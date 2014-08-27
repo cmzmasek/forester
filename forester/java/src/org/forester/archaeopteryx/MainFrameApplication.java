@@ -97,7 +97,7 @@ import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
-import org.forester.sequence.Sequence;
+import org.forester.sequence.MolecularSequence;
 import org.forester.util.BasicDescriptiveStatistics;
 import org.forester.util.BasicTable;
 import org.forester.util.BasicTableParser;
@@ -153,7 +153,7 @@ public final class MainFrameApplication extends MainFrame {
     private PhylogeneticInferenceOptions     _phylogenetic_inference_options       = null;
     private Msa                              _msa                                  = null;
     private File                             _msa_file                             = null;
-    private List<Sequence>                   _seqs                                 = null;
+    private List<MolecularSequence>          _seqs                                 = null;
     private File                             _seqs_file                            = null;
     JMenuItem                                _read_values_jmi;
     JMenuItem                                _read_seqs_jmi;
@@ -589,7 +589,7 @@ public final class MainFrameApplication extends MainFrame {
         return _msa_file;
     }
 
-    public List<Sequence> getSeqs() {
+    public List<MolecularSequence> getSeqs() {
         return _seqs;
     }
 
@@ -697,11 +697,11 @@ public final class MainFrameApplication extends MainFrame {
         if ( ( file != null ) && !file.isDirectory() && ( result == JFileChooser.APPROVE_OPTION ) ) {
             setSeqsFile( null );
             setSeqs( null );
-            List<Sequence> seqs = null;
+            List<MolecularSequence> seqs = null;
             try {
                 if ( FastaParser.isLikelyFasta( new FileInputStream( file ) ) ) {
                     seqs = FastaParser.parse( new FileInputStream( file ) );
-                    for( final Sequence seq : seqs ) {
+                    for( final MolecularSequence seq : seqs ) {
                         System.out.println( SequenceWriter.toFasta( seq, 60 ) );
                     }
                 }
@@ -1260,7 +1260,7 @@ public final class MainFrameApplication extends MainFrame {
         _msa_file = msa_file;
     }
 
-    void setSeqs( final List<Sequence> seqs ) {
+    void setSeqs( final List<MolecularSequence> seqs ) {
         _seqs = seqs;
     }
 
@@ -1431,7 +1431,7 @@ public final class MainFrameApplication extends MainFrame {
         }
         final int result = _sequences_filechooser.showOpenDialog( _contentpane );
         final File file = _sequences_filechooser.getSelectedFile();
-        List<Sequence> seqs = null;
+        List<MolecularSequence> seqs = null;
         if ( ( file != null ) && !file.isDirectory() && ( result == JFileChooser.APPROVE_OPTION ) ) {
             try {
                 if ( FastaParser.isLikelyFasta( new FileInputStream( file ) ) ) {
@@ -1480,13 +1480,13 @@ public final class MainFrameApplication extends MainFrame {
             }
         }
         if ( seqs != null ) {
-            for( final Sequence seq : seqs ) {
+            for( final MolecularSequence seq : seqs ) {
                 System.out.println( seq.getIdentifier() );
             }
             final Phylogeny phy = getCurrentTreePanel().getPhylogeny();
             int total_counter = 0;
             int attached_counter = 0;
-            for( final Sequence seq : seqs ) {
+            for( final MolecularSequence seq : seqs ) {
                 ++total_counter;
                 final String seq_name = seq.getIdentifier();
                 if ( !ForesterUtil.isEmpty( seq_name ) ) {

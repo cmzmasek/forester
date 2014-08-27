@@ -41,7 +41,7 @@ import org.forester.msa.BasicMsa;
 import org.forester.msa.Msa;
 import org.forester.msa.MsaFormatException;
 import org.forester.sequence.BasicSequence;
-import org.forester.sequence.Sequence;
+import org.forester.sequence.MolecularSequence;
 
 public final class GeneralMsaParser {
 
@@ -168,7 +168,7 @@ public final class GeneralMsaParser {
                 }
             }
         } // while ( ( line = reader.readLine() ) != null )
-        final List<Sequence> seqs = new ArrayList<Sequence>();
+        final List<MolecularSequence> seqs = new ArrayList<MolecularSequence>();
         for( int i = 0; i < names_in_order.size(); ++i ) {
             seqs.add( BasicSequence.createAaSequence( names_in_order.get( i ), temp_msa.get( names_in_order.get( i ) )
                     .toString() ) );

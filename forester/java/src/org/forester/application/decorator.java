@@ -45,7 +45,7 @@ import org.forester.phylogeny.PhylogenyMethods.DESCENDANT_SORT_PRIORITY;
 import org.forester.phylogeny.data.Identifier;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
-import org.forester.sequence.Sequence;
+import org.forester.sequence.MolecularSequence;
 import org.forester.tools.PhylogenyDecorator;
 import org.forester.tools.PhylogenyDecorator.FIELD;
 import org.forester.util.BasicTable;
@@ -399,7 +399,7 @@ public final class decorator {
     }
 
     private static Map<String, String> readFastaFileIntoMap( final File mapping_infile, final boolean verbose ) {
-        List<Sequence> seqs = null;
+        List<MolecularSequence> seqs = null;
         try {
             seqs = FastaParser.parse( new FileInputStream( mapping_infile ) );
         }
@@ -412,7 +412,7 @@ public final class decorator {
                     + "] is devoid of fasta-formatted sequences" );
         }
         final Map<String, String> map = new HashMap<String, String>();
-        for( final Sequence seq : seqs ) {
+        for( final MolecularSequence seq : seqs ) {
             if ( ForesterUtil.isEmpty( seq.getIdentifier() ) ) {
                 ForesterUtil.fatalError( decorator.PRG_NAME, "fasta-file [" + mapping_infile
                         + "] contains sequence with empty identifier" );

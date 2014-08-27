@@ -29,8 +29,8 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
 
-import org.forester.sequence.Sequence;
-import org.forester.sequence.Sequence.TYPE;
+import org.forester.sequence.MolecularSequence;
+import org.forester.sequence.MolecularSequence.TYPE;
 
 public interface Msa {
 
@@ -52,11 +52,11 @@ public interface Msa {
 
     public List<Character> getColumnAt( int col );
 
-    public Sequence getSequence( final String id );
+    public MolecularSequence getSequence( final String id );
 
-    public Sequence getSequence( final int row );
+    public MolecularSequence getSequence( final int row );
 
-    public List<Sequence> asSequenceList();
+    public List<MolecularSequence> asSequenceList();
 
     public StringBuffer getSequenceAsString( int row );
 

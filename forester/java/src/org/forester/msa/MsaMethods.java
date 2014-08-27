@@ -34,7 +34,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.forester.sequence.BasicSequence;
-import org.forester.sequence.Sequence;
+import org.forester.sequence.MolecularSequence;
 import org.forester.util.BasicDescriptiveStatistics;
 import org.forester.util.DescriptiveStatistics;
 
@@ -67,7 +67,7 @@ public final class MsaMethods {
                 ++new_length;
             }
         }
-        final List<Sequence> seqs = new ArrayList<Sequence>( msa.getNumberOfSequences() );
+        final List<MolecularSequence> seqs = new ArrayList<MolecularSequence>( msa.getNumberOfSequences() );
         for( int row = 0; row < msa.getNumberOfSequences(); ++row ) {
             final char[] mol_seq = new char[ new_length ];
             int new_col = 0;
@@ -76,7 +76,7 @@ public final class MsaMethods {
                 if ( !delete_cols[ col ] ) {
                     final char residue = msa.getResidueAt( row, col );
                     mol_seq[ new_col++ ] = ( residue );
-                    if ( residue != Sequence.GAP ) {
+                    if ( residue != MolecularSequence.GAP ) {
                         ++non_gap_cols_sum;
                     }
                 }
@@ -119,7 +119,7 @@ public final class MsaMethods {
         int gaps = 0;
         for( int seq = 0; seq < msa.getNumberOfSequences(); ++seq ) {
             for( int i = 0; i < msa.getLength(); ++i ) {
-                if ( msa.getResidueAt( seq, i ) == Sequence.GAP ) {
+                if ( msa.getResidueAt( seq, i ) == MolecularSequence.GAP ) {
                     gaps++;
                 }
             }
@@ -191,7 +191,7 @@ public final class MsaMethods {
     final public static DescriptiveStatistics calculateEffectiveLengthStatistics( final Msa msa ) {
         final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
         for( int row = 0; row < msa.getNumberOfSequences(); ++row ) {
-            final Sequence s = msa.getSequence( row );
+            final MolecularSequence s = msa.getSequence( row );
             stats.addValue( s.getLength() - s.getNumberOfGapResidues() );
         }
         return stats;
@@ -221,7 +221,7 @@ public final class MsaMethods {
     public static SortedMap<Character, Integer> calculateResidueDestributionPerColumn( final Msa msa, final int column ) {
         final SortedMap<Character, Integer> map = new TreeMap<Character, Integer>();
         for( final Character r : msa.getColumnAt( column ) ) {
-            if ( r != Sequence.GAP ) {
+            if ( r != MolecularSequence.GAP ) {
                 if ( !map.containsKey( r ) ) {
                     map.put( r, 1 );
                 }
@@ -238,7 +238,7 @@ public final class MsaMethods {
     }
 
     final public static Msa removeSequence( final Msa msa, final String to_remove_id ) {
-        final List<Sequence> seqs = new ArrayList<Sequence>();
+        final List<MolecularSequence> seqs = new ArrayList<MolecularSequence>();
         for( int row = 0; row < msa.getNumberOfSequences(); ++row ) {
             if ( !to_remove_id.equals( msa.getIdentifier( row ) ) ) {
                 seqs.add( msa.getSequence( row ) );
@@ -251,7 +251,7 @@ public final class MsaMethods {
     }
 
     final public static Msa removeSequences( final Msa msa, final List<String> to_remove_ids ) {
-        final List<Sequence> seqs = new ArrayList<Sequence>();
+        final List<MolecularSequence> seqs = new ArrayList<MolecularSequence>();
         for( int row = 0; row < msa.getNumberOfSequences(); ++row ) {
             if ( !to_remove_ids.contains( msa.getIdentifier( row ) ) ) {
                 seqs.add( msa.getSequence( row ) );
@@ -268,7 +268,7 @@ public final class MsaMethods {
         for( int seq = 0; seq < msa.getNumberOfSequences(); ++seq ) {
             int eff_length = 0;
             for( int i = 0; i < msa.getLength(); ++i ) {
-                if ( msa.getResidueAt( seq, i ) != Sequence.GAP ) {
+                if ( msa.getResidueAt( seq, i ) != MolecularSequence.GAP ) {
                     eff_length++;
                 }
             }
@@ -280,7 +280,7 @@ public final class MsaMethods {
     }
 
     final public static Msa removeSequencesByRow( final Msa msa, final List<Integer> to_remove_rows ) {
-        final List<Sequence> seqs = new ArrayList<Sequence>();
+        final List<MolecularSequence> seqs = new ArrayList<MolecularSequence>();
         for( int row = 0; row < msa.getNumberOfSequences(); ++row ) {
             if ( !to_remove_rows.contains( row ) ) {
                 seqs.add( msa.getSequence( row ) );
@@ -296,7 +296,7 @@ public final class MsaMethods {
         final HashMap<Character, Integer> counts = new HashMap<Character, Integer>();
         for( int row = 0; row < msa.getNumberOfSequences(); ++row ) {
             final char c = msa.getResidueAt( row, col );
-            if ( c != Sequence.GAP ) {
+            if ( c != MolecularSequence.GAP ) {
                 if ( !counts.containsKey( c ) ) {
                     counts.put( c, 1 );
                 }

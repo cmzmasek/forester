@@ -26,7 +26,7 @@
 
 package org.forester.sequence;
 
-public interface Sequence {
+public interface MolecularSequence {
 
     public static final char   UNSPECIFIED_AA  = 'X';
     public static final char   UNSPECIFIED_NUC = 'N';

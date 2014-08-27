@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
 
-import org.forester.sequence.Sequence;
+import org.forester.sequence.MolecularSequence;
 import org.forester.util.ForesterUtil;
 
 public class SequenceWriter {
@@ -15,7 +15,7 @@ public class SequenceWriter {
         FASTA;
     }
 
-    public static StringBuilder toFasta( final Sequence seq, final int width ) {
+    public static StringBuilder toFasta( final MolecularSequence seq, final int width ) {
         return toFasta( seq.getIdentifier(), seq.getMolecularSequenceAsString(), width );
     }
 
@@ -44,7 +44,7 @@ public class SequenceWriter {
         return sb;
     }
 
-    public static void toFasta( final Sequence seq, final Writer w, final int width ) throws IOException {
+    public static void toFasta( final MolecularSequence seq, final Writer w, final int width ) throws IOException {
         w.write( ">" );
         w.write( seq.getIdentifier() );
         w.write( ForesterUtil.LINE_SEPARATOR );
@@ -67,20 +67,22 @@ public class SequenceWriter {
         }
     }
 
-    public static void writeSeqs( final List<Sequence> seqs, final File file, final SEQ_FORMAT format, final int width )
-            throws IOException {
+    public static void writeSeqs( final List<MolecularSequence> seqs,
+                                  final File file,
+                                  final SEQ_FORMAT format,
+                                  final int width ) throws IOException {
         final Writer w = ForesterUtil.createBufferedWriter( file );
         SequenceWriter.writeSeqs( seqs, w, format, width );
         w.close();
     }
 
-    public static void writeSeqs( final List<Sequence> seqs,
+    public static void writeSeqs( final List<MolecularSequence> seqs,
                                   final Writer writer,
                                   final SEQ_FORMAT format,
                                   final int width ) throws IOException {
         switch ( format ) {
             case FASTA:
-                for( final Sequence s : seqs ) {
+                for( final MolecularSequence s : seqs ) {
                     toFasta( s, writer, width );
                     writer.write( ForesterUtil.LINE_SEPARATOR );
                 }

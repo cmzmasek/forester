@@ -45,42 +45,55 @@ import org.forester.io.parsers.util.ParserUtils;
 import org.forester.io.parsers.util.PhylogenyParserException;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
+import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
+import org.forester.sequence.BasicSequence;
+import org.forester.sequence.MolecularSequence;
 import org.forester.util.ForesterUtil;
 
 public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, PhylogenyParser {
 
-    final private static String  begin_trees               = NexusConstants.BEGIN_TREES.toLowerCase();
-    final private static String  end                       = NexusConstants.END.toLowerCase();
-    final private static String  endblock                  = "endblock";
-    final private static Pattern ROOTEDNESS_PATTERN        = Pattern.compile( ".+=\\s*\\[&([R|U])\\].*" );
-    final private static String  taxlabels                 = NexusConstants.TAXLABELS.toLowerCase();
-    final private static Pattern TITLE_PATTERN             = Pattern.compile( "TITLE.?\\s+([^;]+)",
-                                                                              Pattern.CASE_INSENSITIVE );
-    final private static String  translate                 = NexusConstants.TRANSLATE.toLowerCase();
-    final private static String  tree                      = NexusConstants.TREE.toLowerCase();
-    final private static Pattern TREE_NAME_PATTERN         = Pattern.compile( "\\s*.?Tree\\s+(.+?)\\s*=.+",
-                                                                              Pattern.CASE_INSENSITIVE );
-    final private static Pattern TRANSLATE_PATTERN         = Pattern.compile( "([0-9A-Za-z]+)\\s+(.+)" );
-    final private static String  utree                     = NexusConstants.UTREE.toLowerCase();
-    private BufferedReader       _br;
-    private boolean              _ignore_quotes_in_nh_data = Constants.NH_PARSING_IGNORE_QUOTES_DEFAULT;
-    private boolean              _in_taxalabels;
-    private boolean              _in_translate;
-    private boolean              _in_tree;
-    private boolean              _in_trees_block;
-    private boolean              _is_rooted;
-    private String               _name;
-    private Phylogeny            _next;
-    private Object               _nexus_source;
-    private StringBuilder        _nh;
-    private boolean              _replace_underscores      = NHXParser.REPLACE_UNDERSCORES_DEFAULT;
-    private boolean              _rooted_info_present;
-    private List<String>         _taxlabels;
-    private TAXONOMY_EXTRACTION  _taxonomy_extraction      = TAXONOMY_EXTRACTION.NO;
-    private String               _title;
-    private Map<String, String>  _translate_map;
-    private StringBuilder        _translate_sb;
+    final private static String            begin_trees               = NexusConstants.BEGIN_TREES.toLowerCase();
+    final private static String            end                       = NexusConstants.END.toLowerCase();
+    final private static String            endblock                  = "endblock";
+    final private static Pattern           ROOTEDNESS_PATTERN        = Pattern.compile( ".+=\\s*\\[&([R|U])\\].*" );
+    final private static String            taxlabels                 = NexusConstants.TAXLABELS.toLowerCase();
+    final private static Pattern           TITLE_PATTERN             = Pattern.compile( "TITLE.?\\s+([^;]+)",
+                                                                                        Pattern.CASE_INSENSITIVE );
+    final private static String            translate                 = NexusConstants.TRANSLATE.toLowerCase();
+    final private static String            data                      = NexusConstants.BEGIN_CHARACTERS.toLowerCase();
+    final private static String            characters                = NexusConstants.BEGIN_DATA.toLowerCase();
+    final private static String            tree                      = NexusConstants.TREE.toLowerCase();
+    final private static Pattern           TREE_NAME_PATTERN         = Pattern.compile( "\\s*.?Tree\\s+(.+?)\\s*=.+",
+                                                                                        Pattern.CASE_INSENSITIVE );
+    final private static Pattern           TRANSLATE_PATTERN         = Pattern.compile( "([0-9A-Za-z]+)\\s+(.+)" );
+    final private static Pattern           ALN_PATTERN               = Pattern.compile( "(.+)\\s+([A-Za-z-_\\*\\?]+)" );
+    final private static Pattern           DATATYPE_PATTERN          = Pattern.compile( "datatype\\s?.\\s?([a-z]+)" );
+    final private static Pattern           LINK_TAXA_PATTERN         = Pattern.compile( "link\\s+taxa\\s?.\\s?([^;]+)",
+                                                                                        Pattern.CASE_INSENSITIVE );
+    final private static String            utree                     = NexusConstants.UTREE.toLowerCase();
+    private BufferedReader                 _br;
+    private boolean                        _ignore_quotes_in_nh_data = Constants.NH_PARSING_IGNORE_QUOTES_DEFAULT;
+    private boolean                        _in_taxalabels;
+    private boolean                        _in_translate;
+    private boolean                        _in_tree;
+    private boolean                        _in_trees_block;
+    private boolean                        _in_data_block;
+    private boolean                        _is_rooted;
+    private String                         _datatype;
+    private String                         _name;
+    private Phylogeny                      _next;
+    private Object                         _nexus_source;
+    private StringBuilder                  _nh;
+    private boolean                        _replace_underscores      = NHXParser.REPLACE_UNDERSCORES_DEFAULT;
+    private boolean                        _rooted_info_present;
+    private List<String>                   _taxlabels;
+    private TAXONOMY_EXTRACTION            _taxonomy_extraction      = TAXONOMY_EXTRACTION.NO;
+    private String                         _title;
+    private Map<String, String>            _translate_map;
+    private StringBuilder                  _translate_sb;
+    private Map<String, MolecularSequence> _seqs;
+    private final boolean                  _add_sequences            = true;
 
     @Override
     public String getName() {
@@ -128,6 +141,7 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
         _in_tree = false;
         _rooted_info_present = false;
         _is_rooted = false;
+        _seqs = new HashMap<String, MolecularSequence>();
         _br = ParserUtils.createReader( _nexus_source );
         getNext();
     }
@@ -214,6 +228,15 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
                         node.setName( node.getName().replace( '_', ' ' ).trim() );
                     }
                 }
+                if ( _add_sequences ) {
+                    if ( _seqs.containsKey( node.getName() ) ) {
+                        final MolecularSequence s = _seqs.get( node.getName() );
+                        //TODO need to check for uniqueness when adding seqs....
+                        final Sequence ns = new Sequence( s );
+                        ns.setMolecularSequenceAligned( true ); //TODO need to check if all same length
+                        node.getNodeData().addSequence( ns );
+                    }
+                }
             }
         }
         _next = p;
@@ -232,17 +255,31 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
                     _in_trees_block = true;
                     _in_taxalabels = false;
                     _in_translate = false;
+                    _in_data_block = false;
+                    _datatype = null;
                     _title = "";
                 }
                 else if ( line_lc.startsWith( taxlabels ) ) {
+                    //TODO need to be taxa block instead
                     _in_trees_block = false;
                     _in_taxalabels = true;
                     _in_translate = false;
+                    _in_data_block = false;
+                    _datatype = null;
                 }
                 else if ( line_lc.startsWith( translate ) ) {
                     _translate_sb = new StringBuilder();
                     _in_taxalabels = false;
                     _in_translate = true;
+                    _in_data_block = false;
+                    _datatype = null;
+                }
+                else if ( line_lc.startsWith( characters ) || line_lc.startsWith( data ) ) {
+                    _in_taxalabels = false;
+                    _in_trees_block = false;
+                    _in_translate = false;
+                    _in_data_block = true;
+                    _datatype = null;
                 }
                 else if ( _in_trees_block ) {
                     if ( line_lc.startsWith( "title" ) ) {
@@ -252,6 +289,11 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
                         }
                     }
                     else if ( line_lc.startsWith( "link" ) ) {
+                        final Matcher link_m = LINK_TAXA_PATTERN.matcher( line );
+                        if ( link_m.lookingAt() ) {
+                            final String link = link_m.group( 1 );
+                            System.out.println( "link taxa:" + link );
+                        }
                     }
                     else if ( line_lc.startsWith( end ) || line_lc.startsWith( endblock ) ) {
                         _in_trees_block = false;
@@ -344,6 +386,53 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
                         if ( line.endsWith( ";" ) ) {
                             _in_translate = false;
                             setTranslateKeyValuePairs( _translate_sb );
+                        }
+                    }
+                }
+                if ( _in_data_block ) {
+                    if ( line_lc.startsWith( end ) || line_lc.startsWith( endblock ) ) {
+                        _in_data_block = false;
+                        _datatype = null;
+                    }
+                    else if ( line_lc.startsWith( "link" ) ) {
+                        final Matcher link_m = LINK_TAXA_PATTERN.matcher( line );
+                        if ( link_m.lookingAt() ) {
+                            final String link = link_m.group( 1 );
+                            System.out.println( "link taxa:" + link );
+                        }
+                    }
+                    else {
+                        final Matcher datatype_matcher = DATATYPE_PATTERN.matcher( line_lc );
+                        if ( datatype_matcher.find() ) {
+                            _datatype = datatype_matcher.group( 1 );
+                            System.out.println( _datatype );
+                        }
+                        else {
+                            if ( ( _datatype != null )
+                                    && ( _datatype.equals( "protein" ) || _datatype.equals( "dna" ) || _datatype
+                                            .equals( "rna" ) ) ) {
+                                if ( line.endsWith( ";" ) ) {
+                                    _in_data_block = false;
+                                    line = line.substring( 0, line.length() - 1 );
+                                }
+                                final Matcher aln_matcher = ALN_PATTERN.matcher( line );
+                                if ( aln_matcher.matches() ) {
+                                    final String id = aln_matcher.group( 1 );
+                                    final String seq = aln_matcher.group( 2 );
+                                    MolecularSequence s = null;
+                                    if ( _datatype.equals( "protein" ) ) {
+                                        s = BasicSequence.createAaSequence( id, seq );
+                                    }
+                                    else if ( _datatype.equals( "dna" ) ) {
+                                        s = BasicSequence.createDnaSequence( id, seq );
+                                    }
+                                    else {
+                                        s = BasicSequence.createRnaSequence( id, seq );
+                                    }
+                                    _seqs.put( id, s );
+                                    System.out.println( s );
+                                }
+                            }
                         }
                     }
                 }

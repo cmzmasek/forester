@@ -1814,7 +1814,7 @@ public class PhylogenyMethods {
 
     public static void addMolecularSeqsToTree( final Phylogeny phy, final Msa msa ) {
         for( int s = 0; s < msa.getNumberOfSequences(); ++s ) {
-            final org.forester.sequence.Sequence seq = msa.getSequence( s );
+            final org.forester.sequence.MolecularSequence seq = msa.getSequence( s );
             final PhylogenyNode node = phy.getNode( seq.getIdentifier() );
             final org.forester.phylogeny.data.Sequence new_seq = new Sequence();
             new_seq.setMolecularSequenceAligned( true );

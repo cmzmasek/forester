@@ -27,7 +27,7 @@ package org.forester.msa;
 import java.util.List;
 
 import org.forester.sequence.BasicSequence;
-import org.forester.sequence.Sequence;
+import org.forester.sequence.MolecularSequence;
 
 public final class DeleteableMsa extends BasicMsa {
 
@@ -102,7 +102,7 @@ public final class DeleteableMsa extends BasicMsa {
         }
     }
 
-    final public Sequence deleteRow( final String id, final boolean return_removed_seq ) {
+    final public MolecularSequence deleteRow( final String id, final boolean return_removed_seq ) {
         int row = -1;
         for( int r = 0; r < getNumberOfSequences(); ++r ) {
             if ( getIdentifier( r ).equals( id ) ) {
@@ -113,14 +113,14 @@ public final class DeleteableMsa extends BasicMsa {
         if ( row < 0 ) {
             throw new IllegalArgumentException( "id [" + id + "] not found" );
         }
-        Sequence s = null;
+        MolecularSequence s = null;
         StringBuilder sb = null;
         if ( return_removed_seq ) {
             s = getSequence( row );
             final char[] x = s.getMolecularSequence();
             sb = new StringBuilder( x.length );
             for( final char element : x ) {
-                if ( element != Sequence.GAP ) {
+                if ( element != MolecularSequence.GAP ) {
                     sb.append( element );
                 }
             }
@@ -158,7 +158,7 @@ public final class DeleteableMsa extends BasicMsa {
     }
 
     @Override
-    public Sequence getSequence( final int row ) {
+    public MolecularSequence getSequence( final int row ) {
         checkRow( row );
         return new BasicSequence( getIdentifier( row ), getSequenceAsString( row ).toString(), getType() );
     }
@@ -166,7 +166,7 @@ public final class DeleteableMsa extends BasicMsa {
     final public boolean isAllGap( final int col ) {
         final int m_col = _mapped_col_positions[ col ];
         for( int j = 0; j < getNumberOfSequences(); ++j ) {
-            if ( super.getResidueAt( _mapped_row_positions[ j ], m_col ) != Sequence.GAP ) {
+            if ( super.getResidueAt( _mapped_row_positions[ j ], m_col ) != MolecularSequence.GAP ) {
                 return false;
             }
         }
@@ -214,7 +214,7 @@ public final class DeleteableMsa extends BasicMsa {
         --_seqs;
     }
 
-    public final static DeleteableMsa createInstance( final List<Sequence> seqs ) {
+    public final static DeleteableMsa createInstance( final List<MolecularSequence> seqs ) {
         return new DeleteableMsa( ( BasicMsa ) BasicMsa.createInstance( seqs ) );
     }
 

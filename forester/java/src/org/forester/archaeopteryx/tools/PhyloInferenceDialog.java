@@ -48,7 +48,7 @@ import javax.swing.border.LineBorder;
 import org.forester.archaeopteryx.AptxUtil;
 import org.forester.archaeopteryx.MainFrameApplication;
 import org.forester.evoinference.distance.PairwiseDistanceCalculator.PWD_DISTANCE_METHOD;
-import org.forester.sequence.Sequence;
+import org.forester.sequence.MolecularSequence;
 import org.forester.util.BasicDescriptiveStatistics;
 import org.forester.util.DescriptiveStatistics;
 
@@ -477,9 +477,9 @@ public class PhyloInferenceDialog extends JDialog implements ActionListener {
         }
     }
 
-    DescriptiveStatistics calcSequenceStats( final List<Sequence> seqs ) {
+    DescriptiveStatistics calcSequenceStats( final List<MolecularSequence> seqs ) {
         final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
-        for( final Sequence s : seqs ) {
+        for( final MolecularSequence s : seqs ) {
             stats.addValue( s.getLength() );
         }
         return stats;

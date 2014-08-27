@@ -36,8 +36,8 @@ import java.util.Set;
 import org.forester.io.writers.SequenceWriter;
 import org.forester.io.writers.SequenceWriter.SEQ_FORMAT;
 import org.forester.sequence.BasicSequence;
-import org.forester.sequence.Sequence;
-import org.forester.sequence.Sequence.TYPE;
+import org.forester.sequence.MolecularSequence;
+import org.forester.sequence.MolecularSequence.TYPE;
 import org.forester.util.ForesterUtil;
 
 public class BasicMsa implements Msa {
@@ -65,8 +65,8 @@ public class BasicMsa implements Msa {
     }
 
     @Override
-    public List<Sequence> asSequenceList() {
-        final List<Sequence> seqs = new ArrayList<Sequence>();
+    public List<MolecularSequence> asSequenceList() {
+        final List<MolecularSequence> seqs = new ArrayList<MolecularSequence>();
         for( int i = 0; i < getNumberOfSequences(); ++i ) {
             seqs.add( getSequence( i ) );
         }
@@ -103,12 +103,12 @@ public class BasicMsa implements Msa {
     }
 
     @Override
-    public Sequence getSequence( final int row ) {
+    public MolecularSequence getSequence( final int row ) {
         return new BasicSequence( getIdentifier( row ), _data[ row ], getType() );
     }
 
     @Override
-    public Sequence getSequence( final String id ) {
+    public MolecularSequence getSequence( final String id ) {
         for( int i = 0; i < getNumberOfSequences(); ++i ) {
             if ( getIdentifier( i ).equals( id ) ) {
                 return getSequence( i );
@@ -133,7 +133,7 @@ public class BasicMsa implements Msa {
 
     @Override
     public boolean isGapAt( final int row, final int col ) {
-        return getResidueAt( row, col ) == Sequence.GAP;
+        return getResidueAt( row, col ) == MolecularSequence.GAP;
     }
 
     @Override
@@ -211,7 +211,7 @@ public class BasicMsa implements Msa {
         w.write( "   Matrix" );
         w.write( ForesterUtil.LINE_SEPARATOR );
         for( int row = 0; row < getNumberOfSequences(); ++row ) {
-            final Sequence seq = getSequence( row );
+            final MolecularSequence seq = getSequence( row );
             final String s = seq.getMolecularSequenceAsString();
             w.write( "      " );
             w.write( ForesterUtil.pad( getIdentifier( row ).replace( ' ', '_' ), max, ' ', false ).toString() );
@@ -238,14 +238,14 @@ public class BasicMsa implements Msa {
         }
     }
 
-    public static Msa createInstance( final List<Sequence> seqs ) {
+    public static Msa createInstance( final List<MolecularSequence> seqs ) {
         if ( seqs.size() < 1 ) {
             throw new IllegalArgumentException( "cannot create msa from less than one sequence" );
         }
         final int length = seqs.get( 0 ).getLength();
         final BasicMsa msa = new BasicMsa( seqs.size(), length, seqs.get( 0 ).getType() );
         for( int row = 0; row < seqs.size(); ++row ) {
-            final Sequence seq = seqs.get( row );
+            final MolecularSequence seq = seqs.get( row );
             if ( seq.getLength() != length ) {
                 throw new IllegalArgumentException( "illegal attempt to build msa from sequences of unequal length ["
                         + seq.getIdentifier() + "]" );

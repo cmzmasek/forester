@@ -36,6 +36,8 @@ import java.io.Writer;
 import org.forester.archaeopteryx.Configuration;
 import org.forester.archaeopteryx.TreePanel;
 import org.forester.phylogeny.data.PhylogenyData;
+import org.forester.sequence.MolecularSequence;
+import org.forester.sequence.MolecularSequence.TYPE;
 
 public final class RenderableMsaSequence implements RenderablePhylogenyData {
 
@@ -46,6 +48,7 @@ public final class RenderableMsaSequence implements RenderablePhylogenyData {
     private final Rectangle2D            _rectangle              = new Rectangle2D.Float();
     private double                       _height                 = DEFAULT_HEIGHT;
     private final float                  _width                  = DEFAULT_WIDTH;
+    private MolecularSequence.TYPE       _type;
     private static RenderableMsaSequence _instance               = null;
 
     private RenderableMsaSequence() {
@@ -150,11 +153,39 @@ public final class RenderableMsaSequence implements RenderablePhylogenyData {
     }
 
     private Color calculateColor( final char c ) {
-        if ( ( c == 'G' ) || ( c == 'A' ) || ( c == 'S' ) || ( c == 'T' ) ) {
+        if ( _type == TYPE.AA ) {
+            return calculateAAColor( c );
+        }
+        return calculateNucleotideColor( c );
+    }
+
+    private Color calculateNucleotideColor( final char c ) {
+        if ( c == 'A' ) {
+            return Color.YELLOW;
+        }
+        if ( ( c == 'T' ) || ( c == 'U' ) ) {
             return Color.ORANGE;
         }
+        if ( c == 'G' ) {
+            return Color.BLUE;
+        }
+        if ( c == 'C' ) {
+            return Color.CYAN;
+        }
+        else if ( c == '-' ) {
+            return Color.GRAY;
+        }
+        else {
+            return Color.GRAY;
+        }
+    }
+
+    private Color calculateAAColor( final char c ) {
+        if ( ( c == 'G' ) || ( c == 'A' ) || ( c == 'S' ) || ( c == 'T' ) ) {
+            return Color.YELLOW;
+        }
         else if ( ( c == 'N' ) || ( c == 'Q' ) || ( c == 'H' ) ) {
-            return Color.MAGENTA;
+            return Color.PINK;
         }
         else if ( ( c == 'D' ) || ( c == 'E' ) ) {
             return Color.RED;
@@ -163,6 +194,9 @@ public final class RenderableMsaSequence implements RenderablePhylogenyData {
             return Color.BLUE;
         }
         else if ( c == '-' ) {
+            return Color.GRAY;
+        }
+        else if ( c == 'X' ) {
             return Color.GRAY;
         }
         else {
@@ -174,9 +208,20 @@ public final class RenderableMsaSequence implements RenderablePhylogenyData {
         return _height;
     }
 
-    public static RenderableMsaSequence createInstance( final String seq, final Configuration configuration ) {
+    public static RenderableMsaSequence createInstance( final String seq,
+                                                        final String type,
+                                                        final Configuration configuration ) {
         if ( _instance == null ) {
             _instance = new RenderableMsaSequence();
+        }
+        if ( type.equals( "protein" ) ) {
+            _instance._type = TYPE.AA;
+        }
+        else if ( type.equals( "dna" ) ) {
+            _instance._type = TYPE.DNA;
+        }
+        else {
+            _instance._type = TYPE.RNA;
         }
         _instance._seq = seq.toCharArray();
         if ( configuration != null ) {

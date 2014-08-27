@@ -35,7 +35,7 @@ import java.util.List;
 import org.forester.io.parsers.FastaParser;
 import org.forester.io.writers.SequenceWriter;
 import org.forester.io.writers.SequenceWriter.SEQ_FORMAT;
-import org.forester.sequence.Sequence;
+import org.forester.sequence.MolecularSequence;
 import org.forester.util.SystemCommandExecutor;
 
 public final class Mafft extends MsaInferrer {
@@ -72,7 +72,8 @@ public final class Mafft extends MsaInferrer {
     }
 
     @Override
-    public Msa infer( final List<Sequence> seqs, final List<String> opts ) throws IOException, InterruptedException {
+    public Msa infer( final List<MolecularSequence> seqs, final List<String> opts ) throws IOException,
+            InterruptedException {
         final File file = File.createTempFile( "__mafft_input_", ".fasta" );
         file.deleteOnExit();
         final BufferedWriter writer = new BufferedWriter( new FileWriter( file ) );

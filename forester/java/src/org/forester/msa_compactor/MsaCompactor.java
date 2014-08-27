@@ -64,7 +64,7 @@ import org.forester.phylogeny.data.NodeVisualData;
 import org.forester.phylogeny.data.NodeVisualData.NodeFill;
 import org.forester.phylogeny.data.NodeVisualData.NodeShape;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
-import org.forester.sequence.Sequence;
+import org.forester.sequence.MolecularSequence;
 import org.forester.tools.ConfidenceAssessor;
 import org.forester.util.BasicDescriptiveStatistics;
 import org.forester.util.DescriptiveStatistics;
@@ -72,28 +72,28 @@ import org.forester.util.ForesterUtil;
 
 public class MsaCompactor {
 
-    final private static NumberFormat NF_1                       = new DecimalFormat( "0.#" );
-    final private static NumberFormat NF_3                       = new DecimalFormat( "0.###" );
-    final private static NumberFormat NF_4                       = new DecimalFormat( "0.####" );
-    private boolean                   _calculate_shannon_entropy = false;
+    final private static NumberFormat          NF_1                       = new DecimalFormat( "0.#" );
+    final private static NumberFormat          NF_3                       = new DecimalFormat( "0.###" );
+    final private static NumberFormat          NF_4                       = new DecimalFormat( "0.####" );
+    private boolean                            _calculate_shannon_entropy = false;
     //
-    private String                    _infile_name               = null;
-    private final short               _longest_id_length;
+    private String                             _infile_name               = null;
+    private final short                        _longest_id_length;
     //
-    private String                    _maffts_opts               = "--auto";
-    private DeleteableMsa             _msa                       = null;
-    private boolean                   _norm                      = true;
-    private File                      _out_file_base             = null;
-    private MSA_FORMAT                _output_format             = MSA_FORMAT.FASTA;
-    private String                    _path_to_mafft             = null;
-    private boolean                   _phylogentic_inference     = false;
+    private String                             _maffts_opts               = "--auto";
+    private DeleteableMsa                      _msa                       = null;
+    private boolean                            _norm                      = true;
+    private File                               _out_file_base             = null;
+    private MSA_FORMAT                         _output_format             = MSA_FORMAT.FASTA;
+    private String                             _path_to_mafft             = null;
+    private boolean                            _phylogentic_inference     = false;
     //
-    private boolean                   _realign                   = false;
-    private final SortedSet<String>   _removed_seq_ids;
-    private final ArrayList<Sequence> _removed_seqs;
-    private File                      _removed_seqs_out_base     = null;
-    private int                       _step                      = -1;
-    private int                       _step_for_diagnostics      = -1;
+    private boolean                            _realign                   = false;
+    private final SortedSet<String>            _removed_seq_ids;
+    private final ArrayList<MolecularSequence> _removed_seqs;
+    private File                               _removed_seqs_out_base     = null;
+    private int                                _step                      = -1;
+    private int                                _step_for_diagnostics      = -1;
     static {
         NF_1.setRoundingMode( RoundingMode.HALF_UP );
         NF_4.setRoundingMode( RoundingMode.HALF_UP );
@@ -104,7 +104,7 @@ public class MsaCompactor {
         _msa = msa;
         _removed_seq_ids = new TreeSet<String>();
         _longest_id_length = _msa.determineMaxIdLength();
-        _removed_seqs = new ArrayList<Sequence>();
+        _removed_seqs = new ArrayList<MolecularSequence>();
     }
 
     public final Phylogeny calcTree() {
@@ -304,7 +304,7 @@ public class MsaCompactor {
         while ( MsaMethods.calcGapRatio( _msa ) > mean_gapiness ) {
             final String id = to_remove_ids.get( i );
             _removed_seq_ids.add( id );
-            final Sequence deleted = _msa.deleteRow( id, true );
+            final MolecularSequence deleted = _msa.deleteRow( id, true );
             _removed_seqs.add( deleted );
             removeGapColumns();
             if ( isPrintMsaStatsWriteOutfileAndRealign( i ) || ( MsaMethods.calcGapRatio( _msa ) <= mean_gapiness ) ) {
@@ -354,7 +354,7 @@ public class MsaCompactor {
         while ( _msa.getLength() > length ) {
             final String id = to_remove_ids.get( i );
             _removed_seq_ids.add( id );
-            final Sequence deleted = _msa.deleteRow( id, true );
+            final MolecularSequence deleted = _msa.deleteRow( id, true );
             _removed_seqs.add( deleted );
             removeGapColumns();
             if ( isPrintMsaStatsWriteOutfileAndRealign( i ) || ( _msa.getLength() <= length ) ) {
@@ -404,7 +404,7 @@ public class MsaCompactor {
         for( int i = 0; i < to_remove_ids.size(); ++i ) {
             final String id = to_remove_ids.get( i );
             _removed_seq_ids.add( id );
-            final Sequence deleted = _msa.deleteRow( id, true );
+            final MolecularSequence deleted = _msa.deleteRow( id, true );
             _removed_seqs.add( deleted );
             removeGapColumns();
             if ( isPrintMsaStatsWriteOutfileAndRealign( i ) || ( i == ( to_remove_ids.size() - 1 ) ) ) {
@@ -510,7 +510,7 @@ public class MsaCompactor {
         return s;
     }
 
-    final int calcNonGapResidues( final Sequence seq ) {
+    final int calcNonGapResidues( final MolecularSequence seq ) {
         int ng = 0;
         for( int i = 0; i < seq.getLength(); ++i ) {
             if ( !seq.isGapAt( i ) ) {

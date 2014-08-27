@@ -37,6 +37,8 @@ import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.parsers.phyloxml.PhyloXmlMapping;
 import org.forester.io.parsers.phyloxml.PhyloXmlUtil;
 import org.forester.io.writers.PhylogenyWriter;
+import org.forester.sequence.MolecularSequence;
+import org.forester.sequence.MolecularSequence.TYPE;
 import org.forester.util.ForesterUtil;
 
 public class Sequence implements PhylogenyData, MultipleUris, Comparable<Sequence> {
@@ -58,6 +60,31 @@ public class Sequence implements PhylogenyData, MultipleUris, Comparable<Sequenc
 
     public Sequence() {
         init();
+    }
+
+    public Sequence( final MolecularSequence mol_seq ) {
+        init();
+        setMolecularSequence( mol_seq.getMolecularSequenceAsString() );
+        setName( mol_seq.getIdentifier() );
+        String type;
+        if ( mol_seq.getType() == TYPE.AA ) {
+            type = "protein";
+        }
+        else if ( mol_seq.getType() == TYPE.DNA ) {
+            type = "dna";
+        }
+        else if ( mol_seq.getType() == TYPE.RNA ) {
+            type = "rna";
+        }
+        else {
+            throw new IllegalArgumentException( "unknown sequence type " + mol_seq.getType() );
+        }
+        try {
+            setType( type );
+        }
+        catch ( final PhyloXmlDataFormatException e ) {
+            throw new IllegalArgumentException( "don't know how to handle type " + mol_seq.getType() );
+        }
     }
 
     public void addAnnotation( final Annotation annotation ) {

@@ -39,6 +39,7 @@ public final class NexusConstants {
     public final static String END              = "End;";
     public final static String MATRIX           = "Matrix";
     public final static String BEGIN_CHARACTERS = "Begin Characters;";
+    public final static String BEGIN_DATA       = "Begin Data;";
     public final static String FORMAT           = "Format";
     public final static String DATATYPE         = "DataType";
     public final static String STANDARD         = "Standard";

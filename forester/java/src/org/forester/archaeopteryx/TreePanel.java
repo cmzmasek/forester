@@ -4812,18 +4812,18 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         if ( getOptions().isRightLineUpDomains() ) {
                             rds.render( ( float ) ( ( getMaxDistanceToRoot() * getXcorrectionFactor() )
                                     + _length_of_longest_text + ( ( _longest_domain - rds.getTotalLength() ) * rds
-                                    .getRenderingFactorWidth() ) ), node.getYcoord() - ( h / 2 ), g, this, to_pdf );
+                                    .getRenderingFactorWidth() ) ), node.getYcoord() - ( h / 2.0f ), g, this, to_pdf );
                         }
                         else {
                             rds.render( ( float ) ( ( getMaxDistanceToRoot() * getXcorrectionFactor() ) + _length_of_longest_text ),
-                                        node.getYcoord() - ( h / 2 ),
+                                        node.getYcoord() - ( h / 2.0f ),
                                         g,
                                         this,
                                         to_pdf );
                         }
                     }
                     else {
-                        rds.render( node.getXcoord() + x, node.getYcoord() - ( h / 2 ), g, this, to_pdf );
+                        rds.render( node.getXcoord() + x, node.getYcoord() - ( h / 2.0f ), g, this, to_pdf );
                     }
                 }
                 else {
@@ -4831,14 +4831,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         rds.render( ( ( getPhylogeny().getFirstExternalNode().getXcoord() + _length_of_longest_text ) - 20 )
                                             + ( ( _longest_domain - rds.getTotalLength() ) * rds
                                                     .getRenderingFactorWidth() ),
-                                    node.getYcoord() - ( h / 2 ),
+                                    node.getYcoord() - ( h / 2.0f ),
                                     g,
                                     this,
                                     to_pdf );
                     }
                     else {
                         rds.render( getPhylogeny().getFirstExternalNode().getXcoord() + _length_of_longest_text,
-                                    node.getYcoord() - ( h / 2 ),
+                                    node.getYcoord() - ( h / 2.0f ),
                                     g,
                                     this,
                                     to_pdf );
@@ -4873,7 +4873,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 && ( node.getNodeData().getSequence().isMolecularSequenceAligned() )
                 && ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getMolecularSequence() ) ) ) {
             final RenderableMsaSequence rs = RenderableMsaSequence.createInstance( node.getNodeData().getSequence()
-                    .getMolecularSequence(), getConfiguration() );
+                    .getMolecularSequence(), node.getNodeData().getSequence().getType(), getConfiguration() );
             if ( rs != null ) {
                 final int default_height = 7;
                 float y = getYdistance();
@@ -4884,14 +4884,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 rs.setRenderingHeight( h > 1 ? h : 2 );
                 if ( getControlPanel().isDrawPhylogram() ) {
                     rs.render( ( float ) ( ( getMaxDistanceToRoot() * getXcorrectionFactor() ) + _length_of_longest_text ),
-                               node.getYcoord() - ( h / 2 ),
+                               node.getYcoord() - ( h / 2.0f ),
                                g,
                                this,
                                to_pdf );
                 }
                 else {
                     rs.render( getPhylogeny().getFirstExternalNode().getXcoord() + _length_of_longest_text,
-                               node.getYcoord() - ( h / 2 ),
+                               node.getYcoord() - ( h / 2.0f ),
                                g,
                                this,
                                to_pdf );

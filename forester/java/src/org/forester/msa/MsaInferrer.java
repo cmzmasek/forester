@@ -29,7 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import org.forester.sequence.Sequence;
+import org.forester.sequence.MolecularSequence;
 import org.forester.util.SystemCommandExecutor;
 
 public abstract class MsaInferrer {
@@ -49,6 +49,6 @@ public abstract class MsaInferrer {
 
     public abstract Msa infer( File path_to_input_seqs, List<String> opts ) throws IOException, InterruptedException;
 
-    public abstract Msa infer( final List<Sequence> seqs, final List<String> opts ) throws IOException,
+    public abstract Msa infer( final List<MolecularSequence> seqs, final List<String> opts ) throws IOException,
             InterruptedException;
 }

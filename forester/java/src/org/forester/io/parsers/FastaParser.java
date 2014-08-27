@@ -42,7 +42,7 @@ import org.forester.msa.BasicMsa;
 import org.forester.msa.Msa;
 import org.forester.msa.MsaFormatException;
 import org.forester.sequence.BasicSequence;
-import org.forester.sequence.Sequence;
+import org.forester.sequence.MolecularSequence;
 
 public class FastaParser {
 
@@ -109,11 +109,11 @@ public class FastaParser {
         return parseMsa( new ByteArrayInputStream( bytes ) );
     }
 
-    static public List<Sequence> parse( final File f ) throws IOException {
+    static public List<MolecularSequence> parse( final File f ) throws IOException {
         return parse( new FileInputStream( f ) );
     }
 
-    static public List<Sequence> parse( final InputStream is ) throws IOException {
+    static public List<MolecularSequence> parse( final InputStream is ) throws IOException {
         final BufferedReader reader = new BufferedReader( new InputStreamReader( is, "UTF-8" ) );
         String line = null;
         int line_counter = 0;
@@ -151,7 +151,7 @@ public class FastaParser {
         }
         addSeq( name, current_seq, temp_msa );
         reader.close();
-        final List<Sequence> seqs = new ArrayList<Sequence>();
+        final List<MolecularSequence> seqs = new ArrayList<MolecularSequence>();
         for( int i = 0; i < temp_msa.size(); ++i ) {
             seqs.add( BasicSequence.createAaSequence( temp_msa.get( i )[ 0 ].toString(),
                                                       temp_msa.get( i )[ 1 ].toString() ) );

@@ -38,7 +38,7 @@ import org.forester.io.parsers.FastaParser;
 import org.forester.io.writers.SequenceWriter;
 import org.forester.io.writers.SequenceWriter.SEQ_FORMAT;
 import org.forester.sequence.BasicSequence;
-import org.forester.sequence.Sequence;
+import org.forester.sequence.MolecularSequence;
 import org.forester.util.CommandLineArguments;
 import org.forester.util.ForesterUtil;
 
@@ -94,10 +94,10 @@ public final class check_fasta {
         }
         else {
             try {
-                final List<Sequence> seqs = FastaParser.parse( new FileInputStream( infile ) );
+                final List<MolecularSequence> seqs = FastaParser.parse( new FileInputStream( infile ) );
                 final Map<String, Short> names = new HashMap<String, Short>();
                 int duplicates = 0;
-                for( final Sequence seq : seqs ) {
+                for( final MolecularSequence seq : seqs ) {
                     if ( procSeq( infile.toString(), names, seq ) ) {
                         ++duplicates;
                     }
@@ -112,7 +112,7 @@ public final class check_fasta {
         }
     }
 
-    private static boolean procSeq( final String infile, final Map<String, Short> names, final Sequence seq ) {
+    private static boolean procSeq( final String infile, final Map<String, Short> names, final MolecularSequence seq ) {
         boolean duplicate = false;
         final String name = seq.getIdentifier();
         if ( !names.containsKey( name ) ) {

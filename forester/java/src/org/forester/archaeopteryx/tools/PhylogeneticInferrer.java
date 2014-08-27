@@ -47,7 +47,7 @@ import org.forester.msa.MsaMethods;
 import org.forester.msa.ResampleableMsa;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
-import org.forester.sequence.Sequence;
+import org.forester.sequence.MolecularSequence;
 import org.forester.tools.ConfidenceAssessor;
 import org.forester.util.ForesterUtil;
 
@@ -56,12 +56,12 @@ public class PhylogeneticInferrer extends RunnableProcess {
     private Msa                                _msa;
     private final MainFrameApplication         _mf;
     private final PhylogeneticInferenceOptions _options;
-    private final List<Sequence>               _seqs;
+    private final List<MolecularSequence>      _seqs;
     private final boolean                      DEBUG           = true;
     public final static String                 MSA_FILE_SUFFIX = ".aln";
     public final static String                 PWD_FILE_SUFFIX = ".pwd";
 
-    public PhylogeneticInferrer( final List<Sequence> seqs,
+    public PhylogeneticInferrer( final List<MolecularSequence> seqs,
                                  final PhylogeneticInferenceOptions options,
                                  final MainFrameApplication mf ) {
         _msa = null;
@@ -260,7 +260,8 @@ public class PhylogeneticInferrer extends RunnableProcess {
         }
     }
 
-    private Msa runMAFFT( final List<Sequence> seqs, final List<String> opts ) throws IOException, InterruptedException {
+    private Msa runMAFFT( final List<MolecularSequence> seqs, final List<String> opts ) throws IOException,
+            InterruptedException {
         Msa msa = null;
         final MsaInferrer mafft = Mafft.createInstance( _mf.getInferenceManager().getPathToLocalMafft()
                 .getCanonicalPath() );

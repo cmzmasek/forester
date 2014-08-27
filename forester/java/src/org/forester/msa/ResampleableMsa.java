@@ -26,7 +26,7 @@
 package org.forester.msa;
 
 import org.forester.sequence.BasicSequence;
-import org.forester.sequence.Sequence;
+import org.forester.sequence.MolecularSequence;
 
 public final class ResampleableMsa extends BasicMsa {
 
@@ -58,7 +58,7 @@ public final class ResampleableMsa extends BasicMsa {
     }
 
     @Override
-    public Sequence getSequence( final int row ) {
+    public MolecularSequence getSequence( final int row ) {
         return new BasicSequence( getIdentifier( row ), getSequenceAsString( row ).toString(), getType() );
     }
 }

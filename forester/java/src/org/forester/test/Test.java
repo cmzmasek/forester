@@ -106,7 +106,7 @@ import org.forester.sdi.SDI;
 import org.forester.sdi.SDIR;
 import org.forester.sdi.TestGSDI;
 import org.forester.sequence.BasicSequence;
-import org.forester.sequence.Sequence;
+import org.forester.sequence.MolecularSequence;
 import org.forester.species.BasicSpecies;
 import org.forester.species.Species;
 import org.forester.surfacing.TestSurfacing;
@@ -1552,7 +1552,7 @@ public final class Test {
 
     private static boolean testAminoAcidSequence() {
         try {
-            final Sequence aa1 = BasicSequence.createAaSequence( "aa1", "aAklm-?xX*z$#" );
+            final MolecularSequence aa1 = BasicSequence.createAaSequence( "aa1", "aAklm-?xX*z$#" );
             if ( aa1.getLength() != 13 ) {
                 return false;
             }
@@ -1565,15 +1565,15 @@ public final class Test {
             if ( !new String( aa1.getMolecularSequence() ).equals( "AAKLM-XXX*ZXX" ) ) {
                 return false;
             }
-            final Sequence aa2 = BasicSequence.createAaSequence( "aa3", "ARNDCQEGHILKMFPSTWYVX*-BZOJU" );
+            final MolecularSequence aa2 = BasicSequence.createAaSequence( "aa3", "ARNDCQEGHILKMFPSTWYVX*-BZOJU" );
             if ( !new String( aa2.getMolecularSequence() ).equals( "ARNDCQEGHILKMFPSTWYVX*-BZXXU" ) ) {
                 return false;
             }
-            final Sequence dna1 = BasicSequence.createDnaSequence( "dna1", "ACGTUX*-?RYMKWSN" );
+            final MolecularSequence dna1 = BasicSequence.createDnaSequence( "dna1", "ACGTUX*-?RYMKWSN" );
             if ( !new String( dna1.getMolecularSequence() ).equals( "ACGTNN*-NRYMKWSN" ) ) {
                 return false;
             }
-            final Sequence rna1 = BasicSequence.createRnaSequence( "rna1", "..ACGUTX*-?RYMKWSN" );
+            final MolecularSequence rna1 = BasicSequence.createRnaSequence( "rna1", "..ACGUTX*-?RYMKWSN" );
             if ( !new String( rna1.getMolecularSequence() ).equals( "--ACGUNN*-NRYMKWSN" ) ) {
                 return false;
             }
@@ -6134,11 +6134,11 @@ public final class Test {
 
     private static boolean testMsaQualityMethod() {
         try {
-            final Sequence s0 = BasicSequence.createAaSequence( "a", "ABAXEFGHIJJE-" );
-            final Sequence s1 = BasicSequence.createAaSequence( "b", "ABBXEFGHIJJBB" );
-            final Sequence s2 = BasicSequence.createAaSequence( "c", "AXCXEFGHIJJ--" );
-            final Sequence s3 = BasicSequence.createAaSequence( "d", "AXDDEFGHIJ---" );
-            final List<Sequence> l = new ArrayList<Sequence>();
+            final MolecularSequence s0 = BasicSequence.createAaSequence( "a", "ABAXEFGHIJJE-" );
+            final MolecularSequence s1 = BasicSequence.createAaSequence( "b", "ABBXEFGHIJJBB" );
+            final MolecularSequence s2 = BasicSequence.createAaSequence( "c", "AXCXEFGHIJJ--" );
+            final MolecularSequence s3 = BasicSequence.createAaSequence( "d", "AXDDEFGHIJ---" );
+            final List<MolecularSequence> l = new ArrayList<MolecularSequence>();
             l.add( s0 );
             l.add( s1 );
             l.add( s2 );
@@ -6175,11 +6175,11 @@ public final class Test {
 
     private static boolean testMsaEntropy() {
         try {
-            final Sequence s0 = BasicSequence.createAaSequence( "a", "AAAAAAA" );
-            final Sequence s1 = BasicSequence.createAaSequence( "b", "AAAIACC" );
-            final Sequence s2 = BasicSequence.createAaSequence( "c", "AAIIIIF" );
-            final Sequence s3 = BasicSequence.createAaSequence( "d", "AIIIVVW" );
-            final List<Sequence> l = new ArrayList<Sequence>();
+            final MolecularSequence s0 = BasicSequence.createAaSequence( "a", "AAAAAAA" );
+            final MolecularSequence s1 = BasicSequence.createAaSequence( "b", "AAAIACC" );
+            final MolecularSequence s2 = BasicSequence.createAaSequence( "c", "AAIIIIF" );
+            final MolecularSequence s3 = BasicSequence.createAaSequence( "d", "AIIIVVW" );
+            final List<MolecularSequence> l = new ArrayList<MolecularSequence>();
             l.add( s0 );
             l.add( s1 );
             l.add( s2 );
@@ -6200,7 +6200,7 @@ public final class Test {
             System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 6, msa, 4 ) );
             System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 6, msa, 5 ) );
             System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 6, msa, 6 ) );
-            final List<Sequence> l2 = new ArrayList<Sequence>();
+            final List<MolecularSequence> l2 = new ArrayList<MolecularSequence>();
             l2.add( BasicSequence.createAaSequence( "1", "AAAAAAA" ) );
             l2.add( BasicSequence.createAaSequence( "2", "AAAIACC" ) );
             l2.add( BasicSequence.createAaSequence( "3", "AAIIIIF" ) );
@@ -6238,13 +6238,13 @@ public final class Test {
 
     private static boolean testDeleteableMsa() {
         try {
-            final Sequence s0 = BasicSequence.createAaSequence( "a", "AAAA" );
-            final Sequence s1 = BasicSequence.createAaSequence( "b", "BAAA" );
-            final Sequence s2 = BasicSequence.createAaSequence( "c", "CAAA" );
-            final Sequence s3 = BasicSequence.createAaSequence( "d", "DAAA" );
-            final Sequence s4 = BasicSequence.createAaSequence( "e", "EAAA" );
-            final Sequence s5 = BasicSequence.createAaSequence( "f", "FAAA" );
-            final List<Sequence> l0 = new ArrayList<Sequence>();
+            final MolecularSequence s0 = BasicSequence.createAaSequence( "a", "AAAA" );
+            final MolecularSequence s1 = BasicSequence.createAaSequence( "b", "BAAA" );
+            final MolecularSequence s2 = BasicSequence.createAaSequence( "c", "CAAA" );
+            final MolecularSequence s3 = BasicSequence.createAaSequence( "d", "DAAA" );
+            final MolecularSequence s4 = BasicSequence.createAaSequence( "e", "EAAA" );
+            final MolecularSequence s5 = BasicSequence.createAaSequence( "f", "FAAA" );
+            final List<MolecularSequence> l0 = new ArrayList<MolecularSequence>();
             l0.add( s0 );
             l0.add( s1 );
             l0.add( s2 );
@@ -6286,13 +6286,13 @@ public final class Test {
                 return false;
             }
             //
-            final Sequence s_0 = BasicSequence.createAaSequence( "a", "--A---B-C--X----" );
-            final Sequence s_1 = BasicSequence.createAaSequence( "b", "--B-----C-------" );
-            final Sequence s_2 = BasicSequence.createAaSequence( "c", "--C--AB-C------Z" );
-            final Sequence s_3 = BasicSequence.createAaSequence( "d", "--D--AA-C-------" );
-            final Sequence s_4 = BasicSequence.createAaSequence( "e", "--E--AA-C-------" );
-            final Sequence s_5 = BasicSequence.createAaSequence( "f", "--F--AB-CD--Y---" );
-            final List<Sequence> l1 = new ArrayList<Sequence>();
+            final MolecularSequence s_0 = BasicSequence.createAaSequence( "a", "--A---B-C--X----" );
+            final MolecularSequence s_1 = BasicSequence.createAaSequence( "b", "--B-----C-------" );
+            final MolecularSequence s_2 = BasicSequence.createAaSequence( "c", "--C--AB-C------Z" );
+            final MolecularSequence s_3 = BasicSequence.createAaSequence( "d", "--D--AA-C-------" );
+            final MolecularSequence s_4 = BasicSequence.createAaSequence( "e", "--E--AA-C-------" );
+            final MolecularSequence s_5 = BasicSequence.createAaSequence( "f", "--F--AB-CD--Y---" );
+            final List<MolecularSequence> l1 = new ArrayList<MolecularSequence>();
             l1.add( s_0 );
             l1.add( s_1 );
             l1.add( s_2 );
@@ -6327,13 +6327,13 @@ public final class Test {
                 return false;
             }
             //
-            final Sequence s__0 = BasicSequence.createAaSequence( "a", "A------" );
-            final Sequence s__1 = BasicSequence.createAaSequence( "b", "BB-----" );
-            final Sequence s__2 = BasicSequence.createAaSequence( "c", "CCC----" );
-            final Sequence s__3 = BasicSequence.createAaSequence( "d", "DDDD---" );
-            final Sequence s__4 = BasicSequence.createAaSequence( "e", "EEEEE--" );
-            final Sequence s__5 = BasicSequence.createAaSequence( "f", "FFFFFF-" );
-            final List<Sequence> l2 = new ArrayList<Sequence>();
+            final MolecularSequence s__0 = BasicSequence.createAaSequence( "a", "A------" );
+            final MolecularSequence s__1 = BasicSequence.createAaSequence( "b", "BB-----" );
+            final MolecularSequence s__2 = BasicSequence.createAaSequence( "c", "CCC----" );
+            final MolecularSequence s__3 = BasicSequence.createAaSequence( "d", "DDDD---" );
+            final MolecularSequence s__4 = BasicSequence.createAaSequence( "e", "EEEEE--" );
+            final MolecularSequence s__5 = BasicSequence.createAaSequence( "f", "FFFFFF-" );
+            final List<MolecularSequence> l2 = new ArrayList<MolecularSequence>();
             l2.add( s__0 );
             l2.add( s__1 );
             l2.add( s__2 );
@@ -6369,7 +6369,7 @@ public final class Test {
             dmsa2.setIdentifier( 0, "new_c" );
             dmsa2.setIdentifier( 1, "new_d" );
             dmsa2.setResidueAt( 0, 0, 'x' );
-            final Sequence s = dmsa2.deleteRow( "new_d", true );
+            final MolecularSequence s = dmsa2.deleteRow( "new_d", true );
             if ( !s.getMolecularSequenceAsString().equals( "D" ) ) {
                 return false;
             }
