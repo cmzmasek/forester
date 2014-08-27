@@ -30,6 +30,7 @@ import java.util.SortedSet;
 import org.forester.go.GoTerm;
 import org.forester.phylogeny.data.Accession;
 import org.forester.phylogeny.data.Annotation;
+import org.forester.sequence.MolecularSequence;
 
 public interface SequenceDatabaseEntry {
 
@@ -58,4 +59,6 @@ public interface SequenceDatabaseEntry {
     public String getMap();
 
     public String getChromosome();
+
+    public MolecularSequence getMolecularSequence();
 }

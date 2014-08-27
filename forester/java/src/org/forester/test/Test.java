@@ -139,7 +139,7 @@ public final class Test {
     private final static String  PATH_TO_TEST_DATA         = System.getProperty( "user.dir" )
                                                                    + ForesterUtil.getFileSeparator() + "test_data"
                                                                    + ForesterUtil.getFileSeparator();
-    private final static boolean PERFORM_DB_TESTS          = false;
+    private final static boolean PERFORM_DB_TESTS          = true;
     private static final boolean PERFORM_WEB_TREE_ACCESS   = true;
     private static final String  PHYLOXML_LOCAL_XSD        = PATH_TO_RESOURCES + "phyloxml_schema/"
                                                                    + ForesterConstants.PHYLO_XML_VERSION + "/"
@@ -12693,6 +12693,14 @@ public final class Test {
                 return false;
             }
             if ( !entry.getTaxonomyIdentifier().equals( "9986" ) ) {
+                return false;
+            }
+            if ( !entry
+                    .getMolecularSequence()
+                    .getMolecularSequenceAsString()
+                    .startsWith( "MALLHSARVLSGVASAFHPGLAAAASARASSWWAHVEMGPPDPILGVTEAYKRDTNSKKMNLGVGAYRDDNGKPYVLPSVRKAEAQIAAKGLDKEYLPIGGLAEFCRASAELALGENSEV" )
+                    || !entry.getMolecularSequence().getMolecularSequenceAsString().endsWith( "LAHAIHQVTK" ) ) {
+                System.out.println( entry.getMolecularSequence().getMolecularSequenceAsString() );
                 return false;
             }
         }

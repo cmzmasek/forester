@@ -292,7 +292,7 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
                         final Matcher link_m = LINK_TAXA_PATTERN.matcher( line );
                         if ( link_m.lookingAt() ) {
                             final String link = link_m.group( 1 );
-                            System.out.println( "link taxa:" + link );
+                            //System.out.println( "link taxa:" + link );
                         }
                     }
                     else if ( line_lc.startsWith( end ) || line_lc.startsWith( endblock ) ) {
@@ -398,14 +398,14 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
                         final Matcher link_m = LINK_TAXA_PATTERN.matcher( line );
                         if ( link_m.lookingAt() ) {
                             final String link = link_m.group( 1 );
-                            System.out.println( "link taxa:" + link );
+                            //System.out.println( "link taxa:" + link );
                         }
                     }
                     else {
                         final Matcher datatype_matcher = DATATYPE_PATTERN.matcher( line_lc );
                         if ( datatype_matcher.find() ) {
                             _datatype = datatype_matcher.group( 1 );
-                            System.out.println( _datatype );
+                            //System.out.println( _datatype );
                         }
                         else {
                             if ( ( _datatype != null )
@@ -430,7 +430,7 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
                                         s = BasicSequence.createRnaSequence( id, seq );
                                     }
                                     _seqs.put( id, s );
-                                    System.out.println( s );
+                                    //System.out.println( s );
                                 }
                             }
                         }

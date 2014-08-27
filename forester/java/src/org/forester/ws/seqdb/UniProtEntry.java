@@ -36,6 +36,8 @@ import org.forester.go.GoNameSpace;
 import org.forester.go.GoTerm;
 import org.forester.phylogeny.data.Accession;
 import org.forester.phylogeny.data.Annotation;
+import org.forester.sequence.BasicSequence;
+import org.forester.sequence.MolecularSequence;
 import org.forester.util.ForesterUtil;
 
 public final class UniProtEntry implements SequenceDatabaseEntry {
@@ -59,6 +61,7 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
     private String               _os_scientific_name;
     private String               _symbol;
     private String               _tax_id;
+    private MolecularSequence    _mol_seq;
 
     private UniProtEntry() {
     }
@@ -142,6 +145,10 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
         }
     }
 
+    private void setMolecularSequence( final MolecularSequence mol_seq ) {
+        _mol_seq = mol_seq;
+    }
+
     private void setGeneName( final String gene_name ) {
         if ( _gene_name == null ) {
             _gene_name = gene_name;
@@ -172,6 +179,9 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
 
     public static SequenceDatabaseEntry createInstanceFromPlainText( final List<String> lines ) {
         final UniProtEntry e = new UniProtEntry();
+        boolean saw_sq = false;
+        final StringBuffer sq_buffer = new StringBuffer();
+        boolean is_aa = false;
         for( final String line : lines ) {
             //System.out.println( line );
             if ( line.startsWith( "AC" ) ) {
@@ -286,6 +296,18 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
                     e.setTaxId( SequenceDbWsTools.extractFromTo( line, "NCBI_TaxID=", ";" ) );
                 }
             }
+            else if ( line.startsWith( "SQ" ) ) {
+                saw_sq = true;
+                if ( line.contains( "AA;" ) ) {
+                    is_aa = true;
+                }
+            }
+            else if ( saw_sq && line.startsWith( " " ) ) {
+                sq_buffer.append( line.replaceAll( "\\s+", "" ) );
+            }
+        }
+        if ( ( sq_buffer.length() > 0 ) && is_aa ) {
+            e.setMolecularSequence( BasicSequence.createAaSequence( e.getAccession(), sq_buffer.toString() ) );
         }
         return e;
     }
@@ -303,5 +325,10 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
     @Override
     public String getChromosome() {
         return null;
+    }
+
+    @Override
+    public MolecularSequence getMolecularSequence() {
+        return _mol_seq;
     }
 }

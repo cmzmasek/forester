@@ -49,6 +49,7 @@ import org.forester.phylogeny.data.Identifier;
 import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
+import org.forester.sequence.MolecularSequence.TYPE;
 import org.forester.util.ForesterUtil;
 import org.forester.util.SequenceAccessionTools;
 
@@ -378,6 +379,19 @@ public final class SequenceDbWsTools {
                 }
                 catch ( final PhyloXmlDataFormatException e ) {
                     // Eat this exception.
+                }
+            }
+            if ( ( db_entry.getMolecularSequence() != null )
+                    && !ForesterUtil.isEmpty( db_entry.getMolecularSequence().getMolecularSequenceAsString() ) ) {
+                seq.setMolecularSequence( db_entry.getMolecularSequence().getMolecularSequenceAsString() );
+                if ( db_entry.getMolecularSequence().getType() == TYPE.AA ) {
+                    seq.setType( "protein" );
+                }
+                else if ( db_entry.getMolecularSequence().getType() == TYPE.DNA ) {
+                    seq.setType( "dna" );
+                }
+                else if ( db_entry.getMolecularSequence().getType() == TYPE.RNA ) {
+                    seq.setType( "rna" );
                 }
             }
             if ( ( db_entry.getGoTerms() != null ) && !db_entry.getGoTerms().isEmpty() ) {

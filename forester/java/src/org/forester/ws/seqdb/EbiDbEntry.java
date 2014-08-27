@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
 import org.forester.go.GoTerm;
 import org.forester.phylogeny.data.Accession;
 import org.forester.phylogeny.data.Annotation;
+import org.forester.sequence.MolecularSequence;
 import org.forester.util.ForesterUtil;
 
 public final class EbiDbEntry implements SequenceDatabaseEntry {
@@ -674,5 +675,11 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
             sb.append( " " );
         }
         sb.append( s.trim() );
+    }
+
+    @Override
+    public MolecularSequence getMolecularSequence() {
+        // TODO Auto-generated method stub
+        return null;
     }
 }
