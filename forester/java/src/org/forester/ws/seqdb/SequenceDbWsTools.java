@@ -382,8 +382,10 @@ public final class SequenceDbWsTools {
                 }
             }
             if ( ( db_entry.getMolecularSequence() != null )
-                    && !ForesterUtil.isEmpty( db_entry.getMolecularSequence().getMolecularSequenceAsString() ) ) {
+                    && !ForesterUtil.isEmpty( db_entry.getMolecularSequence().getMolecularSequenceAsString() )
+                    && seq.getMolecularSequence().isEmpty() ) {
                 seq.setMolecularSequence( db_entry.getMolecularSequence().getMolecularSequenceAsString() );
+                seq.setMolecularSequenceAligned( false );
                 if ( db_entry.getMolecularSequence().getType() == TYPE.AA ) {
                     seq.setType( "protein" );
                 }

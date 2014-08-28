@@ -33,7 +33,7 @@ public interface MolecularSequence {
     public static final char   GAP             = '-';
     public static final String GAP_STR         = Character.toString( GAP );
     public static final char   TERMINATE       = '*';
-    static final String        AA_REGEXP       = "[^ARNDBCQEZGHILKMFPSTWYVXU\\-\\*]";
+    static final String        AA_REGEXP       = "[^ARNDBCQEZGHILKMFPSTWYVXUO\\-\\*]";
     static final String        DNA_REGEXP      = "[^ACGTRYMKWSN\\-\\*]";
     static final String        RNA_REGEXP      = "[^ACGURYMKWSN\\-\\*]";
 

@@ -42,6 +42,7 @@ import org.forester.phylogeny.data.DomainArchitecture;
 import org.forester.phylogeny.data.Identifier;
 import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
+import org.forester.sequence.MolecularSequence.TYPE;
 import org.forester.util.BasicTable;
 import org.forester.util.BasicTableParser;
 import org.forester.util.ForesterUtil;
@@ -220,18 +221,21 @@ public final class PhylogenyDecorator {
                 throw new IllegalArgumentException( "external node with no name present" );
             }
             String tilde_annotation = null;
+            final String orig_name = name;
             if ( trim_after_tilde && ( name.indexOf( '~' ) > 0 ) ) {
                 final int ti = name.indexOf( '~' );
-                final String orig = name;
                 tilde_annotation = name.substring( ti );
                 name = name.substring( 0, ti );
                 if ( node.isExternal() && ForesterUtil.isEmpty( name ) ) {
-                    throw new IllegalArgumentException( "external node with illegal name: " + orig );
+                    throw new IllegalArgumentException( "external node with illegal name: " + orig_name );
                 }
             }
             if ( !ForesterUtil.isEmpty( name ) ) {
                 if ( intermediate_map != null ) {
                     name = PhylogenyDecorator.extractIntermediate( intermediate_map, name, verbose );
+                }
+                if ( ( field == FIELD.MOL_SEQ ) && !map.containsKey( name ) ) {
+                    name = orig_name;
                 }
                 if ( map.containsKey( name ) ) {
                     String new_value = map.get( name ).trim().replaceAll( "/\\s+/", " " );
@@ -263,6 +267,18 @@ public final class PhylogenyDecorator {
                                     node.getNodeData().setSequence( new Sequence() );
                                 }
                                 node.getNodeData().getSequence().setMolecularSequence( new_value );
+                                final TYPE type = ForesterUtil.guessMolecularSequenceType( new_value );
+                                if ( type != null ) {
+                                    if ( type == TYPE.AA ) {
+                                        node.getNodeData().getSequence().setType( "protein" );
+                                    }
+                                    else if ( type == TYPE.DNA ) {
+                                        node.getNodeData().getSequence().setType( "dna" );
+                                    }
+                                    else if ( type == TYPE.RNA ) {
+                                        node.getNodeData().getSequence().setType( "rna" );
+                                    }
+                                }
                                 break;
                             case SEQUENCE_ANNOTATION_DESC:
                                 if ( verbose ) {

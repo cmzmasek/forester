@@ -70,6 +70,8 @@ import org.forester.phylogeny.data.Taxonomy;
 import org.forester.protein.BasicProtein;
 import org.forester.protein.Domain;
 import org.forester.protein.Protein;
+import org.forester.sequence.MolecularSequence;
+import org.forester.sequence.MolecularSequence.TYPE;
 import org.forester.surfacing.SurfacingUtil;
 
 public final class ForesterUtil {
@@ -1361,6 +1363,22 @@ public final class ForesterUtil {
                                                       final double largercolor_component_x,
                                                       final double x ) {
         return ( int ) ( smallercolor_component_x + ( ( x * ( largercolor_component_x - smallercolor_component_x ) ) / 255.0 ) );
+    }
+
+    final public static MolecularSequence.TYPE guessMolecularSequenceType( final String mol_seq ) {
+        if ( mol_seq.contains( "L" ) || mol_seq.contains( "I" ) || mol_seq.contains( "E" ) || mol_seq.contains( "H" )
+                || mol_seq.contains( "D" ) || mol_seq.contains( "Q" ) ) {
+            return TYPE.AA;
+        }
+        else {
+            if ( mol_seq.contains( "T" ) ) {
+                return TYPE.DNA;
+            }
+            else if ( mol_seq.contains( "U" ) ) {
+                return TYPE.RNA;
+            }
+        }
+        return null;
     }
 
     /**
