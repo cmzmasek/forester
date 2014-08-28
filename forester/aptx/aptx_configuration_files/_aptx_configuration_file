@@ -185,7 +185,7 @@ line_up_renderable_data:                   no
 right_align_domain_architectures:          no
 show_seq_annotation_ref_sources:           yes
 branch_length_value_digits:                3
-confidence_value_digits:                   3
+confidence_value_digits:                   2
 background_gradient:                       no
 allow_editing:                             yes
 ext_descendents_data_to_return_on:         window

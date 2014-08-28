@@ -146,7 +146,7 @@ show_domain_labels:                        yes
 line_up_renderable_data:                   no
 right_align_domain_architectures:          no
 branch_length_value_digits:                3
-confidence_value_digits:                   3
+confidence_value_digits:                   2
 background_gradient:                       no
 allow_editing:                             yes
 ext_descendents_data_to_return_on:         window
