@@ -65,6 +65,7 @@ public final class SequenceDbWsTools {
     private final static boolean DEBUG                   = true;
     private final static String  URL_ENC                 = "UTF-8";
     private final static int     SLEEP                   = 200;
+    private static final boolean ALLOW_TO_OVERWRITE_MOL_SEQ = true;
 
     public static List<UniProtTaxonomy> getTaxonomiesFromCommonNameStrict( final String cn,
                                                                            final int max_taxonomies_return )
@@ -383,7 +384,7 @@ public final class SequenceDbWsTools {
             }
             if ( ( db_entry.getMolecularSequence() != null )
                     && !ForesterUtil.isEmpty( db_entry.getMolecularSequence().getMolecularSequenceAsString() )
-                    && seq.getMolecularSequence().isEmpty() ) {
+                    && ( ALLOW_TO_OVERWRITE_MOL_SEQ || seq.getMolecularSequence().isEmpty() ) ) {
                 seq.setMolecularSequence( db_entry.getMolecularSequence().getMolecularSequenceAsString() );
                 seq.setMolecularSequenceAligned( false );
                 if ( db_entry.getMolecularSequence().getType() == TYPE.AA ) {
