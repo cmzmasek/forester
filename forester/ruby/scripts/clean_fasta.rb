@@ -6,7 +6,7 @@ File.open(infile, 'r') do |f|
    while line = f.gets
        if line =~ /(>.+)~.+/
           line = $1
-       elsif line =~ /(>.+)|NAME=.+/
+       elsif line =~ /(>.+)\|NAME=.+/
            line = $1
        end
        puts line
