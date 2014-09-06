@@ -9,7 +9,7 @@ File.open(infile, 'r') do |f|
        elsif line =~ /(>.+)|NAME=.+/
            line = $1
        end
-       puts s
+       puts line
    end
 end
 
