@@ -1045,7 +1045,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final Color getTaxonomyBasedColor( final PhylogenyNode node ) {
-        if ( node.getNodeData().isHasTaxonomy() ) {
+        if ( node.isExternal() && node.getNodeData().isHasTaxonomy() ) {
             return calculateTaxonomyBasedColor( node.getNodeData().getTaxonomy() );
         }
         // return non-colorized color

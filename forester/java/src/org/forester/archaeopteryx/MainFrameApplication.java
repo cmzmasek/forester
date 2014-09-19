@@ -93,6 +93,7 @@ import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.PhylogenyNode.NH_CONVERSION_SUPPORT_VALUE_STYLE;
 import org.forester.phylogeny.data.Confidence;
+import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
@@ -123,6 +124,7 @@ public final class MainFrameApplication extends MainFrame {
     private final static SequencesFileFilter seqsfilter                            = new SequencesFileFilter();
     private final static DefaultFilter       defaultfilter                         = new DefaultFilter();
     private static final long                serialVersionUID                      = -799735726778865234L;
+    private static final boolean             PREPROCESS_TREES                      = false;
     private final JFileChooser               _values_filechooser;
     private final JFileChooser               _sequences_filechooser;
     private final JFileChooser               _open_filechooser;
@@ -2211,6 +2213,9 @@ public final class MainFrameApplication extends MainFrame {
                                 }
                             }
                         }
+                        if ( PREPROCESS_TREES ) {
+                            preProcessTreesUponReading( phys );
+                        }
                         AptxUtil.addPhylogeniesToTabs( phys,
                                                        file.getName(),
                                                        file.getAbsolutePath(),
@@ -2232,6 +2237,30 @@ public final class MainFrameApplication extends MainFrame {
         }
         activateSaveAllIfNeeded();
         System.gc();
+    }
+
+    private void preProcessTreesUponReading( final Phylogeny[] phys ) {
+        for( final Phylogeny phy : phys ) {
+            if ( ( phy != null ) && !phy.isEmpty() ) {
+                for( final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
+                    final PhylogenyNode n = it.next();
+                    if ( n.isExternal() ) {
+                        if ( n.getNodeData().isHasSequence() ) {
+                            final Sequence s = n.getNodeData().getSequence();
+                            if ( ForesterUtil.isEmpty( s.getGeneName() ) ) {
+                                if ( ( s.getAccession() != null )
+                                        && !ForesterUtil.isEmpty( s.getAccession().getValue() ) ) {
+                                    s.setGeneName( s.getAccession().getValue() );
+                                }
+                                else if ( !ForesterUtil.isEmpty( n.getName() ) ) {
+                                    s.setGeneName( n.getName() );
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private void readSpeciesTreeFromFile() {
