@@ -298,6 +298,15 @@ public final class Test {
             succeeded++;
         }
         System.out.println( "OK." );
+        System.out.print( "Taxonomy data extraction: " );
+        if ( Test.testExtractTaxonomyDataFromNodeName() ) {
+            System.out.println( "OK." );
+            succeeded++;
+        }
+        else {
+            System.out.println( "failed." );
+            failed++;
+        }
         System.out.print( "Taxonomy code extraction: " );
         if ( Test.testExtractTaxonomyCodeFromNodeName() ) {
             System.out.println( "OK." );
@@ -1566,7 +1575,7 @@ public final class Test {
                 return false;
             }
             final MolecularSequence aa2 = BasicSequence.createAaSequence( "aa3", "ARNDCQEGHILKMFPSTWYVX*-BZOJU" );
-            if ( !new String( aa2.getMolecularSequence() ).equals( "ARNDCQEGHILKMFPSTWYVX*-BZXXU" ) ) {
+            if ( !new String( aa2.getMolecularSequence() ).equals( "ARNDCQEGHILKMFPSTWYVX*-BZOXU" ) ) {
                 return false;
             }
             final MolecularSequence dna1 = BasicSequence.createDnaSequence( "dna1", "ACGTUX*-?RYMKWSN" );
@@ -2171,7 +2180,6 @@ public final class Test {
             if ( !t3_rt.getNode( "node b" ).getNodeData().getBinaryCharacters().getType().equals( "characters" ) ) {
                 return false;
             }
-            //
             if ( !t3_rt.getNode( "node ba" ).getNodeData().getDate().getDesc().equals( "Silurian" ) ) {
                 return false;
             }
@@ -3045,7 +3053,6 @@ public final class Test {
             if ( !isEqual( t_bx.getNode( "acd" ).getBranchData().getConfidence( 0 ).getValue(), 1 ) ) {
                 return false;
             }
-            //
             final Phylogeny[] t2 = factory
                     .create( "((((a,b),c),d),e);(((a,b),c),(d,e));(((((a,b),c),d),e),f);((((a,b),c),(d,e)),f);(((a,b),c),d,e);((a,b,c),d,e);",
                              new NHXParser() );
@@ -3055,7 +3062,6 @@ public final class Test {
             for( final Phylogeny target : t2 ) {
                 ConfidenceAssessor.evaluate( "bootstrap", ev2, target, false, 1 );
             }
-            //
             final Phylogeny t4 = factory.create( "((((((A,B)ab,C)abc,D)abcd,E)abcde,F)abcdef,G)abcdefg",
                                                  new NHXParser() )[ 0 ];
             final Phylogeny[] ev4 = factory.create( "(((A,B),C),(X,Y));((F,G),((A,B,C),(D,E)))", new NHXParser() );
@@ -3990,10 +3996,6 @@ public final class Test {
                 System.out.println( entry.getSequenceName() );
                 return false;
             }
-            // if ( !entry.getSequenceSymbol().equals( "" ) ) {
-            //     System.out.println( entry.getSequenceSymbol() );
-            //     return false;
-            // }
             if ( !entry.getGeneName().equals( "treX-like" ) ) {
                 System.out.println( entry.getGeneName() );
                 return false;
@@ -4013,7 +4015,6 @@ public final class Test {
             if ( entry.getCrossReferences().size() != 5 ) {
                 return false;
             }
-            //
             final SequenceDatabaseEntry entry1 = SequenceDbWsTools.obtainEntry( "ABJ16409" );
             if ( !entry1.getAccession().equals( "ABJ16409" ) ) {
                 return false;
@@ -4037,7 +4038,6 @@ public final class Test {
             if ( entry1.getCrossReferences().size() != 6 ) {
                 return false;
             }
-            //
             final SequenceDatabaseEntry entry2 = SequenceDbWsTools.obtainEntry( "NM_184234" );
             if ( !entry2.getAccession().equals( "NM_184234" ) ) {
                 return false;
@@ -4089,8 +4089,6 @@ public final class Test {
             if ( entry3.getCrossReferences().size() != 8 ) {
                 return false;
             }
-            //
-            //
             final SequenceDatabaseEntry entry4 = SequenceDbWsTools.obtainEntry( "AAA36557.1" );
             if ( !entry4.getAccession().equals( "AAA36557" ) ) {
                 return false;
@@ -4510,6 +4508,44 @@ public final class Test {
         return true;
     }
 
+    private static boolean testExtractTaxonomyDataFromNodeName() {
+        try {
+            PhylogenyNode n = new PhylogenyNode( "tr|B1AM49|B1AM49_HUMAN" );
+            if ( !ParserUtils.extractTaxonomyDataFromNodeName( n, TAXONOMY_EXTRACTION.AGGRESSIVE ).equals( "HUMAN" ) ) {
+                return false;
+            }
+            n = new PhylogenyNode( "tr|B1AM49|B1AM49_HUMAN~1-2" );
+            if ( !ParserUtils.extractTaxonomyDataFromNodeName( n, TAXONOMY_EXTRACTION.AGGRESSIVE ).equals( "HUMAN" ) ) {
+                return false;
+            }
+            n = new PhylogenyNode( "tr|B1AM49|HNRPR_HUMAN" );
+            if ( !ParserUtils.extractTaxonomyDataFromNodeName( n, TAXONOMY_EXTRACTION.AGGRESSIVE ).equals( "HUMAN" ) ) {
+                return false;
+            }
+            n = new PhylogenyNode( "tr|B1AM49|HNRPR_HUMAN|" );
+            if ( !ParserUtils.extractTaxonomyDataFromNodeName( n, TAXONOMY_EXTRACTION.AGGRESSIVE ).equals( "HUMAN" ) ) {
+                return false;
+            }
+            n = new PhylogenyNode( "tr|B1AM49|HNRPR_HUMAN~12" );
+            if ( !ParserUtils.extractTaxonomyDataFromNodeName( n, TAXONOMY_EXTRACTION.AGGRESSIVE ).equals( "HUMAN" ) ) {
+                return false;
+            }
+            n = new PhylogenyNode( "HNRPR_HUMAN" );
+            if ( !ParserUtils.extractTaxonomyDataFromNodeName( n, TAXONOMY_EXTRACTION.AGGRESSIVE ).equals( "HUMAN" ) ) {
+                return false;
+            }
+            n = new PhylogenyNode( "HNRPR_HUMAN_X" );
+            if ( !ParserUtils.extractTaxonomyDataFromNodeName( n, TAXONOMY_EXTRACTION.AGGRESSIVE ).equals( "HUMAN" ) ) {
+                return false;
+            }
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace( System.out );
+            return false;
+        }
+        return true;
+    }
+
     private static boolean testExtractTaxonomyCodeFromNodeName() {
         try {
             if ( ParserUtils.extractTaxonomyCodeFromNodeName( "MOUSE", TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED ) != null ) {
@@ -4846,7 +4882,7 @@ public final class Test {
             if ( !msa_0.getSequenceAsString( 1 ).toString().equalsIgnoreCase( "DKXASDFXSFXFKFKSXDFKSLX" ) ) {
                 return false;
             }
-            if ( !msa_0.getSequenceAsString( 2 ).toString().equalsIgnoreCase( "SXDFKSXLFSFPWEXPRXWXERR" ) ) {
+            if ( !msa_0.getSequenceAsString( 2 ).toString().equalsIgnoreCase( "SXDFKSXLFSFPWEXPROWXERR" ) ) {
                 return false;
             }
             if ( !msa_0.getSequenceAsString( 3 ).toString().equalsIgnoreCase( "AAAAAAAAAAAAAAAAAAAAAAA" ) ) {
@@ -6326,7 +6362,6 @@ public final class Test {
             if ( !dmsa1.getSequenceAsString( 1 ).toString().equals( "EAAC" ) ) {
                 return false;
             }
-            //
             final MolecularSequence s__0 = BasicSequence.createAaSequence( "a", "A------" );
             final MolecularSequence s__1 = BasicSequence.createAaSequence( "b", "BB-----" );
             final MolecularSequence s__2 = BasicSequence.createAaSequence( "c", "CCC----" );
@@ -6454,8 +6489,6 @@ public final class Test {
             if ( !ext.get( 4 ).getName().equals( "h" ) ) {
                 return false;
             }
-            //
-            //
             ext.clear();
             final StringBuffer sb2 = new StringBuffer( "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h)gh)fgh)cdefgh)abcdefgh" );
             final Phylogeny t2 = factory.create( sb2, new NHXParser() )[ 0 ];
@@ -6484,8 +6517,6 @@ public final class Test {
             if ( !ext.get( 3 ).getName().equals( "gh" ) ) {
                 return false;
             }
-            //
-            //
             ext.clear();
             final StringBuffer sb3 = new StringBuffer( "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h)gh)fgh)cdefgh)abcdefgh" );
             final Phylogeny t3 = factory.create( sb3, new NHXParser() )[ 0 ];
@@ -6512,8 +6543,6 @@ public final class Test {
             if ( !ext.get( 2 ).getName().equals( "fgh" ) ) {
                 return false;
             }
-            //
-            //
             ext.clear();
             final StringBuffer sb4 = new StringBuffer( "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h)gh)fgh)cdefgh)abcdefgh" );
             final Phylogeny t4 = factory.create( sb4, new NHXParser() )[ 0 ];
@@ -6530,8 +6559,6 @@ public final class Test {
             if ( n.getNextExternalNodeWhileTakingIntoAccountCollapsedNodes() != null ) {
                 return false;
             }
-            //
-            //
             final StringBuffer sb5 = new StringBuffer( "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h))fgh)cdefgh)abcdefgh" );
             final Phylogeny t5 = factory.create( sb5, new NHXParser() )[ 0 ];
             ext.clear();
@@ -6567,8 +6594,6 @@ public final class Test {
             if ( !ext.get( 7 ).getName().equals( "h" ) ) {
                 return false;
             }
-            //
-            //
             final StringBuffer sb6 = new StringBuffer( "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h))fgh)cdefgh)abcdefgh" );
             final Phylogeny t6 = factory.create( sb6, new NHXParser() )[ 0 ];
             ext.clear();
@@ -6602,8 +6627,6 @@ public final class Test {
             if ( !ext.get( 6 ).getName().equals( "h" ) ) {
                 return false;
             }
-            //
-            //
             final StringBuffer sb7 = new StringBuffer( "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h))fgh)cdefgh)abcdefgh" );
             final Phylogeny t7 = factory.create( sb7, new NHXParser() )[ 0 ];
             ext.clear();
@@ -6637,8 +6660,6 @@ public final class Test {
             if ( !ext.get( 6 ).getName().equals( "h" ) ) {
                 return false;
             }
-            //
-            //
             final StringBuffer sb8 = new StringBuffer( "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h))fgh)cdefgh)abcdefgh" );
             final Phylogeny t8 = factory.create( sb8, new NHXParser() )[ 0 ];
             ext.clear();
@@ -6675,8 +6696,6 @@ public final class Test {
             if ( !ext.get( 6 ).getName().equals( "h" ) ) {
                 return false;
             }
-            //
-            //
             final StringBuffer sb9 = new StringBuffer( "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h)gh)fgh)cdefgh)abcdefgh" );
             final Phylogeny t9 = factory.create( sb9, new NHXParser() )[ 0 ];
             ext.clear();
@@ -6710,8 +6729,6 @@ public final class Test {
             if ( !ext.get( 6 ).getName().equals( "gh" ) ) {
                 return false;
             }
-            //
-            //
             final StringBuffer sb10 = new StringBuffer( "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h)gh)fgh)cdefgh)abcdefgh" );
             final Phylogeny t10 = factory.create( sb10, new NHXParser() )[ 0 ];
             ext.clear();
@@ -6747,8 +6764,6 @@ public final class Test {
             if ( !ext.get( 6 ).getName().equals( "gh" ) ) {
                 return false;
             }
-            //
-            //
             final StringBuffer sb11 = new StringBuffer( "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h)gh)fgh)cdefgh)abcdefgh" );
             final Phylogeny t11 = factory.create( sb11, new NHXParser() )[ 0 ];
             ext.clear();
@@ -6780,8 +6795,6 @@ public final class Test {
             if ( !ext.get( 5 ).getName().equals( "fgh" ) ) {
                 return false;
             }
-            //
-            //
             final StringBuffer sb12 = new StringBuffer( "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h)gh)fgh)cdefgh)abcdefgh" );
             final Phylogeny t12 = factory.create( sb12, new NHXParser() )[ 0 ];
             ext.clear();
@@ -6816,8 +6829,6 @@ public final class Test {
             if ( !ext.get( 5 ).getName().equals( "fgh" ) ) {
                 return false;
             }
-            //
-            //
             final StringBuffer sb13 = new StringBuffer( "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h)gh)fgh)cdefgh)abcdefgh" );
             final Phylogeny t13 = factory.create( sb13, new NHXParser() )[ 0 ];
             ext.clear();
@@ -6848,8 +6859,6 @@ public final class Test {
             if ( !ext.get( 4 ).getName().equals( "fgh" ) ) {
                 return false;
             }
-            //
-            //
             final StringBuffer sb14 = new StringBuffer( "((a,b,0)ab,(((c,d)cd,e)cde,(f,(g,h,1,2)gh,0)fgh)cdefgh)abcdefgh" );
             final Phylogeny t14 = factory.create( sb14, new NHXParser() )[ 0 ];
             ext.clear();
@@ -6880,8 +6889,6 @@ public final class Test {
             if ( !ext.get( 4 ).getName().equals( "fgh" ) ) {
                 return false;
             }
-            //
-            //
             final StringBuffer sb15 = new StringBuffer( "((a,b,0)ab,(((c,d)cd,e)cde,x,(f,(g,h,1,2)gh,0)fgh)cdefgh)abcdefgh" );
             final Phylogeny t15 = factory.create( sb15, new NHXParser() )[ 0 ];
             ext.clear();
@@ -7338,7 +7345,6 @@ public final class Test {
             if ( phy != null ) {
                 return false;
             }
-            //
             p.reset();
             if ( !p.hasNext() ) {
                 return false;
@@ -7360,7 +7366,6 @@ public final class Test {
             if ( phy != null ) {
                 return false;
             }
-            ////
             p.setSource( Test.PATH_TO_TEST_DATA + "nexus_test_2.nex" );
             if ( !p.hasNext() ) {
                 return false;
@@ -7382,7 +7387,6 @@ public final class Test {
             if ( phy != null ) {
                 return false;
             }
-            //
             p.reset();
             if ( !p.hasNext() ) {
                 return false;
@@ -7404,7 +7408,6 @@ public final class Test {
             if ( phy != null ) {
                 return false;
             }
-            //
             p.setSource( Test.PATH_TO_TEST_DATA + "nexus_test_3.nex" );
             if ( !p.hasNext() ) {
                 return false;
@@ -11271,8 +11274,7 @@ public final class Test {
             }
             final PhylogenyNode n2 = new PhylogenyNode( "NM_001030253" );
             SequenceDbWsTools.obtainSeqInformation( n2 );
-            if ( !n2.getNodeData().getSequence().getName()
-                    .equals( "Danio rerio B-cell leukemia/lymphoma 2 (bcl2), mRNA" ) ) {
+            if ( !n2.getNodeData().getSequence().getName().equals( "Danio rerio B-cell CLL/lymphoma 2a (bcl2a), mRNA" ) ) {
                 return false;
             }
             if ( !n2.getNodeData().getTaxonomy().getScientificName().equals( "Danio rerio" ) ) {
@@ -11411,7 +11413,6 @@ public final class Test {
                 System.out.println( "provider=" + id.getSource() );
                 return false;
             }
-            //
             id = SequenceAccessionTools.parseAccessorFromString( "N3B004Z009" );
             if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getSource() )
                     || !id.getValue().equals( "N3B004Z009" ) || !id.getSource().equals( "uniprot" ) ) {
@@ -11616,14 +11617,12 @@ public final class Test {
             if ( !s0.match( query_nodes ) ) {
                 return false;
             }
-            //
             query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "G" ) );
             if ( !s0.match( query_nodes ) ) {
                 return false;
             }
-            //
             query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "D" ) );
@@ -11633,7 +11632,6 @@ public final class Test {
             if ( !s0.match( query_nodes ) ) {
                 return false;
             }
-            //
             query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "G" ) );
@@ -11641,7 +11639,6 @@ public final class Test {
             if ( !s0.match( query_nodes ) ) {
                 return false;
             }
-            //
             query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "G" ) );
@@ -11650,14 +11647,12 @@ public final class Test {
             if ( !s0.match( query_nodes ) ) {
                 return false;
             }
-            //
             query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            //
             query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
@@ -11666,7 +11661,6 @@ public final class Test {
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            //
             query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "G" ) );
@@ -11676,7 +11670,6 @@ public final class Test {
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            //
             query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "B" ) );
@@ -11684,49 +11677,42 @@ public final class Test {
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            //
             query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "D" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            //
             query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "B" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            //
             query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "C" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            //
             query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            //
             query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            //
             query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "G" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            //
             query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
@@ -11734,7 +11720,6 @@ public final class Test {
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            //
             query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "B" ) );
@@ -11742,7 +11727,6 @@ public final class Test {
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            //
             query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "D" ) );
@@ -11750,7 +11734,6 @@ public final class Test {
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            //
             query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "D" ) );
@@ -12535,7 +12518,6 @@ public final class Test {
                 System.out.println( n17.toString() );
                 return false;
             }
-            //
             final PhylogenyNode n18 = PhylogenyNode
                     .createInstanceFromNhxString( "Mus_musculus_musculus_392", NHXParser.TAXONOMY_EXTRACTION.AGGRESSIVE );
             if ( !n18.getNodeData().getTaxonomy().getScientificName().equals( "Mus musculus musculus" ) ) {
@@ -12560,13 +12542,6 @@ public final class Test {
                                                   NHXParser.TAXONOMY_EXTRACTION.AGGRESSIVE );
             if ( !n21.getNodeData().getTaxonomy().getScientificName().equals( "Mus musculus musculus" ) ) {
                 System.out.println( n21.toString() );
-                return false;
-            }
-            final PhylogenyNode n22 = PhylogenyNode
-                    .createInstanceFromNhxString( "NEMVE_Nematostella_vectensis",
-                                                  NHXParser.TAXONOMY_EXTRACTION.AGGRESSIVE );
-            if ( !n22.getNodeData().getTaxonomy().getTaxonomyCode().equals( "NEMVE" ) ) {
-                System.out.println( n22.toString() );
                 return false;
             }
             final PhylogenyNode n23 = PhylogenyNode

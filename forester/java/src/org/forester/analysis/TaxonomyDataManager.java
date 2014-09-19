@@ -199,7 +199,10 @@ public final class TaxonomyDataManager extends RunnableProcess {
     }
 
     private final static List<UniProtTaxonomy> getTaxonomiesFromTaxonomyCode( final String query ) throws IOException {
-        if ( ( query.indexOf( "XX" ) == 3 ) && TaxonomyUtil.isHasTaxIdFromFakeTaxCode( query ) ) {
+        //FIXME fix "SPHAR" issue
+        if ( ( ( query.indexOf( "XX" ) == 3 ) && TaxonomyUtil.isHasTaxIdFromFakeTaxCode( query ) )
+                || query.equals( "SPHAR" ) /* TODO remove me, is same as Sphingomonas aromaticivorans */
+        ) {
             final int id = TaxonomyUtil.getTaxIdFromFakeTaxCode( query );
             return SequenceDbWsTools.getTaxonomiesFromId( String.valueOf( id ), MAX_TAXONOMIES_TO_RETURN );
         }

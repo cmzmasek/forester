@@ -105,9 +105,6 @@ public final class ForesterUtil {
         FORMATTER_3 = new DecimalFormat( "#.###", dfs );
     }
 
-    private ForesterUtil() {
-    }
-
     final public static void appendSeparatorIfNotEmpty( final StringBuffer sb, final char separator ) {
         if ( sb.length() > 0 ) {
             sb.append( separator );
@@ -202,6 +199,39 @@ public final class ForesterUtil {
         else {
             return meanColor;
         }
+    }
+
+    /**
+     * Helper method for calcColor methods.
+     * 
+     * @param smallercolor_component_x
+     *            color component the smaller color
+     * @param largercolor_component_x
+     *            color component the larger color
+     * @param x
+     *            factor
+     * @return an int representing a color component
+     */
+    final private static int calculateColorComponent( final double smallercolor_component_x,
+                                                      final double largercolor_component_x,
+                                                      final double x ) {
+        return ( int ) ( smallercolor_component_x + ( ( x * ( largercolor_component_x - smallercolor_component_x ) ) / 255.0 ) );
+    }
+
+    /**
+     * Helper method for calcColor methods.
+     * 
+     * 
+     * @param value
+     *            the value
+     * @param larger
+     *            the largest value
+     * @param smaller
+     *            the smallest value
+     * @return a normalized value between larger and smaller
+     */
+    final private static double calculateColorFactor( final double value, final double larger, final double smaller ) {
+        return ( 255.0 * ( value - smaller ) ) / ( larger - smaller );
     }
 
     public static int calculateOverlap( final Domain domain, final List<Boolean> covered_positions ) {
@@ -495,6 +525,22 @@ public final class ForesterUtil {
 
     final public static String getLineSeparator() {
         return ForesterUtil.LINE_SEPARATOR;
+    }
+
+    final public static MolecularSequence.TYPE guessMolecularSequenceType( final String mol_seq ) {
+        if ( mol_seq.contains( "L" ) || mol_seq.contains( "I" ) || mol_seq.contains( "E" ) || mol_seq.contains( "H" )
+                || mol_seq.contains( "D" ) || mol_seq.contains( "Q" ) ) {
+            return TYPE.AA;
+        }
+        else {
+            if ( mol_seq.contains( "T" ) ) {
+                return TYPE.DNA;
+            }
+            else if ( mol_seq.contains( "U" ) ) {
+                return TYPE.RNA;
+            }
+        }
+        return null;
     }
 
     final public static void increaseCountingMap( final Map<String, Integer> counting_map, final String item_name ) {
@@ -1052,6 +1098,20 @@ public final class ForesterUtil {
         System.out.println( "[" + prg_name + "] > " + message );
     }
 
+    public static List<String> readUrl( final String url_str ) throws IOException {
+        final URL url = new URL( url_str );
+        final URLConnection urlc = url.openConnection();
+        //urlc.setRequestProperty( "User-Agent", "" );
+        final BufferedReader in = new BufferedReader( new InputStreamReader( urlc.getInputStream() ) );
+        String line;
+        final List<String> result = new ArrayList<String>();
+        while ( ( line = in.readLine() ) != null ) {
+            result.add( line );
+        }
+        in.close();
+        return result;
+    }
+
     /**
      * 
      * Example regarding engulfment: ------------0.1 ----------0.2 --0.3 =>
@@ -1203,6 +1263,11 @@ public final class ForesterUtil {
         return false;
     }
 
+    final private static String[] splitString( final String str ) {
+        final String regex = "[\\s;,]+";
+        return str.split( regex );
+    }
+
     final public static String stringArrayToString( final String[] a ) {
         return stringArrayToString( a, ", " );
     }
@@ -1348,57 +1413,6 @@ public final class ForesterUtil {
         return sb.toString();
     }
 
-    /**
-     * Helper method for calcColor methods.
-     * 
-     * @param smallercolor_component_x
-     *            color component the smaller color
-     * @param largercolor_component_x
-     *            color component the larger color
-     * @param x
-     *            factor
-     * @return an int representing a color component
-     */
-    final private static int calculateColorComponent( final double smallercolor_component_x,
-                                                      final double largercolor_component_x,
-                                                      final double x ) {
-        return ( int ) ( smallercolor_component_x + ( ( x * ( largercolor_component_x - smallercolor_component_x ) ) / 255.0 ) );
-    }
-
-    final public static MolecularSequence.TYPE guessMolecularSequenceType( final String mol_seq ) {
-        if ( mol_seq.contains( "L" ) || mol_seq.contains( "I" ) || mol_seq.contains( "E" ) || mol_seq.contains( "H" )
-                || mol_seq.contains( "D" ) || mol_seq.contains( "Q" ) ) {
-            return TYPE.AA;
-        }
-        else {
-            if ( mol_seq.contains( "T" ) ) {
-                return TYPE.DNA;
-            }
-            else if ( mol_seq.contains( "U" ) ) {
-                return TYPE.RNA;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Helper method for calcColor methods.
-     * 
-     * 
-     * @param value
-     *            the value
-     * @param larger
-     *            the largest value
-     * @param smaller
-     *            the smallest value
-     * @return a normalized value between larger and smaller
-     */
-    final private static double calculateColorFactor( final double value, final double larger, final double smaller ) {
-        return ( 255.0 * ( value - smaller ) ) / ( larger - smaller );
-    }
-
-    final private static String[] splitString( final String str ) {
-        final String regex = "[\\s;,]+";
-        return str.split( regex );
+    private ForesterUtil() {
     }
 }

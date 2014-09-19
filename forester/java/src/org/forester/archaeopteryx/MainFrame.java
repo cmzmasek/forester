@@ -344,7 +344,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             switchColors();
         }
         else if ( o == _display_basic_information_item ) {
-            displayBasicInformation( getCurrentTreePanel().getTreeFile() );
+            if ( getCurrentTreePanel() != null ) {
+                displayBasicInformation( getCurrentTreePanel().getTreeFile() );
+            }
         }
         else if ( o == _view_as_NH_item ) {
             viewAsNH();

@@ -971,12 +971,10 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
     @Override
     final public String toString() {
         final StringBuilder sb = new StringBuilder();
-        
         if ( !ForesterUtil.isEmpty( getName() ) ) {
             sb.append( getName() );
             sb.append( " " );
         }
-        
         if ( getNodeData().isHasTaxonomy() ) {
             if ( !ForesterUtil.isEmpty( getNodeData().getTaxonomy().getScientificName() ) ) {
                 sb.append( getNodeData().getTaxonomy().getScientificName() );
@@ -1009,7 +1007,6 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
                 sb.append( " " );
             }
         }
-       
         if ( sb.length() <= 1 ) {
             sb.append( "[" );
             sb.append( getId() );

@@ -60,7 +60,7 @@ public final class ParserUtils {
     final public static String   TAX_CODE_LO                          = "(?:[A-Z]{5})|RAT|PIG|PEA";
     final public static Pattern  TAXOMONY_CODE_PATTERN_A              = Pattern.compile( "(?:\\b|_)(" + TAX_CODE
                                                                               + ")(?:\\b|_)" );
-    final public static Pattern  TAXOMONY_CODE_PATTERN_A_LO           = Pattern.compile( "(?:\\b|_)(" + TAX_CODE_LO
+    final public static Pattern  TAXOMONY_CODE_PATTERN_A_LO           = Pattern.compile( "_(" + TAX_CODE_LO
                                                                               + ")(?:\\b|_)" );
     final public static Pattern  TAXOMONY_CODE_PATTERN_BRACKETED      = Pattern.compile( "\\[(" + TAX_CODE + ")\\]" );
     final public static Pattern  TAXOMONY_CODE_PATTERN_PFR            = Pattern.compile( "(?:\\b|_)[a-zA-Z0-9]{3,}_("

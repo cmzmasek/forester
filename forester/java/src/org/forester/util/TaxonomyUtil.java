@@ -182,7 +182,8 @@ public final class TaxonomyUtil {
         put( "MNELE", "ctenophora" );
         put( "AMPQE", "porifera" );
         put( "MONBE", "choanoflagellida" );
-        put( "SALS5", "choanoflagellida" );
+        put( "SALS5", "choanoflagellida" ); //TODO remove me
+        put( "SALR5", "choanoflagellida" );
         put( "AMOPA", "ichthyophonida & filasterea" );
         put( "SARXX", "ichthyophonida & filasterea" );
         put( "CAPO3", "ichthyophonida & filasterea" );
@@ -578,6 +579,7 @@ public final class TaxonomyUtil {
         FAKE_CODE_TO_ID_MAP.put( "CTEXX", 283909 );
         FAKE_CODE_TO_ID_MAP.put( "HMAXX", 6085 );
         FAKE_CODE_TO_ID_MAP.put( "SARXX", 72019 );
+        FAKE_CODE_TO_ID_MAP.put( "SPHAR", 72019 ); //TODO is same as Sphingomonas aromaticivorans
         FAKE_CODE_TO_ID_MAP.put( "AALXX", 398408 );
         FAKE_CODE_TO_ID_MAP.put( "PFIXX", 83344 );
         FAKE_CODE_TO_ID_MAP.put( "MPSXX", 692275 );

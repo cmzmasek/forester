@@ -173,6 +173,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private static final BasicStroke     STROKE_2                                           = new BasicStroke( 2f );
     private static final double          TWO_PI                                             = 2 * Math.PI;
     private final static int             WIGGLE                                             = 2;
+    private static final String          SHOW_ONLY_THIS_CONF_TYPE                           = "posterior probability";                                  //TODO remove me
     HashMap<Long, Short>                 _nodeid_dist_to_leaf                               = new HashMap<Long, Short>();
     final private Arc2D                  _arc                                               = new Arc2D.Double();
     private AffineTransform              _at;
@@ -2854,13 +2855,19 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final List<PhylogenyNode> additional_nodes = new ArrayList<PhylogenyNode>();
         if ( getFoundNodes0() != null ) {
             for( final Long id : getFoundNodes0() ) {
-                additional_nodes.add( _phylogeny.getNode( id ) );
+                final PhylogenyNode n = _phylogeny.getNode( id );
+                if ( n != null ) {
+                    additional_nodes.add( n );
+                }
             }
         }
         if ( getFoundNodes1() != null ) {
             for( final Long id : getFoundNodes1() ) {
                 if ( ( getFoundNodes0() == null ) || !getFoundNodes0().contains( id ) ) {
-                    additional_nodes.add( _phylogeny.getNode( id ) );
+                    final PhylogenyNode n = _phylogeny.getNode( id );
+                    if ( n != null ) {
+                        additional_nodes.add( n );
+                    }
                 }
             }
         }
@@ -4042,26 +4049,30 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         Collections.sort( confidences );
         final StringBuilder sb = new StringBuilder();
         for( final Confidence confidence : confidences ) {
-            final double value = confidence.getValue();
-            if ( value != Confidence.CONFIDENCE_DEFAULT_VALUE ) {
-                if ( value < getOptions().getMinConfidenceValue() ) {
-                    return;
-                }
-                if ( not_first ) {
-                    sb.append( "/" );
-                }
-                else {
-                    not_first = true;
-                }
-                sb.append( FORMATTER_CONFIDENCE.format( ForesterUtil.round( value, getOptions()
-                        .getNumberOfDigitsAfterCommaForConfidenceValues() ) ) );
-                if ( getOptions().isShowConfidenceStddev() ) {
-                    if ( confidence.getStandardDeviation() != Confidence.CONFIDENCE_DEFAULT_VALUE ) {
-                        sb.append( "(" );
-                        sb.append( FORMATTER_CONFIDENCE.format( ForesterUtil.round( confidence.getStandardDeviation(),
-                                                                                    getOptions()
-                                                                                            .getNumberOfDigitsAfterCommaForConfidenceValues() ) ) );
-                        sb.append( ")" );
+            if ( ForesterUtil.isEmpty( SHOW_ONLY_THIS_CONF_TYPE )
+                    || ( !ForesterUtil.isEmpty( confidence.getType() ) && confidence.getType()
+                            .equalsIgnoreCase( SHOW_ONLY_THIS_CONF_TYPE ) ) ) {
+                final double value = confidence.getValue();
+                if ( value != Confidence.CONFIDENCE_DEFAULT_VALUE ) {
+                    if ( value < getOptions().getMinConfidenceValue() ) {
+                        return;
+                    }
+                    if ( not_first ) {
+                        sb.append( "/" );
+                    }
+                    else {
+                        not_first = true;
+                    }
+                    sb.append( FORMATTER_CONFIDENCE.format( ForesterUtil.round( value, getOptions()
+                            .getNumberOfDigitsAfterCommaForConfidenceValues() ) ) );
+                    if ( getOptions().isShowConfidenceStddev() ) {
+                        if ( confidence.getStandardDeviation() != Confidence.CONFIDENCE_DEFAULT_VALUE ) {
+                            sb.append( "(" );
+                            sb.append( FORMATTER_CONFIDENCE.format( ForesterUtil.round( confidence
+                                    .getStandardDeviation(), getOptions()
+                                    .getNumberOfDigitsAfterCommaForConfidenceValues() ) ) );
+                            sb.append( ")" );
+                        }
                     }
                 }
             }

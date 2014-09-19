@@ -758,11 +758,11 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
                 .add( _show_default_node_shapes_internal_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_NODE_BOXES_LABEL_INT ) );
         _options_jmenu
                 .add( _show_default_node_shapes_external_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_NODE_BOXES_LABEL_EXT ) );
-        if ( getConfiguration().doDisplayOption( Configuration.show_domain_architectures ) ) {
-            _options_jmenu.add( _show_domain_labels = new JCheckBoxMenuItem( MainFrame.SHOW_DOMAIN_LABELS_LABEL ) );
-            _options_jmenu.add( _right_line_up_domains_cbmi = new JCheckBoxMenuItem( MainFrame.RIGHT_LINE_UP_DOMAINS ) );
-        }
         _options_jmenu.add( _line_up_renderable_data_cbmi = new JCheckBoxMenuItem( MainFrame.LINE_UP_RENDERABLE_DATA ) );
+        if ( getConfiguration().doDisplayOption( Configuration.show_domain_architectures ) ) {
+            _options_jmenu.add( _right_line_up_domains_cbmi = new JCheckBoxMenuItem( MainFrame.RIGHT_LINE_UP_DOMAINS ) );
+            _options_jmenu.add( _show_domain_labels = new JCheckBoxMenuItem( MainFrame.SHOW_DOMAIN_LABELS_LABEL ) );
+        }
         _options_jmenu.add( _show_annotation_ref_source = new JCheckBoxMenuItem( MainFrame.SHOW_ANN_REF_SOURCE_LABEL ) );
         _options_jmenu.add( _show_confidence_stddev_cbmi = new JCheckBoxMenuItem( MainFrame.SHOW_CONF_STDDEV_LABEL ) );
         _options_jmenu
@@ -932,7 +932,8 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
     }
 
     void displayBasicInformation() {
-        if ( ( getMainPanel().getCurrentPhylogeny() != null ) && !getMainPanel().getCurrentPhylogeny().isEmpty() ) {
+        if ( ( getMainPanel() != null ) && ( getMainPanel().getCurrentPhylogeny() != null )
+                && !getMainPanel().getCurrentPhylogeny().isEmpty() ) {
             String title = "Basic Information";
             if ( !ForesterUtil.isEmpty( getMainPanel().getCurrentPhylogeny().getName() ) ) {
                 title = title + " for \"" + _mainpanel.getCurrentPhylogeny().getName() + "\"";

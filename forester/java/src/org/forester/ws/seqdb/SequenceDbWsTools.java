@@ -55,17 +55,17 @@ import org.forester.util.SequenceAccessionTools;
 
 public final class SequenceDbWsTools {
 
-    public final static String   BASE_UNIPROT_URL        = "http://www.uniprot.org/";
-    public final static int      DEFAULT_LINES_TO_RETURN = 4000;
-    public final static String   EMBL_DBS_REFSEQ_N       = "refseqn";
-    public final static String   EMBL_DBS_REFSEQ_P       = "refseqp";
-    public final static String   EMBL_GENBANK            = "http://www.ebi.ac.uk/Tools/dbfetch/dbfetch?db=GENBANK&style=raw&id=";
-    public final static String   EMBL_REFSEQ             = "http://www.ebi.ac.uk/Tools/dbfetch/dbfetch?db=REFSEQ&style=raw&id=";
-    public final static String   EMBL_EMBL               = "http://www.ebi.ac.uk/Tools/dbfetch/dbfetch?db=EMBL&style=raw&id=";
-    private final static boolean DEBUG                   = true;
-    private final static String  URL_ENC                 = "UTF-8";
-    private final static int     SLEEP                   = 200;
-    private static final boolean ALLOW_TO_OVERWRITE_MOL_SEQ = true;
+    public final static String   BASE_UNIPROT_URL           = "http://www.uniprot.org/";
+    public final static int      DEFAULT_LINES_TO_RETURN    = 4000;
+    public final static String   EMBL_DBS_REFSEQ_N          = "refseqn";
+    public final static String   EMBL_DBS_REFSEQ_P          = "refseqp";
+    public final static String   EMBL_GENBANK               = "http://www.ebi.ac.uk/Tools/dbfetch/dbfetch?db=GENBANK&style=raw&id=";
+    public final static String   EMBL_REFSEQ                = "http://www.ebi.ac.uk/Tools/dbfetch/dbfetch?db=REFSEQ&style=raw&id=";
+    public final static String   EMBL_EMBL                  = "http://www.ebi.ac.uk/Tools/dbfetch/dbfetch?db=EMBL&style=raw&id=";
+    private final static boolean DEBUG                      = true;
+    private final static String  URL_ENC                    = "UTF-8";
+    private final static int     SLEEP                      = 200;
+    private static final boolean ALLOW_TO_OVERWRITE_MOL_SEQ = false;
 
     public static List<UniProtTaxonomy> getTaxonomiesFromCommonNameStrict( final String cn,
                                                                            final int max_taxonomies_return )
