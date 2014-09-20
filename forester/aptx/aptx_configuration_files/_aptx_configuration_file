@@ -370,7 +370,6 @@ species_color: CIOSA        0xFF2CAE
 species_color: BOVIN        0x5C3317
 species_color: CANFA        0x8B2323
 species_color: HUMAN        0xFF2400
-species_color: Homo_sapiens 0xFF2400
 species_color: PANTR        0xCC2400
 species_color: MOUSE        0xFF7F00
 species_color: RAT          0xFFEF00
@@ -385,10 +384,10 @@ species_color: DANRE        0x0000BB
 species_color: TETNG        0x0000AA
 species_color: ORYLA        0x000088
 species_color: GASAC        0x000066
-species_color: CAEEL        0x666666
+species_color: CAEEL        0x666699
 species_color: CAEBR        0xB0B0B0
-species_color: DROME        0x706F00
-species_color: DROPS        0x504F00
+species_color: DROME        0x663366
+species_color: DROPS        0x996699
 species_color: APIME        0x7A7700
 species_color: AEDAE        0x8C5900
 species_color: TRICA        0x918E00
@@ -397,7 +396,7 @@ species_color: HYDAT        0x3399FF
 species_color: HYDVU        0x3399FF
 species_color: LUBBA        0xF7B5CB
 species_color: GEOCY        0xF5A0BD
-species_color: AMPQE        0x0099FF
+species_color: AMPQE        0x009966
 species_color: SUBDO        0xC790B9
 species_color: MONBE        0xFC0FC0
 species_color: DICPU        0xFFCC33
@@ -436,7 +435,7 @@ species_color: mammals        0xFF0000
 species_color: Chordata       0x8470FF
 species_color: Echinodermata  0x6495ED
 species_color: Hemichordata   0x7EC0EE
-species_color: Arthropoda     0x7AC5CD 
+species_color: Arthropoda     0x7AC5CD
 species_color: Nematoda       0x7171C6
 species_color: Tardigrada     0x388E8E
 species_color: Annelida       0xC67171
