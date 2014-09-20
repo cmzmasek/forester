@@ -2247,7 +2247,7 @@ public final class MainFrameApplication extends MainFrame {
                     if ( n.isExternal() ) {
                         if ( n.getNodeData().isHasSequence() ) {
                             final Sequence s = n.getNodeData().getSequence();
-                            if ( ForesterUtil.isEmpty( s.getGeneName() ) ) {
+                            if ( ForesterUtil.isEmpty( s.getGeneName() ) || s.getGeneName().startsWith( "LOC" ) ) {
                                 if ( ( s.getAccession() != null )
                                         && !ForesterUtil.isEmpty( s.getAccession().getValue() ) ) {
                                     s.setGeneName( s.getAccession().getValue() );

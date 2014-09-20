@@ -4086,7 +4086,7 @@ public final class Test {
             if ( !ForesterUtil.isEmpty( entry3.getGeneName() ) ) {
                 return false;
             }
-            if ( entry3.getCrossReferences().size() != 8 ) {
+            if ( entry3.getCrossReferences().size() < 7 ) {
                 return false;
             }
             final SequenceDatabaseEntry entry4 = SequenceDbWsTools.obtainEntry( "AAA36557.1" );
