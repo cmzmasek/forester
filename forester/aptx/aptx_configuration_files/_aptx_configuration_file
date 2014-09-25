@@ -181,7 +181,7 @@ overview_placement_type:                   upper_left
 color_labels_same_as_branch_length_values: no
 display_sequence_relations:                no
 show_domain_labels:                        yes
-line_up_renderable_data:                   no
+line_up_renderable_data:                   yes
 right_align_domain_architectures:          no
 show_seq_annotation_ref_sources:           yes
 branch_length_value_digits:                3
