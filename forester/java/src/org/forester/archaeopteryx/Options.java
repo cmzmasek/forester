@@ -480,7 +480,7 @@ final public class Options {
         _show_confidence_stddev = false;
         _nh_conversion_support_value_style = NH_CONVERSION_SUPPORT_VALUE_STYLE.NONE;
         _ext_desc_data_to_return = NODE_DATA.UNKNOWN;
-        _line_up_renderable_node_data = false;
+        _line_up_renderable_node_data = true;
         _right_align_domains = false;
     }
 

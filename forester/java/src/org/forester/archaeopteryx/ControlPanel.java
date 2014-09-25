@@ -251,6 +251,7 @@ final class ControlPanel extends JPanel implements ActionListener {
                     displayedPhylogenyMightHaveChanged( false );
                 }
                 else if ( e.getSource() == _show_whole ) {
+                    displayedPhylogenyMightHaveChanged( true );
                     showWhole();
                 }
                 else if ( e.getSource() == _return_to_super_tree ) {
@@ -275,7 +276,7 @@ final class ControlPanel extends JPanel implements ActionListener {
                     tp.getPhylogeny().recalculateNumberOfExternalDescendants( true );
                     tp.resetNodeIdToDistToLeafMap();
                     tp.setEdited( true );
-                    displayedPhylogenyMightHaveChanged( false );
+                    displayedPhylogenyMightHaveChanged( true );
                 }
                 else if ( e.getSource() == _uncollapse_all ) {
                     uncollapseAll( tp );
