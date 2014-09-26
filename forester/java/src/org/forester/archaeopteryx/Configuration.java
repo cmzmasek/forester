@@ -251,8 +251,8 @@ public final class Configuration {
     private Color                           _vector_data_mean_color                                = Color.WHITE;
     private double                          _vector_data_height                                    = 12;
     private int                             _vector_data_width                                     = 120;
-    private boolean                         _line_up_renderable_node_data;
-    private boolean                         _right_align_domains;
+    private boolean                         _line_up_renderable_node_data                          = true;
+    private boolean                         _right_align_domains                                   = false;
     static {
         for( final String font_name : Constants.DEFAULT_FONT_CHOICES ) {
             if ( Arrays.binarySearch( AptxUtil.getAvailableFontFamiliesSorted(), font_name ) >= 0 ) {

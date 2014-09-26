@@ -154,7 +154,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem                   _confcolor_item;
     JMenuItem                   _color_rank_jmi;
     JMenuItem                   _collapse_species_specific_subtrees;
-    JMenuItem                   _collapse_below_threshold;                                                                                                                                                                                    //TODO implememt me
     JMenuItem                   _obtain_detailed_taxonomic_information_jmi;
     JMenuItem                   _obtain_detailed_taxonomic_information_deleting_jmi;
     JMenuItem                   _obtain_seq_information_jmi;

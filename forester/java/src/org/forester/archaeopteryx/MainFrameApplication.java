@@ -93,6 +93,7 @@ import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.PhylogenyNode.NH_CONVERSION_SUPPORT_VALUE_STYLE;
 import org.forester.phylogeny.data.Confidence;
+import org.forester.phylogeny.data.PhylogenyDataUtil;
 import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
@@ -142,11 +143,14 @@ public final class MainFrameApplication extends MainFrame {
     private JMenuItem                        _write_to_tif_item;
     private JMenuItem                        _write_to_png_item;
     private JMenuItem                        _write_to_bmp_item;
+    private JMenuItem                        _collapse_below_threshold;
+    private JMenuItem                        _collapse_below_branch_length;
     private File                             _current_dir;
     private ButtonGroup                      _radio_group_1;
     private ButtonGroup                      _radio_group_2;
     // Others:
     double                                   _min_not_collapse                     = Constants.MIN_NOT_COLLAPSE_DEFAULT;
+    double                                   _min_not_collapse_bl                  = 0.001;
     // Phylogeny Inference menu
     private JMenu                            _inference_menu;
     private JMenuItem                        _inference_from_msa_item;
@@ -544,6 +548,12 @@ public final class MainFrameApplication extends MainFrame {
                     return;
                 }
                 collapseBelowThreshold();
+            }
+            else if ( o == _collapse_below_branch_length ) {
+                if ( isSubtreeDisplayed() ) {
+                    return;
+                }
+                collapseBelowBranchLengthThreshold();
             }
             else if ( ( o == _extract_taxonomy_pfam_strict_rbmi ) || ( o == _extract_taxonomy_pfam_relaxed_rbmi )
                     || ( o == _extract_taxonomy_agressive_rbmi ) ) {
@@ -1089,11 +1099,19 @@ public final class MainFrameApplication extends MainFrame {
         _tools_menu.addSeparator();
         _tools_menu.add( _collapse_species_specific_subtrees = new JMenuItem( "Collapse Species-Specific Subtrees" ) );
         customizeJMenuItem( _collapse_species_specific_subtrees );
+        _collapse_species_specific_subtrees.setToolTipText( "To (reversibly) collapse species-specific subtrees" );
         _tools_menu
                 .add( _collapse_below_threshold = new JMenuItem( "Collapse Branches with Confidence Below Threshold into Multifurcations" ) );
         customizeJMenuItem( _collapse_below_threshold );
         _collapse_below_threshold
-                .setToolTipText( "To collapse branches with confidence values below a threshold into multifurcations (in the case of multiple confidences per branch: without at least one confidence value above a threshold)" );
+                .setToolTipText( "To (permanently) collapse branches with confidence values below a threshold into multifurcations (in the case of multiple confidences per branch: without at least one confidence value above a threshold)" );
+        //
+        _tools_menu
+                .add( _collapse_below_branch_length = new JMenuItem( "Collapse Branches with Branch Lengths Below Threshold into Multifurcations" ) );
+        customizeJMenuItem( _collapse_below_branch_length );
+        _collapse_below_branch_length
+                .setToolTipText( "To (permanently) collapse branches with branches with branch lengths below a threshold into multifurcations" );
+        //
         _tools_menu.addSeparator();
         _tools_menu
                 .add( _extract_tax_code_from_node_names_jmi = new JMenuItem( "Extract Taxonomic Data from Node Names" ) );
@@ -1672,7 +1690,65 @@ public final class MainFrameApplication extends MainFrame {
         }
     }
 
-    private void collapse( final Phylogeny phy, final double m ) {
+    private void collapseBl( final Phylogeny phy ) {
+        final PhylogenyNodeIterator it = phy.iteratorPostorder();
+        final List<PhylogenyNode> to_be_removed = new ArrayList<PhylogenyNode>();
+        double min_bl = Double.MAX_VALUE;
+        boolean bl_present = false;
+        while ( it.hasNext() ) {
+            final PhylogenyNode n = it.next();
+            if ( !n.isExternal() && !n.isRoot() ) {
+                final double bl = n.getDistanceToParent();
+                if ( bl != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT ) {
+                    bl_present = true;
+                    if ( bl < getMinNotCollapseBlValue() ) {
+                        to_be_removed.add( n );
+                    }
+                    if ( bl < min_bl ) {
+                        min_bl = bl;
+                    }
+                }
+            }
+        }
+        if ( bl_present ) {
+            for( final PhylogenyNode node : to_be_removed ) {
+                PhylogenyMethods.removeNode( node, phy );
+            }
+            if ( to_be_removed.size() > 0 ) {
+                phy.externalNodesHaveChanged();
+                phy.clearHashIdToNodeMap();
+                phy.recalculateNumberOfExternalDescendants( true );
+                getCurrentTreePanel().resetNodeIdToDistToLeafMap();
+                getCurrentTreePanel().updateSetOfCollapsedExternalNodes();
+                getCurrentTreePanel().calculateLongestExtNodeInfo();
+                getCurrentTreePanel().setNodeInPreorderToNull();
+                getCurrentTreePanel().recalculateMaxDistanceToRoot();
+                getCurrentTreePanel().resetPreferredSize();
+                getCurrentTreePanel().setEdited( true );
+                getCurrentTreePanel().repaint();
+                repaint();
+            }
+            if ( to_be_removed.size() > 0 ) {
+                JOptionPane.showMessageDialog( this, "Collapsed " + to_be_removed.size()
+                        + " branches with\nbranch length values below " + getMinNotCollapseBlValue(), "Collapsed "
+                        + to_be_removed.size() + " branches", JOptionPane.INFORMATION_MESSAGE );
+            }
+            else {
+                JOptionPane.showMessageDialog( this,
+                                               "No branch collapsed,\nminimum branch length is " + min_bl,
+                                               "No branch collapsed",
+                                               JOptionPane.INFORMATION_MESSAGE );
+            }
+        }
+        else {
+            JOptionPane.showMessageDialog( this,
+                                           "No branch collapsed because no branch length values present",
+                                           "No branch length values present",
+                                           JOptionPane.INFORMATION_MESSAGE );
+        }
+    }
+
+    private void collapse( final Phylogeny phy ) {
         final PhylogenyNodeIterator it = phy.iteratorPostorder();
         final List<PhylogenyNode> to_be_removed = new ArrayList<PhylogenyNode>();
         double min_support = Double.MAX_VALUE;
@@ -1762,7 +1838,43 @@ public final class MainFrameApplication extends MainFrame {
                     }
                     if ( success && ( m >= 0.0 ) ) {
                         setMinNotCollapseConfidenceValue( m );
-                        collapse( phy, m );
+                        collapse( phy );
+                    }
+                }
+            }
+        }
+    }
+
+    private void collapseBelowBranchLengthThreshold() {
+        if ( getCurrentTreePanel() != null ) {
+            final Phylogeny phy = getCurrentTreePanel().getPhylogeny();
+            if ( ( phy != null ) && !phy.isEmpty() ) {
+                final String s = ( String ) JOptionPane
+                        .showInputDialog( this,
+                                          "Please enter the minimum branch length value\n",
+                                          "Minimal Branch Length Value",
+                                          JOptionPane.QUESTION_MESSAGE,
+                                          null,
+                                          null,
+                                          getMinNotCollapseBlValue() );
+                if ( !ForesterUtil.isEmpty( s ) ) {
+                    boolean success = true;
+                    double m = 0.0;
+                    final String m_str = s.trim();
+                    if ( !ForesterUtil.isEmpty( m_str ) ) {
+                        try {
+                            m = Double.parseDouble( m_str );
+                        }
+                        catch ( final Exception ex ) {
+                            success = false;
+                        }
+                    }
+                    else {
+                        success = false;
+                    }
+                    if ( success && ( m >= 0.0 ) ) {
+                        setMinNotCollapseBlValue( m );
+                        collapseBl( phy );
                     }
                 }
             }
@@ -1916,6 +2028,10 @@ public final class MainFrameApplication extends MainFrame {
 
     private double getMinNotCollapseConfidenceValue() {
         return _min_not_collapse;
+    }
+
+    private double getMinNotCollapseBlValue() {
+        return _min_not_collapse_bl;
     }
 
     private PhylogeneticInferenceOptions getPhylogeneticInferenceOptions() {
@@ -2374,6 +2490,10 @@ public final class MainFrameApplication extends MainFrame {
 
     private void setMinNotCollapseConfidenceValue( final double min_not_collapse ) {
         _min_not_collapse = min_not_collapse;
+    }
+
+    private void setMinNotCollapseBlValue( final double min_not_collapse_bl ) {
+        _min_not_collapse_bl = min_not_collapse_bl;
     }
 
     private void setPhylogeneticInferenceOptions( final PhylogeneticInferenceOptions phylogenetic_inference_options ) {
