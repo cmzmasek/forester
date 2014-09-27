@@ -53,6 +53,8 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
     public final static Pattern  PDB_PATTERN       = Pattern.compile( "PDB;\\s+([0-9A-Z]{4});\\s+([^;]+)" );
     public final static Pattern  PharmGKB_PATTERN  = Pattern.compile( "PharmGKB;\\s+([0-9A-Z]+);" );
     public final static Pattern  Reactome_PATTERN  = Pattern.compile( "Reactome;\\s+([0-9A-Z]+);\\s+([^\\.]+)" );
+    public final static Pattern  HGNC_PATTERN      = Pattern.compile( "HGNC;\\s+HGNC:(\\d+);" );
+    
     private String               _ac;
     private SortedSet<Accession> _cross_references;
     private String               _gene_name;
@@ -280,6 +282,12 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
                     final Matcher m = Reactome_PATTERN.matcher( line );
                     if ( m.find() ) {
                         e.addCrossReference( new Accession( m.group( 1 ), "Reactome", m.group( 2 ) ) );
+                    }
+                }
+                else if ( line.indexOf( "HGNC;" ) > 0 ) {
+                    final Matcher m = HGNC_PATTERN.matcher( line );
+                    if ( m.find() ) {
+                        e.addCrossReference( new Accession( m.group( 1 ), "HGNC" ) );
                     }
                 }
             }
