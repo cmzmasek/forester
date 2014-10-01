@@ -255,6 +255,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private float                        _y_distance                                        = 0.0f;
     private int                          _length_of_longest_text;
     private int                          _longest_domain;
+    public final static boolean          SPECIAL_DOMAIN_COLORING                            = true;
     //  private Image                           offscreenImage;
     //  private Graphics                        offscreenGraphics;
     //  private Dimension                       offscreenDimension;
@@ -1096,7 +1097,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     && ( node.getNodeData().getSequence().getDomainArchitecture() != null ) ) {
                 RenderableDomainArchitecture rds = null;
                 if ( !( node.getNodeData().getSequence().getDomainArchitecture() instanceof RenderableDomainArchitecture ) ) {
-                    rds = new RenderableDomainArchitecture( node.getNodeData().getSequence().getDomainArchitecture() );
+                    if ( SPECIAL_DOMAIN_COLORING ) {
+                        rds = new RenderableDomainArchitecture( node.getNodeData().getSequence()
+                                .getDomainArchitecture(), node.getName() );
+                    }
+                    else {
+                        rds = new RenderableDomainArchitecture( node.getNodeData().getSequence()
+                                .getDomainArchitecture() );
+                    }
                     node.getNodeData().getSequence().setDomainArchitecture( rds );
                 }
                 else {

@@ -54,7 +54,6 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
     public final static Pattern  PharmGKB_PATTERN  = Pattern.compile( "PharmGKB;\\s+([0-9A-Z]+);" );
     public final static Pattern  Reactome_PATTERN  = Pattern.compile( "Reactome;\\s+([0-9A-Z]+);\\s+([^\\.]+)" );
     public final static Pattern  HGNC_PATTERN      = Pattern.compile( "HGNC;\\s+HGNC:(\\d+);" );
-    
     private String               _ac;
     private SortedSet<Accession> _cross_references;
     private String               _gene_name;

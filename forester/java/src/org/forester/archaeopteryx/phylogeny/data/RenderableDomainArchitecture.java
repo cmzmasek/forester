@@ -48,6 +48,7 @@ import org.forester.util.ForesterUtil;
 
 public final class RenderableDomainArchitecture extends DomainArchitecture implements RenderablePhylogenyData {
 
+    final static private String       SPECIAL_DOMAIN                = "RRMa";
     final static private int          BRIGHTEN_COLOR_BY             = 200;
     final static private int          E_VALUE_THRESHOLD_EXP_DEFAULT = 0;
     final static private BasicStroke  STROKE_1                      = new BasicStroke( 1f );
@@ -57,9 +58,15 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
     private final Rectangle2D         _rectangle                    = new Rectangle2D.Float();
     private float                     _rendering_factor_width       = 1;
     private float                     _rendering_height             = 0;
+    private String                    _node_name;
 
     public RenderableDomainArchitecture( final DomainArchitecture domain_structure ) {
         _domain_structure = domain_structure;
+    }
+
+    public RenderableDomainArchitecture( final DomainArchitecture domain_structure, final String node_name ) {
+        _domain_structure = domain_structure;
+        _node_name = node_name;
     }
 
     public static void setColorMap( final Map<String, Color> domain_colors ) {
@@ -90,6 +97,28 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
                                    final boolean to_pdf ) {
         final double h2 = heigth / 2.0;
         final Color color_one = getColorOne( name );
+        final Color color_two = getColorTwo( color_one );
+        double step = 1;
+        if ( to_pdf ) {
+            step = 0.05;
+        }
+        for( double i = 0; i < heigth; i += step ) {
+            g.setColor( org.forester.util.ForesterUtil
+                    .calcColor( i >= h2 ? heigth - i : i, 0, h2, color_one, color_two ) );
+            _rectangle.setFrame( x, i + y, width, step );
+            g.fill( _rectangle );
+        }
+    }
+
+    private final void drawDomainGrey( final double x,
+                                       final double y,
+                                       final double width,
+                                       final double heigth,
+                                       final String name,
+                                       final Graphics2D g,
+                                       final boolean to_pdf ) {
+        final double h2 = heigth / 2.0;
+        final Color color_one = Color.GRAY;
         final Color color_two = getColorTwo( color_one );
         double step = 1;
         if ( to_pdf ) {
@@ -186,9 +215,15 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
         }
         _rectangle.setFrame( start, y - 0.5, _domain_structure.getTotalLength() * f, 1 );
         g.fill( _rectangle );
+        short special_domain_count = 0;
         for( int i = 0; i < _domain_structure.getDomains().size(); ++i ) {
             final ProteinDomain d = _domain_structure.getDomain( i );
-            if ( d.getConfidence() <= Math.pow( 10, _e_value_threshold_exp ) ) {
+            if ( ( d.getConfidence() <= Math.pow( 10, _e_value_threshold_exp ) )
+                    || ( TreePanel.SPECIAL_DOMAIN_COLORING && ( d.getName().equals( SPECIAL_DOMAIN ) ) && ( ( d
+                            .getConfidence() <= 1 ) ) ) ) {
+                if ( TreePanel.SPECIAL_DOMAIN_COLORING && ( d.getName().equals( SPECIAL_DOMAIN ) ) ) {
+                    special_domain_count++;
+                }
                 final float xa = start + ( d.getFrom() * f );
                 final float xb = xa + ( d.getLength() * f );
                 if ( tree_panel.getMainPanel().getOptions().isShowDomainLabels()
@@ -204,7 +239,14 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
                             + tree_panel.getMainPanel().getTreeFontSet().getFontMetricsSmall().getAscent()
                             + _rendering_height );
                 }
-                drawDomain( xa, y1, xb - xa, _rendering_height, d.getName(), g, to_pdf );
+                if ( TreePanel.SPECIAL_DOMAIN_COLORING && ( _node_name.indexOf( "~" ) > 1 )
+                        && ( d.getName().equals( SPECIAL_DOMAIN ) )
+                        && ( _node_name.indexOf( "~" + special_domain_count + "-" ) < 1 ) ) {
+                    drawDomainGrey( xa, y1, xb - xa, _rendering_height, d.getName(), g, to_pdf );
+                }
+                else {
+                    drawDomain( xa, y1, xb - xa, _rendering_height, d.getName(), g, to_pdf );
+                }
             }
         }
         g.setStroke( s );
