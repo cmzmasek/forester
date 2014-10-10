@@ -2346,6 +2346,9 @@
                                 <common_name>roundworms</common_name>
                                 <rank>phylum</rank>
                               </taxonomy>
+                              <reference doi="10.1371/journal.pbio.1001050">
+                                <desc>Nematodes: The Worm and Its Relatives</desc>
+                              </reference>
                               <clade>
                                 <taxonomy>
                                   <id provider="uniprot">119089</id>
@@ -2355,119 +2358,205 @@
                                 <reference doi="10.1038/32160">
                                 </reference>
                                 <clade>
-                                  <name>nematode Clade V</name>
+                                  <name>nematode clades IV and V</name>
                                   <clade>
-                                    <taxonomy>
-                                      <id provider="uniprot">6237</id>
-                                      <scientific_name>Caenorhabditis</scientific_name>
-                                      <rank>genus</rank>
-                                    </taxonomy>
-                                    <reference doi="10.1073/pnas.0403094101">
-                                      <desc>Caenorhabditis phylogeny predicts convergence of hermaphroditism and extensive intron loss</desc>
-                                    </reference>
+                                    <name>nematode clade V</name>
                                     <clade>
-                                      <name>CAEBR &amp; CAERE &amp; CAEBE &amp; CAEEL</name>
+                                      <taxonomy>
+                                        <id provider="uniprot">6236</id>
+                                        <scientific_name>Rhabditida</scientific_name>
+                                        <rank>order</rank>
+                                      </taxonomy>
                                       <clade>
-                                        <name>CAEBR &amp; CAERE &amp; CAEBE</name>
+                                        <taxonomy>
+                                          <id provider="uniprot">6237</id>
+                                          <scientific_name>Caenorhabditis</scientific_name>
+                                          <rank>genus</rank>
+                                        </taxonomy>
+                                        <reference doi="10.1073/pnas.0403094101">
+                                          <desc>Caenorhabditis phylogeny predicts convergence of hermaphroditism and extensive intron loss</desc>
+                                        </reference>
                                         <clade>
-                                          <name>CAEBR &amp; CAERE</name>
+                                          <name>CAEBR &amp; CAERE &amp; CAEBE &amp; CAEEL</name>
+                                          <taxonomy>
+                                            <id provider="uniprot">6238</id>
+                                            <scientific_name>Caenorhabditis briggsae</scientific_name>
+                                            <rank>species</rank>
+                                          </taxonomy>
                                           <clade>
+                                            <name>CAEBR &amp; CAERE &amp; CAEBE</name>
                                             <taxonomy>
                                               <id provider="uniprot">6238</id>
-                                              <code>CAEBR</code>
                                               <scientific_name>Caenorhabditis briggsae</scientific_name>
                                               <rank>species</rank>
-                                              <uri>http://www.life.umd.edu/biology/haag/briggsae_herm.jpg</uri>
                                             </taxonomy>
+                                            <clade>
+                                              <name>CAEBR &amp; CAERE</name>
+                                              <taxonomy>
+                                                <id provider="uniprot">6238</id>
+                                                <scientific_name>Caenorhabditis briggsae</scientific_name>
+                                                <rank>species</rank>
+                                              </taxonomy>
+                                              <clade>
+                                                <taxonomy>
+                                                  <id provider="uniprot">6238</id>
+                                                  <code>CAEBR</code>
+                                                  <scientific_name>Caenorhabditis briggsae</scientific_name>
+                                                  <rank>species</rank>
+                                                  <uri>http://www.life.umd.edu/biology/haag/briggsae_herm.jpg</uri>
+                                                </taxonomy>
+                                              </clade>
+                                              <clade>
+                                                <taxonomy>
+                                                  <id provider="uniprot">31234</id>
+                                                  <code>CAERE</code>
+                                                  <scientific_name>Caenorhabditis remanei</scientific_name>
+                                                  <synonym>Caenorhabditis vulgaris</synonym>
+                                                  <rank>species</rank>
+                                                  <uri>http://lemur.amu.edu.pl/share/php/mirnest_1.0/species_images/Caenorhabditis_remanei.jpg</uri>
+                                                </taxonomy>
+                                              </clade>
+                                            </clade>
+                                            <clade>
+                                              <taxonomy>
+                                                <id provider="uniprot">135651</id>
+                                                <code>CAEBE</code>
+                                                <scientific_name>Caenorhabditis brenneri</scientific_name>
+                                                <common_name>Nematode worm</common_name>
+                                                <synonym>Caenorhabditis CB5161</synonym>
+                                                <rank>species</rank>
+                                              </taxonomy>
+                                            </clade>
                                           </clade>
                                           <clade>
                                             <taxonomy>
-                                              <id provider="uniprot">31234</id>
-                                              <code>CAERE</code>
-                                              <scientific_name>Caenorhabditis remanei</scientific_name>
-                                              <synonym>Caenorhabditis vulgaris</synonym>
+                                              <id provider="uniprot">6239</id>
+                                              <code>CAEEL</code>
+                                              <scientific_name>Caenorhabditis elegans</scientific_name>
                                               <rank>species</rank>
-                                              <uri>http://lemur.amu.edu.pl/share/php/mirnest_1.0/species_images/Caenorhabditis_remanei.jpg</uri>
+                                              <uri>http://www.easternct.edu/~adams/images/celegansmain.jpg</uri>
                                             </taxonomy>
                                           </clade>
                                         </clade>
                                         <clade>
                                           <taxonomy>
-                                            <id provider="uniprot">135651</id>
-                                            <code>CAEBE</code>
-                                            <scientific_name>Caenorhabditis brenneri</scientific_name>
-                                            <common_name>Nematode worm</common_name>
-                                            <synonym>Caenorhabditis CB5161</synonym>
+                                            <id provider="uniprot">281687</id>
+                                            <code>CAEJA</code>
+                                            <scientific_name>Caenorhabditis japonica</scientific_name>
                                             <rank>species</rank>
                                           </taxonomy>
                                         </clade>
                                       </clade>
                                       <clade>
                                         <taxonomy>
-                                          <id provider="uniprot">6239</id>
-                                          <code>CAEEL</code>
-                                          <scientific_name>Caenorhabditis elegans</scientific_name>
+                                          <id provider="uniprot">53326</id>
+                                          <scientific_name>Ancylostoma ceylanicum</scientific_name>
                                           <rank>species</rank>
-                                          <uri>http://www.easternct.edu/~adams/images/celegansmain.jpg</uri>
                                         </taxonomy>
                                       </clade>
                                     </clade>
                                     <clade>
                                       <taxonomy>
-                                        <id provider="uniprot">281687</id>
-                                        <code>CAEJA</code>
-                                        <scientific_name>Caenorhabditis japonica</scientific_name>
+                                        <id provider="uniprot">54126</id>
+                                        <code>PRIPA</code>
+                                        <scientific_name>Pristionchus pacificus</scientific_name>
+                                        <common_name>Parasitic nematode</common_name>
                                         <rank>species</rank>
+                                        <uri>http://smithlabdb.usc.edu/images/Pristionchus_pacificus.jpg</uri>
                                       </taxonomy>
                                     </clade>
                                   </clade>
                                   <clade>
                                     <taxonomy>
-                                      <id provider="uniprot">54126</id>
-                                      <code>PRIPA</code>
-                                      <scientific_name>Pristionchus pacificus</scientific_name>
-                                      <common_name>Parasitic nematode</common_name>
-                                      <rank>species</rank>
-                                      <uri>http://smithlabdb.usc.edu/images/Pristionchus_pacificus.jpg</uri>
+                                      <id provider="uniprot">189290</id>
+                                      <scientific_name>Meloidogyne</scientific_name>
+                                      <rank>genus</rank>
                                     </taxonomy>
+                                    <clade>
+                                      <taxonomy>
+                                        <id provider="uniprot">6306</id>
+                                        <code>MELIC</code>
+                                        <scientific_name>Meloidogyne incognita</scientific_name>
+                                        <common_name>Southern root-knot nematode</common_name>
+                                        <rank>species</rank>
+                                      </taxonomy>
+                                    </clade>
+                                    <clade>
+                                      <taxonomy>
+                                        <id provider="uniprot">6305</id>
+                                        <code>MELHA</code>
+                                        <scientific_name>Meloidogyne hapla</scientific_name>
+                                        <common_name>Root-knot nematode worm</common_name>
+                                        <rank>species</rank>
+                                      </taxonomy>
+                                    </clade>
                                   </clade>
                                 </clade>
                                 <clade>
-                                  <taxonomy>
-                                    <id provider="uniprot">6296</id>
-                                    <scientific_name>Onchocercidae</scientific_name>
-                                    <rank>family</rank>
-                                  </taxonomy>
+                                  <name>nematode clade III</name>
                                   <clade>
                                     <taxonomy>
-                                      <id provider="uniprot">6279</id>
-                                      <code>BRUMA</code>
-                                      <scientific_name>Brugia malayi</scientific_name>
-                                      <common_name>Filarial nematode worm</common_name>
-                                      <rank>species</rank>
-                                      <uri>http://upload.wikimedia.org/wikipedia/commons/4/4a/Brugia_malayi.JPG</uri>
+                                      <id provider="uniprot">6296</id>
+                                      <scientific_name>Onchocercidae</scientific_name>
+                                      <rank>family</rank>
                                     </taxonomy>
+                                    <clade>
+                                      <taxonomy>
+                                        <id provider="uniprot">6279</id>
+                                        <code>BRUMA</code>
+                                        <scientific_name>Brugia malayi</scientific_name>
+                                        <common_name>Filarial nematode worm</common_name>
+                                        <rank>species</rank>
+                                        <uri>http://upload.wikimedia.org/wikipedia/commons/4/4a/Brugia_malayi.JPG</uri>
+                                      </taxonomy>
+                                    </clade>
+                                    <clade>
+                                      <taxonomy>
+                                        <id provider="uniprot">6293</id>
+                                        <code>WUCBA</code>
+                                        <scientific_name>Wuchereria bancrofti</scientific_name>
+                                        <rank>species</rank>
+                                        <uri>http://upload.wikimedia.org/wikipedia/commons/a/a9/Wuchereria_bancrofti_1_DPDX.JPG</uri>
+                                      </taxonomy>
+                                      <sequence>
+                                      </sequence>
+                                    </clade>
                                   </clade>
                                   <clade>
                                     <taxonomy>
-                                      <id provider="uniprot">6293</id>
-                                      <code>WUCBA</code>
-                                      <scientific_name>Wuchereria bancrofti</scientific_name>
+                                      <id provider="uniprot">6253</id>
+                                      <code>ASCSU</code>
+                                      <scientific_name>Ascaris suum</scientific_name>
+                                      <common_name>Pig roundworm</common_name>
+                                      <synonym>Ascaris lumbricoides</synonym>
                                       <rank>species</rank>
-                                      <uri>http://upload.wikimedia.org/wikipedia/commons/a/a9/Wuchereria_bancrofti_1_DPDX.JPG</uri>
                                     </taxonomy>
                                   </clade>
                                 </clade>
                               </clade>
                               <clade>
                                 <taxonomy>
-                                  <id provider="uniprot">6334</id>
-                                  <code>TRISP</code>
-                                  <scientific_name>Trichinella spiralis</scientific_name>
-                                  <common_name>Trichina worm</common_name>
-                                  <rank>species</rank>
-                                  <uri>http://upload.wikimedia.org/wikipedia/commons/e/e8/Trichinella_larv1_DPDx.JPG</uri>
+                                  <id provider="uniprot">119088</id>
+                                  <scientific_name>Enoplea</scientific_name>
+                                  <rank>class</rank>
                                 </taxonomy>
+                                <clade>
+                                  <taxonomy>
+                                    <id provider="uniprot">6334</id>
+                                    <code>TRISP</code>
+                                    <scientific_name>Trichinella spiralis</scientific_name>
+                                    <common_name>Trichina worm</common_name>
+                                    <rank>species</rank>
+                                    <uri>http://upload.wikimedia.org/wikipedia/commons/e/e8/Trichinella_larv1_DPDx.JPG</uri>
+                                  </taxonomy>
+                                </clade>
+                                <clade>
+                                  <taxonomy>
+                                    <id provider="uniprot">319952</id>
+                                    <scientific_name>Enoplus communis</scientific_name>
+                                    <rank>species</rank>
+                                  </taxonomy>
+                                </clade>
                               </clade>
                             </clade>
                           </clade>
@@ -4436,8 +4525,6 @@
                                       </taxonomy>
                                       <clade>
                                         <name>Rosales &amp; Cucurbitales &amp; Fabales</name>
-                                        <taxonomy>
-                                        </taxonomy>
                                         <clade>
                                           <name>Rosales &amp; Cucurbitales</name>
                                           <clade>
