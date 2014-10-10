@@ -168,6 +168,7 @@ phylogeny_graphics_type:                   rectangular
 node_label_direction:                      horizontal
 show_default_node_shapes_internal:         no
 show_default_node_shapes_external:         no
+show_node_shapes_for_nodes_with_vis_data:  yes 
 default_node_size:                         4
 default_node_shape:                        rectangle
 default_node_fill:                         solid
