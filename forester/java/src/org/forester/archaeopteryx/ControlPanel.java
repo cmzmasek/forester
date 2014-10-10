@@ -259,14 +259,12 @@ final class ControlPanel extends JPanel implements ActionListener {
                     showWhole();
                 }
                 else if ( e.getSource() == _order ) {
-                    DESCENDANT_SORT_PRIORITY pri = DESCENDANT_SORT_PRIORITY.TAXONOMY;
-                    if ( ( !isShowTaxonomyScientificNames() && !isShowTaxonomyCode() && !isShowTaxonomyCommonNames() ) ) {
-                        if ( ( isShowSequenceAcc() || isShowSeqNames() || isShowSeqSymbols() ) ) {
-                            pri = DESCENDANT_SORT_PRIORITY.SEQUENCE;
-                        }
-                        else if ( isShowNodeNames() ) {
-                            pri = DESCENDANT_SORT_PRIORITY.NODE_NAME;
-                        }
+                    DESCENDANT_SORT_PRIORITY pri = DESCENDANT_SORT_PRIORITY.NODE_NAME;
+                    if ( isShowTaxonomyScientificNames() || isShowTaxonomyCode() ) {
+                        pri = DESCENDANT_SORT_PRIORITY.TAXONOMY;
+                    }
+                    else if ( isShowSeqNames() || isShowSeqSymbols() || isShowGeneNames() ) {
+                        pri = DESCENDANT_SORT_PRIORITY.SEQUENCE;
                     }
                     PhylogenyMethods.orderAppearance( tp.getPhylogeny().getRoot(), _order_of_appearance, true, pri );
                     _order_of_appearance = !_order_of_appearance;

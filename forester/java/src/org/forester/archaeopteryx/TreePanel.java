@@ -1988,16 +1988,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     final void sortDescendants( final PhylogenyNode node ) {
         if ( !node.isExternal() ) {
-            DESCENDANT_SORT_PRIORITY pri = DESCENDANT_SORT_PRIORITY.TAXONOMY;
-            if ( ( !getControlPanel().isShowTaxonomyScientificNames() && !getControlPanel().isShowTaxonomyCode() && !getControlPanel()
-                    .isShowTaxonomyCommonNames() ) ) {
-                if ( ( getControlPanel().isShowSequenceAcc() || getControlPanel().isShowSeqNames() || getControlPanel()
-                        .isShowSeqSymbols() ) ) {
-                    pri = DESCENDANT_SORT_PRIORITY.SEQUENCE;
-                }
-                else if ( getControlPanel().isShowNodeNames() ) {
-                    pri = DESCENDANT_SORT_PRIORITY.NODE_NAME;
-                }
+            DESCENDANT_SORT_PRIORITY pri = DESCENDANT_SORT_PRIORITY.NODE_NAME;
+            if ( getControlPanel().isShowTaxonomyScientificNames() || getControlPanel().isShowTaxonomyCode() ) {
+                pri = DESCENDANT_SORT_PRIORITY.TAXONOMY;
+            }
+            else if ( getControlPanel().isShowSeqNames() || getControlPanel().isShowSeqSymbols()
+                    || getControlPanel().isShowGeneNames() ) {
+                pri = DESCENDANT_SORT_PRIORITY.SEQUENCE;
             }
             PhylogenyMethods.sortNodeDescendents( node, pri );
             setNodeInPreorderToNull();
@@ -2476,6 +2473,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 getControlPanel().getUseVisualStylesCb().setSelected( true );
             }
         }
+        setEdited( true );
         repaint();
     }
 
@@ -2530,6 +2528,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             al = new NodeColorizationActionListener( _color_chooser, node );
         }
         final JDialog dialog = JColorChooser.createDialog( this, "Node colorization", true, _color_chooser, al, null );
+        setEdited( true );
         dialog.setVisible( true );
     }
 
@@ -2552,6 +2551,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         final JDialog dialog = JColorChooser
                 .createDialog( this, "Subtree colorization", true, _color_chooser, al, null );
+        setEdited( true );
         dialog.setVisible( true );
     }
 
