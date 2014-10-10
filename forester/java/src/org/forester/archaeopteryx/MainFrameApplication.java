@@ -901,13 +901,14 @@ public final class MainFrameApplication extends MainFrame {
         _radio_group_1.add( _ext_node_dependent_cladogram_rbmi );
         _radio_group_1.add( _uniform_cladograms_rbmi );
         _radio_group_1.add( _non_lined_up_cladograms_rbmi );
-        ///////
         _options_jmenu.add( _show_overview_cbmi = new JCheckBoxMenuItem( SHOW_OVERVIEW_LABEL ) );
         _options_jmenu.add( _show_scale_cbmi = new JCheckBoxMenuItem( DISPLAY_SCALE_LABEL ) );
         _options_jmenu
                 .add( _show_default_node_shapes_internal_cbmi = new JCheckBoxMenuItem( DISPLAY_NODE_BOXES_LABEL_INT ) );
         _options_jmenu
                 .add( _show_default_node_shapes_external_cbmi = new JCheckBoxMenuItem( DISPLAY_NODE_BOXES_LABEL_EXT ) );
+        _options_jmenu
+                .add( _show_default_node_shapes_for_marked_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_NODE_BOXES_LABEL_MARKED ) );
         _options_jmenu.add( _line_up_renderable_data_cbmi = new JCheckBoxMenuItem( MainFrame.LINE_UP_RENDERABLE_DATA ) );
         if ( getConfiguration().doDisplayOption( Configuration.show_domain_architectures ) ) {
             _options_jmenu.add( _right_line_up_domains_cbmi = new JCheckBoxMenuItem( MainFrame.RIGHT_LINE_UP_DOMAINS ) );
@@ -930,7 +931,6 @@ public final class MainFrameApplication extends MainFrame {
         _options_jmenu.add( _overview_placment_mi = new JMenuItem( "" ) );
         _options_jmenu.add( _switch_colors_mi = new JMenuItem( "" ) );
         _options_jmenu.add( _choose_font_mi = new JMenuItem( "" ) );
-        ///////
         _options_jmenu.addSeparator();
         _options_jmenu.add( customizeMenuItemAsLabel( new JMenuItem( SEARCH_SUBHEADER ), getConfiguration() ) );
         _options_jmenu.add( _search_case_senstive_cbmi = new JCheckBoxMenuItem( SEARCH_CASE_SENSITIVE_LABEL ) );
@@ -956,7 +956,6 @@ public final class MainFrameApplication extends MainFrame {
         _options_jmenu.add( _replace_underscores_cbmi = new JCheckBoxMenuItem( "Replace Underscores with Spaces" ) );
         _options_jmenu
                 .add( _allow_errors_in_distance_to_parent_cbmi = new JCheckBoxMenuItem( "Ignore Distance Values Format Errors" ) );
-        //
         _options_jmenu.add( _extract_taxonomy_no_rbmi = new JRadioButtonMenuItem( "No Taxonomy Extraction" ) );
         _options_jmenu
                 .add( _extract_taxonomy_pfam_strict_rbmi = new JRadioButtonMenuItem( "Extract Taxonomy Codes/Ids from Pfam-style Node Names" ) );
@@ -975,7 +974,6 @@ public final class MainFrameApplication extends MainFrame {
         _radio_group_2.add( _extract_taxonomy_pfam_strict_rbmi );
         _radio_group_2.add( _extract_taxonomy_pfam_relaxed_rbmi );
         _radio_group_2.add( _extract_taxonomy_agressive_rbmi );
-        // 
         _options_jmenu.add( customizeMenuItemAsLabel( new JMenuItem( "Newick/Nexus Output:" ), getConfiguration() ) );
         _options_jmenu
                 .add( _use_brackets_for_conf_in_nh_export_cbmi = new JCheckBoxMenuItem( USE_BRACKETS_FOR_CONF_IN_NH_LABEL ) );
@@ -993,6 +991,8 @@ public final class MainFrameApplication extends MainFrame {
                 .isShowDefaultNodeShapesExternal() );
         customizeCheckBoxMenuItem( _show_default_node_shapes_internal_cbmi, getOptions()
                 .isShowDefaultNodeShapesInternal() );
+        customizeCheckBoxMenuItem( _show_default_node_shapes_for_marked_cbmi, getOptions()
+                .isShowDefaultNodeShapesForMarkedNodes() );
         customizeJMenuItem( _cycle_node_shape_mi );
         customizeJMenuItem( _cycle_node_fill_mi );
         customizeJMenuItem( _choose_node_size_mi );

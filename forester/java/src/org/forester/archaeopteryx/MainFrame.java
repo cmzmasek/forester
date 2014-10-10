@@ -107,8 +107,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String         SCREEN_ANTIALIAS_LABEL                  = "Antialias";
     static final String         COLOR_LABELS_LABEL                      = "Colorize Labels Same as Parent Branch";
     static final String         BG_GRAD_LABEL                           = "Background Color Gradient";
-    static final String         DISPLAY_NODE_BOXES_LABEL_EXT            = "External Node Shapes";
-    static final String         DISPLAY_NODE_BOXES_LABEL_INT            = "Internal Node Shapes";
+    static final String         DISPLAY_NODE_BOXES_LABEL_EXT            = "Shapes for External Nodes";
+    static final String         DISPLAY_NODE_BOXES_LABEL_INT            = "Shapes for Internal Nodes";
+    static final String         DISPLAY_NODE_BOXES_LABEL_MARKED         = "Shapes for Nodes with Visual Data";
     static final String         SHOW_OVERVIEW_LABEL                     = "Overview";
     static final String         FONT_SIZE_MENU_LABEL                    = "Font Size";
     static final String         NONUNIFORM_CLADOGRAMS_LABEL             = "External Node Sum Dependent Cladograms";
@@ -193,6 +194,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem                   _choose_minimal_confidence_mi;
     JCheckBoxMenuItem           _show_default_node_shapes_internal_cbmi;
     JCheckBoxMenuItem           _show_default_node_shapes_external_cbmi;
+    JCheckBoxMenuItem           _show_default_node_shapes_for_marked_cbmi;
     JMenuItem                   _cycle_node_shape_mi;
     JMenuItem                   _cycle_node_fill_mi;
     JMenuItem                   _choose_node_size_mi;
@@ -427,6 +429,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             updateOptions( getOptions() );
         }
         else if ( o == _show_default_node_shapes_external_cbmi ) {
+            updateOptions( getOptions() );
+        }
+        else if ( o == _show_default_node_shapes_for_marked_cbmi ) {
             updateOptions( getOptions() );
         }
         else if ( o == _non_lined_up_cladograms_rbmi ) {
@@ -1308,6 +1313,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 && _show_default_node_shapes_internal_cbmi.isSelected() );
         options.setShowDefaultNodeShapesExternal( ( _show_default_node_shapes_external_cbmi != null )
                 && _show_default_node_shapes_external_cbmi.isSelected() );
+        options.setShowDefaultNodeShapesForMarkedNodes( ( _show_default_node_shapes_for_marked_cbmi != null )
+                && _show_default_node_shapes_for_marked_cbmi.isSelected() );
         if ( ( _non_lined_up_cladograms_rbmi != null ) && ( _non_lined_up_cladograms_rbmi.isSelected() ) ) {
             options.setCladogramType( CLADOGRAM_TYPE.NON_LINED_UP );
         }

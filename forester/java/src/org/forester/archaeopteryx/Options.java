@@ -78,6 +78,7 @@ final public class Options {
     private boolean                           _search_case_sensitive;
     private boolean                           _show_annotation_ref_source;
     private boolean                           _show_confidence_stddev;
+    private boolean                           _show_default_node_shapes_for_marked_nodes;
     private boolean                           _show_default_node_shapes_external;
     private boolean                           _show_default_node_shapes_internal;
     private boolean                           _show_domain_labels;
@@ -279,6 +280,10 @@ final public class Options {
         return _show_default_node_shapes_external;
     }
 
+    boolean isShowDefaultNodeShapesForMarkedNodes() {
+        return _show_default_node_shapes_for_marked_nodes;
+    }
+
     boolean isShowDefaultNodeShapesInternal() {
         return _show_default_node_shapes_internal;
     }
@@ -421,6 +426,10 @@ final public class Options {
         _show_default_node_shapes_internal = show_default_node_shapes_internal;
     }
 
+    void setShowDefaultNodeShapesForMarkedNodes( final boolean show_default_node_shapes_for_marked_nodes ) {
+        _show_default_node_shapes_for_marked_nodes = show_default_node_shapes_for_marked_nodes;
+    }
+
     final void setShowOverview( final boolean show_overview ) {
         _show_overview = show_overview;
     }
@@ -446,6 +455,7 @@ final public class Options {
         _background_color_gradient = false;
         _show_default_node_shapes_internal = false;
         _show_default_node_shapes_external = false;
+        _show_default_node_shapes_for_marked_nodes = false;
         if ( AptxUtil.isUsOrCanada() ) {
             _print_size_x = Constants.US_LETTER_SIZE_X;
             _print_size_y = Constants.US_LETTER_SIZE_Y;
@@ -551,6 +561,7 @@ final public class Options {
             }
             instance.setShowDefaultNodeShapesInternal( configuration.isShowDefaultNodeShapesInternal() );
             instance.setShowDefaultNodeShapesExternal( configuration.isShowDefaultNodeShapesExternal() );
+            instance.setShowDefaultNodeShapesForMarkedNodes( configuration.isShowDefaultNodeShapesForMarkedNodes() );
             if ( configuration.getExtDescNodeDataToReturn() != null ) {
                 instance.setExtDescNodeDataToReturn( configuration.getExtDescNodeDataToReturn() );
             }

@@ -238,6 +238,7 @@ public final class Configuration {
     private float                           _print_line_width                                      = Constants.PDF_LINE_WIDTH_DEFAULT;
     private boolean                         _show_annotation_ref_source                            = true;
     private boolean                         _show_default_node_shapes_external                     = false;
+    private boolean                         _show_default_node_shapes_for_marked_nodes             = false;
     private boolean                         _show_default_node_shapes_internal                     = false;
     private boolean                         _show_domain_labels                                    = true;
     private boolean                         _show_overview                                         = true;
@@ -744,6 +745,10 @@ public final class Configuration {
 
     public boolean isShowDefaultNodeShapesExternal() {
         return _show_default_node_shapes_external;
+    }
+
+    public boolean isShowDefaultNodeShapesForMarkedNodes() {
+        return _show_default_node_shapes_for_marked_nodes;
     }
 
     public boolean isShowDefaultNodeShapesInternal() {
@@ -1380,19 +1385,14 @@ public final class Configuration {
         else if ( key.equals( "gui_button_border_color" ) ) {
             _gui_button_border_color = Color.decode( ( String ) st.nextElement() );
         }
-        else if ( key.equals( "show_default_node_shapes" ) ) {
-            ForesterUtil
-                    .printWarningMessage( Constants.PRG_NAME,
-                                          "configuration key [show_default_node_shapes] is deprecated, use [show_default_node_shapes_internal] and [show_default_node_shapes_external] instead" );
-            final boolean b = parseBoolean( ( ( String ) st.nextElement() ).trim() );
-            setShowDefaultNodeShapesInternal( b );
-            setShowDefaultNodeShapesExternal( b );
-        }
         else if ( key.equals( "show_default_node_shapes_internal" ) ) {
             setShowDefaultNodeShapesInternal( parseBoolean( ( ( String ) st.nextElement() ).trim() ) );
         }
         else if ( key.equals( "show_default_node_shapes_external" ) ) {
             setShowDefaultNodeShapesExternal( parseBoolean( ( ( String ) st.nextElement() ).trim() ) );
+        }
+        else if ( key.equals( "show_node_shapes_for_nodes_with_vis_data" ) ) {
+            setShowDefaultNodeShapesForMarkedNodes( parseBoolean( ( ( String ) st.nextElement() ).trim() ) );
         }
         else if ( key.equals( "default_node_size" ) ) {
             final short i = parseShort( ( ( String ) st.nextElement() ).trim() );
@@ -1759,6 +1759,10 @@ public final class Configuration {
 
     public void setShowDefaultNodeShapesExternal( final boolean show_default_node_shapes_external ) {
         _show_default_node_shapes_external = show_default_node_shapes_external;
+    }
+
+    public void setShowDefaultNodeShapesForMarkedNodes( final boolean show_default_node_shapes_for_marked_nodes ) {
+        _show_default_node_shapes_for_marked_nodes = show_default_node_shapes_for_marked_nodes;
     }
 
     public void setShowDefaultNodeShapesInternal( final boolean show_default_node_shapes_internal ) {

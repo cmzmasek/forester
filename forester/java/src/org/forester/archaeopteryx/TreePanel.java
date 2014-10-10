@@ -136,6 +136,7 @@ import org.forester.util.TaxonomyUtil;
 
 public final class TreePanel extends JPanel implements ActionListener, MouseWheelListener, Printable {
 
+    public final static boolean          SPECIAL_DOMAIN_COLORING                            = true;
     final static Cursor                  ARROW_CURSOR                                       = Cursor.getPredefinedCursor( Cursor.DEFAULT_CURSOR );
     final static Cursor                  CUT_CURSOR                                         = Cursor.getPredefinedCursor( Cursor.CROSSHAIR_CURSOR );
     final static Cursor                  HAND_CURSOR                                        = Cursor.getPredefinedCursor( Cursor.HAND_CURSOR );
@@ -173,7 +174,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private static final BasicStroke     STROKE_2                                           = new BasicStroke( 2f );
     private static final double          TWO_PI                                             = 2 * Math.PI;
     private final static int             WIGGLE                                             = 2;
-    private static final String          SHOW_ONLY_THIS_CONF_TYPE                           = null;                                                     //TODO remove me
+    private static final String          SHOW_ONLY_THIS_CONF_TYPE                           = "posterior probability";                                  //TODO remove me
     HashMap<Long, Short>                 _nodeid_dist_to_leaf                               = new HashMap<Long, Short>();
     final private Arc2D                  _arc                                               = new Arc2D.Double();
     private AffineTransform              _at;
@@ -255,7 +256,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private float                        _y_distance                                        = 0.0f;
     private int                          _length_of_longest_text;
     private int                          _longest_domain;
-    public final static boolean          SPECIAL_DOMAIN_COLORING                            = true;
     //  private Image                           offscreenImage;
     //  private Graphics                        offscreenGraphics;
     //  private Dimension                       offscreenDimension;
@@ -4166,6 +4166,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ( ( isInFoundNodes( node ) || isInCurrentExternalNodes( node ) )
                 || ( getOptions().isShowDefaultNodeShapesExternal() && node.isExternal() )
                 || ( getOptions().isShowDefaultNodeShapesInternal() && node.isInternal() )
+                || ( getOptions().isShowDefaultNodeShapesForMarkedNodes()
+                        && ( node.getNodeData().getNodeVisualData() != null ) && ( !node.getNodeData()
+                        .getNodeVisualData().isEmpty() ) )
                 || ( getControlPanel().isUseVisualStyles() && ( ( node.getNodeData().getNodeVisualData() != null ) && ( ( node
                         .getNodeData().getNodeVisualData().getNodeColor() != null )
                         || ( node.getNodeData().getNodeVisualData().getSize() != NodeVisualData.DEFAULT_SIZE )

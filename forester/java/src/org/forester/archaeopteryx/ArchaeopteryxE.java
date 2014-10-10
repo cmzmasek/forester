@@ -122,6 +122,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
     private ButtonGroup                 _radio_group_1;
     private JCheckBoxMenuItem           _show_default_node_shapes_internal_cbmi;
     private JCheckBoxMenuItem           _show_default_node_shapes_external_cbmi;
+    private JCheckBoxMenuItem           _show_default_node_shapes_for_marked_cbmi;
     private JMenuItem                   _cycle_node_shape_mi;
     private JMenuItem                   _cycle_node_fill_mi;
     private JMenuItem                   _choose_node_size_mi;
@@ -751,13 +752,14 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         _radio_group_1.add( _ext_node_dependent_cladogram_rbmi );
         _radio_group_1.add( _uniform_cladograms_rbmi );
         _radio_group_1.add( _non_lined_up_cladograms_rbmi );
-        /////
         _options_jmenu.add( _show_overview_cbmi = new JCheckBoxMenuItem( MainFrame.SHOW_OVERVIEW_LABEL ) );
         _options_jmenu.add( _show_scale_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_SCALE_LABEL ) );
         _options_jmenu
                 .add( _show_default_node_shapes_internal_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_NODE_BOXES_LABEL_INT ) );
         _options_jmenu
                 .add( _show_default_node_shapes_external_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_NODE_BOXES_LABEL_EXT ) );
+        _options_jmenu
+                .add( _show_default_node_shapes_for_marked_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_NODE_BOXES_LABEL_EXT ) );
         _options_jmenu.add( _line_up_renderable_data_cbmi = new JCheckBoxMenuItem( MainFrame.LINE_UP_RENDERABLE_DATA ) );
         if ( getConfiguration().doDisplayOption( Configuration.show_domain_architectures ) ) {
             _options_jmenu.add( _right_line_up_domains_cbmi = new JCheckBoxMenuItem( MainFrame.RIGHT_LINE_UP_DOMAINS ) );
@@ -782,7 +784,6 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         _options_jmenu.add( _overview_placment_mi = new JMenuItem( "" ) );
         _options_jmenu.add( _switch_colors_mi = new JMenuItem( "" ) );
         _options_jmenu.add( _choose_font_mi = new JMenuItem( "" ) );
-        /////
         _options_jmenu.addSeparator();
         _options_jmenu.add( MainFrame.customizeMenuItemAsLabel( new JMenuItem( MainFrame.SEARCH_SUBHEADER ),
                                                                 getConfiguration() ) );
@@ -807,6 +808,8 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
                 .isShowDefaultNodeShapesExternal() );
         customizeCheckBoxMenuItem( _show_default_node_shapes_internal_cbmi, getOptions()
                 .isShowDefaultNodeShapesInternal() );
+        customizeCheckBoxMenuItem( _show_default_node_shapes_for_marked_cbmi, getOptions()
+                .isShowDefaultNodeShapesForMarkedNodes() );
         customizeJMenuItem( _cycle_node_shape_mi );
         customizeJMenuItem( _cycle_node_fill_mi );
         customizeJMenuItem( _choose_node_size_mi );
@@ -1309,6 +1312,8 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
                 && _show_default_node_shapes_internal_cbmi.isSelected() );
         options.setShowDefaultNodeShapesExternal( ( _show_default_node_shapes_external_cbmi != null )
                 && _show_default_node_shapes_external_cbmi.isSelected() );
+        options.setShowDefaultNodeShapesForMarkedNodes( ( _show_default_node_shapes_for_marked_cbmi != null )
+                && _show_default_node_shapes_for_marked_cbmi.isSelected() );
         if ( ( _non_lined_up_cladograms_rbmi != null ) && ( _non_lined_up_cladograms_rbmi.isSelected() ) ) {
             options.setCladogramType( CLADOGRAM_TYPE.NON_LINED_UP );
         }
