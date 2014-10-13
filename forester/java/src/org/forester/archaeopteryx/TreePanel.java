@@ -1637,23 +1637,20 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     _nodes_in_preorder[ i++ ] = it.next();
                 }
             }
-            //final PhylogenyNodeIterator it;
-            //for( it = _phylogeny.iteratorPreorder(); it.hasNext(); ) {
-            //    paintNodeRectangular( g, it.next(), to_pdf, getControlPanel().isDynamicallyHideData()
-            //            && ( dynamic_hiding_factor > 1 ), dynamic_hiding_factor, to_graphics_file );
-            //}
-            
-            
-            final boolean disallow_shortcutting = ( dynamic_hiding_factor < 40 ) || getControlPanel().isUseVisualStyles()
-                    || getOptions().isShowDefaultNodeShapesForMarkedNodes()
+            final boolean disallow_shortcutting = ( dynamic_hiding_factor < 40 )
+                    || getControlPanel().isUseVisualStyles() || getOptions().isShowDefaultNodeShapesForMarkedNodes()
                     || ( ( getFoundNodes0() != null ) && !getFoundNodes0().isEmpty() )
                     || ( ( getFoundNodes1() != null ) && !getFoundNodes1().isEmpty() )
-                    || ( ( getCurrentExternalNodes() != null ) && !getCurrentExternalNodes().isEmpty() );
-          
-            
+                    || ( ( getCurrentExternalNodes() != null ) && !getCurrentExternalNodes().isEmpty() )
+                    || to_graphics_file || to_pdf;
             for( final PhylogenyNode element : _nodes_in_preorder ) {
-                paintNodeRectangular( g, element, to_pdf, getControlPanel().isDynamicallyHideData()
-                        && ( dynamic_hiding_factor > 1 ), dynamic_hiding_factor, to_graphics_file );
+                paintNodeRectangular( g,
+                                      element,
+                                      to_pdf,
+                                      getControlPanel().isDynamicallyHideData() && ( dynamic_hiding_factor > 1 ),
+                                      dynamic_hiding_factor,
+                                      to_graphics_file,
+                                      disallow_shortcutting );
             }
             if ( getOptions().isShowScale() && getControlPanel().isDrawPhylogram() && ( getScaleDistance() > 0.0 ) ) {
                 if ( !( to_graphics_file || to_pdf ) ) {
@@ -4714,7 +4711,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                              final boolean to_pdf,
                                              final boolean dynamically_hide,
                                              final int dynamic_hiding_factor,
-                                             final boolean to_graphics_file ) {
+                                             final boolean to_graphics_file,
+                                             final boolean disallow_shortcutting ) {
         final boolean is_in_found_nodes = isInFoundNodes( node ) || isInCurrentExternalNodes( node );
         if ( node.isCollapse() ) {
             if ( ( !node.isRoot() && !node.getParent().isCollapse() ) ) {
@@ -4740,11 +4738,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         float new_x = 0;
         float new_x_min = Float.MAX_VALUE;
-        final boolean disallow_shortcutting = ( dynamic_hiding_factor < 40 ) || getControlPanel().isUseVisualStyles()
-                || getOptions().isShowDefaultNodeShapesForMarkedNodes()
-                || ( ( getFoundNodes0() != null ) && !getFoundNodes0().isEmpty() )
-                || ( ( getFoundNodes1() != null ) && !getFoundNodes1().isEmpty() )
-                || ( ( getCurrentExternalNodes() != null ) && !getCurrentExternalNodes().isEmpty() );
         float min_dist = 1.5f;
         if ( !disallow_shortcutting ) {
             if ( dynamic_hiding_factor > 4000 ) {
@@ -4786,7 +4779,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 final float diff_y = node.getYcoord() - y2;
                 final float diff_x = node.getXcoord() - new_x;
                 if ( disallow_shortcutting || ( diff_y > min_dist ) || ( diff_y < -min_dist ) || ( diff_x > min_dist )
-                        || ( diff_x < -min_dist ) || to_graphics_file || to_pdf ) {
+                        || ( diff_x < -min_dist ) ) {
                     paintBranchRectangular( g,
                                             node.getXcoord(),
                                             new_x,
