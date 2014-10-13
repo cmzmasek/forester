@@ -129,6 +129,9 @@ native_ui: ?
 #  To allow/not allow editing (cut, copy, and paste): allow_editing
 #     Example: 'allow_editing: yes'
 #
+#  To allow/not allow thicker strokes for very small trees: allow_thick_strokes
+#     Example: 'allow_thick_strokes: yes'
+#
 #  NH/NHX/Nexus file parsing
 #  -------------------------
 #  To replace underscores with spaces during NH/NHX/Nexus file parsing:
@@ -189,6 +192,7 @@ branch_length_value_digits:                3
 confidence_value_digits:                   2
 background_gradient:                       no
 allow_editing:                             yes
+allow_thick_strokes:                       no
 ext_descendents_data_to_return_on:         window
 ext_descendents_data_to_return:            user_selected
 #label_for_get_ext_descendents_data:        Return_Node_Data         
