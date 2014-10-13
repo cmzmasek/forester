@@ -165,6 +165,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                                                                                         12 );
     private static final float           ROUNDED_D                                          = 8;
     private final static long            serialVersionUID                                   = -978349745916505029L;
+    private static final BasicStroke     STROKE_0025                                        = new BasicStroke( 0.025f );
     private static final BasicStroke     STROKE_005                                         = new BasicStroke( 0.05f );
     private static final BasicStroke     STROKE_01                                          = new BasicStroke( 0.1f );
     private static final BasicStroke     STROKE_025                                         = new BasicStroke( 0.25f );
@@ -5421,6 +5422,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     private final void setupStroke( final Graphics2D g ) {
+        if ( getYdistance() < 0.0001 ) {
+            g.setStroke( STROKE_0025 );
+        }
         if ( getYdistance() < 0.001 ) {
             g.setStroke( STROKE_005 );
         }
@@ -5436,7 +5440,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         else if ( getYdistance() < 2 ) {
             g.setStroke( STROKE_075 );
         }
-        else if ( getYdistance() < 20 ) {
+        else if ( ( getYdistance() < 20 ) || !getConfiguration().isAllowThickStrokes() ) {
             g.setStroke( STROKE_1 );
         }
         else {

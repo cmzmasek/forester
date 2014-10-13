@@ -254,6 +254,7 @@ public final class Configuration {
     private int                             _vector_data_width                                     = 120;
     private boolean                         _line_up_renderable_node_data                          = true;
     private boolean                         _right_align_domains                                   = false;
+    private boolean                         _allow_thick_strokes                                   = false;
     static {
         for( final String font_name : Constants.DEFAULT_FONT_CHOICES ) {
             if ( Arrays.binarySearch( AptxUtil.getAvailableFontFamiliesSorted(), font_name ) >= 0 ) {
@@ -1523,6 +1524,9 @@ public final class Configuration {
         else if ( key.equals( "right_align_domain_architectures" ) ) {
             setRightLineUpDomains( parseBoolean( ( String ) st.nextElement() ) );
         }
+        else if ( key.equals( "allow_thick_strokes" ) ) {
+            _allow_thick_strokes = parseBoolean( ( String ) st.nextElement() );
+        }
         else if ( st.countTokens() >= 2 ) { // counts the tokens that are not
             // yet retrieved!
             int key_index = -1;
@@ -1791,5 +1795,9 @@ public final class Configuration {
 
     private void setValidatePhyloXmlAgainstSchema( final boolean validate_against_phyloxml_xsd_schema ) {
         _validate_against_phyloxml_xsd_schema = validate_against_phyloxml_xsd_schema;
+    }
+
+    public boolean isAllowThickStrokes() {
+        return _allow_thick_strokes;
     }
 }
