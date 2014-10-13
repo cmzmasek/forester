@@ -1642,6 +1642,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             //    paintNodeRectangular( g, it.next(), to_pdf, getControlPanel().isDynamicallyHideData()
             //            && ( dynamic_hiding_factor > 1 ), dynamic_hiding_factor, to_graphics_file );
             //}
+            
+            
+            final boolean disallow_shortcutting = ( dynamic_hiding_factor < 40 ) || getControlPanel().isUseVisualStyles()
+                    || getOptions().isShowDefaultNodeShapesForMarkedNodes()
+                    || ( ( getFoundNodes0() != null ) && !getFoundNodes0().isEmpty() )
+                    || ( ( getFoundNodes1() != null ) && !getFoundNodes1().isEmpty() )
+                    || ( ( getCurrentExternalNodes() != null ) && !getCurrentExternalNodes().isEmpty() );
+          
+            
             for( final PhylogenyNode element : _nodes_in_preorder ) {
                 paintNodeRectangular( g, element, to_pdf, getControlPanel().isDynamicallyHideData()
                         && ( dynamic_hiding_factor > 1 ), dynamic_hiding_factor, to_graphics_file );
@@ -4731,7 +4740,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         float new_x = 0;
         float new_x_min = Float.MAX_VALUE;
-        final boolean disallow_shortcutting = ( dynamic_hiding_factor < 40 );
+        final boolean disallow_shortcutting = ( dynamic_hiding_factor < 40 ) || getControlPanel().isUseVisualStyles()
+                || getOptions().isShowDefaultNodeShapesForMarkedNodes()
+                || ( ( getFoundNodes0() != null ) && !getFoundNodes0().isEmpty() )
+                || ( ( getFoundNodes1() != null ) && !getFoundNodes1().isEmpty() )
+                || ( ( getCurrentExternalNodes() != null ) && !getCurrentExternalNodes().isEmpty() );
         float min_dist = 1.5f;
         if ( !disallow_shortcutting ) {
             if ( dynamic_hiding_factor > 4000 ) {
