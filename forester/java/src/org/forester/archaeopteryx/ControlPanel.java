@@ -1834,6 +1834,9 @@ final class ControlPanel extends JPanel implements ActionListener {
                                                                tree,
                                                                getOptions().isSearchCaseSensitive(),
                                                                !getOptions().isMatchWholeTermsOnly(),
+                                                               getOptions().isSearchWithRegex(),
+                                                               
+                                                               
                                                                isShowDomainArchitectures() ) );
                 }
             }
@@ -1888,6 +1891,7 @@ final class ControlPanel extends JPanel implements ActionListener {
                                                                tree,
                                                                getOptions().isSearchCaseSensitive(),
                                                                !getOptions().isMatchWholeTermsOnly(),
+                                                               getOptions().isSearchWithRegex(),
                                                                isShowDomainArchitectures() ) );
                 }
             }

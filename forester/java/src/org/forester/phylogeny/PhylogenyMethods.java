@@ -40,6 +40,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import org.forester.io.parsers.FastaParser;
 import org.forester.io.parsers.PhylogenyParser;
@@ -939,7 +940,9 @@ public class PhylogenyMethods {
                                                   final Phylogeny phy,
                                                   final boolean case_sensitive,
                                                   final boolean partial,
-                                                  final boolean search_domains ) {
+                                                  final boolean regex,
+                                                  final boolean search_domains
+                                                   ) {
         final List<PhylogenyNode> nodes = new ArrayList<PhylogenyNode>();
         if ( phy.isEmpty() || ( query == null ) ) {
             return nodes;
@@ -950,7 +953,7 @@ public class PhylogenyMethods {
         for( final PhylogenyNodeIterator iter = phy.iteratorPreorder(); iter.hasNext(); ) {
             final PhylogenyNode node = iter.next();
             boolean match = false;
-            if ( match( node.getName(), query, case_sensitive, partial ) ) {
+            if ( match( node.getName(), query, case_sensitive, partial, regex ) ) {
                 match = true;
             }
             else if ( node.getNodeData().isHasTaxonomy()
@@ -1616,16 +1619,45 @@ public class PhylogenyMethods {
                                   final String query,
                                   final boolean case_sensitive,
                                   final boolean partial ) {
+        return match( s, query, case_sensitive, partial, false );
+    }
+
+    private static boolean match( final String s,
+                                  final String query,
+                                  final boolean case_sensitive,
+                                  final boolean partial,
+                                  final boolean regex ) {
+       
         if ( ForesterUtil.isEmpty( s ) || ForesterUtil.isEmpty( query ) ) {
             return false;
         }
         String my_s = s.trim();
         String my_query = query.trim();
-        if ( !case_sensitive ) {
+        if ( !case_sensitive && !regex ) {
             my_s = my_s.toLowerCase();
             my_query = my_query.toLowerCase();
         }
-        if ( partial ) {
+        if ( regex ) {
+            Pattern p = null;
+            try {
+                if ( case_sensitive ) {
+                    p = Pattern.compile( my_query );
+                }
+                else {
+                    p = Pattern.compile( my_query, Pattern.CASE_INSENSITIVE );
+                }
+            }
+            catch ( final PatternSyntaxException e ) {
+                throw e;
+            }
+            if ( p != null ) {
+                return p.matcher( my_s ).find();
+            }
+            else {
+                throw new RuntimeException( "failed to create new pattern" );
+            }
+        }
+        else if ( partial ) {
             return my_s.indexOf( my_query ) >= 0;
         }
         else {

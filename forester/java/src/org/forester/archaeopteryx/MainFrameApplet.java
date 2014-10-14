@@ -246,6 +246,14 @@ public final class MainFrameApplet extends MainFrame {
         _options_jmenu
                 .add( _search_case_senstive_cbmi = new JCheckBoxMenuItem( MainFrame.SEARCH_CASE_SENSITIVE_LABEL ) );
         _options_jmenu.add( _search_whole_words_only_cbmi = new JCheckBoxMenuItem( MainFrame.SEARCH_TERMS_ONLY_LABEL ) );
+       
+        
+        
+        _options_jmenu
+        .add( _search_with_regex_cbmi = new JCheckBoxMenuItem( MainFrame.SEARCH_REGEX_LABEL ) );
+
+        
+        
         _options_jmenu.add( _inverse_search_result_cbmi = new JCheckBoxMenuItem( INVERSE_SEARCH_RESULT_LABEL ) );
         customizeJMenuItem( _choose_font_mi );
         customizeJMenuItem( _switch_colors_mi );
@@ -278,6 +286,15 @@ public final class MainFrameApplet extends MainFrame {
         customizeCheckBoxMenuItem( _show_overview_cbmi, getOptions().isShowOverview() );
         customizeCheckBoxMenuItem( _label_direction_cbmi,
                                    getOptions().getNodeLabelDirection() == NODE_LABEL_DIRECTION.RADIAL );
+        
+        
+        
+        customizeCheckBoxMenuItem( _search_with_regex_cbmi, getOptions().isSearchWithRegex() );
+        
+        
+        
+        
+        
         customizeCheckBoxMenuItem( _search_whole_words_only_cbmi, getOptions().isMatchWholeTermsOnly() );
         customizeCheckBoxMenuItem( _inverse_search_result_cbmi, getOptions().isInverseSearchResult() );
         customizeCheckBoxMenuItem( _show_confidence_stddev_cbmi, getOptions().isShowConfidenceStddev() );

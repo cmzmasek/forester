@@ -96,6 +96,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String         SEARCH_SUBHEADER                        = "Search:";
     static final String         DISPLAY_SUBHEADER                       = "Display:";
     static final String         SEARCH_TERMS_ONLY_LABEL                 = "Match Complete Terms Only";
+    static final String         SEARCH_REGEX_LABEL                       = "Search with Regular Expressions";
     static final String         SEARCH_CASE_SENSITIVE_LABEL             = "Case Sensitive";
     static final String         INVERSE_SEARCH_RESULT_LABEL             = "Negate Result";
     static final String         COLOR_BY_TAXONOMIC_GROUP                = "Colorize by Taxonomic Group";
@@ -223,6 +224,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JCheckBoxMenuItem           _search_case_senstive_cbmi;
     JCheckBoxMenuItem           _search_whole_words_only_cbmi;
     JCheckBoxMenuItem           _inverse_search_result_cbmi;
+    JCheckBoxMenuItem           _search_with_regex_cbmi;
     // type menu:
     JMenu                       _type_menu;
     JCheckBoxMenuItem           _rectangular_type_cbmi;
@@ -457,6 +459,11 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             getMainPanel().getControlPanel().search1();
         }
         else if ( o == _inverse_search_result_cbmi ) {
+            updateOptions( getOptions() );
+            getMainPanel().getControlPanel().search0();
+            getMainPanel().getControlPanel().search1();
+        }
+        else if ( o == _search_with_regex_cbmi ) {
             updateOptions( getOptions() );
             getMainPanel().getControlPanel().search0();
             getMainPanel().getControlPanel().search1();
@@ -1381,6 +1388,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 && _allow_errors_in_distance_to_parent_cbmi.isSelected() );
         options.setMatchWholeTermsOnly( ( _search_whole_words_only_cbmi != null )
                 && _search_whole_words_only_cbmi.isSelected() );
+        options.setSearchWithRegex( ( _search_with_regex_cbmi != null )
+                                    && _search_with_regex_cbmi.isSelected() );
+        
         options.setInverseSearchResult( ( _inverse_search_result_cbmi != null )
                 && _inverse_search_result_cbmi.isSelected() );
         if ( _graphics_export_visible_only_cbmi != null ) {

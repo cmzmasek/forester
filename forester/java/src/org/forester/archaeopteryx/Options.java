@@ -61,6 +61,7 @@ final public class Options {
     private boolean                           _internal_number_are_confidence_for_nh_parsing;
     private boolean                           _inverse_search_result;
     private boolean                           _match_whole_terms_only;
+    private boolean                           _search_with_regex;
     private double                            _min_confidence_value;
     private NH_CONVERSION_SUPPORT_VALUE_STYLE _nh_conversion_support_value_style;
     private boolean                           _nh_parsing_replace_underscores;
@@ -255,6 +256,10 @@ final public class Options {
     final boolean isMatchWholeTermsOnly() {
         return _match_whole_terms_only;
     }
+    
+    final boolean isSearchWithRegex() {
+        return _search_with_regex;
+    }
 
     final boolean isPrintBlackAndWhite() {
         return _print_black_and_white;
@@ -360,6 +365,10 @@ final public class Options {
 
     final void setMatchWholeTermsOnly( final boolean search_whole_words_only ) {
         _match_whole_terms_only = search_whole_words_only;
+    }
+    
+    final void setSearchWithRegex( final boolean search_with_regex ) {
+        _search_with_regex = search_with_regex;
     }
 
     final void setMinConfidenceValue( final double min_confidence_value ) {
@@ -471,6 +480,7 @@ final public class Options {
         _phylogeny_graphics_type = PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR;
         _base_font = new Font( Configuration.getDefaultFontFamilyName(), Font.PLAIN, 10 );
         _match_whole_terms_only = false;
+        _search_with_regex = false;
         _search_case_sensitive = false;
         _print_line_width = Constants.PDF_LINE_WIDTH_DEFAULT;
         _show_overview = true;
