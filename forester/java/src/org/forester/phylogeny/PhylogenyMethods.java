@@ -1672,7 +1672,19 @@ public class PhylogenyMethods {
             return my_s.indexOf( my_query ) >= 0;
         }
         else {
-            return Pattern.compile( "(\\b|_)" + Pattern.quote( my_query ) + "(\\b|_)" ).matcher( my_s ).find();
+            Pattern p = null;
+            try {
+                p = Pattern.compile( "(\\b|_)" + Pattern.quote( my_query ) + "(\\b|_)" );
+            }
+            catch ( final PatternSyntaxException e ) {
+                return false;
+            }
+            if ( p != null ) {
+                return p.matcher( my_s ).find();
+            }
+            else {
+                return false;
+            }
         }
     }
 
