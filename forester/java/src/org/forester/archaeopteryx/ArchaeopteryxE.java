@@ -116,7 +116,6 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
     private JCheckBoxMenuItem           _search_whole_words_only_cbmi;
     private JCheckBoxMenuItem           _inverse_search_result_cbmi;
     private JCheckBoxMenuItem           _search_with_regex_cbmi;
-    
     private JCheckBoxMenuItem           _show_overview_cbmi;
     private JMenuItem                   _choose_minimal_confidence_mi;
     private JMenuItem                   _collapse_species_specific_subtrees;
@@ -253,6 +252,9 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
             getMainPanel().getControlPanel().search1();
         }
         else if ( o == _search_whole_words_only_cbmi ) {
+            if ( ( _search_with_regex_cbmi != null ) && _search_whole_words_only_cbmi.isSelected() ) {
+                _search_with_regex_cbmi.setSelected( false );
+            }
             updateOptions( getOptions() );
             getMainPanel().getControlPanel().search0();
             getMainPanel().getControlPanel().search1();
@@ -263,6 +265,12 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
             getMainPanel().getControlPanel().search1();
         }
         else if ( o == _search_with_regex_cbmi ) {
+            if ( ( _search_whole_words_only_cbmi != null ) && _search_with_regex_cbmi.isSelected() ) {
+                _search_whole_words_only_cbmi.setSelected( false );
+            }
+            if ( ( _search_case_senstive_cbmi != null ) && _search_with_regex_cbmi.isSelected() ) {
+                _search_case_senstive_cbmi.setSelected( true );
+            }
             updateOptions( getOptions() );
             getMainPanel().getControlPanel().search0();
             getMainPanel().getControlPanel().search1();
@@ -797,16 +805,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         _options_jmenu
                 .add( _search_case_senstive_cbmi = new JCheckBoxMenuItem( MainFrame.SEARCH_CASE_SENSITIVE_LABEL ) );
         _options_jmenu.add( _search_whole_words_only_cbmi = new JCheckBoxMenuItem( MainFrame.SEARCH_TERMS_ONLY_LABEL ) );
-        
-        
-        
-        _options_jmenu
-        .add( _search_with_regex_cbmi = new JCheckBoxMenuItem( MainFrame.SEARCH_REGEX_LABEL ) );
-
-        
-        
-        
-        
+        _options_jmenu.add( _search_with_regex_cbmi = new JCheckBoxMenuItem( MainFrame.SEARCH_REGEX_LABEL ) );
         _options_jmenu
                 .add( _inverse_search_result_cbmi = new JCheckBoxMenuItem( MainFrame.INVERSE_SEARCH_RESULT_LABEL ) );
         customizeJMenuItem( _choose_font_mi );
@@ -840,12 +839,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         customizeRadioButtonMenuItem( _ext_node_dependent_cladogram_rbmi,
                                       getOptions().getCladogramType() == CLADOGRAM_TYPE.EXT_NODE_SUM_DEP );
         customizeCheckBoxMenuItem( _show_overview_cbmi, getOptions().isShowOverview() );
-        
-        
         customizeCheckBoxMenuItem( _search_with_regex_cbmi, getOptions().isSearchWithRegex() );
-        
-        
-        
         customizeCheckBoxMenuItem( _search_whole_words_only_cbmi, getOptions().isMatchWholeTermsOnly() );
         customizeCheckBoxMenuItem( _inverse_search_result_cbmi, getOptions().isInverseSearchResult() );
         customizeCheckBoxMenuItem( _show_confidence_stddev_cbmi, getOptions().isShowConfidenceStddev() );
@@ -1364,9 +1358,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
                 && _show_confidence_stddev_cbmi.isSelected() );
         options.setMatchWholeTermsOnly( ( _search_whole_words_only_cbmi != null )
                 && _search_whole_words_only_cbmi.isSelected() );
-        options.setSearchWithRegex( ( _search_with_regex_cbmi != null )
-                                        && _search_with_regex_cbmi.isSelected() );
-        
+        options.setSearchWithRegex( ( _search_with_regex_cbmi != null ) && _search_with_regex_cbmi.isSelected() );
         options.setInverseSearchResult( ( _inverse_search_result_cbmi != null )
                 && _inverse_search_result_cbmi.isSelected() );
         if ( ( _rectangular_type_cbmi != null ) && _rectangular_type_cbmi.isSelected() ) {

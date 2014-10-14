@@ -941,8 +941,7 @@ public class PhylogenyMethods {
                                                   final boolean case_sensitive,
                                                   final boolean partial,
                                                   final boolean regex,
-                                                  final boolean search_domains
-                                                   ) {
+                                                  final boolean search_domains ) {
         final List<PhylogenyNode> nodes = new ArrayList<PhylogenyNode>();
         if ( phy.isEmpty() || ( query == null ) ) {
             return nodes;
@@ -957,15 +956,19 @@ public class PhylogenyMethods {
                 match = true;
             }
             else if ( node.getNodeData().isHasTaxonomy()
-                    && match( node.getNodeData().getTaxonomy().getTaxonomyCode(), query, case_sensitive, partial ) ) {
+                    && match( node.getNodeData().getTaxonomy().getTaxonomyCode(), query, case_sensitive, partial, regex ) ) {
                 match = true;
             }
             else if ( node.getNodeData().isHasTaxonomy()
-                    && match( node.getNodeData().getTaxonomy().getCommonName(), query, case_sensitive, partial ) ) {
+                    && match( node.getNodeData().getTaxonomy().getCommonName(), query, case_sensitive, partial, regex ) ) {
                 match = true;
             }
             else if ( node.getNodeData().isHasTaxonomy()
-                    && match( node.getNodeData().getTaxonomy().getScientificName(), query, case_sensitive, partial ) ) {
+                    && match( node.getNodeData().getTaxonomy().getScientificName(),
+                              query,
+                              case_sensitive,
+                              partial,
+                              regex ) ) {
                 match = true;
             }
             else if ( node.getNodeData().isHasTaxonomy()
@@ -973,28 +976,29 @@ public class PhylogenyMethods {
                     && match( node.getNodeData().getTaxonomy().getIdentifier().getValue(),
                               query,
                               case_sensitive,
-                              partial ) ) {
+                              partial,
+                              regex ) ) {
                 match = true;
             }
             else if ( node.getNodeData().isHasTaxonomy() && !node.getNodeData().getTaxonomy().getSynonyms().isEmpty() ) {
                 final List<String> syns = node.getNodeData().getTaxonomy().getSynonyms();
                 I: for( final String syn : syns ) {
-                    if ( match( syn, query, case_sensitive, partial ) ) {
+                    if ( match( syn, query, case_sensitive, partial, regex ) ) {
                         match = true;
                         break I;
                     }
                 }
             }
             if ( !match && node.getNodeData().isHasSequence()
-                    && match( node.getNodeData().getSequence().getName(), query, case_sensitive, partial ) ) {
+                    && match( node.getNodeData().getSequence().getName(), query, case_sensitive, partial, regex ) ) {
                 match = true;
             }
             if ( !match && node.getNodeData().isHasSequence()
-                    && match( node.getNodeData().getSequence().getGeneName(), query, case_sensitive, partial ) ) {
+                    && match( node.getNodeData().getSequence().getGeneName(), query, case_sensitive, partial, regex ) ) {
                 match = true;
             }
             if ( !match && node.getNodeData().isHasSequence()
-                    && match( node.getNodeData().getSequence().getSymbol(), query, case_sensitive, partial ) ) {
+                    && match( node.getNodeData().getSequence().getSymbol(), query, case_sensitive, partial, regex ) ) {
                 match = true;
             }
             if ( !match
@@ -1003,28 +1007,28 @@ public class PhylogenyMethods {
                     && match( node.getNodeData().getSequence().getAccession().getValue(),
                               query,
                               case_sensitive,
-                              partial ) ) {
+                              partial,
+                              regex ) ) {
                 match = true;
             }
             if ( search_domains && !match && node.getNodeData().isHasSequence()
                     && ( node.getNodeData().getSequence().getDomainArchitecture() != null ) ) {
                 final DomainArchitecture da = node.getNodeData().getSequence().getDomainArchitecture();
                 I: for( int i = 0; i < da.getNumberOfDomains(); ++i ) {
-                    if ( match( da.getDomain( i ).getName(), query, case_sensitive, partial ) ) {
+                    if ( match( da.getDomain( i ).getName(), query, case_sensitive, partial, regex ) ) {
                         match = true;
                         break I;
                     }
                 }
             }
-            //
             if ( !match && node.getNodeData().isHasSequence()
                     && ( node.getNodeData().getSequence().getAnnotations() != null ) ) {
                 for( final Annotation ann : node.getNodeData().getSequence().getAnnotations() ) {
-                    if ( match( ann.getDesc(), query, case_sensitive, partial ) ) {
+                    if ( match( ann.getDesc(), query, case_sensitive, partial, regex ) ) {
                         match = true;
                         break;
                     }
-                    if ( match( ann.getRef(), query, case_sensitive, partial ) ) {
+                    if ( match( ann.getRef(), query, case_sensitive, partial, regex ) ) {
                         match = true;
                         break;
                     }
@@ -1033,15 +1037,15 @@ public class PhylogenyMethods {
             if ( !match && node.getNodeData().isHasSequence()
                     && ( node.getNodeData().getSequence().getCrossReferences() != null ) ) {
                 for( final Accession x : node.getNodeData().getSequence().getCrossReferences() ) {
-                    if ( match( x.getComment(), query, case_sensitive, partial ) ) {
+                    if ( match( x.getComment(), query, case_sensitive, partial, regex ) ) {
                         match = true;
                         break;
                     }
-                    if ( match( x.getSource(), query, case_sensitive, partial ) ) {
+                    if ( match( x.getSource(), query, case_sensitive, partial, regex ) ) {
                         match = true;
                         break;
                     }
-                    if ( match( x.getValue(), query, case_sensitive, partial ) ) {
+                    if ( match( x.getValue(), query, case_sensitive, partial, regex ) ) {
                         match = true;
                         break;
                     }
@@ -1051,14 +1055,14 @@ public class PhylogenyMethods {
             if ( !match && ( node.getNodeData().getBinaryCharacters() != null ) ) {
                 Iterator<String> it = node.getNodeData().getBinaryCharacters().getPresentCharacters().iterator();
                 I: while ( it.hasNext() ) {
-                    if ( match( it.next(), query, case_sensitive, partial ) ) {
+                    if ( match( it.next(), query, case_sensitive, partial, regex ) ) {
                         match = true;
                         break I;
                     }
                 }
                 it = node.getNodeData().getBinaryCharacters().getGainedCharacters().iterator();
                 I: while ( it.hasNext() ) {
-                    if ( match( it.next(), query, case_sensitive, partial ) ) {
+                    if ( match( it.next(), query, case_sensitive, partial, regex ) ) {
                         match = true;
                         break I;
                     }
@@ -1088,19 +1092,31 @@ public class PhylogenyMethods {
                 if ( ForesterUtil.isEmpty( query ) ) {
                     continue;
                 }
-                if ( match( node.getName(), query, case_sensitive, partial ) ) {
+                if ( match( node.getName(), query, case_sensitive, partial, false ) ) {
                     match = true;
                 }
                 else if ( node.getNodeData().isHasTaxonomy()
-                        && match( node.getNodeData().getTaxonomy().getTaxonomyCode(), query, case_sensitive, partial ) ) {
+                        && match( node.getNodeData().getTaxonomy().getTaxonomyCode(),
+                                  query,
+                                  case_sensitive,
+                                  partial,
+                                  false ) ) {
                     match = true;
                 }
                 else if ( node.getNodeData().isHasTaxonomy()
-                        && match( node.getNodeData().getTaxonomy().getCommonName(), query, case_sensitive, partial ) ) {
+                        && match( node.getNodeData().getTaxonomy().getCommonName(),
+                                  query,
+                                  case_sensitive,
+                                  partial,
+                                  false ) ) {
                     match = true;
                 }
                 else if ( node.getNodeData().isHasTaxonomy()
-                        && match( node.getNodeData().getTaxonomy().getScientificName(), query, case_sensitive, partial ) ) {
+                        && match( node.getNodeData().getTaxonomy().getScientificName(),
+                                  query,
+                                  case_sensitive,
+                                  partial,
+                                  false ) ) {
                     match = true;
                 }
                 else if ( node.getNodeData().isHasTaxonomy()
@@ -1108,29 +1124,31 @@ public class PhylogenyMethods {
                         && match( node.getNodeData().getTaxonomy().getIdentifier().getValue(),
                                   query,
                                   case_sensitive,
-                                  partial ) ) {
+                                  partial,
+                                  false ) ) {
                     match = true;
                 }
                 else if ( node.getNodeData().isHasTaxonomy()
                         && !node.getNodeData().getTaxonomy().getSynonyms().isEmpty() ) {
                     final List<String> syns = node.getNodeData().getTaxonomy().getSynonyms();
                     I: for( final String syn : syns ) {
-                        if ( match( syn, query, case_sensitive, partial ) ) {
+                        if ( match( syn, query, case_sensitive, partial, false ) ) {
                             match = true;
                             break I;
                         }
                     }
                 }
                 if ( !match && node.getNodeData().isHasSequence()
-                        && match( node.getNodeData().getSequence().getName(), query, case_sensitive, partial ) ) {
+                        && match( node.getNodeData().getSequence().getName(), query, case_sensitive, partial, false ) ) {
+                    match = true;
+                }
+                if ( !match
+                        && node.getNodeData().isHasSequence()
+                        && match( node.getNodeData().getSequence().getGeneName(), query, case_sensitive, partial, false ) ) {
                     match = true;
                 }
                 if ( !match && node.getNodeData().isHasSequence()
-                        && match( node.getNodeData().getSequence().getGeneName(), query, case_sensitive, partial ) ) {
-                    match = true;
-                }
-                if ( !match && node.getNodeData().isHasSequence()
-                        && match( node.getNodeData().getSequence().getSymbol(), query, case_sensitive, partial ) ) {
+                        && match( node.getNodeData().getSequence().getSymbol(), query, case_sensitive, partial, false ) ) {
                     match = true;
                 }
                 if ( !match
@@ -1139,14 +1157,15 @@ public class PhylogenyMethods {
                         && match( node.getNodeData().getSequence().getAccession().getValue(),
                                   query,
                                   case_sensitive,
-                                  partial ) ) {
+                                  partial,
+                                  false ) ) {
                     match = true;
                 }
                 if ( search_domains && !match && node.getNodeData().isHasSequence()
                         && ( node.getNodeData().getSequence().getDomainArchitecture() != null ) ) {
                     final DomainArchitecture da = node.getNodeData().getSequence().getDomainArchitecture();
                     I: for( int i = 0; i < da.getNumberOfDomains(); ++i ) {
-                        if ( match( da.getDomain( i ).getName(), query, case_sensitive, partial ) ) {
+                        if ( match( da.getDomain( i ).getName(), query, case_sensitive, partial, false ) ) {
                             match = true;
                             break I;
                         }
@@ -1156,11 +1175,11 @@ public class PhylogenyMethods {
                 if ( !match && node.getNodeData().isHasSequence()
                         && ( node.getNodeData().getSequence().getAnnotations() != null ) ) {
                     for( final Annotation ann : node.getNodeData().getSequence().getAnnotations() ) {
-                        if ( match( ann.getDesc(), query, case_sensitive, partial ) ) {
+                        if ( match( ann.getDesc(), query, case_sensitive, partial, false ) ) {
                             match = true;
                             break;
                         }
-                        if ( match( ann.getRef(), query, case_sensitive, partial ) ) {
+                        if ( match( ann.getRef(), query, case_sensitive, partial, false ) ) {
                             match = true;
                             break;
                         }
@@ -1169,15 +1188,15 @@ public class PhylogenyMethods {
                 if ( !match && node.getNodeData().isHasSequence()
                         && ( node.getNodeData().getSequence().getCrossReferences() != null ) ) {
                     for( final Accession x : node.getNodeData().getSequence().getCrossReferences() ) {
-                        if ( match( x.getComment(), query, case_sensitive, partial ) ) {
+                        if ( match( x.getComment(), query, case_sensitive, partial, false ) ) {
                             match = true;
                             break;
                         }
-                        if ( match( x.getSource(), query, case_sensitive, partial ) ) {
+                        if ( match( x.getSource(), query, case_sensitive, partial, false ) ) {
                             match = true;
                             break;
                         }
-                        if ( match( x.getValue(), query, case_sensitive, partial ) ) {
+                        if ( match( x.getValue(), query, case_sensitive, partial, false ) ) {
                             match = true;
                             break;
                         }
@@ -1187,14 +1206,14 @@ public class PhylogenyMethods {
                 if ( !match && ( node.getNodeData().getBinaryCharacters() != null ) ) {
                     Iterator<String> it = node.getNodeData().getBinaryCharacters().getPresentCharacters().iterator();
                     I: while ( it.hasNext() ) {
-                        if ( match( it.next(), query, case_sensitive, partial ) ) {
+                        if ( match( it.next(), query, case_sensitive, partial, false ) ) {
                             match = true;
                             break I;
                         }
                     }
                     it = node.getNodeData().getBinaryCharacters().getGainedCharacters().iterator();
                     I: while ( it.hasNext() ) {
-                        if ( match( it.next(), query, case_sensitive, partial ) ) {
+                        if ( match( it.next(), query, case_sensitive, partial, false ) ) {
                             match = true;
                             break I;
                         }
@@ -1618,16 +1637,8 @@ public class PhylogenyMethods {
     private static boolean match( final String s,
                                   final String query,
                                   final boolean case_sensitive,
-                                  final boolean partial ) {
-        return match( s, query, case_sensitive, partial, false );
-    }
-
-    private static boolean match( final String s,
-                                  final String query,
-                                  final boolean case_sensitive,
                                   final boolean partial,
                                   final boolean regex ) {
-       
         if ( ForesterUtil.isEmpty( s ) || ForesterUtil.isEmpty( query ) ) {
             return false;
         }
@@ -1648,13 +1659,13 @@ public class PhylogenyMethods {
                 }
             }
             catch ( final PatternSyntaxException e ) {
-                throw e;
+                return false;
             }
             if ( p != null ) {
                 return p.matcher( my_s ).find();
             }
             else {
-                throw new RuntimeException( "failed to create new pattern" );
+                return false;
             }
         }
         else if ( partial ) {

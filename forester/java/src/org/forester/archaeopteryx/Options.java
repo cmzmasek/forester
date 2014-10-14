@@ -256,7 +256,7 @@ final public class Options {
     final boolean isMatchWholeTermsOnly() {
         return _match_whole_terms_only;
     }
-    
+
     final boolean isSearchWithRegex() {
         return _search_with_regex;
     }
@@ -366,7 +366,7 @@ final public class Options {
     final void setMatchWholeTermsOnly( final boolean search_whole_words_only ) {
         _match_whole_terms_only = search_whole_words_only;
     }
-    
+
     final void setSearchWithRegex( final boolean search_with_regex ) {
         _search_with_regex = search_with_regex;
     }
@@ -481,7 +481,7 @@ final public class Options {
         _base_font = new Font( Configuration.getDefaultFontFamilyName(), Font.PLAIN, 10 );
         _match_whole_terms_only = false;
         _search_with_regex = false;
-        _search_case_sensitive = false;
+        _search_case_sensitive = true;
         _print_line_width = Constants.PDF_LINE_WIDTH_DEFAULT;
         _show_overview = true;
         _ov_placement = OVERVIEW_PLACEMENT_TYPE.UPPER_LEFT;

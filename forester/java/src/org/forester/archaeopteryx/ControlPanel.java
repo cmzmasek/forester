@@ -1822,7 +1822,7 @@ final class ControlPanel extends JPanel implements ActionListener {
                     continue;
                 }
                 query = query.trim();
-                if ( query.indexOf( '+' ) >= 0 ) {
+                if ( ( query.indexOf( '+' ) >= 0 ) && !getOptions().isSearchWithRegex() ) {
                     nodes.addAll( PhylogenyMethods.searchDataLogicalAnd( query.split( "\\++" ),
                                                                          tree,
                                                                          getOptions().isSearchCaseSensitive(),
@@ -1835,8 +1835,6 @@ final class ControlPanel extends JPanel implements ActionListener {
                                                                getOptions().isSearchCaseSensitive(),
                                                                !getOptions().isMatchWholeTermsOnly(),
                                                                getOptions().isSearchWithRegex(),
-                                                               
-                                                               
                                                                isShowDomainArchitectures() ) );
                 }
             }
