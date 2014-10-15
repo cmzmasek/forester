@@ -105,7 +105,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String         UNIFORM_CLADOGRAMS_LABEL                = "Total Node Sum Dependent Cladograms";
     static final String         LABEL_DIRECTION_LABEL                   = "Radial Labels";
     static final String         LABEL_DIRECTION_TIP                     = "To use radial node labels in radial and unrooted display types";
-    static final String         SEARCH_WITH_REGEX_TIP                   = "To search using regular expressions (Java style). For example, use \"^B.+\\d{2,}$\" to search for everything starting with a B and ending with at least two digits.";
+    static final String         SEARCH_WITH_REGEX_TIP                   = "To search using regular expressions (~Java/Perl syntax). For example, use \"^B.+\\d{2,}$\" to search for everything starting with a B and ending with at least two digits.";
     static final String         SCREEN_ANTIALIAS_LABEL                  = "Antialias";
     static final String         COLOR_LABELS_LABEL                      = "Colorize Labels Same as Parent Branch";
     static final String         BG_GRAD_LABEL                           = "Background Color Gradient";
