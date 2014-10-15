@@ -81,6 +81,7 @@ final class ControlPanel extends JPanel implements ActionListener {
                                                                                     Font.PLAIN,
                                                                                     9 );
     private static final String               RETURN_TO_SUPER_TREE_TEXT = "Back to Super Tree";
+    private static final String               SEARCH_TIP_TEXT           = "Enter text to search for. Use ',' for logical OR and '+' for logical AND (not used in this manner for regular expression searches).";
     private static final long                 serialVersionUID          = -8463483932821545633L;
     private NodeClickAction                   _action_when_node_clicked;
     private int                               _add_new_node_item;
@@ -1361,14 +1362,13 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     void setupSearchTools0() {
-        final String tip = "Enter text to search for. Use ',' for multiple searches (logical OR) and '+' for logical AND.";
         final JLabel search_label = new JLabel( "Search (A):" );
         search_label.setFont( ControlPanel.jcb_bold_font );
         if ( !getConfiguration().isUseNativeUI() ) {
             search_label.setForeground( getConfiguration().getGuiCheckboxTextColor() );
         }
         add( search_label );
-        search_label.setToolTipText( tip );
+        search_label.setToolTipText( SEARCH_TIP_TEXT );
         _search_found_label_0 = new JLabel();
         getSearchFoundCountsLabel0().setVisible( false );
         _search_found_label_0.setFont( ControlPanel.jcb_bold_font );
@@ -1376,7 +1376,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             _search_found_label_0.setForeground( getConfiguration().getGuiCheckboxTextColor() );
         }
         _search_tf_0 = new JTextField( 3 );
-        _search_tf_0.setToolTipText( tip );
+        _search_tf_0.setToolTipText( SEARCH_TIP_TEXT );
         _search_tf_0.setEditable( true );
         if ( !getConfiguration().isUseNativeUI() ) {
             _search_tf_0.setForeground( getConfiguration().getGuiMenuBackgroundColor() );
@@ -1422,14 +1422,13 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     void setupSearchTools1() {
-        final String tip = "Enter text to search for. Use ',' for multiple searches (logical OR) and '+' for logical AND.";
         final JLabel search_label = new JLabel( "Search (B):" );
         search_label.setFont( ControlPanel.jcb_bold_font );
         if ( !getConfiguration().isUseNativeUI() ) {
             search_label.setForeground( getConfiguration().getGuiCheckboxTextColor() );
         }
         add( search_label );
-        search_label.setToolTipText( tip );
+        search_label.setToolTipText( SEARCH_TIP_TEXT );
         _search_found_label_1 = new JLabel();
         getSearchFoundCountsLabel1().setVisible( false );
         _search_found_label_1.setFont( ControlPanel.jcb_bold_font );
@@ -1437,7 +1436,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             _search_found_label_1.setForeground( getConfiguration().getGuiCheckboxTextColor() );
         }
         _search_tf_1 = new JTextField( 3 );
-        _search_tf_1.setToolTipText( tip );
+        _search_tf_1.setToolTipText( SEARCH_TIP_TEXT );
         _search_tf_1.setEditable( true );
         if ( !getConfiguration().isUseNativeUI() ) {
             _search_tf_1.setForeground( getConfiguration().getGuiMenuBackgroundColor() );
@@ -1808,7 +1807,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         getSearchResetButton0().setVisible( true );
         String[] queries = null;
         List<PhylogenyNode> nodes = null;
-        if ( query_str.indexOf( ',' ) >= 0 ) {
+        if ( ( query_str.indexOf( ',' ) >= 0 ) && !getOptions().isSearchWithRegex() ) {
             queries = query_str.split( ",+" );
         }
         else {
@@ -1863,7 +1862,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         getSearchResetButton1().setVisible( true );
         String[] queries = null;
         List<PhylogenyNode> nodes = null;
-        if ( query_str.indexOf( ',' ) >= 0 ) {
+        if ( ( query_str.indexOf( ',' ) >= 0 ) && !getOptions().isSearchWithRegex() ) {
             queries = query_str.split( ",+" );
         }
         else {
@@ -1877,7 +1876,7 @@ final class ControlPanel extends JPanel implements ActionListener {
                     continue;
                 }
                 query = query.trim();
-                if ( query.indexOf( '+' ) >= 0 ) {
+                if ( ( query.indexOf( '+' ) >= 0 ) && !getOptions().isSearchWithRegex() ) {
                     nodes.addAll( PhylogenyMethods.searchDataLogicalAnd( query.split( "\\++" ),
                                                                          tree,
                                                                          getOptions().isSearchCaseSensitive(),

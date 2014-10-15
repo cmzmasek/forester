@@ -77,7 +77,7 @@ import org.forester.util.ForesterUtil;
 public abstract class MainFrame extends JFrame implements ActionListener {
 
     static final String         USE_MOUSEWHEEL_SHIFT_TO_ROTATE          = "In this display type, use mousewheel + Shift to rotate [or A and S]";
-    static final String         PHYLOXML_REF_TOOL_TIP                   = Constants.PHYLOXML_REFERENCE;                                                                                                                                       //TODO //FIXME
+    static final String         PHYLOXML_REF_TOOL_TIP                   = Constants.PHYLOXML_REFERENCE;                                                                                                                                         //TODO //FIXME
     static final String         APTX_REF_TOOL_TIP                       = Constants.APTX_REFERENCE;
     private static final long   serialVersionUID                        = 3655000897845508358L;
     final static Font           menu_font                               = new Font( Configuration.getDefaultFontFamilyName(),
@@ -90,8 +90,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String         TRIANGULAR_TYPE_CBMI_LABEL              = "Triangular";
     static final String         CONVEX_TYPE_CBMI_LABEL                  = "Convex";
     static final String         ROUNDED_TYPE_CBMI_LABEL                 = "Rounded";
-    static final String         UNROOTED_TYPE_CBMI_LABEL                = "Unrooted (alpha)";                                                                                                                                                 //TODO
-    static final String         CIRCULAR_TYPE_CBMI_LABEL                = "Circular (alpha)";                                                                                                                                                 //TODO
+    static final String         UNROOTED_TYPE_CBMI_LABEL                = "Unrooted (alpha)";                                                                                                                                                   //TODO
+    static final String         CIRCULAR_TYPE_CBMI_LABEL                = "Circular (alpha)";                                                                                                                                                   //TODO
     static final String         OPTIONS_HEADER                          = "Options";
     static final String         SEARCH_SUBHEADER                        = "Search:";
     static final String         DISPLAY_SUBHEADER                       = "Display:";
@@ -105,6 +105,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String         UNIFORM_CLADOGRAMS_LABEL                = "Total Node Sum Dependent Cladograms";
     static final String         LABEL_DIRECTION_LABEL                   = "Radial Labels";
     static final String         LABEL_DIRECTION_TIP                     = "To use radial node labels in radial and unrooted display types";
+    static final String         SEARCH_WITH_REGEX_TIP                   = "To search using regular expressions (Java style). For example, use \"^B.+\\d{2,}$\" to search for everything starting with a B and ending with at least two digits.";
     static final String         SCREEN_ANTIALIAS_LABEL                  = "Antialias";
     static final String         COLOR_LABELS_LABEL                      = "Colorize Labels Same as Parent Branch";
     static final String         BG_GRAD_LABEL                           = "Background Color Gradient";
@@ -185,7 +186,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JRadioButtonMenuItem        _uniform_cladograms_rbmi;
     JRadioButtonMenuItem        _ext_node_dependent_cladogram_rbmi;
     JCheckBoxMenuItem           _color_by_taxonomic_group_cbmi;
-    JCheckBoxMenuItem           _show_scale_cbmi;                                                                                                                                                                                             //TODO fix me
+    JCheckBoxMenuItem           _show_scale_cbmi;                                                                                                                                                                                               //TODO fix me
     JCheckBoxMenuItem           _show_overview_cbmi;
     JCheckBoxMenuItem           _show_domain_labels;
     JCheckBoxMenuItem           _show_annotation_ref_source;
@@ -252,7 +253,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     // Handy pointers to child components:
     MainPanel                   _mainpanel;
     Container                   _contentpane;
-    final LinkedList<TextFrame> _textframes                             = new LinkedList<TextFrame>();                                                                                                                                         ;
+    final LinkedList<TextFrame> _textframes                             = new LinkedList<TextFrame>();                                                                                                                                           ;
     Configuration               _configuration;
     Options                     _options;
     private Phylogeny           _species_tree;
