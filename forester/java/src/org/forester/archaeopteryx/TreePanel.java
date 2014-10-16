@@ -2452,13 +2452,23 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         else {
             fc.setFont( getMainPanel().getTreeFontSet().getLargeFont() );
         }
-        fc.showDialog( this, "Select Font" );
-        if ( ( fc.getFont() != null ) && !ForesterUtil.isEmpty( fc.getFont().getFamily().trim() ) ) {
-            List<PhylogenyNode> nodes = new ArrayList<PhylogenyNode>();
-            if ( ( getFoundNodes0() != null ) || ( getFoundNodes1() != null ) ) {
-                nodes = getFoundNodesAsListOfPhylogenyNodes();
-            }
+        List<PhylogenyNode> nodes = new ArrayList<PhylogenyNode>();
+        if ( ( getFoundNodes0() != null ) || ( getFoundNodes1() != null ) ) {
+            nodes = getFoundNodesAsListOfPhylogenyNodes();
+        }
+        if ( !nodes.contains( node ) ) {
             nodes.add( node );
+        }
+        final int count = nodes.size();
+        String title = "Change the font for ";
+        if ( count == 1 ) {
+            title += "one node";
+        }
+        else {
+            title += ( count + " nodes" );
+        }
+        fc.showDialog( this, title );
+        if ( ( fc.getFont() != null ) && !ForesterUtil.isEmpty( fc.getFont().getFamily().trim() ) ) {
             for( final PhylogenyNode n : nodes ) {
                 if ( n.getNodeData().getNodeVisualData() == null ) {
                     n.getNodeData().setNodeVisualData( new NodeVisualData() );
@@ -2482,6 +2492,33 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         setEdited( true );
         repaint();
+    }
+
+    private void colorNodeFont( final PhylogenyNode node ) {
+        _color_chooser.setPreviewPanel( new JPanel() );
+        NodeColorizationActionListener al;
+        int count = 1;
+        if ( ( getFoundNodes0() != null ) || ( getFoundNodes1() != null ) ) {
+            final List<PhylogenyNode> additional_nodes = getFoundNodesAsListOfPhylogenyNodes();
+            al = new NodeColorizationActionListener( _color_chooser, node, additional_nodes );
+            count = additional_nodes.size();
+            if ( !additional_nodes.contains( node ) ) {
+                count++;
+            }
+        }
+        else {
+            al = new NodeColorizationActionListener( _color_chooser, node );
+        }
+        String title = "Change the (node and font) color for ";
+        if ( count == 1 ) {
+            title += "one node";
+        }
+        else {
+            title += ( count + " nodes" );
+        }
+        final JDialog dialog = JColorChooser.createDialog( this, title, true, _color_chooser, al, null );
+        setEdited( true );
+        dialog.setVisible( true );
     }
 
     final private void colorizeNodes( final Color c,
@@ -2522,21 +2559,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
         }
         repaint();
-    }
-
-    private void colorNodeFont( final PhylogenyNode node ) {
-        _color_chooser.setPreviewPanel( new JPanel() );
-        NodeColorizationActionListener al;
-        if ( ( getFoundNodes0() != null ) || ( getFoundNodes1() != null ) ) {
-            final List<PhylogenyNode> additional_nodes = getFoundNodesAsListOfPhylogenyNodes();
-            al = new NodeColorizationActionListener( _color_chooser, node, additional_nodes );
-        }
-        else {
-            al = new NodeColorizationActionListener( _color_chooser, node );
-        }
-        final JDialog dialog = JColorChooser.createDialog( this, "Node colorization", true, _color_chooser, al, null );
-        setEdited( true );
-        dialog.setVisible( true );
     }
 
     final private void colorSubtree( final PhylogenyNode node ) {
