@@ -182,20 +182,7 @@ public final class Test {
         }
         final long start_time = new Date().getTime();
         
-        //
-        if ( Test.testNHXparsingFromURL() ) {
-            System.out.println( "OK." );
-            succeeded++;
-        }
-        else {
-            System.out.println( "failed." );
-            failed++;
-        }
-       // System.exit( 1 );
-        
-        //
-        
-        
+     
         
         System.out.print( "MSA entropy: " );
         if ( Test.testMsaEntropy() ) {
