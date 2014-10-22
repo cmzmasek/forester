@@ -139,7 +139,7 @@ public final class Test {
     private final static String  PATH_TO_TEST_DATA         = System.getProperty( "user.dir" )
                                                                    + ForesterUtil.getFileSeparator() + "test_data"
                                                                    + ForesterUtil.getFileSeparator();
-    private final static boolean PERFORM_DB_TESTS          = true;
+    private final static boolean PERFORM_DB_TESTS          = false;
     private static final boolean PERFORM_WEB_TREE_ACCESS   = true;
     private static final String  PHYLOXML_LOCAL_XSD        = PATH_TO_RESOURCES + "phyloxml_schema/"
                                                                    + ForesterConstants.PHYLO_XML_VERSION + "/"
@@ -181,6 +181,22 @@ public final class Test {
             System.exit( -1 );
         }
         final long start_time = new Date().getTime();
+        
+        //
+        if ( Test.testNHXparsingFromURL() ) {
+            System.out.println( "OK." );
+            succeeded++;
+        }
+        else {
+            System.out.println( "failed." );
+            failed++;
+        }
+       // System.exit( 1 );
+        
+        //
+        
+        
+        
         System.out.print( "MSA entropy: " );
         if ( Test.testMsaEntropy() ) {
             System.out.println( "OK." );
@@ -1218,6 +1234,7 @@ public final class Test {
         }
         catch ( final Exception e ) {
             e.printStackTrace();
+            return false;
         }
         return true;
     }
@@ -1239,7 +1256,10 @@ public final class Test {
                 System.out.println( phys[ 1 ].toNewHampshire() );
                 return false;
             }
-            final Phylogeny[] phys2 = factory.create( u.openStream(), new NHXParser() );
+            
+            final URL u2 = new URL( s );
+            
+            final Phylogeny[] phys2 = factory.create( u2.openStream(), new NHXParser() );
             if ( ( phys2 == null ) || ( phys2.length != 5 ) ) {
                 return false;
             }
@@ -1249,8 +1269,8 @@ public final class Test {
             }
             final PhylogenyFactory factory2 = ParserBasedPhylogenyFactory.getInstance();
             final NHXParser p = new NHXParser();
-            final URL u2 = new URL( s );
-            p.setSource( u2 );
+            final URL u3 = new URL( s );
+            p.setSource( u3 );
             if ( !p.hasNext() ) {
                 return false;
             }
@@ -1282,7 +1302,9 @@ public final class Test {
             }
         }
         catch ( final Exception e ) {
+            System.out.println( e.toString());
             e.printStackTrace();
+            return false;
         }
         return true;
     }

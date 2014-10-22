@@ -127,10 +127,10 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
     @Override
     public final Phylogeny[] parse() throws IOException {
         final List<Phylogeny> l = new ArrayList<Phylogeny>();
-        int c = 0;
+        //int c = 0;
         while ( hasNext() ) {
             l.add( next() );
-            c++;
+           // c++;
         }
         final Phylogeny[] p = new Phylogeny[ l.size() ];
         for( int i = 0; i < l.size(); ++i ) {
@@ -158,7 +158,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
         _my_source_sbuff = null;
         _my_source_sbuil = null;
         _my_source_charary = null;
-        determineSourceType( _source );
+        determineAndProcessSourceType( _source );
         switch ( _input_type ) {
             case STRING:
                 _my_source_br = null;
@@ -211,7 +211,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
         _allow_errors_in_distance_to_parent = allow_errors_in_distance_to_parent;
     }
 
-    private final void determineSourceType( final Object nhx_source ) throws IOException {
+    private final void determineAndProcessSourceType( final Object nhx_source ) throws IOException {
         if ( nhx_source == null ) {
             throw new PhylogenyParserException( getClass() + ": attempt to parse null object." );
         }
@@ -244,11 +244,12 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
             _input_type = NHXParser.BUFFERED_READER;
             _source_length = 0;
             if ( _my_source_br != null ) {
-                try {
-                    _my_source_br.close();
-                }
-                catch ( final IOException e ) {
-                }
+             // I am REALLY not sure if it a "good" NOT to close the stream... 
+//                try {
+//                    _my_source_br.close();
+//                }
+//                catch ( final IOException e ) {
+//                }
             }
             final File f = ( File ) nhx_source;
             final String error = ForesterUtil.isReadableFile( f );
@@ -261,11 +262,12 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
             _input_type = NHXParser.BUFFERED_READER;
             _source_length = 0;
             if ( _my_source_br != null ) {
-                try {
-                    _my_source_br.close();
-                }
-                catch ( final IOException e ) {
-                }
+// I am REALLY not sure if it a "good" NOT to close the stream...                
+//                try {
+//                    _my_source_br.close();
+//                }
+//                catch ( final IOException e ) {
+//                }
             }
             final InputStreamReader isr = new InputStreamReader( ( ( URL ) nhx_source ).openStream() );
             _nhx_source = new BufferedReader( isr );
@@ -274,11 +276,12 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
             _input_type = NHXParser.BUFFERED_READER;
             _source_length = 0;
             if ( _my_source_br != null ) {
-                try {
-                    _my_source_br.close();
-                }
-                catch ( final IOException e ) {
-                }
+             // I am REALLY not sure if it a "good" NOT to close the stream...   
+//                try {
+//                    _my_source_br.close();
+//                }
+//                catch ( final IOException e ) {
+//                }
             }
             final InputStreamReader isr = new InputStreamReader( ( InputStream ) nhx_source );
             _nhx_source = new BufferedReader( isr );
