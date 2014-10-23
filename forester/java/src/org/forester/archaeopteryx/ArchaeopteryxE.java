@@ -774,7 +774,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         _options_jmenu
                 .add( _show_default_node_shapes_external_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_NODE_BOXES_LABEL_EXT ) );
         _options_jmenu
-                .add( _show_default_node_shapes_for_marked_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_NODE_BOXES_LABEL_EXT ) );
+                .add( _show_default_node_shapes_for_marked_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_NODE_BOXES_LABEL_MARKED ) );
         _options_jmenu.add( _line_up_renderable_data_cbmi = new JCheckBoxMenuItem( MainFrame.LINE_UP_RENDERABLE_DATA ) );
         if ( getConfiguration().doDisplayOption( Configuration.show_domain_architectures ) ) {
             _options_jmenu.add( _right_line_up_domains_cbmi = new JCheckBoxMenuItem( MainFrame.RIGHT_LINE_UP_DOMAINS ) );
