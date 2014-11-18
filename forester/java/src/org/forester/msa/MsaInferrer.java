@@ -50,5 +50,5 @@ public abstract class MsaInferrer {
     public abstract Msa infer( File path_to_input_seqs, List<String> opts ) throws IOException, InterruptedException;
 
     public abstract Msa infer( final List<MolecularSequence> seqs, final List<String> opts ) throws IOException,
-            InterruptedException;
+    InterruptedException;
 }

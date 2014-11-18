@@ -333,8 +333,8 @@ public final class HmmPfamOutputParser {
                     }
                     else if ( isVerbose() ) {
                         ForesterUtil.printWarningMessage( getClass().getName(), "query \"" + query
-                                + "\" is not unique [line " + line_number + "] in ["
-                                + getInputFile().getCanonicalPath() + "]" );
+                                                          + "\" is not unique [line " + line_number + "] in ["
+                                                          + getInputFile().getCanonicalPath() + "]" );
                     }
                 }
                 else {
@@ -433,28 +433,28 @@ public final class HmmPfamOutputParser {
                 }
                 catch ( final NumberFormatException e ) {
                     throw new IOException( "could not parse seq-f from \"" + line + "\" [line " + line_number
-                            + "] in [" + getInputFile().getCanonicalPath() + "]" );
+                                           + "] in [" + getInputFile().getCanonicalPath() + "]" );
                 }
                 try {
                     to = Integer.valueOf( to_str ).intValue();
                 }
                 catch ( final NumberFormatException e ) {
                     throw new IOException( "could not parse seq-t from \"" + line + "\" [line " + line_number
-                            + "] in [" + getInputFile().getCanonicalPath() + "]" );
+                                           + "] in [" + getInputFile().getCanonicalPath() + "]" );
                 }
                 try {
                     score = Double.valueOf( score_str ).doubleValue();
                 }
                 catch ( final NumberFormatException e ) {
                     throw new IOException( "could not parse score from \"" + line + "\" [line " + line_number
-                            + "] in [" + getInputFile().getCanonicalPath() + "]" );
+                                           + "] in [" + getInputFile().getCanonicalPath() + "]" );
                 }
                 try {
                     e_value = Double.valueOf( e_value_str ).doubleValue();
                 }
                 catch ( final NumberFormatException e ) {
                     throw new IOException( "could not parse E-value from \"" + line + "\" [line " + line_number
-                            + "] in [" + getInputFile().getCanonicalPath() + "]" );
+                                           + "] in [" + getInputFile().getCanonicalPath() + "]" );
                 }
                 if ( hmm_match_str.equals( "[]" ) ) {
                     //is_complete_hmm_match = true;
@@ -486,14 +486,14 @@ public final class HmmPfamOutputParser {
                 }
                 catch ( final NumberFormatException e ) {
                     throw new IOException( "could not parse domain number from \"" + line + "\" [line " + line_number
-                            + "] in [" + getInputFile().getCanonicalPath() + "]" );
+                                           + "] in [" + getInputFile().getCanonicalPath() + "]" );
                 }
                 try {
                     total = Integer.valueOf( ( total_str ) ).intValue();
                 }
                 catch ( final NumberFormatException e ) {
                     throw new IOException( "could not parse domain count from \"" + line + "\" [line " + line_number
-                            + "] in [" + getInputFile().getCanonicalPath() + "]" );
+                                           + "] in [" + getInputFile().getCanonicalPath() + "]" );
                 }
                 ++_domains_encountered;
                 boolean failed_cutoff = false;
@@ -506,7 +506,7 @@ public final class HmmPfamOutputParser {
                     }
                     else {
                         throw new IOException( "could not find a score cutoff value for domain id \"" + id
-                                + "\" [line " + line_number + "] in [" + getInputFile().getCanonicalPath() + "]" );
+                                               + "\" [line " + line_number + "] in [" + getInputFile().getCanonicalPath() + "]" );
                     }
                 }
                 final String uc_id = id.toUpperCase();
@@ -613,8 +613,8 @@ public final class HmmPfamOutputParser {
     /**
      * To ignore domains which are completely engulfed by domains (individual
      * ones or stretches of overlapping ones) with better support values.
-     * 
-     * 
+     *
+     *
      * @param ignored_engulfed_domains
      */
     public void setIgnoreEngulfedDomains( final boolean ignore_engulfed_domains ) {
@@ -628,7 +628,7 @@ public final class HmmPfamOutputParser {
     /**
      * Sets the individual domain score cutoff values (for example, gathering
      * thresholds from Pfam). Domain ids are the keys, cutoffs the values.
-     * 
+     *
      * @param individual_domain_score_cutoffs
      */
     public void setIndividualDomainScoreCutoffs( final Map<String, String> individual_domain_score_cutoffs ) {

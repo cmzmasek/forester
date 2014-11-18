@@ -101,10 +101,6 @@ final public class Options {
         return _allow_errors_in_distance_to_parent;
     }
 
-    public boolean isAllowFontSizeChange() {
-        return true;
-    }
-
     public final boolean isShowAnnotationRefSource() {
         return _show_annotation_ref_source;
     }

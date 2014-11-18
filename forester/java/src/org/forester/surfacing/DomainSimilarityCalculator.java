@@ -37,11 +37,11 @@ public interface DomainSimilarityCalculator {
                                                               final boolean ignore_domains_without_combinations_in_any_genome,
                                                               final boolean ignore_domains_specific_to_one_genome );;
 
-    public static enum Detailedness {
-        BASIC, LIST_COMBINING_DOMAIN_FOR_EACH_SPECIES, PUNCTILIOUS
-    }
+                                                              public static enum Detailedness {
+                                                                  BASIC, LIST_COMBINING_DOMAIN_FOR_EACH_SPECIES, PUNCTILIOUS
+                                                              }
 
-    public static enum GoAnnotationOutput {
-        ALL, NONE
-    }
+                                                              public static enum GoAnnotationOutput {
+                                                                  ALL, NONE
+                                                              }
 }

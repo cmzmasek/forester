@@ -47,7 +47,7 @@ public class PhyloXmlNodeWriter {
         }
         if ( node.getDistanceToParent() != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT ) {
             PhylogenyDataUtil.appendElement( w, PhyloXmlMapping.BRANCH_LENGTH, String.valueOf( ForesterUtil.round( node
-                    .getDistanceToParent(), PhyloXmlUtil.ROUNDING_DIGITS_FOR_PHYLOXML_DOUBLE_OUTPUT ) ), indentation );
+                                                                                                                   .getDistanceToParent(), PhyloXmlUtil.ROUNDING_DIGITS_FOR_PHYLOXML_DOUBLE_OUTPUT ) ), indentation );
         }
         if ( node.getBranchData() != null ) {
             node.getBranchData().toPhyloXML( w, level, ind );

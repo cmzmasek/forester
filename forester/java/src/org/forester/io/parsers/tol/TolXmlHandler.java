@@ -244,7 +244,7 @@ public final class TolXmlHandler extends DefaultHandler {
                     node.getNodeData().setTaxonomy( new Taxonomy() );
                 }
                 node.getNodeData().getTaxonomy()
-                        .setIdentifier( new Identifier( id, TolXmlMapping.TOL_TAXONOMY_ID_TYPE ) );
+                .setIdentifier( new Identifier( id, TolXmlMapping.TOL_TAXONOMY_ID_TYPE ) );
             }
         }
         final boolean put_into_scientific_name = true; // Allways put into scientific name.

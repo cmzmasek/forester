@@ -283,9 +283,9 @@ public final class gsdi {
             fatalError( "unexpected error", e.toString(), log_writer );
         }
         System.out.println( "Running time (excluding I/O)             : " + ( new Date().getTime() - start_time )
-                + "ms" );
+                            + "ms" );
         log_writer.println( "Running time (excluding I/O)             : " + ( new Date().getTime() - start_time )
-                + "ms" );
+                            + "ms" );
         System.out.println( "Mapping based on                         : " + gsdii.getTaxCompBase() );
         log_writer.println( "Mapping based on                         : " + gsdii.getTaxCompBase() );
         try {
@@ -304,14 +304,14 @@ public final class gsdi {
         System.out.println( "Wrote resulting gene tree to             : " + out_file.getCanonicalPath() );
         log_writer.println( "Wrote resulting gene tree to             : " + out_file.getCanonicalPath() );
         final File species_tree_used_file = new File( ForesterUtil.removeSuffix( out_file.toString() )
-                + SUFFIX_FOR_SPECIES_TREE_USED );
+                                                      + SUFFIX_FOR_SPECIES_TREE_USED );
         try {
             final PhylogenyWriter writer = new PhylogenyWriter();
             writer.toPhyloXML( species_tree_used_file, species_tree, 0 );
         }
         catch ( final IOException e ) {
             ForesterUtil.fatalError( PRG_NAME, "Failed to write to [" + species_tree_used_file.getCanonicalPath()
-                    + "]: " + e.getMessage() );
+                                     + "]: " + e.getMessage() );
         }
         System.out.println( "Wrote (stripped) species tree to         : " + species_tree_used_file.getCanonicalPath() );
         log_writer.println( "Wrote (stripped) species tree to         : " + species_tree_used_file.getCanonicalPath() );
@@ -380,21 +380,21 @@ public final class gsdi {
 
     private static void print_help() {
         System.out.println( "Usage: " + gsdi.PRG_NAME
-                + " [-options] <gene tree in phyloXML format> <species tree> <outfile>" );
+                            + " [-options] <gene tree in phyloXML format> <species tree> <outfile>" );
         System.out.println();
         System.out.println( "Options:" );
         System.out.println( " -" + gsdi.ALLOW_STRIPPING_OF_GENE_TREE_OPTION
-                + ": to allow stripping of gene tree nodes without a matching species" );
+                            + ": to allow stripping of gene tree nodes without a matching species" );
         System.out.println( " -" + gsdi.MOST_PARSIMONIOUS_OPTION
-                + ": use most parimonious duplication model for GSDI: " );
+                            + ": use most parimonious duplication model for GSDI: " );
         System.out.println( "     assign nodes as speciations which would otherwise be assiged" );
         System.out.println( "     as potential duplications due to polytomies in the species tree" );
         System.out.println( " -" + gsdi.GUESS_FORMAT_OF_SPECIES_TREE
-                + ": to allow species tree in other formats than phyloXML (i.e. Newick, NHX, Nexus)" );
+                            + ": to allow species tree in other formats than phyloXML (i.e. Newick, NHX, Nexus)" );
         System.out.println( " -" + gsdi.GSDIR_OPTION
-                + ": to use GSDIR algorithm instead of GSDI algorithm (re-rooting)" );
+                            + ": to use GSDIR algorithm instead of GSDI algorithm (re-rooting)" );
         System.out.println( " -" + TRANSFER_TAXONOMY_OPTION
-                + ": to transfer taxonomic data from species tree to gene tree\n" );
+                            + ": to transfer taxonomic data from species tree to gene tree\n" );
         System.out.println();
         System.out.println( "Gene tree:" );
         System.out.println( " in phyloXM format, with taxonomy and sequence data in appropriate fields" );
@@ -403,7 +403,7 @@ public final class gsdi {
         System.out.println( " in phyloXML format (unless option -" + gsdi.GUESS_FORMAT_OF_SPECIES_TREE + " is used)" );
         System.out.println();
         System.out.println( "Example: gsdi -" + ALLOW_STRIPPING_OF_GENE_TREE_OPTION
-                + " gene_tree.xml tree_of_life.xml out.xml" );
+                            + " gene_tree.xml tree_of_life.xml out.xml" );
         System.out.println();
     }
 

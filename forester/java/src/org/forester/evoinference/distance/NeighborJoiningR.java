@@ -120,7 +120,7 @@ public final class NeighborJoiningR {
             if ( _verbose ) {
                 System.out.println( "" );
                 System.out
-                        .println( "----------------------------------------------------------------------------------" );
+                .println( "----------------------------------------------------------------------------------" );
                 System.out.println( "" );
             }
         }
@@ -259,9 +259,9 @@ public final class NeighborJoiningR {
                 + " ("
                 + ( ForesterUtil.isEmpty( n.getChildNode1().getName() ) ? n.getChildNode1().getId() : n.getChildNode1()
                         .getName() )
-                + "+"
-                + ( ForesterUtil.isEmpty( n.getChildNode2().getName() ) ? n.getChildNode2().getId() : n.getChildNode2()
-                        .getName() ) + ")";
+                        + "+"
+                        + ( ForesterUtil.isEmpty( n.getChildNode2().getName() ) ? n.getChildNode2().getId() : n.getChildNode2()
+                                .getName() ) + ")";
     }
 
     // only the values in the lower triangle are used.

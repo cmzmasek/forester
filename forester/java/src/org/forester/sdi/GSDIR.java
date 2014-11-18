@@ -73,7 +73,7 @@ public class GSDIR implements GSDII {
         }
         if ( gene_tree.getRoot().getNumberOfDescendants() == 2 ) {
             gene_tree_branches_post_order.add( new PhylogenyBranch( gene_tree.getRoot().getChildNode1(), gene_tree
-                    .getRoot().getChildNode2() ) );
+                                                                    .getRoot().getChildNode2() ) );
         }
         int min_duplications_sum = Integer.MAX_VALUE;
         int speciations_sum = 0;
@@ -188,7 +188,7 @@ public class GSDIR implements GSDII {
     /**
      * Places the root of this Phylogeny on Branch b. The new root is always
      * placed on the middle of the branch b.
-     * 
+     *
      */
     static final void reRoot( final PhylogenyBranch b, final Phylogeny phy ) {
         final PhylogenyNode n1 = b.getFirstNode();
@@ -208,7 +208,7 @@ public class GSDIR implements GSDII {
         //        else if ( ( n1.getParent() != null ) && n1.getParent().isRoot()
         //                && ( ( n1.getParent().getChildNode1() == n2 ) || ( n1.getParent().getChildNode2() == n2 ) ) ) {
         //            phy.reRoot( n1 );
-        //           
+        //
         //        }
         else {
             throw new IllegalArgumentException( "reRoot( Branch b ): b is not a branch." );

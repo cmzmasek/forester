@@ -1315,7 +1315,7 @@ public class TestSurfacing {
         final BinaryStates O = BinaryStates.ABSENT;
         try {
             final CharacterStateMatrix<BinaryStates> binary_states_matrix_0 = new BasicCharacterStateMatrix<BinaryStates>( 7,
-                                                                                                                           6 );
+                    6 );
             binary_states_matrix_0.setIdentifier( 0, "A" );
             binary_states_matrix_0.setIdentifier( 1, "B" );
             binary_states_matrix_0.setIdentifier( 2, "C" );
@@ -1821,7 +1821,7 @@ public class TestSurfacing {
             final GenomeWideCombinableDomains gwcd_1 = BasicGenomeWideCombinableDomains
                     .createInstance( list_1, false, new BasicSpecies( "1" ), DomainCombinationType.DIRECTED );
             if ( !gwcd_1.toBinaryDomainCombinations().contains( DirectedBinaryDomainCombination.obtainInstance( "A",
-                                                                                                                "B" ) ) ) {
+                    "B" ) ) ) {
                 return false;
             }
             if ( gwcd_1.toBinaryDomainCombinations()
@@ -1833,7 +1833,7 @@ public class TestSurfacing {
                 return false;
             }
             if ( !gwcd_1.toBinaryDomainCombinations().contains( DirectedBinaryDomainCombination.obtainInstance( "A",
-                                                                                                                "C" ) ) ) {
+                    "C" ) ) ) {
                 return false;
             }
             if ( gwcd_1.toBinaryDomainCombinations()
@@ -1841,27 +1841,27 @@ public class TestSurfacing {
                 return false;
             }
             if ( !gwcd_1.toBinaryDomainCombinations().contains( DirectedBinaryDomainCombination.obtainInstance( "B",
-                                                                                                                "C" ) ) ) {
+                    "C" ) ) ) {
                 return false;
             }
             if ( !gwcd_1.toBinaryDomainCombinations().contains( DirectedBinaryDomainCombination.obtainInstance( "C",
-                                                                                                                "X" ) ) ) {
+                    "X" ) ) ) {
                 return false;
             }
             if ( !gwcd_1.toBinaryDomainCombinations().contains( DirectedBinaryDomainCombination.obtainInstance( "C",
-                                                                                                                "Y" ) ) ) {
+                    "Y" ) ) ) {
                 return false;
             }
             if ( !gwcd_1.toBinaryDomainCombinations().contains( DirectedBinaryDomainCombination.obtainInstance( "A",
-                                                                                                                "X" ) ) ) {
+                    "X" ) ) ) {
                 return false;
             }
             if ( !gwcd_1.toBinaryDomainCombinations().contains( DirectedBinaryDomainCombination.obtainInstance( "A",
-                                                                                                                "Y" ) ) ) {
+                    "Y" ) ) ) {
                 return false;
             }
             if ( !gwcd_1.toBinaryDomainCombinations().contains( DirectedBinaryDomainCombination.obtainInstance( "Y",
-                                                                                                                "A" ) ) ) {
+                    "A" ) ) ) {
                 return false;
             }
             if ( gwcd_1.toBinaryDomainCombinations()
@@ -1873,19 +1873,19 @@ public class TestSurfacing {
                 return false;
             }
             if ( !gwcd_1.toBinaryDomainCombinations().contains( DirectedBinaryDomainCombination.obtainInstance( "X",
-                                                                                                                "Y" ) ) ) {
+                    "Y" ) ) ) {
                 return false;
             }
             if ( !gwcd_1.toBinaryDomainCombinations().contains( DirectedBinaryDomainCombination.obtainInstance( "Y",
-                                                                                                                "X" ) ) ) {
+                    "X" ) ) ) {
                 return false;
             }
             if ( !gwcd_1.toBinaryDomainCombinations().contains( DirectedBinaryDomainCombination.obtainInstance( "A",
-                                                                                                                "Y" ) ) ) {
+                    "Y" ) ) ) {
                 return false;
             }
             if ( !gwcd_1.toBinaryDomainCombinations().contains( DirectedBinaryDomainCombination.obtainInstance( "A",
-                                                                                                                "X" ) ) ) {
+                    "X" ) ) ) {
                 return false;
             }
             if ( gwcd_1.toBinaryDomainCombinations()
@@ -1893,19 +1893,19 @@ public class TestSurfacing {
                 return false;
             }
             if ( !gwcd_1.toBinaryDomainCombinations().contains( DirectedBinaryDomainCombination.obtainInstance( "M",
-                                                                                                                "N" ) ) ) {
+                    "N" ) ) ) {
                 return false;
             }
             if ( !gwcd_1.toBinaryDomainCombinations().contains( DirectedBinaryDomainCombination.obtainInstance( "N",
-                                                                                                                "M" ) ) ) {
+                    "M" ) ) ) {
                 return false;
             }
             if ( !gwcd_1.toBinaryDomainCombinations().contains( DirectedBinaryDomainCombination.obtainInstance( "N",
-                                                                                                                "P" ) ) ) {
+                    "P" ) ) ) {
                 return false;
             }
             if ( !gwcd_1.toBinaryDomainCombinations().contains( DirectedBinaryDomainCombination.obtainInstance( "M",
-                                                                                                                "P" ) ) ) {
+                    "P" ) ) ) {
                 return false;
             }
             if ( gwcd_1.toBinaryDomainCombinations()
@@ -1917,11 +1917,11 @@ public class TestSurfacing {
                 return false;
             }
             if ( gwcd_1.toBinaryDomainCombinations().contains( DirectedBinaryDomainCombination.obtainInstance( "XX",
-                                                                                                               "YY" ) ) ) {
+                    "YY" ) ) ) {
                 return false;
             }
             if ( gwcd_1.toBinaryDomainCombinations().contains( DirectedBinaryDomainCombination.obtainInstance( "YY",
-                                                                                                               "XX" ) ) ) {
+                    "XX" ) ) ) {
                 return false;
             }
             if ( gwcd_1.toBinaryDomainCombinations()
@@ -1941,7 +1941,7 @@ public class TestSurfacing {
             //            if ( matrix_bc.getState( 0, 0 ) != X ) {
             //                return false;
             //            }
-            //        
+            //
             //
             //            final BasicCharacterStateMatrix<BinaryStates> dm = new BasicCharacterStateMatrix<BinaryStates>( new BinaryStates[][] {
             //                    { X, X, X, X, X, X }, { X, X, X, X, X, X } } );
@@ -3226,23 +3226,23 @@ public class TestSurfacing {
                 return false;
             }
             if ( !calc_u.getAllBinaryDomainCombinations().contains( BasicBinaryDomainCombination.obtainInstance( "v",
-                                                                                                                 "u" ) ) ) {
+                    "u" ) ) ) {
                 return false;
             }
             if ( !calc_u.getAllBinaryDomainCombinations().contains( BasicBinaryDomainCombination.obtainInstance( "w",
-                                                                                                                 "v" ) ) ) {
+                    "v" ) ) ) {
                 return false;
             }
             if ( !calc_u.getAllBinaryDomainCombinations().contains( BasicBinaryDomainCombination.obtainInstance( "w",
-                                                                                                                 "x" ) ) ) {
+                    "x" ) ) ) {
                 return false;
             }
             if ( !calc_u.getAllBinaryDomainCombinations().contains( BasicBinaryDomainCombination.obtainInstance( "w",
-                                                                                                                 "u" ) ) ) {
+                    "u" ) ) ) {
                 return false;
             }
             if ( !calc_u.getAllBinaryDomainCombinations().contains( BasicBinaryDomainCombination.obtainInstance( "z",
-                                                                                                                 "y" ) ) ) {
+                    "y" ) ) ) {
                 return false;
             }
             calc_u.setAllowDomainsToBeIgnored( true );
@@ -3333,23 +3333,23 @@ public class TestSurfacing {
                 return false;
             }
             if ( calc_u.getAllBinaryDomainCombinations().contains( BasicBinaryDomainCombination.obtainInstance( "v",
-                                                                                                                "u" ) ) ) {
+                    "u" ) ) ) {
                 return false;
             }
             if ( !calc_u.getAllBinaryDomainCombinations().contains( BasicBinaryDomainCombination.obtainInstance( "w",
-                                                                                                                 "v" ) ) ) {
+                    "v" ) ) ) {
                 return false;
             }
             if ( !calc_u.getAllBinaryDomainCombinations().contains( BasicBinaryDomainCombination.obtainInstance( "w",
-                                                                                                                 "x" ) ) ) {
+                    "x" ) ) ) {
                 return false;
             }
             if ( calc_u.getAllBinaryDomainCombinations().contains( BasicBinaryDomainCombination.obtainInstance( "w",
-                                                                                                                "u" ) ) ) {
+                    "u" ) ) ) {
                 return false;
             }
             if ( !calc_u.getAllBinaryDomainCombinations().contains( BasicBinaryDomainCombination.obtainInstance( "z",
-                                                                                                                 "y" ) ) ) {
+                    "y" ) ) ) {
                 return false;
             }
             calc_u.setAllowDomainsToBeIgnored( false );
@@ -3431,7 +3431,7 @@ public class TestSurfacing {
                 return false;
             }
             if ( !calc_u.getAllBinaryDomainCombinations().contains( BasicBinaryDomainCombination.obtainInstance( "z",
-                                                                                                                 "y" ) ) ) {
+                    "y" ) ) ) {
                 return false;
             }
             if ( !isEqual( calc_u.calculateSharedBinaryDomainCombinationBasedGenomeSimilarityScore(),
@@ -3476,7 +3476,7 @@ public class TestSurfacing {
     private static boolean testDomainCombinationCounting( final File test_dir ) {
         try {
             final HmmPfamOutputParser parser = new HmmPfamOutputParser( new File( test_dir
-                    + ForesterUtil.getFileSeparator() + "hmmpfam_output2" ), "human", "ls" );
+                                                                                  + ForesterUtil.getFileSeparator() + "hmmpfam_output2" ), "human", "ls" );
             parser.setEValueMaximum( 0.2 );
             parser.setIgnoreDufs( true );
             parser.setReturnType( HmmPfamOutputParser.ReturnType.UNORDERED_PROTEIN_DOMAIN_COLLECTION_PER_PROTEIN );
@@ -4549,7 +4549,7 @@ public class TestSurfacing {
     private static boolean testHmmPfamOutputParser( final File test_dir ) {
         try {
             final HmmPfamOutputParser parser = new HmmPfamOutputParser( new File( test_dir
-                    + ForesterUtil.getFileSeparator() + "hmmpfam_output" ), "human", "ls" );
+                                                                                  + ForesterUtil.getFileSeparator() + "hmmpfam_output" ), "human", "ls" );
             parser.setEValueMaximum( 0.2 );
             parser.setIgnoreDufs( true );
             parser.setReturnType( HmmPfamOutputParser.ReturnType.UNORDERED_PROTEIN_DOMAIN_COLLECTION_PER_PROTEIN );
@@ -4627,7 +4627,7 @@ public class TestSurfacing {
                 return false;
             }
             final HmmPfamOutputParser parser2 = new HmmPfamOutputParser( new File( test_dir
-                    + ForesterUtil.getFileSeparator() + "hmmpfam_output_short" ), "human", "ls" );
+                                                                                   + ForesterUtil.getFileSeparator() + "hmmpfam_output_short" ), "human", "ls" );
             parser2.setEValueMaximum( 0.2 );
             parser2.setIgnoreDufs( true );
             parser2.setReturnType( HmmPfamOutputParser.ReturnType.UNORDERED_PROTEIN_DOMAIN_COLLECTION_PER_PROTEIN );
@@ -4718,7 +4718,7 @@ public class TestSurfacing {
     private static boolean testHmmPfamOutputParserWithFilter( final File test_dir ) {
         try {
             HmmPfamOutputParser parser = new HmmPfamOutputParser( new File( test_dir + ForesterUtil.getFileSeparator()
-                    + "hmmpfam_output3" ), "human", "ls" );
+                                                                            + "hmmpfam_output3" ), "human", "ls" );
             parser.setEValueMaximum( 0.2 );
             parser.setIgnoreDufs( true );
             parser.setReturnType( HmmPfamOutputParser.ReturnType.UNORDERED_PROTEIN_DOMAIN_COLLECTION_PER_PROTEIN );

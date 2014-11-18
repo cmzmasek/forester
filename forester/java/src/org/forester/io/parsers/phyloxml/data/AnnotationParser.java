@@ -84,7 +84,7 @@ public class AnnotationParser implements PhylogenyDataPhyloXmlParser {
                     annotation.setProperties( new PropertiesMap() );
                 }
                 annotation.getProperties()
-                        .addProperty( ( Property ) PropertyParser.getInstance().parse( child_element ) );
+                .addProperty( ( Property ) PropertyParser.getInstance().parse( child_element ) );
             }
         }
         return annotation;

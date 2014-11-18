@@ -117,8 +117,8 @@ public class BasicGoXRef implements GoXRef {
 
     /**
      * Based on value and type.
-     * 
-     * 
+     *
+     *
      */
     @Override
     public boolean equals( final Object o ) {

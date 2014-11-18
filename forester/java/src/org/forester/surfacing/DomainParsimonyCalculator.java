@@ -149,9 +149,9 @@ public final class DomainParsimonyCalculator {
             throw new IllegalArgumentException( "binary states matrix number of identifiers is not equal to the number of tree nodes provided" );
         }
         final CharacterStateMatrix<GainLossStates> gl_matrix = new BasicCharacterStateMatrix<GainLossStates>( binary_states_matrix
-                                                                                                                      .getNumberOfIdentifiers(),
-                                                                                                              binary_states_matrix
-                                                                                                                      .getNumberOfCharacters() );
+                .getNumberOfIdentifiers(),
+                binary_states_matrix
+                .getNumberOfCharacters() );
         int total_gains = 0;
         int total_losses = 0;
         int total_unchanged = 0;
@@ -166,7 +166,7 @@ public final class DomainParsimonyCalculator {
                 final PhylogenyNode node = it.next();
                 final String name = node.getName();
                 final BinaryStates bin_state = binary_states_matrix.getState( binary_states_matrix
-                        .getIdentifierIndex( name ), c );
+                                                                              .getIdentifierIndex( name ), c );
                 final PhylogenyNode parent_node = getPhylogeny().getNode( name ).getParent();
                 GainLossStates gl_state = null;
                 if ( node.isRoot() ) {
@@ -180,7 +180,7 @@ public final class DomainParsimonyCalculator {
                 }
                 else {
                     final BinaryStates parent_bin_state = binary_states_matrix.getState( binary_states_matrix
-                            .getIdentifierIndex( parent_node.getName() ), c );
+                                                                                         .getIdentifierIndex( parent_node.getName() ), c );
                     if ( bin_state == BinaryStates.ABSENT ) {
                         if ( parent_bin_state == BinaryStates.ABSENT ) {
                             ++total_unchanged;
@@ -530,7 +530,7 @@ public final class DomainParsimonyCalculator {
                                                             final List<GenomeWideCombinableDomains> gwcd_list ) {
         if ( phylogeny.getNumberOfExternalNodes() != gwcd_list.size() ) {
             throw new IllegalArgumentException( "number of external nodes [" + phylogeny.getNumberOfExternalNodes()
-                    + "] does not equal size of genome wide combinable domains list [" + gwcd_list.size() + "]" );
+                                                + "] does not equal size of genome wide combinable domains list [" + gwcd_list.size() + "]" );
         }
         return new DomainParsimonyCalculator( phylogeny, gwcd_list );
     }
@@ -562,7 +562,7 @@ public final class DomainParsimonyCalculator {
         }
         final int number_of_characters = all_binary_combinations.size();
         final CharacterStateMatrix<CharacterStateMatrix.BinaryStates> matrix = new BasicCharacterStateMatrix<CharacterStateMatrix.BinaryStates>( number_of_identifiers,
-                                                                                                                                                 number_of_characters );
+                number_of_characters );
         int character_index = 0;
         for( final BinaryDomainCombination bc : all_binary_combinations ) {
             matrix.setCharacter( character_index++, bc.toString() );
@@ -616,7 +616,7 @@ public final class DomainParsimonyCalculator {
         }
         int number_of_characters = all_domain_ids.size();
         if ( positive_filter != null ) {
-            //number_of_characters = positive_filter.size(); -- bad if doms in filter but not in genomes 
+            //number_of_characters = positive_filter.size(); -- bad if doms in filter but not in genomes
             number_of_characters = 0;
             for( final String id : all_domain_ids ) {
                 if ( positive_filter.contains( id ) ) {
@@ -625,7 +625,7 @@ public final class DomainParsimonyCalculator {
             }
         }
         final CharacterStateMatrix<CharacterStateMatrix.BinaryStates> matrix = new BasicCharacterStateMatrix<CharacterStateMatrix.BinaryStates>( number_of_identifiers,
-                                                                                                                                                 number_of_characters );
+                number_of_characters );
         int character_index = 0;
         for( final String id : all_domain_ids ) {
             if ( positive_filter == null ) {
@@ -689,14 +689,14 @@ public final class DomainParsimonyCalculator {
         }
         if ( !no_mappings.isEmpty() ) {
             ForesterUtil.programMessage( surfacing.PRG_NAME, "No mappings for the following (" + no_mappings.size()
-                    + "):" );
+                                         + "):" );
             for( final String id : no_mappings ) {
                 ForesterUtil.programMessage( surfacing.PRG_NAME, id );
             }
         }
         final int number_of_characters = all_binary_combinations_mapped.size();
         final CharacterStateMatrix<CharacterStateMatrix.BinaryStates> matrix = new BasicCharacterStateMatrix<CharacterStateMatrix.BinaryStates>( number_of_identifiers,
-                                                                                                                                                 number_of_characters );
+                number_of_characters );
         int character_index = 0;
         for( final BinaryDomainCombination bc : all_binary_combinations_mapped ) {
             matrix.setCharacter( character_index++, bc.toString() );
@@ -739,8 +739,8 @@ public final class DomainParsimonyCalculator {
 
     /**
      * For folds instead of Pfam-domains, for example
-     * 
-     * 
+     *
+     *
      * @param gwcd_list
      * @return
      */
@@ -777,7 +777,7 @@ public final class DomainParsimonyCalculator {
         }
         final int number_of_characters = all_secondary_features.size();
         final CharacterStateMatrix<CharacterStateMatrix.BinaryStates> matrix = new BasicCharacterStateMatrix<CharacterStateMatrix.BinaryStates>( number_of_identifiers,
-                                                                                                                                                 number_of_characters );
+                number_of_characters );
         int character_index = 0;
         for( final String second_id : all_secondary_features ) {
             matrix.setCharacter( character_index++, second_id );

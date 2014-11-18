@@ -57,7 +57,7 @@ public class BranchColor implements PhylogenyData {
     @Override
     /**
      * Not a deep copy.
-     * 
+     *
      */
     public PhylogenyData copy() {
         final BranchColor bc = new BranchColor();

@@ -126,7 +126,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     private int                               _paste_subtree_item;
     private int                               _reroot_cb_item;
     private JButton                           _return_to_super_tree;
-    // Search 
+    // Search
     private JLabel                            _search_found_label_0;
     private JLabel                            _search_found_label_1;
     private JButton                           _search_reset_button_0;
@@ -766,7 +766,7 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     /**
      * Indicates what action should be execute when a node is clicked
-     * 
+     *
      * @return the click-on action
      */
     NodeClickAction getActionWhenNodeClicked() {
@@ -1510,16 +1510,14 @@ final class ControlPanel extends JPanel implements ActionListener {
         _mainpanel.getCurrentTreePanel().validate();
         _mainpanel.validate();
         _mainpanel.getCurrentTreePanel().calcParametersForPainting( _mainpanel.getSizeOfViewport().width,
-                                                                    _mainpanel.getSizeOfViewport().height,
-                                                                    true );
+                                                                    _mainpanel.getSizeOfViewport().height );
         _mainpanel.getCurrentTreePanel().resetPreferredSize();
         _mainpanel.adjustJScrollPane();
         _mainpanel.getCurrentTreePanel().repaint();
         _mainpanel.getCurrentTreePanel().validate();
         _mainpanel.validate();
         _mainpanel.getCurrentTreePanel().calcParametersForPainting( _mainpanel.getSizeOfViewport().width,
-                                                                    _mainpanel.getSizeOfViewport().height,
-                                                                    true );
+                                                                    _mainpanel.getSizeOfViewport().height );
         _mainpanel.getCurrentTreePanel().resetPreferredSize();
         _mainpanel.adjustJScrollPane();
         _mainpanel.getCurrentTreePanel().repaint();
@@ -1531,8 +1529,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             if ( tree_panel != null ) {
                 tree_panel.validate();
                 tree_panel.calcParametersForPainting( _mainpanel.getSizeOfViewport().width,
-                                                      _mainpanel.getSizeOfViewport().height,
-                                                      true );
+                                                      _mainpanel.getSizeOfViewport().height );
                 tree_panel.resetPreferredSize();
                 tree_panel.repaint();
             }

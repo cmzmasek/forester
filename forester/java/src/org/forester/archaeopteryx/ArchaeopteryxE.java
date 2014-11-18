@@ -392,7 +392,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
      * has been selected by the user by clicking the "Return ..."
      * menu item. This method is expected to be called from Javascript or
      * something like it.
-     * 
+     *
      * @return current external node data as String
      */
     public String getCurrentExternalNodesDataBuffer() {
@@ -409,7 +409,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
 
     /**
      * This method returns the current phylogeny as a string in the chosen format
-     * 
+     *
      * @param format must be NH, NHX, NEXUS or PHYLOXML
      * @return the phylogeny string
      * @author Herve Menager
@@ -436,10 +436,10 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
     }
 
     /**
-     * This method returns a view of the current phylogeny in a chosen 
+     * This method returns a view of the current phylogeny in a chosen
      * graphics format, base64-encoded in a string so that in can be used
      * from javascript.
-     * 
+     *
      * @param format must be GraphicsExportType (gif, jpg, pdf, png, tif, bmp)
      * @return the phylogeny string
      * @author Herve Menager
@@ -609,10 +609,12 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
                 @Override
                 public void componentResized( final ComponentEvent e ) {
                     if ( getMainPanel().getCurrentTreePanel() != null ) {
-                        getMainPanel().getCurrentTreePanel()
-                                .calcParametersForPainting( getMainPanel().getCurrentTreePanel().getWidth(),
-                                                            getMainPanel().getCurrentTreePanel().getHeight(),
-                                                            getOptions().isAllowFontSizeChange() );
+                        getMainPanel().getCurrentTreePanel().calcParametersForPainting( getMainPanel()
+                                                                                        .getCurrentTreePanel()
+                                                                                        .getWidth(),
+                                                                                        getMainPanel()
+                                                                                        .getCurrentTreePanel()
+                                                                                        .getHeight() );
                     }
                 }
             } );

@@ -31,9 +31,9 @@ import java.util.NoSuchElementException;
 /*
  * A simple Queue data structure. Created: 10/23/2005 by Christian M. Zmasek.
  * Last modified: 10/23/2005 by Christian M. Zmasek.
- * 
+ *
  * @author Christian M. Zmasek
- * 
+ *
  * @version 1.000
  */
 public class Queue {
@@ -60,7 +60,7 @@ public class Queue {
 
     /**
      * Dequeues one element from this queue.
-     * 
+     *
      * @return the dequeued object
      * @throws NoSuchElementException
      *             if this queue is empty
@@ -76,7 +76,7 @@ public class Queue {
     // --------------
     /**
      * Adds Object element to thisqueue.
-     * 
+     *
      * @param element
      *            the Object to be enqueued
      */
@@ -88,7 +88,7 @@ public class Queue {
     // ---------------
     /**
      * Returns the LinkedList upon which this queue is based.
-     * 
+     *
      * @return the LinkedList upon which this queue is based
      */
     private LinkedList<Object> getData() {
@@ -97,7 +97,7 @@ public class Queue {
 
     /**
      * Returns whether or not this queue is empty.
-     * 
+     *
      * @return true if this queue is empty, false otherwise
      */
     public boolean isEmpty() {

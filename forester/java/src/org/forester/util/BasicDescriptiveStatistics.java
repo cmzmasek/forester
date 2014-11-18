@@ -306,7 +306,7 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
      * Computes the sample standard unit (z-score). Used to compute 'value' in
      * terms of standard units. Note that 'value', 'mean' and 'sd' must be all
      * from the same sample data.
-     * 
+     *
      * @param value
      *            a double in the sample for which
      * @param mean

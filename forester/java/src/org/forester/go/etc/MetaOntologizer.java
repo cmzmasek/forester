@@ -117,7 +117,7 @@ public class MetaOntologizer {
             species = matcher.group( 1 );
             if ( VERBOSE ) {
                 ForesterUtil
-                        .programMessage( PRG_NAME, "species for [" + ontologizer_outfile + "] is [" + species + "]" );
+                .programMessage( PRG_NAME, "species for [" + ontologizer_outfile + "] is [" + species + "]" );
             }
         }
         else {
@@ -226,7 +226,7 @@ public class MetaOntologizer {
         }
         if ( ( p_adjusted_upper_limit < 0.0 ) || ( p_adjusted_upper_limit > 1.0 ) ) {
             throw new IllegalArgumentException( "adjusted P values limit [" + p_adjusted_upper_limit
-                    + "] is out of range" );
+                                                + "] is out of range" );
         }
         SortedMap<Species, SortedSet<String>> speciesto_to_domain_id = null;
         if ( domain_gain_loss_file != null ) {
@@ -236,7 +236,7 @@ public class MetaOntologizer {
             speciesto_to_domain_id = parseDomainGainLossFile( domain_gain_loss_file );
             if ( VERBOSE ) {
                 ForesterUtil.programMessage( PRG_NAME, "parsed gain/loss domains for " + speciesto_to_domain_id.size()
-                        + " species from [" + domain_gain_loss_file + "]" );
+                                             + " species from [" + domain_gain_loss_file + "]" );
             }
         }
         final String[] children = ontologizer_outdir.list();
@@ -253,7 +253,7 @@ public class MetaOntologizer {
         }
         if ( VERBOSE ) {
             ForesterUtil.programMessage( PRG_NAME, "need to analyze " + ontologizer_outfiles.size()
-                    + " Ontologizer outfiles from [" + ontologizer_outdir + "]" );
+                                         + " Ontologizer outfiles from [" + ontologizer_outdir + "]" );
         }
         final OBOparser parser = new OBOparser( obo_file, OBOparser.ReturnType.BASIC_GO_TERM );
         final List<GoTerm> go_terms = parser.parse();
@@ -281,7 +281,7 @@ public class MetaOntologizer {
         for( final File ontologizer_outfile : ontologizer_outfiles ) {
             final String species = obtainSpecies( ontologizer_outfile );
             final List<OntologizerResult> ontologizer_results = OntologizerResult.parse( new File( ontologizer_outdir
-                    + ForesterUtil.FILE_SEPARATOR + ontologizer_outfile ) );
+                                                                                                   + ForesterUtil.FILE_SEPARATOR + ontologizer_outfile ) );
             final SortedSet<OntologizerResult> filtered_ontologizer_results = new TreeSet<OntologizerResult>();
             for( final OntologizerResult ontologizer_result : ontologizer_results ) {
                 if ( ontologizer_result.getPAdjusted() <= p_adjusted_upper_limit ) {
@@ -300,18 +300,18 @@ public class MetaOntologizer {
         writeHtmlHeader( b_html_writer,
                          GoNameSpace.GoNamespaceType.BIOLOGICAL_PROCESS.toString() + " | Pmax = "
                                  + p_adjusted_upper_limit + " | " + comment,
-                         ontologizer_outdir.getAbsolutePath(),
-                         domain_gain_loss_file_full_path_str );
+                                 ontologizer_outdir.getAbsolutePath(),
+                                 domain_gain_loss_file_full_path_str );
         writeHtmlHeader( c_html_writer,
                          GoNameSpace.GoNamespaceType.CELLULAR_COMPONENT.toString() + " | Pmax = "
                                  + p_adjusted_upper_limit + " | " + comment,
-                         ontologizer_outdir.getAbsolutePath(),
-                         domain_gain_loss_file_full_path_str );
+                                 ontologizer_outdir.getAbsolutePath(),
+                                 domain_gain_loss_file_full_path_str );
         writeHtmlHeader( m_html_writer,
                          GoNameSpace.GoNamespaceType.MOLECULAR_FUNCTION.toString() + " | Pmax = "
                                  + p_adjusted_upper_limit + " | " + comment,
-                         ontologizer_outdir.getAbsolutePath(),
-                         domain_gain_loss_file_full_path_str );
+                                 ontologizer_outdir.getAbsolutePath(),
+                                 domain_gain_loss_file_full_path_str );
         for( final String species : species_to_results_map.keySet() ) {
             if ( hasResultsForSpecies( go_id_to_terms,
                                        species_to_results_map,
@@ -381,17 +381,17 @@ public class MetaOntologizer {
         m_tab_writer.close();
         if ( VERBOSE ) {
             ForesterUtil.programMessage( PRG_NAME, "successfully wrote biological process summary to [" + b_file_html
-                    + "]" );
+                                         + "]" );
             ForesterUtil.programMessage( PRG_NAME, "successfully wrote biological process summary to [" + b_file_txt
-                    + "]" );
+                                         + "]" );
             ForesterUtil.programMessage( PRG_NAME, "successfully wrote molecular function summary to [" + m_file_html
-                    + "]" );
+                                         + "]" );
             ForesterUtil.programMessage( PRG_NAME, "successfully wrote molecular function summary to [" + m_file_txt
-                    + "]" );
+                                         + "]" );
             ForesterUtil.programMessage( PRG_NAME, "successfully wrote cellular component summary to [" + c_file_html
-                    + "]" );
+                                         + "]" );
             ForesterUtil.programMessage( PRG_NAME, "successfully wrote cellular component summary to [" + c_file_txt
-                    + "]" );
+                                         + "]" );
         }
     }
 
@@ -404,7 +404,7 @@ public class MetaOntologizer {
             for( final String domain : domains ) {
                 if ( !domain_ids_with_go_annot.contains( domain ) ) {
                     writer.write( "[<a class=\"new_type\" href=\"" + SurfacingConstants.PFAM_FAMILY_ID_LINK + domain
-                            + "\">" + domain + "</a>] " );
+                                  + "\">" + domain + "</a>] " );
                 }
             }
         }
@@ -573,7 +573,7 @@ public class MetaOntologizer {
         writer.write( "</font>" );
         writer.write( "</td><td>" );
         writer.write( "<a href=\"" + SurfacingConstants.GO_LINK + ontologizer_result.getGoId().getId()
-                + "\" target=\"amigo_window\">" + ontologizer_result.getGoId().getId() + "</a>" );
+                      + "\" target=\"amigo_window\">" + ontologizer_result.getGoId().getId() + "</a>" );
         writer.write( "</td><td>" );
         writer.write( "<font color=\"#" + ForesterUtil.colorToHex( p_adj_color ) + "\">" );
         writer.write( FORMATER.format( ontologizer_result.getPAdjusted() ) );

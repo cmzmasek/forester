@@ -152,10 +152,10 @@ public final class GSDI implements GSDII {
      * Preconditions: Mapping M for external nodes must have been calculated and
      * the species tree must be labeled in preorder.
      * <p>
-     * @param transfer_taxonomy 
-     * @return 
-     * @throws SDIException 
-     * 
+     * @param transfer_taxonomy
+     * @return
+     * @throws SDIException
+     *
      */
     final static GSDIsummaryResult geneTreePostOrderTraversal( final Phylogeny gene_tree,
                                                                final boolean most_parsimonious_duplication_model,
@@ -166,7 +166,7 @@ public final class GSDI implements GSDII {
             if ( g.isInternal() ) {
                 if ( g.getNumberOfDescendants() != 2 ) {
                     throw new SDIException( "gene tree contains internal node with " + g.getNumberOfDescendants()
-                            + " descendents" );
+                                            + " descendents" );
                 }
                 PhylogenyNode s1 = g.getChildNode1().getLink();
                 PhylogenyNode s2 = g.getChildNode2().getLink();
@@ -197,7 +197,7 @@ public final class GSDI implements GSDII {
             if ( g.isInternal() ) {
                 if ( g.getNumberOfDescendants() != 2 ) {
                     throw new SDIException( "gene tree contains internal node with " + g.getNumberOfDescendants()
-                            + " descendents" );
+                                            + " descendents" );
                 }
                 PhylogenyNode s1 = g.getChildNode1().getLink();
                 PhylogenyNode s2 = g.getChildNode2().getLink();
@@ -234,8 +234,8 @@ public final class GSDI implements GSDII {
      * This allows for linking of internal nodes of the species tree (as opposed
      * to just external nodes, as in the method it overrides.
      * If TaxonomyComparisonBase is null, it will try to determine it.
-     * @throws SDIException 
-     * 
+     * @throws SDIException
+     *
      */
     final static NodesLinkingResult linkNodesOfG( final Phylogeny gene_tree,
                                                   final Phylogeny species_tree,
@@ -299,7 +299,7 @@ public final class GSDI implements GSDII {
                         }
                         else {
                             throw new SDIException( "taxonomy \"" + g.getNodeData().getTaxonomy()
-                                    + "\" not present in species tree" );
+                                                    + "\" not present in species tree" );
                         }
                     }
                     else {

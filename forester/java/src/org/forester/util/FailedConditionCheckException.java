@@ -29,7 +29,7 @@ package org.forester.util;
 public class FailedConditionCheckException extends RuntimeException {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = -860013990231493438L;
 

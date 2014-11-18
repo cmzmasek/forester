@@ -82,21 +82,21 @@ public final class Blast {
             if ( ForesterUtil.isEmpty( query ) && ( node.getNodeData().getSequence().getAccession() != null )
                     && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getValue() ) ) {
                 final Accession id = SequenceAccessionTools.parseAccessorFromString( node.getNodeData().getSequence()
-                        .getAccession().getValue() );
+                                                                                     .getAccession().getValue() );
                 if ( id != null ) {
                     query = id.getValue();
                 }
             }
             if ( ForesterUtil.isEmpty( query ) && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getName() ) ) {
                 final Accession id = SequenceAccessionTools.parseAccessorFromString( node.getNodeData().getSequence()
-                        .getName() );
+                                                                                     .getName() );
                 if ( id != null ) {
                     query = id.getValue();
                 }
             }
             if ( ForesterUtil.isEmpty( query ) && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getSymbol() ) ) {
                 final Accession id = SequenceAccessionTools.parseAccessorFromString( node.getNodeData().getSequence()
-                        .getSymbol() );
+                                                                                     .getSymbol() );
                 if ( id != null ) {
                     query = id.getValue();
                 }
@@ -104,7 +104,7 @@ public final class Blast {
             if ( ForesterUtil.isEmpty( query )
                     && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getGeneName() ) ) {
                 final Accession id = SequenceAccessionTools.parseAccessorFromString( node.getNodeData().getSequence()
-                        .getGeneName() );
+                                                                                     .getGeneName() );
                 if ( id != null ) {
                     query = id.getValue();
                 }

@@ -51,18 +51,18 @@ import org.forester.util.ForesterUtil;
  * "stripTree(Phylogeny,Phylogeny)" of class Phylogeny </ul> <p> The recursion
  * part is accomplished by this class' method
  * "geneTreePostOrderTraversal(PhylogenyNode)". <p> Requires JDK 1.2 or greater.
- * 
+ *
  * @see SDI#linkNodesOfG()
- * 
+ *
  * @see Phylogeny#preorderReID(int)
- * 
+ *
  * @see
  * PhylogenyMethods#taxonomyBasedDeletionOfExternalNodes(Phylogeny,Phylogeny)
- * 
+ *
  * @see #geneTreePostOrderTraversal(PhylogenyNode)
- * 
+ *
  * @author Christian M. Zmasek
- * 
+ *
  * @version 1.102 -- last modified: 10/02/01
  */
 public class SDI {
@@ -81,7 +81,7 @@ public class SDI {
      * "computeMappingCost()".
      * <p>
      * (Last modified: 01/11/01)
-     * 
+     *
      * @see #infer(boolean)
      * @see SDI#computeMappingCostL()
      * @param gene_tree
@@ -92,7 +92,7 @@ public class SDI {
      *            reference to a rooted binary species Phylogeny which might get
      *            stripped in the process, must have species names in the
      *            species name fields for all external nodes
-     * @throws SDIException 
+     * @throws SDIException
      */
     public SDI( final Phylogeny gene_tree, final Phylogeny species_tree ) throws SDIException {
         if ( species_tree.isEmpty() || gene_tree.isEmpty() ) {
@@ -118,7 +118,7 @@ public class SDI {
      * Reference. Zhang, L. (1997) On a Mirkin-Muchnik-Smith Conjecture for
      * Comparing Molecular Phylogenies. Journal of Computational Biology 4
      * 177-187.
-     * 
+     *
      * @return the mapping cost "L"
      */
     public int computeMappingCostL() {
@@ -130,7 +130,7 @@ public class SDI {
 
     /**
      * Returns the number of duplications.
-     * 
+     *
      * @return number of duplications
      */
     public int getDuplicationsSum() {
@@ -139,7 +139,7 @@ public class SDI {
 
     /**
      * Returns the gene tree.
-     * 
+     *
      * @return gene tree
      */
     public Phylogeny getGeneTree() {
@@ -148,7 +148,7 @@ public class SDI {
 
     /**
      * Returns the species tree.
-     * 
+     *
      * @return species tree
      */
     public Phylogeny getSpeciesTree() {
@@ -175,7 +175,7 @@ public class SDI {
      * the species tree must be labelled in preorder.
      * <p>
      * (Last modified: 01/11/01)
-     * 
+     *
      * @param g
      *            starting node of a gene tree - normally the root
      */
@@ -213,7 +213,7 @@ public class SDI {
      * links (sets the field "link" of PhylogenyNode) each external
      * PhylogenyNode of gene_tree to the external PhylogenyNode of species_tree
      * which has the same species name.
-     * @throws SDIException 
+     * @throws SDIException
      */
     final void linkNodesOfG() throws SDIException {
         final Map<String, PhylogenyNode> speciestree_ext_nodes = new HashMap<String, PhylogenyNode>();
@@ -225,7 +225,7 @@ public class SDI {
             final String tax_str = SDIutil.taxonomyToString( s, tax_comp_base );
             if ( speciestree_ext_nodes.containsKey( tax_str ) ) {
                 throw new IllegalArgumentException( "taxonomy [" + s.getNodeData().getTaxonomy()
-                        + "] is not unique in species phylogeny" );
+                                                    + "] is not unique in species phylogeny" );
             }
             speciestree_ext_nodes.put( tax_str, s );
         }
@@ -236,7 +236,7 @@ public class SDI {
             final PhylogenyNode s = speciestree_ext_nodes.get( tax_str );
             if ( s == null ) {
                 throw new IllegalArgumentException( "taxonomy [" + g.getNodeData().getTaxonomy()
-                        + "] not present in species tree" );
+                                                    + "] not present in species tree" );
             }
             g.setLink( s );
         }
@@ -250,7 +250,7 @@ public class SDI {
      * To be used ONLY by method "SDIunrooted.fastInfer(Phylogeny,Phylogeny)".
      * <p>
      * (Last modfied: 10/02/01)
-     * 
+     *
      * @param prev_root_was_dup
      *            true if the previous root was a duplication, false otherwise
      * @param prev_root_c1
@@ -403,7 +403,7 @@ public class SDI {
         final HashMap<String, PhylogenyNode> speciestree_ext_nodes = new HashMap<String, PhylogenyNode>();
         if ( _species_tree.getFirstExternalNode().isRoot() ) {
             speciestree_ext_nodes.put( _species_tree.getFirstExternalNode().getNodeData().getTaxonomy().getIdentifier()
-                    .getValue(), _species_tree.getFirstExternalNode() );
+                                       .getValue(), _species_tree.getFirstExternalNode() );
         }
         else {
             for( final PhylogenyNodeIterator iter = _species_tree.iteratorExternalForward(); iter.hasNext(); ) {

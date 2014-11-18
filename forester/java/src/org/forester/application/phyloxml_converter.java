@@ -210,12 +210,12 @@ public class phyloxml_converter {
                         && ( field != PhylogenyMethods.PhylogenyNodeField.TAXONOMY_SCIENTIFIC_NAME ) ) {
                     if ( extr_taxonomy_pf_only ) {
                         ( ( NHXParser ) parser )
-                                .setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT );
+                        .setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT );
                         replace_underscores = false;
                     }
                     else if ( extr_taxonomy ) {
                         ( ( NHXParser ) parser )
-                                .setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
+                        .setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
                         replace_underscores = false;
                     }
                 }
@@ -360,10 +360,10 @@ public class phyloxml_converter {
         System.out.println( "Usage:" );
         System.out.println();
         System.out
-                .println( PRG_NAME
-                        + " -"
-                        + FIELD_OPTION
-                        + "=<field option> [options] <infile in New Hamphshire, NHX, Nexus, ToL XML, or phyloXML format> <outfile>" );
+        .println( PRG_NAME
+                  + " -"
+                  + FIELD_OPTION
+                  + "=<field option> [options] <infile in New Hamphshire, NHX, Nexus, ToL XML, or phyloXML format> <outfile>" );
         System.out.println();
         System.out.println( " field options: " );
         System.out.println();
@@ -375,28 +375,28 @@ public class phyloxml_converter {
         System.out.println( "   " + FIELD_SEQUENCE_SYMBOL + ":    transfer name to sequence symbol" );
         System.out.println( "   " + FIELD_DUMMY + ": to convert NHX formatted trees to phyloXML" );
         System.out.println( "   " + FIELD_UNIPROT_TAXONOMY_ID_SPLIT_1
-                + ":    transfer/split name to taxonomy uniprot identifier" );
+                            + ":    transfer/split name to taxonomy uniprot identifier" );
         System.out.println( "          (split at underscore if \"id_name\" pattern, e.g. \"817_SusD\")" );
         System.out.println( "   " + FIELD_UNIPROT_TAXONOMY_ID_SPLIT_2
-                + ":    transfer/split name to taxonomy uniprot identifier" );
+                            + ":    transfer/split name to taxonomy uniprot identifier" );
         System.out.println( "          (split at underscore if \"name_id\" pattern, e.g. \"SusD_817\")" );
         System.out.println();
         System.out.println( " options: " );
         System.out.println( " -" + INTERNAL_NAMES_ARE_BOOT_SUPPPORT
-                + "  : internal names in NH or NHX tree are bootstrap support values" );
+                            + "  : internal names in NH or NHX tree are bootstrap support values" );
         System.out.println( " -" + REPLACE_UNDER_SCORES + " : replace all underscores with spaces" );
         System.out.println( " -" + MIDPOINT_REROOT + "  : midpoint reroot" );
         System.out.println( " -" + ORDER_SUBTREES + "  : order subtrees" );
         System.out
-                .println( " -"
-                        + EXTRACT_TAXONOMY
-                        + " : extract taxonomy to taxonomy code from \"seqname_TAXON\"-style names (cannot be used with the following field options: "
-                        + FIELD_TAXONOMY_CODE + ", " + FIELD_TAXONOMY_COMM_NAME + ", " + FIELD_TAXONOMY_SCI_NAME + ")" );
+        .println( " -"
+                + EXTRACT_TAXONOMY
+                + " : extract taxonomy to taxonomy code from \"seqname_TAXON\"-style names (cannot be used with the following field options: "
+                + FIELD_TAXONOMY_CODE + ", " + FIELD_TAXONOMY_COMM_NAME + ", " + FIELD_TAXONOMY_SCI_NAME + ")" );
         System.out
-                .println( " -"
-                        + EXTRACT_TAXONOMY_PF
-                        + " : extract taxonomy to taxonomy code from Pfam (\"seqname_TAXON/x-y\") style names only (cannot be used with the following field options: "
-                        + FIELD_TAXONOMY_CODE + ", " + FIELD_TAXONOMY_COMM_NAME + ", " + FIELD_TAXONOMY_SCI_NAME + ")" );
+        .println( " -"
+                + EXTRACT_TAXONOMY_PF
+                + " : extract taxonomy to taxonomy code from Pfam (\"seqname_TAXON/x-y\") style names only (cannot be used with the following field options: "
+                + FIELD_TAXONOMY_CODE + ", " + FIELD_TAXONOMY_COMM_NAME + ", " + FIELD_TAXONOMY_SCI_NAME + ")" );
         System.out.println( " -" + NO_TREE_LEVEL_INDENDATION + " : no tree level indendation in phyloXML output" );
         System.out.println( " -" + IGNORE_QUOTES + ": ignore quotes and whitespace (e.g. \"a b\" becomes ab)" );
         System.out.println();

@@ -129,7 +129,7 @@ class PrintableSpeciesSpecificDcData implements SpeciesSpecificDcData {
                 sb.append( " " );
                 if ( html ) {
                     sb.append( "<a href=\"" + SurfacingConstants.PFAM_FAMILY_ID_LINK + domain_id + "\">" + domain_id
-                            + "</a>" );
+                               + "</a>" );
                 }
                 else {
                     sb.append( domain_id );

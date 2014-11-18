@@ -395,7 +395,7 @@ public class TestGo {
     private static boolean testPfamToGoParser( final File test_dir ) {
         try {
             final PfamToGoParser parser = new PfamToGoParser( new File( test_dir + ForesterUtil.getFileSeparator()
-                    + "pfam_to_go_test" ) );
+                                                                        + "pfam_to_go_test" ) );
             final List<PfamToGoMapping> mappings = parser.parse();
             if ( parser.getMappingCount() != 426 ) {
                 return false;
@@ -476,7 +476,7 @@ public class TestGo {
     private static boolean testSuperTermCounting( final File test_dir ) {
         try {
             final OBOparser parser = new OBOparser( new File( test_dir + ForesterUtil.getFileSeparator()
-                    + "gene_ontology_edit.obo" ), OBOparser.ReturnType.BASIC_GO_TERM );
+                                                              + "gene_ontology_edit.obo" ), OBOparser.ReturnType.BASIC_GO_TERM );
             final List<GoTerm> all_go_terms = parser.parse();
             if ( parser.getGoTermCount() != 27748 ) {
                 return false;
@@ -485,23 +485,23 @@ public class TestGo {
             final List<GoTerm> categories = new ArrayList<GoTerm>();
             final List<GoTerm> experiment_set = new ArrayList<GoTerm>();
             experiment_set.add( new BasicGoTerm( new GoId( "GO:0005690" ), "snRNP U4atac", GoNameSpace
-                    .createUnassigned(), false ) );
+                                                 .createUnassigned(), false ) );
             experiment_set.add( new BasicGoTerm( new GoId( "GO:0009698" ),
                                                  "phenylpropanoid metabolic process",
                                                  GoNameSpace.createUnassigned(),
                                                  false ) );
             experiment_set.add( new BasicGoTerm( new GoId( "GO:0008150" ), "biological_process", GoNameSpace
-                    .createUnassigned(), false ) );
+                                                 .createUnassigned(), false ) );
             experiment_set.add( new BasicGoTerm( new GoId( "GO:0006915" ),
                                                  "apoptosis",
                                                  GoNameSpace.createUnassigned(),
                                                  false ) );
             experiment_set.add( new BasicGoTerm( new GoId( "GO:0001783" ), "B cell apoptosis", GoNameSpace
-                    .createUnassigned(), false ) );
+                                                 .createUnassigned(), false ) );
             experiment_set.add( new BasicGoTerm( new GoId( "GO:0010657" ), "muscle cell apoptosis", GoNameSpace
-                    .createUnassigned(), false ) );
+                                                 .createUnassigned(), false ) );
             experiment_set.add( new BasicGoTerm( new GoId( "GO:0010657" ), "muscle cell apoptosis", GoNameSpace
-                    .createUnassigned(), false ) );
+                                                 .createUnassigned(), false ) );
             experiment_set.add( new BasicGoTerm( new GoId( "GO:0010658" ),
                                                  "striated muscle cell apoptosis",
                                                  GoNameSpace.createUnassigned(),
@@ -511,25 +511,25 @@ public class TestGo {
                                                  GoNameSpace.createUnassigned(),
                                                  false ) );
             categories
-                    .add( new BasicGoTerm( new GoId( "GO:0016265" ), "death", GoNameSpace.createUnassigned(), false ) );
+            .add( new BasicGoTerm( new GoId( "GO:0016265" ), "death", GoNameSpace.createUnassigned(), false ) );
             categories.add( new BasicGoTerm( new GoId( "GO:0006915" ),
                                              "apoptosis",
                                              GoNameSpace.createUnassigned(),
                                              false ) );
             categories.add( new BasicGoTerm( new GoId( "GO:0008150" ), "biological_process", GoNameSpace
-                    .createUnassigned(), false ) );
+                                             .createUnassigned(), false ) );
             categories.add( new BasicGoTerm( new GoId( "GO:0010657" ), "muscle cell apoptosis", GoNameSpace
-                    .createUnassigned(), false ) );
+                                             .createUnassigned(), false ) );
             categories.add( new BasicGoTerm( new GoId( "GO:0010658" ), "striated muscle cell apoptosis", GoNameSpace
-                    .createUnassigned(), false ) );
+                                             .createUnassigned(), false ) );
             categories.add( new BasicGoTerm( new GoId( "GO:0046242" ), "o-xylene biosynthetic process", GoNameSpace
-                    .createUnassigned(), false ) );
+                                             .createUnassigned(), false ) );
             categories.add( new BasicGoTerm( new GoId( "GO:0016326" ), "kinesin motor activity", GoNameSpace
-                    .createUnassigned(), false ) );
+                                             .createUnassigned(), false ) );
             categories.add( new BasicGoTerm( new GoId( "GO:0005575" ), "cellular_component", GoNameSpace
-                    .createUnassigned(), false ) );
+                                             .createUnassigned(), false ) );
             categories.add( new BasicGoTerm( new GoId( "GO:0032502" ), "developmental process", GoNameSpace
-                    .createUnassigned(), false ) );
+                                             .createUnassigned(), false ) );
             categories.add( new BasicGoTerm( new GoId( "GO:0051094" ),
                                              "positive regulation of developmental process",
                                              GoNameSpace.createUnassigned(),
@@ -647,7 +647,7 @@ public class TestGo {
     private static boolean testSuperTermGetting( final File test_dir ) {
         try {
             final OBOparser parser = new OBOparser( new File( test_dir + ForesterUtil.getFileSeparator()
-                    + "gene_ontology_edit.obo" ), OBOparser.ReturnType.BASIC_GO_TERM );
+                                                              + "gene_ontology_edit.obo" ), OBOparser.ReturnType.BASIC_GO_TERM );
             final List<GoTerm> go_terms = parser.parse();
             if ( parser.getGoTermCount() != 27748 ) {
                 return false;

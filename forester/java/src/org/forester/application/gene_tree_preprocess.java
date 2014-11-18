@@ -73,7 +73,7 @@ public class gene_tree_preprocess {
                                          "failed to read phylogeny from [" + in + "]: " + e.getLocalizedMessage() );
             }
             final File outtree = new File( ForesterUtil.removeSuffix( in.toString() )
-                    + "_preprocessed_gene_tree.phylo.xml" );
+                                           + "_preprocessed_gene_tree.phylo.xml" );
             final File removed_nodes = new File( ForesterUtil.removeSuffix( in.toString() ) + "_removed_nodes.txt" );
             final File present_species = new File( ForesterUtil.removeSuffix( in.toString() ) + "_species_present.txt" );
             checkForOutputFileWriteability( outtree );
@@ -81,7 +81,7 @@ public class gene_tree_preprocess {
             checkForOutputFileWriteability( present_species );
             if ( phy.getNumberOfExternalNodes() < 2 ) {
                 ForesterUtil.fatalError( PRG_NAME, "phylogeny has " + phy.getNumberOfExternalNodes()
-                        + " external node(s), aborting" );
+                                         + " external node(s), aborting" );
             }
             final SortedSet<String> not_found = SequenceDbWsTools.obtainSeqInformation( phy,
                                                                                         true,

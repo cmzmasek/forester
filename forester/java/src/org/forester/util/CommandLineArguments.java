@@ -106,7 +106,7 @@ public final class CommandLineArguments {
 
     /**
      * Removes quotes
-     * 
+     *
      */
     public String getOptionValueAsCleanString( final String option_name ) throws IllegalArgumentException {
         return getOptionValue( option_name ).replaceAll( "\"", "" ).replaceAll( "\'", "" );
@@ -224,7 +224,7 @@ public final class CommandLineArguments {
             //  }
             if ( getAllOptions().containsKey( key ) ) {
                 throw new IllegalArgumentException( "attempt to set option \"" + key + "\" mutiple times [" + option
-                        + "]" );
+                                                    + "]" );
             }
             options_map.put( key, value );
         }

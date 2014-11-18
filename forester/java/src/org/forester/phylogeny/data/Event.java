@@ -216,7 +216,7 @@ public class Event implements PhylogenyData {
 
     /**
      * Returns true if this event contains one or more duplications events only
-     * 
+     *
      * @return true if this event contains one or more duplications events only
      */
     public boolean isDuplication() {
@@ -250,7 +250,7 @@ public class Event implements PhylogenyData {
 
     /**
      * Returns true if this event contains one or more gene loss events only
-     * 
+     *
      * @return true if this event contains one or more gene loss events only
      */
     public boolean isGeneLoss() {
@@ -267,7 +267,7 @@ public class Event implements PhylogenyData {
 
     /**
      * Returns true if this event contains one or more speciation events only
-     * 
+     *
      * @return true if this event contains one or more speciation events only
      */
     public boolean isSpeciation() {
@@ -331,7 +331,7 @@ public class Event implements PhylogenyData {
         PhylogenyDataUtil.appendOpen( writer, PhyloXmlMapping.EVENTS );
         if ( ( getEventType() != EventType.unassigned ) && ( getEventType() != EventType.mixed ) ) {
             PhylogenyDataUtil
-                    .appendElement( writer, PhyloXmlMapping.EVENT_TYPE, getEventType().toString(), indentation );
+            .appendElement( writer, PhyloXmlMapping.EVENT_TYPE, getEventType().toString(), indentation );
         }
         if ( getNumberOfDuplications() > 0 ) {
             PhylogenyDataUtil.appendElement( writer,

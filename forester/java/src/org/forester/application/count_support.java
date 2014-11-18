@@ -67,10 +67,10 @@ public class count_support {
             System.out.println( count_support.PRG_NAME + ": wrong number of arguments" );
             System.out.println();
             System.out
-                    .println( "Usage: \"count_support [options] <file containing phylogeny to be evaluated> <file with phylogenies to be used for evaluation> <outfile> [outfile for evaluator phylogenies, "
-                            + "always unstripped if -t=<d> option is used, otherwise strippedness is dependent on -s option]\"\n" );
+            .println( "Usage: \"count_support [options] <file containing phylogeny to be evaluated> <file with phylogenies to be used for evaluation> <outfile> [outfile for evaluator phylogenies, "
+                    + "always unstripped if -t=<d> option is used, otherwise strippedness is dependent on -s option]\"\n" );
             System.out
-                    .println( " Options: -s strip external nodes from evaluator phylogenies not found in phylogeny to be evaluated" );
+            .println( " Options: -s strip external nodes from evaluator phylogenies not found in phylogeny to be evaluated" );
             System.out.println( "        : -t=<d> threshold for similarity (0.0 to 1.0)" );
             System.out.println( "        : -n no branch lengths in outfile for evaluator phylogenies" );
             System.out.println();
@@ -105,7 +105,7 @@ public class count_support {
         else {
             if ( !branch_lengths_in_ev_out ) {
                 ForesterUtil.fatalError( count_support.PRG_NAME,
-                                         "Cannot use -n option if no outfile for evaluators specified" );
+                        "Cannot use -n option if no outfile for evaluators specified" );
             }
         }
         Phylogeny p = null;
@@ -142,7 +142,7 @@ public class count_support {
             }
             if ( ( threshhold < 0 ) || ( threshhold > 1.0 ) ) {
                 ForesterUtil.fatalError( count_support.PRG_NAME,
-                                         "support threshold has to be between 0.0 and 1.0 (inclusive)" );
+                        "support threshold has to be between 0.0 and 1.0 (inclusive)" );
             }
         }
         List<Phylogeny> evaluator_phylogenies_above_threshold = null;
@@ -163,7 +163,7 @@ public class count_support {
         if ( threshhold >= 0 ) {
             count_support.normalizeSupport( p, 100, evaluator_phylogenies_above_threshold.size() );
             System.out.println( evaluator_phylogenies_above_threshold.size() + " out of " + ev.length
-                    + " evaluator phylogenies are above threshold of " + threshhold );
+                                + " evaluator phylogenies are above threshold of " + threshhold );
         }
         try {
             final PhylogenyWriter w = new PhylogenyWriter();
@@ -179,7 +179,7 @@ public class count_support {
                 final PhylogenyWriter w = new PhylogenyWriter();
                 if ( evaluator_phylogenies_above_threshold != null ) {
                     System.out.println( "Writing " + evaluator_phylogenies_above_threshold.size()
-                            + " evaluator phylogenies above threshold of " + threshhold + " to: " + evaluators_outfile );
+                                        + " evaluator phylogenies above threshold of " + threshhold + " to: " + evaluators_outfile );
                     if ( count_support.WRITE_EVALUATORS_AS_NHX ) {
                         w.toNewHampshireX( evaluator_phylogenies_above_threshold, evaluators_outfile, ";"
                                 + ForesterUtil.getLineSeparator() );

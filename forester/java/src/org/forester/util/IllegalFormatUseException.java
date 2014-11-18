@@ -28,7 +28,7 @@ package org.forester.util;
 public class IllegalFormatUseException extends IllegalArgumentException {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = -1126329548396073983L;
 

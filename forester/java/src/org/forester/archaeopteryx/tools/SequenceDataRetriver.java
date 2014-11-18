@@ -117,7 +117,7 @@ public final class SequenceDataRetriver extends RunnableProcess {
                                                JOptionPane.WARNING_MESSAGE );
             }
             catch ( final Exception e ) {
-                // Not important if this fails, do nothing. 
+                // Not important if this fails, do nothing.
             }
         }
         else {

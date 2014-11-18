@@ -73,7 +73,7 @@ public final class Mafft extends MsaInferrer {
 
     @Override
     public Msa infer( final List<MolecularSequence> seqs, final List<String> opts ) throws IOException,
-            InterruptedException {
+    InterruptedException {
         final File file = File.createTempFile( "__mafft_input_", ".fasta" );
         file.deleteOnExit();
         final BufferedWriter writer = new BufferedWriter( new FileWriter( file ) );
@@ -99,7 +99,7 @@ public final class Mafft extends MsaInferrer {
         _error = stderr.toString();
         if ( _exit_code != 0 ) {
             throw new IOException( "MAFFT program failed, exit code: " + _exit_code + "\nCommand:\n" + my_opts
-                    + "\nError:\n" + stderr );
+                                   + "\nError:\n" + stderr );
         }
         final StringBuilder stdout = command_executor.getStandardOutputFromCommand();
         if ( ( stdout == null ) || ( stdout.length() < 2 ) ) {

@@ -225,14 +225,14 @@ public class MsaCompactor {
                 }
                 else {
                     n.getNodeData()
-                            .getNodeVisualData()
-                            .setNodeColor( ForesterUtil.calcColor( msa_prop.getLength(),
-                                                                   min,
-                                                                   max,
-                                                                   mean,
-                                                                   min_color,
-                                                                   max_color,
-                                                                   mean_color ) );
+                    .getNodeVisualData()
+                    .setNodeColor( ForesterUtil.calcColor( msa_prop.getLength(),
+                                                           min,
+                                                           max,
+                                                           mean,
+                                                           min_color,
+                                                           max_color,
+                                                           mean_color ) );
                 }
             }
         }
@@ -282,7 +282,7 @@ public class MsaCompactor {
     }
 
     public final List<MsaProperties> removeViaGapAverage( final double mean_gapiness ) throws IOException,
-            InterruptedException {
+    InterruptedException {
         final GapContribution stats[] = calcGapContribtionsStats( _norm );
         final List<String> to_remove_ids = new ArrayList<String>();
         final List<MsaProperties> msa_props = new ArrayList<MsaProperties>();
@@ -383,7 +383,7 @@ public class MsaCompactor {
     }
 
     public final List<MsaProperties> removeWorstOffenders( final int to_remove ) throws IOException,
-            InterruptedException {
+    InterruptedException {
         final GapContribution stats[] = calcGapContribtionsStats( _norm );
         final List<String> to_remove_ids = new ArrayList<String>();
         final List<MsaProperties> msa_props = new ArrayList<MsaProperties>();

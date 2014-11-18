@@ -47,7 +47,7 @@ public final class ResampleableMsa extends BasicMsa {
     final public void resample( final int[] resampled_column_positions ) {
         if ( resampled_column_positions.length != getLength() ) {
             throw new IllegalArgumentException( "illegal attempt to use " + resampled_column_positions.length
-                    + " resampled column positions on msa of length " + getLength() );
+                                                + " resampled column positions on msa of length " + getLength() );
         }
         _resampled_column_positions = resampled_column_positions;
     }

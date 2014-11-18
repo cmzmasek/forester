@@ -114,8 +114,7 @@ public final class MainFrameApplet extends MainFrame {
                     _mainpanel.getCurrentTreePanel().calcParametersForPainting( _mainpanel.getCurrentTreePanel()
                                                                                         .getWidth(),
                                                                                 _mainpanel.getCurrentTreePanel()
-                                                                                        .getHeight(),
-                                                                                getOptions().isAllowFontSizeChange() );
+                                                                                        .getHeight() );
                 }
             }
         } );

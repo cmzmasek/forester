@@ -437,7 +437,7 @@ public class TestPhylogenyReconstruction {
     private static boolean testDistanceCalculationMethods( final File test_dir ) {
         try {
             final Msa msa0 = GeneralMsaParser.parse( new FileInputStream( test_dir + ForesterUtil.FILE_SEPARATOR
-                    + "bcl.aln" ) );
+                                                                          + "bcl.aln" ) );
             final BasicSymmetricalDistanceMatrix pwd0 = PairwiseDistanceCalculator.calcKimuraDistances( msa0 );
             if ( pwd0.getSize() != 120 ) {
                 return false;
@@ -465,7 +465,7 @@ public class TestPhylogenyReconstruction {
             final String p1_str = "((((((a,b)ab,c)ac,d)ad,(e,f)ef)af,(g,h)gh)ah,i)r";
             final Phylogeny p1 = factory1.create( p1_str, new NHXParser() )[ 0 ];
             CharacterStateMatrix<CharacterStateMatrix.BinaryStates> m1 = new BasicCharacterStateMatrix<CharacterStateMatrix.BinaryStates>( 9,
-                                                                                                                                           1 );
+                    1 );
             m1.setIdentifier( 0, "a" );
             m1.setIdentifier( 1, "b" );
             m1.setIdentifier( 2, "c" );
@@ -538,7 +538,7 @@ public class TestPhylogenyReconstruction {
             final String p2_str = "((((((a,b)ab,c)ac,d)ad,(e,f)ef)af,(g,h,i)gi)ai,((j,k,l)jl,(m,n,o)mo,(p,q,r)pr)jr)root";
             final Phylogeny p2 = factory2.create( p2_str, new NHXParser() )[ 0 ];
             final CharacterStateMatrix<CharacterStateMatrix.BinaryStates> m2 = new BasicCharacterStateMatrix<CharacterStateMatrix.BinaryStates>( 18,
-                                                                                                                                                 4 );
+                    4 );
             m2.setIdentifier( 0, "a" );
             m2.setIdentifier( 1, "b" );
             m2.setIdentifier( 2, "c" );
@@ -847,7 +847,7 @@ public class TestPhylogenyReconstruction {
             final String p10_str = "((((((a,b)ab,c)ac,d)ad,(e,f)ef)af,(g,h)gh)ah,i)r";
             final Phylogeny p10 = factory10.create( p10_str, new NHXParser() )[ 0 ];
             final CharacterStateMatrix<CharacterStateMatrix.BinaryStates> m10 = new BasicCharacterStateMatrix<CharacterStateMatrix.BinaryStates>( 9,
-                                                                                                                                                  1 );
+                    1 );
             m10.setIdentifier( 0, "a" );
             m10.setIdentifier( 1, "b" );
             m10.setIdentifier( 2, "c" );
@@ -890,7 +890,7 @@ public class TestPhylogenyReconstruction {
             final String p1_str = "((((((a,b,y)aby,c)ac,d)ad,(e,f)ef)af,(g,h)gh)ah,i)r";
             final Phylogeny p1 = factory1.create( p1_str, new NHXParser() )[ 0 ];
             final CharacterStateMatrix<CharacterStateMatrix.BinaryStates> m1 = new BasicCharacterStateMatrix<CharacterStateMatrix.BinaryStates>( 10,
-                                                                                                                                                 1 );
+                    1 );
             m1.setIdentifier( 0, "a" );
             m1.setIdentifier( 1, "b" );
             m1.setIdentifier( 2, "y" );
@@ -961,7 +961,7 @@ public class TestPhylogenyReconstruction {
             final String p2_str = "((((((a,b,y)aby,c,d)cad,e,f)af,(g,h)gh)ah,i))r";
             final Phylogeny p2 = factory2.create( p2_str, new NHXParser() )[ 0 ];
             final CharacterStateMatrix<CharacterStateMatrix.BinaryStates> m2 = new BasicCharacterStateMatrix<CharacterStateMatrix.BinaryStates>( 10,
-                                                                                                                                                 1 );
+                    1 );
             m2.setIdentifier( 0, "a" );
             m2.setIdentifier( 1, "b" );
             m2.setIdentifier( 2, "y" );
@@ -2121,7 +2121,7 @@ public class TestPhylogenyReconstruction {
                 return false;
             }
             if ( isUnequal( p2.getNode( "Chimp" ).getParent().getParent().getParent().getParent().getParent()
-                    .getDistanceToParent(), 0.458845 ) ) {
+                            .getDistanceToParent(), 0.458845 ) ) {
                 return false;
             }
             m = new BasicSymmetricalDistanceMatrix( 4 );
@@ -2236,11 +2236,11 @@ public class TestPhylogenyReconstruction {
                 return false;
             }
             if ( isUnequal( p2f.getNode( "Chimp" ).getParent().getParent().getParent().getParent()
-                    .getDistanceToParent(), 0.42027 ) ) {
+                            .getDistanceToParent(), 0.42027 ) ) {
                 return false;
             }
             if ( isUnequal( p2f.getNode( "Chimp" ).getParent().getParent().getParent().getParent().getParent()
-                    .getDistanceToParent(), 0.458845 ) ) {
+                            .getDistanceToParent(), 0.458845 ) ) {
                 return false;
             }
         }
@@ -2669,7 +2669,7 @@ public class TestPhylogenyReconstruction {
                 return false;
             }
             if ( isUnequal( p2.getNode( "Chimp" ).getParent().getParent().getParent().getParent().getParent()
-                    .getDistanceToParent(), 0.458845 ) ) {
+                            .getDistanceToParent(), 0.458845 ) ) {
                 return false;
             }
             //

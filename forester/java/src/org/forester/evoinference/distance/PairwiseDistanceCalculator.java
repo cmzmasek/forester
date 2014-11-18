@@ -53,7 +53,7 @@ public final class PairwiseDistanceCalculator {
     /**
      * "Kimura Distance"
      * Kimura, 1983
-     * 
+     *
      * @param row_1
      * @param row_2
      * @return
@@ -143,23 +143,23 @@ public final class PairwiseDistanceCalculator {
 
     public static BasicSymmetricalDistanceMatrix calcFractionalDissimilarities( final Msa msa ) {
         return new PairwiseDistanceCalculator( msa, DEFAULT_VALUE_FOR_TOO_LARGE_DISTANCE_FOR_KIMURA_FORMULA )
-                .calcFractionalDissimilarities();
+        .calcFractionalDissimilarities();
     }
 
     public static BasicSymmetricalDistanceMatrix calcPoissonDistances( final Msa msa ) {
         return new PairwiseDistanceCalculator( msa, DEFAULT_VALUE_FOR_TOO_LARGE_DISTANCE_FOR_KIMURA_FORMULA )
-                .calcPoissonDistances();
+        .calcPoissonDistances();
     }
 
     public static BasicSymmetricalDistanceMatrix calcKimuraDistances( final Msa msa ) {
         return new PairwiseDistanceCalculator( msa, DEFAULT_VALUE_FOR_TOO_LARGE_DISTANCE_FOR_KIMURA_FORMULA )
-                .calcKimuraDistances();
+        .calcKimuraDistances();
     }
 
     public static BasicSymmetricalDistanceMatrix calcKimuraDistances( final Msa msa,
                                                                       final double value_for_too_large_distance_for_kimura_formula ) {
         return new PairwiseDistanceCalculator( msa, value_for_too_large_distance_for_kimura_formula )
-                .calcKimuraDistances();
+        .calcKimuraDistances();
     }
 
     public enum PWD_DISTANCE_METHOD {

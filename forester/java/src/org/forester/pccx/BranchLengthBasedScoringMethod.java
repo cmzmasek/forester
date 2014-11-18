@@ -31,7 +31,7 @@ import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 
 /*
- * 
+ *
  * @author Christian M. Zmasek
  */
 public class BranchLengthBasedScoringMethod extends BranchCountingBasedScoringMethod {

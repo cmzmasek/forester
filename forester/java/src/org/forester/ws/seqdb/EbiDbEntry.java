@@ -54,12 +54,12 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
     private String                _tax_id;
 
     // TODO  PUBMED   15798186
-    //TODO  (FEATURES) 
+    //TODO  (FEATURES)
     // source /db_xref="taxon:9606"
-    // gene            1..2881  
-    // /gene="RBM39" 
+    // gene            1..2881
+    // /gene="RBM39"
     //
-    // /db_xref="MIM:604739"  
+    // /db_xref="MIM:604739"
     // CDS
     // /gene="RBM39"
     // /db_xref="MIM:604739"
@@ -164,7 +164,7 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
             reference sequence was derived from DC346351.1, BC141835.1 and
             C75555.1.
             On Jun 16, 2011 this sequence version replaced gi:35493810.
-            
+
             Summary: This gene encodes a member of the U2AF65 family of
             proteins. The encoded protein is found in the nucleus, where it
             co-localizes with core spliceosomal proteins. It has been shown to
@@ -173,14 +173,14 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
             coregulator of the viral oncoprotein v-Rel. Multiple transcript
             variants have been observed for this gene. A related pseudogene has
             been identified on chromosome X. [provided by RefSeq, Aug 2011].
-            
+
             Transcript Variant: This variant (1) encodes the longest isoform
             (a, also called CC1.4).
-            
+
             Publication Note:  This RefSeq record includes a subset of the
             publications that are available for this gene. Please see the Gene
             record to access additional publications.
-            
+
             ##Evidence-Data-START##
             Transcript exon combination :: BC141835.1, L10911.1 [ECO:0000332]
             RNAseq introns              :: mixed/partial sample support
@@ -262,12 +262,12 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
                      recorded"
                      /note="N-acetylalanine; propagated from
                      UniProtKB/Swiss-Prot (Q14498.2); acetylation site"
-     
+
      exon            461..510
                      /gene="RBM39"
                      /gene_synonym="CAPER; CAPERalpha; FSAP59; HCC1; RNPC2"
                      /inference="alignment:Splign:1.39.8"
-    
+
      exon            1902..2874
                      /gene="RBM39"
                      /gene_synonym="CAPER; CAPERalpha; FSAP59; HCC1; RNPC2"
@@ -287,23 +287,23 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
                      /gene_synonym="CAPER; CAPERalpha; FSAP59; HCC1; RNPC2"
                      /standard_name="REN58785"
                      /db_xref="UniSTS:383585"
-    
+
      polyA_signal    2851..2856
                      /gene="RBM39"
                      /gene_synonym="CAPER; CAPERalpha; FSAP59; HCC1; RNPC2"
      polyA_site      2874
                      /gene="RBM39"
                      /gene_synonym="CAPER; CAPERalpha; FSAP59; HCC1; RNPC2"
-    ORIGIN      
+    ORIGIN
         1 atttggagct tggggcagct tctcgcgaga gcccgtgctg agggctctgt gaggccccgt
        61 gtgtttgtgt gtgtgtatgt gtgctggtga atgtgagtac agggaagcag cggccgccat
       121 ttcagggagc ttgtcgacgc tgtcgcaggg gtggatcctg agctgccgaa gccgccgtcc
       181 tgctctcccg cgtgggcttc tctaattcca ttgttttttt tagattctct cgggcctagc
       241 cgtccttgga acccgatatt cgggctgggc ggttccgcgg cctgggccta ggggcttaac
-    
-    
-    
-    */
+
+
+
+     */
     private EbiDbEntry() {
     }
 

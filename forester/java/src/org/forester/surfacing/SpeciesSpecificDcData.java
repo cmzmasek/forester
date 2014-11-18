@@ -40,7 +40,7 @@ interface SpeciesSpecificDcData {
     /**
      * This should return a sorted map mapping domain ids to their corresponding
      * counts
-     * 
+     *
      * @return a sorted map mapping domain ids to their corresponding counts
      */
     public SortedMap<String, Integer> getCombinableDomainIdToCountsMap();

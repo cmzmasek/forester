@@ -150,7 +150,7 @@ public class pfam_go {
         System.out.println( "Usage:" );
         System.out.println();
         System.out.println( PRG_NAME + " [-" + ALLOW_DUPLICATES_OPTION
-                + " to allow duplicates] <pfam2go file> <file with pfams>" );
+                            + " to allow duplicates] <pfam2go file> <file with pfams>" );
         System.out.println();
         System.out.println();
     }

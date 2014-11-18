@@ -50,16 +50,16 @@ public class BasicProtein implements Protein {
     private final List<Domain>       _protein_domains;
     public static Comparator<Domain> DomainMidPositionComparator = new Comparator<Domain>() {
 
-                                                                     @Override
-                                                                     public int compare( final Domain d1,
-                                                                                         final Domain d2 ) {
-                                                                         final int m1 = ( d1.getTo() + d1.getFrom() );
-                                                                         final int m2 = ( d2.getTo() + d2.getFrom() );
-                                                                         return m1 < m2 ? -1 : m1 > m2 ? 1 : d1
-                                                                                 .getDomainId()
-                                                                                 .compareTo( d2.getDomainId() );
-                                                                     }
-                                                                 };
+        @Override
+        public int compare( final Domain d1,
+                            final Domain d2 ) {
+            final int m1 = ( d1.getTo() + d1.getFrom() );
+            final int m2 = ( d2.getTo() + d2.getFrom() );
+            return m1 < m2 ? -1 : m1 > m2 ? 1 : d1
+                    .getDomainId()
+                    .compareTo( d2.getDomainId() );
+        }
+    };
 
     public BasicProtein( final String id_str, final String species_str, final int length ) {
         if ( length < 0 ) {
@@ -88,10 +88,10 @@ public class BasicProtein implements Protein {
      * If in_nc_order is set to true, this returns true only and only if
      * the order in List 'domains' and this protein (as determined by the start positions
      * of the domains of this proteins, _not_ by their index) are the same
-     * (interspersing, 'other', domains in this are ignored). 
+     * (interspersing, 'other', domains in this are ignored).
      * If in_nc_order is set to false, this returns true only and only if
      * this contains all domains listed in 'domains' (order and count do not matter).
-     * 
+     *
      * @param domains a list of domain ids in a certain order.
      * @param in_nc_order to consider order
      * @return

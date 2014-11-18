@@ -34,8 +34,8 @@ public class CountsBasedPairwiseDomainSimilarity implements PairwiseDomainSimila
 
     /**
      * counts_difference: (counts for domain 1) minus (counts for domain 2).
-     * 
-     * 
+     *
+     *
      * @param counts_difference value of domain_1 minus value of domain_2
      * @param counts_sum
      */
@@ -52,7 +52,7 @@ public class CountsBasedPairwiseDomainSimilarity implements PairwiseDomainSimila
 
     /**
      * Returns (counts for domain 1) minus (counts for domain 2).
-     * 
+     *
      */
     @Override
     public int getDifferenceInCounts() {

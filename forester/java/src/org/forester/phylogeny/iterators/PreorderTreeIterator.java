@@ -57,7 +57,7 @@ public final class PreorderTreeIterator implements PhylogenyNodeIterator {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.util.Iterator#hasNext()
      */
     @Override
@@ -84,7 +84,7 @@ public final class PreorderTreeIterator implements PhylogenyNodeIterator {
 
     /**
      * Not supported.
-     * 
+     *
      */
     @Override
     public final void remove() {

@@ -324,8 +324,8 @@ public final class MsaMethods {
 
     final private static HashMap<Character, Integer> calcResidueDistribution6( final Msa msa, final int col ) {
         // Residues are classified into one of tex2html_wrap199 types:
-        // aliphatic [AVLIMC], aromatic [FWYH], polar [STNQ], positive [KR], negative [DE], 
-        // special conformations [GP] and gaps. This convention follows that 
+        // aliphatic [AVLIMC], aromatic [FWYH], polar [STNQ], positive [KR], negative [DE],
+        // special conformations [GP] and gaps. This convention follows that
         // of Mirny & Shakhnovich (1999, J Mol Biol 291:177-196).
         final HashMap<Character, Integer> counts = new HashMap<Character, Integer>();
         for( int row = 0; row < msa.getNumberOfSequences(); ++row ) {
@@ -370,8 +370,8 @@ public final class MsaMethods {
 
     final private static HashMap<Character, Integer> calcResidueDistribution7( final Msa msa, final int col ) {
         // Residues are classified into one of tex2html_wrap199 types:
-        // aliphatic [AVLIMC], aromatic [FWYH], polar [STNQ], positive [KR], negative [DE], 
-        // special conformations [GP] and gaps. This convention follows that 
+        // aliphatic [AVLIMC], aromatic [FWYH], polar [STNQ], positive [KR], negative [DE],
+        // special conformations [GP] and gaps. This convention follows that
         // of Mirny & Shakhnovich (1999, J Mol Biol 291:177-196).
         final HashMap<Character, Integer> counts = new HashMap<Character, Integer>();
         for( int row = 0; row < msa.getNumberOfSequences(); ++row ) {

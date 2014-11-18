@@ -86,7 +86,7 @@ public class Phylogeny {
     /**
      * Adds this Phylogeny to the list of child nodes of PhylogenyNode parent
      * and sets the parent of this to parent.
-     * 
+     *
      * @param n
      *            the PhylogenyNode to add
      */
@@ -126,7 +126,7 @@ public class Phylogeny {
     /**
      * This calculates the height of the subtree emanating at n for rooted,
      * tree-shaped phylogenies
-     * 
+     *
      * @param n
      *            the root-node of a subtree
      * @return the height of the subtree emanating at n
@@ -222,9 +222,9 @@ public class Phylogeny {
     /**
      * Need to call clearHashIdToNodeMap() afterwards (not done automatically
      * to allow client multiple deletions in linear time).
-     * Need to call 'recalculateNumberOfExternalDescendants(boolean)' after this 
+     * Need to call 'recalculateNumberOfExternalDescendants(boolean)' after this
      * if tree is to be displayed.
-     * 
+     *
      * @param remove_us the parent node of the subtree to be deleted
      */
     public void deleteSubtree( final PhylogenyNode remove_us, final boolean collapse_resulting_node_with_one_desc ) {
@@ -261,12 +261,12 @@ public class Phylogeny {
                     final int pi = p.getChildNodeIndex();
                     if ( removed_node.isFirstChildNode() ) {
                         p.getChildNode( 1 ).setDistanceToParent( PhylogenyMethods.addPhylogenyDistances( p
-                                .getDistanceToParent(), p.getChildNode( 1 ).getDistanceToParent() ) );
+                                                                                                         .getDistanceToParent(), p.getChildNode( 1 ).getDistanceToParent() ) );
                         pp.setChildNode( pi, p.getChildNode( 1 ) );
                     }
                     else {
                         p.getChildNode( 0 ).setDistanceToParent( PhylogenyMethods.addPhylogenyDistances( p
-                                .getDistanceToParent(), p.getChildNode( 0 ).getDistanceToParent() ) );
+                                                                                                         .getDistanceToParent(), p.getChildNode( 0 ).getDistanceToParent() ) );
                         pp.setChildNode( pi, p.getChildNode( 0 ) );
                     }
                 }
@@ -313,10 +313,10 @@ public class Phylogeny {
     }
 
     /**
-     * 
+     *
      * Warning. The order of the returned nodes is random
      * -- and hence cannot be relied on.
-     * 
+     *
      * @return Unordered set of PhylogenyNode
      */
     public List<PhylogenyNode> getExternalNodes() {
@@ -342,7 +342,7 @@ public class Phylogeny {
     /**
      * Sets the number of duplications of this Phylogeny (int). A value of -1
      * indicates that the number of duplications is unknown.
-     * 
+     *
      * @param clean_nh
      *            set to true for clean NH format
      */
@@ -373,7 +373,7 @@ public class Phylogeny {
      * height is the longest distance from the root to an external node. Please
      * note. Child nodes of collapsed nodes are ignored -- which is useful for
      * display purposes but might be misleading for other applications.
-     * 
+     *
      * @return the height for rooted, tree-shaped phylogenies
      */
     public double getHeight() {
@@ -411,7 +411,7 @@ public class Phylogeny {
     /**
      * Returns a PhylogenyNode of this Phylogeny which has a matching name.
      * Throws an Exception if seqname is not present in this or not unique.
-     * 
+     *
      * @param name
      *            name (String) of PhylogenyNode to find
      * @return PhylogenyNode with matchin name
@@ -432,7 +432,7 @@ public class Phylogeny {
 
     /**
      * This is time-inefficient since it runs a iterator each time it is called.
-     * 
+     *
      */
     public int getNodeCount() {
         if ( isEmpty() ) {
@@ -448,7 +448,7 @@ public class Phylogeny {
     /**
      * Returns a List with references to all Nodes of this Phylogeny which have
      * a matching name.
-     * 
+     *
      * @param name
      *            name (String) of Nodes to find
      * @return Vector of references to Nodes of this Phylogeny with matching
@@ -529,7 +529,7 @@ public class Phylogeny {
     /**
      * Returns a Vector with references to all Nodes of this Phylogeny which
      * have a matching species name.
-     * 
+     *
      * @param specname
      *            species name (String) of Nodes to find
      * @return Vector of references to Nodes of this Phylogeny with matching
@@ -629,7 +629,7 @@ public class Phylogeny {
      * <p>
      * (Last modified: 11/22/00) Olivier CHABROL :
      * olivier.chabrol@univ-provence.fr
-     * 
+     *
      * @param n
      *            external PhylogenyNode whose orthologs are to be returned
      * @return Vector of references to all orthologous Nodes of PhylogenyNode n
@@ -658,11 +658,11 @@ public class Phylogeny {
             if ( node.isDuplication() && isContains( taxIdList, taxonomyCodeRangeList ) ) {
                 if ( node.getChildNode1() == prev ) {
                     v.addAll( getNodeByTaxonomyID( searchNodeSpeciesId, node.getChildNode2()
-                            .getAllExternalDescendants() ) );
+                                                   .getAllExternalDescendants() ) );
                 }
                 else {
                     v.addAll( getNodeByTaxonomyID( searchNodeSpeciesId, node.getChildNode1()
-                            .getAllExternalDescendants() ) );
+                                                   .getAllExternalDescendants() ) );
                 }
             }
         }
@@ -711,7 +711,7 @@ public class Phylogeny {
     /**
      * Returns whether this is a completely binary tree (i.e. all internal nodes
      * are bifurcations).
-     * 
+     *
      */
     public boolean isCompletelyBinary() {
         if ( isEmpty() ) {
@@ -728,7 +728,7 @@ public class Phylogeny {
 
     /**
      * Checks whether a Phylogeny object is deleted (or empty).
-     * 
+     *
      * @return true if the tree is deleted (or empty), false otherwise
      */
     public boolean isEmpty() {
@@ -770,7 +770,7 @@ public class Phylogeny {
      * Resets the ID numbers of the nodes of this Phylogeny in level order,
      * starting with start_label (for the root). <br>
      * WARNING. After this method has been called, node IDs are no longer
-     * unique. 
+     * unique.
      */
     public void levelOrderReID() {
         if ( isEmpty() ) {
@@ -810,7 +810,7 @@ public class Phylogeny {
      * (Re)counts the number of children for each PhylogenyNode of this
      * Phylogeny. As an example, this method needs to be called after a
      * Phylogeny has been reRooted and it is to be displayed.
-     * 
+     *
      * @param consider_collapsed_nodes
      *            set to true to take into account collapsed nodes (collapsed
      *            nodes have 1 child).
@@ -843,7 +843,7 @@ public class Phylogeny {
      * <p>
      * <li>recalculateNumberOfExternalDescendants(boolean)
      * <li>recalculateAndReset()
-     * 
+     *
      * @param id
      *            ID (int) of PhylogenyNode of this Phylogeny
      */
@@ -863,7 +863,7 @@ public class Phylogeny {
      * </ul>
      * <p>
      * (Last modified: 10/01/01)
-     * 
+     *
      * @param n
      *            PhylogenyNode of this Phylogeny\
      */
@@ -995,7 +995,7 @@ public class Phylogeny {
                 }
                 else {
                     node.setDistanceToParent( ( c.getDistanceToParent() >= 0.0 ? c.getDistanceToParent() : 0.0 )
-                            + ( node.getDistanceToParent() >= 0.0 ? node.getDistanceToParent() : 0.0 ) );
+                                              + ( node.getDistanceToParent() >= 0.0 ? node.getDistanceToParent() : 0.0 ) );
                 }
                 if ( c.getBranchDataDirectly() != null ) {
                     node.setBranchData( ( BranchData ) c.getBranchDataDirectly().copy() );
@@ -1146,7 +1146,7 @@ public class Phylogeny {
     // ---------------------------------------------------------
     /**
      * Converts this Phylogeny to a New Hampshire X (String) representation.
-     * 
+     *
      * @return New Hampshire X (String) representation of this
      * @see #toNewHampshireX()
      */
@@ -1180,7 +1180,7 @@ public class Phylogeny {
     /**
      * Return Node by TaxonomyId Olivier CHABROL :
      * olivier.chabrol@univ-provence.fr
-     * 
+     *
      * @param taxonomyID
      *            search taxonomy identifier
      * @param nodes
@@ -1200,7 +1200,7 @@ public class Phylogeny {
     /**
      * List all species contains in all leaf under a node Olivier CHABROL :
      * olivier.chabrol@univ-provence.fr
-     * 
+     *
      * @param node
      *            PhylogenyNode whose sub node species are returned
      * @return species contains in all leaf under the param node
@@ -1223,7 +1223,7 @@ public class Phylogeny {
      * Create a map [<PhylogenyNode, List<String>], the list contains the
      * species contains in all leaf under phylogeny node Olivier CHABROL :
      * olivier.chabrol@univ-provence.fr
-     * 
+     *
      * @param node
      *            the tree root node
      * @param map
@@ -1246,7 +1246,7 @@ public class Phylogeny {
     /**
      * Util method to check if all element of a list is contains in the
      * rangeList. Olivier CHABROL : olivier.chabrol@univ-provence.fr
-     * 
+     *
      * @param list
      *            list to be check
      * @param rangeList

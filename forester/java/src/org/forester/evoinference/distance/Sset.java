@@ -67,7 +67,7 @@ public final class Sset {
             if ( x == null ) {
                 System.out.println();
                 System.out
-                        .println( "________________________________________________________________________________________" );
+                .println( "________________________________________________________________________________________" );
                 System.out.println( toString() );
                 throw new IllegalArgumentException( "key " + key + " (->" + value + ") does not exist for row " + j );
             }
@@ -77,7 +77,7 @@ public final class Sset {
                 if ( !x.contains( value ) ) {
                     System.out.println();
                     System.out
-                            .println( "________________________________________________________________________________________" );
+                    .println( "________________________________________________________________________________________" );
                     System.out.println( toString() );
                     throw new IllegalArgumentException( "pairing " + key + "->" + value + " does not exist for row "
                             + j );
@@ -89,7 +89,7 @@ public final class Sset {
             if ( DEBUG ) {
                 if ( !x.remove( value ) ) {
                     throw new IllegalArgumentException( "pairing " + key + "->" + value
-                            + " does not exist (could not be removed) for row " + j );
+                                                        + " does not exist (could not be removed) for row " + j );
                 }
             }
             else {

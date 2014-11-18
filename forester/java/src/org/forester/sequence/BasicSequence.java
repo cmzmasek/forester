@@ -36,7 +36,7 @@ public class BasicSequence implements MolecularSequence {
 
     /**
      * Only use if you know what you are doing!
-     * 
+     *
      */
     public BasicSequence( final String identifier, final String mol_sequence, final TYPE type ) {
         if ( ForesterUtil.isEmpty( identifier ) ) {
@@ -52,7 +52,7 @@ public class BasicSequence implements MolecularSequence {
 
     /**
      * Only use if you know what you are doing!
-     * 
+     *
      */
     public BasicSequence( final String identifier, final char[] mol_sequence, final TYPE type ) {
         if ( ForesterUtil.isEmpty( identifier ) ) {
@@ -145,17 +145,17 @@ public class BasicSequence implements MolecularSequence {
 
     public static MolecularSequence createAaSequence( final String identifier, final String mol_sequence ) {
         return new BasicSequence( identifier, mol_sequence.toUpperCase().replaceAll( "\\.", GAP_STR )
-                .replaceAll( AA_REGEXP, Character.toString( UNSPECIFIED_AA ) ), TYPE.AA );
+                                  .replaceAll( AA_REGEXP, Character.toString( UNSPECIFIED_AA ) ), TYPE.AA );
     }
 
     public static MolecularSequence createDnaSequence( final String identifier, final String mol_sequence ) {
         return new BasicSequence( identifier, mol_sequence.toUpperCase().replaceAll( "\\.", GAP_STR )
-                .replaceAll( DNA_REGEXP, Character.toString( UNSPECIFIED_NUC ) ), TYPE.DNA );
+                                  .replaceAll( DNA_REGEXP, Character.toString( UNSPECIFIED_NUC ) ), TYPE.DNA );
     }
 
     public static MolecularSequence createRnaSequence( final String identifier, final String mol_sequence ) {
         return new BasicSequence( identifier, mol_sequence.toUpperCase().replaceAll( "\\.", GAP_STR )
-                .replaceAll( RNA_REGEXP, Character.toString( UNSPECIFIED_NUC ) ), TYPE.RNA );
+                                  .replaceAll( RNA_REGEXP, Character.toString( UNSPECIFIED_NUC ) ), TYPE.RNA );
     }
 
     @Override

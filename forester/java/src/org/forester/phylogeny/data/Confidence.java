@@ -167,25 +167,25 @@ public class Confidence implements PhylogenyData, Comparable<Confidence> {
         writer.write( indentation );
         if ( getStandardDeviation() != CONFIDENCE_DEFAULT_VALUE ) {
             PhylogenyDataUtil
-                    .appendElement( writer,
-                                    PhyloXmlMapping.CONFIDENCE,
-                                    FORMATTER.format( ForesterUtil
-                                            .round( getValue(), PhyloXmlUtil.ROUNDING_DIGITS_FOR_PHYLOXML_DOUBLE_OUTPUT ) ),
-                                    PhyloXmlMapping.CONFIDENCE_TYPE_ATTR,
-                                    ForesterUtil.isEmpty( getType() ) ? "unknown" : getType(),
-                                    PhyloXmlMapping.CONFIDENCE_SD_ATTR,
-                                    String.valueOf( ForesterUtil
-                                            .round( getStandardDeviation(),
-                                                    PhyloXmlUtil.ROUNDING_DIGITS_FOR_PHYLOXML_DOUBLE_OUTPUT ) ) );
+            .appendElement( writer,
+                            PhyloXmlMapping.CONFIDENCE,
+                            FORMATTER.format( ForesterUtil
+                                              .round( getValue(), PhyloXmlUtil.ROUNDING_DIGITS_FOR_PHYLOXML_DOUBLE_OUTPUT ) ),
+                                              PhyloXmlMapping.CONFIDENCE_TYPE_ATTR,
+                                              ForesterUtil.isEmpty( getType() ) ? "unknown" : getType(),
+                                                      PhyloXmlMapping.CONFIDENCE_SD_ATTR,
+                                                      String.valueOf( ForesterUtil
+                                                                      .round( getStandardDeviation(),
+                                                                              PhyloXmlUtil.ROUNDING_DIGITS_FOR_PHYLOXML_DOUBLE_OUTPUT ) ) );
         }
         else {
             PhylogenyDataUtil
-                    .appendElement( writer,
-                                    PhyloXmlMapping.CONFIDENCE,
-                                    FORMATTER.format( ForesterUtil
-                                            .round( getValue(), PhyloXmlUtil.ROUNDING_DIGITS_FOR_PHYLOXML_DOUBLE_OUTPUT ) ),
-                                    PhyloXmlMapping.CONFIDENCE_TYPE_ATTR,
-                                    ForesterUtil.isEmpty( getType() ) ? "unknown" : getType() );
+            .appendElement( writer,
+                            PhyloXmlMapping.CONFIDENCE,
+                            FORMATTER.format( ForesterUtil
+                                              .round( getValue(), PhyloXmlUtil.ROUNDING_DIGITS_FOR_PHYLOXML_DOUBLE_OUTPUT ) ),
+                                              PhyloXmlMapping.CONFIDENCE_TYPE_ATTR,
+                                              ForesterUtil.isEmpty( getType() ) ? "unknown" : getType() );
         }
     }
 

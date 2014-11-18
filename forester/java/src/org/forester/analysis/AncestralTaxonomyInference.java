@@ -40,7 +40,7 @@ import org.forester.ws.seqdb.UniProtTaxonomy;
 public final class AncestralTaxonomyInference {
 
     public static void inferTaxonomyFromDescendents( final Phylogeny phy ) throws IOException,
-            AncestralTaxonomyInferenceException {
+    AncestralTaxonomyInferenceException {
         TaxonomyDataManager.clearCachesIfTooLarge();
         for( final PhylogenyNodeIterator iter = phy.iteratorPostorder(); iter.hasNext(); ) {
             final PhylogenyNode node = iter.next();
@@ -51,7 +51,7 @@ public final class AncestralTaxonomyInference {
     }
 
     private static void inferTaxonomyFromDescendents( final PhylogenyNode n ) throws IOException,
-            AncestralTaxonomyInferenceException {
+    AncestralTaxonomyInferenceException {
         if ( n.isExternal() ) {
             throw new IllegalArgumentException( "attempt to infer taxonomy from descendants of external node" );
         }
@@ -65,9 +65,9 @@ public final class AncestralTaxonomyInference {
                             || !ForesterUtil.isEmpty( desc.getNodeData().getTaxonomy().getScientificName() )
                             || !ForesterUtil.isEmpty( desc.getNodeData().getTaxonomy().getLineage() )
                             || !ForesterUtil.isEmpty( desc.getNodeData().getTaxonomy().getTaxonomyCode() ) || !ForesterUtil
-                                .isEmpty( desc.getNodeData().getTaxonomy().getCommonName() ) ) ) {
+                            .isEmpty( desc.getNodeData().getTaxonomy().getCommonName() ) ) ) {
                 final UniProtTaxonomy up_tax = TaxonomyDataManager.obtainUniProtTaxonomy( desc.getNodeData()
-                        .getTaxonomy(), null, null );
+                                                                                          .getTaxonomy(), null, null );
                 if ( ( up_tax == null ) && ForesterUtil.isEmpty( desc.getNodeData().getTaxonomy().getLineage() ) ) {
                     String desc_str = "";
                     if ( !ForesterUtil.isEmpty( desc.getName() ) ) {
@@ -78,9 +78,9 @@ public final class AncestralTaxonomyInference {
                     }
                     System.out.println( desc.getNodeData().getTaxonomy().toString() );
                     System.out.println( ForesterUtil.stringListToString( desc.getNodeData().getTaxonomy().getLineage(),
-                                                                         "  >  " ) );
+                            "  >  " ) );
                     throw new AncestralTaxonomyInferenceException( "a taxonomy for node " + desc_str
-                            + " could not be established from the database" );
+                                                                   + " could not be established from the database" );
                 }
                 String[] lineage = ForesterUtil.stringListToArray( desc.getNodeData().getTaxonomy().getLineage() );
                 if ( ( lineage == null ) || ( lineage.length < 1 ) ) {
@@ -104,7 +104,7 @@ public final class AncestralTaxonomyInference {
                     node = "[" + desc.getId() + "]";
                 }
                 throw new AncestralTaxonomyInferenceException( "node " + node
-                        + " has no or inappropriate taxonomic information" );
+                                                               + " has no or inappropriate taxonomic information" );
             }
         }
         final List<String> last_common_lineage = new ArrayList<String>();

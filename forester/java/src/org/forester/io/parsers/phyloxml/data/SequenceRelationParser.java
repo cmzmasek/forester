@@ -68,7 +68,7 @@ public class SequenceRelationParser implements PhylogenyDataPhyloXmlParser {
         }
         if ( element.isHasAttribute( PhyloXmlMapping.SEQUENCE_RELATION_DISTANCE ) ) {
             seqRelation
-                    .setDistance( Double.valueOf( element.getAttribute( PhyloXmlMapping.SEQUENCE_RELATION_DISTANCE ) ) );
+            .setDistance( Double.valueOf( element.getAttribute( PhyloXmlMapping.SEQUENCE_RELATION_DISTANCE ) ) );
         }
         for( int i = 0; i < element.getNumberOfChildElements(); ++i ) {
             final XmlElement child_element = element.getChildElement( i );

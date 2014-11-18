@@ -167,8 +167,8 @@ public class PhylogeneticInferrer extends RunnableProcess {
                                                        + _options.getMsaPrg() + "\" and the following parameters:\n\""
                                                        + _options.getMsaPrgParameters() + "\"\nError: "
                                                        + e.getLocalizedMessage(),
-                                               "Failed to Calculate MSA",
-                                               JOptionPane.ERROR_MESSAGE );
+                                                       "Failed to Calculate MSA",
+                                                       JOptionPane.ERROR_MESSAGE );
                 if ( DEBUG ) {
                     e.printStackTrace();
                 }
@@ -181,8 +181,8 @@ public class PhylogeneticInferrer extends RunnableProcess {
                                                        + _options.getMsaPrg() + "\" and the following parameters:\n\""
                                                        + _options.getMsaPrgParameters() + "\"\nError: "
                                                        + e.getLocalizedMessage(),
-                                               "Unexpected Exception During MSA Calculation",
-                                               JOptionPane.ERROR_MESSAGE );
+                                                       "Unexpected Exception During MSA Calculation",
+                                                       JOptionPane.ERROR_MESSAGE );
                 if ( DEBUG ) {
                     e.printStackTrace();
                 }
@@ -194,8 +194,8 @@ public class PhylogeneticInferrer extends RunnableProcess {
                                                "Could not create multiple sequence alignment with "
                                                        + _options.getMsaPrg() + "\nand the following parameters:\n\""
                                                        + _options.getMsaPrgParameters() + "\"",
-                                               "Failed to Calculate MSA",
-                                               JOptionPane.ERROR_MESSAGE );
+                                                       "Failed to Calculate MSA",
+                                                       JOptionPane.ERROR_MESSAGE );
                 return;
             }
             if ( DEBUG ) {
@@ -213,8 +213,8 @@ public class PhylogeneticInferrer extends RunnableProcess {
                                                    "Less than two sequences longer than "
                                                            + _options.getMsaProcessingMinAllowedLength()
                                                            + " residues left after MSA processing",
-                                                   "MSA Processing Settings Too Stringent",
-                                                   JOptionPane.ERROR_MESSAGE );
+                                                           "MSA Processing Settings Too Stringent",
+                                                           JOptionPane.ERROR_MESSAGE );
                     return;
                 }
             }
@@ -231,7 +231,7 @@ public class PhylogeneticInferrer extends RunnableProcess {
         if ( _options.isPerformBootstrapResampling() && ( n > 0 ) ) {
             final ResampleableMsa resampleable_msa = new ResampleableMsa( ( BasicMsa ) _msa );
             final int[][] resampled_column_positions = BootstrapResampler.createResampledColumnPositions( _msa
-                    .getLength(), n, seed );
+                                                                                                          .getLength(), n, seed );
             final Phylogeny[] eval_phys = new Phylogeny[ n ];
             for( int i = 0; i < n; ++i ) {
                 resampleable_msa.resample( resampled_column_positions[ i ] );
@@ -261,10 +261,10 @@ public class PhylogeneticInferrer extends RunnableProcess {
     }
 
     private Msa runMAFFT( final List<MolecularSequence> seqs, final List<String> opts ) throws IOException,
-            InterruptedException {
+    InterruptedException {
         Msa msa = null;
         final MsaInferrer mafft = Mafft.createInstance( _mf.getInferenceManager().getPathToLocalMafft()
-                .getCanonicalPath() );
+                                                        .getCanonicalPath() );
         try {
             msa = mafft.infer( seqs, opts );
         }
@@ -278,11 +278,11 @@ public class PhylogeneticInferrer extends RunnableProcess {
         if ( !ForesterUtil.isEmpty( _options.getIntermediateFilesBase() ) ) {
             try {
                 final BufferedWriter msa_writer = new BufferedWriter( new FileWriter( _options.getIntermediateFilesBase()
-                        + MSA_FILE_SUFFIX ) );
+                                                                                      + MSA_FILE_SUFFIX ) );
                 _msa.write( msa_writer, MSA_FORMAT.PHYLIP );
                 msa_writer.close();
                 final BufferedWriter pwd_writer = new BufferedWriter( new FileWriter( _options.getIntermediateFilesBase()
-                        + PWD_FILE_SUFFIX ) );
+                                                                                      + PWD_FILE_SUFFIX ) );
                 m.write( pwd_writer );
                 pwd_writer.close();
             }

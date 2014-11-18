@@ -33,7 +33,7 @@ import javax.swing.JComponent;
 public abstract class AbstractRenderer extends JComponent {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID   = 7236434322552764776L;
     static final Color        DEFAULT_COLOR      = new Color( 0, 0, 0 );

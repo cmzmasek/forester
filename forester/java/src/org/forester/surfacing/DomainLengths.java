@@ -54,9 +54,9 @@ public class DomainLengths {
 
     /**
      * Returns descriptive statistics based on the arithmetic means
-     * for each species.  
-     * 
-     * 
+     * for each species.
+     *
+     *
      * @return
      */
     public DescriptiveStatistics calculateMeanBasedStatistics() {
@@ -68,10 +68,10 @@ public class DomainLengths {
     }
 
     /**
-     * 
+     *
      * Note. This is not technically a Z-score since the distribution
      * of means is unknown (and not normal).
-     * 
+     *
      * @param species
      * @return
      */

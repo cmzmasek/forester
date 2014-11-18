@@ -39,7 +39,7 @@ public class BranchData implements PhylogenyData {
     private BranchWidth      _branch_width;
 
     public BranchData() {
-        // Doing nothing. 
+        // Doing nothing.
     }
 
     public void addConfidence( final Confidence confidence ) {

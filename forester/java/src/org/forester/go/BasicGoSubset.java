@@ -82,7 +82,7 @@ public class BasicGoSubset implements GoSubset {
         }
         else if ( o.getClass() != this.getClass() ) {
             throw new IllegalArgumentException( "attempt to check go subset equality to " + o + " [" + o.getClass()
-                    + "]" );
+                                                + "]" );
         }
         else {
             return ( getType() == ( ( GoSubset ) o ).getType() );

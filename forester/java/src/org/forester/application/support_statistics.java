@@ -118,7 +118,7 @@ public final class support_statistics {
         if ( dss_comp != null ) {
             sb.append( ForesterUtil.getLineSeparator() );
             sb.append( "\t" + ForesterUtil.normalizeString( "values for support means:", max_length, true, ' ' )
-                    + "\t\t" );
+                       + "\t\t" );
             sb.append( ForesterUtil.round( dss_comp.arithmeticMean(), support_statistics.PLACES ) + "\t" );
             sb.append( ForesterUtil.round( dss_comp.sampleStandardDeviation(), support_statistics.PLACES ) + "\t" );
             sb.append( ForesterUtil.round( dss_comp.getMin(), support_statistics.PLACES ) + "\t" );

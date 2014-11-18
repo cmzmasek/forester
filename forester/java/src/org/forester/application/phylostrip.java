@@ -46,7 +46,7 @@ public class phylostrip {
         if ( args.length < 4 ) {
             System.out.println( "\nstrip: Wrong number of arguments.\n" );
             System.out
-                    .println( "Usage: \"phylostrip <in-tree> <out-tree> <options> [name1] [name2] ... OR [ref-tree]\"\n" );
+            .println( "Usage: \"phylostrip <in-tree> <out-tree> <options> [name1] [name2] ... OR [ref-tree]\"\n" );
             System.out.println( " Options: -knn to keep listed nodes" );
             System.out.println( "          -rnn to remove listed nodes" );
             System.out.println( "          -knnp to keep nodes found in [ref-tree]" );

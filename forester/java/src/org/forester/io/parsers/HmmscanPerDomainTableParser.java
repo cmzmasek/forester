@@ -372,7 +372,7 @@ public final class HmmscanPerDomainTableParser {
             if ( ForesterUtil.isEmpty( line ) || line.startsWith( "#" ) ) {
                 continue;
             }
-            // 0                    1           2    3                      4           5      6        7      8      9  10  11        12        13     14    15      16  17      18  19      20  21  22      
+            // 0                    1           2    3                      4           5      6        7      8      9  10  11        12        13     14    15      16  17      18  19      20  21  22
             // #                                                                              --- full sequence --- -------------- this domain -------------   hmm coord   ali coord   env coord
             // # target name        accession   tlen query name             accession   qlen   E-value  score  bias   #  of  c-Evalue  i-Evalue  score  bias  from    to  from    to  from    to  acc description of target
             // #------------------- ---------- -----   -------------------- ---------- ----- --------- ------ ----- --- --- --------- --------- ------ ----- ----- ----- ----- ----- ----- ----- ---- ---------------------
@@ -406,7 +406,7 @@ public final class HmmscanPerDomainTableParser {
                 if ( !isAllowProteinsWithSameName() ) {
                     if ( query.equals( prev_query ) ) {
                         throw new IOException( "more than one protein named [" + query + "]" + " lengths: " + qlen
-                                + ", " + prev_qlen );
+                                               + ", " + prev_qlen );
                     }
                     if ( prev_queries.contains( query ) ) {
                         throw new IOException( "more than one protein named [" + query + "]" );
@@ -442,7 +442,7 @@ public final class HmmscanPerDomainTableParser {
                 }
                 else {
                     throw new IOException( "could not find a score cutoff value for domain id \"" + target_id
-                            + "\" [line " + line_number + "] in [" + getInputFile().getCanonicalPath() + "]" );
+                                           + "\" [line " + line_number + "] in [" + getInputFile().getCanonicalPath() + "]" );
                 }
             }
             final String uc_id = target_id.toUpperCase();
@@ -513,7 +513,7 @@ public final class HmmscanPerDomainTableParser {
         }
         catch ( final NumberFormatException e ) {
             throw new IOException( "could not parse \" +label + \" from \"" + double_str + "\" [line " + line_number
-                    + "] in [" + getInputFile().getCanonicalPath() + "]" );
+                                   + "] in [" + getInputFile().getCanonicalPath() + "]" );
         }
         return d;
     }
@@ -525,7 +525,7 @@ public final class HmmscanPerDomainTableParser {
         }
         catch ( final NumberFormatException e ) {
             throw new IOException( "could not parse \"" + label + "\" from \"" + double_str + "\" [line " + line_number
-                    + "] in [" + getInputFile().getCanonicalPath() + "]" );
+                                   + "] in [" + getInputFile().getCanonicalPath() + "]" );
         }
         return i;
     }
@@ -599,8 +599,8 @@ public final class HmmscanPerDomainTableParser {
     /**
      * To ignore domains which are completely engulfed by domains (individual
      * ones or stretches of overlapping ones) with better support values.
-     * 
-     * 
+     *
+     *
      * @param ignored_engulfed_domains
      */
     public void setIgnoreEngulfedDomains( final boolean ignore_engulfed_domains ) {
@@ -614,7 +614,7 @@ public final class HmmscanPerDomainTableParser {
     /**
      * Sets the individual  score cutoff values (for example, gathering
      * thresholds from Pfam). Domain ids are the keys, cutoffs the values.
-     * 
+     *
      * @param individual_score_cutoffs
      */
     public void setIndividualScoreCutoffs( final Map<String, Double> individual_score_cutoffs ) {

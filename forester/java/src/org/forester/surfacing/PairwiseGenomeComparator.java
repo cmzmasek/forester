@@ -122,11 +122,11 @@ public class PairwiseGenomeComparator {
                 if ( ( list_of_genome_wide_combinable_domains.get( i ).getSize() < 1 )
                         || ( list_of_genome_wide_combinable_domains.get( j ).getSize() < 1 ) ) {
                     domain_distance_scores_means
-                            .setValue( i, j, DomainArchitectureBasedGenomeSimilarityCalculator.MAX_SIMILARITY_SCORE );
+                    .setValue( i, j, DomainArchitectureBasedGenomeSimilarityCalculator.MAX_SIMILARITY_SCORE );
                     shared_domains_based_distances
-                            .setValue( i, j, DomainArchitectureBasedGenomeSimilarityCalculator.MAX_SIMILARITY_SCORE );
+                    .setValue( i, j, DomainArchitectureBasedGenomeSimilarityCalculator.MAX_SIMILARITY_SCORE );
                     shared_binary_combinations_based_distances
-                            .setValue( i, j, DomainArchitectureBasedGenomeSimilarityCalculator.MAX_SIMILARITY_SCORE );
+                    .setValue( i, j, DomainArchitectureBasedGenomeSimilarityCalculator.MAX_SIMILARITY_SCORE );
                     continue;
                 }
                 final List<GenomeWideCombinableDomains> genome_pair = new ArrayList<GenomeWideCombinableDomains>( 2 );
@@ -151,9 +151,9 @@ public class PairwiseGenomeComparator {
                         .calculateDescriptiveStatisticsForMeanValues( similarities );
                 final String species_j = species[ j ].getSpeciesId();
                 final DomainArchitectureBasedGenomeSimilarityCalculator genome_similarity_calculator = new DomainArchitectureBasedGenomeSimilarityCalculator( list_of_genome_wide_combinable_domains
-                                                                                                                                                                      .get( i ),
+                                                                                                                                                              .get( i ),
                                                                                                                                                               list_of_genome_wide_combinable_domains
-                                                                                                                                                                      .get( j ) );
+                                                                                                                                                              .get( j ) );
                 genome_similarity_calculator.setAllowDomainsToBeIgnored( false );
                 double dissimilarity_score_mean;
                 if ( stats.getN() < 1 ) {
@@ -275,15 +275,15 @@ public class PairwiseGenomeComparator {
                     genome_pair.add( list_of_genome_wide_combinable_domains.get( i ) );
                     genome_pair.add( list_of_genome_wide_combinable_domains.get( j ) );
                     final DomainArchitectureBasedGenomeSimilarityCalculator genome_simiarity_calculator = new DomainArchitectureBasedGenomeSimilarityCalculator( list_of_genome_wide_combinable_domains
-                                                                                                                                                                         .get( i ),
+                                                                                                                                                                 .get( i ),
                                                                                                                                                                  list_of_genome_wide_combinable_domains
-                                                                                                                                                                         .get( j ) );
+                                                                                                                                                                 .get( j ) );
                     genome_simiarity_calculator.setAllowDomainsToBeIgnored( true );
                     genome_simiarity_calculator.setDomainIdsToIgnore( domain_ids_to_ignore );
                     shared_domains_based_distances.setValue( i, j, 1.0 - genome_simiarity_calculator
-                            .calculateSharedDomainsBasedGenomeSimilarityScore() );
+                                                             .calculateSharedDomainsBasedGenomeSimilarityScore() );
                     shared_binary_combinations_based_distances.setValue( i, j, 1.0 - genome_simiarity_calculator
-                            .calculateSharedBinaryDomainCombinationBasedGenomeSimilarityScore() );
+                                                                         .calculateSharedBinaryDomainCombinationBasedGenomeSimilarityScore() );
                 }
             }
             getSharedDomainsBasedDistances().add( shared_domains_based_distances );

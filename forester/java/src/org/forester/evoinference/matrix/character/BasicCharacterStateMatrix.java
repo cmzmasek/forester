@@ -102,7 +102,7 @@ public class BasicCharacterStateMatrix<S> implements CharacterStateMatrix<S> {
     @Override
     public CharacterStateMatrix<S> copy() {
         final CharacterStateMatrix<S> new_matrix = new BasicCharacterStateMatrix<S>( getNumberOfIdentifiers(),
-                                                                                     getNumberOfCharacters() );
+                getNumberOfCharacters() );
         for( int character = 0; character < getNumberOfCharacters(); ++character ) {
             if ( getCharacter( character ) != null ) {
                 new_matrix.setCharacter( character, getCharacter( character ) );
@@ -129,7 +129,7 @@ public class BasicCharacterStateMatrix<S> implements CharacterStateMatrix<S> {
         }
         else if ( o.getClass() != this.getClass() ) {
             throw new IllegalArgumentException( "attempt to check character state matrix to " + o + " [" + o.getClass()
-                    + "]" );
+                                                + "]" );
         }
         else {
             final CharacterStateMatrix<S> other = ( CharacterStateMatrix<S> ) o;
@@ -247,7 +247,7 @@ public class BasicCharacterStateMatrix<S> implements CharacterStateMatrix<S> {
     @Override
     public CharacterStateMatrix<S> pivot() {
         final CharacterStateMatrix<S> new_matrix = new BasicCharacterStateMatrix<S>( getNumberOfCharacters(),
-                                                                                     getNumberOfIdentifiers() );
+                getNumberOfIdentifiers() );
         for( int character = 0; character < getNumberOfCharacters(); ++character ) {
             if ( getCharacter( character ) != null ) {
                 new_matrix.setIdentifier( character, getCharacter( character ) );
@@ -424,7 +424,7 @@ public class BasicCharacterStateMatrix<S> implements CharacterStateMatrix<S> {
     public void writeNexusBinaryChractersBlock( final Writer w ) throws IOException {
         //BEGIN CHARACTERS;
         // DIMENSIONS NCHAR=x;
-        //BEGIN CHARSTATELABELS 
+        //BEGIN CHARSTATELABELS
         // 1 bcl,
         // 2 tir,
         //END;

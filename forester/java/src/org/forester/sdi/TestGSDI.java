@@ -41,7 +41,7 @@ import org.forester.util.ForesterUtil;
 public final class TestGSDI {
 
     private final static String PATH_TO_TEST_DATA = System.getProperty( "user.dir" ) + ForesterUtil.getFileSeparator()
-                                                          + "test_data" + ForesterUtil.getFileSeparator();
+            + "test_data" + ForesterUtil.getFileSeparator();
 
     public static void main( final String[] args ) {
         if ( !TestGSDI.testGSDI_against_binary_gene_tree() ) {
@@ -1283,7 +1283,7 @@ public final class TestGSDI {
             //--
             final Phylogeny tol_143_ = ParserUtils.readPhylogenies( PATH_TO_TEST_DATA + "tol_143.xml" )[ 0 ];
             final Phylogeny gene_tree_tax_code_4_ = ParserUtils.readPhylogenies( PATH_TO_TEST_DATA
-                    + "gene_tree_tax_code_4.xml" )[ 0 ];
+                                                                                 + "gene_tree_tax_code_4.xml" )[ 0 ];
             final GSDI gsdi_143_4_1 = new GSDI( gene_tree_tax_code_4_.copy(), tol_143_.copy(), false, true, true );
             if ( gsdi_143_4_1.getDuplicationsSum() != 21 ) {
                 return false;
@@ -1296,7 +1296,7 @@ public final class TestGSDI {
             }
             //--
             final Phylogeny gsdi_test_gene_tree_sn_wnt = ParserUtils.readPhylogenies( PATH_TO_TEST_DATA
-                    + "gsdi_test_gene_tree_sn_wnt.xml" )[ 0 ];
+                                                                                      + "gsdi_test_gene_tree_sn_wnt.xml" )[ 0 ];
             gsdi_test_gene_tree_sn_wnt.setRooted( true );
             final GSDI a = new GSDI( gsdi_test_gene_tree_sn_wnt.copy(), tol_143_.copy(), false, true, true );
             if ( a.getDuplicationsSum() != 33 ) {
@@ -1319,7 +1319,7 @@ public final class TestGSDI {
             }
             //--
             final Phylogeny gsdi_test_species_tree_sn_xml = ParserUtils.readPhylogenies( PATH_TO_TEST_DATA
-                    + "gsdi_test_species_tree_sn.xml" )[ 0 ];
+                                                                                         + "gsdi_test_species_tree_sn.xml" )[ 0 ];
             final GSDI b = new GSDI( gsdi_test_gene_tree_sn_wnt.copy(),
                                      gsdi_test_species_tree_sn_xml.copy(),
                                      false,
@@ -1386,9 +1386,9 @@ public final class TestGSDI {
             }
             //--
             final Phylogeny gsdi_test_gene_tree_codes_xml = ParserUtils.readPhylogenies( PATH_TO_TEST_DATA
-                    + "gsdi_test_gene_tree_codes.xml" )[ 0 ];
+                                                                                         + "gsdi_test_gene_tree_codes.xml" )[ 0 ];
             final Phylogeny gsdi_test_species_tree_codes_xml = ParserUtils.readPhylogenies( PATH_TO_TEST_DATA
-                    + "gsdi_test_species_tree_codes.xml" )[ 0 ];
+                                                                                            + "gsdi_test_species_tree_codes.xml" )[ 0 ];
             final GSDI d = new GSDI( gsdi_test_gene_tree_codes_xml.copy(),
                                      gsdi_test_species_tree_codes_xml.copy(),
                                      false,
@@ -1420,7 +1420,7 @@ public final class TestGSDI {
             }
             //--
             final Phylogeny gsdi_test_gene_tree_sn_xml = ParserUtils.readPhylogenies( PATH_TO_TEST_DATA
-                    + "gsdi_test_gene_tree_sn.xml" )[ 0 ];
+                                                                                      + "gsdi_test_gene_tree_sn.xml" )[ 0 ];
             final GSDI e = new GSDI( gsdi_test_gene_tree_sn_xml.copy(),
                                      gsdi_test_species_tree_sn_xml.copy(),
                                      false,

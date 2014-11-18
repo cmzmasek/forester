@@ -31,12 +31,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 
+ *
  * This is to access the Web API for Biology (WABI) at DDBJ.
  * See: http://xml.nig.ac.jp/
- * 
+ *
  * Service Description:
- * TXSearch is a retrieval system for a Taxonomy Database which 
+ * TXSearch is a retrieval system for a Taxonomy Database which
  * was unified by DDBJ, GenBank and EMBL, which is developed by DDBJ.
  * See: http://xml.nig.ac.jp/wabi/Method?serviceName=TxSearch&mode=methodList
  *

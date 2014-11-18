@@ -45,8 +45,8 @@ public class PfamToGoMapping implements Mapping {
 
     /**
      * Based on key and value.
-     * 
-     * 
+     *
+     *
      */
     @Override
     public boolean equals( final Object o ) {

@@ -89,7 +89,7 @@ public class BasicDomain implements Domain {
     /**
      * Basic domains are compared/sorted based upon their identifiers (case
      * insensitive) and their numbers.
-     * 
+     *
      */
     @Override
     public int compareTo( final Domain domain ) {
@@ -106,7 +106,7 @@ public class BasicDomain implements Domain {
     /**
      * Basic domains are considered equal if they have the same identifier (case
      * sensitive).
-     * 
+     *
      */
     @Override
     public boolean equals( final Object o ) {

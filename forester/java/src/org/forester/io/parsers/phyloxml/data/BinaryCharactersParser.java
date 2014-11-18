@@ -64,11 +64,11 @@ public class BinaryCharactersParser implements PhylogenyDataPhyloXmlParser {
         try {
             if ( element.isHasAttribute( PhyloXmlMapping.BINARY_CHARACTERS_PRESENT_COUNT_ATTR ) ) {
                 present_count = Integer.parseInt( element
-                        .getAttribute( PhyloXmlMapping.BINARY_CHARACTERS_PRESENT_COUNT_ATTR ) );
+                                                  .getAttribute( PhyloXmlMapping.BINARY_CHARACTERS_PRESENT_COUNT_ATTR ) );
             }
             if ( element.isHasAttribute( PhyloXmlMapping.BINARY_CHARACTERS_GAINED_COUNT_ATTR ) ) {
                 gained_count = Integer.parseInt( element
-                        .getAttribute( PhyloXmlMapping.BINARY_CHARACTERS_GAINED_COUNT_ATTR ) );
+                                                 .getAttribute( PhyloXmlMapping.BINARY_CHARACTERS_GAINED_COUNT_ATTR ) );
             }
             if ( element.isHasAttribute( PhyloXmlMapping.BINARY_CHARACTERS_LOST_COUNT_ATTR ) ) {
                 lost_count = Integer

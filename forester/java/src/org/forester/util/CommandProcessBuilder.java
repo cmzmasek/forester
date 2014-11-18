@@ -36,7 +36,7 @@ import java.util.List;
 public class CommandProcessBuilder {
 
     public static Process execute( final List<String> command, final File working_dir ) throws InterruptedException,
-            IOException {
+    IOException {
         final ProcessBuilder builder = new ProcessBuilder( command );
         if ( working_dir != null ) {
             if ( !working_dir.exists() ) {

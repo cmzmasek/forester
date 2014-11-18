@@ -37,12 +37,12 @@ import org.forester.util.ForesterUtil;
 public class Test {
 
     private final static String PATH_TO_TEST_DATA = System.getProperty( "user.dir" ) + ForesterUtil.getFileSeparator()
-                                                          + "test_data" + ForesterUtil.getFileSeparator();
+            + "test_data" + ForesterUtil.getFileSeparator();
 
     public static void main( final String[] args ) {
         System.out.println( "[Java version: " + ForesterUtil.JAVA_VERSION + " " + ForesterUtil.JAVA_VENDOR + "]" );
         System.out.println( "[OS: " + ForesterUtil.OS_NAME + " " + ForesterUtil.OS_ARCH + " " + ForesterUtil.OS_VERSION
-                + "]" );
+                            + "]" );
         Locale.setDefault( Locale.US );
         System.out.println( "[Locale: " + Locale.getDefault() + "]" );
         final int failed = 0;

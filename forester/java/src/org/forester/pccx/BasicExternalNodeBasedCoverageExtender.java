@@ -86,7 +86,7 @@ public class BasicExternalNodeBasedCoverageExtender implements CoverageExtender 
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.forester.tools.modeling.CoverageExtender#find(java.util.List,
      *      java.util.List, int,
      *      org.forester.tools.modeling.CoverageCalculationMethod,

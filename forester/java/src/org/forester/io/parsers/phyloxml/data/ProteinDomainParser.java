@@ -57,7 +57,7 @@ public class ProteinDomainParser implements PhylogenyDataPhyloXmlParser {
                     .parseInt( element.getAttribute( PhyloXmlMapping.SEQUENCE_DOMAIN_ARCHITECTURE_PROT_DOMAIN_FROM ) );
             t = Integer.parseInt( element.getAttribute( PhyloXmlMapping.SEQUENCE_DOMAIN_ARCHITECTURE_PROT_DOMAIN_TO ) );
             conf = Double.parseDouble( element
-                    .getAttribute( PhyloXmlMapping.SEQUENCE_DOMAIN_ARCHITECTURE_PROT_DOMAIN_CONFIDENCE ) );
+                                       .getAttribute( PhyloXmlMapping.SEQUENCE_DOMAIN_ARCHITECTURE_PROT_DOMAIN_CONFIDENCE ) );
             if ( element.isHasAttribute( PhyloXmlMapping.IDENTIFIER ) ) {
                 id = element.getAttribute( PhyloXmlMapping.IDENTIFIER );
             }

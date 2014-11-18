@@ -142,7 +142,7 @@ public class nj {
         System.out.println( "Usage:" );
         System.out.println();
         System.out.println( "% java -cp forester.jar org.forester.applications." + PRG_NAME
-                + " [options] <pairwise distances infile> <out file>" );
+                            + " [options] <pairwise distances infile> <out file>" );
         System.out.println();
         System.out.println( " Options: " );
         System.out.println( VERBOSE_OPTION + ": verbose on" );

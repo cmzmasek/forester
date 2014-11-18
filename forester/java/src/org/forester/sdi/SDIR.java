@@ -45,11 +45,11 @@ import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
  * <li>Mapping cost L <li>Phylogeny height - which is the largest distance from
  * root to external node (minimizing of which is the same as "midpoint rooting")
  * </ul>
- * 
+ *
  * @see SDIse
- * 
+ *
  * @see SDI
- * 
+ *
  * @author Christian M. Zmasek
  */
 public class SDIR {
@@ -76,7 +76,7 @@ public class SDIR {
     /**
      * Returns the number of differently rooted trees which minimize the
      * (rooting) "criterion" - as determined by method "infer".
-     * 
+     *
      * @see #infer(Phylogeny,Phylogeny,boolean,boolean,boolean,boolean,int,boolean)
      * @return number of differently rooted trees which minimized the criterion
      */
@@ -97,7 +97,7 @@ public class SDIR {
      * not necessarily zero.
      * <p>
      * (Last modified: 01/22/00)
-     * 
+     *
      * @see #infer(Phylogeny,Phylogeny,boolean,boolean,boolean,boolean,int,boolean)
      * @return the minimal difference in tree heights -- IF calculated by
      *         "infer"
@@ -113,7 +113,7 @@ public class SDIR {
      * <B>IMPORTANT </B>: If the tree is not rooted by minimizing the sum of
      * duplications or the mapping cost L, then this number is NOT NECESSARILY
      * the MINIMAL number of duplications.
-     * 
+     *
      * @see #infer(Phylogeny,Phylogeny,boolean,boolean,boolean,boolean,int,boolean)
      * @return (minimal) number of duplications
      */
@@ -126,7 +126,7 @@ public class SDIR {
      * minimize_mapping_cost is set to true.
      * <p>
      * (Last modified: 11/07/00)
-     * 
+     *
      * @see #infer(Phylogeny,Phylogeny,boolean,boolean,boolean,boolean,int,boolean)
      * @return the minimal mapping cost "L" -- IF calculated by "infer"
      */
@@ -142,7 +142,7 @@ public class SDIR {
      * first criterion.
      * <p>
      * (Last modified: 01/12/00)
-     * 
+     *
      * @see #infer(Phylogeny,Phylogeny,boolean,boolean,boolean,boolean,int,boolean)
      * @return the minimal tree height -- IF calculated by "infer"
      */
@@ -153,7 +153,7 @@ public class SDIR {
     /**
      * Returns the sum of times (in ms) needed to run method infer of class SDI.
      * Final variable TIME needs to be set to true.
-     * 
+     *
      * @return sum of times (in ms) needed to run method infer of class SDI
      */
     public long getTimeSumSDI() {
@@ -188,7 +188,7 @@ public class SDIR {
      * </ul>
      * <p>
      * (Last modified: 10/01/01)
-     * 
+     *
      * @param gene_tree
      *            a binary (except deepest node) gene Phylogeny
      * @param species_tree
@@ -212,7 +212,7 @@ public class SDIR {
      *            Array) must be no lower than 1
      * @return array of rooted Trees with duplication vs. speciation assigned if
      *         return_trees is set to true, null otherwise
-     * @throws SDIException 
+     * @throws SDIException
      */
     public Phylogeny[] infer( final Phylogeny gene_tree,
                               final Phylogeny species_tree,

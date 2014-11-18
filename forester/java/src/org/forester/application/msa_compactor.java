@@ -70,7 +70,7 @@ public class msa_compactor {
     final static private String       OUTPUT_REMOVED_SEQS_OPTION             = "ro";
     final static private String       MAFFT_OPTIONS                          = "mo";
     final static private String       PERFORM_PHYLOGENETIC_INFERENCE         = "t";
-    //        
+    //
     final static private String       PATH_TO_MAFFT_OPTION                   = "mafft";
     final static private String       DO_NOT_NORMALIZE_FOR_EFF_LENGTH_OPTION = "nn";
     final static private String       PRG_NAME                               = "msa_compactor";
@@ -169,7 +169,7 @@ public class msa_compactor {
                 if ( length >= msa.getLength() ) {
                     ForesterUtil.fatalError( PRG_NAME,
                                              "target length is out of range [longer than MSA (" + msa.getLength()
-                                                     + ")]: " + length );
+                                             + ")]: " + length );
                 }
                 else if ( length < initial_msa_stats.getMin() ) {
                     ForesterUtil.fatalError( PRG_NAME,
@@ -269,8 +269,8 @@ public class msa_compactor {
             if ( chart_only ) {
                 if ( ( out != null ) || ( removed_seqs_out_base != null ) ) {
                     ForesterUtil
-                            .fatalError( PRG_NAME,
-                                         "chart only, no outfile(s) produced, thus no need to indicate output file(s)" );
+                    .fatalError( PRG_NAME,
+                                 "chart only, no outfile(s) produced, thus no need to indicate output file(s)" );
                 }
                 if ( !realign && cla.isOptionSet( STEP_OPTION ) ) {
                     ForesterUtil.fatalError( PRG_NAME,
@@ -281,7 +281,7 @@ public class msa_compactor {
             if ( perform_phylogenetic_inference ) {
                 if ( step_for_diagnostics != 1 ) {
                     ForesterUtil.fatalError( PRG_NAME,
-                                             "step for diagnostics reports needs to be set to 1 for tree calculation" );
+                            "step for diagnostics reports needs to be set to 1 for tree calculation" );
                 }
             }
             ForesterUtil.printProgramInformation( PRG_NAME,
@@ -422,7 +422,7 @@ public class msa_compactor {
         else {
             if ( ForesterUtil.isEmpty( path_to_mafft ) ) {
                 ForesterUtil.fatalError( PRG_NAME, "no MAFFT executable found, use -\"" + PATH_TO_MAFFT_OPTION
-                        + "=<path to MAFFT>\" option" );
+                                         + "=<path to MAFFT>\" option" );
             }
             else {
                 ForesterUtil.fatalError( PRG_NAME, "no MAFFT executable at \"" + path_to_mafft + "\"" );
@@ -453,25 +453,25 @@ public class msa_compactor {
         System.out.println( " options: " );
         System.out.println();
         System.out.println( "   -" + REMOVE_WORST_OFFENDERS_OPTION
-                + "=<integer>   number of worst offender sequences to remove" );
+                            + "=<integer>   number of worst offender sequences to remove" );
         System.out.println( "   -" + LENGTH_OPTION + "=<integer>   target MSA length" );
         System.out.println( "   -" + AV_GAPINESS_OPTION + "=<decimal>   target gap-ratio (0.0-1.0)" );
         System.out.println( "   -" + REALIGN_OPTION + "             to realign using MAFFT" + mafft_comment );
         System.out.println( "   -" + MAFFT_OPTIONS + "=<string>   options for MAFFT (default: --auto)" );
         System.out.println( "   -" + STEP_OPTION + "=<integer>   step for output and re-aligning (default: 1)" );
         System.out.println( "   -" + STEP_FOR_DIAGNOSTICS_OPTION
-                + "=<integer>  step for diagnostics reports (default: 1)" );
+                            + "=<integer>  step for diagnostics reports (default: 1)" );
         System.out.println( "   -" + REPORT_ENTROPY
-                + "             to calculate normalized Shannon Entropy (not recommended for very large alignments)" );
+                            + "             to calculate normalized Shannon Entropy (not recommended for very large alignments)" );
         System.out.println( "   -" + OUTPUT_FORMAT_OPTION
-                + "=<f|p|n>     format for output alignments: f for fasta (default), p for phylip, or n for nexus" );
+                            + "=<f|p|n>     format for output alignments: f for fasta (default), p for phylip, or n for nexus" );
         System.out.println( "   -" + OUTPUT_REMOVED_SEQS_OPTION + "=<file>     to output the removed sequences" );
         System.out.println( "   -" + MIN_LENGTH_OPTION
-                + "=<integer>  minimal effecive sequence length (for deleting of shorter sequences)" );
+                            + "=<integer>  minimal effecive sequence length (for deleting of shorter sequences)" );
         System.out.println( "   -" + GAP_RATIO_LENGTH_OPTION
-                + "=<decimal>  maximal allowed gap ratio per column (for deleting of columms) (0.0-1.0)" );
+                            + "=<decimal>  maximal allowed gap ratio per column (for deleting of columms) (0.0-1.0)" );
         System.out.println( "   -" + PERFORM_PHYLOGENETIC_INFERENCE
-                + "             to calculate a simple phylogenetic tree (Kimura distances, NJ)" );
+                            + "             to calculate a simple phylogenetic tree (Kimura distances, NJ)" );
         System.out.println();
         System.out.println();
         System.out.println();

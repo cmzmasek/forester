@@ -161,7 +161,7 @@ public class rio {
             }
             else {
                 ForesterUtil
-                        .fatalError( "values for re-rooting are: 'none', 'midpoint', or 'outgroup' (minizming duplications is default)" );
+                .fatalError( "values for re-rooting are: 'none', 'midpoint', or 'outgroup' (minizming duplications is default)" );
             }
         }
         if ( ForesterUtil.isEmpty( outgroup ) && ( rerooting == REROOTING.OUTGROUP ) ) {
@@ -422,37 +422,37 @@ public class rio {
         System.out.println( "Usage" );
         System.out.println();
         System.out
-                .println( PRG_NAME
-                        + " [options] <gene trees infile> <species tree infile> <all vs all orthology table outfile> [logfile]" );
+        .println( PRG_NAME
+                  + " [options] <gene trees infile> <species tree infile> <all vs all orthology table outfile> [logfile]" );
         System.out.println();
         System.out.println( " Options" );
         System.out.println( "  -" + GT_FIRST + "=<first>     : first gene tree to analyze (0-based index)" );
         System.out.println( "  -" + GT_LAST + "=<last>      : last gene tree to analyze (0-based index)" );
         System.out.println( "  -" + REROOTING_OPT
-                + "=<re-rooting>: re-rooting method for gene trees, possible values or 'none', 'midpoint'," );
+                            + "=<re-rooting>: re-rooting method for gene trees, possible values or 'none', 'midpoint'," );
         System.out.println( "                   or 'outgroup' (default: by minizming duplications)" );
         System.out.println( "  -" + OUTGROUP
-                + "=<outgroup>  : for rooting by outgroup, name of outgroup (external gene tree node)" );
+                            + "=<outgroup>  : for rooting by outgroup, name of outgroup (external gene tree node)" );
         System.out
-                .println( "  -" + RETURN_SPECIES_TREE + "=<outfile>   : to write the (stripped) species tree to file" );
+        .println( "  -" + RETURN_SPECIES_TREE + "=<outfile>   : to write the (stripped) species tree to file" );
         System.out.println( "  -" + RETURN_BEST_GENE_TREE
-                + "=<outfile>   : to write (one) minimal duplication gene tree to file" );
+                            + "=<outfile>   : to write (one) minimal duplication gene tree to file" );
         System.out
-                .println( "  -"
-                        + TRANSFER_TAXONOMY_OPTION
-                        + "             : to transfer taxonomic data from species tree to returned minimal duplication gene tree\n"
-                        + "                   (if -" + RETURN_BEST_GENE_TREE + " option is used)" );
+        .println( "  -"
+                + TRANSFER_TAXONOMY_OPTION
+                + "             : to transfer taxonomic data from species tree to returned minimal duplication gene tree\n"
+                + "                   (if -" + RETURN_BEST_GENE_TREE + " option is used)" );
         System.out.println( "  -" + USE_SDIR
-                + "             : to use SDIR instead of GSDIR (faster, but non-binary species trees are" );
+                            + "             : to use SDIR instead of GSDIR (faster, but non-binary species trees are" );
         System.out.println( "                   disallowed, as are most options)" );
         System.out.println();
         System.out.println( " Formats" );
         System.out
-                .println( "  The gene trees, as well as the species tree, ideally are in phyloXML (www.phyloxml.org) format," );
+        .println( "  The gene trees, as well as the species tree, ideally are in phyloXML (www.phyloxml.org) format," );
         System.out
-                .println( "  but can also be in New Hamphshire (Newick) or Nexus format as long as species information can be" );
+        .println( "  but can also be in New Hamphshire (Newick) or Nexus format as long as species information can be" );
         System.out
-                .println( "  extracted from the gene names (e.g. \"HUMAN\" from \"BCL2_HUMAN\") and matched to a single species" );
+        .println( "  extracted from the gene names (e.g. \"HUMAN\" from \"BCL2_HUMAN\") and matched to a single species" );
         System.out.println( "  in the species tree." );
         System.out.println();
         System.out.println( " Examples" );

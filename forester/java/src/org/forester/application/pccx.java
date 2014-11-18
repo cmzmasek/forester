@@ -263,7 +263,7 @@ public class pccx {
                 }
                 catch ( final IOException e ) {
                     ForesterUtil.fatalError( pccx.PRG_NAME, "Failed to write to \"" + annotated_phylogenies_outfile
-                            + "\" [" + e.getMessage() + "]" );
+                                             + "\" [" + e.getMessage() + "]" );
                 }
             }
         }
@@ -283,7 +283,7 @@ public class pccx {
         System.out.println( "Usage:" );
         System.out.println();
         System.out.println( pccx.PRG_NAME
-                + "  [options] <phylogen(y|ies) infile> [external node name 1] [name 2] ... [name n]" );
+                            + "  [options] <phylogen(y|ies) infile> [external node name 1] [name 2] ... [name n]" );
         System.out.println();
         System.out.println( " Options: " );
         System.out.println();
@@ -294,7 +294,7 @@ public class pccx {
         System.out.println( " -o=<file> : write output to <file>" );
         System.out.println( " -i=<file> : read (new-line separated) external node names from <file>" );
         System.out.println( " -" + pccx.OUTPUT_ANNOTATED_PHYLOGENIES_OPTION
-                + "=<file> : write output as annotated phylogeny to <file> (only first" );
+                            + "=<file> : write output as annotated phylogeny to <file> (only first" );
         System.out.println( "             phylogeny in phylogenies infile is used)" );
         System.out.println();
     }

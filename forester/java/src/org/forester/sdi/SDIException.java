@@ -4,7 +4,7 @@ package org.forester.sdi;
 public class SDIException extends Exception {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 5154733429066500435L;
 

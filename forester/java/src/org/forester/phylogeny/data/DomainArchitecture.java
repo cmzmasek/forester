@@ -154,8 +154,8 @@ public class DomainArchitecture implements PhylogenyData {
     /**
      * Returns true if the names and the order of the domains match (domain and
      * linker lengths are ignored).
-     * 
-     * 
+     *
+     *
      */
     @Override
     public boolean isEqual( final PhylogenyData domain_architecture ) {

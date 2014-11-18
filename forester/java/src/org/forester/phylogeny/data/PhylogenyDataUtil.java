@@ -351,7 +351,7 @@ public final class PhylogenyDataUtil {
 
     /**
      * Creates a deep copy of ArrayList of PhylogenyData objects.
-     * 
+     *
      * @param list
      *            an ArrayList of PhylogenyData objects
      * @return a deep copy of ArrayList list

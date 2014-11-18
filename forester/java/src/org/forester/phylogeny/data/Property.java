@@ -74,15 +74,15 @@ public class Property implements PhylogenyData {
                      final String id_ref ) {
         if ( !ForesterUtil.isEmpty( ref ) && ( ref.indexOf( ":" ) < 1 ) ) {
             throw new IllegalArgumentException( "property reference [" + ref
-                    + "] is not in the expected format (missing a \":\")" );
+                                                + "] is not in the expected format (missing a \":\")" );
         }
         if ( !ForesterUtil.isEmpty( unit ) && ( unit.indexOf( ":" ) < 1 ) ) {
             throw new IllegalArgumentException( "property unit [" + unit
-                    + "] is not in the expected format (missing a \":\")" );
+                                                + "] is not in the expected format (missing a \":\")" );
         }
         if ( !ForesterUtil.isEmpty( datatype ) && ( datatype.indexOf( ":" ) < 1 ) ) {
             throw new IllegalArgumentException( "property datatype [" + unit
-                    + "] is not in the expected format (missing a \":\")" );
+                                                + "] is not in the expected format (missing a \":\")" );
         }
         _ref = ref;
         _unit = unit;

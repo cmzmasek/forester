@@ -68,8 +68,8 @@ public class TreeSplitMatrix {
     /**
      * If strict is true, target nodes (all external nodes of the phylogeny for
      * which support values are to be calculated) is not used for anything during construction.
-     * 
-     * 
+     *
+     *
      * @param target
      * @param evaluator
      * @param strict

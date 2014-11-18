@@ -40,8 +40,8 @@ import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 /*
  * A simple class containing a static method to evaluate the topology of a given
  * phylogeny with a list of resampled phylogenies.
- * 
- * 
+ *
+ *
  * @author Christian M Zmasek
  */
 public final class SupportCount {
@@ -74,18 +74,18 @@ public final class SupportCount {
     }
 
     /**
-     * 
+     *
      * Precondition: phylogeny and evaluator_phylogeny have to be rooted in the
      * same manner.
-     * 
+     *
      * Returns a measure of the similarity ("average bootstrap similarity")
      * between the topologies of phylogeny and evaluator_phylogeny: (sum of
      * branches which divide phylogeny in a manner consitent with
      * evaluator_phylogeny)/sum of branches in phylogeny. Therefore, this
      * measure is 1.0 for indentical topologies and 0.0 for completely
      * incompatible topologies.
-     * 
-     * 
+     *
+     *
      * @param phylogeny
      * @param evaluator_phylogeny
      * @param external_names_per_node
@@ -160,7 +160,7 @@ public final class SupportCount {
      * phylogenies. If phylogenies contains topogies with names not present in
      * phylogeny, strip_phylogenies must be set to true. phylogeny must not
      * contain names not found in all phylogenies.
-     * 
+     *
      * @param phylogeny
      *            the topology to be evaluated
      * @param evaluator_phylogenies

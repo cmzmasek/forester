@@ -174,7 +174,7 @@ public class TolParser implements PhylogenyParser {
                     final Reader reader = getReaderFromZipFile();
                     if ( reader == null ) {
                         throw new PhylogenyParserException( "Zip file \"" + getSource()
-                                + "\" appears not to contain any entries" );
+                                                            + "\" appears not to contain any entries" );
                     }
                     xml_reader.parse( new InputSource( reader ) );
                 }
@@ -194,7 +194,7 @@ public class TolParser implements PhylogenyParser {
                     final Reader reader = new InputStreamReader( zip_is );
                     if ( reader == null ) {
                         throw new PhylogenyParserException( "Zip input stream \"" + getSource()
-                                + "\" appears not to contain any data" );
+                                                            + "\" appears not to contain any data" );
                     }
                     xml_reader.parse( new InputSource( reader ) );
                 }
@@ -218,7 +218,7 @@ public class TolParser implements PhylogenyParser {
         }
         catch ( final ParserConfigurationException parser_config_exception ) {
             throw new PhylogenyParserException( "Failed to parse [" + getSource()
-                    + "] Problem with xml parser _configuration: " + parser_config_exception.getMessage() );
+                                                + "] Problem with xml parser _configuration: " + parser_config_exception.getMessage() );
         }
         catch ( final IOException e ) {
             throw new PhylogenyParserException( "Problem with input source [" + getSource() + "]: \n" + e.getMessage() );

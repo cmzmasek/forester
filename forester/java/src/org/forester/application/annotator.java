@@ -94,8 +94,8 @@ public final class annotator {
                 }
                 catch ( final Exception e ) {
                     ForesterUtil
-                            .fatalError( PRG_NAME, "failed to read phylgenies from [" + infile + "] [" + e.getMessage()
-                                    + "]" );
+                    .fatalError( PRG_NAME, "failed to read phylgenies from [" + infile + "] [" + e.getMessage()
+                                 + "]" );
                 }
                 try {
                     obtainSeqInformation( phy );
@@ -129,7 +129,7 @@ public final class annotator {
     }
 
     private static void inferTaxonomyFromDescendents( final Phylogeny phy ) throws IOException,
-            AncestralTaxonomyInferenceException {
+    AncestralTaxonomyInferenceException {
         AncestralTaxonomyInference.inferTaxonomyFromDescendents( phy );
     }
 

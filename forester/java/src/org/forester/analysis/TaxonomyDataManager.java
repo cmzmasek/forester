@@ -133,7 +133,7 @@ public final class TaxonomyDataManager extends RunnableProcess {
     private final static UniProtTaxonomy obtainTaxonomy( final HashMap<String, UniProtTaxonomy> cache,
                                                          final Object query,
                                                          final QUERY_TYPE qt ) throws IOException,
-            AncestralTaxonomyInferenceException {
+                                                         AncestralTaxonomyInferenceException {
         if ( cache.containsKey( query ) ) {
             return cache.get( query ).copy();
         }
@@ -202,7 +202,7 @@ public final class TaxonomyDataManager extends RunnableProcess {
         //FIXME fix "SPHAR" issue
         if ( ( ( query.indexOf( "XX" ) == 3 ) && TaxonomyUtil.isHasTaxIdFromFakeTaxCode( query ) )
                 || query.equals( "SPHAR" ) /* TODO remove me, is same as Sphingomonas aromaticivorans */
-        ) {
+                ) {
             final int id = TaxonomyUtil.getTaxIdFromFakeTaxCode( query );
             return SequenceDbWsTools.getTaxonomiesFromId( String.valueOf( id ), MAX_TAXONOMIES_TO_RETURN );
         }
@@ -219,7 +219,7 @@ public final class TaxonomyDataManager extends RunnableProcess {
     synchronized final private static SortedSet<String> obtainDetailedTaxonomicInformation( final Phylogeny phy,
                                                                                             final boolean delete,
                                                                                             final boolean allow_to_use_basic_node_names )
-            throws IOException, AncestralTaxonomyInferenceException {
+                                                                                                    throws IOException, AncestralTaxonomyInferenceException {
         clearCachesIfTooLarge();
         final SortedSet<String> not_found = new TreeSet<String>();
         List<PhylogenyNode> not_found_external_nodes = null;
@@ -254,7 +254,7 @@ public final class TaxonomyDataManager extends RunnableProcess {
                 if ( ( ( tax != null ) && ( isHasAppropriateId( tax )
                         || !ForesterUtil.isEmpty( tax.getScientificName() )
                         || !ForesterUtil.isEmpty( tax.getTaxonomyCode() ) || !ForesterUtil
-                            .isEmpty( tax.getCommonName() ) ) ) ) {
+                        .isEmpty( tax.getCommonName() ) ) ) ) {
                     uniprot_tax = obtainUniProtTaxonomy( tax, null, qt );
                 }
                 else {
@@ -376,7 +376,7 @@ public final class TaxonomyDataManager extends RunnableProcess {
         else {
             final List<UniProtTaxonomy> matching_taxonomies = new ArrayList<UniProtTaxonomy>();
             final List<UniProtTaxonomy> up_taxonomies = getTaxonomiesFromScientificName( lineage
-                    .get( lineage.size() - 1 ) );
+                                                                                         .get( lineage.size() - 1 ) );
             if ( ( up_taxonomies != null ) && ( up_taxonomies.size() > 0 ) ) {
                 for( final UniProtTaxonomy up_taxonomy : up_taxonomies ) {
                     boolean match = true;
@@ -425,7 +425,7 @@ public final class TaxonomyDataManager extends RunnableProcess {
             }
             else {
                 throw new AncestralTaxonomyInferenceException( "taxonomy \"" + ( lineage.get( lineage.size() - 1 ) )
-                        + "\" not found" );
+                                                               + "\" not found" );
             }
         }
     }
@@ -434,7 +434,7 @@ public final class TaxonomyDataManager extends RunnableProcess {
                                                            final PhylogenyNode node,
                                                            final Taxonomy tax,
                                                            final UniProtTaxonomy up_tax )
-            throws PhyloXmlDataFormatException {
+                                                                   throws PhyloXmlDataFormatException {
         if ( ( qt != QUERY_TYPE.SN ) && !ForesterUtil.isEmpty( up_tax.getScientificName() )
                 && ForesterUtil.isEmpty( tax.getScientificName() ) ) {
             tax.setScientificName( up_tax.getScientificName() );
@@ -512,7 +512,7 @@ public final class TaxonomyDataManager extends RunnableProcess {
                                                JOptionPane.WARNING_MESSAGE );
             }
             catch ( final Exception e ) {
-                // Not important if this fails, do nothing. 
+                // Not important if this fails, do nothing.
             }
             return;
         }
@@ -564,7 +564,7 @@ public final class TaxonomyDataManager extends RunnableProcess {
                                                JOptionPane.WARNING_MESSAGE );
             }
             catch ( final Exception e ) {
-                // Not important if this fails, do nothing. 
+                // Not important if this fails, do nothing.
             }
         }
         else {

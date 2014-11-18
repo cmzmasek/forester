@@ -83,8 +83,8 @@ public class BasicGoRelationship implements GoRelationship {
 
     /**
      * Based on value and type.
-     * 
-     * 
+     *
+     *
      */
     @Override
     public boolean equals( final Object o ) {

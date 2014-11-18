@@ -45,7 +45,7 @@ public interface GenomeWideCombinableDomains {
 
     /**
      * This should return all domains ids present in the genome.
-     * 
+     *
      * @return a sorted set of domains ids
      */
     public SortedSet<String> getAllDomainIds();
@@ -53,9 +53,9 @@ public interface GenomeWideCombinableDomains {
     public DomainCombinationType getDomainCombinationType();
 
     /**
-     * This should return a statistic for per domain 
+     * This should return a statistic for per domain
      * promiscuity in a genome.
-     * 
+     *
      * @return descriptive statistics for per domain promiscuity in a genome
      */
     public DescriptiveStatistics getPerGenomeDomainPromiscuityStatistics();
@@ -66,7 +66,7 @@ public interface GenomeWideCombinableDomains {
 
     /**
      * This should return all binary domain combinations present in the genome.
-     * 
+     *
      * @return a sorted set of binary domain combinations
      */
     public SortedSet<BinaryDomainCombination> toBinaryDomainCombinations();

@@ -117,17 +117,17 @@ public final class UniProtTaxonomy {
 
     /**
      * Creates deep copy for all fields, except lineage.
-     * 
+     *
      * @return
      */
     public UniProtTaxonomy copy() {
         return new UniProtTaxonomy( getLineage(),
                                     getCode() != null ? new String( getCode() ) : null,
-                                    getCommonName() != null ? new String( getCommonName() ) : null,
-                                    getScientificName() != null ? new String( getScientificName() ) : null,
-                                    getSynonym() != null ? new String( getSynonym() ) : null,
-                                    getRank() != null ? new String( getRank() ) : null,
-                                    getId() != null ? new String( getId() ) : null );
+                                            getCommonName() != null ? new String( getCommonName() ) : null,
+                                                    getScientificName() != null ? new String( getScientificName() ) : null,
+                                                            getSynonym() != null ? new String( getSynonym() ) : null,
+                                                                    getRank() != null ? new String( getRank() ) : null,
+                                                                            getId() != null ? new String( getId() ) : null );
     }
 
     public String getCode() {

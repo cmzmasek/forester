@@ -81,7 +81,7 @@ public class BasicGoTerm implements GoTerm {
 
     /**
      * Compares based on GO id.
-     * 
+     *
      */
     @Override
     public int compareTo( final GoTerm go_term ) {
@@ -90,8 +90,8 @@ public class BasicGoTerm implements GoTerm {
 
     /**
      * Makes a shallow copy.
-     * 
-     * 
+     *
+     *
      */
     @Override
     public PhylogenyData copy() {
@@ -106,7 +106,7 @@ public class BasicGoTerm implements GoTerm {
 
     /**
      * Return true if both GO id and namespace are equal.
-     * 
+     *
      */
     @Override
     public boolean equals( final Object o ) {
@@ -177,8 +177,8 @@ public class BasicGoTerm implements GoTerm {
 
     /**
      * Hashcode is based on hashcode of GO id.
-     * 
-     * 
+     *
+     *
      */
     @Override
     public int hashCode() {

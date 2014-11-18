@@ -161,7 +161,7 @@ public final class GeneralMsaParser {
                 }
                 else {
                     throw new MsaFormatException( "illegal msa format (line: " + line_counter + "):\n\"" + trim( line )
-                            + "\"" );
+                                                  + "\"" );
                 }
                 if ( is_first ) {
                     is_first = false;
@@ -171,7 +171,7 @@ public final class GeneralMsaParser {
         final List<MolecularSequence> seqs = new ArrayList<MolecularSequence>();
         for( int i = 0; i < names_in_order.size(); ++i ) {
             seqs.add( BasicSequence.createAaSequence( names_in_order.get( i ), temp_msa.get( names_in_order.get( i ) )
-                    .toString() ) );
+                                                      .toString() ) );
         }
         final Msa msa = BasicMsa.createInstance( seqs );
         return msa;

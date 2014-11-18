@@ -184,7 +184,7 @@ public class NodeData implements PhylogenyData {
 
     /**
      * Convenience method -- always returns the first Distribution.
-     *  
+     *
      * @return Distribution
      */
     public Distribution getDistribution() {
@@ -209,9 +209,9 @@ public class NodeData implements PhylogenyData {
 
     /**
      * Convenience method -- always returns the first Reference.
-     * 
+     *
      *  @return Reference
-     *  
+     *
      */
     public Reference getReference() {
         return getReference( 0 );
@@ -227,7 +227,7 @@ public class NodeData implements PhylogenyData {
 
     /**
      * Convenience method -- always returns the first Sequence.
-     * 
+     *
      * @return Sequence
      */
     public Sequence getSequence() {
@@ -248,9 +248,9 @@ public class NodeData implements PhylogenyData {
 
     /**
      * Convenience method -- always returns the first Taxonomy.
-     * 
+     *
      * @return  Taxonomy
-     * 
+     *
      */
     public Taxonomy getTaxonomy() {
         return getTaxonomy( 0 );
@@ -272,21 +272,21 @@ public class NodeData implements PhylogenyData {
     public boolean isEmpty() {
         return ( ForesterUtil.isEmpty( _node_name ) && !isHasSequence() && !isHasTaxonomy() && !isHasBinaryCharacters()
                 && !isHasDate() && !isHasDistribution() && !isHasEvent() && !isHasProperties() && !isHasReference() && ( ( _vector == null ) || _vector
-                .isEmpty() ) );
+                        .isEmpty() ) );
     }
 
     public boolean isHasDate() {
         return ( getDate() != null )
                 && ( !ForesterUtil.isEmpty( getDate().getDesc() ) || !ForesterUtil.isNull( getDate().getMax() )
                         || !ForesterUtil.isNull( getDate().getMin() ) || !ForesterUtil.isNull( getDate().getValue() ) || !ForesterUtil
-                            .isEmpty( getDate().getUnit() ) );
+                        .isEmpty( getDate().getUnit() ) );
     }
 
     public boolean isHasDistribution() {
         return ( ( ( getDistributions() != null ) && ( getDistributions().size() > 0 ) ) && ( ( !ForesterUtil
                 .isEmpty( getDistribution().getDesc() ) )
                 || ( ( getDistribution().getPoints() != null ) && ( getDistribution().getPoints().size() > 0 ) ) || ( ( getDistribution()
-                .getPolygons() != null ) && ( getDistribution().getPolygons().size() > 0 ) ) ) );
+                        .getPolygons() != null ) && ( getDistribution().getPolygons().size() > 0 ) ) ) );
     }
 
     public boolean isHasEvent() {
@@ -300,7 +300,7 @@ public class NodeData implements PhylogenyData {
     public boolean isHasReference() {
         return ( ( getReferences() != null ) && ( getReferences().size() > 0 ) )
                 && ( !ForesterUtil.isEmpty( getReference().getDoi() ) || !ForesterUtil.isEmpty( getReference()
-                        .getDescription() ) );
+                                                                                                .getDescription() ) );
     }
 
     public boolean isHasSequence() {
@@ -321,7 +321,7 @@ public class NodeData implements PhylogenyData {
 
     /**
      * Convenience method -- always sets the first Distribution.
-     * 
+     *
      */
     public void setDistribution( final Distribution distribution ) {
         if ( _distributions == null ) {
@@ -363,7 +363,7 @@ public class NodeData implements PhylogenyData {
 
     /**
      * Convenience method -- always sets the first Reference.
-     * 
+     *
      */
     public void setReference( final Reference reference ) {
         if ( _references == null ) {
@@ -390,7 +390,7 @@ public class NodeData implements PhylogenyData {
 
     /**
      * Convenience method -- always sets the first Sequence.
-     * 
+     *
      */
     public void setSequence( final Sequence sequence ) {
         if ( _sequences == null ) {
@@ -421,7 +421,7 @@ public class NodeData implements PhylogenyData {
 
     /**
      * Convenience method -- always sets the first Taxonomy.
-     * 
+     *
      */
     public void setTaxonomy( final Taxonomy taxonomy ) {
         if ( _taxonomies == null ) {

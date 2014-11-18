@@ -59,44 +59,44 @@ public final class ParserUtils {
     final public static String   TAX_CODE                             = "(?:[A-Z9][A-Z]{2}[A-Z0-9]{2})|RAT|PIG|PEA";
     final public static String   TAX_CODE_LO                          = "(?:[A-Z]{5})|RAT|PIG|PEA";
     final public static Pattern  TAXOMONY_CODE_PATTERN_A              = Pattern.compile( "(?:\\b|_)(" + TAX_CODE
-                                                                              + ")(?:\\b|_)" );
+                                                                                         + ")(?:\\b|_)" );
     final public static Pattern  TAXOMONY_CODE_PATTERN_A_LO           = Pattern.compile( "_(" + TAX_CODE_LO
-                                                                              + ")(?:\\b|_)" );
+                                                                                         + ")(?:\\b|_)" );
     final public static Pattern  TAXOMONY_CODE_PATTERN_BRACKETED      = Pattern.compile( "\\[(" + TAX_CODE + ")\\]" );
     final public static Pattern  TAXOMONY_CODE_PATTERN_PFR            = Pattern.compile( "(?:\\b|_)[a-zA-Z0-9]{3,}_("
-                                                                              + TAX_CODE + ")\\b" );
+            + TAX_CODE + ")\\b" );
     final public static Pattern  TAXOMONY_SN_PATTERN_GENUS            = Pattern.compile( "([A-Z][a-z]{2,30})" );
     final public static Pattern  TAXOMONY_SN_PATTERN_SN               = Pattern.compile( "(?:\\b|_)(" + SN_BN
-                                                                              + ")(?:(\\s*$)|([_ ][a-z]*[A-Z0-9]))" );
+                                                                                         + ")(?:(\\s*$)|([_ ][a-z]*[A-Z0-9]))" );
     final public static Pattern  TAXOMONY_SN_PATTERN_SNS              = Pattern.compile( "(?:\\b|_)(" + SN_BN
-                                                                              + "[_ ][a-z]{3,30}"
-                                                                              + ")[_ ][a-z]*[A-Z0-9]" );
+                                                                                         + "[_ ][a-z]{3,30}"
+                                                                                         + ")[_ ][a-z]*[A-Z0-9]" );
     final public static Pattern  TAXOMONY_SN_PATTERN_SNS2             = Pattern.compile( "[A-Z0-9][a-z]*[_ ](" + SN_BN
-                                                                              + "[_ ][a-z]{3,30}" + ")\\s*$" );
+                                                                                         + "[_ ][a-z]{3,30}" + ")\\s*$" );
     final public static Pattern  TAXOMONY_SN_PATTERN_SP               = Pattern
-                                                                              .compile( "(?:\\b|_)([A-Z][a-z]{2,30}[_ ]sp\\.?)(?:\\b|_)?" );
+            .compile( "(?:\\b|_)([A-Z][a-z]{2,30}[_ ]sp\\.?)(?:\\b|_)?" );
     final public static Pattern  TAXOMONY_SN_PATTERN_STRAIN_1         = Pattern
-                                                                              .compile( "(?:\\b|_)("
-                                                                                      + SN_BN
-                                                                                      + "[_ ](?:str|subsp|ssp|var)[a-z]{0,5}\\.?[_ ]\\S{1,60})(?:\\b|_)" );
+            .compile( "(?:\\b|_)("
+                    + SN_BN
+                    + "[_ ](?:str|subsp|ssp|var)[a-z]{0,5}\\.?[_ ]\\S{1,60})(?:\\b|_)" );
     final public static Pattern  TAXOMONY_SN_PATTERN_STRAIN_2         = Pattern
-                                                                              .compile( "(?:\\b|_)("
-                                                                                      + SN_BN
-                                                                                      + "[_ ]\\((?:str|subsp|ssp|var)[a-z]{0,5}\\.?[_ ]\\S{1,60}\\))" );
+            .compile( "(?:\\b|_)("
+                    + SN_BN
+                    + "[_ ]\\((?:str|subsp|ssp|var)[a-z]{0,5}\\.?[_ ]\\S{1,60}\\))" );
     final public static Pattern  TAXOMONY_SN_PATTERN_STRAIN_SUBSTRAIN = Pattern
-                                                                              .compile( "(?:\\b|_)("
-                                                                                      + SN_BN
-                                                                                      + "[_ ]str[a-z]{0,3}\\.?[_ ]\\S{1,60}[_ ]substr[a-z]{0,3}\\.?[_ ]\\S{1,60})(?:\\b|_)" );
+            .compile( "(?:\\b|_)("
+                    + SN_BN
+                    + "[_ ]str[a-z]{0,3}\\.?[_ ]\\S{1,60}[_ ]substr[a-z]{0,3}\\.?[_ ]\\S{1,60})(?:\\b|_)" );
     final private static Pattern TAXOMONY_CODE_PATTERN_PFS            = Pattern.compile( "(?:\\b|_)[A-Z0-9]{4,}_("
-                                                                              + TAX_CODE + ")/\\d+-\\d+\\b" );
+            + TAX_CODE + ")/\\d+-\\d+\\b" );
     final private static Pattern TAXOMONY_UNIPROT_ID_PATTERN_PFR      = Pattern
-                                                                              .compile( "(?:\\b|_)[A-Z0-9]{1,}_(\\d{1,7})\\b" );
+            .compile( "(?:\\b|_)[A-Z0-9]{1,}_(\\d{1,7})\\b" );
     final private static Pattern TAXOMONY_UNIPROT_ID_PATTERN_PFS      = Pattern
-                                                                              .compile( "(?:\\b|_)[A-Z0-9]{4,}_(\\d{1,7})/\\d+-\\d+\\b" );
+            .compile( "(?:\\b|_)[A-Z0-9]{4,}_(\\d{1,7})/\\d+-\\d+\\b" );
 
     final public static PhylogenyParser createParserDependingFileContents( final File file,
                                                                            final boolean phyloxml_validate_against_xsd )
-            throws FileNotFoundException, IOException {
+                                                                                   throws FileNotFoundException, IOException {
         PhylogenyParser parser = null;
         final String first_line = ForesterUtil.getFirstLine( file ).trim().toLowerCase();
         if ( first_line.startsWith( "<" ) ) {
@@ -127,7 +127,7 @@ public final class ParserUtils {
 
     final public static PhylogenyParser createParserDependingOnFileType( final File file,
                                                                          final boolean phyloxml_validate_against_xsd )
-            throws FileNotFoundException, IOException {
+                                                                                 throws FileNotFoundException, IOException {
         PhylogenyParser parser = null;
         parser = ParserUtils.createParserDependingOnSuffix( file.getName(), phyloxml_validate_against_xsd );
         if ( parser == null ) {
@@ -146,7 +146,7 @@ public final class ParserUtils {
 
     final public static PhylogenyParser createParserDependingOnUrlContents( final URL url,
                                                                             final boolean phyloxml_validate_against_xsd )
-            throws FileNotFoundException, IOException {
+                                                                                    throws FileNotFoundException, IOException {
         final String lc_filename = url.getFile().toString().toLowerCase();
         PhylogenyParser parser = createParserDependingOnSuffix( lc_filename, phyloxml_validate_against_xsd );
         if ( parser == null ) {
@@ -213,7 +213,7 @@ public final class ParserUtils {
         }
         else {
             throw new IllegalArgumentException( "attempt to parse object of type [" + source.getClass()
-                    + "] (can only parse objects of type File/String, InputStream, StringBuffer, or StringBuilder)" );
+                                                + "] (can only parse objects of type File/String, InputStream, StringBuffer, or StringBuilder)" );
         }
         return reader;
     }
@@ -317,7 +317,7 @@ public final class ParserUtils {
 
     public final static String extractTaxonomyDataFromNodeName( final PhylogenyNode node,
                                                                 final NHXParser.TAXONOMY_EXTRACTION taxonomy_extraction )
-            throws PhyloXmlDataFormatException {
+                                                                        throws PhyloXmlDataFormatException {
         if ( taxonomy_extraction == TAXONOMY_EXTRACTION.NO ) {
             throw new IllegalArgumentException();
         }
@@ -384,7 +384,7 @@ public final class ParserUtils {
 
     /**
      * Return null if it can not guess the parser to use based on name suffix.
-     * 
+     *
      * @param filename
      * @return
      */

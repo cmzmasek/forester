@@ -30,7 +30,7 @@ import org.forester.util.ForesterUtil;
 public class dom_dup {
 
     // HUMAN MOUSE
-    // ARATH SOYBN VOLCA CYAME PARTE THAPS EMIHU NAEGR 
+    // ARATH SOYBN VOLCA CYAME PARTE THAPS EMIHU NAEGR
     final static private String HELP_OPTION_1 = "help";
     final static private String HELP_OPTION_2 = "h";
     final static private String PRG_NAME      = "dom_dup";
@@ -192,7 +192,7 @@ public class dom_dup {
         System.out.println( " example: " );
         System.out.println();
         System.out
-                .println( "dom_dup \"HUMAN~[12]-2\" groups.txt RRMa_ALL_plus_RRMa_ee3_50_hmmalign_05_40_fme_gsdi.phylo.xml" );
+        .println( "dom_dup \"HUMAN~[12]-2\" groups.txt RRMa_ALL_plus_RRMa_ee3_50_hmmalign_05_40_fme_gsdi.phylo.xml" );
         System.out.println();
         System.out.println();
     }

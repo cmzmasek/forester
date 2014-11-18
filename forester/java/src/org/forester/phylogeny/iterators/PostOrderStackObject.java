@@ -29,7 +29,7 @@ import org.forester.phylogeny.PhylogenyNode;
 
 /*
  * @author Christian M. Zmasek
- * 
+ *
  * @version 1.00 -- last modified: 06/15/00
  */
 public final class PostOrderStackObject {

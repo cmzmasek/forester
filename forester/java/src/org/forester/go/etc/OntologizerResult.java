@@ -36,7 +36,7 @@ import org.forester.go.GoId;
 import org.forester.util.ForesterUtil;
 
 /*
- * 
+ *
  * Note: this class has a natural ordering that is inconsistent with equals.
  */
 public class OntologizerResult implements Comparable<OntologizerResult> {

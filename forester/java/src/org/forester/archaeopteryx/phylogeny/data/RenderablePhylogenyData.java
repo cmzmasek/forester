@@ -43,7 +43,7 @@ public interface RenderablePhylogenyData extends PhylogenyData {
      * This can be used to render phylogeny data as graphics (for example,
      * display of the domain structure). In most Renderable implementations this
      * will do nothing (i.e. just return).
-     * 
+     *
      * @param g
      *            the Graphics to render to
      */

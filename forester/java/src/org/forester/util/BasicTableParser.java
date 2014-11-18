@@ -61,7 +61,7 @@ public class BasicTableParser {
                                                   final boolean use_last_separator_only,
                                                   final String start_of_comment_line,
                                                   final boolean tables_separated_by_single_string_line )
-            throws IOException {
+                                                          throws IOException {
         if ( use_first_separator_only && use_last_separator_only ) {
             throw new IllegalArgumentException();
         }
@@ -77,7 +77,7 @@ public class BasicTableParser {
             if ( !ForesterUtil.isEmpty( line )
                     && ( ( ( line.charAt( 0 ) == '"' ) && ( line.charAt( line.length() - 1 ) == '"' ) && ( ForesterUtil
                             .countChars( line, '"' ) == 2 ) ) || ( ( line.charAt( 0 ) == '\'' )
-                            && ( line.charAt( line.length() - 1 ) == '\'' ) && ( ForesterUtil.countChars( line, '\'' ) == 2 ) ) ) ) {
+                                    && ( line.charAt( line.length() - 1 ) == '\'' ) && ( ForesterUtil.countChars( line, '\'' ) == 2 ) ) ) ) {
                 line = line.substring( 1, line.length() - 1 ).trim();
             }
             if ( saw_first_table

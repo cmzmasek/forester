@@ -130,7 +130,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
         //int c = 0;
         while ( hasNext() ) {
             l.add( next() );
-           // c++;
+            // c++;
         }
         final Phylogeny[] p = new Phylogeny[ l.size() ];
         for( int i = 0; i < l.size(); ++i ) {
@@ -244,12 +244,12 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
             _input_type = NHXParser.BUFFERED_READER;
             _source_length = 0;
             if ( _my_source_br != null ) {
-             // I am REALLY not sure if it a "good" NOT to close the stream... 
-//                try {
-//                    _my_source_br.close();
-//                }
-//                catch ( final IOException e ) {
-//                }
+                //I am REALLY not sure if it is a "good" idea NOT to close the stream...
+                //                try {
+                //                    _my_source_br.close();
+                //                }
+                //                catch ( final IOException e ) {
+                //                }
             }
             final File f = ( File ) nhx_source;
             final String error = ForesterUtil.isReadableFile( f );
@@ -262,12 +262,12 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
             _input_type = NHXParser.BUFFERED_READER;
             _source_length = 0;
             if ( _my_source_br != null ) {
-// I am REALLY not sure if it a "good" NOT to close the stream...                
-//                try {
-//                    _my_source_br.close();
-//                }
-//                catch ( final IOException e ) {
-//                }
+                //I am REALLY not sure if it is a "good" idea NOT to close the stream...
+                //                try {
+                //                    _my_source_br.close();
+                //                }
+                //                catch ( final IOException e ) {
+                //                }
             }
             final InputStreamReader isr = new InputStreamReader( ( ( URL ) nhx_source ).openStream() );
             _nhx_source = new BufferedReader( isr );
@@ -276,12 +276,12 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
             _input_type = NHXParser.BUFFERED_READER;
             _source_length = 0;
             if ( _my_source_br != null ) {
-             // I am REALLY not sure if it a "good" NOT to close the stream...   
-//                try {
-//                    _my_source_br.close();
-//                }
-//                catch ( final IOException e ) {
-//                }
+                //I am REALLY not sure if it is a "good" idea NOT to close the stream...
+                //                try {
+                //                    _my_source_br.close();
+                //                }
+                //                catch ( final IOException e ) {
+                //                }
             }
             final InputStreamReader isr = new InputStreamReader( ( InputStream ) nhx_source );
             _nhx_source = new BufferedReader( isr );
@@ -294,14 +294,14 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
     }
 
     private final Phylogeny finishPhylogeny() throws PhylogenyParserException, NHXFormatException,
-            PhyloXmlDataFormatException {
+    PhyloXmlDataFormatException {
         if ( _current_phylogeny != null ) {
             parseNHX( _current_anotation != null ? _current_anotation.toString() : "",
-                      _current_phylogeny.getRoot(),
-                      getTaxonomyExtraction(),
-                      isReplaceUnderscores(),
-                      isAllowErrorsInDistanceToParent(),
-                      true );
+                    _current_phylogeny.getRoot(),
+                    getTaxonomyExtraction(),
+                    isReplaceUnderscores(),
+                    isAllowErrorsInDistanceToParent(),
+                    true );
             if ( GUESS_IF_SUPPORT_VALUES ) {
                 if ( isBranchLengthsLikeBootstrapValues( _current_phylogeny ) ) {
                     moveBranchLengthsToConfidenceValues( _current_phylogeny );
@@ -320,7 +320,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
     }
 
     private final Phylogeny finishSingleNodePhylogeny() throws PhylogenyParserException, NHXFormatException,
-            PhyloXmlDataFormatException {
+    PhyloXmlDataFormatException {
         final PhylogenyNode new_node = new PhylogenyNode();
         parseNHX( _current_anotation.toString(),
                   new_node,
@@ -479,7 +479,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                 _current_anotation.append( c );
             }
             ++_i;
-        } //  while ( true ) 
+        } //  while ( true )
         if ( _clade_level != 0 ) {
             throw new PhylogenyParserException( "error in NH (Newick) formatted data: most likely cause: number of open parens does not equal number of close parens" );
         }
@@ -511,7 +511,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
     }
 
     private final void processCloseParen() throws PhylogenyParserException, NHXFormatException,
-            PhyloXmlDataFormatException {
+    PhyloXmlDataFormatException {
         if ( _clade_level < 0 ) {
             throw new PhylogenyParserException( "error in NH (Newick)/NHX formatted data: most likely cause: number of close parens is larger than number of open parens" );
         }
@@ -569,7 +569,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
     }
 
     private final Phylogeny processOpenParen() throws PhylogenyParserException, NHXFormatException,
-            PhyloXmlDataFormatException {
+    PhyloXmlDataFormatException {
         Phylogeny phy = null;
         final PhylogenyNode new_node = new PhylogenyNode();
         if ( _clade_level == 0 ) {
@@ -606,7 +606,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                                        final boolean replace_underscores,
                                        final boolean allow_errors_in_distance_to_parent,
                                        final boolean replace_bell ) throws NHXFormatException,
-            PhyloXmlDataFormatException {
+                                       PhyloXmlDataFormatException {
         if ( ( taxonomy_extraction != TAXONOMY_EXTRACTION.NO ) && replace_underscores ) {
             throw new IllegalArgumentException( "cannot extract taxonomies and replace under scores at the same time" );
         }
@@ -703,7 +703,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                             node_to_annotate.getNodeData().setSequence( new Sequence() );
                         }
                         node_to_annotate.getNodeData().getSequence()
-                                .setAccession( new Accession( s.substring( 3 ), "?" ) );
+                        .setAccession( new Accession( s.substring( 3 ), "?" ) );
                     }
                     else if ( s.startsWith( NHXtags.GENE_NAME ) ) {
                         if ( !node_to_annotate.getNodeData().isHasSequence() ) {
@@ -711,7 +711,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                         }
                         node_to_annotate.getNodeData().getSequence().setName( s.substring( 3 ) );
                     }
-                } // while ( t.hasMoreTokens() ) 
+                } // while ( t.hasMoreTokens() )
             }
         }
     }
@@ -778,7 +778,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
             if ( prob >= 0.0 ) {
                 if ( sd >= 0.0 ) {
                     node_to_annotate.getBranchData()
-                            .addConfidence( new Confidence( prob, "posterior probability", sd ) );
+                    .addConfidence( new Confidence( prob, "posterior probability", sd ) );
                 }
                 else {
                     node_to_annotate.getBranchData().addConfidence( new Confidence( prob, "posterior probability" ) );
@@ -793,7 +793,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
             }
             catch ( final NumberFormatException e ) {
                 throw new NHXFormatException( "failed to parse median branch length (Mr Bayes output) from \"" + s
-                        + "\"" );
+                                              + "\"" );
             }
             if ( bl >= 0.0 ) {
                 node_to_annotate.setDistanceToParent( bl );

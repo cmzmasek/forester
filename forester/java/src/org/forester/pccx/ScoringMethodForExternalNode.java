@@ -34,15 +34,15 @@ import org.forester.phylogeny.PhylogenyNode;
 /*
  * Interface providing implementations of scoring methods used by
  * ExternalNodeBasedCoverageMethod.
- * 
+ *
  * @author Christian M. Zmasek
  */
 public interface ScoringMethodForExternalNode {
 
     /**
      * This calculates the coverage score for one external node.
-     * 
-     * 
+     *
+     *
      * @param external_node_scores
      *            SortedMap<PhylogenyNode, Double> in which the external node
      *            scores are stored (node->score)
@@ -52,8 +52,8 @@ public interface ScoringMethodForExternalNode {
      *            PhylogenyNod for which to calculate the score
      * @param options
      *            CoverageCalculationOptions
-     * @param annotate_phylogeny           
-     *            
+     * @param annotate_phylogeny
+     *
      */
     public void calculateScoreForExternalNode( final SortedMap<PhylogenyNode, Double> external_node_scores,
                                                final Phylogeny phylogeny,
@@ -62,7 +62,7 @@ public interface ScoringMethodForExternalNode {
 
     /**
      * This returns a short description of this scoring method
-     * 
+     *
      * @return short description of this scoring method
      */
     public String getDesciption();
@@ -70,8 +70,8 @@ public interface ScoringMethodForExternalNode {
     /**
      * This calculates a normalization factor, so that a normalized score of 1.0
      * means complete coverage.
-     * 
-     * 
+     *
+     *
      * @param phylogeny
      *            Phylogeny containing the external nodes to score
      * @return normalization factor

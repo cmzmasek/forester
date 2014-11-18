@@ -87,7 +87,7 @@ public final class DomainCountsDifferenceUtil {
         if ( high_copy_base_species.contains( high_copy_target_species )
                 || low_copy_species.contains( high_copy_target_species ) ) {
             throw new IllegalArgumentException( "species [" + high_copy_target_species
-                    + "] appears in other list as well" );
+                                                + "] appears in other list as well" );
         }
         if ( min_diff < 0 ) {
             throw new IllegalArgumentException( "attempt to use negative addition [" + min_diff + "]" );
@@ -235,7 +235,7 @@ public final class DomainCountsDifferenceUtil {
         writeGoIdsToFile( passing_gos_writer, go_ids_of_passing_domains );
     }
 
-    //FIXME really needs to be tested! 
+    //FIXME really needs to be tested!
     private static void addCounts( final SortedMap<BinaryDomainCombination, List<Integer>> copy_counts,
                                    final BinaryDomainCombination dc,
                                    final GenomeWideCombinableDomains genome,
@@ -293,7 +293,7 @@ public final class DomainCountsDifferenceUtil {
     private static void appendGoTerm( final StringBuilder sb, final GoTerm go_term ) {
         final GoId go_id = go_term.getGoId();
         sb.append( "<a href=\"" + SurfacingConstants.AMIGO_LINK + go_id + "\" target=\"amigo_window\">" + go_id
-                + "</a>" );
+                   + "</a>" );
         sb.append( ":" );
         sb.append( go_term.getName() );
         sb.append( " [" );
@@ -538,7 +538,7 @@ public final class DomainCountsDifferenceUtil {
                                                              final SortedMap<BinaryDomainCombination, Double> low_copy_values,
                                                              final SortedSet<BinaryDomainCombination> all_bdcs,
                                                              final Map<String, Set<BinaryDomainCombination>> bdcs_per_genome )
-            throws IOException {
+                                                                     throws IOException {
         int counter = 0;
         int total_absense_counter = 0;
         int not_total_absense_counter = 0;
@@ -556,8 +556,8 @@ public final class DomainCountsDifferenceUtil {
                     }
                     ++counter;
                     html_writer.write( "<tr><td><a href=\"" + SurfacingConstants.PFAM_FAMILY_ID_LINK + bdc.getId0()
-                            + "\">" + bdc.getId0() + "</a> = <a href=\"" + SurfacingConstants.PFAM_FAMILY_ID_LINK
-                            + bdc.getId1() + "\">" + bdc.getId1() + "</a>" );
+                                       + "\">" + bdc.getId0() + "</a> = <a href=\"" + SurfacingConstants.PFAM_FAMILY_ID_LINK
+                                       + bdc.getId1() + "\">" + bdc.getId1() + "</a>" );
                     html_writer.write( "</td><td>" );
                     html_writer.write( "<table>" );
                     for( final GenomeWideCombinableDomains genome : genomes ) {
@@ -570,7 +570,7 @@ public final class DomainCountsDifferenceUtil {
                                                    bdcs_per_genome,
                                                    species,
                                                    html_writer,
-                                                   "#0000FF" );
+                                    "#0000FF" );
                             html_writer.write( "</tr>" );
                         }
                         else if ( low_copy_species.contains( species ) ) {
@@ -581,7 +581,7 @@ public final class DomainCountsDifferenceUtil {
                                                    bdcs_per_genome,
                                                    species,
                                                    html_writer,
-                                                   "#A0A0A0" );
+                                    "#A0A0A0" );
                             html_writer.write( "</tr>" );
                         }
                         else if ( high_copy_base_species.contains( species ) ) {
@@ -592,7 +592,7 @@ public final class DomainCountsDifferenceUtil {
                                                    bdcs_per_genome,
                                                    species,
                                                    html_writer,
-                                                   "#404040" );
+                                    "#404040" );
                             html_writer.write( "</tr>" );
                         }
                     }
@@ -662,7 +662,7 @@ public final class DomainCountsDifferenceUtil {
                                                   final SortedSet<String> all_domains,
                                                   final SortedSet<GoId> go_ids_of_passing_domains,
                                                   final SortedMap<Species, List<Protein>> protein_lists_per_species )
-            throws IOException {
+                                                          throws IOException {
         int counter = 0;
         int total_absense_counter = 0;
         int not_total_absense_counter = 0;
@@ -687,9 +687,9 @@ public final class DomainCountsDifferenceUtil {
                     plain_writer.write( domain_id );
                     plain_writer.write( SurfacingConstants.NL );
                     html_writer.write( "<tr><td><a href=\"" + SurfacingConstants.PFAM_FAMILY_ID_LINK + domain_id
-                            + "\">" + domain_id + "</a></td><td>" );
+                                       + "\">" + domain_id + "</a></td><td>" );
                     html_writer.write( addGoInformation( domain_id, domain_id_to_go_ids_map, go_id_to_term_map )
-                            .toString() );
+                                       .toString() );
                     html_writer.write( "</td><td>" );
                     html_writer.write( "<table>" );
                     for( final GenomeWideCombinableDomains genome : genomes ) {
@@ -702,7 +702,7 @@ public final class DomainCountsDifferenceUtil {
                                                    species,
                                                    plain_writer,
                                                    html_writer,
-                                                   "#0000FF" );
+                                    "#0000FF" );
                             html_writer.write( "</tr>" );
                         }
                         else if ( low_copy_species.contains( species ) ) {
@@ -713,7 +713,7 @@ public final class DomainCountsDifferenceUtil {
                                                    species,
                                                    plain_writer,
                                                    html_writer,
-                                                   "#A0A0A0" );
+                                    "#A0A0A0" );
                             html_writer.write( "</tr>" );
                         }
                         else if ( high_copy_base_species.contains( species ) ) {
@@ -724,7 +724,7 @@ public final class DomainCountsDifferenceUtil {
                                                    species,
                                                    plain_writer,
                                                    html_writer,
-                                                   "#404040" );
+                                    "#404040" );
                             html_writer.write( "</tr>" );
                         }
                     }
@@ -813,7 +813,7 @@ public final class DomainCountsDifferenceUtil {
                                              final SortedMap<Species, List<Protein>> protein_lists_per_species,
                                              final String domain_id ) throws IOException {
         final File my_proteins_file = new File( proteins_file_base.getParentFile() + ForesterUtil.FILE_SEPARATOR
-                + domain_id + PLUS_MINUS_PROTEINS_FILE_DOM_SUFFIX );
+                                                + domain_id + PLUS_MINUS_PROTEINS_FILE_DOM_SUFFIX );
         SurfacingUtil.checkForOutputFileWriteability( my_proteins_file );
         final Writer proteins_file_writer = new BufferedWriter( new FileWriter( my_proteins_file ) );
         SurfacingUtil.extractProteinNames( protein_lists_per_species,

@@ -309,7 +309,7 @@ public final class PhyloXmlHandler extends DefaultHandler {
             }
             else if ( qualified_name.equals( PhyloXmlMapping.BINARY_CHARACTERS ) ) {
                 node.getNodeData().setBinaryCharacters( ( BinaryCharacters ) BinaryCharactersParser.getInstance()
-                        .parse( element ) );
+                                                        .parse( element ) );
             }
             else if ( qualified_name.equals( PhyloXmlMapping.COLOR ) ) {
                 node.getBranchData().setBranchColor( ( BranchColor ) ColorParser.getInstance().parse( element ) );
@@ -406,15 +406,15 @@ public final class PhyloXmlHandler extends DefaultHandler {
                 final XmlElement element = new XmlElement( namespace_uri, local_name, local_name, attributes );
                 if ( element.isHasAttribute( PhyloXmlMapping.PHYLOGENY_IS_REROOTABLE_ATTR ) ) {
                     getCurrentPhylogeny().setRerootable( Boolean.parseBoolean( element
-                            .getAttribute( PhyloXmlMapping.PHYLOGENY_IS_REROOTABLE_ATTR ) ) );
+                                                                               .getAttribute( PhyloXmlMapping.PHYLOGENY_IS_REROOTABLE_ATTR ) ) );
                 }
                 if ( element.isHasAttribute( PhyloXmlMapping.PHYLOGENY_BRANCHLENGTH_UNIT_ATTR ) ) {
                     getCurrentPhylogeny()
-                            .setDistanceUnit( element.getAttribute( PhyloXmlMapping.PHYLOGENY_BRANCHLENGTH_UNIT_ATTR ) );
+                    .setDistanceUnit( element.getAttribute( PhyloXmlMapping.PHYLOGENY_BRANCHLENGTH_UNIT_ATTR ) );
                 }
                 if ( element.isHasAttribute( PhyloXmlMapping.PHYLOGENY_IS_ROOTED_ATTR ) ) {
                     getCurrentPhylogeny().setRooted( Boolean.parseBoolean( element
-                            .getAttribute( PhyloXmlMapping.PHYLOGENY_IS_ROOTED_ATTR ) ) );
+                                                                           .getAttribute( PhyloXmlMapping.PHYLOGENY_IS_ROOTED_ATTR ) ) );
                 }
                 if ( element.isHasAttribute( PhyloXmlMapping.PHYLOGENY_TYPE_ATTR ) ) {
                     getCurrentPhylogeny().setType( ( element.getAttribute( PhyloXmlMapping.PHYLOGENY_TYPE_ATTR ) ) );

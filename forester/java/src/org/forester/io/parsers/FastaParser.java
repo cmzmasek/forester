@@ -51,7 +51,7 @@ public class FastaParser {
     private static final Pattern ANYTHING_REGEX  = Pattern.compile( "[\\d\\s]+" );
     //>gi|71834668|ref|NP_001025424.1| Bcl2 [Danio rerio]
     public static final Pattern  FASTA_DESC_LINE = Pattern
-                                                         .compile( ">?\\s*([^|]+)\\|([^|]+)\\S*\\s+(.+)\\s+\\[(.+)\\]" );
+            .compile( ">?\\s*([^|]+)\\|([^|]+)\\S*\\s+(.+)\\s+\\[(.+)\\]" );
 
     public static void main( final String[] args ) {
         final String a = ">gi|71834668|ref|NP_001025424.1| Bcl2 [Danio rerio]";

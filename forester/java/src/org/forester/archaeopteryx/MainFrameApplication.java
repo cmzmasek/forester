@@ -389,8 +389,7 @@ public final class MainFrameApplication extends MainFrame {
                     _mainpanel.getCurrentTreePanel().calcParametersForPainting( _mainpanel.getCurrentTreePanel()
                                                                                         .getWidth(),
                                                                                 _mainpanel.getCurrentTreePanel()
-                                                                                        .getHeight(),
-                                                                                getOptions().isAllowFontSizeChange() );
+                                                                                        .getHeight() );
                 }
             }
         } );
@@ -1293,8 +1292,7 @@ public final class MainFrameApplication extends MainFrame {
 
     void writePhylogenyToGraphicsFile( final String file_name, final GraphicsExportType type ) {
         _mainpanel.getCurrentTreePanel().calcParametersForPainting( _mainpanel.getCurrentTreePanel().getWidth(),
-                                                                    _mainpanel.getCurrentTreePanel().getHeight(),
-                                                                    true );
+                                                                    _mainpanel.getCurrentTreePanel().getHeight() );
         String file_written_to = "";
         boolean error = false;
         try {
@@ -2145,8 +2143,7 @@ public final class MainFrameApplication extends MainFrame {
         }
         if ( !getOptions().isPrintUsingActualSize() ) {
             getCurrentTreePanel().calcParametersForPainting( getOptions().getPrintSizeX() - 80,
-                                                             getOptions().getPrintSizeY() - 140,
-                                                             true );
+                                                             getOptions().getPrintSizeY() - 140 );
             getCurrentTreePanel().resetPreferredSize();
             getCurrentTreePanel().repaint();
         }
@@ -2174,9 +2171,8 @@ public final class MainFrameApplication extends MainFrame {
 
     private void printPhylogenyToPdf( final String file_name ) {
         if ( !getOptions().isPrintUsingActualSize() ) {
-            getCurrentTreePanel().calcParametersForPainting( getOptions().getPrintSizeX(),
-                                                             getOptions().getPrintSizeY(),
-                                                             true );
+            getCurrentTreePanel()
+            .calcParametersForPainting( getOptions().getPrintSizeX(), getOptions().getPrintSizeY() );
             getCurrentTreePanel().resetPreferredSize();
             getCurrentTreePanel().repaint();
         }

@@ -33,7 +33,7 @@ import org.forester.phylogeny.PhylogenyNode;
 
 /*
  * Scoring method according to an idea by Adam Godzik, PhD.
- * 
+ *
  * @author Christian M. Zmasek
  */
 public class BranchCountingBasedScoringMethod implements ScoringMethodForExternalNode {

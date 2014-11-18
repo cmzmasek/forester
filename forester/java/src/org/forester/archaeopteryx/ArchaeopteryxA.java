@@ -66,7 +66,7 @@ public class ArchaeopteryxA extends JApplet {
      * has been selected by the user by clicking the "Return ..."
      * menu item. This method is expected to be called from Javascript or
      * something like it.
-     * 
+     *
      * @return current external node data as String
      */
     public String getCurrentExternalNodesDataBuffer() {
@@ -195,7 +195,7 @@ public class ArchaeopteryxA extends JApplet {
 
     /**
      * Prints message when initialization is finished. Called automatically.
-     * 
+     *
      * @param g
      *            Graphics
      */

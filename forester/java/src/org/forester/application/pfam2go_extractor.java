@@ -96,7 +96,7 @@ public class pfam2go_extractor {
     private static void printHelp() {
         System.out.println();
         System.out.println( PRG_NAME
-                + " <pfam2go mapping file> <file with all GO terms, in 'obo' format> <GO id> [more GO ids]" );
+                            + " <pfam2go mapping file> <file with all GO terms, in 'obo' format> <GO id> [more GO ids]" );
         System.out.println();
     }
 }

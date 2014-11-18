@@ -36,7 +36,7 @@ public final class DevelopmentTools {
 
     /**
      * Creates a completely unbalanced Phylogeny with i external nodes.
-     * 
+     *
      * @return a newly created unbalanced Phylogeny
      */
     // public static Phylogeny createUnbalancedTree( int i ) {
@@ -46,7 +46,7 @@ public final class DevelopmentTools {
     // try {
     // PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
     // t1 = factory.create( ":S=", new SimpleNHXParser() );
-    //            
+    //
     // t1.setRooted( true );
     //
     // for ( int j = 1; j < i; ++j ) {
@@ -71,7 +71,7 @@ public final class DevelopmentTools {
     /**
      * Creates a completely balanced rooted phylogeny with a given number of levels and
      * children per node.
-     * 
+     *
      * @param levels
      * @param children_per_node
      * @return a completely balanced rooted phylogeny
@@ -165,7 +165,7 @@ public final class DevelopmentTools {
     /**
      * Sets the species names of the external Nodes of Phylogeny t to a random
      * positive integer number between (and including) min and max.
-     * 
+     *
      * @param t
      *            whose external species names are to be randomized
      * @param min

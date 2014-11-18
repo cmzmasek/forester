@@ -26,7 +26,7 @@ public abstract class RunnableProcess implements Runnable {
         final boolean removed = mf.getProcessPool().removeProcess( getProcessId() );
         if ( !removed ) {
             ForesterUtil.printWarningMessage( Constants.PRG_NAME, "could not remove process " + getProcessId()
-                    + " from process pool" );
+                                              + " from process pool" );
         }
         mf.updateProcessMenu();
     }

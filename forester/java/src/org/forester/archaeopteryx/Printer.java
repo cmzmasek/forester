@@ -38,9 +38,9 @@ final class Printer {
 
     /**
      * Returns null if printing has been aborted by the user,
-     * a String otherwise -- if a printer name was obtained this String is 
+     * a String otherwise -- if a printer name was obtained this String is
      * the printer name, an empty String otherwise.
-     * 
+     *
      * @param tree_panel
      * @param job_name
      * @return

@@ -181,7 +181,7 @@ public class XmlElement {
 
     /**
      * [Careful, this does not call "new String(...)"]
-     * 
+     *
      * @param value
      */
     public void setValue( final String value ) {

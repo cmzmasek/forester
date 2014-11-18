@@ -40,7 +40,7 @@ public interface DescriptiveStatistics {
     /**
      * Computes the coefficient of variation. Used to express standard deviation
      * independent of units of measure.
-     * 
+     *
      * @return
      */
     public abstract double coefficientOfVariation();
@@ -68,7 +68,7 @@ public interface DescriptiveStatistics {
     /**
      * Determines relationship between the mean and the median. This reflects
      * how the data differs from the normal bell shaped distribution.
-     * 
+     *
      * @return
      */
     public abstract double pearsonianSkewness();

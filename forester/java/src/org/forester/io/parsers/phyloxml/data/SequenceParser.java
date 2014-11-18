@@ -72,7 +72,7 @@ public class SequenceParser implements PhylogenyDataPhyloXmlParser {
             else if ( child_element.getQualifiedName().equals( PhyloXmlMapping.SEQUENCE_MOL_SEQ ) ) {
                 if ( child_element.isHasAttribute( PhyloXmlMapping.SEQUENCE_MOL_SEQ_ALIGNED_ATTR ) ) {
                     sequence.setMolecularSequenceAligned( Boolean.parseBoolean( child_element
-                            .getAttribute( PhyloXmlMapping.SEQUENCE_MOL_SEQ_ALIGNED_ATTR ) ) );
+                                                                                .getAttribute( PhyloXmlMapping.SEQUENCE_MOL_SEQ_ALIGNED_ATTR ) ) );
                 }
                 sequence.setMolecularSequence( child_element.getValueAsString() );
             }
@@ -87,7 +87,7 @@ public class SequenceParser implements PhylogenyDataPhyloXmlParser {
             }
             else if ( child_element.getQualifiedName().equals( PhyloXmlMapping.SEQUENCE_DOMAIN_ARCHITECURE ) ) {
                 sequence.setDomainArchitecture( ( DomainArchitecture ) DomainArchitectureParser.getInstance()
-                        .parse( child_element ) );
+                                                .parse( child_element ) );
             }
             else if ( child_element.getQualifiedName().equals( PhyloXmlMapping.URI ) ) {
                 sequence.addUri( ( Uri ) UriParser.getInstance().parse( child_element ) );
@@ -96,7 +96,7 @@ public class SequenceParser implements PhylogenyDataPhyloXmlParser {
                 for( int j = 0; j < child_element.getNumberOfChildElements(); ++j ) {
                     //    final XmlElement c = child_element.getChildElement( j );
                     sequence.addCrossReference( ( Accession ) AccessionParser.getInstance().parse( child_element
-                            .getChildElement( j ) ) );
+                                                                                                   .getChildElement( j ) ) );
                 }
                 //sequence.addUri( ( Uri ) UriParser.getInstance().parse( child_element ) );
             }

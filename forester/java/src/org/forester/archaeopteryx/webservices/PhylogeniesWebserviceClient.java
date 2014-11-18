@@ -36,75 +36,75 @@ public interface PhylogeniesWebserviceClient {
 
     /**
      * A short description of the webservice (~20 characters).
-     *  
+     *
      * @return a short description of the webservice (~20 characters)
      */
     public String getDescription();
 
     /**
      * Instructions (and examples) on how to use the webservice.
-     * 
+     *
      * @return instructions (and examples) on how to use the webservice
      */
     public String getInstructions();
 
     /**
      * A name/description which can appear on a menu.
-     * 
+     *
      * @return A name/description which can appear on a menu
      */
     public String getMenuName();
 
     /**
      * The name of the webservice.
-     * 
-     * 
+     *
+     *
      * @return the name of the webservice
      */
     public String getName();
 
     /**
      * The node data field in which to place node names from simple unannotated formats
-     * (such as Newick). Null means avoiding any such postprocessing.  
-     * 
+     * (such as Newick). Null means avoiding any such postprocessing.
+     *
      * @return the field code
      */
     public PhylogenyMethods.PhylogenyNodeField getNodeField();
 
     /**
      * This is used to indicate any kind of special processing.
-     * 
-     * 
+     *
+     *
      * @return a reference
      */
     public Object getProcessingInstructions();
 
     /**
      * To get a type of reference for the webservice (an URL or citation, for example).
-     * 
-     * 
+     *
+     *
      * @return a reference
      */
     public String getReference();
 
     /**
      * The expected format of the response.
-     * 
+     *
      * @return the expected format of the response
      */
     public WsPhylogenyFormat getReturnFormat();
 
     /**
      * Use QUERY_PLACEHOLDER to indicate position of query variable.
-     * 
+     *
      * @return the URL
      */
     public String getUrl();
 
     /**
      * Is the query a number?
-     * 
-     * 
+     *
+     *
      * @return
      */
     public boolean isQueryInteger();

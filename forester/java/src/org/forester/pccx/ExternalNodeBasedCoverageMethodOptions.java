@@ -33,7 +33,7 @@ public class ExternalNodeBasedCoverageMethodOptions implements CoverageCalculati
     /**
      * This constructor sets the class name for the scoring method e.g.
      * "org.forester.tools.modeling.BranchCountingBasedScoringMethod"
-     * 
+     *
      * @param scoring_method
      *            class name for the scoring method
      */

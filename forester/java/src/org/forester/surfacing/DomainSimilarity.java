@@ -110,7 +110,7 @@ public class DomainSimilarity implements Comparable<DomainSimilarity> {
         final int s = species_data.size();
         if ( ( ( s * s ) - s ) != ( getN() * 2 ) ) {
             throw new IllegalArgumentException( "illegal species count and n: species count:" + s + ", n:" + _n
-                    + " for domain " + combinable_domains.getKeyDomain() );
+                                                + " for domain " + combinable_domains.getKeyDomain() );
         }
         if ( s > 2 ) {
             if ( getMaximalDifferenceInCounts() < 0 ) {
@@ -192,10 +192,10 @@ public class DomainSimilarity implements Comparable<DomainSimilarity> {
     /**
      * For pairwise similarities, this should return the "difference"; for example the difference in counts
      * for copy number based features (the same as getMaximalDifferenceInCounts(), or the number
-     * of actually different domain combinations. 
+     * of actually different domain combinations.
      * For pairwise similarities, this should return the difference,
      * while for comparisons of more than two domains, this should return the maximal difference
-     * 
+     *
      */
     public int getMaximalDifference() {
         return _max_difference;
@@ -205,8 +205,8 @@ public class DomainSimilarity implements Comparable<DomainSimilarity> {
      * For pairwise similarities, this should return the difference in counts,
      * while for comparisons of more than two domains, this should return the maximal difference
      * in counts
-     * 
-     * 
+     *
+     *
      * @return the (maximal) difference in counts
      */
     public int getMaximalDifferenceInCounts() {
@@ -228,7 +228,7 @@ public class DomainSimilarity implements Comparable<DomainSimilarity> {
     /**
      * This should return the number of pairwise distances used to calculate
      * this similarity score
-     * 
+     *
      * @return the number of pairwise distances
      */
     public int getN() {
@@ -250,8 +250,8 @@ public class DomainSimilarity implements Comparable<DomainSimilarity> {
     /**
      * This should return a map, which maps species names to
      * SpeciesSpecificDomainSimilariyData
-     * 
-     * 
+     *
+     *
      * @return SortedMap<String, SpeciesSpecificDomainSimilariyData>
      */
     public SortedMap<Species, SpeciesSpecificDcData> getSpeciesData() {
@@ -538,7 +538,7 @@ public class DomainSimilarity implements Comparable<DomainSimilarity> {
         sb.append( "</td>" );
         sb.append( "<td>" );
         sb.append( "<a href=\"" + SurfacingConstants.GOOGLE_SCHOLAR_SEARCH + getDomainId()
-                + "\" target=\"gs_window\">gs</a>" );
+                   + "\" target=\"gs_window\">gs</a>" );
         sb.append( "</td>" );
         if ( getMaximalSimilarityScore() > 0 ) {
             sb.append( "<td>" );

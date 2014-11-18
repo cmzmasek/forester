@@ -42,7 +42,7 @@ import org.forester.phylogeny.iterators.PreorderTreeIterator;
 import org.forester.util.ForesterUtil;
 
 /**
- * Warning. Implementation of method 'compareTo' only looks at 
+ * Warning. Implementation of method 'compareTo' only looks at
  * node name. Thus, use of this class in SortedSets might lead
  * to unexpected behavior.
  *
@@ -95,7 +95,7 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
     /**
      * Adds PhylogenyNode n to the list of child nodes and sets the _parent of n
      * to this.
-     * 
+     *
      * @param n
      *            the PhylogenyNode to add
      */
@@ -141,8 +141,8 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
      * Returns a new PhylogenyNode which has its data copied from this
      * PhylogenyNode. Links to the other Nodes in the same Phylogeny are NOT
      * copied (e.g. _link to _parent). Field "_link" IS copied.
-     * 
-     * @see #getLink() 
+     *
+     * @see #getLink()
      */
     final public PhylogenyNode copyNodeData() {
         final PhylogenyNode node = new PhylogenyNode();
@@ -168,8 +168,8 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
      * Returns a new PhylogenyNode which has the same data as this
      * PhylogenyNode. Links to the other Nodes in the same Phylogeny are NOT
      * copied (e.g. _link to _parent). Field "_link" IS copied.
-     * 
-     * @see #getLink() 
+     *
+     * @see #getLink()
      */
     final public PhylogenyNode copyNodeDataShallow() {
         final PhylogenyNode node = new PhylogenyNode();
@@ -190,8 +190,8 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
     @Override
     /**
      * Based on node name, sequence, and taxonomy.
-     * 
-     * 
+     *
+     *
      */
     final public boolean equals( final Object o ) {
         if ( this == o ) {
@@ -239,7 +239,7 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
     /**
      * Returns a List containing references to all external children of this
      * PhylogenyNode.
-     * 
+     *
      * @return List of references to external Nodes
      */
     final public List<PhylogenyNode> getAllExternalDescendants() {
@@ -267,7 +267,7 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
     /**
      * Returns a List containing references to all names of the external
      * children of this PhylogenyNode.
-     * 
+     *
      * @return List of references to names of external Nodes
      */
     final public List<String> getAllExternalDescendantsNames() {
@@ -288,7 +288,7 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
 
     /**
      * This return child node n of this node.
-     * 
+     *
      * @param n
      *            the index of the child to get
      * @return the child node with index n
@@ -327,7 +327,7 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
     /**
      * This gets the child node index of this node.
      * <p>
-     * 
+     *
      * @return the child node index of this node
      * @throws UnsupportedOperationException
      *             if this node is a root node
@@ -341,7 +341,7 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
      * parent
      * <p>
      * [last modified Aug 14, 2006 by CMZ]
-     * 
+     *
      * @return the child node index of this node
      * @throws UnsupportedOperationException
      *             if this node is a root node
@@ -377,7 +377,7 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
      * Convenience method. Returns the first child node of this node.
      * <p>
      * [last modified May 18, 2005 by CMZ]
-     * 
+     *
      * @return the first child node of this node
      */
     public final PhylogenyNode getFirstChildNode() {
@@ -402,7 +402,7 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
      * Convenience method. Returns the last child node of this node.
      * <p>
      * [last modified May 18, 2005 by CMZ]
-     * 
+     *
      * @return the last child node of this node
      */
     public final PhylogenyNode getLastChildNode() {
@@ -616,7 +616,7 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
 
     /**
      * Checks whether this PhylogenyNode is external (tip).
-     * 
+     *
      * @return true if this PhylogenyNode is external, false otherwise
      */
     final public boolean isExternal() {
@@ -663,7 +663,7 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
 
     /**
      * Checks whether this PhylogenyNode is internal (tip).
-     * 
+     *
      * @return true if this PhylogenyNode is external, false otherwise
      */
     final public boolean isInternal() {
@@ -674,7 +674,7 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
      * Returns true if this node is the last child node of its _parent.
      * <p>
      * [last modified June 01, 2005 by CMZ]
-     * 
+     *
      * @return true if this node is the last child node of its _parent, false
      *         otherwise
      */
@@ -701,7 +701,7 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
 
     /**
      * Checks whether this PhylogenyNode is a root.
-     * 
+     *
      * @return true if this PhylogenyNode is the root, false otherwise
      */
     final public boolean isRoot() {
@@ -772,7 +772,7 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
      * child nodes. This does not allow null slots in the list of child nodes:
      * If i is larger than the number of child nodes, n is just added to the
      * list, not place at index i.
-     * 
+     *
      * @param i
      *            the index of position where to add the child
      * @param n
@@ -876,7 +876,7 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
         }
         if ( getNumberOfDescendants() != 2 ) {
             throw new RuntimeException( "attempt to swap descendants of node with " + getNumberOfDescendants()
-                    + " descendants" );
+                                        + " descendants" );
         }
         final PhylogenyNode a = getChildNode( 0 );
         final PhylogenyNode b = getChildNode( 1 );
@@ -894,8 +894,8 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
             if ( getBranchData().isHasConfidences()
                     && ( getBranchData().getConfidence( 0 ).getValue() != Confidence.CONFIDENCE_DEFAULT_VALUE ) ) {
                 data = Confidence.FORMATTER.format( ForesterUtil
-                        .round( getBranchData().getConfidence( 0 ).getValue(),
-                                PhyloXmlUtil.ROUNDING_DIGITS_FOR_PHYLOXML_DOUBLE_OUTPUT ) );
+                                                    .round( getBranchData().getConfidence( 0 ).getValue(),
+                                                            PhyloXmlUtil.ROUNDING_DIGITS_FOR_PHYLOXML_DOUBLE_OUTPUT ) );
             }
         }
         else if ( !ForesterUtil.isEmpty( getName() ) ) {
@@ -933,8 +933,8 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
                 && ( getBranchData().getConfidence( 0 ).getValue() != Confidence.CONFIDENCE_DEFAULT_VALUE ) ) {
             sb.append( "[" );
             sb.append( Confidence.FORMATTER.format( ForesterUtil
-                    .round( getBranchData().getConfidence( 0 ).getValue(),
-                            PhyloXmlUtil.ROUNDING_DIGITS_FOR_PHYLOXML_DOUBLE_OUTPUT ) ) );
+                                                    .round( getBranchData().getConfidence( 0 ).getValue(),
+                                                            PhyloXmlUtil.ROUNDING_DIGITS_FOR_PHYLOXML_DOUBLE_OUTPUT ) ) );
             sb.append( "]" );
         }
         return sb.toString();
@@ -1056,7 +1056,7 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
     /**
      * Adds PhylogenyNode n to the list of child nodes. But does NOT set the
      * _parent of n to this.
-     * 
+     *
      * @see addAsChild( PhylogenyNode n )
      * @param n
      *            the PhylogenyNode to add
@@ -1066,26 +1066,26 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
     }
 
     public static PhylogenyNode createInstanceFromNhxString( final String nhx ) throws NHXFormatException,
-            PhyloXmlDataFormatException {
+    PhyloXmlDataFormatException {
         return new PhylogenyNode( nhx, NHXParser.TAXONOMY_EXTRACTION.NO, false );
     }
 
     public static PhylogenyNode createInstanceFromNhxString( final String nhx,
                                                              final NHXParser.TAXONOMY_EXTRACTION taxonomy_extraction )
-            throws NHXFormatException, PhyloXmlDataFormatException {
+                                                                     throws NHXFormatException, PhyloXmlDataFormatException {
         return new PhylogenyNode( nhx, taxonomy_extraction, false );
     }
 
     public static PhylogenyNode createInstanceFromNhxString( final String nhx,
                                                              final NHXParser.TAXONOMY_EXTRACTION taxonomy_extraction,
                                                              final boolean replace_underscores )
-            throws NHXFormatException, PhyloXmlDataFormatException {
+                                                                     throws NHXFormatException, PhyloXmlDataFormatException {
         return new PhylogenyNode( nhx, taxonomy_extraction, replace_underscores );
     }
 
     /**
      * Returns the total number of all Nodes created so far.
-     * 
+     *
      * @return total number of Nodes (long)
      */
     synchronized final public static long getNodeCount() {

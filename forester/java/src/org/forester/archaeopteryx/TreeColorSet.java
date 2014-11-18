@@ -64,7 +64,7 @@ public final class TreeColorSet {
             new Color( 0, 100, 100 ), // background_color_gradient_bottom
             new Color( 230, 230, 230 ), // sequence  __ Default (same as Black)
             new Color( 180, 180, 180 ), // taxonomy
-            new Color( 180, 180, 180 ), // support  
+            new Color( 180, 180, 180 ), // support
             new Color( 140, 140, 140 ), // branch_length_color
             new Color( 255, 255, 255 ), // branch_color
             new Color( 255, 255, 255 ), // box_color
@@ -75,16 +75,16 @@ public final class TreeColorSet {
             new Color( 255, 0, 0 ), // duplication_box_color
             new Color( 0, 255, 0 ), // speciation_box_color
             new Color( 255, 255, 0 ), // duplication_speciation_color
-            new Color( 230, 230, 230 ), // domain_label  
-            new Color( 100, 100, 100 ), // domains_base  
-            new Color( 65, 105, 255 ), // binary_domain_combinations_color  
+            new Color( 230, 230, 230 ), // domain_label
+            new Color( 100, 100, 100 ), // domains_base
+            new Color( 65, 105, 255 ), // binary_domain_combinations_color
             new Color( 173, 255, 47 ) // annotation
             , new Color( 130, 130, 130 )                 // overview
             }, { new Color( 0, 0, 0 ), // background_color
-            new Color( 0, 255, 255 ), // background_color_gradient_bottom    
+            new Color( 0, 255, 255 ), // background_color_gradient_bottom
             new Color( 230, 230, 230 ), // sequence  __ Black
             new Color( 180, 180, 180 ), // taxonomy
-            new Color( 180, 180, 180 ), // support  
+            new Color( 180, 180, 180 ), // support
             new Color( 140, 140, 140 ), // branch_length_color
             new Color( 255, 255, 255 ), // branch_color
             new Color( 255, 255, 255 ), // box_color
@@ -95,8 +95,8 @@ public final class TreeColorSet {
             new Color( 255, 0, 0 ), // duplication_box_color
             new Color( 0, 255, 0 ), // speciation_box_color
             new Color( 255, 255, 0 ), // duplication_speciation_color
-            new Color( 230, 230, 230 ), // domain_label  
-            new Color( 100, 100, 100 ), // domains_base  
+            new Color( 230, 230, 230 ), // domain_label
+            new Color( 100, 100, 100 ), // domains_base
             new Color( 65, 105, 255 ), // binary_domain_combinations_color
             new Color( 173, 255, 47 ) // annotation
             , new Color( 130, 130, 130 ) // ov
@@ -104,7 +104,7 @@ public final class TreeColorSet {
             new Color( 0, 255, 255 ), // background_color_gradient_bottom
             new Color( 0, 0, 0 ), // sequence  __ Black & White
             new Color( 0, 0, 0 ), // taxonomy
-            new Color( 0, 0, 0 ), // support 
+            new Color( 0, 0, 0 ), // support
             new Color( 0, 0, 0 ), // branch_length_color
             new Color( 0, 0, 0 ), // branch_color
             new Color( 0, 0, 0 ), // box_color
@@ -115,8 +115,8 @@ public final class TreeColorSet {
             new Color( 255, 0, 0 ), // duplication_box_color
             new Color( 0, 255, 0 ), // speciation_box_color
             new Color( 255, 255, 0 ), // duplication_speciation_color
-            new Color( 0, 0, 0 ), // domain_label  
-            new Color( 100, 100, 100 ), // domains_base  
+            new Color( 0, 0, 0 ), // domain_label
+            new Color( 100, 100, 100 ), // domains_base
             new Color( 0, 0, 0 ), // binary_domain_combinations_color
             new Color( 0, 0, 0 ) // annotation
             , new Color( 220, 220, 220 ) // ov
@@ -124,7 +124,7 @@ public final class TreeColorSet {
             new Color( 0, 255, 255 ), // background_color_gradient_bottom
             new Color( 220, 220, 220 ), // sequence __ Silver
             new Color( 180, 180, 180 ), // taxonomy
-            new Color( 140, 140, 140 ), // support 
+            new Color( 140, 140, 140 ), // support
             new Color( 140, 140, 140 ), // branch_length_color
             new Color( 240, 240, 240 ), // branch_color
             new Color( 140, 140, 140 ), // box_color
@@ -135,8 +135,8 @@ public final class TreeColorSet {
             new Color( 255, 0, 0 ), // duplication_box_color
             new Color( 0, 255, 0 ), // speciation_box_color
             new Color( 255, 255, 0 ), // duplication_speciation_color
-            new Color( 230, 230, 230 ), // domain_label  
-            new Color( 100, 100, 100 ), // domains_base  
+            new Color( 230, 230, 230 ), // domain_label
+            new Color( 100, 100, 100 ), // domains_base
             new Color( 180, 180, 180 ), // binary_domain_combinations_color
             new Color( 140, 140, 140 ) // annotation
             , new Color( 40, 40, 40 ) // ov
@@ -144,7 +144,7 @@ public final class TreeColorSet {
             new Color( 0, 255, 255 ), // background_color_gradient_bottom
             new Color( 0, 255, 0 ), // sequence __ the Matrix
             new Color( 30, 200, 30 ), // taxonomy
-            new Color( 0, 155, 0 ), // support 
+            new Color( 0, 155, 0 ), // support
             new Color( 0, 100, 0 ), // branch_length_color
             new Color( 0, 155, 0 ), // branch_color
             new Color( 0, 255, 0 ), // box_color
@@ -155,8 +155,8 @@ public final class TreeColorSet {
             new Color( 255, 0, 0 ), // duplication_box_color
             new Color( 0, 255, 0 ), // speciation_box_color
             new Color( 255, 255, 0 ), // duplication_speciation_color
-            new Color( 230, 230, 230 ), // domain_label  
-            new Color( 100, 100, 100 ), // domains_base  
+            new Color( 230, 230, 230 ), // domain_label
+            new Color( 100, 100, 100 ), // domains_base
             new Color( 0, 235, 0 ), // binary_domain_combinations_color
             new Color( 0, 235, 0 ) // annotation
             , new Color( 40, 40, 40 ) // ov
@@ -164,7 +164,7 @@ public final class TreeColorSet {
             new Color( 0, 255, 255 ), // background_color_gradient_bottom
             new Color( 0, 0, 0 ), //sequence __ White & Blue
             new Color( 40, 40, 40 ), // taxonomy
-            new Color( 0, 125, 0 ), // support 
+            new Color( 0, 125, 0 ), // support
             new Color( 70, 70, 0 ), // branch_length_color
             new Color( 0, 20, 200 ), // branch_color
             new Color( 0, 20, 200 ), // box_color
@@ -175,8 +175,8 @@ public final class TreeColorSet {
             new Color( 255, 0, 0 ), // duplication_box_color
             new Color( 0, 255, 0 ), // speciation_box_color
             new Color( 255, 255, 0 ), // duplication_speciation_color
-            new Color( 0, 0, 0 ), // domain_label  
-            new Color( 50, 50, 50 ), // domains_base  
+            new Color( 0, 0, 0 ), // domain_label
+            new Color( 50, 50, 50 ), // domains_base
             new Color( 65, 105, 225 ), // binary_domain_combinations_color
             new Color( 173, 255, 47 ) // annotation
             , new Color( 220, 220, 220 ) // ov
@@ -184,7 +184,7 @@ public final class TreeColorSet {
             new Color( 0, 255, 255 ), // background_color_gradient_bottom
             new Color( 255, 255, 255 ), // sequence __ Cyan
             new Color( 200, 200, 200 ), // taxonomy
-            new Color( 255, 255, 255 ), // support 
+            new Color( 255, 255, 255 ), // support
             new Color( 200, 200, 200 ), // branch_length_color
             new Color( 0, 255, 255 ), // branch_color
             new Color( 0, 255, 255 ), // box_color
@@ -195,8 +195,8 @@ public final class TreeColorSet {
             new Color( 255, 0, 0 ), // duplication_box_color
             new Color( 0, 255, 0 ), // speciation_box_color
             new Color( 255, 255, 0 ), // duplication_speciation_color
-            new Color( 230, 230, 230 ), // domain_label  
-            new Color( 100, 100, 100 ), // domains_base  
+            new Color( 230, 230, 230 ), // domain_label
+            new Color( 100, 100, 100 ), // domains_base
             new Color( 65, 105, 225 ), // binary_domain_combinations_color
             new Color( 173, 255, 47 ) // annotation
             , new Color( 0, 120, 120 ) // ov
@@ -204,7 +204,7 @@ public final class TreeColorSet {
             new Color( 0, 255, 255 ), // background_color_gradient_bottom
             new Color( 255, 200, 0 ), // sequence __ Clockwork
             new Color( 255, 200, 0 ), // taxonomy
-            new Color( 255, 200, 0 ), // support 
+            new Color( 255, 200, 0 ), // support
             new Color( 255, 200, 0 ), // branch_length_color
             new Color( 255, 200, 0 ), // branch_color
             new Color( 255, 200, 0 ), // box_color
@@ -215,8 +215,8 @@ public final class TreeColorSet {
             new Color( 255, 0, 0 ), // duplication_box_color
             new Color( 0, 255, 0 ), // speciation_box_color
             new Color( 255, 255, 0 ), // duplication_speciation_color
-            new Color( 255, 200, 0 ), // domain_label  
-            new Color( 255, 200, 0 ), // domains_base  
+            new Color( 255, 200, 0 ), // domain_label
+            new Color( 255, 200, 0 ), // domains_base
             new Color( 150, 150, 150 ), // binary_domain_combinations_color
             new Color( 150, 150, 150 ) // annotation
             , new Color( 150, 150, 150 ) // ov
@@ -224,7 +224,7 @@ public final class TreeColorSet {
             new Color( 0, 255, 255 ), // background_color_gradient_bottom
             new Color( 255, 255, 255 ), // sequence __ Blue
             new Color( 255, 255, 255 ), // taxonomy
-            new Color( 255, 0, 0 ), // support 
+            new Color( 255, 0, 0 ), // support
             new Color( 255, 0, 0 ), // branch_length_color
             new Color( 255, 0, 0 ), // branch_color
             new Color( 255, 0, 0 ), // box_color
@@ -235,8 +235,8 @@ public final class TreeColorSet {
             new Color( 255, 0, 0 ), // duplication_box_color
             new Color( 0, 255, 0 ), // speciation_box_color
             new Color( 255, 255, 0 ), // duplication_speciation_color
-            new Color( 255, 255, 255 ), // domain_label  
-            new Color( 100, 100, 100 ), // domains_base  
+            new Color( 255, 255, 255 ), // domain_label
+            new Color( 100, 100, 100 ), // domains_base
             new Color( 255, 255, 255 ), // binary_domain_combinations_color
             new Color( 255, 255, 255 ) // annotation
             , new Color( 77, 77, 255 ) // ov
@@ -244,7 +244,7 @@ public final class TreeColorSet {
             new Color( 0, 255, 255 ), // background_color_gradient_bottom
             new Color( 255, 255, 255 ), // sequence __ blue &  white
             new Color( 255, 255, 255 ), // taxonomy
-            new Color( 255, 255, 255 ), // support 
+            new Color( 255, 255, 255 ), // support
             new Color( 0, 191, 255 ), // branch_length_color
             new Color( 0, 191, 255 ), // branch_color
             new Color( 0, 191, 255 ), // box_color
@@ -255,8 +255,8 @@ public final class TreeColorSet {
             new Color( 255, 0, 0 ), // duplication_box_color
             new Color( 0, 255, 0 ), // speciation_box_color
             new Color( 255, 255, 0 ), // duplication_speciation_color
-            new Color( 255, 255, 255 ), // domain_label  
-            new Color( 150, 150, 150 ), // domains_base  
+            new Color( 255, 255, 255 ), // domain_label
+            new Color( 150, 150, 150 ), // domains_base
             new Color( 255, 255, 255 ), // binary_domain_combinations_color
             new Color( 255, 255, 255 ) // annotation
             , new Color( 170, 187, 204 ) // ov
@@ -264,7 +264,7 @@ public final class TreeColorSet {
             new Color( 255, 255, 0 ), // background_color_gradient_bottom
             new Color( 127, 255, 0 ), // sequence __ Neon
             new Color( 255, 110, 199 ), // taxonomy
-            new Color( 234, 173, 234 ), // support 
+            new Color( 234, 173, 234 ), // support
             new Color( 77, 77, 255 ), // branch_length_color
             new Color( 234, 173, 234 ), // branch_color
             new Color( 77, 77, 255 ), // box_color
@@ -275,8 +275,8 @@ public final class TreeColorSet {
             new Color( 255, 0, 0 ), // duplication_box_color
             new Color( 0, 255, 0 ), // speciation_box_color
             new Color( 255, 255, 0 ), // duplication_speciation_color
-            new Color( 127, 255, 0 ), // domain_label  
-            new Color( 234, 173, 234 ), // domains_base  
+            new Color( 127, 255, 0 ), // domain_label
+            new Color( 234, 173, 234 ), // domains_base
             new Color( 27, 255, 0 ), // binary_domain_combinations_color
             new Color( 27, 255, 0 ) // annotation
             , new Color( 77, 77, 255 ) // ov

@@ -135,7 +135,7 @@ public class DolloParsimony {
             final BinaryStates state = matrix.getState( indentifier_index, character_index );
             if ( state == null ) {
                 throw new IllegalArgumentException( "value at [" + indentifier_index + ", " + character_index
-                        + "] is null" );
+                                                    + "] is null" );
             }
             states.put( p.getNode( matrix.getIdentifier( indentifier_index ) ), state );
         }
@@ -176,8 +176,8 @@ public class DolloParsimony {
             nodes.add( postorder.next() );
         }
         setGainLossMatrix( new BasicCharacterStateMatrix<CharacterStateMatrix.GainLossStates>( nodes.size(),
-                                                                                               external_node_states_matrix
-                                                                                                       .getNumberOfCharacters() ) );
+                external_node_states_matrix
+                .getNumberOfCharacters() ) );
         int identifier_index = 0;
         for( final PhylogenyNode node : nodes ) {
             getGainLossMatrix().setIdentifier( identifier_index++,
@@ -200,8 +200,8 @@ public class DolloParsimony {
             }
         }
         setInternalStatesMatrix( new BasicCharacterStateMatrix<BinaryStates>( internal_nodes.size(),
-                                                                              external_node_states_matrix
-                                                                                      .getNumberOfCharacters() ) );
+                external_node_states_matrix
+                .getNumberOfCharacters() ) );
         int identifier_index = 0;
         for( final PhylogenyNode node : internal_nodes ) {
             getInternalStatesMatrix().setIdentifier( identifier_index++,
@@ -314,17 +314,17 @@ public class DolloParsimony {
                                    final PhylogenyNode node,
                                    final GainLossStates state ) {
         getGainLossMatrix().setState( ForesterUtil.isEmpty( node.getName() ) ? node.getId() + "" : node.getName(),
-                                      character_state_column,
-                                      state );
+                character_state_column,
+                state );
     }
 
     private void setInternalNodeState( final Map<PhylogenyNode, BinaryStates> states,
                                        final int character_state_column,
                                        final PhylogenyNode node ) {
         getInternalStatesMatrix()
-                .setState( ForesterUtil.isEmpty( node.getName() ) ? node.getId() + "" : node.getName(),
-                           character_state_column,
-                           states.get( node ) );
+        .setState( ForesterUtil.isEmpty( node.getName() ) ? node.getId() + "" : node.getName(),
+                character_state_column,
+                states.get( node ) );
     }
 
     private void setInternalStatesMatrix( final CharacterStateMatrix<BinaryStates> internal_states_matrix ) {
@@ -368,7 +368,7 @@ public class DolloParsimony {
             final PhylogenyNode node_child = node.getChildNode( i );
             if ( !states.containsKey( node_child ) ) {
                 throw new RuntimeException( "this should not have happened: node [" + node_child.getName()
-                        + "] not found in node state map" );
+                                            + "] not found in node state map" );
             }
             if ( ( states.get( node_child ) == BinaryStates.PRESENT )
                     || ( states.get( node_child ) == BinaryStates.UNKNOWN ) ) {

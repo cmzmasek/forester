@@ -120,7 +120,7 @@ public class TreePanelUtil {
      * all external nodes of node.
      * If at least one the external nodes has no taxonomy,
      * null is returned.
-     * 
+     *
      */
     public static Set<Taxonomy> obtainDistinctTaxonomies( final PhylogenyNode node ) {
         final List<PhylogenyNode> descs = node.getAllExternalDescendants();

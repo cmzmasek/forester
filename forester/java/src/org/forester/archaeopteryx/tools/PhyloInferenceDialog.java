@@ -203,7 +203,7 @@ public class PhyloInferenceDialog extends JDialog implements ActionListener {
         distance_calc_pnl_1.add( _distance_calc_kimura_rb = new JRadioButton( "Kimura correction" ) );
         distance_calc_pnl_1.add( _distance_calc_poisson_rb = new JRadioButton( "Poisson" ) );
         distance_calc_pnl_1
-                .add( _distance_calc_fract_dissimilarity_rb = new JRadioButton( "Fractional dissimilarity" ) );
+        .add( _distance_calc_fract_dissimilarity_rb = new JRadioButton( "Fractional dissimilarity" ) );
         final ButtonGroup distance_calc_group_1 = new ButtonGroup();
         distance_calc_group_1.add( _distance_calc_kimura_rb );
         distance_calc_group_1.add( _distance_calc_poisson_rb );
@@ -333,7 +333,7 @@ public class PhyloInferenceDialog extends JDialog implements ActionListener {
     private void processMsaProcessing() {
         getPhylogeneticInferenceOptions().setExecuteMsaProcessing( _execute_msa_processing_cb.isSelected() );
         getPhylogeneticInferenceOptions()
-                .setMsaProcessingRemoveAllGapColumns( _msa_processing_remove_all_gap_columns_cb.isSelected() );
+        .setMsaProcessingRemoveAllGapColumns( _msa_processing_remove_all_gap_columns_cb.isSelected() );
         int min_length = -1;
         try {
             min_length = Integer.parseInt( _msa_processing_min_allowed_length_tf.getText().trim() );
@@ -347,7 +347,7 @@ public class PhyloInferenceDialog extends JDialog implements ActionListener {
         double msa_processing_max_allowed_gap_ratio = -1.0;
         try {
             msa_processing_max_allowed_gap_ratio = Double.parseDouble( _msa_processing_max_allowed_gap_ratio_tf
-                    .getText().trim() );
+                                                                       .getText().trim() );
         }
         catch ( final NumberFormatException e ) {
             msa_processing_max_allowed_gap_ratio = -1.0;
@@ -409,7 +409,7 @@ public class PhyloInferenceDialog extends JDialog implements ActionListener {
     private void updateMsaProcessingItem() {
         _execute_msa_processing_cb.setSelected( getPhylogeneticInferenceOptions().isExecuteMsaProcessing() );
         _msa_processing_remove_all_gap_columns_cb.setSelected( getPhylogeneticInferenceOptions()
-                .isMsaProcessingRemoveAllGapColumns() );
+                                                               .isMsaProcessingRemoveAllGapColumns() );
         if ( _opts.getMsaProcessingMaxAllowedGapRatio() > 0 ) {
             _msa_processing_max_allowed_gap_ratio_tf.setText( _opts.getMsaProcessingMaxAllowedGapRatio() + "" );
         }

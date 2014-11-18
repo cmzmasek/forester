@@ -41,8 +41,8 @@ public interface PhylogenyData {
      * Creates a new PhylogenyData object with identical values as this
      * PhylogenyData.
      * This ~should~ return a deep copy, but not there yet.
-     * 
-     * 
+     *
+     *
      * @return a ~deep~ copy of this PhylogenyData
      */
     public PhylogenyData copy();
@@ -50,7 +50,7 @@ public interface PhylogenyData {
     /**
      * Compares this PhylogenyData to PhylogenyData data. In general, this
      * should return true if and only if all fiels are exactly identical.
-     * 
+     *
      * @param PhylogenyData
      *            the PhylogenyData to compare to
      * @return in general, true if and only if all fiels are exactly identical,
@@ -62,11 +62,11 @@ public interface PhylogenyData {
 
     /**
      *  Writes a phyloXML representation of this phylogeny data.
-     * 
+     *
      * @param writer
      * @param level
      * @param indentation
-     * @throws IOException 
+     * @throws IOException
      */
     public void toPhyloXML( final Writer writer, final int level, final String indentation ) throws IOException;
 }

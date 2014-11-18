@@ -150,7 +150,7 @@ public class DomainLengthsTable {
     private void addDomainLengths( final DomainLengths domain_lengths ) {
         if ( getDomainLengths().containsKey( domain_lengths.getDomainId() ) ) {
             throw new IllegalArgumentException( "domain lengths for [" + domain_lengths.getDomainId()
-                    + "] already added" );
+                                                + "] already added" );
         }
         getDomainLengths().put( domain_lengths.getDomainId(), domain_lengths );
     }

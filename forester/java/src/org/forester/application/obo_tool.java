@@ -98,7 +98,7 @@ public class obo_tool {
             ForesterUtil.fatalError( PRG_NAME, e.toString() );
         }
         ForesterUtil.programMessage( PRG_NAME, "successfully read in " + go_terms.size() + " GO terms from [" + infile
-                + "]" );
+                                     + "]" );
         if ( output_ids_to_names ) {
             final File outfile_ids_to_names = new File( outfile + IDS_TO_NAMES_SUFFIX );
             final String error = ForesterUtil.isWritableFile( outfile_ids_to_names );

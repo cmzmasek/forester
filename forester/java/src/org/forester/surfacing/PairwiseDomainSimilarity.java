@@ -32,7 +32,7 @@ public interface PairwiseDomainSimilarity {
      * This should return the -- not normalized, not absolute -- difference in
      * counts (for example domain counts) for the two domains.
      * It is important that it is: (counts for domain 1) minus (counts for domain 2).
-     * 
+     *
      * @return the difference in counts
      */
     public int getDifferenceInCounts();

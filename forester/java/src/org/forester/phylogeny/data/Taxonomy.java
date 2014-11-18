@@ -249,11 +249,11 @@ public class Taxonomy implements PhylogenyData, MultipleUris, Comparable<Taxonom
     public boolean isEmpty() {
         return ( ( getIdentifier() == null ) && ForesterUtil.isEmpty( getTaxonomyCode() )
                 && ForesterUtil.isEmpty( getCommonName() ) && ForesterUtil.isEmpty( getScientificName() ) && ForesterUtil
-                    .isEmpty( _lineage ) );
+                .isEmpty( _lineage ) );
     }
 
     /**
-     * 
+     *
      * If this and taxonomy 'data' has an identifier, comparison will be based on that.
      * Otherwise,  if this and taxonomy 'data' has a code, comparison will be based on that.
      * Otherwise,  if Taxonomy 'data' has a scientific name, comparison will be
@@ -261,7 +261,7 @@ public class Taxonomy implements PhylogenyData, MultipleUris, Comparable<Taxonom
      * Otherwise,  if Taxonomy 'data' has a common  name, comparison will be
      * based on that (case insensitive!).
      * (Note. This is important and should not be change without a very good reason.)
-     * 
+     *
      */
     @Override
     public boolean isEqual( final PhylogenyData data ) {
@@ -392,7 +392,7 @@ public class Taxonomy implements PhylogenyData, MultipleUris, Comparable<Taxonom
         }
         if ( !ForesterUtil.isEmpty( getCommonName() ) ) {
             PhylogenyDataUtil
-                    .appendElement( writer, PhyloXmlMapping.TAXONOMY_COMMON_NAME, getCommonName(), indentation );
+            .appendElement( writer, PhyloXmlMapping.TAXONOMY_COMMON_NAME, getCommonName(), indentation );
         }
         if ( _synonyms != null ) {
             for( final String syn : getSynonyms() ) {

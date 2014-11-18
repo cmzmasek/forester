@@ -95,9 +95,9 @@ public class Date implements PhylogenyData {
     public PhylogenyData copy() {
         return new Date( getDesc(),
                          getValue() == null ? null : new BigDecimal( getValue().toPlainString() ),
-                         getMin() == null ? null : new BigDecimal( getMin().toPlainString() ),
-                         getMax() == null ? null : new BigDecimal( getMax().toPlainString() ),
-                         getUnit() );
+                                 getMin() == null ? null : new BigDecimal( getMin().toPlainString() ),
+                                         getMax() == null ? null : new BigDecimal( getMax().toPlainString() ),
+                                                 getUnit() );
     }
 
     public String getDesc() {

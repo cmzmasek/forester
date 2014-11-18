@@ -37,7 +37,7 @@ public interface CombinableDomains {
 
     /**
      * To add a new combinable domain.
-     * 
+     *
      * @param protein_domain
      */
     public void addCombinableDomain( final String protein_domain );
@@ -46,7 +46,7 @@ public interface CombinableDomains {
      * Returns the combinable domain identifiers sorted in alphabetical manner: -
      * keys are the combinable domain identifiers - values are the counts of
      * proteins exhibiting a particular combination
-     * 
+     *
      * @return combining domain identifiers sorted in alphabetical manner
      */
     public SortedMap<String, Integer> getCombinableDomainsIds();
@@ -56,7 +56,7 @@ public interface CombinableDomains {
     /**
      * Returns the domain whose combinable domains are in stored in this
      * combinable domains.
-     * 
+     *
      * @return the domain identifier
      */
     public String getKeyDomain();
@@ -64,7 +64,7 @@ public interface CombinableDomains {
     /**
      * Returns how many times the key domain is present in a given species
      * genome.
-     * 
+     *
      * @return key domain count in species
      */
     public int getKeyDomainCount();
@@ -74,7 +74,7 @@ public interface CombinableDomains {
     /**
      * Returns how many proteins with the key domain are present in a given
      * species genome.
-     * 
+     *
      * @return key domain proteins count in species
      */
     public int getKeyDomainProteinsCount();
@@ -85,7 +85,7 @@ public interface CombinableDomains {
 
     /**
      * Returns the species of this combinable domains.
-     * 
+     *
      * @return the species
      */
     public Species getSpecies();
@@ -97,10 +97,10 @@ public interface CombinableDomains {
     void addKeyDomainProtein( String protein );
 
     /**
-     * 
+     *
      * This must return all domains in this set of combinable domains (i.e.
      * the key domain and all domains which can combine with the key domain).
-     * 
+     *
      *  @return all domains
      */
     List<String> getAllDomains();
@@ -109,7 +109,7 @@ public interface CombinableDomains {
 
     /**
      * Sets how many times the key domain is present in a given species genome.
-     * 
+     *
      * @param key_domain_count
      *            key domain count in species
      */

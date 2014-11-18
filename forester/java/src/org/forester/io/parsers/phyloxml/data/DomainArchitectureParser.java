@@ -51,7 +51,7 @@ public class DomainArchitectureParser implements PhylogenyDataPhyloXmlParser {
         final DomainArchitecture architecure = new DomainArchitecture();
         if ( !element.isHasAttribute( PhyloXmlMapping.SEQUENCE_DOMAIN_ARCHITECTURE_LENGTH ) ) {
             throw new PhyloXmlDataFormatException( PhyloXmlMapping.SEQUENCE_DOMAIN_ARCHITECTURE_LENGTH
-                    + " attribute is required for domain architecture" );
+                                                   + " attribute is required for domain architecture" );
         }
         final String lenght_str = element.getAttribute( PhyloXmlMapping.SEQUENCE_DOMAIN_ARCHITECTURE_LENGTH );
         try {
@@ -59,7 +59,7 @@ public class DomainArchitectureParser implements PhylogenyDataPhyloXmlParser {
         }
         catch ( final NumberFormatException e ) {
             throw new PhyloXmlDataFormatException( "could not extract domain architecture length from [" + lenght_str
-                    + "]: " + e.getMessage() );
+                                                   + "]: " + e.getMessage() );
         }
         for( int i = 0; i < element.getNumberOfChildElements(); ++i ) {
             final XmlElement child_element = element.getChildElement( i );

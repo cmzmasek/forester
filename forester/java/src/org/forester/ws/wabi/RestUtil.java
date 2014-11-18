@@ -36,7 +36,7 @@ import java.net.URLEncoder;
 import java.util.List;
 
 /**
- * 
+ *
  * This is to access the Web API for Biology (WABI) at DDBJ.
  * See: http://xml.nig.ac.jp/
  *

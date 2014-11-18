@@ -90,7 +90,7 @@ public final class ConfidenceAssessor {
             for( final Confidence confidence : confidences ) {
                 if ( confidence.getType().equals( confidence_type ) ) {
                     throw new IllegalArgumentException( "confidence [" + confidence_type
-                            + "] is already present in target" );
+                                                        + "] is already present in target" );
                 }
             }
         }
@@ -128,9 +128,9 @@ public final class ConfidenceAssessor {
                 if ( strict ) {
                     if ( evaluator.getNumberOfExternalNodes() != target.getNumberOfExternalNodes() ) {
                         throw new IllegalArgumentException( "evaluator #" + counter
-                                + " does not have the same number of external nodes ["
-                                + evaluator.getNumberOfExternalNodes() + "] than the corresponding target ["
-                                + target.getNumberOfExternalNodes() + "]" );
+                                                            + " does not have the same number of external nodes ["
+                                                            + evaluator.getNumberOfExternalNodes() + "] than the corresponding target ["
+                                                            + target.getNumberOfExternalNodes() + "]" );
                     }
                 }
                 final TreeSplitMatrix s = new TreeSplitMatrix( evaluator, strict, target );

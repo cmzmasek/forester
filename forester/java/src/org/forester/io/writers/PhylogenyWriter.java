@@ -54,17 +54,17 @@ public final class PhylogenyWriter {
     public final static String          PHYLO_XML_INTENDATION_BASE      = "  ";
     public final static String          PHYLO_XML_VERSION_ENCODING_LINE = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
     public final static String          PHYLO_XML_NAMESPACE_LINE        = "<phyloxml xmlns:xsi=\""
-                                                                                + ForesterConstants.XML_SCHEMA_INSTANCE
-                                                                                + "\" xsi:schemaLocation=\""
-                                                                                + ForesterConstants.PHYLO_XML_LOCATION
-                                                                                + " "
-                                                                                + ForesterConstants.PHYLO_XML_LOCATION
-                                                                                + "/"
-                                                                                + ForesterConstants.PHYLO_XML_VERSION
-                                                                                + "/" + ForesterConstants.PHYLO_XML_XSD
-                                                                                + "\" " + "xmlns=\""
-                                                                                + ForesterConstants.PHYLO_XML_LOCATION
-                                                                                + "\">";
+            + ForesterConstants.XML_SCHEMA_INSTANCE
+            + "\" xsi:schemaLocation=\""
+            + ForesterConstants.PHYLO_XML_LOCATION
+            + " "
+            + ForesterConstants.PHYLO_XML_LOCATION
+            + "/"
+            + ForesterConstants.PHYLO_XML_VERSION
+            + "/" + ForesterConstants.PHYLO_XML_XSD
+            + "\" " + "xmlns=\""
+            + ForesterConstants.PHYLO_XML_LOCATION
+            + "\">";
     public final static String          PHYLO_XML_END                   = "</phyloxml>";
     private boolean                     _saw_comma;
     private StringBuffer                _buffer;
@@ -112,7 +112,7 @@ public final class PhylogenyWriter {
         if ( tree.getConfidence() != null ) {
             if ( ForesterUtil.isEmpty( tree.getConfidence().getType() ) ) {
                 PhylogenyDataUtil.appendElement( writer, PhyloXmlMapping.CONFIDENCE, tree.getConfidence().getValue()
-                        + "", indentation );
+                                                 + "", indentation );
             }
             PhylogenyDataUtil.appendElement( writer,
                                              PhyloXmlMapping.CONFIDENCE,
@@ -583,7 +583,7 @@ public final class PhylogenyWriter {
                     PhylogenyDataUtil.appendOpen( getWriter(),
                                                   PhyloXmlMapping.CLADE,
                                                   PhyloXmlMapping.NODE_COLLAPSE,
-                                                  "true" );
+                            "true" );
                 }
                 else {
                     PhylogenyDataUtil.appendOpen( getWriter(), PhyloXmlMapping.CLADE );

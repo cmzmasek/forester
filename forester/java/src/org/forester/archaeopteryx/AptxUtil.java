@@ -112,8 +112,8 @@ public final class AptxUtil {
 
     /**
      * Returns true if at least one branch has a length larger than zero.
-     * 
-     * 
+     *
+     *
      * @param phy
      */
     final static public boolean isHasAtLeastOneBranchLengthLargerThanZero( final Phylogeny phy ) {
@@ -271,7 +271,7 @@ public final class AptxUtil {
                                                                          final ControlPanel ac,
                                                                          final GraphicsExportType type,
                                                                          final Options options ) throws IOException {
-        tree_panel.calcParametersForPainting( width, height, true );
+        tree_panel.calcParametersForPainting( width, height );
         tree_panel.resetPreferredSize();
         tree_panel.repaint();
         final RenderingHints rendering_hints = new RenderingHints( RenderingHints.KEY_RENDERING,
@@ -572,8 +572,8 @@ public final class AptxUtil {
 
     /**
      * Exits with -1.
-     * 
-     * 
+     *
+     *
      * @param message
      *            to message to be printed
      */
@@ -801,7 +801,7 @@ public final class AptxUtil {
             if ( options.isGraphicsExportVisibleOnly() ) {
                 throw new IllegalArgumentException( "cannot export visible rectangle only without exporting in actual size" );
             }
-            tree_panel.calcParametersForPainting( options.getPrintSizeX(), options.getPrintSizeY(), true );
+            tree_panel.calcParametersForPainting( options.getPrintSizeX(), options.getPrintSizeY() );
             tree_panel.resetPreferredSize();
             tree_panel.repaint();
         }
@@ -866,7 +866,7 @@ public final class AptxUtil {
             if ( options.isGraphicsExportVisibleOnly() ) {
                 throw new IllegalArgumentException( "cannot export visible rectangle only without exporting in actual size" );
             }
-            tree_panel.calcParametersForPainting( options.getPrintSizeX(), options.getPrintSizeY(), true );
+            tree_panel.calcParametersForPainting( options.getPrintSizeX(), options.getPrintSizeY() );
             tree_panel.resetPreferredSize();
             tree_panel.repaint();
         }

@@ -120,13 +120,13 @@ public class ExternalNodeBasedCoverageMethod implements CoverageCalculationMetho
             final PhylogenyNode node = ( PhylogenyNode ) element.getKey();
             final double normalized_value = ( Double ) element.getValue() * normalization_factor;
             PhylogenyMethods.setBranchColorValue( node, ForesterUtil
-                    .calcColor( normalized_value,
-                                min,
-                                max,
-                                median,
-                                ExternalNodeBasedCoverageMethod.MINIMAL_COV_COLOR,
-                                ExternalNodeBasedCoverageMethod.MAXIMAL_COV_COLOR,
-                                ExternalNodeBasedCoverageMethod.MEAN_COVERAGE_COLOR ) );
+                                                  .calcColor( normalized_value,
+                                                              min,
+                                                              max,
+                                                              median,
+                                                              ExternalNodeBasedCoverageMethod.MINIMAL_COV_COLOR,
+                                                              ExternalNodeBasedCoverageMethod.MAXIMAL_COV_COLOR,
+                                                              ExternalNodeBasedCoverageMethod.MEAN_COVERAGE_COLOR ) );
         }
         PhylogenyMethods.postorderBranchColorAveragingExternalNodeBased( phylogeny );
     }

@@ -214,9 +214,9 @@ public final class NeighborJoining {
                 + " ("
                 + ( ForesterUtil.isEmpty( n.getChildNode1().getName() ) ? n.getChildNode1().getId() : n.getChildNode1()
                         .getName() )
-                + "+"
-                + ( ForesterUtil.isEmpty( n.getChildNode2().getName() ) ? n.getChildNode2().getId() : n.getChildNode2()
-                        .getName() ) + ")";
+                        + "+"
+                        + ( ForesterUtil.isEmpty( n.getChildNode2().getName() ) ? n.getChildNode2().getId() : n.getChildNode2()
+                                .getName() ) + ")";
     }
 
     // only the values in the lower triangle are used.

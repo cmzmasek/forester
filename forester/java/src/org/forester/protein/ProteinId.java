@@ -57,7 +57,7 @@ public class ProteinId implements Comparable<ProteinId> {
         }
         else if ( o.getClass() != this.getClass() ) {
             throw new IllegalArgumentException( "attempt to check protein id equality to " + o + " [" + o.getClass()
-                    + "]" );
+                                                + "]" );
         }
         else {
             return getId().equals( ( ( ProteinId ) o ).getId() );

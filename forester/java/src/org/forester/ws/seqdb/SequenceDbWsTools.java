@@ -69,7 +69,7 @@ public final class SequenceDbWsTools {
 
     public static List<UniProtTaxonomy> getTaxonomiesFromCommonNameStrict( final String cn,
                                                                            final int max_taxonomies_return )
-            throws IOException {
+                                                                                   throws IOException {
         final List<UniProtTaxonomy> taxonomies = getTaxonomiesFromCommonName( cn, max_taxonomies_return );
         if ( ( taxonomies != null ) && ( taxonomies.size() > 0 ) ) {
             final List<UniProtTaxonomy> filtered_taxonomies = new ArrayList<UniProtTaxonomy>();
@@ -96,11 +96,11 @@ public final class SequenceDbWsTools {
      * Does not return "sub-types".
      * For example, for "Mus musculus" only returns "Mus musculus"
      * and not "Mus musculus", "Mus musculus bactrianus", ...
-     * 
+     *
      */
     public static List<UniProtTaxonomy> getTaxonomiesFromScientificNameStrict( final String sn,
                                                                                final int max_taxonomies_return )
-            throws IOException {
+                                                                                       throws IOException {
         final List<UniProtTaxonomy> taxonomies = getTaxonomiesFromScientificName( sn, max_taxonomies_return );
         if ( ( taxonomies != null ) && ( taxonomies.size() > 0 ) ) {
             final List<UniProtTaxonomy> filtered_taxonomies = new ArrayList<UniProtTaxonomy>();
@@ -116,7 +116,7 @@ public final class SequenceDbWsTools {
 
     public static List<UniProtTaxonomy> getTaxonomiesFromTaxonomyCode( final String code,
                                                                        final int max_taxonomies_return )
-            throws IOException {
+                                                                               throws IOException {
         final String my_code = new String( code );
         final List<String> result = getTaxonomyStringFromTaxonomyCode( my_code, max_taxonomies_return );
         if ( result.size() > 0 ) {
@@ -142,7 +142,7 @@ public final class SequenceDbWsTools {
         final Accession acc = SequenceAccessionTools.parseAccessorFromString( acc_str );
         if ( acc == null ) {
             throw new IllegalArgumentException( "could not extract acceptable sequence db accessor from \"" + acc_str
-                    + "\"" );
+                                                + "\"" );
         }
         if ( acc.getSource().equals( Source.REFSEQ.toString() ) || acc.getSource().equals( Source.EMBL.toString() )
                 || acc.getSource().equals( Source.NCBI.toString() ) ) {
@@ -153,7 +153,7 @@ public final class SequenceDbWsTools {
         }
         else {
             throw new IllegalArgumentException( "don't know how to handle request for source \"" + acc.getSource()
-                    + "\"" );
+                                                + "\"" );
         }
     }
 
@@ -251,7 +251,7 @@ public final class SequenceDbWsTools {
         }
         in.close();
         try {
-            // To prevent accessing online dbs in too quick succession. 
+            // To prevent accessing online dbs in too quick succession.
             Thread.sleep( SLEEP );
         }
         catch ( final InterruptedException e ) {
@@ -301,7 +301,7 @@ public final class SequenceDbWsTools {
         final int i_b = target.indexOf( b );
         if ( ( i_a < 0 ) || ( i_b < i_a ) ) {
             throw new IllegalArgumentException( "attempt to extract from \"" + target + "\" between \"" + a
-                    + "\" and \"" + b + "\"" );
+                                                + "\" and \"" + b + "\"" );
         }
         return target.substring( i_a + a.length(), i_b ).trim();
     }
@@ -455,7 +455,7 @@ public final class SequenceDbWsTools {
 
     private static List<UniProtTaxonomy> getTaxonomiesFromScientificName( final String sn,
                                                                           final int max_taxonomies_return )
-            throws IOException {
+                                                                                  throws IOException {
         final List<String> result = getTaxonomyStringFromScientificName( sn, max_taxonomies_return );
         if ( result.size() > 0 ) {
             return parseUniProtTaxonomy( result );
@@ -487,7 +487,7 @@ public final class SequenceDbWsTools {
         return ( !( ( acc == null ) || ForesterUtil.isEmpty( acc.getSource() ) || ForesterUtil.isEmpty( acc.getValue() ) || ( ( acc
                 .getSource().equals( Source.UNIPROT.toString() ) )
                 && ( acc.getSource().toString().equals( Source.EMBL.toString() ) ) && ( acc.getSource().toString()
-                .equals( Source.REFSEQ.toString() ) ) ) ) );
+                        .equals( Source.REFSEQ.toString() ) ) ) ) );
     }
 
     private static List<UniProtTaxonomy> parseUniProtTaxonomy( final List<String> result ) throws IOException {

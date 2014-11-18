@@ -200,8 +200,8 @@ public class goac {
         System.out.println( "Usage:" );
         System.out.println();
         System.out
-                .println( PRG_NAME
-                        + " <file with all GO terms, in 'obo' format> <file with ancestral term ids> <file with go ids to be analyzed>" );
+        .println( PRG_NAME
+                  + " <file with all GO terms, in 'obo' format> <file with ancestral term ids> <file with go ids to be analyzed>" );
         System.out.println();
         System.out.println();
     }

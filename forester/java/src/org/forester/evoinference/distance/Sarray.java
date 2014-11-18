@@ -65,7 +65,7 @@ public final class Sarray {
         if ( x == null ) {
             System.out.println();
             System.out
-                    .println( "________________________________________________________________________________________" );
+            .println( "________________________________________________________________________________________" );
             System.out.println( toString() );
             throw new IllegalArgumentException( "key " + key + " (->" + value + ") does not exist for row " + j );
         }

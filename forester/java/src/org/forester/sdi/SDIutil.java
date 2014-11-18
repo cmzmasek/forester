@@ -73,7 +73,7 @@ public class SDIutil {
                                                     final boolean replace_undescores_in_nhx_trees,
                                                     final boolean ignore_quotes_in_nhx_trees,
                                                     final TAXONOMY_EXTRACTION taxonomy_extraction_in_nhx_trees )
-            throws FileNotFoundException, PhyloXmlDataFormatException, IOException, SDIException {
+                                                            throws FileNotFoundException, PhyloXmlDataFormatException, IOException, SDIException {
         Phylogeny species_tree;
         final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
         final PhylogenyParser p = ParserUtils.createParserDependingOnFileType( species_tree_file, true );
@@ -99,9 +99,9 @@ public class SDIutil {
             switch ( comp_base ) {
                 case SCIENTIFIC_NAME:
                     PhylogenyMethods
-                            .transferNodeNameToField( species_tree,
-                                                      PhylogenyMethods.PhylogenyNodeField.TAXONOMY_SCIENTIFIC_NAME,
-                                                      true );
+                    .transferNodeNameToField( species_tree,
+                                              PhylogenyMethods.PhylogenyNodeField.TAXONOMY_SCIENTIFIC_NAME,
+                                              true );
                     break;
                 case CODE:
                     PhylogenyMethods.transferNodeNameToField( species_tree,

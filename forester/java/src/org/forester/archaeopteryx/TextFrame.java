@@ -52,7 +52,7 @@ import javax.swing.JTextArea;
 final class TextFrame extends JFrame implements ActionListener, ClipboardOwner {
 
     /**
-     * 
+     *
      */
     private static final long           serialVersionUID = -5012834229705518363L;
     private static Color                ta_text_color    = new Color( 0, 0, 0 ),

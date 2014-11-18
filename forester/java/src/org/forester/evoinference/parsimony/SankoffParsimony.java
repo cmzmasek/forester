@@ -45,11 +45,11 @@ import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.util.ForesterUtil;
 
 /**
- * 
+ *
  * IN PROGRESS!
  * DO NOT USE!
- * 
- * 
+ *
+ *
  * @param <STATE_TYPE>
  */
 public class SankoffParsimony<STATE_TYPE> {
@@ -154,7 +154,7 @@ public class SankoffParsimony<STATE_TYPE> {
 
     /**
      * Returns a view of the internal states prior to trace-back.
-     * 
+     *
      * @return
      */
     public CharacterStateMatrix<List<STATE_TYPE>> getInternalStatesMatrixPriorToTraceback() {
@@ -171,7 +171,7 @@ public class SankoffParsimony<STATE_TYPE> {
             final PhylogenyNode node_child = node.getChildNode( i );
             if ( !states.containsKey( node_child ) ) {
                 throw new AssertionError( "this should not have happened: node [" + node_child.getName()
-                        + "] not found in node state map" );
+                                          + "] not found in node state map" );
             }
             if ( i == 0 ) {
                 states_in_child_nodes.addAll( states.get( node_child ) );
@@ -208,7 +208,7 @@ public class SankoffParsimony<STATE_TYPE> {
             final STATE_TYPE state = matrix.getState( indentifier_index, character_index );
             if ( state == null ) {
                 throw new IllegalArgumentException( "value at [" + indentifier_index + ", " + character_index
-                        + "] is null" );
+                                                    + "] is null" );
             }
             final SortedSet<STATE_TYPE> l = new TreeSet<STATE_TYPE>();
             l.add( state );
@@ -225,7 +225,7 @@ public class SankoffParsimony<STATE_TYPE> {
             final STATE_TYPE state = matrix.getState( indentifier_index, character_index );
             if ( state == null ) {
                 throw new IllegalArgumentException( "value at [" + indentifier_index + ", " + character_index
-                        + "] is null" );
+                                                    + "] is null" );
             }
             states.put( p.getNode( matrix.getIdentifier( indentifier_index ) ), state );
         }
@@ -251,7 +251,7 @@ public class SankoffParsimony<STATE_TYPE> {
             final PhylogenyNode node_child = node.getChildNode( i );
             if ( !states.containsKey( node_child ) ) {
                 throw new AssertionError( "this should not have happened: node [" + node_child.getName()
-                        + "] not found in node state map" );
+                                          + "] not found in node state map" );
             }
             states_in_child_nodes.addAll( states.get( node_child ) );
         }
@@ -278,8 +278,8 @@ public class SankoffParsimony<STATE_TYPE> {
             nodes.add( postorder.next() );
         }
         setGainLossMatrix( new BasicCharacterStateMatrix<CharacterStateMatrix.GainLossStates>( nodes.size(),
-                                                                                               external_node_states_matrix
-                                                                                                       .getNumberOfCharacters() ) );
+                external_node_states_matrix
+                .getNumberOfCharacters() ) );
         int identifier_index = 0;
         for( final PhylogenyNode node : nodes ) {
             getGainLossMatrix().setIdentifier( identifier_index++,
@@ -302,11 +302,11 @@ public class SankoffParsimony<STATE_TYPE> {
             }
         }
         setInternalStatesMatrixPriorToTraceback( new BasicCharacterStateMatrix<List<STATE_TYPE>>( internal_nodes.size(),
-                                                                                                  external_node_states_matrix
-                                                                                                          .getNumberOfCharacters() ) );
+                external_node_states_matrix
+                .getNumberOfCharacters() ) );
         setInternalStatesMatrixTraceback( new BasicCharacterStateMatrix<STATE_TYPE>( internal_nodes.size(),
-                                                                                     external_node_states_matrix
-                                                                                             .getNumberOfCharacters() ) );
+                external_node_states_matrix
+                .getNumberOfCharacters() ) );
         int identifier_index = 0;
         for( final PhylogenyNode node : internal_nodes ) {
             getInternalStatesMatrix().setIdentifier( identifier_index,
@@ -322,7 +322,7 @@ public class SankoffParsimony<STATE_TYPE> {
                                                     external_node_states_matrix.getCharacter( character_index ) );
             getInternalStatesMatrixPriorToTraceback().setCharacter( character_index,
                                                                     external_node_states_matrix
-                                                                            .getCharacter( character_index ) );
+                                                                    .getCharacter( character_index ) );
         }
     }
 
@@ -421,7 +421,7 @@ public class SankoffParsimony<STATE_TYPE> {
                 else if ( current_binary_state == ABSENT ) {//new
                     setGainLossState( character_state_column, current_node, UNCHANGED_ABSENT );//new
                 }//new
-                 // setGainLossState( character_state_column, current_node, UNKNOWN_GAIN_LOSS );
+                // setGainLossState( character_state_column, current_node, UNKNOWN_GAIN_LOSS );
             }
         }
     }
@@ -446,26 +446,26 @@ public class SankoffParsimony<STATE_TYPE> {
                                    final PhylogenyNode node,
                                    final GainLossStates state ) {
         getGainLossMatrix().setState( ForesterUtil.isEmpty( node.getName() ) ? node.getId() + "" : node.getName(),
-                                      character_state_column,
-                                      state );
+                character_state_column,
+                state );
     }
 
     private void setInternalNodeState( final Map<PhylogenyNode, STATE_TYPE> states,
                                        final int character_state_column,
                                        final PhylogenyNode node ) {
         getInternalStatesMatrix()
-                .setState( ForesterUtil.isEmpty( node.getName() ) ? node.getId() + "" : node.getName(),
-                           character_state_column,
-                           states.get( node ) );
+        .setState( ForesterUtil.isEmpty( node.getName() ) ? node.getId() + "" : node.getName(),
+                character_state_column,
+                states.get( node ) );
     }
 
     private void setInternalNodeStatePriorToTraceback( final Map<PhylogenyNode, SortedSet<STATE_TYPE>> states,
                                                        final int character_state_column,
                                                        final PhylogenyNode node ) {
         getInternalStatesMatrixPriorToTraceback().setState( ForesterUtil.isEmpty( node.getName() ) ? node.getId() + ""
-                                                                    : node.getName(),
-                                                            character_state_column,
-                                                            toListSorted( states.get( node ) ) );
+                : node.getName(),
+                character_state_column,
+                toListSorted( states.get( node ) ) );
     }
 
     private void setInternalStatesMatrixPriorToTraceback( final CharacterStateMatrix<List<STATE_TYPE>> internal_states_matrix_prior_to_traceback ) {
@@ -518,13 +518,13 @@ public class SankoffParsimony<STATE_TYPE> {
      * This sets whether to use the first or last state in the sorted
      * states at the undecided internal nodes.
      * For randomized choices set randomize to true (and this to false).
-     * 
+     *
      * Note. It might be advisable to set this to false
      * for BinaryStates if absence at the root is preferred
-     * (given the enum BinaryStates sorts in the following order: 
+     * (given the enum BinaryStates sorts in the following order:
      * ABSENT, UNKNOWN, PRESENT).
-     * 
-     * 
+     *
+     *
      * @param use_last
      */
     public void setUseLast( final boolean use_last ) {

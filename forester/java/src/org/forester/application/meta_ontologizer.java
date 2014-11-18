@@ -134,8 +134,8 @@ public class meta_ontologizer {
         System.out.println( "Usage:" );
         System.out.println();
         System.out
-                .println( PRG_NAME
-                        + " -p=<adj P value limit> <obo file> <pfam to go file> <ontologizer outdir> [domain gain loss file] <base for meta ontologizer outfile> <comment>" );
+        .println( PRG_NAME
+                  + " -p=<adj P value limit> <obo file> <pfam to go file> <ontologizer outdir> [domain gain loss file] <base for meta ontologizer outfile> <comment>" );
         System.out.println();
     }
 }

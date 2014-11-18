@@ -93,16 +93,16 @@ public final class NodeVisualData implements PhylogenyData {
     @Override
     public final PhylogenyData copy() {
         return new NodeVisualData( !ForesterUtil.isEmpty( getFontName() ) ? new String( getFontName() ) : null,
-                                   getFontStyle(),
-                                   getFontSize(),
-                                   getFontColor() != null ? new Color( getFontColor().getRed(), getFontColor()
-                                           .getGreen(), getFontColor().getBlue() ) : null,
-                                   getShape(),
-                                   getFillType(),
-                                   getNodeColor() != null ? new Color( getNodeColor().getRed(), getNodeColor()
-                                           .getGreen(), getNodeColor().getBlue() ) : null,
-                                   getSize(),
-                                   getTransparency() );
+                getFontStyle(),
+                getFontSize(),
+                getFontColor() != null ? new Color( getFontColor().getRed(), getFontColor()
+                                                    .getGreen(), getFontColor().getBlue() ) : null,
+                                                    getShape(),
+                                                    getFillType(),
+                                                    getNodeColor() != null ? new Color( getNodeColor().getRed(), getNodeColor()
+                                                                                        .getGreen(), getNodeColor().getBlue() ) : null,
+                                                                                        getSize(),
+                                                                                        getTransparency() );
     }
 
     public final NodeFill getFillType() {

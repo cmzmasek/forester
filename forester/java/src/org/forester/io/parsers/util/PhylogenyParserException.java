@@ -33,12 +33,12 @@ import java.io.IOException;
 public class PhylogenyParserException extends IOException {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = -4810333295377881086L;
 
     /**
-     * 
+     *
      */
     public PhylogenyParserException() {
         super();

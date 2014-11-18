@@ -94,7 +94,7 @@ public class BinaryCharacters implements PhylogenyData {
     public void addGainedCharacter( final String binary_character ) {
         if ( getLostCharacters().contains( binary_character ) ) {
             throw new IllegalArgumentException( "attempt to add binary character [" + binary_character
-                    + "] to gained characters but is already listed as lost" );
+                                                + "] to gained characters but is already listed as lost" );
         }
         getGainedCharacters().add( binary_character );
     }
@@ -102,11 +102,11 @@ public class BinaryCharacters implements PhylogenyData {
     public void addLostCharacter( final String binary_character ) {
         if ( getPresentCharacters().contains( binary_character ) ) {
             throw new IllegalArgumentException( "attempt to add binary character [" + binary_character
-                    + "] to lost characters but is already listed as present" );
+                                                + "] to lost characters but is already listed as present" );
         }
         if ( getGainedCharacters().contains( binary_character ) ) {
             throw new IllegalArgumentException( "attempt to add binary character [" + binary_character
-                    + "] to lost characters but is already listed as gained" );
+                                                + "] to lost characters but is already listed as gained" );
         }
         getLostCharacters().add( binary_character );
     }
@@ -114,7 +114,7 @@ public class BinaryCharacters implements PhylogenyData {
     public void addPresentCharacter( final String binary_character ) {
         if ( getLostCharacters().contains( binary_character ) ) {
             throw new IllegalArgumentException( "attempt to add binary character [" + binary_character
-                    + "] to present characters but is already listed as lost" );
+                                                + "] to present characters but is already listed as lost" );
         }
         getPresentCharacters().add( binary_character );
     }
@@ -148,7 +148,7 @@ public class BinaryCharacters implements PhylogenyData {
     @Override
     /**
      * Not a deep copy.
-     * 
+     *
      */
     public PhylogenyData copy() {
         validate();
@@ -238,10 +238,10 @@ public class BinaryCharacters implements PhylogenyData {
                                       getType(),
                                       PhyloXmlMapping.BINARY_CHARACTERS_GAINED_COUNT_ATTR,
                                       getGainedCount() != COUNT_DEFAULT ? String.valueOf( getGainedCount() ) : "",
-                                      PhyloXmlMapping.BINARY_CHARACTERS_LOST_COUNT_ATTR,
-                                      getLostCount() != COUNT_DEFAULT ? String.valueOf( getLostCount() ) : "",
-                                      PhyloXmlMapping.BINARY_CHARACTERS_PRESENT_COUNT_ATTR,
-                                      getPresentCount() != COUNT_DEFAULT ? String.valueOf( getPresentCount() ) : "" );
+                                              PhyloXmlMapping.BINARY_CHARACTERS_LOST_COUNT_ATTR,
+                                              getLostCount() != COUNT_DEFAULT ? String.valueOf( getLostCount() ) : "",
+                                                      PhyloXmlMapping.BINARY_CHARACTERS_PRESENT_COUNT_ATTR,
+                                                      getPresentCount() != COUNT_DEFAULT ? String.valueOf( getPresentCount() ) : "" );
         final String my_ind = indentation + PhylogenyWriter.PHYLO_XML_INTENDATION_BASE;
         if ( getGainedCharacters().size() > 0 ) {
             writer.write( ForesterUtil.LINE_SEPARATOR );

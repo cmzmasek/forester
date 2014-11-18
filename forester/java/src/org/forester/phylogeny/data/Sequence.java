@@ -158,7 +158,7 @@ public class Sequence implements PhylogenyData, MultipleUris, Comparable<Sequenc
 
     /**
      * Not a deep copy.
-     * 
+     *
      */
     @Override
     public PhylogenyData copy() {

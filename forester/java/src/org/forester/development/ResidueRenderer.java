@@ -39,7 +39,7 @@ public class ResidueRenderer extends AbstractRenderer {
     static final int          DISTANCE_OVAL_BORDER = 1;
     static final int          SIZE_LIMIT           = 7;
     /**
-     * 
+     *
      */
     private static final long serialVersionUID     = -2331160296913478874L;
     private final char        _value;

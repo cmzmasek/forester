@@ -18,7 +18,7 @@ import org.forester.util.ForesterUtil;
 public final class TestRIO {
 
     private final static String PATH_TO_TEST_DATA = System.getProperty( "user.dir" ) + ForesterUtil.getFileSeparator()
-                                                          + "test_data" + ForesterUtil.getFileSeparator();
+            + "test_data" + ForesterUtil.getFileSeparator();
 
     public static void main( final String[] args ) {
         if ( !testRIO_GSDIR() ) {

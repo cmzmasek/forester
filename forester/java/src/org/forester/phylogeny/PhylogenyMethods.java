@@ -133,7 +133,7 @@ public class PhylogenyMethods {
                             if ( !ForesterUtil.isEmpty( stats.get( i ).getDescription() ) ) {
                                 if ( !stats.get( i ).getDescription().equalsIgnoreCase( c.getType() ) ) {
                                     throw new IllegalArgumentException( "support values in node [" + n.toString()
-                                            + "] appear inconsistently ordered" );
+                                                                        + "] appear inconsistently ordered" );
                                 }
                             }
                             stats.get( i ).setDescription( c.getType() );
@@ -148,8 +148,8 @@ public class PhylogenyMethods {
 
     /**
      * Calculates the distance between PhylogenyNodes node1 and node2.
-     * 
-     * 
+     *
+     *
      * @param node1
      * @param node2
      * @return distance between node1 and node2
@@ -163,8 +163,8 @@ public class PhylogenyMethods {
 
     /**
      * Returns the LCA of PhylogenyNodes node1 and node2.
-     * 
-     * 
+     *
+     *
      * @param node1
      * @param node2
      * @return LCA of node1 and node2
@@ -209,8 +209,8 @@ public class PhylogenyMethods {
     /**
      * Returns the LCA of PhylogenyNodes node1 and node2.
      * Precondition: ids are in pre-order (or level-order).
-     * 
-     * 
+     *
+     *
      * @param node1
      * @param node2
      * @return LCA of node1 and node2
@@ -500,9 +500,9 @@ public class PhylogenyMethods {
     }
 
     /**
-     * 
+     *
      * Convenience method
-     * 
+     *
      * @param node
      * @return
      */
@@ -553,9 +553,9 @@ public class PhylogenyMethods {
     }
 
     /**
-     * Returns taxonomy t if all external descendants have 
+     * Returns taxonomy t if all external descendants have
      * the same taxonomy t, null otherwise.
-     * 
+     *
      */
     public static Taxonomy getExternalDescendantsTaxonomy( final PhylogenyNode node ) {
         final List<PhylogenyNode> descs = node.getAllExternalDescendants();
@@ -683,7 +683,7 @@ public class PhylogenyMethods {
 
     /*
      * This is case insensitive.
-     * 
+     *
      */
     public synchronized static boolean isTaxonomyHasIdentifierOfGivenProvider( final Taxonomy tax,
                                                                                final String[] providers ) {
@@ -777,7 +777,7 @@ public class PhylogenyMethods {
      * all external nodes of node.
      * If at least one of the external nodes has no taxonomy,
      * null is returned.
-     * 
+     *
      */
     public static Map<Taxonomy, Integer> obtainDistinctTaxonomyCounts( final PhylogenyNode node ) {
         final List<PhylogenyNode> descs = node.getAllExternalDescendants();
@@ -801,10 +801,10 @@ public class PhylogenyMethods {
      * Arranges the order of childern for each node of this Phylogeny in such a
      * way that either the branch with more children is on top (right) or on
      * bottom (left), dependent on the value of boolean order.
-     * 
+     *
      * @param order
      *            decides in which direction to order
-     * @param pri 
+     * @param pri
      */
     public static void orderAppearance( final PhylogenyNode n,
                                         final boolean order,
@@ -1239,7 +1239,7 @@ public class PhylogenyMethods {
 
     /**
      * Convenience method.
-     * Sets value for the first confidence value (created if not present, values overwritten otherwise). 
+     * Sets value for the first confidence value (created if not present, values overwritten otherwise).
      */
     public static void setBootstrapConfidence( final PhylogenyNode node, final double bootstrap_confidence_value ) {
         setConfidence( node, bootstrap_confidence_value, "bootstrap" );
@@ -1261,7 +1261,7 @@ public class PhylogenyMethods {
 
     /**
      * Convenience method.
-     * Sets value for the first confidence value (created if not present, values overwritten otherwise). 
+     * Sets value for the first confidence value (created if not present, values overwritten otherwise).
      */
     public static void setConfidence( final PhylogenyNode node, final double confidence_value ) {
         setConfidence( node, confidence_value, "" );
@@ -1269,7 +1269,7 @@ public class PhylogenyMethods {
 
     /**
      * Convenience method.
-     * Sets value for the first confidence value (created if not present, values overwritten otherwise). 
+     * Sets value for the first confidence value (created if not present, values overwritten otherwise).
      */
     public static void setConfidence( final PhylogenyNode node, final double confidence_value, final String type ) {
         Confidence c = null;
@@ -1293,11 +1293,11 @@ public class PhylogenyMethods {
 
     /**
      * Convenience method to set the taxonomy code of a phylogeny node.
-     * 
-     * 
+     *
+     *
      * @param node
      * @param taxonomy_code
-     * @throws PhyloXmlDataFormatException 
+     * @throws PhyloXmlDataFormatException
      */
     public static void setTaxonomyCode( final PhylogenyNode node, final String taxonomy_code )
             throws PhyloXmlDataFormatException {
@@ -1330,7 +1330,7 @@ public class PhylogenyMethods {
     /**
      * Removes from Phylogeny to_be_stripped all external Nodes which are
      * associated with a species NOT found in Phylogeny reference.
-     * 
+     *
      * @param reference
      *            a reference Phylogeny
      * @param to_be_stripped
@@ -1365,7 +1365,7 @@ public class PhylogenyMethods {
             else if ( !( ref_ext_taxo.contains( n.getNodeData().getTaxonomy().getScientificName() ) )
                     && !( ref_ext_taxo.contains( n.getNodeData().getTaxonomy().getTaxonomyCode() ) )
                     && !( ( n.getNodeData().getTaxonomy().getIdentifier() != null ) && ref_ext_taxo.contains( n
-                            .getNodeData().getTaxonomy().getIdentifier().getValuePlusProvider() ) ) ) {
+                                                                                                              .getNodeData().getTaxonomy().getIdentifier().getValuePlusProvider() ) ) ) {
                 nodes_to_delete.add( n );
             }
         }
@@ -1502,7 +1502,7 @@ public class PhylogenyMethods {
                             n.setName( "" );
                         }
                         n.getNodeData().getTaxonomy()
-                                .setIdentifier( new Identifier( id, PhyloXmlUtil.UNIPROT_TAX_PROVIDER ) );
+                        .setIdentifier( new Identifier( id, PhyloXmlUtil.UNIPROT_TAX_PROVIDER ) );
                         break;
                     }
                     case TAXONOMY_ID_UNIPROT_2: {
@@ -1518,7 +1518,7 @@ public class PhylogenyMethods {
                             n.setName( "" );
                         }
                         n.getNodeData().getTaxonomy()
-                                .setIdentifier( new Identifier( id, PhyloXmlUtil.UNIPROT_TAX_PROVIDER ) );
+                        .setIdentifier( new Identifier( id, PhyloXmlUtil.UNIPROT_TAX_PROVIDER ) );
                         break;
                     }
                     case TAXONOMY_ID: {
@@ -1617,7 +1617,7 @@ public class PhylogenyMethods {
     /**
      * Calculates the distance between PhylogenyNodes n1 and n2.
      * PRECONDITION: n1 is a descendant of n2.
-     * 
+     *
      * @param n1
      *            a descendant of n2
      * @param n2

@@ -105,7 +105,7 @@ public class pfamacc2go {
     private static void printHelp() {
         System.out.println();
         System.out.println( PRG_NAME
-                + " <pfam2go mapping file> <file with pfam accessors, newline and/or comma separated>" );
+                            + " <pfam2go mapping file> <file with pfam accessors, newline and/or comma separated>" );
         System.out.println();
     }
 }

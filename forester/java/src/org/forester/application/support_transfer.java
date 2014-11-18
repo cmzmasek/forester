@@ -48,7 +48,7 @@ public final class support_transfer {
      * Transfers branch length values from one Phylogeny to another. It is
      * mainly a "main method" for method "copyBranchLengthValuesFrom( Phylogeny )"
      * of org.forester.phylogeny.Phylogeny, to be used in other (Perl) programs.
-     * 
+     *
      * @param args[0]
      *            Filename (String) for Phylogeny which has correct branch
      *            length values
@@ -60,8 +60,8 @@ public final class support_transfer {
      * @param args[2]
      *            String Filename (String) for outputfile
      * @param args[3]
-     *            String [number of tree with correct bl to use in case treefile contains more than one, default 0]            
-     
+     *            String [number of tree with correct bl to use in case treefile contains more than one, default 0]
+
      */
     public static void main( final String args[] ) {
         Phylogeny phylogeny_w_bl = null; // Has correct branch lengths
@@ -147,7 +147,7 @@ public final class support_transfer {
      * Important (but obvious): The topology of both trees needs to be the same.
      * The method is not robust, and might produce wrong results if the internal
      * topology differs or if the external node names are not unique.
-     * 
+     *
      * @param from
      *            the Phylogeny to copy the support values from
      * @param to

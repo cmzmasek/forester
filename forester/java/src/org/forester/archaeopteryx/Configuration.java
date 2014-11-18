@@ -355,7 +355,7 @@ public final class Configuration {
     /**
      * Will attempt to use the phylogeny to determine whether to check
      * this or not (e.g. phylogram)
-     * 
+     *
      */
     boolean doGuessCheckOption( final int which ) {
         return display_options[ which ][ 2 ].equals( "?" );
@@ -701,7 +701,7 @@ public final class Configuration {
 
     /**
      * Convenience method.
-     * 
+     *
      * @return true if value in configuration file was 'yes'
      */
     boolean isDrawAsPhylogram() {
@@ -868,7 +868,7 @@ public final class Configuration {
 
     /**
      * read each line of config file, process non-comment lines
-     * @throws IOException 
+     * @throws IOException
      */
     private void readConfig( final BufferedReader conf_in ) throws IOException {
         String line;

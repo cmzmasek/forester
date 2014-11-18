@@ -57,7 +57,7 @@ public class Point implements PhylogenyData {
         }
         else {
             return new StringBuffer( "[" + getLatitude().toPlainString() + ", " + getLongitude() + ", " + getAltitude()
-                    + getAltiudeUnit() + "]" );
+                                     + getAltiudeUnit() + "]" );
         }
     }
 
@@ -70,9 +70,9 @@ public class Point implements PhylogenyData {
     public PhylogenyData copy() {
         return new Point( getGeodeticDatum(),
                           getLatitude() == null ? null : new BigDecimal( getLatitude().toPlainString() ),
-                          getLongitude() == null ? null : new BigDecimal( getLongitude().toPlainString() ),
-                          getAltitude() == null ? null : new BigDecimal( getAltitude().toPlainString() ),
-                          getAltiudeUnit() );
+                                  getLongitude() == null ? null : new BigDecimal( getLongitude().toPlainString() ),
+                                          getAltitude() == null ? null : new BigDecimal( getAltitude().toPlainString() ),
+                                                  getAltiudeUnit() );
     }
 
     public BigDecimal getAltitude() {
@@ -156,6 +156,6 @@ public class Point implements PhylogenyData {
                 && ( ( p.getLatitude() == null ) || ( p.getLatitude().compareTo( BigDecimal.ZERO ) <= 0 ) )
                 && ( ForesterUtil.isEmpty( p.getGeodeticDatum() ) || p.getGeodeticDatum()
                         .equalsIgnoreCase( UNKNOWN_GEODETIC_DATUM ) ) && ( ForesterUtil.isEmpty( p.getAltiudeUnit() ) || p
-                .getAltiudeUnit().equalsIgnoreCase( "?" ) ) );
+                                .getAltiudeUnit().equalsIgnoreCase( "?" ) ) );
     }
 }

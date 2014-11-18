@@ -50,9 +50,9 @@ public final class GoUtils {
 
     /**
      * This is for counting the how many times each GO term in 'categories'
-     * is a (direct or indirect) super term of the GO terms in 'experiment_set'. 
-     * 
-     * 
+     * is a (direct or indirect) super term of the GO terms in 'experiment_set'.
+     *
+     *
      * @param categories the set of super terms to be counted
      * @param experiment_set the list of GO terms to be analyzed
      * @param all_go_terms all terms in the ontology
@@ -160,7 +160,7 @@ public final class GoUtils {
             penultimate = my_go_term;
             if ( !map.containsKey( my_go_term.getSuperGoIds().get( 0 ) ) ) {
                 throw new IllegalArgumentException( "GO-id [" + my_go_term.getSuperGoIds().get( 0 )
-                        + "] not found in map" );
+                                                    + "] not found in map" );
             }
             my_go_term = map.get( my_go_term.getSuperGoIds().get( 0 ) );
         }
@@ -172,7 +172,7 @@ public final class GoUtils {
         while ( ( my_go_term.getSuperGoIds() != null ) && ( my_go_term.getSuperGoIds().size() > 0 ) ) {
             if ( !map.containsKey( my_go_term.getSuperGoIds().get( 0 ) ) ) {
                 throw new IllegalArgumentException( "GO-id [" + my_go_term.getSuperGoIds().get( 0 )
-                        + "] not found in map" );
+                                                    + "] not found in map" );
             }
             my_go_term = map.get( my_go_term.getSuperGoIds().get( 0 ) );
         }

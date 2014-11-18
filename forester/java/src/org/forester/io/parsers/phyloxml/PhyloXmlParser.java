@@ -182,7 +182,7 @@ public class PhyloXmlParser implements PhylogenyParser {
                     final Reader reader = getReaderFromZipFile();
                     if ( reader == null ) {
                         throw new PhylogenyParserException( "zip file \"" + getSource()
-                                + "\" appears not to contain any entries" );
+                                                            + "\" appears not to contain any entries" );
                     }
                     xml_reader.parse( new InputSource( reader ) );
                 }
@@ -224,7 +224,7 @@ public class PhyloXmlParser implements PhylogenyParser {
         }
         catch ( final ParserConfigurationException parser_config_exception ) {
             throw new PhylogenyParserException( "failed to parse [" + getSource()
-                    + "]. Problem with XML parser configuration: " + parser_config_exception.getLocalizedMessage() );
+                                                + "]. Problem with XML parser configuration: " + parser_config_exception.getLocalizedMessage() );
         }
         catch ( final IOException e ) {
             throw new PhylogenyParserException( "problem with input source: " + e.getLocalizedMessage() );

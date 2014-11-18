@@ -39,16 +39,16 @@ import org.forester.util.ForesterUtil;
  * This can read full, lower triangular, and upper triangular distance matrices.
  * In the case of a full matrix, the lower triangular values are used. Format
  * (by example): id1 0 id2 0.3 0 id3 0.4 0.4 0
- * 
+ *
  * OR
- * 
+ *
  * id1 id2 0.3 id3 0.4 0.4
- * 
+ *
  * Numbers before are after the data are ignored.
- * 
- * 
- * 
- * 
+ *
+ *
+ *
+ *
  * @author Christian M Zmasek
  */
 public class SymmetricalDistanceMatrixParser {
@@ -75,11 +75,11 @@ public class SymmetricalDistanceMatrixParser {
         }
         catch ( final NumberFormatException e ) {
             throw new IOException( "illegal format for distance [" + table_value + "] at [" + ( i - 1 ) + ", " + row
-                    + "]" );
+                                   + "]" );
         }
         if ( !ForesterUtil.isEqual( 0.0, d ) ) {
             throw new IOException( "attempt to use non-zero diagonal value [" + table_value + "] at [" + ( i - 1 )
-                    + ", " + row + "]" );
+                                   + ", " + row + "]" );
         }
     }
 
@@ -140,7 +140,7 @@ public class SymmetricalDistanceMatrixParser {
         }
         catch ( final NumberFormatException e ) {
             throw new IOException( "illegal format for distance [" + table_value + "] at [" + ( col - 1 ) + ", " + row
-                    + "]" );
+                                   + "]" );
         }
         distance_matrix.setValue( ( col - 1 ) + col_offset, row, d );
     }

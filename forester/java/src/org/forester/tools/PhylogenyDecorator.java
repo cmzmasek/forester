@@ -87,14 +87,14 @@ public final class PhylogenyDecorator {
                                 && new_values.containsKey( TP_TAXONOMY_ID_PROVIDER ) ) {
                             ForesterUtil.ensurePresenceOfTaxonomy( node );
                             node.getNodeData()
-                                    .getTaxonomy()
-                                    .setIdentifier( new Identifier( new_values.get( TP_TAXONOMY_ID ),
-                                                                    new_values.get( TP_TAXONOMY_ID_PROVIDER ) ) );
+                            .getTaxonomy()
+                            .setIdentifier( new Identifier( new_values.get( TP_TAXONOMY_ID ),
+                                                            new_values.get( TP_TAXONOMY_ID_PROVIDER ) ) );
                         }
                         else if ( new_values.containsKey( TP_TAXONOMY_ID ) ) {
                             ForesterUtil.ensurePresenceOfTaxonomy( node );
                             node.getNodeData().getTaxonomy()
-                                    .setIdentifier( new Identifier( new_values.get( TP_TAXONOMY_ID ) ) );
+                            .setIdentifier( new Identifier( new_values.get( TP_TAXONOMY_ID ) ) );
                         }
                         if ( new_values.containsKey( TP_TAXONOMY_SN ) ) {
                             ForesterUtil.ensurePresenceOfTaxonomy( node );
@@ -112,9 +112,9 @@ public final class PhylogenyDecorator {
                                 && new_values.containsKey( TP_SEQ_ACCESSION_SOURCE ) ) {
                             ForesterUtil.ensurePresenceOfSequence( node );
                             node.getNodeData()
-                                    .getSequence()
-                                    .setAccession( new Accession( new_values.get( TP_SEQ_ACCESSION ),
-                                                                  new_values.get( TP_SEQ_ACCESSION_SOURCE ) ) );
+                            .getSequence()
+                            .setAccession( new Accession( new_values.get( TP_SEQ_ACCESSION ),
+                                                          new_values.get( TP_SEQ_ACCESSION_SOURCE ) ) );
                         }
                         if ( new_values.containsKey( TP_SEQ_ANNOTATION_DESC ) ) {
                             ForesterUtil.ensurePresenceOfSequence( node );
@@ -142,7 +142,7 @@ public final class PhylogenyDecorator {
                         if ( new_values.containsKey( TP_NODE_NAME ) ) {
                             node.setName( new_values.get( TP_NODE_NAME ) );
                         }
-                    } // if ( new_values != null ) 
+                    } // if ( new_values != null )
                 } // if ( map.containsKey( name ) || ( numbers_of_chars_allowed_to_remove_if_not_found_in_map > 0 ) )
                 else if ( picky ) {
                     throw new IllegalArgumentException( "\"" + name + "\" not found in name map" );
@@ -160,7 +160,7 @@ public final class PhylogenyDecorator {
                                    final boolean cut_name_after_space,
                                    final boolean trim_after_tilde,
                                    final boolean verbose ) throws IllegalArgumentException, NHXFormatException,
-            PhyloXmlDataFormatException {
+                                   PhyloXmlDataFormatException {
         return PhylogenyDecorator.decorate( phylogeny,
                                             map,
                                             field,
@@ -174,9 +174,9 @@ public final class PhylogenyDecorator {
     }
 
     /**
-     * 
-     * 
-     * 
+     *
+     *
+     *
      * @param phylogeny
      * @param map
      *            maps names (in phylogeny) to new values if intermediate_map is
@@ -186,7 +186,7 @@ public final class PhylogenyDecorator {
      * @param intermediate_map
      *            maps name (in phylogeny) to a intermediate value
      * @throws IllegalArgumentException
-     * @throws PhyloXmlDataFormatException 
+     * @throws PhyloXmlDataFormatException
      */
     public static String decorate( final Phylogeny phylogeny,
                                    final Map<String, String> map,
@@ -255,7 +255,7 @@ public final class PhylogenyDecorator {
                             }
                             else if ( picky ) {
                                 throw new IllegalArgumentException( " could not get taxonomy from \"" + new_value
-                                        + "\"" );
+                                                                    + "\"" );
                             }
                         }
                         switch ( field ) {
@@ -299,7 +299,7 @@ public final class PhylogenyDecorator {
                                     node.getNodeData().setSequence( new Sequence() );
                                 }
                                 node.getNodeData().getSequence()
-                                        .setDomainArchitecture( new DomainArchitecture( new_value ) );
+                                .setDomainArchitecture( new DomainArchitecture( new_value ) );
                                 break;
                             case TAXONOMY_CODE:
                                 if ( verbose ) {
@@ -359,7 +359,7 @@ public final class PhylogenyDecorator {
             }
         }
         return "updated " + ext_nodes_updated + "/" + ext_nodes + " external nodes, updated " + int_nodes_updated + "/"
-                + int_nodes + " internal nodes";
+        + int_nodes + " internal nodes";
     }
 
     public static Map<String, Map<String, String>> parseMappingTable( final File mapping_table_file )

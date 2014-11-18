@@ -31,7 +31,7 @@ import org.forester.phylogeny.Phylogeny;
 
 /*
  * Interface for Phylogeny factories.
- * 
+ *
  * @author Christian M. Zmasek
  */
 public interface PhylogenyFactory {
@@ -40,7 +40,7 @@ public interface PhylogenyFactory {
      * This must create a Phylogeny from source (e.g. an XML file, an alignment,
      * pairwise distances) by using creator (e.g. an XML file parser, an
      * algorithm implementation).
-     * 
+     *
      * @param source
      *            a source to create a Phylogeny from
      * @param creator

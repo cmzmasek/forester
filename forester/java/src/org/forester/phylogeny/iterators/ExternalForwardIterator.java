@@ -38,7 +38,7 @@ public class ExternalForwardIterator implements PhylogenyNodeIterator {
 
     /**
      * Constructor for ExternalForwardIterator.
-     * 
+     *
      * @param tree
      *            the tree on which to iterate over all external nodes.
      */
@@ -69,7 +69,7 @@ public class ExternalForwardIterator implements PhylogenyNodeIterator {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.util.Iterator#hasNext()
      */
     @Override
@@ -79,7 +79,7 @@ public class ExternalForwardIterator implements PhylogenyNodeIterator {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.util.Iterator#next()
      */
     @Override
@@ -99,7 +99,7 @@ public class ExternalForwardIterator implements PhylogenyNodeIterator {
 
     /**
      * Not supported.
-     * 
+     *
      */
     @Override
     public void remove() {

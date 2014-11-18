@@ -143,7 +143,7 @@ public class BasicMsa implements Msa {
         }
         if ( _identifiers_set.contains( id ) ) {
             throw new IllegalArgumentException( "illegal attempt to create msa with non-unique identifiers [" + id
-                    + "]" );
+                                                + "]" );
         }
         _identifiers_set.add( id );
         _identifiers[ row ] = id;

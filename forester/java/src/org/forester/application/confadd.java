@@ -142,8 +142,8 @@ public class confadd {
         }
         if ( ( first < 0 ) || ( last < 0 ) ) {
             ForesterUtil
-                    .fatalError( PRG_NAME,
-                                 "attempt to set first or last evaluator topology to use to a number less than zero" );
+            .fatalError( PRG_NAME,
+                         "attempt to set first or last evaluator topology to use to a number less than zero" );
         }
         if ( norm < 0 ) {
             ForesterUtil.fatalError( PRG_NAME, "illegal value for normalizer [" + norm + "]" );
@@ -200,7 +200,7 @@ public class confadd {
         }
         if ( ( last >= evaluators.length ) || ( last <= first ) ) {
             ForesterUtil.fatalError( PRG_NAME, "illegal value for first or last evaluator topology to use [" + first
-                    + ", " + last + "]" );
+                                     + ", " + last + "]" );
         }
         double value = 1;
         if ( norm > 0 ) {
@@ -244,17 +244,17 @@ public class confadd {
         System.out.println( "Usage:" );
         System.out.println();
         System.out.println( PRG_NAME
-                + " [options] <confidence type> <target tree file> <evaluators tree file> <outfile>" );
+                            + " [options] <confidence type> <target tree file> <evaluators tree file> <outfile>" );
         System.out.println();
         System.out.println( "options:" );
         System.out.println();
         System.out.println( " -" + STRICT_OPTION
-                + "    : strict [default: non-strict]: all nodes between 'target' and 'evaluators' must match" );
+                            + "    : strict [default: non-strict]: all nodes between 'target' and 'evaluators' must match" );
         System.out.println( " -" + NORMALIZE_OPTION
-                + "=<d>: normalize to this value (e.g. 100 for most bootstrap analyses) [default: no normalization]" );
+                            + "=<d>: normalize to this value (e.g. 100 for most bootstrap analyses) [default: no normalization]" );
         System.out.println( " -" + FIRST_OPTION + "=<i>: first evaluator topology to use (0-based) [default: 0]" );
         System.out.println( " -" + LAST_OPTION
-                + "=<i>: last evaluator topology to use (0-based) [default: use all until final topology]" );
+                            + "=<i>: last evaluator topology to use (0-based) [default: use all until final topology]" );
         System.out.println();
     }
 
@@ -265,7 +265,7 @@ public class confadd {
             final PhylogenyNode node = it.next();
             if ( ext_nodes.contains( node ) ) {
                 throw new IllegalArgumentException( "external node [" + node.toString() + "] of " + msg
-                        + " is not unique" );
+                                                    + " is not unique" );
             }
             ext_nodes.add( node );
         }

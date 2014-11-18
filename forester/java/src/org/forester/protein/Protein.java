@@ -38,10 +38,10 @@ public interface Protein {
      * If in_nc_order is set to true, this should return true only and only if
      * the order in List 'domains' and this protein (as determined by the start positions
      * of the domains of this proteins, _not_ by their index) are the same
-     * (interspersing, 'other', domains in this are ignored). 
+     * (interspersing, 'other', domains in this are ignored).
      * If in_nc_order is set to false, this should return true only and only if
      * this contains all domains listed in 'domains' (order and count do not matter).
-     * 
+     *
      * @param domains a list of domain ids in a certain order.
      * @param in_nc_order to consider order
      * @return

@@ -104,7 +104,7 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
         }
         for( double i = 0; i < heigth; i += step ) {
             g.setColor( org.forester.util.ForesterUtil
-                    .calcColor( i >= h2 ? heigth - i : i, 0, h2, color_one, color_two ) );
+                        .calcColor( i >= h2 ? heigth - i : i, 0, h2, color_one, color_two ) );
             _rectangle.setFrame( x, i + y, width, step );
             g.fill( _rectangle );
         }
@@ -126,7 +126,7 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
         }
         for( double i = 0; i < heigth; i += step ) {
             g.setColor( org.forester.util.ForesterUtil
-                    .calcColor( i >= h2 ? heigth - i : i, 0, h2, color_one, color_two ) );
+                        .calcColor( i >= h2 ? heigth - i : i, 0, h2, color_one, color_two ) );
             _rectangle.setFrame( x, i + y, width, step );
             g.fill( _rectangle );
         }
@@ -236,8 +236,8 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
                         g.setColor( Constants.DOMAIN_LABEL_COLOR_FOR_PDF );
                     }
                     g.drawString( d.getName(), xa, y1
-                            + tree_panel.getMainPanel().getTreeFontSet().getFontMetricsSmall().getAscent()
-                            + _rendering_height );
+                                  + tree_panel.getMainPanel().getTreeFontSet().getFontMetricsSmall().getAscent()
+                                  + _rendering_height );
                 }
                 if ( TreePanel.SPECIAL_DOMAIN_COLORING && ( _node_name.indexOf( "~" ) > 1 )
                         && ( d.getName().equals( SPECIAL_DOMAIN ) )

@@ -98,18 +98,18 @@ public class ImageLoader implements Runnable {
                             catch ( final MalformedURLException e ) {
                                 AptxUtil.printWarningMessage( Constants.PRG_NAME,
                                                               "could not load image from \"" + uri.getValue()
-                                                                      + "\": Malformed URL Exception: "
-                                                                      + e.getLocalizedMessage() );
+                                                              + "\": Malformed URL Exception: "
+                                                              + e.getLocalizedMessage() );
                             }
                             catch ( final IOException e ) {
                                 AptxUtil.printWarningMessage( Constants.PRG_NAME,
                                                               "could not load image from \"" + uri.getValue()
-                                                                      + "\": IO Exception: " + e.getLocalizedMessage() );
+                                                              + "\": IO Exception: " + e.getLocalizedMessage() );
                             }
                             catch ( final CMMException e ) {
                                 AptxUtil.printWarningMessage( Constants.PRG_NAME,
                                                               "could not load image from \"" + uri.getValue()
-                                                                      + "\": CMMException: " + e.getLocalizedMessage() );
+                                                              + "\": CMMException: " + e.getLocalizedMessage() );
                             }
                             if ( bi != null ) {
                                 image_map.put( uri_str, bi );

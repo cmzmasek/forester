@@ -123,7 +123,7 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
                 && ForesterUtil.isEmpty( getTaxonomyScientificName() ) && ForesterUtil.isEmpty( getSequenceSymbol() )
                 && ForesterUtil.isEmpty( getGeneName() ) && ForesterUtil.isEmpty( getTaxonomyIdentifier() )
                 && ForesterUtil.isEmpty( getSequenceSymbol() ) && ( ( getGoTerms() == null ) || getGoTerms().isEmpty() ) && ( ( getCrossReferences() == null ) || getCrossReferences()
-                .isEmpty() ) );
+                        .isEmpty() ) );
     }
 
     private void addCrossReference( final Accession accession ) {

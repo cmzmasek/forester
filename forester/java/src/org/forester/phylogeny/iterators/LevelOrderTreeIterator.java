@@ -33,12 +33,12 @@ import org.forester.phylogeny.PhylogenyNode;
 
 /*
  * An iterator to iterate a Phylogeny in level order.
- * 
+ *
  * Created: 10/23/2005 by Christian M. Zmasek. Last modified: 10/23/2005 by
  * Christian M. Zmasek.
- * 
+ *
  * @author Christian M. Zmasek
- * 
+ *
  * @version 1.000
  */
 public class LevelOrderTreeIterator implements PhylogenyNodeIterator {
@@ -53,7 +53,7 @@ public class LevelOrderTreeIterator implements PhylogenyNodeIterator {
     /**
      * Creates a new LevelOrderTreeIterator for iterating over all the nodes of
      * Phylogeny phylogeny
-     * 
+     *
      * @param phylogeny
      *            the Phylogeny to iterate over
      * @throws IllegalArgumentException
@@ -69,7 +69,7 @@ public class LevelOrderTreeIterator implements PhylogenyNodeIterator {
     /**
      * Creates a new LevelOrderTreeIterator for iterating over all the child
      * nodes of PhylogenyNode node (including node itself).
-     * 
+     *
      * @param node
      *            the parent of the nodes to iterate over
      */
@@ -83,7 +83,7 @@ public class LevelOrderTreeIterator implements PhylogenyNodeIterator {
     // ---------------
     /**
      * Returns the queue upon which this iterator is based.
-     * 
+     *
      */
     private Queue getQueue() {
         return _queue;
@@ -91,7 +91,7 @@ public class LevelOrderTreeIterator implements PhylogenyNodeIterator {
 
     /**
      * Returns the root of the phylogeny this iterators parses over.
-     * 
+     *
      * @return the root of the phylogeny this iterators parses over.
      */
     private PhylogenyNode getRoot() {
@@ -103,7 +103,7 @@ public class LevelOrderTreeIterator implements PhylogenyNodeIterator {
     /**
      * Returns true is this iterator has at least one more element, false
      * otherwise.
-     * 
+     *
      * @return true is this iterator has at least one more element, false
      *         otherwise
      */
@@ -114,7 +114,7 @@ public class LevelOrderTreeIterator implements PhylogenyNodeIterator {
 
     /**
      * Returns the next PhylogenyNode.
-     * 
+     *
      * @return the next PhylogenyNode
      * @throws NoSuchElementException
      *             if iteration is complete
@@ -133,7 +133,7 @@ public class LevelOrderTreeIterator implements PhylogenyNodeIterator {
 
     /**
      * Not supported.
-     * 
+     *
      */
     @Override
     public void remove() {

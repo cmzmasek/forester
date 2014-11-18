@@ -115,13 +115,13 @@ public final class ForesterUtil {
      * This calculates a color. If value is equal to min the returned color is
      * minColor, if value is equal to max the returned color is maxColor,
      * otherwise a color 'proportional' to value is returned.
-     * 
+     *
      * @param value
-     *            the value 
+     *            the value
      * @param min
-     *            the smallest value 
+     *            the smallest value
      * @param max
-     *            the largest value 
+     *            the largest value
      * @param minColor
      *            the color for min
      * @param maxColor
@@ -152,15 +152,15 @@ public final class ForesterUtil {
      * value is equal to mean the returned color is meanColor, otherwise a color
      * 'proportional' to value is returned -- either between min-mean or
      * mean-max
-     * 
+     *
      * @param value
      *            the value
      * @param min
      *            the smallest value
      * @param max
-     *            the largest value 
+     *            the largest value
      * @param mean
-     *            the mean/median value 
+     *            the mean/median value
      * @param minColor
      *            the color for min
      * @param maxColor
@@ -203,7 +203,7 @@ public final class ForesterUtil {
 
     /**
      * Helper method for calcColor methods.
-     * 
+     *
      * @param smallercolor_component_x
      *            color component the smaller color
      * @param largercolor_component_x
@@ -220,8 +220,8 @@ public final class ForesterUtil {
 
     /**
      * Helper method for calcColor methods.
-     * 
-     * 
+     *
+     *
      * @param value
      *            the value
      * @param larger
@@ -583,7 +583,7 @@ public final class ForesterUtil {
     /**
      * Returns true is Domain domain falls in an uninterrupted stretch of
      * covered positions.
-     * 
+     *
      * @param domain
      * @param covered_positions
      * @return
@@ -609,7 +609,7 @@ public final class ForesterUtil {
      * This determines whether String[] a and String[] b have at least one
      * String in common (intersect). Returns false if at least one String[] is
      * null or empty.
-     * 
+     *
      * @param a
      *            a String[] b a String[]
      * @return true if both a and b or not empty or null and contain at least
@@ -969,7 +969,7 @@ public final class ForesterUtil {
         }
         else {
             throw new IllegalArgumentException( "attempt to parse object of type [" + source.getClass()
-                    + "] (can only parse objects of type File, InputStream, String, or StringBuffer)" );
+                                                + "] (can only parse objects of type File, InputStream, String, or StringBuffer)" );
         }
         return reader;
     }
@@ -1113,16 +1113,16 @@ public final class ForesterUtil {
     }
 
     /**
-     * 
+     *
      * Example regarding engulfment: ------------0.1 ----------0.2 --0.3 =>
      * domain with 0.3 is ignored
-     * 
+     *
      * -----------0.1 ----------0.2 --0.3 => domain with 0.3 is ignored
-     * 
-     * 
+     *
+     *
      * ------------0.1 ----------0.3 --0.2 => domains with 0.3 and 0.2 are _not_
      * ignored
-     * 
+     *
      * @param max_allowed_overlap
      *            maximal allowed overlap (inclusive) to be still considered not
      *            overlapping (zero or negative value to allow any overlap)
@@ -1136,7 +1136,7 @@ public final class ForesterUtil {
                                                     final boolean remove_engulfed_domains,
                                                     final Protein protein ) {
         final Protein pruned_protein = new BasicProtein( protein.getProteinId().getId(), protein.getSpecies()
-                .getSpeciesId(), protein.getLength() );
+                                                         .getSpeciesId(), protein.getLength() );
         final List<Domain> sorted = SurfacingUtil.sortDomainsWithAscendingConfidenceValues( protein );
         final List<Boolean> covered_positions = new ArrayList<Boolean>();
         for( final Domain domain : sorted ) {
@@ -1171,7 +1171,7 @@ public final class ForesterUtil {
 
     /**
      * Removes all white space from String s.
-     * 
+     *
      * @return String s with white space removed
      */
     final public static String removeWhiteSpace( String s ) {
@@ -1342,7 +1342,7 @@ public final class ForesterUtil {
     final public static void unexpectedFatalError( final String prg_name, final Exception e ) {
         System.err.println();
         System.err.println( "[" + prg_name
-                + "] > unexpected error; should not have occured! Please contact program author(s)." );
+                            + "] > unexpected error; should not have occured! Please contact program author(s)." );
         e.printStackTrace( System.err );
         System.err.println();
         System.exit( -1 );
@@ -1351,7 +1351,7 @@ public final class ForesterUtil {
     final public static void unexpectedFatalError( final String prg_name, final String message ) {
         System.err.println();
         System.err.println( "[" + prg_name
-                + "] > unexpected error: should not have occured! Please contact program author(s)." );
+                            + "] > unexpected error: should not have occured! Please contact program author(s)." );
         System.err.println( message );
         System.err.println();
         System.exit( -1 );
@@ -1360,7 +1360,7 @@ public final class ForesterUtil {
     final public static void unexpectedFatalError( final String prg_name, final String message, final Exception e ) {
         System.err.println();
         System.err.println( "[" + prg_name
-                + "] > unexpected error: should not have occured! Please contact program author(s)." );
+                            + "] > unexpected error: should not have occured! Please contact program author(s)." );
         System.err.println( message );
         e.printStackTrace( System.err );
         System.err.println();

@@ -69,16 +69,16 @@ public class DomainArchitectureBasedGenomeSimilarityCalculator {
     }
 
     /**
-     * This returns a score between 0.0 (no binary domain combination in common) 
+     * This returns a score between 0.0 (no binary domain combination in common)
      * and 1.0 (all binary domain combinations in common) measuring the similarity between two
      * genomes based on the number of shared binary domain combinations:
-     *   
+     *
      * t: sum of (distinct) binary domain combinations
      * s: sum of shared (distinct) binary domain combinations
      *
      * 1 - ( ( t - s ) / t )
-     *  
-     * @return shared binary domain combinations based similarity score 
+     *
+     * @return shared binary domain combinations based similarity score
      */
     public double calculateSharedBinaryDomainCombinationBasedGenomeSimilarityScore() {
         final double t = getAllBinaryDomainCombinations().size();
@@ -90,16 +90,16 @@ public class DomainArchitectureBasedGenomeSimilarityCalculator {
     }
 
     /**
-     * This returns a score between 0.0 (no domains in common) 
+     * This returns a score between 0.0 (no domains in common)
      * and 1.0 (all domains in common) measuring the similarity between two
      * genomes based on the number of shared domains:
-     * 
+     *
      * t: sum of (distinct) domains
      * s: sum of shared (distinct) domains
      *
      * 1 - ( ( t - s ) / t )
-     * 
-     * @return shared domains based similarity score 
+     *
+     * @return shared domains based similarity score
      */
     public double calculateSharedDomainsBasedGenomeSimilarityScore() {
         final double t = getAllDomains().size();
@@ -118,7 +118,7 @@ public class DomainArchitectureBasedGenomeSimilarityCalculator {
     /**
      * Does not return binary combinations which contain one or two domains
      * to be ignored -- if ignoring is allowed.
-     * 
+     *
      * @return SortedSet<BinaryDomainCombination>
      */
     public Set<BinaryDomainCombination> getAllBinaryDomainCombinations() {
@@ -139,8 +139,8 @@ public class DomainArchitectureBasedGenomeSimilarityCalculator {
     /**
      * Does not return domains which are to be
      * ignored -- if ignoring is allowed.
-     * 
-     * 
+     *
+     *
      * @return
      */
     public Set<String> getAllDomains() {
