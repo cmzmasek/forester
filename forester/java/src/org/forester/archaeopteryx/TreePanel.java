@@ -520,7 +520,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     calculateLongestExtNodeInfo();
                 }
             }
-            _length_of_longest_text = calcLengthOfLongestText();
+            //_length_of_longest_text = calcLengthOfLongestText();
             int ext_nodes = _phylogeny.getRoot().getNumberOfExternalNodes();
             final int max_depth = PhylogenyMethods.calculateMaxDepth( _phylogeny );
             if ( ext_nodes == 1 ) {
@@ -659,7 +659,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             if ( sum >= max_length ) {
                 _longest_ext_node_info = max_length;
-                return;
+                // return; //FIXME why?
             }
             if ( sum > longest ) {
                 longest = sum;
@@ -672,6 +672,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         else {
             _longest_ext_node_info = longest;
         }
+        _length_of_longest_text = calcLengthOfLongestText();
     }
 
     final void calculateScaleDistance() {
