@@ -28,14 +28,14 @@
 
 	<target name="compile" description="Compiles the Task" depends="clean">
 		<mkdir dir="${classes.dir}" />
-		<javac source="1.6" target="1.6" debug="true" debuglevel="lines,source" srcdir="${src.dir}" destdir="${classes.dir}" optimize="on" verbose="false" classpath="${itextjar};${commonscodecjar};${openchartjar}">
+		<javac source="1.7" target="1.7" debug="true" debuglevel="lines,source" srcdir="${src.dir}" destdir="${classes.dir}" optimize="on" verbose="false" classpath="${itextjar};${commonscodecjar};${openchartjar}">
 			<compilerarg value="-Xlint:deprecation" />
 		</javac> 
 	</target>
 
 	<target name="compile_applets_only" description="Compiles the Task" depends="clean">
 		<mkdir dir="${classes.dir}" />
-		<javac source="1.6" target="1.6" debug="true" debuglevel="lines,source" srcdir="${src.dir}" destdir="${classes.dir}" optimize="on" verbose="false" classpath="${itextjar};${commonscodecjar};${openchartjar}">
+		<javac source="1.7" target="1.7" debug="true" debuglevel="lines,source" srcdir="${src.dir}" destdir="${classes.dir}" optimize="on" verbose="false" classpath="${itextjar};${commonscodecjar};${openchartjar}">
 			<compilerarg value="-Xlint:deprecation" />
 		</javac> 
 	</target>
