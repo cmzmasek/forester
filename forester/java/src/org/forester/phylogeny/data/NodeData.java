@@ -50,7 +50,9 @@ public class NodeData implements PhylogenyData {
         TAXONOMY_SCIENTIFIC_NAME,
         TAXONOMY_COMM0N_NAME,
         TAXONOMY_CODE,
-        UNKNOWN;
+        UNKNOWN,
+        DOMAINS,
+        GO_ANNOTATIONS;
     }
     private String             _node_name;
     private Event              _event;

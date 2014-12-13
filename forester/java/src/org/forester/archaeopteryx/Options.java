@@ -94,7 +94,11 @@ final public class Options {
     }
 
     public NodeData.NODE_DATA getExtDescNodeDataToReturn() {
-        return _ext_desc_data_to_return;
+        return NodeData.NODE_DATA.DOMAINS;
+        // TODO fix me
+        // FIXME remove me
+        // ~~~~~~
+        //return _ext_desc_data_to_return;
     }
 
     public boolean isAllowErrorsInDistanceToParent() {

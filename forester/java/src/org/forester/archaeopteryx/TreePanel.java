@@ -77,8 +77,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.TreeMap;
 
 import javax.swing.BorderFactory;
 import javax.swing.JApplet;
@@ -121,6 +124,7 @@ import org.forester.phylogeny.data.NodeVisualData.NodeShape;
 import org.forester.phylogeny.data.PhylogenyDataUtil;
 import org.forester.phylogeny.data.PropertiesMap;
 import org.forester.phylogeny.data.Property;
+import org.forester.phylogeny.data.ProteinDomain;
 import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.SequenceRelation;
 import org.forester.phylogeny.data.Taxonomy;
@@ -5491,6 +5495,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     private void showExtDescNodeData( final PhylogenyNode node ) {
         final List<String> data = new ArrayList<String>();
+        final SortedMap<String,Integer> string_int_map = new TreeMap<String,Integer>();
+        
+        
         final List<PhylogenyNode> nodes = node.getAllExternalDescendants();
         if ( ( getFoundNodes0() != null ) || ( getFoundNodes1() != null ) ) {
             for( final PhylogenyNode n : getFoundNodesAsListOfPhylogenyNodes() ) {
@@ -5607,6 +5614,32 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         data.add( n.getNodeData().getTaxonomy().getTaxonomyCode() );
                     }
                     break;
+                case DOMAINS:
+                    if ( n.getNodeData().isHasSequence()
+                            && n.getNodeData().getSequence().getDomainArchitecture() != null ) {
+                        final DomainArchitecture da = n.getNodeData().getSequence().getDomainArchitecture();
+                        for( int i = 0; i < da.getDomains().size(); ++i ) {
+                            final ProteinDomain d = da.getDomain( i );
+                            if ( d.getConfidence() < 1 ) {
+                                String dn = d.getName();
+                                if ( !string_int_map.containsKey(  dn ) ) {
+                                    string_int_map.put( dn, 1 );
+                                }
+                                else {
+                                    string_int_map.put( dn, string_int_map.get( dn ) + 1 );
+                                }
+                                
+                            }
+                            
+                        }
+                    }
+                    break;    
+                case GO_ANNOTATIONS:
+                    if ( n.getNodeData().isHasSequence() ) {
+                        //TODO do something clever
+                    }
+                    break;     
+                    
                 case UNKNOWN:
                     TreePanelUtil.showExtDescNodeDataUserSelectedHelper( getControlPanel(), n, data );
                     break;
@@ -5615,6 +5648,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                             + getOptions().getExtDescNodeDataToReturn() );
             }
         } // for loop
+        ///////////////////////////////////////////////////////
+        //TODO remove me
+        if ( string_int_map != null ) {
+            for( final Object key :  string_int_map.keySet() ) {
+                System.out.print( key.toString() );
+                System.out.print( ": " );
+                System.out.print( string_int_map.get( key ).toString() );
+                System.out.println();
+            }
+        }
+        ///////////////////////////////////////////////////////
         final StringBuilder sb = new StringBuilder();
         final int size = TreePanelUtil.makeSB( data, getOptions(), sb );
         if ( ( getConfiguration().getExtNodeDataReturnOn() == EXT_NODE_DATA_RETURN_ON.CONSOLE )
