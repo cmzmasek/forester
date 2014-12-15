@@ -944,7 +944,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         repaint();
     }
 
-    final void decreaseDomainStructureEvalueThreshold() {
+    final void decreaseDomainStructureEvalueThresholdExp() {
         if ( _domain_structure_e_value_thr_exp > -20 ) {
             _domain_structure_e_value_thr_exp -= 1;
         }
@@ -991,7 +991,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return _current_external_nodes_data_buffer_change_counter;
     }
 
-    final int getDomainStructureEvalueThreshold() {
+    final int getDomainStructureEvalueThresholdExp() {
         return _domain_structure_e_value_thr_exp;
     }
 
@@ -1079,7 +1079,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return _y_distance;
     }
 
-    final void increaseDomainStructureEvalueThreshold() {
+    final void increaseDomainStructureEvalueThresholdExp() {
         if ( _domain_structure_e_value_thr_exp < 3 ) {
             _domain_structure_e_value_thr_exp += 1;
         }
@@ -3599,6 +3599,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 return "Taxonomy Codes";
             case TAXONOMY_COMM0N_NAME:
                 return "Taxonomy Common Names";
+            case DOMAINS_ALL:
+                return "Domains [E-value threshold: " + Math.pow( 10, getDomainStructureEvalueThresholdExp() ) + "]";
+            case DOMAINS_COLLAPSED_PER_PROTEIN:
+                return "Domains [collapsed per protein, E-value threshold: " + Math.pow( 10, getDomainStructureEvalueThresholdExp() ) + "]";
+            case GO_ANNOTATIONS:
+                return "Go Annotations";
+            case GO_ANNOTATIONS_WITH_COUNTS:
+                return "Go Annotations [with counts]";    
             case UNKNOWN:
                 return "User Selected Data";
             default:
@@ -5495,9 +5503,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     private void showExtDescNodeData( final PhylogenyNode node ) {
         final List<String> data = new ArrayList<String>();
-        final SortedMap<String,Integer> string_int_map = new TreeMap<String,Integer>();
-        
-        
         final List<PhylogenyNode> nodes = node.getAllExternalDescendants();
         if ( ( getFoundNodes0() != null ) || ( getFoundNodes1() != null ) ) {
             for( final PhylogenyNode n : getFoundNodesAsListOfPhylogenyNodes() ) {
@@ -5614,32 +5619,37 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         data.add( n.getNodeData().getTaxonomy().getTaxonomyCode() );
                     }
                     break;
-                case DOMAINS:
+                case DOMAINS_ALL:    
+                case DOMAINS_COLLAPSED_PER_PROTEIN:
                     if ( n.getNodeData().isHasSequence()
                             && n.getNodeData().getSequence().getDomainArchitecture() != null ) {
                         final DomainArchitecture da = n.getNodeData().getSequence().getDomainArchitecture();
+                        final Set<String> s = new HashSet<String>();
                         for( int i = 0; i < da.getDomains().size(); ++i ) {
                             final ProteinDomain d = da.getDomain( i );
-                            if ( d.getConfidence() < 1 ) {
-                                String dn = d.getName();
-                                if ( !string_int_map.containsKey(  dn ) ) {
-                                    string_int_map.put( dn, 1 );
+                            if ( d.getConfidence() <= Math.pow( 10, getDomainStructureEvalueThresholdExp() ) ) {
+                                final String name = d.getName();
+                                if ( !( s.contains( name ) ) ) {
+                                    data.add( name );
+                                    if ( getOptions().getExtDescNodeDataToReturn() == NODE_DATA.DOMAINS_COLLAPSED_PER_PROTEIN ) {
+                                        s.add( name );
+                                    }
                                 }
-                                else {
-                                    string_int_map.put( dn, string_int_map.get( dn ) + 1 );
-                                }
-                                
                             }
-                            
                         }
                     }
                     break;    
                 case GO_ANNOTATIONS:
                     if ( n.getNodeData().isHasSequence() ) {
-                        //TODO do something clever
+                        if ( n.getNodeData().isHasSequence()
+                                && n.getNodeData().getSequence().getAnnotations() != null ) {
+                            final SortedSet<Annotation> a = n.getNodeData().getSequence().getAnnotations();
+                            for( int i = 0; i < a.size(); ++i ) {
+                                data.add(  n.getNodeData().getSequence().getAnnotation( i ).toString() );
+                            }
+                        }
                     }
-                    break;     
-                    
+                    break;  
                 case UNKNOWN:
                     TreePanelUtil.showExtDescNodeDataUserSelectedHelper( getControlPanel(), n, data );
                     break;
@@ -5648,18 +5658,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                             + getOptions().getExtDescNodeDataToReturn() );
             }
         } // for loop
-        ///////////////////////////////////////////////////////
-        //TODO remove me
-        if ( string_int_map != null ) {
-            for( final Object key :  string_int_map.keySet() ) {
-                System.out.print( key.toString() );
-                System.out.print( ": " );
-                System.out.print( string_int_map.get( key ).toString() );
-                System.out.println();
-            }
-        }
-        ///////////////////////////////////////////////////////
+       
         final StringBuilder sb = new StringBuilder();
+       
+        
         final int size = TreePanelUtil.makeSB( data, getOptions(), sb );
         if ( ( getConfiguration().getExtNodeDataReturnOn() == EXT_NODE_DATA_RETURN_ON.CONSOLE )
                 || ( getConfiguration().getExtNodeDataReturnOn() == EXT_NODE_DATA_RETURN_ON.BUFFER_ONLY ) ) {

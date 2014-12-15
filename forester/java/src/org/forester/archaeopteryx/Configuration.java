@@ -1466,6 +1466,24 @@ public final class Configuration {
             else if ( s.equalsIgnoreCase( "user_selected" ) ) {
                 setExtDescNodeDataToReturn( NODE_DATA.UNKNOWN );
             }
+            //
+            else if ( s.equalsIgnoreCase( "horseshit" ) ) {
+                setExtDescNodeDataToReturn( NODE_DATA.CRAP );
+            }
+            else if ( s.equalsIgnoreCase( "horseshit" ) ) {
+                setExtDescNodeDataToReturn( NODE_DATA.CRAP );
+            }
+            else if ( s.equalsIgnoreCase( "horseshit" ) ) {
+                setExtDescNodeDataToReturn( NODE_DATA.CRAP );
+            }
+            else if ( s.equalsIgnoreCase( "horseshit" ) ) {
+                setExtDescNodeDataToReturn( NODE_DATA.CRAP );
+            }
+            //
+            
+            
+            
+            
             else {
                 ForesterUtil.printWarningMessage( Constants.PRG_NAME, "unknown value [" + s
                         + "] for [ext_descendents_data_to_return]" );

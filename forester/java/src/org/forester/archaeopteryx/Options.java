@@ -94,7 +94,7 @@ final public class Options {
     }
 
     public NodeData.NODE_DATA getExtDescNodeDataToReturn() {
-        return NodeData.NODE_DATA.DOMAINS;
+        return NodeData.NODE_DATA.DOMAINS_ALL;
         // TODO fix me
         // FIXME remove me
         // ~~~~~~

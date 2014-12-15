@@ -290,11 +290,11 @@ final class ControlPanel extends JPanel implements ActionListener {
                     displayedPhylogenyMightHaveChanged( true );
                 }
                 else if ( e.getSource() == _decr_domain_structure_evalue_thr ) {
-                    _mainpanel.getCurrentTreePanel().decreaseDomainStructureEvalueThreshold();
+                    _mainpanel.getCurrentTreePanel().decreaseDomainStructureEvalueThresholdExp();
                     displayedPhylogenyMightHaveChanged( true );
                 }
                 else if ( e.getSource() == _incr_domain_structure_evalue_thr ) {
-                    _mainpanel.getCurrentTreePanel().increaseDomainStructureEvalueThreshold();
+                    _mainpanel.getCurrentTreePanel().increaseDomainStructureEvalueThresholdExp();
                     displayedPhylogenyMightHaveChanged( true );
                 }
                 else if ( e.getSource() == _search_tf_0 ) {
@@ -1616,7 +1616,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     void updateDomainStructureEvaluethresholdDisplay() {
         if ( _domain_structure_evalue_thr_tf != null ) {
             _domain_structure_evalue_thr_tf.setText( "10^"
-                    + getMainPanel().getCurrentTreePanel().getDomainStructureEvalueThreshold() );
+                    + getMainPanel().getCurrentTreePanel().getDomainStructureEvalueThresholdExp() );
         }
     }
 
