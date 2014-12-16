@@ -3608,7 +3608,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             case GO_TERM_IDS:
                 return "GO Term IDs";    
             case UNKNOWN:
-                return "User Selected Data";
+                return "User/UI Selected Data Fields";
             default:
                 throw new IllegalArgumentException( "unknown data element: "
                         + getOptions().getExtDescNodeDataToReturn() );
@@ -5674,7 +5674,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
         } // for loop
         final StringBuilder sb = new StringBuilder();
-        final int size = TreePanelUtil.makeSB( data, getOptions(), sb );
+        final int size = TreePanelUtil.nodeDataIntoStringBuffer( data, getOptions(), sb );
         if ( ( getConfiguration().getExtNodeDataReturnOn() == EXT_NODE_DATA_RETURN_ON.CONSOLE )
                 || ( getConfiguration().getExtNodeDataReturnOn() == EXT_NODE_DATA_RETURN_ON.BUFFER_ONLY ) ) {
             if ( getConfiguration().getExtNodeDataReturnOn() == EXT_NODE_DATA_RETURN_ON.CONSOLE ) {

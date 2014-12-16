@@ -881,6 +881,8 @@ public final class MainFrameApplication extends MainFrame {
                 setTextForPdfLineWidthChooserMenuItem( _choose_pdf_width_mi, getOptions() );
                 MainFrame.setCycleNodeFillMenuItem( _cycle_node_fill_mi, getOptions() );
                 MainFrame.setCycleNodeShapeMenuItem( _cycle_node_shape_mi, getOptions() );
+                
+                MainFrame.setCycleDataReturnMenuItem( _cycle_data_return, getOptions() );
                 MainFrame.setTextNodeSizeMenuItem( _choose_node_size_mi, getOptions() );
                 try {
                     getMainPanel().getControlPanel().setVisibilityOfDomainStrucureCB();
@@ -930,6 +932,8 @@ public final class MainFrameApplication extends MainFrame {
         _options_jmenu.add( _overview_placment_mi = new JMenuItem( "" ) );
         _options_jmenu.add( _switch_colors_mi = new JMenuItem( "" ) );
         _options_jmenu.add( _choose_font_mi = new JMenuItem( "" ) );
+        _options_jmenu.addSeparator();
+        _options_jmenu.add( _cycle_data_return = new JMenuItem( "Cycle Data Return" ) );
         _options_jmenu.addSeparator();
         _options_jmenu.add( customizeMenuItemAsLabel( new JMenuItem( SEARCH_SUBHEADER ), getConfiguration() ) );
         _options_jmenu.add( _search_case_senstive_cbmi = new JCheckBoxMenuItem( SEARCH_CASE_SENSITIVE_LABEL ) );
@@ -997,6 +1001,8 @@ public final class MainFrameApplication extends MainFrame {
         customizeJMenuItem( _cycle_node_shape_mi );
         customizeJMenuItem( _cycle_node_fill_mi );
         customizeJMenuItem( _choose_node_size_mi );
+        customizeJMenuItem( _cycle_data_return);
+        
         customizeCheckBoxMenuItem( _color_labels_same_as_parent_branch, getOptions().isColorLabelsSameAsParentBranch() );
         customizeCheckBoxMenuItem( _color_by_taxonomic_group_cbmi, getOptions().isColorByTaxonomicGroup() );
         customizeCheckBoxMenuItem( _screen_antialias_cbmi, getOptions().isAntialiasScreen() );

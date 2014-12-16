@@ -6,6 +6,7 @@ import java.awt.Component;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -33,6 +34,7 @@ import org.forester.phylogeny.iterators.PreorderTreeIterator;
 import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
 import org.forester.util.SequenceAccessionTools;
+import org.forester.util.StringInt;
 import org.forester.ws.seqdb.UniProtTaxonomy;
 
 public class TreePanelUtil {
@@ -437,7 +439,7 @@ public class TreePanelUtil {
                 .getSynonyms().isEmpty() );
     }
 
-    static int makeSB( final List<String> data, final Options optz, final StringBuilder sb ) {
+    static int nodeDataIntoStringBuffer( final List<String> data, final Options optz, final StringBuilder sb ) {
         final SortedMap<String, Integer> map = new TreeMap<String, Integer>();
         int size = 0;
         if ( ( optz.getExtDescNodeDataToReturn() != NODE_DATA.SEQUENCE_MOL_SEQ )
@@ -453,13 +455,30 @@ public class TreePanelUtil {
                     }
                 }
             }
-            for( final Entry<String, Integer> e : map.entrySet() ) {
-                final String v = e.getKey();
-                final Object c = e.getValue();
-                sb.append( v );
-                sb.append( "\t" );
-                sb.append( c );
-                sb.append( ForesterUtil.LINE_SEPARATOR );
+            if ( ( optz.getExtDescNodeDataToReturn() == NODE_DATA.DOMAINS_ALL )
+                    || ( optz.getExtDescNodeDataToReturn() == NODE_DATA.DOMAINS_COLLAPSED_PER_PROTEIN )
+                    || ( optz.getExtDescNodeDataToReturn() == NODE_DATA.SEQ_ANNOTATIONS ) ) {
+                final ArrayList<StringInt> sis = new ArrayList<StringInt>();
+                for( final Entry<String, Integer> e : map.entrySet() ) {
+                    sis.add( new StringInt( e.getKey(), e.getValue() ) );
+                }
+                Collections.sort( sis, new StringInt.DescendingIntComparator() );
+                for( final StringInt si : sis ) {
+                    sb.append( si.getString() );
+                    sb.append( "\t" );
+                    sb.append( si.getInt() );
+                    sb.append( ForesterUtil.LINE_SEPARATOR );
+                }
+            }
+            else {
+                for( final Entry<String, Integer> e : map.entrySet() ) {
+                    final String v = e.getKey();
+                    final Object c = e.getValue();
+                    sb.append( v );
+                    sb.append( "\t" );
+                    sb.append( c );
+                    sb.append( ForesterUtil.LINE_SEPARATOR );
+                }
             }
             size = map.size();
         }

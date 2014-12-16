@@ -65,6 +65,7 @@ import org.forester.phylogeny.PhylogenyMethods.DESCENDANT_SORT_PRIORITY;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.PhylogenyNode.NH_CONVERSION_SUPPORT_VALUE_STYLE;
 import org.forester.phylogeny.data.Annotation;
+import org.forester.phylogeny.data.NodeData;
 import org.forester.phylogeny.data.NodeVisualData.NodeFill;
 import org.forester.phylogeny.data.NodeVisualData.NodeShape;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
@@ -200,6 +201,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem                   _cycle_node_shape_mi;
     JMenuItem                   _cycle_node_fill_mi;
     JMenuItem                   _choose_node_size_mi;
+    JMenuItem                   _cycle_data_return;
     JCheckBoxMenuItem           _show_confidence_stddev_cbmi;
     JCheckBoxMenuItem           _right_line_up_domains_cbmi;
     JCheckBoxMenuItem           _line_up_renderable_data_cbmi;
@@ -409,6 +411,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         else if ( o == _cycle_node_shape_mi ) {
             MainFrame.cycleNodeShape( getOptions(), getCurrentTreePanel() );
         }
+        else if ( o == _cycle_data_return ) {
+            MainFrame.cycleNodeDataReturn( getOptions(), getCurrentTreePanel() );
+        }
         else if ( o == _screen_antialias_cbmi ) {
             updateOptions( getOptions() );
             updateScreenTextAntialias( getMainPanel().getTreePanels() );
@@ -600,10 +605,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         if ( ( nodes == null ) || nodes.isEmpty() ) {
             JOptionPane
-                    .showMessageDialog( this,
-                                        "Need to select external nodes, either via direct selection or via the \"Search\" function",
-                                        "No external nodes selected to " + function.toLowerCase(),
-                                        JOptionPane.ERROR_MESSAGE );
+            .showMessageDialog( this,
+                                "Need to select external nodes, either via direct selection or via the \"Search\" function",
+                                "No external nodes selected to " + function.toLowerCase(),
+                                JOptionPane.ERROR_MESSAGE );
             return;
         }
         final int todo = nodes.size();
@@ -620,8 +625,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             return;
         }
         final int result = JOptionPane.showConfirmDialog( null, function + " " + todo
-                + " external node(s), from a total of " + ext + " external nodes," + "\nresulting in tree with " + res
-                + " nodes?", function + " external nodes", JOptionPane.OK_CANCEL_OPTION );
+                                                          + " external node(s), from a total of " + ext + " external nodes," + "\nresulting in tree with " + res
+                                                          + " nodes?", function + " external nodes", JOptionPane.OK_CANCEL_OPTION );
         if ( result == JOptionPane.OK_OPTION ) {
             if ( !delete ) {
                 final List<PhylogenyNode> to_delete = new ArrayList<PhylogenyNode>();
@@ -990,8 +995,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                                                    + gsdi.getStrippedExternalGeneTreeNodes().size() + "\n"
                                                    + "Taxonomy linkage based on: " + gsdi.getTaxCompBase() + "\n"
                                                    + "Number of polytomies in species tree used: " + poly + "\n",
-                                           "GSDI successfully completed",
-                                           JOptionPane.WARNING_MESSAGE );
+                                                   "GSDI successfully completed",
+                                                   JOptionPane.WARNING_MESSAGE );
         }
         else {
             JOptionPane.showMessageDialog( this,
@@ -1003,8 +1008,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                                                    + gsdi.getStrippedExternalGeneTreeNodes().size() + "\n"
                                                    + "Taxonomy linkage based on: " + gsdi.getTaxCompBase() + "\n"
                                                    + "Number of polytomies in species tree used: " + poly + "\n",
-                                           "GSDI successfully completed",
-                                           JOptionPane.INFORMATION_MESSAGE );
+                                                   "GSDI successfully completed",
+                                                   JOptionPane.INFORMATION_MESSAGE );
         }
     }
 
@@ -1063,8 +1068,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                                                    + gsdir.getStrippedExternalGeneTreeNodes().size() + "\n"
                                                    + "Taxonomy linkage based on: " + gsdir.getTaxCompBase() + "\n"
                                                    + "Number of polytomies in species tree used: " + poly + "\n",
-                                           "GSDIR successfully completed",
-                                           JOptionPane.WARNING_MESSAGE );
+                                                   "GSDIR successfully completed",
+                                                   JOptionPane.WARNING_MESSAGE );
         }
         else {
             JOptionPane.showMessageDialog( this,
@@ -1074,8 +1079,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                                                    + gsdir.getStrippedExternalGeneTreeNodes().size() + "\n"
                                                    + "Taxonomy linkage based on: " + gsdir.getTaxCompBase() + "\n"
                                                    + "Number of polytomies in species tree used: " + poly + "\n",
-                                           "GSDIR successfully completed",
-                                           JOptionPane.INFORMATION_MESSAGE );
+                                                   "GSDIR successfully completed",
+                                                   JOptionPane.INFORMATION_MESSAGE );
         }
     }
 
@@ -1183,10 +1188,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if ( getCurrentTreePanel() != null ) {
             if ( getCurrentTreePanel().isCurrentTreeIsSubtree() ) {
                 JOptionPane
-                        .showMessageDialog( this,
-                                            "This operation can only be performed on a complete tree, not on the currently displayed sub-tree only.",
-                                            "Operation can not be exectuted on a sub-tree",
-                                            JOptionPane.WARNING_MESSAGE );
+                .showMessageDialog( this,
+                                    "This operation can only be performed on a complete tree, not on the currently displayed sub-tree only.",
+                                    "Operation can not be exectuted on a sub-tree",
+                                    JOptionPane.WARNING_MESSAGE );
                 return true;
             }
         }
@@ -1318,20 +1323,20 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     void updateOptions( final Options options ) {
         options.setAntialiasScreen( ( _screen_antialias_cbmi != null ) && _screen_antialias_cbmi.isSelected() );
         options.setBackgroundColorGradient( ( _background_gradient_cbmi != null )
-                && _background_gradient_cbmi.isSelected() );
+                                            && _background_gradient_cbmi.isSelected() );
         options.setShowDomainLabels( ( _show_domain_labels != null ) && _show_domain_labels.isSelected() );
         options.setShowAnnotationRefSource( ( _show_annotation_ref_source != null )
-                && _show_annotation_ref_source.isSelected() );
+                                            && _show_annotation_ref_source.isSelected() );
         options.setAbbreviateScientificTaxonNames( ( _abbreviate_scientific_names != null )
-                && _abbreviate_scientific_names.isSelected() );
+                                                   && _abbreviate_scientific_names.isSelected() );
         options.setColorLabelsSameAsParentBranch( ( _color_labels_same_as_parent_branch != null )
-                && _color_labels_same_as_parent_branch.isSelected() );
+                                                  && _color_labels_same_as_parent_branch.isSelected() );
         options.setShowDefaultNodeShapesInternal( ( _show_default_node_shapes_internal_cbmi != null )
-                && _show_default_node_shapes_internal_cbmi.isSelected() );
+                                                  && _show_default_node_shapes_internal_cbmi.isSelected() );
         options.setShowDefaultNodeShapesExternal( ( _show_default_node_shapes_external_cbmi != null )
-                && _show_default_node_shapes_external_cbmi.isSelected() );
+                                                  && _show_default_node_shapes_external_cbmi.isSelected() );
         options.setShowDefaultNodeShapesForMarkedNodes( ( _show_default_node_shapes_for_marked_cbmi != null )
-                && _show_default_node_shapes_for_marked_cbmi.isSelected() );
+                                                        && _show_default_node_shapes_for_marked_cbmi.isSelected() );
         if ( ( _non_lined_up_cladograms_rbmi != null ) && ( _non_lined_up_cladograms_rbmi.isSelected() ) ) {
             options.setCladogramType( CLADOGRAM_TYPE.NON_LINED_UP );
         }
@@ -1342,7 +1347,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             options.setCladogramType( CLADOGRAM_TYPE.EXT_NODE_SUM_DEP );
         }
         options.setSearchCaseSensitive( ( _search_case_senstive_cbmi != null )
-                && _search_case_senstive_cbmi.isSelected() );
+                                        && _search_case_senstive_cbmi.isSelected() );
         if ( ( _show_scale_cbmi != null ) && _show_scale_cbmi.isEnabled() ) {
             options.setShowScale( _show_scale_cbmi.isSelected() );
         }
@@ -1356,14 +1361,14 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         options.setShowOverview( ( _show_overview_cbmi != null ) && _show_overview_cbmi.isSelected() );
         options.setShowConfidenceStddev( ( _show_confidence_stddev_cbmi != null )
-                && _show_confidence_stddev_cbmi.isSelected() );
+                                         && _show_confidence_stddev_cbmi.isSelected() );
         if ( ( _color_by_taxonomic_group_cbmi != null ) && _color_by_taxonomic_group_cbmi.isEnabled() ) {
             options.setColorByTaxonomicGroup( _color_by_taxonomic_group_cbmi.isSelected() );
         }
         options.setPrintUsingActualSize( ( _print_using_actual_size_cbmi != null )
-                && ( _print_using_actual_size_cbmi.isSelected() ) );
+                                         && ( _print_using_actual_size_cbmi.isSelected() ) );
         options.setGraphicsExportUsingActualSize( ( _graphics_export_using_actual_size_cbmi != null )
-                && ( _graphics_export_using_actual_size_cbmi.isSelected() ) );
+                                                  && ( _graphics_export_using_actual_size_cbmi.isSelected() ) );
         options.setAntialiasPrint( ( _antialias_print_cbmi != null ) && _antialias_print_cbmi.isSelected() );
         if ( ( _use_brackets_for_conf_in_nh_export_cbmi != null )
                 && _use_brackets_for_conf_in_nh_export_cbmi.isSelected() ) {
@@ -1377,9 +1382,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             options.setNhConversionSupportValueStyle( NH_CONVERSION_SUPPORT_VALUE_STYLE.NONE );
         }
         options.setPrintBlackAndWhite( ( _print_black_and_white_cbmi != null )
-                && _print_black_and_white_cbmi.isSelected() );
+                                       && _print_black_and_white_cbmi.isSelected() );
         options.setInternalNumberAreConfidenceForNhParsing( ( _internal_number_are_confidence_for_nh_parsing_cbmi != null )
-                && _internal_number_are_confidence_for_nh_parsing_cbmi.isSelected() );
+                                                            && _internal_number_are_confidence_for_nh_parsing_cbmi.isSelected() );
         if ( ( _extract_taxonomy_pfam_strict_rbmi != null ) && _extract_taxonomy_pfam_strict_rbmi.isSelected() ) {
             options.setTaxonomyExtraction( TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT );
         }
@@ -1393,14 +1398,14 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             options.setTaxonomyExtraction( TAXONOMY_EXTRACTION.NO );
         }
         options.setReplaceUnderscoresInNhParsing( ( _replace_underscores_cbmi != null )
-                && _replace_underscores_cbmi.isSelected() );
+                                                  && _replace_underscores_cbmi.isSelected() );
         options.setAllowErrorsInDistanceToParent( ( _allow_errors_in_distance_to_parent_cbmi != null )
-                && _allow_errors_in_distance_to_parent_cbmi.isSelected() );
+                                                  && _allow_errors_in_distance_to_parent_cbmi.isSelected() );
         options.setMatchWholeTermsOnly( ( _search_whole_words_only_cbmi != null )
-                && _search_whole_words_only_cbmi.isSelected() );
+                                        && _search_whole_words_only_cbmi.isSelected() );
         options.setSearchWithRegex( ( _search_with_regex_cbmi != null ) && _search_with_regex_cbmi.isSelected() );
         options.setInverseSearchResult( ( _inverse_search_result_cbmi != null )
-                && _inverse_search_result_cbmi.isSelected() );
+                                        && _inverse_search_result_cbmi.isSelected() );
         if ( _graphics_export_visible_only_cbmi != null ) {
             options.setGraphicsExportVisibleOnly( _graphics_export_visible_only_cbmi.isSelected() );
             if ( _graphics_export_visible_only_cbmi.isSelected() && ( _graphics_export_using_actual_size_cbmi != null ) ) {
@@ -1466,8 +1471,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 title = "\"" + getMainPanel().getCurrentPhylogeny().getName() + "\" in " + title;
             }
             showTextFrame( _mainpanel.getCurrentPhylogeny().toNewHampshire( getOptions()
-                                   .getNhConversionSupportValueStyle() ),
-                           title );
+                                                                            .getNhConversionSupportValueStyle() ),
+                                                                            title );
         }
     }
 
@@ -1490,10 +1495,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             }
             if ( ( nodes == null ) || nodes.isEmpty() ) {
                 JOptionPane
-                        .showMessageDialog( this,
-                                            "Need to select nodes, either via direct selection or via the \"Search\" function",
-                                            "No nodes selected for annotation",
-                                            JOptionPane.ERROR_MESSAGE );
+                .showMessageDialog( this,
+                                    "Need to select nodes, either via direct selection or via the \"Search\" function",
+                                    "No nodes selected for annotation",
+                                    JOptionPane.ERROR_MESSAGE );
                 return;
             }
             final Phylogeny phy = getMainPanel().getCurrentPhylogeny();
@@ -1512,7 +1517,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                                                                   my_panel,
                                                                   "Enter the sequence annotation(s) for the "
                                                                           + nodes.size() + " selected nodes",
-                                                                  JOptionPane.OK_CANCEL_OPTION );
+                                                                          JOptionPane.OK_CANCEL_OPTION );
                 if ( result == JOptionPane.OK_OPTION ) {
                     String ref = ref_field.getText();
                     String desc = desc_filed.getText();
@@ -1539,7 +1544,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                         for( final PhylogenyNode n : nodes ) {
                             ForesterUtil.ensurePresenceOfSequence( n );
                             final Annotation ann = ForesterUtil.isEmpty( ref ) ? new Annotation()
-                                    : new Annotation( ref );
+                            : new Annotation( ref );
                             if ( !ForesterUtil.isEmpty( desc ) ) {
                                 ann.setDesc( desc );
                             }
@@ -1564,11 +1569,11 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 .showInputDialog( this,
                                   "Please enter the minimum for confidence values to be displayed.\n"
                                           + "[current value: " + getOptions().getMinConfidenceValue() + "]\n",
-                                  "Minimal Confidence Value",
-                                  JOptionPane.QUESTION_MESSAGE,
-                                  null,
-                                  null,
-                                  getOptions().getMinConfidenceValue() );
+                                          "Minimal Confidence Value",
+                                          JOptionPane.QUESTION_MESSAGE,
+                                          null,
+                                          null,
+                                          getOptions().getMinConfidenceValue() );
         if ( !ForesterUtil.isEmpty( s ) ) {
             boolean success = true;
             double m = 0.0;
@@ -1676,11 +1681,11 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                                                                  "Please enter the default size for node shapes.\n"
                                                                          + "[current value: "
                                                                          + options.getDefaultNodeShapeSize() + "]\n",
-                                                                 "Node Shape Size",
-                                                                 JOptionPane.QUESTION_MESSAGE,
-                                                                 null,
-                                                                 null,
-                                                                 options.getDefaultNodeShapeSize() );
+                                                                         "Node Shape Size",
+                                                                         JOptionPane.QUESTION_MESSAGE,
+                                                                         null,
+                                                                         null,
+                                                                         options.getDefaultNodeShapeSize() );
         if ( !ForesterUtil.isEmpty( s ) ) {
             boolean success = true;
             double m = 0.0;
@@ -1760,6 +1765,28 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
     }
 
+    static void cycleNodeDataReturn( final Options op, final TreePanel tree_panel ) {
+        switch ( op.getExtDescNodeDataToReturn() ) {
+            case UNKNOWN:
+                op.setExtDescNodeDataToReturn( NodeData.NODE_DATA.DOMAINS_ALL );
+                break;
+            case DOMAINS_ALL:
+                op.setExtDescNodeDataToReturn( NodeData.NODE_DATA.DOMAINS_COLLAPSED_PER_PROTEIN );
+                break;
+            case DOMAINS_COLLAPSED_PER_PROTEIN:
+                op.setExtDescNodeDataToReturn( NodeData.NODE_DATA.GO_TERM_IDS );
+                break;
+            case GO_TERM_IDS:
+                op.setExtDescNodeDataToReturn( NodeData.NODE_DATA.SEQUENCE_MOL_SEQ );
+                break;
+            case SEQUENCE_MOL_SEQ:
+                op.setExtDescNodeDataToReturn( NodeData.NODE_DATA.SEQUENCE_MOL_SEQ_FASTA );
+                break;
+            default:
+                op.setExtDescNodeDataToReturn( NodeData.NODE_DATA.UNKNOWN );
+        }
+    }
+
     static void cycleOverview( final Options op, final TreePanel tree_panel ) {
         switch ( op.getOvPlacement() ) {
             case LOWER_LEFT:
@@ -1802,6 +1829,16 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
     }
 
+    static void setCycleDataReturnMenuItem( final JMenuItem mi, final Options options ) {
+        if ( ( options != null ) && ( options.getExtDescNodeDataToReturn() != null ) ) {
+            mi.setText( "Cycle Node Return Data... (current: "
+                    + options.getExtDescNodeDataToReturn().toString().toLowerCase() + ")" );
+        }
+        else {
+            mi.setText( "Cycle Node Return Data..." );
+        }
+    }
+
     static void setOvPlacementColorChooseMenuItem( final JMenuItem mi, final Options options ) {
         if ( ( options != null ) && ( options.getOvPlacement() != null ) ) {
             mi.setText( "Cycle Overview Placement... (current: " + options.getOvPlacement() + ")" );
@@ -1814,7 +1851,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static void setTextColorChooseMenuItem( final JMenuItem mi, final TreePanel tree_panel ) {
         if ( ( tree_panel != null ) && ( tree_panel.getTreeColorSet() != null ) ) {
             mi.setText( "Select Color Scheme... (current: " + tree_panel.getTreeColorSet().getCurrentColorSchemeName()
-                    + ")" );
+                        + ")" );
         }
         else {
             mi.setText( "Select Color Scheme..." );

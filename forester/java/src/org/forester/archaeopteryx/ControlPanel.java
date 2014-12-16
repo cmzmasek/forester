@@ -2085,7 +2085,7 @@ final class ControlPanel extends JPanel implements ActionListener {
                         s = "Sequence Annotations";
                         break;
                     case UNKNOWN:
-                        s = "User Selected Data";
+                        s = "User/UI Selected Data Fields";
                         break;
                     default:
                         throw new IllegalStateException( "dont know how to deal with "
