@@ -3603,10 +3603,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 return "Domains [E-value threshold: " + Math.pow( 10, getDomainStructureEvalueThresholdExp() ) + "]";
             case DOMAINS_COLLAPSED_PER_PROTEIN:
                 return "Domains [collapsed per protein, E-value threshold: " + Math.pow( 10, getDomainStructureEvalueThresholdExp() ) + "]";
-            case GO_ANNOTATIONS:
-                return "Go Annotations";
-            case GO_ANNOTATIONS_WITH_COUNTS:
-                return "Go Annotations [with counts]";    
+            case SEQ_ANNOTATIONS:
+                return "Sequence Annotations";
+            case GO_TERM_IDS:
+                return "GO Term IDs";    
             case UNKNOWN:
                 return "User Selected Data";
             default:
@@ -5639,7 +5639,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         }
                     }
                     break;    
-                case GO_ANNOTATIONS:
+                case SEQ_ANNOTATIONS:
                     if ( n.getNodeData().isHasSequence() ) {
                         if ( n.getNodeData().isHasSequence()
                                 && n.getNodeData().getSequence().getAnnotations() != null ) {
@@ -5650,6 +5650,21 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         }
                     }
                     break;  
+                case GO_TERM_IDS:
+                    if ( n.getNodeData().isHasSequence() ) {
+                        if ( n.getNodeData().isHasSequence()
+                                && n.getNodeData().getSequence().getAnnotations() != null ) {
+                            final SortedSet<Annotation> a = n.getNodeData().getSequence().getAnnotations();
+                            for( int i = 0; i < a.size(); ++i ) {
+                                final Annotation ann =  n.getNodeData().getSequence().getAnnotation( i );
+                                final String ref = ann.getRef();
+                                if ( ref.toUpperCase().startsWith( "GO:" ) ) {
+                                    data.add( ref );
+                                }
+                            }
+                        }
+                    }
+                    break;      
                 case UNKNOWN:
                     TreePanelUtil.showExtDescNodeDataUserSelectedHelper( getControlPanel(), n, data );
                     break;
@@ -5658,10 +5673,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                             + getOptions().getExtDescNodeDataToReturn() );
             }
         } // for loop
-       
         final StringBuilder sb = new StringBuilder();
-       
-        
         final int size = TreePanelUtil.makeSB( data, getOptions(), sb );
         if ( ( getConfiguration().getExtNodeDataReturnOn() == EXT_NODE_DATA_RETURN_ON.CONSOLE )
                 || ( getConfiguration().getExtNodeDataReturnOn() == EXT_NODE_DATA_RETURN_ON.BUFFER_ONLY ) ) {

@@ -1466,24 +1466,18 @@ public final class Configuration {
             else if ( s.equalsIgnoreCase( "user_selected" ) ) {
                 setExtDescNodeDataToReturn( NODE_DATA.UNKNOWN );
             }
-            //
-            else if ( s.equalsIgnoreCase( "horseshit" ) ) {
-                setExtDescNodeDataToReturn( NODE_DATA.CRAP );
+            else if ( s.equalsIgnoreCase( "domains" ) ) {
+                setExtDescNodeDataToReturn( NODE_DATA.DOMAINS_ALL );
             }
-            else if ( s.equalsIgnoreCase( "horseshit" ) ) {
-                setExtDescNodeDataToReturn( NODE_DATA.CRAP );
+            else if ( s.equalsIgnoreCase( "domains_collapsed" ) ) {
+                setExtDescNodeDataToReturn( NODE_DATA.DOMAINS_COLLAPSED_PER_PROTEIN );
             }
-            else if ( s.equalsIgnoreCase( "horseshit" ) ) {
-                setExtDescNodeDataToReturn( NODE_DATA.CRAP );
+            else if ( s.equalsIgnoreCase( "seq_annotations" ) ) {
+                setExtDescNodeDataToReturn( NODE_DATA.SEQ_ANNOTATIONS );
             }
-            else if ( s.equalsIgnoreCase( "horseshit" ) ) {
-                setExtDescNodeDataToReturn( NODE_DATA.CRAP );
+            else if ( s.equalsIgnoreCase( "go_term_ids" ) ) {
+                setExtDescNodeDataToReturn( NODE_DATA.GO_TERM_IDS );
             }
-            //
-            
-            
-            
-            
             else {
                 ForesterUtil.printWarningMessage( Constants.PRG_NAME, "unknown value [" + s
                         + "] for [ext_descendents_data_to_return]" );

@@ -2072,6 +2072,18 @@ final class ControlPanel extends JPanel implements ActionListener {
                     case TAXONOMY_SCIENTIFIC_NAME:
                         s = "Scientific Names";
                         break;
+                    case DOMAINS_ALL:
+                        s = "Domains";
+                        break;
+                    case DOMAINS_COLLAPSED_PER_PROTEIN:
+                        s = "Domains (collapsed per protein)";
+                        break;
+                    case GO_TERM_IDS:
+                        s = "GO Term IDs";
+                        break;
+                    case SEQ_ANNOTATIONS:
+                        s = "Sequence Annotations";
+                        break;
                     case UNKNOWN:
                         s = "User Selected Data";
                         break;

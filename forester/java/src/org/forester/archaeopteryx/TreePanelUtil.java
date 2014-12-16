@@ -439,8 +439,10 @@ public class TreePanelUtil {
 
     static int makeSB( final List<String> data, final Options optz, final StringBuilder sb ) {
         final SortedMap<String, Integer> map = new TreeMap<String, Integer>();
+        int size = 0;
         if ( ( optz.getExtDescNodeDataToReturn() != NODE_DATA.SEQUENCE_MOL_SEQ )
-                && ( optz.getExtDescNodeDataToReturn() != NODE_DATA.SEQUENCE_MOL_SEQ_FASTA ) ) {
+                && ( optz.getExtDescNodeDataToReturn() != NODE_DATA.SEQUENCE_MOL_SEQ_FASTA )
+                && ( optz.getExtDescNodeDataToReturn() != NODE_DATA.GO_TERM_IDS ) ) {
             for( final String d : data ) {
                 if ( !ForesterUtil.isEmpty( d ) ) {
                     if ( map.containsKey( d ) ) {
@@ -451,10 +453,6 @@ public class TreePanelUtil {
                     }
                 }
             }
-        }
-        int size = 0;
-        if ( ( optz.getExtDescNodeDataToReturn() != NODE_DATA.SEQUENCE_MOL_SEQ )
-                && ( optz.getExtDescNodeDataToReturn() != NODE_DATA.SEQUENCE_MOL_SEQ_FASTA ) ) {
             for( final Entry<String, Integer> e : map.entrySet() ) {
                 final String v = e.getKey();
                 final Object c = e.getValue();
