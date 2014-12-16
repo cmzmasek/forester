@@ -100,6 +100,10 @@ native_ui: ?
 #                      taxonomy_code
 #                      taxonomy_common_name
 #                      user_selected
+#                      domains
+#                      domains_collapsed
+#                      seq_annotations
+#                      go_term_ids
 #
 #  To determine where to return data selected by user clicking on "Return ...": 'ext_descendents_data_to_return_on'
 #     Contents of buffer can be obtained with method 'getCurrentExternalNodesDataBuffer()' of
