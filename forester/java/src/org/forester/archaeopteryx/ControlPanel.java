@@ -1302,10 +1302,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         _sequence_colors = sequence_colors;
     }
 
-    /* GUILHEM_END */
-    /*
-     * Set up the controls from the config settings. 11/26/05
-     */
+   
     void setupControls() {
         // The tree display options:
         setupDisplayCheckboxes();
@@ -2040,57 +2037,7 @@ final class ControlPanel extends JPanel implements ActionListener {
                         .getLabelForGetExtDescendentsData() );
             }
             else {
-                String s = ";";
-                switch ( getConfiguration().getExtDescNodeDataToReturn() ) {
-                    case NODE_NAME:
-                        s = "Node Names";
-                        break;
-                    case SEQUENCE_ACC:
-                        s = "Sequence Accessors";
-                        break;
-                    case SEQUENCE_MOL_SEQ:
-                        s = "Molecular Sequence";
-                        break;
-                    case SEQUENCE_MOL_SEQ_FASTA:
-                        s = "Molecular Sequence (Fasta)";
-                        break;
-                    case SEQUENCE_NAME:
-                        s = "Sequence Names";
-                        break;
-                    case GENE_NAME:
-                        s = "Gene Names";
-                        break;
-                    case SEQUENCE_SYMBOL:
-                        s = "Sequence Symbols";
-                        break;
-                    case TAXONOMY_CODE:
-                        s = "Taxonomy Codes";
-                        break;
-                    case TAXONOMY_COMM0N_NAME:
-                        s = "Taxonomy Common Names";
-                        break;
-                    case TAXONOMY_SCIENTIFIC_NAME:
-                        s = "Scientific Names";
-                        break;
-                    case DOMAINS_ALL:
-                        s = "Domains";
-                        break;
-                    case DOMAINS_COLLAPSED_PER_PROTEIN:
-                        s = "Domains (collapsed per protein)";
-                        break;
-                    case GO_TERM_IDS:
-                        s = "GO Term IDs";
-                        break;
-                    case SEQ_ANNOTATIONS:
-                        s = "Sequence Annotations";
-                        break;
-                    case UNKNOWN:
-                        s = "User/UI Selected Data Fields";
-                        break;
-                    default:
-                        throw new IllegalStateException( "dont know how to deal with "
-                                + getConfiguration().getExtDescNodeDataToReturn() );
-                }
+                final String s = getOptions().getExtDescNodeDataToReturn().toString();
                 final String label = _configuration.getClickToTitle( Configuration.get_ext_desc_data ) + " " + s;
                 addClickToOption( Configuration.get_ext_desc_data, label );
             }

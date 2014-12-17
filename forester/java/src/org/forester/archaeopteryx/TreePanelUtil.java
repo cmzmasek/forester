@@ -26,7 +26,7 @@ import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Accession;
 import org.forester.phylogeny.data.Annotation;
 import org.forester.phylogeny.data.BranchColor;
-import org.forester.phylogeny.data.NodeData.NODE_DATA;
+import org.forester.phylogeny.data.NodeDataField;
 import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
@@ -178,12 +178,12 @@ public class TreePanelUtil {
             TreePanelUtil
                     .showExtDescNodeDataUserSelectedHelperHelper( node.getNodeData().getTaxonomy().getCommonName(), sb );
         }
-        if ( ( cp.isShowSeqNames() || cp.isShowSeqSymbols() || cp.isShowSequenceAcc() )
-                && node.getNodeData().isHasSequence()
-                && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getMolecularSequence() ) ) {
-            TreePanelUtil.showExtDescNodeDataUserSelectedHelperHelper( node.getNodeData().getSequence()
-                    .getMolecularSequence(), sb );
-        }
+//        if ( ( cp.isShowSeqNames() || cp.isShowSeqSymbols() || cp.isShowSequenceAcc() )
+//                && node.getNodeData().isHasSequence()
+//                && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getMolecularSequence() ) ) {
+//            TreePanelUtil.showExtDescNodeDataUserSelectedHelperHelper( node.getNodeData().getSequence()
+//                    .getMolecularSequence(), sb );
+//        }
         final String s = sb.toString().trim();
         if ( !ForesterUtil.isEmpty( s ) ) {
             data.add( s );
@@ -439,12 +439,11 @@ public class TreePanelUtil {
                 .getSynonyms().isEmpty() );
     }
 
-    static int nodeDataIntoStringBuffer( final List<String> data, final Options optz, final StringBuilder sb ) {
+    static final int nodeDataIntoStringBuffer( final List<String> data, final Options optz, final StringBuilder sb ) {
         final SortedMap<String, Integer> map = new TreeMap<String, Integer>();
         int size = 0;
-        if ( ( optz.getExtDescNodeDataToReturn() != NODE_DATA.SEQUENCE_MOL_SEQ )
-                && ( optz.getExtDescNodeDataToReturn() != NODE_DATA.SEQUENCE_MOL_SEQ_FASTA )
-                && ( optz.getExtDescNodeDataToReturn() != NODE_DATA.GO_TERM_IDS ) ) {
+        if ( ( optz.getExtDescNodeDataToReturn() != NodeDataField.SEQUENCE_MOL_SEQ_FASTA )
+                && ( optz.getExtDescNodeDataToReturn() != NodeDataField.GO_TERM_IDS ) ) {
             for( final String d : data ) {
                 if ( !ForesterUtil.isEmpty( d ) ) {
                     if ( map.containsKey( d ) ) {
@@ -455,9 +454,9 @@ public class TreePanelUtil {
                     }
                 }
             }
-            if ( ( optz.getExtDescNodeDataToReturn() == NODE_DATA.DOMAINS_ALL )
-                    || ( optz.getExtDescNodeDataToReturn() == NODE_DATA.DOMAINS_COLLAPSED_PER_PROTEIN )
-                    || ( optz.getExtDescNodeDataToReturn() == NODE_DATA.SEQ_ANNOTATIONS ) ) {
+            if ( ( optz.getExtDescNodeDataToReturn() == NodeDataField.DOMAINS_ALL )
+                    || ( optz.getExtDescNodeDataToReturn() == NodeDataField.DOMAINS_COLLAPSED_PER_PROTEIN )
+                    || ( optz.getExtDescNodeDataToReturn() == NodeDataField.SEQ_ANNOTATIONS ) ) {
                 final ArrayList<StringInt> sis = new ArrayList<StringInt>();
                 for( final Entry<String, Integer> e : map.entrySet() ) {
                     sis.add( new StringInt( e.getKey(), e.getValue() ) );

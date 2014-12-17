@@ -65,7 +65,7 @@ import org.forester.phylogeny.PhylogenyMethods.DESCENDANT_SORT_PRIORITY;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.PhylogenyNode.NH_CONVERSION_SUPPORT_VALUE_STYLE;
 import org.forester.phylogeny.data.Annotation;
-import org.forester.phylogeny.data.NodeData;
+import org.forester.phylogeny.data.NodeDataField;
 import org.forester.phylogeny.data.NodeVisualData.NodeFill;
 import org.forester.phylogeny.data.NodeVisualData.NodeShape;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
@@ -1768,22 +1768,19 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static void cycleNodeDataReturn( final Options op, final TreePanel tree_panel ) {
         switch ( op.getExtDescNodeDataToReturn() ) {
             case UNKNOWN:
-                op.setExtDescNodeDataToReturn( NodeData.NODE_DATA.DOMAINS_ALL );
+                op.setExtDescNodeDataToReturn( NodeDataField.DOMAINS_ALL );
                 break;
             case DOMAINS_ALL:
-                op.setExtDescNodeDataToReturn( NodeData.NODE_DATA.DOMAINS_COLLAPSED_PER_PROTEIN );
+                op.setExtDescNodeDataToReturn( NodeDataField.DOMAINS_COLLAPSED_PER_PROTEIN );
                 break;
             case DOMAINS_COLLAPSED_PER_PROTEIN:
-                op.setExtDescNodeDataToReturn( NodeData.NODE_DATA.GO_TERM_IDS );
+                op.setExtDescNodeDataToReturn( NodeDataField.GO_TERM_IDS );
                 break;
             case GO_TERM_IDS:
-                op.setExtDescNodeDataToReturn( NodeData.NODE_DATA.SEQUENCE_MOL_SEQ );
-                break;
-            case SEQUENCE_MOL_SEQ:
-                op.setExtDescNodeDataToReturn( NodeData.NODE_DATA.SEQUENCE_MOL_SEQ_FASTA );
+                op.setExtDescNodeDataToReturn( NodeDataField.SEQUENCE_MOL_SEQ_FASTA );
                 break;
             default:
-                op.setExtDescNodeDataToReturn( NodeData.NODE_DATA.UNKNOWN );
+                op.setExtDescNodeDataToReturn( NodeDataField.UNKNOWN );
         }
     }
 
@@ -1832,7 +1829,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static void setCycleDataReturnMenuItem( final JMenuItem mi, final Options options ) {
         if ( ( options != null ) && ( options.getExtDescNodeDataToReturn() != null ) ) {
             mi.setText( "Cycle Node Return Data... (current: "
-                    + options.getExtDescNodeDataToReturn().toString().toLowerCase() + ")" );
+                    + options.getExtDescNodeDataToReturn().toString() + ")" );
         }
         else {
             mi.setText( "Cycle Node Return Data..." );

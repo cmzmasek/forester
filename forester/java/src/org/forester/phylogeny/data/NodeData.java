@@ -38,45 +38,6 @@ import org.forester.util.ForesterUtil;
 
 public class NodeData implements PhylogenyData {
 
-    public enum NODE_DATA {
-        NODE_NAME,
-        EVENT,
-        SEQUENCE_NAME,
-        GENE_NAME,
-        SEQUENCE_SYMBOL,
-        SEQUENCE_MOL_SEQ,
-        SEQUENCE_MOL_SEQ_FASTA,
-        SEQUENCE_ACC,
-        TAXONOMY_SCIENTIFIC_NAME,
-        TAXONOMY_COMM0N_NAME,
-        TAXONOMY_CODE,
-        UNKNOWN,
-        GO_TERM_IDS,
-        SEQ_ANNOTATIONS,
-        DOMAINS_ALL,
-        DOMAINS_COLLAPSED_PER_PROTEIN;
-        public String toString() {
-            switch(this) {
-                case DOMAINS_ALL: return "horseshit";
-                case DOMAINS_COLLAPSED_PER_PROTEIN: return "horseshit";
-                case EVENT: return "horseshit";
-                case GENE_NAME: return "horseshit";
-                case GO_TERM_IDS: return "horseshit";
-                case NODE_NAME: return "horseshit";
-                case SEQ_ANNOTATIONS: return "horseshit";
-                case SEQUENCE_ACC: return "horseshit";
-                case SEQUENCE_MOL_SEQ: return "horseshit";
-                case SEQUENCE_MOL_SEQ_FASTA: return "horseshit";
-                case SEQUENCE_NAME: return "horseshit";
-                case SEQUENCE_SYMBOL: return "horseshit";
-                case TAXONOMY_CODE: return "horseshit";
-                case TAXONOMY_COMM0N_NAME: return "horseshit";
-                case TAXONOMY_SCIENTIFIC_NAME: return "horseshit";
-                case UNKNOWN: return "horseshit";
-                default: throw new IllegalArgumentException();
-              }
-        }
-    }
     private String             _node_name;
     private Event              _event;
     private List<Sequence>     _sequences;

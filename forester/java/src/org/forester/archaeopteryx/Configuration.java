@@ -47,7 +47,7 @@ import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
 import org.forester.archaeopteryx.Options.OVERVIEW_PLACEMENT_TYPE;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
 import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
-import org.forester.phylogeny.data.NodeData.NODE_DATA;
+import org.forester.phylogeny.data.NodeDataField;
 import org.forester.phylogeny.data.NodeVisualData;
 import org.forester.phylogeny.data.NodeVisualData.NodeFill;
 import org.forester.phylogeny.data.NodeVisualData.NodeShape;
@@ -203,7 +203,7 @@ public final class Configuration {
     private SortedMap<String, Color>        _display_colors                                        = null;
     private boolean                         _display_sequence_relations                            = false;
     private boolean                         _editable                                              = true;
-    private NODE_DATA                       _ext_desc_data_to_return                               = NODE_DATA.UNKNOWN;
+    private NodeDataField                       _ext_desc_data_to_return                               = NodeDataField.UNKNOWN;
     private EXT_NODE_DATA_RETURN_ON         _ext_node_data_return_on                               = EXT_NODE_DATA_RETURN_ON.WINODW;
     private int                             _frame_x_size;
     private int                             _frame_y_size;
@@ -514,7 +514,7 @@ public final class Configuration {
         return _domain_colors;
     }
 
-    public NODE_DATA getExtDescNodeDataToReturn() {
+    public NodeDataField getExtDescNodeDataToReturn() {
         return _ext_desc_data_to_return;
     }
 
@@ -1003,7 +1003,7 @@ public final class Configuration {
         _editable = editable;
     }
 
-    public void setExtDescNodeDataToReturn( final NODE_DATA ext_desc_data_to_return ) {
+    public void setExtDescNodeDataToReturn( final NodeDataField ext_desc_data_to_return ) {
         _ext_desc_data_to_return = ext_desc_data_to_return;
     }
 
@@ -1434,49 +1434,43 @@ public final class Configuration {
         else if ( key.equals( "ext_descendents_data_to_return" ) ) {
             final String s = ( ( String ) st.nextElement() ).trim();
             if ( s.equalsIgnoreCase( "node_name" ) ) {
-                setExtDescNodeDataToReturn( NODE_DATA.NODE_NAME );
+                setExtDescNodeDataToReturn( NodeDataField.NODE_NAME );
             }
             else if ( s.equalsIgnoreCase( "sequence_acc" ) ) {
-                setExtDescNodeDataToReturn( NODE_DATA.SEQUENCE_ACC );
+                setExtDescNodeDataToReturn( NodeDataField.SEQUENCE_ACC );
             }
             else if ( s.equalsIgnoreCase( "sequence_mol_seq_fasta" ) ) {
-                setExtDescNodeDataToReturn( NODE_DATA.SEQUENCE_MOL_SEQ_FASTA );
-            }
-            else if ( s.equalsIgnoreCase( "sequence_mol_seq" ) ) {
-                setExtDescNodeDataToReturn( NODE_DATA.SEQUENCE_MOL_SEQ );
+                setExtDescNodeDataToReturn( NodeDataField.SEQUENCE_MOL_SEQ_FASTA );
             }
             else if ( s.equalsIgnoreCase( "sequence_name" ) ) {
-                setExtDescNodeDataToReturn( NODE_DATA.SEQUENCE_NAME );
+                setExtDescNodeDataToReturn( NodeDataField.SEQUENCE_NAME );
             }
             else if ( s.equalsIgnoreCase( "gene_name" ) ) {
-                setExtDescNodeDataToReturn( NODE_DATA.GENE_NAME );
+                setExtDescNodeDataToReturn( NodeDataField.GENE_NAME );
             }
             else if ( s.equalsIgnoreCase( "sequence_symbol" ) ) {
-                setExtDescNodeDataToReturn( NODE_DATA.SEQUENCE_SYMBOL );
+                setExtDescNodeDataToReturn( NodeDataField.SEQUENCE_SYMBOL );
             }
             else if ( s.equalsIgnoreCase( "taxonomy_scientific_name" ) ) {
-                setExtDescNodeDataToReturn( NODE_DATA.TAXONOMY_SCIENTIFIC_NAME );
+                setExtDescNodeDataToReturn( NodeDataField.TAXONOMY_SCIENTIFIC_NAME );
             }
             else if ( s.equalsIgnoreCase( "taxonomy_code" ) ) {
-                setExtDescNodeDataToReturn( NODE_DATA.TAXONOMY_CODE );
-            }
-            else if ( s.equalsIgnoreCase( "taxonomy_common_name" ) ) {
-                setExtDescNodeDataToReturn( NODE_DATA.TAXONOMY_COMM0N_NAME );
+                setExtDescNodeDataToReturn( NodeDataField.TAXONOMY_CODE );
             }
             else if ( s.equalsIgnoreCase( "user_selected" ) ) {
-                setExtDescNodeDataToReturn( NODE_DATA.UNKNOWN );
+                setExtDescNodeDataToReturn( NodeDataField.UNKNOWN );
             }
             else if ( s.equalsIgnoreCase( "domains" ) ) {
-                setExtDescNodeDataToReturn( NODE_DATA.DOMAINS_ALL );
+                setExtDescNodeDataToReturn( NodeDataField.DOMAINS_ALL );
             }
             else if ( s.equalsIgnoreCase( "domains_collapsed" ) ) {
-                setExtDescNodeDataToReturn( NODE_DATA.DOMAINS_COLLAPSED_PER_PROTEIN );
+                setExtDescNodeDataToReturn( NodeDataField.DOMAINS_COLLAPSED_PER_PROTEIN );
             }
             else if ( s.equalsIgnoreCase( "seq_annotations" ) ) {
-                setExtDescNodeDataToReturn( NODE_DATA.SEQ_ANNOTATIONS );
+                setExtDescNodeDataToReturn( NodeDataField.SEQ_ANNOTATIONS );
             }
             else if ( s.equalsIgnoreCase( "go_term_ids" ) ) {
-                setExtDescNodeDataToReturn( NODE_DATA.GO_TERM_IDS );
+                setExtDescNodeDataToReturn( NodeDataField.GO_TERM_IDS );
             }
             else {
                 ForesterUtil.printWarningMessage( Constants.PRG_NAME, "unknown value [" + s

@@ -29,8 +29,7 @@ import java.awt.Font;
 
 import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
 import org.forester.phylogeny.PhylogenyNode.NH_CONVERSION_SUPPORT_VALUE_STYLE;
-import org.forester.phylogeny.data.NodeData;
-import org.forester.phylogeny.data.NodeData.NODE_DATA;
+import org.forester.phylogeny.data.NodeDataField;
 import org.forester.phylogeny.data.NodeVisualData;
 import org.forester.phylogeny.data.NodeVisualData.NodeFill;
 import org.forester.phylogeny.data.NodeVisualData.NodeShape;
@@ -55,7 +54,7 @@ final public class Options {
     private NodeVisualData.NodeShape          _default_node_shape;
     private short                             _default_node_shape_size;
     private boolean                           _editable;
-    private NODE_DATA                         _ext_desc_data_to_return;
+    private NodeDataField                         _ext_desc_data_to_return;
     private boolean                           _graphics_export_using_actual_size;
     private boolean                           _graphics_export_visible_only;
     private boolean                           _internal_number_are_confidence_for_nh_parsing;
@@ -93,7 +92,7 @@ final public class Options {
         init();
     }
 
-    public NodeData.NODE_DATA getExtDescNodeDataToReturn() {
+    public NodeDataField getExtDescNodeDataToReturn() {
         return _ext_desc_data_to_return;
     }
 
@@ -121,7 +120,7 @@ final public class Options {
         _color_labels_same_as_parent_branch = color_labels_same_as_parent_branch;
     }
 
-    public void setExtDescNodeDataToReturn( final NODE_DATA ext_desc_data_to_return ) {
+    public void setExtDescNodeDataToReturn( final NodeDataField ext_desc_data_to_return ) {
         _ext_desc_data_to_return = ext_desc_data_to_return;
     }
 
@@ -495,7 +494,7 @@ final public class Options {
         _color_labels_same_as_parent_branch = false;
         _show_confidence_stddev = false;
         _nh_conversion_support_value_style = NH_CONVERSION_SUPPORT_VALUE_STYLE.NONE;
-        _ext_desc_data_to_return = NODE_DATA.UNKNOWN;
+        _ext_desc_data_to_return = NodeDataField.UNKNOWN;
         _line_up_renderable_node_data = true;
         _right_align_domains = false;
     }
