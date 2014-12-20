@@ -17,37 +17,37 @@ public enum NodeDataField {
     DOMAINS_ALL,
     DOMAINS_COLLAPSED_PER_PROTEIN;
 
-    
+    @Override
     public String toString() {
         switch ( this ) {
             case DOMAINS_ALL:
-                return "Domain";
+                return "Domains";
             case DOMAINS_COLLAPSED_PER_PROTEIN:
-                return "Domain (collapsed per protein)";
+                return "Domains (collapsed per protein)";
             case EVENT:
-                return "Event";
+                return "Events";
             case GENE_NAME:
-                return "Gene Name";
+                return "Gene Names";
             case GO_TERM_IDS:
-                return "GO Term ID";
+                return "GO Term IDs";
             case NODE_NAME:
-                return "Node Name";
+                return "Node Names";
             case SEQ_ANNOTATIONS:
-                return "Sequence Annotation";
+                return "Sequence Annotations";
             case SEQUENCE_ACC:
-                return "Sequence Accessor";
+                return "Sequence Accessors";
             case SEQUENCE_MOL_SEQ_FASTA:
-                return "Molecular Sequence (Fasta)";
+                return "Molecular Sequences (Fasta)";
             case SEQUENCE_NAME:
-                return "Sequence Name";
+                return "Sequence Names";
             case SEQUENCE_SYMBOL:
-                return "Sequence Symbol";
+                return "Sequence Symbols";
             case TAXONOMY_CODE:
-                return "Taxonomy Code";
+                return "Taxonomy Codes";
             case TAXONOMY_SCIENTIFIC_NAME:
-                return "Scientific Name";
+                return "Scientific Names";
             case UNKNOWN:
-                return "User/UI Selected Data Field(s)";
+                return "User Selected Data Fields";
             default:
                 throw new IllegalArgumentException();
         }

@@ -229,10 +229,10 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
             MainFrame.cycleOverview( getOptions(), getCurrentTreePanel() );
         }
         else if ( o == _cycle_node_fill_mi ) {
-            MainFrame.cycleNodeFill( getOptions(), getCurrentTreePanel() );
+            MainFrame.cycleNodeFill( getOptions() );
         }
         else if ( o == _cycle_node_shape_mi ) {
-            MainFrame.cycleNodeShape( getOptions(), getCurrentTreePanel() );
+            MainFrame.cycleNodeShape( getOptions() );
         }
         else if ( o == _non_lined_up_cladograms_rbmi ) {
             updateOptions( getOptions() );

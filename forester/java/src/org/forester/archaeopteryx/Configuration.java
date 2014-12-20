@@ -67,32 +67,32 @@ public final class Configuration {
         CROSSPLATFORM, NATIVE, NIMBUS, UNKNOWN
     }
     final static String                     clickto_options[][]                                    = {
-            { "Display Node Data", "display" }, { "Collapse/Uncollapse", "display" }, { "Root/Reroot", "display" },
-            { "Go to Sub-/Super-Tree", "display" }, { "Swap Descendants", "display" },
-            { "Colorize Node(s)", "display" }, { "Change Node Font(s)", "display" },
-            { "Colorize Subtree(s)", "display" }, { "Open Sequence DB", "display" }, { "Open PDB", "display" },
-            { "Open Taxonomy DB", "display" }, { "Launch BLAST", "display" }, { "Cut Subtree", "display" },
-            { "Copy Subtree", "display" }, { "Paste Subtree", "display" }, { "Delete Subtree/Node", "display" },
-            { "Add New Node", "display" }, { "Edit Node Data", "display" }, { "Sort Descendants", "display" },
-            { "Return", "display" }, { "Select Node(s)", "display" }                              };
+        { "Display Node Data", "display" }, { "Collapse/Uncollapse", "display" }, { "Root/Reroot", "display" },
+        { "Go to Sub-/Super-Tree", "display" }, { "Swap Descendants", "display" },
+        { "Colorize Node(s)", "display" }, { "Change Node Font(s)", "display" },
+        { "Colorize Subtree(s)", "display" }, { "Open Sequence DB", "display" }, { "Open PDB", "display" },
+        { "Open Taxonomy DB", "display" }, { "Launch BLAST", "display" }, { "Cut Subtree", "display" },
+        { "Copy Subtree", "display" }, { "Paste Subtree", "display" }, { "Delete Subtree/Node", "display" },
+        { "Add New Node", "display" }, { "Edit Node Data", "display" }, { "Sort Descendants", "display" },
+        { "List Node Data", "display" }, { "Select Node(s)", "display" }                      };
     private final static String             DEFAULT_SPECIES_COLORS[][]                             = {
-            { "BRAFL", "0x00FFFF" }, { "SPHGR", "0x9620F0" }, { "STRPU", "0x9620F0" }, { "CIOIN", "0xFF1CAE" },
-            { "CIOSA", "0xFF2CAE" }, { "BOVIN", "0x5C3317" }, { "CANFA", "0x8B2323" }, { "HUMAN", "0xFF2400" },
-            { "PANTR", "0xCC2400" }, { "MOUSE", "0xFF7F00" }, { "RAT", "0xFFEF00" }, { "MONDO", "0xEE9A49" },
-            { "ORNAN", "0xCD853F" }, { "XENLA", "0x6BAA23" }, { "XENTR", "0x6BAA23" }, { "CHICK", "0xFFC125" },
-            { "FUGRU", "0x0000FF" }, { "BRARE", "0x0000DD" }, { "DANRE", "0x0000BB" }, { "TETNG", "0x0000AA" },
-            { "ORYLA", "0x000088" }, { "GASAC", "0x000066" }, { "CAEEL", "0x666699" }, { "CAEBR", "0xB0B0B0" },
-            { "DROME", "0x663366" }, { "DROPS", "0x996699" }, { "APIME", "0x7A7700" }, { "AEDAE", "0x8C5900" },
-            { "TRICA", "0x918E00" }, { "NEMVE", "0x0066CC" }, { "HYDVU", "0x3399FF" }, { "LUBBA", "0xF7B5CB" },
-            { "GEOCY", "0xF5A0BD" }, { "AMPQE", "0x009966" }, { "SUBDO", "0xC790B9" }, { "MONBE", "0xFC0FC0" },
-            { "DICPU", "0xFFCC33" }, { "DICDI", "0xFFCC00" }, { "ENTHI", "0x5959AB" }, { "ARATH", "0x00FF00" },
-            { "POPTR", "0x006400" }, { "VITVI", "0x00CD00" }, { "GLYMA", "0x00FF7F" }, { "ORYSA", "0x008B00" },
-            { "ORYSJ", "0x008C00" }, { "SORBI", "0x00EE76" }, { "SELMO", "0x238E23" }, { "PHYPA", "0x09F911" },
-            { "OSTLU", "0x7FFF00" }, { "OSTTA", "0x7FFF00" }, { "OSTRC", "0x7FFF00" }, { "MICPU", "0x66CD00" },
-            { "MIC99", "0x66CD00" }, { "CHLRE", "0xB3EE3A" }, { "VOLCA", "0xC0FF3E" }, { "CHLSP", "0x6B8E23" },
-            { "CYAME", "0xD02090" }, { "YEAST", "0xAAAAAA" }, { "BACFR", "0xFF0000" }, { "BACTN", "0xFFFF00" },
-            { "MYXXD", "0x0000FF" }, { "STIAU", "0x00FFFF" }, { "BACOV", "0x8C5900" }, { "BACUN", "0x66CD00" },
-            { "PORGI", "0x918E00" }                                                               };
+        { "BRAFL", "0x00FFFF" }, { "SPHGR", "0x9620F0" }, { "STRPU", "0x9620F0" }, { "CIOIN", "0xFF1CAE" },
+        { "CIOSA", "0xFF2CAE" }, { "BOVIN", "0x5C3317" }, { "CANFA", "0x8B2323" }, { "HUMAN", "0xFF2400" },
+        { "PANTR", "0xCC2400" }, { "MOUSE", "0xFF7F00" }, { "RAT", "0xFFEF00" }, { "MONDO", "0xEE9A49" },
+        { "ORNAN", "0xCD853F" }, { "XENLA", "0x6BAA23" }, { "XENTR", "0x6BAA23" }, { "CHICK", "0xFFC125" },
+        { "FUGRU", "0x0000FF" }, { "BRARE", "0x0000DD" }, { "DANRE", "0x0000BB" }, { "TETNG", "0x0000AA" },
+        { "ORYLA", "0x000088" }, { "GASAC", "0x000066" }, { "CAEEL", "0x666699" }, { "CAEBR", "0xB0B0B0" },
+        { "DROME", "0x663366" }, { "DROPS", "0x996699" }, { "APIME", "0x7A7700" }, { "AEDAE", "0x8C5900" },
+        { "TRICA", "0x918E00" }, { "NEMVE", "0x0066CC" }, { "HYDVU", "0x3399FF" }, { "LUBBA", "0xF7B5CB" },
+        { "GEOCY", "0xF5A0BD" }, { "AMPQE", "0x009966" }, { "SUBDO", "0xC790B9" }, { "MONBE", "0xFC0FC0" },
+        { "DICPU", "0xFFCC33" }, { "DICDI", "0xFFCC00" }, { "ENTHI", "0x5959AB" }, { "ARATH", "0x00FF00" },
+        { "POPTR", "0x006400" }, { "VITVI", "0x00CD00" }, { "GLYMA", "0x00FF7F" }, { "ORYSA", "0x008B00" },
+        { "ORYSJ", "0x008C00" }, { "SORBI", "0x00EE76" }, { "SELMO", "0x238E23" }, { "PHYPA", "0x09F911" },
+        { "OSTLU", "0x7FFF00" }, { "OSTTA", "0x7FFF00" }, { "OSTRC", "0x7FFF00" }, { "MICPU", "0x66CD00" },
+        { "MIC99", "0x66CD00" }, { "CHLRE", "0xB3EE3A" }, { "VOLCA", "0xC0FF3E" }, { "CHLSP", "0x6B8E23" },
+        { "CYAME", "0xD02090" }, { "YEAST", "0xAAAAAA" }, { "BACFR", "0xFF0000" }, { "BACTN", "0xFFFF00" },
+        { "MYXXD", "0x0000FF" }, { "STIAU", "0x00FFFF" }, { "BACOV", "0x8C5900" }, { "BACUN", "0x66CD00" },
+        { "PORGI", "0x918E00" }                                                               };
     final static int                        display_node_data                                      = 0;
     final static int                        collapse_uncollapse                                    = 1;
     final static int                        reroot                                                 = 2;
@@ -118,20 +118,20 @@ public final class Configuration {
     // Click-to options
     // ------------------
     final static String                     display_options[][]                                    = {
-            { "Phylogram", "display", "?" }, { "Node Name", "display", "yes" }, { "Taxonomy Code", "display", "yes" },
-            { "Seq Annotations", "display", "no" }, { "Confidence Values", "display", "?" },
-            { "Node Events", "display", "?" }, { "Colorize by Taxonomy", "display", "no" },
-            { "Colorize by Sequence", "display", "no" }, { "Visual Styles/Branch Colors", "display", "no" },
-            { "Branch Widths", "display", "no" }, { "Domain Architectures", "display", "no" },
-            { "Binary Characters", "nodisplay", "no" }, { "Binary Char Counts", "nodisplay", "no" },
-            { "Seq Name", "display", "yes" }, { "Seq Accession", "display", "no" },
-            { "Show Internal Data", "display", "yes" }, { "Dyna Hide", "display", "yes" },
-            { "Taxonomy Scientific", "display", "yes" }, { "Taxonomy Common", "display", "no" },
-            { "Colorize by Annotation", "display", "no" }, { "Seq Symbol", "display", "yes" },
-            { "Rollover", "display", "yes" }, { "Relation Confidence", "nodisplay", "no" },
-            { "Vector Data", "nodisplay", "no" }, { "Taxonomy Images", "display", "no" },
-            { "Properties", "display", "no" }, { "Gene Name", "display", "yes" },
-            { "Multiple Seq Alignment", "display", "no" }, { "Branch Length Values", "display", "no" } };
+        { "Phylogram", "display", "?" }, { "Node Name", "display", "yes" }, { "Taxonomy Code", "display", "yes" },
+        { "Seq Annotations", "display", "no" }, { "Confidence Values", "display", "?" },
+        { "Node Events", "display", "?" }, { "Colorize by Taxonomy", "display", "no" },
+        { "Colorize by Sequence", "display", "no" }, { "Visual Styles/Branch Colors", "display", "no" },
+        { "Branch Widths", "display", "no" }, { "Domain Architectures", "display", "no" },
+        { "Binary Characters", "nodisplay", "no" }, { "Binary Char Counts", "nodisplay", "no" },
+        { "Seq Name", "display", "yes" }, { "Seq Accession", "display", "no" },
+        { "Show Internal Data", "display", "yes" }, { "Dyna Hide", "display", "yes" },
+        { "Taxonomy Scientific", "display", "yes" }, { "Taxonomy Common", "display", "no" },
+        { "Colorize by Annotation", "display", "no" }, { "Seq Symbol", "display", "yes" },
+        { "Rollover", "display", "yes" }, { "Relation Confidence", "nodisplay", "no" },
+        { "Vector Data", "nodisplay", "no" }, { "Taxonomy Images", "display", "no" },
+        { "Properties", "display", "no" }, { "Gene Name", "display", "yes" },
+        { "Multiple Seq Alignment", "display", "no" }, { "Branch Length Values", "display", "no" } };
     final static int                        display_as_phylogram                                   = 0;
     final static int                        show_node_names                                        = 1;
     final static int                        show_tax_code                                          = 2;
@@ -203,7 +203,7 @@ public final class Configuration {
     private SortedMap<String, Color>        _display_colors                                        = null;
     private boolean                         _display_sequence_relations                            = false;
     private boolean                         _editable                                              = true;
-    private NodeDataField                       _ext_desc_data_to_return                               = NodeDataField.UNKNOWN;
+    private NodeDataField                   _ext_desc_data_to_return                               = NodeDataField.UNKNOWN;
     private EXT_NODE_DATA_RETURN_ON         _ext_node_data_return_on                               = EXT_NODE_DATA_RETURN_ON.WINODW;
     private int                             _frame_x_size;
     private int                             _frame_y_size;
@@ -385,8 +385,8 @@ public final class Configuration {
         if ( name.equals( "edit_info" ) ) {
             index = Configuration.display_node_data;
             ForesterUtil
-                    .printWarningMessage( Constants.PRG_NAME,
-                                          "configuration key [edit_info] is deprecated, use [display node data] instead" );
+            .printWarningMessage( Constants.PRG_NAME,
+                                  "configuration key [edit_info] is deprecated, use [display node data] instead" );
         }
         else if ( name.equals( "display_node_data" ) ) {
             index = Configuration.display_node_data;
@@ -411,7 +411,7 @@ public final class Configuration {
         }
         else if ( name.equals( "display_sequences" ) ) {
             ForesterUtil
-                    .printWarningMessage( Constants.PRG_NAME, "configuration key [display_sequences] is deprecated" );
+            .printWarningMessage( Constants.PRG_NAME, "configuration key [display_sequences] is deprecated" );
             return DEPRECATED;
         }
         else if ( name.equals( "open_seq_web" ) ) {
@@ -449,7 +449,7 @@ public final class Configuration {
         }
         else if ( name.equals( "display_node_popup" ) ) {
             ForesterUtil.printWarningMessage( Constants.PRG_NAME,
-                                              "configuration key [display_node_popup] is deprecated" );
+                    "configuration key [display_node_popup] is deprecated" );
             return DEPRECATED;
         }
         else if ( name.equals( "custom_option" ) ) {
@@ -1045,7 +1045,7 @@ public final class Configuration {
             default_clickto = getClickToIndex( clickto_name );
             if ( default_clickto == -1 ) {
                 ForesterUtil.printWarningMessage( Constants.PRG_NAME, "invalid value [" + clickto_name
-                        + "] for [default_click_to]" );
+                                                  + "] for [default_click_to]" );
                 default_clickto = 0;
             }
             else if ( default_clickto == DEPRECATED ) {
@@ -1065,7 +1065,7 @@ public final class Configuration {
             }
             else {
                 ForesterUtil.printWarningMessage( Constants.PRG_NAME, "could not parse yes/no/? value from [" + my_str
-                        + "]" );
+                                                  + "]" );
                 _ui = UI.UNKNOWN;
             }
         }
@@ -1104,7 +1104,7 @@ public final class Configuration {
             else {
                 setPhylogenyGraphicsType( PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
                 ForesterUtil.printWarningMessage( Constants.PRG_NAME, "unknown value [" + type_str
-                        + "] for [phylogeny_graphics_type]" );
+                                                  + "] for [phylogeny_graphics_type]" );
             }
         }
         else if ( key.equals( "min_confidence_value" ) ) {
@@ -1158,7 +1158,7 @@ public final class Configuration {
             }
             else {
                 ForesterUtil.printWarningMessage( Constants.PRG_NAME,
-                                                  "value for [pdf_export_line_width] cannot be zero or negative" );
+                        "value for [pdf_export_line_width] cannot be zero or negative" );
             }
         }
         else if ( key.equals( "window_initial_size_x" ) ) {
@@ -1183,8 +1183,8 @@ public final class Configuration {
             }
             else {
                 ForesterUtil
-                        .printWarningMessage( Constants.PRG_NAME,
-                                              "value for [default_number_of_bootstrap_resamples] cannot be negative" );
+                .printWarningMessage( Constants.PRG_NAME,
+                                      "value for [default_number_of_bootstrap_resamples] cannot be negative" );
             }
         }
         else if ( key.equals( "mafft_local" ) ) {
@@ -1239,13 +1239,13 @@ public final class Configuration {
             }
             else {
                 ForesterUtil.printWarningMessage( Constants.PRG_NAME, "unknown value [" + type_str
-                        + "] for [cladogram_type]" );
+                                                  + "] for [cladogram_type]" );
             }
         }
         else if ( key.equals( "non_lined_up_cladogram" ) ) {
             ForesterUtil
-                    .printWarningMessage( Constants.PRG_NAME,
-                                          "configuration key [non_lined_up_cladogram] is deprecated, use [cladogram_type] instead" );
+            .printWarningMessage( Constants.PRG_NAME,
+                                  "configuration key [non_lined_up_cladogram] is deprecated, use [cladogram_type] instead" );
         }
         else if ( key.equals( "hide_controls_and_menus" ) ) {
             _hide_controls_and_menus = parseBoolean( ( String ) st.nextElement() );
@@ -1278,7 +1278,7 @@ public final class Configuration {
             else {
                 setOvPlacement( OVERVIEW_PLACEMENT_TYPE.UPPER_LEFT );
                 ForesterUtil.printWarningMessage( Constants.PRG_NAME, "unknown value [" + type_str
-                        + "] for [overview_placement_type]" );
+                                                  + "] for [overview_placement_type]" );
             }
         }
         else if ( key.equals( "node_label_direction" ) ) {
@@ -1292,7 +1292,7 @@ public final class Configuration {
             else {
                 setNodeLabelDirection( NODE_LABEL_DIRECTION.HORIZONTAL );
                 ForesterUtil.printWarningMessage( Constants.PRG_NAME, "unknown value [" + type_str
-                        + "] for [node_label_direction]" );
+                                                  + "] for [node_label_direction]" );
             }
         }
         else if ( key.equals( "branch_length_value_digits" ) ) {
@@ -1302,7 +1302,7 @@ public final class Configuration {
             }
             else {
                 ForesterUtil.printWarningMessage( Constants.PRG_NAME, "illegal value [" + i
-                        + "] for [branch_length_value_digits]" );
+                                                  + "] for [branch_length_value_digits]" );
             }
         }
         else if ( key.equals( "confidence_value_digits" ) ) {
@@ -1312,7 +1312,7 @@ public final class Configuration {
             }
             else {
                 ForesterUtil.printWarningMessage( Constants.PRG_NAME, "illegal value [" + i
-                        + "] for [confidence_value_digits]" );
+                                                  + "] for [confidence_value_digits]" );
             }
         }
         else if ( key.equals( "allow_editing" ) ) {
@@ -1325,8 +1325,8 @@ public final class Configuration {
             final boolean r = parseBoolean( ( String ) st.nextElement() );
             if ( r && ( getTaxonomyExtraction() != TAXONOMY_EXTRACTION.NO ) ) {
                 ForesterUtil
-                        .printWarningMessage( Constants.PRG_NAME,
-                                              "attempt to extract taxonomies and replace underscores at the same time" );
+                .printWarningMessage( Constants.PRG_NAME,
+                                      "attempt to extract taxonomies and replace underscores at the same time" );
             }
             else {
                 setReplaceUnderscoresInNhParsing( r );
@@ -1348,15 +1348,15 @@ public final class Configuration {
             }
             else {
                 ForesterUtil
-                        .printWarningMessage( Constants.PRG_NAME,
-                                              "unknown value for \"taxonomy_extraction_in_nh_parsing\": "
-                                                      + s
-                                                      + " (must be either: no, pfam_relaxed, pfam_strict, or aggressive)" );
+                .printWarningMessage( Constants.PRG_NAME,
+                                      "unknown value for \"taxonomy_extraction_in_nh_parsing\": "
+                                              + s
+                                              + " (must be either: no, pfam_relaxed, pfam_strict, or aggressive)" );
             }
             if ( ( getTaxonomyExtraction() != TAXONOMY_EXTRACTION.NO ) && isReplaceUnderscoresInNhParsing() ) {
                 ForesterUtil
-                        .printWarningMessage( Constants.PRG_NAME,
-                                              "attempt to extract taxonomies and replace underscores at the same time" );
+                .printWarningMessage( Constants.PRG_NAME,
+                                      "attempt to extract taxonomies and replace underscores at the same time" );
             }
         }
         else if ( key.equals( "internal_labels_are_confidence_values" ) ) {
@@ -1412,7 +1412,7 @@ public final class Configuration {
             }
             else {
                 ForesterUtil.printWarningMessage( Constants.PRG_NAME, "unknown value [" + fill_str
-                        + "] for [default_node_fill]" );
+                                                  + "] for [default_node_fill]" );
             }
         }
         else if ( key.equals( "default_node_shape" ) ) {
@@ -1425,13 +1425,13 @@ public final class Configuration {
             }
             else {
                 ForesterUtil.printWarningMessage( Constants.PRG_NAME, "unknown value [" + shape_str
-                        + "] for [default_node_shape]" );
+                                                  + "] for [default_node_shape]" );
             }
         }
         else if ( key.equals( "midpoint_reroot" ) ) {
             setMidpointReroot( parseBoolean( ( String ) st.nextElement() ) );
         }
-        else if ( key.equals( "ext_descendents_data_to_return" ) ) {
+        else if ( key.equals( "list_node_data_field" ) || key.equals( "ext_descendents_data_to_return" ) ) {
             final String s = ( ( String ) st.nextElement() ).trim();
             if ( s.equalsIgnoreCase( "node_name" ) ) {
                 setExtDescNodeDataToReturn( NodeDataField.NODE_NAME );
@@ -1474,20 +1474,16 @@ public final class Configuration {
             }
             else {
                 ForesterUtil.printWarningMessage( Constants.PRG_NAME, "unknown value [" + s
-                        + "] for [ext_descendents_data_to_return]" );
+                                                  + "] for [ext_descendents_data_to_return]" );
             }
         }
-        else if ( key.equals( "label_for_get_ext_descendents_data" ) ) {
+        else if ( key.equals( "list_node_data_custom_label" ) || key.equals( "label_for_get_ext_descendents_data" ) ) {
             final String s = ( ( String ) st.nextElement() ).trim();
-            if ( ForesterUtil.isEmpty( s ) || ( s.length() < 2 ) ) {
-                ForesterUtil.printWarningMessage( Constants.PRG_NAME, "illegal value [" + s
-                        + "] for [label_for_get_ext_descendents_data]" );
-            }
-            else {
+            if ( !ForesterUtil.isEmpty( s ) && ( s.length() > 1 ) ) {
                 setLabelForGetExtDescendentsData( s.replaceAll( "_", " " ) );
             }
         }
-        else if ( key.equals( "ext_descendents_data_to_return_on" ) ) {
+        else if ( key.equals( "list_node_data_in" ) || key.equals( "ext_descendents_data_to_return_on" ) ) {
             final String s = ( ( String ) st.nextElement() ).trim().toLowerCase();
             if ( s.equals( "console" ) ) {
                 setExtNodeDataReturnOn( EXT_NODE_DATA_RETURN_ON.CONSOLE );
@@ -1500,7 +1496,7 @@ public final class Configuration {
             }
             else {
                 ForesterUtil.printWarningMessage( Constants.PRG_NAME, "unknown value [" + s
-                        + "] for [ext_descendents_data_to_return_on]" );
+                                                  + "] for [ext_descendents_data_to_return_on]" );
             }
         }
         else if ( key.equals( "vector_data_min_color" ) ) {
@@ -1569,8 +1565,8 @@ public final class Configuration {
             else if ( key.equals( "color_branches" ) ) {
                 key_index = Configuration.use_style;
                 ForesterUtil
-                        .printWarningMessage( Constants.PRG_NAME,
-                                              "configuration key [color_branches] is deprecated, use [use_visual_styles] instead" );
+                .printWarningMessage( Constants.PRG_NAME,
+                                      "configuration key [color_branches] is deprecated, use [use_visual_styles] instead" );
             }
             else if ( key.equals( "width_branches" ) ) {
                 key_index = Configuration.width_branches;
@@ -1666,18 +1662,18 @@ public final class Configuration {
                 }
                 else if ( key.equals( "annotation_color" ) ) {
                     getAnnotationColors()
-                            .put( ( String ) st.nextElement(), Color.decode( ( String ) st.nextElement() ) );
+                    .put( ( String ) st.nextElement(), Color.decode( ( String ) st.nextElement() ) );
                 }
                 else if ( key.equals( "function_color" ) ) {
                     ForesterUtil.printWarningMessage( Constants.PRG_NAME,
-                                                      "configuration key [function_color] is deprecated" );
+                            "configuration key [function_color] is deprecated" );
                 }
                 else if ( key.equals( DISPLAY_COLOR_KEY ) ) {
                     putDisplayColors( ( String ) st.nextElement(), Color.decode( ( String ) st.nextElement() ) );
                 }
                 else {
                     ForesterUtil.printWarningMessage( Constants.PRG_NAME, "unknown configuration key [" + key
-                            + "] in: " + config_filename );
+                                                      + "] in: " + config_filename );
                 }
             }
         }

@@ -1302,7 +1302,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         _sequence_colors = sequence_colors;
     }
 
-   
     void setupControls() {
         // The tree display options:
         setupDisplayCheckboxes();
@@ -2034,13 +2033,14 @@ final class ControlPanel extends JPanel implements ActionListener {
             _get_ext_desc_data = cb_index;
             if ( !ForesterUtil.isEmpty( getConfiguration().getLabelForGetExtDescendentsData() ) ) {
                 addClickToOption( Configuration.get_ext_desc_data, getConfiguration()
-                        .getLabelForGetExtDescendentsData() );
+                                  .getLabelForGetExtDescendentsData() );
             }
             else {
-                final String s = getOptions().getExtDescNodeDataToReturn().toString();
-                final String label = _configuration.getClickToTitle( Configuration.get_ext_desc_data ) + " " + s;
-                addClickToOption( Configuration.get_ext_desc_data, label );
+               
+                addClickToOption( Configuration.get_ext_desc_data,
+                                  getConfiguration().getClickToTitle( Configuration.get_ext_desc_data ) );
             }
+           
             if ( default_option == Configuration.get_ext_desc_data ) {
                 selected_index = cb_index;
             }

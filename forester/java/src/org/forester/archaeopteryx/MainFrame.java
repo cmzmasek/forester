@@ -406,13 +406,13 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             MainFrame.cycleOverview( getOptions(), getCurrentTreePanel() );
         }
         else if ( o == _cycle_node_fill_mi ) {
-            MainFrame.cycleNodeFill( getOptions(), getCurrentTreePanel() );
+            MainFrame.cycleNodeFill( getOptions() );
         }
         else if ( o == _cycle_node_shape_mi ) {
-            MainFrame.cycleNodeShape( getOptions(), getCurrentTreePanel() );
+            MainFrame.cycleNodeShape( getOptions() );
         }
         else if ( o == _cycle_data_return ) {
-            MainFrame.cycleNodeDataReturn( getOptions(), getCurrentTreePanel() );
+            MainFrame.cycleNodeDataReturn( getOptions(), getConfiguration() );
         }
         else if ( o == _screen_antialias_cbmi ) {
             updateOptions( getOptions() );
@@ -1736,7 +1736,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         return label;
     }
 
-    static void cycleNodeFill( final Options op, final TreePanel tree_panel ) {
+    static void cycleNodeFill( final Options op ) {
         switch ( op.getDefaultNodeFill() ) {
             case GRADIENT:
                 op.setDefaultNodeFill( NodeFill.SOLID );
@@ -1752,7 +1752,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
     }
 
-    static void cycleNodeShape( final Options op, final TreePanel tree_panel ) {
+    static void cycleNodeShape( final Options op ) {
         switch ( op.getDefaultNodeShape() ) {
             case CIRCLE:
                 op.setDefaultNodeShape( NodeShape.RECTANGLE );
@@ -1765,7 +1765,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
     }
 
-    static void cycleNodeDataReturn( final Options op, final TreePanel tree_panel ) {
+    private static void cycleNodeDataReturn( final Options op, Configuration conf ) {
         switch ( op.getExtDescNodeDataToReturn() ) {
             case UNKNOWN:
                 op.setExtDescNodeDataToReturn( NodeDataField.DOMAINS_ALL );
@@ -1774,11 +1774,28 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 op.setExtDescNodeDataToReturn( NodeDataField.DOMAINS_COLLAPSED_PER_PROTEIN );
                 break;
             case DOMAINS_COLLAPSED_PER_PROTEIN:
+                op.setExtDescNodeDataToReturn( NodeDataField.SEQ_ANNOTATIONS );
+                break;
+            case SEQ_ANNOTATIONS:
                 op.setExtDescNodeDataToReturn( NodeDataField.GO_TERM_IDS );
                 break;
             case GO_TERM_IDS:
                 op.setExtDescNodeDataToReturn( NodeDataField.SEQUENCE_MOL_SEQ_FASTA );
                 break;
+            case SEQUENCE_MOL_SEQ_FASTA:
+                if ( conf != null && conf.getExtDescNodeDataToReturn() != null
+                   &&      conf.getExtDescNodeDataToReturn() != NodeDataField.DOMAINS_ALL
+                   &&      conf.getExtDescNodeDataToReturn() != NodeDataField.DOMAINS_COLLAPSED_PER_PROTEIN
+                   &&       conf.getExtDescNodeDataToReturn() != NodeDataField.SEQ_ANNOTATIONS
+                   &&      conf.getExtDescNodeDataToReturn() != NodeDataField.GO_TERM_IDS
+                   &&       conf.getExtDescNodeDataToReturn() != NodeDataField.SEQUENCE_MOL_SEQ_FASTA
+                        ) {
+                    op.setExtDescNodeDataToReturn( conf.getExtDescNodeDataToReturn() );
+                }
+                else {
+                    op.setExtDescNodeDataToReturn( NodeDataField.UNKNOWN );
+                }
+                break;  
             default:
                 op.setExtDescNodeDataToReturn( NodeDataField.UNKNOWN );
         }

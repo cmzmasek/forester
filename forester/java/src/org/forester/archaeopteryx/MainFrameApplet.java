@@ -188,7 +188,7 @@ public final class MainFrameApplet extends MainFrame {
                 MainFrame.setCycleNodeFillMenuItem( _cycle_node_fill_mi, getOptions() );
                 MainFrame.setCycleNodeShapeMenuItem( _cycle_node_shape_mi, getOptions() );
                 MainFrame.setTextNodeSizeMenuItem( _choose_node_size_mi, getOptions() );
-                MainFrame.setCycleDataReturnMenuItem( _cycle_data_return, getOptions() );
+               
                 try {
                     getMainPanel().getControlPanel().setVisibilityOfDomainStrucureCB();
                     getMainPanel().getControlPanel().setVisibilityOfX();
