@@ -936,12 +936,48 @@ public class PhylogenyMethods {
         }
     }
 
+    
+    private static enum NDF {
+        NN( "NN" ),
+        TC( "TC" ),
+        CN( "CN" ),
+        TS( "TS" ),
+        TI( "TI" ),
+        SY( "SY" ),
+        SN( "SN" ),
+        GN( "GN" ),
+        SS( "SS" ),
+        SA( "SA" ),
+        DO( "DO" ),
+        AN( "AN" ),
+        XR( "XR" ),
+        BC( "BC" ),
+        MS( "MS" );
+        
+        private final String _text;
+
+        NDF( final String text ) {
+            _text = text;
+        }
+
+        public static NDF fromString( final String text ) {
+                for( NDF n : NDF.values() ) {
+                    if ( text.startsWith( n._text ) ) {
+                        return n;
+                    }
+                }
+            return null;
+        }
+    }
+  
+    
     public static List<PhylogenyNode> searchData( final String query,
                                                   final Phylogeny phy,
                                                   final boolean case_sensitive,
                                                   final boolean partial,
                                                   final boolean regex,
-                                                  final boolean search_domains ) {
+                                                  final boolean search_domains,
+                                                  final double domains_confidence_threshold ) {
         final List<PhylogenyNode> nodes = new ArrayList<PhylogenyNode>();
         if ( phy.isEmpty() || ( query == null ) ) {
             return nodes;
@@ -949,120 +985,147 @@ public class PhylogenyMethods {
         if ( ForesterUtil.isEmpty( query ) ) {
             return nodes;
         }
+
+        String my_query = query;
+        NDF ndf = null;
+
+        if ( my_query.length() > 2 &&  my_query.indexOf( ":" ) == 2 ) {
+            ndf = NDF.fromString( my_query );
+            if ( ndf != null ) {
+                my_query = my_query.substring( 3 );
+            }
+        }
+       
+        
         for( final PhylogenyNodeIterator iter = phy.iteratorPreorder(); iter.hasNext(); ) {
             final PhylogenyNode node = iter.next();
             boolean match = false;
-            if ( match( node.getName(), query, case_sensitive, partial, regex ) ) {
+            
+            
+            if ( ( ndf == null || ndf == NDF.NN ) && match( node.getName(), my_query, case_sensitive, partial, regex ) ) {
                 match = true;
             }
-            else if ( node.getNodeData().isHasTaxonomy()
-                    && match( node.getNodeData().getTaxonomy().getTaxonomyCode(), query, case_sensitive, partial, regex ) ) {
+            else if ( ( ndf == null || ndf == NDF.TC ) && node.getNodeData().isHasTaxonomy()
+                    && match( node.getNodeData().getTaxonomy().getTaxonomyCode(), my_query, case_sensitive, partial, regex ) ) {
                 match = true;
             }
-            else if ( node.getNodeData().isHasTaxonomy()
-                    && match( node.getNodeData().getTaxonomy().getCommonName(), query, case_sensitive, partial, regex ) ) {
+            else if ( ( ndf == null || ndf == NDF.CN ) && node.getNodeData().isHasTaxonomy()
+                    && match( node.getNodeData().getTaxonomy().getCommonName(), my_query, case_sensitive, partial, regex ) ) {
                 match = true;
             }
-            else if ( node.getNodeData().isHasTaxonomy()
+            else if ( ( ndf == null || ndf == NDF.TS ) && node.getNodeData().isHasTaxonomy()
                     && match( node.getNodeData().getTaxonomy().getScientificName(),
-                              query,
+                              my_query,
                               case_sensitive,
                               partial,
                               regex ) ) {
                 match = true;
             }
-            else if ( node.getNodeData().isHasTaxonomy()
+            else if ( ( ndf == null || ndf == NDF.TI ) &&
+                    node.getNodeData().isHasTaxonomy()
                     && ( node.getNodeData().getTaxonomy().getIdentifier() != null )
                     && match( node.getNodeData().getTaxonomy().getIdentifier().getValue(),
-                              query,
+                              my_query,
                               case_sensitive,
                               partial,
                               regex ) ) {
                 match = true;
             }
-            else if ( node.getNodeData().isHasTaxonomy() && !node.getNodeData().getTaxonomy().getSynonyms().isEmpty() ) {
+            else if ( 
+                    ( ndf == null || ndf == NDF.SY ) &&
+                    node.getNodeData().isHasTaxonomy() && !node.getNodeData().getTaxonomy().getSynonyms().isEmpty() ) {
                 final List<String> syns = node.getNodeData().getTaxonomy().getSynonyms();
                 I: for( final String syn : syns ) {
-                    if ( match( syn, query, case_sensitive, partial, regex ) ) {
+                    if ( match( syn, my_query, case_sensitive, partial, regex ) ) {
                         match = true;
                         break I;
                     }
                 }
             }
-            if ( !match && node.getNodeData().isHasSequence()
-                    && match( node.getNodeData().getSequence().getName(), query, case_sensitive, partial, regex ) ) {
+            if (    !match && ( ndf == null || ndf == NDF.SN ) &&
+                     node.getNodeData().isHasSequence()
+                    && match( node.getNodeData().getSequence().getName(), my_query, case_sensitive, partial, regex ) ) {
                 match = true;
             }
-            if ( !match && node.getNodeData().isHasSequence()
-                    && match( node.getNodeData().getSequence().getGeneName(), query, case_sensitive, partial, regex ) ) {
+            if (      !match && ( ndf == null || ndf == NDF.GN ) &&
+                     node.getNodeData().isHasSequence()
+                    && match( node.getNodeData().getSequence().getGeneName(), my_query, case_sensitive, partial, regex ) ) {
                 match = true;
             }
-            if ( !match && node.getNodeData().isHasSequence()
-                    && match( node.getNodeData().getSequence().getSymbol(), query, case_sensitive, partial, regex ) ) {
+            if (    !match && ( ndf == null || ndf == NDF.SS ) &&
+                    
+                     node.getNodeData().isHasSequence()
+                    && match( node.getNodeData().getSequence().getSymbol(), my_query, case_sensitive, partial, regex ) ) {
                 match = true;
             }
-            if ( !match
-                    && node.getNodeData().isHasSequence()
+            if (   !match && ( ndf == null || ndf == NDF.SA ) &&
+                    
+                   
+                     node.getNodeData().isHasSequence()
                     && ( node.getNodeData().getSequence().getAccession() != null )
                     && match( node.getNodeData().getSequence().getAccession().getValue(),
-                              query,
+                              my_query,
                               case_sensitive,
                               partial,
                               regex ) ) {
                 match = true;
             }
-            if ( search_domains && !match && node.getNodeData().isHasSequence()
+            if (  !match && ( (ndf == null && search_domains ) || ndf == NDF.DO ) && node.getNodeData().isHasSequence()
                     && ( node.getNodeData().getSequence().getDomainArchitecture() != null ) ) {
                 final DomainArchitecture da = node.getNodeData().getSequence().getDomainArchitecture();
                 I: for( int i = 0; i < da.getNumberOfDomains(); ++i ) {
-                    if ( match( da.getDomain( i ).getName(), query, case_sensitive, partial, regex ) ) {
+                    if ( ( da.getDomain( i ).getConfidence() <= domains_confidence_threshold ) && ( match( da.getDomain( i ).getName(), my_query, case_sensitive, partial, regex ) ) ) {
                         match = true;
                         break I;
                     }
                 }
             }
-            if ( !match && node.getNodeData().isHasSequence()
+            if ( 
+                    !match && ( ndf == null || ndf == NDF.AN ) &&
+                    node.getNodeData().isHasSequence()
                     && ( node.getNodeData().getSequence().getAnnotations() != null ) ) {
                 for( final Annotation ann : node.getNodeData().getSequence().getAnnotations() ) {
-                    if ( match( ann.getDesc(), query, case_sensitive, partial, regex ) ) {
+                    if ( match( ann.getDesc(), my_query, case_sensitive, partial, regex ) ) {
                         match = true;
                         break;
                     }
-                    if ( match( ann.getRef(), query, case_sensitive, partial, regex ) ) {
+                    if ( match( ann.getRef(), my_query, case_sensitive, partial, regex ) ) {
                         match = true;
                         break;
                     }
                 }
             }
-            if ( !match && node.getNodeData().isHasSequence()
+            if ( !match && ( ndf == null || ndf == NDF.XR ) &&
+                    node.getNodeData().isHasSequence()
                     && ( node.getNodeData().getSequence().getCrossReferences() != null ) ) {
                 for( final Accession x : node.getNodeData().getSequence().getCrossReferences() ) {
-                    if ( match( x.getComment(), query, case_sensitive, partial, regex ) ) {
+                    if ( match( x.getComment(), my_query, case_sensitive, partial, regex ) ) {
                         match = true;
                         break;
                     }
-                    if ( match( x.getSource(), query, case_sensitive, partial, regex ) ) {
+                    if ( match( x.getSource(), my_query, case_sensitive, partial, regex ) ) {
                         match = true;
                         break;
                     }
-                    if ( match( x.getValue(), query, case_sensitive, partial, regex ) ) {
+                    if ( match( x.getValue(), my_query, case_sensitive, partial, regex ) ) {
                         match = true;
                         break;
                     }
                 }
             }
             //
-            if ( !match && ( node.getNodeData().getBinaryCharacters() != null ) ) {
+            if ( !match && ( ndf == null || ndf == NDF.BC ) &&
+                    ( node.getNodeData().getBinaryCharacters() != null ) ) {
                 Iterator<String> it = node.getNodeData().getBinaryCharacters().getPresentCharacters().iterator();
                 I: while ( it.hasNext() ) {
-                    if ( match( it.next(), query, case_sensitive, partial, regex ) ) {
+                    if ( match( it.next(), my_query, case_sensitive, partial, regex ) ) {
                         match = true;
                         break I;
                     }
                 }
                 it = node.getNodeData().getBinaryCharacters().getGainedCharacters().iterator();
                 I: while ( it.hasNext() ) {
-                    if ( match( it.next(), query, case_sensitive, partial, regex ) ) {
+                    if ( match( it.next(), my_query, case_sensitive, partial, regex ) ) {
                         match = true;
                         break I;
                     }

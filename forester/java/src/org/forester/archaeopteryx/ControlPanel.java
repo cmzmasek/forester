@@ -224,11 +224,12 @@ final class ControlPanel extends JPanel implements ActionListener {
                 }
                 displayedPhylogenyMightHaveChanged( true );
             }
-            else if ( e.getSource() == _show_domain_architectures ) {
+            else if ( e.getSource() == _show_domain_architectures  ) {
                 search0();
                 search1();
                 displayedPhylogenyMightHaveChanged( true );
             }
+            
             else if ( ( tp != null ) && ( tp.getPhylogeny() != null ) ) {
                 if ( e.getSource() == getDisplayAsPhylogramCb() ) {
                     setDrawPhylogram( getDisplayAsPhylogramCb().isSelected() );
@@ -291,10 +292,14 @@ final class ControlPanel extends JPanel implements ActionListener {
                 }
                 else if ( e.getSource() == _decr_domain_structure_evalue_thr ) {
                     _mainpanel.getCurrentTreePanel().decreaseDomainStructureEvalueThresholdExp();
+                    search0();
+                    search1();
                     displayedPhylogenyMightHaveChanged( true );
                 }
                 else if ( e.getSource() == _incr_domain_structure_evalue_thr ) {
                     _mainpanel.getCurrentTreePanel().increaseDomainStructureEvalueThresholdExp();
+                    search0();
+                    search1();
                     displayedPhylogenyMightHaveChanged( true );
                 }
                 else if ( e.getSource() == _search_tf_0 ) {
@@ -1822,12 +1827,16 @@ final class ControlPanel extends JPanel implements ActionListener {
                                                                          isShowDomainArchitectures() ) );
                 }
                 else {
+                    final TreePanel tp = getMainPanel().getCurrentTreePanel();
+                   
+                    
                     nodes.addAll( PhylogenyMethods.searchData( query,
                                                                tree,
                                                                getOptions().isSearchCaseSensitive(),
                                                                !getOptions().isMatchWholeTermsOnly(),
                                                                getOptions().isSearchWithRegex(),
-                                                               isShowDomainArchitectures() ) );
+                                                               isShowDomainArchitectures(),
+                                                               tp != null ? Math.pow( 10, tp.getDomainStructureEvalueThresholdExp() ) : 0 )  );
                 }
             }
             if ( getOptions().isInverseSearchResult() ) {
@@ -1877,12 +1886,14 @@ final class ControlPanel extends JPanel implements ActionListener {
                                                                          isShowDomainArchitectures() ) );
                 }
                 else {
+                    final TreePanel tp = getMainPanel().getCurrentTreePanel();
                     nodes.addAll( PhylogenyMethods.searchData( query,
                                                                tree,
                                                                getOptions().isSearchCaseSensitive(),
                                                                !getOptions().isMatchWholeTermsOnly(),
                                                                getOptions().isSearchWithRegex(),
-                                                               isShowDomainArchitectures() ) );
+                                                               isShowDomainArchitectures(),
+                                                               tp != null ? Math.pow( 10, tp.getDomainStructureEvalueThresholdExp() ) : 0 )  );
                 }
             }
             if ( getOptions().isInverseSearchResult() ) {

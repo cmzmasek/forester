@@ -476,7 +476,7 @@ final public class Options {
         _base_font = new Font( Configuration.getDefaultFontFamilyName(), Font.PLAIN, 10 );
         _match_whole_terms_only = false;
         _search_with_regex = false;
-        _search_case_sensitive = true;
+        _search_case_sensitive = false;
         _print_line_width = Constants.PDF_LINE_WIDTH_DEFAULT;
         _show_overview = true;
         _ov_placement = OVERVIEW_PLACEMENT_TYPE.UPPER_LEFT;
