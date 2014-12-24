@@ -1158,6 +1158,10 @@ public class PhylogenyMethods {
             final PhylogenyNode node = iter.next();
             boolean all_matched = true;
             for( String query : queries ) {
+                if ( query == null ) {
+                    continue;
+                }
+                query = query.trim();
                 NDF ndf = null;
                 if ( ( query.length() > 2 ) && ( query.indexOf( ":" ) == 2 ) ) {
                     ndf = NDF.fromString( query );
