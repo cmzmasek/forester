@@ -224,12 +224,11 @@ final class ControlPanel extends JPanel implements ActionListener {
                 }
                 displayedPhylogenyMightHaveChanged( true );
             }
-            else if ( e.getSource() == _show_domain_architectures  ) {
+            else if ( e.getSource() == _show_domain_architectures ) {
                 search0();
                 search1();
                 displayedPhylogenyMightHaveChanged( true );
             }
-            
             else if ( ( tp != null ) && ( tp.getPhylogeny() != null ) ) {
                 if ( e.getSource() == getDisplayAsPhylogramCb() ) {
                     setDrawPhylogram( getDisplayAsPhylogramCb().isSelected() );
@@ -572,7 +571,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             case Configuration.color_according_to_annotation:
                 _color_according_to_annotation = new JCheckBox( title );
                 _color_according_to_annotation
-                        .setToolTipText( "To colorize sequence annotation labels as a function of sequence annotation" );
+                .setToolTipText( "To colorize sequence annotation labels as a function of sequence annotation" );
                 addJCheckBox( _color_according_to_annotation, ch_panel );
                 add( ch_panel );
                 break;
@@ -629,7 +628,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             case Configuration.use_style:
                 _use_visual_styles_cb = new JCheckBox( title );
                 getUseVisualStylesCb()
-                        .setToolTipText( "To use visual styles (node colors, fonts) and branch colors, if present" );
+                .setToolTipText( "To use visual styles (node colors, fonts) and branch colors, if present" );
                 addJCheckBox( getUseVisualStylesCb(), ch_panel );
                 add( ch_panel );
                 break;
@@ -1162,13 +1161,13 @@ final class ControlPanel extends JPanel implements ActionListener {
                     getNodeDescPopupCb().setSelected( state );
                 }
                 break;
-            /* GUILHEM_BEG */
+                /* GUILHEM_BEG */
             case Configuration.show_relation_confidence:
                 if ( _seq_relation_confidence_switch != null ) {
                     _seq_relation_confidence_switch.setSelected( state );
                 }
                 break;
-            /* GUILHEM_END */
+                /* GUILHEM_END */
             default:
                 throw new AssertionError( "unknown checkbox: " + which );
         }
@@ -1578,7 +1577,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             }
             else {
                 getMainPanel().getMainFrame().setSelectedTypeInTypeMenu( getMainPanel().getCurrentTreePanel()
-                        .getPhylogenyGraphicsType() );
+                                                                         .getPhylogenyGraphicsType() );
             }
             getMainPanel().getCurrentTreePanel().updateSubSuperTreeButton();
             getMainPanel().getControlPanel().search0();
@@ -1636,7 +1635,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             treepanel.resetPreferredSize();
             getMainPanel().getCurrentScrollPane().getViewport().validate();
             sb.setValue( ForesterUtil.roundToInt( ( ( sb.getMaximum() - sb.getMinimum() ) / x )
-                    - ( sb.getVisibleAmount() / 2.0 ) ) );
+                                                  - ( sb.getVisibleAmount() / 2.0 ) ) );
         }
         else {
             final int x = sb.getMaximum() - sb.getMinimum() - sb.getVisibleAmount() - sb.getValue();
@@ -1661,7 +1660,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         treepanel.resetPreferredSize();
         getMainPanel().getCurrentScrollPane().getViewport().validate();
         sb.setValue( ForesterUtil.roundToInt( ( ( sb.getMaximum() - sb.getMinimum() ) / x )
-                - ( sb.getVisibleAmount() / 2.0 ) ) );
+                                              - ( sb.getVisibleAmount() / 2.0 ) ) );
         treepanel.resetPreferredSize();
         treepanel.updateOvSizes();
     }
@@ -1686,7 +1685,7 @@ final class ControlPanel extends JPanel implements ActionListener {
                 treepanel.resetPreferredSize();
                 getMainPanel().getCurrentScrollPane().getViewport().validate();
                 sb.setValue( ForesterUtil.roundToInt( ( ( sb.getMaximum() - sb.getMinimum() ) / x )
-                        - ( sb.getVisibleAmount() / 2.0 ) ) );
+                                                      - ( sb.getVisibleAmount() / 2.0 ) ) );
             }
             else {
                 final int x = sb.getMaximum() - sb.getMinimum() - sb.getVisibleAmount() - sb.getValue();
@@ -1715,7 +1714,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             treepanel.resetPreferredSize();
             getMainPanel().getCurrentScrollPane().getViewport().validate();
             sb.setValue( ForesterUtil.roundToInt( ( ( sb.getMaximum() - sb.getMinimum() ) / x )
-                    - ( sb.getVisibleAmount() / 2.0 ) ) );
+                                                  - ( sb.getVisibleAmount() / 2.0 ) ) );
             treepanel.resetPreferredSize();
             treepanel.updateOvSizes();
         }
@@ -1760,7 +1759,7 @@ final class ControlPanel extends JPanel implements ActionListener {
                                                                                                         cellHasFocus );
                 if ( ( value != null ) && ( value instanceof SequenceRelation.SEQUENCE_RELATION_TYPE ) ) {
                     ( ( DefaultListCellRenderer ) component ).setText( SequenceRelation
-                            .getPrintableNameByType( ( SequenceRelation.SEQUENCE_RELATION_TYPE ) value ) );
+                                                                       .getPrintableNameByType( ( SequenceRelation.SEQUENCE_RELATION_TYPE ) value ) );
                 }
                 return component;
             }
@@ -1819,24 +1818,26 @@ final class ControlPanel extends JPanel implements ActionListener {
                     continue;
                 }
                 query = query.trim();
-                if ( ( query.indexOf( '+' ) >= 0 ) && !getOptions().isSearchWithRegex() ) {
+                final TreePanel tp = getMainPanel().getCurrentTreePanel();
+                if ( ( query.indexOf( '+' ) > 0 ) && !getOptions().isSearchWithRegex() ) {
                     nodes.addAll( PhylogenyMethods.searchDataLogicalAnd( query.split( "\\++" ),
                                                                          tree,
                                                                          getOptions().isSearchCaseSensitive(),
                                                                          !getOptions().isMatchWholeTermsOnly(),
-                                                                         isShowDomainArchitectures() ) );
+                                                                         isShowDomainArchitectures(),
+                                                                         tp != null ? Math.pow( 10,
+                                                                                                tp.getDomainStructureEvalueThresholdExp() )
+                                                                                 : 0 ) );
                 }
                 else {
-                    final TreePanel tp = getMainPanel().getCurrentTreePanel();
-                   
-                    
                     nodes.addAll( PhylogenyMethods.searchData( query,
                                                                tree,
                                                                getOptions().isSearchCaseSensitive(),
                                                                !getOptions().isMatchWholeTermsOnly(),
                                                                getOptions().isSearchWithRegex(),
                                                                isShowDomainArchitectures(),
-                                                               tp != null ? Math.pow( 10, tp.getDomainStructureEvalueThresholdExp() ) : 0 )  );
+                                                               tp != null ? Math.pow( 10, tp
+                                                                       .getDomainStructureEvalueThresholdExp() ) : 0 ) );
                 }
             }
             if ( getOptions().isInverseSearchResult() ) {
@@ -1878,22 +1879,26 @@ final class ControlPanel extends JPanel implements ActionListener {
                     continue;
                 }
                 query = query.trim();
-                if ( ( query.indexOf( '+' ) >= 0 ) && !getOptions().isSearchWithRegex() ) {
+                final TreePanel tp = getMainPanel().getCurrentTreePanel();
+                if ( ( query.indexOf( '+' ) > 0 ) && !getOptions().isSearchWithRegex() ) {
                     nodes.addAll( PhylogenyMethods.searchDataLogicalAnd( query.split( "\\++" ),
                                                                          tree,
                                                                          getOptions().isSearchCaseSensitive(),
                                                                          !getOptions().isMatchWholeTermsOnly(),
-                                                                         isShowDomainArchitectures() ) );
+                                                                         isShowDomainArchitectures(),
+                                                                         tp != null ? Math.pow( 10,
+                                                                                                tp.getDomainStructureEvalueThresholdExp() )
+                                                                                 : 0 ) );
                 }
                 else {
-                    final TreePanel tp = getMainPanel().getCurrentTreePanel();
                     nodes.addAll( PhylogenyMethods.searchData( query,
                                                                tree,
                                                                getOptions().isSearchCaseSensitive(),
                                                                !getOptions().isMatchWholeTermsOnly(),
                                                                getOptions().isSearchWithRegex(),
                                                                isShowDomainArchitectures(),
-                                                               tp != null ? Math.pow( 10, tp.getDomainStructureEvalueThresholdExp() ) : 0 )  );
+                                                               tp != null ? Math.pow( 10, tp
+                                                                       .getDomainStructureEvalueThresholdExp() ) : 0 ) );
                 }
             }
             if ( getOptions().isInverseSearchResult() ) {
@@ -2044,14 +2049,12 @@ final class ControlPanel extends JPanel implements ActionListener {
             _get_ext_desc_data = cb_index;
             if ( !ForesterUtil.isEmpty( getConfiguration().getLabelForGetExtDescendentsData() ) ) {
                 addClickToOption( Configuration.get_ext_desc_data, getConfiguration()
-                                  .getLabelForGetExtDescendentsData() );
+                        .getLabelForGetExtDescendentsData() );
             }
             else {
-               
                 addClickToOption( Configuration.get_ext_desc_data,
                                   getConfiguration().getClickToTitle( Configuration.get_ext_desc_data ) );
             }
-           
             if ( default_option == Configuration.get_ext_desc_data ) {
                 selected_index = cb_index;
             }
