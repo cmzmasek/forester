@@ -322,7 +322,7 @@ module Evoruby
               seq.set_name( seq.get_name + " [" + current_species + "]" )
               new_msa.add_sequence( seq )
             else
-              Util.fatal_error( PRG_NAME, "unexected error: seq is nil" )
+              Util.fatal_error( PRG_NAME, "unexpected error: seq is nil" )
             end
 
             if domain_ranges != nil
