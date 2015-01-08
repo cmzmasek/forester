@@ -190,20 +190,43 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
             }
             else if ( line.startsWith( "DE" ) && ForesterUtil.isEmpty( e.getSequenceName() ) ) {
                 if ( ( line.indexOf( "RecName:" ) > 0 ) && ( line.indexOf( "Full=" ) > 0 ) ) {
-                    e.setSequenceName( SequenceDbWsTools.extractFromTo( line, "Full=", ";" ) );
+                    if ( line.indexOf( "{" ) > 0  ) {
+                        e.setSequenceName( SequenceDbWsTools.extractFromTo( line, "Full=", "{" ) );
+                    }
+                    else {
+                        e.setSequenceName( SequenceDbWsTools.extractFromTo( line, "Full=", ";" ) );
+                    }
                 }
                 else if ( ( line.indexOf( "SubName:" ) > 0 ) && ( line.indexOf( "Full=" ) > 0 ) ) {
-                    e.setSequenceName( SequenceDbWsTools.extractFromTo( line, "Full=", ";" ) );
+                    if ( line.indexOf( "{" ) > 0  ) {
+                        e.setSequenceName( SequenceDbWsTools.extractFromTo( line, "Full=", "{" ) );
+                    }
+                    else {
+                        e.setSequenceName( SequenceDbWsTools.extractFromTo( line, "Full=", ";" ) );
+                    }
+                    
                 }
             }
             else if ( line.startsWith( "DE" ) && ForesterUtil.isEmpty( e.getSequenceSymbol() ) ) {
+              
                 if ( line.indexOf( "Short=" ) > 0 ) {
-                    e.setSequenceSymbol( SequenceDbWsTools.extractFromTo( line, "Short=", ";" ) );
+                    if ( line.indexOf( "{" ) > 0  ) {
+                        e.setSequenceSymbol( SequenceDbWsTools.extractFromTo( line, "Short=", "{" ) );
+                    }
+                    else {
+                        e.setSequenceSymbol( SequenceDbWsTools.extractFromTo( line, "Short=", ";" ) );
+                    }
+                   
                 }
             }
             else if ( line.startsWith( "GN" ) && ForesterUtil.isEmpty( e.getGeneName() ) ) {
                 if ( line.indexOf( "Name=" ) > 0 ) {
-                    e.setGeneName( SequenceDbWsTools.extractFromTo( line, "Name=", ";" ) );
+                    if ( line.indexOf( "{" ) > 0  ) {
+                        e.setGeneName( SequenceDbWsTools.extractFromTo( line, "Name=", "{" ) );
+                    }
+                    else {
+                        e.setGeneName( SequenceDbWsTools.extractFromTo( line, "Name=", ";" ) );
+                    }
                 }
             }
             else if ( line.startsWith( "DR" ) ) {
