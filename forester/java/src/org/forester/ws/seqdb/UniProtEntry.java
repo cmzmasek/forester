@@ -54,6 +54,8 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
     public final static Pattern  PharmGKB_PATTERN  = Pattern.compile( "PharmGKB;\\s+([0-9A-Z]+);" );
     public final static Pattern  Reactome_PATTERN  = Pattern.compile( "Reactome;\\s+([0-9A-Z]+);\\s+([^\\.]+)" );
     public final static Pattern  HGNC_PATTERN      = Pattern.compile( "HGNC;\\s+HGNC:(\\d+);" );
+    public final static Pattern  NCBI_TAXID_PATTERN= Pattern.compile( "NCBI_TaxID=(\\d+)" );
+    
     private String               _ac;
     private SortedSet<Accession> _cross_references;
     private String               _gene_name;
@@ -323,7 +325,10 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
             }
             else if ( line.startsWith( "OX" ) ) {
                 if ( line.indexOf( "NCBI_TaxID=" ) > 0 ) {
-                    e.setTaxId( SequenceDbWsTools.extractFromTo( line, "NCBI_TaxID=", ";" ) );
+                    final Matcher m = NCBI_TAXID_PATTERN.matcher( line );
+                    if ( m.find() ) {
+                        e.setTaxId( m.group( 1 ) );
+                    }
                 }
             }
             else if ( line.startsWith( "SQ" ) ) {
