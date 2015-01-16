@@ -9450,6 +9450,14 @@ public final class Test {
             if ( !p11.toNewHampshireX().equals( "(('A: \"':0.2,B:0.3):0.5[&&NHX:B=91],C:0.1)root:0.1[&&NHX:B=100]" ) ) {
                 return false;
             }
+            final Phylogeny p12 = factory
+                    .create( "((A:0.2,B:0.3):0.5[&&NHX:B=91],C:0.1)root:0.1[&&NHX:B=100]",
+                             new NHXParser() )[ 0 ];
+            if ( !p12.toNewHampshireX().equals( "((A:0.2,B:0.3):0.5[&&NHX:B=91],C:0.1)root:0.1[&&NHX:B=100]" ) ) {
+                return false;
+            }
+            
+            
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );

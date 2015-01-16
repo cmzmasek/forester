@@ -176,7 +176,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private static final BasicStroke     STROKE_2                                           = new BasicStroke( 2f );
     private static final double          TWO_PI                                             = 2 * Math.PI;
     private final static int             WIGGLE                                             = 2;
-    private static final String          SHOW_ONLY_THIS_CONF_TYPE                           = "posterior probability";                                  //TODO remove me
+    private static final String          SHOW_ONLY_THIS_CONF_TYPE                           = null;    //TODO remove me
     HashMap<Long, Short>                 _nodeid_dist_to_leaf                               = new HashMap<Long, Short>();
     final private Arc2D                  _arc                                               = new Arc2D.Double();
     private AffineTransform              _at;
