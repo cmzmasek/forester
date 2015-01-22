@@ -61,6 +61,7 @@ public class msa_compactor {
     final static private String       STEP_OPTION                            = "s";
     final static private String       LENGTH_OPTION                          = "l";
     final static private String       REALIGN_OPTION                         = "a";
+    final static private String       INFO_ONLY_OPTION                       = "i";
     //
     final static private String       STEP_FOR_DIAGNOSTICS_OPTION            = "sd";
     final static private String       MIN_LENGTH_OPTION                      = "ml";
@@ -124,6 +125,7 @@ public class msa_compactor {
             allowed_options.add( OUTPUT_REMOVED_SEQS_OPTION );
             allowed_options.add( MAFFT_OPTIONS );
             allowed_options.add( PERFORM_PHYLOGENETIC_INFERENCE );
+            allowed_options.add( INFO_ONLY_OPTION );
             final String dissallowed_options = cla.validateAllowedOptionsAsString( allowed_options );
             if ( dissallowed_options.length() > 0 ) {
                 ForesterUtil.fatalError( PRG_NAME, "unknown option(s): " + dissallowed_options );
@@ -137,6 +139,11 @@ public class msa_compactor {
                 msa = DeleteableMsa.createInstance( GeneralMsaParser.parse( is ) );
             }
             final DescriptiveStatistics initial_msa_stats = MsaMethods.calculateEffectiveLengthStatistics( msa );
+            if (cla.isOptionSet( INFO_ONLY_OPTION ) ) {
+                printInfo( in, msa, initial_msa_stats );
+                System.exit( 0 );
+            }
+            
             final boolean chart_only = ( !cla.isOptionSet( LENGTH_OPTION ) )
                     && ( !cla.isOptionSet( REMOVE_WORST_OFFENDERS_OPTION ) )
                     && ( !cla.isOptionSet( AV_GAPINESS_OPTION ) && ( !cla.isOptionSet( MIN_LENGTH_OPTION ) ) );
@@ -284,31 +291,11 @@ public class msa_compactor {
                             "step for diagnostics reports needs to be set to 1 for tree calculation" );
                 }
             }
-            ForesterUtil.printProgramInformation( PRG_NAME,
-                                                  PRG_DESC,
-                                                  PRG_VERSION,
-                                                  PRG_DATE,
-                                                  E_MAIL,
-                                                  WWW,
-                                                  ForesterUtil.getForesterLibraryInformation() );
-            System.out.println( "Input MSA                            : " + in );
-            System.out.println( "  MSA length                         : " + msa.getLength() );
-            System.out.println( "  Number of sequences                : " + msa.getNumberOfSequences() );
-            System.out.println( "  Median sequence length             : " + NF_1.format( initial_msa_stats.median() ) );
-            System.out.println( "  Mean sequence length               : "
-                    + NF_1.format( initial_msa_stats.arithmeticMean() ) );
-            System.out.println( "  Max sequence length                : " + ( ( int ) initial_msa_stats.getMax() ) );
-            System.out.println( "  Min sequence length                : " + ( ( int ) initial_msa_stats.getMin() ) );
-            System.out.println( "  Gap ratio                          : "
-                    + NF_4.format( MsaMethods.calcGapRatio( msa ) ) );
-            System.out.println( "  Normalized Shannon Entropy (entn21): "
-                    + NF_4.format( MsaMethods.calcNormalizedShannonsEntropy( 21, msa ) ) );
+            printInfo( in, msa, initial_msa_stats );
             if ( !chart_only ) {
                 System.out.println( "Output                               : " + out );
             }
-            else {
-                System.out.println( "Output                               : n/a" );
-            }
+            
             if ( removed_seqs_out_base != null ) {
                 System.out.println( "Write removed sequences to           : " + removed_seqs_out_base );
             }
@@ -416,6 +403,28 @@ public class msa_compactor {
         }
     }
 
+    private static void printInfo( final File in, DeleteableMsa msa, final DescriptiveStatistics initial_msa_stats ) {
+        ForesterUtil.printProgramInformation( PRG_NAME,
+                                              PRG_DESC,
+                                              PRG_VERSION,
+                                              PRG_DATE,
+                                              E_MAIL,
+                                              WWW,
+                                              ForesterUtil.getForesterLibraryInformation() );
+        System.out.println( "Input MSA                            : " + in );
+        System.out.println( "  MSA length                         : " + msa.getLength() );
+        System.out.println( "  Number of sequences                : " + msa.getNumberOfSequences() );
+        System.out.println( "  Median sequence length             : " + NF_1.format( initial_msa_stats.median() ) );
+        System.out.println( "  Mean sequence length               : "
+                + NF_1.format( initial_msa_stats.arithmeticMean() ) );
+        System.out.println( "  Max sequence length                : " + ( ( int ) initial_msa_stats.getMax() ) );
+        System.out.println( "  Min sequence length                : " + ( ( int ) initial_msa_stats.getMin() ) );
+        System.out.println( "  Gap ratio                          : "
+                + NF_4.format( MsaMethods.calcGapRatio( msa ) ) );
+        System.out.println( "  Normalized Shannon Entropy (entn21): "
+                + NF_4.format( MsaMethods.calcNormalizedShannonsEntropy( 21, msa ) ) );
+    }
+
     private static void checkPathToMafft( final String path_to_mafft ) {
         if ( !ForesterUtil.isEmpty( path_to_mafft ) && MsaInferrer.isInstalled( path_to_mafft ) ) {
         }
@@ -448,10 +457,12 @@ public class msa_compactor {
         }
         System.out.println( "Usage:" );
         System.out.println();
-        System.out.println( PRG_NAME + " <options> <msa input file> <output file base>" );
+        System.out.println( PRG_NAME + " [options] <msa input file> [output file base]" );
         System.out.println();
         System.out.println( " options: " );
         System.out.println();
+        System.out.println( "   -" + INFO_ONLY_OPTION
+                            + "             to only display same basic information about the MSA" );
         System.out.println( "   -" + REMOVE_WORST_OFFENDERS_OPTION
                             + "=<integer>   number of worst offender sequences to remove" );
         System.out.println( "   -" + LENGTH_OPTION + "=<integer>   target MSA length" );
