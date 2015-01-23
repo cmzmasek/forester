@@ -185,7 +185,7 @@ public class MsaCompactor {
         return msa_props;
     }
 
-    public final void decorateTree( final Phylogeny phy, final List<MsaProperties> msa_props, final boolean chart_only ) {
+    public final void decorateTree( final Phylogeny phy, final Msa msa, final List<MsaProperties> msa_props, final boolean chart_only ) {
         final BasicDescriptiveStatistics length_stats = new BasicDescriptiveStatistics();
         for( int i = 0; i < msa_props.size(); ++i ) {
             final MsaProperties msa_prop = msa_props.get( i );
