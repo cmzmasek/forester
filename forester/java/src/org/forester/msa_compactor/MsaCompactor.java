@@ -143,6 +143,7 @@ public class MsaCompactor {
             System.out.println( "calculating phylogentic tree..." );
             System.out.println();
             phy = calcTree();
+            addSeqs2Tree( _msa, phy );
         }
         if ( !_realign ) {
             _step = -1;
@@ -185,7 +186,26 @@ public class MsaCompactor {
         return msa_props;
     }
 
-    public final void decorateTree( final Phylogeny phy, final Msa msa, final List<MsaProperties> msa_props, final boolean chart_only ) {
+    private final static void addSeqs2Tree( final Msa msa, final Phylogeny phy ) {
+        for( int i = 0; i < msa.getNumberOfSequences(); ++i ) {
+            final MolecularSequence seq = msa.getSequence( i );
+            final String seq_name = seq.getIdentifier();
+            final PhylogenyNode n = phy.getNode( seq_name );
+            if ( !n.getNodeData().isHasSequence() ) {
+                n.getNodeData().addSequence( new org.forester.phylogeny.data.Sequence() );
+            }
+            else {
+                throw new IllegalArgumentException( "this should not have happened" );
+            }
+            n.getNodeData().getSequence().setMolecularSequence( seq.getMolecularSequenceAsString() );
+            n.getNodeData().getSequence().setMolecularSequenceAligned( true );
+            n.getNodeData().getSequence().setName( seq_name );
+        }
+    }
+
+    private final static void decorateTree( final Phylogeny phy,
+                                            final List<MsaProperties> msa_props,
+                                            final boolean chart_only ) {
         final BasicDescriptiveStatistics length_stats = new BasicDescriptiveStatistics();
         for( int i = 0; i < msa_props.size(); ++i ) {
             final MsaProperties msa_prop = msa_props.get( i );
@@ -210,32 +230,34 @@ public class MsaCompactor {
                 it.next().getNodeData().setNodeVisualData( vis );
             }
         }
-        for( int i = 0; i < msa_props.size(); ++i ) {
-            final MsaProperties msa_prop = msa_props.get( i );
-            final String id = msa_prop.getRemovedSeq();
-            if ( !ForesterUtil.isEmpty( id ) ) {
-                final PhylogenyNode n = phy.getNode( id );
-                n.setName( n.getName() + " [" + i + "]" );
-                if ( !chart_only ) {
-                    final NodeVisualData vis = new NodeVisualData();
-                    vis.setFillType( NodeFill.SOLID );
-                    vis.setShape( NodeShape.RECTANGLE );
-                    vis.setNodeColor( ForesterUtil.calcColor( msa_prop.getLength(), min, max, mean_color, max_color ) );
-                    n.getNodeData().setNodeVisualData( vis );
+      
+                for( int i = 0; i < msa_props.size(); ++i ) {
+                    final MsaProperties msa_prop = msa_props.get( i );
+                    final String id = msa_prop.getRemovedSeq();
+                    if ( !ForesterUtil.isEmpty( id ) ) {
+                        final PhylogenyNode n = phy.getNode( id );
+                        n.setName( n.getName() + " [" + i + "]" );
+                        if ( !chart_only ) {
+                            final NodeVisualData vis = new NodeVisualData();
+                            vis.setFillType( NodeFill.SOLID );
+                            vis.setShape( NodeShape.RECTANGLE );
+                            vis.setNodeColor( ForesterUtil.calcColor( msa_prop.getLength(), min, max, mean_color, max_color ) );
+                            n.getNodeData().setNodeVisualData( vis );
+                        }
+                        else {
+                            n.getNodeData()
+                                    .getNodeVisualData()
+                                    .setNodeColor( ForesterUtil.calcColor( msa_prop.getLength(),
+                                                                           min,
+                                                                           max,
+                                                                           mean,
+                                                                           min_color,
+                                                                           max_color,
+                                                                           mean_color ) );
+                        }
+                    }
+        
                 }
-                else {
-                    n.getNodeData()
-                    .getNodeVisualData()
-                    .setNodeColor( ForesterUtil.calcColor( msa_prop.getLength(),
-                                                           min,
-                                                           max,
-                                                           mean,
-                                                           min_color,
-                                                           max_color,
-                                                           mean_color ) );
-                }
-            }
-        }
     }
 
     final public void deleteGapColumns( final double max_allowed_gap_ratio ) {
@@ -294,6 +316,7 @@ public class MsaCompactor {
             System.out.println( "calculating phylogentic tree..." );
             System.out.println();
             phy = calcTree();
+            addSeqs2Tree( _msa, phy );
         }
         printTableHeader();
         MsaProperties msa_prop = new MsaProperties( _msa, "", _calculate_shannon_entropy );
@@ -326,7 +349,7 @@ public class MsaCompactor {
             System.out.println( msg );
         }
         if ( _phylogentic_inference ) {
-            decorateTree( phy, msa_props, false );
+            decorateTree( phy,  msa_props, false );
             displayTree( phy );
         }
         return msa_props;
@@ -344,6 +367,7 @@ public class MsaCompactor {
             System.out.println( "calculating phylogentic tree..." );
             System.out.println();
             phy = calcTree();
+            addSeqs2Tree( _msa, phy );
         }
         printTableHeader();
         MsaProperties msa_prop = new MsaProperties( _msa, "", _calculate_shannon_entropy );
@@ -376,7 +400,7 @@ public class MsaCompactor {
             System.out.println( msg );
         }
         if ( _phylogentic_inference ) {
-            decorateTree( phy, msa_props, false );
+            decorateTree( phy,  msa_props, false );
             displayTree( phy );
         }
         return msa_props;
@@ -395,6 +419,7 @@ public class MsaCompactor {
             System.out.println( "calculating phylogentic tree..." );
             System.out.println();
             phy = calcTree();
+            addSeqs2Tree( _msa, phy );
         }
         printTableHeader();
         MsaProperties msa_prop = new MsaProperties( _msa, "", _calculate_shannon_entropy );
@@ -425,8 +450,16 @@ public class MsaCompactor {
             System.out.println( msg );
         }
         if ( _phylogentic_inference ) {
-            decorateTree( phy, msa_props, false );
+            decorateTree( phy,  msa_props, false );
             displayTree( phy );
+            
+           
+                System.out.println( "calculating phylogentic tree..." );
+                System.out.println();
+                Phylogeny phy2 = calcTree();
+                addSeqs2Tree( _msa, phy2 );
+                displayTree( phy2 );
+            
         }
         return msa_props;
     }

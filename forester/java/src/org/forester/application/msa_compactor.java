@@ -46,6 +46,12 @@ import org.forester.util.CommandLineArguments;
 import org.forester.util.DescriptiveStatistics;
 import org.forester.util.ForesterUtil;
 
+
+/*
+java -cp C:\Users\czmasek\SOFTWARE_DEV\ECLIPSE\forester\java\fo
+rester.jar org.forester.application.msa_compactor Bcl-2_e1_20_mafft -t
+*/
+
 public class msa_compactor {
 
     final private static NumberFormat NF_1                                   = new DecimalFormat( "0.#" );
