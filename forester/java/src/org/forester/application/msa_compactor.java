@@ -418,20 +418,20 @@ public class msa_compactor {
                                               WWW,
                                               ForesterUtil.getForesterLibraryInformation() );
         System.out.println( "Input MSA                            : " + in );
-        System.out.println( "  MSA length                         : " + msa.getLength() );
-        System.out.println( "  Number of sequences                : " + msa.getNumberOfSequences() );
-        System.out.println( "  Median sequence length             : " + NF_1.format( initial_msa_stats.median() ) );
-        System.out.println( "  Mean sequence length               : "
+        System.out.println( "MSA length                         : " + msa.getLength() );
+        System.out.println( "Number of sequences                : " + msa.getNumberOfSequences() );
+        System.out.println( "Median sequence length             : " + NF_1.format( initial_msa_stats.median() ) );
+        System.out.println( "Mean sequence length               : "
                 + NF_1.format( initial_msa_stats.arithmeticMean() ) );
-        System.out.println( "  Max sequence length                : " + ( ( int ) initial_msa_stats.getMax() ) );
-        System.out.println( "  Min sequence length                : " + ( ( int ) initial_msa_stats.getMin() ) );
-        System.out.println( "  Gap ratio                          : "
+        System.out.println( "Max sequence length                : " + ( ( int ) initial_msa_stats.getMax() ) );
+        System.out.println( "Min sequence length                : " + ( ( int ) initial_msa_stats.getMin() ) );
+        System.out.println( "Gap ratio                          : "
                 + NF_4.format( MsaMethods.calcGapRatio( msa ) ) );
-        System.out.println( "  Mean gap count per 100 residues    : "
+        System.out.println( "Mean gap count per 100 residues    : "
                 + NF_1.format( MsaMethods.calcNumberOfGapsPer100Stats( msa ).arithmeticMean() ) );
-        System.out.println( "  Normalized Shannon Entropy (entn7) : "
+        System.out.println( "Normalized Shannon Entropy (entn7) : "
                 + NF_4.format( MsaMethods.calcNormalizedShannonsEntropy( 7, msa ) ) );
-        System.out.println( "  Normalized Shannon Entropy (entn21): "
+        System.out.println( "Normalized Shannon Entropy (entn21): "
                 + NF_4.format( MsaMethods.calcNormalizedShannonsEntropy( 21, msa ) ) );
     }
 
