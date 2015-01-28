@@ -427,6 +427,10 @@ public class msa_compactor {
         System.out.println( "  Min sequence length                : " + ( ( int ) initial_msa_stats.getMin() ) );
         System.out.println( "  Gap ratio                          : "
                 + NF_4.format( MsaMethods.calcGapRatio( msa ) ) );
+        System.out.println( "  Mean gap count per 100 residues    : "
+                + NF_1.format( MsaMethods.calcNumberOfGapsPer100Stats( msa ).arithmeticMean() ) );
+        System.out.println( "  Normalized Shannon Entropy (entn7) : "
+                + NF_4.format( MsaMethods.calcNormalizedShannonsEntropy( 7, msa ) ) );
         System.out.println( "  Normalized Shannon Entropy (entn21): "
                 + NF_4.format( MsaMethods.calcNormalizedShannonsEntropy( 21, msa ) ) );
     }

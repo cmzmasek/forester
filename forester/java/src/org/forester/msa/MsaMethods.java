@@ -107,6 +107,44 @@ public final class MsaMethods {
         _ignored_seqs_ids = new ArrayList<String>();
     }
 
+    public static final DescriptiveStatistics calcNumberOfGapsPer100Stats( final Msa msa ) {
+        final int[] gaps = calcNumberOfGapsInMsa( msa );
+        final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
+        final double n = 100.0 / msa.getLength();
+        for( final int gap : gaps ) {
+            stats.addValue( n * gap );
+        }
+        return stats;
+    }
+
+    public static final int[] calcNumberOfGapsInMsa( final Msa msa ) {
+        final int seqs = msa.getNumberOfSequences();
+        final int[]  gaps= new int[ seqs ];
+        for( int i = 0; i < seqs; ++i ) {
+            gaps[ i ] =  calcNumberOfGaps( msa.getSequence( i ) );
+        }
+        return gaps;
+    }
+    
+    
+
+    public final static int calcNumberOfGaps( final MolecularSequence seq  ) {
+        int gaps = 0;
+        boolean was_gap = false;
+        for( int i = 0; i < seq.getLength(); ++i ) {
+            if ( seq.isGapAt( i ) ) {
+               if ( !was_gap ) {
+                   ++gaps;
+                   was_gap = true;
+               }
+            }
+            else {
+                was_gap = false;
+            }
+        }
+        return gaps;
+    }
+
     public static DescriptiveStatistics calcBasicGapinessStatistics( final Msa msa ) {
         final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
         for( int i = 0; i < msa.getLength(); ++i ) {

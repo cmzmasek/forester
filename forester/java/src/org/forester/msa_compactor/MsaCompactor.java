@@ -230,34 +230,32 @@ public class MsaCompactor {
                 it.next().getNodeData().setNodeVisualData( vis );
             }
         }
-      
-                for( int i = 0; i < msa_props.size(); ++i ) {
-                    final MsaProperties msa_prop = msa_props.get( i );
-                    final String id = msa_prop.getRemovedSeq();
-                    if ( !ForesterUtil.isEmpty( id ) ) {
-                        final PhylogenyNode n = phy.getNode( id );
-                        n.setName( n.getName() + " [" + i + "]" );
-                        if ( !chart_only ) {
-                            final NodeVisualData vis = new NodeVisualData();
-                            vis.setFillType( NodeFill.SOLID );
-                            vis.setShape( NodeShape.RECTANGLE );
-                            vis.setNodeColor( ForesterUtil.calcColor( msa_prop.getLength(), min, max, mean_color, max_color ) );
-                            n.getNodeData().setNodeVisualData( vis );
-                        }
-                        else {
-                            n.getNodeData()
-                                    .getNodeVisualData()
-                                    .setNodeColor( ForesterUtil.calcColor( msa_prop.getLength(),
-                                                                           min,
-                                                                           max,
-                                                                           mean,
-                                                                           min_color,
-                                                                           max_color,
-                                                                           mean_color ) );
-                        }
-                    }
-        
+        for( int i = 0; i < msa_props.size(); ++i ) {
+            final MsaProperties msa_prop = msa_props.get( i );
+            final String id = msa_prop.getRemovedSeq();
+            if ( !ForesterUtil.isEmpty( id ) ) {
+                final PhylogenyNode n = phy.getNode( id );
+                n.setName( n.getName() + " [" + i + "]" );
+                if ( !chart_only ) {
+                    final NodeVisualData vis = new NodeVisualData();
+                    vis.setFillType( NodeFill.SOLID );
+                    vis.setShape( NodeShape.RECTANGLE );
+                    vis.setNodeColor( ForesterUtil.calcColor( msa_prop.getLength(), min, max, mean_color, max_color ) );
+                    n.getNodeData().setNodeVisualData( vis );
                 }
+                else {
+                    n.getNodeData()
+                            .getNodeVisualData()
+                            .setNodeColor( ForesterUtil.calcColor( msa_prop.getLength(),
+                                                                   min,
+                                                                   max,
+                                                                   mean,
+                                                                   min_color,
+                                                                   max_color,
+                                                                   mean_color ) );
+                }
+            }
+        }
     }
 
     final public void deleteGapColumns( final double max_allowed_gap_ratio ) {
@@ -304,7 +302,7 @@ public class MsaCompactor {
     }
 
     public final List<MsaProperties> removeViaGapAverage( final double mean_gapiness ) throws IOException,
-    InterruptedException {
+            InterruptedException {
         final GapContribution stats[] = calcGapContribtionsStats( _norm );
         final List<String> to_remove_ids = new ArrayList<String>();
         final List<MsaProperties> msa_props = new ArrayList<MsaProperties>();
@@ -349,7 +347,7 @@ public class MsaCompactor {
             System.out.println( msg );
         }
         if ( _phylogentic_inference ) {
-            decorateTree( phy,  msa_props, false );
+            decorateTree( phy, msa_props, false );
             displayTree( phy );
         }
         return msa_props;
@@ -400,14 +398,14 @@ public class MsaCompactor {
             System.out.println( msg );
         }
         if ( _phylogentic_inference ) {
-            decorateTree( phy,  msa_props, false );
+            decorateTree( phy, msa_props, false );
             displayTree( phy );
         }
         return msa_props;
     }
 
     public final List<MsaProperties> removeWorstOffenders( final int to_remove ) throws IOException,
-    InterruptedException {
+            InterruptedException {
         final GapContribution stats[] = calcGapContribtionsStats( _norm );
         final List<String> to_remove_ids = new ArrayList<String>();
         final List<MsaProperties> msa_props = new ArrayList<MsaProperties>();
@@ -450,16 +448,13 @@ public class MsaCompactor {
             System.out.println( msg );
         }
         if ( _phylogentic_inference ) {
-            decorateTree( phy,  msa_props, false );
+            decorateTree( phy, msa_props, false );
             displayTree( phy );
-            
-           
-                System.out.println( "calculating phylogentic tree..." );
-                System.out.println();
-                Phylogeny phy2 = calcTree();
-                addSeqs2Tree( _msa, phy2 );
-                displayTree( phy2 );
-            
+            System.out.println( "calculating phylogentic tree..." );
+            System.out.println();
+            final Phylogeny phy2 = calcTree();
+            addSeqs2Tree( _msa, phy2 );
+            displayTree( phy2 );
         }
         return msa_props;
     }
@@ -641,6 +636,8 @@ public class MsaCompactor {
         sb.append( msa_properties.getLength() );
         sb.append( "\t" );
         sb.append( NF_4.format( msa_properties.getGapRatio() ) );
+        sb.append( "\t" );
+        sb.append( NF_1.format( msa_properties.getAvgNumberOfGapsPer100() ) );
         if ( _calculate_shannon_entropy ) {
             sb.append( "\t" );
             sb.append( NF_4.format( msa_properties.getEntropy7() ) );
@@ -707,6 +704,8 @@ public class MsaCompactor {
         System.out.print( "Seqs" );
         System.out.print( "\t" );
         System.out.print( "Length" );
+        System.out.print( "\t" );
+        System.out.print( "Gap R" );
         System.out.print( "\t" );
         System.out.print( "Gaps" );
         System.out.print( "\t" );

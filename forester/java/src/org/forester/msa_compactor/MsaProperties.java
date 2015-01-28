@@ -34,6 +34,7 @@ public final class MsaProperties {
     final private double _gap_ratio;
     final private int    _length;
     final private int    _number_of_sequences;
+    final private double _avg_number_of_gaps_per_100;
     final private String _removed_seq;
 
     public MsaProperties( final int number_of_sequences,
@@ -41,12 +42,14 @@ public final class MsaProperties {
                           final double gap_ratio,
                           final double entropy7,
                           final double entropy21,
+                          final double avg_number_of_gaps_per_100,
                           final String removed_seq ) {
         _number_of_sequences = number_of_sequences;
         _length = length;
         _gap_ratio = gap_ratio;
         _entropy7 = entropy7;
         _entropy21 = entropy21;
+        _avg_number_of_gaps_per_100 = avg_number_of_gaps_per_100;
         _removed_seq = removed_seq;
     }
 
@@ -55,6 +58,7 @@ public final class MsaProperties {
         _length = msa.getLength();
         _gap_ratio = MsaMethods.calcGapRatio( msa );
         _removed_seq = removed_seq;
+        _avg_number_of_gaps_per_100 = MsaMethods.calcNumberOfGapsPer100Stats( msa ).arithmeticMean();
         if ( calculate_normalized_shannon_entropy ) {
             _entropy7 = MsaMethods.calcNormalizedShannonsEntropy( 7, msa );
             _entropy21 = MsaMethods.calcNormalizedShannonsEntropy( 21, msa );
@@ -77,6 +81,10 @@ public final class MsaProperties {
         return _gap_ratio;
     }
 
+    public final double getAvgNumberOfGapsPer100() {
+        return _avg_number_of_gaps_per_100;
+    }
+    
     public final int getLength() {
         return _length;
     }
