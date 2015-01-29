@@ -107,12 +107,11 @@ public final class MsaMethods {
         _ignored_seqs_ids = new ArrayList<String>();
     }
 
-    public static final DescriptiveStatistics calcNumberOfGapsPer100Stats( final Msa msa ) {
+    public static final DescriptiveStatistics calcNumberOfGapsStats( final Msa msa ) {
         final int[] gaps = calcNumberOfGapsInMsa( msa );
         final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
-        final double n = 100.0 / msa.getLength();
         for( final int gap : gaps ) {
-            stats.addValue( n * gap );
+            stats.addValue(  gap );
         }
         return stats;
     }

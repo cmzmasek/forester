@@ -998,6 +998,10 @@ public final class Configuration {
     public void setDynamicallyHideData( final boolean b ) {
         display_options[ dynamically_hide_data ][ 2 ] = b ? "yes" : "no";
     }
+    
+    public void setDisplayMultipleSequenceAlignment( final boolean b ) {
+        display_options[ show_mol_seqs ][ 2 ] = b ? "yes" : "no";
+    }
 
     private void setEditable( final boolean editable ) {
         _editable = editable;

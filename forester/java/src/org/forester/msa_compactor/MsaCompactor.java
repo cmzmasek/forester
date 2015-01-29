@@ -245,14 +245,14 @@ public class MsaCompactor {
                 }
                 else {
                     n.getNodeData()
-                            .getNodeVisualData()
-                            .setNodeColor( ForesterUtil.calcColor( msa_prop.getLength(),
-                                                                   min,
-                                                                   max,
-                                                                   mean,
-                                                                   min_color,
-                                                                   max_color,
-                                                                   mean_color ) );
+                    .getNodeVisualData()
+                    .setNodeColor( ForesterUtil.calcColor( msa_prop.getLength(),
+                                                           min,
+                                                           max,
+                                                           mean,
+                                                           min_color,
+                                                           max_color,
+                                                           mean_color ) );
                 }
             }
         }
@@ -272,6 +272,7 @@ public class MsaCompactor {
         config.setDisplaySequenceNames( false );
         config.setDisplaySequenceSymbols( false );
         config.setDisplayGeneNames( false );
+        config.setDisplayMultipleSequenceAlignment( true );
         config.setShowScale( true );
         config.setAddTaxonomyImagesCB( false );
         config.setBaseFontSize( 9 );
@@ -302,7 +303,7 @@ public class MsaCompactor {
     }
 
     public final List<MsaProperties> removeViaGapAverage( final double mean_gapiness ) throws IOException,
-            InterruptedException {
+    InterruptedException {
         final GapContribution stats[] = calcGapContribtionsStats( _norm );
         final List<String> to_remove_ids = new ArrayList<String>();
         final List<MsaProperties> msa_props = new ArrayList<MsaProperties>();
@@ -405,7 +406,7 @@ public class MsaCompactor {
     }
 
     public final List<MsaProperties> removeWorstOffenders( final int to_remove ) throws IOException,
-            InterruptedException {
+    InterruptedException {
         final GapContribution stats[] = calcGapContribtionsStats( _norm );
         final List<String> to_remove_ids = new ArrayList<String>();
         final List<MsaProperties> msa_props = new ArrayList<MsaProperties>();
@@ -637,7 +638,7 @@ public class MsaCompactor {
         sb.append( "\t" );
         sb.append( NF_4.format( msa_properties.getGapRatio() ) );
         sb.append( "\t" );
-        sb.append( NF_1.format( msa_properties.getAvgNumberOfGapsPer100() ) );
+        sb.append( NF_1.format( msa_properties.getAvgNumberOfGaps() ) );
         if ( _calculate_shannon_entropy ) {
             sb.append( "\t" );
             sb.append( NF_4.format( msa_properties.getEntropy7() ) );

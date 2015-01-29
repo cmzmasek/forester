@@ -1197,7 +1197,7 @@ public final class MainFrameApplication extends MainFrame {
         _contentpane.removeAll();
         setVisible( false );
         dispose();
-        System.exit( 0 );
+       // System.exit( 0 ); //TODO reconfirm that this is OK, then remove.
     }
 
     void readPhylogeniesFromURL() {

@@ -26,6 +26,8 @@ package org.forester.msa_compactor;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionListener;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.List;
 
 import javax.swing.JDialog;
@@ -45,6 +47,7 @@ import com.approximatrix.charting.swing.ChartPanel;
 
 public final class Chart extends JDialog implements ActionListener {
 
+    final private static NumberFormat NF_1             = new DecimalFormat( "0.##" );
     private static final long         serialVersionUID = -5292420246132943515L;
     private ChartPanel                _chart_panel     = null;
     private final int                 _initial_number_of_seqs;
@@ -92,50 +95,93 @@ public final class Chart extends JDialog implements ActionListener {
             final MultiScatterDataModel model = new MultiScatterDataModel();
             final double[][] seqs_length = new double[ _msa_props.size() ][ 2 ];
             int max_length = -1;
+            int min_length = Integer.MAX_VALUE;
+            double max_gap_ratio = -1;
+            double min_gap_ratio = Double.MAX_VALUE;
+            double max_avg_gap_count = -1;
+            double min_avg_gap_count = Double.MAX_VALUE;
             for( int i = 0; i < _msa_props.size(); ++i ) {
                 seqs_length[ i ][ 0 ] = _initial_number_of_seqs - _msa_props.get( i ).getNumberOfSequences();
-                seqs_length[ i ][ 1 ] = _msa_props.get( i ).getLength();
-                if ( _msa_props.get( i ).getLength() > max_length ) {
-                    max_length = _msa_props.get( i ).getLength();
+                //
+                final int length = _msa_props.get( i ).getLength();
+                seqs_length[ i ][ 1 ] = length;
+                if ( length > max_length ) {
+                    max_length = length;
+                }
+                if ( length < min_length ) {
+                    min_length = length;
+                }
+                //
+                final double gap_ratio = _msa_props.get( i ).getGapRatio();
+                if ( gap_ratio > max_gap_ratio ) {
+                    max_gap_ratio = gap_ratio;
+                }
+                if ( gap_ratio < min_gap_ratio ) {
+                    min_gap_ratio = gap_ratio;
+                }
+                //
+                final double avg_gap_count = _msa_props.get( i ).getAvgNumberOfGaps();
+                if ( avg_gap_count > max_avg_gap_count ) {
+                    max_avg_gap_count = avg_gap_count;
+                }
+                if ( avg_gap_count < min_avg_gap_count ) {
+                    min_avg_gap_count = avg_gap_count;
                 }
             }
-            model.addData( seqs_length, "Length" );
+            model.addData( seqs_length, "Length" + " (" + minMaxToString( min_length, max_length ) + ")" );
             model.setSeriesLine( "Series " + "Length", true );
             model.setSeriesMarker( "Series " + "Length", false );
             final double[][] seqs_gaps = new double[ _msa_props.size() ][ 2 ];
-            double max_gap_ratio = -1;
             double max_ent7 = -1;
             double max_ent21 = -1;
-            for( int i = 0; i < _msa_props.size(); ++i ) {
-                if ( _msa_props.get( i ).getGapRatio() > max_gap_ratio ) {
-                    max_gap_ratio = _msa_props.get( i ).getGapRatio();
-                }
-                if ( _show_msa_qual ) {
-                    if ( _msa_props.get( i ).getEntropy7() > max_ent7 ) {
-                        max_ent7 = _msa_props.get( i ).getEntropy7();
+            double min_ent7 = Double.MAX_VALUE;
+            double min_ent21 = Double.MAX_VALUE;
+            if ( _show_msa_qual ) {
+                for( int i = 0; i < _msa_props.size(); ++i ) {
+                    final double ent7 = _msa_props.get( i ).getEntropy7();
+                    if ( ent7 > max_ent7 ) {
+                        max_ent7 = ent7;
                     }
-                    if ( _msa_props.get( i ).getEntropy21() > max_ent21 ) {
-                        max_ent21 = _msa_props.get( i ).getEntropy21();
+                    if ( ent7 < max_ent7 ) {
+                        min_ent7 = ent7;
+                    }
+                    final double ent21 = _msa_props.get( i ).getEntropy21();
+                    if ( ent21 > min_ent21 ) {
+                        max_ent21 = ent21;
+                    }
+                    if ( ent21 < min_ent21 ) {
+                        min_ent21 = ent21;
                     }
                 }
             }
             final double gap_ratio_factor = ( max_length / 2.0 ) / max_gap_ratio;
+            final double avg_gaps_counts_factor = ( max_length / 2.0 ) / max_avg_gap_count;
             final double ent7_factor = ( max_length / 2.0 ) / max_ent7;
             final double ent21_factor = ( max_length / 2.0 ) / max_ent21;
             for( int i = 0; i < _msa_props.size(); ++i ) {
                 seqs_gaps[ i ][ 0 ] = _initial_number_of_seqs - _msa_props.get( i ).getNumberOfSequences();
                 seqs_gaps[ i ][ 1 ] = ForesterUtil.roundToInt( _msa_props.get( i ).getGapRatio() * gap_ratio_factor );
             }
-            model.addData( seqs_gaps, "Gap ratio" );
-            model.setSeriesLine( "Series " + "Gap ratio", true );
-            model.setSeriesMarker( "Series " + "Gap ratio", false );
+            model.addData( seqs_gaps, "Gap Ratio" + " (" + minMaxToString( min_gap_ratio, max_gap_ratio ) + ")" );
+            model.setSeriesLine( "Series " + "Gap Ratio", true );
+            model.setSeriesMarker( "Series " + "Gap Ratio", false );
+            final double[][] gap_counts = new double[ _msa_props.size() ][ 2 ];
+            for( int i = 0; i < _msa_props.size(); ++i ) {
+                gap_counts[ i ][ 0 ] = _initial_number_of_seqs - _msa_props.get( i ).getNumberOfSequences();
+                gap_counts[ i ][ 1 ] = ForesterUtil.roundToInt( _msa_props.get( i ).getAvgNumberOfGaps()
+                                                                * avg_gaps_counts_factor );
+            }
+            model.addData( gap_counts, "Mean Gap Count" + " (" + minMaxToString( min_avg_gap_count, max_avg_gap_count )
+                    + ")" );
+            model.setSeriesLine( "Series " + "Mean Gap Count", true );
+            model.setSeriesMarker( "Series " + "Mean Gap Count", false );
             if ( _show_msa_qual ) {
                 final double[][] entropy7 = new double[ _msa_props.size() ][ 2 ];
                 for( int i = 0; i < _msa_props.size(); ++i ) {
                     entropy7[ i ][ 0 ] = _initial_number_of_seqs - _msa_props.get( i ).getNumberOfSequences();
                     entropy7[ i ][ 1 ] = ForesterUtil.roundToInt( _msa_props.get( i ).getEntropy7() * ent7_factor );
                 }
-                model.addData( entropy7, "Entropy norm 7" );
+                model.addData( entropy7, "Entropy norm 7" + " (" + minMaxToString( min_ent7, max_ent7 ) + ")" );
                 model.setSeriesLine( "Series " + "Entropy norm 7", true );
                 model.setSeriesMarker( "Series " + "Entropy norm 7", false );
                 //
@@ -144,7 +190,7 @@ public final class Chart extends JDialog implements ActionListener {
                     entropy21[ i ][ 0 ] = _initial_number_of_seqs - _msa_props.get( i ).getNumberOfSequences();
                     entropy21[ i ][ 1 ] = ForesterUtil.roundToInt( _msa_props.get( i ).getEntropy21() * ent21_factor );
                 }
-                model.addData( entropy21, "Entropy norm 21" );
+                model.addData( entropy21, "Entropy norm 21" + " (" + minMaxToString( min_ent21, max_ent21 ) + ")" );
                 model.setSeriesLine( "Series " + "Entropy norm 21", true );
                 model.setSeriesMarker( "Series " + "Entropy norm 21", false );
             }
@@ -160,6 +206,10 @@ public final class Chart extends JDialog implements ActionListener {
             _chart_panel.addChartRenderer( renderer, 0 );
         }
         return _chart_panel;
+    }
+
+    private final static String minMaxToString( final double min, final double max ) {
+        return NF_1.format( min ) + "-" + NF_1.format( max );
     }
 
     public static void display( final List<MsaProperties> msa_props,

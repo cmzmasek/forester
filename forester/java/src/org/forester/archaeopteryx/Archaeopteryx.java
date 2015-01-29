@@ -59,7 +59,7 @@ public final class Archaeopteryx {
         phylogenies[ 0 ] = phylogeny;
         return MainFrameApplication.createInstance( phylogenies, config, title );
     }
-
+    
     public static void main( final String args[] ) {
         Phylogeny[] phylogenies = null;
         String config_filename = null;
