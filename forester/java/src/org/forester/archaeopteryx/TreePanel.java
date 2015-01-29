@@ -4790,6 +4790,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             paintNodeBox( node.getXcoord(), node.getYcoord(), node, g, to_pdf, to_graphics_file );
         }
+        if ( getControlPanel().isShowMolSequences() && ( node.getNodeData().isHasSequence() )
+                && ( node.getNodeData().getSequence().isMolecularSequenceAligned() )
+                && ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getMolecularSequence() ) ) ) {
+            paintMolecularSequences( g, node, to_pdf );
+        }
         if ( dynamically_hide
                 && !is_in_found_nodes
                 && ( ( node.isExternal() && ( ( _external_node_index % dynamic_hiding_factor ) != 1 ) ) || ( !node
@@ -4892,33 +4897,37 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 }
             }
         }
-        if ( getControlPanel().isShowMolSequences() && ( node.getNodeData().isHasSequence() )
-                && ( node.getNodeData().getSequence().isMolecularSequenceAligned() )
-                && ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getMolecularSequence() ) ) ) {
-            final RenderableMsaSequence rs = RenderableMsaSequence.createInstance( node.getNodeData().getSequence()
-                                                                                   .getMolecularSequence(), node.getNodeData().getSequence().getType(), getConfiguration() );
-            if ( rs != null ) {
-                final int default_height = 7;
-                float y = getYdistance();
-                if ( getControlPanel().isDynamicallyHideData() ) {
-                    y = getTreeFontSet().getFontMetricsLarge().getHeight();
-                }
-                final int h = y < default_height ? ForesterUtil.roundToInt( y ) : default_height;
-                rs.setRenderingHeight( h > 1 ? h : 2 );
-                if ( getControlPanel().isDrawPhylogram() ) {
-                    rs.render( ( float ) ( ( getMaxDistanceToRoot() * getXcorrectionFactor() ) + _length_of_longest_text ),
-                               node.getYcoord() - ( h / 2.0f ),
-                               g,
-                               this,
-                               to_pdf );
-                }
-                else {
-                    rs.render( getPhylogeny().getFirstExternalNode().getXcoord() + _length_of_longest_text,
-                               node.getYcoord() - ( h / 2.0f ),
-                               g,
-                               this,
-                               to_pdf );
-                }
+       
+        //if ( getControlPanel().isShowMolSequences() && ( node.getNodeData().isHasSequence() )
+        //        && ( node.getNodeData().getSequence().isMolecularSequenceAligned() )
+        //        && ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getMolecularSequence() ) ) ) {
+        //    paintMolecularSequences( g, node, to_pdf );
+        //}
+    }
+
+    private void paintMolecularSequences( final Graphics2D g, final PhylogenyNode node, final boolean to_pdf ) {
+        final RenderableMsaSequence rs = RenderableMsaSequence.createInstance( node.getNodeData().getSequence()
+                                                                               .getMolecularSequence(), node.getNodeData().getSequence().getType(), getConfiguration() );
+        if ( rs != null ) {
+            final int default_height = 8;
+            float y = getYdistance();
+           
+            final int h = ( y / 2) < default_height ? ForesterUtil.roundToInt( y * 2 ) : default_height;
+            rs.setRenderingHeight( h > 1 ? h : 1 );
+           
+            if ( getControlPanel().isDrawPhylogram() ) {
+                rs.render( ( float ) ( ( getMaxDistanceToRoot() * getXcorrectionFactor() ) + _length_of_longest_text ),
+                           node.getYcoord() - ( h / 2.0f ),
+                           g,
+                           this,
+                           to_pdf );
+            }
+            else {
+                rs.render( getPhylogeny().getFirstExternalNode().getXcoord() + _length_of_longest_text,
+                           node.getYcoord() - ( h / 2.0f ),
+                           g,
+                           this,
+                           to_pdf );
             }
         }
     }
