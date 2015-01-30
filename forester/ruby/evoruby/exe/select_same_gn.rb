@@ -19,6 +19,7 @@ module Evoruby
   f = MsaFactory.new()
 
   IGNORE_SEQS_LACKING_GN = false
+  IGNORE_FRAGMENTS = false
   IGNORE_SPECIES = true
 
   msa = nil
@@ -58,8 +59,7 @@ module Evoruby
       all_names << name
     end
 
-    if fragment_re.match( name )
-
+    if IGNORE_FRAGMENTS && fragment_re.match( name )
       outfile.puts("ignored because fragment: " + name)
       frag_counter += 1
       next
@@ -121,7 +121,10 @@ module Evoruby
     gn_to_seqs[gn].add_sequence(seq)
   end
 
-  outfile.puts( "Sequences ignored because \"fragment\" in desc                : " + frag_counter.to_s )
+  if IGNORE_FRAGMENTS
+    outfile.puts( "Sequences ignored because \"fragment\" in desc                : " + frag_counter.to_s )
+  end
+  
   if IGNORE_SEQS_LACKING_GN
     outfile.puts( "Sequences ignored because no \"GN=\" in desc                  : " + no_gn_counter.to_s )
   end
