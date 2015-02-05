@@ -394,6 +394,9 @@ public class msa_compactor {
                     msa_props = mc.chart( step, realign, norm );
                 }
                 Chart.display( msa_props, initial_number_of_seqs, report_entropy, in.getName() );
+                System.out.println();
+                System.out.println( "Final MSA properties" );
+                printMsaInfo( msa,  MsaMethods.calculateEffectiveLengthStatistics( msa ));
             }
         }
         catch ( final IllegalArgumentException iae ) {
@@ -422,20 +425,20 @@ public class msa_compactor {
     }
 
     private static void printMsaInfo( DeleteableMsa msa, final DescriptiveStatistics msa_stats ) {
-        System.out.println( "MSA length                         : " + msa.getLength() );
-        System.out.println( "Number of sequences                : " + msa.getNumberOfSequences() );
-        System.out.println( "Median sequence length             : " + NF_1.format( msa_stats.median() ) );
-        System.out.println( "Mean sequence length               : "
+        System.out.println( "MSA length                           : " + msa.getLength() );
+        System.out.println( "Number of sequences                  : " + msa.getNumberOfSequences() );
+        System.out.println( "Median sequence length               : " + NF_1.format( msa_stats.median() ) );
+        System.out.println( "Mean sequence length                 : "
                 + NF_1.format( msa_stats.arithmeticMean() ) );
-        System.out.println( "Max sequence length                : " + ( ( int ) msa_stats.getMax() ) );
-        System.out.println( "Min sequence length                : " + ( ( int ) msa_stats.getMin() ) );
-        System.out.println( "Gap ratio                          : "
+        System.out.println( "Max sequence length                  : " + ( ( int ) msa_stats.getMax() ) );
+        System.out.println( "Min sequence length                  : " + ( ( int ) msa_stats.getMin() ) );
+        System.out.println( "Gap ratio                            : "
                 + NF_4.format( MsaMethods.calcGapRatio( msa ) ) );
-        System.out.println( "Mean gap count per 100 residues    : "
+        System.out.println( "Mean gap count per sequence          : "
                 + NF_1.format( MsaMethods.calcNumberOfGapsStats( msa ).arithmeticMean() ) );
-        System.out.println( "Normalized Shannon Entropy (entn7) : "
+        System.out.println( "Normalized Shannon Entropy (entn7)   : "
                 + NF_4.format( MsaMethods.calcNormalizedShannonsEntropy( 7, msa ) ) );
-        System.out.println( "Normalized Shannon Entropy (entn21): "
+        System.out.println( "Normalized Shannon Entropy (entn21)  : "
                 + NF_4.format( MsaMethods.calcNormalizedShannonsEntropy( 21, msa ) ) );
     }
 

@@ -7,7 +7,7 @@ import org.forester.archaeopteryx.Configuration;
 
 public final class InferenceManager {
 
-    private final static String DEFAULT_PATHS[] = { "C:\\Program Files\\", "C:\\Program Files (x86)\\", "/bin/",
+    private final static String DEFAULT_PATHS[] = {"C:\\Program Files\\mafft-win\\", "C:\\Program Files\\", "C:\\Program Files (x86)\\", "/bin/",
         "/usr/local/bin/", "/usr/bin/"     };
     private final File          _path_to_local_mafft;
     private final File          _path_to_local_fastme;

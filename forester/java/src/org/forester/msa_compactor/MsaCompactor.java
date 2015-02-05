@@ -179,6 +179,7 @@ public class MsaCompactor {
             }
             ++i;
         }
+        
         if ( _phylogentic_inference ) {
             decorateTree( phy, msa_props, true );
             displayTree( phy );
@@ -350,7 +351,14 @@ public class MsaCompactor {
         if ( _phylogentic_inference ) {
             decorateTree( phy, msa_props, false );
             displayTree( phy );
-        }
+            System.out.println( "calculating phylogentic tree..." );
+            System.out.println();
+            final Phylogeny phy2 = calcTree();
+            addSeqs2Tree( _msa, phy2 );
+            displayTree( phy2 );
+        }   
+      
+       
         return msa_props;
     }
 
@@ -401,7 +409,13 @@ public class MsaCompactor {
         if ( _phylogentic_inference ) {
             decorateTree( phy, msa_props, false );
             displayTree( phy );
-        }
+            System.out.println( "calculating phylogentic tree..." );
+            System.out.println();
+            final Phylogeny phy2 = calcTree();
+            addSeqs2Tree( _msa, phy2 );
+            displayTree( phy2 );
+        }   
+       
         return msa_props;
     }
 
@@ -456,7 +470,8 @@ public class MsaCompactor {
             final Phylogeny phy2 = calcTree();
             addSeqs2Tree( _msa, phy2 );
             displayTree( phy2 );
-        }
+        }   
+       
         return msa_props;
     }
 
