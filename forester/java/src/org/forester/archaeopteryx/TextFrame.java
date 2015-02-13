@@ -28,6 +28,7 @@
 
 package org.forester.archaeopteryx;
 
+import java.awt.AWTPermission;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
@@ -41,6 +42,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.security.acl.Permission;
 import java.util.LinkedList;
 
 import javax.swing.JButton;
@@ -79,10 +81,9 @@ final class TextFrame extends JFrame implements ActionListener, ClipboardOwner {
         final SecurityManager sm = System.getSecurityManager();
         if ( sm != null ) {
             try {
-                sm.checkSystemClipboardAccess();
+                sm.checkPermission( new AWTPermission( "accessClipboard" ) );
             }
             catch ( final Exception e ) {
-                //nope!
                 can_use_clipboard = false;
             }
         }
