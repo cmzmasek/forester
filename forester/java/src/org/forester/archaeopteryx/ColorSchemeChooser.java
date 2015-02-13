@@ -51,7 +51,7 @@ final class ColorSchemeChooser extends JDialog implements ActionListener {
 
     private static final long  serialVersionUID = 6150960100859081126L;
     private final TreeColorSet _colorset;
-    private final JComboBox    _selector;
+    private final JComboBox<String>    _selector;
     private final JPanel       _color_panel;
     private final JPanel       _color_labels[];
     private final JButton      _ok_btn;
@@ -77,7 +77,7 @@ final class ColorSchemeChooser extends JDialog implements ActionListener {
         for( final String element : TreeColorSet.SCHEME_NAMES ) {
             list.add( element );
         }
-        _selector = new JComboBox( list );
+        _selector = new JComboBox<String>( list );
         _selector.setMaximumRowCount( list.size() );
         _selector.getModel().addListDataListener( new ListDataListener() {
 

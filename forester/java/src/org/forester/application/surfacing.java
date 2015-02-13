@@ -270,7 +270,7 @@ public class surfacing {
     public static final String                                      INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_MAPPED_OUTPUT_SUFFIX        = "_indep_dc_gains_fitch_lists_for_go_mapping_MAPPED.txt";
     public static final String                                      INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_MAPPED_OUTPUT_UNIQUE_SUFFIX = "_indep_dc_gains_fitch_lists_for_go_mapping_unique_MAPPED.txt";
     private static final boolean                                    CALC_SIMILARITY_SCORES                                                        = false;
-
+    @SuppressWarnings("unchecked")
     public static void main( final String args[] ) {
         final long start_time = new Date().getTime();
         // final StringBuffer log = new StringBuffer();

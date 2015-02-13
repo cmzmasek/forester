@@ -120,6 +120,7 @@ public class BasicCharacterStateMatrix<S> implements CharacterStateMatrix<S> {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public boolean equals( final Object o ) {
         if ( this == o ) {
             return true;
@@ -216,6 +217,7 @@ public class BasicCharacterStateMatrix<S> implements CharacterStateMatrix<S> {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public S getState( final int identifier_index, final int character_index ) {
         return ( S ) _states[ identifier_index ][ character_index ];
     }

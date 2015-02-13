@@ -49,9 +49,9 @@ public class FontChooser extends JDialog implements ActionListener, ListSelectio
     private String                _type;
     private int                   _style;
     private int                   _size;
-    private final JList           _font_list        = new JList( AptxUtil.getAvailableFontFamiliesSorted() );
-    private final JList           _style_list       = new JList( STYLE );
-    private final JList           _size_list        = new JList( SIZE );
+    private final JList<String>           _font_list        = new JList<String>( AptxUtil.getAvailableFontFamiliesSorted() );
+    private final JList<String>           _style_list       = new JList<String>( STYLE );
+    private final JList<String>           _size_list        = new JList<String>( SIZE );
     private final JTextField      _fonts_tf         = new JTextField();
     private final JTextField      _style_tf         = new JTextField();
     private final JTextField      _size_tf          = new JTextField();
@@ -224,7 +224,7 @@ public class FontChooser extends JDialog implements ActionListener, ListSelectio
         _font = font;
     }
 
-    private void setScrollPos( final JScrollPane sp, final JList list, final int index ) {
+    private void setScrollPos( final JScrollPane sp, final JList<String> list, final int index ) {
         final int unit_size = sp.getVerticalScrollBar().getMaximum() / list.getModel().getSize();
         sp.getVerticalScrollBar().setValue( ( index - 2 ) * unit_size );
     }

@@ -130,6 +130,8 @@ public final class TaxonomyDataManager extends RunnableProcess {
         return _sn_up_cache_map;
     }
 
+    
+    @SuppressWarnings("unchecked")
     private final static UniProtTaxonomy obtainTaxonomy( final HashMap<String, UniProtTaxonomy> cache,
                                                          final Object query,
                                                          final QUERY_TYPE qt ) throws IOException,
@@ -154,6 +156,7 @@ public final class TaxonomyDataManager extends RunnableProcess {
                     break;
                 case LIN:
                     return obtainUniProtTaxonomyFromLineage( ( List<String> ) query );
+                    
                 default:
                     throw new RuntimeException();
             }

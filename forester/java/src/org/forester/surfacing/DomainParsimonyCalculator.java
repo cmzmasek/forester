@@ -543,7 +543,7 @@ public final class DomainParsimonyCalculator {
         }
         return new DomainParsimonyCalculator( phylogeny, gwcd_list, domain_id_to_secondary_features_map );
     }
-
+    @SuppressWarnings("unchecked")
     public static CharacterStateMatrix<BinaryStates> createMatrixOfBinaryDomainCombinationPresenceOrAbsence( final List<GenomeWideCombinableDomains> gwcd_list ) {
         if ( gwcd_list.isEmpty() ) {
             throw new IllegalArgumentException( "genome wide combinable domains list is empty" );
@@ -662,7 +662,7 @@ public final class DomainParsimonyCalculator {
         }
         return matrix;
     }
-
+    @SuppressWarnings("unchecked")
     public static CharacterStateMatrix<BinaryStates> createMatrixOfSecondaryFeatureBinaryDomainCombinationPresenceOrAbsence( final List<GenomeWideCombinableDomains> gwcd_list,
                                                                                                                              final Map<String, String> domain_id_to_second_features_map ) {
         if ( gwcd_list.isEmpty() ) {
