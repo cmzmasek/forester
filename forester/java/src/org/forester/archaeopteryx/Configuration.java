@@ -680,10 +680,6 @@ public final class Configuration {
     }
 
     boolean isAntialiasScreen() {
-        if ( ForesterUtil.isMac() ) {
-            //Apple Macintosh graphics are slow, turn off anti-alias.
-            return false;
-        }
         return _antialias_screen;
     }
 
