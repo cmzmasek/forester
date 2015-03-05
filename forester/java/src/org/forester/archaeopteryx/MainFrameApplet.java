@@ -87,6 +87,7 @@ public final class MainFrameApplet extends MainFrame {
         if ( getSpeciesTree() != null ) {
             buildAnalysisMenu();
         }
+        buildFileMenu();
         buildToolsMenu();
         buildViewMenu();
         buildFontSizeMenu();

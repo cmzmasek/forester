@@ -60,6 +60,8 @@ public class ArchaeopteryxA extends JApplet {
             getMainFrameApplet().close();
         }
     }
+    
+    
 
     /**
      * This method returns the current external node data which

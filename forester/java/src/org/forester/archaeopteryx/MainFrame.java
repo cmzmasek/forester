@@ -41,6 +41,7 @@ import java.util.NoSuchElementException;
 import javax.swing.Box;
 import javax.swing.JApplet;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -58,6 +59,8 @@ import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
 import org.forester.archaeopteryx.tools.InferenceManager;
 import org.forester.archaeopteryx.tools.ProcessPool;
 import org.forester.archaeopteryx.tools.ProcessRunning;
+import org.forester.archaeopteryx.webservices.PhylogeniesWebserviceClient;
+import org.forester.archaeopteryx.webservices.WebservicesManager;
 import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
@@ -74,6 +77,7 @@ import org.forester.sdi.GSDIR;
 import org.forester.sdi.SDIException;
 import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
+import org.forester.util.WindowsUtils;
 
 public abstract class MainFrame extends JFrame implements ActionListener {
 
@@ -152,6 +156,13 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem                   _close_item;
     JMenuItem                   _exit_item;
     JMenuItem                   _new_item;
+   JMenuItem                        _print_item;
+    JMenuItem                        _write_to_pdf_item;
+    JMenuItem                        _write_to_jpg_item;
+    JMenuItem                        _write_to_gif_item;
+    JMenuItem                        _write_to_tif_item;
+   JMenuItem                        _write_to_png_item;
+    JMenuItem                        _write_to_bmp_item;
     // tools menu:
     JMenuItem                   _midpoint_root_item;
     JMenuItem                   _taxcolor_item;
@@ -250,6 +261,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem                   _phyloxml_website_item;
     JMenuItem                   _phyloxml_ref_item;
     JMenuItem                   _aptx_ref_item;
+    //
+    JFileChooser               _writetopdf_filechooser;
+    File                             _current_dir;
+    
     // process menu:
     JMenu                       _process_menu;
     // Handy pointers to child components:
@@ -265,6 +280,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     MainFrame() {
         _process_pool = ProcessPool.createInstance();
+        _writetopdf_filechooser = new JFileChooser();
     }
 
     /**
@@ -573,6 +589,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 ForesterUtil.printErrorMessage( Constants.PRG_NAME, e1.toString() );
             }
         }
+        else if ( o == _write_to_pdf_item ) {
+            writeToPdf( _mainpanel.getCurrentPhylogeny() );
+        }
         else {
             if ( _load_phylogeny_from_webservice_menu_items != null ) {
                 for( int i = 0; i < _load_phylogeny_from_webservice_menu_items.length; ++i ) {
@@ -585,6 +604,122 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _contentpane.repaint();
     }
 
+    
+    void setCurrentDir( final File current_dir ) {
+        _current_dir = current_dir;
+    } 
+    
+   void writeToPdf( final Phylogeny t ) {
+        if ( ( t == null ) || t.isEmpty() ) {
+            return;
+        }
+        String initial_filename = "";
+        if ( getMainPanel().getCurrentTreePanel().getTreeFile() != null ) {
+            initial_filename = getMainPanel().getCurrentTreePanel().getTreeFile().toString();
+        }
+        if ( initial_filename.indexOf( '.' ) > 0 ) {
+            initial_filename = initial_filename.substring( 0, initial_filename.lastIndexOf( '.' ) );
+        }
+        initial_filename = initial_filename + ".pdf";
+        _writetopdf_filechooser.setSelectedFile( new File( initial_filename ) );
+        final File my_dir = getCurrentDir();
+        if ( my_dir != null ) {
+            _writetopdf_filechooser.setCurrentDirectory( my_dir );
+        }
+        final int result = _writetopdf_filechooser.showSaveDialog( _contentpane );
+        File file = _writetopdf_filechooser.getSelectedFile();
+        setCurrentDir( _writetopdf_filechooser.getCurrentDirectory() );
+        if ( ( file != null ) && ( result == JFileChooser.APPROVE_OPTION ) ) {
+            if ( !file.toString().toLowerCase().endsWith( ".pdf" ) ) {
+                file = new File( file.toString() + ".pdf" );
+            }
+            if ( file.exists() ) {
+                final int i = JOptionPane.showConfirmDialog( this,
+                                                             file + " already exists. Overwrite?",
+                                                             "WARNING",
+                                                             JOptionPane.OK_CANCEL_OPTION,
+                                                             JOptionPane.WARNING_MESSAGE );
+                if ( i != JOptionPane.OK_OPTION ) {
+                    return;
+                }
+            }
+            printPhylogenyToPdf( file.toString() );
+        }
+    }
+
+   
+    void printPhylogenyToPdf( final String file_name ) {
+       if ( !getOptions().isPrintUsingActualSize() ) {
+           getCurrentTreePanel()
+           .calcParametersForPainting( getOptions().getPrintSizeX(), getOptions().getPrintSizeY() );
+           getCurrentTreePanel().resetPreferredSize();
+           getCurrentTreePanel().repaint();
+       }
+       String pdf_written_to = "";
+       boolean error = false;
+       try {
+           if ( getOptions().isPrintUsingActualSize() ) {
+               pdf_written_to = PdfExporter.writePhylogenyToPdf( file_name,
+                                                                 getCurrentTreePanel(),
+                                                                 getCurrentTreePanel().getWidth(),
+                                                                 getCurrentTreePanel().getHeight() );
+           }
+           else {
+               pdf_written_to = PdfExporter.writePhylogenyToPdf( file_name, getCurrentTreePanel(), getOptions()
+                       .getPrintSizeX(), getOptions().getPrintSizeY() );
+           }
+       }
+       catch ( final IOException e ) {
+           error = true;
+           JOptionPane.showMessageDialog( this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE );
+       }
+       if ( !error ) {
+           if ( !ForesterUtil.isEmpty( pdf_written_to ) ) {
+               JOptionPane.showMessageDialog( this,
+                                              "Wrote PDF to: " + pdf_written_to,
+                                              "Information",
+                                              JOptionPane.INFORMATION_MESSAGE );
+           }
+           else {
+               JOptionPane.showMessageDialog( this,
+                                              "There was an unknown problem when attempting to write to PDF file: \""
+                                                      + file_name + "\"",
+                                              "Error",
+                                              JOptionPane.ERROR_MESSAGE );
+           }
+       }
+       if ( !getOptions().isPrintUsingActualSize() ) {
+           getControlPanel().showWhole();
+       }
+   }
+   
+    ControlPanel getControlPanel() {
+        return getMainPanel().getControlPanel();
+    }
+
+    
+    File getCurrentDir() {
+       if ( ( _current_dir == null ) || !_current_dir.canRead() ) {
+           if ( ForesterUtil.isWindows() ) {
+               try {
+                   _current_dir = new File( WindowsUtils.getCurrentUserDesktopPath() );
+               }
+               catch ( final Exception e ) {
+                   _current_dir = null;
+               }
+           }
+       }
+       if ( ( _current_dir == null ) || !_current_dir.canRead() ) {
+           if ( System.getProperty( "user.home" ) != null ) {
+               _current_dir = new File( System.getProperty( "user.home" ) );
+           }
+           else if ( System.getProperty( "user.dir" ) != null ) {
+               _current_dir = new File( System.getProperty( "user.dir" ) );
+           }
+       }
+       return _current_dir;
+   }
+    
     private void deleteSelectedNodes( final boolean delete ) {
         final Phylogeny phy = getMainPanel().getCurrentPhylogeny();
         if ( ( phy == null ) || ( phy.getNumberOfExternalNodes() < 2 ) ) {
@@ -741,9 +876,50 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
     }
 
+//    void buildFileMenu() {
+//        _file_jmenu = createMenu( "File", getConfiguration() );
+//        _file_jmenu.add( _exit_item = new JMenuItem( "Exit" ) );
+//        customizeJMenuItem( _exit_item );
+//        _jmenubar.add( _file_jmenu );
+//    }
+    
     void buildFileMenu() {
-        _file_jmenu = createMenu( "File", getConfiguration() );
+        _file_jmenu = MainFrame.createMenu( "File", getConfiguration() );
+        
+       // _file_jmenu.add( _save_item = new JMenuItem( "Save Tree As..." ) );
+       // _file_jmenu.add( _save_all_item = new JMenuItem( "Save All Trees As..." ) );
+       // _save_all_item.setToolTipText( "Write all phylogenies to one file." );
+       // _save_all_item.setEnabled( false );
+       // _file_jmenu.addSeparator();
+        _file_jmenu.add( _write_to_pdf_item = new JMenuItem( "Export to PDF file ..." ) );
+//        if ( AptxUtil.canWriteFormat( "tif" ) || AptxUtil.canWriteFormat( "tiff" ) || AptxUtil.canWriteFormat( "TIF" ) ) {
+//            _file_jmenu.add( _write_to_tif_item = new JMenuItem( "Export to TIFF file..." ) );
+//        }
+//        _file_jmenu.add( _write_to_png_item = new JMenuItem( "Export to PNG file..." ) );
+//        _file_jmenu.add( _write_to_jpg_item = new JMenuItem( "Export to JPG file..." ) );
+//        if ( AptxUtil.canWriteFormat( "gif" ) ) {
+//            _file_jmenu.add( _write_to_gif_item = new JMenuItem( "Export to GIF file..." ) );
+//        }
+//        if ( AptxUtil.canWriteFormat( "bmp" ) ) {
+//            _file_jmenu.add( _write_to_bmp_item = new JMenuItem( "Export to BMP file..." ) );
+//        }
+     //   _file_jmenu.addSeparator();
+      //  _file_jmenu.add( _print_item = new JMenuItem( "Print..." ) );
+        _file_jmenu.addSeparator();
+
         _file_jmenu.add( _exit_item = new JMenuItem( "Exit" ) );
+       
+       customizeJMenuItem( _save_item );
+
+// customizeJMenuItem( _close_item );
+ //customizeJMenuItem( _save_all_item );
+        customizeJMenuItem( _write_to_pdf_item );
+//        customizeJMenuItem( _write_to_png_item );
+//        customizeJMenuItem( _write_to_jpg_item );
+//        customizeJMenuItem( _write_to_gif_item );
+//        customizeJMenuItem( _write_to_tif_item );
+//        customizeJMenuItem( _write_to_bmp_item );
+//        customizeJMenuItem( _print_item );
         customizeJMenuItem( _exit_item );
         _jmenubar.add( _file_jmenu );
     }

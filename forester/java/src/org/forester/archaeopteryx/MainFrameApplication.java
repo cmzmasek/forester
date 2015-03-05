@@ -133,19 +133,13 @@ public final class MainFrameApplication extends MainFrame {
     private final JFileChooser               _seqs_pi_filechooser;
     private final JFileChooser               _open_filechooser_for_species_tree;
     private final JFileChooser               _save_filechooser;
-    private final JFileChooser               _writetopdf_filechooser;
+   
     private final JFileChooser               _writetographics_filechooser;
     // Application-only print menu items
-    private JMenuItem                        _print_item;
-    private JMenuItem                        _write_to_pdf_item;
-    private JMenuItem                        _write_to_jpg_item;
-    private JMenuItem                        _write_to_gif_item;
-    private JMenuItem                        _write_to_tif_item;
-    private JMenuItem                        _write_to_png_item;
-    private JMenuItem                        _write_to_bmp_item;
+   
     private JMenuItem                        _collapse_below_threshold;
     private JMenuItem                        _collapse_below_branch_length;
-    private File                             _current_dir;
+   
     private ButtonGroup                      _radio_group_1;
     private ButtonGroup                      _radio_group_2;
     // Others:
@@ -438,9 +432,6 @@ public final class MainFrameApplication extends MainFrame {
             }
             else if ( o == _close_item ) {
                 closeCurrentPane();
-            }
-            else if ( o == _write_to_pdf_item ) {
-                writeToPdf( _mainpanel.getCurrentPhylogeny() );
             }
             else if ( o == _write_to_jpg_item ) {
                 writeToGraphicsFile( _mainpanel.getCurrentPhylogeny(), GraphicsExportType.JPG );
@@ -2007,31 +1998,8 @@ public final class MainFrameApplication extends MainFrame {
         }
     }
 
-    private ControlPanel getControlPanel() {
-        return getMainPanel().getControlPanel();
-    }
-
-    private File getCurrentDir() {
-        if ( ( _current_dir == null ) || !_current_dir.canRead() ) {
-            if ( ForesterUtil.isWindows() ) {
-                try {
-                    _current_dir = new File( WindowsUtils.getCurrentUserDesktopPath() );
-                }
-                catch ( final Exception e ) {
-                    _current_dir = null;
-                }
-            }
-        }
-        if ( ( _current_dir == null ) || !_current_dir.canRead() ) {
-            if ( System.getProperty( "user.home" ) != null ) {
-                _current_dir = new File( System.getProperty( "user.home" ) );
-            }
-            else if ( System.getProperty( "user.dir" ) != null ) {
-                _current_dir = new File( System.getProperty( "user.dir" ) );
-            }
-        }
-        return _current_dir;
-    }
+   
+   
 
     private double getMinNotCollapseConfidenceValue() {
         return _min_not_collapse;
@@ -2175,50 +2143,7 @@ public final class MainFrameApplication extends MainFrame {
         }
     }
 
-    private void printPhylogenyToPdf( final String file_name ) {
-        if ( !getOptions().isPrintUsingActualSize() ) {
-            getCurrentTreePanel()
-            .calcParametersForPainting( getOptions().getPrintSizeX(), getOptions().getPrintSizeY() );
-            getCurrentTreePanel().resetPreferredSize();
-            getCurrentTreePanel().repaint();
-        }
-        String pdf_written_to = "";
-        boolean error = false;
-        try {
-            if ( getOptions().isPrintUsingActualSize() ) {
-                pdf_written_to = PdfExporter.writePhylogenyToPdf( file_name,
-                                                                  getCurrentTreePanel(),
-                                                                  getCurrentTreePanel().getWidth(),
-                                                                  getCurrentTreePanel().getHeight() );
-            }
-            else {
-                pdf_written_to = PdfExporter.writePhylogenyToPdf( file_name, getCurrentTreePanel(), getOptions()
-                        .getPrintSizeX(), getOptions().getPrintSizeY() );
-            }
-        }
-        catch ( final IOException e ) {
-            error = true;
-            JOptionPane.showMessageDialog( this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE );
-        }
-        if ( !error ) {
-            if ( !ForesterUtil.isEmpty( pdf_written_to ) ) {
-                JOptionPane.showMessageDialog( this,
-                                               "Wrote PDF to: " + pdf_written_to,
-                                               "Information",
-                                               JOptionPane.INFORMATION_MESSAGE );
-            }
-            else {
-                JOptionPane.showMessageDialog( this,
-                                               "There was an unknown problem when attempting to write to PDF file: \""
-                                                       + file_name + "\"",
-                                               "Error",
-                                               JOptionPane.ERROR_MESSAGE );
-            }
-        }
-        if ( !getOptions().isPrintUsingActualSize() ) {
-            getControlPanel().showWhole();
-        }
-    }
+   
 
     private void readPhylogeniesFromFile() {
         boolean exception = false;
@@ -2489,9 +2414,7 @@ public final class MainFrameApplication extends MainFrame {
         }
     }
 
-    private void setCurrentDir( final File current_dir ) {
-        _current_dir = current_dir;
-    }
+   
 
     private void setMinNotCollapseConfidenceValue( final double min_not_collapse ) {
         _min_not_collapse = min_not_collapse;
@@ -2750,44 +2673,7 @@ public final class MainFrameApplication extends MainFrame {
         }
     }
 
-    private void writeToPdf( final Phylogeny t ) {
-        if ( ( t == null ) || t.isEmpty() ) {
-            return;
-        }
-        String initial_filename = "";
-        if ( getMainPanel().getCurrentTreePanel().getTreeFile() != null ) {
-            initial_filename = getMainPanel().getCurrentTreePanel().getTreeFile().toString();
-        }
-        if ( initial_filename.indexOf( '.' ) > 0 ) {
-            initial_filename = initial_filename.substring( 0, initial_filename.lastIndexOf( '.' ) );
-        }
-        initial_filename = initial_filename + ".pdf";
-        _writetopdf_filechooser.setSelectedFile( new File( initial_filename ) );
-        final File my_dir = getCurrentDir();
-        if ( my_dir != null ) {
-            _writetopdf_filechooser.setCurrentDirectory( my_dir );
-        }
-        final int result = _writetopdf_filechooser.showSaveDialog( _contentpane );
-        File file = _writetopdf_filechooser.getSelectedFile();
-        setCurrentDir( _writetopdf_filechooser.getCurrentDirectory() );
-        if ( ( file != null ) && ( result == JFileChooser.APPROVE_OPTION ) ) {
-            if ( !file.toString().toLowerCase().endsWith( ".pdf" ) ) {
-                file = new File( file.toString() + ".pdf" );
-            }
-            if ( file.exists() ) {
-                final int i = JOptionPane.showConfirmDialog( this,
-                                                             file + " already exists. Overwrite?",
-                                                             "WARNING",
-                                                             JOptionPane.OK_CANCEL_OPTION,
-                                                             JOptionPane.WARNING_MESSAGE );
-                if ( i != JOptionPane.OK_OPTION ) {
-                    return;
-                }
-            }
-            printPhylogenyToPdf( file.toString() );
-        }
-    }
-
+    
     public static MainFrameApplication createInstance( final Phylogeny[] phys, final Configuration config ) {
         return new MainFrameApplication( phys, config );
     }
