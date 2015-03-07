@@ -126,41 +126,6 @@ public final class MainFrameApplet extends MainFrame {
         System.gc();
     }
 
-    private void readSpeciesTree( final Configuration configuration, final String species_tree_url_str )
-            throws MalformedURLException, FileNotFoundException, IOException {
-        final URL species_tree_url = new URL( species_tree_url_str );
-        final Phylogeny[] species_trees = AptxUtil.readPhylogeniesFromUrl( species_tree_url,
-                                                                           configuration
-                                                                                   .isValidatePhyloXmlAgainstSchema(),
-                                                                           configuration
-                                                                                   .isReplaceUnderscoresInNhParsing(),
-                                                                           false,
-                                                                           TAXONOMY_EXTRACTION.NO,
-                                                                           false );
-        if ( ( species_trees != null ) && ( species_trees.length > 0 ) ) {
-            AptxUtil.printAppletMessage( ArchaeopteryxA.NAME, "successfully read species tree" );
-            if ( species_trees[ 0 ].isEmpty() ) {
-                ForesterUtil.printErrorMessage( ArchaeopteryxA.NAME, "species tree is empty" );
-            }
-            else if ( !species_trees[ 0 ].isRooted() ) {
-                ForesterUtil.printErrorMessage( ArchaeopteryxA.NAME, "species tree is not rooted" );
-            }
-            else {
-                setSpeciesTree( species_trees[ 0 ] );
-                AptxUtil.printAppletMessage( ArchaeopteryxA.NAME, "species tree OK" );
-            }
-        }
-        else {
-            ForesterUtil.printErrorMessage( ArchaeopteryxA.NAME, "failed to read species tree from "
-                    + species_tree_url_str );
-        }
-    }
-
-    @Override
-    public MainPanel getMainPanel() {
-        return _mainpanel;
-    }
-
     void buildAnalysisMenu() {
         _analysis_menu = MainFrame.createMenu( "Analysis", getConfiguration() );
         _analysis_menu.add( _gsdi_item = new JMenuItem( "GSDI (Generalized Speciation Duplication Inference)" ) );
@@ -186,10 +151,11 @@ public final class MainFrameApplet extends MainFrame {
                         .setTextMinSupportMenuItem( _choose_minimal_confidence_mi, getOptions(), getCurrentTreePanel() );
                 MainFrame.setTextForFontChooserMenuItem( _choose_font_mi, createCurrentFontDesc( getMainPanel()
                         .getTreeFontSet() ) );
+                setTextForGraphicsSizeChooserMenuItem( _print_size_mi, getOptions() );
+                setTextForPdfLineWidthChooserMenuItem( _choose_pdf_width_mi, getOptions() );
                 MainFrame.setCycleNodeFillMenuItem( _cycle_node_fill_mi, getOptions() );
                 MainFrame.setCycleNodeShapeMenuItem( _cycle_node_shape_mi, getOptions() );
                 MainFrame.setTextNodeSizeMenuItem( _choose_node_size_mi, getOptions() );
-               
                 try {
                     getMainPanel().getControlPanel().setVisibilityOfDomainStrucureCB();
                     getMainPanel().getControlPanel().setVisibilityOfX();
@@ -250,6 +216,30 @@ public final class MainFrameApplet extends MainFrame {
         _options_jmenu.add( _search_with_regex_cbmi = new JCheckBoxMenuItem( MainFrame.SEARCH_REGEX_LABEL ) );
         _search_with_regex_cbmi.setToolTipText( MainFrame.SEARCH_WITH_REGEX_TIP );
         _options_jmenu.add( _inverse_search_result_cbmi = new JCheckBoxMenuItem( INVERSE_SEARCH_RESULT_LABEL ) );
+        //
+        _options_jmenu.addSeparator();
+        _options_jmenu.add( customizeMenuItemAsLabel( new JMenuItem( "Graphics Export & Printing:" ),
+                                                      getConfiguration() ) );
+        _options_jmenu.add( _antialias_print_cbmi = new JCheckBoxMenuItem( "Antialias" ) );
+        _options_jmenu.add( _print_black_and_white_cbmi = new JCheckBoxMenuItem( "Export in Black and White" ) );
+        _options_jmenu
+                .add( _print_using_actual_size_cbmi = new JCheckBoxMenuItem( "Use Current Image Size for PDF export and Printing" ) );
+        _options_jmenu
+                .add( _graphics_export_using_actual_size_cbmi = new JCheckBoxMenuItem( "Use Current Image Size for PNG, JPG, and GIF export" ) );
+        _options_jmenu
+                .add( _graphics_export_visible_only_cbmi = new JCheckBoxMenuItem( "Limit to Visible ('Screenshot') for PNG, JPG, and GIF export" ) );
+        _options_jmenu.add( _print_size_mi = new JMenuItem( "" ) );
+        _options_jmenu.add( _choose_pdf_width_mi = new JMenuItem( "" ) );
+        //
+        customizeCheckBoxMenuItem( _antialias_print_cbmi, getOptions().isAntialiasPrint() );
+        customizeCheckBoxMenuItem( _print_black_and_white_cbmi, getOptions().isPrintBlackAndWhite() );
+        customizeCheckBoxMenuItem( _graphics_export_visible_only_cbmi, getOptions().isGraphicsExportVisibleOnly() );
+        customizeCheckBoxMenuItem( _print_using_actual_size_cbmi, getOptions().isPrintUsingActualSize() );
+        customizeCheckBoxMenuItem( _graphics_export_using_actual_size_cbmi, getOptions()
+                .isGraphicsExportUsingActualSize() );
+        customizeJMenuItem( _print_size_mi );
+        customizeJMenuItem( _choose_pdf_width_mi );
+        //
         customizeJMenuItem( _choose_font_mi );
         customizeJMenuItem( _switch_colors_mi );
         customizeJMenuItem( _choose_minimal_confidence_mi );
@@ -315,5 +305,40 @@ public final class MainFrameApplet extends MainFrame {
 
     JApplet getApplet() {
         return _applet;
+    }
+
+    @Override
+    public MainPanel getMainPanel() {
+        return _mainpanel;
+    }
+
+    private void readSpeciesTree( final Configuration configuration, final String species_tree_url_str )
+            throws MalformedURLException, FileNotFoundException, IOException {
+        final URL species_tree_url = new URL( species_tree_url_str );
+        final Phylogeny[] species_trees = AptxUtil.readPhylogeniesFromUrl( species_tree_url,
+                                                                           configuration
+                                                                                   .isValidatePhyloXmlAgainstSchema(),
+                                                                           configuration
+                                                                                   .isReplaceUnderscoresInNhParsing(),
+                                                                           false,
+                                                                           TAXONOMY_EXTRACTION.NO,
+                                                                           false );
+        if ( ( species_trees != null ) && ( species_trees.length > 0 ) ) {
+            AptxUtil.printAppletMessage( ArchaeopteryxA.NAME, "successfully read species tree" );
+            if ( species_trees[ 0 ].isEmpty() ) {
+                ForesterUtil.printErrorMessage( ArchaeopteryxA.NAME, "species tree is empty" );
+            }
+            else if ( !species_trees[ 0 ].isRooted() ) {
+                ForesterUtil.printErrorMessage( ArchaeopteryxA.NAME, "species tree is not rooted" );
+            }
+            else {
+                setSpeciesTree( species_trees[ 0 ] );
+                AptxUtil.printAppletMessage( ArchaeopteryxA.NAME, "species tree OK" );
+            }
+        }
+        else {
+            ForesterUtil.printErrorMessage( ArchaeopteryxA.NAME, "failed to read species tree from "
+                    + species_tree_url_str );
+        }
     }
 }
