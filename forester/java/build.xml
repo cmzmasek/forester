@@ -71,6 +71,14 @@
 	</target>
 
 	<target name="jar_applets_only" description="JARs the classes files" depends="compile_applets_only,copy_resources">
+		<unjar src="${itextjar}" dest="${classes.dir}">
+		    <patternset>
+		        <include name="**/*.class" />
+		        <include name="**/*.afm" />
+		        <include name="**/*.txt" />
+		        <exclude name="**/*Test*.class" />
+		    </patternset>
+		 </unjar>
 		<unjar src="${commonscodecjar}" dest="${classes.dir}">
             <patternset>
                 <include name="**/*.class" />
