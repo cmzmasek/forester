@@ -435,27 +435,11 @@ public final class MainFrameApplication extends MainFrame {
             else if ( o == _new_item ) {
                 newTree();
             }
-            else if ( o == _save_all_item ) {
-                writeAllToFile();
-            }
+           
             else if ( o == _close_item ) {
                 closeCurrentPane();
             }
-            else if ( o == _write_to_jpg_item ) {
-                writeToGraphicsFile( _mainpanel.getCurrentPhylogeny(), GraphicsExportType.JPG );
-            }
-            else if ( o == _write_to_gif_item ) {
-                writeToGraphicsFile( _mainpanel.getCurrentPhylogeny(), GraphicsExportType.GIF );
-            }
-            else if ( o == _write_to_tif_item ) {
-                writeToGraphicsFile( _mainpanel.getCurrentPhylogeny(), GraphicsExportType.TIFF );
-            }
-            else if ( o == _write_to_bmp_item ) {
-                writeToGraphicsFile( _mainpanel.getCurrentPhylogeny(), GraphicsExportType.BMP );
-            }
-            else if ( o == _print_item ) {
-                print();
-            }
+          
             else if ( o == _load_species_tree_item ) {
                 readSpeciesTreeFromFile();
             }
@@ -1731,38 +1715,7 @@ public final class MainFrameApplication extends MainFrame {
         }
     }
 
-    private void print() {
-        if ( ( getCurrentTreePanel() == null ) || ( getCurrentTreePanel().getPhylogeny() == null )
-                || getCurrentTreePanel().getPhylogeny().isEmpty() ) {
-            return;
-        }
-        if ( !getOptions().isPrintUsingActualSize() ) {
-            getCurrentTreePanel().calcParametersForPainting( getOptions().getPrintSizeX() - 80,
-                                                             getOptions().getPrintSizeY() - 140 );
-            getCurrentTreePanel().resetPreferredSize();
-            getCurrentTreePanel().repaint();
-        }
-        final String job_name = Constants.PRG_NAME;
-        boolean error = false;
-        String printer_name = null;
-        try {
-            printer_name = Printer.print( getCurrentTreePanel(), job_name );
-        }
-        catch ( final Exception e ) {
-            error = true;
-            JOptionPane.showMessageDialog( this, e.getMessage(), "Printing Error", JOptionPane.ERROR_MESSAGE );
-        }
-        if ( !error && ( printer_name != null ) ) {
-            String msg = "Printing data sent to printer";
-            if ( printer_name.length() > 1 ) {
-                msg += " [" + printer_name + "]";
-            }
-            JOptionPane.showMessageDialog( this, msg, "Printing...", JOptionPane.INFORMATION_MESSAGE );
-        }
-        if ( !getOptions().isPrintUsingActualSize() ) {
-            getControlPanel().showWhole();
-        }
-    }
+   
 
     public void readMsaFromFile() {
         // Set an initial directory if none set yet
@@ -2300,61 +2253,5 @@ public final class MainFrameApplication extends MainFrame {
         nhx.setAllowErrorsInDistanceToParent( getOptions().isAllowErrorsInDistanceToParent() );
     }
 
-    private void writeAllToFile() {
-        if ( ( getMainPanel().getTabbedPane() == null ) || ( getMainPanel().getTabbedPane().getTabCount() < 1 ) ) {
-            return;
-        }
-        final File my_dir = getCurrentDir();
-        if ( my_dir != null ) {
-            _save_filechooser.setCurrentDirectory( my_dir );
-        }
-        _save_filechooser.setSelectedFile( new File( "" ) );
-        final int result = _save_filechooser.showSaveDialog( _contentpane );
-        final File file = _save_filechooser.getSelectedFile();
-        setCurrentDir( _save_filechooser.getCurrentDirectory() );
-        if ( ( file != null ) && ( result == JFileChooser.APPROVE_OPTION ) ) {
-            if ( file.exists() ) {
-                final int i = JOptionPane.showConfirmDialog( this,
-                                                             file + " already exists. Overwrite?",
-                                                             "Warning",
-                                                             JOptionPane.OK_CANCEL_OPTION,
-                                                             JOptionPane.WARNING_MESSAGE );
-                if ( i != JOptionPane.OK_OPTION ) {
-                    return;
-                }
-                else {
-                    try {
-                        file.delete();
-                    }
-                    catch ( final Exception e ) {
-                        JOptionPane.showMessageDialog( this,
-                                                       "Failed to delete: " + file,
-                                                       "Error",
-                                                       JOptionPane.WARNING_MESSAGE );
-                    }
-                }
-            }
-            final int count = getMainPanel().getTabbedPane().getTabCount();
-            final List<Phylogeny> trees = new ArrayList<Phylogeny>();
-            for( int i = 0; i < count; ++i ) {
-                final Phylogeny phy = getMainPanel().getPhylogeny( i );
-                if ( ForesterUtil.isEmpty( phy.getName() )
-                        && !ForesterUtil.isEmpty( getMainPanel().getTabbedPane().getTitleAt( i ) ) ) {
-                    phy.setName( getMainPanel().getTabbedPane().getTitleAt( i ) );
-                }
-                trees.add( phy );
-                getMainPanel().getTreePanels().get( i ).setEdited( false );
-            }
-            final PhylogenyWriter writer = new PhylogenyWriter();
-            try {
-                writer.toPhyloXML( file, trees, 0, ForesterUtil.LINE_SEPARATOR );
-            }
-            catch ( final IOException e ) {
-                JOptionPane.showMessageDialog( this,
-                                               "Failed to write to: " + file,
-                                               "Error",
-                                               JOptionPane.WARNING_MESSAGE );
-            }
-        }
-    }
+   
 } // MainFrameApplication.
