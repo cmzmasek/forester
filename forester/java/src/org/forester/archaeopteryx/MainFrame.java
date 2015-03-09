@@ -1335,7 +1335,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
     }
 
-    void printPhylogenyToPdf( final String file_name ) {
+    void static printPhylogenyToPdf( final String file_name ) {
         if ( !getOptions().isPrintUsingActualSize() ) {
             getCurrentTreePanel()
                     .calcParametersForPainting( getOptions().getPrintSizeX(), getOptions().getPrintSizeY() );
@@ -1893,42 +1893,49 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
     }
 
-    void writeToPdf( final Phylogeny t ) {
+    static File writeToPdf( final Phylogeny t,
+                            final MainPanel mp,
+                            JFileChooser writetopdf_filechooser,
+                            File curr_dir,
+                            Container contentpane ,
+                            Component component ) {
         if ( ( t == null ) || t.isEmpty() ) {
-            return;
+            return null;
         }
         String initial_filename = "";
-        if ( getMainPanel().getCurrentTreePanel().getTreeFile() != null ) {
-            initial_filename = getMainPanel().getCurrentTreePanel().getTreeFile().toString();
+        if (mp.getCurrentTreePanel().getTreeFile() != null ) {
+            initial_filename = mp.getCurrentTreePanel().getTreeFile().toString();
         }
         if ( initial_filename.indexOf( '.' ) > 0 ) {
             initial_filename = initial_filename.substring( 0, initial_filename.lastIndexOf( '.' ) );
         }
         initial_filename = initial_filename + ".pdf";
-        _writetopdf_filechooser.setSelectedFile( new File( initial_filename ) );
-        final File my_dir = getCurrentDir();
+        writetopdf_filechooser.setSelectedFile( new File( initial_filename ) );
+        final File my_dir = curr_dir;
         if ( my_dir != null ) {
-            _writetopdf_filechooser.setCurrentDirectory( my_dir );
+            writetopdf_filechooser.setCurrentDirectory( my_dir );
         }
-        final int result = _writetopdf_filechooser.showSaveDialog( _contentpane );
-        File file = _writetopdf_filechooser.getSelectedFile();
-        setCurrentDir( _writetopdf_filechooser.getCurrentDirectory() );
+        final int result = writetopdf_filechooser.showSaveDialog( contentpane );
+        File file = writetopdf_filechooser.getSelectedFile();
+       // setCurrentDir( writetopdf_filechooser.getCurrentDirectory() );
+        final File new_current_dir = writetopdf_filechooser.getCurrentDirectory();
         if ( ( file != null ) && ( result == JFileChooser.APPROVE_OPTION ) ) {
             if ( !file.toString().toLowerCase().endsWith( ".pdf" ) ) {
                 file = new File( file.toString() + ".pdf" );
             }
             if ( file.exists() ) {
-                final int i = JOptionPane.showConfirmDialog( this,
+                final int i = JOptionPane.showConfirmDialog( component,
                                                              file + " already exists. Overwrite?",
                                                              "WARNING",
                                                              JOptionPane.OK_CANCEL_OPTION,
                                                              JOptionPane.WARNING_MESSAGE );
                 if ( i != JOptionPane.OK_OPTION ) {
-                    return;
+                    return null;
                 }
             }
             printPhylogenyToPdf( file.toString() );
         }
+        return new_current_dir;
     }
 
     private void annotateSequences() {
