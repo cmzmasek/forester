@@ -47,6 +47,7 @@ import org.forester.sdi.GSDIR;
 import org.forester.sdi.SDIException;
 import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
+import org.forester.util.WindowsUtils;
 
 // Use like this:
 // <applet archive="forester.jar"
@@ -140,58 +141,54 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
     private JCheckBoxMenuItem           _right_line_up_domains_cbmi;
     private JCheckBoxMenuItem           _line_up_renderable_data_cbmi;
     // file menu:
-    JMenuItem                        _open_item;
-    JMenuItem                        _open_url_item;
-    JMenuItem                        _save_item;
-    JMenuItem                        _save_all_item;
-    JMenuItem                        _close_item;
-    JMenuItem                        _exit_item;
-    JMenuItem                        _new_item;
-    JMenuItem                        _print_item;
-    JMenuItem                        _write_to_pdf_item;
-    JMenuItem                        _write_to_jpg_item;
-    JMenuItem                        _write_to_gif_item;
-    JMenuItem                        _write_to_tif_item;
-    JMenuItem                        _write_to_png_item;
-    JMenuItem                        _write_to_bmp_item;
-    JMenu                            _file_jmenu;
+    private JMenuItem                        _open_item;
+    private JMenuItem                        _open_url_item;
+    private JMenuItem                        _save_item;
+    private JMenuItem                        _save_all_item;
+    private JMenuItem                        _close_item;
+    private  JMenuItem                        _exit_item;
+    private JMenuItem                        _new_item;
+    private JMenuItem                        _print_item;
+    private JMenuItem                        _write_to_pdf_item;
+    private JMenuItem                        _write_to_jpg_item;
+    private JMenuItem                        _write_to_gif_item;
+    private JMenuItem                        _write_to_tif_item;
+    private JMenuItem                        _write_to_png_item;
+    private JMenuItem                        _write_to_bmp_item;
+    private JMenu                            _file_jmenu;
+    private JFileChooser                     _writetopdf_filechooser;
+    private File                             _current_dir;
+    private JFileChooser                     _save_filechooser;
+    private JFileChooser                     _writetographics_filechooser;
 
     
-    void writePhylogenyToGraphicsFile( final String file_name, final GraphicsExportType type ) {
-        _mainpanel.getCurrentTreePanel().calcParametersForPainting( _mainpanel.getCurrentTreePanel().getWidth(),
-                                                                    _mainpanel.getCurrentTreePanel().getHeight() );
-        String file_written_to = "";
-        boolean error = false;
-        try {
-            file_written_to = AptxUtil.writePhylogenyToGraphicsFile( file_name,
-                                                                     _mainpanel.getCurrentTreePanel().getWidth(),
-                                                                     _mainpanel.getCurrentTreePanel().getHeight(),
-                                                                     _mainpanel.getCurrentTreePanel(),
-                                                                     _mainpanel.getControlPanel(),
-                                                                     type,
-                                                                     getOptions() );
-        }
-        catch ( final IOException e ) {
-            error = true;
-            JOptionPane.showMessageDialog( this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE );
-        }
-        if ( !error ) {
-            if ( ( file_written_to != null ) && ( file_written_to.length() > 0 ) ) {
-                JOptionPane.showMessageDialog( this,
-                                               "Wrote image to: " + file_written_to,
-                                               "Graphics Export",
-                                               JOptionPane.INFORMATION_MESSAGE );
-            }
-            else {
-                JOptionPane.showMessageDialog( this,
-                                               "There was an unknown problem when attempting to write to an image file: \""
-                                                       + file_name + "\"",
-                                               "Error",
-                                               JOptionPane.ERROR_MESSAGE );
-            }
-        }
-        _contentpane.repaint();
+    void setCurrentDir( final File current_dir ) {
+        _current_dir = current_dir;
     }
+    
+    File getCurrentDir() {
+        if ( ( _current_dir == null ) || !_current_dir.canRead() ) {
+            if ( ForesterUtil.isWindows() ) {
+                try {
+                    _current_dir = new File( WindowsUtils.getCurrentUserDesktopPath() );
+                }
+                catch ( final Exception e ) {
+                    _current_dir = null;
+                }
+            }
+        }
+        if ( ( _current_dir == null ) || !_current_dir.canRead() ) {
+            if ( System.getProperty( "user.home" ) != null ) {
+                _current_dir = new File( System.getProperty( "user.home" ) );
+            }
+            else if ( System.getProperty( "user.dir" ) != null ) {
+                _current_dir = new File( System.getProperty( "user.dir" ) );
+            }
+        }
+        return _current_dir;
+    }
+    
+  
 
   
     void buildFileMenu() {
@@ -467,10 +464,23 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         }
         //
         else if ( o == _write_to_pdf_item ) {
-            writeToPdf( _mainpanel.getCurrentPhylogeny() );
+           // writeToPdf( _mainpanel.getCurrentPhylogeny() );
+            final File curr_dir =MainFrame.writeToPdf( _mainpanel.getCurrentPhylogeny(), 
+                                  getMainPanel(),
+                                  _writetopdf_filechooser,
+                                  _current_dir,
+                                  getContentPane(),
+                                  this );
+            
+            
+            if ( curr_dir != null ) {
+                setCurrentDir( curr_dir );
+            }
+            
         }
         
         else if ( o == _write_to_jpg_item ) {
+            
             writeToGraphicsFile( _mainpanel.getCurrentPhylogeny(), GraphicsExportType.JPG );
         }
         else if ( o == _write_to_gif_item ) {
@@ -618,6 +628,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
 
     @Override
     public void init() {
+        _writetopdf_filechooser = new JFileChooser();
         final String config_filename = getParameter( Constants.APPLET_PARAM_NAME_FOR_CONFIG_FILE_URL );
         AptxUtil.printAppletMessage( NAME, "URL for configuration file is: " + config_filename );
         final Configuration configuration = new Configuration( config_filename, true, true, true );
