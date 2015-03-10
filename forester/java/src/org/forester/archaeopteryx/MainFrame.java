@@ -691,7 +691,14 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             print( getCurrentTreePanel(), getOptions(), this );
         }
         else if ( o == _save_item ) {
-            writeToFile( _mainpanel.getCurrentPhylogeny() );
+           
+            final File new_dir = writeToFile( _mainpanel.getCurrentPhylogeny() ,
+                         getMainPanel(), _save_filechooser, _current_dir, getContentPane(), this );
+      
+            if ( new_dir != null ) {
+                setCurrentDir( new_dir ); 
+            }
+           
         }
        
         else if ( o == _graphics_export_visible_only_cbmi ) {
@@ -1091,14 +1098,16 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                                        JOptionPane.ERROR_MESSAGE );
     }
 
-    void exceptionOccuredDuringSaveAs( final Exception e ) {
+    static void exceptionOccuredDuringSaveAs( final Exception e, 
+                                              final TreePanel tp,
+                                              final Component comp ) {
         try {
-            _mainpanel.getCurrentTreePanel().setArrowCursor();
+            tp.setArrowCursor();
         }
         catch ( final Exception ex ) {
             // Do nothing.
         }
-        JOptionPane.showMessageDialog( this, "Exception" + e, "Error during File|SaveAs", JOptionPane.ERROR_MESSAGE );
+        JOptionPane.showMessageDialog( comp, "Exception" + e, "Error during File|SaveAs", JOptionPane.ERROR_MESSAGE );
     }
 
     void executeGSDI() {
@@ -1736,38 +1745,53 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
     }
 
-    boolean writeAsNewHampshire( final Phylogeny t, boolean exception, final File file ) {
+    static boolean writeAsNewHampshire( final TreePanel tp,
+                                        final Options op,
+                                        boolean exception,
+                                        final File file ) {
         try {
             final PhylogenyWriter writer = new PhylogenyWriter();
-            writer.toNewHampshire( t, true, getOptions().getNhConversionSupportValueStyle(), file );
+            writer.toNewHampshire( tp.getPhylogeny(), true, op.getNhConversionSupportValueStyle(), file );
         }
         catch ( final Exception e ) {
             exception = true;
-            exceptionOccuredDuringSaveAs( e );
+            exceptionOccuredDuringSaveAs( e, tp, tp);
         }
         return exception;
     }
 
-    boolean writeAsNexus( final Phylogeny t, boolean exception, final File file ) {
+   
+    
+    
+    static boolean writeAsNexus( final TreePanel tp,
+                                        final Options op,
+                                        boolean exception,
+                                        final File file ) {
         try {
             final PhylogenyWriter writer = new PhylogenyWriter();
-            writer.toNexus( file, t, getOptions().getNhConversionSupportValueStyle() );
+            writer.toNexus(file , tp.getPhylogeny(),  op.getNhConversionSupportValueStyle());
         }
         catch ( final Exception e ) {
             exception = true;
-            exceptionOccuredDuringSaveAs( e );
+            exceptionOccuredDuringSaveAs( e, tp, tp);
         }
         return exception;
     }
+    
+    
+    
 
-    boolean writeAsPhyloXml( final Phylogeny t, boolean exception, final File file ) {
+    static boolean writeAsPhyloXml( final TreePanel tp,
+                             final Options op,
+                             boolean exception,
+                             final File file ) {
         try {
             final PhylogenyWriter writer = new PhylogenyWriter();
-            writer.toPhyloXML( file, t, 0 );
+            writer.toPhyloXML( file, tp.getPhylogeny(), 0 );
         }
         catch ( final Exception e ) {
             exception = true;
-            exceptionOccuredDuringSaveAs( e );
+            exceptionOccuredDuringSaveAs( e, tp, tp);
         }
         return exception;
     }
@@ -1812,42 +1836,51 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         contentpane.repaint();
     }
 
-    void writeToFile( final Phylogeny t ) {
+    static File writeToFile( final Phylogeny t,
+                             final MainPanel mp,
+                             final JFileChooser save_filechooser,
+                             final File current_dir,
+                             Container contentpane,
+                             Component comp
+            
+            ) {
+        File  new_file = null;
         if ( t == null ) {
-            return;
+            return null;
         }
         String initial_filename = null;
-        if ( getMainPanel().getCurrentTreePanel().getTreeFile() != null ) {
+        if ( mp.getCurrentTreePanel().getTreeFile() != null ) {
             try {
-                initial_filename = getMainPanel().getCurrentTreePanel().getTreeFile().getCanonicalPath();
+                initial_filename = mp.getCurrentTreePanel().getTreeFile().getCanonicalPath();
             }
             catch ( final IOException e ) {
                 initial_filename = null;
             }
         }
         if ( !ForesterUtil.isEmpty( initial_filename ) ) {
-            _save_filechooser.setSelectedFile( new File( initial_filename ) );
+            save_filechooser.setSelectedFile( new File( initial_filename ) );
         }
         else {
-            _save_filechooser.setSelectedFile( new File( "" ) );
+            save_filechooser.setSelectedFile( new File( "" ) );
         }
-        final File my_dir = getCurrentDir();
+        final File my_dir = current_dir;
         if ( my_dir != null ) {
-            _save_filechooser.setCurrentDirectory( my_dir );
+            save_filechooser.setCurrentDirectory( my_dir );
         }
-        final int result = _save_filechooser.showSaveDialog( _contentpane );
-        final File file = _save_filechooser.getSelectedFile();
-        setCurrentDir( _save_filechooser.getCurrentDirectory() );
+        final int result = save_filechooser.showSaveDialog( contentpane );
+        final File file = save_filechooser.getSelectedFile();
+      
+        new_file =  save_filechooser.getCurrentDirectory();
         boolean exception = false;
         if ( ( file != null ) && ( result == JFileChooser.APPROVE_OPTION ) ) {
             if ( file.exists() ) {
-                final int i = JOptionPane.showConfirmDialog( this,
+                final int i = JOptionPane.showConfirmDialog( comp,
                                                              file + " already exists.\nOverwrite?",
                                                              "Overwrite?",
                                                              JOptionPane.OK_CANCEL_OPTION,
                                                              JOptionPane.QUESTION_MESSAGE );
                 if ( i != JOptionPane.OK_OPTION ) {
-                    return;
+                    return null;
                 }
                 else {
                     final File to = new File( file.getAbsoluteFile().toString() + Constants.BACKUP_FILE_SUFFIX );
@@ -1855,7 +1888,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                         ForesterUtil.copyFile( file, to );
                     }
                     catch ( final Exception e ) {
-                        JOptionPane.showMessageDialog( this,
+                        JOptionPane.showMessageDialog( comp,
                                                        "Failed to create backup copy " + to,
                                                        "Failed to Create Backup Copy",
                                                        JOptionPane.WARNING_MESSAGE );
@@ -1864,43 +1897,54 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                         file.delete();
                     }
                     catch ( final Exception e ) {
-                        JOptionPane.showMessageDialog( this,
+                        JOptionPane.showMessageDialog( comp,
                                                        "Failed to delete: " + file,
                                                        "Failed to Delete",
                                                        JOptionPane.WARNING_MESSAGE );
                     }
                 }
             }
-            if ( _save_filechooser.getFileFilter() == MainFrame.nhfilter ) {
-                exception = writeAsNewHampshire( t, exception, file );
+            if ( save_filechooser.getFileFilter() == MainFrame.nhfilter ) {
+               
+                
+                exception = writeAsNewHampshire( mp.getCurrentTreePanel(), mp.getOptions(), exception, file );
             }
-            else if ( _save_filechooser.getFileFilter() == MainFrame.xmlfilter ) {
-                exception = writeAsPhyloXml( t, exception, file );
+            else if ( save_filechooser.getFileFilter() == MainFrame.xmlfilter ) {
+                
+                exception =  writeAsPhyloXml(   mp.getCurrentTreePanel(), mp.getOptions(),
+                                 exception,
+                                  file ) ;
+                
             }
-            else if ( _save_filechooser.getFileFilter() == MainFrame.nexusfilter ) {
-                exception = writeAsNexus( t, exception, file );
+            else if ( save_filechooser.getFileFilter() == MainFrame.nexusfilter ) {
+                
+               exception = writeAsNexus( mp.getCurrentTreePanel(), mp.getOptions(), exception, file );
             }
             // "*.*":
             else {
                 final String file_name = file.getName().trim().toLowerCase();
                 if ( file_name.endsWith( ".nh" ) || file_name.endsWith( ".newick" ) || file_name.endsWith( ".phy" )
                         || file_name.endsWith( ".tree" ) ) {
-                    exception = writeAsNewHampshire( t, exception, file );
+                    exception = writeAsNewHampshire( mp.getCurrentTreePanel(), mp.getOptions(), exception, file );
+                    
                 }
                 else if ( file_name.endsWith( ".nex" ) || file_name.endsWith( ".nexus" ) ) {
-                    exception = writeAsNexus( t, exception, file );
+                    exception = writeAsNexus(  mp.getCurrentTreePanel(), mp.getOptions(), exception, file );
                 }
                 // XML is default:
                 else {
-                    exception = writeAsPhyloXml( t, exception, file );
+                    exception =  writeAsPhyloXml(   mp.getCurrentTreePanel(), mp.getOptions(),
+                                                    exception,
+                                                     file ) ;
                 }
             }
             if ( !exception ) {
-                getMainPanel().setTitleOfSelectedTab( file.getName() );
-                getMainPanel().getCurrentTreePanel().setTreeFile( file );
-                getMainPanel().getCurrentTreePanel().setEdited( false );
+                mp.setTitleOfSelectedTab( file.getName() );
+                mp.getCurrentTreePanel().setTreeFile( file );
+                mp.getCurrentTreePanel().setEdited( false );
             }
         }
+        return new_file;
     }
 
     static File writeToGraphicsFile( final Phylogeny t,

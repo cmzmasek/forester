@@ -3,7 +3,6 @@ package org.forester.archaeopteryx;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
-import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -35,8 +34,6 @@ import org.forester.archaeopteryx.AptxUtil.GraphicsExportType;
 import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
-import org.forester.archaeopteryx.webservices.PhylogeniesWebserviceClient;
-import org.forester.archaeopteryx.webservices.WebservicesManager;
 import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
@@ -66,7 +63,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
     private final static String         NAME             = "ArchaeopteryxE";
     private static final long           serialVersionUID = -1220055577935759443L;
     private Configuration               _configuration;
-    private MainPanelApplets            _mainpanel;
+    private MainPanel                   _mainpanel;
     private JMenuBar                    _jmenubar;
     private JMenu                       _options_jmenu;
     private JMenu                       _font_size_menu;
@@ -141,31 +138,30 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
     private JCheckBoxMenuItem           _right_line_up_domains_cbmi;
     private JCheckBoxMenuItem           _line_up_renderable_data_cbmi;
     // file menu:
-    private JMenuItem                        _open_item;
-    private JMenuItem                        _open_url_item;
-    private JMenuItem                        _save_item;
-    private JMenuItem                        _save_all_item;
-    private JMenuItem                        _close_item;
-    private  JMenuItem                        _exit_item;
-    private JMenuItem                        _new_item;
-    private JMenuItem                        _print_item;
-    private JMenuItem                        _write_to_pdf_item;
-    private JMenuItem                        _write_to_jpg_item;
-    private JMenuItem                        _write_to_gif_item;
-    private JMenuItem                        _write_to_tif_item;
-    private JMenuItem                        _write_to_png_item;
-    private JMenuItem                        _write_to_bmp_item;
-    private JMenu                            _file_jmenu;
-    private JFileChooser                     _writetopdf_filechooser;
-    private File                             _current_dir;
-    private JFileChooser                     _save_filechooser;
-    private JFileChooser                     _writetographics_filechooser;
+    private JMenuItem                   _open_item;
+    private JMenuItem                   _open_url_item;
+    private JMenuItem                   _save_item;
+    private JMenuItem                   _save_all_item;
+    private JMenuItem                   _close_item;
+    private JMenuItem                   _exit_item;
+    private JMenuItem                   _new_item;
+    private JMenuItem                   _print_item;
+    private JMenuItem                   _write_to_pdf_item;
+    private JMenuItem                   _write_to_jpg_item;
+    private JMenuItem                   _write_to_gif_item;
+    private JMenuItem                   _write_to_tif_item;
+    private JMenuItem                   _write_to_png_item;
+    private JMenuItem                   _write_to_bmp_item;
+    private JMenu                       _file_jmenu;
+    private JFileChooser                _writetopdf_filechooser;
+    private File                        _current_dir;
+    private JFileChooser                _save_filechooser;
+    private JFileChooser                _writetographics_filechooser;
 
-    
     void setCurrentDir( final File current_dir ) {
         _current_dir = current_dir;
     }
-    
+
     File getCurrentDir() {
         if ( ( _current_dir == null ) || !_current_dir.canRead() ) {
             if ( ForesterUtil.isWindows() ) {
@@ -187,10 +183,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         }
         return _current_dir;
     }
-    
-  
 
-  
     void buildFileMenu() {
         _file_jmenu = MainFrame.createMenu( "File", getConfiguration() );
         _file_jmenu.add( _save_item = new JMenuItem( "Save Tree As..." ) );
@@ -222,7 +215,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         customizeJMenuItem( _exit_item );
         _jmenubar.add( _file_jmenu );
     }
-    
+
     @Override
     public void actionPerformed( final ActionEvent e ) {
         final Object o = e.getSource();
@@ -464,70 +457,118 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         }
         //
         else if ( o == _write_to_pdf_item ) {
-           // writeToPdf( _mainpanel.getCurrentPhylogeny() );
-            final File curr_dir =MainFrame.writeToPdf( _mainpanel.getCurrentPhylogeny(), 
-                                  getMainPanel(),
-                                  _writetopdf_filechooser,
-                                  _current_dir,
-                                  getContentPane(),
-                                  this );
-            
-            
+            // writeToPdf( _mainpanel.getCurrentPhylogeny() );
+            final File curr_dir = MainFrame.writeToPdf( _mainpanel.getCurrentPhylogeny(),
+                                                        getMainPanel(),
+                                                        _writetopdf_filechooser,
+                                                        _current_dir,
+                                                        getContentPane(),
+                                                        this );
             if ( curr_dir != null ) {
                 setCurrentDir( curr_dir );
             }
-            
         }
-        
         else if ( o == _write_to_jpg_item ) {
-            
-            writeToGraphicsFile( _mainpanel.getCurrentPhylogeny(), GraphicsExportType.JPG );
+            final File curr_dir = MainFrame.writeToGraphicsFile( _mainpanel.getCurrentPhylogeny(),
+                                                                 GraphicsExportType.JPG,
+                                                                 _mainpanel,
+                                                                 _writetographics_filechooser,
+                                                                 this,
+                                                                 getContentPane(),
+                                                                 _current_dir );
+            if ( curr_dir != null ) {
+                setCurrentDir( curr_dir );
+            }
         }
         else if ( o == _write_to_gif_item ) {
-            writeToGraphicsFile( _mainpanel.getCurrentPhylogeny(), GraphicsExportType.GIF );
+            final File curr_dir = MainFrame.writeToGraphicsFile( _mainpanel.getCurrentPhylogeny(),
+                                                                 GraphicsExportType.GIF,
+                                                                 _mainpanel,
+                                                                 _writetographics_filechooser,
+                                                                 this,
+                                                                 getContentPane(),
+                                                                 _current_dir );
+            if ( curr_dir != null ) {
+                setCurrentDir( curr_dir );
+            }
         }
         else if ( o == _write_to_tif_item ) {
-            writeToGraphicsFile( _mainpanel.getCurrentPhylogeny(), GraphicsExportType.TIFF );
+            final File curr_dir = MainFrame.writeToGraphicsFile( _mainpanel.getCurrentPhylogeny(),
+                                                                 GraphicsExportType.TIFF,
+                                                                 _mainpanel,
+                                                                 _writetographics_filechooser,
+                                                                 this,
+                                                                 getContentPane(),
+                                                                 _current_dir );
+            if ( curr_dir != null ) {
+                setCurrentDir( curr_dir );
+            }
         }
         else if ( o == _write_to_bmp_item ) {
-            writeToGraphicsFile( _mainpanel.getCurrentPhylogeny(), GraphicsExportType.BMP );
+            final File curr_dir = MainFrame.writeToGraphicsFile( _mainpanel.getCurrentPhylogeny(),
+                                                                 GraphicsExportType.BMP,
+                                                                 _mainpanel,
+                                                                 _writetographics_filechooser,
+                                                                 this,
+                                                                 getContentPane(),
+                                                                 _current_dir );
+            if ( curr_dir != null ) {
+                setCurrentDir( curr_dir );
+            }
         }
         else if ( o == _write_to_png_item ) {
-            writeToGraphicsFile( _mainpanel.getCurrentPhylogeny(), GraphicsExportType.PNG );
+            final File curr_dir = MainFrame.writeToGraphicsFile( _mainpanel.getCurrentPhylogeny(),
+                                                                 GraphicsExportType.PNG,
+                                                                 _mainpanel,
+                                                                 _writetographics_filechooser,
+                                                                 this,
+                                                                 getContentPane(),
+                                                                 _current_dir );
+            if ( curr_dir != null ) {
+                setCurrentDir( curr_dir );
+            }
         }
         else if ( o == _print_item ) {
-            MainFrame.print( getCurrentTreePanel(),
-                             getOptions(),
-                             
-                             this );
-                  
+            MainFrame.print( getCurrentTreePanel(), getOptions(), this );
         }
         else if ( o == _save_item ) {
-            writeToFile( _mainpanel.getCurrentPhylogeny() );
-        }
-       
-//        else if ( o == _graphics_export_visible_only_cbmi ) {
-//            updateOptions( getOptions() );
-//        }
-//        else if ( o == _antialias_print_cbmi ) {
-//            updateOptions( getOptions() );
-//        }
-//        else if ( o == _print_black_and_white_cbmi ) {
-//            updateOptions( getOptions() );
-//        }
-//        else if ( o == _print_using_actual_size_cbmi ) {
-//            updateOptions( getOptions() );
-//        }
-//        else if ( o == _graphics_export_using_actual_size_cbmi ) {
-//            updateOptions( getOptions() );
-//        }
-//        else if ( o == _print_size_mi ) {
-//            choosePrintSize();
-//        }
-//        else if ( o == _choose_pdf_width_mi ) {
-//            choosePdfWidth();
-//        }
+            
+            final File new_dir = MainFrame.writeToFile( _mainpanel.getCurrentPhylogeny() ,
+                                              getMainPanel(), _save_filechooser, _current_dir, getContentPane(), this );
+                           
+                                 if ( new_dir != null ) {
+                                     setCurrentDir( new_dir ); 
+                                 }
+            
+            
+        } // TODO
+        // TODO
+        // TODO
+        // TODO
+        // TODO
         
+        
+        //        else if ( o == _graphics_export_visible_only_cbmi ) {
+        //            updateOptions( getOptions() );
+        //        }
+        //        else if ( o == _antialias_print_cbmi ) {
+        //            updateOptions( getOptions() );
+        //        }
+        //        else if ( o == _print_black_and_white_cbmi ) {
+        //            updateOptions( getOptions() );
+        //        }
+        //        else if ( o == _print_using_actual_size_cbmi ) {
+        //            updateOptions( getOptions() );
+        //        }
+        //        else if ( o == _graphics_export_using_actual_size_cbmi ) {
+        //            updateOptions( getOptions() );
+        //        }
+        //        else if ( o == _print_size_mi ) {
+        //            choosePrintSize();
+        //        }
+        //        else if ( o == _choose_pdf_width_mi ) {
+        //            choosePdfWidth();
+        //        }
         repaint();
     }
 
@@ -629,6 +670,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
     @Override
     public void init() {
         _writetopdf_filechooser = new JFileChooser();
+        _writetographics_filechooser = new JFileChooser();
         final String config_filename = getParameter( Constants.APPLET_PARAM_NAME_FOR_CONFIG_FILE_URL );
         AptxUtil.printAppletMessage( NAME, "URL for configuration file is: " + config_filename );
         final Configuration configuration = new Configuration( config_filename, true, true, true );
@@ -765,11 +807,11 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
                 public void componentResized( final ComponentEvent e ) {
                     if ( getMainPanel().getCurrentTreePanel() != null ) {
                         getMainPanel().getCurrentTreePanel().calcParametersForPainting( getMainPanel()
-                                                                                        .getCurrentTreePanel()
-                                                                                        .getWidth(),
+                                                                                                .getCurrentTreePanel()
+                                                                                                .getWidth(),
                                                                                         getMainPanel()
-                                                                                        .getCurrentTreePanel()
-                                                                                        .getHeight() );
+                                                                                                .getCurrentTreePanel()
+                                                                                                .getHeight() );
                     }
                 }
             } );
@@ -1102,12 +1144,12 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
 
     void customizeJMenuItem( final JMenuItem jmi ) {
         if ( jmi != null ) {
-        jmi.setFont( MainFrame.menu_font );
-        if ( !getConfiguration().isUseNativeUI() ) {
-            jmi.setBackground( getConfiguration().getGuiMenuBackgroundColor() );
-            jmi.setForeground( getConfiguration().getGuiMenuTextColor() );
-        }
-        jmi.addActionListener( this );
+            jmi.setFont( MainFrame.menu_font );
+            if ( !getConfiguration().isUseNativeUI() ) {
+                jmi.setBackground( getConfiguration().getGuiMenuBackgroundColor() );
+                jmi.setForeground( getConfiguration().getGuiMenuTextColor() );
+            }
+            jmi.addActionListener( this );
         }
     }
 
