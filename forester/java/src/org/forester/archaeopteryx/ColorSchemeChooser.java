@@ -49,16 +49,16 @@ import javax.swing.event.ListDataListener;
 
 final class ColorSchemeChooser extends JDialog implements ActionListener {
 
-    private static final long  serialVersionUID = 6150960100859081126L;
-    private final TreeColorSet _colorset;
-    private final JComboBox<String>    _selector;
-    private final JPanel       _color_panel;
-    private final JPanel       _color_labels[];
-    private final JButton      _ok_btn;
-    private final JButton      _cancel_btn;
-    private final MainPanel    _main_panel;
-    private final int          _prev_selected_scheme;
-    private int                _selected_scheme;
+    private static final long       serialVersionUID = 6150960100859081126L;
+    private final TreeColorSet      _colorset;
+    private final JComboBox<String> _selector;
+    private final JPanel            _color_panel;
+    private final JPanel            _color_labels[];
+    private final JButton           _ok_btn;
+    private final JButton           _cancel_btn;
+    private final MainPanel         _main_panel;
+    private final int               _prev_selected_scheme;
+    private int                     _selected_scheme;
 
     ColorSchemeChooser( final MainPanel parent, final TreeColorSet colorset ) {
         setName( "Color Scheme Chooser" );

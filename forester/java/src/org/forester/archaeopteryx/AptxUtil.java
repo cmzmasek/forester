@@ -83,10 +83,62 @@ import org.forester.util.ForesterUtil;
 
 public final class AptxUtil {
 
+    public static enum GraphicsExportType {
+        BMP( "bmp" ), GIF( "gif" ), JPG( "jpg" ), PDF( "pdf" ), PNG( "png" ), TIFF( "tif" );
+
+        private final String _suffix;
+
+        private GraphicsExportType( final String suffix ) {
+            _suffix = suffix;
+        }
+
+        @Override
+        public String toString() {
+            return _suffix;
+        }
+    }
     private final static String[] AVAILABLE_FONT_FAMILIES_SORTED = GraphicsEnvironment.getLocalGraphicsEnvironment()
-                                                                         .getAvailableFontFamilyNames();
+            .getAvailableFontFamilyNames();
     static {
         Arrays.sort( AVAILABLE_FONT_FAMILIES_SORTED );
+    }
+
+    final public static Color calculateColorFromString( final String str, final boolean is_taxonomy ) {
+        final String my_str = str.toUpperCase();
+        char first = my_str.charAt( 0 );
+        char second = ' ';
+        char third = ' ';
+        if ( my_str.length() > 1 ) {
+            if ( is_taxonomy ) {
+                second = my_str.charAt( 1 );
+            }
+            else {
+                second = my_str.charAt( my_str.length() - 1 );
+            }
+            if ( is_taxonomy ) {
+                if ( my_str.length() > 2 ) {
+                    if ( my_str.indexOf( " " ) > 0 ) {
+                        third = my_str.charAt( my_str.indexOf( " " ) + 1 );
+                    }
+                    else {
+                        third = my_str.charAt( 2 );
+                    }
+                }
+            }
+            else if ( my_str.length() > 2 ) {
+                third = my_str.charAt( ( my_str.length() - 1 ) / 2 );
+            }
+        }
+        first = normalizeCharForRGB( first );
+        second = normalizeCharForRGB( second );
+        third = normalizeCharForRGB( third );
+        if ( ( first > 235 ) && ( second > 235 ) && ( third > 235 ) ) {
+            first = 0;
+        }
+        else if ( ( first < 60 ) && ( second < 60 ) && ( third < 60 ) ) {
+            second = 255;
+        }
+        return new Color( first, second, third );
     }
 
     public static MaskFormatter createMaskFormatter( final String s ) {
@@ -126,16 +178,6 @@ public final class AptxUtil {
         return false;
     }
 
-    final static public boolean isHasAtLeastOneBranchWithSupportValues( final Phylogeny phy ) {
-        final PhylogenyNodeIterator it = phy.iteratorPostorder();
-        while ( it.hasNext() ) {
-            if ( it.next().getBranchData().isHasConfidences() ) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     final static public boolean isHasAtLeastOneBranchWithSupportSD( final Phylogeny phy ) {
         final PhylogenyNodeIterator it = phy.iteratorPostorder();
         while ( it.hasNext() ) {
@@ -147,6 +189,16 @@ public final class AptxUtil {
                         return true;
                     }
                 }
+            }
+        }
+        return false;
+    }
+
+    final static public boolean isHasAtLeastOneBranchWithSupportValues( final Phylogeny phy ) {
+        final PhylogenyNodeIterator it = phy.iteratorPostorder();
+        while ( it.hasNext() ) {
+            if ( it.next().getBranchData().isHasConfidences() ) {
+                return true;
             }
         }
         return false;
@@ -232,10 +284,61 @@ public final class AptxUtil {
         System.out.println( "[" + name + "] > " + message );
     }
 
+    final public static Phylogeny[] readPhylogeniesFromUrl( final URL url,
+                                                            final boolean phyloxml_validate_against_xsd,
+                                                            final boolean replace_underscores,
+                                                            final boolean internal_numbers_are_confidences,
+                                                            final TAXONOMY_EXTRACTION taxonomy_extraction,
+                                                            final boolean midpoint_reroot )
+                                                                    throws FileNotFoundException, IOException {
+        final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+        final PhylogenyParser parser;
+        boolean nhx_or_nexus = false;
+        if ( url.getHost().toLowerCase().indexOf( "tolweb" ) >= 0 ) {
+            parser = new TolParser();
+        }
+        else {
+            parser = ParserUtils.createParserDependingOnUrlContents( url, phyloxml_validate_against_xsd );
+            if ( parser instanceof NHXParser ) {
+                nhx_or_nexus = true;
+                final NHXParser nhx = ( NHXParser ) parser;
+                nhx.setReplaceUnderscores( replace_underscores );
+                nhx.setIgnoreQuotes( false );
+                nhx.setTaxonomyExtraction( taxonomy_extraction );
+            }
+            else if ( parser instanceof NexusPhylogeniesParser ) {
+                nhx_or_nexus = true;
+                final NexusPhylogeniesParser nex = ( NexusPhylogeniesParser ) parser;
+                nex.setReplaceUnderscores( replace_underscores );
+                nex.setIgnoreQuotes( false );
+            }
+        }
+        AptxUtil.printAppletMessage( "Archaeopteryx", "parser is " + parser.getName() );
+        final URLConnection url_connection = url.openConnection();
+        url_connection.setDefaultUseCaches( false );
+        final InputStream i = url_connection.getInputStream();
+        final Phylogeny[] phys = factory.create( i, parser );
+        i.close();
+        if ( phys != null ) {
+            if ( nhx_or_nexus && internal_numbers_are_confidences ) {
+                for( final Phylogeny phy : phys ) {
+                    PhylogenyMethods.transferInternalNodeNamesToConfidence( phy, "" );
+                }
+            }
+            if ( midpoint_reroot ) {
+                for( final Phylogeny phy : phys ) {
+                    PhylogenyMethods.midpointRoot( phy );
+                    PhylogenyMethods.orderAppearance( phy.getRoot(), true, true, DESCENDANT_SORT_PRIORITY.NODE_NAME );
+                }
+            }
+        }
+        return phys;
+    }
+
     final public static void showErrorMessage( final Component parent, final String error_msg ) {
         printAppletMessage( Constants.PRG_NAME, error_msg );
         JOptionPane.showMessageDialog( parent, error_msg, "[" + Constants.PRG_NAME + " " + Constants.VERSION
-                + "] Error", JOptionPane.ERROR_MESSAGE );
+                                       + "] Error", JOptionPane.ERROR_MESSAGE );
     }
 
     public static void writePhylogenyToGraphicsFile( final File intree,
@@ -260,7 +363,7 @@ public final class AptxUtil {
         phys[ 0 ] = phy;
         final MainFrameApplication mf = MainFrameApplication.createInstance( phys, config );
         AptxUtil.writePhylogenyToGraphicsFileNonInteractive( outfile, width, height, mf.getMainPanel()
-                .getCurrentTreePanel(), mf.getMainPanel().getControlPanel(), type, mf.getOptions() );
+                                                             .getCurrentTreePanel(), mf.getMainPanel().getControlPanel(), type, mf.getOptions() );
         mf.end();
     }
 
@@ -305,6 +408,44 @@ public final class AptxUtil {
         g2d.dispose();
     }
 
+    final private static char normalizeCharForRGB( char c ) {
+        c -= 65;
+        c *= 10.2;
+        c = c > 255 ? 255 : c;
+        c = c < 0 ? 0 : c;
+        return c;
+    }
+
+    final private static void openUrlInWebBrowser( final String url ) throws IOException, ClassNotFoundException,
+    SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException,
+    InvocationTargetException, InterruptedException {
+        final String os = System.getProperty( "os.name" );
+        final Runtime runtime = Runtime.getRuntime();
+        if ( os.toLowerCase().startsWith( "win" ) ) {
+            Runtime.getRuntime().exec( "rundll32 url.dll,FileProtocolHandler " + url );
+        }
+        else if ( ForesterUtil.isMac() ) {
+            final Class<?> file_mgr = Class.forName( "com.apple.eio.FileManager" );
+            final Method open_url = file_mgr.getDeclaredMethod( "openURL", new Class[] { String.class } );
+            open_url.invoke( null, new Object[] { url } );
+        }
+        else {
+            final String[] browsers = { "firefox", "opera", "konqueror", "mozilla", "netscape", "epiphany" };
+            String browser = null;
+            for( int i = 0; ( i < browsers.length ) && ( browser == null ); ++i ) {
+                if ( runtime.exec( new String[] { "which", browsers[ i ] } ).waitFor() == 0 ) {
+                    browser = browsers[ i ];
+                }
+            }
+            if ( browser == null ) {
+                throw new IOException( "could not find a web browser to open [" + url + "] in" );
+            }
+            else {
+                runtime.exec( new String[] { browser, url } );
+            }
+        }
+    }
+
     final static void addPhylogeniesToTabs( final Phylogeny[] phys,
                                             final String default_name,
                                             final String full_path,
@@ -312,8 +453,8 @@ public final class AptxUtil {
                                             final MainPanel main_panel ) {
         if ( phys.length > Constants.MAX_TREES_TO_LOAD ) {
             JOptionPane.showMessageDialog( main_panel, "Attempt to load " + phys.length
-                    + " phylogenies,\ngoing to load only the first " + Constants.MAX_TREES_TO_LOAD, Constants.PRG_NAME
-                    + " more than " + Constants.MAX_TREES_TO_LOAD + " phylogenies", JOptionPane.WARNING_MESSAGE );
+                                           + " phylogenies,\ngoing to load only the first " + Constants.MAX_TREES_TO_LOAD, Constants.PRG_NAME
+                                           + " more than " + Constants.MAX_TREES_TO_LOAD + " phylogenies", JOptionPane.WARNING_MESSAGE );
         }
         int i = 1;
         for( final Phylogeny phy : phys ) {
@@ -684,64 +825,13 @@ public final class AptxUtil {
         JOptionPane.showMessageDialog( null,
                                        "Java memory allocation might be too small, try \"-Xmx2048m\" java command line option"
                                                + "\n\nError: " + e.getLocalizedMessage(),
-                                       "Out of Memory Error [" + Constants.PRG_NAME + " " + Constants.VERSION + "]",
-                                       JOptionPane.ERROR_MESSAGE );
+                                               "Out of Memory Error [" + Constants.PRG_NAME + " " + Constants.VERSION + "]",
+                                               JOptionPane.ERROR_MESSAGE );
         System.exit( -1 );
     }
 
     final static void printAppletMessage( final String applet_name, final String message ) {
         System.out.println( "[" + applet_name + "] > " + message );
-    }
-
-    final public static Phylogeny[] readPhylogeniesFromUrl( final URL url,
-                                                            final boolean phyloxml_validate_against_xsd,
-                                                            final boolean replace_underscores,
-                                                            final boolean internal_numbers_are_confidences,
-                                                            final TAXONOMY_EXTRACTION taxonomy_extraction,
-                                                            final boolean midpoint_reroot )
-            throws FileNotFoundException, IOException {
-        final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-        final PhylogenyParser parser;
-        boolean nhx_or_nexus = false;
-        if ( url.getHost().toLowerCase().indexOf( "tolweb" ) >= 0 ) {
-            parser = new TolParser();
-        }
-        else {
-            parser = ParserUtils.createParserDependingOnUrlContents( url, phyloxml_validate_against_xsd );
-            if ( parser instanceof NHXParser ) {
-                nhx_or_nexus = true;
-                final NHXParser nhx = ( NHXParser ) parser;
-                nhx.setReplaceUnderscores( replace_underscores );
-                nhx.setIgnoreQuotes( false );
-                nhx.setTaxonomyExtraction( taxonomy_extraction );
-            }
-            else if ( parser instanceof NexusPhylogeniesParser ) {
-                nhx_or_nexus = true;
-                final NexusPhylogeniesParser nex = ( NexusPhylogeniesParser ) parser;
-                nex.setReplaceUnderscores( replace_underscores );
-                nex.setIgnoreQuotes( false );
-            }
-        }
-        AptxUtil.printAppletMessage( "Archaeopteryx", "parser is " + parser.getName() );
-        final URLConnection url_connection = url.openConnection();
-        url_connection.setDefaultUseCaches( false );
-        final InputStream i = url_connection.getInputStream();
-        final Phylogeny[] phys = factory.create( i, parser );
-        i.close();
-        if ( phys != null ) {
-            if ( nhx_or_nexus && internal_numbers_are_confidences ) {
-                for( final Phylogeny phy : phys ) {
-                    PhylogenyMethods.transferInternalNodeNamesToConfidence( phy, "" );
-                }
-            }
-            if ( midpoint_reroot ) {
-                for( final Phylogeny phy : phys ) {
-                    PhylogenyMethods.midpointRoot( phy );
-                    PhylogenyMethods.orderAppearance( phy.getRoot(), true, true, DESCENDANT_SORT_PRIORITY.NODE_NAME );
-                }
-            }
-        }
-        return phys;
     }
 
     final static void removeBranchColors( final Phylogeny phy ) {
@@ -765,10 +855,10 @@ public final class AptxUtil {
             sb.append( s + "\n" );
         }
         JOptionPane
-                .showMessageDialog( null,
-                                    "An unexpected (possibly severe) error has occured - terminating. \nPlease contact: "
-                                            + Constants.AUTHOR_EMAIL + " \nError: " + e.getLocalizedMessage() + "\n"
-                                            + sb,
+        .showMessageDialog( null,
+                            "An unexpected (possibly severe) error has occured - terminating. \nPlease contact: "
+                                    + Constants.AUTHOR_EMAIL + " \nError: " + e.getLocalizedMessage() + "\n"
+                                    + sb,
                                     "Unexpected Severe Error [" + Constants.PRG_NAME + " " + Constants.VERSION + "]",
                                     JOptionPane.ERROR_MESSAGE );
         System.exit( -1 );
@@ -786,8 +876,8 @@ public final class AptxUtil {
                                        "An unexpected exception has occured. \nPlease contact: "
                                                + Constants.AUTHOR_EMAIL + " \nException: " + e.getLocalizedMessage()
                                                + "\n" + sb,
-                                       "Unexpected Exception [" + Constants.PRG_NAME + Constants.VERSION + "]",
-                                       JOptionPane.ERROR_MESSAGE );
+                                               "Unexpected Exception [" + Constants.PRG_NAME + Constants.VERSION + "]",
+                                               JOptionPane.ERROR_MESSAGE );
     }
 
     final static String writePhylogenyToGraphicsByteArrayOutputStream( final ByteArrayOutputStream baos,
@@ -956,96 +1046,5 @@ public final class AptxUtil {
         // Convert to an IIOImage:
         final IIOImage iio_image = new IIOImage( image, null, null );
         writer.write( null, iio_image, image_write_param );
-    }
-
-    final private static void openUrlInWebBrowser( final String url ) throws IOException, ClassNotFoundException,
-            SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException,
-            InvocationTargetException, InterruptedException {
-        final String os = System.getProperty( "os.name" );
-        final Runtime runtime = Runtime.getRuntime();
-        if ( os.toLowerCase().startsWith( "win" ) ) {
-            Runtime.getRuntime().exec( "rundll32 url.dll,FileProtocolHandler " + url );
-        }
-        else if ( ForesterUtil.isMac() ) {
-            final Class<?> file_mgr = Class.forName( "com.apple.eio.FileManager" );
-            final Method open_url = file_mgr.getDeclaredMethod( "openURL", new Class[] { String.class } );
-            open_url.invoke( null, new Object[] { url } );
-        }
-        else {
-            final String[] browsers = { "firefox", "opera", "konqueror", "mozilla", "netscape", "epiphany" };
-            String browser = null;
-            for( int i = 0; ( i < browsers.length ) && ( browser == null ); ++i ) {
-                if ( runtime.exec( new String[] { "which", browsers[ i ] } ).waitFor() == 0 ) {
-                    browser = browsers[ i ];
-                }
-            }
-            if ( browser == null ) {
-                throw new IOException( "could not find a web browser to open [" + url + "] in" );
-            }
-            else {
-                runtime.exec( new String[] { browser, url } );
-            }
-        }
-    }
-
-    public static enum GraphicsExportType {
-        BMP( "bmp" ), GIF( "gif" ), JPG( "jpg" ), PDF( "pdf" ), PNG( "png" ), TIFF( "tif" );
-
-        private final String _suffix;
-
-        private GraphicsExportType( final String suffix ) {
-            _suffix = suffix;
-        }
-
-        @Override
-        public String toString() {
-            return _suffix;
-        }
-    }
-
-    final public static Color calculateColorFromString( final String str, final boolean is_taxonomy ) {
-        final String my_str = str.toUpperCase();
-        char first = my_str.charAt( 0 );
-        char second = ' ';
-        char third = ' ';
-        if ( my_str.length() > 1 ) {
-            if ( is_taxonomy ) {
-                second = my_str.charAt( 1 );
-            }
-            else {
-                second = my_str.charAt( my_str.length() - 1 );
-            }
-            if ( is_taxonomy ) {
-                if ( my_str.length() > 2 ) {
-                    if ( my_str.indexOf( " " ) > 0 ) {
-                        third = my_str.charAt( my_str.indexOf( " " ) + 1 );
-                    }
-                    else {
-                        third = my_str.charAt( 2 );
-                    }
-                }
-            }
-            else if ( my_str.length() > 2 ) {
-                third = my_str.charAt( ( my_str.length() - 1 ) / 2 );
-            }
-        }
-        first = normalizeCharForRGB( first );
-        second = normalizeCharForRGB( second );
-        third = normalizeCharForRGB( third );
-        if ( ( first > 235 ) && ( second > 235 ) && ( third > 235 ) ) {
-            first = 0;
-        }
-        else if ( ( first < 60 ) && ( second < 60 ) && ( third < 60 ) ) {
-            second = 255;
-        }
-        return new Color( first, second, third );
-    }
-
-    final private static char normalizeCharForRGB( char c ) {
-        c -= 65;
-        c *= 10.2;
-        c = c > 255 ? 255 : c;
-        c = c < 0 ? 0 : c;
-        return c;
     }
 }

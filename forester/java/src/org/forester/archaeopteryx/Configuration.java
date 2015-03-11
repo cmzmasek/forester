@@ -59,40 +59,40 @@ public final class Configuration {
         BUFFER_ONLY, CONSOLE, WINODW;
     }
 
-    static enum TRIPLET {
-        FALSE, TRUE, UNKNOWN
-    }
-
     public enum UI {
         CROSSPLATFORM, NATIVE, NIMBUS, UNKNOWN
     }
+
+    static enum TRIPLET {
+        FALSE, TRUE, UNKNOWN
+    }
     final static String                     clickto_options[][]                                    = {
-        { "Display Node Data", "display" }, { "Collapse/Uncollapse", "display" }, { "Root/Reroot", "display" },
-        { "Go to Sub-/Super-Tree", "display" }, { "Swap Descendants", "display" },
-        { "Colorize Node(s)", "display" }, { "Change Node Font(s)", "display" },
-        { "Colorize Subtree(s)", "display" }, { "Open Sequence DB", "display" }, { "Open PDB", "display" },
-        { "Open Taxonomy DB", "display" }, { "Launch BLAST", "display" }, { "Cut Subtree", "display" },
-        { "Copy Subtree", "display" }, { "Paste Subtree", "display" }, { "Delete Subtree/Node", "display" },
-        { "Add New Node", "display" }, { "Edit Node Data", "display" }, { "Sort Descendants", "display" },
-        { "List Node Data", "display" }, { "Select Node(s)", "display" }                      };
+            { "Display Node Data", "display" }, { "Collapse/Uncollapse", "display" }, { "Root/Reroot", "display" },
+            { "Go to Sub-/Super-Tree", "display" }, { "Swap Descendants", "display" },
+            { "Colorize Node(s)", "display" }, { "Change Node Font(s)", "display" },
+            { "Colorize Subtree(s)", "display" }, { "Open Sequence DB", "display" }, { "Open PDB", "display" },
+            { "Open Taxonomy DB", "display" }, { "Launch BLAST", "display" }, { "Cut Subtree", "display" },
+            { "Copy Subtree", "display" }, { "Paste Subtree", "display" }, { "Delete Subtree/Node", "display" },
+            { "Add New Node", "display" }, { "Edit Node Data", "display" }, { "Sort Descendants", "display" },
+            { "List Node Data", "display" }, { "Select Node(s)", "display" }                      };
     private final static String             DEFAULT_SPECIES_COLORS[][]                             = {
-        { "BRAFL", "0x00FFFF" }, { "SPHGR", "0x9620F0" }, { "STRPU", "0x9620F0" }, { "CIOIN", "0xFF1CAE" },
-        { "CIOSA", "0xFF2CAE" }, { "BOVIN", "0x5C3317" }, { "CANFA", "0x8B2323" }, { "HUMAN", "0xFF2400" },
-        { "PANTR", "0xCC2400" }, { "MOUSE", "0xFF7F00" }, { "RAT", "0xFFEF00" }, { "MONDO", "0xEE9A49" },
-        { "ORNAN", "0xCD853F" }, { "XENLA", "0x6BAA23" }, { "XENTR", "0x6BAA23" }, { "CHICK", "0xFFC125" },
-        { "FUGRU", "0x0000FF" }, { "BRARE", "0x0000DD" }, { "DANRE", "0x0000BB" }, { "TETNG", "0x0000AA" },
-        { "ORYLA", "0x000088" }, { "GASAC", "0x000066" }, { "CAEEL", "0x666699" }, { "CAEBR", "0xB0B0B0" },
-        { "DROME", "0x663366" }, { "DROPS", "0x996699" }, { "APIME", "0x7A7700" }, { "AEDAE", "0x8C5900" },
-        { "TRICA", "0x918E00" }, { "NEMVE", "0x0066CC" }, { "HYDVU", "0x3399FF" }, { "LUBBA", "0xF7B5CB" },
-        { "GEOCY", "0xF5A0BD" }, { "AMPQE", "0x009966" }, { "SUBDO", "0xC790B9" }, { "MONBE", "0xFC0FC0" },
-        { "DICPU", "0xFFCC33" }, { "DICDI", "0xFFCC00" }, { "ENTHI", "0x5959AB" }, { "ARATH", "0x00FF00" },
-        { "POPTR", "0x006400" }, { "VITVI", "0x00CD00" }, { "GLYMA", "0x00FF7F" }, { "ORYSA", "0x008B00" },
-        { "ORYSJ", "0x008C00" }, { "SORBI", "0x00EE76" }, { "SELMO", "0x238E23" }, { "PHYPA", "0x09F911" },
-        { "OSTLU", "0x7FFF00" }, { "OSTTA", "0x7FFF00" }, { "OSTRC", "0x7FFF00" }, { "MICPU", "0x66CD00" },
-        { "MIC99", "0x66CD00" }, { "CHLRE", "0xB3EE3A" }, { "VOLCA", "0xC0FF3E" }, { "CHLSP", "0x6B8E23" },
-        { "CYAME", "0xD02090" }, { "YEAST", "0xAAAAAA" }, { "BACFR", "0xFF0000" }, { "BACTN", "0xFFFF00" },
-        { "MYXXD", "0x0000FF" }, { "STIAU", "0x00FFFF" }, { "BACOV", "0x8C5900" }, { "BACUN", "0x66CD00" },
-        { "PORGI", "0x918E00" }                                                               };
+            { "BRAFL", "0x00FFFF" }, { "SPHGR", "0x9620F0" }, { "STRPU", "0x9620F0" }, { "CIOIN", "0xFF1CAE" },
+            { "CIOSA", "0xFF2CAE" }, { "BOVIN", "0x5C3317" }, { "CANFA", "0x8B2323" }, { "HUMAN", "0xFF2400" },
+            { "PANTR", "0xCC2400" }, { "MOUSE", "0xFF7F00" }, { "RAT", "0xFFEF00" }, { "MONDO", "0xEE9A49" },
+            { "ORNAN", "0xCD853F" }, { "XENLA", "0x6BAA23" }, { "XENTR", "0x6BAA23" }, { "CHICK", "0xFFC125" },
+            { "FUGRU", "0x0000FF" }, { "BRARE", "0x0000DD" }, { "DANRE", "0x0000BB" }, { "TETNG", "0x0000AA" },
+            { "ORYLA", "0x000088" }, { "GASAC", "0x000066" }, { "CAEEL", "0x666699" }, { "CAEBR", "0xB0B0B0" },
+            { "DROME", "0x663366" }, { "DROPS", "0x996699" }, { "APIME", "0x7A7700" }, { "AEDAE", "0x8C5900" },
+            { "TRICA", "0x918E00" }, { "NEMVE", "0x0066CC" }, { "HYDVU", "0x3399FF" }, { "LUBBA", "0xF7B5CB" },
+            { "GEOCY", "0xF5A0BD" }, { "AMPQE", "0x009966" }, { "SUBDO", "0xC790B9" }, { "MONBE", "0xFC0FC0" },
+            { "DICPU", "0xFFCC33" }, { "DICDI", "0xFFCC00" }, { "ENTHI", "0x5959AB" }, { "ARATH", "0x00FF00" },
+            { "POPTR", "0x006400" }, { "VITVI", "0x00CD00" }, { "GLYMA", "0x00FF7F" }, { "ORYSA", "0x008B00" },
+            { "ORYSJ", "0x008C00" }, { "SORBI", "0x00EE76" }, { "SELMO", "0x238E23" }, { "PHYPA", "0x09F911" },
+            { "OSTLU", "0x7FFF00" }, { "OSTTA", "0x7FFF00" }, { "OSTRC", "0x7FFF00" }, { "MICPU", "0x66CD00" },
+            { "MIC99", "0x66CD00" }, { "CHLRE", "0xB3EE3A" }, { "VOLCA", "0xC0FF3E" }, { "CHLSP", "0x6B8E23" },
+            { "CYAME", "0xD02090" }, { "YEAST", "0xAAAAAA" }, { "BACFR", "0xFF0000" }, { "BACTN", "0xFFFF00" },
+            { "MYXXD", "0x0000FF" }, { "STIAU", "0x00FFFF" }, { "BACOV", "0x8C5900" }, { "BACUN", "0x66CD00" },
+            { "PORGI", "0x918E00" }                                                               };
     final static int                        display_node_data                                      = 0;
     final static int                        collapse_uncollapse                                    = 1;
     final static int                        reroot                                                 = 2;
@@ -118,20 +118,20 @@ public final class Configuration {
     // Click-to options
     // ------------------
     final static String                     display_options[][]                                    = {
-        { "Phylogram", "display", "?" }, { "Node Name", "display", "yes" }, { "Taxonomy Code", "display", "yes" },
-        { "Seq Annotations", "display", "no" }, { "Confidence Values", "display", "?" },
-        { "Node Events", "display", "?" }, { "Colorize by Taxonomy", "display", "no" },
-        { "Colorize by Sequence", "display", "no" }, { "Visual Styles/Branch Colors", "display", "no" },
-        { "Branch Widths", "display", "no" }, { "Domain Architectures", "display", "no" },
-        { "Binary Characters", "nodisplay", "no" }, { "Binary Char Counts", "nodisplay", "no" },
-        { "Seq Name", "display", "yes" }, { "Seq Accession", "display", "no" },
-        { "Show Internal Data", "display", "yes" }, { "Dyna Hide", "display", "yes" },
-        { "Taxonomy Scientific", "display", "yes" }, { "Taxonomy Common", "display", "no" },
-        { "Colorize by Annotation", "display", "no" }, { "Seq Symbol", "display", "yes" },
-        { "Rollover", "display", "yes" }, { "Relation Confidence", "nodisplay", "no" },
-        { "Vector Data", "nodisplay", "no" }, { "Taxonomy Images", "display", "no" },
-        { "Properties", "display", "no" }, { "Gene Name", "display", "yes" },
-        { "Multiple Seq Alignment", "display", "no" }, { "Branch Length Values", "display", "no" } };
+            { "Phylogram", "display", "?" }, { "Node Name", "display", "yes" }, { "Taxonomy Code", "display", "yes" },
+            { "Seq Annotations", "display", "no" }, { "Confidence Values", "display", "?" },
+            { "Node Events", "display", "?" }, { "Colorize by Taxonomy", "display", "no" },
+            { "Colorize by Sequence", "display", "no" }, { "Visual Styles/Branch Colors", "display", "no" },
+            { "Branch Widths", "display", "no" }, { "Domain Architectures", "display", "no" },
+            { "Binary Characters", "nodisplay", "no" }, { "Binary Char Counts", "nodisplay", "no" },
+            { "Seq Name", "display", "yes" }, { "Seq Accession", "display", "no" },
+            { "Show Internal Data", "display", "yes" }, { "Dyna Hide", "display", "yes" },
+            { "Taxonomy Scientific", "display", "yes" }, { "Taxonomy Common", "display", "no" },
+            { "Colorize by Annotation", "display", "no" }, { "Seq Symbol", "display", "yes" },
+            { "Rollover", "display", "yes" }, { "Relation Confidence", "nodisplay", "no" },
+            { "Vector Data", "nodisplay", "no" }, { "Taxonomy Images", "display", "no" },
+            { "Properties", "display", "no" }, { "Gene Name", "display", "yes" },
+            { "Multiple Seq Alignment", "display", "no" }, { "Branch Length Values", "display", "no" } };
     final static int                        display_as_phylogram                                   = 0;
     final static int                        show_node_names                                        = 1;
     final static int                        show_tax_code                                          = 2;
@@ -267,10 +267,6 @@ public final class Configuration {
         }
     }
 
-    static String getDefaultFontFamilyName() {
-        return DEFAULT_FONT_FAMILY;
-    }
-
     public Configuration() {
         this( null, false, false, false );
     }
@@ -335,49 +331,312 @@ public final class Configuration {
         }
     }
 
-    boolean displaySequenceRelations() {
-        return _display_sequence_relations;
-    }
-
-    boolean doCheckOption( final int which ) {
-        return ( display_options[ which ][ 2 ].equalsIgnoreCase( "yes" ) )
-                || ( display_options[ which ][ 2 ].equalsIgnoreCase( "true" ) );
-    }
-
-    boolean doDisplayClickToOption( final int which ) {
-        return clickto_options[ which ][ 1 ].equalsIgnoreCase( "display" );
-    }
-
-    boolean doDisplayOption( final int which ) {
-        return display_options[ which ][ 1 ].equalsIgnoreCase( "display" );
-    }
-
-    /**
-     * Will attempt to use the phylogeny to determine whether to check
-     * this or not (e.g. phylogram)
-     *
-     */
-    boolean doGuessCheckOption( final int which ) {
-        return display_options[ which ][ 2 ].equals( "?" );
-    }
-
-    Map<String, Color> getAnnotationColors() {
-        if ( _annotation_colors == null ) {
-            _annotation_colors = new Hashtable<String, Color>();
-        }
-        return _annotation_colors;
-    }
-
     public String getBaseFontFamilyName() {
         return _base_font_family_name;
     }
 
-    int getBaseFontSize() {
-        return _base_font_size;
+    public int getDefaultBootstrapSamples() {
+        return _default_bootstrap_samples;
     }
 
-    CLADOGRAM_TYPE getCladogramType() {
-        return _cladogram_type;
+    public NodeFill getDefaultNodeFill() {
+        return _default_node_fill;
+    }
+
+    public NodeShape getDefaultNodeShape() {
+        return _default_node_shape;
+    }
+
+    public short getDefaultNodeShapeSize() {
+        return _default_node_shape_size;
+    }
+
+    public NodeDataField getExtDescNodeDataToReturn() {
+        return _ext_desc_data_to_return;
+    }
+
+    public EXT_NODE_DATA_RETURN_ON getExtNodeDataReturnOn() {
+        return _ext_node_data_return_on;
+    }
+
+    public int getFrameXSize() {
+        return _frame_x_size;
+    }
+
+    public int getFrameYSize() {
+        return _frame_y_size;
+    }
+
+    public String getLabelForGetExtDescendentsData() {
+        return _label_for_get_ext_descendents_data;
+    }
+
+    public File getPathToLocalFastme() {
+        return _path_to_local_fastme;
+    }
+
+    public File getPathToLocalMafft() {
+        return _path_to_local_mafft;
+    }
+
+    public File getPathToLocalRaxml() {
+        return _path_to_local_raxml;
+    }
+
+    public double getVectorDataHeight() {
+        return _vector_data_height;
+    }
+
+    public Color getVectorDataMaxColor() {
+        return _vector_data_max_color;
+    }
+
+    public Color getVectorDataMeanColor() {
+        return _vector_data_mean_color;
+    }
+
+    public Color getVectorDataMinColor() {
+        return _vector_data_min_color;
+    }
+
+    public int getVectorDataWidth() {
+        return _vector_data_width;
+    }
+
+    public boolean isAbbreviateScientificTaxonNames() {
+        return _abbreviate_scientific_names;
+    }
+
+    public boolean isAllowThickStrokes() {
+        return _allow_thick_strokes;
+    }
+
+    public boolean isBackgroundColorGradient() {
+        return _background_color_gradient;
+    }
+
+    public boolean isColorByTaxonomicGroup() {
+        return false;
+    }
+
+    public boolean isColorLabelsSameAsParentBranch() {
+        return _color_labels_same_as_parent_branch;
+    }
+
+    final public boolean isLineUpRendarableNodeData() {
+        return _line_up_renderable_node_data;
+    }
+
+    public boolean isMidpointReroot() {
+        return _midpoint_root;
+    }
+
+    final public boolean isRightLineUpDomains() {
+        return _right_align_domains;
+    }
+
+    public boolean isShowAnnotationRefSource() {
+        return _show_annotation_ref_source;
+    }
+
+    public boolean isShowDefaultNodeShapesExternal() {
+        return _show_default_node_shapes_external;
+    }
+
+    public boolean isShowDefaultNodeShapesForMarkedNodes() {
+        return _show_default_node_shapes_for_marked_nodes;
+    }
+
+    public boolean isShowDefaultNodeShapesInternal() {
+        return _show_default_node_shapes_internal;
+    }
+
+    public boolean isShowDomainLabels() {
+        return _show_domain_labels;
+    }
+
+    public void putDisplayColors( final String key, final Color color ) {
+        getDisplayColors().put( key, color );
+    }
+
+    public void setAbbreviateScientificTaxonNames( final boolean abbreviate_scientific_names ) {
+        _abbreviate_scientific_names = abbreviate_scientific_names;
+    }
+
+    public void setAddTaxonomyImagesCB( final boolean b ) {
+        display_options[ show_taxonomy_images ][ 1 ] = b ? "yes" : "no";
+    }
+
+    public void setBackgroundColorGradient( final boolean background_color_gradient ) {
+        _background_color_gradient = background_color_gradient;
+    }
+
+    public void setBaseFontFamilyName( final String base_font_family_name ) {
+        _base_font_family_name = base_font_family_name;
+    }
+
+    public void setBaseFontSize( final int base_font_size ) {
+        _base_font_size = base_font_size;
+    }
+
+    public void setColorizeBranches( final boolean b ) {
+        display_options[ use_style ][ 2 ] = b ? "yes" : "no";
+    }
+
+    public void setColorLabelsSameAsParentBranch( final boolean color_labels_same_as_parent_branch ) {
+        _color_labels_same_as_parent_branch = color_labels_same_as_parent_branch;
+    }
+
+    public void setDefaultNodeFill( final NodeFill default_node_fill ) {
+        _default_node_fill = default_node_fill;
+    }
+
+    public void setDefaultNodeShape( final NodeShape default_node_shape ) {
+        _default_node_shape = default_node_shape;
+    }
+
+    public void setDefaultNodeShapeSize( final short default_node_shape_size ) {
+        _default_node_shape_size = default_node_shape_size;
+    }
+
+    public void setDisplayAsPhylogram( final boolean b ) {
+        display_options[ display_as_phylogram ][ 2 ] = b ? "yes" : "no";
+    }
+
+    public void setDisplayColors( final SortedMap<String, Color> display_colors ) {
+        _display_colors = display_colors;
+    }
+
+    public void setDisplayConfidenceValues( final boolean b ) {
+        display_options[ write_confidence_values ][ 2 ] = b ? "yes" : "no";
+    }
+
+    public void setDisplayGeneNames( final boolean b ) {
+        display_options[ show_gene_names ][ 2 ] = b ? "yes" : "no";
+    }
+
+    public void setDisplayInternalData( final boolean b ) {
+        display_options[ display_internal_data ][ 2 ] = b ? "yes" : "no";
+    }
+
+    public void setDisplayMultipleSequenceAlignment( final boolean b ) {
+        display_options[ show_mol_seqs ][ 2 ] = b ? "yes" : "no";
+    }
+
+    public void setDisplayNodeNames( final boolean b ) {
+        display_options[ show_node_names ][ 2 ] = b ? "yes" : "no";
+    }
+
+    public void setDisplaySequenceAcc( final boolean b ) {
+        display_options[ show_sequence_acc ][ 2 ] = b ? "yes" : "no";
+    }
+
+    public void setDisplaySequenceNames( final boolean b ) {
+        display_options[ show_seq_names ][ 2 ] = b ? "yes" : "no";
+    }
+
+    public void setDisplaySequenceRelations( final boolean display_sequence_relations ) {
+        _display_sequence_relations = display_sequence_relations;
+    }
+
+    public void setDisplaySequenceSymbols( final boolean b ) {
+        display_options[ show_seq_symbols ][ 2 ] = b ? "yes" : "no";
+    }
+
+    public void setDisplayTaxonomyCode( final boolean b ) {
+        display_options[ show_tax_code ][ 2 ] = b ? "yes" : "no";
+    }
+
+    public void setDisplayTaxonomyCommonNames( final boolean b ) {
+        display_options[ show_taxonomy_common_names ][ 2 ] = b ? "yes" : "no";
+    }
+
+    public void setDisplayTaxonomyImages( final boolean b ) {
+        display_options[ show_taxonomy_images ][ 2 ] = b ? "yes" : "no";
+    }
+
+    public void setDisplayTaxonomyScientificNames( final boolean b ) {
+        display_options[ show_taxonomy_scientific_names ][ 2 ] = b ? "yes" : "no";
+    }
+
+    public void setDynamicallyHideData( final boolean b ) {
+        display_options[ dynamically_hide_data ][ 2 ] = b ? "yes" : "no";
+    }
+
+    public void setExtDescNodeDataToReturn( final NodeDataField ext_desc_data_to_return ) {
+        _ext_desc_data_to_return = ext_desc_data_to_return;
+    }
+
+    public void setFrameXSize( final int frame_x_size ) {
+        _frame_x_size = frame_x_size;
+    }
+
+    public void setFrameYSize( final int frame_y_size ) {
+        _frame_y_size = frame_y_size;
+    }
+
+    final public void setLineUpRendarableNodeData( final boolean line_up_renderable_node_data ) {
+        _line_up_renderable_node_data = line_up_renderable_node_data;
+    }
+
+    public void setMidpointReroot( final boolean midpoint_root ) {
+        _midpoint_root = midpoint_root;
+    }
+
+    public void setMinConfidenceValue( final double min_confidence_value ) {
+        _min_confidence_value = min_confidence_value;
+    }
+
+    public void setNodeLabelDirection( final NODE_LABEL_DIRECTION node_label_direction ) {
+        _node_label_direction = node_label_direction;
+    }
+
+    public void setNumberOfDigitsAfterCommaForBranchLengthValue( final short number_of_digits_after_comma_for_branch_length_values ) {
+        _number_of_digits_after_comma_for_branch_length_values = number_of_digits_after_comma_for_branch_length_values;
+    }
+
+    public void setNumberOfDigitsAfterCommaForConfidenceValues( final short number_of_digits_after_comma_for_confidence_values ) {
+        _number_of_digits_after_comma_for_confidence_values = number_of_digits_after_comma_for_confidence_values;
+    }
+
+    public void setPhylogenyGraphicsType( final PHYLOGENY_GRAPHICS_TYPE phylogeny_graphics_type ) {
+        _phylogeny_graphics_type = phylogeny_graphics_type;
+    }
+
+    public void setPrintLineWidth( final float print_line_width ) {
+        _print_line_width = print_line_width;
+    }
+
+    public void setReplaceUnderscoresInNhParsing( final boolean nh_parsing_replace_underscores ) {
+        _nh_parsing_replace_underscores = nh_parsing_replace_underscores;
+    }
+
+    final public void setRightLineUpDomains( final boolean right_align_domains ) {
+        _right_align_domains = right_align_domains;
+    }
+
+    public void setShowDefaultNodeShapesExternal( final boolean show_default_node_shapes_external ) {
+        _show_default_node_shapes_external = show_default_node_shapes_external;
+    }
+
+    public void setShowDefaultNodeShapesForMarkedNodes( final boolean show_default_node_shapes_for_marked_nodes ) {
+        _show_default_node_shapes_for_marked_nodes = show_default_node_shapes_for_marked_nodes;
+    }
+
+    public void setShowDefaultNodeShapesInternal( final boolean show_default_node_shapes_internal ) {
+        _show_default_node_shapes_internal = show_default_node_shapes_internal;
+    }
+
+    public void setShowDomainLabels( final boolean show_domain_labels ) {
+        _show_domain_labels = show_domain_labels;
+    }
+
+    public void setShowScale( final boolean show_scale ) {
+        _show_scale = show_scale;
+    }
+
+    public void setUseStyle( final boolean b ) {
+        display_options[ use_style ][ 2 ] = b ? "yes" : "no";
     }
 
     private int getClickToIndex( final String name ) {
@@ -385,8 +644,8 @@ public final class Configuration {
         if ( name.equals( "edit_info" ) ) {
             index = Configuration.display_node_data;
             ForesterUtil
-            .printWarningMessage( Constants.PRG_NAME,
-                                  "configuration key [edit_info] is deprecated, use [display node data] instead" );
+                    .printWarningMessage( Constants.PRG_NAME,
+                                          "configuration key [edit_info] is deprecated, use [display node data] instead" );
         }
         else if ( name.equals( "display_node_data" ) ) {
             index = Configuration.display_node_data;
@@ -411,7 +670,7 @@ public final class Configuration {
         }
         else if ( name.equals( "display_sequences" ) ) {
             ForesterUtil
-            .printWarningMessage( Constants.PRG_NAME, "configuration key [display_sequences] is deprecated" );
+                    .printWarningMessage( Constants.PRG_NAME, "configuration key [display_sequences] is deprecated" );
             return DEPRECATED;
         }
         else if ( name.equals( "open_seq_web" ) ) {
@@ -449,7 +708,7 @@ public final class Configuration {
         }
         else if ( name.equals( "display_node_popup" ) ) {
             ForesterUtil.printWarningMessage( Constants.PRG_NAME,
-                    "configuration key [display_node_popup] is deprecated" );
+                                              "configuration key [display_node_popup] is deprecated" );
             return DEPRECATED;
         }
         else if ( name.equals( "custom_option" ) ) {
@@ -471,316 +730,11 @@ public final class Configuration {
         return index;
     }
 
-    int getClickToOptionsCount() {
-        return clickto_options.length;
-    }
-
-    String getClickToTitle( final int which ) {
-        return clickto_options[ which ][ 0 ];
-    }
-
-    public int getDefaultBootstrapSamples() {
-        return _default_bootstrap_samples;
-    }
-
-    int getDefaultDisplayClicktoOption() {
-        return default_clickto;
-    }
-
-    public NodeFill getDefaultNodeFill() {
-        return _default_node_fill;
-    }
-
-    public NodeShape getDefaultNodeShape() {
-        return _default_node_shape;
-    }
-
-    public short getDefaultNodeShapeSize() {
-        return _default_node_shape_size;
-    }
-
-    SortedMap<String, Color> getDisplayColors() {
-        return _display_colors;
-    }
-
-    String getDisplayTitle( final int which ) {
-        return display_options[ which ][ 0 ];
-    }
-
-    Map<String, Color> getDomainColors() {
-        if ( _domain_colors == null ) {
-            _domain_colors = new Hashtable<String, Color>();
-        }
-        return _domain_colors;
-    }
-
-    public NodeDataField getExtDescNodeDataToReturn() {
-        return _ext_desc_data_to_return;
-    }
-
-    public EXT_NODE_DATA_RETURN_ON getExtNodeDataReturnOn() {
-        return _ext_node_data_return_on;
-    }
-
-    public int getFrameXSize() {
-        return _frame_x_size;
-    }
-
-    public int getFrameYSize() {
-        return _frame_y_size;
-    }
-
-    int getGraphicsExportX() {
-        return _graphics_export_x;
-    }
-
-    int getGraphicsExportY() {
-        return _graphics_export_y;
-    }
-
-    Color getGuiBackgroundColor() {
-        return _gui_background_color;
-    }
-
-    Color getGuiButtonBackgroundColor() {
-        return _gui_button_background_color;
-    }
-
-    Color getGuiButtonBorderColor() {
-        return _gui_button_border_color;
-    }
-
-    Color getGuiButtonTextColor() {
-        return _gui_button_text_color;
-    }
-
-    Color getGuiCheckboxAndButtonActiveColor() {
-        return _gui_checkbox_and_button_active_color;
-    }
-
-    Color getGuiCheckboxTextColor() {
-        return _gui_checkbox_text_color;
-    }
-
-    Color getGuiMenuBackgroundColor() {
-        return _gui_menu_background_color;
-    }
-
-    Color getGuiMenuTextColor() {
-        return _gui_menu_text_color;
-    }
-
-    public String getLabelForGetExtDescendentsData() {
-        return _label_for_get_ext_descendents_data;
-    }
-
-    int getMaxBaseFontSize() {
-        return _max_base_font_size;
-    }
-
-    int getMinBaseFontSize() {
-        return _min_base_font_size;
-    }
-
-    double getMinConfidenceValue() {
-        return _min_confidence_value;
-    }
-
-    NODE_LABEL_DIRECTION getNodeLabelDirection() {
-        return _node_label_direction;
-    }
-
-    short getNumberOfDigitsAfterCommaForBranchLengthValues() {
-        return _number_of_digits_after_comma_for_branch_length_values;
-    }
-
-    short getNumberOfDigitsAfterCommaForConfidenceValues() {
-        return _number_of_digits_after_comma_for_confidence_values;
-    }
-
-    short getOvMaxHeight() {
-        return _ov_max_height;
-    }
-
-    short getOvMaxWidth() {
-        return _ov_max_width;
-    }
-
-    OVERVIEW_PLACEMENT_TYPE getOvPlacement() {
-        return _ov_placement;
-    }
-
-    public File getPathToLocalFastme() {
-        return _path_to_local_fastme;
-    }
-
-    public File getPathToLocalMafft() {
-        return _path_to_local_mafft;
-    }
-
-    public File getPathToLocalRaxml() {
-        return _path_to_local_raxml;
-    }
-
-    PHYLOGENY_GRAPHICS_TYPE getPhylogenyGraphicsType() {
-        return _phylogeny_graphics_type;
-    }
-
-    float getPrintLineWidth() {
-        return _print_line_width;
-    }
-
-    Hashtable<String, Color> getSequenceColors() {
-        if ( _sequence_colors == null ) {
-            _sequence_colors = new Hashtable<String, Color>();
-        }
-        return _sequence_colors;
-    }
-
-    Hashtable<String, Color> getSpeciesColors() {
-        if ( _species_colors == null ) {
-            initSpeciesColors();
-        }
-        return _species_colors;
-    }
-
-    final TAXONOMY_EXTRACTION getTaxonomyExtraction() {
-        return _taxonomy_extraction;
-    }
-
-    public double getVectorDataHeight() {
-        return _vector_data_height;
-    }
-
-    public Color getVectorDataMaxColor() {
-        return _vector_data_max_color;
-    }
-
-    public Color getVectorDataMeanColor() {
-        return _vector_data_mean_color;
-    }
-
-    public Color getVectorDataMinColor() {
-        return _vector_data_min_color;
-    }
-
-    public int getVectorDataWidth() {
-        return _vector_data_width;
-    }
-
     private final void initSpeciesColors() {
         _species_colors = new Hashtable<String, Color>();
         for( final String[] s : DEFAULT_SPECIES_COLORS ) {
             _species_colors.put( s[ 0 ], Color.decode( s[ 1 ] ) );
         }
-    }
-
-    public boolean isAbbreviateScientificTaxonNames() {
-        return _abbreviate_scientific_names;
-    }
-
-    boolean isAntialiasScreen() {
-        return _antialias_screen;
-    }
-
-    public boolean isBackgroundColorGradient() {
-        return _background_color_gradient;
-    }
-
-    public boolean isColorByTaxonomicGroup() {
-        return false;
-    }
-
-    public boolean isColorLabelsSameAsParentBranch() {
-        return _color_labels_same_as_parent_branch;
-    }
-
-    /**
-     * Convenience method.
-     *
-     * @return true if value in configuration file was 'yes'
-     */
-    boolean isDrawAsPhylogram() {
-        return doCheckOption( display_as_phylogram );
-    }
-
-    boolean isEditable() {
-        return _editable;
-    }
-
-    /**
-     * Only used by ArchaeoptryxE.
-     *
-     */
-    boolean isHideControlPanelAndMenubar() {
-        return _hide_controls_and_menus;
-    }
-
-    boolean isInternalNumberAreConfidenceForNhParsing() {
-        return _internal_number_are_confidence_for_nh_parsing;
-    }
-
-    final public boolean isLineUpRendarableNodeData() {
-        return _line_up_renderable_node_data;
-    }
-
-    public boolean isMidpointReroot() {
-        return _midpoint_root;
-    }
-
-    boolean isReplaceUnderscoresInNhParsing() {
-        return _nh_parsing_replace_underscores;
-    }
-
-    final public boolean isRightLineUpDomains() {
-        return _right_align_domains;
-    }
-
-    public boolean isShowAnnotationRefSource() {
-        return _show_annotation_ref_source;
-    }
-
-    public boolean isShowDefaultNodeShapesExternal() {
-        return _show_default_node_shapes_external;
-    }
-
-    public boolean isShowDefaultNodeShapesForMarkedNodes() {
-        return _show_default_node_shapes_for_marked_nodes;
-    }
-
-    public boolean isShowDefaultNodeShapesInternal() {
-        return _show_default_node_shapes_internal;
-    }
-
-    public boolean isShowDomainLabels() {
-        return _show_domain_labels;
-    }
-
-    boolean isShowOverview() {
-        return _show_overview;
-    }
-
-    boolean isShowScale() {
-        return _show_scale;
-    }
-
-    final boolean isUseNativeUI() {
-        if ( ( _ui == UI.UNKNOWN ) && ForesterUtil.isMac() ) {
-            _ui = UI.NATIVE;
-        }
-        return _ui == UI.NATIVE;
-    }
-
-    /**
-     * Only used by ArchaeoptryxE.
-     *
-     */
-    boolean isUseTabbedDisplay() {
-        return _use_tabbed_display;
-    }
-
-    boolean isValidatePhyloXmlAgainstSchema() {
-        return _validate_against_phyloxml_xsd_schema;
     }
 
     private boolean parseBoolean( final String str ) {
@@ -858,10 +812,6 @@ public final class Configuration {
         }
     }
 
-    public void putDisplayColors( final String key, final Color color ) {
-        getDisplayColors().put( key, color );
-    }
-
     /**
      * read each line of config file, process non-comment lines
      * @throws IOException
@@ -883,140 +833,24 @@ public final class Configuration {
         } while ( line != null );
     }
 
-    public void setAbbreviateScientificTaxonNames( final boolean abbreviate_scientific_names ) {
-        _abbreviate_scientific_names = abbreviate_scientific_names;
-    }
-
-    public void setAddTaxonomyImagesCB( final boolean b ) {
-        display_options[ show_taxonomy_images ][ 1 ] = b ? "yes" : "no";
-    }
-
     private void setAntialiasScreen( final boolean antialias_screen ) {
         _antialias_screen = antialias_screen;
-    }
-
-    public void setBackgroundColorGradient( final boolean background_color_gradient ) {
-        _background_color_gradient = background_color_gradient;
-    }
-
-    public void setBaseFontFamilyName( final String base_font_family_name ) {
-        _base_font_family_name = base_font_family_name;
-    }
-
-    public void setBaseFontSize( final int base_font_size ) {
-        _base_font_size = base_font_size;
     }
 
     private void setCladogramType( final CLADOGRAM_TYPE cladogram_type ) {
         _cladogram_type = cladogram_type;
     }
 
-    public void setColorizeBranches( final boolean b ) {
-        display_options[ use_style ][ 2 ] = b ? "yes" : "no";
-    }
-
-    public void setColorLabelsSameAsParentBranch( final boolean color_labels_same_as_parent_branch ) {
-        _color_labels_same_as_parent_branch = color_labels_same_as_parent_branch;
-    }
-
     private void setDefaultBootstrapSamples( final int default_bootstrap_samples ) {
         _default_bootstrap_samples = default_bootstrap_samples;
-    }
-
-    public void setDefaultNodeFill( final NodeFill default_node_fill ) {
-        _default_node_fill = default_node_fill;
-    }
-
-    public void setDefaultNodeShape( final NodeShape default_node_shape ) {
-        _default_node_shape = default_node_shape;
-    }
-
-    public void setDefaultNodeShapeSize( final short default_node_shape_size ) {
-        _default_node_shape_size = default_node_shape_size;
-    }
-
-    public void setDisplayAsPhylogram( final boolean b ) {
-        display_options[ display_as_phylogram ][ 2 ] = b ? "yes" : "no";
-    }
-
-    public void setDisplayColors( final SortedMap<String, Color> display_colors ) {
-        _display_colors = display_colors;
-    }
-
-    public void setDisplayConfidenceValues( final boolean b ) {
-        display_options[ write_confidence_values ][ 2 ] = b ? "yes" : "no";
-    }
-
-    public void setDisplayGeneNames( final boolean b ) {
-        display_options[ show_gene_names ][ 2 ] = b ? "yes" : "no";
-    }
-
-    public void setDisplayInternalData( final boolean b ) {
-        display_options[ display_internal_data ][ 2 ] = b ? "yes" : "no";
-    }
-
-    public void setDisplayNodeNames( final boolean b ) {
-        display_options[ show_node_names ][ 2 ] = b ? "yes" : "no";
-    }
-
-    public void setDisplaySequenceAcc( final boolean b ) {
-        display_options[ show_sequence_acc ][ 2 ] = b ? "yes" : "no";
-    }
-
-    public void setDisplaySequenceNames( final boolean b ) {
-        display_options[ show_seq_names ][ 2 ] = b ? "yes" : "no";
-    }
-
-    public void setDisplaySequenceRelations( final boolean display_sequence_relations ) {
-        _display_sequence_relations = display_sequence_relations;
-    }
-
-    public void setDisplaySequenceSymbols( final boolean b ) {
-        display_options[ show_seq_symbols ][ 2 ] = b ? "yes" : "no";
-    }
-
-    public void setDisplayTaxonomyCode( final boolean b ) {
-        display_options[ show_tax_code ][ 2 ] = b ? "yes" : "no";
-    }
-
-    public void setDisplayTaxonomyCommonNames( final boolean b ) {
-        display_options[ show_taxonomy_common_names ][ 2 ] = b ? "yes" : "no";
-    }
-
-    public void setDisplayTaxonomyImages( final boolean b ) {
-        display_options[ show_taxonomy_images ][ 2 ] = b ? "yes" : "no";
-    }
-
-    public void setDisplayTaxonomyScientificNames( final boolean b ) {
-        display_options[ show_taxonomy_scientific_names ][ 2 ] = b ? "yes" : "no";
-    }
-
-    public void setDynamicallyHideData( final boolean b ) {
-        display_options[ dynamically_hide_data ][ 2 ] = b ? "yes" : "no";
-    }
-    
-    public void setDisplayMultipleSequenceAlignment( final boolean b ) {
-        display_options[ show_mol_seqs ][ 2 ] = b ? "yes" : "no";
     }
 
     private void setEditable( final boolean editable ) {
         _editable = editable;
     }
 
-    public void setExtDescNodeDataToReturn( final NodeDataField ext_desc_data_to_return ) {
-        _ext_desc_data_to_return = ext_desc_data_to_return;
-    }
-
     private void setExtNodeDataReturnOn( final EXT_NODE_DATA_RETURN_ON ext_node_data_return_on ) {
         _ext_node_data_return_on = ext_node_data_return_on;
-    }
-
-    public void setFrameXSize( final int frame_x_size ) {
-        _frame_x_size = frame_x_size;
-    }
-
-    public void setFrameYSize( final int frame_y_size ) {
-        _frame_y_size = frame_y_size;
     }
 
     private void setGraphicsExportX( final int graphics_export_x ) {
@@ -1045,7 +879,7 @@ public final class Configuration {
             default_clickto = getClickToIndex( clickto_name );
             if ( default_clickto == -1 ) {
                 ForesterUtil.printWarningMessage( Constants.PRG_NAME, "invalid value [" + clickto_name
-                                                  + "] for [default_click_to]" );
+                        + "] for [default_click_to]" );
                 default_clickto = 0;
             }
             else if ( default_clickto == DEPRECATED ) {
@@ -1065,7 +899,7 @@ public final class Configuration {
             }
             else {
                 ForesterUtil.printWarningMessage( Constants.PRG_NAME, "could not parse yes/no/? value from [" + my_str
-                                                  + "]" );
+                        + "]" );
                 _ui = UI.UNKNOWN;
             }
         }
@@ -1104,7 +938,7 @@ public final class Configuration {
             else {
                 setPhylogenyGraphicsType( PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
                 ForesterUtil.printWarningMessage( Constants.PRG_NAME, "unknown value [" + type_str
-                                                  + "] for [phylogeny_graphics_type]" );
+                        + "] for [phylogeny_graphics_type]" );
             }
         }
         else if ( key.equals( "min_confidence_value" ) ) {
@@ -1158,7 +992,7 @@ public final class Configuration {
             }
             else {
                 ForesterUtil.printWarningMessage( Constants.PRG_NAME,
-                        "value for [pdf_export_line_width] cannot be zero or negative" );
+                                                  "value for [pdf_export_line_width] cannot be zero or negative" );
             }
         }
         else if ( key.equals( "window_initial_size_x" ) ) {
@@ -1183,8 +1017,8 @@ public final class Configuration {
             }
             else {
                 ForesterUtil
-                .printWarningMessage( Constants.PRG_NAME,
-                                      "value for [default_number_of_bootstrap_resamples] cannot be negative" );
+                        .printWarningMessage( Constants.PRG_NAME,
+                                              "value for [default_number_of_bootstrap_resamples] cannot be negative" );
             }
         }
         else if ( key.equals( "mafft_local" ) ) {
@@ -1239,13 +1073,13 @@ public final class Configuration {
             }
             else {
                 ForesterUtil.printWarningMessage( Constants.PRG_NAME, "unknown value [" + type_str
-                                                  + "] for [cladogram_type]" );
+                        + "] for [cladogram_type]" );
             }
         }
         else if ( key.equals( "non_lined_up_cladogram" ) ) {
             ForesterUtil
-            .printWarningMessage( Constants.PRG_NAME,
-                                  "configuration key [non_lined_up_cladogram] is deprecated, use [cladogram_type] instead" );
+                    .printWarningMessage( Constants.PRG_NAME,
+                                          "configuration key [non_lined_up_cladogram] is deprecated, use [cladogram_type] instead" );
         }
         else if ( key.equals( "hide_controls_and_menus" ) ) {
             _hide_controls_and_menus = parseBoolean( ( String ) st.nextElement() );
@@ -1278,7 +1112,7 @@ public final class Configuration {
             else {
                 setOvPlacement( OVERVIEW_PLACEMENT_TYPE.UPPER_LEFT );
                 ForesterUtil.printWarningMessage( Constants.PRG_NAME, "unknown value [" + type_str
-                                                  + "] for [overview_placement_type]" );
+                        + "] for [overview_placement_type]" );
             }
         }
         else if ( key.equals( "node_label_direction" ) ) {
@@ -1292,7 +1126,7 @@ public final class Configuration {
             else {
                 setNodeLabelDirection( NODE_LABEL_DIRECTION.HORIZONTAL );
                 ForesterUtil.printWarningMessage( Constants.PRG_NAME, "unknown value [" + type_str
-                                                  + "] for [node_label_direction]" );
+                        + "] for [node_label_direction]" );
             }
         }
         else if ( key.equals( "branch_length_value_digits" ) ) {
@@ -1302,7 +1136,7 @@ public final class Configuration {
             }
             else {
                 ForesterUtil.printWarningMessage( Constants.PRG_NAME, "illegal value [" + i
-                                                  + "] for [branch_length_value_digits]" );
+                        + "] for [branch_length_value_digits]" );
             }
         }
         else if ( key.equals( "confidence_value_digits" ) ) {
@@ -1312,7 +1146,7 @@ public final class Configuration {
             }
             else {
                 ForesterUtil.printWarningMessage( Constants.PRG_NAME, "illegal value [" + i
-                                                  + "] for [confidence_value_digits]" );
+                        + "] for [confidence_value_digits]" );
             }
         }
         else if ( key.equals( "allow_editing" ) ) {
@@ -1325,8 +1159,8 @@ public final class Configuration {
             final boolean r = parseBoolean( ( String ) st.nextElement() );
             if ( r && ( getTaxonomyExtraction() != TAXONOMY_EXTRACTION.NO ) ) {
                 ForesterUtil
-                .printWarningMessage( Constants.PRG_NAME,
-                                      "attempt to extract taxonomies and replace underscores at the same time" );
+                        .printWarningMessage( Constants.PRG_NAME,
+                                              "attempt to extract taxonomies and replace underscores at the same time" );
             }
             else {
                 setReplaceUnderscoresInNhParsing( r );
@@ -1348,15 +1182,15 @@ public final class Configuration {
             }
             else {
                 ForesterUtil
-                .printWarningMessage( Constants.PRG_NAME,
-                                      "unknown value for \"taxonomy_extraction_in_nh_parsing\": "
-                                              + s
-                                              + " (must be either: no, pfam_relaxed, pfam_strict, or aggressive)" );
+                        .printWarningMessage( Constants.PRG_NAME,
+                                              "unknown value for \"taxonomy_extraction_in_nh_parsing\": "
+                                                      + s
+                                                      + " (must be either: no, pfam_relaxed, pfam_strict, or aggressive)" );
             }
             if ( ( getTaxonomyExtraction() != TAXONOMY_EXTRACTION.NO ) && isReplaceUnderscoresInNhParsing() ) {
                 ForesterUtil
-                .printWarningMessage( Constants.PRG_NAME,
-                                      "attempt to extract taxonomies and replace underscores at the same time" );
+                        .printWarningMessage( Constants.PRG_NAME,
+                                              "attempt to extract taxonomies and replace underscores at the same time" );
             }
         }
         else if ( key.equals( "internal_labels_are_confidence_values" ) ) {
@@ -1412,7 +1246,7 @@ public final class Configuration {
             }
             else {
                 ForesterUtil.printWarningMessage( Constants.PRG_NAME, "unknown value [" + fill_str
-                                                  + "] for [default_node_fill]" );
+                        + "] for [default_node_fill]" );
             }
         }
         else if ( key.equals( "default_node_shape" ) ) {
@@ -1425,7 +1259,7 @@ public final class Configuration {
             }
             else {
                 ForesterUtil.printWarningMessage( Constants.PRG_NAME, "unknown value [" + shape_str
-                                                  + "] for [default_node_shape]" );
+                        + "] for [default_node_shape]" );
             }
         }
         else if ( key.equals( "midpoint_reroot" ) ) {
@@ -1474,7 +1308,7 @@ public final class Configuration {
             }
             else {
                 ForesterUtil.printWarningMessage( Constants.PRG_NAME, "unknown value [" + s
-                                                  + "] for [ext_descendents_data_to_return]" );
+                        + "] for [ext_descendents_data_to_return]" );
             }
         }
         else if ( key.equals( "list_node_data_custom_label" ) || key.equals( "label_for_get_ext_descendents_data" ) ) {
@@ -1496,7 +1330,7 @@ public final class Configuration {
             }
             else {
                 ForesterUtil.printWarningMessage( Constants.PRG_NAME, "unknown value [" + s
-                                                  + "] for [ext_descendents_data_to_return_on]" );
+                        + "] for [ext_descendents_data_to_return_on]" );
             }
         }
         else if ( key.equals( "vector_data_min_color" ) ) {
@@ -1565,8 +1399,8 @@ public final class Configuration {
             else if ( key.equals( "color_branches" ) ) {
                 key_index = Configuration.use_style;
                 ForesterUtil
-                .printWarningMessage( Constants.PRG_NAME,
-                                      "configuration key [color_branches] is deprecated, use [use_visual_styles] instead" );
+                        .printWarningMessage( Constants.PRG_NAME,
+                                              "configuration key [color_branches] is deprecated, use [use_visual_styles] instead" );
             }
             else if ( key.equals( "width_branches" ) ) {
                 key_index = Configuration.width_branches;
@@ -1662,18 +1496,18 @@ public final class Configuration {
                 }
                 else if ( key.equals( "annotation_color" ) ) {
                     getAnnotationColors()
-                    .put( ( String ) st.nextElement(), Color.decode( ( String ) st.nextElement() ) );
+                            .put( ( String ) st.nextElement(), Color.decode( ( String ) st.nextElement() ) );
                 }
                 else if ( key.equals( "function_color" ) ) {
                     ForesterUtil.printWarningMessage( Constants.PRG_NAME,
-                            "configuration key [function_color] is deprecated" );
+                                                      "configuration key [function_color] is deprecated" );
                 }
                 else if ( key.equals( DISPLAY_COLOR_KEY ) ) {
                     putDisplayColors( ( String ) st.nextElement(), Color.decode( ( String ) st.nextElement() ) );
                 }
                 else {
                     ForesterUtil.printWarningMessage( Constants.PRG_NAME, "unknown configuration key [" + key
-                                                      + "] in: " + config_filename );
+                            + "] in: " + config_filename );
                 }
             }
         }
@@ -1687,36 +1521,12 @@ public final class Configuration {
         _label_for_get_ext_descendents_data = label_for_get_ext_descendents_data;
     }
 
-    final public void setLineUpRendarableNodeData( final boolean line_up_renderable_node_data ) {
-        _line_up_renderable_node_data = line_up_renderable_node_data;
-    }
-
     private void setMaxBaseFontSize( final int max_base_font_size ) {
         _max_base_font_size = max_base_font_size;
     }
 
-    public void setMidpointReroot( final boolean midpoint_root ) {
-        _midpoint_root = midpoint_root;
-    }
-
     private void setMinBaseFontSize( final int min_base_font_size ) {
         _min_base_font_size = min_base_font_size;
-    }
-
-    public void setMinConfidenceValue( final double min_confidence_value ) {
-        _min_confidence_value = min_confidence_value;
-    }
-
-    public void setNodeLabelDirection( final NODE_LABEL_DIRECTION node_label_direction ) {
-        _node_label_direction = node_label_direction;
-    }
-
-    public void setNumberOfDigitsAfterCommaForBranchLengthValue( final short number_of_digits_after_comma_for_branch_length_values ) {
-        _number_of_digits_after_comma_for_branch_length_values = number_of_digits_after_comma_for_branch_length_values;
-    }
-
-    public void setNumberOfDigitsAfterCommaForConfidenceValues( final short number_of_digits_after_comma_for_confidence_values ) {
-        _number_of_digits_after_comma_for_confidence_values = number_of_digits_after_comma_for_confidence_values;
     }
 
     private void setOvMaxHeight( final short ov_max_height ) {
@@ -1743,63 +1553,253 @@ public final class Configuration {
         _path_to_local_raxml = path_to_local_raxml;
     }
 
-    public void setPhylogenyGraphicsType( final PHYLOGENY_GRAPHICS_TYPE phylogeny_graphics_type ) {
-        _phylogeny_graphics_type = phylogeny_graphics_type;
-    }
-
-    public void setPrintLineWidth( final float print_line_width ) {
-        _print_line_width = print_line_width;
-    }
-
-    public void setReplaceUnderscoresInNhParsing( final boolean nh_parsing_replace_underscores ) {
-        _nh_parsing_replace_underscores = nh_parsing_replace_underscores;
-    }
-
-    final public void setRightLineUpDomains( final boolean right_align_domains ) {
-        _right_align_domains = right_align_domains;
-    }
-
     private void setShowAnnotationRefSource( final boolean b ) {
         _show_annotation_ref_source = b;
-    }
-
-    public void setShowDefaultNodeShapesExternal( final boolean show_default_node_shapes_external ) {
-        _show_default_node_shapes_external = show_default_node_shapes_external;
-    }
-
-    public void setShowDefaultNodeShapesForMarkedNodes( final boolean show_default_node_shapes_for_marked_nodes ) {
-        _show_default_node_shapes_for_marked_nodes = show_default_node_shapes_for_marked_nodes;
-    }
-
-    public void setShowDefaultNodeShapesInternal( final boolean show_default_node_shapes_internal ) {
-        _show_default_node_shapes_internal = show_default_node_shapes_internal;
-    }
-
-    public void setShowDomainLabels( final boolean show_domain_labels ) {
-        _show_domain_labels = show_domain_labels;
     }
 
     private void setShowOverview( final boolean show_overview ) {
         _show_overview = show_overview;
     }
 
-    public void setShowScale( final boolean show_scale ) {
-        _show_scale = show_scale;
+    private void setValidatePhyloXmlAgainstSchema( final boolean validate_against_phyloxml_xsd_schema ) {
+        _validate_against_phyloxml_xsd_schema = validate_against_phyloxml_xsd_schema;
+    }
+
+    boolean displaySequenceRelations() {
+        return _display_sequence_relations;
+    }
+
+    boolean doCheckOption( final int which ) {
+        return ( display_options[ which ][ 2 ].equalsIgnoreCase( "yes" ) )
+                || ( display_options[ which ][ 2 ].equalsIgnoreCase( "true" ) );
+    }
+
+    boolean doDisplayClickToOption( final int which ) {
+        return clickto_options[ which ][ 1 ].equalsIgnoreCase( "display" );
+    }
+
+    boolean doDisplayOption( final int which ) {
+        return display_options[ which ][ 1 ].equalsIgnoreCase( "display" );
+    }
+
+    /**
+     * Will attempt to use the phylogeny to determine whether to check
+     * this or not (e.g. phylogram)
+     *
+     */
+    boolean doGuessCheckOption( final int which ) {
+        return display_options[ which ][ 2 ].equals( "?" );
+    }
+
+    Map<String, Color> getAnnotationColors() {
+        if ( _annotation_colors == null ) {
+            _annotation_colors = new Hashtable<String, Color>();
+        }
+        return _annotation_colors;
+    }
+
+    int getBaseFontSize() {
+        return _base_font_size;
+    }
+
+    CLADOGRAM_TYPE getCladogramType() {
+        return _cladogram_type;
+    }
+
+    int getClickToOptionsCount() {
+        return clickto_options.length;
+    }
+
+    String getClickToTitle( final int which ) {
+        return clickto_options[ which ][ 0 ];
+    }
+
+    int getDefaultDisplayClicktoOption() {
+        return default_clickto;
+    }
+
+    SortedMap<String, Color> getDisplayColors() {
+        return _display_colors;
+    }
+
+    String getDisplayTitle( final int which ) {
+        return display_options[ which ][ 0 ];
+    }
+
+    Map<String, Color> getDomainColors() {
+        if ( _domain_colors == null ) {
+            _domain_colors = new Hashtable<String, Color>();
+        }
+        return _domain_colors;
+    }
+
+    int getGraphicsExportX() {
+        return _graphics_export_x;
+    }
+
+    int getGraphicsExportY() {
+        return _graphics_export_y;
+    }
+
+    Color getGuiBackgroundColor() {
+        return _gui_background_color;
+    }
+
+    Color getGuiButtonBackgroundColor() {
+        return _gui_button_background_color;
+    }
+
+    Color getGuiButtonBorderColor() {
+        return _gui_button_border_color;
+    }
+
+    Color getGuiButtonTextColor() {
+        return _gui_button_text_color;
+    }
+
+    Color getGuiCheckboxAndButtonActiveColor() {
+        return _gui_checkbox_and_button_active_color;
+    }
+
+    Color getGuiCheckboxTextColor() {
+        return _gui_checkbox_text_color;
+    }
+
+    Color getGuiMenuBackgroundColor() {
+        return _gui_menu_background_color;
+    }
+
+    Color getGuiMenuTextColor() {
+        return _gui_menu_text_color;
+    }
+
+    int getMaxBaseFontSize() {
+        return _max_base_font_size;
+    }
+
+    int getMinBaseFontSize() {
+        return _min_base_font_size;
+    }
+
+    double getMinConfidenceValue() {
+        return _min_confidence_value;
+    }
+
+    NODE_LABEL_DIRECTION getNodeLabelDirection() {
+        return _node_label_direction;
+    }
+
+    short getNumberOfDigitsAfterCommaForBranchLengthValues() {
+        return _number_of_digits_after_comma_for_branch_length_values;
+    }
+
+    short getNumberOfDigitsAfterCommaForConfidenceValues() {
+        return _number_of_digits_after_comma_for_confidence_values;
+    }
+
+    short getOvMaxHeight() {
+        return _ov_max_height;
+    }
+
+    short getOvMaxWidth() {
+        return _ov_max_width;
+    }
+
+    OVERVIEW_PLACEMENT_TYPE getOvPlacement() {
+        return _ov_placement;
+    }
+
+    PHYLOGENY_GRAPHICS_TYPE getPhylogenyGraphicsType() {
+        return _phylogeny_graphics_type;
+    }
+
+    float getPrintLineWidth() {
+        return _print_line_width;
+    }
+
+    Hashtable<String, Color> getSequenceColors() {
+        if ( _sequence_colors == null ) {
+            _sequence_colors = new Hashtable<String, Color>();
+        }
+        return _sequence_colors;
+    }
+
+    Hashtable<String, Color> getSpeciesColors() {
+        if ( _species_colors == null ) {
+            initSpeciesColors();
+        }
+        return _species_colors;
+    }
+
+    final TAXONOMY_EXTRACTION getTaxonomyExtraction() {
+        return _taxonomy_extraction;
+    }
+
+    boolean isAntialiasScreen() {
+        return _antialias_screen;
+    }
+
+    /**
+     * Convenience method.
+     *
+     * @return true if value in configuration file was 'yes'
+     */
+    boolean isDrawAsPhylogram() {
+        return doCheckOption( display_as_phylogram );
+    }
+
+    boolean isEditable() {
+        return _editable;
+    }
+
+    /**
+     * Only used by ArchaeoptryxE.
+     *
+     */
+    boolean isHideControlPanelAndMenubar() {
+        return _hide_controls_and_menus;
+    }
+
+    boolean isInternalNumberAreConfidenceForNhParsing() {
+        return _internal_number_are_confidence_for_nh_parsing;
+    }
+
+    boolean isReplaceUnderscoresInNhParsing() {
+        return _nh_parsing_replace_underscores;
+    }
+
+    boolean isShowOverview() {
+        return _show_overview;
+    }
+
+    boolean isShowScale() {
+        return _show_scale;
+    }
+
+    final boolean isUseNativeUI() {
+        if ( ( _ui == UI.UNKNOWN ) && ForesterUtil.isMac() ) {
+            _ui = UI.NATIVE;
+        }
+        return _ui == UI.NATIVE;
+    }
+
+    /**
+     * Only used by ArchaeoptryxE.
+     *
+     */
+    boolean isUseTabbedDisplay() {
+        return _use_tabbed_display;
+    }
+
+    boolean isValidatePhyloXmlAgainstSchema() {
+        return _validate_against_phyloxml_xsd_schema;
     }
 
     final void setTaxonomyExtraction( final TAXONOMY_EXTRACTION taxonomy_extraction ) {
         _taxonomy_extraction = taxonomy_extraction;
     }
 
-    public void setUseStyle( final boolean b ) {
-        display_options[ use_style ][ 2 ] = b ? "yes" : "no";
-    }
-
-    private void setValidatePhyloXmlAgainstSchema( final boolean validate_against_phyloxml_xsd_schema ) {
-        _validate_against_phyloxml_xsd_schema = validate_against_phyloxml_xsd_schema;
-    }
-
-    public boolean isAllowThickStrokes() {
-        return _allow_thick_strokes;
+    static String getDefaultFontFamilyName() {
+        return DEFAULT_FONT_FAMILY;
     }
 }

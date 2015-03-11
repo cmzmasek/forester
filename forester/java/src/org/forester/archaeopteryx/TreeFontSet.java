@@ -87,6 +87,36 @@ public final class TreeFontSet {
         return _small_max_descent;
     }
 
+    private Font getLargeFontSystem() {
+        return _large_font_system;
+    }
+
+    private void intializeFonts() {
+        final int small_size = getBaseFont().getSize() - 2;
+        int italic = Font.ITALIC;
+        if ( getBaseFont().getStyle() == Font.BOLD ) {
+            italic = italic + Font.BOLD;
+        }
+        _small_font = new Font( getBaseFont().getFontName(), getBaseFont().getStyle(), small_size );
+        _large_font = new Font( getBaseFont().getFontName(), getBaseFont().getStyle(), getBaseFont().getSize() );
+        _small_font_system = new Font( getBaseFont().getFontName(), getBaseFont().getStyle(), small_size );
+        _large_font_system = new Font( getBaseFont().getFontName(), getBaseFont().getStyle(), getBaseFont().getSize() );
+        _small_font_memory = _small_font;
+        _large_font_memory = _large_font;
+        setupFontMetrics();
+    }
+
+    private void setDecreasedSizeBySystem( final boolean decreased_size_by_system ) {
+        _decreased_size_by_system = decreased_size_by_system;
+    }
+
+    private void setupFontMetrics() {
+        _fm_small = _owner.getFontMetrics( _small_font );
+        _fm_large = _owner.getFontMetrics( _large_font );
+        _small_max_descent = _fm_small.getMaxDescent();
+        _small_max_ascent = _fm_small.getMaxAscent() + 1;
+    }
+
     void decreaseFontSize( final int min, final boolean decreased_size_by_system ) {
         if ( decreased_size_by_system && !isDecreasedSizeBySystem() ) {
             _small_font_memory = _small_font;
@@ -168,35 +198,5 @@ public final class TreeFontSet {
         _small_font = _small_font.deriveFont( 4f );
         _large_font = _large_font.deriveFont( 6f );
         setupFontMetrics();
-    }
-
-    private Font getLargeFontSystem() {
-        return _large_font_system;
-    }
-
-    private void intializeFonts() {
-        final int small_size = getBaseFont().getSize() - 2;
-        int italic = Font.ITALIC;
-        if ( getBaseFont().getStyle() == Font.BOLD ) {
-            italic = italic + Font.BOLD;
-        }
-        _small_font = new Font( getBaseFont().getFontName(), getBaseFont().getStyle(), small_size );
-        _large_font = new Font( getBaseFont().getFontName(), getBaseFont().getStyle(), getBaseFont().getSize() );
-        _small_font_system = new Font( getBaseFont().getFontName(), getBaseFont().getStyle(), small_size );
-        _large_font_system = new Font( getBaseFont().getFontName(), getBaseFont().getStyle(), getBaseFont().getSize() );
-        _small_font_memory = _small_font;
-        _large_font_memory = _large_font;
-        setupFontMetrics();
-    }
-
-    private void setDecreasedSizeBySystem( final boolean decreased_size_by_system ) {
-        _decreased_size_by_system = decreased_size_by_system;
-    }
-
-    private void setupFontMetrics() {
-        _fm_small = _owner.getFontMetrics( _small_font );
-        _fm_large = _owner.getFontMetrics( _large_font );
-        _small_max_descent = _fm_small.getMaxDescent();
-        _small_max_ascent = _fm_small.getMaxAscent() + 1;
     }
 }

@@ -99,7 +99,7 @@ public final class MainFrameApplet extends MainFrame {
         _contentpane.setLayout( new BorderLayout() );
         _contentpane.add( _mainpanel, BorderLayout.CENTER );
         setSize( getConfiguration().getFrameXSize() > 40 ? getConfiguration().getFrameXSize() : DEFAULT_FRAME_X_SIZE,
-                 getConfiguration().getFrameYSize() > 40 ? getConfiguration().getFrameYSize() : DEFAULT_FRAME_Y_SIZE );
+                getConfiguration().getFrameYSize() > 40 ? getConfiguration().getFrameYSize() : DEFAULT_FRAME_Y_SIZE );
         addWindowListener( new WindowAdapter() {
 
             @Override
@@ -113,9 +113,9 @@ public final class MainFrameApplet extends MainFrame {
             public void componentResized( final ComponentEvent e ) {
                 if ( _mainpanel.getCurrentTreePanel() != null ) {
                     _mainpanel.getCurrentTreePanel().calcParametersForPainting( _mainpanel.getCurrentTreePanel()
-                                                                                        .getWidth(),
+                                                                                .getWidth(),
                                                                                 _mainpanel.getCurrentTreePanel()
-                                                                                        .getHeight() );
+                                                                                .getHeight() );
                 }
             }
         } );
@@ -124,6 +124,41 @@ public final class MainFrameApplet extends MainFrame {
         requestFocusInWindow();
         setVisible( true );
         System.gc();
+    }
+
+    @Override
+    public MainPanel getMainPanel() {
+        return _mainpanel;
+    }
+
+    private void readSpeciesTree( final Configuration configuration, final String species_tree_url_str )
+            throws MalformedURLException, FileNotFoundException, IOException {
+        final URL species_tree_url = new URL( species_tree_url_str );
+        final Phylogeny[] species_trees = AptxUtil.readPhylogeniesFromUrl( species_tree_url,
+                                                                           configuration
+                                                                           .isValidatePhyloXmlAgainstSchema(),
+                                                                           configuration
+                                                                           .isReplaceUnderscoresInNhParsing(),
+                                                                           false,
+                                                                           TAXONOMY_EXTRACTION.NO,
+                                                                           false );
+        if ( ( species_trees != null ) && ( species_trees.length > 0 ) ) {
+            AptxUtil.printAppletMessage( ArchaeopteryxA.NAME, "successfully read species tree" );
+            if ( species_trees[ 0 ].isEmpty() ) {
+                ForesterUtil.printErrorMessage( ArchaeopteryxA.NAME, "species tree is empty" );
+            }
+            else if ( !species_trees[ 0 ].isRooted() ) {
+                ForesterUtil.printErrorMessage( ArchaeopteryxA.NAME, "species tree is not rooted" );
+            }
+            else {
+                setSpeciesTree( species_trees[ 0 ] );
+                AptxUtil.printAppletMessage( ArchaeopteryxA.NAME, "species tree OK" );
+            }
+        }
+        else {
+            ForesterUtil.printErrorMessage( ArchaeopteryxA.NAME, "failed to read species tree from "
+                    + species_tree_url_str );
+        }
     }
 
     void buildAnalysisMenu() {
@@ -148,9 +183,9 @@ public final class MainFrameApplet extends MainFrame {
                 MainFrame.setOvPlacementColorChooseMenuItem( _overview_placment_mi, getOptions() );
                 MainFrame.setTextColorChooseMenuItem( _switch_colors_mi, getCurrentTreePanel() );
                 MainFrame
-                        .setTextMinSupportMenuItem( _choose_minimal_confidence_mi, getOptions(), getCurrentTreePanel() );
+                .setTextMinSupportMenuItem( _choose_minimal_confidence_mi, getOptions(), getCurrentTreePanel() );
                 MainFrame.setTextForFontChooserMenuItem( _choose_font_mi, createCurrentFontDesc( getMainPanel()
-                        .getTreeFontSet() ) );
+                                                                                                 .getTreeFontSet() ) );
                 setTextForGraphicsSizeChooserMenuItem( _print_size_mi, getOptions() );
                 setTextForPdfLineWidthChooserMenuItem( _choose_pdf_width_mi, getOptions() );
                 MainFrame.setCycleNodeFillMenuItem( _cycle_node_fill_mi, getOptions() );
@@ -168,7 +203,7 @@ public final class MainFrameApplet extends MainFrame {
         _options_jmenu.add( MainFrame.customizeMenuItemAsLabel( new JMenuItem( MainFrame.DISPLAY_SUBHEADER ),
                                                                 getConfiguration() ) );
         _options_jmenu
-                .add( _ext_node_dependent_cladogram_rbmi = new JRadioButtonMenuItem( MainFrame.NONUNIFORM_CLADOGRAMS_LABEL ) );
+        .add( _ext_node_dependent_cladogram_rbmi = new JRadioButtonMenuItem( MainFrame.NONUNIFORM_CLADOGRAMS_LABEL ) );
         _options_jmenu.add( _uniform_cladograms_rbmi = new JRadioButtonMenuItem( MainFrame.UNIFORM_CLADOGRAMS_LABEL ) );
         _options_jmenu.add( _non_lined_up_cladograms_rbmi = new JRadioButtonMenuItem( NON_LINED_UP_CLADOGRAMS_LABEL ) );
         _radio_group_1 = new ButtonGroup();
@@ -178,11 +213,11 @@ public final class MainFrameApplet extends MainFrame {
         _options_jmenu.add( _show_overview_cbmi = new JCheckBoxMenuItem( MainFrame.SHOW_OVERVIEW_LABEL ) );
         _options_jmenu.add( _show_scale_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_SCALE_LABEL ) );
         _options_jmenu
-                .add( _show_default_node_shapes_internal_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_NODE_BOXES_LABEL_INT ) );
+        .add( _show_default_node_shapes_internal_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_NODE_BOXES_LABEL_INT ) );
         _options_jmenu
-                .add( _show_default_node_shapes_external_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_NODE_BOXES_LABEL_EXT ) );
+        .add( _show_default_node_shapes_external_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_NODE_BOXES_LABEL_EXT ) );
         _options_jmenu
-                .add( _show_default_node_shapes_for_marked_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_NODE_BOXES_LABEL_MARKED ) );
+        .add( _show_default_node_shapes_for_marked_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_NODE_BOXES_LABEL_MARKED ) );
         _options_jmenu.add( _line_up_renderable_data_cbmi = new JCheckBoxMenuItem( MainFrame.LINE_UP_RENDERABLE_DATA ) );
         if ( getConfiguration().doDisplayOption( Configuration.show_domain_architectures ) ) {
             _options_jmenu.add( _right_line_up_domains_cbmi = new JCheckBoxMenuItem( MainFrame.RIGHT_LINE_UP_DOMAINS ) );
@@ -191,9 +226,9 @@ public final class MainFrameApplet extends MainFrame {
         _options_jmenu.add( _show_annotation_ref_source = new JCheckBoxMenuItem( MainFrame.SHOW_ANN_REF_SOURCE_LABEL ) );
         _options_jmenu.add( _show_confidence_stddev_cbmi = new JCheckBoxMenuItem( MainFrame.SHOW_CONF_STDDEV_LABEL ) );
         _options_jmenu
-                .add( _color_by_taxonomic_group_cbmi = new JCheckBoxMenuItem( MainFrame.COLOR_BY_TAXONOMIC_GROUP ) );
+        .add( _color_by_taxonomic_group_cbmi = new JCheckBoxMenuItem( MainFrame.COLOR_BY_TAXONOMIC_GROUP ) );
         _options_jmenu
-                .add( _color_labels_same_as_parent_branch = new JCheckBoxMenuItem( MainFrame.COLOR_LABELS_LABEL ) );
+        .add( _color_labels_same_as_parent_branch = new JCheckBoxMenuItem( MainFrame.COLOR_LABELS_LABEL ) );
         _color_labels_same_as_parent_branch.setToolTipText( MainFrame.COLOR_LABELS_TIP );
         _options_jmenu.add( _abbreviate_scientific_names = new JCheckBoxMenuItem( MainFrame.ABBREV_SN_LABEL ) );
         _options_jmenu.add( _label_direction_cbmi = new JCheckBoxMenuItem( MainFrame.LABEL_DIRECTION_LABEL ) );
@@ -211,7 +246,7 @@ public final class MainFrameApplet extends MainFrame {
         _options_jmenu.add( MainFrame.customizeMenuItemAsLabel( new JMenuItem( MainFrame.SEARCH_SUBHEADER ),
                                                                 getConfiguration() ) );
         _options_jmenu
-                .add( _search_case_senstive_cbmi = new JCheckBoxMenuItem( MainFrame.SEARCH_CASE_SENSITIVE_LABEL ) );
+        .add( _search_case_senstive_cbmi = new JCheckBoxMenuItem( MainFrame.SEARCH_CASE_SENSITIVE_LABEL ) );
         _options_jmenu.add( _search_whole_words_only_cbmi = new JCheckBoxMenuItem( MainFrame.SEARCH_TERMS_ONLY_LABEL ) );
         _options_jmenu.add( _search_with_regex_cbmi = new JCheckBoxMenuItem( MainFrame.SEARCH_REGEX_LABEL ) );
         _search_with_regex_cbmi.setToolTipText( MainFrame.SEARCH_WITH_REGEX_TIP );
@@ -223,11 +258,11 @@ public final class MainFrameApplet extends MainFrame {
         _options_jmenu.add( _antialias_print_cbmi = new JCheckBoxMenuItem( "Antialias" ) );
         _options_jmenu.add( _print_black_and_white_cbmi = new JCheckBoxMenuItem( "Export in Black and White" ) );
         _options_jmenu
-                .add( _print_using_actual_size_cbmi = new JCheckBoxMenuItem( "Use Current Image Size for PDF export and Printing" ) );
+        .add( _print_using_actual_size_cbmi = new JCheckBoxMenuItem( "Use Current Image Size for PDF export and Printing" ) );
         _options_jmenu
-                .add( _graphics_export_using_actual_size_cbmi = new JCheckBoxMenuItem( "Use Current Image Size for PNG, JPG, and GIF export" ) );
+        .add( _graphics_export_using_actual_size_cbmi = new JCheckBoxMenuItem( "Use Current Image Size for PNG, JPG, and GIF export" ) );
         _options_jmenu
-                .add( _graphics_export_visible_only_cbmi = new JCheckBoxMenuItem( "Limit to Visible ('Screenshot') for PNG, JPG, and GIF export" ) );
+        .add( _graphics_export_visible_only_cbmi = new JCheckBoxMenuItem( "Limit to Visible ('Screenshot') for PNG, JPG, and GIF export" ) );
         _options_jmenu.add( _print_size_mi = new JMenuItem( "" ) );
         _options_jmenu.add( _choose_pdf_width_mi = new JMenuItem( "" ) );
         //
@@ -236,7 +271,7 @@ public final class MainFrameApplet extends MainFrame {
         customizeCheckBoxMenuItem( _graphics_export_visible_only_cbmi, getOptions().isGraphicsExportVisibleOnly() );
         customizeCheckBoxMenuItem( _print_using_actual_size_cbmi, getOptions().isPrintUsingActualSize() );
         customizeCheckBoxMenuItem( _graphics_export_using_actual_size_cbmi, getOptions()
-                .isGraphicsExportUsingActualSize() );
+                                   .isGraphicsExportUsingActualSize() );
         customizeJMenuItem( _print_size_mi );
         customizeJMenuItem( _choose_pdf_width_mi );
         //
@@ -245,11 +280,11 @@ public final class MainFrameApplet extends MainFrame {
         customizeJMenuItem( _choose_minimal_confidence_mi );
         customizeJMenuItem( _overview_placment_mi );
         customizeCheckBoxMenuItem( _show_default_node_shapes_internal_cbmi, getOptions()
-                .isShowDefaultNodeShapesInternal() );
+                                   .isShowDefaultNodeShapesInternal() );
         customizeCheckBoxMenuItem( _show_default_node_shapes_external_cbmi, getOptions()
-                .isShowDefaultNodeShapesExternal() );
+                                   .isShowDefaultNodeShapesExternal() );
         customizeCheckBoxMenuItem( _show_default_node_shapes_for_marked_cbmi, getOptions()
-                .isShowDefaultNodeShapesForMarkedNodes() );
+                                   .isShowDefaultNodeShapesForMarkedNodes() );
         customizeJMenuItem( _cycle_node_shape_mi );
         customizeJMenuItem( _cycle_node_fill_mi );
         customizeJMenuItem( _choose_node_size_mi );
@@ -289,7 +324,7 @@ public final class MainFrameApplet extends MainFrame {
         _tools_menu.addSeparator();
         _tools_menu.add( _remove_visual_styles_item = new JMenuItem( "Delete All Visual Styles From Nodes" ) );
         _remove_visual_styles_item
-                .setToolTipText( "To remove all node visual styles (fonts, colors) from the current phylogeny." );
+        .setToolTipText( "To remove all node visual styles (fonts, colors) from the current phylogeny." );
         customizeJMenuItem( _remove_visual_styles_item );
         _tools_menu.add( _remove_branch_color_item = new JMenuItem( "Delete All Colors From Branches" ) );
         _remove_branch_color_item.setToolTipText( "To remove all branch color values from the current phylogeny." );
@@ -305,40 +340,5 @@ public final class MainFrameApplet extends MainFrame {
 
     JApplet getApplet() {
         return _applet;
-    }
-
-    @Override
-    public MainPanel getMainPanel() {
-        return _mainpanel;
-    }
-
-    private void readSpeciesTree( final Configuration configuration, final String species_tree_url_str )
-            throws MalformedURLException, FileNotFoundException, IOException {
-        final URL species_tree_url = new URL( species_tree_url_str );
-        final Phylogeny[] species_trees = AptxUtil.readPhylogeniesFromUrl( species_tree_url,
-                                                                           configuration
-                                                                                   .isValidatePhyloXmlAgainstSchema(),
-                                                                           configuration
-                                                                                   .isReplaceUnderscoresInNhParsing(),
-                                                                           false,
-                                                                           TAXONOMY_EXTRACTION.NO,
-                                                                           false );
-        if ( ( species_trees != null ) && ( species_trees.length > 0 ) ) {
-            AptxUtil.printAppletMessage( ArchaeopteryxA.NAME, "successfully read species tree" );
-            if ( species_trees[ 0 ].isEmpty() ) {
-                ForesterUtil.printErrorMessage( ArchaeopteryxA.NAME, "species tree is empty" );
-            }
-            else if ( !species_trees[ 0 ].isRooted() ) {
-                ForesterUtil.printErrorMessage( ArchaeopteryxA.NAME, "species tree is not rooted" );
-            }
-            else {
-                setSpeciesTree( species_trees[ 0 ] );
-                AptxUtil.printAppletMessage( ArchaeopteryxA.NAME, "species tree OK" );
-            }
-        }
-        else {
-            ForesterUtil.printErrorMessage( ArchaeopteryxA.NAME, "failed to read species tree from "
-                    + species_tree_url_str );
-        }
     }
 }

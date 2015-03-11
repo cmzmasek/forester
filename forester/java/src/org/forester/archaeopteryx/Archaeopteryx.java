@@ -44,6 +44,12 @@ public final class Archaeopteryx {
         return createApplication( phylogenies, "", "" );
     }
 
+    public static MainFrame createApplication( final Phylogeny phylogeny, final Configuration config, final String title ) {
+        final Phylogeny[] phylogenies = new Phylogeny[ 1 ];
+        phylogenies[ 0 ] = phylogeny;
+        return MainFrameApplication.createInstance( phylogenies, config, title );
+    }
+
     public static MainFrame createApplication( final Phylogeny[] phylogenies ) {
         return createApplication( phylogenies, "", "" );
     }
@@ -54,12 +60,6 @@ public final class Archaeopteryx {
         return MainFrameApplication.createInstance( phylogenies, config_file_name, title );
     }
 
-    public static MainFrame createApplication( final Phylogeny phylogeny, final Configuration config, final String title ) {
-        final Phylogeny[] phylogenies = new Phylogeny[ 1 ];
-        phylogenies[ 0 ] = phylogeny;
-        return MainFrameApplication.createInstance( phylogenies, config, title );
-    }
-    
     public static void main( final String args[] ) {
         Phylogeny[] phylogenies = null;
         String config_filename = null;
@@ -88,7 +88,7 @@ public final class Archaeopteryx {
                     }
                     boolean nhx_or_nexus = false;
                     final PhylogenyParser p = ParserUtils.createParserDependingOnFileType( f, conf
-                            .isValidatePhyloXmlAgainstSchema() );
+                                                                                           .isValidatePhyloXmlAgainstSchema() );
                     if ( p instanceof NHXParser ) {
                         nhx_or_nexus = true;
                         final NHXParser nhx = ( NHXParser ) p;

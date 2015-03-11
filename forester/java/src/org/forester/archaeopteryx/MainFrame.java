@@ -296,7 +296,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _save_filechooser = new JFileChooser();
         _save_filechooser.setCurrentDirectory( new File( "." ) );
         _save_filechooser.setMultiSelectionEnabled( false );
-        _save_filechooser.setFileFilter( MainFrame.xmlfilter );
+        _save_filechooser.setFileFilter( xmlfilter );
         _save_filechooser.addChoosableFileFilter( nhfilter );
         _save_filechooser.addChoosableFileFilter( nexusfilter );
         _save_filechooser.addChoosableFileFilter( _save_filechooser.getAcceptAllFileFilter() );
@@ -647,7 +647,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             if ( new_dir != null ) {
                 setCurrentDir( new_dir );
             }
-           
         }
         else if ( o == _write_to_tif_item ) {
             final File new_dir = writeToGraphicsFile( _mainpanel.getCurrentPhylogeny(),
@@ -660,7 +659,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             if ( new_dir != null ) {
                 setCurrentDir( new_dir );
             }
-           
         }
         else if ( o == _write_to_bmp_item ) {
             final File new_dir = writeToGraphicsFile( _mainpanel.getCurrentPhylogeny(),
@@ -673,7 +671,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             if ( new_dir != null ) {
                 setCurrentDir( new_dir );
             }
-          
         }
         else if ( o == _write_to_png_item ) {
             final File new_dir = writeToGraphicsFile( _mainpanel.getCurrentPhylogeny(),
@@ -691,16 +688,16 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             print( getCurrentTreePanel(), getOptions(), this );
         }
         else if ( o == _save_item ) {
-           
-            final File new_dir = writeToFile( _mainpanel.getCurrentPhylogeny() ,
-                         getMainPanel(), _save_filechooser, _current_dir, getContentPane(), this );
-      
+            final File new_dir = writeToFile( _mainpanel.getCurrentPhylogeny(),
+                                              getMainPanel(),
+                                              _save_filechooser,
+                                              _current_dir,
+                                              getContentPane(),
+                                              this );
             if ( new_dir != null ) {
-                setCurrentDir( new_dir ); 
+                setCurrentDir( new_dir );
             }
-           
         }
-       
         else if ( o == _graphics_export_visible_only_cbmi ) {
             updateOptions( getOptions() );
         }
@@ -793,6 +790,290 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 doUpdateProcessMenu();
             }
         } );
+    }
+
+    private void annotateSequences() {
+        if ( getCurrentTreePanel() != null ) {
+            List<PhylogenyNode> nodes = null;
+            if ( ( getCurrentTreePanel().getFoundNodes0() != null )
+                    || ( getCurrentTreePanel().getFoundNodes1() != null ) ) {
+                nodes = getCurrentTreePanel().getFoundNodesAsListOfPhylogenyNodes();
+            }
+            if ( ( nodes == null ) || nodes.isEmpty() ) {
+                JOptionPane
+                .showMessageDialog( this,
+                                    "Need to select nodes, either via direct selection or via the \"Search\" function",
+                                    "No nodes selected for annotation",
+                                    JOptionPane.ERROR_MESSAGE );
+                return;
+            }
+            final Phylogeny phy = getMainPanel().getCurrentPhylogeny();
+            if ( ( phy != null ) && !phy.isEmpty() ) {
+                final JTextField ref_field = new JTextField( 10 );
+                final JTextField desc_filed = new JTextField( 20 );
+                ref_field.setText( ForesterUtil.isEmpty( getPreviousNodeAnnotationReference() ) ? ""
+                        : getPreviousNodeAnnotationReference() );
+                final JPanel my_panel = new JPanel();
+                my_panel.add( new JLabel( "Reference " ) );
+                my_panel.add( ref_field );
+                my_panel.add( Box.createHorizontalStrut( 15 ) );
+                my_panel.add( new JLabel( "Description " ) );
+                my_panel.add( desc_filed );
+                final int result = JOptionPane.showConfirmDialog( null,
+                                                                  my_panel,
+                                                                  "Enter the sequence annotation(s) for the "
+                                                                          + nodes.size() + " selected nodes",
+                                                                          JOptionPane.OK_CANCEL_OPTION );
+                if ( result == JOptionPane.OK_OPTION ) {
+                    String ref = ref_field.getText();
+                    String desc = desc_filed.getText();
+                    if ( !ForesterUtil.isEmpty( ref ) ) {
+                        ref = ref.trim();
+                        ref = ref.replaceAll( "\\s+", " " );
+                        if ( ( ref.indexOf( ':' ) < 1 ) || ( ref.indexOf( ':' ) > ( ref.length() - 2 ) )
+                                || ( ref.length() < 3 ) ) {
+                            JOptionPane.showMessageDialog( this,
+                                                           "Reference needs to be in the form of \"GO:1234567\"",
+                                                           "Illegal Format for Annotation Reference",
+                                                           JOptionPane.ERROR_MESSAGE );
+                            return;
+                        }
+                    }
+                    if ( ref != null ) {
+                        setPreviousNodeAnnotationReference( ref );
+                    }
+                    if ( desc != null ) {
+                        desc = desc.trim();
+                        desc = desc.replaceAll( "\\s+", " " );
+                    }
+                    if ( !ForesterUtil.isEmpty( ref ) || !ForesterUtil.isEmpty( desc ) ) {
+                        for( final PhylogenyNode n : nodes ) {
+                            ForesterUtil.ensurePresenceOfSequence( n );
+                            final Annotation ann = ForesterUtil.isEmpty( ref ) ? new Annotation()
+                            : new Annotation( ref );
+                            if ( !ForesterUtil.isEmpty( desc ) ) {
+                                ann.setDesc( desc );
+                            }
+                            n.getNodeData().getSequence().addAnnotation( ann );
+                        }
+                    }
+                    getMainPanel().getControlPanel().showAnnotations();
+                }
+            }
+        }
+    }
+
+    private void chooseFont() {
+        final FontChooser fc = new FontChooser();
+        fc.setFont( getMainPanel().getTreeFontSet().getLargeFont() );
+        fc.showDialog( this, "Select the Base Font" );
+        getMainPanel().getTreeFontSet().setBaseFont( fc.getFont() );
+    }
+
+    private void chooseMinimalConfidence() {
+        final String s = ( String ) JOptionPane
+                .showInputDialog( this,
+                                  "Please enter the minimum for confidence values to be displayed.\n"
+                                          + "[current value: " + getOptions().getMinConfidenceValue() + "]\n",
+                                          "Minimal Confidence Value",
+                                          JOptionPane.QUESTION_MESSAGE,
+                                          null,
+                                          null,
+                                          getOptions().getMinConfidenceValue() );
+        if ( !ForesterUtil.isEmpty( s ) ) {
+            boolean success = true;
+            double m = 0.0;
+            final String m_str = s.trim();
+            if ( !ForesterUtil.isEmpty( m_str ) ) {
+                try {
+                    m = Double.parseDouble( m_str );
+                }
+                catch ( final Exception ex ) {
+                    success = false;
+                }
+            }
+            else {
+                success = false;
+            }
+            if ( success && ( m >= 0.0 ) ) {
+                getOptions().setMinConfidenceValue( m );
+            }
+        }
+    }
+
+    private void deleteSelectedNodes( final boolean delete ) {
+        final Phylogeny phy = getMainPanel().getCurrentPhylogeny();
+        if ( ( phy == null ) || ( phy.getNumberOfExternalNodes() < 2 ) ) {
+            return;
+        }
+        final List<PhylogenyNode> nodes = new ArrayList<PhylogenyNode>();
+        if ( ( getCurrentTreePanel().getFoundNodes0() != null ) || ( getCurrentTreePanel().getFoundNodes1() != null ) ) {
+            final List<PhylogenyNode> all_selected_nodes = getCurrentTreePanel().getFoundNodesAsListOfPhylogenyNodes();
+            for( final PhylogenyNode n : all_selected_nodes ) {
+                if ( n.isExternal() ) {
+                    nodes.add( n );
+                }
+            }
+        }
+        String function = "Retain";
+        if ( delete ) {
+            function = "Delete";
+        }
+        if ( ( nodes == null ) || nodes.isEmpty() ) {
+            JOptionPane
+            .showMessageDialog( this,
+                                "Need to select external nodes, either via direct selection or via the \"Search\" function",
+                                "No external nodes selected to " + function.toLowerCase(),
+                                JOptionPane.ERROR_MESSAGE );
+            return;
+        }
+        final int todo = nodes.size();
+        final int ext = phy.getNumberOfExternalNodes();
+        int res = todo;
+        if ( delete ) {
+            res = ext - todo;
+        }
+        if ( res < 1 ) {
+            JOptionPane.showMessageDialog( this,
+                                           "Cannot delete all nodes",
+                                           "Attempt to delete all nodes ",
+                                           JOptionPane.ERROR_MESSAGE );
+            return;
+        }
+        final int result = JOptionPane.showConfirmDialog( null, function + " " + todo
+                                                          + " external node(s), from a total of " + ext + " external nodes," + "\nresulting in tree with " + res
+                                                          + " nodes?", function + " external nodes", JOptionPane.OK_CANCEL_OPTION );
+        if ( result == JOptionPane.OK_OPTION ) {
+            if ( !delete ) {
+                final List<PhylogenyNode> to_delete = new ArrayList<PhylogenyNode>();
+                for( final PhylogenyNodeIterator it = phy.iteratorExternalForward(); it.hasNext(); ) {
+                    final PhylogenyNode n = it.next();
+                    if ( !nodes.contains( n ) ) {
+                        to_delete.add( n );
+                    }
+                }
+                for( final PhylogenyNode n : to_delete ) {
+                    phy.deleteSubtree( n, true );
+                }
+            }
+            else {
+                for( final PhylogenyNode n : nodes ) {
+                    phy.deleteSubtree( n, true );
+                }
+            }
+            resetSearch();
+            getCurrentTreePanel().setNodeInPreorderToNull();
+            phy.externalNodesHaveChanged();
+            phy.clearHashIdToNodeMap();
+            phy.recalculateNumberOfExternalDescendants( true );
+            getCurrentTreePanel().resetNodeIdToDistToLeafMap();
+            getCurrentTreePanel().setEdited( true );
+            repaint();
+        }
+    }
+
+    private void doUpdateProcessMenu() {
+        if ( _process_pool.size() > 0 ) {
+            if ( _process_menu == null ) {
+                _process_menu = createMenu( "", getConfiguration() );
+                _process_menu.setForeground( Color.RED );
+            }
+            _process_menu.removeAll();
+            final String text = "processes running: " + _process_pool.size();
+            _process_menu.setText( text );
+            _jmenubar.add( _process_menu );
+            for( int i = 0; i < _process_pool.size(); ++i ) {
+                final ProcessRunning p = _process_pool.getProcessByIndex( i );
+                _process_menu.add( customizeJMenuItem( new JMenuItem( p.getName() + " [" + p.getStart() + "]" ) ) );
+            }
+        }
+        else {
+            if ( _process_menu != null ) {
+                _process_menu.removeAll();
+                _jmenubar.remove( _process_menu );
+            }
+        }
+        _jmenubar.validate();
+        _jmenubar.repaint();
+        repaint();
+    }
+
+    private String getPreviousNodeAnnotationReference() {
+        return _previous_node_annotation_ref;
+    }
+
+    private void removeBranchColors() {
+        if ( getMainPanel().getCurrentPhylogeny() != null ) {
+            AptxUtil.removeBranchColors( getMainPanel().getCurrentPhylogeny() );
+        }
+    }
+
+    private void removeVisualStyles() {
+        if ( getMainPanel().getCurrentPhylogeny() != null ) {
+            AptxUtil.removeVisualStyles( getMainPanel().getCurrentPhylogeny() );
+        }
+    }
+
+    private void setPreviousNodeAnnotationReference( final String previous_node_annotation_ref ) {
+        _previous_node_annotation_ref = previous_node_annotation_ref;
+    }
+
+    private void writeAllToFile() {
+        if ( ( getMainPanel().getTabbedPane() == null ) || ( getMainPanel().getTabbedPane().getTabCount() < 1 ) ) {
+            return;
+        }
+        final File my_dir = getCurrentDir();
+        if ( my_dir != null ) {
+            _save_filechooser.setCurrentDirectory( my_dir );
+        }
+        _save_filechooser.setSelectedFile( new File( "" ) );
+        final int result = _save_filechooser.showSaveDialog( _contentpane );
+        final File file = _save_filechooser.getSelectedFile();
+        setCurrentDir( _save_filechooser.getCurrentDirectory() );
+        if ( ( file != null ) && ( result == JFileChooser.APPROVE_OPTION ) ) {
+            if ( file.exists() ) {
+                final int i = JOptionPane.showConfirmDialog( this,
+                                                             file + " already exists. Overwrite?",
+                                                             "Warning",
+                                                             JOptionPane.OK_CANCEL_OPTION,
+                                                             JOptionPane.WARNING_MESSAGE );
+                if ( i != JOptionPane.OK_OPTION ) {
+                    return;
+                }
+                else {
+                    try {
+                        file.delete();
+                    }
+                    catch ( final Exception e ) {
+                        JOptionPane.showMessageDialog( this,
+                                                       "Failed to delete: " + file,
+                                                       "Error",
+                                                       JOptionPane.WARNING_MESSAGE );
+                    }
+                }
+            }
+            final int count = getMainPanel().getTabbedPane().getTabCount();
+            final List<Phylogeny> trees = new ArrayList<Phylogeny>();
+            for( int i = 0; i < count; ++i ) {
+                final Phylogeny phy = getMainPanel().getPhylogeny( i );
+                if ( ForesterUtil.isEmpty( phy.getName() )
+                        && !ForesterUtil.isEmpty( getMainPanel().getTabbedPane().getTitleAt( i ) ) ) {
+                    phy.setName( getMainPanel().getTabbedPane().getTitleAt( i ) );
+                }
+                trees.add( phy );
+                getMainPanel().getTreePanels().get( i ).setEdited( false );
+            }
+            final PhylogenyWriter writer = new PhylogenyWriter();
+            try {
+                writer.toPhyloXML( file, trees, 0, ForesterUtil.LINE_SEPARATOR );
+            }
+            catch ( final IOException e ) {
+                JOptionPane.showMessageDialog( this,
+                                               "Failed to write to: " + file,
+                                               "Error",
+                                               JOptionPane.WARNING_MESSAGE );
+            }
+        }
     }
 
     void activateSaveAllIfNeeded() {
@@ -931,11 +1212,11 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                                                                  "Please enter the default line width for PDF export.\n"
                                                                          + "[current value: "
                                                                          + getOptions().getPrintLineWidth() + "]\n",
-                                                                 "Line Width for PDF Export",
-                                                                 JOptionPane.QUESTION_MESSAGE,
-                                                                 null,
-                                                                 null,
-                                                                 getOptions().getPrintLineWidth() );
+                                                                         "Line Width for PDF Export",
+                                                                         JOptionPane.QUESTION_MESSAGE,
+                                                                         null,
+                                                                         null,
+                                                                         getOptions().getPrintLineWidth() );
         if ( !ForesterUtil.isEmpty( s ) ) {
             boolean success = true;
             float f = 0.0f;
@@ -967,12 +1248,12 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                                                                          + Constants.A4_SIZE_Y + "]\n" + "[US Letter: "
                                                                          + Constants.US_LETTER_SIZE_X + ", "
                                                                          + Constants.US_LETTER_SIZE_Y + "]",
-                                                                 "Default Size for Graphics Export",
-                                                                 JOptionPane.QUESTION_MESSAGE,
-                                                                 null,
-                                                                 null,
-                                                                 getOptions().getPrintSizeX() + ", "
-                                                                         + getOptions().getPrintSizeY() );
+                                                                         "Default Size for Graphics Export",
+                                                                         JOptionPane.QUESTION_MESSAGE,
+                                                                         null,
+                                                                         null,
+                                                                         getOptions().getPrintSizeX() + ", "
+                                                                                 + getOptions().getPrintSizeY() );
         if ( !ForesterUtil.isEmpty( s ) && ( s.indexOf( ',' ) > 0 ) ) {
             boolean success = true;
             int x = 0;
@@ -1098,18 +1379,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                                        JOptionPane.ERROR_MESSAGE );
     }
 
-    static void exceptionOccuredDuringSaveAs( final Exception e, 
-                                              final TreePanel tp,
-                                              final Component comp ) {
-        try {
-            tp.setArrowCursor();
-        }
-        catch ( final Exception ex ) {
-            // Do nothing.
-        }
-        JOptionPane.showMessageDialog( comp, "Exception" + e, "Error during File|SaveAs", JOptionPane.ERROR_MESSAGE );
-    }
-
     void executeGSDI() {
         if ( !isOKforSDI( false, true ) ) {
             return;
@@ -1163,8 +1432,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                                                    + gsdi.getStrippedExternalGeneTreeNodes().size() + "\n"
                                                    + "Taxonomy linkage based on: " + gsdi.getTaxCompBase() + "\n"
                                                    + "Number of polytomies in species tree used: " + poly + "\n",
-                                           "GSDI successfully completed",
-                                           JOptionPane.WARNING_MESSAGE );
+                                                   "GSDI successfully completed",
+                                                   JOptionPane.WARNING_MESSAGE );
         }
         else {
             JOptionPane.showMessageDialog( this,
@@ -1176,8 +1445,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                                                    + gsdi.getStrippedExternalGeneTreeNodes().size() + "\n"
                                                    + "Taxonomy linkage based on: " + gsdi.getTaxCompBase() + "\n"
                                                    + "Number of polytomies in species tree used: " + poly + "\n",
-                                           "GSDI successfully completed",
-                                           JOptionPane.INFORMATION_MESSAGE );
+                                                   "GSDI successfully completed",
+                                                   JOptionPane.INFORMATION_MESSAGE );
         }
     }
 
@@ -1236,8 +1505,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                                                    + gsdir.getStrippedExternalGeneTreeNodes().size() + "\n"
                                                    + "Taxonomy linkage based on: " + gsdir.getTaxCompBase() + "\n"
                                                    + "Number of polytomies in species tree used: " + poly + "\n",
-                                           "GSDIR successfully completed",
-                                           JOptionPane.WARNING_MESSAGE );
+                                                   "GSDIR successfully completed",
+                                                   JOptionPane.WARNING_MESSAGE );
         }
         else {
             JOptionPane.showMessageDialog( this,
@@ -1247,8 +1516,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                                                    + gsdir.getStrippedExternalGeneTreeNodes().size() + "\n"
                                                    + "Taxonomy linkage based on: " + gsdir.getTaxCompBase() + "\n"
                                                    + "Number of polytomies in species tree used: " + poly + "\n",
-                                           "GSDIR successfully completed",
-                                           JOptionPane.INFORMATION_MESSAGE );
+                                                   "GSDIR successfully completed",
+                                                   JOptionPane.INFORMATION_MESSAGE );
         }
     }
 
@@ -1382,10 +1651,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if ( getCurrentTreePanel() != null ) {
             if ( getCurrentTreePanel().isCurrentTreeIsSubtree() ) {
                 JOptionPane
-                        .showMessageDialog( this,
-                                            "This operation can only be performed on a complete tree, not on the currently displayed sub-tree only.",
-                                            "Operation can not be exectuted on a sub-tree",
-                                            JOptionPane.WARNING_MESSAGE );
+                .showMessageDialog( this,
+                                    "This operation can only be performed on a complete tree, not on the currently displayed sub-tree only.",
+                                    "Operation can not be exectuted on a sub-tree",
+                                    JOptionPane.WARNING_MESSAGE );
                 return true;
             }
         }
@@ -1395,52 +1664,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     void midpointRoot() {
         if ( _mainpanel.getCurrentTreePanel() != null ) {
             _mainpanel.getCurrentTreePanel().midpointRoot();
-        }
-    }
-
-    static void printPhylogenyToPdf( final String file_name,
-                                     final Options opts,
-                                     final TreePanel tp,
-                                     final Component comp ) {
-        if ( !opts.isPrintUsingActualSize() ) {
-            tp.calcParametersForPainting( opts.getPrintSizeX(), opts.getPrintSizeY() );
-            tp.resetPreferredSize();
-            tp.repaint();
-        }
-        String pdf_written_to = "";
-        boolean error = false;
-        try {
-            if ( opts.isPrintUsingActualSize() ) {
-                pdf_written_to = PdfExporter.writePhylogenyToPdf( file_name, tp, tp.getWidth(), tp.getHeight() );
-            }
-            else {
-                pdf_written_to = PdfExporter.writePhylogenyToPdf( file_name,
-                                                                  tp,
-                                                                  opts.getPrintSizeX(),
-                                                                  opts.getPrintSizeY() );
-            }
-        }
-        catch ( final IOException e ) {
-            error = true;
-            JOptionPane.showMessageDialog( comp, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE );
-        }
-        if ( !error ) {
-            if ( !ForesterUtil.isEmpty( pdf_written_to ) ) {
-                JOptionPane.showMessageDialog( comp,
-                                               "Wrote PDF to: " + pdf_written_to,
-                                               "Information",
-                                               JOptionPane.INFORMATION_MESSAGE );
-            }
-            else {
-                JOptionPane.showMessageDialog( comp,
-                                               "There was an unknown problem when attempting to write to PDF file: \""
-                                                       + file_name + "\"",
-                                               "Error",
-                                               JOptionPane.ERROR_MESSAGE );
-            }
-        }
-        if ( !opts.isPrintUsingActualSize() ) {
-            tp.getControlPanel().showWhole();
         }
     }
 
@@ -1582,20 +1805,20 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     void updateOptions( final Options options ) {
         options.setAntialiasScreen( ( _screen_antialias_cbmi != null ) && _screen_antialias_cbmi.isSelected() );
         options.setBackgroundColorGradient( ( _background_gradient_cbmi != null )
-                && _background_gradient_cbmi.isSelected() );
+                                            && _background_gradient_cbmi.isSelected() );
         options.setShowDomainLabels( ( _show_domain_labels != null ) && _show_domain_labels.isSelected() );
         options.setShowAnnotationRefSource( ( _show_annotation_ref_source != null )
-                && _show_annotation_ref_source.isSelected() );
+                                            && _show_annotation_ref_source.isSelected() );
         options.setAbbreviateScientificTaxonNames( ( _abbreviate_scientific_names != null )
-                && _abbreviate_scientific_names.isSelected() );
+                                                   && _abbreviate_scientific_names.isSelected() );
         options.setColorLabelsSameAsParentBranch( ( _color_labels_same_as_parent_branch != null )
-                && _color_labels_same_as_parent_branch.isSelected() );
+                                                  && _color_labels_same_as_parent_branch.isSelected() );
         options.setShowDefaultNodeShapesInternal( ( _show_default_node_shapes_internal_cbmi != null )
-                && _show_default_node_shapes_internal_cbmi.isSelected() );
+                                                  && _show_default_node_shapes_internal_cbmi.isSelected() );
         options.setShowDefaultNodeShapesExternal( ( _show_default_node_shapes_external_cbmi != null )
-                && _show_default_node_shapes_external_cbmi.isSelected() );
+                                                  && _show_default_node_shapes_external_cbmi.isSelected() );
         options.setShowDefaultNodeShapesForMarkedNodes( ( _show_default_node_shapes_for_marked_cbmi != null )
-                && _show_default_node_shapes_for_marked_cbmi.isSelected() );
+                                                        && _show_default_node_shapes_for_marked_cbmi.isSelected() );
         if ( ( _non_lined_up_cladograms_rbmi != null ) && ( _non_lined_up_cladograms_rbmi.isSelected() ) ) {
             options.setCladogramType( CLADOGRAM_TYPE.NON_LINED_UP );
         }
@@ -1606,7 +1829,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             options.setCladogramType( CLADOGRAM_TYPE.EXT_NODE_SUM_DEP );
         }
         options.setSearchCaseSensitive( ( _search_case_senstive_cbmi != null )
-                && _search_case_senstive_cbmi.isSelected() );
+                                        && _search_case_senstive_cbmi.isSelected() );
         if ( ( _show_scale_cbmi != null ) && _show_scale_cbmi.isEnabled() ) {
             options.setShowScale( _show_scale_cbmi.isSelected() );
         }
@@ -1620,14 +1843,14 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         options.setShowOverview( ( _show_overview_cbmi != null ) && _show_overview_cbmi.isSelected() );
         options.setShowConfidenceStddev( ( _show_confidence_stddev_cbmi != null )
-                && _show_confidence_stddev_cbmi.isSelected() );
+                                         && _show_confidence_stddev_cbmi.isSelected() );
         if ( ( _color_by_taxonomic_group_cbmi != null ) && _color_by_taxonomic_group_cbmi.isEnabled() ) {
             options.setColorByTaxonomicGroup( _color_by_taxonomic_group_cbmi.isSelected() );
         }
         options.setPrintUsingActualSize( ( _print_using_actual_size_cbmi != null )
-                && ( _print_using_actual_size_cbmi.isSelected() ) );
+                                         && ( _print_using_actual_size_cbmi.isSelected() ) );
         options.setGraphicsExportUsingActualSize( ( _graphics_export_using_actual_size_cbmi != null )
-                && ( _graphics_export_using_actual_size_cbmi.isSelected() ) );
+                                                  && ( _graphics_export_using_actual_size_cbmi.isSelected() ) );
         options.setAntialiasPrint( ( _antialias_print_cbmi != null ) && _antialias_print_cbmi.isSelected() );
         if ( ( _use_brackets_for_conf_in_nh_export_cbmi != null )
                 && _use_brackets_for_conf_in_nh_export_cbmi.isSelected() ) {
@@ -1641,9 +1864,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             options.setNhConversionSupportValueStyle( NH_CONVERSION_SUPPORT_VALUE_STYLE.NONE );
         }
         options.setPrintBlackAndWhite( ( _print_black_and_white_cbmi != null )
-                && _print_black_and_white_cbmi.isSelected() );
+                                       && _print_black_and_white_cbmi.isSelected() );
         options.setInternalNumberAreConfidenceForNhParsing( ( _internal_number_are_confidence_for_nh_parsing_cbmi != null )
-                && _internal_number_are_confidence_for_nh_parsing_cbmi.isSelected() );
+                                                            && _internal_number_are_confidence_for_nh_parsing_cbmi.isSelected() );
         if ( ( _extract_taxonomy_pfam_strict_rbmi != null ) && _extract_taxonomy_pfam_strict_rbmi.isSelected() ) {
             options.setTaxonomyExtraction( TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT );
         }
@@ -1657,14 +1880,14 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             options.setTaxonomyExtraction( TAXONOMY_EXTRACTION.NO );
         }
         options.setReplaceUnderscoresInNhParsing( ( _replace_underscores_cbmi != null )
-                && _replace_underscores_cbmi.isSelected() );
+                                                  && _replace_underscores_cbmi.isSelected() );
         options.setAllowErrorsInDistanceToParent( ( _allow_errors_in_distance_to_parent_cbmi != null )
-                && _allow_errors_in_distance_to_parent_cbmi.isSelected() );
+                                                  && _allow_errors_in_distance_to_parent_cbmi.isSelected() );
         options.setMatchWholeTermsOnly( ( _search_whole_words_only_cbmi != null )
-                && _search_whole_words_only_cbmi.isSelected() );
+                                        && _search_whole_words_only_cbmi.isSelected() );
         options.setSearchWithRegex( ( _search_with_regex_cbmi != null ) && _search_with_regex_cbmi.isSelected() );
         options.setInverseSearchResult( ( _inverse_search_result_cbmi != null )
-                && _inverse_search_result_cbmi.isSelected() );
+                                        && _inverse_search_result_cbmi.isSelected() );
         if ( _graphics_export_visible_only_cbmi != null ) {
             options.setGraphicsExportVisibleOnly( _graphics_export_visible_only_cbmi.isSelected() );
             if ( _graphics_export_visible_only_cbmi.isSelected() && ( _graphics_export_using_actual_size_cbmi != null ) ) {
@@ -1730,8 +1953,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 title = "\"" + getMainPanel().getCurrentPhylogeny().getName() + "\" in " + title;
             }
             showTextFrame( _mainpanel.getCurrentPhylogeny().toNewHampshire( getOptions()
-                                   .getNhConversionSupportValueStyle() ),
-                           title );
+                                                                            .getNhConversionSupportValueStyle() ),
+                                                                            title );
         }
     }
 
@@ -1745,53 +1968,390 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
     }
 
-    static boolean writeAsNewHampshire( final TreePanel tp,
-                                        final Options op,
-                                        boolean exception,
-                                        final File file ) {
+    private static void cycleNodeDataReturn( final Options op, final Configuration conf ) {
+        switch ( op.getExtDescNodeDataToReturn() ) {
+            case UNKNOWN:
+                op.setExtDescNodeDataToReturn( NodeDataField.DOMAINS_ALL );
+                break;
+            case DOMAINS_ALL:
+                op.setExtDescNodeDataToReturn( NodeDataField.DOMAINS_COLLAPSED_PER_PROTEIN );
+                break;
+            case DOMAINS_COLLAPSED_PER_PROTEIN:
+                op.setExtDescNodeDataToReturn( NodeDataField.SEQ_ANNOTATIONS );
+                break;
+            case SEQ_ANNOTATIONS:
+                op.setExtDescNodeDataToReturn( NodeDataField.GO_TERM_IDS );
+                break;
+            case GO_TERM_IDS:
+                op.setExtDescNodeDataToReturn( NodeDataField.SEQUENCE_MOL_SEQ_FASTA );
+                break;
+            case SEQUENCE_MOL_SEQ_FASTA:
+                if ( ( conf != null ) && ( conf.getExtDescNodeDataToReturn() != null )
+                        && ( conf.getExtDescNodeDataToReturn() != NodeDataField.DOMAINS_ALL )
+                        && ( conf.getExtDescNodeDataToReturn() != NodeDataField.DOMAINS_COLLAPSED_PER_PROTEIN )
+                        && ( conf.getExtDescNodeDataToReturn() != NodeDataField.SEQ_ANNOTATIONS )
+                        && ( conf.getExtDescNodeDataToReturn() != NodeDataField.GO_TERM_IDS )
+                        && ( conf.getExtDescNodeDataToReturn() != NodeDataField.SEQUENCE_MOL_SEQ_FASTA ) ) {
+                    op.setExtDescNodeDataToReturn( conf.getExtDescNodeDataToReturn() );
+                }
+                else {
+                    op.setExtDescNodeDataToReturn( NodeDataField.UNKNOWN );
+                }
+                break;
+            default:
+                op.setExtDescNodeDataToReturn( NodeDataField.UNKNOWN );
+        }
+    }
+
+    /**
+     * Display the about box.
+     */
+    static void about() {
+        final StringBuffer about = new StringBuffer( "Archaeopteryx\nVersion " + Constants.VERSION + "\n" );
+        about.append( "Copyright (C) 2014 Christian M Zmasek\n" );
+        about.append( "All Rights Reserved\n" );
+        about.append( "License: GNU Lesser General Public License (LGPL)\n" );
+        about.append( "Last modified: " + Constants.PRG_DATE + "\n" );
+        about.append( "Based on: " + ForesterUtil.getForesterLibraryInformation() + "\n" );
+        about.append( "phyloXML version : " + ForesterConstants.PHYLO_XML_VERSION + "\n" );
+        about.append( "phyloXML location: " + ForesterConstants.PHYLO_XML_LOCATION + "\n" );
+        if ( !ForesterUtil.isEmpty( ForesterUtil.JAVA_VERSION ) && !ForesterUtil.isEmpty( ForesterUtil.JAVA_VENDOR ) ) {
+            about.append( "[your Java version: " + ForesterUtil.JAVA_VERSION + " " + ForesterUtil.JAVA_VENDOR + "]\n" );
+        }
+        if ( !ForesterUtil.isEmpty( ForesterUtil.OS_NAME ) && !ForesterUtil.isEmpty( ForesterUtil.OS_ARCH )
+                && !ForesterUtil.isEmpty( ForesterUtil.OS_VERSION ) ) {
+            about.append( "[your OS: " + ForesterUtil.OS_NAME + " " + ForesterUtil.OS_ARCH + " "
+                    + ForesterUtil.OS_VERSION + "]\n" );
+        }
+        final Runtime rt = java.lang.Runtime.getRuntime();
+        final long free_memory = rt.freeMemory() / 1000000;
+        final long total_memory = rt.totalMemory() / 1000000;
+        about.append( "[free memory: " + free_memory + "MB, total memory: " + total_memory + "MB]\n" );
+        about.append( "[locale: " + Locale.getDefault() + "]\n" );
+        about.append( "References:\n" );
+        about.append( Constants.PHYLOXML_REFERENCE_SHORT + "\n" );
+        about.append( "For more information & download:\n" );
+        about.append( Constants.APTX_WEB_SITE + "\n" );
+        about.append( "Documentation:\n" );
+        about.append( Constants.APTX_DOC_SITE + "\n" );
+        about.append( "Comments: " + Constants.AUTHOR_EMAIL );
+        JOptionPane.showMessageDialog( null, about, Constants.PRG_NAME, JOptionPane.PLAIN_MESSAGE );
+    }
+
+    static void chooseNodeSize( final Options options, final Component parent ) {
+        final String s = ( String ) JOptionPane.showInputDialog( parent,
+                                                                 "Please enter the default size for node shapes.\n"
+                                                                         + "[current value: "
+                                                                         + options.getDefaultNodeShapeSize() + "]\n",
+                                                                         "Node Shape Size",
+                                                                         JOptionPane.QUESTION_MESSAGE,
+                                                                         null,
+                                                                         null,
+                                                                         options.getDefaultNodeShapeSize() );
+        if ( !ForesterUtil.isEmpty( s ) ) {
+            boolean success = true;
+            double m = 0.0;
+            final String m_str = s.trim();
+            if ( !ForesterUtil.isEmpty( m_str ) ) {
+                try {
+                    m = Double.parseDouble( m_str );
+                }
+                catch ( final Exception ex ) {
+                    success = false;
+                }
+            }
+            else {
+                success = false;
+            }
+            if ( success && ( m >= 0.0 ) ) {
+                final short size = ForesterUtil.roundToShort( m );
+                if ( size >= 0.0 ) {
+                    options.setDefaultNodeShapeSize( size );
+                }
+            }
+        }
+    }
+
+    static String createCurrentFontDesc( final TreeFontSet tree_font_set ) {
+        return tree_font_set.getLargeFont().getFamily() + " " + tree_font_set.getLargeFont().getSize();
+    }
+
+    static JMenu createMenu( final String title, final Configuration conf ) {
+        final JMenu jmenu = new JMenu( title );
+        if ( !conf.isUseNativeUI() ) {
+            jmenu.setFont( MainFrame.menu_font );
+            jmenu.setBackground( conf.getGuiMenuBackgroundColor() );
+            jmenu.setForeground( conf.getGuiMenuTextColor() );
+        }
+        return jmenu;
+    }
+
+    static JMenuItem customizeMenuItemAsLabel( final JMenuItem label, final Configuration configuration ) {
+        label.setFont( MainFrame.menu_font.deriveFont( Font.BOLD ) );
+        if ( !configuration.isUseNativeUI() ) {
+            label.setBackground( configuration.getGuiMenuBackgroundColor() );
+            label.setForeground( configuration.getGuiMenuTextColor() );
+            label.setOpaque( true );
+        }
+        label.setSelected( false );
+        label.setEnabled( false );
+        return label;
+    }
+
+    static void cycleNodeFill( final Options op ) {
+        switch ( op.getDefaultNodeFill() ) {
+            case GRADIENT:
+                op.setDefaultNodeFill( NodeFill.SOLID );
+                break;
+            case NONE:
+                op.setDefaultNodeFill( NodeFill.GRADIENT );
+                break;
+            case SOLID:
+                op.setDefaultNodeFill( NodeFill.NONE );
+                break;
+            default:
+                throw new RuntimeException( "unknown fill: " + op.getDefaultNodeFill() );
+        }
+    }
+
+    static void cycleNodeShape( final Options op ) {
+        switch ( op.getDefaultNodeShape() ) {
+            case CIRCLE:
+                op.setDefaultNodeShape( NodeShape.RECTANGLE );
+                break;
+            case RECTANGLE:
+                op.setDefaultNodeShape( NodeShape.CIRCLE );
+                break;
+            default:
+                throw new RuntimeException( "unknown shape: " + op.getDefaultNodeShape() );
+        }
+    }
+
+    static void cycleOverview( final Options op, final TreePanel tree_panel ) {
+        switch ( op.getOvPlacement() ) {
+            case LOWER_LEFT:
+                op.setOvPlacement( Options.OVERVIEW_PLACEMENT_TYPE.UPPER_LEFT );
+                break;
+            case LOWER_RIGHT:
+                op.setOvPlacement( Options.OVERVIEW_PLACEMENT_TYPE.LOWER_LEFT );
+                break;
+            case UPPER_LEFT:
+                op.setOvPlacement( Options.OVERVIEW_PLACEMENT_TYPE.UPPER_RIGHT );
+                break;
+            case UPPER_RIGHT:
+                op.setOvPlacement( Options.OVERVIEW_PLACEMENT_TYPE.LOWER_RIGHT );
+                break;
+            default:
+                throw new RuntimeException( "unknown placement: " + op.getOvPlacement() );
+        }
+        if ( tree_panel != null ) {
+            tree_panel.updateOvSettings();
+        }
+    }
+
+    static void exceptionOccuredDuringSaveAs( final Exception e, final TreePanel tp, final Component comp ) {
+        try {
+            tp.setArrowCursor();
+        }
+        catch ( final Exception ex ) {
+            // Do nothing.
+        }
+        JOptionPane.showMessageDialog( comp, "Exception" + e, "Error during File|SaveAs", JOptionPane.ERROR_MESSAGE );
+    }
+
+    static void print( final TreePanel tp, final Options op, final Component c ) {
+        if ( ( tp == null ) || ( tp.getPhylogeny() == null ) || tp.getPhylogeny().isEmpty() ) {
+            return;
+        }
+        if ( !op.isPrintUsingActualSize() ) {
+            tp.calcParametersForPainting( op.getPrintSizeX() - 80, op.getPrintSizeY() - 140 );
+            tp.resetPreferredSize();
+            tp.repaint();
+        }
+        final String job_name = Constants.PRG_NAME;
+        boolean error = false;
+        String printer_name = null;
+        try {
+            printer_name = Printer.print( tp, job_name );
+        }
+        catch ( final Exception e ) {
+            error = true;
+            JOptionPane.showMessageDialog( c, e.getMessage(), "Printing Error", JOptionPane.ERROR_MESSAGE );
+        }
+        if ( !error && ( printer_name != null ) ) {
+            String msg = "Printing data sent to printer";
+            if ( printer_name.length() > 1 ) {
+                msg += " [" + printer_name + "]";
+            }
+            JOptionPane.showMessageDialog( c, msg, "Printing...", JOptionPane.INFORMATION_MESSAGE );
+        }
+        if ( !op.isPrintUsingActualSize() ) {
+            tp.getControlPanel().showWhole();
+        }
+    }
+
+    static void printPhylogenyToPdf( final String file_name,
+                                     final Options opts,
+                                     final TreePanel tp,
+                                     final Component comp ) {
+        if ( !opts.isPrintUsingActualSize() ) {
+            tp.calcParametersForPainting( opts.getPrintSizeX(), opts.getPrintSizeY() );
+            tp.resetPreferredSize();
+            tp.repaint();
+        }
+        String pdf_written_to = "";
+        boolean error = false;
+        try {
+            if ( opts.isPrintUsingActualSize() ) {
+                pdf_written_to = PdfExporter.writePhylogenyToPdf( file_name, tp, tp.getWidth(), tp.getHeight() );
+            }
+            else {
+                pdf_written_to = PdfExporter.writePhylogenyToPdf( file_name,
+                                                                  tp,
+                                                                  opts.getPrintSizeX(),
+                                                                  opts.getPrintSizeY() );
+            }
+        }
+        catch ( final IOException e ) {
+            error = true;
+            JOptionPane.showMessageDialog( comp, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE );
+        }
+        if ( !error ) {
+            if ( !ForesterUtil.isEmpty( pdf_written_to ) ) {
+                JOptionPane.showMessageDialog( comp,
+                                               "Wrote PDF to: " + pdf_written_to,
+                                               "Information",
+                                               JOptionPane.INFORMATION_MESSAGE );
+            }
+            else {
+                JOptionPane.showMessageDialog( comp,
+                                               "There was an unknown problem when attempting to write to PDF file: \""
+                                                       + file_name + "\"",
+                                                       "Error",
+                                                       JOptionPane.ERROR_MESSAGE );
+            }
+        }
+        if ( !opts.isPrintUsingActualSize() ) {
+            tp.getControlPanel().showWhole();
+        }
+    }
+
+    static void setCycleDataReturnMenuItem( final JMenuItem mi, final Options options ) {
+        if ( ( options != null ) && ( options.getExtDescNodeDataToReturn() != null ) ) {
+            mi.setText( "Cycle Node Return Data... (current: " + options.getExtDescNodeDataToReturn().toString() + ")" );
+        }
+        else {
+            mi.setText( "Cycle Node Return Data..." );
+        }
+    }
+
+    static void setCycleNodeFillMenuItem( final JMenuItem mi, final Options options ) {
+        if ( ( options != null ) && ( options.getDefaultNodeFill() != null ) ) {
+            mi.setText( "Cycle Node Shape Fill Type... (current: "
+                    + options.getDefaultNodeFill().toString().toLowerCase() + ")" );
+        }
+        else {
+            mi.setText( "Cycle Node Shape Fill Type..." );
+        }
+    }
+
+    static void setCycleNodeShapeMenuItem( final JMenuItem mi, final Options options ) {
+        if ( ( options != null ) && ( options.getDefaultNodeShape() != null ) ) {
+            mi.setText( "Cycle Node Shape Fill Type... (current: "
+                    + options.getDefaultNodeShape().toString().toLowerCase() + ")" );
+        }
+        else {
+            mi.setText( "Cycle Node Shape Fill Type..." );
+        }
+    }
+
+    static void setOvPlacementColorChooseMenuItem( final JMenuItem mi, final Options options ) {
+        if ( ( options != null ) && ( options.getOvPlacement() != null ) ) {
+            mi.setText( "Cycle Overview Placement... (current: " + options.getOvPlacement() + ")" );
+        }
+        else {
+            mi.setText( "Cycle Overview Placement..." );
+        }
+    }
+
+    static void setTextColorChooseMenuItem( final JMenuItem mi, final TreePanel tree_panel ) {
+        if ( ( tree_panel != null ) && ( tree_panel.getTreeColorSet() != null ) ) {
+            mi.setText( "Select Color Scheme... (current: " + tree_panel.getTreeColorSet().getCurrentColorSchemeName()
+                        + ")" );
+        }
+        else {
+            mi.setText( "Select Color Scheme..." );
+        }
+    }
+
+    static void setTextForFontChooserMenuItem( final JMenuItem mi, final String font_desc ) {
+        mi.setText( "Select Default Font... (current: " + font_desc + ")" );
+    }
+
+    static void setTextForGraphicsSizeChooserMenuItem( final JMenuItem mi, final Options o ) {
+        mi.setText( "Enter Default Size for Graphics Export... (current: " + o.getPrintSizeX() + ", "
+                + o.getPrintSizeY() + ")" );
+    }
+
+    static void setTextForPdfLineWidthChooserMenuItem( final JMenuItem mi, final Options o ) {
+        mi.setText( "Enter Default Line Width for PDF Export... (current: " + o.getPrintLineWidth() + ")" );
+    }
+
+    static void setTextMinSupportMenuItem( final JMenuItem mi, final Options options, final TreePanel current_tree_panel ) {
+        if ( ( current_tree_panel == null ) || ( current_tree_panel.getPhylogeny() == null ) ) {
+            mi.setEnabled( true );
+        }
+        else if ( AptxUtil.isHasAtLeastOneBranchWithSupportValues( current_tree_panel.getPhylogeny() ) ) {
+            mi.setEnabled( true );
+        }
+        else {
+            mi.setEnabled( false );
+        }
+        mi.setText( "Enter Min Confidence Value... (current: " + options.getMinConfidenceValue() + ")" );
+    }
+
+    static void setTextNodeSizeMenuItem( final JMenuItem mi, final Options options ) {
+        mi.setText( "Enter Default Node Shape Size... (current: " + options.getDefaultNodeShapeSize() + ")" );
+    }
+
+    static void updateScreenTextAntialias( final List<TreePanel> treepanels ) {
+        for( final TreePanel tree_panel : treepanels ) {
+            tree_panel.setTextAntialias();
+        }
+    }
+
+    static boolean writeAsNewHampshire( final TreePanel tp, final Options op, boolean exception, final File file ) {
         try {
             final PhylogenyWriter writer = new PhylogenyWriter();
             writer.toNewHampshire( tp.getPhylogeny(), true, op.getNhConversionSupportValueStyle(), file );
         }
         catch ( final Exception e ) {
             exception = true;
-            exceptionOccuredDuringSaveAs( e, tp, tp);
+            exceptionOccuredDuringSaveAs( e, tp, tp );
         }
         return exception;
     }
 
-   
-    
-    
-    static boolean writeAsNexus( final TreePanel tp,
-                                        final Options op,
-                                        boolean exception,
-                                        final File file ) {
+    static boolean writeAsNexus( final TreePanel tp, final Options op, boolean exception, final File file ) {
         try {
             final PhylogenyWriter writer = new PhylogenyWriter();
-            writer.toNexus(file , tp.getPhylogeny(),  op.getNhConversionSupportValueStyle());
+            writer.toNexus( file, tp.getPhylogeny(), op.getNhConversionSupportValueStyle() );
         }
         catch ( final Exception e ) {
             exception = true;
-            exceptionOccuredDuringSaveAs( e, tp, tp);
+            exceptionOccuredDuringSaveAs( e, tp, tp );
         }
         return exception;
     }
-    
-    
-    
 
-    static boolean writeAsPhyloXml( final TreePanel tp,
-                             final Options op,
-                             boolean exception,
-                             final File file ) {
+    static boolean writeAsPhyloXml( final TreePanel tp, final Options op, boolean exception, final File file ) {
         try {
             final PhylogenyWriter writer = new PhylogenyWriter();
             writer.toPhyloXML( file, tp.getPhylogeny(), 0 );
         }
         catch ( final Exception e ) {
             exception = true;
-            exceptionOccuredDuringSaveAs( e, tp, tp);
+            exceptionOccuredDuringSaveAs( e, tp, tp );
         }
         return exception;
     }
@@ -1829,8 +2389,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 JOptionPane.showMessageDialog( comp,
                                                "There was an unknown problem when attempting to write to an image file: \""
                                                        + file_name + "\"",
-                                               "Error",
-                                               JOptionPane.ERROR_MESSAGE );
+                                                       "Error",
+                                                       JOptionPane.ERROR_MESSAGE );
             }
         }
         contentpane.repaint();
@@ -1840,11 +2400,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                              final MainPanel mp,
                              final JFileChooser save_filechooser,
                              final File current_dir,
-                             Container contentpane,
-                             Component comp
-            
-            ) {
-        File  new_file = null;
+                             final Container contentpane,
+                             final Component comp ) {
+        File new_file = null;
         if ( t == null ) {
             return null;
         }
@@ -1869,8 +2427,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         final int result = save_filechooser.showSaveDialog( contentpane );
         final File file = save_filechooser.getSelectedFile();
-      
-        new_file =  save_filechooser.getCurrentDirectory();
+        new_file = save_filechooser.getCurrentDirectory();
         boolean exception = false;
         if ( ( file != null ) && ( result == JFileChooser.APPROVE_OPTION ) ) {
             if ( file.exists() ) {
@@ -1905,20 +2462,13 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 }
             }
             if ( save_filechooser.getFileFilter() == MainFrame.nhfilter ) {
-               
-                
                 exception = writeAsNewHampshire( mp.getCurrentTreePanel(), mp.getOptions(), exception, file );
             }
             else if ( save_filechooser.getFileFilter() == MainFrame.xmlfilter ) {
-                
-                exception =  writeAsPhyloXml(   mp.getCurrentTreePanel(), mp.getOptions(),
-                                 exception,
-                                  file ) ;
-                
+                exception = writeAsPhyloXml( mp.getCurrentTreePanel(), mp.getOptions(), exception, file );
             }
             else if ( save_filechooser.getFileFilter() == MainFrame.nexusfilter ) {
-                
-               exception = writeAsNexus( mp.getCurrentTreePanel(), mp.getOptions(), exception, file );
+                exception = writeAsNexus( mp.getCurrentTreePanel(), mp.getOptions(), exception, file );
             }
             // "*.*":
             else {
@@ -1926,16 +2476,13 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 if ( file_name.endsWith( ".nh" ) || file_name.endsWith( ".newick" ) || file_name.endsWith( ".phy" )
                         || file_name.endsWith( ".tree" ) ) {
                     exception = writeAsNewHampshire( mp.getCurrentTreePanel(), mp.getOptions(), exception, file );
-                    
                 }
                 else if ( file_name.endsWith( ".nex" ) || file_name.endsWith( ".nexus" ) ) {
-                    exception = writeAsNexus(  mp.getCurrentTreePanel(), mp.getOptions(), exception, file );
+                    exception = writeAsNexus( mp.getCurrentTreePanel(), mp.getOptions(), exception, file );
                 }
                 // XML is default:
                 else {
-                    exception =  writeAsPhyloXml(   mp.getCurrentTreePanel(), mp.getOptions(),
-                                                    exception,
-                                                     file ) ;
+                    exception = writeAsPhyloXml( mp.getCurrentTreePanel(), mp.getOptions(), exception, file );
                 }
             }
             if ( !exception ) {
@@ -2048,586 +2595,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             printPhylogenyToPdf( file.toString(), mp.getOptions(), mp.getCurrentTreePanel(), component );
         }
         return new_current_dir;
-    }
-
-    private void annotateSequences() {
-        if ( getCurrentTreePanel() != null ) {
-            List<PhylogenyNode> nodes = null;
-            if ( ( getCurrentTreePanel().getFoundNodes0() != null )
-                    || ( getCurrentTreePanel().getFoundNodes1() != null ) ) {
-                nodes = getCurrentTreePanel().getFoundNodesAsListOfPhylogenyNodes();
-            }
-            if ( ( nodes == null ) || nodes.isEmpty() ) {
-                JOptionPane
-                        .showMessageDialog( this,
-                                            "Need to select nodes, either via direct selection or via the \"Search\" function",
-                                            "No nodes selected for annotation",
-                                            JOptionPane.ERROR_MESSAGE );
-                return;
-            }
-            final Phylogeny phy = getMainPanel().getCurrentPhylogeny();
-            if ( ( phy != null ) && !phy.isEmpty() ) {
-                final JTextField ref_field = new JTextField( 10 );
-                final JTextField desc_filed = new JTextField( 20 );
-                ref_field.setText( ForesterUtil.isEmpty( getPreviousNodeAnnotationReference() ) ? ""
-                        : getPreviousNodeAnnotationReference() );
-                final JPanel my_panel = new JPanel();
-                my_panel.add( new JLabel( "Reference " ) );
-                my_panel.add( ref_field );
-                my_panel.add( Box.createHorizontalStrut( 15 ) );
-                my_panel.add( new JLabel( "Description " ) );
-                my_panel.add( desc_filed );
-                final int result = JOptionPane.showConfirmDialog( null,
-                                                                  my_panel,
-                                                                  "Enter the sequence annotation(s) for the "
-                                                                          + nodes.size() + " selected nodes",
-                                                                  JOptionPane.OK_CANCEL_OPTION );
-                if ( result == JOptionPane.OK_OPTION ) {
-                    String ref = ref_field.getText();
-                    String desc = desc_filed.getText();
-                    if ( !ForesterUtil.isEmpty( ref ) ) {
-                        ref = ref.trim();
-                        ref = ref.replaceAll( "\\s+", " " );
-                        if ( ( ref.indexOf( ':' ) < 1 ) || ( ref.indexOf( ':' ) > ( ref.length() - 2 ) )
-                                || ( ref.length() < 3 ) ) {
-                            JOptionPane.showMessageDialog( this,
-                                                           "Reference needs to be in the form of \"GO:1234567\"",
-                                                           "Illegal Format for Annotation Reference",
-                                                           JOptionPane.ERROR_MESSAGE );
-                            return;
-                        }
-                    }
-                    if ( ref != null ) {
-                        setPreviousNodeAnnotationReference( ref );
-                    }
-                    if ( desc != null ) {
-                        desc = desc.trim();
-                        desc = desc.replaceAll( "\\s+", " " );
-                    }
-                    if ( !ForesterUtil.isEmpty( ref ) || !ForesterUtil.isEmpty( desc ) ) {
-                        for( final PhylogenyNode n : nodes ) {
-                            ForesterUtil.ensurePresenceOfSequence( n );
-                            final Annotation ann = ForesterUtil.isEmpty( ref ) ? new Annotation()
-                                    : new Annotation( ref );
-                            if ( !ForesterUtil.isEmpty( desc ) ) {
-                                ann.setDesc( desc );
-                            }
-                            n.getNodeData().getSequence().addAnnotation( ann );
-                        }
-                    }
-                    getMainPanel().getControlPanel().showAnnotations();
-                }
-            }
-        }
-    }
-
-    private void chooseFont() {
-        final FontChooser fc = new FontChooser();
-        fc.setFont( getMainPanel().getTreeFontSet().getLargeFont() );
-        fc.showDialog( this, "Select the Base Font" );
-        getMainPanel().getTreeFontSet().setBaseFont( fc.getFont() );
-    }
-
-    private void chooseMinimalConfidence() {
-        final String s = ( String ) JOptionPane
-                .showInputDialog( this,
-                                  "Please enter the minimum for confidence values to be displayed.\n"
-                                          + "[current value: " + getOptions().getMinConfidenceValue() + "]\n",
-                                  "Minimal Confidence Value",
-                                  JOptionPane.QUESTION_MESSAGE,
-                                  null,
-                                  null,
-                                  getOptions().getMinConfidenceValue() );
-        if ( !ForesterUtil.isEmpty( s ) ) {
-            boolean success = true;
-            double m = 0.0;
-            final String m_str = s.trim();
-            if ( !ForesterUtil.isEmpty( m_str ) ) {
-                try {
-                    m = Double.parseDouble( m_str );
-                }
-                catch ( final Exception ex ) {
-                    success = false;
-                }
-            }
-            else {
-                success = false;
-            }
-            if ( success && ( m >= 0.0 ) ) {
-                getOptions().setMinConfidenceValue( m );
-            }
-        }
-    }
-
-    private void deleteSelectedNodes( final boolean delete ) {
-        final Phylogeny phy = getMainPanel().getCurrentPhylogeny();
-        if ( ( phy == null ) || ( phy.getNumberOfExternalNodes() < 2 ) ) {
-            return;
-        }
-        final List<PhylogenyNode> nodes = new ArrayList<PhylogenyNode>();
-        if ( ( getCurrentTreePanel().getFoundNodes0() != null ) || ( getCurrentTreePanel().getFoundNodes1() != null ) ) {
-            final List<PhylogenyNode> all_selected_nodes = getCurrentTreePanel().getFoundNodesAsListOfPhylogenyNodes();
-            for( final PhylogenyNode n : all_selected_nodes ) {
-                if ( n.isExternal() ) {
-                    nodes.add( n );
-                }
-            }
-        }
-        String function = "Retain";
-        if ( delete ) {
-            function = "Delete";
-        }
-        if ( ( nodes == null ) || nodes.isEmpty() ) {
-            JOptionPane
-                    .showMessageDialog( this,
-                                        "Need to select external nodes, either via direct selection or via the \"Search\" function",
-                                        "No external nodes selected to " + function.toLowerCase(),
-                                        JOptionPane.ERROR_MESSAGE );
-            return;
-        }
-        final int todo = nodes.size();
-        final int ext = phy.getNumberOfExternalNodes();
-        int res = todo;
-        if ( delete ) {
-            res = ext - todo;
-        }
-        if ( res < 1 ) {
-            JOptionPane.showMessageDialog( this,
-                                           "Cannot delete all nodes",
-                                           "Attempt to delete all nodes ",
-                                           JOptionPane.ERROR_MESSAGE );
-            return;
-        }
-        final int result = JOptionPane.showConfirmDialog( null, function + " " + todo
-                + " external node(s), from a total of " + ext + " external nodes," + "\nresulting in tree with " + res
-                + " nodes?", function + " external nodes", JOptionPane.OK_CANCEL_OPTION );
-        if ( result == JOptionPane.OK_OPTION ) {
-            if ( !delete ) {
-                final List<PhylogenyNode> to_delete = new ArrayList<PhylogenyNode>();
-                for( final PhylogenyNodeIterator it = phy.iteratorExternalForward(); it.hasNext(); ) {
-                    final PhylogenyNode n = it.next();
-                    if ( !nodes.contains( n ) ) {
-                        to_delete.add( n );
-                    }
-                }
-                for( final PhylogenyNode n : to_delete ) {
-                    phy.deleteSubtree( n, true );
-                }
-            }
-            else {
-                for( final PhylogenyNode n : nodes ) {
-                    phy.deleteSubtree( n, true );
-                }
-            }
-            resetSearch();
-            getCurrentTreePanel().setNodeInPreorderToNull();
-            phy.externalNodesHaveChanged();
-            phy.clearHashIdToNodeMap();
-            phy.recalculateNumberOfExternalDescendants( true );
-            getCurrentTreePanel().resetNodeIdToDistToLeafMap();
-            getCurrentTreePanel().setEdited( true );
-            repaint();
-        }
-    }
-
-    private void doUpdateProcessMenu() {
-        if ( _process_pool.size() > 0 ) {
-            if ( _process_menu == null ) {
-                _process_menu = createMenu( "", getConfiguration() );
-                _process_menu.setForeground( Color.RED );
-            }
-            _process_menu.removeAll();
-            final String text = "processes running: " + _process_pool.size();
-            _process_menu.setText( text );
-            _jmenubar.add( _process_menu );
-            for( int i = 0; i < _process_pool.size(); ++i ) {
-                final ProcessRunning p = _process_pool.getProcessByIndex( i );
-                _process_menu.add( customizeJMenuItem( new JMenuItem( p.getName() + " [" + p.getStart() + "]" ) ) );
-            }
-        }
-        else {
-            if ( _process_menu != null ) {
-                _process_menu.removeAll();
-                _jmenubar.remove( _process_menu );
-            }
-        }
-        _jmenubar.validate();
-        _jmenubar.repaint();
-        repaint();
-    }
-
-    private String getPreviousNodeAnnotationReference() {
-        return _previous_node_annotation_ref;
-    }
-
-    static void print( final TreePanel tp, final Options op, final Component c ) {
-        if ( ( tp == null ) || ( tp.getPhylogeny() == null ) || tp.getPhylogeny().isEmpty() ) {
-            return;
-        }
-        if ( !op.isPrintUsingActualSize() ) {
-            tp.calcParametersForPainting( op.getPrintSizeX() - 80, op.getPrintSizeY() - 140 );
-            tp.resetPreferredSize();
-            tp.repaint();
-        }
-        final String job_name = Constants.PRG_NAME;
-        boolean error = false;
-        String printer_name = null;
-        try {
-            printer_name = Printer.print( tp, job_name );
-        }
-        catch ( final Exception e ) {
-            error = true;
-            JOptionPane.showMessageDialog( c, e.getMessage(), "Printing Error", JOptionPane.ERROR_MESSAGE );
-        }
-        if ( !error && ( printer_name != null ) ) {
-            String msg = "Printing data sent to printer";
-            if ( printer_name.length() > 1 ) {
-                msg += " [" + printer_name + "]";
-            }
-            JOptionPane.showMessageDialog( c, msg, "Printing...", JOptionPane.INFORMATION_MESSAGE );
-        }
-        if ( !op.isPrintUsingActualSize() ) {
-            tp.getControlPanel().showWhole();
-        }
-    }
-
-    private void removeBranchColors() {
-        if ( getMainPanel().getCurrentPhylogeny() != null ) {
-            AptxUtil.removeBranchColors( getMainPanel().getCurrentPhylogeny() );
-        }
-    }
-
-    private void removeVisualStyles() {
-        if ( getMainPanel().getCurrentPhylogeny() != null ) {
-            AptxUtil.removeVisualStyles( getMainPanel().getCurrentPhylogeny() );
-        }
-    }
-
-    private void setPreviousNodeAnnotationReference( final String previous_node_annotation_ref ) {
-        _previous_node_annotation_ref = previous_node_annotation_ref;
-    }
-
-    private void writeAllToFile() {
-        if ( ( getMainPanel().getTabbedPane() == null ) || ( getMainPanel().getTabbedPane().getTabCount() < 1 ) ) {
-            return;
-        }
-        final File my_dir = getCurrentDir();
-        if ( my_dir != null ) {
-            _save_filechooser.setCurrentDirectory( my_dir );
-        }
-        _save_filechooser.setSelectedFile( new File( "" ) );
-        final int result = _save_filechooser.showSaveDialog( _contentpane );
-        final File file = _save_filechooser.getSelectedFile();
-        setCurrentDir( _save_filechooser.getCurrentDirectory() );
-        if ( ( file != null ) && ( result == JFileChooser.APPROVE_OPTION ) ) {
-            if ( file.exists() ) {
-                final int i = JOptionPane.showConfirmDialog( this,
-                                                             file + " already exists. Overwrite?",
-                                                             "Warning",
-                                                             JOptionPane.OK_CANCEL_OPTION,
-                                                             JOptionPane.WARNING_MESSAGE );
-                if ( i != JOptionPane.OK_OPTION ) {
-                    return;
-                }
-                else {
-                    try {
-                        file.delete();
-                    }
-                    catch ( final Exception e ) {
-                        JOptionPane.showMessageDialog( this,
-                                                       "Failed to delete: " + file,
-                                                       "Error",
-                                                       JOptionPane.WARNING_MESSAGE );
-                    }
-                }
-            }
-            final int count = getMainPanel().getTabbedPane().getTabCount();
-            final List<Phylogeny> trees = new ArrayList<Phylogeny>();
-            for( int i = 0; i < count; ++i ) {
-                final Phylogeny phy = getMainPanel().getPhylogeny( i );
-                if ( ForesterUtil.isEmpty( phy.getName() )
-                        && !ForesterUtil.isEmpty( getMainPanel().getTabbedPane().getTitleAt( i ) ) ) {
-                    phy.setName( getMainPanel().getTabbedPane().getTitleAt( i ) );
-                }
-                trees.add( phy );
-                getMainPanel().getTreePanels().get( i ).setEdited( false );
-            }
-            final PhylogenyWriter writer = new PhylogenyWriter();
-            try {
-                writer.toPhyloXML( file, trees, 0, ForesterUtil.LINE_SEPARATOR );
-            }
-            catch ( final IOException e ) {
-                JOptionPane.showMessageDialog( this,
-                                               "Failed to write to: " + file,
-                                               "Error",
-                                               JOptionPane.WARNING_MESSAGE );
-            }
-        }
-    }
-
-    /**
-     * Display the about box.
-     */
-    static void about() {
-        final StringBuffer about = new StringBuffer( "Archaeopteryx\nVersion " + Constants.VERSION + "\n" );
-        about.append( "Copyright (C) 2014 Christian M Zmasek\n" );
-        about.append( "All Rights Reserved\n" );
-        about.append( "License: GNU Lesser General Public License (LGPL)\n" );
-        about.append( "Last modified: " + Constants.PRG_DATE + "\n" );
-        about.append( "Based on: " + ForesterUtil.getForesterLibraryInformation() + "\n" );
-        about.append( "phyloXML version : " + ForesterConstants.PHYLO_XML_VERSION + "\n" );
-        about.append( "phyloXML location: " + ForesterConstants.PHYLO_XML_LOCATION + "\n" );
-        if ( !ForesterUtil.isEmpty( ForesterUtil.JAVA_VERSION ) && !ForesterUtil.isEmpty( ForesterUtil.JAVA_VENDOR ) ) {
-            about.append( "[your Java version: " + ForesterUtil.JAVA_VERSION + " " + ForesterUtil.JAVA_VENDOR + "]\n" );
-        }
-        if ( !ForesterUtil.isEmpty( ForesterUtil.OS_NAME ) && !ForesterUtil.isEmpty( ForesterUtil.OS_ARCH )
-                && !ForesterUtil.isEmpty( ForesterUtil.OS_VERSION ) ) {
-            about.append( "[your OS: " + ForesterUtil.OS_NAME + " " + ForesterUtil.OS_ARCH + " "
-                    + ForesterUtil.OS_VERSION + "]\n" );
-        }
-        final Runtime rt = java.lang.Runtime.getRuntime();
-        final long free_memory = rt.freeMemory() / 1000000;
-        final long total_memory = rt.totalMemory() / 1000000;
-        about.append( "[free memory: " + free_memory + "MB, total memory: " + total_memory + "MB]\n" );
-        about.append( "[locale: " + Locale.getDefault() + "]\n" );
-        about.append( "References:\n" );
-        about.append( Constants.PHYLOXML_REFERENCE_SHORT + "\n" );
-        about.append( "For more information & download:\n" );
-        about.append( Constants.APTX_WEB_SITE + "\n" );
-        about.append( "Documentation:\n" );
-        about.append( Constants.APTX_DOC_SITE + "\n" );
-        about.append( "Comments: " + Constants.AUTHOR_EMAIL );
-        JOptionPane.showMessageDialog( null, about, Constants.PRG_NAME, JOptionPane.PLAIN_MESSAGE );
-    }
-
-    static void chooseNodeSize( final Options options, final Component parent ) {
-        final String s = ( String ) JOptionPane.showInputDialog( parent,
-                                                                 "Please enter the default size for node shapes.\n"
-                                                                         + "[current value: "
-                                                                         + options.getDefaultNodeShapeSize() + "]\n",
-                                                                 "Node Shape Size",
-                                                                 JOptionPane.QUESTION_MESSAGE,
-                                                                 null,
-                                                                 null,
-                                                                 options.getDefaultNodeShapeSize() );
-        if ( !ForesterUtil.isEmpty( s ) ) {
-            boolean success = true;
-            double m = 0.0;
-            final String m_str = s.trim();
-            if ( !ForesterUtil.isEmpty( m_str ) ) {
-                try {
-                    m = Double.parseDouble( m_str );
-                }
-                catch ( final Exception ex ) {
-                    success = false;
-                }
-            }
-            else {
-                success = false;
-            }
-            if ( success && ( m >= 0.0 ) ) {
-                final short size = ForesterUtil.roundToShort( m );
-                if ( size >= 0.0 ) {
-                    options.setDefaultNodeShapeSize( size );
-                }
-            }
-        }
-    }
-
-    static String createCurrentFontDesc( final TreeFontSet tree_font_set ) {
-        return tree_font_set.getLargeFont().getFamily() + " " + tree_font_set.getLargeFont().getSize();
-    }
-
-    static JMenu createMenu( final String title, final Configuration conf ) {
-        final JMenu jmenu = new JMenu( title );
-        if ( !conf.isUseNativeUI() ) {
-            jmenu.setFont( MainFrame.menu_font );
-            jmenu.setBackground( conf.getGuiMenuBackgroundColor() );
-            jmenu.setForeground( conf.getGuiMenuTextColor() );
-        }
-        return jmenu;
-    }
-
-    static JMenuItem customizeMenuItemAsLabel( final JMenuItem label, final Configuration configuration ) {
-        label.setFont( MainFrame.menu_font.deriveFont( Font.BOLD ) );
-        if ( !configuration.isUseNativeUI() ) {
-            label.setBackground( configuration.getGuiMenuBackgroundColor() );
-            label.setForeground( configuration.getGuiMenuTextColor() );
-            label.setOpaque( true );
-        }
-        label.setSelected( false );
-        label.setEnabled( false );
-        return label;
-    }
-
-    static void cycleNodeFill( final Options op ) {
-        switch ( op.getDefaultNodeFill() ) {
-            case GRADIENT:
-                op.setDefaultNodeFill( NodeFill.SOLID );
-                break;
-            case NONE:
-                op.setDefaultNodeFill( NodeFill.GRADIENT );
-                break;
-            case SOLID:
-                op.setDefaultNodeFill( NodeFill.NONE );
-                break;
-            default:
-                throw new RuntimeException( "unknown fill: " + op.getDefaultNodeFill() );
-        }
-    }
-
-    static void cycleNodeShape( final Options op ) {
-        switch ( op.getDefaultNodeShape() ) {
-            case CIRCLE:
-                op.setDefaultNodeShape( NodeShape.RECTANGLE );
-                break;
-            case RECTANGLE:
-                op.setDefaultNodeShape( NodeShape.CIRCLE );
-                break;
-            default:
-                throw new RuntimeException( "unknown shape: " + op.getDefaultNodeShape() );
-        }
-    }
-
-    static void cycleOverview( final Options op, final TreePanel tree_panel ) {
-        switch ( op.getOvPlacement() ) {
-            case LOWER_LEFT:
-                op.setOvPlacement( Options.OVERVIEW_PLACEMENT_TYPE.UPPER_LEFT );
-                break;
-            case LOWER_RIGHT:
-                op.setOvPlacement( Options.OVERVIEW_PLACEMENT_TYPE.LOWER_LEFT );
-                break;
-            case UPPER_LEFT:
-                op.setOvPlacement( Options.OVERVIEW_PLACEMENT_TYPE.UPPER_RIGHT );
-                break;
-            case UPPER_RIGHT:
-                op.setOvPlacement( Options.OVERVIEW_PLACEMENT_TYPE.LOWER_RIGHT );
-                break;
-            default:
-                throw new RuntimeException( "unknown placement: " + op.getOvPlacement() );
-        }
-        if ( tree_panel != null ) {
-            tree_panel.updateOvSettings();
-        }
-    }
-
-    static void setCycleDataReturnMenuItem( final JMenuItem mi, final Options options ) {
-        if ( ( options != null ) && ( options.getExtDescNodeDataToReturn() != null ) ) {
-            mi.setText( "Cycle Node Return Data... (current: " + options.getExtDescNodeDataToReturn().toString() + ")" );
-        }
-        else {
-            mi.setText( "Cycle Node Return Data..." );
-        }
-    }
-
-    static void setCycleNodeFillMenuItem( final JMenuItem mi, final Options options ) {
-        if ( ( options != null ) && ( options.getDefaultNodeFill() != null ) ) {
-            mi.setText( "Cycle Node Shape Fill Type... (current: "
-                    + options.getDefaultNodeFill().toString().toLowerCase() + ")" );
-        }
-        else {
-            mi.setText( "Cycle Node Shape Fill Type..." );
-        }
-    }
-
-    static void setCycleNodeShapeMenuItem( final JMenuItem mi, final Options options ) {
-        if ( ( options != null ) && ( options.getDefaultNodeShape() != null ) ) {
-            mi.setText( "Cycle Node Shape Fill Type... (current: "
-                    + options.getDefaultNodeShape().toString().toLowerCase() + ")" );
-        }
-        else {
-            mi.setText( "Cycle Node Shape Fill Type..." );
-        }
-    }
-
-    static void setOvPlacementColorChooseMenuItem( final JMenuItem mi, final Options options ) {
-        if ( ( options != null ) && ( options.getOvPlacement() != null ) ) {
-            mi.setText( "Cycle Overview Placement... (current: " + options.getOvPlacement() + ")" );
-        }
-        else {
-            mi.setText( "Cycle Overview Placement..." );
-        }
-    }
-
-    static void setTextColorChooseMenuItem( final JMenuItem mi, final TreePanel tree_panel ) {
-        if ( ( tree_panel != null ) && ( tree_panel.getTreeColorSet() != null ) ) {
-            mi.setText( "Select Color Scheme... (current: " + tree_panel.getTreeColorSet().getCurrentColorSchemeName()
-                    + ")" );
-        }
-        else {
-            mi.setText( "Select Color Scheme..." );
-        }
-    }
-
-    static void setTextForFontChooserMenuItem( final JMenuItem mi, final String font_desc ) {
-        mi.setText( "Select Default Font... (current: " + font_desc + ")" );
-    }
-
-    static void setTextForGraphicsSizeChooserMenuItem( final JMenuItem mi, final Options o ) {
-        mi.setText( "Enter Default Size for Graphics Export... (current: " + o.getPrintSizeX() + ", "
-                + o.getPrintSizeY() + ")" );
-    }
-
-    static void setTextForPdfLineWidthChooserMenuItem( final JMenuItem mi, final Options o ) {
-        mi.setText( "Enter Default Line Width for PDF Export... (current: " + o.getPrintLineWidth() + ")" );
-    }
-
-    static void setTextMinSupportMenuItem( final JMenuItem mi, final Options options, final TreePanel current_tree_panel ) {
-        if ( ( current_tree_panel == null ) || ( current_tree_panel.getPhylogeny() == null ) ) {
-            mi.setEnabled( true );
-        }
-        else if ( AptxUtil.isHasAtLeastOneBranchWithSupportValues( current_tree_panel.getPhylogeny() ) ) {
-            mi.setEnabled( true );
-        }
-        else {
-            mi.setEnabled( false );
-        }
-        mi.setText( "Enter Min Confidence Value... (current: " + options.getMinConfidenceValue() + ")" );
-    }
-
-    static void setTextNodeSizeMenuItem( final JMenuItem mi, final Options options ) {
-        mi.setText( "Enter Default Node Shape Size... (current: " + options.getDefaultNodeShapeSize() + ")" );
-    }
-
-    static void updateScreenTextAntialias( final List<TreePanel> treepanels ) {
-        for( final TreePanel tree_panel : treepanels ) {
-            tree_panel.setTextAntialias();
-        }
-    }
-
-    private static void cycleNodeDataReturn( final Options op, final Configuration conf ) {
-        switch ( op.getExtDescNodeDataToReturn() ) {
-            case UNKNOWN:
-                op.setExtDescNodeDataToReturn( NodeDataField.DOMAINS_ALL );
-                break;
-            case DOMAINS_ALL:
-                op.setExtDescNodeDataToReturn( NodeDataField.DOMAINS_COLLAPSED_PER_PROTEIN );
-                break;
-            case DOMAINS_COLLAPSED_PER_PROTEIN:
-                op.setExtDescNodeDataToReturn( NodeDataField.SEQ_ANNOTATIONS );
-                break;
-            case SEQ_ANNOTATIONS:
-                op.setExtDescNodeDataToReturn( NodeDataField.GO_TERM_IDS );
-                break;
-            case GO_TERM_IDS:
-                op.setExtDescNodeDataToReturn( NodeDataField.SEQUENCE_MOL_SEQ_FASTA );
-                break;
-            case SEQUENCE_MOL_SEQ_FASTA:
-                if ( ( conf != null ) && ( conf.getExtDescNodeDataToReturn() != null )
-                        && ( conf.getExtDescNodeDataToReturn() != NodeDataField.DOMAINS_ALL )
-                        && ( conf.getExtDescNodeDataToReturn() != NodeDataField.DOMAINS_COLLAPSED_PER_PROTEIN )
-                        && ( conf.getExtDescNodeDataToReturn() != NodeDataField.SEQ_ANNOTATIONS )
-                        && ( conf.getExtDescNodeDataToReturn() != NodeDataField.GO_TERM_IDS )
-                        && ( conf.getExtDescNodeDataToReturn() != NodeDataField.SEQUENCE_MOL_SEQ_FASTA ) ) {
-                    op.setExtDescNodeDataToReturn( conf.getExtDescNodeDataToReturn() );
-                }
-                else {
-                    op.setExtDescNodeDataToReturn( NodeDataField.UNKNOWN );
-                }
-                break;
-            default:
-                op.setExtDescNodeDataToReturn( NodeDataField.UNKNOWN );
-        }
     }
 }
 

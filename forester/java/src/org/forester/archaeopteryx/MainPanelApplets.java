@@ -70,14 +70,6 @@ final class MainPanelApplets extends MainPanel {
         setupTreeGraphic( configuration, getControlPanel() );
     }
 
-    JApplet getApplet() {
-        return _applet;
-    }
-
-    MainFrameApplet getAppletFrame() {
-        return ( MainFrameApplet ) _mainframe;
-    }
-
     @Override
     public Options getOptions() {
         if ( _mainframe != null ) {
@@ -86,5 +78,13 @@ final class MainPanelApplets extends MainPanel {
         else {
             return ( ( ArchaeopteryxE ) _applet ).getOptions();
         }
+    }
+
+    JApplet getApplet() {
+        return _applet;
+    }
+
+    MainFrameApplet getAppletFrame() {
+        return ( MainFrameApplet ) _mainframe;
     }
 }

@@ -70,9 +70,6 @@ public class MainPanel extends JPanel implements ComponentListener {
     private Hashtable<String, BufferedImage> _image_map;
     private static Map<String, String>       _lineage_to_rank_map;
 
-    MainPanel() {
-    }
-
     public MainPanel( final Configuration configuration, final MainFrame parent ) {
         if ( configuration == null ) {
             throw new IllegalArgumentException( "configuration is null" );
@@ -86,6 +83,9 @@ public class MainPanel extends JPanel implements ComponentListener {
         add( _control_panel, BorderLayout.WEST );
         setupTreeGraphic( configuration, getControlPanel() );
         getControlPanel().showWhole();
+    }
+
+    MainPanel() {
     }
 
     public void addPhylogenyInNewTab( final Phylogeny phy,
@@ -141,6 +141,78 @@ public class MainPanel extends JPanel implements ComponentListener {
         getTabbedPane().addTab( name, null, treegraphic_scroll_pane_panel, "" );
         getTabbedPane().setSelectedIndex( getTabbedPane().getTabCount() - 1 );
         getControlPanel().showWhole();
+    }
+
+    @Override
+    public void componentHidden( final ComponentEvent e ) {
+        // Do nothing.
+    }
+
+    @Override
+    public void componentMoved( final ComponentEvent e ) {
+        // Do nothing.
+    }
+
+    @Override
+    public void componentResized( final ComponentEvent e ) {
+        if ( getCurrentTreePanel() != null ) {
+            getCurrentTreePanel().updateOvSettings();
+            getCurrentTreePanel().updateOvSizes();
+        }
+    }
+
+    @Override
+    public void componentShown( final ComponentEvent e ) {
+        // Do nothing.
+    }
+
+    public ControlPanel getControlPanel() {
+        return _control_panel;
+    }
+
+    public Set<Long> getCopiedAndPastedNodes() {
+        return _copied_and_pasted_nodes;
+    }
+
+    public TreePanel getCurrentTreePanel() {
+        final int selected = getTabbedPane().getSelectedIndex();
+        if ( selected >= 0 ) {
+            return _treepanels.get( selected );
+        }
+        else {
+            if ( _treepanels.size() == 1 ) {
+                return _treepanels.get( 0 );
+            }
+            else {
+                return null;
+            }
+        }
+    }
+
+    public Options getOptions() {
+        return _mainframe.getOptions();
+    }
+
+    public JTabbedPane getTabbedPane() {
+        return _tabbed_pane;
+    }
+
+    public TreeFontSet getTreeFontSet() {
+        return _fontset;
+    }
+
+    public void setArrowCursor() {
+        setCursor( TreePanel.ARROW_CURSOR );
+        repaint();
+    }
+
+    public void setCopiedAndPastedNodes( final Set<Long> node_ids ) {
+        _copied_and_pasted_nodes = node_ids;
+    }
+
+    public void setWaitCursor() {
+        setCursor( TreePanel.WAIT_CURSOR );
+        repaint();
     }
 
     void addPhylogenyInPanel( final Phylogeny phy, final Configuration config ) {
@@ -199,39 +271,8 @@ public class MainPanel extends JPanel implements ComponentListener {
         }
     }
 
-    @Override
-    public void componentHidden( final ComponentEvent e ) {
-        // Do nothing.
-    }
-
-    @Override
-    public void componentMoved( final ComponentEvent e ) {
-        // Do nothing.
-    }
-
-    @Override
-    public void componentResized( final ComponentEvent e ) {
-        if ( getCurrentTreePanel() != null ) {
-            getCurrentTreePanel().updateOvSettings();
-            getCurrentTreePanel().updateOvSizes();
-        }
-    }
-
-    @Override
-    public void componentShown( final ComponentEvent e ) {
-        // Do nothing.
-    }
-
     Configuration getConfiguration() {
         return _configuration;
-    }
-
-    public ControlPanel getControlPanel() {
-        return _control_panel;
-    }
-
-    public Set<Long> getCopiedAndPastedNodes() {
-        return _copied_and_pasted_nodes;
     }
 
     Phylogeny getCurrentPhylogeny() {
@@ -276,38 +317,16 @@ public class MainPanel extends JPanel implements ComponentListener {
         }
     }
 
-    void setTitleOfSelectedTab( final String title ) {
-        final int selected = getTabbedPane().getSelectedIndex();
-        if ( selected >= 0 ) {
-            getTabbedPane().setTitleAt( selected, title );
-        }
-    }
-
-    public TreePanel getCurrentTreePanel() {
-        final int selected = getTabbedPane().getSelectedIndex();
-        if ( selected >= 0 ) {
-            return _treepanels.get( selected );
-        }
-        else {
-            if ( _treepanels.size() == 1 ) {
-                return _treepanels.get( 0 );
-            }
-            else {
-                return null;
-            }
-        }
-    }
-
     Phylogeny getCutOrCopiedTree() {
         return _cut_or_copied_tree;
     }
 
-    MainFrame getMainFrame() {
-        return _mainframe;
+    synchronized Hashtable<String, BufferedImage> getImageMap() {
+        return _image_map;
     }
 
-    public Options getOptions() {
-        return _mainframe.getOptions();
+    MainFrame getMainFrame() {
+        return _mainframe;
     }
 
     Phylogeny getPhylogeny( final int index ) {
@@ -321,16 +340,8 @@ public class MainPanel extends JPanel implements ComponentListener {
         return getCurrentScrollPane().getViewport().getExtentSize();
     }
 
-    public JTabbedPane getTabbedPane() {
-        return _tabbed_pane;
-    }
-
     TreeColorSet getTreeColorSet() {
         return _colorset;
-    }
-
-    public TreeFontSet getTreeFontSet() {
-        return _fontset;
     }
 
     List<TreePanel> getTreePanels() {
@@ -383,17 +394,19 @@ public class MainPanel extends JPanel implements ComponentListener {
         add( _tabbed_pane, BorderLayout.CENTER );
     }
 
-    public void setArrowCursor() {
-        setCursor( TreePanel.ARROW_CURSOR );
-        repaint();
-    }
-
-    public void setCopiedAndPastedNodes( final Set<Long> node_ids ) {
-        _copied_and_pasted_nodes = node_ids;
-    }
-
     void setCutOrCopiedTree( final Phylogeny cut_or_copied_tree ) {
         _cut_or_copied_tree = cut_or_copied_tree;
+    }
+
+    synchronized void setImageMap( final Hashtable<String, BufferedImage> image_map ) {
+        _image_map = image_map;
+    }
+
+    void setTitleOfSelectedTab( final String title ) {
+        final int selected = getTabbedPane().getSelectedIndex();
+        if ( selected >= 0 ) {
+            getTabbedPane().setTitleAt( selected, title );
+        }
     }
 
     void setTreeColorSet( final TreeColorSet colorset ) {
@@ -414,23 +427,10 @@ public class MainPanel extends JPanel implements ComponentListener {
         RenderableDomainArchitecture.setColorMap( config_settings.getDomainColors() );
     }
 
-    public void setWaitCursor() {
-        setCursor( TreePanel.WAIT_CURSOR );
-        repaint();
-    }
-
     void terminate() {
         for( final TreePanel atvtreepanel : _treepanels ) {
             atvtreepanel.removeAllEditNodeJFrames();
         }
-    }
-
-    synchronized void setImageMap( final Hashtable<String, BufferedImage> image_map ) {
-        _image_map = image_map;
-    }
-
-    synchronized Hashtable<String, BufferedImage> getImageMap() {
-        return _image_map;
     }
 
     public synchronized static Map<String, String> getLineageToRankMap() {

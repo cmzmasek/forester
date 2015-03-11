@@ -71,6 +71,71 @@ import org.forester.util.ForesterUtil;
 
 class NodeEditPanel extends JPanel {
 
+    private enum PHYLOXML_TAG {
+        NODE_NAME,
+        NODE_BRANCH_LENGTH,
+        NODE_BRANCH_WIDTH,
+        TAXONOMY_CODE,
+        TAXONOMY_SCIENTIFIC_NAME,
+        TAXONOMY_AUTHORITY,
+        TAXONOMY_COMMON_NAME,
+        TAXONOMY_SYNONYM,
+        TAXONOMY_RANK,
+        TAXONOMY_URI,
+        SEQ_SYMBOL,
+        SEQ_NAME,
+        SEQ_GENE_NAME,
+        SEQ_LOCATION,
+        SEQ_TYPE,
+        SEQ_MOL_SEQ,
+        SEQ_URI,
+        DATE_DESCRIPTION,
+        DATE_VALUE,
+        DATE_MIN,
+        DATE_MAX,
+        DATE_UNIT,
+        TAXONOMY_ID_VALUE,
+        TAXONOMY_ID_PROVIDER,
+        SEQ_ACC_VALUE,
+        SEQ_ACC_SOURCE,
+        CONFIDENCE_VALUE,
+        CONFIDENCE_TYPE,
+        LIT_REFERENCE_DESC,
+        LIT_REFERENCE_DOI,
+        EVENTS_DUPLICATIONS,
+        EVENTS_SPECIATIONS,
+        EVENTS_GENE_LOSSES,
+        DIST_DESC,
+        DIST_GEODETIC,
+        DIST_LAT,
+        DIST_LONG,
+        DIST_ALT,
+        DIST_ALT_UNIT
+    }
+
+    private class TagNumber {
+
+        final private PHYLOXML_TAG _tag;
+        final private int          _number;
+
+        TagNumber( final PHYLOXML_TAG tag, final int number ) {
+            _tag = tag;
+            _number = number;
+        }
+
+        @Override
+        public String toString() {
+            return getTag() + "_" + getNumber();
+        }
+
+        int getNumber() {
+            return _number;
+        }
+
+        PHYLOXML_TAG getTag() {
+            return _tag;
+        }
+    }
     private static final long                            serialVersionUID = 5120159904388100771L;
     private final JTree                                  _tree;
     private final JEditorPane                            _pane;
@@ -290,12 +355,12 @@ class NodeEditPanel extends JPanel {
                                NodePanel.EVENTS_DUPLICATIONS,
                                String.valueOf( events.getNumberOfDuplications() >= 0 ? events.getNumberOfDuplications()
                                        : 0 ),
-                               PHYLOXML_TAG.EVENTS_DUPLICATIONS );
+                                       PHYLOXML_TAG.EVENTS_DUPLICATIONS );
         addSubelementEditable( category,
                                NodePanel.EVENTS_SPECIATIONS,
                                String.valueOf( events.getNumberOfSpeciations() >= 0 ? events.getNumberOfSpeciations()
                                        : 0 ),
-                               PHYLOXML_TAG.EVENTS_SPECIATIONS );
+                                       PHYLOXML_TAG.EVENTS_SPECIATIONS );
         addSubelementEditable( category,
                                NodePanel.EVENTS_GENE_LOSSES,
                                String.valueOf( events.getNumberOfGeneLosses() >= 0 ? events.getNumberOfGeneLosses() : 0 ),
@@ -353,7 +418,7 @@ class NodeEditPanel extends JPanel {
             for( final Uri uri : seq.getUris() ) {
                 if ( uri != null ) {
                     addSubelementEditable( category, NodePanel.SEQ_URI + " [" + uri_counter + "]", uri.getValue()
-                            .toString(), PHYLOXML_TAG.SEQ_URI, uri_counter++ );
+                                           .toString(), PHYLOXML_TAG.SEQ_URI, uri_counter++ );
                 }
             }
         }
@@ -480,7 +545,7 @@ class NodeEditPanel extends JPanel {
             for( final Uri uri : tax.getUris() ) {
                 if ( uri != null ) {
                     addSubelementEditable( category, NodePanel.TAXONOMY_URI + " [" + uri_counter + "]", uri.getValue()
-                            .toString(), PHYLOXML_TAG.TAXONOMY_URI, uri_counter++ );
+                                           .toString(), PHYLOXML_TAG.TAXONOMY_URI, uri_counter++ );
                 }
             }
         }
@@ -489,6 +554,25 @@ class NodeEditPanel extends JPanel {
                                "",
                                PHYLOXML_TAG.TAXONOMY_URI,
                                uri_counter );
+    }
+
+    private void addUri( final DefaultMutableTreeNode mtn, final Uri uri, final int number, final MultipleUris mu ) {
+        if ( uri != null ) {
+            if ( mu.getUris() == null ) {
+                mu.setUris( new ArrayList<Uri>() );
+            }
+        }
+        if ( ( uri != null ) && ( mu.getUris() == null ) ) {
+            mu.setUris( new ArrayList<Uri>() );
+        }
+        if ( ( uri != null ) && ( mu.getUris().size() == number ) ) {
+            mu.getUris().add( uri );
+        }
+        if ( ( mu.getUris() != null ) && ( mu.getUris().size() != number ) ) {
+            mu.getUris().set( number, uri );
+        }
+        final ImageLoader il = new ImageLoader( getTreePanel() );
+        new Thread( il ).start();
     }
 
     private void collapsePath( final String name ) {
@@ -539,10 +623,6 @@ class NodeEditPanel extends JPanel {
 
     private TagNumber getMapping( final DefaultMutableTreeNode mtn ) {
         return getMap().get( mtn );
-    }
-
-    PhylogenyNode getMyNode() {
-        return _my_node;
     }
 
     private DefaultMutableTreeNode getSelectedTreeNode() {
@@ -615,13 +695,6 @@ class NodeEditPanel extends JPanel {
             mtn.setUserObject( "" );
         }
         return i;
-    }
-
-    void writeAll() {
-        for( int i = 0; i < getJTree().getRowCount(); i++ ) {
-            final TreePath p = getJTree().getPathForRow( i );
-            writeBack( ( DefaultMutableTreeNode ) p.getLastPathComponent() );
-        }
     }
 
     private void writeBack( final DefaultMutableTreeNode mtn ) {
@@ -1035,88 +1108,14 @@ class NodeEditPanel extends JPanel {
         getTreePanel().repaint();
     }
 
-    private void addUri( final DefaultMutableTreeNode mtn, final Uri uri, final int number, final MultipleUris mu ) {
-        if ( uri != null ) {
-            if ( mu.getUris() == null ) {
-                mu.setUris( new ArrayList<Uri>() );
-            }
-        }
-        if ( ( uri != null ) && ( mu.getUris() == null ) ) {
-            mu.setUris( new ArrayList<Uri>() );
-        }
-        if ( ( uri != null ) && ( mu.getUris().size() == number ) ) {
-            mu.getUris().add( uri );
-        }
-        if ( ( mu.getUris() != null ) && ( mu.getUris().size() != number ) ) {
-            mu.getUris().set( number, uri );
-        }
-        final ImageLoader il = new ImageLoader( getTreePanel() );
-        new Thread( il ).start();
+    PhylogenyNode getMyNode() {
+        return _my_node;
     }
 
-    private enum PHYLOXML_TAG {
-        NODE_NAME,
-        NODE_BRANCH_LENGTH,
-        NODE_BRANCH_WIDTH,
-        TAXONOMY_CODE,
-        TAXONOMY_SCIENTIFIC_NAME,
-        TAXONOMY_AUTHORITY,
-        TAXONOMY_COMMON_NAME,
-        TAXONOMY_SYNONYM,
-        TAXONOMY_RANK,
-        TAXONOMY_URI,
-        SEQ_SYMBOL,
-        SEQ_NAME,
-        SEQ_GENE_NAME,
-        SEQ_LOCATION,
-        SEQ_TYPE,
-        SEQ_MOL_SEQ,
-        SEQ_URI,
-        DATE_DESCRIPTION,
-        DATE_VALUE,
-        DATE_MIN,
-        DATE_MAX,
-        DATE_UNIT,
-        TAXONOMY_ID_VALUE,
-        TAXONOMY_ID_PROVIDER,
-        SEQ_ACC_VALUE,
-        SEQ_ACC_SOURCE,
-        CONFIDENCE_VALUE,
-        CONFIDENCE_TYPE,
-        LIT_REFERENCE_DESC,
-        LIT_REFERENCE_DOI,
-        EVENTS_DUPLICATIONS,
-        EVENTS_SPECIATIONS,
-        EVENTS_GENE_LOSSES,
-        DIST_DESC,
-        DIST_GEODETIC,
-        DIST_LAT,
-        DIST_LONG,
-        DIST_ALT,
-        DIST_ALT_UNIT
-    }
-
-    private class TagNumber {
-
-        final private PHYLOXML_TAG _tag;
-        final private int          _number;
-
-        TagNumber( final PHYLOXML_TAG tag, final int number ) {
-            _tag = tag;
-            _number = number;
-        }
-
-        int getNumber() {
-            return _number;
-        }
-
-        PHYLOXML_TAG getTag() {
-            return _tag;
-        }
-
-        @Override
-        public String toString() {
-            return getTag() + "_" + getNumber();
+    void writeAll() {
+        for( int i = 0; i < getJTree().getRowCount(); i++ ) {
+            final TreePath p = getJTree().getPathForRow( i );
+            writeBack( ( DefaultMutableTreeNode ) p.getLastPathComponent() );
         }
     }
 }

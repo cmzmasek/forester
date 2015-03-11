@@ -42,7 +42,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.security.acl.Permission;
 import java.util.LinkedList;
 
 import javax.swing.JButton;
@@ -139,17 +138,8 @@ final class TextFrame extends JFrame implements ActionListener, ClipboardOwner {
         }
     }
 
-    void close() {
-        setVisible( false );
-        dispose();
-    }
-
-    void removeMe() {
-        final int i = _tframes.indexOf( this );
-        if ( i >= 0 ) {
-            _tframes.remove( i );
-        }
-        close();
+    @Override
+    public void lostOwnership( final Clipboard clipboard, final Transferable contents ) {
     }
 
     private void copy() {
@@ -162,8 +152,17 @@ final class TextFrame extends JFrame implements ActionListener, ClipboardOwner {
         sys_clipboard.setContents( contents, this );
     }
 
-    @Override
-    public void lostOwnership( final Clipboard clipboard, final Transferable contents ) {
+    void close() {
+        setVisible( false );
+        dispose();
+    }
+
+    void removeMe() {
+        final int i = _tframes.indexOf( this );
+        if ( i >= 0 ) {
+            _tframes.remove( i );
+        }
+        close();
     }
 
     static TextFrame instantiate( final String s, final String title, final LinkedList<TextFrame> tframes ) {

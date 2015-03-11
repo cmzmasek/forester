@@ -41,7 +41,7 @@ public class FontChooser extends JDialog implements ActionListener, ListSelectio
     public static final long      serialVersionUID  = 62256323L;
     private static final String[] STYLE             = { REGULAR, BOLD, ITALIC, BOLD_ITALIC };
     private static final String[] SIZE              = { "3", "4", "6", "8", "10", "12", "14", "16", "18", "20", "22",
-            "24", "26", "28", "36", "72"           };
+        "24", "26", "28", "36", "72"           };
     private static final int      OK_OPTION         = 1;
     private static final int      CANCEL_OPTION     = 2;
     private Font                  _font;
@@ -49,9 +49,9 @@ public class FontChooser extends JDialog implements ActionListener, ListSelectio
     private String                _type;
     private int                   _style;
     private int                   _size;
-    private final JList<String>           _font_list        = new JList<String>( AptxUtil.getAvailableFontFamiliesSorted() );
-    private final JList<String>           _style_list       = new JList<String>( STYLE );
-    private final JList<String>           _size_list        = new JList<String>( SIZE );
+    private final JList<String>   _font_list        = new JList<String>( AptxUtil.getAvailableFontFamiliesSorted() );
+    private final JList<String>   _style_list       = new JList<String>( STYLE );
+    private final JList<String>   _size_list        = new JList<String>( SIZE );
     private final JTextField      _fonts_tf         = new JTextField();
     private final JTextField      _style_tf         = new JTextField();
     private final JTextField      _size_tf          = new JTextField();
@@ -132,7 +132,7 @@ public class FontChooser extends JDialog implements ActionListener, ListSelectio
             boolean found = false;
             _type = _fonts_tf.getText();
             for( int i = 0; i < _font_list.getModel().getSize(); i++ ) {
-                if ( ( ( String ) _font_list.getModel().getElementAt( i ) ).startsWith( _fonts_tf.getText().trim() ) ) {
+                if ( _font_list.getModel().getElementAt( i ).startsWith( _fonts_tf.getText().trim() ) ) {
                     _font_list.setSelectedIndex( i );
                     setScrollPos( _font_jsp, _font_list, i );
                     found = true;
@@ -207,26 +207,9 @@ public class FontChooser extends JDialog implements ActionListener, ListSelectio
         return _font.getStyle();
     }
 
-    private void parseSize() {
-        try {
-            _size = ( Integer.parseInt( _size_tf.getText().trim() ) );
-        }
-        catch ( final Exception ex ) {
-            // Ignore.
-        }
-        if ( _size < 1 ) {
-            _size = 1;
-        }
-    }
-
     @Override
     public void setFont( final Font font ) {
         _font = font;
-    }
-
-    private void setScrollPos( final JScrollPane sp, final JList<String> list, final int index ) {
-        final int unit_size = sp.getVerticalScrollBar().getMaximum() / list.getModel().getSize();
-        sp.getVerticalScrollBar().setValue( ( index - 2 ) * unit_size );
     }
 
     public int showDialog( final Component parent, final String title ) {
@@ -249,7 +232,7 @@ public class FontChooser extends JDialog implements ActionListener, ListSelectio
         found = false;
         for( int i = 0; i < _size_list.getModel().getSize(); i++ ) {
             _size_list.setSelectedIndex( i );
-            if ( _font.getSize() <= Integer.parseInt( ( String ) _size_list.getSelectedValue() ) ) {
+            if ( _font.getSize() <= Integer.parseInt( _size_list.getSelectedValue() ) ) {
                 found = true;
                 setScrollPos( _size_jsp, _size_list, i );
                 break;
@@ -267,13 +250,13 @@ public class FontChooser extends JDialog implements ActionListener, ListSelectio
     public void valueChanged( final ListSelectionEvent e ) {
         if ( e.getSource() == _font_list ) {
             if ( _font_list.getSelectedValue() != null ) {
-                _fonts_tf.setText( ( ( String ) ( _font_list.getSelectedValue() ) ) );
+                _fonts_tf.setText( ( ( _font_list.getSelectedValue() ) ) );
             }
             _type = _fonts_tf.getText();
             _test_tf.setFont( new Font( _type, _style, _size ) );
         }
         else if ( e.getSource() == _style_list ) {
-            _style_tf.setText( ( ( String ) ( _style_list.getSelectedValue() ) ) );
+            _style_tf.setText( ( ( _style_list.getSelectedValue() ) ) );
             if ( _style_tf.getText().equals( REGULAR ) ) {
                 _style = 0;
             }
@@ -290,10 +273,27 @@ public class FontChooser extends JDialog implements ActionListener, ListSelectio
         }
         else if ( e.getSource() == _size_list ) {
             if ( _size_list.getSelectedValue() != null ) {
-                _size_tf.setText( ( ( String ) ( _size_list.getSelectedValue() ) ) );
+                _size_tf.setText( ( ( _size_list.getSelectedValue() ) ) );
             }
             _size = ( Integer.parseInt( _size_tf.getText().trim() ) );
             _test_tf.setFont( new Font( _type, _style, _size ) );
         }
+    }
+
+    private void parseSize() {
+        try {
+            _size = ( Integer.parseInt( _size_tf.getText().trim() ) );
+        }
+        catch ( final Exception ex ) {
+            // Ignore.
+        }
+        if ( _size < 1 ) {
+            _size = 1;
+        }
+    }
+
+    private void setScrollPos( final JScrollPane sp, final JList<String> list, final int index ) {
+        final int unit_size = sp.getVerticalScrollBar().getMaximum() / list.getModel().getSize();
+        sp.getVerticalScrollBar().setValue( ( index - 2 ) * unit_size );
     }
 }

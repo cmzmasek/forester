@@ -45,11 +45,11 @@ import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfWriter;
 
 /*
- * 
+ *
  * This uses iText.
- * 
+ *
  * See: http://www.lowagie.com/iText/
- * 
+ *
  * Current version: iText-2.1.7
  */
 final class PdfExporter {

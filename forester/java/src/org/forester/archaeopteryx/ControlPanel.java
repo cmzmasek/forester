@@ -72,6 +72,29 @@ import org.forester.util.ForesterUtil;
 
 final class ControlPanel extends JPanel implements ActionListener {
 
+    enum NodeClickAction {
+        ADD_NEW_NODE,
+        BLAST,
+        COLLAPSE,
+        COLOR_SUBTREE,
+        COPY_SUBTREE,
+        CUT_SUBTREE,
+        DELETE_NODE_OR_SUBTREE,
+        EDIT_NODE_DATA,
+        GET_EXT_DESC_DATA,
+        OPEN_PDB_WEB,
+        OPEN_SEQ_WEB,
+        OPEN_TAX_WEB,
+        PASTE_SUBTREE,
+        REROOT,
+        SELECT_NODES,
+        SHOW_DATA,
+        SORT_DESCENDENTS,
+        SUBTREE,
+        SWAP,
+        CHANGE_NODE_FONT,
+        COLOR_NODE_FONT;
+    }
     final static Font                         jcb_bold_font             = new Font( Configuration.getDefaultFontFamilyName(),
                                                                                     Font.BOLD,
                                                                                     9 );
@@ -331,16 +354,12 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
     }
 
-    public JCheckBox getColorAccSpeciesCb() {
-        return _color_acc_species;
-    }
-
     public JCheckBox getColorAccSequenceCb() {
         return _color_acc_sequence;
     }
 
-    public JCheckBox getUseVisualStylesCb() {
-        return _use_visual_styles_cb;
+    public JCheckBox getColorAccSpeciesCb() {
+        return _color_acc_species;
     }
 
     public JCheckBox getDisplayAsPhylogramCb() {
@@ -399,8 +418,16 @@ final class ControlPanel extends JPanel implements ActionListener {
         return _show_events;
     }
 
+    public JCheckBox getUseVisualStylesCb() {
+        return _use_visual_styles_cb;
+    }
+
     public JCheckBox getWriteConfidenceCb() {
         return _write_confidence;
+    }
+
+    public boolean isShowMolSequences() {
+        return ( ( _show_mol_seqs != null ) && _show_mol_seqs.isSelected() );
     }
 
     public boolean isShowProperties() {
@@ -461,1266 +488,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         } );
     }
 
-    void activateButtonToReturnToSuperTree( int index ) {
-        --index;
-        if ( index > 0 ) {
-            _return_to_super_tree.setText( RETURN_TO_SUPER_TREE_TEXT + " " + index );
-        }
-        else {
-            _return_to_super_tree.setText( RETURN_TO_SUPER_TREE_TEXT );
-        }
-        _return_to_super_tree.setForeground( getConfiguration().getGuiCheckboxAndButtonActiveColor() );
-        _return_to_super_tree.setEnabled( true );
-    }
-
-    /**
-     * Add zoom and quick edit buttons. (Last modified 8/9/04)
-     */
-    void addButtons() {
-        final JLabel spacer = new JLabel( "" );
-        spacer.setOpaque( false );
-        add( spacer );
-        final JPanel x_panel = new JPanel( new GridLayout( 1, 1, 0, 0 ) );
-        final JPanel y_panel = new JPanel( new GridLayout( 1, 3, 0, 0 ) );
-        final JPanel z_panel = new JPanel( new GridLayout( 1, 1, 0, 0 ) );
-        if ( !getConfiguration().isUseNativeUI() ) {
-            x_panel.setBackground( getBackground() );
-            y_panel.setBackground( getBackground() );
-            z_panel.setBackground( getBackground() );
-        }
-        add( _zoom_label = new JLabel( "Zoom:" ) );
-        customizeLabel( _zoom_label, getConfiguration() );
-        add( x_panel );
-        add( y_panel );
-        add( z_panel );
-        if ( getConfiguration().isUseNativeUI() ) {
-            _zoom_in_x = new JButton( "+" );
-            _zoom_out_x = new JButton( "-" );
-        }
-        else {
-            _zoom_in_x = new JButton( "X+" );
-            _zoom_out_x = new JButton( "X-" );
-        }
-        _zoom_in_y = new JButton( "Y+" );
-        _zoom_out_y = new JButton( "Y-" );
-        _show_whole = new JButton( "F" );
-        _show_whole.setToolTipText( "To fit the complete phylogeny to the current display size [F or Home]" );
-        _zoom_in_x.setToolTipText( "To zoom in horizontally [Shift+cursor-right]" );
-        _zoom_in_y.setToolTipText( "To zoom in vertically [Shift+cursor-up]" );
-        _zoom_out_x.setToolTipText( "To zoom out horizontally [Shift+cursor-left]" );
-        _zoom_out_y.setToolTipText( "To zoom out vertically [Shift+cursor-down]" );
-        if ( getConfiguration().isUseNativeUI() && ForesterUtil.isMac() ) {
-            _zoom_out_x.setPreferredSize( new Dimension( 55, 10 ) );
-            _zoom_in_x.setPreferredSize( new Dimension( 55, 10 ) );
-        }
-        else {
-            _zoom_out_x.setPreferredSize( new Dimension( 10, 10 ) );
-            _zoom_in_x.setPreferredSize( new Dimension( 10, 10 ) );
-        }
-        _zoom_out_y.setPreferredSize( new Dimension( 10, 10 ) );
-        _zoom_in_y.setPreferredSize( new Dimension( 10, 10 ) );
-        _show_whole.setPreferredSize( new Dimension( 10, 10 ) );
-        _return_to_super_tree = new JButton( RETURN_TO_SUPER_TREE_TEXT );
-        _return_to_super_tree.setEnabled( false );
-        _order = new JButton( "Order Subtrees" );
-        _uncollapse_all = new JButton( "Uncollapse All" );
-        addJButton( _zoom_in_y, x_panel );
-        addJButton( _zoom_out_x, y_panel );
-        addJButton( _show_whole, y_panel );
-        addJButton( _zoom_in_x, y_panel );
-        addJButton( _zoom_out_y, z_panel );
-        if ( getConfiguration().doDisplayOption( Configuration.show_domain_architectures ) ) {
-            setUpControlsForDomainStrucures();
-        }
-        final JLabel spacer2 = new JLabel( "" );
-        add( spacer2 );
-        addJButton( _return_to_super_tree, this );
-        addJButton( _order, this );
-        addJButton( _uncollapse_all, this );
-        final JLabel spacer3 = new JLabel( "" );
-        add( spacer3 );
-        setVisibilityOfDomainStrucureControls();
-    }
-
-    void addCheckbox( final int which, final String title ) {
-        final JPanel ch_panel = new JPanel( new BorderLayout( 0, 0 ) );
-        switch ( which ) {
-            case Configuration.display_as_phylogram:
-                _display_as_phylogram_cb = new JCheckBox( title );
-                getDisplayAsPhylogramCb().setToolTipText( "To switch between phylogram and cladogram display" );
-                addJCheckBox( getDisplayAsPhylogramCb(), ch_panel );
-                add( ch_panel );
-                break;
-            case Configuration.display_internal_data:
-                _display_internal_data = new JCheckBox( title );
-                _display_internal_data.setToolTipText( "To allow or disallow display of internal labels" );
-                addJCheckBox( _display_internal_data, ch_panel );
-                add( ch_panel );
-                break;
-            case Configuration.color_according_to_species:
-                _color_acc_species = new JCheckBox( title );
-                _color_acc_species.setToolTipText( "To colorize node labels as a function of taxonomy" );
-                addJCheckBox( _color_acc_species, ch_panel );
-                add( ch_panel );
-                break;
-            case Configuration.color_according_to_sequence:
-                _color_acc_sequence = new JCheckBox( title );
-                _color_acc_sequence.setToolTipText( "To colorize node labels as a function of sequence name" );
-                addJCheckBox( _color_acc_sequence, ch_panel );
-                add( ch_panel );
-                break;
-            case Configuration.color_according_to_annotation:
-                _color_according_to_annotation = new JCheckBox( title );
-                _color_according_to_annotation
-                        .setToolTipText( "To colorize sequence annotation labels as a function of sequence annotation" );
-                addJCheckBox( _color_according_to_annotation, ch_panel );
-                add( ch_panel );
-                break;
-            case Configuration.show_node_names:
-                _show_node_names = new JCheckBox( title );
-                addJCheckBox( _show_node_names, ch_panel );
-                add( ch_panel );
-                break;
-            case Configuration.show_taxonomy_scientific_names:
-                _show_taxo_scientific_names = new JCheckBox( title );
-                addJCheckBox( _show_taxo_scientific_names, ch_panel );
-                add( ch_panel );
-                break;
-            case Configuration.show_taxonomy_common_names:
-                _show_taxo_common_names = new JCheckBox( title );
-                addJCheckBox( _show_taxo_common_names, ch_panel );
-                add( ch_panel );
-                break;
-            case Configuration.show_tax_code:
-                _show_taxo_code = new JCheckBox( title );
-                addJCheckBox( _show_taxo_code, ch_panel );
-                add( ch_panel );
-                break;
-            case Configuration.show_taxonomy_images:
-                _show_taxo_images_cb = new JCheckBox( title );
-                addJCheckBox( _show_taxo_images_cb, ch_panel );
-                add( ch_panel );
-                break;
-            case Configuration.show_binary_characters:
-                _show_binary_characters = new JCheckBox( title );
-                addJCheckBox( _show_binary_characters, ch_panel );
-                add( ch_panel );
-                break;
-            case Configuration.show_annotation:
-                _show_annotation = new JCheckBox( title );
-                addJCheckBox( _show_annotation, ch_panel );
-                add( ch_panel );
-                break;
-            case Configuration.show_binary_character_counts:
-                _show_binary_character_counts = new JCheckBox( title );
-                addJCheckBox( _show_binary_character_counts, ch_panel );
-                add( ch_panel );
-                break;
-            case Configuration.write_confidence_values:
-                _write_confidence = new JCheckBox( title );
-                addJCheckBox( getWriteConfidenceCb(), ch_panel );
-                add( ch_panel );
-                break;
-            case Configuration.write_events:
-                _show_events = new JCheckBox( title );
-                addJCheckBox( getShowEventsCb(), ch_panel );
-                add( ch_panel );
-                break;
-            case Configuration.use_style:
-                _use_visual_styles_cb = new JCheckBox( title );
-                getUseVisualStylesCb()
-                        .setToolTipText( "To use visual styles (node colors, fonts) and branch colors, if present" );
-                addJCheckBox( getUseVisualStylesCb(), ch_panel );
-                add( ch_panel );
-                break;
-            case Configuration.width_branches:
-                _width_branches = new JCheckBox( title );
-                _width_branches.setToolTipText( "To use branch width values, if present" );
-                addJCheckBox( _width_branches, ch_panel );
-                add( ch_panel );
-                break;
-            case Configuration.write_branch_length_values:
-                _write_branch_length_values = new JCheckBox( title );
-                addJCheckBox( _write_branch_length_values, ch_panel );
-                add( ch_panel );
-                break;
-            case Configuration.show_domain_architectures:
-                _show_domain_architectures = new JCheckBox( title );
-                addJCheckBox( _show_domain_architectures, ch_panel );
-                add( ch_panel );
-                break;
-            case Configuration.show_mol_seqs:
-                _show_mol_seqs = new JCheckBox( title );
-                addJCheckBox( _show_mol_seqs, ch_panel );
-                add( ch_panel );
-                break;
-            case Configuration.show_seq_names:
-                _show_seq_names = new JCheckBox( title );
-                addJCheckBox( _show_seq_names, ch_panel );
-                add( ch_panel );
-                break;
-            case Configuration.show_gene_names:
-                _show_gene_names = new JCheckBox( title );
-                addJCheckBox( _show_gene_names, ch_panel );
-                add( ch_panel );
-                break;
-            case Configuration.show_seq_symbols:
-                _show_seq_symbols = new JCheckBox( title );
-                addJCheckBox( _show_seq_symbols, ch_panel );
-                add( ch_panel );
-                break;
-            case Configuration.show_sequence_acc:
-                _show_sequence_acc = new JCheckBox( title );
-                addJCheckBox( _show_sequence_acc, ch_panel );
-                add( ch_panel );
-                break;
-            case Configuration.dynamically_hide_data:
-                _dynamically_hide_data = new JCheckBox( title );
-                getDynamicallyHideData().setToolTipText( "To hide labels depending on expected visibility" );
-                addJCheckBox( getDynamicallyHideData(), ch_panel );
-                add( ch_panel );
-                break;
-            case Configuration.node_data_popup:
-                _node_desc_popup_cb = new JCheckBox( title );
-                getNodeDescPopupCb().setToolTipText( "To enable mouse rollover display of basic node data" );
-                addJCheckBox( getNodeDescPopupCb(), ch_panel );
-                add( ch_panel );
-                break;
-            case Configuration.show_relation_confidence:
-                _seq_relation_confidence_switch = new JCheckBox( title );
-                addJCheckBox( _seq_relation_confidence_switch, ch_panel );
-                add( ch_panel );
-                break;
-            case Configuration.show_vector_data:
-                _show_vector_data_cb = new JCheckBox( title );
-                addJCheckBox( _show_vector_data_cb, ch_panel );
-                add( ch_panel );
-                break;
-            case Configuration.show_properties:
-                _show_properties_cb = new JCheckBox( title );
-                addJCheckBox( _show_properties_cb, ch_panel );
-                add( ch_panel );
-                break;
-            default:
-                throw new RuntimeException( "unknown checkbox: " + which );
-        }
-    }// addCheckbox
-
-    void addJButton( final JButton jb, final JPanel p ) {
-        jb.setFocusPainted( false );
-        jb.setFont( ControlPanel.jcb_font );
-        if ( !_configuration.isUseNativeUI() ) {
-            jb.setBorder( BorderFactory.createLineBorder( getConfiguration().getGuiButtonBorderColor() ) );
-            jb.setBackground( getConfiguration().getGuiButtonBackgroundColor() );
-            jb.setForeground( getConfiguration().getGuiButtonTextColor() );
-        }
-        p.add( jb );
-        jb.addActionListener( this );
-    }
-
-    void addJCheckBox( final JCheckBox jcb, final JPanel p ) {
-        jcb.setFocusPainted( false );
-        jcb.setFont( ControlPanel.jcb_font );
-        if ( !_configuration.isUseNativeUI() ) {
-            jcb.setBackground( getConfiguration().getGuiBackgroundColor() );
-            jcb.setForeground( getConfiguration().getGuiCheckboxTextColor() );
-        }
-        p.add( jcb, "Center" );
-        jcb.addActionListener( this );
-    }
-
-    void addJTextField( final JTextField tf, final JPanel p ) {
-        if ( !_configuration.isUseNativeUI() ) {
-            tf.setForeground( getConfiguration().getGuiBackgroundColor() );
-            tf.setFont( ControlPanel.jcb_font );
-        }
-        p.add( tf );
-        tf.addActionListener( this );
-    }
-
-    void deactivateButtonToReturnToSuperTree() {
-        _return_to_super_tree.setText( RETURN_TO_SUPER_TREE_TEXT );
-        _return_to_super_tree.setForeground( getConfiguration().getGuiButtonTextColor() );
-        _return_to_super_tree.setEnabled( false );
-    }
-
-    void displayedPhylogenyMightHaveChanged( final boolean recalc_longest_ext_node_info ) {
-        if ( ( _mainpanel != null )
-                && ( ( _mainpanel.getCurrentPhylogeny() != null ) && !_mainpanel.getCurrentPhylogeny().isEmpty() ) ) {
-            if ( getOptions().isShowOverview() ) {
-                _mainpanel.getCurrentTreePanel().updateOvSizes();
-            }
-            _mainpanel.getCurrentTreePanel().recalculateMaxDistanceToRoot();
-            setVisibilityOfDomainStrucureControls();
-            updateDomainStructureEvaluethresholdDisplay();
-            _mainpanel.getCurrentTreePanel().calculateScaleDistance();
-            _mainpanel.getCurrentTreePanel().calcMaxDepth();
-            _mainpanel.adjustJScrollPane();
-            if ( recalc_longest_ext_node_info ) {
-                _mainpanel.getCurrentTreePanel().initNodeData();
-                _mainpanel.getCurrentTreePanel().calculateLongestExtNodeInfo();
-            }
-            _mainpanel.getCurrentTreePanel().repaint();
-            // _mainpanel.getCurrentTreePanel().setUpUrtFactors();
-        }
-    }
-
-    void endClickToOptions() {
-        _click_to_combobox.addActionListener( this );
-    }
-
-    /**
-     * Indicates what action should be execute when a node is clicked
-     *
-     * @return the click-on action
-     */
-    NodeClickAction getActionWhenNodeClicked() {
-        return _action_when_node_clicked;
-    }
-
-    Map<Integer, String> getAllClickToItems() {
-        return _all_click_to_names;
-    }
-
-    Map<String, Color> getAnnotationColors() {
-        return _annotation_colors;
-    }
-
-    Configuration getConfiguration() {
-        return _configuration;
-    }
-
-    TreePanel getCurrentTreePanel() {
-        return getMainPanel().getCurrentTreePanel();
-    }
-
-    MainPanel getMainPanel() {
-        return _mainpanel;
-    }
-
-    Options getOptions() {
-        return getMainPanel().getOptions();
-    }
-
-    JLabel getSearchFoundCountsLabel0() {
-        return _search_found_label_0;
-    }
-
-    JLabel getSearchFoundCountsLabel1() {
-        return _search_found_label_1;
-    }
-
-    JButton getSearchResetButton0() {
-        return _search_reset_button_0;
-    }
-
-    JButton getSearchResetButton1() {
-        return _search_reset_button_1;
-    }
-
-    JTextField getSearchTextField0() {
-        return _search_tf_0;
-    }
-
-    JTextField getSearchTextField1() {
-        return _search_tf_1;
-    }
-
-    List<String> getSingleClickToNames() {
-        return _click_to_names;
-    }
-
-    Map<String, Color> getSpeciesColors() {
-        return _species_colors;
-    }
-
-    Map<String, Color> getSequenceColors() {
-        return _sequence_colors;
-    }
-
-    boolean isAntialiasScreenText() {
-        return true;
-    }
-
-    boolean isColorAccordingToAnnotation() {
-        return ( ( _color_according_to_annotation != null ) && _color_according_to_annotation.isSelected() );
-    }
-
-    boolean isColorAccordingToTaxonomy() {
-        return ( ( _color_acc_species != null ) && _color_acc_species.isSelected() );
-    }
-
-    boolean isColorAccordingToSequence() {
-        return ( ( _color_acc_sequence != null ) && _color_acc_sequence.isSelected() );
-    }
-
-    boolean isUseVisualStyles() {
-        return ( ( ( getUseVisualStylesCb() != null ) && getUseVisualStylesCb().isSelected() ) || ( ( getUseVisualStylesCb() == null ) && _color_branches ) );
-    }
-
-    boolean isDrawPhylogram() {
-        return isDrawPhylogram( getMainPanel().getCurrentTabIndex() );
-    }
-
-    boolean isDynamicallyHideData() {
-        return ( ( getDynamicallyHideData() != null ) && getDynamicallyHideData().isSelected() );
-    }
-
-    boolean isEvents() {
-        return ( ( getShowEventsCb() != null ) && getShowEventsCb().isSelected() );
-    }
-
-    boolean isNodeDescPopup() {
-        return ( ( getNodeDescPopupCb() != null ) && getNodeDescPopupCb().isSelected() );
-    }
-
-    boolean isShowAnnotation() {
-        return ( ( _show_annotation != null ) && _show_annotation.isSelected() );
-    }
-
-    boolean isShowBinaryCharacterCounts() {
-        return ( ( _show_binary_character_counts != null ) && _show_binary_character_counts.isSelected() );
-    }
-
-    boolean isShowBinaryCharacters() {
-        return ( ( _show_binary_characters != null ) && _show_binary_characters.isSelected() );
-    }
-
-    boolean isShowConfidenceValues() {
-        return ( ( getWriteConfidenceCb() != null ) && getWriteConfidenceCb().isSelected() );
-    }
-
-    boolean isWriteBranchLengthValues() {
-        return ( ( _write_branch_length_values != null ) && _write_branch_length_values.isSelected() );
-    }
-
-    boolean isShowDomainArchitectures() {
-        return ( ( _show_domain_architectures != null ) && _show_domain_architectures.isSelected() );
-    }
-
-    public boolean isShowMolSequences() {
-        return ( ( _show_mol_seqs != null ) && _show_mol_seqs.isSelected() );
-    }
-
-    boolean isShowGeneNames() {
-        return ( ( _show_gene_names != null ) && _show_gene_names.isSelected() );
-    }
-
-    boolean isShowInternalData() {
-        return ( ( _display_internal_data == null ) || _display_internal_data.isSelected() );
-    }
-
-    boolean isShowNodeNames() {
-        return ( ( _show_node_names != null ) && _show_node_names.isSelected() );
-    }
-
-    boolean isShowSeqNames() {
-        return ( ( _show_seq_names != null ) && _show_seq_names.isSelected() );
-    }
-
-    boolean isShowSeqSymbols() {
-        return ( ( _show_seq_symbols != null ) && _show_seq_symbols.isSelected() );
-    }
-
-    boolean isShowSequenceAcc() {
-        return ( ( _show_sequence_acc != null ) && _show_sequence_acc.isSelected() );
-    }
-
-    boolean isShowSequenceRelationConfidence() {
-        return ( ( _seq_relation_confidence_switch != null ) && ( _seq_relation_confidence_switch.isSelected() ) );
-    }
-
-    boolean isShowSequenceRelations() {
-        return ( ( _show_sequence_relations != null ) && ( _show_sequence_relations.getSelectedIndex() > 0 ) );
-    }
-
-    boolean isShowTaxonomyCode() {
-        return ( ( _show_taxo_code != null ) && _show_taxo_code.isSelected() );
-    }
-
-    boolean isShowTaxonomyCommonNames() {
-        return ( ( _show_taxo_common_names != null ) && _show_taxo_common_names.isSelected() );
-    }
-
-    boolean isShowTaxonomyScientificNames() {
-        return ( ( _show_taxo_scientific_names != null ) && _show_taxo_scientific_names.isSelected() );
-    }
-
-    boolean isWidthBranches() {
-        return ( ( _width_branches != null ) && _width_branches.isSelected() );
-    }
-
-    void phylogenyAdded( final Configuration configuration ) {
-        getIsDrawPhylogramList().add( configuration.isDrawAsPhylogram() );
-    }
-
-    void phylogenyRemoved( final int index ) {
-        getIsDrawPhylogramList().remove( index );
-    }
-
-    void search0() {
-        final MainPanel main_panel = getMainPanel();
-        final Phylogeny tree = main_panel.getCurrentPhylogeny();
-        if ( ( tree == null ) || tree.isEmpty() ) {
-            return;
-        }
-        String query = getSearchTextField0().getText();
-        if ( query != null ) {
-            query = query.trim();
-        }
-        if ( !ForesterUtil.isEmpty( query ) ) {
-            search0( main_panel, tree, query );
-        }
-        else {
-            getSearchFoundCountsLabel0().setVisible( false );
-            getSearchResetButton0().setEnabled( false );
-            getSearchResetButton0().setVisible( false );
-            searchReset0();
-        }
-    }
-
-    void search1() {
-        final MainPanel main_panel = getMainPanel();
-        final Phylogeny tree = main_panel.getCurrentPhylogeny();
-        if ( ( tree == null ) || tree.isEmpty() ) {
-            return;
-        }
-        String query = getSearchTextField1().getText();
-        if ( query != null ) {
-            query = query.trim();
-        }
-        if ( !ForesterUtil.isEmpty( query ) ) {
-            search1( main_panel, tree, query );
-        }
-        else {
-            getSearchFoundCountsLabel1().setVisible( false );
-            getSearchResetButton1().setEnabled( false );
-            getSearchResetButton1().setVisible( false );
-            searchReset1();
-        }
-    }
-
-    void searchReset0() {
-        if ( getMainPanel().getCurrentTreePanel() != null ) {
-            getMainPanel().getCurrentTreePanel().setFoundNodes0( null );
-        }
-    }
-
-    void searchReset1() {
-        if ( getMainPanel().getCurrentTreePanel() != null ) {
-            getMainPanel().getCurrentTreePanel().setFoundNodes1( null );
-        }
-    }
-
-    void setActionWhenNodeClicked( final NodeClickAction action ) {
-        _action_when_node_clicked = action;
-    }
-
-    void setAnnotationColors( final Map<String, Color> annotation_colors ) {
-        _annotation_colors = annotation_colors;
-    }
-
-    void setCheckbox( final int which, final boolean state ) {
-        switch ( which ) {
-            case Configuration.display_as_phylogram:
-                if ( getDisplayAsPhylogramCb() != null ) {
-                    getDisplayAsPhylogramCb().setSelected( state );
-                }
-                break;
-            case Configuration.display_internal_data:
-                if ( _display_internal_data != null ) {
-                    _display_internal_data.setSelected( state );
-                }
-                break;
-            case Configuration.color_according_to_species:
-                if ( _color_acc_species != null ) {
-                    _color_acc_species.setSelected( state );
-                }
-                break;
-            case Configuration.color_according_to_sequence:
-                if ( _color_acc_sequence != null ) {
-                    _color_acc_sequence.setSelected( state );
-                }
-                break;
-            case Configuration.color_according_to_annotation:
-                if ( _color_according_to_annotation != null ) {
-                    _color_according_to_annotation.setSelected( state );
-                }
-                break;
-            case Configuration.show_node_names:
-                if ( _show_node_names != null ) {
-                    _show_node_names.setSelected( state );
-                }
-                break;
-            case Configuration.show_taxonomy_scientific_names:
-                if ( _show_taxo_scientific_names != null ) {
-                    _show_taxo_scientific_names.setSelected( state );
-                }
-                break;
-            case Configuration.show_taxonomy_common_names:
-                if ( _show_taxo_common_names != null ) {
-                    _show_taxo_common_names.setSelected( state );
-                }
-                break;
-            case Configuration.show_tax_code:
-                if ( _show_taxo_code != null ) {
-                    _show_taxo_code.setSelected( state );
-                }
-                break;
-            case Configuration.show_taxonomy_images:
-                if ( _show_taxo_images_cb != null ) {
-                    _show_taxo_images_cb.setSelected( state );
-                }
-                break;
-            case Configuration.show_annotation:
-                if ( _show_annotation != null ) {
-                    _show_annotation.setSelected( state );
-                }
-                break;
-            case Configuration.show_binary_characters:
-                if ( _show_binary_characters != null ) {
-                    _show_binary_characters.setSelected( state );
-                }
-                break;
-            case Configuration.show_binary_character_counts:
-                if ( _show_binary_character_counts != null ) {
-                    _show_binary_character_counts.setSelected( state );
-                }
-                break;
-            case Configuration.write_confidence_values:
-                if ( getWriteConfidenceCb() != null ) {
-                    getWriteConfidenceCb().setSelected( state );
-                }
-                break;
-            case Configuration.write_events:
-                if ( getShowEventsCb() != null ) {
-                    getShowEventsCb().setSelected( state );
-                }
-                break;
-            case Configuration.use_style:
-                if ( getUseVisualStylesCb() != null ) {
-                    getUseVisualStylesCb().setSelected( state );
-                }
-                break;
-            case Configuration.width_branches:
-                if ( _width_branches != null ) {
-                    _width_branches.setSelected( state );
-                }
-                break;
-            case Configuration.show_domain_architectures:
-                if ( _show_domain_architectures != null ) {
-                    _show_domain_architectures.setSelected( state );
-                }
-                break;
-            case Configuration.write_branch_length_values:
-                if ( _write_branch_length_values != null ) {
-                    _write_branch_length_values.setSelected( state );
-                }
-                break;
-            case Configuration.show_mol_seqs:
-                if ( _show_mol_seqs != null ) {
-                    _show_mol_seqs.setSelected( state );
-                }
-                break;
-            case Configuration.show_seq_names:
-                if ( _show_seq_names != null ) {
-                    _show_seq_names.setSelected( state );
-                }
-                break;
-            case Configuration.show_gene_names:
-                if ( _show_gene_names != null ) {
-                    _show_gene_names.setSelected( state );
-                }
-                break;
-            case Configuration.show_seq_symbols:
-                if ( _show_seq_symbols != null ) {
-                    _show_seq_symbols.setSelected( state );
-                }
-                break;
-            case Configuration.show_vector_data:
-                if ( _show_vector_data_cb != null ) {
-                    _show_vector_data_cb.setSelected( state );
-                }
-                break;
-            case Configuration.show_properties:
-                if ( _show_properties_cb != null ) {
-                    _show_properties_cb.setSelected( state );
-                }
-                break;
-            case Configuration.show_sequence_acc:
-                if ( _show_sequence_acc != null ) {
-                    _show_sequence_acc.setSelected( state );
-                }
-                break;
-            case Configuration.dynamically_hide_data:
-                if ( getDynamicallyHideData() != null ) {
-                    getDynamicallyHideData().setSelected( state );
-                }
-                break;
-            case Configuration.node_data_popup:
-                if ( getNodeDescPopupCb() != null ) {
-                    getNodeDescPopupCb().setSelected( state );
-                }
-                break;
-            /* GUILHEM_BEG */
-            case Configuration.show_relation_confidence:
-                if ( _seq_relation_confidence_switch != null ) {
-                    _seq_relation_confidence_switch.setSelected( state );
-                }
-                break;
-            /* GUILHEM_END */
-            default:
-                throw new AssertionError( "unknown checkbox: " + which );
-        }
-    }
-
-    /**
-     * Set this checkbox state. Not all checkboxes have been instantiated
-     * depending on the config.
-     */
-    void setCheckbox( final JCheckBox cb, final boolean state ) {
-        if ( cb != null ) {
-            cb.setSelected( state );
-        }
-    }
-
-    void setClickToAction( final int action ) {
-        // Set click-to action
-        if ( action == _show_data_item ) {
-            setActionWhenNodeClicked( NodeClickAction.SHOW_DATA );
-        }
-        else if ( action == _collapse_cb_item ) {
-            setActionWhenNodeClicked( NodeClickAction.COLLAPSE );
-        }
-        else if ( action == _reroot_cb_item ) {
-            setActionWhenNodeClicked( NodeClickAction.REROOT );
-        }
-        else if ( action == _subtree_cb_item ) {
-            setActionWhenNodeClicked( NodeClickAction.SUBTREE );
-        }
-        else if ( action == _swap_cb_item ) {
-            setActionWhenNodeClicked( NodeClickAction.SWAP );
-        }
-        else if ( action == _color_subtree_cb_item ) {
-            setActionWhenNodeClicked( NodeClickAction.COLOR_SUBTREE );
-        }
-        else if ( action == _open_seq_web_item ) {
-            setActionWhenNodeClicked( NodeClickAction.OPEN_SEQ_WEB );
-        }
-        else if ( action == _sort_descendents_item ) {
-            setActionWhenNodeClicked( NodeClickAction.SORT_DESCENDENTS );
-        }
-        else if ( action == _blast_item ) {
-            setActionWhenNodeClicked( NodeClickAction.BLAST );
-        }
-        else if ( action == _open_tax_web_item ) {
-            setActionWhenNodeClicked( NodeClickAction.OPEN_TAX_WEB );
-        }
-        else if ( action == _cut_subtree_item ) {
-            setActionWhenNodeClicked( NodeClickAction.CUT_SUBTREE );
-        }
-        else if ( action == _copy_subtree_item ) {
-            setActionWhenNodeClicked( NodeClickAction.COPY_SUBTREE );
-        }
-        else if ( action == _delete_node_or_subtree_item ) {
-            setActionWhenNodeClicked( NodeClickAction.DELETE_NODE_OR_SUBTREE );
-        }
-        else if ( action == _paste_subtree_item ) {
-            setActionWhenNodeClicked( NodeClickAction.PASTE_SUBTREE );
-        }
-        else if ( action == _add_new_node_item ) {
-            setActionWhenNodeClicked( NodeClickAction.ADD_NEW_NODE );
-        }
-        else if ( action == _edit_node_data_item ) {
-            setActionWhenNodeClicked( NodeClickAction.EDIT_NODE_DATA );
-        }
-        else if ( action == _select_nodes_item ) {
-            setActionWhenNodeClicked( NodeClickAction.SELECT_NODES );
-        }
-        else if ( action == _get_ext_desc_data ) {
-            setActionWhenNodeClicked( NodeClickAction.GET_EXT_DESC_DATA );
-        }
-        else if ( action == _open_pdb_item ) {
-            setActionWhenNodeClicked( NodeClickAction.OPEN_PDB_WEB );
-        }
-        else if ( action == _color_node_font_item ) {
-            setActionWhenNodeClicked( NodeClickAction.COLOR_NODE_FONT );
-        }
-        else if ( action == _change_node_font_item ) {
-            setActionWhenNodeClicked( NodeClickAction.CHANGE_NODE_FONT );
-        }
-        else {
-            throw new RuntimeException( "unknown action: " + action );
-        }
-        // make sure drop down is displaying the correct action
-        // in case this was called from outside the class
-        _click_to_combobox.setSelectedIndex( action );
-    }
-
-    void setColorBranches( final boolean color_branches ) {
-        _color_branches = color_branches;
-    }
-
-    void setDrawPhylogram( final boolean b ) {
-        getDisplayAsPhylogramCb().setSelected( b );
-        setDrawPhylogram( getMainPanel().getCurrentTabIndex(), b );
-    }
-
-    void setDrawPhylogramEnabled( final boolean b ) {
-        getDisplayAsPhylogramCb().setEnabled( b );
-    }
-
-    void setDynamicHidingIsOn( final boolean is_on ) {
-        if ( is_on ) {
-            getDynamicallyHideData().setForeground( getConfiguration().getGuiCheckboxAndButtonActiveColor() );
-        }
-        else {
-            if ( !_configuration.isUseNativeUI() ) {
-                getDynamicallyHideData().setForeground( getConfiguration().getGuiButtonTextColor() );
-            }
-            else {
-                getDynamicallyHideData().setForeground( Color.BLACK );
-            }
-        }
-    }
-
-    void setSearchFoundCountsOnLabel0( final int counts ) {
-        getSearchFoundCountsLabel0().setText( "Found: " + counts );
-    }
-
-    void setSearchFoundCountsOnLabel1( final int counts ) {
-        getSearchFoundCountsLabel1().setText( "Found: " + counts );
-    }
-
-    void setShowEvents( final boolean show_events ) {
-        if ( getShowEventsCb() == null ) {
-            _show_events = new JCheckBox( "" );
-        }
-        getShowEventsCb().setSelected( show_events );
-    }
-
-    void setSpeciesColors( final Map<String, Color> species_colors ) {
-        _species_colors = species_colors;
-    }
-
-    void setSequenceColors( final Map<String, Color> sequence_colors ) {
-        _sequence_colors = sequence_colors;
-    }
-
-    void setupControls() {
-        // The tree display options:
-        setupDisplayCheckboxes();
-        /* GUILHEM_BEG */
-        // The sequence relation query selection combo-box
-        if ( _configuration.displaySequenceRelations() ) {
-            addSequenceRelationBlock();
-        }
-        /* GUILHEM_END */
-        // Click-to options
-        startClickToOptions();
-        setupClickToOptions();
-        endClickToOptions();
-        // Zoom and quick edit buttons
-        addButtons();
-        setupSearchTools0();
-        setupSearchTools1();
-    }
-
-    void setUpControlsForDomainStrucures() {
-        _domain_display_label = new JLabel( "Domain Architectures:" );
-        add( customizeLabel( _domain_display_label, getConfiguration() ) );
-        add( _domain_display_label );
-        _zoom_in_domain_structure = new JButton( "d+" );
-        _zoom_out_domain_structure = new JButton( "d-" );
-        _decr_domain_structure_evalue_thr = new JButton( "-" );
-        _incr_domain_structure_evalue_thr = new JButton( "+" );
-        _zoom_in_domain_structure.setPreferredSize( new Dimension( 10, 10 ) );
-        _zoom_out_domain_structure.setPreferredSize( new Dimension( 10, 10 ) );
-        _decr_domain_structure_evalue_thr.setPreferredSize( new Dimension( 10, 10 ) );
-        _incr_domain_structure_evalue_thr.setPreferredSize( new Dimension( 10, 10 ) );
-        _incr_domain_structure_evalue_thr.setToolTipText( "Increase the E-value threshold by a factor of 10" );
-        _decr_domain_structure_evalue_thr.setToolTipText( "Decrease the E-value threshold by a factor of 10" );
-        _domain_structure_evalue_thr_tf = new JTextField( 3 );
-        _domain_structure_evalue_thr_tf.setEditable( false );
-        if ( !getConfiguration().isUseNativeUI() ) {
-            _domain_structure_evalue_thr_tf.setForeground( getConfiguration().getGuiMenuBackgroundColor() );
-            _domain_structure_evalue_thr_tf.setBackground( getConfiguration().getGuiCheckboxTextColor() );
-            _domain_structure_evalue_thr_tf.setBorder( null );
-        }
-        final JPanel d1_panel = new JPanel( new GridLayout( 1, 2, 0, 0 ) );
-        final JPanel d2_panel = new JPanel( new GridLayout( 1, 3, 0, 0 ) );
-        if ( !_configuration.isUseNativeUI() ) {
-            d1_panel.setBackground( getBackground() );
-            d2_panel.setBackground( getBackground() );
-        }
-        add( d1_panel );
-        add( d2_panel );
-        addJButton( _zoom_out_domain_structure, d1_panel );
-        addJButton( _zoom_in_domain_structure, d1_panel );
-        addJButton( _decr_domain_structure_evalue_thr, d2_panel );
-        addJTextField( _domain_structure_evalue_thr_tf, d2_panel );
-        addJButton( _incr_domain_structure_evalue_thr, d2_panel );
-    }
-
-    void setupSearchTools0() {
-        final JLabel search_label = new JLabel( "Search (A):" );
-        search_label.setFont( ControlPanel.jcb_bold_font );
-        if ( !getConfiguration().isUseNativeUI() ) {
-            search_label.setForeground( getConfiguration().getGuiCheckboxTextColor() );
-        }
-        add( search_label );
-        search_label.setToolTipText( SEARCH_TIP_TEXT );
-        _search_found_label_0 = new JLabel();
-        getSearchFoundCountsLabel0().setVisible( false );
-        _search_found_label_0.setFont( ControlPanel.jcb_bold_font );
-        if ( !getConfiguration().isUseNativeUI() ) {
-            _search_found_label_0.setForeground( getConfiguration().getGuiCheckboxTextColor() );
-        }
-        _search_tf_0 = new JTextField( 3 );
-        _search_tf_0.setToolTipText( SEARCH_TIP_TEXT );
-        _search_tf_0.setEditable( true );
-        if ( !getConfiguration().isUseNativeUI() ) {
-            _search_tf_0.setForeground( getConfiguration().getGuiMenuBackgroundColor() );
-            _search_tf_0.setBackground( getConfiguration().getGuiCheckboxTextColor() );
-            _search_tf_0.setBorder( null );
-        }
-        _search_reset_button_0 = new JButton();
-        getSearchResetButton0().setText( "Reset" );
-        getSearchResetButton0().setEnabled( false );
-        getSearchResetButton0().setVisible( false );
-        final JPanel s_panel_1 = new JPanel( new BorderLayout() );
-        final JPanel s_panel_2 = new JPanel( new GridLayout( 1, 2, 0, 0 ) );
-        s_panel_1.setBackground( getBackground() );
-        add( s_panel_1 );
-        s_panel_2.setBackground( getBackground() );
-        add( s_panel_2 );
-        final KeyAdapter key_adapter = new KeyAdapter() {
-
-            @Override
-            public void keyReleased( final KeyEvent key_event ) {
-                search0();
-                displayedPhylogenyMightHaveChanged( true );
-            }
-        };
-        final ActionListener action_listener = new ActionListener() {
-
-            @Override
-            public void actionPerformed( final ActionEvent e ) {
-                searchReset0();
-                setSearchFoundCountsOnLabel0( 0 );
-                getSearchFoundCountsLabel0().setVisible( false );
-                getSearchTextField0().setText( "" );
-                getSearchResetButton0().setEnabled( false );
-                getSearchResetButton0().setVisible( false );
-                displayedPhylogenyMightHaveChanged( true );
-            }
-        };
-        _search_reset_button_0.addActionListener( action_listener );
-        _search_tf_0.addKeyListener( key_adapter );
-        addJTextField( _search_tf_0, s_panel_1 );
-        s_panel_2.add( _search_found_label_0 );
-        addJButton( _search_reset_button_0, s_panel_2 );
-    }
-
-    void setupSearchTools1() {
-        final JLabel search_label = new JLabel( "Search (B):" );
-        search_label.setFont( ControlPanel.jcb_bold_font );
-        if ( !getConfiguration().isUseNativeUI() ) {
-            search_label.setForeground( getConfiguration().getGuiCheckboxTextColor() );
-        }
-        add( search_label );
-        search_label.setToolTipText( SEARCH_TIP_TEXT );
-        _search_found_label_1 = new JLabel();
-        getSearchFoundCountsLabel1().setVisible( false );
-        _search_found_label_1.setFont( ControlPanel.jcb_bold_font );
-        if ( !getConfiguration().isUseNativeUI() ) {
-            _search_found_label_1.setForeground( getConfiguration().getGuiCheckboxTextColor() );
-        }
-        _search_tf_1 = new JTextField( 3 );
-        _search_tf_1.setToolTipText( SEARCH_TIP_TEXT );
-        _search_tf_1.setEditable( true );
-        if ( !getConfiguration().isUseNativeUI() ) {
-            _search_tf_1.setForeground( getConfiguration().getGuiMenuBackgroundColor() );
-            _search_tf_1.setBackground( getConfiguration().getGuiCheckboxTextColor() );
-            _search_tf_1.setBorder( null );
-        }
-        _search_reset_button_1 = new JButton();
-        getSearchResetButton1().setText( "Reset" );
-        getSearchResetButton1().setEnabled( false );
-        getSearchResetButton1().setVisible( false );
-        final JPanel s_panel_1 = new JPanel( new BorderLayout() );
-        final JPanel s_panel_2 = new JPanel( new GridLayout( 1, 2, 0, 0 ) );
-        s_panel_1.setBackground( getBackground() );
-        add( s_panel_1 );
-        s_panel_2.setBackground( getBackground() );
-        add( s_panel_2 );
-        final KeyAdapter key_adapter = new KeyAdapter() {
-
-            @Override
-            public void keyReleased( final KeyEvent key_event ) {
-                search1();
-                displayedPhylogenyMightHaveChanged( true );
-            }
-        };
-        final ActionListener action_listener = new ActionListener() {
-
-            @Override
-            public void actionPerformed( final ActionEvent e ) {
-                searchReset1();
-                setSearchFoundCountsOnLabel1( 0 );
-                getSearchFoundCountsLabel1().setVisible( false );
-                getSearchTextField1().setText( "" );
-                getSearchResetButton1().setEnabled( false );
-                getSearchResetButton1().setVisible( false );
-                displayedPhylogenyMightHaveChanged( true );
-            }
-        };
-        _search_reset_button_1.addActionListener( action_listener );
-        _search_tf_1.addKeyListener( key_adapter );
-        addJTextField( _search_tf_1, s_panel_1 );
-        s_panel_2.add( _search_found_label_1 );
-        addJButton( _search_reset_button_1, s_panel_2 );
-    }
-
-    void showAnnotations() {
-        if ( _show_annotation != null ) {
-            _show_annotation.setSelected( true );
-        }
-        if ( _color_according_to_annotation != null ) {
-            _color_according_to_annotation.setSelected( true );
-        }
-        if ( _color_acc_species != null ) {
-            _color_acc_species.setSelected( false );
-        }
-        if ( _color_acc_sequence != null ) {
-            _color_acc_sequence.setSelected( false );
-        }
-        _mainpanel.getCurrentTreePanel().repaint();
-    }
-
-    /**
-     * Fit entire tree into window.
-     */
-    void showWhole() {
-        if ( ( _mainpanel.getCurrentScrollPane() == null ) || _mainpanel.getCurrentTreePanel().getPhylogeny().isEmpty() ) {
-            return;
-        }
-        getCurrentTreePanel().updateSetOfCollapsedExternalNodes();
-        displayedPhylogenyMightHaveChanged( true );
-        _mainpanel.getCurrentTreePanel().updateOvSettings();
-        _mainpanel.getCurrentTreePanel().validate();
-        _mainpanel.validate();
-        _mainpanel.getCurrentTreePanel().calcParametersForPainting( _mainpanel.getSizeOfViewport().width,
-                                                                    _mainpanel.getSizeOfViewport().height );
-        _mainpanel.getCurrentTreePanel().resetPreferredSize();
-        _mainpanel.adjustJScrollPane();
-        _mainpanel.getCurrentTreePanel().repaint();
-        _mainpanel.getCurrentTreePanel().validate();
-        _mainpanel.validate();
-        _mainpanel.getCurrentTreePanel().calcParametersForPainting( _mainpanel.getSizeOfViewport().width,
-                                                                    _mainpanel.getSizeOfViewport().height );
-        _mainpanel.getCurrentTreePanel().resetPreferredSize();
-        _mainpanel.adjustJScrollPane();
-        _mainpanel.getCurrentTreePanel().repaint();
-        _mainpanel.getCurrentTreePanel().updateOvSizes();
-    }
-
-    void showWholeAll() {
-        for( final TreePanel tree_panel : _mainpanel.getTreePanels() ) {
-            if ( tree_panel != null ) {
-                tree_panel.validate();
-                tree_panel.calcParametersForPainting( _mainpanel.getSizeOfViewport().width,
-                                                      _mainpanel.getSizeOfViewport().height );
-                tree_panel.resetPreferredSize();
-                tree_panel.repaint();
-            }
-        }
-    }
-
-    // Create header for click-to combo box.
-    void startClickToOptions() {
-        final JLabel spacer = new JLabel( "" );
-        spacer.setFont( ControlPanel.jcb_font );
-        add( spacer );
-        _click_to_label = new JLabel( "Click on Node to:" );
-        add( customizeLabel( _click_to_label, getConfiguration() ) );
-        _click_to_combobox = new JComboBox<String>();
-        _click_to_combobox.setFocusable( false );
-        _click_to_combobox.setMaximumRowCount( 14 );
-        _click_to_combobox.setFont( ControlPanel.js_font );
-        if ( !_configuration.isUseNativeUI() ) {
-            _click_to_combobox.setBackground( getConfiguration().getGuiBackgroundColor() );
-        }
-        // don't add listener until all items are set (or each one will trigger
-        // an event)
-        // click_to_list.addActionListener(this);
-        add( _click_to_combobox );
-        // Correlates option names to titles
-        _all_click_to_names = new HashMap<Integer, String>();
-        _click_to_names = new ArrayList<String>();
-    }
-
-    void tabChanged() {
-        if ( getMainPanel().getTabbedPane().getTabCount() > 0 ) {
-            if ( getCurrentTreePanel().isPhyHasBranchLengths()
-                    && ( getCurrentTreePanel().getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR ) ) {
-                setDrawPhylogramEnabled( true );
-                setDrawPhylogram( isDrawPhylogram() );
-            }
-            else {
-                setDrawPhylogramEnabled( false );
-                setDrawPhylogram( false );
-            }
-            if ( getMainPanel().getMainFrame() == null ) {
-                // Must be "E" applet version.
-                final ArchaeopteryxE e = ( ArchaeopteryxE ) ( ( MainPanelApplets ) getMainPanel() ).getApplet();
-                e.setSelectedTypeInTypeMenu( e.getCurrentTreePanel().getPhylogenyGraphicsType() );
-            }
-            else {
-                getMainPanel().getMainFrame().setSelectedTypeInTypeMenu( getMainPanel().getCurrentTreePanel()
-                        .getPhylogenyGraphicsType() );
-            }
-            getMainPanel().getCurrentTreePanel().updateSubSuperTreeButton();
-            getMainPanel().getControlPanel().search0();
-            getMainPanel().getControlPanel().search1();
-            getMainPanel().getControlPanel().updateDomainStructureEvaluethresholdDisplay();
-            getSequenceRelationTypeBox().removeAllItems();
-            for( final SequenceRelation.SEQUENCE_RELATION_TYPE type : getMainPanel().getCurrentPhylogeny()
-                    .getRelevantSequenceRelationTypes() ) {
-                _sequence_relation_type_box.addItem( type );
-            }
-            getMainPanel().getCurrentTreePanel().repaint();
-            //setSequenceRelationQueries( getMainPanel().getCurrentPhylogeny().getSequenceRelationQueries() );
-            // according to GUILHEM the line above can be removed.
-        }
-    }
-
-    /**
-     * Uncollapse all nodes.
-     */
-    void uncollapseAll( final TreePanel tp ) {
-        final Phylogeny t = tp.getPhylogeny();
-        if ( ( t != null ) && !t.isEmpty() ) {
-            for( final PhylogenyNodeIterator iter = t.iteratorPreorder(); iter.hasNext(); ) {
-                final PhylogenyNode node = iter.next();
-                node.setCollapse( false );
-            }
-            tp.resetNodeIdToDistToLeafMap();
-            tp.updateSetOfCollapsedExternalNodes();
-            t.recalculateNumberOfExternalDescendants( false );
-            tp.setNodeInPreorderToNull();
-            t.clearHashIdToNodeMap();
-            showWhole();
-        }
-    }
-
-    void updateDomainStructureEvaluethresholdDisplay() {
-        if ( _domain_structure_evalue_thr_tf != null ) {
-            _domain_structure_evalue_thr_tf.setText( "10^"
-                    + getMainPanel().getCurrentTreePanel().getDomainStructureEvalueThresholdExp() );
-        }
-    }
-
-    void zoomInX( final float factor, final float x_correction_factor ) {
-        final JScrollBar sb = getMainPanel().getCurrentScrollPane().getHorizontalScrollBar();
-        final TreePanel treepanel = getMainPanel().getCurrentTreePanel();
-        treepanel.multiplyUrtFactor( 1f );
-        if ( ( treepanel.getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR )
-                || ( treepanel.getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED )
-                || isDrawPhylogram( getMainPanel().getCurrentTabIndex() )
-                || ( getOptions().getCladogramType() == CLADOGRAM_TYPE.NON_LINED_UP ) ) {
-            final double x = ( sb.getMaximum() - sb.getMinimum() ) / ( sb.getValue() + ( sb.getVisibleAmount() / 2.0 ) );
-            treepanel.setXdistance( ( treepanel.getXdistance() * factor ) );
-            treepanel.setXcorrectionFactor( ( treepanel.getXcorrectionFactor() * x_correction_factor ) );
-            getMainPanel().adjustJScrollPane();
-            treepanel.resetPreferredSize();
-            getMainPanel().getCurrentScrollPane().getViewport().validate();
-            sb.setValue( ForesterUtil.roundToInt( ( ( sb.getMaximum() - sb.getMinimum() ) / x )
-                    - ( sb.getVisibleAmount() / 2.0 ) ) );
-        }
-        else {
-            final int x = sb.getMaximum() - sb.getMinimum() - sb.getVisibleAmount() - sb.getValue();
-            treepanel.setXdistance( ( treepanel.getXdistance() * factor ) );
-            treepanel.setXcorrectionFactor( ( treepanel.getXcorrectionFactor() * x_correction_factor ) );
-            getMainPanel().adjustJScrollPane();
-            treepanel.resetPreferredSize();
-            getMainPanel().getCurrentScrollPane().getViewport().validate();
-            sb.setValue( sb.getMaximum() - sb.getMinimum() - x - sb.getVisibleAmount() );
-        }
-        treepanel.resetPreferredSize();
-        treepanel.updateOvSizes();
-    }
-
-    void zoomInY( final float factor ) {
-        final JScrollBar sb = getMainPanel().getCurrentScrollPane().getVerticalScrollBar();
-        final TreePanel treepanel = getMainPanel().getCurrentTreePanel();
-        treepanel.multiplyUrtFactor( 1.1f );
-        final double x = ( sb.getMaximum() - sb.getMinimum() ) / ( sb.getValue() + ( sb.getVisibleAmount() / 2.0 ) );
-        treepanel.setYdistance( ( treepanel.getYdistance() * factor ) );
-        getMainPanel().adjustJScrollPane();
-        treepanel.resetPreferredSize();
-        getMainPanel().getCurrentScrollPane().getViewport().validate();
-        sb.setValue( ForesterUtil.roundToInt( ( ( sb.getMaximum() - sb.getMinimum() ) / x )
-                - ( sb.getVisibleAmount() / 2.0 ) ) );
-        treepanel.resetPreferredSize();
-        treepanel.updateOvSizes();
-    }
-
-    void zoomOutX( final float factor, final float x_correction_factor ) {
-        final TreePanel treepanel = getMainPanel().getCurrentTreePanel();
-        treepanel.multiplyUrtFactor( 1f );
-        if ( ( treepanel.getXdistance() * factor ) > 0.0 ) {
-            final JScrollBar sb = getMainPanel().getCurrentScrollPane().getHorizontalScrollBar();
-            if ( ( treepanel.getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR )
-                    || ( treepanel.getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED )
-                    || isDrawPhylogram( getMainPanel().getCurrentTabIndex() )
-                    || ( getOptions().getCladogramType() == CLADOGRAM_TYPE.NON_LINED_UP ) ) {
-                getMainPanel().adjustJScrollPane();
-                treepanel.resetPreferredSize();
-                getMainPanel().getCurrentScrollPane().getViewport().validate();
-                final double x = ( sb.getMaximum() - sb.getMinimum() )
-                        / ( sb.getValue() + ( sb.getVisibleAmount() / 2.0 ) );
-                treepanel.setXdistance( ( treepanel.getXdistance() * factor ) );
-                treepanel.setXcorrectionFactor( ( treepanel.getXcorrectionFactor() * x_correction_factor ) );
-                getMainPanel().adjustJScrollPane();
-                treepanel.resetPreferredSize();
-                getMainPanel().getCurrentScrollPane().getViewport().validate();
-                sb.setValue( ForesterUtil.roundToInt( ( ( sb.getMaximum() - sb.getMinimum() ) / x )
-                        - ( sb.getVisibleAmount() / 2.0 ) ) );
-            }
-            else {
-                final int x = sb.getMaximum() - sb.getMinimum() - sb.getVisibleAmount() - sb.getValue();
-                treepanel.setXdistance( treepanel.getXdistance() * factor );
-                treepanel.setXcorrectionFactor( treepanel.getXcorrectionFactor() * x_correction_factor );
-                if ( x > 0 ) {
-                    getMainPanel().adjustJScrollPane();
-                    treepanel.resetPreferredSize();
-                    getMainPanel().getCurrentScrollPane().getViewport().validate();
-                    sb.setValue( sb.getMaximum() - sb.getMinimum() - x - sb.getVisibleAmount() );
-                }
-            }
-            treepanel.resetPreferredSize();
-            treepanel.updateOvSizes();
-        }
-    }
-
-    void zoomOutY( final float factor ) {
-        final TreePanel treepanel = getMainPanel().getCurrentTreePanel();
-        treepanel.multiplyUrtFactor( 0.9f );
-        if ( ( treepanel.getYdistance() * factor ) > 0.0 ) {
-            final JScrollBar sb = getMainPanel().getCurrentScrollPane().getVerticalScrollBar();
-            final double x = ( sb.getMaximum() - sb.getMinimum() ) / ( sb.getValue() + ( sb.getVisibleAmount() / 2.0 ) );
-            treepanel.setYdistance( ( treepanel.getYdistance() * factor ) );
-            getMainPanel().adjustJScrollPane();
-            treepanel.resetPreferredSize();
-            getMainPanel().getCurrentScrollPane().getViewport().validate();
-            sb.setValue( ForesterUtil.roundToInt( ( ( sb.getMaximum() - sb.getMinimum() ) / x )
-                    - ( sb.getVisibleAmount() / 2.0 ) ) );
-            treepanel.resetPreferredSize();
-            treepanel.updateOvSizes();
-        }
-    }
-
     private void addClickToOption( final int which, final String title ) {
         _click_to_combobox.addItem( title );
         _click_to_names.add( title );
@@ -1760,7 +527,7 @@ final class ControlPanel extends JPanel implements ActionListener {
                                                                                                         cellHasFocus );
                 if ( ( value != null ) && ( value instanceof SequenceRelation.SEQUENCE_RELATION_TYPE ) ) {
                     ( ( DefaultListCellRenderer ) component ).setText( SequenceRelation
-                            .getPrintableNameByType( ( SequenceRelation.SEQUENCE_RELATION_TYPE ) value ) );
+                                                                       .getPrintableNameByType( ( SequenceRelation.SEQUENCE_RELATION_TYPE ) value ) );
                 }
                 return component;
             }
@@ -1786,6 +553,21 @@ final class ControlPanel extends JPanel implements ActionListener {
     /* GUILHEM_END */
     private List<Boolean> getIsDrawPhylogramList() {
         return _draw_phylogram;
+    }
+
+    // This takes care of ArchaeopteryxE-issue.
+    // Can, and will, return null prior to  ArchaeopteryxE initialization completion.
+    final private MainFrame getMainFrame() {
+        MainFrame mf = getMainPanel().getMainFrame();
+        if ( mf == null ) {
+            // Must be "E" applet version.
+            final ArchaeopteryxE e = ( ArchaeopteryxE ) ( ( MainPanelApplets ) getMainPanel() ).getApplet();
+            if ( e.getMainPanel() == null ) {
+                return null;
+            }
+            mf = e.getMainPanel().getMainFrame();
+        }
+        return mf;
     }
 
     private void init() {
@@ -1828,7 +610,7 @@ final class ControlPanel extends JPanel implements ActionListener {
                                                                          isShowDomainArchitectures(),
                                                                          tp != null ? Math.pow( 10,
                                                                                                 tp.getDomainStructureEvalueThresholdExp() )
-                                                                                                : 0 ) );
+                                                                                 : 0 ) );
                 }
                 else {
                     nodes.addAll( PhylogenyMethods.searchData( query,
@@ -1838,7 +620,7 @@ final class ControlPanel extends JPanel implements ActionListener {
                                                                getOptions().isSearchWithRegex(),
                                                                isShowDomainArchitectures(),
                                                                tp != null ? Math.pow( 10, tp
-                                                                                      .getDomainStructureEvalueThresholdExp() ) : 0 ) );
+                                                                       .getDomainStructureEvalueThresholdExp() ) : 0 ) );
                 }
             }
             if ( getOptions().isInverseSearchResult() ) {
@@ -1890,7 +672,7 @@ final class ControlPanel extends JPanel implements ActionListener {
                                                                          isShowDomainArchitectures(),
                                                                          tp != null ? Math.pow( 10,
                                                                                                 tp.getDomainStructureEvalueThresholdExp() )
-                                                                                                : 0 ) );
+                                                                                 : 0 ) );
                 }
                 else {
                     nodes.addAll( PhylogenyMethods.searchData( query,
@@ -1900,7 +682,7 @@ final class ControlPanel extends JPanel implements ActionListener {
                                                                getOptions().isSearchWithRegex(),
                                                                isShowDomainArchitectures(),
                                                                tp != null ? Math.pow( 10, tp
-                                                                                      .getDomainStructureEvalueThresholdExp() ) : 0 ) );
+                                                                       .getDomainStructureEvalueThresholdExp() ) : 0 ) );
                 }
             }
             if ( getOptions().isInverseSearchResult() ) {
@@ -2052,7 +834,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             _get_ext_desc_data = cb_index;
             if ( !ForesterUtil.isEmpty( getConfiguration().getLabelForGetExtDescendentsData() ) ) {
                 addClickToOption( Configuration.get_ext_desc_data, getConfiguration()
-                                  .getLabelForGetExtDescendentsData() );
+                        .getLabelForGetExtDescendentsData() );
             }
             else {
                 addClickToOption( Configuration.get_ext_desc_data,
@@ -2312,19 +1094,1055 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
     }
 
-    // This takes care of ArchaeopteryxE-issue.
-    // Can, and will, return null prior to  ArchaeopteryxE initialization completion.
-    final private MainFrame getMainFrame() {
-        MainFrame mf = getMainPanel().getMainFrame();
-        if ( mf == null ) {
-            // Must be "E" applet version.
-            final ArchaeopteryxE e = ( ArchaeopteryxE ) ( ( MainPanelApplets ) getMainPanel() ).getApplet();
-            if ( e.getMainPanel() == null ) {
-                return null;
-            }
-            mf = e.getMainPanel().getMainFrame();
+    void activateButtonToReturnToSuperTree( int index ) {
+        --index;
+        if ( index > 0 ) {
+            _return_to_super_tree.setText( RETURN_TO_SUPER_TREE_TEXT + " " + index );
         }
-        return mf;
+        else {
+            _return_to_super_tree.setText( RETURN_TO_SUPER_TREE_TEXT );
+        }
+        _return_to_super_tree.setForeground( getConfiguration().getGuiCheckboxAndButtonActiveColor() );
+        _return_to_super_tree.setEnabled( true );
+    }
+
+    /**
+     * Add zoom and quick edit buttons. (Last modified 8/9/04)
+     */
+    void addButtons() {
+        final JLabel spacer = new JLabel( "" );
+        spacer.setOpaque( false );
+        add( spacer );
+        final JPanel x_panel = new JPanel( new GridLayout( 1, 1, 0, 0 ) );
+        final JPanel y_panel = new JPanel( new GridLayout( 1, 3, 0, 0 ) );
+        final JPanel z_panel = new JPanel( new GridLayout( 1, 1, 0, 0 ) );
+        if ( !getConfiguration().isUseNativeUI() ) {
+            x_panel.setBackground( getBackground() );
+            y_panel.setBackground( getBackground() );
+            z_panel.setBackground( getBackground() );
+        }
+        add( _zoom_label = new JLabel( "Zoom:" ) );
+        customizeLabel( _zoom_label, getConfiguration() );
+        add( x_panel );
+        add( y_panel );
+        add( z_panel );
+        if ( getConfiguration().isUseNativeUI() ) {
+            _zoom_in_x = new JButton( "+" );
+            _zoom_out_x = new JButton( "-" );
+        }
+        else {
+            _zoom_in_x = new JButton( "X+" );
+            _zoom_out_x = new JButton( "X-" );
+        }
+        _zoom_in_y = new JButton( "Y+" );
+        _zoom_out_y = new JButton( "Y-" );
+        _show_whole = new JButton( "F" );
+        _show_whole.setToolTipText( "To fit the complete phylogeny to the current display size [F or Home]" );
+        _zoom_in_x.setToolTipText( "To zoom in horizontally [Shift+cursor-right]" );
+        _zoom_in_y.setToolTipText( "To zoom in vertically [Shift+cursor-up]" );
+        _zoom_out_x.setToolTipText( "To zoom out horizontally [Shift+cursor-left]" );
+        _zoom_out_y.setToolTipText( "To zoom out vertically [Shift+cursor-down]" );
+        if ( getConfiguration().isUseNativeUI() && ForesterUtil.isMac() ) {
+            _zoom_out_x.setPreferredSize( new Dimension( 55, 10 ) );
+            _zoom_in_x.setPreferredSize( new Dimension( 55, 10 ) );
+        }
+        else {
+            _zoom_out_x.setPreferredSize( new Dimension( 10, 10 ) );
+            _zoom_in_x.setPreferredSize( new Dimension( 10, 10 ) );
+        }
+        _zoom_out_y.setPreferredSize( new Dimension( 10, 10 ) );
+        _zoom_in_y.setPreferredSize( new Dimension( 10, 10 ) );
+        _show_whole.setPreferredSize( new Dimension( 10, 10 ) );
+        _return_to_super_tree = new JButton( RETURN_TO_SUPER_TREE_TEXT );
+        _return_to_super_tree.setEnabled( false );
+        _order = new JButton( "Order Subtrees" );
+        _uncollapse_all = new JButton( "Uncollapse All" );
+        addJButton( _zoom_in_y, x_panel );
+        addJButton( _zoom_out_x, y_panel );
+        addJButton( _show_whole, y_panel );
+        addJButton( _zoom_in_x, y_panel );
+        addJButton( _zoom_out_y, z_panel );
+        if ( getConfiguration().doDisplayOption( Configuration.show_domain_architectures ) ) {
+            setUpControlsForDomainStrucures();
+        }
+        final JLabel spacer2 = new JLabel( "" );
+        add( spacer2 );
+        addJButton( _return_to_super_tree, this );
+        addJButton( _order, this );
+        addJButton( _uncollapse_all, this );
+        final JLabel spacer3 = new JLabel( "" );
+        add( spacer3 );
+        setVisibilityOfDomainStrucureControls();
+    }
+
+    void addCheckbox( final int which, final String title ) {
+        final JPanel ch_panel = new JPanel( new BorderLayout( 0, 0 ) );
+        switch ( which ) {
+            case Configuration.display_as_phylogram:
+                _display_as_phylogram_cb = new JCheckBox( title );
+                getDisplayAsPhylogramCb().setToolTipText( "To switch between phylogram and cladogram display" );
+                addJCheckBox( getDisplayAsPhylogramCb(), ch_panel );
+                add( ch_panel );
+                break;
+            case Configuration.display_internal_data:
+                _display_internal_data = new JCheckBox( title );
+                _display_internal_data.setToolTipText( "To allow or disallow display of internal labels" );
+                addJCheckBox( _display_internal_data, ch_panel );
+                add( ch_panel );
+                break;
+            case Configuration.color_according_to_species:
+                _color_acc_species = new JCheckBox( title );
+                _color_acc_species.setToolTipText( "To colorize node labels as a function of taxonomy" );
+                addJCheckBox( _color_acc_species, ch_panel );
+                add( ch_panel );
+                break;
+            case Configuration.color_according_to_sequence:
+                _color_acc_sequence = new JCheckBox( title );
+                _color_acc_sequence.setToolTipText( "To colorize node labels as a function of sequence name" );
+                addJCheckBox( _color_acc_sequence, ch_panel );
+                add( ch_panel );
+                break;
+            case Configuration.color_according_to_annotation:
+                _color_according_to_annotation = new JCheckBox( title );
+                _color_according_to_annotation
+                .setToolTipText( "To colorize sequence annotation labels as a function of sequence annotation" );
+                addJCheckBox( _color_according_to_annotation, ch_panel );
+                add( ch_panel );
+                break;
+            case Configuration.show_node_names:
+                _show_node_names = new JCheckBox( title );
+                addJCheckBox( _show_node_names, ch_panel );
+                add( ch_panel );
+                break;
+            case Configuration.show_taxonomy_scientific_names:
+                _show_taxo_scientific_names = new JCheckBox( title );
+                addJCheckBox( _show_taxo_scientific_names, ch_panel );
+                add( ch_panel );
+                break;
+            case Configuration.show_taxonomy_common_names:
+                _show_taxo_common_names = new JCheckBox( title );
+                addJCheckBox( _show_taxo_common_names, ch_panel );
+                add( ch_panel );
+                break;
+            case Configuration.show_tax_code:
+                _show_taxo_code = new JCheckBox( title );
+                addJCheckBox( _show_taxo_code, ch_panel );
+                add( ch_panel );
+                break;
+            case Configuration.show_taxonomy_images:
+                _show_taxo_images_cb = new JCheckBox( title );
+                addJCheckBox( _show_taxo_images_cb, ch_panel );
+                add( ch_panel );
+                break;
+            case Configuration.show_binary_characters:
+                _show_binary_characters = new JCheckBox( title );
+                addJCheckBox( _show_binary_characters, ch_panel );
+                add( ch_panel );
+                break;
+            case Configuration.show_annotation:
+                _show_annotation = new JCheckBox( title );
+                addJCheckBox( _show_annotation, ch_panel );
+                add( ch_panel );
+                break;
+            case Configuration.show_binary_character_counts:
+                _show_binary_character_counts = new JCheckBox( title );
+                addJCheckBox( _show_binary_character_counts, ch_panel );
+                add( ch_panel );
+                break;
+            case Configuration.write_confidence_values:
+                _write_confidence = new JCheckBox( title );
+                addJCheckBox( getWriteConfidenceCb(), ch_panel );
+                add( ch_panel );
+                break;
+            case Configuration.write_events:
+                _show_events = new JCheckBox( title );
+                addJCheckBox( getShowEventsCb(), ch_panel );
+                add( ch_panel );
+                break;
+            case Configuration.use_style:
+                _use_visual_styles_cb = new JCheckBox( title );
+                getUseVisualStylesCb()
+                .setToolTipText( "To use visual styles (node colors, fonts) and branch colors, if present" );
+                addJCheckBox( getUseVisualStylesCb(), ch_panel );
+                add( ch_panel );
+                break;
+            case Configuration.width_branches:
+                _width_branches = new JCheckBox( title );
+                _width_branches.setToolTipText( "To use branch width values, if present" );
+                addJCheckBox( _width_branches, ch_panel );
+                add( ch_panel );
+                break;
+            case Configuration.write_branch_length_values:
+                _write_branch_length_values = new JCheckBox( title );
+                addJCheckBox( _write_branch_length_values, ch_panel );
+                add( ch_panel );
+                break;
+            case Configuration.show_domain_architectures:
+                _show_domain_architectures = new JCheckBox( title );
+                addJCheckBox( _show_domain_architectures, ch_panel );
+                add( ch_panel );
+                break;
+            case Configuration.show_mol_seqs:
+                _show_mol_seqs = new JCheckBox( title );
+                addJCheckBox( _show_mol_seqs, ch_panel );
+                add( ch_panel );
+                break;
+            case Configuration.show_seq_names:
+                _show_seq_names = new JCheckBox( title );
+                addJCheckBox( _show_seq_names, ch_panel );
+                add( ch_panel );
+                break;
+            case Configuration.show_gene_names:
+                _show_gene_names = new JCheckBox( title );
+                addJCheckBox( _show_gene_names, ch_panel );
+                add( ch_panel );
+                break;
+            case Configuration.show_seq_symbols:
+                _show_seq_symbols = new JCheckBox( title );
+                addJCheckBox( _show_seq_symbols, ch_panel );
+                add( ch_panel );
+                break;
+            case Configuration.show_sequence_acc:
+                _show_sequence_acc = new JCheckBox( title );
+                addJCheckBox( _show_sequence_acc, ch_panel );
+                add( ch_panel );
+                break;
+            case Configuration.dynamically_hide_data:
+                _dynamically_hide_data = new JCheckBox( title );
+                getDynamicallyHideData().setToolTipText( "To hide labels depending on expected visibility" );
+                addJCheckBox( getDynamicallyHideData(), ch_panel );
+                add( ch_panel );
+                break;
+            case Configuration.node_data_popup:
+                _node_desc_popup_cb = new JCheckBox( title );
+                getNodeDescPopupCb().setToolTipText( "To enable mouse rollover display of basic node data" );
+                addJCheckBox( getNodeDescPopupCb(), ch_panel );
+                add( ch_panel );
+                break;
+            case Configuration.show_relation_confidence:
+                _seq_relation_confidence_switch = new JCheckBox( title );
+                addJCheckBox( _seq_relation_confidence_switch, ch_panel );
+                add( ch_panel );
+                break;
+            case Configuration.show_vector_data:
+                _show_vector_data_cb = new JCheckBox( title );
+                addJCheckBox( _show_vector_data_cb, ch_panel );
+                add( ch_panel );
+                break;
+            case Configuration.show_properties:
+                _show_properties_cb = new JCheckBox( title );
+                addJCheckBox( _show_properties_cb, ch_panel );
+                add( ch_panel );
+                break;
+            default:
+                throw new RuntimeException( "unknown checkbox: " + which );
+        }
+    }// addCheckbox
+
+    void addJButton( final JButton jb, final JPanel p ) {
+        jb.setFocusPainted( false );
+        jb.setFont( ControlPanel.jcb_font );
+        if ( !_configuration.isUseNativeUI() ) {
+            jb.setBorder( BorderFactory.createLineBorder( getConfiguration().getGuiButtonBorderColor() ) );
+            jb.setBackground( getConfiguration().getGuiButtonBackgroundColor() );
+            jb.setForeground( getConfiguration().getGuiButtonTextColor() );
+        }
+        p.add( jb );
+        jb.addActionListener( this );
+    }
+
+    void addJCheckBox( final JCheckBox jcb, final JPanel p ) {
+        jcb.setFocusPainted( false );
+        jcb.setFont( ControlPanel.jcb_font );
+        if ( !_configuration.isUseNativeUI() ) {
+            jcb.setBackground( getConfiguration().getGuiBackgroundColor() );
+            jcb.setForeground( getConfiguration().getGuiCheckboxTextColor() );
+        }
+        p.add( jcb, "Center" );
+        jcb.addActionListener( this );
+    }
+
+    void addJTextField( final JTextField tf, final JPanel p ) {
+        if ( !_configuration.isUseNativeUI() ) {
+            tf.setForeground( getConfiguration().getGuiBackgroundColor() );
+            tf.setFont( ControlPanel.jcb_font );
+        }
+        p.add( tf );
+        tf.addActionListener( this );
+    }
+
+    void deactivateButtonToReturnToSuperTree() {
+        _return_to_super_tree.setText( RETURN_TO_SUPER_TREE_TEXT );
+        _return_to_super_tree.setForeground( getConfiguration().getGuiButtonTextColor() );
+        _return_to_super_tree.setEnabled( false );
+    }
+
+    void displayedPhylogenyMightHaveChanged( final boolean recalc_longest_ext_node_info ) {
+        if ( ( _mainpanel != null )
+                && ( ( _mainpanel.getCurrentPhylogeny() != null ) && !_mainpanel.getCurrentPhylogeny().isEmpty() ) ) {
+            if ( getOptions().isShowOverview() ) {
+                _mainpanel.getCurrentTreePanel().updateOvSizes();
+            }
+            _mainpanel.getCurrentTreePanel().recalculateMaxDistanceToRoot();
+            setVisibilityOfDomainStrucureControls();
+            updateDomainStructureEvaluethresholdDisplay();
+            _mainpanel.getCurrentTreePanel().calculateScaleDistance();
+            _mainpanel.getCurrentTreePanel().calcMaxDepth();
+            _mainpanel.adjustJScrollPane();
+            if ( recalc_longest_ext_node_info ) {
+                _mainpanel.getCurrentTreePanel().initNodeData();
+                _mainpanel.getCurrentTreePanel().calculateLongestExtNodeInfo();
+            }
+            _mainpanel.getCurrentTreePanel().repaint();
+            // _mainpanel.getCurrentTreePanel().setUpUrtFactors();
+        }
+    }
+
+    void endClickToOptions() {
+        _click_to_combobox.addActionListener( this );
+    }
+
+    /**
+     * Indicates what action should be execute when a node is clicked
+     *
+     * @return the click-on action
+     */
+    NodeClickAction getActionWhenNodeClicked() {
+        return _action_when_node_clicked;
+    }
+
+    Map<Integer, String> getAllClickToItems() {
+        return _all_click_to_names;
+    }
+
+    Map<String, Color> getAnnotationColors() {
+        return _annotation_colors;
+    }
+
+    Configuration getConfiguration() {
+        return _configuration;
+    }
+
+    TreePanel getCurrentTreePanel() {
+        return getMainPanel().getCurrentTreePanel();
+    }
+
+    MainPanel getMainPanel() {
+        return _mainpanel;
+    }
+
+    Options getOptions() {
+        return getMainPanel().getOptions();
+    }
+
+    JLabel getSearchFoundCountsLabel0() {
+        return _search_found_label_0;
+    }
+
+    JLabel getSearchFoundCountsLabel1() {
+        return _search_found_label_1;
+    }
+
+    JButton getSearchResetButton0() {
+        return _search_reset_button_0;
+    }
+
+    JButton getSearchResetButton1() {
+        return _search_reset_button_1;
+    }
+
+    JTextField getSearchTextField0() {
+        return _search_tf_0;
+    }
+
+    JTextField getSearchTextField1() {
+        return _search_tf_1;
+    }
+
+    Map<String, Color> getSequenceColors() {
+        return _sequence_colors;
+    }
+
+    List<String> getSingleClickToNames() {
+        return _click_to_names;
+    }
+
+    Map<String, Color> getSpeciesColors() {
+        return _species_colors;
+    }
+
+    boolean isAntialiasScreenText() {
+        return true;
+    }
+
+    boolean isColorAccordingToAnnotation() {
+        return ( ( _color_according_to_annotation != null ) && _color_according_to_annotation.isSelected() );
+    }
+
+    boolean isColorAccordingToSequence() {
+        return ( ( _color_acc_sequence != null ) && _color_acc_sequence.isSelected() );
+    }
+
+    boolean isColorAccordingToTaxonomy() {
+        return ( ( _color_acc_species != null ) && _color_acc_species.isSelected() );
+    }
+
+    boolean isDrawPhylogram() {
+        return isDrawPhylogram( getMainPanel().getCurrentTabIndex() );
+    }
+
+    boolean isDynamicallyHideData() {
+        return ( ( getDynamicallyHideData() != null ) && getDynamicallyHideData().isSelected() );
+    }
+
+    boolean isEvents() {
+        return ( ( getShowEventsCb() != null ) && getShowEventsCb().isSelected() );
+    }
+
+    boolean isNodeDescPopup() {
+        return ( ( getNodeDescPopupCb() != null ) && getNodeDescPopupCb().isSelected() );
+    }
+
+    boolean isShowAnnotation() {
+        return ( ( _show_annotation != null ) && _show_annotation.isSelected() );
+    }
+
+    boolean isShowBinaryCharacterCounts() {
+        return ( ( _show_binary_character_counts != null ) && _show_binary_character_counts.isSelected() );
+    }
+
+    boolean isShowBinaryCharacters() {
+        return ( ( _show_binary_characters != null ) && _show_binary_characters.isSelected() );
+    }
+
+    boolean isShowConfidenceValues() {
+        return ( ( getWriteConfidenceCb() != null ) && getWriteConfidenceCb().isSelected() );
+    }
+
+    boolean isShowDomainArchitectures() {
+        return ( ( _show_domain_architectures != null ) && _show_domain_architectures.isSelected() );
+    }
+
+    boolean isShowGeneNames() {
+        return ( ( _show_gene_names != null ) && _show_gene_names.isSelected() );
+    }
+
+    boolean isShowInternalData() {
+        return ( ( _display_internal_data == null ) || _display_internal_data.isSelected() );
+    }
+
+    boolean isShowNodeNames() {
+        return ( ( _show_node_names != null ) && _show_node_names.isSelected() );
+    }
+
+    boolean isShowSeqNames() {
+        return ( ( _show_seq_names != null ) && _show_seq_names.isSelected() );
+    }
+
+    boolean isShowSeqSymbols() {
+        return ( ( _show_seq_symbols != null ) && _show_seq_symbols.isSelected() );
+    }
+
+    boolean isShowSequenceAcc() {
+        return ( ( _show_sequence_acc != null ) && _show_sequence_acc.isSelected() );
+    }
+
+    boolean isShowSequenceRelationConfidence() {
+        return ( ( _seq_relation_confidence_switch != null ) && ( _seq_relation_confidence_switch.isSelected() ) );
+    }
+
+    boolean isShowSequenceRelations() {
+        return ( ( _show_sequence_relations != null ) && ( _show_sequence_relations.getSelectedIndex() > 0 ) );
+    }
+
+    boolean isShowTaxonomyCode() {
+        return ( ( _show_taxo_code != null ) && _show_taxo_code.isSelected() );
+    }
+
+    boolean isShowTaxonomyCommonNames() {
+        return ( ( _show_taxo_common_names != null ) && _show_taxo_common_names.isSelected() );
+    }
+
+    boolean isShowTaxonomyScientificNames() {
+        return ( ( _show_taxo_scientific_names != null ) && _show_taxo_scientific_names.isSelected() );
+    }
+
+    boolean isUseVisualStyles() {
+        return ( ( ( getUseVisualStylesCb() != null ) && getUseVisualStylesCb().isSelected() ) || ( ( getUseVisualStylesCb() == null ) && _color_branches ) );
+    }
+
+    boolean isWidthBranches() {
+        return ( ( _width_branches != null ) && _width_branches.isSelected() );
+    }
+
+    boolean isWriteBranchLengthValues() {
+        return ( ( _write_branch_length_values != null ) && _write_branch_length_values.isSelected() );
+    }
+
+    void phylogenyAdded( final Configuration configuration ) {
+        getIsDrawPhylogramList().add( configuration.isDrawAsPhylogram() );
+    }
+
+    void phylogenyRemoved( final int index ) {
+        getIsDrawPhylogramList().remove( index );
+    }
+
+    void search0() {
+        final MainPanel main_panel = getMainPanel();
+        final Phylogeny tree = main_panel.getCurrentPhylogeny();
+        if ( ( tree == null ) || tree.isEmpty() ) {
+            return;
+        }
+        String query = getSearchTextField0().getText();
+        if ( query != null ) {
+            query = query.trim();
+        }
+        if ( !ForesterUtil.isEmpty( query ) ) {
+            search0( main_panel, tree, query );
+        }
+        else {
+            getSearchFoundCountsLabel0().setVisible( false );
+            getSearchResetButton0().setEnabled( false );
+            getSearchResetButton0().setVisible( false );
+            searchReset0();
+        }
+    }
+
+    void search1() {
+        final MainPanel main_panel = getMainPanel();
+        final Phylogeny tree = main_panel.getCurrentPhylogeny();
+        if ( ( tree == null ) || tree.isEmpty() ) {
+            return;
+        }
+        String query = getSearchTextField1().getText();
+        if ( query != null ) {
+            query = query.trim();
+        }
+        if ( !ForesterUtil.isEmpty( query ) ) {
+            search1( main_panel, tree, query );
+        }
+        else {
+            getSearchFoundCountsLabel1().setVisible( false );
+            getSearchResetButton1().setEnabled( false );
+            getSearchResetButton1().setVisible( false );
+            searchReset1();
+        }
+    }
+
+    void searchReset0() {
+        if ( getMainPanel().getCurrentTreePanel() != null ) {
+            getMainPanel().getCurrentTreePanel().setFoundNodes0( null );
+        }
+    }
+
+    void searchReset1() {
+        if ( getMainPanel().getCurrentTreePanel() != null ) {
+            getMainPanel().getCurrentTreePanel().setFoundNodes1( null );
+        }
+    }
+
+    void setActionWhenNodeClicked( final NodeClickAction action ) {
+        _action_when_node_clicked = action;
+    }
+
+    void setAnnotationColors( final Map<String, Color> annotation_colors ) {
+        _annotation_colors = annotation_colors;
+    }
+
+    void setCheckbox( final int which, final boolean state ) {
+        switch ( which ) {
+            case Configuration.display_as_phylogram:
+                if ( getDisplayAsPhylogramCb() != null ) {
+                    getDisplayAsPhylogramCb().setSelected( state );
+                }
+                break;
+            case Configuration.display_internal_data:
+                if ( _display_internal_data != null ) {
+                    _display_internal_data.setSelected( state );
+                }
+                break;
+            case Configuration.color_according_to_species:
+                if ( _color_acc_species != null ) {
+                    _color_acc_species.setSelected( state );
+                }
+                break;
+            case Configuration.color_according_to_sequence:
+                if ( _color_acc_sequence != null ) {
+                    _color_acc_sequence.setSelected( state );
+                }
+                break;
+            case Configuration.color_according_to_annotation:
+                if ( _color_according_to_annotation != null ) {
+                    _color_according_to_annotation.setSelected( state );
+                }
+                break;
+            case Configuration.show_node_names:
+                if ( _show_node_names != null ) {
+                    _show_node_names.setSelected( state );
+                }
+                break;
+            case Configuration.show_taxonomy_scientific_names:
+                if ( _show_taxo_scientific_names != null ) {
+                    _show_taxo_scientific_names.setSelected( state );
+                }
+                break;
+            case Configuration.show_taxonomy_common_names:
+                if ( _show_taxo_common_names != null ) {
+                    _show_taxo_common_names.setSelected( state );
+                }
+                break;
+            case Configuration.show_tax_code:
+                if ( _show_taxo_code != null ) {
+                    _show_taxo_code.setSelected( state );
+                }
+                break;
+            case Configuration.show_taxonomy_images:
+                if ( _show_taxo_images_cb != null ) {
+                    _show_taxo_images_cb.setSelected( state );
+                }
+                break;
+            case Configuration.show_annotation:
+                if ( _show_annotation != null ) {
+                    _show_annotation.setSelected( state );
+                }
+                break;
+            case Configuration.show_binary_characters:
+                if ( _show_binary_characters != null ) {
+                    _show_binary_characters.setSelected( state );
+                }
+                break;
+            case Configuration.show_binary_character_counts:
+                if ( _show_binary_character_counts != null ) {
+                    _show_binary_character_counts.setSelected( state );
+                }
+                break;
+            case Configuration.write_confidence_values:
+                if ( getWriteConfidenceCb() != null ) {
+                    getWriteConfidenceCb().setSelected( state );
+                }
+                break;
+            case Configuration.write_events:
+                if ( getShowEventsCb() != null ) {
+                    getShowEventsCb().setSelected( state );
+                }
+                break;
+            case Configuration.use_style:
+                if ( getUseVisualStylesCb() != null ) {
+                    getUseVisualStylesCb().setSelected( state );
+                }
+                break;
+            case Configuration.width_branches:
+                if ( _width_branches != null ) {
+                    _width_branches.setSelected( state );
+                }
+                break;
+            case Configuration.show_domain_architectures:
+                if ( _show_domain_architectures != null ) {
+                    _show_domain_architectures.setSelected( state );
+                }
+                break;
+            case Configuration.write_branch_length_values:
+                if ( _write_branch_length_values != null ) {
+                    _write_branch_length_values.setSelected( state );
+                }
+                break;
+            case Configuration.show_mol_seqs:
+                if ( _show_mol_seqs != null ) {
+                    _show_mol_seqs.setSelected( state );
+                }
+                break;
+            case Configuration.show_seq_names:
+                if ( _show_seq_names != null ) {
+                    _show_seq_names.setSelected( state );
+                }
+                break;
+            case Configuration.show_gene_names:
+                if ( _show_gene_names != null ) {
+                    _show_gene_names.setSelected( state );
+                }
+                break;
+            case Configuration.show_seq_symbols:
+                if ( _show_seq_symbols != null ) {
+                    _show_seq_symbols.setSelected( state );
+                }
+                break;
+            case Configuration.show_vector_data:
+                if ( _show_vector_data_cb != null ) {
+                    _show_vector_data_cb.setSelected( state );
+                }
+                break;
+            case Configuration.show_properties:
+                if ( _show_properties_cb != null ) {
+                    _show_properties_cb.setSelected( state );
+                }
+                break;
+            case Configuration.show_sequence_acc:
+                if ( _show_sequence_acc != null ) {
+                    _show_sequence_acc.setSelected( state );
+                }
+                break;
+            case Configuration.dynamically_hide_data:
+                if ( getDynamicallyHideData() != null ) {
+                    getDynamicallyHideData().setSelected( state );
+                }
+                break;
+            case Configuration.node_data_popup:
+                if ( getNodeDescPopupCb() != null ) {
+                    getNodeDescPopupCb().setSelected( state );
+                }
+                break;
+                /* GUILHEM_BEG */
+            case Configuration.show_relation_confidence:
+                if ( _seq_relation_confidence_switch != null ) {
+                    _seq_relation_confidence_switch.setSelected( state );
+                }
+                break;
+                /* GUILHEM_END */
+            default:
+                throw new AssertionError( "unknown checkbox: " + which );
+        }
+    }
+
+    /**
+     * Set this checkbox state. Not all checkboxes have been instantiated
+     * depending on the config.
+     */
+    void setCheckbox( final JCheckBox cb, final boolean state ) {
+        if ( cb != null ) {
+            cb.setSelected( state );
+        }
+    }
+
+    void setClickToAction( final int action ) {
+        // Set click-to action
+        if ( action == _show_data_item ) {
+            setActionWhenNodeClicked( NodeClickAction.SHOW_DATA );
+        }
+        else if ( action == _collapse_cb_item ) {
+            setActionWhenNodeClicked( NodeClickAction.COLLAPSE );
+        }
+        else if ( action == _reroot_cb_item ) {
+            setActionWhenNodeClicked( NodeClickAction.REROOT );
+        }
+        else if ( action == _subtree_cb_item ) {
+            setActionWhenNodeClicked( NodeClickAction.SUBTREE );
+        }
+        else if ( action == _swap_cb_item ) {
+            setActionWhenNodeClicked( NodeClickAction.SWAP );
+        }
+        else if ( action == _color_subtree_cb_item ) {
+            setActionWhenNodeClicked( NodeClickAction.COLOR_SUBTREE );
+        }
+        else if ( action == _open_seq_web_item ) {
+            setActionWhenNodeClicked( NodeClickAction.OPEN_SEQ_WEB );
+        }
+        else if ( action == _sort_descendents_item ) {
+            setActionWhenNodeClicked( NodeClickAction.SORT_DESCENDENTS );
+        }
+        else if ( action == _blast_item ) {
+            setActionWhenNodeClicked( NodeClickAction.BLAST );
+        }
+        else if ( action == _open_tax_web_item ) {
+            setActionWhenNodeClicked( NodeClickAction.OPEN_TAX_WEB );
+        }
+        else if ( action == _cut_subtree_item ) {
+            setActionWhenNodeClicked( NodeClickAction.CUT_SUBTREE );
+        }
+        else if ( action == _copy_subtree_item ) {
+            setActionWhenNodeClicked( NodeClickAction.COPY_SUBTREE );
+        }
+        else if ( action == _delete_node_or_subtree_item ) {
+            setActionWhenNodeClicked( NodeClickAction.DELETE_NODE_OR_SUBTREE );
+        }
+        else if ( action == _paste_subtree_item ) {
+            setActionWhenNodeClicked( NodeClickAction.PASTE_SUBTREE );
+        }
+        else if ( action == _add_new_node_item ) {
+            setActionWhenNodeClicked( NodeClickAction.ADD_NEW_NODE );
+        }
+        else if ( action == _edit_node_data_item ) {
+            setActionWhenNodeClicked( NodeClickAction.EDIT_NODE_DATA );
+        }
+        else if ( action == _select_nodes_item ) {
+            setActionWhenNodeClicked( NodeClickAction.SELECT_NODES );
+        }
+        else if ( action == _get_ext_desc_data ) {
+            setActionWhenNodeClicked( NodeClickAction.GET_EXT_DESC_DATA );
+        }
+        else if ( action == _open_pdb_item ) {
+            setActionWhenNodeClicked( NodeClickAction.OPEN_PDB_WEB );
+        }
+        else if ( action == _color_node_font_item ) {
+            setActionWhenNodeClicked( NodeClickAction.COLOR_NODE_FONT );
+        }
+        else if ( action == _change_node_font_item ) {
+            setActionWhenNodeClicked( NodeClickAction.CHANGE_NODE_FONT );
+        }
+        else {
+            throw new RuntimeException( "unknown action: " + action );
+        }
+        // make sure drop down is displaying the correct action
+        // in case this was called from outside the class
+        _click_to_combobox.setSelectedIndex( action );
+    }
+
+    void setColorBranches( final boolean color_branches ) {
+        _color_branches = color_branches;
+    }
+
+    void setDrawPhylogram( final boolean b ) {
+        getDisplayAsPhylogramCb().setSelected( b );
+        setDrawPhylogram( getMainPanel().getCurrentTabIndex(), b );
+    }
+
+    void setDrawPhylogramEnabled( final boolean b ) {
+        getDisplayAsPhylogramCb().setEnabled( b );
+    }
+
+    void setDynamicHidingIsOn( final boolean is_on ) {
+        if ( is_on ) {
+            getDynamicallyHideData().setForeground( getConfiguration().getGuiCheckboxAndButtonActiveColor() );
+        }
+        else {
+            if ( !_configuration.isUseNativeUI() ) {
+                getDynamicallyHideData().setForeground( getConfiguration().getGuiButtonTextColor() );
+            }
+            else {
+                getDynamicallyHideData().setForeground( Color.BLACK );
+            }
+        }
+    }
+
+    void setSearchFoundCountsOnLabel0( final int counts ) {
+        getSearchFoundCountsLabel0().setText( "Found: " + counts );
+    }
+
+    void setSearchFoundCountsOnLabel1( final int counts ) {
+        getSearchFoundCountsLabel1().setText( "Found: " + counts );
+    }
+
+    void setSequenceColors( final Map<String, Color> sequence_colors ) {
+        _sequence_colors = sequence_colors;
+    }
+
+    void setShowEvents( final boolean show_events ) {
+        if ( getShowEventsCb() == null ) {
+            _show_events = new JCheckBox( "" );
+        }
+        getShowEventsCb().setSelected( show_events );
+    }
+
+    void setSpeciesColors( final Map<String, Color> species_colors ) {
+        _species_colors = species_colors;
+    }
+
+    void setupControls() {
+        // The tree display options:
+        setupDisplayCheckboxes();
+        /* GUILHEM_BEG */
+        // The sequence relation query selection combo-box
+        if ( _configuration.displaySequenceRelations() ) {
+            addSequenceRelationBlock();
+        }
+        /* GUILHEM_END */
+        // Click-to options
+        startClickToOptions();
+        setupClickToOptions();
+        endClickToOptions();
+        // Zoom and quick edit buttons
+        addButtons();
+        setupSearchTools0();
+        setupSearchTools1();
+    }
+
+    void setUpControlsForDomainStrucures() {
+        _domain_display_label = new JLabel( "Domain Architectures:" );
+        add( customizeLabel( _domain_display_label, getConfiguration() ) );
+        add( _domain_display_label );
+        _zoom_in_domain_structure = new JButton( "d+" );
+        _zoom_out_domain_structure = new JButton( "d-" );
+        _decr_domain_structure_evalue_thr = new JButton( "-" );
+        _incr_domain_structure_evalue_thr = new JButton( "+" );
+        _zoom_in_domain_structure.setPreferredSize( new Dimension( 10, 10 ) );
+        _zoom_out_domain_structure.setPreferredSize( new Dimension( 10, 10 ) );
+        _decr_domain_structure_evalue_thr.setPreferredSize( new Dimension( 10, 10 ) );
+        _incr_domain_structure_evalue_thr.setPreferredSize( new Dimension( 10, 10 ) );
+        _incr_domain_structure_evalue_thr.setToolTipText( "Increase the E-value threshold by a factor of 10" );
+        _decr_domain_structure_evalue_thr.setToolTipText( "Decrease the E-value threshold by a factor of 10" );
+        _domain_structure_evalue_thr_tf = new JTextField( 3 );
+        _domain_structure_evalue_thr_tf.setEditable( false );
+        if ( !getConfiguration().isUseNativeUI() ) {
+            _domain_structure_evalue_thr_tf.setForeground( getConfiguration().getGuiMenuBackgroundColor() );
+            _domain_structure_evalue_thr_tf.setBackground( getConfiguration().getGuiCheckboxTextColor() );
+            _domain_structure_evalue_thr_tf.setBorder( null );
+        }
+        final JPanel d1_panel = new JPanel( new GridLayout( 1, 2, 0, 0 ) );
+        final JPanel d2_panel = new JPanel( new GridLayout( 1, 3, 0, 0 ) );
+        if ( !_configuration.isUseNativeUI() ) {
+            d1_panel.setBackground( getBackground() );
+            d2_panel.setBackground( getBackground() );
+        }
+        add( d1_panel );
+        add( d2_panel );
+        addJButton( _zoom_out_domain_structure, d1_panel );
+        addJButton( _zoom_in_domain_structure, d1_panel );
+        addJButton( _decr_domain_structure_evalue_thr, d2_panel );
+        addJTextField( _domain_structure_evalue_thr_tf, d2_panel );
+        addJButton( _incr_domain_structure_evalue_thr, d2_panel );
+    }
+
+    void setupSearchTools0() {
+        final JLabel search_label = new JLabel( "Search (A):" );
+        search_label.setFont( ControlPanel.jcb_bold_font );
+        if ( !getConfiguration().isUseNativeUI() ) {
+            search_label.setForeground( getConfiguration().getGuiCheckboxTextColor() );
+        }
+        add( search_label );
+        search_label.setToolTipText( SEARCH_TIP_TEXT );
+        _search_found_label_0 = new JLabel();
+        getSearchFoundCountsLabel0().setVisible( false );
+        _search_found_label_0.setFont( ControlPanel.jcb_bold_font );
+        if ( !getConfiguration().isUseNativeUI() ) {
+            _search_found_label_0.setForeground( getConfiguration().getGuiCheckboxTextColor() );
+        }
+        _search_tf_0 = new JTextField( 3 );
+        _search_tf_0.setToolTipText( SEARCH_TIP_TEXT );
+        _search_tf_0.setEditable( true );
+        if ( !getConfiguration().isUseNativeUI() ) {
+            _search_tf_0.setForeground( getConfiguration().getGuiMenuBackgroundColor() );
+            _search_tf_0.setBackground( getConfiguration().getGuiCheckboxTextColor() );
+            _search_tf_0.setBorder( null );
+        }
+        _search_reset_button_0 = new JButton();
+        getSearchResetButton0().setText( "Reset" );
+        getSearchResetButton0().setEnabled( false );
+        getSearchResetButton0().setVisible( false );
+        final JPanel s_panel_1 = new JPanel( new BorderLayout() );
+        final JPanel s_panel_2 = new JPanel( new GridLayout( 1, 2, 0, 0 ) );
+        s_panel_1.setBackground( getBackground() );
+        add( s_panel_1 );
+        s_panel_2.setBackground( getBackground() );
+        add( s_panel_2 );
+        final KeyAdapter key_adapter = new KeyAdapter() {
+
+            @Override
+            public void keyReleased( final KeyEvent key_event ) {
+                search0();
+                displayedPhylogenyMightHaveChanged( true );
+            }
+        };
+        final ActionListener action_listener = new ActionListener() {
+
+            @Override
+            public void actionPerformed( final ActionEvent e ) {
+                searchReset0();
+                setSearchFoundCountsOnLabel0( 0 );
+                getSearchFoundCountsLabel0().setVisible( false );
+                getSearchTextField0().setText( "" );
+                getSearchResetButton0().setEnabled( false );
+                getSearchResetButton0().setVisible( false );
+                displayedPhylogenyMightHaveChanged( true );
+            }
+        };
+        _search_reset_button_0.addActionListener( action_listener );
+        _search_tf_0.addKeyListener( key_adapter );
+        addJTextField( _search_tf_0, s_panel_1 );
+        s_panel_2.add( _search_found_label_0 );
+        addJButton( _search_reset_button_0, s_panel_2 );
+    }
+
+    void setupSearchTools1() {
+        final JLabel search_label = new JLabel( "Search (B):" );
+        search_label.setFont( ControlPanel.jcb_bold_font );
+        if ( !getConfiguration().isUseNativeUI() ) {
+            search_label.setForeground( getConfiguration().getGuiCheckboxTextColor() );
+        }
+        add( search_label );
+        search_label.setToolTipText( SEARCH_TIP_TEXT );
+        _search_found_label_1 = new JLabel();
+        getSearchFoundCountsLabel1().setVisible( false );
+        _search_found_label_1.setFont( ControlPanel.jcb_bold_font );
+        if ( !getConfiguration().isUseNativeUI() ) {
+            _search_found_label_1.setForeground( getConfiguration().getGuiCheckboxTextColor() );
+        }
+        _search_tf_1 = new JTextField( 3 );
+        _search_tf_1.setToolTipText( SEARCH_TIP_TEXT );
+        _search_tf_1.setEditable( true );
+        if ( !getConfiguration().isUseNativeUI() ) {
+            _search_tf_1.setForeground( getConfiguration().getGuiMenuBackgroundColor() );
+            _search_tf_1.setBackground( getConfiguration().getGuiCheckboxTextColor() );
+            _search_tf_1.setBorder( null );
+        }
+        _search_reset_button_1 = new JButton();
+        getSearchResetButton1().setText( "Reset" );
+        getSearchResetButton1().setEnabled( false );
+        getSearchResetButton1().setVisible( false );
+        final JPanel s_panel_1 = new JPanel( new BorderLayout() );
+        final JPanel s_panel_2 = new JPanel( new GridLayout( 1, 2, 0, 0 ) );
+        s_panel_1.setBackground( getBackground() );
+        add( s_panel_1 );
+        s_panel_2.setBackground( getBackground() );
+        add( s_panel_2 );
+        final KeyAdapter key_adapter = new KeyAdapter() {
+
+            @Override
+            public void keyReleased( final KeyEvent key_event ) {
+                search1();
+                displayedPhylogenyMightHaveChanged( true );
+            }
+        };
+        final ActionListener action_listener = new ActionListener() {
+
+            @Override
+            public void actionPerformed( final ActionEvent e ) {
+                searchReset1();
+                setSearchFoundCountsOnLabel1( 0 );
+                getSearchFoundCountsLabel1().setVisible( false );
+                getSearchTextField1().setText( "" );
+                getSearchResetButton1().setEnabled( false );
+                getSearchResetButton1().setVisible( false );
+                displayedPhylogenyMightHaveChanged( true );
+            }
+        };
+        _search_reset_button_1.addActionListener( action_listener );
+        _search_tf_1.addKeyListener( key_adapter );
+        addJTextField( _search_tf_1, s_panel_1 );
+        s_panel_2.add( _search_found_label_1 );
+        addJButton( _search_reset_button_1, s_panel_2 );
+    }
+
+    void setVisibilityOfDomainStrucureCB() {
+        try {
+            if ( ( getCurrentTreePanel() != null )
+                    && ( ( getCurrentTreePanel().getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR ) || ( getCurrentTreePanel()
+                            .getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED ) ) ) {
+                if ( getMainPanel().getMainFrame()._right_line_up_domains_cbmi != null ) {
+                    getMainPanel().getMainFrame()._right_line_up_domains_cbmi.setVisible( false );
+                }
+                if ( getMainPanel().getMainFrame()._show_domain_labels != null ) {
+                    getMainPanel().getMainFrame()._show_domain_labels.setVisible( false );
+                }
+            }
+            else if ( isShowDomainArchitectures() ) {
+                if ( getMainPanel().getMainFrame()._right_line_up_domains_cbmi != null ) {
+                    getMainPanel().getMainFrame()._right_line_up_domains_cbmi.setVisible( true );
+                }
+                if ( getMainPanel().getMainFrame()._show_domain_labels != null ) {
+                    getMainPanel().getMainFrame()._show_domain_labels.setVisible( true );
+                }
+            }
+            else {
+                if ( getMainPanel().getMainFrame()._right_line_up_domains_cbmi != null ) {
+                    getMainPanel().getMainFrame()._right_line_up_domains_cbmi.setVisible( false );
+                }
+                if ( getMainPanel().getMainFrame()._show_domain_labels != null ) {
+                    getMainPanel().getMainFrame()._show_domain_labels.setVisible( false );
+                }
+            }
+        }
+        catch ( final Exception ignore ) {
+            //not important...
+        }
     }
 
     void setVisibilityOfX() {
@@ -2412,37 +2230,242 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
     }
 
-    void setVisibilityOfDomainStrucureCB() {
-        try {
-            if ( ( getCurrentTreePanel() != null )
-                    && ( ( getCurrentTreePanel().getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR ) || ( getCurrentTreePanel()
-                            .getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED ) ) ) {
-                if ( getMainPanel().getMainFrame()._right_line_up_domains_cbmi != null ) {
-                    getMainPanel().getMainFrame()._right_line_up_domains_cbmi.setVisible( false );
-                }
-                if ( getMainPanel().getMainFrame()._show_domain_labels != null ) {
-                    getMainPanel().getMainFrame()._show_domain_labels.setVisible( false );
-                }
-            }
-            else if ( isShowDomainArchitectures() ) {
-                if ( getMainPanel().getMainFrame()._right_line_up_domains_cbmi != null ) {
-                    getMainPanel().getMainFrame()._right_line_up_domains_cbmi.setVisible( true );
-                }
-                if ( getMainPanel().getMainFrame()._show_domain_labels != null ) {
-                    getMainPanel().getMainFrame()._show_domain_labels.setVisible( true );
-                }
-            }
-            else {
-                if ( getMainPanel().getMainFrame()._right_line_up_domains_cbmi != null ) {
-                    getMainPanel().getMainFrame()._right_line_up_domains_cbmi.setVisible( false );
-                }
-                if ( getMainPanel().getMainFrame()._show_domain_labels != null ) {
-                    getMainPanel().getMainFrame()._show_domain_labels.setVisible( false );
-                }
+    void showAnnotations() {
+        if ( _show_annotation != null ) {
+            _show_annotation.setSelected( true );
+        }
+        if ( _color_according_to_annotation != null ) {
+            _color_according_to_annotation.setSelected( true );
+        }
+        if ( _color_acc_species != null ) {
+            _color_acc_species.setSelected( false );
+        }
+        if ( _color_acc_sequence != null ) {
+            _color_acc_sequence.setSelected( false );
+        }
+        _mainpanel.getCurrentTreePanel().repaint();
+    }
+
+    /**
+     * Fit entire tree into window.
+     */
+    void showWhole() {
+        if ( ( _mainpanel.getCurrentScrollPane() == null ) || _mainpanel.getCurrentTreePanel().getPhylogeny().isEmpty() ) {
+            return;
+        }
+        getCurrentTreePanel().updateSetOfCollapsedExternalNodes();
+        displayedPhylogenyMightHaveChanged( true );
+        _mainpanel.getCurrentTreePanel().updateOvSettings();
+        _mainpanel.getCurrentTreePanel().validate();
+        _mainpanel.validate();
+        _mainpanel.getCurrentTreePanel().calcParametersForPainting( _mainpanel.getSizeOfViewport().width,
+                                                                    _mainpanel.getSizeOfViewport().height );
+        _mainpanel.getCurrentTreePanel().resetPreferredSize();
+        _mainpanel.adjustJScrollPane();
+        _mainpanel.getCurrentTreePanel().repaint();
+        _mainpanel.getCurrentTreePanel().validate();
+        _mainpanel.validate();
+        _mainpanel.getCurrentTreePanel().calcParametersForPainting( _mainpanel.getSizeOfViewport().width,
+                                                                    _mainpanel.getSizeOfViewport().height );
+        _mainpanel.getCurrentTreePanel().resetPreferredSize();
+        _mainpanel.adjustJScrollPane();
+        _mainpanel.getCurrentTreePanel().repaint();
+        _mainpanel.getCurrentTreePanel().updateOvSizes();
+    }
+
+    void showWholeAll() {
+        for( final TreePanel tree_panel : _mainpanel.getTreePanels() ) {
+            if ( tree_panel != null ) {
+                tree_panel.validate();
+                tree_panel.calcParametersForPainting( _mainpanel.getSizeOfViewport().width,
+                                                      _mainpanel.getSizeOfViewport().height );
+                tree_panel.resetPreferredSize();
+                tree_panel.repaint();
             }
         }
-        catch ( final Exception ignore ) {
-            //not important...
+    }
+
+    // Create header for click-to combo box.
+    void startClickToOptions() {
+        final JLabel spacer = new JLabel( "" );
+        spacer.setFont( ControlPanel.jcb_font );
+        add( spacer );
+        _click_to_label = new JLabel( "Click on Node to:" );
+        add( customizeLabel( _click_to_label, getConfiguration() ) );
+        _click_to_combobox = new JComboBox<String>();
+        _click_to_combobox.setFocusable( false );
+        _click_to_combobox.setMaximumRowCount( 14 );
+        _click_to_combobox.setFont( ControlPanel.js_font );
+        if ( !_configuration.isUseNativeUI() ) {
+            _click_to_combobox.setBackground( getConfiguration().getGuiBackgroundColor() );
+        }
+        // don't add listener until all items are set (or each one will trigger
+        // an event)
+        // click_to_list.addActionListener(this);
+        add( _click_to_combobox );
+        // Correlates option names to titles
+        _all_click_to_names = new HashMap<Integer, String>();
+        _click_to_names = new ArrayList<String>();
+    }
+
+    void tabChanged() {
+        if ( getMainPanel().getTabbedPane().getTabCount() > 0 ) {
+            if ( getCurrentTreePanel().isPhyHasBranchLengths()
+                    && ( getCurrentTreePanel().getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR ) ) {
+                setDrawPhylogramEnabled( true );
+                setDrawPhylogram( isDrawPhylogram() );
+            }
+            else {
+                setDrawPhylogramEnabled( false );
+                setDrawPhylogram( false );
+            }
+            if ( getMainPanel().getMainFrame() == null ) {
+                // Must be "E" applet version.
+                final ArchaeopteryxE e = ( ArchaeopteryxE ) ( ( MainPanelApplets ) getMainPanel() ).getApplet();
+                e.setSelectedTypeInTypeMenu( e.getCurrentTreePanel().getPhylogenyGraphicsType() );
+            }
+            else {
+                getMainPanel().getMainFrame().setSelectedTypeInTypeMenu( getMainPanel().getCurrentTreePanel()
+                                                                         .getPhylogenyGraphicsType() );
+            }
+            getMainPanel().getCurrentTreePanel().updateSubSuperTreeButton();
+            getMainPanel().getControlPanel().search0();
+            getMainPanel().getControlPanel().search1();
+            getMainPanel().getControlPanel().updateDomainStructureEvaluethresholdDisplay();
+            getSequenceRelationTypeBox().removeAllItems();
+            for( final SequenceRelation.SEQUENCE_RELATION_TYPE type : getMainPanel().getCurrentPhylogeny()
+                    .getRelevantSequenceRelationTypes() ) {
+                _sequence_relation_type_box.addItem( type );
+            }
+            getMainPanel().getCurrentTreePanel().repaint();
+            //setSequenceRelationQueries( getMainPanel().getCurrentPhylogeny().getSequenceRelationQueries() );
+            // according to GUILHEM the line above can be removed.
+        }
+    }
+
+    /**
+     * Uncollapse all nodes.
+     */
+    void uncollapseAll( final TreePanel tp ) {
+        final Phylogeny t = tp.getPhylogeny();
+        if ( ( t != null ) && !t.isEmpty() ) {
+            for( final PhylogenyNodeIterator iter = t.iteratorPreorder(); iter.hasNext(); ) {
+                final PhylogenyNode node = iter.next();
+                node.setCollapse( false );
+            }
+            tp.resetNodeIdToDistToLeafMap();
+            tp.updateSetOfCollapsedExternalNodes();
+            t.recalculateNumberOfExternalDescendants( false );
+            tp.setNodeInPreorderToNull();
+            t.clearHashIdToNodeMap();
+            showWhole();
+        }
+    }
+
+    void updateDomainStructureEvaluethresholdDisplay() {
+        if ( _domain_structure_evalue_thr_tf != null ) {
+            _domain_structure_evalue_thr_tf.setText( "10^"
+                    + getMainPanel().getCurrentTreePanel().getDomainStructureEvalueThresholdExp() );
+        }
+    }
+
+    void zoomInX( final float factor, final float x_correction_factor ) {
+        final JScrollBar sb = getMainPanel().getCurrentScrollPane().getHorizontalScrollBar();
+        final TreePanel treepanel = getMainPanel().getCurrentTreePanel();
+        treepanel.multiplyUrtFactor( 1f );
+        if ( ( treepanel.getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR )
+                || ( treepanel.getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED )
+                || isDrawPhylogram( getMainPanel().getCurrentTabIndex() )
+                || ( getOptions().getCladogramType() == CLADOGRAM_TYPE.NON_LINED_UP ) ) {
+            final double x = ( sb.getMaximum() - sb.getMinimum() ) / ( sb.getValue() + ( sb.getVisibleAmount() / 2.0 ) );
+            treepanel.setXdistance( ( treepanel.getXdistance() * factor ) );
+            treepanel.setXcorrectionFactor( ( treepanel.getXcorrectionFactor() * x_correction_factor ) );
+            getMainPanel().adjustJScrollPane();
+            treepanel.resetPreferredSize();
+            getMainPanel().getCurrentScrollPane().getViewport().validate();
+            sb.setValue( ForesterUtil.roundToInt( ( ( sb.getMaximum() - sb.getMinimum() ) / x )
+                                                  - ( sb.getVisibleAmount() / 2.0 ) ) );
+        }
+        else {
+            final int x = sb.getMaximum() - sb.getMinimum() - sb.getVisibleAmount() - sb.getValue();
+            treepanel.setXdistance( ( treepanel.getXdistance() * factor ) );
+            treepanel.setXcorrectionFactor( ( treepanel.getXcorrectionFactor() * x_correction_factor ) );
+            getMainPanel().adjustJScrollPane();
+            treepanel.resetPreferredSize();
+            getMainPanel().getCurrentScrollPane().getViewport().validate();
+            sb.setValue( sb.getMaximum() - sb.getMinimum() - x - sb.getVisibleAmount() );
+        }
+        treepanel.resetPreferredSize();
+        treepanel.updateOvSizes();
+    }
+
+    void zoomInY( final float factor ) {
+        final JScrollBar sb = getMainPanel().getCurrentScrollPane().getVerticalScrollBar();
+        final TreePanel treepanel = getMainPanel().getCurrentTreePanel();
+        treepanel.multiplyUrtFactor( 1.1f );
+        final double x = ( sb.getMaximum() - sb.getMinimum() ) / ( sb.getValue() + ( sb.getVisibleAmount() / 2.0 ) );
+        treepanel.setYdistance( ( treepanel.getYdistance() * factor ) );
+        getMainPanel().adjustJScrollPane();
+        treepanel.resetPreferredSize();
+        getMainPanel().getCurrentScrollPane().getViewport().validate();
+        sb.setValue( ForesterUtil.roundToInt( ( ( sb.getMaximum() - sb.getMinimum() ) / x )
+                                              - ( sb.getVisibleAmount() / 2.0 ) ) );
+        treepanel.resetPreferredSize();
+        treepanel.updateOvSizes();
+    }
+
+    void zoomOutX( final float factor, final float x_correction_factor ) {
+        final TreePanel treepanel = getMainPanel().getCurrentTreePanel();
+        treepanel.multiplyUrtFactor( 1f );
+        if ( ( treepanel.getXdistance() * factor ) > 0.0 ) {
+            final JScrollBar sb = getMainPanel().getCurrentScrollPane().getHorizontalScrollBar();
+            if ( ( treepanel.getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR )
+                    || ( treepanel.getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED )
+                    || isDrawPhylogram( getMainPanel().getCurrentTabIndex() )
+                    || ( getOptions().getCladogramType() == CLADOGRAM_TYPE.NON_LINED_UP ) ) {
+                getMainPanel().adjustJScrollPane();
+                treepanel.resetPreferredSize();
+                getMainPanel().getCurrentScrollPane().getViewport().validate();
+                final double x = ( sb.getMaximum() - sb.getMinimum() )
+                        / ( sb.getValue() + ( sb.getVisibleAmount() / 2.0 ) );
+                treepanel.setXdistance( ( treepanel.getXdistance() * factor ) );
+                treepanel.setXcorrectionFactor( ( treepanel.getXcorrectionFactor() * x_correction_factor ) );
+                getMainPanel().adjustJScrollPane();
+                treepanel.resetPreferredSize();
+                getMainPanel().getCurrentScrollPane().getViewport().validate();
+                sb.setValue( ForesterUtil.roundToInt( ( ( sb.getMaximum() - sb.getMinimum() ) / x )
+                                                      - ( sb.getVisibleAmount() / 2.0 ) ) );
+            }
+            else {
+                final int x = sb.getMaximum() - sb.getMinimum() - sb.getVisibleAmount() - sb.getValue();
+                treepanel.setXdistance( treepanel.getXdistance() * factor );
+                treepanel.setXcorrectionFactor( treepanel.getXcorrectionFactor() * x_correction_factor );
+                if ( x > 0 ) {
+                    getMainPanel().adjustJScrollPane();
+                    treepanel.resetPreferredSize();
+                    getMainPanel().getCurrentScrollPane().getViewport().validate();
+                    sb.setValue( sb.getMaximum() - sb.getMinimum() - x - sb.getVisibleAmount() );
+                }
+            }
+            treepanel.resetPreferredSize();
+            treepanel.updateOvSizes();
+        }
+    }
+
+    void zoomOutY( final float factor ) {
+        final TreePanel treepanel = getMainPanel().getCurrentTreePanel();
+        treepanel.multiplyUrtFactor( 0.9f );
+        if ( ( treepanel.getYdistance() * factor ) > 0.0 ) {
+            final JScrollBar sb = getMainPanel().getCurrentScrollPane().getVerticalScrollBar();
+            final double x = ( sb.getMaximum() - sb.getMinimum() ) / ( sb.getValue() + ( sb.getVisibleAmount() / 2.0 ) );
+            treepanel.setYdistance( ( treepanel.getYdistance() * factor ) );
+            getMainPanel().adjustJScrollPane();
+            treepanel.resetPreferredSize();
+            getMainPanel().getCurrentScrollPane().getViewport().validate();
+            sb.setValue( ForesterUtil.roundToInt( ( ( sb.getMaximum() - sb.getMinimum() ) / x )
+                                                  - ( sb.getVisibleAmount() / 2.0 ) ) );
+            treepanel.resetPreferredSize();
+            treepanel.updateOvSizes();
         }
     }
 
@@ -2453,29 +2476,5 @@ final class ControlPanel extends JPanel implements ActionListener {
             label.setBackground( configuration.getGuiBackgroundColor() );
         }
         return label;
-    }
-
-    enum NodeClickAction {
-        ADD_NEW_NODE,
-        BLAST,
-        COLLAPSE,
-        COLOR_SUBTREE,
-        COPY_SUBTREE,
-        CUT_SUBTREE,
-        DELETE_NODE_OR_SUBTREE,
-        EDIT_NODE_DATA,
-        GET_EXT_DESC_DATA,
-        OPEN_PDB_WEB,
-        OPEN_SEQ_WEB,
-        OPEN_TAX_WEB,
-        PASTE_SUBTREE,
-        REROOT,
-        SELECT_NODES,
-        SHOW_DATA,
-        SORT_DESCENDENTS,
-        SUBTREE,
-        SWAP,
-        CHANGE_NODE_FONT,
-        COLOR_NODE_FONT;
     }
 }

@@ -40,6 +40,39 @@ import org.forester.util.ForesterUtil;
  */
 final public class Options {
 
+    public static enum CLADOGRAM_TYPE {
+        EXT_NODE_SUM_DEP, NON_LINED_UP, TOTAL_NODE_SUM_DEP;
+    }
+
+    public static enum NODE_LABEL_DIRECTION {
+        HORIZONTAL, RADIAL;
+    }
+
+    public static enum PHYLOGENY_GRAPHICS_TYPE {
+        CIRCULAR, CONVEX, CURVED, EURO_STYLE, RECTANGULAR, ROUNDED, TRIANGULAR, UNROOTED;
+    }
+
+    static enum OVERVIEW_PLACEMENT_TYPE {
+        LOWER_LEFT( "lower left" ),
+        LOWER_RIGHT( "lower right" ),
+        UPPER_LEFT( "upper left" ),
+        UPPER_RIGHT( "upper right" );
+
+        private final String _name;
+
+        private OVERVIEW_PLACEMENT_TYPE( final String name ) {
+            _name = name;
+        }
+
+        @Override
+        public String toString() {
+            return _name;
+        }
+
+        public String toTag() {
+            return toString().replaceAll( " ", "_" );
+        }
+    }
     static final double                       MIN_CONFIDENCE_DEFAULT = 0.0;
     private boolean                           _abbreviate_scientific_names;
     private boolean                           _allow_errors_in_distance_to_parent;
@@ -54,7 +87,7 @@ final public class Options {
     private NodeVisualData.NodeShape          _default_node_shape;
     private short                             _default_node_shape_size;
     private boolean                           _editable;
-    private NodeDataField                         _ext_desc_data_to_return;
+    private NodeDataField                     _ext_desc_data_to_return;
     private boolean                           _graphics_export_using_actual_size;
     private boolean                           _graphics_export_visible_only;
     private boolean                           _internal_number_are_confidence_for_nh_parsing;
@@ -100,6 +133,14 @@ final public class Options {
         return _allow_errors_in_distance_to_parent;
     }
 
+    final public boolean isLineUpRendarableNodeData() {
+        return _line_up_renderable_node_data;
+    }
+
+    final public boolean isRightLineUpDomains() {
+        return _right_align_domains;
+    }
+
     public final boolean isShowAnnotationRefSource() {
         return _show_annotation_ref_source;
     }
@@ -124,12 +165,81 @@ final public class Options {
         _ext_desc_data_to_return = ext_desc_data_to_return;
     }
 
+    final public void setLineUpRendarableNodeData( final boolean line_up_renderable_node_data ) {
+        _line_up_renderable_node_data = line_up_renderable_node_data;
+    }
+
+    final public void setRightLineUpDomains( final boolean right_align_domains ) {
+        _right_align_domains = right_align_domains;
+    }
+
     public final void setShowAnnotationRefSource( final boolean show_annotation_ref_source ) {
         _show_annotation_ref_source = show_annotation_ref_source;
     }
 
     public void setShowDomainLabels( final boolean show_domain_labels ) {
         _show_domain_labels = show_domain_labels;
+    }
+
+    final private void init() {
+        _default_node_shape = NodeShape.CIRCLE;
+        _default_node_fill = NodeFill.GRADIENT;
+        _default_node_shape_size = Constants.DEFAULT_NODE_SHAPE_SIZE_DEFAULT;
+        _internal_number_are_confidence_for_nh_parsing = false;
+        _show_scale = false;
+        _antialias_screen = true;
+        _antialias_print = true;
+        _graphics_export_visible_only = false;
+        _editable = true;
+        _background_color_gradient = false;
+        _show_default_node_shapes_internal = false;
+        _show_default_node_shapes_external = false;
+        _show_default_node_shapes_for_marked_nodes = false;
+        if ( AptxUtil.isUsOrCanada() ) {
+            _print_size_x = Constants.US_LETTER_SIZE_X;
+            _print_size_y = Constants.US_LETTER_SIZE_Y;
+        }
+        else {
+            _print_size_x = Constants.A4_SIZE_X;
+            _print_size_y = Constants.A4_SIZE_Y;
+        }
+        _min_confidence_value = MIN_CONFIDENCE_DEFAULT;
+        _print_black_and_white = false;
+        _print_using_actual_size = true;
+        _graphics_export_using_actual_size = true;
+        _phylogeny_graphics_type = PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR;
+        _base_font = new Font( Configuration.getDefaultFontFamilyName(), Font.PLAIN, 10 );
+        _match_whole_terms_only = false;
+        _search_with_regex = false;
+        _search_case_sensitive = false;
+        _print_line_width = Constants.PDF_LINE_WIDTH_DEFAULT;
+        _show_overview = true;
+        _ov_placement = OVERVIEW_PLACEMENT_TYPE.UPPER_LEFT;
+        _node_label_direction = NODE_LABEL_DIRECTION.HORIZONTAL;
+        _inverse_search_result = false;
+        _scale_bar_length = 0.0;
+        _number_of_digits_after_comma_for_branch_length_values = Constants.NUMBER_OF_DIGITS_AFTER_COMMA_FOR_BRANCH_LENGTH_VALUES_DEFAULT;
+        _number_of_digits_after_comma_for_confidence_values = Constants.NUMBER_OF_DIGITS_AFTER_COMMA_FOR_CONFIDENCE_VALUES_DEFAULT;
+        _nh_parsing_replace_underscores = false;
+        _taxonomy_extraction = TAXONOMY_EXTRACTION.NO;
+        _cladogram_type = Constants.CLADOGRAM_TYPE_DEFAULT;
+        _show_domain_labels = true;
+        _show_annotation_ref_source = true;
+        setAbbreviateScientificTaxonNames( false );
+        _color_labels_same_as_parent_branch = false;
+        _show_confidence_stddev = false;
+        _nh_conversion_support_value_style = NH_CONVERSION_SUPPORT_VALUE_STYLE.NONE;
+        _ext_desc_data_to_return = NodeDataField.UNKNOWN;
+        _line_up_renderable_node_data = true;
+        _right_align_domains = false;
+    }
+
+    final private void setNumberOfDigitsAfterCommaForBranchLength( final short number_of_digits_after_comma_for_branch_length_values ) {
+        _number_of_digits_after_comma_for_branch_length_values = number_of_digits_after_comma_for_branch_length_values;
+    }
+
+    final private void setNumberOfDigitsAfterCommaForConfidenceValues( final short number_of_digits_after_comma_for_confidence_values ) {
+        _number_of_digits_after_comma_for_confidence_values = number_of_digits_after_comma_for_confidence_values;
     }
 
     final Font getBaseFont() {
@@ -252,10 +362,6 @@ final public class Options {
         return _match_whole_terms_only;
     }
 
-    final boolean isSearchWithRegex() {
-        return _search_with_regex;
-    }
-
     final boolean isPrintBlackAndWhite() {
         return _print_black_and_white;
     }
@@ -270,6 +376,10 @@ final public class Options {
 
     final boolean isSearchCaseSensitive() {
         return _search_case_sensitive;
+    }
+
+    final boolean isSearchWithRegex() {
+        return _search_with_regex;
     }
 
     boolean isShowConfidenceStddev() {
@@ -362,10 +472,6 @@ final public class Options {
         _match_whole_terms_only = search_whole_words_only;
     }
 
-    final void setSearchWithRegex( final boolean search_with_regex ) {
-        _search_with_regex = search_with_regex;
-    }
-
     final void setMinConfidenceValue( final double min_confidence_value ) {
         _min_confidence_value = min_confidence_value;
     }
@@ -418,6 +524,10 @@ final public class Options {
         _search_case_sensitive = search_case_sensitive;
     }
 
+    final void setSearchWithRegex( final boolean search_with_regex ) {
+        _search_with_regex = search_with_regex;
+    }
+
     void setShowConfidenceStddev( final boolean show_confidence_stddev ) {
         _show_confidence_stddev = show_confidence_stddev;
     }
@@ -426,12 +536,12 @@ final public class Options {
         _show_default_node_shapes_external = show_default_node_shapes_external;
     }
 
-    void setShowDefaultNodeShapesInternal( final boolean show_default_node_shapes_internal ) {
-        _show_default_node_shapes_internal = show_default_node_shapes_internal;
-    }
-
     void setShowDefaultNodeShapesForMarkedNodes( final boolean show_default_node_shapes_for_marked_nodes ) {
         _show_default_node_shapes_for_marked_nodes = show_default_node_shapes_for_marked_nodes;
+    }
+
+    void setShowDefaultNodeShapesInternal( final boolean show_default_node_shapes_internal ) {
+        _show_default_node_shapes_internal = show_default_node_shapes_internal;
     }
 
     final void setShowOverview( final boolean show_overview ) {
@@ -444,67 +554,6 @@ final public class Options {
 
     final void setTaxonomyExtraction( final TAXONOMY_EXTRACTION taxonomy_extraction ) {
         _taxonomy_extraction = taxonomy_extraction;
-    }
-
-    final private void init() {
-        _default_node_shape = NodeShape.CIRCLE;
-        _default_node_fill = NodeFill.GRADIENT;
-        _default_node_shape_size = Constants.DEFAULT_NODE_SHAPE_SIZE_DEFAULT;
-        _internal_number_are_confidence_for_nh_parsing = false;
-        _show_scale = false;
-        _antialias_screen = true;
-        _antialias_print = true;
-        _graphics_export_visible_only = false;
-        _editable = true;
-        _background_color_gradient = false;
-        _show_default_node_shapes_internal = false;
-        _show_default_node_shapes_external = false;
-        _show_default_node_shapes_for_marked_nodes = false;
-        if ( AptxUtil.isUsOrCanada() ) {
-            _print_size_x = Constants.US_LETTER_SIZE_X;
-            _print_size_y = Constants.US_LETTER_SIZE_Y;
-        }
-        else {
-            _print_size_x = Constants.A4_SIZE_X;
-            _print_size_y = Constants.A4_SIZE_Y;
-        }
-        _min_confidence_value = MIN_CONFIDENCE_DEFAULT;
-        _print_black_and_white = false;
-        _print_using_actual_size = true;
-        _graphics_export_using_actual_size = true;
-        _phylogeny_graphics_type = PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR;
-        _base_font = new Font( Configuration.getDefaultFontFamilyName(), Font.PLAIN, 10 );
-        _match_whole_terms_only = false;
-        _search_with_regex = false;
-        _search_case_sensitive = false;
-        _print_line_width = Constants.PDF_LINE_WIDTH_DEFAULT;
-        _show_overview = true;
-        _ov_placement = OVERVIEW_PLACEMENT_TYPE.UPPER_LEFT;
-        _node_label_direction = NODE_LABEL_DIRECTION.HORIZONTAL;
-        _inverse_search_result = false;
-        _scale_bar_length = 0.0;
-        _number_of_digits_after_comma_for_branch_length_values = Constants.NUMBER_OF_DIGITS_AFTER_COMMA_FOR_BRANCH_LENGTH_VALUES_DEFAULT;
-        _number_of_digits_after_comma_for_confidence_values = Constants.NUMBER_OF_DIGITS_AFTER_COMMA_FOR_CONFIDENCE_VALUES_DEFAULT;
-        _nh_parsing_replace_underscores = false;
-        _taxonomy_extraction = TAXONOMY_EXTRACTION.NO;
-        _cladogram_type = Constants.CLADOGRAM_TYPE_DEFAULT;
-        _show_domain_labels = true;
-        _show_annotation_ref_source = true;
-        setAbbreviateScientificTaxonNames( false );
-        _color_labels_same_as_parent_branch = false;
-        _show_confidence_stddev = false;
-        _nh_conversion_support_value_style = NH_CONVERSION_SUPPORT_VALUE_STYLE.NONE;
-        _ext_desc_data_to_return = NodeDataField.UNKNOWN;
-        _line_up_renderable_node_data = true;
-        _right_align_domains = false;
-    }
-
-    final private void setNumberOfDigitsAfterCommaForBranchLength( final short number_of_digits_after_comma_for_branch_length_values ) {
-        _number_of_digits_after_comma_for_branch_length_values = number_of_digits_after_comma_for_branch_length_values;
-    }
-
-    final private void setNumberOfDigitsAfterCommaForConfidenceValues( final short number_of_digits_after_comma_for_confidence_values ) {
-        _number_of_digits_after_comma_for_confidence_values = number_of_digits_after_comma_for_confidence_values;
     }
 
     public final static Options createInstance( final Configuration configuration ) {
@@ -521,16 +570,16 @@ final public class Options {
             instance.setBackgroundColorGradient( configuration.isBackgroundColorGradient() );
             if ( configuration.getNumberOfDigitsAfterCommaForBranchLengthValues() >= 0 ) {
                 instance.setNumberOfDigitsAfterCommaForBranchLength( configuration
-                        .getNumberOfDigitsAfterCommaForBranchLengthValues() );
+                                                                     .getNumberOfDigitsAfterCommaForBranchLengthValues() );
             }
             if ( configuration.getNumberOfDigitsAfterCommaForConfidenceValues() >= 0 ) {
                 instance.setNumberOfDigitsAfterCommaForConfidenceValues( configuration
-                        .getNumberOfDigitsAfterCommaForConfidenceValues() );
+                                                                         .getNumberOfDigitsAfterCommaForConfidenceValues() );
             }
             instance.setTaxonomyExtraction( configuration.getTaxonomyExtraction() );
             instance.setReplaceUnderscoresInNhParsing( configuration.isReplaceUnderscoresInNhParsing() );
             instance.setInternalNumberAreConfidenceForNhParsing( configuration
-                    .isInternalNumberAreConfidenceForNhParsing() );
+                                                                 .isInternalNumberAreConfidenceForNhParsing() );
             instance.setEditable( configuration.isEditable() );
             instance.setColorLabelsSameAsParentBranch( configuration.isColorLabelsSameAsParentBranch() );
             instance.setShowDomainLabels( configuration.isShowDomainLabels() );
@@ -550,7 +599,7 @@ final public class Options {
             }
             if ( !ForesterUtil.isEmpty( configuration.getBaseFontFamilyName() ) ) {
                 instance.setBaseFont( new Font( configuration.getBaseFontFamilyName(), Font.PLAIN, instance
-                        .getBaseFont().getSize() ) );
+                                                .getBaseFont().getSize() ) );
             }
             if ( configuration.getPhylogenyGraphicsType() != null ) {
                 instance.setPhylogenyGraphicsType( configuration.getPhylogenyGraphicsType() );
@@ -579,55 +628,5 @@ final public class Options {
 
     final static Options createDefaultInstance() {
         return new Options();
-    }
-
-    public static enum CLADOGRAM_TYPE {
-        EXT_NODE_SUM_DEP, NON_LINED_UP, TOTAL_NODE_SUM_DEP;
-    }
-
-    public static enum NODE_LABEL_DIRECTION {
-        HORIZONTAL, RADIAL;
-    }
-
-    public static enum PHYLOGENY_GRAPHICS_TYPE {
-        CIRCULAR, CONVEX, CURVED, EURO_STYLE, RECTANGULAR, ROUNDED, TRIANGULAR, UNROOTED;
-    }
-
-    static enum OVERVIEW_PLACEMENT_TYPE {
-        LOWER_LEFT( "lower left" ),
-        LOWER_RIGHT( "lower right" ),
-        UPPER_LEFT( "upper left" ),
-        UPPER_RIGHT( "upper right" );
-
-        private final String _name;
-
-        private OVERVIEW_PLACEMENT_TYPE( final String name ) {
-            _name = name;
-        }
-
-        @Override
-        public String toString() {
-            return _name;
-        }
-
-        public String toTag() {
-            return toString().replaceAll( " ", "_" );
-        }
-    }
-
-    final public boolean isLineUpRendarableNodeData() {
-        return _line_up_renderable_node_data;
-    }
-
-    final public boolean isRightLineUpDomains() {
-        return _right_align_domains;
-    }
-
-    final public void setLineUpRendarableNodeData( final boolean line_up_renderable_node_data ) {
-        _line_up_renderable_node_data = line_up_renderable_node_data;
-    }
-
-    final public void setRightLineUpDomains( final boolean right_align_domains ) {
-        _right_align_domains = right_align_domains;
     }
 }
