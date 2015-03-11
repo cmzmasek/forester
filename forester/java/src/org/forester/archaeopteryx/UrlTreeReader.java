@@ -29,7 +29,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Date;
 
 import javax.swing.JOptionPane;
 
@@ -65,7 +64,6 @@ public class UrlTreeReader implements Runnable {
     }
 
     synchronized void readPhylogeniesFromWebservice() {
-        final long start_time = new Date().getTime();
         URL url = null;
         Phylogeny[] trees = null;
         final WebservicesManager webservices_manager = WebservicesManager.getInstance();
@@ -132,7 +130,7 @@ public class UrlTreeReader implements Runnable {
                     case PFAM:
                         parser = new NHXParser();
                         ( ( NHXParser ) parser )
-                        .setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT );
+                                .setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT );
                         ( ( NHXParser ) parser ).setReplaceUnderscores( false );
                         ( ( NHXParser ) parser ).setGuessRootedness( true );
                         break;
@@ -245,23 +243,23 @@ public class UrlTreeReader implements Runnable {
                         }
                         _main_frame.getMainPanel().getCurrentTreePanel().setTreeFile( new File( my_name_for_file ) );
                         AptxUtil.lookAtSomeTreePropertiesForAptxControlSettings( phylogeny, _main_frame.getMainPanel()
-                                                                                 .getControlPanel(), _main_frame.getConfiguration() );
+                                .getControlPanel(), _main_frame.getConfiguration() );
                         _main_frame.getMainPanel().getControlPanel().showWhole();
                     }
                 }
             }
             else if ( !exception ) {
                 JOptionPane.showMessageDialog( null, ForesterUtil.wordWrap( "Failed to read in tree(s) from [" + url
-                                                                            + "]", 80 ), "Error", JOptionPane.ERROR_MESSAGE );
+                        + "]", 80 ), "Error", JOptionPane.ERROR_MESSAGE );
             }
             _main_frame.getContentPane().repaint();
             if ( ( trees != null ) && ( trees.length > 0 ) ) {
                 try {
                     JOptionPane.showMessageDialog( null,
                                                    ForesterUtil.wordWrap( "Successfully read in " + trees.length
-                                                                          + " tree(s) from [" + url + "]", 80 ),
-                                                                          "Success",
-                                                                          JOptionPane.INFORMATION_MESSAGE );
+                                                           + " tree(s) from [" + url + "]", 80 ),
+                                                   "Success",
+                                                   JOptionPane.INFORMATION_MESSAGE );
                 }
                 catch ( final Exception e ) {
                     // Not important if this fails, do nothing.

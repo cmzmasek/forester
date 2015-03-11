@@ -138,9 +138,9 @@ public class ArchaeopteryxA extends JApplet {
             _mainframe_applet = new MainFrameApplet( this, configuration, getSpeciesTreeUrlStr() );
             final URL tree_url = new URL( getTreeUrlStr() );
             final Phylogeny[] phys = AptxUtil.readPhylogeniesFromUrl( tree_url, configuration
-                                                                      .isValidatePhyloXmlAgainstSchema(), configuration.isReplaceUnderscoresInNhParsing(), configuration
-                                                                      .isInternalNumberAreConfidenceForNhParsing(), configuration.getTaxonomyExtraction(), configuration
-                                                                      .isMidpointReroot() );
+                    .isValidatePhyloXmlAgainstSchema(), configuration.isReplaceUnderscoresInNhParsing(), configuration
+                    .isInternalNumberAreConfidenceForNhParsing(), configuration.getTaxonomyExtraction(), configuration
+                    .isMidpointReroot() );
             if ( phys == null ) {
                 ForesterUtil.printErrorMessage( NAME, "phylogenies from [" + tree_url + "] are null" );
             }
@@ -183,12 +183,12 @@ public class ArchaeopteryxA extends JApplet {
         final String default_relation = getParameter( Constants.APPLET_PARAM_NAME_FOR_DEFAULT_SEQUENCE_RELATION_TYPE );
         if ( default_relation != null ) {
             getMainFrameApplet().getMainPanel().getControlPanel().getSequenceRelationTypeBox()
-            .setSelectedItem( default_relation );
+                    .setSelectedItem( default_relation );
         }
         final String default_sequence = getParameter( Constants.APPLET_PARAM_NAME_FOR_DEFAULT_QUERY_SEQUENCE );
         if ( default_sequence != null ) {
             getMainFrameApplet().getMainPanel().getControlPanel().getSequenceRelationBox()
-            .setSelectedItem( default_sequence );
+                    .setSelectedItem( default_sequence );
         }
         /* GUILHEM_END */
     }

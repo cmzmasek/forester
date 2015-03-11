@@ -46,7 +46,7 @@ public final class Constants {
     final static String         PRG_DATE                                                      = "150306";
     final static String         DEFAULT_CONFIGURATION_FILE_NAME                               = "_aptx_configuration_file";
     final static String[]       DEFAULT_FONT_CHOICES                                          = { "Arial", "Helvetica",
-        "Verdana", "Tahoma", "Dialog", "Lucida Sans", "SansSerif", "Sans-serif", "Sans"  };
+            "Verdana", "Tahoma", "Dialog", "Lucida Sans", "SansSerif", "Sans-serif", "Sans"  };
     final static boolean        VERBOSE_DEFAULT                                               = false;
     final static int            DOMAIN_STRUCTURE_DEFAULT_WIDTH                                = 100;
     final static String         AUTHOR_EMAIL                                                  = "phyloxml@gmail.com";

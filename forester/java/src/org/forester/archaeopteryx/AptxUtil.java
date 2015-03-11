@@ -98,7 +98,7 @@ public final class AptxUtil {
         }
     }
     private final static String[] AVAILABLE_FONT_FAMILIES_SORTED = GraphicsEnvironment.getLocalGraphicsEnvironment()
-            .getAvailableFontFamilyNames();
+                                                                         .getAvailableFontFamilyNames();
     static {
         Arrays.sort( AVAILABLE_FONT_FAMILIES_SORTED );
     }
@@ -290,7 +290,7 @@ public final class AptxUtil {
                                                             final boolean internal_numbers_are_confidences,
                                                             final TAXONOMY_EXTRACTION taxonomy_extraction,
                                                             final boolean midpoint_reroot )
-                                                                    throws FileNotFoundException, IOException {
+            throws FileNotFoundException, IOException {
         final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
         final PhylogenyParser parser;
         boolean nhx_or_nexus = false;
@@ -338,7 +338,7 @@ public final class AptxUtil {
     final public static void showErrorMessage( final Component parent, final String error_msg ) {
         printAppletMessage( Constants.PRG_NAME, error_msg );
         JOptionPane.showMessageDialog( parent, error_msg, "[" + Constants.PRG_NAME + " " + Constants.VERSION
-                                       + "] Error", JOptionPane.ERROR_MESSAGE );
+                + "] Error", JOptionPane.ERROR_MESSAGE );
     }
 
     public static void writePhylogenyToGraphicsFile( final File intree,
@@ -363,7 +363,7 @@ public final class AptxUtil {
         phys[ 0 ] = phy;
         final MainFrameApplication mf = MainFrameApplication.createInstance( phys, config );
         AptxUtil.writePhylogenyToGraphicsFileNonInteractive( outfile, width, height, mf.getMainPanel()
-                                                             .getCurrentTreePanel(), mf.getMainPanel().getControlPanel(), type, mf.getOptions() );
+                .getCurrentTreePanel(), mf.getMainPanel().getControlPanel(), type, mf.getOptions() );
         mf.end();
     }
 
@@ -417,8 +417,8 @@ public final class AptxUtil {
     }
 
     final private static void openUrlInWebBrowser( final String url ) throws IOException, ClassNotFoundException,
-    SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException,
-    InvocationTargetException, InterruptedException {
+            SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException,
+            InvocationTargetException, InterruptedException {
         final String os = System.getProperty( "os.name" );
         final Runtime runtime = Runtime.getRuntime();
         if ( os.toLowerCase().startsWith( "win" ) ) {
@@ -453,8 +453,8 @@ public final class AptxUtil {
                                             final MainPanel main_panel ) {
         if ( phys.length > Constants.MAX_TREES_TO_LOAD ) {
             JOptionPane.showMessageDialog( main_panel, "Attempt to load " + phys.length
-                                           + " phylogenies,\ngoing to load only the first " + Constants.MAX_TREES_TO_LOAD, Constants.PRG_NAME
-                                           + " more than " + Constants.MAX_TREES_TO_LOAD + " phylogenies", JOptionPane.WARNING_MESSAGE );
+                    + " phylogenies,\ngoing to load only the first " + Constants.MAX_TREES_TO_LOAD, Constants.PRG_NAME
+                    + " more than " + Constants.MAX_TREES_TO_LOAD + " phylogenies", JOptionPane.WARNING_MESSAGE );
         }
         int i = 1;
         for( final Phylogeny phy : phys ) {
@@ -825,8 +825,8 @@ public final class AptxUtil {
         JOptionPane.showMessageDialog( null,
                                        "Java memory allocation might be too small, try \"-Xmx2048m\" java command line option"
                                                + "\n\nError: " + e.getLocalizedMessage(),
-                                               "Out of Memory Error [" + Constants.PRG_NAME + " " + Constants.VERSION + "]",
-                                               JOptionPane.ERROR_MESSAGE );
+                                       "Out of Memory Error [" + Constants.PRG_NAME + " " + Constants.VERSION + "]",
+                                       JOptionPane.ERROR_MESSAGE );
         System.exit( -1 );
     }
 
@@ -855,10 +855,10 @@ public final class AptxUtil {
             sb.append( s + "\n" );
         }
         JOptionPane
-        .showMessageDialog( null,
-                            "An unexpected (possibly severe) error has occured - terminating. \nPlease contact: "
-                                    + Constants.AUTHOR_EMAIL + " \nError: " + e.getLocalizedMessage() + "\n"
-                                    + sb,
+                .showMessageDialog( null,
+                                    "An unexpected (possibly severe) error has occured - terminating. \nPlease contact: "
+                                            + Constants.AUTHOR_EMAIL + " \nError: " + e.getLocalizedMessage() + "\n"
+                                            + sb,
                                     "Unexpected Severe Error [" + Constants.PRG_NAME + " " + Constants.VERSION + "]",
                                     JOptionPane.ERROR_MESSAGE );
         System.exit( -1 );
@@ -876,8 +876,8 @@ public final class AptxUtil {
                                        "An unexpected exception has occured. \nPlease contact: "
                                                + Constants.AUTHOR_EMAIL + " \nException: " + e.getLocalizedMessage()
                                                + "\n" + sb,
-                                               "Unexpected Exception [" + Constants.PRG_NAME + Constants.VERSION + "]",
-                                               JOptionPane.ERROR_MESSAGE );
+                                       "Unexpected Exception [" + Constants.PRG_NAME + Constants.VERSION + "]",
+                                       JOptionPane.ERROR_MESSAGE );
     }
 
     final static String writePhylogenyToGraphicsByteArrayOutputStream( final ByteArrayOutputStream baos,

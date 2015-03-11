@@ -150,7 +150,7 @@ public class TreePanelUtil {
         if ( cp.isShowSeqSymbols() && node.getNodeData().isHasSequence()
                 && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getSymbol() ) ) {
             TreePanelUtil
-            .showExtDescNodeDataUserSelectedHelperHelper( node.getNodeData().getSequence().getSymbol(), sb );
+                    .showExtDescNodeDataUserSelectedHelperHelper( node.getNodeData().getSequence().getSymbol(), sb );
         }
         if ( cp.isShowGeneNames() && node.getNodeData().isHasSequence()
                 && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getGeneName() ) ) {
@@ -161,22 +161,22 @@ public class TreePanelUtil {
                 && ( node.getNodeData().getSequence().getAccession() != null )
                 && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().toString() ) ) {
             TreePanelUtil.showExtDescNodeDataUserSelectedHelperHelper( node.getNodeData().getSequence().getAccession()
-                                                                       .toString(), sb );
+                    .toString(), sb );
         }
         if ( cp.isShowTaxonomyCode() && node.getNodeData().isHasTaxonomy()
                 && !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getTaxonomyCode() ) ) {
             TreePanelUtil.showExtDescNodeDataUserSelectedHelperHelper( node.getNodeData().getTaxonomy()
-                                                                       .getTaxonomyCode(), sb );
+                    .getTaxonomyCode(), sb );
         }
         if ( cp.isShowTaxonomyScientificNames() && node.getNodeData().isHasTaxonomy()
                 && !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getScientificName() ) ) {
             TreePanelUtil.showExtDescNodeDataUserSelectedHelperHelper( node.getNodeData().getTaxonomy()
-                                                                       .getScientificName(), sb );
+                    .getScientificName(), sb );
         }
         if ( cp.isShowTaxonomyCommonNames() && node.getNodeData().isHasTaxonomy()
                 && !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getCommonName() ) ) {
             TreePanelUtil
-            .showExtDescNodeDataUserSelectedHelperHelper( node.getNodeData().getTaxonomy().getCommonName(), sb );
+                    .showExtDescNodeDataUserSelectedHelperHelper( node.getNodeData().getTaxonomy().getCommonName(), sb );
         }
         //        if ( ( cp.isShowSeqNames() || cp.isShowSeqSymbols() || cp.isShowSequenceAcc() )
         //                && node.getNodeData().isHasSequence()
@@ -211,7 +211,7 @@ public class TreePanelUtil {
                     TreePanelUtil.collapseSubtree( n, true );
                     if ( !n.getNodeData().isHasTaxonomy() ) {
                         n.getNodeData().setTaxonomy( ( Taxonomy ) n.getAllExternalDescendants().get( 0 ).getNodeData()
-                                                     .getTaxonomy().copy() );
+                                .getTaxonomy().copy() );
                     }
                     inferred = true;
                 }
@@ -283,7 +283,7 @@ public class TreePanelUtil {
                     final List<PhylogenyNode> descs = PhylogenyMethods.getAllDescendants( n );
                     for( final PhylogenyNode desc : descs ) {
                         desc.getBranchData()
-                        .setBranchColor( new BranchColor( tree_panel.calculateTaxonomyBasedColor( tax ) ) );
+                                .setBranchColor( new BranchColor( tree_panel.calculateTaxonomyBasedColor( tax ) ) );
                     }
                 }
             }
@@ -298,11 +298,11 @@ public class TreePanelUtil {
             if ( n.getNodeData().isHasTaxonomy()
                     && ( !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getScientificName() )
                             || !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getCommonName() ) || !ForesterUtil
-                            .isEmpty( n.getNodeData().getTaxonomy().getTaxonomyCode() ) ) ) {
+                                .isEmpty( n.getNodeData().getTaxonomy().getTaxonomyCode() ) ) ) {
                 if ( !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getRank() )
                         && n.getNodeData().getTaxonomy().getRank().equalsIgnoreCase( rank ) ) {
                     final BranchColor c = new BranchColor( tree_panel.calculateTaxonomyBasedColor( n.getNodeData()
-                                                                                                   .getTaxonomy() ) );
+                            .getTaxonomy() ) );
                     TreePanelUtil.colorizeSubtree( n, c );
                     ++colorizations;
                     if ( !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getScientificName() ) ) {
@@ -320,7 +320,7 @@ public class TreePanelUtil {
                     for( final String lin : node.getNodeData().getTaxonomy().getLineage() ) {
                         if ( true_lineage_to_color_map.containsKey( lin ) ) {
                             TreePanelUtil
-                            .colorizeSubtree( node, new BranchColor( true_lineage_to_color_map.get( lin ) ) );
+                                    .colorizeSubtree( node, new BranchColor( true_lineage_to_color_map.get( lin ) ) );
                             ++colorizations;
                             success = true;
                             break;

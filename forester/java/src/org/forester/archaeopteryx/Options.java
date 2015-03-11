@@ -570,16 +570,16 @@ final public class Options {
             instance.setBackgroundColorGradient( configuration.isBackgroundColorGradient() );
             if ( configuration.getNumberOfDigitsAfterCommaForBranchLengthValues() >= 0 ) {
                 instance.setNumberOfDigitsAfterCommaForBranchLength( configuration
-                                                                     .getNumberOfDigitsAfterCommaForBranchLengthValues() );
+                        .getNumberOfDigitsAfterCommaForBranchLengthValues() );
             }
             if ( configuration.getNumberOfDigitsAfterCommaForConfidenceValues() >= 0 ) {
                 instance.setNumberOfDigitsAfterCommaForConfidenceValues( configuration
-                                                                         .getNumberOfDigitsAfterCommaForConfidenceValues() );
+                        .getNumberOfDigitsAfterCommaForConfidenceValues() );
             }
             instance.setTaxonomyExtraction( configuration.getTaxonomyExtraction() );
             instance.setReplaceUnderscoresInNhParsing( configuration.isReplaceUnderscoresInNhParsing() );
             instance.setInternalNumberAreConfidenceForNhParsing( configuration
-                                                                 .isInternalNumberAreConfidenceForNhParsing() );
+                    .isInternalNumberAreConfidenceForNhParsing() );
             instance.setEditable( configuration.isEditable() );
             instance.setColorLabelsSameAsParentBranch( configuration.isColorLabelsSameAsParentBranch() );
             instance.setShowDomainLabels( configuration.isShowDomainLabels() );
@@ -599,7 +599,7 @@ final public class Options {
             }
             if ( !ForesterUtil.isEmpty( configuration.getBaseFontFamilyName() ) ) {
                 instance.setBaseFont( new Font( configuration.getBaseFontFamilyName(), Font.PLAIN, instance
-                                                .getBaseFont().getSize() ) );
+                        .getBaseFont().getSize() ) );
             }
             if ( configuration.getPhylogenyGraphicsType() != null ) {
                 instance.setPhylogenyGraphicsType( configuration.getPhylogenyGraphicsType() );

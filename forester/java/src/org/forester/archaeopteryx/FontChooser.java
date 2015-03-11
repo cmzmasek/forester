@@ -41,7 +41,7 @@ public class FontChooser extends JDialog implements ActionListener, ListSelectio
     public static final long      serialVersionUID  = 62256323L;
     private static final String[] STYLE             = { REGULAR, BOLD, ITALIC, BOLD_ITALIC };
     private static final String[] SIZE              = { "3", "4", "6", "8", "10", "12", "14", "16", "18", "20", "22",
-        "24", "26", "28", "36", "72"           };
+            "24", "26", "28", "36", "72"           };
     private static final int      OK_OPTION         = 1;
     private static final int      CANCEL_OPTION     = 2;
     private Font                  _font;

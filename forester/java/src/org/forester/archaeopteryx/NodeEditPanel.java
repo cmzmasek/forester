@@ -355,12 +355,12 @@ class NodeEditPanel extends JPanel {
                                NodePanel.EVENTS_DUPLICATIONS,
                                String.valueOf( events.getNumberOfDuplications() >= 0 ? events.getNumberOfDuplications()
                                        : 0 ),
-                                       PHYLOXML_TAG.EVENTS_DUPLICATIONS );
+                               PHYLOXML_TAG.EVENTS_DUPLICATIONS );
         addSubelementEditable( category,
                                NodePanel.EVENTS_SPECIATIONS,
                                String.valueOf( events.getNumberOfSpeciations() >= 0 ? events.getNumberOfSpeciations()
                                        : 0 ),
-                                       PHYLOXML_TAG.EVENTS_SPECIATIONS );
+                               PHYLOXML_TAG.EVENTS_SPECIATIONS );
         addSubelementEditable( category,
                                NodePanel.EVENTS_GENE_LOSSES,
                                String.valueOf( events.getNumberOfGeneLosses() >= 0 ? events.getNumberOfGeneLosses() : 0 ),
@@ -418,7 +418,7 @@ class NodeEditPanel extends JPanel {
             for( final Uri uri : seq.getUris() ) {
                 if ( uri != null ) {
                     addSubelementEditable( category, NodePanel.SEQ_URI + " [" + uri_counter + "]", uri.getValue()
-                                           .toString(), PHYLOXML_TAG.SEQ_URI, uri_counter++ );
+                            .toString(), PHYLOXML_TAG.SEQ_URI, uri_counter++ );
                 }
             }
         }
@@ -545,7 +545,7 @@ class NodeEditPanel extends JPanel {
             for( final Uri uri : tax.getUris() ) {
                 if ( uri != null ) {
                     addSubelementEditable( category, NodePanel.TAXONOMY_URI + " [" + uri_counter + "]", uri.getValue()
-                                           .toString(), PHYLOXML_TAG.TAXONOMY_URI, uri_counter++ );
+                            .toString(), PHYLOXML_TAG.TAXONOMY_URI, uri_counter++ );
                 }
             }
         }

@@ -351,7 +351,7 @@ class NodePanel extends JPanel implements TreeSelectionListener {
         for( final String key : properties_map.keySet() ) {
             final Property prop = properties_map.get( key );
             category.add( new DefaultMutableTreeNode( prop.getRef() + "=" + prop.getValue() + " " + prop.getUnit()
-                                                      + " [" + prop.getAppliesTo().toString() + "]" ) );
+                    + " [" + prop.getAppliesTo().toString() + "]" ) );
         }
     }
 

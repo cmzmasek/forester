@@ -88,7 +88,7 @@ public final class Archaeopteryx {
                     }
                     boolean nhx_or_nexus = false;
                     final PhylogenyParser p = ParserUtils.createParserDependingOnFileType( f, conf
-                                                                                           .isValidatePhyloXmlAgainstSchema() );
+                            .isValidatePhyloXmlAgainstSchema() );
                     if ( p instanceof NHXParser ) {
                         nhx_or_nexus = true;
                         final NHXParser nhx = ( NHXParser ) p;
