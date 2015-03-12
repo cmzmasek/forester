@@ -273,13 +273,12 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem                        _phyloxml_ref_item;
     JMenuItem                        _aptx_ref_item;
     //
-    JFileChooser                     _writetopdf_filechooser;
     File                             _current_dir;
+    JFileChooser                     _writetopdf_filechooser;
     JFileChooser                     _save_filechooser;
     JFileChooser                     _writetographics_filechooser;
     // process menu:
     JMenu                            _process_menu;
-    // Handy pointers to child components:
     MainPanel                        _mainpanel;
     Container                        _contentpane;
     final LinkedList<TextFrame>      _textframes                             = new LinkedList<TextFrame>();                                                                                                                                                  ;
@@ -293,15 +292,27 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     MainFrame() {
         _process_pool = ProcessPool.createInstance();
         _writetopdf_filechooser = new JFileChooser();
+        _writetopdf_filechooser.setMultiSelectionEnabled( false );
+        _writetopdf_filechooser.addChoosableFileFilter( pdffilter );
+        _writetographics_filechooser = new JFileChooser();
+        _writetographics_filechooser.setMultiSelectionEnabled( false );
+        _writetographics_filechooser.addChoosableFileFilter( graphicsfilefilter );
         _save_filechooser = new JFileChooser();
-        _save_filechooser.setCurrentDirectory( new File( "." ) );
         _save_filechooser.setMultiSelectionEnabled( false );
         _save_filechooser.setFileFilter( xmlfilter );
         _save_filechooser.addChoosableFileFilter( nhfilter );
         _save_filechooser.addChoosableFileFilter( nexusfilter );
         _save_filechooser.addChoosableFileFilter( _save_filechooser.getAcceptAllFileFilter() );
-        _writetographics_filechooser = new JFileChooser();
-        _writetographics_filechooser.addChoosableFileFilter( MainFrame.graphicsfilefilter );
+        try {
+            final String home_dir = System.getProperty( "user.home" );
+            _save_filechooser.setCurrentDirectory( new File( home_dir ) );
+            _writetopdf_filechooser.setCurrentDirectory( new File( home_dir ) );
+            _writetographics_filechooser.setCurrentDirectory( new File( home_dir ) );
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace();
+            // Do nothing. Not important.
+        }
     }
 
     /**

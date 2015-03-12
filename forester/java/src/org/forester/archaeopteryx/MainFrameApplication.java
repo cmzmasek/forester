@@ -244,14 +244,12 @@ public final class MainFrameApplication extends MainFrame {
         setOptions( Options.createInstance( _configuration ) );
         setInferenceManager( InferenceManager.createInstance( _configuration ) );
         setPhylogeneticInferenceOptions( PhylogeneticInferenceOptions.createInstance( _configuration ) );
-        //     _textframe = null; #~~~~
         // set title
         setTitle( Constants.PRG_NAME + " " + Constants.VERSION + " (" + Constants.PRG_DATE + ")" );
         _mainpanel = new MainPanel( _configuration, this );
         // The file dialogs
         _open_filechooser = new JFileChooser();
-        _open_filechooser.setCurrentDirectory( new File( "." ) );
-        _open_filechooser.setMultiSelectionEnabled( false );
+        _open_filechooser.setMultiSelectionEnabled( true );
         _open_filechooser.addChoosableFileFilter( MainFrame.xmlfilter );
         _open_filechooser.addChoosableFileFilter( MainFrame.nhxfilter );
         _open_filechooser.addChoosableFileFilter( MainFrame.nhfilter );
@@ -260,44 +258,41 @@ public final class MainFrameApplication extends MainFrame {
         _open_filechooser.addChoosableFileFilter( _open_filechooser.getAcceptAllFileFilter() );
         _open_filechooser.setFileFilter( MainFrame.defaultfilter );
         _open_filechooser_for_species_tree = new JFileChooser();
-        _open_filechooser_for_species_tree.setCurrentDirectory( new File( "." ) );
         _open_filechooser_for_species_tree.setMultiSelectionEnabled( false );
         _open_filechooser_for_species_tree.addChoosableFileFilter( MainFrame.xmlfilter );
         _open_filechooser_for_species_tree.addChoosableFileFilter( MainFrame.tolfilter );
         _open_filechooser_for_species_tree.setFileFilter( MainFrame.xmlfilter );
-        _save_filechooser = new JFileChooser();
-        _save_filechooser.setCurrentDirectory( new File( "." ) );
-        _save_filechooser.setMultiSelectionEnabled( false );
-        _save_filechooser.setFileFilter( MainFrame.xmlfilter );
-        _save_filechooser.addChoosableFileFilter( MainFrame.nhfilter );
-        _save_filechooser.addChoosableFileFilter( MainFrame.nexusfilter );
-        _save_filechooser.addChoosableFileFilter( _save_filechooser.getAcceptAllFileFilter() );
-        _writetopdf_filechooser = new JFileChooser();
-        _writetopdf_filechooser.addChoosableFileFilter( MainFrame.pdffilter );
-        _writetographics_filechooser = new JFileChooser();
-        _writetographics_filechooser.addChoosableFileFilter( MainFrame.graphicsfilefilter );
         // Msa:
         _msa_filechooser = new JFileChooser();
         _msa_filechooser.setName( "Read Multiple Sequence Alignment File" );
-        _msa_filechooser.setCurrentDirectory( new File( "." ) );
         _msa_filechooser.setMultiSelectionEnabled( false );
         _msa_filechooser.addChoosableFileFilter( _msa_filechooser.getAcceptAllFileFilter() );
         _msa_filechooser.addChoosableFileFilter( MainFrame.msafilter );
         // Seqs:
         _seqs_pi_filechooser = new JFileChooser();
         _seqs_pi_filechooser.setName( "Read Sequences File" );
-        _seqs_pi_filechooser.setCurrentDirectory( new File( "." ) );
         _seqs_pi_filechooser.setMultiSelectionEnabled( false );
         _seqs_pi_filechooser.addChoosableFileFilter( _seqs_pi_filechooser.getAcceptAllFileFilter() );
         _seqs_pi_filechooser.addChoosableFileFilter( MainFrame.seqsfilter );
         // Expression
         _values_filechooser = new JFileChooser();
-        _values_filechooser.setCurrentDirectory( new File( "." ) );
         _values_filechooser.setMultiSelectionEnabled( false );
         // Sequences
         _sequences_filechooser = new JFileChooser();
-        _sequences_filechooser.setCurrentDirectory( new File( "." ) );
         _sequences_filechooser.setMultiSelectionEnabled( false );
+        try {
+            final String home_dir = System.getProperty( "user.home" );
+            _open_filechooser.setCurrentDirectory( new File( home_dir ) );
+            _open_filechooser_for_species_tree.setCurrentDirectory( new File( home_dir ) );
+            _msa_filechooser.setCurrentDirectory( new File( home_dir ) );
+            _seqs_pi_filechooser.setCurrentDirectory( new File( home_dir ) );
+            _values_filechooser.setCurrentDirectory( new File( home_dir ) );
+            _sequences_filechooser.setCurrentDirectory( new File( home_dir ) );
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace();
+            // Do nothing. Not important.
+        }
         // build the menu bar
         _jmenubar = new JMenuBar();
         if ( !_configuration.isUseNativeUI() ) {
@@ -1440,7 +1435,6 @@ public final class MainFrameApplication extends MainFrame {
         Phylogeny[] phys = null;
         // Set an initial directory if none set yet
         final File my_dir = getCurrentDir();
-        _open_filechooser.setMultiSelectionEnabled( true );
         // Open file-open dialog and set current directory
         if ( my_dir != null ) {
             _open_filechooser.setCurrentDirectory( my_dir );

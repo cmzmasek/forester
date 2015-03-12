@@ -151,6 +151,13 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
     private File                        _current_dir;
     private JFileChooser                _save_filechooser;
     private JFileChooser                _writetographics_filechooser;
+    private JCheckBoxMenuItem           _graphics_export_visible_only_cbmi;
+    private JCheckBoxMenuItem           _antialias_print_cbmi;
+    private JCheckBoxMenuItem           _print_black_and_white_cbmi;
+    private JCheckBoxMenuItem           _print_using_actual_size_cbmi;
+    private JCheckBoxMenuItem           _graphics_export_using_actual_size_cbmi;
+    private JMenuItem                   _print_size_mi;
+    private JMenuItem                   _choose_pdf_width_mi;
 
     @Override
     public void actionPerformed( final ActionEvent e ) {
@@ -391,9 +398,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
             }
             updateOptions( getOptions() );
         }
-        //
         else if ( o == _write_to_pdf_item ) {
-            // writeToPdf( _mainpanel.getCurrentPhylogeny() );
             final File curr_dir = MainFrame.writeToPdf( _mainpanel.getCurrentPhylogeny(),
                                                         getMainPanel(),
                                                         _writetopdf_filechooser,
@@ -477,32 +482,28 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
             if ( new_dir != null ) {
                 setCurrentDir( new_dir );
             }
-        } // TODO
-        // TODO
-        // TODO
-        // TODO
-        // TODO
-          //        else if ( o == _graphics_export_visible_only_cbmi ) {
-          //            updateOptions( getOptions() );
-          //        }
-          //        else if ( o == _antialias_print_cbmi ) {
-          //            updateOptions( getOptions() );
-          //        }
-          //        else if ( o == _print_black_and_white_cbmi ) {
-          //            updateOptions( getOptions() );
-          //        }
-          //        else if ( o == _print_using_actual_size_cbmi ) {
-          //            updateOptions( getOptions() );
-          //        }
-          //        else if ( o == _graphics_export_using_actual_size_cbmi ) {
-          //            updateOptions( getOptions() );
-          //        }
-          //        else if ( o == _print_size_mi ) {
-          //            choosePrintSize();
-          //        }
-          //        else if ( o == _choose_pdf_width_mi ) {
-          //            choosePdfWidth();
-          //        }
+        }
+        else if ( o == _graphics_export_visible_only_cbmi ) {
+            updateOptions( getOptions() );
+        }
+        else if ( o == _antialias_print_cbmi ) {
+            updateOptions( getOptions() );
+        }
+        else if ( o == _print_black_and_white_cbmi ) {
+            updateOptions( getOptions() );
+        }
+        else if ( o == _print_using_actual_size_cbmi ) {
+            updateOptions( getOptions() );
+        }
+        else if ( o == _graphics_export_using_actual_size_cbmi ) {
+            updateOptions( getOptions() );
+        }
+        else if ( o == _print_size_mi ) {
+            choosePrintSize();
+        }
+        else if ( o == _choose_pdf_width_mi ) {
+            choosePdfWidth();
+        }
         repaint();
     }
 
@@ -603,16 +604,18 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
 
     @Override
     public void init() {
-        _writetographics_filechooser = new JFileChooser();
         _writetopdf_filechooser = new JFileChooser();
+        _writetopdf_filechooser.setMultiSelectionEnabled( false );
+        _writetopdf_filechooser.addChoosableFileFilter( MainFrame.pdffilter );
+        _writetographics_filechooser = new JFileChooser();
+        _writetographics_filechooser.setMultiSelectionEnabled( false );
+        _writetographics_filechooser.addChoosableFileFilter( MainFrame.graphicsfilefilter );
         _save_filechooser = new JFileChooser();
         _save_filechooser.setMultiSelectionEnabled( false );
         _save_filechooser.setFileFilter( MainFrame.xmlfilter );
         _save_filechooser.addChoosableFileFilter( MainFrame.nhfilter );
         _save_filechooser.addChoosableFileFilter( MainFrame.nexusfilter );
         _save_filechooser.addChoosableFileFilter( _save_filechooser.getAcceptAllFileFilter() );
-        _writetographics_filechooser = new JFileChooser();
-        _writetographics_filechooser.addChoosableFileFilter( MainFrame.graphicsfilefilter );
         try {
             final String home_dir = System.getProperty( "user.home" );
             _save_filechooser.setCurrentDirectory( new File( home_dir ) );
@@ -620,6 +623,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
             _writetographics_filechooser.setCurrentDirectory( new File( home_dir ) );
         }
         catch ( final Exception e ) {
+            e.printStackTrace();
             // Do nothing. Not important.
         }
         final String config_filename = getParameter( Constants.APPLET_PARAM_NAME_FOR_CONFIG_FILE_URL );
@@ -646,7 +650,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
             ForesterUtil.printErrorMessage( NAME, "error: " + e );
             e.printStackTrace();
             JOptionPane.showMessageDialog( this, NAME + ": Could not create URL from: \"" + tree_url_str
-                    + "\"\nException: " + e, "Failed to create URL", JOptionPane.ERROR_MESSAGE );
+                                           + "\"\nException: " + e, "Failed to create URL", JOptionPane.ERROR_MESSAGE );
         }
         if ( phys_url == null ) {
             ForesterUtil.printErrorMessage( NAME, "failed to get tree URL from "
@@ -710,7 +714,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
             }
             catch ( final IOException e ) {
                 ForesterUtil.printErrorMessage( NAME, "could not read species tree from  [" + species_tree_url_str
-                        + "]" );
+                                                + "]" );
                 JOptionPane.showMessageDialog( this, NAME + ": could not read species tree from  ["
                         + species_tree_url_str + "]", "Failed to read species tree", JOptionPane.ERROR_MESSAGE );
             }
@@ -758,11 +762,11 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
                 public void componentResized( final ComponentEvent e ) {
                     if ( getMainPanel().getCurrentTreePanel() != null ) {
                         getMainPanel().getCurrentTreePanel().calcParametersForPainting( getMainPanel()
-                                                                                                .getCurrentTreePanel()
-                                                                                                .getWidth(),
+                                                                                        .getCurrentTreePanel()
+                                                                                        .getWidth(),
                                                                                         getMainPanel()
-                                                                                                .getCurrentTreePanel()
-                                                                                                .getHeight() );
+                                                                                        .getCurrentTreePanel()
+                                                                                        .getHeight() );
                     }
                 }
             } );
@@ -784,7 +788,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
                 AptxUtil.printAppletMessage( NAME, "not using tabbed display" );
                 if ( getSpeciesTree() != null ) {
                     AptxUtil.printAppletMessage( NAME,
-                                                 "Warning: gsdi (gene duplication inference) only available tabbed display" );
+                            "Warning: gsdi (gene duplication inference) only available tabbed display" );
                 }
                 AptxUtil.addPhylogenyToPanel( phys, getConfiguration(), getMainPanel() );
             }
@@ -845,11 +849,11 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
                 .showInputDialog( this,
                                   "Please the minimum for confidence values to be displayed.\n" + "[current value: "
                                           + getOptions().getMinConfidenceValue() + "]\n",
-                                  "Minimal Confidence Value",
-                                  JOptionPane.QUESTION_MESSAGE,
-                                  null,
-                                  null,
-                                  getOptions().getMinConfidenceValue() );
+                                          "Minimal Confidence Value",
+                                          JOptionPane.QUESTION_MESSAGE,
+                                          null,
+                                          null,
+                                          getOptions().getMinConfidenceValue() );
         if ( !ForesterUtil.isEmpty( s ) ) {
             boolean success = true;
             double m = 0.0;
@@ -867,6 +871,84 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
             }
             if ( success && ( m >= 0.0 ) ) {
                 getOptions().setMinConfidenceValue( m );
+            }
+        }
+    }
+
+    private void choosePdfWidth() {
+        final String s = ( String ) JOptionPane.showInputDialog( this,
+                                                                 "Please enter the default line width for PDF export.\n"
+                                                                         + "[current value: "
+                                                                         + getOptions().getPrintLineWidth() + "]\n",
+                                                                 "Line Width for PDF Export",
+                                                                 JOptionPane.QUESTION_MESSAGE,
+                                                                 null,
+                                                                 null,
+                                                                 getOptions().getPrintLineWidth() );
+        if ( !ForesterUtil.isEmpty( s ) ) {
+            boolean success = true;
+            float f = 0.0f;
+            final String m_str = s.trim();
+            if ( !ForesterUtil.isEmpty( m_str ) ) {
+                try {
+                    f = Float.parseFloat( m_str );
+                }
+                catch ( final Exception ex ) {
+                    success = false;
+                }
+            }
+            else {
+                success = false;
+            }
+            if ( success && ( f > 0.0 ) ) {
+                getOptions().setPrintLineWidth( f );
+            }
+        }
+    }
+
+    private void choosePrintSize() {
+        final String s = ( String ) JOptionPane.showInputDialog( this,
+                                                                 "Please enter values for width and height,\nseparated by a comma.\n"
+                                                                         + "[current values: "
+                                                                         + getOptions().getPrintSizeX() + ", "
+                                                                         + getOptions().getPrintSizeY() + "]\n"
+                                                                         + "[A4: " + Constants.A4_SIZE_X + ", "
+                                                                         + Constants.A4_SIZE_Y + "]\n" + "[US Letter: "
+                                                                         + Constants.US_LETTER_SIZE_X + ", "
+                                                                         + Constants.US_LETTER_SIZE_Y + "]",
+                                                                 "Default Size for Graphics Export",
+                                                                 JOptionPane.QUESTION_MESSAGE,
+                                                                 null,
+                                                                 null,
+                                                                 getOptions().getPrintSizeX() + ", "
+                                                                         + getOptions().getPrintSizeY() );
+        if ( !ForesterUtil.isEmpty( s ) && ( s.indexOf( ',' ) > 0 ) ) {
+            boolean success = true;
+            int x = 0;
+            int y = 0;
+            final String[] str_ary = s.split( "," );
+            if ( str_ary.length == 2 ) {
+                final String x_str = str_ary[ 0 ].trim();
+                final String y_str = str_ary[ 1 ].trim();
+                if ( !ForesterUtil.isEmpty( x_str ) && !ForesterUtil.isEmpty( y_str ) ) {
+                    try {
+                        x = Integer.parseInt( x_str );
+                        y = Integer.parseInt( y_str );
+                    }
+                    catch ( final Exception ex ) {
+                        success = false;
+                    }
+                }
+                else {
+                    success = false;
+                }
+            }
+            else {
+                success = false;
+            }
+            if ( success && ( x > 1 ) && ( y > 1 ) ) {
+                getOptions().setPrintSizeX( x );
+                getOptions().setPrintSizeY( y );
             }
         }
     }
@@ -1024,9 +1106,11 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
                 MainFrame.setOvPlacementColorChooseMenuItem( _overview_placment_mi, getOptions() );
                 MainFrame.setTextColorChooseMenuItem( _switch_colors_mi, getCurrentTreePanel() );
                 MainFrame
-                        .setTextMinSupportMenuItem( _choose_minimal_confidence_mi, getOptions(), getCurrentTreePanel() );
+                .setTextMinSupportMenuItem( _choose_minimal_confidence_mi, getOptions(), getCurrentTreePanel() );
                 MainFrame.setTextForFontChooserMenuItem( _choose_font_mi, MainFrame
-                        .createCurrentFontDesc( getMainPanel().getTreeFontSet() ) );
+                                                         .createCurrentFontDesc( getMainPanel().getTreeFontSet() ) );
+                setTextForGraphicsSizeChooserMenuItem( _print_size_mi, getOptions() );
+                setTextForPdfLineWidthChooserMenuItem( _choose_pdf_width_mi, getOptions() );
                 MainFrame.setCycleNodeFillMenuItem( _cycle_node_fill_mi, getOptions() );
                 MainFrame.setCycleNodeShapeMenuItem( _cycle_node_shape_mi, getOptions() );
                 MainFrame.setTextNodeSizeMenuItem( _choose_node_size_mi, getOptions() );
@@ -1042,10 +1126,10 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         _options_jmenu.add( MainFrame.customizeMenuItemAsLabel( new JMenuItem( MainFrame.DISPLAY_SUBHEADER ),
                                                                 getConfiguration() ) );
         _options_jmenu
-                .add( _ext_node_dependent_cladogram_rbmi = new JRadioButtonMenuItem( MainFrame.NONUNIFORM_CLADOGRAMS_LABEL ) );
+        .add( _ext_node_dependent_cladogram_rbmi = new JRadioButtonMenuItem( MainFrame.NONUNIFORM_CLADOGRAMS_LABEL ) );
         _options_jmenu.add( _uniform_cladograms_rbmi = new JRadioButtonMenuItem( MainFrame.UNIFORM_CLADOGRAMS_LABEL ) );
         _options_jmenu
-                .add( _non_lined_up_cladograms_rbmi = new JRadioButtonMenuItem( MainFrame.NON_LINED_UP_CLADOGRAMS_LABEL ) );
+        .add( _non_lined_up_cladograms_rbmi = new JRadioButtonMenuItem( MainFrame.NON_LINED_UP_CLADOGRAMS_LABEL ) );
         _radio_group_1 = new ButtonGroup();
         _radio_group_1.add( _ext_node_dependent_cladogram_rbmi );
         _radio_group_1.add( _uniform_cladograms_rbmi );
@@ -1053,11 +1137,11 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         _options_jmenu.add( _show_overview_cbmi = new JCheckBoxMenuItem( MainFrame.SHOW_OVERVIEW_LABEL ) );
         _options_jmenu.add( _show_scale_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_SCALE_LABEL ) );
         _options_jmenu
-                .add( _show_default_node_shapes_internal_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_NODE_BOXES_LABEL_INT ) );
+        .add( _show_default_node_shapes_internal_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_NODE_BOXES_LABEL_INT ) );
         _options_jmenu
-                .add( _show_default_node_shapes_external_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_NODE_BOXES_LABEL_EXT ) );
+        .add( _show_default_node_shapes_external_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_NODE_BOXES_LABEL_EXT ) );
         _options_jmenu
-                .add( _show_default_node_shapes_for_marked_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_NODE_BOXES_LABEL_MARKED ) );
+        .add( _show_default_node_shapes_for_marked_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_NODE_BOXES_LABEL_MARKED ) );
         _options_jmenu.add( _line_up_renderable_data_cbmi = new JCheckBoxMenuItem( MainFrame.LINE_UP_RENDERABLE_DATA ) );
         if ( getConfiguration().doDisplayOption( Configuration.show_domain_architectures ) ) {
             _options_jmenu.add( _right_line_up_domains_cbmi = new JCheckBoxMenuItem( MainFrame.RIGHT_LINE_UP_DOMAINS ) );
@@ -1066,9 +1150,9 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         _options_jmenu.add( _show_annotation_ref_source = new JCheckBoxMenuItem( MainFrame.SHOW_ANN_REF_SOURCE_LABEL ) );
         _options_jmenu.add( _show_confidence_stddev_cbmi = new JCheckBoxMenuItem( MainFrame.SHOW_CONF_STDDEV_LABEL ) );
         _options_jmenu
-                .add( _color_by_taxonomic_group_cbmi = new JCheckBoxMenuItem( MainFrame.COLOR_BY_TAXONOMIC_GROUP ) );
+        .add( _color_by_taxonomic_group_cbmi = new JCheckBoxMenuItem( MainFrame.COLOR_BY_TAXONOMIC_GROUP ) );
         _options_jmenu
-                .add( _color_labels_same_as_parent_branch = new JCheckBoxMenuItem( MainFrame.COLOR_LABELS_LABEL ) );
+        .add( _color_labels_same_as_parent_branch = new JCheckBoxMenuItem( MainFrame.COLOR_LABELS_LABEL ) );
         _color_labels_same_as_parent_branch.setToolTipText( MainFrame.COLOR_LABELS_TIP );
         _options_jmenu.add( _abbreviate_scientific_names = new JCheckBoxMenuItem( MainFrame.ABBREV_SN_LABEL ) );
         _options_jmenu.add( _label_direction_cbmi = new JCheckBoxMenuItem( MainFrame.LABEL_DIRECTION_LABEL ) );
@@ -1086,12 +1170,36 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         _options_jmenu.add( MainFrame.customizeMenuItemAsLabel( new JMenuItem( MainFrame.SEARCH_SUBHEADER ),
                                                                 getConfiguration() ) );
         _options_jmenu
-                .add( _search_case_senstive_cbmi = new JCheckBoxMenuItem( MainFrame.SEARCH_CASE_SENSITIVE_LABEL ) );
+        .add( _search_case_senstive_cbmi = new JCheckBoxMenuItem( MainFrame.SEARCH_CASE_SENSITIVE_LABEL ) );
         _options_jmenu.add( _search_whole_words_only_cbmi = new JCheckBoxMenuItem( MainFrame.SEARCH_TERMS_ONLY_LABEL ) );
         _options_jmenu.add( _search_with_regex_cbmi = new JCheckBoxMenuItem( MainFrame.SEARCH_REGEX_LABEL ) );
         _search_with_regex_cbmi.setToolTipText( MainFrame.SEARCH_WITH_REGEX_TIP );
         _options_jmenu
-                .add( _inverse_search_result_cbmi = new JCheckBoxMenuItem( MainFrame.INVERSE_SEARCH_RESULT_LABEL ) );
+        .add( _inverse_search_result_cbmi = new JCheckBoxMenuItem( MainFrame.INVERSE_SEARCH_RESULT_LABEL ) );
+        //
+        _options_jmenu.addSeparator();
+        _options_jmenu.add( MainFrame.customizeMenuItemAsLabel( new JMenuItem( "Graphics Export & Printing:" ),
+                                                                getConfiguration() ) );
+        _options_jmenu.add( _antialias_print_cbmi = new JCheckBoxMenuItem( "Antialias" ) );
+        _options_jmenu.add( _print_black_and_white_cbmi = new JCheckBoxMenuItem( "Export in Black and White" ) );
+        _options_jmenu
+        .add( _print_using_actual_size_cbmi = new JCheckBoxMenuItem( "Use Current Image Size for PDF export and Printing" ) );
+        _options_jmenu
+        .add( _graphics_export_using_actual_size_cbmi = new JCheckBoxMenuItem( "Use Current Image Size for PNG, JPG, and GIF export" ) );
+        _options_jmenu
+        .add( _graphics_export_visible_only_cbmi = new JCheckBoxMenuItem( "Limit to Visible ('Screenshot') for PNG, JPG, and GIF export" ) );
+        _options_jmenu.add( _print_size_mi = new JMenuItem( "" ) );
+        _options_jmenu.add( _choose_pdf_width_mi = new JMenuItem( "" ) );
+        //
+        customizeCheckBoxMenuItem( _antialias_print_cbmi, getOptions().isAntialiasPrint() );
+        customizeCheckBoxMenuItem( _print_black_and_white_cbmi, getOptions().isPrintBlackAndWhite() );
+        customizeCheckBoxMenuItem( _graphics_export_visible_only_cbmi, getOptions().isGraphicsExportVisibleOnly() );
+        customizeCheckBoxMenuItem( _print_using_actual_size_cbmi, getOptions().isPrintUsingActualSize() );
+        customizeCheckBoxMenuItem( _graphics_export_using_actual_size_cbmi, getOptions()
+                                   .isGraphicsExportUsingActualSize() );
+        customizeJMenuItem( _print_size_mi );
+        customizeJMenuItem( _choose_pdf_width_mi );
+        //
         customizeJMenuItem( _choose_font_mi );
         customizeJMenuItem( _choose_minimal_confidence_mi );
         customizeJMenuItem( _switch_colors_mi );
@@ -1105,11 +1213,11 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         customizeCheckBoxMenuItem( _show_annotation_ref_source, getOptions().isShowAnnotationRefSource() );
         customizeCheckBoxMenuItem( _abbreviate_scientific_names, getOptions().isAbbreviateScientificTaxonNames() );
         customizeCheckBoxMenuItem( _show_default_node_shapes_external_cbmi, getOptions()
-                .isShowDefaultNodeShapesExternal() );
+                                   .isShowDefaultNodeShapesExternal() );
         customizeCheckBoxMenuItem( _show_default_node_shapes_internal_cbmi, getOptions()
-                .isShowDefaultNodeShapesInternal() );
+                                   .isShowDefaultNodeShapesInternal() );
         customizeCheckBoxMenuItem( _show_default_node_shapes_for_marked_cbmi, getOptions()
-                .isShowDefaultNodeShapesForMarkedNodes() );
+                                   .isShowDefaultNodeShapesForMarkedNodes() );
         customizeJMenuItem( _cycle_node_shape_mi );
         customizeJMenuItem( _cycle_node_fill_mi );
         customizeJMenuItem( _choose_node_size_mi );
@@ -1141,7 +1249,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         _tools_menu.addSeparator();
         _tools_menu.add( _remove_visual_styles_item = new JMenuItem( "Delete All Visual Styles From Nodes" ) );
         _remove_visual_styles_item
-                .setToolTipText( "To remove all node visual styles (fonts, colors) from the current phylogeny." );
+        .setToolTipText( "To remove all node visual styles (fonts, colors) from the current phylogeny." );
         customizeJMenuItem( _remove_visual_styles_item );
         _tools_menu.add( _remove_branch_color_item = new JMenuItem( "Delete All Colors From Branches" ) );
         _remove_branch_color_item.setToolTipText( "To remove all branch color values from the current phylogeny." );
@@ -1182,7 +1290,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
     void buildViewMenu() {
         _view_jmenu = MainFrame.createMenu( "View", getConfiguration() );
         _view_jmenu
-                .add( _display_basic_information_item = new JMenuItem( MainFrame.SHOW_BASIC_TREE_INFORMATION_LABEL ) );
+        .add( _display_basic_information_item = new JMenuItem( MainFrame.SHOW_BASIC_TREE_INFORMATION_LABEL ) );
         _view_jmenu.addSeparator();
         _view_jmenu.add( _view_as_XML_item = new JMenuItem( "as phyloXML" ) );
         _view_jmenu.add( _view_as_NH_item = new JMenuItem( "as Newick" ) );
@@ -1301,8 +1409,8 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
                                                    + gsdi.getStrippedExternalGeneTreeNodes().size() + "\n"
                                                    + "Taxonomy linkage based on: " + gsdi.getTaxCompBase() + "\n"
                                                    + "Number of polytomies in species tree used: " + poly + "\n",
-                                           "GSDI successfully completed",
-                                           JOptionPane.WARNING_MESSAGE );
+                                                   "GSDI successfully completed",
+                                                   JOptionPane.WARNING_MESSAGE );
         }
         else {
             JOptionPane.showMessageDialog( this,
@@ -1314,8 +1422,8 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
                                                    + gsdi.getStrippedExternalGeneTreeNodes().size() + "\n"
                                                    + "Taxonomy linkage based on: " + gsdi.getTaxCompBase() + "\n"
                                                    + "Number of polytomies in species tree used: " + poly + "\n",
-                                           "GSDI successfully completed",
-                                           JOptionPane.INFORMATION_MESSAGE );
+                                                   "GSDI successfully completed",
+                                                   JOptionPane.INFORMATION_MESSAGE );
         }
     }
 
@@ -1374,8 +1482,8 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
                                                    + gsdir.getStrippedExternalGeneTreeNodes().size() + "\n"
                                                    + "Taxonomy linkage based on: " + gsdir.getTaxCompBase() + "\n"
                                                    + "Number of polytomies in species tree used: " + poly + "\n",
-                                           "GSDIR successfully completed",
-                                           JOptionPane.WARNING_MESSAGE );
+                                                   "GSDIR successfully completed",
+                                                   JOptionPane.WARNING_MESSAGE );
         }
         else {
             JOptionPane.showMessageDialog( this,
@@ -1385,8 +1493,8 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
                                                    + gsdir.getStrippedExternalGeneTreeNodes().size() + "\n"
                                                    + "Taxonomy linkage based on: " + gsdir.getTaxCompBase() + "\n"
                                                    + "Number of polytomies in species tree used: " + poly + "\n",
-                                           "GSDIR successfully completed",
-                                           JOptionPane.INFORMATION_MESSAGE );
+                                                   "GSDIR successfully completed",
+                                                   JOptionPane.INFORMATION_MESSAGE );
         }
     }
 
@@ -1501,10 +1609,10 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         if ( getCurrentTreePanel() != null ) {
             if ( getCurrentTreePanel().isCurrentTreeIsSubtree() ) {
                 JOptionPane
-                        .showMessageDialog( this,
-                                            "This operation can only be performed on a complete tree, not on the currently displayed sub-tree only.",
-                                            "Operation can not be exectuted on a sub-tree",
-                                            JOptionPane.WARNING_MESSAGE );
+                .showMessageDialog( this,
+                                    "This operation can only be performed on a complete tree, not on the currently displayed sub-tree only.",
+                                    "Operation can not be exectuted on a sub-tree",
+                                    JOptionPane.WARNING_MESSAGE );
                 return true;
             }
         }
@@ -1633,20 +1741,20 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
     void updateOptions( final Options options ) {
         options.setAntialiasScreen( ( _screen_antialias_cbmi != null ) && _screen_antialias_cbmi.isSelected() );
         options.setBackgroundColorGradient( ( _background_gradient_cbmi != null )
-                && _background_gradient_cbmi.isSelected() );
+                                            && _background_gradient_cbmi.isSelected() );
         options.setShowDomainLabels( ( _show_domain_labels != null ) && _show_domain_labels.isSelected() );
         options.setShowAnnotationRefSource( ( _show_annotation_ref_source != null )
-                && _show_annotation_ref_source.isSelected() );
+                                            && _show_annotation_ref_source.isSelected() );
         options.setAbbreviateScientificTaxonNames( ( _abbreviate_scientific_names != null )
-                && _abbreviate_scientific_names.isSelected() );
+                                                   && _abbreviate_scientific_names.isSelected() );
         options.setColorLabelsSameAsParentBranch( ( _color_labels_same_as_parent_branch != null )
-                && _color_labels_same_as_parent_branch.isSelected() );
+                                                  && _color_labels_same_as_parent_branch.isSelected() );
         options.setShowDefaultNodeShapesInternal( ( _show_default_node_shapes_internal_cbmi != null )
-                && _show_default_node_shapes_internal_cbmi.isSelected() );
+                                                  && _show_default_node_shapes_internal_cbmi.isSelected() );
         options.setShowDefaultNodeShapesExternal( ( _show_default_node_shapes_external_cbmi != null )
-                && _show_default_node_shapes_external_cbmi.isSelected() );
+                                                  && _show_default_node_shapes_external_cbmi.isSelected() );
         options.setShowDefaultNodeShapesForMarkedNodes( ( _show_default_node_shapes_for_marked_cbmi != null )
-                && _show_default_node_shapes_for_marked_cbmi.isSelected() );
+                                                        && _show_default_node_shapes_for_marked_cbmi.isSelected() );
         if ( ( _non_lined_up_cladograms_rbmi != null ) && ( _non_lined_up_cladograms_rbmi.isSelected() ) ) {
             options.setCladogramType( CLADOGRAM_TYPE.NON_LINED_UP );
         }
@@ -1657,7 +1765,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
             options.setCladogramType( CLADOGRAM_TYPE.EXT_NODE_SUM_DEP );
         }
         options.setSearchCaseSensitive( ( _search_case_senstive_cbmi != null )
-                && _search_case_senstive_cbmi.isSelected() );
+                                        && _search_case_senstive_cbmi.isSelected() );
         if ( ( _show_scale_cbmi != null ) && _show_scale_cbmi.isEnabled() ) {
             options.setShowScale( _show_scale_cbmi.isSelected() );
         }
@@ -1671,12 +1779,19 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         }
         options.setShowOverview( ( _show_overview_cbmi != null ) && _show_overview_cbmi.isSelected() );
         options.setShowConfidenceStddev( ( _show_confidence_stddev_cbmi != null )
-                && _show_confidence_stddev_cbmi.isSelected() );
+                                         && _show_confidence_stddev_cbmi.isSelected() );
         options.setMatchWholeTermsOnly( ( _search_whole_words_only_cbmi != null )
-                && _search_whole_words_only_cbmi.isSelected() );
+                                        && _search_whole_words_only_cbmi.isSelected() );
         options.setSearchWithRegex( ( _search_with_regex_cbmi != null ) && _search_with_regex_cbmi.isSelected() );
         options.setInverseSearchResult( ( _inverse_search_result_cbmi != null )
-                && _inverse_search_result_cbmi.isSelected() );
+                                        && _inverse_search_result_cbmi.isSelected() );
+        options.setPrintUsingActualSize( ( _print_using_actual_size_cbmi != null )
+                && ( _print_using_actual_size_cbmi.isSelected() ) );
+        options.setGraphicsExportUsingActualSize( ( _graphics_export_using_actual_size_cbmi != null )
+                && ( _graphics_export_using_actual_size_cbmi.isSelected() ) );
+        options.setAntialiasPrint( ( _antialias_print_cbmi != null ) && _antialias_print_cbmi.isSelected() );
+        options.setPrintBlackAndWhite( ( _print_black_and_white_cbmi != null )
+                && _print_black_and_white_cbmi.isSelected() );
         if ( ( _rectangular_type_cbmi != null ) && _rectangular_type_cbmi.isSelected() ) {
             options.setPhylogenyGraphicsType( PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
         }
@@ -1710,6 +1825,16 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         if ( ( _line_up_renderable_data_cbmi != null ) && _line_up_renderable_data_cbmi.isEnabled() ) {
             options.setLineUpRendarableNodeData( _line_up_renderable_data_cbmi.isSelected() );
         }
+        if ( _graphics_export_visible_only_cbmi != null ) {
+            options.setGraphicsExportVisibleOnly( _graphics_export_visible_only_cbmi.isSelected() );
+            if ( _graphics_export_visible_only_cbmi.isSelected() && ( _graphics_export_using_actual_size_cbmi != null ) ) {
+                _graphics_export_using_actual_size_cbmi.setSelected( true );
+                _graphics_export_using_actual_size_cbmi.setEnabled( false );
+            }
+            else {
+                _graphics_export_using_actual_size_cbmi.setEnabled( true );
+            }
+        }
     }
 
     void updateTypeCheckboxes( final Options options, final Object o ) {
@@ -1724,8 +1849,8 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
                 title = "\"" + getMainPanel().getCurrentPhylogeny().getName() + "\" in " + title;
             }
             showTextFrame( getMainPanel().getCurrentPhylogeny().toNexus( getOptions()
-                                   .getNhConversionSupportValueStyle() ),
-                           title );
+                                                                         .getNhConversionSupportValueStyle() ),
+                                                                         title );
         }
     }
 
@@ -1736,8 +1861,8 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
                 title = "\"" + getMainPanel().getCurrentPhylogeny().getName() + "\" in " + title;
             }
             showTextFrame( getMainPanel().getCurrentPhylogeny().toNewHampshire( getOptions()
-                                   .getNhConversionSupportValueStyle() ),
-                           title );
+                                                                                .getNhConversionSupportValueStyle() ),
+                                                                                title );
         }
     }
 
@@ -1749,6 +1874,15 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
             }
             showTextFrame( getMainPanel().getCurrentPhylogeny().toPhyloXML( 0 ), title );
         }
+    }
+
+    static void setTextForGraphicsSizeChooserMenuItem( final JMenuItem mi, final Options o ) {
+        mi.setText( "Enter Default Size for Graphics Export... (current: " + o.getPrintSizeX() + ", "
+                + o.getPrintSizeY() + ")" );
+    }
+
+    static void setTextForPdfLineWidthChooserMenuItem( final JMenuItem mi, final Options o ) {
+        mi.setText( "Enter Default Line Width for PDF Export... (current: " + o.getPrintLineWidth() + ")" );
     }
 
     static void setupScreenTextAntialias( final List<TreePanel> treepanels, final boolean antialias ) {
