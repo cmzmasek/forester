@@ -81,13 +81,11 @@ public final class MainFrameApplet extends MainFrame {
         }
         // build the menu bar
         _jmenubar = new JMenuBar();
+        buildFileMenu();
         if ( !_configuration.isUseNativeUI() ) {
             _jmenubar.setBackground( _configuration.getGuiMenuBackgroundColor() );
         }
-        if ( getSpeciesTree() != null ) {
-            buildAnalysisMenu();
-        }
-        buildFileMenu();
+        buildAnalysisMenu();
         buildToolsMenu();
         buildViewMenu();
         buildFontSizeMenu();
@@ -163,14 +161,16 @@ public final class MainFrameApplet extends MainFrame {
 
     void buildAnalysisMenu() {
         _analysis_menu = MainFrame.createMenu( "Analysis", getConfiguration() );
-        _analysis_menu.add( _gsdi_item = new JMenuItem( "GSDI (Generalized Speciation Duplication Inference)" ) );
-        _analysis_menu.add( _gsdir_item = new JMenuItem( "GSDIR (GSDI with re-rooting)" ) );
-        customizeJMenuItem( _gsdi_item );
-        customizeJMenuItem( _gsdir_item );
-        //  _analysis_menu.addSeparator();
-        //  _analysis_menu.add( _lineage_inference = new JMenuItem( INFER_ANCESTOR_TAXONOMIES ) );
-        //  customizeJMenuItem( _lineage_inference );
-        //  _lineage_inference.setToolTipText( "Inference of ancestor taxonomies/lineages" );
+        if ( getSpeciesTree() != null ) {
+            _analysis_menu.add( _gsdi_item = new JMenuItem( "GSDI (Generalized Speciation Duplication Inference)" ) );
+            _analysis_menu.add( _gsdir_item = new JMenuItem( "GSDIR (GSDI with re-rooting)" ) );
+            customizeJMenuItem( _gsdi_item );
+            customizeJMenuItem( _gsdir_item );
+            _analysis_menu.addSeparator();
+        }
+        _analysis_menu.add( _lineage_inference = new JMenuItem( INFER_ANCESTOR_TAXONOMIES ) );
+        customizeJMenuItem( _lineage_inference );
+        _lineage_inference.setToolTipText( "Inference of ancestor taxonomies/lineages" );
         _jmenubar.add( _analysis_menu );
     }
 

@@ -31,6 +31,7 @@ import javax.swing.JOptionPane;
 
 import org.forester.analysis.AncestralTaxonomyInference;
 import org.forester.analysis.AncestralTaxonomyInferenceException;
+import org.forester.archaeopteryx.MainFrame;
 import org.forester.archaeopteryx.MainFrameApplication;
 import org.forester.archaeopteryx.TreePanel;
 import org.forester.phylogeny.Phylogeny;
@@ -39,10 +40,10 @@ import org.forester.ws.seqdb.SequenceDbWsTools;
 public class AncestralTaxonomyInferrer extends RunnableProcess {
 
     private final Phylogeny            _phy;
-    private final MainFrameApplication _mf;
+    private final MainFrame _mf;
     private final TreePanel            _treepanel;
 
-    public AncestralTaxonomyInferrer( final MainFrameApplication mf, final TreePanel treepanel, final Phylogeny phy ) {
+    public AncestralTaxonomyInferrer( final MainFrame mf, final TreePanel treepanel, final Phylogeny phy ) {
         _phy = phy;
         _mf = mf;
         _treepanel = treepanel;
