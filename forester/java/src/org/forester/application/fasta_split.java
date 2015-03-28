@@ -22,6 +22,11 @@
 //
 // Contact: phylosoft @ gmail . com
 // WWW: https://sites.google.com/site/cmzmasek/home/software/forester
+//
+//
+// "java -Xmx1024m -cp path\to\forester.jar org.forester.application.fasta_split
+// 
+//
 
 package org.forester.application;
 
@@ -46,7 +51,7 @@ public final class fasta_split {
 
     final static private String PRG_NAME    = "fasta_split";
     final static private String PRG_VERSION = "1.00";
-    final static private String PRG_DATE    = "150320";
+    final static private String PRG_DATE    = "150325";
 
     public static void main( final String args[] ) {
         ForesterUtil.printProgramInformation( fasta_split.PRG_NAME, fasta_split.PRG_VERSION, fasta_split.PRG_DATE );
@@ -89,7 +94,9 @@ public final class fasta_split {
             ForesterUtil.fatalError( PRG_NAME, infile + " appears empty" );
         }
         final Map<String, List<MolecularSequence>> output = new HashMap<String, List<MolecularSequence>>();
+        int cc = 0;
         for( final MolecularSequence seq : seqs ) {
+            System.out.println( ++cc );
             final Matcher m = pa.matcher( seq.getIdentifier() );
             if ( m.find() ) {
                 final String key = m.group( 1 );
@@ -99,7 +106,13 @@ public final class fasta_split {
                 output.get( key ).add( seq );
             }
             else {
-                ForesterUtil.fatalError( PRG_NAME, pattern_str + " not found in sequence " + seq.getIdentifier() );
+                //ForesterUtil.fatalError( PRG_NAME, pattern_str + " not found in sequence \"" + seq.getIdentifier() + "\"" );
+                System.out.println( "warning: " + pattern_str + " not found in sequence \"" + seq.getIdentifier() + "\"" );
+                final String key = "unknown";
+                if ( !output.containsKey( key ) ) {
+                    output.put( key, new ArrayList<MolecularSequence>() );
+                }
+                output.get( key ).add( seq );
             }
         }
         int c = 0;
