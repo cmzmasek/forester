@@ -66,14 +66,21 @@ public final class table2fasta {
         final int position = Integer.parseInt( cla.getName( 0 ) );
         final File intable = cla.getFile( 1 );
         final File outfile = cla.getFile( 2 );
+        if ( outfile.exists() ) {
+            ForesterUtil.fatalError( PRG_NAME, outfile + " already exists" );
+        }
+        if ( !intable.exists() ) {
+            ForesterUtil.fatalError( PRG_NAME, intable + " does not exist" );
+        }
         BasicTable<String> t = null;
         try {
             t = BasicTableParser.parse( intable, '\t' );
         }
         catch ( final IOException e ) {
-            e.printStackTrace();
+            ForesterUtil.fatalError( PRG_NAME, e.getMessage() );
         }
         final List<MolecularSequence> seqs = new ArrayList<MolecularSequence>();
+        System.out.println( "Number of rows: " + t.getNumberOfRows() );
         for( int r = 0; r < t.getNumberOfRows(); ++r ) {
             String seq = null;
             final StringBuilder id = new StringBuilder();
@@ -81,19 +88,40 @@ public final class table2fasta {
                 if ( c == position ) {
                     seq = t.getValue( c, r );
                 }
-                else {
+                else if ( ( c == 0 ) || ( c == 1 ) ) {
                     id.append( t.getValue( c, r ) );
                     id.append( " " );
                 }
             }
-            final MolecularSequence s = BasicSequence.createDnaSequence( id.toString().trim(), seq );
-            seqs.add( s );
+            if ( id.length() < 2 ) {
+                ForesterUtil.fatalError( PRG_NAME, "row " + r + " id is empty" );
+            }
+            String id_str = id.toString().trim();
+            if ( id_str.startsWith( ">" ) ) {
+                id_str = id_str.substring( 1 );
+            }
+            if ( ForesterUtil.isEmpty( seq ) ) {
+                seq = t.getValue( position - 1, r );
+                if ( ForesterUtil.isEmpty( seq ) ) {
+                    ForesterUtil.fatalError( PRG_NAME, "row " + r + " seq is empty" );
+                }
+            }
+            MolecularSequence s = null;
+            try {
+                s = BasicSequence.createAaSequence( id_str, seq );
+            }
+            catch ( final Exception e ) {
+                ForesterUtil.fatalError( PRG_NAME, e.getMessage() );
+            }
+            if ( s != null ) {
+                seqs.add( s );
+            }
         }
         try {
-            SequenceWriter.writeSeqs( seqs, outfile, SEQ_FORMAT.FASTA, 6 );
+            SequenceWriter.writeSeqs( seqs, outfile, SEQ_FORMAT.FASTA, 60 );
         }
         catch ( final IOException e ) {
-            e.printStackTrace();
+            ForesterUtil.fatalError( PRG_NAME, e.getMessage() );
         }
     }
 

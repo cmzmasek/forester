@@ -39,15 +39,19 @@ public class BasicSequence implements MolecularSequence {
      *
      */
     public BasicSequence( final String identifier, final String mol_sequence, final TYPE type ) {
+        check( identifier, mol_sequence );
+        _mol_sequence = mol_sequence.toCharArray();
+        _identifier = identifier;
+        _type = type;
+    }
+
+    private static final void check( final String identifier, final String mol_sequence ) {
         if ( ForesterUtil.isEmpty( identifier ) ) {
             throw new IllegalArgumentException( "identifier of sequence cannot be empty" );
         }
         if ( ForesterUtil.isEmpty( mol_sequence ) ) {
             throw new IllegalArgumentException( "molecular sequence cannot be empty" );
         }
-        _mol_sequence = mol_sequence.toCharArray();
-        _identifier = identifier;
-        _type = type;
     }
 
     /**
@@ -144,16 +148,19 @@ public class BasicSequence implements MolecularSequence {
     }
 
     public static MolecularSequence createAaSequence( final String identifier, final String mol_sequence ) {
+        check( identifier, mol_sequence );
         return new BasicSequence( identifier, mol_sequence.toUpperCase().replaceAll( "\\.", GAP_STR )
                                   .replaceAll( AA_REGEXP, Character.toString( UNSPECIFIED_AA ) ), TYPE.AA );
     }
 
     public static MolecularSequence createDnaSequence( final String identifier, final String mol_sequence ) {
+        check( identifier, mol_sequence );
         return new BasicSequence( identifier, mol_sequence.toUpperCase().replaceAll( "\\.", GAP_STR )
                                   .replaceAll( DNA_REGEXP, Character.toString( UNSPECIFIED_NUC ) ), TYPE.DNA );
     }
 
     public static MolecularSequence createRnaSequence( final String identifier, final String mol_sequence ) {
+        check( identifier, mol_sequence );
         return new BasicSequence( identifier, mol_sequence.toUpperCase().replaceAll( "\\.", GAP_STR )
                                   .replaceAll( RNA_REGEXP, Character.toString( UNSPECIFIED_NUC ) ), TYPE.RNA );
     }
