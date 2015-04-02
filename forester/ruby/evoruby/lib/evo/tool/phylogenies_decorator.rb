@@ -253,7 +253,7 @@ module Evoruby
 
 
     def get_id( phylogeny_file_name )
-      if phylogeny_file_name =~ /^(.+_.+)_/
+      if phylogeny_file_name =~ /^(.+?_.+?)_/
         return $1
       elsif phylogeny_file_name =~ /^(.+?)__/
         return $1
