@@ -178,8 +178,8 @@ module Evoruby
           seqs_file_name = nil
 
           ids_mapfile_name = get_file( files, phylogeny_id, IDS_MAPFILE_SUFFIX )
-          domains_mapfile_name = get_file( files, phylogeny_id, DOMAINS_MAPFILE_SUFFIX )
-          seqs_file_name = get_seq_file( files, phylogeny_id )
+         # domains_mapfile_name = get_file( files, phylogeny_id, DOMAINS_MAPFILE_SUFFIX )
+         # seqs_file_name = get_seq_file( files, phylogeny_id )
 
 #          begin
 #            Util.check_file_for_readability( domains_mapfile_name )
