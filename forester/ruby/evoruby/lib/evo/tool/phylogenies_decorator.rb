@@ -239,8 +239,8 @@ module Evoruby
                      Util.fatal_error( PRG_NAME, 'error: ' + $! )
                    end
 
-          File.delete( TMP_FILE_1 )
-          File.delete( TMP_FILE_2 )
+        #  File.delete( TMP_FILE_1 )
+        #  File.delete( TMP_FILE_2 )
 
         end
       }
