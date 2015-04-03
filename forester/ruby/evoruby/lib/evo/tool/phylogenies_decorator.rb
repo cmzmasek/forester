@@ -181,11 +181,11 @@ module Evoruby
           domains_mapfile_name = get_file( files, phylogeny_id, DOMAINS_MAPFILE_SUFFIX )
           seqs_file_name = get_seq_file( files, phylogeny_id )
 
-          begin
-            Util.check_file_for_readability( domains_mapfile_name )
-          rescue ArgumentError
-            Util.fatal_error( PRG_NAME, 'failed to read from [#{domains_mapfile_name}]: ' + $! )
-          end
+#          begin
+#            Util.check_file_for_readability( domains_mapfile_name )
+#          rescue ArgumentError
+#            Util.fatal_error( PRG_NAME, 'failed to read from [#{domains_mapfile_name}]: ' + $! )
+#          end
 
           begin
             Util.check_file_for_readability( ids_mapfile_name )
@@ -193,11 +193,11 @@ module Evoruby
             Util.fatal_error( PRG_NAME, 'failed to read from [#{ids_mapfile_name}]: ' + $! )
           end
 
-          begin
-            Util.check_file_for_readability( seqs_file_name  )
-          rescue ArgumentError
-            Util.fatal_error( PRG_NAME, 'failed to read from [#{seqs_file_name }]: ' + $! )
-          end
+#          begin
+#            Util.check_file_for_readability( seqs_file_name  )
+#          rescue ArgumentError
+#            Util.fatal_error( PRG_NAME, 'failed to read from [#{seqs_file_name }]: ' + $! )
+#          end
 
 #          cmd = decorator +
 #           ' -t -p -f=m ' + phylogeny_file + ' ' +
@@ -228,6 +228,16 @@ module Evoruby
           rescue Error
             Util.fatal_error( PRG_NAME, 'error: ' + $! )
           end
+          
+          cmd = decorator + ' ' +  DECORATOR_OPTIONS_SEQ_NAMES + ' ' +
+                    '-f=n ' + TMP_FILE_2 + ' ' +
+                    ids_mapfile_name + ' ' + outfile
+                   puts cmd
+                   begin
+                     execute_cmd( cmd, log )
+                   rescue Error
+                     Util.fatal_error( PRG_NAME, 'error: ' + $! )
+                   end
 
           File.delete( TMP_FILE_1 )
           File.delete( TMP_FILE_2 )
