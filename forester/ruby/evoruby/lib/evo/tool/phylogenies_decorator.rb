@@ -220,7 +220,7 @@ module Evoruby
 #          end
 
           cmd = decorator + ' ' +  DECORATOR_OPTIONS_SEQ_NAMES + ' ' +
-           '-f=n ' + seqs_file_name + ' ' +
+           '-f=n ' + phylogeny_file + ' ' +
            ids_mapfile_name + ' ' + outfile
           puts cmd
           begin
