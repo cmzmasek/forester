@@ -199,25 +199,25 @@ module Evoruby
             Util.fatal_error( PRG_NAME, 'failed to read from [#{seqs_file_name }]: ' + $! )
           end
 
-          cmd = decorator +
-           ' -t -p -f=m ' + phylogeny_file + ' ' +
-           seqs_file_name  + ' ' + TMP_FILE_1
-          puts cmd
-          begin
-            execute_cmd( cmd, log )
-          rescue Error
-            Util.fatal_error( PRG_NAME, 'error: ' + $! )
-          end
-
-          cmd = decorator + ' ' + DECORATOR_OPTIONS_DOMAINS + ' ' +
-           '-f=d ' + TMP_FILE_1 + ' ' +
-           domains_mapfile_name + ' ' +TMP_FILE_2
-          puts cmd
-          begin
-            execute_cmd( cmd, log )
-          rescue Error
-            Util.fatal_error( PRG_NAME, 'error: ' + $! )
-          end
+#          cmd = decorator +
+#           ' -t -p -f=m ' + phylogeny_file + ' ' +
+#           seqs_file_name  + ' ' + TMP_FILE_1
+#          puts cmd
+#          begin
+#            execute_cmd( cmd, log )
+#          rescue Error
+#            Util.fatal_error( PRG_NAME, 'error: ' + $! )
+#          end
+#
+#          cmd = decorator + ' ' + DECORATOR_OPTIONS_DOMAINS + ' ' +
+#           '-f=d ' + TMP_FILE_1 + ' ' +
+#           domains_mapfile_name + ' ' +TMP_FILE_2
+#          puts cmd
+#          begin
+#            execute_cmd( cmd, log )
+#          rescue Error
+#            Util.fatal_error( PRG_NAME, 'error: ' + $! )
+#          end
 
           cmd = decorator + ' ' +  DECORATOR_OPTIONS_SEQ_NAMES + ' ' +
            '-f=n ' + TMP_FILE_2 + ' ' +
@@ -243,7 +243,7 @@ module Evoruby
     end # def run
 
     def execute_cmd( cmd, log )
-      log << 'excuting ' + cmd + NL
+      log << 'executing ' + cmd + NL
       IO.popen( cmd , 'r+' ) do | pipe |
         pipe.close_write
         log << pipe.read + NL + NL
