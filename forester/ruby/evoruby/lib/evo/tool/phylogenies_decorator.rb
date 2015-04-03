@@ -15,11 +15,9 @@
 require 'lib/evo/util/constants'
 require 'lib/evo/util/util'
 require 'lib/evo/util/command_line_arguments'
-
 require 'date'
 
 module Evoruby
-
   class PhylogeniesDecorator
 
     #DECORATOR_OPTIONS_SEQ_NAMES = '-r=1 -mdn'
@@ -33,6 +31,7 @@ module Evoruby
     DOMAINS_MAPFILE_SUFFIX    = '_hmmscan_10.dff'
     SLEEP_TIME                = 0.05
     REMOVE_NI                 = true
+    IDS_ONLY                  = true
     TMP_FILE_1                  = '___PD1___'
     TMP_FILE_2                  = '___PD2___'
     LOG_FILE                  = '00_phylogenies_decorator.log'
@@ -47,22 +46,20 @@ module Evoruby
     CONTACT        = "phylosoft@gmail.com"
     WWW            = "https://sites.google.com/site/cmzmasek/home/software/forester"
 
-
     HELP_OPTION_1       = "help"
     HELP_OPTION_2       = "h"
 
     NL = Constants::LINE_DELIMITER
-
     def run
 
       Util.print_program_information( PRG_NAME,
-        PRG_VERSION,
-        PRG_DESC,
-        PRG_DATE,
-        COPYRIGHT,
-        CONTACT,
-        WWW,
-        STDOUT )
+      PRG_VERSION,
+      PRG_DESC,
+      PRG_DATE,
+      COPYRIGHT,
+      CONTACT,
+      WWW,
+      STDOUT )
 
       if ( ARGV == nil || ARGV.length > 3 || ARGV.length < 2  )
         print_help
@@ -92,7 +89,7 @@ module Evoruby
       end
 
       if ( cla.is_option_set?( HELP_OPTION_1 ) ||
-           cla.is_option_set?( HELP_OPTION_2 ) )
+      cla.is_option_set?( HELP_OPTION_2 ) )
         print_help
         exit( 0 )
       end
@@ -136,10 +133,10 @@ module Evoruby
 
       files.each { | phylogeny_file |
         if ( !File.directory?( phylogeny_file ) &&
-             phylogeny_file !~ /^\./ &&
-             phylogeny_file !~ /^00/ &&
-             phylogeny_file !~ /#{out_suffix}$/ &&
-             phylogeny_file =~ /#{in_suffix}$/ )
+        phylogeny_file !~ /^\./ &&
+        phylogeny_file !~ /^00/ &&
+        phylogeny_file !~ /#{out_suffix}$/ &&
+        phylogeny_file =~ /#{in_suffix}$/ )
           begin
             Util.check_file_for_readability( phylogeny_file )
           rescue ArgumentError
@@ -156,7 +153,7 @@ module Evoruby
 
           if File.exists?( outfile )
             msg = counter.to_s + ': ' + phylogeny_file + ' -> ' +  outfile +
-             ' : already exists, skipping'
+            ' : already exists, skipping'
             Util.print_message( PRG_NAME, msg  )
             log << msg + NL
             next
@@ -178,14 +175,24 @@ module Evoruby
           seqs_file_name = nil
 
           ids_mapfile_name = get_file( files, phylogeny_id, IDS_MAPFILE_SUFFIX )
-         # domains_mapfile_name = get_file( files, phylogeny_id, DOMAINS_MAPFILE_SUFFIX )
-         # seqs_file_name = get_seq_file( files, phylogeny_id )
 
-#          begin
-#            Util.check_file_for_readability( domains_mapfile_name )
-#          rescue ArgumentError
-#            Util.fatal_error( PRG_NAME, 'failed to read from [#{domains_mapfile_name}]: ' + $! )
-#          end
+          unless IDS_ONLY
+            domains_mapfile_name = get_file( files, phylogeny_id, DOMAINS_MAPFILE_SUFFIX )
+            seqs_file_name = get_seq_file( files, phylogeny_id )
+          end
+
+          unless IDS_ONLY
+            begin
+              Util.check_file_for_readability( domains_mapfile_name )
+            rescue ArgumentError
+              Util.fatal_error( PRG_NAME, 'failed to read from [#{domains_mapfile_name}]: ' + $! )
+            end
+            begin
+              Util.check_file_for_readability( seqs_file_name  )
+            rescue ArgumentError
+              Util.fatal_error( PRG_NAME, 'failed to read from [#{seqs_file_name }]: ' + $! )
+            end
+          end
 
           begin
             Util.check_file_for_readability( ids_mapfile_name )
@@ -193,55 +200,51 @@ module Evoruby
             Util.fatal_error( PRG_NAME, 'failed to read from [#{ids_mapfile_name}]: ' + $! )
           end
 
-#          begin
-#            Util.check_file_for_readability( seqs_file_name  )
-#          rescue ArgumentError
-#            Util.fatal_error( PRG_NAME, 'failed to read from [#{seqs_file_name }]: ' + $! )
-#          end
+          unless IDS_ONLY
+            cmd = decorator +
+            ' -t -p -f=m ' + phylogeny_file + ' ' +
+            seqs_file_name  + ' ' + TMP_FILE_1
+            puts cmd
+            begin
+              execute_cmd( cmd, log )
+            rescue Error
+              Util.fatal_error( PRG_NAME, 'error: ' + $! )
+            end
 
-#          cmd = decorator +
-#           ' -t -p -f=m ' + phylogeny_file + ' ' +
-#           seqs_file_name  + ' ' + TMP_FILE_1
-#          puts cmd
-#          begin
-#            execute_cmd( cmd, log )
-#          rescue Error
-#            Util.fatal_error( PRG_NAME, 'error: ' + $! )
-#          end
-#
-#          cmd = decorator + ' ' + DECORATOR_OPTIONS_DOMAINS + ' ' +
-#           '-f=d ' + TMP_FILE_1 + ' ' +
-#           domains_mapfile_name + ' ' +TMP_FILE_2
-#          puts cmd
-#          begin
-#            execute_cmd( cmd, log )
-#          rescue Error
-#            Util.fatal_error( PRG_NAME, 'error: ' + $! )
-#          end
-
-          cmd = decorator + ' ' +  DECORATOR_OPTIONS_SEQ_NAMES + ' ' +
-           '-f=n ' + phylogeny_file + ' ' +
-           ids_mapfile_name + ' ' + outfile
-          puts cmd
-          begin
-            execute_cmd( cmd, log )
-          rescue Error
-            Util.fatal_error( PRG_NAME, 'error: ' + $! )
+            cmd = decorator + ' ' + DECORATOR_OPTIONS_DOMAINS + ' ' +
+            '-f=d ' + TMP_FILE_1 + ' ' +
+            domains_mapfile_name + ' ' +TMP_FILE_2
+            puts cmd
+            begin
+              execute_cmd( cmd, log )
+            rescue Error
+              Util.fatal_error( PRG_NAME, 'error: ' + $! )
+            end
           end
-          
-#          cmd = decorator + ' ' +  DECORATOR_OPTIONS_SEQ_NAMES + ' ' +
-#                    '-f=n ' + TMP_FILE_2 + ' ' +
-#                    ids_mapfile_name + ' ' + outfile
-#                   puts cmd
-#                   begin
-#                     execute_cmd( cmd, log )
-#                   rescue Error
-#                     Util.fatal_error( PRG_NAME, 'error: ' + $! )
-#                   end
 
-        #  File.delete( TMP_FILE_1 )
-        #  File.delete( TMP_FILE_2 )
-
+          if IDS_ONLY
+            cmd = decorator + ' ' +  DECORATOR_OPTIONS_SEQ_NAMES + ' ' +
+            '-f=n ' + phylogeny_file + ' ' +
+            ids_mapfile_name + ' ' + outfile
+            puts cmd
+            begin
+              execute_cmd( cmd, log )
+            rescue Error
+              Util.fatal_error( PRG_NAME, 'error: ' + $! )
+            end
+          else
+            cmd = decorator + ' ' +  DECORATOR_OPTIONS_SEQ_NAMES + ' ' +
+            '-f=n ' + TMP_FILE_2 + ' ' +
+            ids_mapfile_name + ' ' + outfile
+            puts cmd
+            begin
+              execute_cmd( cmd, log )
+            rescue Error
+              Util.fatal_error( PRG_NAME, 'error: ' + $! )
+            end
+            File.delete( TMP_FILE_1 )
+            File.delete( TMP_FILE_2 )
+          end
         end
       }
       open( LOG_FILE, 'w' ) do | f |
@@ -261,7 +264,6 @@ module Evoruby
       sleep( SLEEP_TIME )
     end
 
-
     def get_id( phylogeny_file_name )
       if phylogeny_file_name =~ /^(.+?_.+?)_/
         return $1
@@ -279,19 +281,19 @@ module Evoruby
       files_in_dir.each { | file |
 
         if ( !File.directory?( file ) &&
-             file !~ /^\./ &&
-             file !~ /^00/ &&
-             file =~ /^#{phylogeny_id}.*#{suffix_pattern}$/ )
+        file !~ /^\./ &&
+        file !~ /^00/ &&
+        file =~ /^#{phylogeny_id}.*#{suffix_pattern}$/ )
           matching_files << file
         end
       }
       if matching_files.length < 1
         Util.fatal_error( PRG_NAME, 'no file matching [' + phylogeny_id +
-           '...' + suffix_pattern + '] present in current directory' )
+        '...' + suffix_pattern + '] present in current directory' )
       end
       if matching_files.length > 1
         Util.fatal_error( PRG_NAME, 'more than one file matching [' +
-           phylogeny_id  + '...' + suffix_pattern + '] present in current directory' )
+        phylogeny_id  + '...' + suffix_pattern + '] present in current directory' )
       end
       matching_files[ 0 ]
     end
@@ -302,24 +304,23 @@ module Evoruby
       files_in_dir.each { | file |
 
         if ( !File.directory?( file ) &&
-             file !~ /^\./ &&
-             file !~ /^00/ &&
-             ( file =~ /^#{phylogeny_id}__.+\d$/ || file =~ /^#{phylogeny_id}_.*\.fasta$/ ) )
+        file !~ /^\./ &&
+        file !~ /^00/ &&
+        ( file =~ /^#{phylogeny_id}__.+\d$/ || file =~ /^#{phylogeny_id}_.*\.fasta$/ ) )
           matching_files << file
         end
       }
 
       if matching_files.length < 1
         Util.fatal_error( PRG_NAME, 'no seq file matching [' +
-           phylogeny_id + '_] present in current directory' )
+        phylogeny_id + '_] present in current directory' )
       end
       if matching_files.length > 1
         Util.fatal_error( PRG_NAME, 'more than one seq file matching [' +
-           phylogeny_id + '_] present in current directory' )
+        phylogeny_id + '_] present in current directory' )
       end
       matching_files[ 0 ]
     end
-
 
     def print_help()
       puts( "Usage:" )
