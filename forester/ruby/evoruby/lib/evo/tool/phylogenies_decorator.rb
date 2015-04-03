@@ -229,15 +229,15 @@ module Evoruby
             Util.fatal_error( PRG_NAME, 'error: ' + $! )
           end
           
-          cmd = decorator + ' ' +  DECORATOR_OPTIONS_SEQ_NAMES + ' ' +
-                    '-f=n ' + TMP_FILE_2 + ' ' +
-                    ids_mapfile_name + ' ' + outfile
-                   puts cmd
-                   begin
-                     execute_cmd( cmd, log )
-                   rescue Error
-                     Util.fatal_error( PRG_NAME, 'error: ' + $! )
-                   end
+#          cmd = decorator + ' ' +  DECORATOR_OPTIONS_SEQ_NAMES + ' ' +
+#                    '-f=n ' + TMP_FILE_2 + ' ' +
+#                    ids_mapfile_name + ' ' + outfile
+#                   puts cmd
+#                   begin
+#                     execute_cmd( cmd, log )
+#                   rescue Error
+#                     Util.fatal_error( PRG_NAME, 'error: ' + $! )
+#                   end
 
         #  File.delete( TMP_FILE_1 )
         #  File.delete( TMP_FILE_2 )
