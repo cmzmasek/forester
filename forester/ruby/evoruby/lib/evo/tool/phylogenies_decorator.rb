@@ -220,7 +220,7 @@ module Evoruby
 #          end
 
           cmd = decorator + ' ' +  DECORATOR_OPTIONS_SEQ_NAMES + ' ' +
-           '-f=n ' + TMP_FILE_2 + ' ' +
+           '-f=n ' + seqs_file_name + ' ' +
            ids_mapfile_name + ' ' + outfile
           puts cmd
           begin
