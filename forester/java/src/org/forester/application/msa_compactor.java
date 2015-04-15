@@ -105,7 +105,7 @@ public class msa_compactor {
             int length = -1;
             int step = 1;
             boolean realign = false;
-            boolean norm = true;
+            boolean normalize_for_effective_seq_length = true;
             String path_to_mafft = null;
             int step_for_diagnostics = 1;
             int min_length = -1;
@@ -223,7 +223,7 @@ public class msa_compactor {
                 path_to_mafft = cla.getOptionValueAsCleanString( PATH_TO_MAFFT_OPTION );
             }
             if ( cla.isOptionSet( DO_NOT_NORMALIZE_FOR_EFF_LENGTH_OPTION ) ) {
-                norm = false;
+                normalize_for_effective_seq_length = false;
             }
             if ( cla.isOptionSet( STEP_FOR_DIAGNOSTICS_OPTION ) ) {
                 step_for_diagnostics = cla.getOptionValueAsInt( STEP_FOR_DIAGNOSTICS_OPTION );
@@ -346,8 +346,11 @@ public class msa_compactor {
                 }
                 System.out.println( "Step for diagnostics reports         : " + step_for_diagnostics );
                 System.out.println( "Calculate normalized Shannon Entropy : " + report_entropy );
-                if ( !norm ) {
-                    System.out.println( "Normalize                            : " + norm );
+                if ( normalize_for_effective_seq_length ) {
+                    System.out.println( "Normalize                            : with individual, effective sequence lenghts"  );
+                }
+                else {
+                    System.out.println( "Normalize                            : with MSA length" );
                 }
                 System.out.println( "Realign with MAFFT                   : " + realign );
                 if ( realign ) {
@@ -372,7 +375,7 @@ public class msa_compactor {
                 if ( removed_seqs_out_base != null ) {
                     mc.setRemovedSeqsOutBase( removed_seqs_out_base );
                 }
-                mc.setNorm( norm );
+                mc.setNorm( normalize_for_effective_seq_length );
                 mc.setRealign( realign );
                 if ( realign ) {
                     mc.setPathToMafft( path_to_mafft );
@@ -391,7 +394,7 @@ public class msa_compactor {
                     msa_props = mc.removeViaLength( length );
                 }
                 else {
-                    msa_props = mc.chart( step, realign, norm );
+                    msa_props = mc.chart( step, realign, normalize_for_effective_seq_length );
                 }
                 Chart.display( msa_props, initial_number_of_seqs, report_entropy, in.getName() );
                 System.out.println();
@@ -500,6 +503,9 @@ public class msa_compactor {
                             + "=<decimal>  maximal allowed gap ratio per column (for deleting of columms) (0.0-1.0)" );
         System.out.println( "   -" + PERFORM_PHYLOGENETIC_INFERENCE
                             + "             to calculate a simple phylogenetic tree (Kimura distances, NJ)" );
+        System.out.println( "   -" + DO_NOT_NORMALIZE_FOR_EFF_LENGTH_OPTION
+                            + "            to normalize gap-contributions with MSA length, instead of individual effective sequence lenghts" );
+       
         System.out.println();
         System.out.println();
         System.out.println();

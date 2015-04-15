@@ -82,7 +82,7 @@ public class MsaCompactor {
     //
     private String                             _maffts_opts               = "--auto";
     private DeleteableMsa                      _msa                       = null;
-    private boolean                            _norm                      = true;
+    private boolean                            _normalize_for_effective_seq_length                      = true;
     private File                               _out_file_base             = null;
     private MSA_FORMAT                         _output_format             = MSA_FORMAT.FASTA;
     private String                             _path_to_mafft             = null;
@@ -130,9 +130,9 @@ public class MsaCompactor {
         return phy;
     }
 
-    public final List<MsaProperties> chart( final int step, final boolean realign, final boolean norm )
+    public final List<MsaProperties> chart( final int step, final boolean realign, final boolean normalize_for_effective_seq_length )
             throws IOException, InterruptedException {
-        final GapContribution stats[] = calcGapContribtionsStats( norm );
+        final GapContribution stats[] = calcGapContribtionsStats( normalize_for_effective_seq_length );
         final List<String> to_remove_ids = new ArrayList<String>();
         final List<MsaProperties> msa_props = new ArrayList<MsaProperties>();
         for( final GapContribution gap_gontribution : stats ) {
@@ -305,7 +305,7 @@ public class MsaCompactor {
 
     public final List<MsaProperties> removeViaGapAverage( final double mean_gapiness ) throws IOException,
     InterruptedException {
-        final GapContribution stats[] = calcGapContribtionsStats( _norm );
+        final GapContribution stats[] = calcGapContribtionsStats( _normalize_for_effective_seq_length );
         final List<String> to_remove_ids = new ArrayList<String>();
         final List<MsaProperties> msa_props = new ArrayList<MsaProperties>();
         for( final GapContribution gap_gontribution : stats ) {
@@ -363,7 +363,7 @@ public class MsaCompactor {
     }
 
     public List<MsaProperties> removeViaLength( final int length ) throws IOException, InterruptedException {
-        final GapContribution stats[] = calcGapContribtionsStats( _norm );
+        final GapContribution stats[] = calcGapContribtionsStats( _normalize_for_effective_seq_length );
         final List<String> to_remove_ids = new ArrayList<String>();
         final List<MsaProperties> msa_props = new ArrayList<MsaProperties>();
         for( final GapContribution gap_gontribution : stats ) {
@@ -421,7 +421,7 @@ public class MsaCompactor {
 
     public final List<MsaProperties> removeWorstOffenders( final int to_remove ) throws IOException,
     InterruptedException {
-        final GapContribution stats[] = calcGapContribtionsStats( _norm );
+        final GapContribution stats[] = calcGapContribtionsStats( _normalize_for_effective_seq_length );
         final List<String> to_remove_ids = new ArrayList<String>();
         final List<MsaProperties> msa_props = new ArrayList<MsaProperties>();
         for( int j = 0; j < to_remove; ++j ) {
@@ -487,8 +487,8 @@ public class MsaCompactor {
         _maffts_opts = maffts_opts;
     }
 
-    public final void setNorm( final boolean norm ) {
-        _norm = norm;
+    public final void setNorm( final boolean normalize_for_effective_seq_length ) {
+        _normalize_for_effective_seq_length = normalize_for_effective_seq_length;
     }
 
     final public void setOutFileBase( final File out_file_base ) {
@@ -584,8 +584,8 @@ public class MsaCompactor {
         return stats;
     }
 
-    final private GapContribution[] calcGapContribtionsStats( final boolean norm ) {
-        final GapContribution stats[] = calcGapContribtions( norm );
+    final private GapContribution[] calcGapContribtionsStats( final boolean normalize_for_effective_seq_length ) {
+        final GapContribution stats[] = calcGapContribtions( normalize_for_effective_seq_length );
         Arrays.sort( stats );
         return stats;
     }
