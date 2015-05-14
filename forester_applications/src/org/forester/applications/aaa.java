@@ -12,7 +12,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.forester.io.parsers.FastaParser;
-import org.forester.sequence.Sequence;
+import org.forester.sequence.MolecularSequence;
 import org.forester.util.EasyWriter;
 import org.forester.util.ForesterUtil;
 
@@ -26,12 +26,12 @@ public class aaa {
         try {
             final EasyWriter out = ( EasyWriter ) ForesterUtil.createEasyWriter( "aaa_out" );
             System.out.println( "STARTING..." );
-            final List<Sequence> too_short = new ArrayList<Sequence>();
-            final List<Sequence> orig = FastaParser
+            final List<MolecularSequence> too_short = new ArrayList<MolecularSequence>();
+            final List<MolecularSequence> orig = FastaParser
                     .parse( new FileInputStream( "C:\\Users\\zma\\Desktop\\RRMa_domains_ext_20_2.fasta" ) );
             final int initial_number = orig.size();
             final List<String> new_seqs = new ArrayList<String>();
-            for( final Sequence seq : orig ) {
+            for( final MolecularSequence seq : orig ) {
                 if ( seq.getLength() < MIN_LENGTH ) {
                     too_short.add( seq );
                     continue;
@@ -115,7 +115,7 @@ public class aaa {
             out.println( "" );
             out.println( "" );
             out.println( "Removed because too short:" );
-            for( final Sequence s : too_short ) {
+            for( final MolecularSequence s : too_short ) {
                 out.println( s.toString() );
             }
             out.println( "" );

@@ -23,7 +23,7 @@ public class domainloss_replacement {
         try {
             if ( args.length != 2 ) {
                 System.out
-                        .println( "Usage: domainloss_replacement <phylogeny file> <file with replacement characters>" );
+                .println( "Usage: domainloss_replacement <phylogeny file> <file with replacement characters>" );
                 System.exit( -1 );
             }
             final Phylogeny p = ParserUtils.readPhylogenies( args[ 0 ] )[ 0 ];
@@ -46,7 +46,7 @@ public class domainloss_replacement {
                 final int losses = lost_chars.size();
                 lost_chars.retainAll( replacement_domains );
                 final int intersection = lost_chars.size();
-                final double percentage = 100.0 * intersection / losses;
+                final double percentage = ( 100.0 * intersection ) / losses;
                 System.out.println( name + "\t" + intersection + "\t" + losses + "\t"
                         + ForesterUtil.round( percentage, 3 ) );
             }

@@ -59,7 +59,7 @@ public class get_subtree_specific_chars {
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
             phy = factory.create( infile, org.forester.io.parsers.util.ParserUtils
-                    .createParserDependingOnFileType( infile, true ) )[ 0 ];
+                                  .createParserDependingOnFileType( infile, true ) )[ 0 ];
         }
         catch ( final Exception e ) {
             System.err.println( e + "\nCould not read " + infile + "\n" );
@@ -105,7 +105,7 @@ public class get_subtree_specific_chars {
                                 if ( !phy.getNode( external_id ).getNodeData().getBinaryCharacters()
                                         .getGainedCharacters().contains( node_char )
                                         && !phy.getNode( external_id ).getNodeData().getBinaryCharacters()
-                                                .getPresentCharacters().contains( node_char ) ) {
+                                        .getPresentCharacters().contains( node_char ) ) {
                                     found = false;
                                     break;
                                 }

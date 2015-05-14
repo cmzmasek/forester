@@ -92,9 +92,9 @@ public class subtree_feature_count {
                 }
             }
             final int n = l.size();
-            final double xray_p = ForesterUtil.round( 100.0 * xray / n, 1 );
-            final double nmr_p = ForesterUtil.round( 100.0 * nmr / n, 1 );
-            final double model_p = ForesterUtil.round( 100.0 * model / n, 1 );
+            final double xray_p = ForesterUtil.round( ( 100.0 * xray ) / n, 1 );
+            final double nmr_p = ForesterUtil.round( ( 100.0 * nmr ) / n, 1 );
+            final double model_p = ForesterUtil.round( ( 100.0 * model ) / n, 1 );
             final StringBuilder sb = new StringBuilder();
             sb.append( String.valueOf( n ) );
             sb.append( "\t" );

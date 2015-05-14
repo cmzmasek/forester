@@ -53,9 +53,7 @@ public class phylo2coloredgraphics {
             config.putDisplayColors( TreeColorSet.BRANCH, new Color( 0, 0, 0 ) );
             config.putDisplayColors( TreeColorSet.TAXONOMY, new Color( 0, 0, 0 ) );
             config.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
-            config.setTaxonomyColorize( false );
             config.setColorizeBranches( true );
-            config.setUseBranchesWidths( true );
             config.setDisplayTaxonomyCode( false );
             // Writing to a graphics file.
             AptxUtil.writePhylogenyToGraphicsFile( phy,

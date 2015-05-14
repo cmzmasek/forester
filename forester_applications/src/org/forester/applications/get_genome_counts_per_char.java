@@ -58,7 +58,7 @@ public class get_genome_counts_per_char {
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
             phy = factory.create( infile, org.forester.io.parsers.util.ParserUtils
-                    .createParserDependingOnFileType( infile, true ) )[ 0 ];
+                                  .createParserDependingOnFileType( infile, true ) )[ 0 ];
         }
         catch ( final Exception e ) {
             System.err.println( e + "\nCould not read " + infile + "\n" );
@@ -129,7 +129,7 @@ public class get_genome_counts_per_char {
     }
 
     private static PhylogenyNode find( final String s, final Phylogeny phy ) {
-        final List<PhylogenyNode> l = PhylogenyMethods.searchData( s, phy, true, false, false );
+        final List<PhylogenyNode> l = PhylogenyMethods.searchData( s, phy, true, false, false, false, 0 );
         if ( l.size() != 1 ) {
             System.err.println( "error: " + s );
             System.exit( -1 );

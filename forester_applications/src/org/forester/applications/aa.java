@@ -12,7 +12,7 @@ import java.util.Set;
 import org.forester.io.parsers.FastaParser;
 import org.forester.msa.Msa;
 import org.forester.sequence.BasicSequence;
-import org.forester.sequence.Sequence;
+import org.forester.sequence.MolecularSequence;
 import org.forester.util.ForesterUtil;
 
 public class aa {
@@ -20,10 +20,10 @@ public class aa {
     public static void main( final String args[] ) {
         try {
             System.out.println( "STARTING..." );
-            final List<Sequence> orig = FastaParser
+            final List<MolecularSequence> orig = FastaParser
                     .parse( new FileInputStream( "C:\\Users\\zma\\Desktop\\RRMa_domains_ext_20.fasta" ) );
             final Msa msa = FastaParser.parseMsa( new FileInputStream( "C:\\Users\\zma\\Desktop\\test3_sorted.fasta" ) );
-            final Set<Sequence> all_found_seqs = new HashSet<Sequence>();
+            final Set<MolecularSequence> all_found_seqs = new HashSet<MolecularSequence>();
             for( int i = 0; i < msa.getNumberOfSequences(); ++i ) {
                 final String id = msa.getIdentifier( i );
                 final String id_ = id.substring( 0, id.indexOf( "_" ) );
@@ -38,8 +38,8 @@ public class aa {
                     System.exit( -1 );
                 }
                 int found = 0;
-                final List<Sequence> found_seqs = new ArrayList<Sequence>();
-                for( final Sequence orig_seq : orig ) {
+                final List<MolecularSequence> found_seqs = new ArrayList<MolecularSequence>();
+                for( final MolecularSequence orig_seq : orig ) {
                     final String orig_seq_id = orig_seq.getIdentifier();
                     if ( ( orig_seq_id.indexOf( id_ ) >= 0 ) && ( orig_seq_id.indexOf( "[" + range + "]" ) >= 0 ) ) {
                         found++;
@@ -47,16 +47,16 @@ public class aa {
                     }
                 }
                 if ( found > 0 ) {
-                    for( final Sequence found_seq : found_seqs ) {
+                    for( final MolecularSequence found_seq : found_seqs ) {
                         if ( found_seq.getLength() >= 85 ) {
                             all_found_seqs.add( BasicSequence.createAaSequence( id, found_seq
-                                    .getMolecularSequenceAsString() ) );
+                                                                                .getMolecularSequenceAsString() ) );
                         }
                     }
                     if ( found > 1 ) {
                         System.out.println( i + ": " + id + "=>" + id_ + " " + range );
                         System.out.println( "  found: " + found );
-                        for( final Sequence found_seq : found_seqs ) {
+                        for( final MolecularSequence found_seq : found_seqs ) {
                             System.out.println( found_seq.toString() );
                         }
                     }
@@ -68,7 +68,7 @@ public class aa {
             }
             final String fasta_ary[] = new String[ all_found_seqs.size() ];
             int i = 0;
-            for( final Sequence sequence : all_found_seqs ) {
+            for( final MolecularSequence sequence : all_found_seqs ) {
                 fasta_ary[ i ] = ">" + sequence.getIdentifier() + "\n" + sequence.getMolecularSequenceAsString();
                 System.out.println( sequence );
                 i++;

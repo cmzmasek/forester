@@ -40,7 +40,7 @@ import org.forester.phylogeny.data.Property;
 import org.forester.phylogeny.data.Property.AppliesTo;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
-import org.forester.sequence.Sequence;
+import org.forester.sequence.MolecularSequence;
 import org.forester.util.CommandLineArguments;
 import org.forester.util.ForesterUtil;
 
@@ -64,9 +64,9 @@ public class map_lengths {
             final Phylogeny phy = phylogenies_0[ 0 ];
             for( int i = 1; i < cla.getNumberOfNames(); i++ ) {
                 final String fasta_name = cla.getName( i );
-                final List<Sequence> seqs = FastaParser.parse( new File( fasta_name ) );
+                final List<MolecularSequence> seqs = FastaParser.parse( new File( fasta_name ) );
                 for( int s = 0; s < seqs.size(); s++ ) {
-                    final Sequence seq = seqs.get( s );
+                    final MolecularSequence seq = seqs.get( s );
                     final int actual_length = seq.getLength() - seq.getNumberOfGapResidues();
                     String node_name = "" + seq.getIdentifier();
                     node_name = node_name.substring( 0, node_name.indexOf( "/" ) );

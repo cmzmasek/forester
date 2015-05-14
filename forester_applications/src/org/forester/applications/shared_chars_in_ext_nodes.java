@@ -58,7 +58,7 @@ public class shared_chars_in_ext_nodes {
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
             phy = factory.create( infile, org.forester.io.parsers.util.ParserUtils
-                    .createParserDependingOnFileType( infile, true ) )[ 0 ];
+                                  .createParserDependingOnFileType( infile, true ) )[ 0 ];
         }
         catch ( final Exception e ) {
             System.err.println( e + "\nCould not read " + infile + "\n" );

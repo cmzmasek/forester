@@ -84,7 +84,7 @@ public class get_distances {
         }
         catch ( final IOException e ) {
             System.out.println( "\nError during processing of \"" + names_infile + "\" [" + e.getMessage()
-                    + "] at line \"" + line + "\"\n" );
+                                + "] at line \"" + line + "\"\n" );
             System.exit( -1 );
         }
         System.out.println( "\nDone.\n" );

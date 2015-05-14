@@ -124,7 +124,7 @@ public class simple_node_processor {
                     final String c = t.getTaxonomyCode();
                     if ( c.indexOf( "XX" ) == 3 ) {
                         System.out.println( "FAKE_CODE_TO_ID_MAP.put( \"" + c + "\", " + t.getIdentifier().getValue()
-                                + ");" );
+                                            + ");" );
                     }
                     //   SurfacingUtil.obtainHexColorStringDependingOnTaxonomyGroup( t.getTaxonomyCode(), phy );
                 }
