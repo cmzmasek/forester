@@ -1,3 +1,0 @@
-#summary resampled inference of orthologs
-
-https://sites.google.com/site/cmzmasek/home/software/forester/rio
