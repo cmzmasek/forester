@@ -119,6 +119,9 @@
             <sequence>
                <name>CAEEL_XYZ</name>
             </sequence>
+            <events>
+                <duplications>1</duplications>
+            </events>
          </clade>
          <clade>
             <name>node b</name>
@@ -197,6 +200,9 @@
                      <domain id="123" from="34" to="43" confidence="1.3e-34"> D </domain>
                   </domain_architecture>
                </sequence>
+               <events>
+                   <speciations>1</speciations>
+               </events>
                <date>
                    <value>433</value>
                </date>
