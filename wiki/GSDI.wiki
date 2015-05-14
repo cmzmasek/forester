@@ -1,3 +1,0 @@
-#summary generalized speciation duplication inference
-
-https://sites.google.com/site/cmzmasek/home/software/forester/gsdi
