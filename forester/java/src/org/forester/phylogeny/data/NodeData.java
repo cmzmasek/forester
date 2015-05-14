@@ -178,6 +178,9 @@ public class NodeData implements PhylogenyData {
     }
 
     public Distribution getDistribution( final int index ) {
+        if ( _distributions == null ) {
+            return null;
+        }
         return _distributions.get( index );
     }
 
@@ -204,6 +207,9 @@ public class NodeData implements PhylogenyData {
     }
 
     public Reference getReference( final int index ) {
+        if ( _references == null ) {
+            return null;
+        }
         return _references.get( index );
     }
 
@@ -221,6 +227,9 @@ public class NodeData implements PhylogenyData {
     }
 
     public Sequence getSequence( final int index ) {
+        if ( _sequences == null ) {
+            return null;
+        }
         return _sequences.get( index );
     }
 
@@ -243,6 +252,9 @@ public class NodeData implements PhylogenyData {
     }
 
     public Taxonomy getTaxonomy( final int index ) {
+        if ( _taxonomies == null ) {
+            return null;
+        }
         return _taxonomies.get( index );
     }
 
