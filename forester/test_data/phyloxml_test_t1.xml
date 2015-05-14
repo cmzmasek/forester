@@ -192,9 +192,9 @@
                   <name>bc seq</name>
                   <domain_architecture length="124">
                      <domain from="120" to="130" confidence="0.9" id=""> A </domain>
-                     <domain from="21" to="44" confidence="2144" id="pfam"> B </domain>
+                     <domain from="21" to="44" confidence="0" id="pfam"> B </domain>
                      <domain to="43" confidence="1.0E-89" from="34" id=""> C </domain>
-                     <domain id="123" from="34" to="43" confidence="-1.3e-34"> D </domain>
+                     <domain id="123" from="34" to="43" confidence="1.3e-34"> D </domain>
                   </domain_architecture>
                </sequence>
                <date>

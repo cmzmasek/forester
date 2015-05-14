@@ -62,14 +62,14 @@ public final class SequenceDbWsTools {
     public final static String   EMBL_GENBANK               = "http://www.ebi.ac.uk/Tools/dbfetch/dbfetch?db=GENBANK&style=raw&id=";
     public final static String   EMBL_REFSEQ                = "http://www.ebi.ac.uk/Tools/dbfetch/dbfetch?db=REFSEQ&style=raw&id=";
     public final static String   EMBL_EMBL                  = "http://www.ebi.ac.uk/Tools/dbfetch/dbfetch?db=EMBL&style=raw&id=";
-    private final static boolean DEBUG                      = true;
+    private final static boolean DEBUG                      = false;
     private final static String  URL_ENC                    = "UTF-8";
     private final static int     SLEEP                      = 200;
     private static final boolean ALLOW_TO_OVERWRITE_MOL_SEQ = false;
 
     public static List<UniProtTaxonomy> getTaxonomiesFromCommonNameStrict( final String cn,
                                                                            final int max_taxonomies_return )
-                                                                                   throws IOException {
+            throws IOException {
         final List<UniProtTaxonomy> taxonomies = getTaxonomiesFromCommonName( cn, max_taxonomies_return );
         if ( ( taxonomies != null ) && ( taxonomies.size() > 0 ) ) {
             final List<UniProtTaxonomy> filtered_taxonomies = new ArrayList<UniProtTaxonomy>();
@@ -100,7 +100,7 @@ public final class SequenceDbWsTools {
      */
     public static List<UniProtTaxonomy> getTaxonomiesFromScientificNameStrict( final String sn,
                                                                                final int max_taxonomies_return )
-                                                                                       throws IOException {
+            throws IOException {
         final List<UniProtTaxonomy> taxonomies = getTaxonomiesFromScientificName( sn, max_taxonomies_return );
         if ( ( taxonomies != null ) && ( taxonomies.size() > 0 ) ) {
             final List<UniProtTaxonomy> filtered_taxonomies = new ArrayList<UniProtTaxonomy>();
@@ -116,7 +116,7 @@ public final class SequenceDbWsTools {
 
     public static List<UniProtTaxonomy> getTaxonomiesFromTaxonomyCode( final String code,
                                                                        final int max_taxonomies_return )
-                                                                               throws IOException {
+            throws IOException {
         final String my_code = new String( code );
         final List<String> result = getTaxonomyStringFromTaxonomyCode( my_code, max_taxonomies_return );
         if ( result.size() > 0 ) {
@@ -142,7 +142,7 @@ public final class SequenceDbWsTools {
         final Accession acc = SequenceAccessionTools.parseAccessorFromString( acc_str );
         if ( acc == null ) {
             throw new IllegalArgumentException( "could not extract acceptable sequence db accessor from \"" + acc_str
-                                                + "\"" );
+                    + "\"" );
         }
         if ( acc.getSource().equals( Source.REFSEQ.toString() ) || acc.getSource().equals( Source.EMBL.toString() )
                 || acc.getSource().equals( Source.NCBI.toString() ) ) {
@@ -153,7 +153,7 @@ public final class SequenceDbWsTools {
         }
         else {
             throw new IllegalArgumentException( "don't know how to handle request for source \"" + acc.getSource()
-                                                + "\"" );
+                    + "\"" );
         }
     }
 
@@ -263,7 +263,9 @@ public final class SequenceDbWsTools {
     public static List<String> queryEmblDb( final Accession acc, final int max_lines_to_return ) throws IOException {
         final StringBuilder url_sb = new StringBuilder();
         //  url_sb.append( BASE_EMBL_DB_URL );
-        System.out.println( "source: " + acc.getSource() );
+        if ( DEBUG ) {
+            System.out.println( "source: " + acc.getSource() );
+        }
         if ( acc.getSource().equals( Source.NCBI.toString() ) ) {
             url_sb.append( EMBL_GENBANK );
             //url_sb.append( '/' );
@@ -454,7 +456,7 @@ public final class SequenceDbWsTools {
 
     private static List<UniProtTaxonomy> getTaxonomiesFromScientificName( final String sn,
                                                                           final int max_taxonomies_return )
-                                                                                  throws IOException {
+            throws IOException {
         final List<String> result = getTaxonomyStringFromScientificName( sn, max_taxonomies_return );
         if ( result.size() > 0 ) {
             return parseUniProtTaxonomy( result );
@@ -486,7 +488,7 @@ public final class SequenceDbWsTools {
         return ( !( ( acc == null ) || ForesterUtil.isEmpty( acc.getSource() ) || ForesterUtil.isEmpty( acc.getValue() ) || ( ( acc
                 .getSource().equals( Source.UNIPROT.toString() ) )
                 && ( acc.getSource().toString().equals( Source.EMBL.toString() ) ) && ( acc.getSource().toString()
-                        .equals( Source.REFSEQ.toString() ) ) ) ) );
+                .equals( Source.REFSEQ.toString() ) ) ) ) );
     }
 
     private static List<UniProtTaxonomy> parseUniProtTaxonomy( final List<String> result ) throws IOException {

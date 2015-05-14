@@ -59,7 +59,8 @@ import org.forester.util.ForesterUtil;
 
 public class TestPhylogenyReconstruction {
 
-    private final static double ZERO_DIFF = 1.0E-9;
+    private final static double  ZERO_DIFF = 1.0E-9;
+    private final static boolean VERBOSE   = false;
 
     public static boolean isEqual( final double a, final double b ) {
         return ( ( Math.abs( a - b ) ) < ZERO_DIFF );
@@ -71,7 +72,7 @@ public class TestPhylogenyReconstruction {
 
     public static void main( final String[] args ) {
         System.out.println( "NJ" );
-        if ( testNeighborJoining() ) {
+        if ( testNeighborJoining( VERBOSE ) ) {
             System.out.println( "  OK." );
         }
         else {
@@ -133,7 +134,7 @@ public class TestPhylogenyReconstruction {
         }
         System.out.println( "OK." );
         System.out.print( "  Neighbor Joining: " );
-        if ( !testNeighborJoining() ) {
+        if ( !testNeighborJoining( VERBOSE ) ) {
             System.out.println( "failed." );
             return false;
         }
@@ -437,7 +438,7 @@ public class TestPhylogenyReconstruction {
     private static boolean testDistanceCalculationMethods( final File test_dir ) {
         try {
             final Msa msa0 = GeneralMsaParser.parse( new FileInputStream( test_dir + ForesterUtil.FILE_SEPARATOR
-                                                                          + "bcl.aln" ) );
+                    + "bcl.aln" ) );
             final BasicSymmetricalDistanceMatrix pwd0 = PairwiseDistanceCalculator.calcKimuraDistances( msa0 );
             if ( pwd0.getSize() != 120 ) {
                 return false;
@@ -465,7 +466,7 @@ public class TestPhylogenyReconstruction {
             final String p1_str = "((((((a,b)ab,c)ac,d)ad,(e,f)ef)af,(g,h)gh)ah,i)r";
             final Phylogeny p1 = factory1.create( p1_str, new NHXParser() )[ 0 ];
             CharacterStateMatrix<CharacterStateMatrix.BinaryStates> m1 = new BasicCharacterStateMatrix<CharacterStateMatrix.BinaryStates>( 9,
-                    1 );
+                                                                                                                                           1 );
             m1.setIdentifier( 0, "a" );
             m1.setIdentifier( 1, "b" );
             m1.setIdentifier( 2, "c" );
@@ -538,7 +539,7 @@ public class TestPhylogenyReconstruction {
             final String p2_str = "((((((a,b)ab,c)ac,d)ad,(e,f)ef)af,(g,h,i)gi)ai,((j,k,l)jl,(m,n,o)mo,(p,q,r)pr)jr)root";
             final Phylogeny p2 = factory2.create( p2_str, new NHXParser() )[ 0 ];
             final CharacterStateMatrix<CharacterStateMatrix.BinaryStates> m2 = new BasicCharacterStateMatrix<CharacterStateMatrix.BinaryStates>( 18,
-                    4 );
+                                                                                                                                                 4 );
             m2.setIdentifier( 0, "a" );
             m2.setIdentifier( 1, "b" );
             m2.setIdentifier( 2, "c" );
@@ -847,7 +848,7 @@ public class TestPhylogenyReconstruction {
             final String p10_str = "((((((a,b)ab,c)ac,d)ad,(e,f)ef)af,(g,h)gh)ah,i)r";
             final Phylogeny p10 = factory10.create( p10_str, new NHXParser() )[ 0 ];
             final CharacterStateMatrix<CharacterStateMatrix.BinaryStates> m10 = new BasicCharacterStateMatrix<CharacterStateMatrix.BinaryStates>( 9,
-                    1 );
+                                                                                                                                                  1 );
             m10.setIdentifier( 0, "a" );
             m10.setIdentifier( 1, "b" );
             m10.setIdentifier( 2, "c" );
@@ -890,7 +891,7 @@ public class TestPhylogenyReconstruction {
             final String p1_str = "((((((a,b,y)aby,c)ac,d)ad,(e,f)ef)af,(g,h)gh)ah,i)r";
             final Phylogeny p1 = factory1.create( p1_str, new NHXParser() )[ 0 ];
             final CharacterStateMatrix<CharacterStateMatrix.BinaryStates> m1 = new BasicCharacterStateMatrix<CharacterStateMatrix.BinaryStates>( 10,
-                    1 );
+                                                                                                                                                 1 );
             m1.setIdentifier( 0, "a" );
             m1.setIdentifier( 1, "b" );
             m1.setIdentifier( 2, "y" );
@@ -961,7 +962,7 @@ public class TestPhylogenyReconstruction {
             final String p2_str = "((((((a,b,y)aby,c,d)cad,e,f)af,(g,h)gh)ah,i))r";
             final Phylogeny p2 = factory2.create( p2_str, new NHXParser() )[ 0 ];
             final CharacterStateMatrix<CharacterStateMatrix.BinaryStates> m2 = new BasicCharacterStateMatrix<CharacterStateMatrix.BinaryStates>( 10,
-                    1 );
+                                                                                                                                                 1 );
             m2.setIdentifier( 0, "a" );
             m2.setIdentifier( 1, "b" );
             m2.setIdentifier( 2, "y" );
@@ -1952,7 +1953,7 @@ public class TestPhylogenyReconstruction {
         return true;
     }
 
-    private static boolean testNeighborJoining() {
+    private static boolean testNeighborJoining( final boolean verbose ) {
         try {
             NeighborJoining nj = NeighborJoining.createInstance();
             final BasicSymmetricalDistanceMatrix m0 = new BasicSymmetricalDistanceMatrix( 4 );
@@ -2079,7 +2080,7 @@ public class TestPhylogenyReconstruction {
             m.setRow( "1.60430 1.43890 0.61790 0.50610 0.34840 0.00000 0.26920", 5 );
             m.setRow( "1.59050 1.46290 0.55830 0.47100 0.30830 0.26920 0.00000", 6 );
             //NeighborJoiningR njr = NeighborJoiningR.createInstance( true, 6 );
-            nj = NeighborJoining.createInstance( true, 6 );
+            nj = NeighborJoining.createInstance( verbose, 6 );
             final Phylogeny p2 = nj.execute( m );
             //Archaeopteryx.createApplication( p2 );
             p2.reRoot( p2.getNode( "Bovine" ) );
@@ -2121,7 +2122,7 @@ public class TestPhylogenyReconstruction {
                 return false;
             }
             if ( isUnequal( p2.getNode( "Chimp" ).getParent().getParent().getParent().getParent().getParent()
-                            .getDistanceToParent(), 0.458845 ) ) {
+                    .getDistanceToParent(), 0.458845 ) ) {
                 return false;
             }
             m = new BasicSymmetricalDistanceMatrix( 4 );
@@ -2199,7 +2200,7 @@ public class TestPhylogenyReconstruction {
             m.setRow( "1.52430 1.44650 0.59580 0.46310 0.00000 0.34840 0.30830", 4 );
             m.setRow( "1.60430 1.43890 0.61790 0.50610 0.34840 0.00000 0.26920", 5 );
             m.setRow( "1.59050 1.46290 0.55830 0.47100 0.30830 0.26920 0.00000", 6 );
-            njf = NeighborJoiningF.createInstance( true, 5 );
+            njf = NeighborJoiningF.createInstance( verbose, 5 );
             final Phylogeny p2f = njf.execute( m );
             p2f.reRoot( p2f.getNode( "Bovine" ) );
             if ( isUnequal( p2f.getNode( "Chimp" ).getDistanceToParent(), 0.15168 ) ) {
@@ -2236,11 +2237,11 @@ public class TestPhylogenyReconstruction {
                 return false;
             }
             if ( isUnequal( p2f.getNode( "Chimp" ).getParent().getParent().getParent().getParent()
-                            .getDistanceToParent(), 0.42027 ) ) {
+                    .getDistanceToParent(), 0.42027 ) ) {
                 return false;
             }
             if ( isUnequal( p2f.getNode( "Chimp" ).getParent().getParent().getParent().getParent().getParent()
-                            .getDistanceToParent(), 0.458845 ) ) {
+                    .getDistanceToParent(), 0.458845 ) ) {
                 return false;
             }
         }
@@ -2669,7 +2670,7 @@ public class TestPhylogenyReconstruction {
                 return false;
             }
             if ( isUnequal( p2.getNode( "Chimp" ).getParent().getParent().getParent().getParent().getParent()
-                            .getDistanceToParent(), 0.458845 ) ) {
+                    .getDistanceToParent(), 0.458845 ) ) {
                 return false;
             }
             //

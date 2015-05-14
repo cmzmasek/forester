@@ -33,7 +33,7 @@ import org.forester.util.ForesterUtil;
 
 public class ProteinDomain implements PhylogenyData {
 
-    final public static double CONFIDENCE_DEFAULT = 0.0;
+    final public static double CONFIDENCE_DEFAULT = -1;
     final public static String IDENTIFIER_DEFAULT = "";
     final private String       _name;
     final private int          _from;
@@ -78,7 +78,7 @@ public class ProteinDomain implements PhylogenyData {
             sb.append( " " );
             sb.append( getId() );
         }
-        if ( getConfidence() != CONFIDENCE_DEFAULT ) {
+        if ( getConfidence() >= 0 ) {
             sb.append( " " );
             sb.append( getConfidence() );
         }

@@ -66,8 +66,18 @@ public class ProteinDomainParser implements PhylogenyDataPhyloXmlParser {
             throw new PhyloXmlDataFormatException( "failed to parse element [" + element + "]: " + e.getMessage() );
         }
         name = element.getValueAsString();
-        if ( ( f == -1 ) || ( t == -1 ) || ( conf == ProteinDomain.CONFIDENCE_DEFAULT ) ) {
-            throw new PhyloXmlDataFormatException( "from, to, or confidence attribute not set in: " + element );
+        if ( f == -1 ) {
+            throw new PhyloXmlDataFormatException( "\"" + PhyloXmlMapping.SEQUENCE_DOMAIN_ARCHITECTURE_PROT_DOMAIN_FROM
+                    + "\" attribute not set in: " + element );
+        }
+        if ( t == -1 ) {
+            throw new PhyloXmlDataFormatException( "\"" + PhyloXmlMapping.SEQUENCE_DOMAIN_ARCHITECTURE_PROT_DOMAIN_TO
+                    + "\" attribute not set in: " + element );
+        }
+        if ( conf < 0 ) {
+            throw new PhyloXmlDataFormatException( "\""
+                    + PhyloXmlMapping.SEQUENCE_DOMAIN_ARCHITECTURE_PROT_DOMAIN_CONFIDENCE
+                    + "\" attribute either negative or not set in: " + element );
         }
         return new ProteinDomain( name, f, t, id, conf );
     }

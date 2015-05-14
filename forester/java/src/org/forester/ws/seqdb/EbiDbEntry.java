@@ -39,6 +39,7 @@ import org.forester.util.ForesterUtil;
 
 public final class EbiDbEntry implements SequenceDatabaseEntry {
 
+    private final static boolean  DEBUG = false;
     private SortedSet<Annotation> _annotations;
     private String                _chromosome;
     private SortedSet<Accession>  _cross_references;
@@ -394,7 +395,9 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
         if ( _cross_references == null ) {
             _cross_references = new TreeSet<Accession>();
         }
-        System.out.println( "XREF ADDED: " + accession );
+        if ( DEBUG ) {
+            System.out.println( "XREF ADDED: " + accession );
+        }
         _cross_references.add( accession );
     }
 

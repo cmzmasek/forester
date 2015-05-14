@@ -42,20 +42,19 @@ import org.forester.util.ForesterUtil;
 
 public final class UniProtEntry implements SequenceDatabaseEntry {
 
-    public final static Pattern  BindingDB_PATTERN = Pattern.compile( "BindingDB;\\s+([0-9A-Z]+);" );
-    public final static Pattern  CTD_PATTERN       = Pattern.compile( "CTD;\\s+(\\d+);" );
-    public final static Pattern  DrugBank_PATTERN  = Pattern.compile( "DrugBank;\\s+([0-9A-Z]+);\\s+([^\\.]+)" );
-    public final static Pattern  GO_PATTERN        = Pattern.compile( "GO;\\s+(GO:\\d+);\\s+([PFC]):([^;]+);" );
-    public final static Pattern  KEGG_PATTERN      = Pattern.compile( "KEGG;\\s+([a-z]+:[0-9]+);" );
-    public final static Pattern  MIM_PATTERN       = Pattern.compile( "MIM;\\s+(\\d+);" );
-    public final static Pattern  NextBio_PATTERN   = Pattern.compile( "NextBio;\\s+(\\d+);" );
-    public final static Pattern  Orphanet_PATTERN  = Pattern.compile( "Orphanet;\\s+(\\d+);\\s+([^\\.]+)" );
-    public final static Pattern  PDB_PATTERN       = Pattern.compile( "PDB;\\s+([0-9A-Z]{4});\\s+([^;]+)" );
-    public final static Pattern  PharmGKB_PATTERN  = Pattern.compile( "PharmGKB;\\s+([0-9A-Z]+);" );
-    public final static Pattern  Reactome_PATTERN  = Pattern.compile( "Reactome;\\s+([0-9A-Z]+);\\s+([^\\.]+)" );
-    public final static Pattern  HGNC_PATTERN      = Pattern.compile( "HGNC;\\s+HGNC:(\\d+);" );
-    public final static Pattern  NCBI_TAXID_PATTERN= Pattern.compile( "NCBI_TaxID=(\\d+)" );
-    
+    public final static Pattern  BindingDB_PATTERN  = Pattern.compile( "BindingDB;\\s+([0-9A-Z]+);" );
+    public final static Pattern  CTD_PATTERN        = Pattern.compile( "CTD;\\s+(\\d+);" );
+    public final static Pattern  DrugBank_PATTERN   = Pattern.compile( "DrugBank;\\s+([0-9A-Z]+);\\s+([^\\.]+)" );
+    public final static Pattern  GO_PATTERN         = Pattern.compile( "GO;\\s+(GO:\\d+);\\s+([PFC]):([^;]+);" );
+    public final static Pattern  KEGG_PATTERN       = Pattern.compile( "KEGG;\\s+([a-z]+:[0-9]+);" );
+    public final static Pattern  MIM_PATTERN        = Pattern.compile( "MIM;\\s+(\\d+);" );
+    public final static Pattern  NextBio_PATTERN    = Pattern.compile( "NextBio;\\s+(\\d+);" );
+    public final static Pattern  Orphanet_PATTERN   = Pattern.compile( "Orphanet;\\s+(\\d+);\\s+([^\\.]+)" );
+    public final static Pattern  PDB_PATTERN        = Pattern.compile( "PDB;\\s+([0-9A-Z]{4});\\s+([^;]+)" );
+    public final static Pattern  PharmGKB_PATTERN   = Pattern.compile( "PharmGKB;\\s+([0-9A-Z]+);" );
+    public final static Pattern  Reactome_PATTERN   = Pattern.compile( "Reactome;\\s+([0-9A-Z]+);\\s+([^\\.]+)" );
+    public final static Pattern  HGNC_PATTERN       = Pattern.compile( "HGNC;\\s+HGNC:(\\d+);" );
+    public final static Pattern  NCBI_TAXID_PATTERN = Pattern.compile( "NCBI_TaxID=(\\d+)" );
     private String               _ac;
     private SortedSet<Accession> _cross_references;
     private String               _gene_name;
@@ -125,7 +124,7 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
                 && ForesterUtil.isEmpty( getTaxonomyScientificName() ) && ForesterUtil.isEmpty( getSequenceSymbol() )
                 && ForesterUtil.isEmpty( getGeneName() ) && ForesterUtil.isEmpty( getTaxonomyIdentifier() )
                 && ForesterUtil.isEmpty( getSequenceSymbol() ) && ( ( getGoTerms() == null ) || getGoTerms().isEmpty() ) && ( ( getCrossReferences() == null ) || getCrossReferences()
-                        .isEmpty() ) );
+                .isEmpty() ) );
     }
 
     private void addCrossReference( final Accession accession ) {
@@ -186,13 +185,12 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
         final StringBuffer sq_buffer = new StringBuffer();
         boolean is_aa = false;
         for( final String line : lines ) {
-            //System.out.println( line );
             if ( line.startsWith( "AC" ) ) {
                 e.setAc( SequenceDbWsTools.extractFromTo( line, "AC", ";" ) );
             }
             else if ( line.startsWith( "DE" ) && ForesterUtil.isEmpty( e.getSequenceName() ) ) {
                 if ( ( line.indexOf( "RecName:" ) > 0 ) && ( line.indexOf( "Full=" ) > 0 ) ) {
-                    if ( line.indexOf( "{" ) > 0  ) {
+                    if ( line.indexOf( "{" ) > 0 ) {
                         e.setSequenceName( SequenceDbWsTools.extractFromTo( line, "Full=", "{" ) );
                     }
                     else {
@@ -200,30 +198,27 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
                     }
                 }
                 else if ( ( line.indexOf( "SubName:" ) > 0 ) && ( line.indexOf( "Full=" ) > 0 ) ) {
-                    if ( line.indexOf( "{" ) > 0  ) {
+                    if ( line.indexOf( "{" ) > 0 ) {
                         e.setSequenceName( SequenceDbWsTools.extractFromTo( line, "Full=", "{" ) );
                     }
                     else {
                         e.setSequenceName( SequenceDbWsTools.extractFromTo( line, "Full=", ";" ) );
                     }
-                    
                 }
             }
             else if ( line.startsWith( "DE" ) && ForesterUtil.isEmpty( e.getSequenceSymbol() ) ) {
-              
                 if ( line.indexOf( "Short=" ) > 0 ) {
-                    if ( line.indexOf( "{" ) > 0  ) {
+                    if ( line.indexOf( "{" ) > 0 ) {
                         e.setSequenceSymbol( SequenceDbWsTools.extractFromTo( line, "Short=", "{" ) );
                     }
                     else {
                         e.setSequenceSymbol( SequenceDbWsTools.extractFromTo( line, "Short=", ";" ) );
                     }
-                   
                 }
             }
             else if ( line.startsWith( "GN" ) && ForesterUtil.isEmpty( e.getGeneName() ) ) {
                 if ( line.indexOf( "Name=" ) > 0 ) {
-                    if ( line.indexOf( "{" ) > 0  ) {
+                    if ( line.indexOf( "{" ) > 0 ) {
                         e.setGeneName( SequenceDbWsTools.extractFromTo( line, "Name=", "{" ) );
                     }
                     else {
@@ -341,8 +336,13 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
                 sq_buffer.append( line.replaceAll( "\\s+", "" ) );
             }
         }
-        if ( ( sq_buffer.length() > 0 ) && is_aa ) {
-            e.setMolecularSequence( BasicSequence.createAaSequence( e.getAccession(), sq_buffer.toString() ) );
+        if ( sq_buffer.length() > 0 ) {
+            if ( is_aa ) {
+                e.setMolecularSequence( BasicSequence.createAaSequence( e.getAccession(), sq_buffer.toString() ) );
+            }
+            else {
+                e.setMolecularSequence( BasicSequence.createDnaSequence( e.getAccession(), sq_buffer.toString() ) );
+            }
         }
         return e;
     }
