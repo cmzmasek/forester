@@ -631,7 +631,7 @@ public final class AptxUtil {
                 System.out.println( t.toString() );
             }
             desc.append( "\n" );
-            final DescriptiveStatistics bs = PhylogenyMethods.calculatBranchLengthStatistics( phy );
+            final DescriptiveStatistics bs = PhylogenyMethods.calculateBranchLengthStatistics( phy );
             if ( bs.getN() > 3 ) {
                 desc.append( "\n" );
                 desc.append( "Branch-length statistics: " );
@@ -653,7 +653,7 @@ public final class AptxUtil {
                     desc.append( histo.toStringBuffer( 12, '#', 40, 7, "    " ) );
                 }
             }
-            final DescriptiveStatistics ds = PhylogenyMethods.calculatNumberOfDescendantsPerNodeStatistics( phy );
+            final DescriptiveStatistics ds = PhylogenyMethods.calculateNumberOfDescendantsPerNodeStatistics( phy );
             if ( ds.getN() > 2 ) {
                 desc.append( "\n" );
                 desc.append( "Descendants per node statistics: " );
@@ -670,7 +670,7 @@ public final class AptxUtil {
             }
             List<DescriptiveStatistics> css = null;
             try {
-                css = PhylogenyMethods.calculatConfidenceStatistics( phy );
+                css = PhylogenyMethods.calculateConfidenceStatistics( phy );
             }
             catch ( final IllegalArgumentException e ) {
                 ForesterUtil.printWarningMessage( Constants.PRG_NAME, e.getMessage() );

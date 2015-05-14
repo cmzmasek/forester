@@ -107,7 +107,7 @@ public class PhylogenyMethods {
         return could_extract;
     }
 
-    public static DescriptiveStatistics calculatBranchLengthStatistics( final Phylogeny phy ) {
+    public static DescriptiveStatistics calculateBranchLengthStatistics( final Phylogeny phy ) {
         final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
         for( final PhylogenyNodeIterator iter = phy.iteratorPreorder(); iter.hasNext(); ) {
             final PhylogenyNode n = iter.next();
@@ -118,7 +118,7 @@ public class PhylogenyMethods {
         return stats;
     }
 
-    public static List<DescriptiveStatistics> calculatConfidenceStatistics( final Phylogeny phy ) {
+    public static List<DescriptiveStatistics> calculateConfidenceStatistics( final Phylogeny phy ) {
         final List<DescriptiveStatistics> stats = new ArrayList<DescriptiveStatistics>();
         for( final PhylogenyNodeIterator iter = phy.iteratorPreorder(); iter.hasNext(); ) {
             final PhylogenyNode n = iter.next();
@@ -305,7 +305,7 @@ public class PhylogenyMethods {
         return x;
     }
 
-    public static DescriptiveStatistics calculatNumberOfDescendantsPerNodeStatistics( final Phylogeny phy ) {
+    public static DescriptiveStatistics calculateNumberOfDescendantsPerNodeStatistics( final Phylogeny phy ) {
         final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
         for( final PhylogenyNodeIterator iter = phy.iteratorPreorder(); iter.hasNext(); ) {
             final PhylogenyNode n = iter.next();
