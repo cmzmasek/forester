@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.biojava.thirdparty</groupId>
   <artifactId>forester</artifactId>
-  <version>1.038-SNAPSHOT</version>
+  <version>1.038</version>
 
  <scm>
     <connection>scm:git:git://github.com/cmzmasek/forester.git</connection>
@@ -39,7 +39,7 @@
 
 
 		<dependency>
-    		<artifactId>mytest</artifactId>
+    		<artifactId>openchart</artifactId>
 			<groupId>openchart</groupId>
 			<version>1.0</version>
 			<scope>system</scope>
@@ -50,17 +50,17 @@
  </dependencies>
  
  <build>
- <plugins>
+ 	<plugins>
        	<plugin>
         	<groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
             <version>3.1</version>
             <configuration>
-           		<source>1.7</source>
-           		<target>1.7</target>
+           		<source>1.8</source>
+           		<target>1.8</target>
             </configuration>
        	</plugin>
-  </plugins>
+  	</plugins>
   </build>
 
 </project>
