@@ -50,6 +50,7 @@
  </dependencies>
  
  <build>
+
  	<plugins>
        	<plugin>
         	<groupId>org.apache.maven.plugins</groupId>
@@ -61,6 +62,26 @@
             </configuration>
        	</plugin>
   	</plugins>
+  	
+    <resources>
+
+      <resource>
+        <directory>forester/resources/phyloxml_schema/1.10</directory>
+        <includes>
+          <include>phyloxml.xsd</include>
+        </includes>
+      </resource>
+
+      <resource>
+        <directory>forester/resources/synth_laf/</directory>
+        <includes>
+          <include>synth_look_and_feel_1.xml</include>
+        </includes>
+      </resource>
+
+
+    </resources>  	
+  	
   </build>
 
 </project>
