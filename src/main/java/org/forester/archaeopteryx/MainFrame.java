@@ -2258,6 +2258,11 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             error = true;
             JOptionPane.showMessageDialog( comp, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE );
         }
+        catch (NoClassDefFoundError e) {
+           	error = true;
+       		String msg = "PDF support has been disabled due to licensing restrictions, you will need to provide the itextpdf jar (5.1 or newer) in the classpath for this to work. Error is: NoClassDefFoundError ";
+       		JOptionPane.showMessageDialog( comp, msg+e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE );
+        }
         if ( !error ) {
             if ( !ForesterUtil.isEmpty( pdf_written_to ) ) {
                 JOptionPane.showMessageDialog( comp,
