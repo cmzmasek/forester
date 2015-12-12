@@ -16,10 +16,6 @@
 		<id>cmzmasek</id>
 		<name>Christian Zmasek</name>
 	</developer>
-	<developer>
-		<id>josemduarte</id>
-		<name>Jose Manuel Duarte</name>
-	</developer>
  </developers>
 
 
@@ -39,7 +35,8 @@
 			<scope>provided</scope>
 		</dependency>
 
-
+		<!-- Openchart is not available in maven central. The only way we can provide it is by pointing to the jar within the distribution.
+		     That's not ideal and maven warns about it. -->
 		<dependency>
     		<artifactId>openchart</artifactId>
 			<groupId>openchart</groupId>
