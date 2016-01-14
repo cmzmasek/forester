@@ -1,25 +1,44 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>org.biojava.thirdparty</groupId>
-  <artifactId>forester</artifactId>
-  <version>1.038</version>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
- <scm>
-    <connection>scm:git:git://github.com/cmzmasek/forester.git</connection>
-    <developerConnection>scm:git:git@github.com:cmzmasek/forester.git</developerConnection>
-    <url>https://github.com/cmzmasek/forester.git</url>
-    <tag>HEAD</tag>
- </scm>
-
- <developers>
-	<developer>
-		<id>cmzmasek</id>
-		<name>Christian Zmasek</name>
-	</developer>
- </developers>
+	<!-- for releasing to Maven Central / OSS Sonatype -->
+	<parent>
+		<groupId>org.sonatype.oss</groupId>
+		<artifactId>oss-parent</artifactId>
+		<version>9</version>
+	</parent>
 
 
- <dependencies>
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.biojava.thirdparty</groupId>
+	<artifactId>forester</artifactId>
+	<version>1.038</version>
+	<name>Forester</name>
+	<description>
+		Applications and software libraries for evolutionary biology and comparative genomics research
+	</description>
+
+	<scm>
+		<connection>scm:git:git://github.com/josemduarte/forester.git</connection>
+		<developerConnection>scm:git:git@github.com:josemduarte/forester.git</developerConnection>
+		<url>https://github.com/josemduarte/forester.git</url>
+		<tag>HEAD</tag>
+	</scm>
+
+	<developers>
+		<developer>
+			<id>cmzmasek</id>
+			<name>Christian Zmasek</name>
+		</developer>
+		<developer>
+			<id>josemduarte</id>
+			<name>Jose Manuel Duarte</name>
+			<email>jose.m.duarte@gmail.com</email>
+		</developer>
+	</developers>
+
+
+	<dependencies>
 
 		<dependency>
 			<groupId>commons-codec</groupId>
@@ -31,14 +50,16 @@
 			<groupId>com.itextpdf</groupId>
 			<artifactId>itextpdf</artifactId>
 			<version>5.1.0</version>
-			<!-- Due to licensing restrictions with itextpdf, we make it scope=provided so that it can be provided as a separate jar at runtime -->
+			<!-- Due to licensing restrictions with itextpdf, we make it scope=provided 
+				so that it can be provided as a separate jar at runtime -->
 			<scope>provided</scope>
 		</dependency>
 
-		<!-- Openchart is not available in maven central. The only way we can provide it is by pointing to the jar within the distribution.
-		     That's not ideal and maven warns about it. -->
+		<!-- Openchart is not available in maven central. The only way we can provide 
+			it is by pointing to the jar within the distribution. That's not ideal and 
+			maven warns about it. -->
 		<dependency>
-    		<artifactId>openchart</artifactId>
+			<artifactId>openchart</artifactId>
 			<groupId>openchart</groupId>
 			<version>1.0</version>
 			<scope>system</scope>
@@ -46,41 +67,106 @@
 		</dependency>
 
 
- </dependencies>
- 
- <build>
+	</dependencies>
 
- 	<plugins>
-       	<plugin>
-        	<groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <version>3.1</version>
-            <configuration>
-           		<source>1.8</source>
-           		<target>1.8</target>
-            </configuration>
-       	</plugin>
-  	</plugins>
-  	
-    <resources>
+	<build>
 
-      <resource>
-        <directory>forester/resources/phyloxml_schema/1.10</directory>
-        <includes>
-          <include>phyloxml.xsd</include>
-        </includes>
-      </resource>
+		<plugins>
 
-      <resource>
-        <directory>forester/resources/synth_laf/</directory>
-        <includes>
-          <include>synth_look_and_feel_1.xml</include>
-        </includes>
-      </resource>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.1</version>
+				<configuration>
+					<source>1.7</source>
+					<target>1.7</target>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.sonatype.plugins</groupId>
+				<artifactId>nexus-staging-maven-plugin</artifactId>
+				<version>1.6.6</version>
+				<extensions>true</extensions>
+				<configuration>
+					<serverId>ossrh</serverId>
+					<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+					<autoReleaseAfterClose>true</autoReleaseAfterClose>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.10.3</version>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>2.4</version>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+				<version>1.6</version>
+				<executions>
+					<execution>
+						<id>sign-artifacts</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>sign</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+		</plugins>
+
+		<resources>
+
+			<resource>
+				<directory>forester/resources/phyloxml_schema/1.10</directory>
+				<includes>
+					<include>phyloxml.xsd</include>
+				</includes>
+			</resource>
+
+			<resource>
+				<directory>forester/resources/synth_laf/</directory>
+				<includes>
+					<include>synth_look_and_feel_1.xml</include>
+				</includes>
+			</resource>
 
 
-    </resources>  	
-  	
-  </build>
+		</resources>
+
+	</build>
+
+	<distributionManagement>
+		<snapshotRepository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
 
 </project>
