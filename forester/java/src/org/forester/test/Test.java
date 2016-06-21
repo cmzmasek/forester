@@ -4031,7 +4031,7 @@ public final class Test {
                 System.out.println( entry.getAnnotations().first().getRefSource() );
                 return false;
             }
-            if ( entry.getCrossReferences().size() != 5 ) {
+            if ( entry.getCrossReferences().size() < 1 ) {
                 return false;
             }
             final SequenceDatabaseEntry entry1 = SequenceDbWsTools.obtainEntry( "ABJ16409" );
@@ -4054,7 +4054,7 @@ public final class Test {
                 System.out.println( entry1.getGeneName() );
                 return false;
             }
-            if ( entry1.getCrossReferences().size() != 6 ) {
+            if ( entry1.getCrossReferences().size() < 1 ) {
                 return false;
             }
             final SequenceDatabaseEntry entry2 = SequenceDbWsTools.obtainEntry( "NM_184234" );
@@ -4078,10 +4078,15 @@ public final class Test {
                 System.out.println( entry2.getGeneName() );
                 return false;
             }
-            if ( entry2.getCrossReferences().size() != 3 ) {
+            if ( entry2.getCrossReferences().size() < 1 ) {
                 return false;
             }
-            //
+            if ( !entry2.getChromosome().equals( "20" ) ) {
+                return false;
+            }
+            if ( !entry2.getMap().equals( "20q11.22" ) ) {
+                return false;
+            }
             final SequenceDatabaseEntry entry3 = SequenceDbWsTools.obtainEntry( "HM043801" );
             if ( !entry3.getAccession().equals( "HM043801" ) ) {
                 return false;
@@ -4105,7 +4110,7 @@ public final class Test {
             if ( !ForesterUtil.isEmpty( entry3.getGeneName() ) ) {
                 return false;
             }
-            if ( entry3.getCrossReferences().size() < 7 ) {
+            if ( entry3.getCrossReferences().size() < 1 ) {
                 return false;
             }
             final SequenceDatabaseEntry entry4 = SequenceDbWsTools.obtainEntry( "AAA36557.1" );
@@ -4128,21 +4133,6 @@ public final class Test {
                 System.out.println( entry4.getGeneName() );
                 return false;
             }
-            //   if ( !entry4.getChromosome().equals( "ras" ) ) {
-            //     System.out.println( entry4.getChromosome() );
-            //     return false;
-            // }
-            // if ( !entry4.getMap().equals( "ras" ) ) {
-            //     System.out.println( entry4.getMap() );
-            //     return false;
-            // }
-            //TODO FIXME gi...
-            //
-            //TODO fails:
-            //            final SequenceDatabaseEntry entry5 = SequenceDbWsTools.obtainEntry( "M30539" );
-            //            if ( !entry5.getAccession().equals( "HM043801" ) ) {
-            //                return false;
-            //            }
             final SequenceDatabaseEntry entry5 = SequenceDbWsTools.obtainEntry( "AAZ45343.1" );
             if ( !entry5.getAccession().equals( "AAZ45343" ) ) {
                 return false;
@@ -4157,6 +4147,25 @@ public final class Test {
             }
             if ( !entry5.getTaxonomyIdentifier().equals( "159087" ) ) {
                 System.out.println( entry5.getTaxonomyIdentifier() );
+                return false;
+            }
+            final SequenceDatabaseEntry entry6 = SequenceDbWsTools.obtainEntry( "M30539" );
+            if ( !entry6.getAccession().equals( "M30539" ) ) {
+                return false;
+            }
+            if ( !entry6.getGeneName().equals( "ras" ) ) {
+                return false;
+            }
+            if ( !entry6.getSequenceName().equals( "Human SK2 c-Ha-ras-1 oncogene-encoded protein gene, exon 1" ) ) {
+                return false;
+            }
+            if ( !entry6.getTaxonomyIdentifier().equals( "9606" ) ) {
+                return false;
+            }
+            if ( !entry6.getTaxonomyScientificName().equals( "Homo sapiens" ) ) {
+                return false;
+            }
+            if ( entry6.getCrossReferences().size() < 1 ) {
                 return false;
             }
         }

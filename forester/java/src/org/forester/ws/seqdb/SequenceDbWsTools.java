@@ -132,7 +132,7 @@ public final class SequenceDbWsTools {
     public static SequenceDatabaseEntry obtainEmblEntry( final Accession acc, final int max_lines_to_return )
             throws IOException {
         final List<String> lines = queryEmblDb( acc, max_lines_to_return );
-        return EbiDbEntry.createInstanceFromPlainTextForRefSeq( lines );
+        return EbiDbEntry.createInstance( lines );
     }
 
     public static SequenceDatabaseEntry obtainEntry( final String acc_str ) throws IOException {
@@ -164,7 +164,7 @@ public final class SequenceDbWsTools {
     public static SequenceDatabaseEntry obtainRefSeqEntryFromEmbl( final Accession acc, final int max_lines_to_return )
             throws IOException {
         final List<String> lines = queryEmblDbForRefSeqEntry( acc, max_lines_to_return );
-        return EbiDbEntry.createInstanceFromPlainTextForRefSeq( lines );
+        return EbiDbEntry.createInstance( lines );
     }
 
     public final static Accession obtainSeqAccession( final PhylogenyNode node ) {
@@ -221,7 +221,7 @@ public final class SequenceDbWsTools {
     public static SequenceDatabaseEntry obtainUniProtEntry( final String query, final int max_lines_to_return )
             throws IOException {
         final List<String> lines = queryUniprot( "uniprot/" + query + ".txt", max_lines_to_return );
-        return UniProtEntry.createInstanceFromPlainText( lines );
+        return UniProtEntry.createInstance( lines );
     }
 
     public static List<String> queryDb( final String query, int max_lines_to_return, final String base_url )

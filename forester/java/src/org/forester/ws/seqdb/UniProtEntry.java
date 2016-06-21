@@ -127,6 +127,21 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
                 .isEmpty() ) );
     }
 
+    @Override
+    public String getMap() {
+        return null;
+    }
+
+    @Override
+    public String getChromosome() {
+        return null;
+    }
+
+    @Override
+    public MolecularSequence getMolecularSequence() {
+        return _mol_seq;
+    }
+    
     private void addCrossReference( final Accession accession ) {
         if ( _cross_references == null ) {
             _cross_references = new TreeSet<Accession>();
@@ -179,7 +194,14 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
         }
     }
 
-    public static SequenceDatabaseEntry createInstanceFromPlainText( final List<String> lines ) {
+   
+
+    @Override
+    public SortedSet<Annotation> getAnnotations() {
+        return null;
+    }
+
+    public final static SequenceDatabaseEntry createInstance( final List<String> lines ) {
         final UniProtEntry e = new UniProtEntry();
         boolean saw_sq = false;
         final StringBuffer sq_buffer = new StringBuffer();
@@ -345,25 +367,5 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
             }
         }
         return e;
-    }
-
-    @Override
-    public SortedSet<Annotation> getAnnotations() {
-        return null;
-    }
-
-    @Override
-    public String getMap() {
-        return null;
-    }
-
-    @Override
-    public String getChromosome() {
-        return null;
-    }
-
-    @Override
-    public MolecularSequence getMolecularSequence() {
-        return _mol_seq;
     }
 }
