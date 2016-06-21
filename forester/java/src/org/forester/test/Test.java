@@ -125,10 +125,7 @@ import org.forester.util.SequenceAccessionTools;
 import org.forester.ws.seqdb.SequenceDatabaseEntry;
 import org.forester.ws.seqdb.SequenceDbWsTools;
 import org.forester.ws.seqdb.UniProtTaxonomy;
-import org.forester.ws.wabi.TxSearch;
-import org.forester.ws.wabi.TxSearch.RANKS;
-import org.forester.ws.wabi.TxSearch.TAX_NAME_CLASS;
-import org.forester.ws.wabi.TxSearch.TAX_RANK;
+
 
 @SuppressWarnings( "unused")
 public final class Test {
@@ -12913,62 +12910,6 @@ public final class Test {
             return true;
         }
         catch ( final Exception e ) {
-            return false;
-        }
-        return true;
-    }
-
-    private static boolean testWabiTxSearch() {
-        try {
-            String result = "";
-            result = TxSearch.searchSimple( "nematostella" );
-            result = TxSearch.getTxId( "nematostella" );
-            if ( !result.equals( "45350" ) ) {
-                return false;
-            }
-            result = TxSearch.getTxName( "45350" );
-            if ( !result.equals( "Nematostella" ) ) {
-                return false;
-            }
-            result = TxSearch.getTxId( "nematostella vectensis" );
-            if ( !result.equals( "45351" ) ) {
-                return false;
-            }
-            result = TxSearch.getTxName( "45351" );
-            if ( !result.equals( "Nematostella vectensis" ) ) {
-                return false;
-            }
-            result = TxSearch.getTxId( "Bacillus subtilis subsp. subtilis str. N170" );
-            if ( !result.equals( "536089" ) ) {
-                return false;
-            }
-            result = TxSearch.getTxName( "536089" );
-            if ( !result.equals( "Bacillus subtilis subsp. subtilis str. N170" ) ) {
-                return false;
-            }
-            final List<String> queries = new ArrayList<String>();
-            queries.add( "Campylobacter coli" );
-            queries.add( "Escherichia coli" );
-            queries.add( "Arabidopsis" );
-            queries.add( "Trichoplax" );
-            queries.add( "Samanea saman" );
-            queries.add( "Kluyveromyces marxianus" );
-            queries.add( "Bacillus subtilis subsp. subtilis str. N170" );
-            queries.add( "Bornavirus parrot/PDD/2008" );
-            final List<RANKS> ranks = new ArrayList<RANKS>();
-            ranks.add( RANKS.SUPERKINGDOM );
-            ranks.add( RANKS.KINGDOM );
-            ranks.add( RANKS.FAMILY );
-            ranks.add( RANKS.GENUS );
-            ranks.add( RANKS.TRIBE );
-            result = TxSearch.searchLineage( queries, ranks );
-            result = TxSearch.searchParam( "Homo sapiens", TAX_NAME_CLASS.ALL, TAX_RANK.SPECIES, 10, true );
-            result = TxSearch.searchParam( "Samanea saman", TAX_NAME_CLASS.SCIENTIFIC_NAME, TAX_RANK.ALL, 10, true );
-        }
-        catch ( final Exception e ) {
-            System.out.println();
-            System.out.println( "the following might be due to absence internet connection:" );
-            e.printStackTrace( System.out );
             return false;
         }
         return true;

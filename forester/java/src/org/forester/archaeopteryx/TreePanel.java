@@ -701,16 +701,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 catch ( final Exception e ) {
                     e.printStackTrace();
                 }
-                if ( Constants.ALLOW_DDBJ_BLAST ) {
-                    try {
-                        System.out.println( "trying: " + query );
-                        final Blast s = new Blast();
-                        s.ddbjBlast( query );
-                    }
-                    catch ( final Exception e ) {
-                        e.printStackTrace();
-                    }
-                }
             }
         }
     }
