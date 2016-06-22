@@ -35,7 +35,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.forester.archaeopteryx.Constants;
+import org.forester.archaeopteryx.AptxConstants;
 import org.forester.io.parsers.IteratingPhylogenyParser;
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.nhx.NHXFormatException;
@@ -53,7 +53,7 @@ import org.forester.util.ForesterUtil;
 
 public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, PhylogenyParser {
 
-    final private static boolean DEBUG                               = true;
+    final private static boolean DEBUG                               = false;
     
     final private static String            begin_trees               = NexusConstants.BEGIN_TREES.toLowerCase();
     final private static String            end                       = NexusConstants.END.toLowerCase();
@@ -71,11 +71,11 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
     final private static Pattern           TRANSLATE_PATTERN         = Pattern.compile( "([0-9A-Za-z]+)\\s+(.+)" );
     final private static Pattern           ALN_PATTERN               = Pattern.compile( "(.+)\\s+([A-Za-z-_\\*\\?]+)" );
     final private static Pattern           DATATYPE_PATTERN          = Pattern.compile( "datatype\\s?.\\s?([a-z]+)" );
-    final private static Pattern           LINK_TAXA_PATTERN         = Pattern.compile( "link\\s+taxa\\s?.\\s?([^;]+)",
-                                                                                        Pattern.CASE_INSENSITIVE );
+    //final private static Pattern           LINK_TAXA_PATTERN         = Pattern.compile( "link\\s+taxa\\s?.\\s?([^;]+)",
+    //                                                                                    Pattern.CASE_INSENSITIVE );
     final private static String            utree                     = NexusConstants.UTREE.toLowerCase();
     private BufferedReader                 _br;
-    private boolean                        _ignore_quotes_in_nh_data = Constants.NH_PARSING_IGNORE_QUOTES_DEFAULT;
+    private boolean                        _ignore_quotes_in_nh_data = AptxConstants.NH_PARSING_IGNORE_QUOTES_DEFAULT;
     private boolean                        _in_taxalabels;
     private boolean                        _in_translate;
     private boolean                        _in_tree;
@@ -294,10 +294,10 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
                         }
                     }
                     else if ( line_lc.startsWith( "link" ) ) {
-                        final Matcher link_m = LINK_TAXA_PATTERN.matcher( line );
-                        if ( link_m.lookingAt() ) {
-                            final String link = link_m.group( 1 );  //TODO why?
-                        }
+                        //final Matcher link_m = LINK_TAXA_PATTERN.matcher( line );
+                        //if ( link_m.lookingAt() ) {
+                            //final String link = link_m.group( 1 );  //TODO why?
+                       // }
                     }
                     else if ( line_lc.startsWith( end ) || line_lc.startsWith( endblock ) ) {
                         _in_trees_block = false;
@@ -399,10 +399,10 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
                         _datatype = null;
                     }
                     else if ( line_lc.startsWith( "link" ) ) {
-                        final Matcher link_m = LINK_TAXA_PATTERN.matcher( line );
-                        if ( link_m.lookingAt() ) {
-                            final String link = link_m.group( 1 );
-                        }
+                     //   final Matcher link_m = LINK_TAXA_PATTERN.matcher( line );
+                     //   if ( link_m.lookingAt() ) {
+                     //       final String link = link_m.group( 1 );
+                     //   }
                     }
                     else {
                         final Matcher datatype_matcher = DATATYPE_PATTERN.matcher( line_lc );

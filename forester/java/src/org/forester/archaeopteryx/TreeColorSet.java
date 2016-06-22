@@ -341,7 +341,7 @@ public final class TreeColorSet {
     }
 
     Color getBinaryDomainCombinationsColor() {
-        if ( Constants.SPECIAL_CUSTOM ) {
+        if ( AptxConstants.SPECIAL_CUSTOM ) {
             return new Color( 50, 50, 50 );
         }
         return binary_domain_combinations_color;
@@ -492,7 +492,7 @@ public final class TreeColorSet {
                     tcs.setColorforDefault( field, color );
                 }
                 catch ( final IllegalArgumentException ex ) {
-                    ForesterUtil.printWarningMessage( Constants.PRG_NAME, ex.getMessage() );
+                    ForesterUtil.printWarningMessage( AptxConstants.PRG_NAME, ex.getMessage() );
                 }
             }
         }

@@ -34,7 +34,7 @@ import java.awt.Dimension;
 import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.util.ForesterConstants;
 
-public final class Constants {
+public final class AptxConstants {
 
     final static boolean        __ALLOW_PHYLOGENETIC_INFERENCE                                = true;
     public final static boolean __RELEASE                                                     = false;                                                                             // TODO remove me
@@ -42,7 +42,7 @@ public final class Constants {
     public final static boolean __SYNTH_LF                                                    = false;                                                                             // TODO remove me
     public final static String  PRG_NAME                                                      = "Archaeopteryx";
     final static String         VERSION                                                       = "0.9909 experimental";
-    final static String         PRG_DATE                                                      = "150513";
+    final static String         PRG_DATE                                                      = "160622";
     final static String         DEFAULT_CONFIGURATION_FILE_NAME                               = "_aptx_configuration_file";
     final static String[]       DEFAULT_FONT_CHOICES                                          = { "Arial", "Helvetica",
             "Verdana", "Tahoma", "Dialog", "Lucida Sans", "SansSerif", "Sans-serif", "Sans"  };
@@ -51,13 +51,13 @@ public final class Constants {
     final static String         AUTHOR_EMAIL                                                  = "phyloxml@gmail.com";
     final static int            DOMAIN_STRUCTURE_E_VALUE_THR_DEFAULT_EXP                      = -3;
     final static float          BUTTON_ZOOM_IN_FACTOR                                         = 1.25f;
-    final static float          BUTTON_ZOOM_OUT_FACTOR                                        = 1 / Constants.BUTTON_ZOOM_IN_FACTOR;
+    final static float          BUTTON_ZOOM_OUT_FACTOR                                        = 1 / AptxConstants.BUTTON_ZOOM_IN_FACTOR;
     final static float          BUTTON_ZOOM_IN_X_CORRECTION_FACTOR                            = 1.2f;
-    final static float          BUTTON_ZOOM_OUT_X_CORRECTION_FACTOR                           = 1 / Constants.BUTTON_ZOOM_IN_X_CORRECTION_FACTOR;
+    final static float          BUTTON_ZOOM_OUT_X_CORRECTION_FACTOR                           = 1 / AptxConstants.BUTTON_ZOOM_IN_X_CORRECTION_FACTOR;
     final static float          WHEEL_ZOOM_IN_FACTOR                                          = 1.08f;
-    final static float          WHEEL_ZOOM_OUT_FACTOR                                         = 1 / Constants.WHEEL_ZOOM_IN_FACTOR;
+    final static float          WHEEL_ZOOM_OUT_FACTOR                                         = 1 / AptxConstants.WHEEL_ZOOM_IN_FACTOR;
     final static float          WHEEL_ZOOM_IN_X_CORRECTION_FACTOR                             = 1.085f;
-    final static float          WHEEL_ZOOM_OUT_X_CORRECTION_FACTOR                            = 1 / Constants.WHEEL_ZOOM_IN_X_CORRECTION_FACTOR;
+    final static float          WHEEL_ZOOM_OUT_X_CORRECTION_FACTOR                            = 1 / AptxConstants.WHEEL_ZOOM_IN_X_CORRECTION_FACTOR;
     static final boolean        SPECIAL_CUSTOM                                                = false;                                                                             //TODO remove me
     static final double         EXT_NODE_INFO_LENGTH_MAX_RATIO                                = 0.95;
     static final Dimension      NODE_PANEL_SPLIT_MINIMUM_SIZE                                 = new Dimension( 100, 50 );

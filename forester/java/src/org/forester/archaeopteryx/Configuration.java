@@ -179,7 +179,7 @@ public final class Configuration {
     String                                  config_filename;
     // This option is selected in the dropdown
     int                                     default_clickto                                        = Configuration.display_node_data;
-    String                                  default_config_filename                                = Constants.DEFAULT_CONFIGURATION_FILE_NAME;
+    String                                  default_config_filename                                = AptxConstants.DEFAULT_CONFIGURATION_FILE_NAME;
     // --------------
     // Color set
     // --------------
@@ -188,18 +188,18 @@ public final class Configuration {
     // Fonts
     // -------
     TreeFontSet                             tree_font_set;
-    boolean                                 verbose                                                = Constants.VERBOSE_DEFAULT;
+    boolean                                 verbose                                                = AptxConstants.VERBOSE_DEFAULT;
     private boolean                         _abbreviate_scientific_names                           = false;
     private boolean                         _antialias_screen                                      = true;
     private boolean                         _background_color_gradient                             = false;
     private String                          _base_font_family_name                                 = "";
     private int                             _base_font_size                                        = -1;
-    private CLADOGRAM_TYPE                  _cladogram_type                                        = Constants.CLADOGRAM_TYPE_DEFAULT;
+    private CLADOGRAM_TYPE                  _cladogram_type                                        = AptxConstants.CLADOGRAM_TYPE_DEFAULT;
     private boolean                         _color_labels_same_as_parent_branch                    = false;
     private int                             _default_bootstrap_samples                             = -1;
     private NodeFill                        _default_node_fill                                     = NodeFill.SOLID;
     private NodeShape                       _default_node_shape                                    = NodeShape.RECTANGLE;
-    private short                           _default_node_shape_size                               = Constants.DEFAULT_NODE_SHAPE_SIZE_DEFAULT;
+    private short                           _default_node_shape_size                               = AptxConstants.DEFAULT_NODE_SHAPE_SIZE_DEFAULT;
     private SortedMap<String, Color>        _display_colors                                        = null;
     private boolean                         _display_sequence_relations                            = false;
     private boolean                         _editable                                              = true;
@@ -209,14 +209,14 @@ public final class Configuration {
     private int                             _frame_y_size;
     private int                             _graphics_export_x                                     = -1;
     private int                             _graphics_export_y                                     = -1;
-    private Color                           _gui_background_color                                  = Constants.GUI_BACKGROUND_DEFAULT;
-    private Color                           _gui_button_background_color                           = Constants.BUTTON_BACKGROUND_COLOR_DEFAULT;
-    private Color                           _gui_button_border_color                               = Constants.BUTTON_BORDER_COLOR_DEFAULT;
-    private Color                           _gui_button_text_color                                 = Constants.BUTTON_TEXT_COLOR_DEFAULT;
-    private Color                           _gui_checkbox_and_button_active_color                  = Constants.CHECKBOX_AND_BUTTON_ACTIVE_COLOR_DEFAULT;
-    private Color                           _gui_checkbox_text_color                               = Constants.CHECKBOX_TEXT_COLOR_DEFAULT;
-    private Color                           _gui_menu_background_color                             = Constants.MENU_BACKGROUND_COLOR_DEFAULT;
-    private Color                           _gui_menu_text_color                                   = Constants.MENU_TEXT_COLOR_DEFAULT;
+    private Color                           _gui_background_color                                  = AptxConstants.GUI_BACKGROUND_DEFAULT;
+    private Color                           _gui_button_background_color                           = AptxConstants.BUTTON_BACKGROUND_COLOR_DEFAULT;
+    private Color                           _gui_button_border_color                               = AptxConstants.BUTTON_BORDER_COLOR_DEFAULT;
+    private Color                           _gui_button_text_color                                 = AptxConstants.BUTTON_TEXT_COLOR_DEFAULT;
+    private Color                           _gui_checkbox_and_button_active_color                  = AptxConstants.CHECKBOX_AND_BUTTON_ACTIVE_COLOR_DEFAULT;
+    private Color                           _gui_checkbox_text_color                               = AptxConstants.CHECKBOX_TEXT_COLOR_DEFAULT;
+    private Color                           _gui_menu_background_color                             = AptxConstants.MENU_BACKGROUND_COLOR_DEFAULT;
+    private Color                           _gui_menu_text_color                                   = AptxConstants.MENU_TEXT_COLOR_DEFAULT;
     private boolean                         _hide_controls_and_menus                               = false;
     private boolean                         _internal_number_are_confidence_for_nh_parsing         = false;
     private String                          _label_for_get_ext_descendents_data                    = "";
@@ -226,8 +226,8 @@ public final class Configuration {
     private double                          _min_confidence_value                                  = Options.MIN_CONFIDENCE_DEFAULT;
     private boolean                         _nh_parsing_replace_underscores                        = false;
     private NODE_LABEL_DIRECTION            _node_label_direction                                  = NODE_LABEL_DIRECTION.HORIZONTAL;
-    private short                           _number_of_digits_after_comma_for_branch_length_values = Constants.NUMBER_OF_DIGITS_AFTER_COMMA_FOR_BRANCH_LENGTH_VALUES_DEFAULT;
-    private short                           _number_of_digits_after_comma_for_confidence_values    = Constants.NUMBER_OF_DIGITS_AFTER_COMMA_FOR_CONFIDENCE_VALUES_DEFAULT;
+    private short                           _number_of_digits_after_comma_for_branch_length_values = AptxConstants.NUMBER_OF_DIGITS_AFTER_COMMA_FOR_BRANCH_LENGTH_VALUES_DEFAULT;
+    private short                           _number_of_digits_after_comma_for_confidence_values    = AptxConstants.NUMBER_OF_DIGITS_AFTER_COMMA_FOR_CONFIDENCE_VALUES_DEFAULT;
     private short                           _ov_max_height                                         = 80;
     private short                           _ov_max_width                                          = 80;
     private OVERVIEW_PLACEMENT_TYPE         _ov_placement                                          = OVERVIEW_PLACEMENT_TYPE.UPPER_LEFT;
@@ -235,7 +235,7 @@ public final class Configuration {
     private File                            _path_to_local_mafft                                   = null;
     private File                            _path_to_local_raxml                                   = null;
     private PHYLOGENY_GRAPHICS_TYPE         _phylogeny_graphics_type                               = PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR;
-    private float                           _print_line_width                                      = Constants.PDF_LINE_WIDTH_DEFAULT;
+    private float                           _print_line_width                                      = AptxConstants.PDF_LINE_WIDTH_DEFAULT;
     private boolean                         _show_annotation_ref_source                            = true;
     private boolean                         _show_default_node_shapes_external                     = false;
     private boolean                         _show_default_node_shapes_for_marked_nodes             = false;
@@ -246,7 +246,7 @@ public final class Configuration {
     private TAXONOMY_EXTRACTION             _taxonomy_extraction                                   = TAXONOMY_EXTRACTION.NO;
     private UI                              _ui                                                    = UI.UNKNOWN;
     private boolean                         _use_tabbed_display                                    = false;
-    private boolean                         _validate_against_phyloxml_xsd_schema                  = Constants.VALIDATE_AGAINST_PHYLOXML_XSD_SCJEMA_DEFAULT;
+    private boolean                         _validate_against_phyloxml_xsd_schema                  = AptxConstants.VALIDATE_AGAINST_PHYLOXML_XSD_SCJEMA_DEFAULT;
     private Color                           _vector_data_min_color                                 = Color.BLUE;
     private Color                           _vector_data_max_color                                 = Color.YELLOW;
     private Color                           _vector_data_mean_color                                = Color.WHITE;
@@ -256,14 +256,14 @@ public final class Configuration {
     private boolean                         _right_align_domains                                   = false;
     private boolean                         _allow_thick_strokes                                   = false;
     static {
-        for( final String font_name : Constants.DEFAULT_FONT_CHOICES ) {
+        for( final String font_name : AptxConstants.DEFAULT_FONT_CHOICES ) {
             if ( Arrays.binarySearch( AptxUtil.getAvailableFontFamiliesSorted(), font_name ) >= 0 ) {
                 DEFAULT_FONT_FAMILY = font_name;
                 break;
             }
         }
         if ( ForesterUtil.isEmpty( DEFAULT_FONT_FAMILY ) ) {
-            DEFAULT_FONT_FAMILY = Constants.DEFAULT_FONT_CHOICES[ Constants.DEFAULT_FONT_CHOICES.length - 1 ];
+            DEFAULT_FONT_FAMILY = AptxConstants.DEFAULT_FONT_CHOICES[ AptxConstants.DEFAULT_FONT_CHOICES.length - 1 ];
         }
     }
 
@@ -290,16 +290,16 @@ public final class Configuration {
                     final BufferedReader bf = new BufferedReader( isr );
                     readConfig( bf );
                     bf.close();
-                    ForesterUtil.programMessage( Constants.PRG_NAME, "successfully read from configuration url ["
+                    ForesterUtil.programMessage( AptxConstants.PRG_NAME, "successfully read from configuration url ["
                             + config_filename + "]" );
                 }
                 catch ( final Exception e ) {
-                    ForesterUtil.printWarningMessage( Constants.PRG_NAME, "failed to read configuration from ["
+                    ForesterUtil.printWarningMessage( AptxConstants.PRG_NAME, "failed to read configuration from ["
                             + config_filename + "]: " + e.getLocalizedMessage() );
                 }
             }
             catch ( final Exception e ) {
-                ForesterUtil.printWarningMessage( Constants.PRG_NAME, "cannot find or open configuration url ["
+                ForesterUtil.printWarningMessage( AptxConstants.PRG_NAME, "cannot find or open configuration url ["
                         + config_filename + "]" );
             }
         }
@@ -317,14 +317,14 @@ public final class Configuration {
                 }
                 catch ( final Exception e ) {
                     if ( verbose ) {
-                        ForesterUtil.printWarningMessage( Constants.PRG_NAME, "failed to read configuration from ["
+                        ForesterUtil.printWarningMessage( AptxConstants.PRG_NAME, "failed to read configuration from ["
                                 + config_filename + "]: " + e );
                     }
                 }
             }
             else {
                 if ( verbose ) {
-                    ForesterUtil.printWarningMessage( Constants.PRG_NAME, "cannot find or open configuration file ["
+                    ForesterUtil.printWarningMessage( AptxConstants.PRG_NAME, "cannot find or open configuration file ["
                             + config_filename + "]" );
                 }
             }
@@ -644,7 +644,7 @@ public final class Configuration {
         if ( name.equals( "edit_info" ) ) {
             index = Configuration.display_node_data;
             ForesterUtil
-            .printWarningMessage( Constants.PRG_NAME,
+            .printWarningMessage( AptxConstants.PRG_NAME,
                                   "configuration key [edit_info] is deprecated, use [display node data] instead" );
         }
         else if ( name.equals( "display_node_data" ) ) {
@@ -670,7 +670,7 @@ public final class Configuration {
         }
         else if ( name.equals( "display_sequences" ) ) {
             ForesterUtil
-            .printWarningMessage( Constants.PRG_NAME, "configuration key [display_sequences] is deprecated" );
+            .printWarningMessage( AptxConstants.PRG_NAME, "configuration key [display_sequences] is deprecated" );
             return DEPRECATED;
         }
         else if ( name.equals( "open_seq_web" ) ) {
@@ -707,12 +707,12 @@ public final class Configuration {
             index = Configuration.select_nodes;
         }
         else if ( name.equals( "display_node_popup" ) ) {
-            ForesterUtil.printWarningMessage( Constants.PRG_NAME,
+            ForesterUtil.printWarningMessage( AptxConstants.PRG_NAME,
                     "configuration key [display_node_popup] is deprecated" );
             return DEPRECATED;
         }
         else if ( name.equals( "custom_option" ) ) {
-            ForesterUtil.printWarningMessage( Constants.PRG_NAME, "configuration key [custom_option] is deprecated" );
+            ForesterUtil.printWarningMessage( AptxConstants.PRG_NAME, "configuration key [custom_option] is deprecated" );
             return DEPRECATED;
         }
         else if ( name.equals( "color_subtree" ) ) {
@@ -746,7 +746,7 @@ public final class Configuration {
             return false;
         }
         else {
-            ForesterUtil.printWarningMessage( Constants.PRG_NAME, "could not parse boolean value from [" + str + "]" );
+            ForesterUtil.printWarningMessage( AptxConstants.PRG_NAME, "could not parse boolean value from [" + str + "]" );
             return false;
         }
     }
@@ -757,7 +757,7 @@ public final class Configuration {
             d = Double.parseDouble( str.trim() );
         }
         catch ( final Exception e ) {
-            ForesterUtil.printWarningMessage( Constants.PRG_NAME, "could not parse double from [" + str + "]" );
+            ForesterUtil.printWarningMessage( AptxConstants.PRG_NAME, "could not parse double from [" + str + "]" );
             d = 0.0;
         }
         return d;
@@ -769,7 +769,7 @@ public final class Configuration {
             f = Float.parseFloat( str.trim() );
         }
         catch ( final Exception e ) {
-            ForesterUtil.printWarningMessage( Constants.PRG_NAME, "could not parse float from [" + str + "]" );
+            ForesterUtil.printWarningMessage( AptxConstants.PRG_NAME, "could not parse float from [" + str + "]" );
             f = 0.0f;
         }
         return f;
@@ -781,7 +781,7 @@ public final class Configuration {
             i = Integer.parseInt( str.trim() );
         }
         catch ( final Exception e ) {
-            ForesterUtil.printWarningMessage( Constants.PRG_NAME, "could not parse integer from [" + str + "]" );
+            ForesterUtil.printWarningMessage( AptxConstants.PRG_NAME, "could not parse integer from [" + str + "]" );
             i = -1;
         }
         return i;
@@ -793,7 +793,7 @@ public final class Configuration {
             i = Short.parseShort( str.trim() );
         }
         catch ( final Exception e ) {
-            ForesterUtil.printWarningMessage( Constants.PRG_NAME, "could not parse short from [" + str + "]" );
+            ForesterUtil.printWarningMessage( AptxConstants.PRG_NAME, "could not parse short from [" + str + "]" );
             i = -1;
         }
         return i;
@@ -878,7 +878,7 @@ public final class Configuration {
             final String clickto_name = ( String ) st.nextElement();
             default_clickto = getClickToIndex( clickto_name );
             if ( default_clickto == -1 ) {
-                ForesterUtil.printWarningMessage( Constants.PRG_NAME, "invalid value [" + clickto_name
+                ForesterUtil.printWarningMessage( AptxConstants.PRG_NAME, "invalid value [" + clickto_name
                                                   + "] for [default_click_to]" );
                 default_clickto = 0;
             }
@@ -898,7 +898,7 @@ public final class Configuration {
                 _ui = UI.UNKNOWN;
             }
             else {
-                ForesterUtil.printWarningMessage( Constants.PRG_NAME, "could not parse yes/no/? value from [" + my_str
+                ForesterUtil.printWarningMessage( AptxConstants.PRG_NAME, "could not parse yes/no/? value from [" + my_str
                                                   + "]" );
                 _ui = UI.UNKNOWN;
             }
@@ -937,7 +937,7 @@ public final class Configuration {
             }
             else {
                 setPhylogenyGraphicsType( PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
-                ForesterUtil.printWarningMessage( Constants.PRG_NAME, "unknown value [" + type_str
+                ForesterUtil.printWarningMessage( AptxConstants.PRG_NAME, "unknown value [" + type_str
                                                   + "] for [phylogeny_graphics_type]" );
             }
         }
@@ -991,7 +991,7 @@ public final class Configuration {
                 setPrintLineWidth( f );
             }
             else {
-                ForesterUtil.printWarningMessage( Constants.PRG_NAME,
+                ForesterUtil.printWarningMessage( AptxConstants.PRG_NAME,
                         "value for [pdf_export_line_width] cannot be zero or negative" );
             }
         }
@@ -1017,7 +1017,7 @@ public final class Configuration {
             }
             else {
                 ForesterUtil
-                .printWarningMessage( Constants.PRG_NAME,
+                .printWarningMessage( AptxConstants.PRG_NAME,
                                       "value for [default_number_of_bootstrap_resamples] cannot be negative" );
             }
         }
@@ -1072,13 +1072,13 @@ public final class Configuration {
                 setCladogramType( Options.CLADOGRAM_TYPE.TOTAL_NODE_SUM_DEP );
             }
             else {
-                ForesterUtil.printWarningMessage( Constants.PRG_NAME, "unknown value [" + type_str
+                ForesterUtil.printWarningMessage( AptxConstants.PRG_NAME, "unknown value [" + type_str
                                                   + "] for [cladogram_type]" );
             }
         }
         else if ( key.equals( "non_lined_up_cladogram" ) ) {
             ForesterUtil
-            .printWarningMessage( Constants.PRG_NAME,
+            .printWarningMessage( AptxConstants.PRG_NAME,
                                   "configuration key [non_lined_up_cladogram] is deprecated, use [cladogram_type] instead" );
         }
         else if ( key.equals( "hide_controls_and_menus" ) ) {
@@ -1111,7 +1111,7 @@ public final class Configuration {
             }
             else {
                 setOvPlacement( OVERVIEW_PLACEMENT_TYPE.UPPER_LEFT );
-                ForesterUtil.printWarningMessage( Constants.PRG_NAME, "unknown value [" + type_str
+                ForesterUtil.printWarningMessage( AptxConstants.PRG_NAME, "unknown value [" + type_str
                                                   + "] for [overview_placement_type]" );
             }
         }
@@ -1125,7 +1125,7 @@ public final class Configuration {
             }
             else {
                 setNodeLabelDirection( NODE_LABEL_DIRECTION.HORIZONTAL );
-                ForesterUtil.printWarningMessage( Constants.PRG_NAME, "unknown value [" + type_str
+                ForesterUtil.printWarningMessage( AptxConstants.PRG_NAME, "unknown value [" + type_str
                                                   + "] for [node_label_direction]" );
             }
         }
@@ -1135,7 +1135,7 @@ public final class Configuration {
                 setNumberOfDigitsAfterCommaForBranchLengthValue( i );
             }
             else {
-                ForesterUtil.printWarningMessage( Constants.PRG_NAME, "illegal value [" + i
+                ForesterUtil.printWarningMessage( AptxConstants.PRG_NAME, "illegal value [" + i
                                                   + "] for [branch_length_value_digits]" );
             }
         }
@@ -1145,7 +1145,7 @@ public final class Configuration {
                 setNumberOfDigitsAfterCommaForConfidenceValues( i );
             }
             else {
-                ForesterUtil.printWarningMessage( Constants.PRG_NAME, "illegal value [" + i
+                ForesterUtil.printWarningMessage( AptxConstants.PRG_NAME, "illegal value [" + i
                                                   + "] for [confidence_value_digits]" );
             }
         }
@@ -1159,7 +1159,7 @@ public final class Configuration {
             final boolean r = parseBoolean( ( String ) st.nextElement() );
             if ( r && ( getTaxonomyExtraction() != TAXONOMY_EXTRACTION.NO ) ) {
                 ForesterUtil
-                .printWarningMessage( Constants.PRG_NAME,
+                .printWarningMessage( AptxConstants.PRG_NAME,
                                       "attempt to extract taxonomies and replace underscores at the same time" );
             }
             else {
@@ -1182,14 +1182,14 @@ public final class Configuration {
             }
             else {
                 ForesterUtil
-                .printWarningMessage( Constants.PRG_NAME,
+                .printWarningMessage( AptxConstants.PRG_NAME,
                                       "unknown value for \"taxonomy_extraction_in_nh_parsing\": "
                                               + s
                                               + " (must be either: no, pfam_relaxed, pfam_strict, or aggressive)" );
             }
             if ( ( getTaxonomyExtraction() != TAXONOMY_EXTRACTION.NO ) && isReplaceUnderscoresInNhParsing() ) {
                 ForesterUtil
-                .printWarningMessage( Constants.PRG_NAME,
+                .printWarningMessage( AptxConstants.PRG_NAME,
                                       "attempt to extract taxonomies and replace underscores at the same time" );
             }
         }
@@ -1245,7 +1245,7 @@ public final class Configuration {
                 setDefaultNodeFill( NodeFill.SOLID );
             }
             else {
-                ForesterUtil.printWarningMessage( Constants.PRG_NAME, "unknown value [" + fill_str
+                ForesterUtil.printWarningMessage( AptxConstants.PRG_NAME, "unknown value [" + fill_str
                                                   + "] for [default_node_fill]" );
             }
         }
@@ -1258,7 +1258,7 @@ public final class Configuration {
                 setDefaultNodeShape( NodeShape.RECTANGLE );
             }
             else {
-                ForesterUtil.printWarningMessage( Constants.PRG_NAME, "unknown value [" + shape_str
+                ForesterUtil.printWarningMessage( AptxConstants.PRG_NAME, "unknown value [" + shape_str
                                                   + "] for [default_node_shape]" );
             }
         }
@@ -1307,7 +1307,7 @@ public final class Configuration {
                 setExtDescNodeDataToReturn( NodeDataField.GO_TERM_IDS );
             }
             else {
-                ForesterUtil.printWarningMessage( Constants.PRG_NAME, "unknown value [" + s
+                ForesterUtil.printWarningMessage( AptxConstants.PRG_NAME, "unknown value [" + s
                                                   + "] for [ext_descendents_data_to_return]" );
             }
         }
@@ -1329,7 +1329,7 @@ public final class Configuration {
                 setExtNodeDataReturnOn( EXT_NODE_DATA_RETURN_ON.BUFFER_ONLY );
             }
             else {
-                ForesterUtil.printWarningMessage( Constants.PRG_NAME, "unknown value [" + s
+                ForesterUtil.printWarningMessage( AptxConstants.PRG_NAME, "unknown value [" + s
                                                   + "] for [ext_descendents_data_to_return_on]" );
             }
         }
@@ -1399,7 +1399,7 @@ public final class Configuration {
             else if ( key.equals( "color_branches" ) ) {
                 key_index = Configuration.use_style;
                 ForesterUtil
-                .printWarningMessage( Constants.PRG_NAME,
+                .printWarningMessage( AptxConstants.PRG_NAME,
                                       "configuration key [color_branches] is deprecated, use [use_visual_styles] instead" );
             }
             else if ( key.equals( "width_branches" ) ) {
@@ -1479,7 +1479,7 @@ public final class Configuration {
                         // Deprecated.
                     }
                     else {
-                        ForesterUtil.printWarningMessage( Constants.PRG_NAME, "unknown click-to option: "
+                        ForesterUtil.printWarningMessage( AptxConstants.PRG_NAME, "unknown click-to option: "
                                 + click_to_name );
                     }
                 }
@@ -1499,20 +1499,20 @@ public final class Configuration {
                     .put( ( String ) st.nextElement(), Color.decode( ( String ) st.nextElement() ) );
                 }
                 else if ( key.equals( "function_color" ) ) {
-                    ForesterUtil.printWarningMessage( Constants.PRG_NAME,
+                    ForesterUtil.printWarningMessage( AptxConstants.PRG_NAME,
                             "configuration key [function_color] is deprecated" );
                 }
                 else if ( key.equals( DISPLAY_COLOR_KEY ) ) {
                     putDisplayColors( ( String ) st.nextElement(), Color.decode( ( String ) st.nextElement() ) );
                 }
                 else {
-                    ForesterUtil.printWarningMessage( Constants.PRG_NAME, "unknown configuration key [" + key
+                    ForesterUtil.printWarningMessage( AptxConstants.PRG_NAME, "unknown configuration key [" + key
                                                       + "] in: " + config_filename );
                 }
             }
         }
         else {
-            ForesterUtil.printWarningMessage( Constants.PRG_NAME, "unknown configuration key [" + key + "] in: "
+            ForesterUtil.printWarningMessage( AptxConstants.PRG_NAME, "unknown configuration key [" + key + "] in: "
                     + config_filename );
         }
     }

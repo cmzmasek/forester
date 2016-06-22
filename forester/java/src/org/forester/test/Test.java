@@ -125,7 +125,6 @@ import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
 import org.forester.util.GeneralTable;
 import org.forester.util.SequenceAccessionTools;
-import org.forester.util.TrustManager;
 import org.forester.ws.seqdb.SequenceDatabaseEntry;
 import org.forester.ws.seqdb.SequenceDbWsTools;
 import org.forester.ws.seqdb.UniProtTaxonomy;
@@ -182,22 +181,6 @@ public final class Test {
             System.exit( -1 );
         }
         final long start_time = new Date().getTime();
-        
-        
-        
-        System.out.print( "TreeBase acccess: " );
-        if ( Test.testTreeBaseReading() ) {
-            System.out.println( "OK." );
-            succeeded++;
-        }
-        else {
-            System.out.println( "failed." );
-            failed++;
-        }
-        System.exit( -1 );
-        
-        
-        
         
         System.out.print( "Basic node methods: " );
         if ( Test.testBasicNodeMethods() ) {
@@ -989,6 +972,24 @@ public final class Test {
             }
         }
         if ( PERFORM_WEB_TREE_ACCESS ) {
+            System.out.print( "TreeBase acccess: " );
+            if ( Test.testTreeBaseReading() ) {
+                System.out.println( "OK." );
+                succeeded++;
+            }
+            else {
+                System.out.println( "failed." );
+                failed++;
+            }
+            System.out.print( "ToL access: " );
+            if ( Test.testToLReading() ) {
+                System.out.println( "OK." );
+                succeeded++;
+            }
+            else {
+                System.out.println( "failed." );
+                failed++;
+            }
             System.out.print( "NHX parsing from URL: " );
             if ( Test.testNHXparsingFromURL() ) {
                 System.out.println( "OK." );
@@ -1016,25 +1017,6 @@ public final class Test {
                 System.out.println( "failed." );
                 failed++;
             }
-            System.out.print( "TreeBase acccess: " );
-            if ( Test.testTreeBaseReading() ) {
-                System.out.println( "OK." );
-                succeeded++;
-            }
-            else {
-                System.out.println( "failed." );
-                failed++;
-            }
-            System.out.print( "ToL access: " );
-            if ( Test.testToLReading() ) {
-                System.out.println( "OK." );
-                succeeded++;
-            }
-            else {
-                System.out.println( "failed." );
-                failed++;
-            }
-            //
             System.out.print( "TreeFam access: " );
             if ( Test.testTreeFamReading() ) {
                 System.out.println( "OK." );
@@ -1044,8 +1026,6 @@ public final class Test {
                 System.out.println( "failed." );
                 failed++;
             }
-            //
-            //
             System.out.print( "Pfam tree access: " );
             if ( Test.testPfamTreeReading() ) {
                 System.out.println( "OK." );
@@ -1469,17 +1449,24 @@ public final class Test {
             parser.setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT );
             parser.setReplaceUnderscores( false );
             parser.setGuessRootedness( true );
-            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            final Phylogeny[] phys = factory.create( u.openStream(), parser );
+            final Phylogeny[] phys = ForesterUtil.readPhylogeniesFromUrl( u, parser);
             if ( ( phys == null ) || ( phys.length != 1 ) ) {
                 return false;
             }
             if ( phys[ 0 ].getNumberOfExternalNodes() < 10 ) {
                 return false;
             }
+            final Phylogeny[] phys2 = ForesterUtil.readPhylogeniesFromUrl( u, parser);
+            if ( ( phys2 == null ) || ( phys2.length != 1 ) ) {
+                return false;
+            }
+            if ( phys2[ 0 ].getNumberOfExternalNodes() != phys[ 0 ].getNumberOfExternalNodes() ) {
+                return false;
+            }
         }
         catch ( final Exception e ) {
             e.printStackTrace();
+            return false;
         }
         return true;
     }
@@ -1488,14 +1475,20 @@ public final class Test {
         try {
             final String s = "https://sites.google.com/site/cmzmasek/home/software/archaeopteryx/examples/archaeopteryx_a/apaf_bcl2.xml";
             final URL u = new URL( s );
-            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            final Phylogeny[] phys = factory.create( u.openStream(), PhyloXmlParser.createPhyloXmlParser() );
+            final Phylogeny[] phys = ForesterUtil.readPhylogeniesFromUrl( u, PhyloXmlParser.createPhyloXmlParser() );
+            
             if ( ( phys == null ) || ( phys.length != 2 ) ) {
+                return false;
+            }
+            final Phylogeny[] phys2 = ForesterUtil.readPhylogeniesFromUrl( u, PhyloXmlParser.createPhyloXmlParser() );
+            
+            if ( ( phys2 == null ) || ( phys2.length != 2 ) ) {
                 return false;
             }
         }
         catch ( final Exception e ) {
             e.printStackTrace();
+            return false;
         }
         return true;
     }
@@ -1503,8 +1496,7 @@ public final class Test {
     private static final boolean testToLReading() {
         try {
             final URL u = new URL( WebserviceUtil.TOL_URL_BASE + "15079" );
-            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            final Phylogeny[] phys = factory.create( u.openStream(), new TolParser() );
+            final Phylogeny[] phys = ForesterUtil.readPhylogeniesFromUrl( u, new TolParser() );
             if ( ( phys == null ) || ( phys.length != 1 ) ) {
                 return false;
             }
@@ -1517,40 +1509,126 @@ public final class Test {
             if ( phys[ 0 ].getNumberOfExternalNodes() < 5 ) {
                 return false;
             }
+            //
+            final URL u2 = new URL( WebserviceUtil.TOL_URL_BASE + "17706" );
+            final Phylogeny[] phys2 = ForesterUtil.readPhylogeniesFromUrl( u2, new TolParser() );
+            if ( ( phys2 == null ) || ( phys2.length != 1 ) ) {
+                return false;
+            }
+            if ( !phys2[ 0 ].getRoot().getNodeData().getTaxonomy().getIdentifier().getValue().equals( "17706" ) ) {
+                return false;
+            }
+            if ( phys2[ 0 ].getNumberOfExternalNodes() < 5 ) {
+                return false;
+            }
         }
         catch ( final Exception e ) {
             e.printStackTrace();
+            return false;
         }
         return true;
     }
 
     private static final boolean testTreeBaseReading() {
         try {
-            final URL u = new URL( WebserviceUtil.TREEBASE_PHYLOWS_TREE_URL_BASE + "72557?format=nexus" );
-            System.out.println( u.toString() );
-               
-            final HttpsURLConnection con = TrustManager.makeHttpsURLConnection( u );
-          
+            final URL u = new URL( WebserviceUtil.TREEBASE_PHYLOWS_TREE_URL_BASE + "72557?format=nexus" );  
             final NexusPhylogeniesParser parser = new NexusPhylogeniesParser();
             parser.setReplaceUnderscores( true );
-            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            
-            
-            final Phylogeny[] phys = factory.create( con.getInputStream(), parser );
-            if ( ( phys == null ) || ( phys.length < 1 ) ) {
+            final Phylogeny[] phys = ForesterUtil.readPhylogeniesFromUrl( u, parser );
+            if ( ( phys == null ) || ( phys.length != 1 ) ) {
+                return false;
+            }
+            final URL u_1 = new URL( WebserviceUtil.TREEBASE_PHYLOWS_TREE_URL_BASE + "2406?format=nexus" );  
+            final NexusPhylogeniesParser parser_1 = new NexusPhylogeniesParser();
+            final Phylogeny[] phys_1 = ForesterUtil.readPhylogeniesFromUrl( u_1, parser_1 );
+            if ( ( phys_1 == null ) || ( phys_1.length != 1 ) ) {
+                return false;
+            }
+            final URL u_2 = new URL( WebserviceUtil.TREEBASE_PHYLOWS_TREE_URL_BASE + "422?format=nexus" );  
+            final NexusPhylogeniesParser parser_2 = new NexusPhylogeniesParser();
+            final Phylogeny[] phys_2 = ForesterUtil.readPhylogeniesFromUrl( u_2, parser_2 );
+            if ( ( phys_2 == null ) || ( phys_2.length != 1 ) ) {
+                return false;
+            }
+            final URL u_3 = new URL( WebserviceUtil.TREEBASE_PHYLOWS_TREE_URL_BASE + "2654?format=nexus" );  
+            final NexusPhylogeniesParser parser_3 = new NexusPhylogeniesParser();
+            final Phylogeny[] phys_3 = ForesterUtil.readPhylogeniesFromUrl( u_3, parser_3 );
+             if ( ( phys_3 == null ) || ( phys_3.length != 1 ) ) {
+                return false;
+            }
+            final URL u_4 = new URL( WebserviceUtil.TREEBASE_PHYLOWS_TREE_URL_BASE + "825?format=nexus" );  
+            final NexusPhylogeniesParser parser_4 = new NexusPhylogeniesParser();
+            final Phylogeny[] phys_4 = ForesterUtil.readPhylogeniesFromUrl( u_4, parser_4 );
+             if ( ( phys_4 == null ) || ( phys_4.length != 1 ) ) {
                 return false;
             }
             final URL u2 = new URL( WebserviceUtil.TREEBASE_PHYLOWS_STUDY_URL_BASE + "15613?format=nexus" );
             final NexusPhylogeniesParser parser2 = new NexusPhylogeniesParser();
             parser2.setReplaceUnderscores( true );
-            final PhylogenyFactory factory2 = ParserBasedPhylogenyFactory.getInstance();
-            final Phylogeny[] phys2 = factory2.create( u2.openStream(), parser2 );
+            final Phylogeny[] phys2 = ForesterUtil.readPhylogeniesFromUrl( u2, parser2 );
             if ( ( phys2 == null ) || ( phys2.length != 9 ) ) {
-                //return false;
+                return false;
+            }
+            final URL u3 = new URL( WebserviceUtil.TREEBASE_PHYLOWS_STUDY_URL_BASE + "14909?format=nexus" );
+            final NexusPhylogeniesParser parser3 = new NexusPhylogeniesParser();
+            final Phylogeny[] phys3 = ForesterUtil.readPhylogeniesFromUrl( u3, parser3 );
+            if ( ( phys3 == null ) || ( phys3.length != 2 ) ) {
+                return false;
+            }
+            final Phylogeny[] phys4 = ForesterUtil.readPhylogeniesFromUrl( new URL( WebserviceUtil.TREEBASE_PHYLOWS_STUDY_URL_BASE + "14525?format=nexus" ),
+                    new NexusPhylogeniesParser() );
+            if ( ( phys4 == null ) || ( phys4.length != 1 ) ) {
+                return false;
+            }
+            final Phylogeny[] phys5 = ForesterUtil.readPhylogeniesFromUrl( new URL( WebserviceUtil.TREEBASE_PHYLOWS_STUDY_URL_BASE + "15632?format=nexus" ) ,
+                    new NexusPhylogeniesParser() );
+            if ( ( phys5 == null ) || ( phys5.length != 1 ) ) {
+                return false;
+            }
+            final Phylogeny[] phys6 = ForesterUtil.readPhylogeniesFromUrl( new URL( WebserviceUtil.TREEBASE_PHYLOWS_STUDY_URL_BASE + "10190?format=nexus" ) ,
+                    new NexusPhylogeniesParser() );
+            if ( ( phys6 == null ) || ( phys6.length != 1 ) ) {
+                return false;
+            }
+            final Phylogeny[] phys7 = ForesterUtil.readPhylogeniesFromUrl( new URL( WebserviceUtil.TREEBASE_PHYLOWS_STUDY_URL_BASE + "13246?format=nexus" ) ,
+                    new NexusPhylogeniesParser() );
+            if ( ( phys7 == null ) || ( phys7.length != 2 ) ) {
+                return false;
+            }
+            final Phylogeny[] phys8 = ForesterUtil.readPhylogeniesFromUrl( new URL( WebserviceUtil.TREEBASE_PHYLOWS_STUDY_URL_BASE + "11662?format=nexus" ) ,
+                    new NexusPhylogeniesParser() );
+            if ( ( phys8 == null ) || ( phys8.length != 2 ) ) {
+                return false;
+            }
+            final Phylogeny[] phys9 = ForesterUtil.readPhylogeniesFromUrl( new URL( WebserviceUtil.TREEBASE_PHYLOWS_STUDY_URL_BASE + "562?format=nexus" ) ,
+                    new NexusPhylogeniesParser() );
+            if ( ( phys9 == null ) || ( phys9.length != 4 ) ) {
+                return false;
+            }
+            final Phylogeny[] phys16424 = ForesterUtil.readPhylogeniesFromUrl( new URL( WebserviceUtil.TREEBASE_PHYLOWS_STUDY_URL_BASE + "16424?format=nexus" ) ,
+                    new NexusPhylogeniesParser() );
+            if ( ( phys16424 == null ) || ( phys16424.length != 1 ) ) {
+                return false;
+            }
+            final Phylogeny[] phys17878 = ForesterUtil.readPhylogeniesFromUrl( new URL( WebserviceUtil.TREEBASE_PHYLOWS_STUDY_URL_BASE + "17878?format=nexus" ) ,
+                    new NexusPhylogeniesParser() );
+            if ( ( phys17878 == null ) || ( phys17878.length != 17 ) ) {
+                return false;
+            }
+            final Phylogeny[] phys18804 = ForesterUtil.readPhylogeniesFromUrl( new URL( WebserviceUtil.TREEBASE_PHYLOWS_STUDY_URL_BASE + "18804?format=nexus" ) ,
+                    new NexusPhylogeniesParser() );
+            if ( ( phys18804 == null ) || ( phys18804.length != 2 ) ) {
+                return false;
+            }
+            final Phylogeny[] phys346 = ForesterUtil.readPhylogeniesFromUrl( new URL( WebserviceUtil.TREEBASE_PHYLOWS_STUDY_URL_BASE + "346?format=nexus" ) ,
+                    new NexusPhylogeniesParser() );
+            if ( ( phys346 == null ) || ( phys346.length != 1 ) ) {
+                return false;
             }
         }
         catch ( final Exception e ) {
             e.printStackTrace();
+            return false;
         }
         return true;
     }
@@ -1562,8 +1640,7 @@ public final class Test {
             parser.setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.NO );
             parser.setReplaceUnderscores( false );
             parser.setGuessRootedness( true );
-            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            final Phylogeny[] phys = factory.create( u.openStream(), parser );
+            final Phylogeny[] phys = ForesterUtil.readPhylogeniesFromUrl( u, parser );
             if ( ( phys == null ) || ( phys.length != 1 ) ) {
                 return false;
             }
@@ -1573,6 +1650,7 @@ public final class Test {
         }
         catch ( final Exception e ) {
             e.printStackTrace();
+            return false;
         }
         return true;
     }
@@ -4917,11 +4995,21 @@ public final class Test {
 
     private static boolean testFastaParser() {
         try {
-            if ( !FastaParser.isLikelyFasta( new FileInputStream( PATH_TO_TEST_DATA + "fasta_0.fasta" ) ) ) {
+            FileInputStream fis1 = new FileInputStream( PATH_TO_TEST_DATA + "fasta_0.fasta" );
+            if ( !FastaParser.isLikelyFasta( fis1 ) ) {
+                fis1.close();
                 return false;
             }
-            if ( FastaParser.isLikelyFasta( new FileInputStream( PATH_TO_TEST_DATA + "msa_3.txt" ) ) ) {
+            else {
+                fis1.close();
+            }
+            FileInputStream fis2 = new FileInputStream( PATH_TO_TEST_DATA + "msa_3.txt" );
+            if ( FastaParser.isLikelyFasta( fis2 ) ) {
+                fis2.close();
                 return false;
+            }
+            else {
+                fis2.close();
             }
             final Msa msa_0 = FastaParser.parseMsa( new FileInputStream( PATH_TO_TEST_DATA + "fasta_0.fasta" ) );
             if ( !msa_0.getSequenceAsString( 0 ).toString().equalsIgnoreCase( "ACGTGKXFMFDMXEXXXSFMFMF" ) ) {

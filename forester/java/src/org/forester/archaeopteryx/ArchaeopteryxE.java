@@ -345,42 +345,42 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         }
         else if ( o == _help_item ) {
             try {
-                AptxUtil.openWebsite( Constants.APTX_DOC_SITE, true, this );
+                AptxUtil.openWebsite( AptxConstants.APTX_DOC_SITE, true, this );
             }
             catch ( final IOException e1 ) {
-                ForesterUtil.printErrorMessage( Constants.PRG_NAME, e1.toString() );
+                ForesterUtil.printErrorMessage( AptxConstants.PRG_NAME, e1.toString() );
             }
         }
         else if ( o == _website_item ) {
             try {
-                AptxUtil.openWebsite( Constants.APTX_WEB_SITE, true, this );
+                AptxUtil.openWebsite( AptxConstants.APTX_WEB_SITE, true, this );
             }
             catch ( final IOException e1 ) {
-                ForesterUtil.printErrorMessage( Constants.PRG_NAME, e1.toString() );
+                ForesterUtil.printErrorMessage( AptxConstants.PRG_NAME, e1.toString() );
             }
         }
         else if ( o == _phyloxml_website_item ) {
             try {
-                AptxUtil.openWebsite( Constants.PHYLOXML_WEB_SITE, true, this );
+                AptxUtil.openWebsite( AptxConstants.PHYLOXML_WEB_SITE, true, this );
             }
             catch ( final IOException e1 ) {
-                ForesterUtil.printErrorMessage( Constants.PRG_NAME, e1.toString() );
+                ForesterUtil.printErrorMessage( AptxConstants.PRG_NAME, e1.toString() );
             }
         }
         else if ( o == _aptx_ref_item ) {
             try {
-                AptxUtil.openWebsite( Constants.APTX_REFERENCE_URL, true, this );
+                AptxUtil.openWebsite( AptxConstants.APTX_REFERENCE_URL, true, this );
             }
             catch ( final IOException e1 ) {
-                ForesterUtil.printErrorMessage( Constants.PRG_NAME, e1.toString() );
+                ForesterUtil.printErrorMessage( AptxConstants.PRG_NAME, e1.toString() );
             }
         }
         else if ( o == _phyloxml_ref_item ) {
             try {
-                AptxUtil.openWebsite( Constants.PHYLOXML_REFERENCE_URL, true, this );
+                AptxUtil.openWebsite( AptxConstants.PHYLOXML_REFERENCE_URL, true, this );
             }
             catch ( final IOException e1 ) {
-                ForesterUtil.printErrorMessage( Constants.PRG_NAME, e1.toString() );
+                ForesterUtil.printErrorMessage( AptxConstants.PRG_NAME, e1.toString() );
             }
         }
         else if ( o == _color_by_taxonomic_group_cbmi ) {
@@ -626,18 +626,18 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
             e.printStackTrace();
             // Do nothing. Not important.
         }
-        final String config_filename = getParameter( Constants.APPLET_PARAM_NAME_FOR_CONFIG_FILE_URL );
+        final String config_filename = getParameter( AptxConstants.APPLET_PARAM_NAME_FOR_CONFIG_FILE_URL );
         AptxUtil.printAppletMessage( NAME, "URL for configuration file is: " + config_filename );
         final Configuration configuration = new Configuration( config_filename, true, true, true );
         setConfiguration( configuration );
         setOptions( Options.createInstance( configuration ) );
         setupUI();
-        final String tree_url_str = getParameter( Constants.APPLET_PARAM_NAME_FOR_URL_OF_TREE_TO_LOAD );
+        final String tree_url_str = getParameter( AptxConstants.APPLET_PARAM_NAME_FOR_URL_OF_TREE_TO_LOAD );
         if ( ForesterUtil.isEmpty( tree_url_str ) ) {
             ForesterUtil.printErrorMessage( NAME, "could not get tree URL from "
-                    + Constants.APPLET_PARAM_NAME_FOR_URL_OF_TREE_TO_LOAD );
+                    + AptxConstants.APPLET_PARAM_NAME_FOR_URL_OF_TREE_TO_LOAD );
             JOptionPane.showMessageDialog( this, NAME + ": could not get tree URL from "
-                    + Constants.APPLET_PARAM_NAME_FOR_URL_OF_TREE_TO_LOAD, "Failed get URL", JOptionPane.ERROR_MESSAGE );
+                    + AptxConstants.APPLET_PARAM_NAME_FOR_URL_OF_TREE_TO_LOAD, "Failed get URL", JOptionPane.ERROR_MESSAGE );
             return;
         }
         AptxUtil.printAppletMessage( NAME, "URL for phylogenies is " + tree_url_str );
@@ -654,7 +654,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         }
         if ( phys_url == null ) {
             ForesterUtil.printErrorMessage( NAME, "failed to get tree URL from "
-                    + Constants.APPLET_PARAM_NAME_FOR_URL_OF_TREE_TO_LOAD );
+                    + AptxConstants.APPLET_PARAM_NAME_FOR_URL_OF_TREE_TO_LOAD );
             JOptionPane.showMessageDialog( this,
                                            NAME + ": Could not create URL from: \"" + tree_url_str,
                                            "Failed to create URL",
@@ -699,7 +699,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
             AptxUtil.printAppletMessage( NAME, "loaded " + phys.length + " phylogenies from: " + phys_url );
         }
         //
-        final String species_tree_url_str = getParameter( Constants.APPLET_PARAM_NAME_FOR_URL_OF_SPECIES_TREE_TO_LOAD );
+        final String species_tree_url_str = getParameter( AptxConstants.APPLET_PARAM_NAME_FOR_URL_OF_SPECIES_TREE_TO_LOAD );
         if ( !ForesterUtil.isEmpty( species_tree_url_str ) ) {
             AptxUtil.printAppletMessage( NAME, "URL of species tree to load: \"" + species_tree_url_str + "\"" );
             Phylogeny[] species_trees = null;
@@ -801,11 +801,11 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
                     .getRelevantSequenceRelationTypes() ) {
                 getCurrentTreePanel().getControlPanel().getSequenceRelationTypeBox().addItem( type );
             }
-            final String default_relation = getParameter( Constants.APPLET_PARAM_NAME_FOR_DEFAULT_SEQUENCE_RELATION_TYPE );
+            final String default_relation = getParameter( AptxConstants.APPLET_PARAM_NAME_FOR_DEFAULT_SEQUENCE_RELATION_TYPE );
             if ( default_relation != null ) {
                 getCurrentTreePanel().getControlPanel().getSequenceRelationTypeBox().setSelectedItem( default_relation );
             }
-            final String default_sequence = getParameter( Constants.APPLET_PARAM_NAME_FOR_DEFAULT_QUERY_SEQUENCE );
+            final String default_sequence = getParameter( AptxConstants.APPLET_PARAM_NAME_FOR_DEFAULT_QUERY_SEQUENCE );
             if ( default_sequence != null ) {
                 getCurrentTreePanel().getControlPanel().getSequenceRelationBox().setSelectedItem( default_sequence );
             }
@@ -911,10 +911,10 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
                                                                          + "[current values: "
                                                                          + getOptions().getPrintSizeX() + ", "
                                                                          + getOptions().getPrintSizeY() + "]\n"
-                                                                         + "[A4: " + Constants.A4_SIZE_X + ", "
-                                                                         + Constants.A4_SIZE_Y + "]\n" + "[US Letter: "
-                                                                         + Constants.US_LETTER_SIZE_X + ", "
-                                                                         + Constants.US_LETTER_SIZE_Y + "]",
+                                                                         + "[A4: " + AptxConstants.A4_SIZE_X + ", "
+                                                                         + AptxConstants.A4_SIZE_Y + "]\n" + "[US Letter: "
+                                                                         + AptxConstants.US_LETTER_SIZE_X + ", "
+                                                                         + AptxConstants.US_LETTER_SIZE_Y + "]",
                                                                          "Default Size for Graphics Export",
                                                                          JOptionPane.QUESTION_MESSAGE,
                                                                          null,

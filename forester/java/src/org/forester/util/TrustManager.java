@@ -11,7 +11,7 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 
-public class TrustManager implements X509TrustManager {
+final class TrustManager implements X509TrustManager {
     
     @Override
     public X509Certificate[] getAcceptedIssuers() {
@@ -28,7 +28,7 @@ public class TrustManager implements X509TrustManager {
         throws CertificateException {
     }
     
-    public final static HttpsURLConnection makeHttpsURLConnection( final URL url ) throws NoSuchAlgorithmException,
+    final static HttpsURLConnection makeHttpsURLConnection( final URL url ) throws NoSuchAlgorithmException,
                                                                                         IOException,
                                                                                         KeyManagementException {
         

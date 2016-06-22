@@ -1,7 +1,7 @@
 
 package org.forester.archaeopteryx.tools;
 
-import org.forester.archaeopteryx.Constants;
+import org.forester.archaeopteryx.AptxConstants;
 import org.forester.archaeopteryx.MainFrame;
 import org.forester.util.ForesterUtil;
 
@@ -25,7 +25,7 @@ public abstract class RunnableProcess implements Runnable {
     public void end( final MainFrame mf ) {
         final boolean removed = mf.getProcessPool().removeProcess( getProcessId() );
         if ( !removed ) {
-            ForesterUtil.printWarningMessage( Constants.PRG_NAME, "could not remove process " + getProcessId()
+            ForesterUtil.printWarningMessage( AptxConstants.PRG_NAME, "could not remove process " + getProcessId()
                                               + " from process pool" );
         }
         mf.updateProcessMenu();

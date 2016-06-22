@@ -244,8 +244,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private Set<Long>                    _current_external_nodes                            = null;
     private StringBuilder                _current_external_nodes_data_buffer                = new StringBuilder();
     private int                          _current_external_nodes_data_buffer_change_counter = 0;
-    private int                          _domain_structure_e_value_thr_exp                  = Constants.DOMAIN_STRUCTURE_E_VALUE_THR_DEFAULT_EXP;
-    private double                       _domain_structure_width                            = Constants.DOMAIN_STRUCTURE_DEFAULT_WIDTH;
+    private int                          _domain_structure_e_value_thr_exp                  = AptxConstants.DOMAIN_STRUCTURE_E_VALUE_THR_DEFAULT_EXP;
+    private double                       _domain_structure_width                            = AptxConstants.DOMAIN_STRUCTURE_DEFAULT_WIDTH;
     private int                          _dynamic_hiding_factor                             = 0;
     private boolean                      _edited                                            = false;
     private final Ellipse2D              _ellipse                                           = new Ellipse2D.Float();
@@ -452,13 +452,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             else {
                 if ( notches < 0 ) {
                     for( int i = 0; i < ( -notches ); ++i ) {
-                        getControlPanel().zoomInY( Constants.WHEEL_ZOOM_IN_FACTOR );
+                        getControlPanel().zoomInY( AptxConstants.WHEEL_ZOOM_IN_FACTOR );
                         getControlPanel().displayedPhylogenyMightHaveChanged( false );
                     }
                 }
                 else {
                     for( int i = 0; i < notches; ++i ) {
-                        getControlPanel().zoomOutY( Constants.WHEEL_ZOOM_OUT_FACTOR );
+                        getControlPanel().zoomOutY( AptxConstants.WHEEL_ZOOM_OUT_FACTOR );
                         getControlPanel().displayedPhylogenyMightHaveChanged( false );
                     }
                 }
@@ -467,17 +467,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         else {
             if ( notches < 0 ) {
                 for( int i = 0; i < ( -notches ); ++i ) {
-                    getControlPanel().zoomInX( Constants.WHEEL_ZOOM_IN_FACTOR,
-                                               Constants.WHEEL_ZOOM_IN_X_CORRECTION_FACTOR );
-                    getControlPanel().zoomInY( Constants.WHEEL_ZOOM_IN_FACTOR );
+                    getControlPanel().zoomInX( AptxConstants.WHEEL_ZOOM_IN_FACTOR,
+                                               AptxConstants.WHEEL_ZOOM_IN_X_CORRECTION_FACTOR );
+                    getControlPanel().zoomInY( AptxConstants.WHEEL_ZOOM_IN_FACTOR );
                     getControlPanel().displayedPhylogenyMightHaveChanged( false );
                 }
             }
             else {
                 for( int i = 0; i < notches; ++i ) {
-                    getControlPanel().zoomOutY( Constants.WHEEL_ZOOM_OUT_FACTOR );
-                    getControlPanel().zoomOutX( Constants.WHEEL_ZOOM_OUT_FACTOR,
-                                                Constants.WHEEL_ZOOM_OUT_X_CORRECTION_FACTOR );
+                    getControlPanel().zoomOutY( AptxConstants.WHEEL_ZOOM_OUT_FACTOR );
+                    getControlPanel().zoomOutX( AptxConstants.WHEEL_ZOOM_OUT_FACTOR,
+                                                AptxConstants.WHEEL_ZOOM_OUT_X_CORRECTION_FACTOR );
                     getControlPanel().displayedPhylogenyMightHaveChanged( false );
                 }
             }
@@ -1554,21 +1554,21 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     || ( e.getKeyCode() == KeyEvent.VK_LEFT ) || ( e.getKeyCode() == KeyEvent.VK_RIGHT ) ) {
                 if ( e.getModifiersEx() == InputEvent.SHIFT_DOWN_MASK ) {
                     if ( e.getKeyCode() == KeyEvent.VK_UP ) {
-                        getMainPanel().getControlPanel().zoomInY( Constants.WHEEL_ZOOM_IN_FACTOR );
+                        getMainPanel().getControlPanel().zoomInY( AptxConstants.WHEEL_ZOOM_IN_FACTOR );
                         getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged( false );
                     }
                     else if ( e.getKeyCode() == KeyEvent.VK_DOWN ) {
-                        getMainPanel().getControlPanel().zoomOutY( Constants.WHEEL_ZOOM_OUT_FACTOR );
+                        getMainPanel().getControlPanel().zoomOutY( AptxConstants.WHEEL_ZOOM_OUT_FACTOR );
                         getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged( false );
                     }
                     else if ( e.getKeyCode() == KeyEvent.VK_LEFT ) {
-                        getMainPanel().getControlPanel().zoomOutX( Constants.WHEEL_ZOOM_OUT_FACTOR,
-                                                                   Constants.WHEEL_ZOOM_OUT_X_CORRECTION_FACTOR );
+                        getMainPanel().getControlPanel().zoomOutX( AptxConstants.WHEEL_ZOOM_OUT_FACTOR,
+                                                                   AptxConstants.WHEEL_ZOOM_OUT_X_CORRECTION_FACTOR );
                         getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged( false );
                     }
                     else if ( e.getKeyCode() == KeyEvent.VK_RIGHT ) {
-                        getMainPanel().getControlPanel().zoomInX( Constants.WHEEL_ZOOM_IN_FACTOR,
-                                                                  Constants.WHEEL_ZOOM_IN_FACTOR );
+                        getMainPanel().getControlPanel().zoomInX( AptxConstants.WHEEL_ZOOM_IN_FACTOR,
+                                                                  AptxConstants.WHEEL_ZOOM_IN_FACTOR );
                         getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged( false );
                     }
                 }
@@ -1615,15 +1615,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 }
             }
             else if ( ( e.getKeyCode() == KeyEvent.VK_SUBTRACT ) || ( e.getKeyCode() == KeyEvent.VK_MINUS ) ) {
-                getMainPanel().getControlPanel().zoomOutY( Constants.WHEEL_ZOOM_OUT_FACTOR );
-                getMainPanel().getControlPanel().zoomOutX( Constants.WHEEL_ZOOM_OUT_FACTOR,
-                                                           Constants.WHEEL_ZOOM_OUT_X_CORRECTION_FACTOR );
+                getMainPanel().getControlPanel().zoomOutY( AptxConstants.WHEEL_ZOOM_OUT_FACTOR );
+                getMainPanel().getControlPanel().zoomOutX( AptxConstants.WHEEL_ZOOM_OUT_FACTOR,
+                                                           AptxConstants.WHEEL_ZOOM_OUT_X_CORRECTION_FACTOR );
                 getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged( false );
             }
             else if ( plusPressed( e.getKeyCode() ) ) {
-                getMainPanel().getControlPanel().zoomInX( Constants.WHEEL_ZOOM_IN_FACTOR,
-                                                          Constants.WHEEL_ZOOM_IN_FACTOR );
-                getMainPanel().getControlPanel().zoomInY( Constants.WHEEL_ZOOM_IN_FACTOR );
+                getMainPanel().getControlPanel().zoomInX( AptxConstants.WHEEL_ZOOM_IN_FACTOR,
+                                                          AptxConstants.WHEEL_ZOOM_IN_FACTOR );
+                getMainPanel().getControlPanel().zoomInY( AptxConstants.WHEEL_ZOOM_IN_FACTOR );
                 getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged( false );
             }
             else if ( e.getKeyCode() == KeyEvent.VK_S ) {
@@ -2452,7 +2452,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final float x = node.getXcoord();
             g.setFont( getTreeFontSet().getLargeFont() );
             g.setColor( getTreeColorSet().getGainedCharactersColor() );
-            if ( Constants.SPECIAL_CUSTOM ) {
+            if ( AptxConstants.SPECIAL_CUSTOM ) {
                 g.setColor( Color.BLUE );
             }
             TreePanel
@@ -4427,7 +4427,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return;
         }
         int max_length = ForesterUtil.roundToInt( ( getSize().getWidth() - MOVE )
-                                                  * Constants.EXT_NODE_INFO_LENGTH_MAX_RATIO );
+                                                  * AptxConstants.EXT_NODE_INFO_LENGTH_MAX_RATIO );
         if ( max_length < 40 ) {
             max_length = 40;
         }

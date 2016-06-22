@@ -46,7 +46,7 @@ final class NodeFrame extends javax.swing.JFrame {
     NodeFrame( final PhylogenyNode n, final Phylogeny tree, final TreePanel tp, final int x ) {
         super( "Node " + ( ForesterUtil.isEmpty( n.getName() ) ? n.getId() : n.getName() ) );
         _reepanel = tp;
-        setSize( Constants.NODE_FRAME_SIZE );
+        setSize( AptxConstants.NODE_FRAME_SIZE );
         _index = x;
         final Container contentPane = getContentPane();
         final NodePanel nodepanel = new NodePanel( n );
@@ -67,7 +67,7 @@ final class NodeFrame extends javax.swing.JFrame {
     NodeFrame( final PhylogenyNode n, final Phylogeny tree, final TreePanel tp, final int x, final String dummy ) {
         super( "Editable Node " + ( ForesterUtil.isEmpty( n.getName() ) ? n.getId() : n.getName() ) );
         _reepanel = tp;
-        setSize( Constants.NODE_FRAME_SIZE );
+        setSize( AptxConstants.NODE_FRAME_SIZE );
         _index = x;
         final Container contentPane = getContentPane();
         final NodeEditPanel nodepanel = new NodeEditPanel( n, tp );

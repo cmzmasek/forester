@@ -56,8 +56,7 @@ public final class WebserviceUtil {
     public static final String TREE_FAM_INST                   = "tree_fam";
     public static final String TREE_FAM_NAME                   = "TreeFam";
     public static final String TREE_FAM_URL_BASE               = "http://www.treefam.org/family/TF";
-    public static final String TREEBASE_PHYLOWS_STUDY_URL_BASE = "http://purl.org/phylo/treebase/phylows/study/TB2:S";
-  //  public static final String TREEBASE_PHYLOWS_TREE_URL_BASE  = "http://purl.org/phylo/treebase/phylows/tree/TB2:Tr";
+    public static final String TREEBASE_PHYLOWS_STUDY_URL_BASE = "https://treebase.org/treebase-web/phylows/study/TB2:S";
     public static final String TREEBASE_PHYLOWS_TREE_URL_BASE  = "https://treebase.org/treebase-web/phylows/tree/TB2:Tr";
     
     
@@ -67,14 +66,14 @@ public final class WebserviceUtil {
         clients.add( new BasicPhylogeniesWebserviceClient( TREE_BASE_NAME,
                                                            "Read Tree(s) from TreeBASE Study...",
                                                            "Use TreeBASE to obtain evolutionary tree(s) from a study",
-                                                           "Please enter a TreeBASE study (\"S\") identifier (without the \"S\")\n(Examples: 14909, 14525, 15613, 15632)",
+                                                           "Please enter a TreeBASE study (\"S\") identifier (without the \"S\")\n(Examples: 13246, 11662, 562, 16424, 17878, 10190, 14909, 14525, 15613, 15632)",
                                                            WsPhylogenyFormat.TREEBASE_STUDY,
                                                            null,
                                                            TREEBASE_PHYLOWS_STUDY_URL_BASE
                                                            + PhylogeniesWebserviceClient.QUERY_PLACEHOLDER
                                                            + "?format=nexus",
                                                            true,
-                                                           "http://www.treebase.org",
+                                                           "https://treebase.org",
                                                            TREE_BASE_INST ) );
         clients.add( new BasicPhylogeniesWebserviceClient( TREE_BASE_NAME,
                                                            "Read Tree from TreeBASE...",
@@ -86,7 +85,7 @@ public final class WebserviceUtil {
                                                            + PhylogeniesWebserviceClient.QUERY_PLACEHOLDER
                                                            + "?format=nexus",
                                                            true,
-                                                           "http://www.treebase.org",
+                                                           "https://treebase.org",
                                                            TREE_BASE_INST ) );
         clients.add( new BasicPhylogeniesWebserviceClient( PFAM_NAME,
                                                            "Read Domain Tree from Pfam...",

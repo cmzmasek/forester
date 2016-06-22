@@ -36,12 +36,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
-import java.net.URLConnection;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -74,8 +74,6 @@ import org.forester.phylogeny.PhylogenyMethods.DESCENDANT_SORT_PRIORITY;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.data.Taxonomy;
-import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
-import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.util.AsciiHistogram;
 import org.forester.util.DescriptiveStatistics;
@@ -291,7 +289,6 @@ public final class AptxUtil {
                                                             final TAXONOMY_EXTRACTION taxonomy_extraction,
                                                             final boolean midpoint_reroot )
                                                                     throws FileNotFoundException, IOException {
-        final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
         final PhylogenyParser parser;
         boolean nhx_or_nexus = false;
         if ( url.getHost().toLowerCase().indexOf( "tolweb" ) >= 0 ) {
@@ -314,11 +311,16 @@ public final class AptxUtil {
             }
         }
         AptxUtil.printAppletMessage( "Archaeopteryx", "parser is " + parser.getName() );
-        final URLConnection url_connection = url.openConnection();
-        url_connection.setDefaultUseCaches( false );
-        final InputStream i = url_connection.getInputStream();
-        final Phylogeny[] phys = factory.create( i, parser );
-        i.close();
+        Phylogeny[] phys = null;
+        try {
+            phys = ForesterUtil.readPhylogeniesFromUrl( url, parser );
+        }
+        catch ( final KeyManagementException e ) {
+            throw new IOException( e.getMessage() );
+        }
+        catch ( final NoSuchAlgorithmException e ) {
+            throw new IOException( e.getMessage() );
+        }
         if ( phys != null ) {
             if ( nhx_or_nexus && internal_numbers_are_confidences ) {
                 for( final Phylogeny phy : phys ) {
@@ -336,8 +338,8 @@ public final class AptxUtil {
     }
 
     final public static void showErrorMessage( final Component parent, final String error_msg ) {
-        printAppletMessage( Constants.PRG_NAME, error_msg );
-        JOptionPane.showMessageDialog( parent, error_msg, "[" + Constants.PRG_NAME + " " + Constants.VERSION
+        printAppletMessage( AptxConstants.PRG_NAME, error_msg );
+        JOptionPane.showMessageDialog( parent, error_msg, "[" + AptxConstants.PRG_NAME + " " + AptxConstants.VERSION
                                        + "] Error", JOptionPane.ERROR_MESSAGE );
     }
 
@@ -451,15 +453,15 @@ public final class AptxUtil {
                                             final String full_path,
                                             final Configuration configuration,
                                             final MainPanel main_panel ) {
-        if ( phys.length > Constants.MAX_TREES_TO_LOAD ) {
+        if ( phys.length > AptxConstants.MAX_TREES_TO_LOAD ) {
             JOptionPane.showMessageDialog( main_panel, "Attempt to load " + phys.length
-                                           + " phylogenies,\ngoing to load only the first " + Constants.MAX_TREES_TO_LOAD, Constants.PRG_NAME
-                                           + " more than " + Constants.MAX_TREES_TO_LOAD + " phylogenies", JOptionPane.WARNING_MESSAGE );
+                                           + " phylogenies,\ngoing to load only the first " + AptxConstants.MAX_TREES_TO_LOAD, AptxConstants.PRG_NAME
+                                           + " more than " + AptxConstants.MAX_TREES_TO_LOAD + " phylogenies", JOptionPane.WARNING_MESSAGE );
         }
         int i = 1;
         for( final Phylogeny phy : phys ) {
             if ( !phy.isEmpty() ) {
-                if ( i <= Constants.MAX_TREES_TO_LOAD ) {
+                if ( i <= AptxConstants.MAX_TREES_TO_LOAD ) {
                     String my_name = "";
                     String my_name_for_file = "";
                     if ( phys.length > 1 ) {
@@ -673,7 +675,7 @@ public final class AptxUtil {
                 css = PhylogenyMethods.calculateConfidenceStatistics( phy );
             }
             catch ( final IllegalArgumentException e ) {
-                ForesterUtil.printWarningMessage( Constants.PRG_NAME, e.getMessage() );
+                ForesterUtil.printWarningMessage( AptxConstants.PRG_NAME, e.getMessage() );
             }
             if ( ( css != null ) && ( css.size() > 0 ) ) {
                 desc.append( "\n" );
@@ -720,9 +722,9 @@ public final class AptxUtil {
      */
     final static void dieWithSystemError( final String message ) {
         System.out.println();
-        System.out.println( Constants.PRG_NAME + " encountered the following system error: " + message );
+        System.out.println( AptxConstants.PRG_NAME + " encountered the following system error: " + message );
         System.out.println( "Please contact the authors." );
-        System.out.println( Constants.PRG_NAME + " needs to close." );
+        System.out.println( AptxConstants.PRG_NAME + " needs to close." );
         System.out.println();
         System.exit( -1 );
     }
@@ -809,7 +811,7 @@ public final class AptxUtil {
 
     final static void openWebsite( final String url, final boolean is_applet, final JApplet applet ) throws IOException {
         try {
-            AptxUtil.launchWebBrowser( new URI( url ), is_applet, applet, Constants.PRG_NAME );
+            AptxUtil.launchWebBrowser( new URI( url ), is_applet, applet, AptxConstants.PRG_NAME );
         }
         catch ( final Exception e ) {
             throw new IOException( e );
@@ -825,7 +827,7 @@ public final class AptxUtil {
         JOptionPane.showMessageDialog( null,
                                        "Java memory allocation might be too small, try \"-Xmx2048m\" java command line option"
                                                + "\n\nError: " + e.getLocalizedMessage(),
-                                               "Out of Memory Error [" + Constants.PRG_NAME + " " + Constants.VERSION + "]",
+                                               "Out of Memory Error [" + AptxConstants.PRG_NAME + " " + AptxConstants.VERSION + "]",
                                                JOptionPane.ERROR_MESSAGE );
         System.exit( -1 );
     }
@@ -857,9 +859,9 @@ public final class AptxUtil {
         JOptionPane
         .showMessageDialog( null,
                             "An unexpected (possibly severe) error has occured - terminating. \nPlease contact: "
-                                    + Constants.AUTHOR_EMAIL + " \nError: " + e.getLocalizedMessage() + "\n"
+                                    + AptxConstants.AUTHOR_EMAIL + " \nError: " + e.getLocalizedMessage() + "\n"
                                     + sb,
-                                    "Unexpected Severe Error [" + Constants.PRG_NAME + " " + Constants.VERSION + "]",
+                                    "Unexpected Severe Error [" + AptxConstants.PRG_NAME + " " + AptxConstants.VERSION + "]",
                                     JOptionPane.ERROR_MESSAGE );
         System.exit( -1 );
     }
@@ -874,9 +876,9 @@ public final class AptxUtil {
         }
         JOptionPane.showMessageDialog( null,
                                        "An unexpected exception has occured. \nPlease contact: "
-                                               + Constants.AUTHOR_EMAIL + " \nException: " + e.getLocalizedMessage()
+                                               + AptxConstants.AUTHOR_EMAIL + " \nException: " + e.getLocalizedMessage()
                                                + "\n" + sb,
-                                               "Unexpected Exception [" + Constants.PRG_NAME + Constants.VERSION + "]",
+                                               "Unexpected Exception [" + AptxConstants.PRG_NAME + AptxConstants.VERSION + "]",
                                                JOptionPane.ERROR_MESSAGE );
     }
 

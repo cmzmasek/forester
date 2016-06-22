@@ -93,8 +93,8 @@ public class ArchaeopteryxA extends JApplet {
     public void init() {
         boolean has_exception = false;
         setName( NAME );
-        setTreeUrlStr( getParameter( Constants.APPLET_PARAM_NAME_FOR_URL_OF_TREE_TO_LOAD ) );
-        setSpeciesTreeUrlStr( getParameter( Constants.APPLET_PARAM_NAME_FOR_URL_OF_SPECIES_TREE_TO_LOAD ) );
+        setTreeUrlStr( getParameter( AptxConstants.APPLET_PARAM_NAME_FOR_URL_OF_TREE_TO_LOAD ) );
+        setSpeciesTreeUrlStr( getParameter( AptxConstants.APPLET_PARAM_NAME_FOR_URL_OF_SPECIES_TREE_TO_LOAD ) );
         if ( !ForesterUtil.isEmpty( getTreeUrlStr() ) ) {
             AptxUtil.printAppletMessage( NAME, "URL of tree(s) to load: " + getTreeUrlStr() );
         }
@@ -124,7 +124,7 @@ public class ArchaeopteryxA extends JApplet {
             setMessage2( "[Your Java version: " + s + "]" );
             repaint();
         }
-        final String config_filename = getParameter( Constants.APPLET_PARAM_NAME_FOR_CONFIG_FILE_URL );
+        final String config_filename = getParameter( AptxConstants.APPLET_PARAM_NAME_FOR_CONFIG_FILE_URL );
         AptxUtil.printAppletMessage( NAME, "URL for configuration file is: " + config_filename );
         final Configuration configuration = new Configuration( config_filename, true, true, true );
         try {
@@ -180,12 +180,12 @@ public class ArchaeopteryxA extends JApplet {
         getMainFrameApplet().requestFocusInWindow();
         getMainFrameApplet().requestFocus();
         /* GUILHEM_BEG */
-        final String default_relation = getParameter( Constants.APPLET_PARAM_NAME_FOR_DEFAULT_SEQUENCE_RELATION_TYPE );
+        final String default_relation = getParameter( AptxConstants.APPLET_PARAM_NAME_FOR_DEFAULT_SEQUENCE_RELATION_TYPE );
         if ( default_relation != null ) {
             getMainFrameApplet().getMainPanel().getControlPanel().getSequenceRelationTypeBox()
                     .setSelectedItem( default_relation );
         }
-        final String default_sequence = getParameter( Constants.APPLET_PARAM_NAME_FOR_DEFAULT_QUERY_SEQUENCE );
+        final String default_sequence = getParameter( AptxConstants.APPLET_PARAM_NAME_FOR_DEFAULT_QUERY_SEQUENCE );
         if ( default_sequence != null ) {
             getMainFrameApplet().getMainPanel().getControlPanel().getSequenceRelationBox()
                     .setSelectedItem( default_sequence );

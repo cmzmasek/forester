@@ -184,7 +184,7 @@ final public class Options {
     final private void init() {
         _default_node_shape = NodeShape.CIRCLE;
         _default_node_fill = NodeFill.GRADIENT;
-        _default_node_shape_size = Constants.DEFAULT_NODE_SHAPE_SIZE_DEFAULT;
+        _default_node_shape_size = AptxConstants.DEFAULT_NODE_SHAPE_SIZE_DEFAULT;
         _internal_number_are_confidence_for_nh_parsing = false;
         _show_scale = false;
         _antialias_screen = true;
@@ -196,12 +196,12 @@ final public class Options {
         _show_default_node_shapes_external = false;
         _show_default_node_shapes_for_marked_nodes = false;
         if ( AptxUtil.isUsOrCanada() ) {
-            _print_size_x = Constants.US_LETTER_SIZE_X;
-            _print_size_y = Constants.US_LETTER_SIZE_Y;
+            _print_size_x = AptxConstants.US_LETTER_SIZE_X;
+            _print_size_y = AptxConstants.US_LETTER_SIZE_Y;
         }
         else {
-            _print_size_x = Constants.A4_SIZE_X;
-            _print_size_y = Constants.A4_SIZE_Y;
+            _print_size_x = AptxConstants.A4_SIZE_X;
+            _print_size_y = AptxConstants.A4_SIZE_Y;
         }
         _min_confidence_value = MIN_CONFIDENCE_DEFAULT;
         _print_black_and_white = false;
@@ -212,17 +212,17 @@ final public class Options {
         _match_whole_terms_only = false;
         _search_with_regex = false;
         _search_case_sensitive = false;
-        _print_line_width = Constants.PDF_LINE_WIDTH_DEFAULT;
+        _print_line_width = AptxConstants.PDF_LINE_WIDTH_DEFAULT;
         _show_overview = true;
         _ov_placement = OVERVIEW_PLACEMENT_TYPE.UPPER_LEFT;
         _node_label_direction = NODE_LABEL_DIRECTION.HORIZONTAL;
         _inverse_search_result = false;
         _scale_bar_length = 0.0;
-        _number_of_digits_after_comma_for_branch_length_values = Constants.NUMBER_OF_DIGITS_AFTER_COMMA_FOR_BRANCH_LENGTH_VALUES_DEFAULT;
-        _number_of_digits_after_comma_for_confidence_values = Constants.NUMBER_OF_DIGITS_AFTER_COMMA_FOR_CONFIDENCE_VALUES_DEFAULT;
+        _number_of_digits_after_comma_for_branch_length_values = AptxConstants.NUMBER_OF_DIGITS_AFTER_COMMA_FOR_BRANCH_LENGTH_VALUES_DEFAULT;
+        _number_of_digits_after_comma_for_confidence_values = AptxConstants.NUMBER_OF_DIGITS_AFTER_COMMA_FOR_CONFIDENCE_VALUES_DEFAULT;
         _nh_parsing_replace_underscores = false;
         _taxonomy_extraction = TAXONOMY_EXTRACTION.NO;
-        _cladogram_type = Constants.CLADOGRAM_TYPE_DEFAULT;
+        _cladogram_type = AptxConstants.CLADOGRAM_TYPE_DEFAULT;
         _show_domain_labels = true;
         _show_annotation_ref_source = true;
         setAbbreviateScientificTaxonNames( false );

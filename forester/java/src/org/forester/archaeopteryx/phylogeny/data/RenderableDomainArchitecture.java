@@ -39,7 +39,7 @@ import java.util.Map;
 import java.util.SortedMap;
 
 import org.forester.archaeopteryx.AptxUtil;
-import org.forester.archaeopteryx.Constants;
+import org.forester.archaeopteryx.AptxConstants;
 import org.forester.archaeopteryx.TreePanel;
 import org.forester.phylogeny.data.DomainArchitecture;
 import org.forester.phylogeny.data.PhylogenyData;
@@ -211,7 +211,7 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
             g.setColor( tree_panel.getTreeColorSet().getDomainBaseColor() );
         }
         else {
-            g.setColor( Constants.DOMAIN_BASE_COLOR_FOR_PDF );
+            g.setColor( AptxConstants.DOMAIN_BASE_COLOR_FOR_PDF );
         }
         _rectangle.setFrame( start, y - 0.5, _domain_structure.getTotalLength() * f, 1 );
         g.fill( _rectangle );
@@ -233,7 +233,7 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
                         g.setColor( tree_panel.getTreeColorSet().getDomainLabelColor() );
                     }
                     else {
-                        g.setColor( Constants.DOMAIN_LABEL_COLOR_FOR_PDF );
+                        g.setColor( AptxConstants.DOMAIN_LABEL_COLOR_FOR_PDF );
                     }
                     g.drawString( d.getName(), xa, y1
                                   + tree_panel.getMainPanel().getTreeFontSet().getFontMetricsSmall().getAscent()

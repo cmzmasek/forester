@@ -260,19 +260,19 @@ final class ControlPanel extends JPanel implements ActionListener {
                 }
                 // Zoom buttons
                 else if ( e.getSource() == _zoom_in_x ) {
-                    zoomInX( Constants.BUTTON_ZOOM_IN_FACTOR, Constants.BUTTON_ZOOM_IN_X_CORRECTION_FACTOR );
+                    zoomInX( AptxConstants.BUTTON_ZOOM_IN_FACTOR, AptxConstants.BUTTON_ZOOM_IN_X_CORRECTION_FACTOR );
                     displayedPhylogenyMightHaveChanged( false );
                 }
                 else if ( e.getSource() == _zoom_in_y ) {
-                    zoomInY( Constants.BUTTON_ZOOM_IN_FACTOR );
+                    zoomInY( AptxConstants.BUTTON_ZOOM_IN_FACTOR );
                     displayedPhylogenyMightHaveChanged( false );
                 }
                 else if ( e.getSource() == _zoom_out_x ) {
-                    zoomOutX( Constants.BUTTON_ZOOM_OUT_FACTOR, Constants.BUTTON_ZOOM_OUT_X_CORRECTION_FACTOR );
+                    zoomOutX( AptxConstants.BUTTON_ZOOM_OUT_FACTOR, AptxConstants.BUTTON_ZOOM_OUT_X_CORRECTION_FACTOR );
                     displayedPhylogenyMightHaveChanged( false );
                 }
                 else if ( e.getSource() == _zoom_out_y ) {
-                    zoomOutY( Constants.BUTTON_ZOOM_OUT_FACTOR );
+                    zoomOutY( AptxConstants.BUTTON_ZOOM_OUT_FACTOR );
                     displayedPhylogenyMightHaveChanged( false );
                 }
                 else if ( e.getSource() == _show_whole ) {

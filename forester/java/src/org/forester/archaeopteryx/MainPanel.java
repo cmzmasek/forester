@@ -375,7 +375,7 @@ public class MainPanel extends JPanel implements ComponentListener {
                 if ( sel >= 0 ) {
                     if ( !getConfiguration().isUseNativeUI() ) {
                         if ( _tabbed_pane.getTabCount() > 0 ) {
-                            _tabbed_pane.setForegroundAt( sel, Constants.TAB_LABEL_FOREGROUND_COLOR_SELECTED );
+                            _tabbed_pane.setForegroundAt( sel, AptxConstants.TAB_LABEL_FOREGROUND_COLOR_SELECTED );
                             for( int i = 0; i < _tabbed_pane.getTabCount(); ++i ) {
                                 if ( i != sel ) {
                                     _tabbed_pane.setBackgroundAt( i, getConfiguration().getGuiBackgroundColor() );

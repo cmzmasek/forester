@@ -121,7 +121,7 @@ public final class MainFrameApplication extends MainFrame {
     private ButtonGroup                  _radio_group_1;
     private ButtonGroup                  _radio_group_2;
     // Others:
-    double                               _min_not_collapse               = Constants.MIN_NOT_COLLAPSE_DEFAULT;
+    double                               _min_not_collapse               = AptxConstants.MIN_NOT_COLLAPSE_DEFAULT;
     double                               _min_not_collapse_bl            = 0.001;
     // Phylogeny Inference menu
     private JMenu                        _inference_menu;
@@ -197,7 +197,7 @@ public final class MainFrameApplication extends MainFrame {
         }
         try {
             boolean synth_exception = false;
-            if ( Constants.__SYNTH_LF ) {
+            if ( AptxConstants.__SYNTH_LF ) {
                 try {
                     final SynthLookAndFeel synth = new SynthLookAndFeel();
                     synth.load( MainFrameApplication.class.getResourceAsStream( "/resources/synth_look_and_feel_1.xml" ),
@@ -206,12 +206,12 @@ public final class MainFrameApplication extends MainFrame {
                 }
                 catch ( final Exception ex ) {
                     synth_exception = true;
-                    ForesterUtil.printWarningMessage( Constants.PRG_NAME,
+                    ForesterUtil.printWarningMessage( AptxConstants.PRG_NAME,
                                                       "could not create synth look and feel: "
                                                               + ex.getLocalizedMessage() );
                 }
             }
-            if ( !Constants.__SYNTH_LF || synth_exception ) {
+            if ( !AptxConstants.__SYNTH_LF || synth_exception ) {
                 if ( _configuration.isUseNativeUI() ) {
                     UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName() );
                 }
@@ -242,7 +242,7 @@ public final class MainFrameApplication extends MainFrame {
         setInferenceManager( InferenceManager.createInstance( _configuration ) );
         setPhylogeneticInferenceOptions( PhylogeneticInferenceOptions.createInstance( _configuration ) );
         // set title
-        setTitle( Constants.PRG_NAME + " " + Constants.VERSION + " (" + Constants.PRG_DATE + ")" );
+        setTitle( AptxConstants.PRG_NAME + " " + AptxConstants.VERSION + " (" + AptxConstants.PRG_DATE + ")" );
         _mainpanel = new MainPanel( _configuration, this );
         // The file dialogs
         _open_filechooser = new JFileChooser();
@@ -296,7 +296,7 @@ public final class MainFrameApplication extends MainFrame {
             _jmenubar.setBackground( getConfiguration().getGuiMenuBackgroundColor() );
         }
         buildFileMenu();
-        if ( Constants.__ALLOW_PHYLOGENETIC_INFERENCE ) {
+        if ( AptxConstants.__ALLOW_PHYLOGENETIC_INFERENCE ) {
             buildPhylogeneticInferenceMenu();
         }
         buildAnalysisMenu();

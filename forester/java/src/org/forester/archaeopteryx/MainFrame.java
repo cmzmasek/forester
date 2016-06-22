@@ -94,8 +94,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     final static SequencesFileFilter seqsfilter                              = new SequencesFileFilter();
     final static DefaultFilter       defaultfilter                           = new DefaultFilter();
     static final String              USE_MOUSEWHEEL_SHIFT_TO_ROTATE          = "In this display type, use mousewheel + Shift to rotate [or A and S]";
-    static final String              PHYLOXML_REF_TOOL_TIP                   = Constants.PHYLOXML_REFERENCE;                                                                                                                                                //TODO //FIXME
-    static final String              APTX_REF_TOOL_TIP                       = Constants.APTX_REFERENCE;
+    static final String              PHYLOXML_REF_TOOL_TIP                   = AptxConstants.PHYLOXML_REFERENCE;                                                                                                                                                //TODO //FIXME
+    static final String              APTX_REF_TOOL_TIP                       = AptxConstants.APTX_REFERENCE;
     private static final long        serialVersionUID                        = 3655000897845508358L;
     final static Font                menu_font                               = new Font( Configuration.getDefaultFontFamilyName(),
                                                                                          Font.PLAIN,
@@ -586,42 +586,42 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         else if ( o == _help_item ) {
             try {
-                AptxUtil.openWebsite( Constants.APTX_DOC_SITE, is_applet, applet );
+                AptxUtil.openWebsite( AptxConstants.APTX_DOC_SITE, is_applet, applet );
             }
             catch ( final IOException e1 ) {
-                ForesterUtil.printErrorMessage( Constants.PRG_NAME, e1.toString() );
+                ForesterUtil.printErrorMessage( AptxConstants.PRG_NAME, e1.toString() );
             }
         }
         else if ( o == _website_item ) {
             try {
-                AptxUtil.openWebsite( Constants.APTX_WEB_SITE, is_applet, applet );
+                AptxUtil.openWebsite( AptxConstants.APTX_WEB_SITE, is_applet, applet );
             }
             catch ( final IOException e1 ) {
-                ForesterUtil.printErrorMessage( Constants.PRG_NAME, e1.toString() );
+                ForesterUtil.printErrorMessage( AptxConstants.PRG_NAME, e1.toString() );
             }
         }
         else if ( o == _phyloxml_website_item ) {
             try {
-                AptxUtil.openWebsite( Constants.PHYLOXML_WEB_SITE, is_applet, applet );
+                AptxUtil.openWebsite( AptxConstants.PHYLOXML_WEB_SITE, is_applet, applet );
             }
             catch ( final IOException e1 ) {
-                ForesterUtil.printErrorMessage( Constants.PRG_NAME, e1.toString() );
+                ForesterUtil.printErrorMessage( AptxConstants.PRG_NAME, e1.toString() );
             }
         }
         else if ( o == _aptx_ref_item ) {
             try {
-                AptxUtil.openWebsite( Constants.APTX_REFERENCE_URL, is_applet, applet );
+                AptxUtil.openWebsite( AptxConstants.APTX_REFERENCE_URL, is_applet, applet );
             }
             catch ( final IOException e1 ) {
-                ForesterUtil.printErrorMessage( Constants.PRG_NAME, e1.toString() );
+                ForesterUtil.printErrorMessage( AptxConstants.PRG_NAME, e1.toString() );
             }
         }
         else if ( o == _phyloxml_ref_item ) {
             try {
-                AptxUtil.openWebsite( Constants.PHYLOXML_REFERENCE_URL, is_applet, applet );
+                AptxUtil.openWebsite( AptxConstants.PHYLOXML_REFERENCE_URL, is_applet, applet );
             }
             catch ( final IOException e1 ) {
-                ForesterUtil.printErrorMessage( Constants.PRG_NAME, e1.toString() );
+                ForesterUtil.printErrorMessage( AptxConstants.PRG_NAME, e1.toString() );
             }
         }
         else if ( o == _write_to_pdf_item ) {
@@ -1268,10 +1268,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                                                                          + "[current values: "
                                                                          + getOptions().getPrintSizeX() + ", "
                                                                          + getOptions().getPrintSizeY() + "]\n"
-                                                                         + "[A4: " + Constants.A4_SIZE_X + ", "
-                                                                         + Constants.A4_SIZE_Y + "]\n" + "[US Letter: "
-                                                                         + Constants.US_LETTER_SIZE_X + ", "
-                                                                         + Constants.US_LETTER_SIZE_Y + "]",
+                                                                         + "[A4: " + AptxConstants.A4_SIZE_X + ", "
+                                                                         + AptxConstants.A4_SIZE_Y + "]\n" + "[US Letter: "
+                                                                         + AptxConstants.US_LETTER_SIZE_X + ", "
+                                                                         + AptxConstants.US_LETTER_SIZE_Y + "]",
                                                                  "Default Size for Graphics Export",
                                                                  JOptionPane.QUESTION_MESSAGE,
                                                                  null,
@@ -2049,11 +2049,11 @@ public abstract class MainFrame extends JFrame implements ActionListener {
      * Display the about box.
      */
     static void about() {
-        final StringBuffer about = new StringBuffer( "Archaeopteryx\nVersion " + Constants.VERSION + "\n" );
+        final StringBuffer about = new StringBuffer( "Archaeopteryx\nVersion " + AptxConstants.VERSION + "\n" );
         about.append( "Copyright (C) 2015 Christian M Zmasek\n" );
         about.append( "All Rights Reserved\n" );
         about.append( "License: GNU Lesser General Public License (LGPL)\n" );
-        about.append( "Last modified: " + Constants.PRG_DATE + "\n" );
+        about.append( "Last modified: " + AptxConstants.PRG_DATE + "\n" );
         about.append( "Based on: " + ForesterUtil.getForesterLibraryInformation() + "\n" );
         about.append( "phyloXML version : " + ForesterConstants.PHYLO_XML_VERSION + "\n" );
         about.append( "phyloXML location: " + ForesterConstants.PHYLO_XML_LOCATION + "\n" );
@@ -2071,13 +2071,13 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         about.append( "[free memory: " + free_memory + "MB, total memory: " + total_memory + "MB]\n" );
         about.append( "[locale: " + Locale.getDefault() + "]\n" );
         about.append( "References:\n" );
-        about.append( Constants.PHYLOXML_REFERENCE_SHORT + "\n" );
+        about.append( AptxConstants.PHYLOXML_REFERENCE_SHORT + "\n" );
         about.append( "For more information & download:\n" );
-        about.append( Constants.APTX_WEB_SITE + "\n" );
+        about.append( AptxConstants.APTX_WEB_SITE + "\n" );
         about.append( "Documentation:\n" );
-        about.append( Constants.APTX_DOC_SITE + "\n" );
-        about.append( "Comments: " + Constants.AUTHOR_EMAIL );
-        JOptionPane.showMessageDialog( null, about, Constants.PRG_NAME, JOptionPane.PLAIN_MESSAGE );
+        about.append( AptxConstants.APTX_DOC_SITE + "\n" );
+        about.append( "Comments: " + AptxConstants.AUTHOR_EMAIL );
+        JOptionPane.showMessageDialog( null, about, AptxConstants.PRG_NAME, JOptionPane.PLAIN_MESSAGE );
     }
 
     static void chooseNodeSize( final Options options, final Component parent ) {
@@ -2210,7 +2210,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             tp.resetPreferredSize();
             tp.repaint();
         }
-        final String job_name = Constants.PRG_NAME;
+        final String job_name = AptxConstants.PRG_NAME;
         boolean error = false;
         String printer_name = null;
         try {
@@ -2482,7 +2482,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                     return null;
                 }
                 else {
-                    final File to = new File( file.getAbsoluteFile().toString() + Constants.BACKUP_FILE_SUFFIX );
+                    final File to = new File( file.getAbsoluteFile().toString() + AptxConstants.BACKUP_FILE_SUFFIX );
                     try {
                         ForesterUtil.copyFile( file, to );
                     }

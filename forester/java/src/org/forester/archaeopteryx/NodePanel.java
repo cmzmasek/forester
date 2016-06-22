@@ -137,10 +137,10 @@ class NodePanel extends JPanel implements TreeSelectionListener {
         final JSplitPane split_pane = new JSplitPane( JSplitPane.VERTICAL_SPLIT );
         split_pane.setTopComponent( tree_view );
         split_pane.setBottomComponent( data_view );
-        data_view.setMinimumSize( Constants.NODE_PANEL_SPLIT_MINIMUM_SIZE );
-        tree_view.setMinimumSize( Constants.NODE_PANEL_SPLIT_MINIMUM_SIZE );
+        data_view.setMinimumSize( AptxConstants.NODE_PANEL_SPLIT_MINIMUM_SIZE );
+        tree_view.setMinimumSize( AptxConstants.NODE_PANEL_SPLIT_MINIMUM_SIZE );
         split_pane.setDividerLocation( 400 );
-        split_pane.setPreferredSize( Constants.NODE_PANEL_SIZE );
+        split_pane.setPreferredSize( AptxConstants.NODE_PANEL_SIZE );
         add( split_pane );
     }
 

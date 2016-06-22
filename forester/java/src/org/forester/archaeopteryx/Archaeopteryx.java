@@ -84,7 +84,7 @@ public final class Archaeopteryx {
                     f = new File( args[ filename_index ] );
                     final String err = ForesterUtil.isReadableFile( f );
                     if ( !ForesterUtil.isEmpty( err ) ) {
-                        ForesterUtil.fatalError( Constants.PRG_NAME, err );
+                        ForesterUtil.fatalError( AptxConstants.PRG_NAME, err );
                     }
                     boolean nhx_or_nexus = false;
                     final PhylogenyParser p = ParserUtils.createParserDependingOnFileType( f, conf
@@ -115,7 +115,7 @@ public final class Archaeopteryx {
             }
         }
         catch ( final Exception e ) {
-            ForesterUtil.fatalError( Constants.PRG_NAME, "failed to start: " + e.getLocalizedMessage() );
+            ForesterUtil.fatalError( AptxConstants.PRG_NAME, "failed to start: " + e.getLocalizedMessage() );
         }
         String title = "";
         if ( f != null ) {

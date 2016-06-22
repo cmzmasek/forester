@@ -30,13 +30,11 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import javax.net.ssl.HttpsURLConnection;
 import javax.swing.JOptionPane;
 
 import org.forester.archaeopteryx.webservices.PhylogeniesWebserviceClient;
 import org.forester.archaeopteryx.webservices.WebserviceUtil;
 import org.forester.archaeopteryx.webservices.WebservicesManager;
-import org.forester.archaeopteryx.webservices.WebservicesManager.WsPhylogenyFormat;
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.nexus.NexusPhylogeniesParser;
 import org.forester.io.parsers.nhx.NHXParser;
@@ -46,10 +44,7 @@ import org.forester.io.parsers.tol.TolParser;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.data.Identifier;
-import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
-import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.util.ForesterUtil;
-import org.forester.util.TrustManager;
 
 public class UrlTreeReader implements Runnable {
 
@@ -155,17 +150,7 @@ public class UrlTreeReader implements Runnable {
                 else {
                     _main_frame.getMainPanel().setWaitCursor();
                 }
-                final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-                
-                if (client.getReturnFormat()== WebservicesManager.WsPhylogenyFormat.TREEBASE_TREE
-                    || client.getReturnFormat()== WebservicesManager.WsPhylogenyFormat.TREEBASE_STUDY) {
-                    
-                    final HttpsURLConnection con = TrustManager.makeHttpsURLConnection( url );
-                    trees = factory.create( con.getInputStream(), parser );
-                }
-                else {
-                    trees = factory.create( url.openStream(), parser );
-                }
+                trees = ForesterUtil.readPhylogeniesFromUrl( url, parser );
             }
             catch ( final MalformedURLException e ) {
                 exception = true;

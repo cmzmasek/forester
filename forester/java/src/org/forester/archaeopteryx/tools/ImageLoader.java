@@ -36,7 +36,7 @@ import java.util.List;
 import javax.imageio.ImageIO;
 
 import org.forester.archaeopteryx.AptxUtil;
-import org.forester.archaeopteryx.Constants;
+import org.forester.archaeopteryx.AptxConstants;
 import org.forester.archaeopteryx.TreePanel;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Taxonomy;
@@ -96,18 +96,18 @@ public class ImageLoader implements Runnable {
                                 bi = ImageIO.read( uri.getValue().toURL() );
                             }
                             catch ( final MalformedURLException e ) {
-                                AptxUtil.printWarningMessage( Constants.PRG_NAME,
+                                AptxUtil.printWarningMessage( AptxConstants.PRG_NAME,
                                                               "could not load image from \"" + uri.getValue()
                                                               + "\": Malformed URL Exception: "
                                                               + e.getLocalizedMessage() );
                             }
                             catch ( final IOException e ) {
-                                AptxUtil.printWarningMessage( Constants.PRG_NAME,
+                                AptxUtil.printWarningMessage( AptxConstants.PRG_NAME,
                                                               "could not load image from \"" + uri.getValue()
                                                               + "\": IO Exception: " + e.getLocalizedMessage() );
                             }
                             catch ( final CMMException e ) {
-                                AptxUtil.printWarningMessage( Constants.PRG_NAME,
+                                AptxUtil.printWarningMessage( AptxConstants.PRG_NAME,
                                                               "could not load image from \"" + uri.getValue()
                                                               + "\": CMMException: " + e.getLocalizedMessage() );
                             }

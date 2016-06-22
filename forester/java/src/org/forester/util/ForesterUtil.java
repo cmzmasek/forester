@@ -42,6 +42,8 @@ import java.io.Writer;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.net.URLConnection;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -62,11 +64,14 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.forester.archaeopteryx.Constants;
+import org.forester.archaeopteryx.AptxConstants;
+import org.forester.io.parsers.PhylogenyParser;
+import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Distribution;
 import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.Taxonomy;
+import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.protein.BasicProtein;
 import org.forester.protein.Domain;
 import org.forester.protein.Protein;
@@ -646,7 +651,7 @@ public final class ForesterUtil {
             return OS_NAME.toLowerCase().startsWith( "mac" );
         }
         catch ( final Exception e ) {
-            ForesterUtil.printWarningMessage( Constants.PRG_NAME, "minor error: " + e );
+            ForesterUtil.printWarningMessage( AptxConstants.PRG_NAME, "minor error: " + e );
             return false;
         }
     }
@@ -683,7 +688,7 @@ public final class ForesterUtil {
             return OS_NAME.toLowerCase().indexOf( "win" ) > -1;
         }
         catch ( final Exception e ) {
-            ForesterUtil.printWarningMessage( Constants.PRG_NAME, "minor error: " + e );
+            ForesterUtil.printWarningMessage( AptxConstants.PRG_NAME, "minor error: " + e );
             return false;
         }
     }
@@ -1413,6 +1418,44 @@ public final class ForesterUtil {
         return sb.toString();
     }
 
+
+    public final static Phylogeny[] readPhylogeniesFromUrl( final URL url,
+                                                            final PhylogenyParser parser )
+            throws NoSuchAlgorithmException, IOException, KeyManagementException {
+        if ( url == null ) {
+            throw new IllegalArgumentException( "URL to read from must not be null" );
+        }
+        else if ( parser == null ) {
+            throw new IllegalArgumentException( "parser to use to read from URL must not be null" );
+        }
+        final URLConnection con;
+        if ( url.toString().startsWith( "https:" ) ) {    
+             con = TrustManager.makeHttpsURLConnection( url );
+        }
+        else if ( url.toString().startsWith( "http:" ) ) {
+            con = url.openConnection();
+        }
+        else {
+            throw new IllegalArgumentException( "Cannot deal with URL: " + url );
+        }
+        if ( con == null ) {    
+            throw new IOException( "could not create connection from " + url );
+        }
+        con.setDefaultUseCaches( false );
+        final InputStream is = con.getInputStream();
+        if ( is == null ) {    
+            throw new IOException( "could not create input stream from " + url );
+        }
+        final Phylogeny[] trees = ParserBasedPhylogenyFactory.getInstance().create( is, parser );
+        try {
+            is.close();
+        }
+        catch ( final Exception e ) {
+            // ignore  
+        }
+        return trees;
+    }
+    
     private ForesterUtil() {
     }
 }
