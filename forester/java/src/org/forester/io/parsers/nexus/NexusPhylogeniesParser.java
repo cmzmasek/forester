@@ -53,6 +53,8 @@ import org.forester.util.ForesterUtil;
 
 public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, PhylogenyParser {
 
+    final private static boolean DEBUG                               = true;
+    
     final private static String            begin_trees               = NexusConstants.BEGIN_TREES.toLowerCase();
     final private static String            end                       = NexusConstants.END.toLowerCase();
     final private static String            endblock                  = "endblock";
@@ -246,6 +248,9 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
         _next = null;
         String line;
         while ( ( line = _br.readLine() ) != null ) {
+            if ( DEBUG ) {
+                System.out.println( line );
+            }
             line = line.trim();
             if ( ( line.length() > 0 ) && !line.startsWith( "#" ) && !line.startsWith( ">" ) ) {
                 line = ForesterUtil.collapseWhiteSpace( line );
@@ -291,8 +296,7 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
                     else if ( line_lc.startsWith( "link" ) ) {
                         final Matcher link_m = LINK_TAXA_PATTERN.matcher( line );
                         if ( link_m.lookingAt() ) {
-                            final String link = link_m.group( 1 );
-                            //System.out.println( "link taxa:" + link );
+                            final String link = link_m.group( 1 );  //TODO why?
                         }
                     }
                     else if ( line_lc.startsWith( end ) || line_lc.startsWith( endblock ) ) {
@@ -398,14 +402,12 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
                         final Matcher link_m = LINK_TAXA_PATTERN.matcher( line );
                         if ( link_m.lookingAt() ) {
                             final String link = link_m.group( 1 );
-                            //System.out.println( "link taxa:" + link );
                         }
                     }
                     else {
                         final Matcher datatype_matcher = DATATYPE_PATTERN.matcher( line_lc );
                         if ( datatype_matcher.find() ) {
                             _datatype = datatype_matcher.group( 1 );
-                            //System.out.println( _datatype );
                         }
                         else {
                             if ( ( _datatype != null )
@@ -430,7 +432,6 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
                                         s = BasicSequence.createRnaSequence( id, seq );
                                     }
                                     _seqs.put( id, s );
-                                    //System.out.println( s );
                                 }
                             }
                         }

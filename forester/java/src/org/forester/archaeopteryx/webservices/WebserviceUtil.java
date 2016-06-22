@@ -57,8 +57,11 @@ public final class WebserviceUtil {
     public static final String TREE_FAM_NAME                   = "TreeFam";
     public static final String TREE_FAM_URL_BASE               = "http://www.treefam.org/family/TF";
     public static final String TREEBASE_PHYLOWS_STUDY_URL_BASE = "http://purl.org/phylo/treebase/phylows/study/TB2:S";
-    public static final String TREEBASE_PHYLOWS_TREE_URL_BASE  = "http://purl.org/phylo/treebase/phylows/tree/TB2:Tr";
-
+  //  public static final String TREEBASE_PHYLOWS_TREE_URL_BASE  = "http://purl.org/phylo/treebase/phylows/tree/TB2:Tr";
+    public static final String TREEBASE_PHYLOWS_TREE_URL_BASE  = "https://treebase.org/treebase-web/phylows/tree/TB2:Tr";
+    
+    
+    
     public static List<PhylogeniesWebserviceClient> createDefaultClients() {
         final List<PhylogeniesWebserviceClient> clients = new ArrayList<PhylogeniesWebserviceClient>();
         clients.add( new BasicPhylogeniesWebserviceClient( TREE_BASE_NAME,
