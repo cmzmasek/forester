@@ -38,6 +38,7 @@ import org.forester.io.parsers.util.PhylogenyParserException;
 
 public class NexusBinaryStatesMatrixParser {
 
+    private static final String UTF_8 = "UTF-8";
     private Object                             _nexus_source;
     private CharacterStateMatrix<BinaryStates> _matrix;
     private int                                _nchar;
@@ -61,7 +62,7 @@ public class NexusBinaryStatesMatrixParser {
 
     public void parse() throws IOException {
         reset();
-        final BufferedReader reader = ParserUtils.createReader( getNexusSource() );
+        final BufferedReader reader = ParserUtils.createReader( getNexusSource(), UTF_8 );
         String line;
         boolean in_matrix = false;
         int identifier_index = 0;

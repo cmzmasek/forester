@@ -17,7 +17,7 @@ native_ui: ?
 #     value for bootstrap support)
 #
 #  Font family name: 'font_family':
-#     Example: 'font_family: Arial,Calibri,Helvetica'
+#     Example: 'font_family: Sans,Helvetica'
 #     It is advisable to use more than one value for font_family (in
 #     decreasing order of preference). Font family names have to be
 #     comma separated (no spaces). Spaces in font names have to be
@@ -162,7 +162,7 @@ native_ui: ?
 
 
 min_confidence_value:                      0.0
-font_family:                               Arial,Helvetica,Verdana,Tahoma,Dialog,Lucida-Sans,SansSerif,Sans-serif,Sans
+font_family:                               SansSerif,Sans-serif,Sans,Dialog,Tahoma,Helvetica,Arial,Verdana
 font_size:                                 10
 font_size_min:                             2
 font_size_max:                             20

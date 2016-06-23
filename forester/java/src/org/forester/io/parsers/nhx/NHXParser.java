@@ -24,8 +24,9 @@
 package org.forester.io.parsers.nhx;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -67,10 +68,11 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
     final static private boolean GUESS_IF_SUPPORT_VALUES                    = true;
     final static private boolean GUESS_ROOTEDNESS_DEFAULT                   = true;
     final static private boolean IGNORE_QUOTES_DEFAULT                      = false;
-    final static private byte    STRING                                     = 0;
-    final static private byte    STRING_BUFFER                              = 1;
-    final static private byte    STRING_BUILDER                             = 4;
+   
     final static private char    BELL                                       = 7;
+    public final static String   UTF_8 = "UTF-8";
+    public final static String   ISO_8859_1 = "ISO-8859-1";
+    private final static String  ENCODING_DEFAULT = UTF_8;
     private boolean              _allow_errors_in_distance_to_parent;
     private int                  _clade_level;
     private StringBuilder        _current_anotation;
@@ -86,9 +88,6 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
     private byte                 _input_type;
     private BufferedReader       _my_source_br                              = null;
     private char[]               _my_source_charary                         = null;
-    private StringBuffer         _my_source_sbuff                           = null;
-    private StringBuilder        _my_source_sbuil                           = null;
-    private String               _my_source_str                             = null;
     private Phylogeny            _next;
     private Object               _nhx_source;
     private boolean              _replace_underscores;
@@ -98,8 +97,15 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
     private Object               _source;
     private int                  _source_length;
     private TAXONOMY_EXTRACTION  _taxonomy_extraction;
+    private final String         _encoding;
 
     public NHXParser() {
+        _encoding = ENCODING_DEFAULT;
+        init();
+    }
+    
+    public NHXParser( final String encoding ) {
+        _encoding = encoding;
         init();
     }
 
@@ -127,10 +133,8 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
     @Override
     public final Phylogeny[] parse() throws IOException {
         final List<Phylogeny> l = new ArrayList<Phylogeny>();
-        //int c = 0;
         while ( hasNext() ) {
             l.add( next() );
-            // c++;
         }
         final Phylogeny[] p = new Phylogeny[ l.size() ];
         for( int i = 0; i < l.size(); ++i ) {
@@ -154,24 +158,9 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
         _current_anotation = new StringBuilder();
         _current_phylogeny = null;
         _current_node = null;
-        _my_source_str = null;
-        _my_source_sbuff = null;
-        _my_source_sbuil = null;
         _my_source_charary = null;
         determineAndProcessSourceType( _source );
         switch ( _input_type ) {
-            case STRING:
-                _my_source_br = null;
-                _my_source_str = ( String ) _nhx_source;
-                break;
-            case STRING_BUFFER:
-                _my_source_br = null;
-                _my_source_sbuff = ( StringBuffer ) _nhx_source;
-                break;
-            case STRING_BUILDER:
-                _my_source_br = null;
-                _my_source_sbuil = ( StringBuilder ) _nhx_source;
-                break;
             case CHAR_ARRAY:
                 _my_source_br = null;
                 _my_source_charary = ( char[] ) _nhx_source;
@@ -216,24 +205,12 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
             throw new PhylogenyParserException( getClass() + ": attempt to parse null object." );
         }
         else if ( nhx_source instanceof String ) {
-            _input_type = NHXParser.STRING;
-            _source_length = ( ( String ) nhx_source ).length();
             _nhx_source = nhx_source;
-        }
-        else if ( nhx_source instanceof StringBuilder ) {
-            _input_type = NHXParser.STRING_BUILDER;
-            _source_length = ( ( StringBuilder ) nhx_source ).length();
-            _nhx_source = nhx_source;
-        }
-        else if ( nhx_source instanceof StringBuffer ) {
-            _input_type = NHXParser.STRING_BUFFER;
-            _source_length = ( ( StringBuffer ) nhx_source ).length();
-            _nhx_source = nhx_source;
-        }
-        else if ( nhx_source instanceof StringBuilder ) {
-            _input_type = NHXParser.STRING_BUILDER;
-            _source_length = ( ( StringBuilder ) nhx_source ).length();
-            _nhx_source = nhx_source;
+            _input_type = NHXParser.BUFFERED_READER;
+            _source_length = 0;
+            InputStream is = new ByteArrayInputStream( (( String ) nhx_source ).getBytes(getEncoding()));
+            final InputStreamReader isr = new InputStreamReader( is, getEncoding() );
+            _nhx_source = new BufferedReader( isr );
         }
         else if ( nhx_source instanceof char[] ) {
             _input_type = NHXParser.CHAR_ARRAY;
@@ -256,7 +233,9 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
             if ( !ForesterUtil.isEmpty( error ) ) {
                 throw new PhylogenyParserException( error );
             }
-            _nhx_source = new BufferedReader( new FileReader( f ) );
+            final InputStream is = new FileInputStream( f );
+            final InputStreamReader isr = new InputStreamReader( is, getEncoding() );
+            _nhx_source = new BufferedReader( isr );
         }
         else if ( nhx_source instanceof URL ) {
             _input_type = NHXParser.BUFFERED_READER;
@@ -269,7 +248,8 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                 //                catch ( final IOException e ) {
                 //                }
             }
-            final InputStreamReader isr = new InputStreamReader( ( ( URL ) nhx_source ).openStream() );
+            final InputStream is = ( ( URL ) nhx_source ).openStream();
+            final InputStreamReader isr = new InputStreamReader( is, getEncoding() );
             _nhx_source = new BufferedReader( isr );
         }
         else if ( nhx_source instanceof InputStream ) {
@@ -283,12 +263,13 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                 //                catch ( final IOException e ) {
                 //                }
             }
-            final InputStreamReader isr = new InputStreamReader( ( InputStream ) nhx_source );
-            _nhx_source = new BufferedReader( isr );
+            final InputStream is = ( InputStream ) nhx_source;
+            final InputStreamReader isr = new InputStreamReader( is, getEncoding() );
+             _nhx_source = new BufferedReader( isr );
         }
         else {
             throw new IllegalArgumentException( getClass() + " can only parse objects of type String,"
-                    + " StringBuffer, StringBuilder, char[], File, InputStream, or URL "
+                    + " char[], File, InputStream, or URL "
                     + " [attempt to parse object of " + nhx_source.getClass() + "]." );
         }
     }
@@ -376,22 +357,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                 if ( _i >= _source_length ) {
                     break;
                 }
-                else {
-                    switch ( _input_type ) {
-                        case STRING:
-                            c = _my_source_str.charAt( _i );
-                            break;
-                        case STRING_BUFFER:
-                            c = _my_source_sbuff.charAt( _i );
-                            break;
-                        case STRING_BUILDER:
-                            c = _my_source_sbuil.charAt( _i );
-                            break;
-                        case CHAR_ARRAY:
-                            c = _my_source_charary[ _i ];
-                            break;
-                    }
-                }
+                c = _my_source_charary[ _i ];
             }
             if ( !_in_single_quote && !_in_double_quote ) {
                 if ( c == ':' ) {
@@ -407,7 +373,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
             }
             // \n\t is always ignored,
             // "=34  '=39 space=32
-            if ( ( c < 32 ) || ( c > 126 ) || ( isIgnoreQuotes() && ( ( c == 32 ) || ( c == 34 ) || ( c == 39 ) ) )
+            if ( ( c < 32 ) || ( c == 127 ) || ( isIgnoreQuotes() && ( ( c == 32 ) || ( c == 34 ) || ( c == 39 ) ) )
                     || ( ( c == 32 ) && ( !_in_single_quote && !_in_double_quote ) )
                     || ( ( _clade_level == 0 ) && ( c == ';' ) && ( !_in_single_quote && !_in_double_quote ) ) ) {
                 //do nothing
@@ -464,7 +430,6 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                 final Phylogeny phy = processOpenParen();
                 if ( phy != null ) {
                     ++_i;
-                    //  return phy;
                     _next = phy;
                     return;
                 }
@@ -799,6 +764,10 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                 node_to_annotate.setDistanceToParent( bl );
             }
         }
+    }
+
+    public String getEncoding() {
+        return _encoding;
     }
 
     public static enum TAXONOMY_EXTRACTION {

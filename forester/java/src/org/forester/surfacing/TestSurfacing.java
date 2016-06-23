@@ -42,7 +42,6 @@ import org.forester.evoinference.matrix.character.CharacterStateMatrix;
 import org.forester.evoinference.matrix.character.CharacterStateMatrix.BinaryStates;
 import org.forester.evoinference.matrix.character.CharacterStateMatrix.GainLossStates;
 import org.forester.io.parsers.HmmPfamOutputParser;
-import org.forester.io.parsers.nexus.PaupLogParser;
 import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
@@ -176,12 +175,7 @@ public class TestSurfacing {
             return false;
         }
         System.out.println( "OK." );
-        System.out.print( "  Paup log parser: " );
-        if ( !TestSurfacing.testPaupLogParser( test_dir ) ) {
-            System.out.println( "failed." );
-            return false;
-        }
-        System.out.println( "OK." );
+       
         System.out.print( "  Binary state matrix to gain loss matrix: " );
         if ( !TestSurfacing.testBinaryStateMatrixToGainLossMatrix( test_dir ) ) {
             System.out.println( "failed." );
@@ -5432,73 +5426,5 @@ public class TestSurfacing {
         return true;
     }
 
-    private static boolean testPaupLogParser( final File test_dir ) {
-        try {
-            final PaupLogParser parser = new PaupLogParser();
-            parser.setSource( new File( test_dir + ForesterUtil.getFileSeparator() + "paup_log_test_1" ) );
-            final CharacterStateMatrix<BinaryStates> matrix = parser.parse();
-            if ( matrix.getNumberOfIdentifiers() != 8 ) {
-                return false;
-            }
-            if ( !matrix.getIdentifier( 0 ).equals( "MOUSE" ) ) {
-                return false;
-            }
-            if ( !matrix.getIdentifier( 1 ).equals( "NEMVE" ) ) {
-                return false;
-            }
-            if ( !matrix.getIdentifier( 2 ).equals( "MONBE" ) ) {
-                return false;
-            }
-            if ( !matrix.getIdentifier( 3 ).equals( "DICDI" ) ) {
-                return false;
-            }
-            if ( !matrix.getIdentifier( 4 ).equals( "ARATH" ) ) {
-                return false;
-            }
-            if ( !matrix.getIdentifier( 5 ).equals( "6" ) ) {
-                return false;
-            }
-            if ( !matrix.getIdentifier( 6 ).equals( "7" ) ) {
-                return false;
-            }
-            if ( !matrix.getIdentifier( 7 ).equals( "8" ) ) {
-                return false;
-            }
-            if ( matrix.getNumberOfCharacters() != ( 66 + 66 + 28 ) ) {
-                return false;
-            }
-            if ( matrix.getState( 0, 4 ) != BinaryStates.ABSENT ) {
-                return false;
-            }
-            if ( matrix.getState( 0, 5 ) != BinaryStates.PRESENT ) {
-                return false;
-            }
-            if ( matrix.getState( 1, 5 ) != BinaryStates.PRESENT ) {
-                return false;
-            }
-            if ( matrix.getState( 7, 154 ) != BinaryStates.ABSENT ) {
-                return false;
-            }
-            if ( matrix.getState( 7, 155 ) != BinaryStates.PRESENT ) {
-                return false;
-            }
-            if ( matrix.getState( 7, 156 ) != BinaryStates.PRESENT ) {
-                return false;
-            }
-            if ( matrix.getState( 7, 157 ) != BinaryStates.ABSENT ) {
-                return false;
-            }
-            if ( matrix.getState( 7, 158 ) != BinaryStates.PRESENT ) {
-                return false;
-            }
-            if ( matrix.getState( 7, 159 ) != BinaryStates.ABSENT ) {
-                return false;
-            }
-        }
-        catch ( final Exception e ) {
-            e.printStackTrace( System.out );
-            return false;
-        }
-        return true;
-    }
+   
 }

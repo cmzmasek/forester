@@ -53,6 +53,8 @@ import org.forester.util.ForesterUtil;
 
 public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, PhylogenyParser {
 
+    private static final String UTF_8 = "UTF-8";
+
     final private static boolean DEBUG                               = false;
     
     final private static String            begin_trees               = NexusConstants.BEGIN_TREES.toLowerCase();
@@ -144,7 +146,7 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
         _rooted_info_present = false;
         _is_rooted = false;
         _seqs = new HashMap<String, MolecularSequence>();
-        _br = ParserUtils.createReader( _nexus_source );
+        _br = ParserUtils.createReader( _nexus_source, UTF_8 );
         getNext();
     }
 
@@ -182,7 +184,7 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
         if ( rooted_info_present ) {
             pars.setGuessRootedness( false );
         }
-        pars.setSource( nhx );
+        pars.setSource( nhx.toString() );
         final Phylogeny p = pars.next();
         if ( p == null ) {
             throw new PhylogenyParserException( "failed to create phylogeny" );

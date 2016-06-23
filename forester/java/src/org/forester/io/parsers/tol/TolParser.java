@@ -96,6 +96,12 @@ public class TolParser implements PhylogenyParser {
                 break;
             }
         }
+        try {
+            zip_file.close();
+        }
+        catch ( final Exception e ) {
+            // Ignore.
+        }
         return reader;
     }
 

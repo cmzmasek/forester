@@ -25,8 +25,9 @@
 
 package org.forester.io.parsers.phyloxml;
 
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -58,6 +59,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 public class PhyloXmlParser implements PhylogenyParser {
 
+    private static final String  UTF_8                                      = "UTF-8";
     final public static String   JAXP_SCHEMA_LANGUAGE                       = "http://java.sun.com/xml/jaxp/properties/schemaLanguage";
     final public static String   W3C_XML_SCHEMA                             = "http://www.w3.org/2001/XMLSchema";
     final public static String   JAXP_SCHEMA_SOURCE                         = "http://java.sun.com/xml/jaxp/properties/schemaSource";
@@ -96,9 +98,15 @@ public class PhyloXmlParser implements PhylogenyParser {
             final ZipEntry zip_file_entry = ( ZipEntry ) zip_file_entries.nextElement();
             if ( !zip_file_entry.isDirectory() && ( zip_file_entry.getSize() > 0 ) ) {
                 final InputStream is = zip_file.getInputStream( zip_file_entry );
-                reader = new InputStreamReader( is );
+                reader = new InputStreamReader( is, UTF_8 );
                 break;
             }
+        }
+        try {
+            zip_file.close();
+        }
+        catch ( final Exception e ) {
+            // Ignore
         }
         return reader;
     }
@@ -176,7 +184,9 @@ public class PhyloXmlParser implements PhylogenyParser {
             }
             if ( getSource() instanceof File ) {
                 if ( !getSource().toString().toLowerCase().endsWith( ".zip" ) ) {
-                    xml_reader.parse( new InputSource( new FileReader( ( File ) getSource() ) ) );
+                    final InputStream is = new FileInputStream( (File) getSource() );
+                    final InputStreamReader isr = new InputStreamReader( is, UTF_8 );
+                    xml_reader.parse( new InputSource( new BufferedReader( isr ) ) );
                 }
                 else {
                     final Reader reader = getReaderFromZipFile();
@@ -184,27 +194,24 @@ public class PhyloXmlParser implements PhylogenyParser {
                         throw new PhylogenyParserException( "zip file \"" + getSource()
                                                             + "\" appears not to contain any entries" );
                     }
-                    xml_reader.parse( new InputSource( reader ) );
+                    xml_reader.parse( new InputSource( new BufferedReader( reader ) ) );
                 }
             }
             else if ( getSource() instanceof InputSource ) {
-                xml_reader.parse( ( InputSource ) getSource() );
+                final InputSource is = ( InputSource ) getSource();
+                is.setEncoding( UTF_8 );
+                xml_reader.parse( is );
             }
             else if ( getSource() instanceof InputStream ) {
                 if ( !isZippedInputstream() ) {
                     final InputStream is = ( InputStream ) getSource();
-                    xml_reader.parse( new InputSource( new InputStreamReader( is ) ) );
+                    xml_reader.parse( new InputSource( new BufferedReader( new InputStreamReader( is, UTF_8 ) ) ) );
                 }
                 else {
                     final ZipInputStream zip_is = new ZipInputStream( ( InputStream ) getSource() );
                     zip_is.getNextEntry();
-                    xml_reader.parse( new InputSource( new InputStreamReader( zip_is ) ) );
+                    xml_reader.parse( new InputSource( new BufferedReader( new InputStreamReader( zip_is, UTF_8 ) ) ) );
                 }
-            }
-            else if ( getSource() instanceof String ) {
-                final File file = new File( getSource().toString() );
-                final Reader reader = new FileReader( file );
-                xml_reader.parse( new InputSource( reader ) );
             }
             else if ( getSource() instanceof StringBuffer ) {
                 final StringReader string_reader = new StringReader( getSource().toString() );

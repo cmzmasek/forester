@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.10/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" rerootable="true">
+  <clade>
+    <clade>
+      <clade>
+        <name>AQ~!@#$%^&amp;*()_+-=\{}|;:&quot;&lt;&gt;?,./</name>
+      </clade>
+      <clade>
+        <name>€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜˜˜™š›œžŸ¡¢£¤¥¦§¨©ª«¬®¯°±¹²³´µ¶·¸º»¼¿À÷þÿ</name>
+      </clade>
+    </clade>
+    <clade>
+      <clade>
+        <name>漢字ひらがなカタカナ</name>
+      </clade>
+      <clade>
+        <name>อักษรไทย</name>
+      </clade>
+    </clade>
+    <clade>
+      <clade>
+        <name>繁體字</name>
+      </clade>
+      <clade>
+        <name>한글</name>
+      </clade>
+    </clade>
+    <clade>
+      <clade>
+        <name>देवनागरी</name>
+      </clade>
+      <clade>
+        <name>chữ Quốc ngữ</name>
+      </clade>
+      <clade>
+        <name>ру́сский язы́к</name>
+      </clade>
+      <clade>
+        <name>អក្សរខ្មែរ</name>
+      </clade>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>

@@ -362,6 +362,15 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
+        System.out.print( "NH parsing - special chars: " );
+        if ( Test.testNHParsingSpecialChars() ) {
+            System.out.println( "OK." );
+            succeeded++;
+        }
+        else {
+            System.out.println( "failed." );
+            failed++;
+        }
         System.out.print( "Conversion to NHX (node level): " );
         if ( Test.testNHXconversion() ) {
             System.out.println( "OK." );
@@ -481,6 +490,15 @@ public final class Test {
         }
         System.out.print( "Tol XML parsing: " );
         if ( Test.testBasicTolXMLparsing() ) {
+            System.out.println( "OK." );
+            succeeded++;
+        }
+        else {
+            System.out.println( "failed." );
+            failed++;
+        }
+        System.out.print( "UTF-8 parsing from file: " );
+        if ( Test.testUTF8ParsingFromFile() ) {
             System.out.println( "OK." );
             succeeded++;
         }
@@ -1797,12 +1815,258 @@ public final class Test {
         }
         return true;
     }
+    
+    private static boolean testUTF8ParsingFromFile() {
+        try {
+            final PhyloXmlParser xml_parser = PhyloXmlParser.createPhyloXmlParser();
+            final Phylogeny[] phylogenies_xml = ParserBasedPhylogenyFactory.getInstance().create( new File( Test.PATH_TO_TEST_DATA + "chars.xml" ),
+                                                              xml_parser );
+            if ( xml_parser.getErrorCount() > 0 ) {
+                System.out.println( xml_parser.getErrorMessages().toString() );
+                return false;
+            }
+            if ( phylogenies_xml.length != 1 ) {
+                return false;
+            }
+         
+            final Phylogeny[] phylogenies_xml2 = ParserBasedPhylogenyFactory.getInstance().create( new StringBuffer( phylogenies_xml[0].toPhyloXML( 0 )),
+                                                                                                   xml_parser );
+            
+            final Phylogeny[] phylogenies_nh = ParserBasedPhylogenyFactory.getInstance().create( new File( Test.PATH_TO_TEST_DATA + "chars.nh" ), new NHXParser() );
+            if ( phylogenies_nh.length != 1 ) {
+                return false;
+            }
+           
+            final Phylogeny[] phylogenies_nex = ParserBasedPhylogenyFactory.getInstance().create( new File( Test.PATH_TO_TEST_DATA + "chars.nex" ), new NexusPhylogeniesParser() );
+            if ( phylogenies_nex.length != 1 ) {
+                return false;
+            }
+          
+            final String[] xml_n = phylogenies_xml[0].getAllExternalNodeNames();
+            final String[] xml_n2 = phylogenies_xml2[0].getAllExternalNodeNames();
+            final String[] nh_n = phylogenies_nh[0].getAllExternalNodeNames();
+            final String[] nex_n = phylogenies_nex[0].getAllExternalNodeNames();
+            final String n0 = "AQ~!@#$%^&*()_+-=\\{}|;:\"<>?,./";
+            final String n1 = "€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜˜˜™š›œžŸ¡¢£¤¥¦§¨©ª«¬®¯°±¹²³´µ¶·¸º»¼¿À÷þÿ";
+            final String n2 = "漢字ひらがなカタカナ";
+            final String n3 = "อักษรไทย";
+            final String n4 = "繁體字";
+            final String n5 = "한글";
+            final String n6 = "देवनागरी";
+            
+            final String n7 = "chữ Quốc ngữ";
+            final String n8 = "ру́сский язы́к";
+            final String n9 = "អក្សរខ្មែរ";
+            
+            if ( !xml_n[0].equals( n0 ) ) {
+                System.out.println( xml_n[0] );
+                System.out.println( n0 );
+                return false;
+            }
+            if ( !xml_n2[0].equals( n0 ) ) {
+                System.out.println( xml_n2[0] );
+                System.out.println( n0 );
+                return false;
+            }
+            if ( !nh_n[0].equals( n0 ) ) {
+                System.out.println( nh_n[0] );
+                System.out.println( n0 );
+                return false;
+            }
+            if ( !nex_n[0].equals( n0 ) ) {
+                System.out.println( nex_n[0] );
+                System.out.println( n0 );
+                return false;
+            }
+            
+            if ( !xml_n[1].equals( n1 ) ) {
+                System.out.println( xml_n[1] );
+                System.out.println( n1 );
+                return false;
+            }
+            if ( !xml_n2[1].equals( n1 ) ) {
+                System.out.println( xml_n2[1] );
+                System.out.println( n1 );
+                return false;
+            }
+            if ( !nh_n[1].equals( n1 ) ) {
+                System.out.println( nh_n[1] );
+                System.out.println( n1 );
+                return false;
+            }
+            if ( !nex_n[1].equals( n1 ) ) {
+                System.out.println( nex_n[1] );
+                System.out.println( n1 );
+                return false;
+            }
+            
+            if ( !xml_n[2].equals( n2 ) ) {
+                System.out.println( xml_n[2] );
+                System.out.println( n2 );
+                return false;
+            }
+            if ( !xml_n2[2].equals( n2 ) ) {
+                System.out.println( xml_n2[2] );
+                System.out.println( n2 );
+                return false;
+            }
+            if ( !nh_n[2].equals( n2 ) ) {
+                System.out.println( nh_n[2] );
+                System.out.println( n2 );
+                return false;
+            }
+            if ( !nex_n[2].equals( n2 ) ) {
+                System.out.println( nex_n[2] );
+                System.out.println( n2 );
+                return false;
+            }
+            //
+            if ( !xml_n[3].equals( n3 ) ) {
+                System.out.println( xml_n[3] );
+                System.out.println( n3 );
+                return false;
+            }
+            if ( !xml_n2[3].equals( n3 ) ) {
+                System.out.println( xml_n2[3] );
+                System.out.println( n3 );
+                return false;
+            }
+            if ( !nh_n[3].equals( n3 ) ) {
+                System.out.println( nh_n[3] );
+                System.out.println( n3 );
+                return false;
+            }
+            if ( !nex_n[3].equals( n3 ) ) {
+                System.out.println( nex_n[3] );
+                System.out.println( n3 );
+                return false;
+            }
+            //
+            if ( !xml_n[4].equals( n4 ) ) {
+                System.out.println( xml_n[4] );
+                System.out.println( n4 );
+                return false;
+            }
+            if ( !nh_n[4].equals( n4 ) ) {
+                System.out.println( nh_n[4] );
+                System.out.println( n4 );
+                return false;
+            }
+            if ( !nex_n[4].equals( n4 ) ) {
+                System.out.println( nex_n[4] );
+                System.out.println( n4 );
+                return false;
+            }
+            //
+            if ( !xml_n[5].equals( n5 ) ) {
+                System.out.println( xml_n[5] );
+                System.out.println( n5 );
+                return false;
+            }
+            if ( !nh_n[5].equals( n5 ) ) {
+                System.out.println( nh_n[5] );
+                System.out.println( n5 );
+                return false;
+            }
+            if ( !nex_n[5].equals( n5 ) ) {
+                System.out.println( nex_n[5] );
+                System.out.println( n5 );
+                return false;
+            }
+            //
+            if ( !xml_n[6].equals( n6 ) ) {
+                System.out.println( xml_n[6] );
+                System.out.println( n6 );
+                return false;
+            }
+            if ( !nh_n[6].equals( n6 ) ) {
+                System.out.println( nh_n[6] );
+                System.out.println( n6 );
+                return false;
+            }
+            if ( !nex_n[6].equals( n6 ) ) {
+                System.out.println( nex_n[6] );
+                System.out.println( n6 );
+                return false;
+            }
+            //
+            if ( !xml_n[7].equals( n7 ) ) {
+                System.out.println( xml_n[7] );
+                System.out.println( n7 );
+                return false;
+            }
+            if ( !nh_n[7].equals( n7 ) ) {
+                System.out.println( nh_n[7] );
+                System.out.println( n7 );
+                return false;
+            }
+            if ( !nex_n[7].equals( n7 ) ) {
+                System.out.println( nex_n[7] );
+                System.out.println( n7 );
+                return false;
+            }
+            if ( !xml_n[8].equals( n8 ) ) {
+                System.out.println( xml_n[8] );
+                System.out.println( n8 );
+                return false;
+            }
+            if ( !nh_n[8].equals( n8 ) ) {
+                System.out.println( nh_n[8] );
+                System.out.println( n8 );
+                return false;
+            }
+            if ( !nex_n[8].equals( n8 ) ) {
+                System.out.println( nex_n[8] );
+                System.out.println( n8 );
+                return false;
+            }
+            if ( !xml_n[9].equals( n9 ) ) {
+                System.out.println( xml_n[9] );
+                System.out.println( n9 );
+                return false;
+            }
+            if ( !xml_n2[9].equals( n9 ) ) {
+                System.out.println( xml_n2[9] );
+                System.out.println( n9 );
+                return false;
+            }
+            if ( !nh_n[9].equals( n9 ) ) {
+                System.out.println( nh_n[9] );
+                System.out.println( n9 );
+                return false;
+            }
+            if ( !nex_n[9].equals( n9 ) ) {
+                System.out.println( nex_n[9] );
+                System.out.println( n9 );
+                return false;
+            }
+            if (!phylogenies_xml[0].toNewHampshire().equals( 
+                                                            phylogenies_nh[0].toNewHampshire() ) ) {
+                System.out.println( phylogenies_xml[0].toNewHampshire() );
+                System.out.println( phylogenies_nh[0].toNewHampshire() );
+                return false;
+            }
+            if (!phylogenies_xml[0].toNewHampshire().equals( 
+                                                            phylogenies_nex[0].toNewHampshire() ) ) {
+                System.out.println( phylogenies_xml[0].toNewHampshire() );
+                System.out.println( phylogenies_nex[0].toNewHampshire() );
+                return false;
+            }
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace( System.out );
+            return false;
+        }
+        return true;
+    }
+    
+    
 
     private static boolean testBasicPhyloXMLparsing() {
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
             final PhyloXmlParser xml_parser = PhyloXmlParser.createPhyloXmlParser();
-            final Phylogeny[] phylogenies_0 = factory.create( Test.PATH_TO_TEST_DATA + "phyloxml_test_t1.xml",
+            final Phylogeny[] phylogenies_0 = factory.create( new File( Test.PATH_TO_TEST_DATA + "phyloxml_test_t1.xml" ),
                                                               xml_parser );
             if ( xml_parser.getErrorCount() > 0 ) {
                 System.out.println( xml_parser.getErrorMessages().toString() );
@@ -2016,7 +2280,7 @@ public final class Test {
             else {
                 xml_parser.setValidateAgainstSchema( PHYLOXML_REMOTE_XSD );
             }
-            final Phylogeny[] phylogenies_0 = factory.create( Test.PATH_TO_TEST_DATA + "phyloxml_test_t1.xml",
+            final Phylogeny[] phylogenies_0 = factory.create( new File( Test.PATH_TO_TEST_DATA + "phyloxml_test_t1.xml" ),
                                                               xml_parser );
             if ( xml_parser.getErrorCount() > 0 ) {
                 System.out.println( xml_parser.getErrorMessages().toString() );
@@ -2182,6 +2446,7 @@ public final class Test {
             }
             if ( !( t3_rt.getNode( "root node" ).getNodeData().getReference().getDescription()
                     .equals( "Aguinaldo, A. M. A.; J. M. Turbeville, L. S. Linford, M. C. Rivera, J. R. Garey, R. A. Raff, & J. A. Lake (1997). \"Evidence for a clade of nematodes, arthropods and other moulting animals\". Nature 387 (6632): 489–493." ) ) ) {
+                System.out.println( t3_rt.getNode( "root node" ).getNodeData().getReference().getDescription() );
                 return false;
             }
             if ( !t3_rt.getNode( "root node" ).getNodeData().getTaxonomy().getTaxonomyCode().equals( "ECDYS" ) ) {
@@ -2368,7 +2633,7 @@ public final class Test {
                     xml_parser.setValidateAgainstSchema( PHYLOXML_REMOTE_XSD );
                 }
             }
-            final Phylogeny[] phylogenies_0 = factory.create( Test.PATH_TO_TEST_DATA + "phyloxml_test_t1.xml",
+            final Phylogeny[] phylogenies_0 = factory.create( new File( Test.PATH_TO_TEST_DATA + "phyloxml_test_t1.xml" ),
                                                               xml_parser );
             if ( xml_parser.getErrorCount() > 0 ) {
                 System.out.println( xml_parser.getErrorMessages().toString() );
@@ -2403,7 +2668,7 @@ public final class Test {
                 return false;
             }
             final String x2 = Test.PATH_TO_TEST_DATA + "phyloxml_test_t1.xml";
-            final Phylogeny[] phylogenies_1 = factory.create( x2, xml_parser );
+            final Phylogeny[] phylogenies_1 = factory.create( new File( x2 ), xml_parser );
             if ( xml_parser.getErrorCount() > 0 ) {
                 System.out.println( "errors:" );
                 System.out.println( xml_parser.getErrorMessages().toString() );
@@ -2412,7 +2677,7 @@ public final class Test {
             if ( phylogenies_1.length != 4 ) {
                 return false;
             }
-            final Phylogeny[] phylogenies_2 = factory.create( Test.PATH_TO_TEST_DATA + "phyloxml_test_t3.xml",
+            final Phylogeny[] phylogenies_2 = factory.create( new File(Test.PATH_TO_TEST_DATA + "phyloxml_test_t3.xml" ),
                                                               xml_parser );
             if ( xml_parser.getErrorCount() > 0 ) {
                 System.out.println( "errors:" );
@@ -2425,7 +2690,7 @@ public final class Test {
             if ( phylogenies_2[ 0 ].getNumberOfExternalNodes() != 2 ) {
                 return false;
             }
-            final Phylogeny[] phylogenies_3 = factory.create( Test.PATH_TO_TEST_DATA + "phyloxml_test_t4.xml",
+            final Phylogeny[] phylogenies_3 = factory.create( new File( Test.PATH_TO_TEST_DATA + "phyloxml_test_t4.xml" ),
                                                               xml_parser );
             if ( xml_parser.getErrorCount() > 0 ) {
                 System.out.println( xml_parser.getErrorMessages().toString() );
@@ -2447,7 +2712,7 @@ public final class Test {
             if ( !a.getNode( "node b1" ).getNodeData().getTaxonomy().getCommonName().equals( "b1 species" ) ) {
                 return false;
             }
-            final Phylogeny[] phylogenies_4 = factory.create( Test.PATH_TO_TEST_DATA + "special_characters.xml",
+            final Phylogeny[] phylogenies_4 = factory.create( new File( Test.PATH_TO_TEST_DATA + "special_characters.xml") ,
                                                               xml_parser );
             if ( xml_parser.getErrorCount() > 0 ) {
                 System.out.println( xml_parser.getErrorMessages().toString() );
@@ -3071,7 +3336,7 @@ public final class Test {
                 return false;
             }
             final StringBuffer sb5 = new StringBuffer( "(((A11:2)A1:2,(A21:1,A22:2,A23)A2:11,A3:2)A:2,B:10,C:3,D:8)" );
-            final Phylogeny t5 = factory.create( sb5, new NHXParser() )[ 0 ];
+            final Phylogeny t5 = factory.create( sb5.toString(), new NHXParser() )[ 0 ];
             if ( t5.getNumberOfExternalNodes() != 8 ) {
                 return false;
             }
@@ -3079,17 +3344,17 @@ public final class Test {
                 return false;
             }
             final StringBuffer sb6 = new StringBuffer( "(X,Y,Z,(((A111)A11:2)A1:2,(X,Y,Z,A21:1,A22:2,A23)A2:11,A3:2)A:2,B:10,C:3,D:8)" );
-            final Phylogeny t6 = factory.create( sb6, new NHXParser() )[ 0 ];
+            final Phylogeny t6 = factory.create( sb6.toString(), new NHXParser() )[ 0 ];
             if ( t6.getHeight() != 15 ) {
                 return false;
             }
             final StringBuffer sb7 = new StringBuffer( "(((A11:2)A1:2,(A21:1,A22:2,A23)A2:11,A3:2)A:2,B:10,C:15,D:8)" );
-            final Phylogeny t7 = factory.create( sb7, new NHXParser() )[ 0 ];
+            final Phylogeny t7 = factory.create( sb7.toString(), new NHXParser() )[ 0 ];
             if ( t7.getHeight() != 15 ) {
                 return false;
             }
             final StringBuffer sb8 = new StringBuffer( "(((A11:11)A1:2,(A21:2,A22:2,A23,A24,AA:)A2:11,A3:2)A:2,B:15,C:15,D:15)" );
-            final Phylogeny t8 = factory.create( sb8, new NHXParser() )[ 0 ];
+            final Phylogeny t8 = factory.create( sb8.toString(), new NHXParser() )[ 0 ];
             if ( t8.getNumberOfExternalNodes() != 10 ) {
                 return false;
             }
@@ -6577,7 +6842,7 @@ public final class Test {
             PhylogenyNode n;
             List<PhylogenyNode> ext = new ArrayList<PhylogenyNode>();
             final StringBuffer sb0 = new StringBuffer( "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h))fgh)cdefgh)abcdefgh" );
-            final Phylogeny t0 = factory.create( sb0, new NHXParser() )[ 0 ];
+            final Phylogeny t0 = factory.create( sb0.toString(), new NHXParser() )[ 0 ];
             t0.getNode( "cd" ).setCollapse( true );
             t0.getNode( "cde" ).setCollapse( true );
             n = t0.getFirstExternalNode();
@@ -6605,7 +6870,7 @@ public final class Test {
             }
             ext.clear();
             final StringBuffer sb1 = new StringBuffer( "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h))fgh)cdefgh)abcdefgh" );
-            final Phylogeny t1 = factory.create( sb1, new NHXParser() )[ 0 ];
+            final Phylogeny t1 = factory.create( sb1.toString(), new NHXParser() )[ 0 ];
             t1.getNode( "ab" ).setCollapse( true );
             t1.getNode( "cd" ).setCollapse( true );
             t1.getNode( "cde" ).setCollapse( true );
@@ -6632,7 +6897,7 @@ public final class Test {
             }
             ext.clear();
             final StringBuffer sb2 = new StringBuffer( "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h)gh)fgh)cdefgh)abcdefgh" );
-            final Phylogeny t2 = factory.create( sb2, new NHXParser() )[ 0 ];
+            final Phylogeny t2 = factory.create( sb2.toString(), new NHXParser() )[ 0 ];
             t2.getNode( "ab" ).setCollapse( true );
             t2.getNode( "cd" ).setCollapse( true );
             t2.getNode( "cde" ).setCollapse( true );
@@ -6660,7 +6925,7 @@ public final class Test {
             }
             ext.clear();
             final StringBuffer sb3 = new StringBuffer( "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h)gh)fgh)cdefgh)abcdefgh" );
-            final Phylogeny t3 = factory.create( sb3, new NHXParser() )[ 0 ];
+            final Phylogeny t3 = factory.create( sb3.toString(), new NHXParser() )[ 0 ];
             t3.getNode( "ab" ).setCollapse( true );
             t3.getNode( "cd" ).setCollapse( true );
             t3.getNode( "cde" ).setCollapse( true );
@@ -6686,7 +6951,7 @@ public final class Test {
             }
             ext.clear();
             final StringBuffer sb4 = new StringBuffer( "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h)gh)fgh)cdefgh)abcdefgh" );
-            final Phylogeny t4 = factory.create( sb4, new NHXParser() )[ 0 ];
+            final Phylogeny t4 = factory.create( sb4.toString(), new NHXParser() )[ 0 ];
             t4.getNode( "ab" ).setCollapse( true );
             t4.getNode( "cd" ).setCollapse( true );
             t4.getNode( "cde" ).setCollapse( true );
@@ -6701,7 +6966,7 @@ public final class Test {
                 return false;
             }
             final StringBuffer sb5 = new StringBuffer( "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h))fgh)cdefgh)abcdefgh" );
-            final Phylogeny t5 = factory.create( sb5, new NHXParser() )[ 0 ];
+            final Phylogeny t5 = factory.create( sb5.toString(), new NHXParser() )[ 0 ];
             ext.clear();
             n = t5.getFirstExternalNode();
             while ( n != null ) {
@@ -6736,7 +7001,7 @@ public final class Test {
                 return false;
             }
             final StringBuffer sb6 = new StringBuffer( "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h))fgh)cdefgh)abcdefgh" );
-            final Phylogeny t6 = factory.create( sb6, new NHXParser() )[ 0 ];
+            final Phylogeny t6 = factory.create( sb6.toString(), new NHXParser() )[ 0 ];
             ext.clear();
             t6.getNode( "ab" ).setCollapse( true );
             n = t6.getNode( "ab" );
@@ -6769,7 +7034,7 @@ public final class Test {
                 return false;
             }
             final StringBuffer sb7 = new StringBuffer( "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h))fgh)cdefgh)abcdefgh" );
-            final Phylogeny t7 = factory.create( sb7, new NHXParser() )[ 0 ];
+            final Phylogeny t7 = factory.create( sb7.toString(), new NHXParser() )[ 0 ];
             ext.clear();
             t7.getNode( "cd" ).setCollapse( true );
             n = t7.getNode( "a" );
@@ -6802,7 +7067,7 @@ public final class Test {
                 return false;
             }
             final StringBuffer sb8 = new StringBuffer( "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h))fgh)cdefgh)abcdefgh" );
-            final Phylogeny t8 = factory.create( sb8, new NHXParser() )[ 0 ];
+            final Phylogeny t8 = factory.create( sb8.toString(), new NHXParser() )[ 0 ];
             ext.clear();
             t8.getNode( "cd" ).setCollapse( true );
             t8.getNode( "c" ).setCollapse( true );
@@ -6838,7 +7103,7 @@ public final class Test {
                 return false;
             }
             final StringBuffer sb9 = new StringBuffer( "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h)gh)fgh)cdefgh)abcdefgh" );
-            final Phylogeny t9 = factory.create( sb9, new NHXParser() )[ 0 ];
+            final Phylogeny t9 = factory.create( sb9.toString(), new NHXParser() )[ 0 ];
             ext.clear();
             t9.getNode( "gh" ).setCollapse( true );
             n = t9.getNode( "a" );
@@ -6871,7 +7136,7 @@ public final class Test {
                 return false;
             }
             final StringBuffer sb10 = new StringBuffer( "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h)gh)fgh)cdefgh)abcdefgh" );
-            final Phylogeny t10 = factory.create( sb10, new NHXParser() )[ 0 ];
+            final Phylogeny t10 = factory.create( sb10.toString(), new NHXParser() )[ 0 ];
             ext.clear();
             t10.getNode( "gh" ).setCollapse( true );
             t10.getNode( "g" ).setCollapse( true );
@@ -6906,7 +7171,7 @@ public final class Test {
                 return false;
             }
             final StringBuffer sb11 = new StringBuffer( "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h)gh)fgh)cdefgh)abcdefgh" );
-            final Phylogeny t11 = factory.create( sb11, new NHXParser() )[ 0 ];
+            final Phylogeny t11 = factory.create( sb11.toString(), new NHXParser() )[ 0 ];
             ext.clear();
             t11.getNode( "gh" ).setCollapse( true );
             t11.getNode( "fgh" ).setCollapse( true );
@@ -6937,7 +7202,7 @@ public final class Test {
                 return false;
             }
             final StringBuffer sb12 = new StringBuffer( "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h)gh)fgh)cdefgh)abcdefgh" );
-            final Phylogeny t12 = factory.create( sb12, new NHXParser() )[ 0 ];
+            final Phylogeny t12 = factory.create( sb12.toString(), new NHXParser() )[ 0 ];
             ext.clear();
             t12.getNode( "gh" ).setCollapse( true );
             t12.getNode( "fgh" ).setCollapse( true );
@@ -6971,7 +7236,7 @@ public final class Test {
                 return false;
             }
             final StringBuffer sb13 = new StringBuffer( "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h)gh)fgh)cdefgh)abcdefgh" );
-            final Phylogeny t13 = factory.create( sb13, new NHXParser() )[ 0 ];
+            final Phylogeny t13 = factory.create( sb13.toString(), new NHXParser() )[ 0 ];
             ext.clear();
             t13.getNode( "ab" ).setCollapse( true );
             t13.getNode( "b" ).setCollapse( true );
@@ -7001,7 +7266,7 @@ public final class Test {
                 return false;
             }
             final StringBuffer sb14 = new StringBuffer( "((a,b,0)ab,(((c,d)cd,e)cde,(f,(g,h,1,2)gh,0)fgh)cdefgh)abcdefgh" );
-            final Phylogeny t14 = factory.create( sb14, new NHXParser() )[ 0 ];
+            final Phylogeny t14 = factory.create( sb14.toString(), new NHXParser() )[ 0 ];
             ext.clear();
             t14.getNode( "ab" ).setCollapse( true );
             t14.getNode( "a" ).setCollapse( true );
@@ -7031,7 +7296,7 @@ public final class Test {
                 return false;
             }
             final StringBuffer sb15 = new StringBuffer( "((a,b,0)ab,(((c,d)cd,e)cde,x,(f,(g,h,1,2)gh,0)fgh)cdefgh)abcdefgh" );
-            final Phylogeny t15 = factory.create( sb15, new NHXParser() )[ 0 ];
+            final Phylogeny t15 = factory.create( sb15.toString(), new NHXParser() )[ 0 ];
             ext.clear();
             t15.getNode( "ab" ).setCollapse( true );
             t15.getNode( "a" ).setCollapse( true );
@@ -7066,7 +7331,7 @@ public final class Test {
             //
             //
             final StringBuffer sb16 = new StringBuffer( "((a,b,0)ab,(((c,d)cd,e)cde,x,(f,(g,h,1,2)gh,0)fgh)cdefgh)abcdefgh" );
-            final Phylogeny t16 = factory.create( sb16, new NHXParser() )[ 0 ];
+            final Phylogeny t16 = factory.create( sb16.toString(), new NHXParser() )[ 0 ];
             ext.clear();
             t16.getNode( "ab" ).setCollapse( true );
             t16.getNode( "a" ).setCollapse( true );
@@ -8286,10 +8551,10 @@ public final class Test {
             if ( !p1b.toNewHampshire().equals( "(';A;',';B;1;');" ) ) {
                 return false;
             }
-            final Phylogeny p2 = factory.create( new StringBuffer( "(A,B2)" ), new NHXParser() )[ 0 ];
+            final Phylogeny p2 = factory.create( new StringBuffer( "(A,B2)" ).toString(), new NHXParser() )[ 0 ];
             final Phylogeny p3 = factory.create( new char[] { '(', 'A', ',', 'B', '3', ')' }, new NHXParser() )[ 0 ];
             final Phylogeny p4 = factory.create( "(A,B4);", new NHXParser() )[ 0 ];
-            final Phylogeny p5 = factory.create( new StringBuffer( "(A,B5);" ), new NHXParser() )[ 0 ];
+            final Phylogeny p5 = factory.create( new StringBuffer( "(A,B5);" ).toString(), new NHXParser() )[ 0 ];
             final Phylogeny[] p7 = factory.create( "(A,B7);(C,D7)", new NHXParser() );
             final Phylogeny[] p8 = factory.create( "(A,B8) (C,D8)", new NHXParser() );
             final Phylogeny[] p9 = factory.create( "(A,B9)\n(C,D9)", new NHXParser() );
@@ -8547,21 +8812,21 @@ public final class Test {
             if ( p46.length != 0 ) {
                 return false;
             }
-            final Phylogeny p47 = factory.create( new StringBuffer( "((A,B)ab:2[0.44],C)" ), new NHXParser() )[ 0 ];
+            final Phylogeny p47 = factory.create( new StringBuffer( "((A,B)ab:2[0.44],C)" ).toString(), new NHXParser() )[ 0 ];
             if ( !isEqual( 0.44, p47.getNode( "ab" ).getBranchData().getConfidence( 0 ).getValue() ) ) {
                 return false;
             }
-            final Phylogeny p48 = factory.create( new StringBuffer( "((A,B)ab:2[88],C)" ), new NHXParser() )[ 0 ];
+            final Phylogeny p48 = factory.create( new StringBuffer( "((A,B)ab:2[88],C)" ).toString(), new NHXParser() )[ 0 ];
             if ( !isEqual( 88, p48.getNode( "ab" ).getBranchData().getConfidence( 0 ).getValue() ) ) {
                 return false;
             }
             final Phylogeny p49 = factory
-                    .create( new StringBuffer( "((A,B)a[comment:a,b;(a)]b:2[0.44][comment(a,b,b);],C)" ),
+                    .create( new StringBuffer( "((A,B)a[comment:a,b;(a)]b:2[0.44][comment(a,b,b);],C)" ).toString(),
                              new NHXParser() )[ 0 ];
             if ( !isEqual( 0.44, p49.getNode( "ab" ).getBranchData().getConfidence( 0 ).getValue() ) ) {
                 return false;
             }
-            final Phylogeny p50 = factory.create( new StringBuffer( "((\"A\",B)ab:2[88],C)" ), new NHXParser() )[ 0 ];
+            final Phylogeny p50 = factory.create( new StringBuffer( "((\"A\",B)ab:2[88],C)" ).toString(), new NHXParser() )[ 0 ];
             if ( p50.getNode( "A" ) == null ) {
                 return false;
             }
@@ -8576,21 +8841,21 @@ public final class Test {
                     .equals( "((A,B)88:2.0,C);" ) ) {
                 return false;
             }
-            final Phylogeny p51 = factory.create( new StringBuffer( "((\"A(A\",B)ab:2[88],C)" ), new NHXParser() )[ 0 ];
+            final Phylogeny p51 = factory.create( new StringBuffer( "((\"A(A\",B)ab:2[88],C)" ).toString(), new NHXParser() )[ 0 ];
             if ( p51.getNode( "A(A" ) == null ) {
                 return false;
             }
-            final Phylogeny p52 = factory.create( new StringBuffer( "(('A(A',B)ab:2[88],C)" ), new NHXParser() )[ 0 ];
+            final Phylogeny p52 = factory.create( new StringBuffer( "(('A(A',B)ab:2[88],C)" ).toString(), new NHXParser() )[ 0 ];
             if ( p52.getNode( "A(A" ) == null ) {
                 return false;
             }
             final Phylogeny p53 = factory
-                    .create( new StringBuffer( "(('A(A',\"B (x (a' ,b) f(x);\"[com])[ment]ab:2[88],C)" ),
+                    .create( new StringBuffer( "(('A(A',\"B (x (a' ,b) f(x);\"[com])[ment]ab:2[88],C)" ).toString(),
                              new NHXParser() )[ 0 ];
             if ( p53.getNode( "B (x (a' ,b) f(x);" ) == null ) {
                 return false;
             }
-            final Phylogeny p54 = factory.create( new StringBuffer( "((A,B):[88],C)" ), new NHXParser() )[ 0 ];
+            final Phylogeny p54 = factory.create( new StringBuffer( "((A,B):[88],C)" ).toString(), new NHXParser() )[ 0 ];
             if ( p54.getNode( "A" ) == null ) {
                 return false;
             }
@@ -8598,7 +8863,7 @@ public final class Test {
                 return false;
             }
             final Phylogeny p55 = factory
-                    .create( new StringBuffer( "((\"lcl|HPV32_L1.:1  s\":0.195593,\"lcl|HPV30_L1.1|;a\":0.114237):0.0359322,\"lcl|HPV56_L1.1|,d\":0.0727412,\"lcl|HPV66_L1.1x\":0.0798012);" ),
+                    .create( new StringBuffer( "((\"lcl|HPV32_L1.:1  s\":0.195593,\"lcl|HPV30_L1.1|;a\":0.114237):0.0359322,\"lcl|HPV56_L1.1|,d\":0.0727412,\"lcl|HPV66_L1.1x\":0.0798012);" ).toString(),
                              new NHXParser() )[ 0 ];
             if ( !p55
                     .toNewHampshire()
@@ -8607,7 +8872,7 @@ public final class Test {
                 return false;
             }
             final Phylogeny p56 = factory
-                    .create( new StringBuffer( "((\"lcl|HPV32_L1.:1      s\":0.195593,\"lcl|HPV30_L1.1|;a\":0.114\n237):0.0359322,\"lcl|HPV56_L1.1|,d\":0.0727412,\"lcl|HPV66_L1.1:x\":0.0798012);" ),
+                    .create( new StringBuffer( "((\"lcl|HPV32_L1.:1      s\":0.195593,\"lcl|HPV30_L1.1|;a\":0.114\n237):0.0359322,\"lcl|HPV56_L1.1|,d\":0.0727412,\"lcl|HPV66_L1.1:x\":0.0798012);" ).toString(),
                              new NHXParser() )[ 0 ];
             if ( !p56
                     .toNewHampshire()
@@ -8616,7 +8881,7 @@ public final class Test {
                 return false;
             }
             final Phylogeny p57 = factory
-                    .create( new StringBuffer( "((\"lcl|HPV32_L1.:1      s\":0.195593,\"lcl|HPV30_L1.1|;a\":0.114\n237):0.0359322,\"lcl|HPV56_L1.1|,d\":0.0727412,\"lcl|HPV66_L1.1:x\":0.0798012);" ),
+                    .create( new StringBuffer( "((\"lcl|HPV32_L1.:1      s\":0.195593,\"lcl|HPV30_L1.1|;a\":0.114\n237):0.0359322,\"lcl|HPV56_L1.1|,d\":0.0727412,\"lcl|HPV66_L1.1:x\":0.0798012);" ).toString(),
                              new NHXParser() )[ 0 ];
             if ( !p57
                     .toNewHampshire()
@@ -8625,25 +8890,25 @@ public final class Test {
                 return false;
             }
             final String s58 = "('Homo \"man\" sapiens:1',\"Homo 'man' sapiens;\")';root \"1_ )';";
-            final Phylogeny p58 = factory.create( new StringBuffer( s58 ), new NHXParser() )[ 0 ];
+            final Phylogeny p58 = factory.create( s58, new NHXParser() )[ 0 ];
             if ( !p58.toNewHampshire().equals( s58 ) ) {
                 System.out.println( p58.toNewHampshire() );
                 return false;
             }
             final String s59 = "('Homo \"man sapiens:1',\"Homo 'man sapiens\")\"root; '1_ )\";";
-            final Phylogeny p59 = factory.create( new StringBuffer( s59 ), new NHXParser() )[ 0 ];
+            final Phylogeny p59 = factory.create( s59 , new NHXParser() )[ 0 ];
             if ( !p59.toNewHampshire().equals( s59 ) ) {
                 System.out.println( p59.toNewHampshire() );
                 return false;
             }
             final String s60 = "('\" ;,:\":\"',\"'abc def' g's_\",'=:0.45+,.:%~`!@#$%^&*()_-+={} | ;,');";
-            final Phylogeny p60 = factory.create( new StringBuffer( s60 ), new NHXParser() )[ 0 ];
+            final Phylogeny p60 = factory.create( s60, new NHXParser() )[ 0 ];
             if ( !p60.toNewHampshire().equals( s60 ) ) {
                 System.out.println( p60.toNewHampshire() );
                 return false;
             }
             final String s61 = "('H[omo] \"man\" sapiens:1',\"H[omo] 'man' sapiens;\",H[omo] sapiens)';root \"1_ )';";
-            final Phylogeny p61 = factory.create( new StringBuffer( s61 ), new NHXParser() )[ 0 ];
+            final Phylogeny p61 = factory.create( s61, new NHXParser() )[ 0 ];
             if ( !p61.toNewHampshire()
                     .equals( "('H{omo} \"man\" sapiens:1',\"H{omo} 'man' sapiens;\",Hsapiens)';root \"1_ )';" ) ) {
                 System.out.println( p61.toNewHampshire() );
@@ -8656,7 +8921,36 @@ public final class Test {
         }
         return true;
     }
-
+    
+    private static boolean testNHParsingSpecialChars() {
+        try {
+            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();   
+            final String i0 = "(A!+=~QWERTY!@#$%^&*-,€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜˜˜™š›œžŸ¡¢£¤¥¦§¨©ª«¬®¯°±¹²³´µ¶·¸º»¼¿À÷þÿ)";
+            final Phylogeny p0 = factory.create( i0, new NHXParser() )[ 0 ];
+            if ( !p0.toNewHampshireX().equals( i0 ) ) {
+                System.out.println();
+                System.out.println( p0.toNewHampshireX() );
+                System.out.println( i0 );
+                return false;
+            }
+            final String i1 = "(हिंदी,한글,ไทย,'Tiếng Việt',ひらがなカタカナ漢字,繁體字,русский)";
+            final Phylogeny p1 = factory.create( i1, new NHXParser() )[ 0 ];
+            if ( !p1.toNewHampshireX().equals( i1 ) ) {
+                System.out.println();
+                System.out.println( p1.toNewHampshireX() );
+                System.out.println( i1 );
+                return false;
+            }
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace( System.out );
+            return false;
+        }
+        return true;
+    }
+    
+    
+    
     private static boolean testNHParsingIter() {
         try {
             final String p0_str = "(A,B);";
@@ -9840,7 +10134,7 @@ public final class Test {
                     xml_parser.setValidateAgainstSchema( PHYLOXML_REMOTE_XSD );
                 }
             }
-            final Phylogeny[] phylogenies_0 = factory.create( Test.PATH_TO_TEST_DATA + "phyloxml_distribution.xml",
+            final Phylogeny[] phylogenies_0 = factory.create( new File( Test.PATH_TO_TEST_DATA + "phyloxml_distribution.xml" ),
                                                               xml_parser );
             if ( xml_parser.getErrorCount() > 0 ) {
                 System.out.println( xml_parser.getErrorMessages().toString() );

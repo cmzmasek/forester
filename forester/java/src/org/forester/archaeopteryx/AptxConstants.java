@@ -44,8 +44,8 @@ public final class AptxConstants {
     final static String         VERSION                                                       = "0.9909 experimental";
     final static String         PRG_DATE                                                      = "160622";
     final static String         DEFAULT_CONFIGURATION_FILE_NAME                               = "_aptx_configuration_file";
-    final static String[]       DEFAULT_FONT_CHOICES                                          = { "Arial", "Helvetica",
-            "Verdana", "Tahoma", "Dialog", "Lucida Sans", "SansSerif", "Sans-serif", "Sans"  };
+    final static String[]       DEFAULT_FONT_CHOICES                                          = { 
+            "SansSerif", "Sans-serif", "Sans", "Dialog", "Lucida Sans", "Tahoma", "Helvetica", "Arial", "Verdana" };
     final static boolean        VERBOSE_DEFAULT                                               = false;
     final static int            DOMAIN_STRUCTURE_DEFAULT_WIDTH                                = 100;
     final static String         AUTHOR_EMAIL                                                  = "phyloxml@gmail.com";

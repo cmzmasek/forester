@@ -1858,7 +1858,7 @@ public final class MainFrameApplication extends MainFrame {
         _options_jmenu.add( _print_size_mi = new JMenuItem( "" ) );
         _options_jmenu.add( _choose_pdf_width_mi = new JMenuItem( "" ) );
         _options_jmenu.addSeparator();
-        _options_jmenu.add( customizeMenuItemAsLabel( new JMenuItem( "Newick/NHX/Nexus Input:" ), getConfiguration() ) );
+        _options_jmenu.add( customizeMenuItemAsLabel( new JMenuItem( "Newick/NHX/Nexus Read:" ), getConfiguration() ) );
         _options_jmenu
         .add( _internal_number_are_confidence_for_nh_parsing_cbmi = new JCheckBoxMenuItem( "Internal Node Names are Confidence Values" ) );
         _options_jmenu.add( _replace_underscores_cbmi = new JCheckBoxMenuItem( "Replace Underscores with Spaces" ) );
@@ -1882,7 +1882,7 @@ public final class MainFrameApplication extends MainFrame {
         _radio_group_2.add( _extract_taxonomy_pfam_strict_rbmi );
         _radio_group_2.add( _extract_taxonomy_pfam_relaxed_rbmi );
         _radio_group_2.add( _extract_taxonomy_agressive_rbmi );
-        _options_jmenu.add( customizeMenuItemAsLabel( new JMenuItem( "Newick/Nexus Output:" ), getConfiguration() ) );
+        _options_jmenu.add( customizeMenuItemAsLabel( new JMenuItem( "Newick/Nexus Save:" ), getConfiguration() ) );
         _options_jmenu
         .add( _use_brackets_for_conf_in_nh_export_cbmi = new JCheckBoxMenuItem( USE_BRACKETS_FOR_CONF_IN_NH_LABEL ) );
         _use_brackets_for_conf_in_nh_export_cbmi

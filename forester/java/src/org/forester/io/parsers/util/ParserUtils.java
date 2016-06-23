@@ -28,8 +28,8 @@ package org.forester.io.parsers.util;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -184,7 +184,7 @@ public final class ParserUtils {
         return parser;
     }
 
-    public static BufferedReader createReader( final Object source ) throws IOException, FileNotFoundException {
+    public static BufferedReader createReader( final Object source, final String encoding ) throws IOException, FileNotFoundException {
         BufferedReader reader = null;
         if ( ( source instanceof File ) || ( source instanceof String ) ) {
             File f = null;
@@ -203,10 +203,12 @@ public final class ParserUtils {
             else if ( !f.canRead() ) {
                 throw new IOException( "[" + f.getAbsolutePath() + "] is not a readable" );
             }
-            reader = new BufferedReader( new FileReader( f ) );
+            final InputStream is = new FileInputStream( f );
+            final InputStreamReader isr = new InputStreamReader( is, encoding );
+            reader = new BufferedReader( isr );
         }
         else if ( source instanceof InputStream ) {
-            reader = new BufferedReader( new InputStreamReader( ( InputStream ) source ) );
+            reader = new BufferedReader( new InputStreamReader( ( InputStream ) source, encoding ) );
         }
         else if ( ( source instanceof StringBuffer ) || ( source instanceof StringBuilder ) ) {
             reader = new BufferedReader( new StringReader( source.toString() ) );
