@@ -41,7 +41,7 @@ public final class AptxConstants {
     public final static boolean __SNAPSHOT_RELEASE                                            = false;                                                                             // TODO remove me
     public final static boolean __SYNTH_LF                                                    = false;                                                                             // TODO remove me
     public final static String  PRG_NAME                                                      = "Archaeopteryx";
-    final static String         VERSION                                                       = "0.9910 beta";
+    final static String         VERSION                                                       = "0.9911 beta";
     final static String         PRG_DATE                                                      = "160623";
     final static String         DEFAULT_CONFIGURATION_FILE_NAME                               = "_aptx_configuration_file";
     final static String[]       DEFAULT_FONT_CHOICES                                          = { 

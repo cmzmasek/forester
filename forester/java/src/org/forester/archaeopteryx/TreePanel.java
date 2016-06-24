@@ -918,8 +918,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return;
         }
         _color_chooser.setPreviewPanel( new JPanel() );
-        SubtreeColorizationActionListener al;
-        if ( ( getFoundNodes0() != null ) || ( getFoundNodes1() != null ) ) {
+        final SubtreeColorizationActionListener al;
+        final boolean color_found = getOptions().isColorAllFoundNodesWhenColoringSubtree();
+        if ( color_found && ( ( getFoundNodes0() != null ) || ( getFoundNodes1() != null ) ) ) {
             final List<PhylogenyNode> additional_nodes = getFoundNodesAsListOfPhylogenyNodes();
             al = new SubtreeColorizationActionListener( _color_chooser, node, additional_nodes );
         }

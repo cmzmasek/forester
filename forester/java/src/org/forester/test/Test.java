@@ -1474,13 +1474,6 @@ public final class Test {
             if ( phys[ 0 ].getNumberOfExternalNodes() < 10 ) {
                 return false;
             }
-            final Phylogeny[] phys2 = ForesterUtil.readPhylogeniesFromUrl( u, parser);
-            if ( ( phys2 == null ) || ( phys2.length != 1 ) ) {
-                return false;
-            }
-            if ( phys2[ 0 ].getNumberOfExternalNodes() != phys[ 0 ].getNumberOfExternalNodes() ) {
-                return false;
-            }
         }
         catch ( final Exception e ) {
             e.printStackTrace();

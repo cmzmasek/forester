@@ -1844,6 +1844,7 @@ public final class MainFrameApplication extends MainFrame {
         _options_jmenu.add( _search_with_regex_cbmi = new JCheckBoxMenuItem( MainFrame.SEARCH_REGEX_LABEL ) );
         _search_with_regex_cbmi.setToolTipText( MainFrame.SEARCH_WITH_REGEX_TIP );
         _options_jmenu.add( _inverse_search_result_cbmi = new JCheckBoxMenuItem( INVERSE_SEARCH_RESULT_LABEL ) );
+        _options_jmenu.add( _color_all_found_nodes_when_coloring_subtree_cbmi = new JCheckBoxMenuItem( "Colorize All Found Nodes When Colorizing Subtree(s)" ) ); 
         _options_jmenu.addSeparator();
         _options_jmenu.add( customizeMenuItemAsLabel( new JMenuItem( "Graphics Export & Printing:" ),
                                                       getConfiguration() ) );
@@ -1941,6 +1942,7 @@ public final class MainFrameApplication extends MainFrame {
         customizeCheckBoxMenuItem( _search_with_regex_cbmi, getOptions().isSearchWithRegex() );
         customizeCheckBoxMenuItem( _search_whole_words_only_cbmi, getOptions().isMatchWholeTermsOnly() );
         customizeCheckBoxMenuItem( _inverse_search_result_cbmi, getOptions().isInverseSearchResult() );
+        customizeCheckBoxMenuItem( _color_all_found_nodes_when_coloring_subtree_cbmi, getOptions().isColorAllFoundNodesWhenColoringSubtree() ); 
         customizeCheckBoxMenuItem( _graphics_export_visible_only_cbmi, getOptions().isGraphicsExportVisibleOnly() );
         customizeCheckBoxMenuItem( _print_using_actual_size_cbmi, getOptions().isPrintUsingActualSize() );
         customizeCheckBoxMenuItem( _graphics_export_using_actual_size_cbmi, getOptions()

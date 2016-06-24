@@ -253,6 +253,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JCheckBoxMenuItem                _search_whole_words_only_cbmi;
     JCheckBoxMenuItem                _inverse_search_result_cbmi;
     JCheckBoxMenuItem                _search_with_regex_cbmi;
+    JCheckBoxMenuItem                _color_all_found_nodes_when_coloring_subtree_cbmi;
     // type menu:
     JMenu                            _type_menu;
     JCheckBoxMenuItem                _rectangular_type_cbmi;
@@ -533,6 +534,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             updateOptions( getOptions() );
             getMainPanel().getControlPanel().search0();
             getMainPanel().getControlPanel().search1();
+        }
+        else if ( o == _color_all_found_nodes_when_coloring_subtree_cbmi ) {
+            updateOptions( getOptions() );
         }
         else if ( o == _show_scale_cbmi ) {
             updateOptions( getOptions() );
@@ -1970,6 +1974,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if ( ( _line_up_renderable_data_cbmi != null ) && _line_up_renderable_data_cbmi.isEnabled() ) {
             options.setLineUpRendarableNodeData( _line_up_renderable_data_cbmi.isSelected() );
         }
+        if ( ( _color_all_found_nodes_when_coloring_subtree_cbmi != null ) && _color_all_found_nodes_when_coloring_subtree_cbmi.isEnabled() ) {
+            options.setColorAllFoundNodesWhenColoringSubtree( _color_all_found_nodes_when_coloring_subtree_cbmi.isSelected() );
+        }
     }
 
     void updateTypeCheckboxes( final Options options, final Object o ) {
@@ -2050,7 +2057,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
      */
     static void about() {
         final StringBuffer about = new StringBuffer( "Archaeopteryx\nVersion " + AptxConstants.VERSION + "\n" );
-        about.append( "Copyright (C) 2015 Christian M Zmasek\n" );
+        about.append( "Copyright (C) 2016 Christian M Zmasek\n" );
         about.append( "All Rights Reserved\n" );
         about.append( "License: GNU Lesser General Public License (LGPL)\n" );
         about.append( "Last modified: " + AptxConstants.PRG_DATE + "\n" );

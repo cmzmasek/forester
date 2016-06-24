@@ -120,6 +120,7 @@ final public class Options {
     private TAXONOMY_EXTRACTION               _taxonomy_extraction;
     private boolean                           _line_up_renderable_node_data;
     private boolean                           _right_align_domains;
+    private boolean                           _color_all_found_nodes_when_coloring_subtree;
 
     private Options() {
         init();
@@ -195,6 +196,7 @@ final public class Options {
         _show_default_node_shapes_internal = false;
         _show_default_node_shapes_external = false;
         _show_default_node_shapes_for_marked_nodes = false;
+        _color_all_found_nodes_when_coloring_subtree = false;
         if ( AptxUtil.isUsOrCanada() ) {
             _print_size_x = AptxConstants.US_LETTER_SIZE_X;
             _print_size_y = AptxConstants.US_LETTER_SIZE_Y;
@@ -628,5 +630,13 @@ final public class Options {
 
     final static Options createDefaultInstance() {
         return new Options();
+    }
+
+    final boolean isColorAllFoundNodesWhenColoringSubtree() {
+        return _color_all_found_nodes_when_coloring_subtree;
+    }
+    
+    final void setColorAllFoundNodesWhenColoringSubtree( final boolean color_all_found_nodes_when_coloring_subtree ) {
+        _color_all_found_nodes_when_coloring_subtree = color_all_found_nodes_when_coloring_subtree;
     }
 }
