@@ -61,7 +61,7 @@ public final class AptxConstants {
     static final boolean        SPECIAL_CUSTOM                                                = false;                                                                             //TODO remove me
     static final double         EXT_NODE_INFO_LENGTH_MAX_RATIO                                = 0.95;
     static final Dimension      NODE_PANEL_SPLIT_MINIMUM_SIZE                                 = new Dimension( 100, 50 );
-    static final Dimension      NODE_PANEL_SIZE                                               = new Dimension( 500, 600 );
+    static final Dimension      NODE_PANEL_SIZE                                               = new Dimension( 500, 540 );
     static final Dimension      NODE_FRAME_SIZE                                               = new Dimension( 520, 640 );
     static final String         APPLET_PARAM_NAME_FOR_URL_OF_TREE_TO_LOAD                     = "url_of_tree_to_load";
     static final String         APPLET_PARAM_NAME_FOR_URL_OF_SPECIES_TREE_TO_LOAD             = "url_of_species_tree_to_load";

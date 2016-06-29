@@ -25,12 +25,18 @@
 
 package org.forester.archaeopteryx;
 
+
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
 
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -116,7 +122,7 @@ class NodePanel extends JPanel implements TreeSelectionListener {
     private final JEditorPane _pane;
     private final JTree       _tree;
 
-    public NodePanel( final PhylogenyNode phylogeny_node ) {
+    public NodePanel( final PhylogenyNode phylogeny_node, final NodeFrame parent ) {
         String node_name = "";
         if ( !ForesterUtil.isEmpty( phylogeny_node.getName() ) ) {
             node_name = phylogeny_node.getName() + " ";
@@ -131,17 +137,38 @@ class NodePanel extends JPanel implements TreeSelectionListener {
         expandPath( SEQUENCE );
         expandPath( EVENTS );
         final JScrollPane tree_view = new JScrollPane( getJTree() );
+        
+        final JButton close_button = new JButton( "Close" );
+        close_button.setEnabled( true );
+       
         _pane = new JEditorPane();
         _pane.setEditable( false );
+        
         final JScrollPane data_view = new JScrollPane( _pane );
         final JSplitPane split_pane = new JSplitPane( JSplitPane.VERTICAL_SPLIT );
         split_pane.setTopComponent( tree_view );
+        data_view.add( close_button );
         split_pane.setBottomComponent( data_view );
         data_view.setMinimumSize( AptxConstants.NODE_PANEL_SPLIT_MINIMUM_SIZE );
         tree_view.setMinimumSize( AptxConstants.NODE_PANEL_SPLIT_MINIMUM_SIZE );
-        split_pane.setDividerLocation( 400 );
+        split_pane.setDividerLocation( 300 );
         split_pane.setPreferredSize( AptxConstants.NODE_PANEL_SIZE );
-        add( split_pane );
+       
+        
+        close_button.addActionListener( new ActionListener() {
+            public void actionPerformed( final ActionEvent e ) {
+                parent.close();
+           }
+        } );
+        
+      
+        close_button.setAlignmentX( Component.CENTER_ALIGNMENT );
+        split_pane.setAlignmentX( Component.CENTER_ALIGNMENT );
+        final JPanel panel = new JPanel();
+        panel.setLayout( new BoxLayout( panel, BoxLayout.Y_AXIS ) );
+        panel.add( split_pane );
+        panel.add( close_button );
+        add( panel );
     }
 
     @Override

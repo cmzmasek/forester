@@ -49,28 +49,33 @@ final class NodeFrame extends javax.swing.JFrame {
         setSize( AptxConstants.NODE_FRAME_SIZE );
         _index = x;
         final Container contentPane = getContentPane();
-        final NodePanel nodepanel = new NodePanel( n );
-        contentPane.add( nodepanel, BorderLayout.CENTER );
+        final NodePanel nodepanel = new NodePanel( n, this );
+        contentPane.add( nodepanel );
         addWindowListener( new WindowAdapter() {
 
             @Override
             public void windowClosing( final WindowEvent e ) {
-                remove(); // to release slot in array
-                dispose();
+                close();
             }
         } );
-        setResizable( false );
+        setResizable( true );
         nodepanel.setVisible( true );
         setVisible( true );
     }
 
+    
+    void close() {
+        remove(); // to release slot in array
+        dispose();
+    }
+    
     NodeFrame( final PhylogenyNode n, final Phylogeny tree, final TreePanel tp, final int x, final String dummy ) {
         super( "Editable Node " + ( ForesterUtil.isEmpty( n.getName() ) ? n.getId() : n.getName() ) );
         _reepanel = tp;
         setSize( AptxConstants.NODE_FRAME_SIZE );
         _index = x;
         final Container contentPane = getContentPane();
-        final NodeEditPanel nodepanel = new NodeEditPanel( n, tp );
+        final NodeEditPanel nodepanel = new NodeEditPanel( n, tp, this );
         contentPane.add( nodepanel, BorderLayout.CENTER );
         addWindowListener( new WindowAdapter() {
 

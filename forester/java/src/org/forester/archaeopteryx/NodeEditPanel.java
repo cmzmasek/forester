@@ -25,6 +25,9 @@
 
 package org.forester.archaeopteryx;
 
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.math.BigDecimal;
@@ -35,11 +38,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JEditorPane;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
 import javax.swing.JTree;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
@@ -143,7 +147,9 @@ class NodeEditPanel extends JPanel {
     private final TreePanel                              _tree_panel;
     private final Map<DefaultMutableTreeNode, TagNumber> _map;
 
-    public NodeEditPanel( final PhylogenyNode phylogeny_node, final TreePanel tree_panel ) {
+    public NodeEditPanel( final PhylogenyNode phylogeny_node,
+                          final TreePanel tree_panel,
+                          final NodeFrame parent ) {
         _map = new HashMap<DefaultMutableTreeNode, TagNumber>();
         _my_node = phylogeny_node;
         _tree_panel = tree_panel;
@@ -159,17 +165,32 @@ class NodeEditPanel extends JPanel {
         getJTree().setToggleClickCount( 1 );
         getJTree().setInvokesStopCellEditing( true );
         final JScrollPane tree_view = new JScrollPane( getJTree() );
+        
+        final JButton close_button = new JButton( "Close" );
+        close_button.setToolTipText( "This only closes this window; to write values back to the phylogeny, press ENTER after editing a field." );
+        close_button.setEnabled( true );
+        
+        close_button.addActionListener( new ActionListener() {
+            public void actionPerformed( final ActionEvent e ) {
+                writeAll();
+                parent.close();
+           }
+        } );
+        
         _pane = new JEditorPane();
         _pane.setEditable( true );
-        final JScrollPane data_view = new JScrollPane( _pane );
-        final JSplitPane split_pane = new JSplitPane( JSplitPane.VERTICAL_SPLIT );
-        split_pane.setTopComponent( tree_view );
-        // split_pane.setBottomComponent( data_view );
-        data_view.setMinimumSize( AptxConstants.NODE_PANEL_SPLIT_MINIMUM_SIZE );
         tree_view.setMinimumSize( AptxConstants.NODE_PANEL_SPLIT_MINIMUM_SIZE );
-        // split_pane.setDividerLocation( 400 );
-        split_pane.setPreferredSize( AptxConstants.NODE_PANEL_SIZE );
-        add( split_pane );
+        tree_view.setPreferredSize( AptxConstants.NODE_PANEL_SIZE );
+        
+        close_button.setAlignmentX( Component.CENTER_ALIGNMENT );
+        tree_view.setAlignmentX( Component.CENTER_ALIGNMENT );
+        
+        final JPanel panel = new JPanel();
+        panel.setLayout( new BoxLayout( panel, BoxLayout.Y_AXIS ) );
+        panel.add( tree_view );
+        panel.add( close_button );
+        add( panel );
+        
         getJTree().getSelectionModel().setSelectionMode( TreeSelectionModel.SINGLE_TREE_SELECTION );
         getJTree().addKeyListener( new KeyListener() {
 
@@ -215,6 +236,8 @@ class NodeEditPanel extends JPanel {
                 getTreePanel().repaint();
             }
         } );
+        
+        
        
     }
 
@@ -1118,6 +1141,7 @@ class NodeEditPanel extends JPanel {
     }
 
     void writeAll() {
+        //TODO this does not do what it should do.
         for( int i = 0; i < getJTree().getRowCount(); i++ ) {
             final TreePath p = getJTree().getPathForRow( i );
             writeBack( ( DefaultMutableTreeNode ) p.getLastPathComponent() );
