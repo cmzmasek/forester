@@ -210,8 +210,12 @@ class NodeEditPanel extends JPanel {
                 if ( old_path != null ) {
                     writeBack( ( DefaultMutableTreeNode ) old_path.getLastPathComponent() );
                 }
+                AptxUtil.lookAtRealBranchLengthsForAptxControlSettings( tree_panel.getPhylogeny(),
+                                                                        tree_panel.getControlPanel() );
+                getTreePanel().repaint();
             }
         } );
+       
     }
 
     private void addBasics( final DefaultMutableTreeNode top, final PhylogenyNode phylogeny_node, final String name ) {
@@ -1103,6 +1107,7 @@ class NodeEditPanel extends JPanel {
             default:
                 throw new IllegalArgumentException( "unknown: " + tag );
         }
+       
         getJTree().repaint();
         getTreePanel().setEdited( true );
         getTreePanel().repaint();

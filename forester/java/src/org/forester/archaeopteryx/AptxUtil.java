@@ -766,18 +766,31 @@ public final class AptxUtil {
         }
         return false;
     }
-
+    final static void lookAtRealBranchLengthsForAptxControlSettings( final Phylogeny t,
+                                                                     final ControlPanel cp ) {
+        if ( ( t != null ) && !t.isEmpty() ) {
+            final boolean has_bl = AptxUtil.isHasAtLeastOneBranchLengthLargerThanZero( t );
+            if ( !has_bl ) {
+                cp.setDrawPhylogram( false );
+                cp.setDrawPhylogramEnabled( false );
+            }
+            else if ( cp.getDisplayAsPhylogramCb() != null ) {
+                cp.setDrawPhylogramEnabled( true );
+            }
+        }
+    }
     final static void lookAtSomeTreePropertiesForAptxControlSettings( final Phylogeny t,
                                                                       final ControlPanel atv_control,
                                                                       final Configuration configuration ) {
         if ( ( t != null ) && !t.isEmpty() ) {
-            if ( !AptxUtil.isHasAtLeastOneBranchLengthLargerThanZero( t ) ) {
+            final boolean has_bl = AptxUtil.isHasAtLeastOneBranchLengthLargerThanZero( t );
+            if ( !has_bl ) {
                 atv_control.setDrawPhylogram( false );
                 atv_control.setDrawPhylogramEnabled( false );
             }
             if ( configuration.doGuessCheckOption( Configuration.display_as_phylogram ) ) {
                 if ( atv_control.getDisplayAsPhylogramCb() != null ) {
-                    if ( AptxUtil.isHasAtLeastOneBranchLengthLargerThanZero( t ) ) {
+                    if ( has_bl ) {
                         atv_control.setDrawPhylogram( true );
                         atv_control.setDrawPhylogramEnabled( true );
                     }

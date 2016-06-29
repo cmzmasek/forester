@@ -551,6 +551,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     }// addSequenceRelationBlock
 
     /* GUILHEM_END */
+    
     private List<Boolean> getIsDrawPhylogramList() {
         return _draw_phylogram;
     }
