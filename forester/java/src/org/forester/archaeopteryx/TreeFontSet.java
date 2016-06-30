@@ -39,7 +39,7 @@ public final class TreeFontSet {
     static final int            BOLD_AND_ITALIC           = Font.BOLD + Font.ITALIC;
     final static float          FONT_SIZE_CHANGE_STEP     = 1.0f;
     final static float          SMALL_FONTS_BASE          = 8;
-    private final static String DEFAULT_FONT              = "Verdana";
+    private final static String DEFAULT_FONT              = "Arial Unicode MS";
     private Font                _base_font;
     private boolean             _decreased_size_by_system = false;
     private FontMetrics         _fm_large;

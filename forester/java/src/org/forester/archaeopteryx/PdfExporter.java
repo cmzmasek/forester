@@ -32,15 +32,20 @@ import java.awt.Graphics2D;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.Map;
 
 import org.forester.phylogeny.Phylogeny;
 import org.forester.util.ForesterUtil;
 
+import com.itextpdf.awt.DefaultFontMapper;
+import com.itextpdf.awt.DefaultFontMapper.BaseFontParameters;
+import com.itextpdf.awt.PdfGraphics2D;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.FontFactory;
 import com.itextpdf.text.Rectangle;
-import com.itextpdf.text.pdf.DefaultFontMapper;
+import com.itextpdf.text.pdf.BaseFont;
 import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfWriter;
 
@@ -50,7 +55,7 @@ import com.itextpdf.text.pdf.PdfWriter;
  * 
  * See: http://www.lowagie.com/iText/
  * 
- * Current version: iText-2.1.7
+ * Current version: iText-5.5.9
  */
 final class PdfExporter {
 
@@ -86,6 +91,7 @@ final class PdfExporter {
         PdfWriter writer = null;
         try {
             writer = PdfWriter.getInstance( document, new FileOutputStream( file_name ) );
+           
         }
         catch ( final DocumentException e ) {
             throw new IOException( e );
@@ -94,7 +100,7 @@ final class PdfExporter {
         final DefaultFontMapper mapper = new DefaultFontMapper();
         FontFactory.registerDirectories();
         if ( ForesterUtil.isWindows() ) {
-            mapper.insertDirectory( "C:\\WINDOWS\\Fonts\\" );
+            mapper.insertDirectory( "c:/windows/fonts" );
         }
         else if ( ForesterUtil.isMac() ) {
             mapper.insertDirectory( "/Library/Fonts/" );
@@ -106,8 +112,11 @@ final class PdfExporter {
             mapper.insertDirectory( "/usr/share/fonts/default/TrueType/" );
             mapper.insertDirectory( "/usr/share/fonts/default/Type1/" );
         }
+        enableUnicode( mapper );
         final PdfContentByte cb = writer.getDirectContent();
-        final Graphics2D g2 = cb.createGraphics( width, height, mapper );
+        
+        final Graphics2D g2 = new PdfGraphics2D(cb, width, height, mapper); 
+    
         try {
             tree_panel.paintPhylogeny( g2, true, false, width, height, 0, 0 );
         }
@@ -129,4 +138,47 @@ final class PdfExporter {
         }
         return msg;
     }
+
+    private final static void enableUnicode( final DefaultFontMapper mapper ) {
+        final Map<String, DefaultFontMapper.BaseFontParameters> map = mapper.getMapper();
+        for (final Iterator<String> i = map.keySet().iterator(); i.hasNext();) {
+            final String name = i.next();
+            final String name_lc = name.toLowerCase();
+            if ( name_lc.contains( "unicode" ) || name_lc.equals( "dialog" ) ) {
+                final BaseFontParameters pfps = map.get(name);
+                try {
+                    pfps.encoding = BaseFont.IDENTITY_H;
+                    pfps.embedded = true;
+                }
+                catch ( Exception e )  {
+                    //Ignore.
+                }
+            }
+        }
+    }
+    
+    /* not used currently 
+    static FontMapper arial_uni = new FontMapper() {
+        public BaseFont awtToPdf(Font font) {
+            System.out.println( font.toString() );
+            try {
+                return BaseFont.createFont(
+                        "c:/windows/fonts/arialuni.ttf",
+                        BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+            }
+            catch (DocumentException e) {
+                e.printStackTrace();
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+       
+        @Override
+        public Font pdfToAwt( BaseFont arg0, int arg1 ) {
+            return null;
+        }
+    };
+    */
 }

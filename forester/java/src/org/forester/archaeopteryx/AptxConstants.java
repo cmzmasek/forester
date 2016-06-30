@@ -39,13 +39,12 @@ public final class AptxConstants {
     final static boolean        __ALLOW_PHYLOGENETIC_INFERENCE                                = true;
     public final static boolean __RELEASE                                                     = false;                                                                             // TODO remove me
     public final static boolean __SNAPSHOT_RELEASE                                            = false;                                                                             // TODO remove me
-    public final static boolean __SYNTH_LF                                                    = false;                                                                             // TODO remove me
     public final static String  PRG_NAME                                                      = "Archaeopteryx";
     final static String         VERSION                                                       = "0.9912 beta";
-    final static String         PRG_DATE                                                      = "160629";
+    final static String         PRG_DATE                                                      = "160631";
     final static String         DEFAULT_CONFIGURATION_FILE_NAME                               = "_aptx_configuration_file";
     final static String[]       DEFAULT_FONT_CHOICES                                          = { 
-            "SansSerif", "Sans-serif", "Sans", "Dialog", "Lucida Sans", "Tahoma", "Helvetica", "Arial", "Verdana" };
+            "Arial Unicode MS", "Dialog", "SansSerif", "Sans", "Arial", "Helvetica" };
     final static boolean        VERBOSE_DEFAULT                                               = false;
     final static int            DOMAIN_STRUCTURE_DEFAULT_WIDTH                                = 100;
     final static String         AUTHOR_EMAIL                                                  = "phyloxml@gmail.com";

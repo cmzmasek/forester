@@ -313,9 +313,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private float                        _y_distance                                        = 0.0f;
     private int                          _length_of_longest_text;
     private int                          _longest_domain;
-    //  private Image                           offscreenImage;
-    //  private Graphics                        offscreenGraphics;
-    //  private Dimension                       offscreenDimension;
     static {
         final DecimalFormatSymbols dfs = new DecimalFormatSymbols();
         dfs.setDecimalSeparator( '.' );
@@ -4390,7 +4387,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             setOvXDistance( ov_xdist );
             final double height = _phylogeny.getHeight();
             if ( height > 0 ) {
-                final float corr = ( float ) ( ( x - TreePanel.MOVE - getLongestExtNodeInfo() - getXdistance() ) / height );
+                final float corr = ( float ) ( ( x - ( 2.0 * TreePanel.MOVE ) - getLongestExtNodeInfo() - getXdistance() ) / height ); 
                 setXcorrectionFactor( corr > 0 ? corr : 0 );
                 final float ov_corr = ( float ) ( ( getOvMaxWidth() - getOvXDistance() ) / height );
                 setOvXcorrectionFactor( ov_corr > 0 ? ov_corr : 0 );
@@ -4427,7 +4424,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ( ( _phylogeny == null ) || _phylogeny.isEmpty() ) {
             return;
         }
-        int max_length = ForesterUtil.roundToInt( ( getSize().getWidth() - MOVE )
+        int max_length = ForesterUtil.roundToInt( ( getSize().getWidth() - 2 * MOVE )
                                                   * AptxConstants.EXT_NODE_INFO_LENGTH_MAX_RATIO );
         if ( max_length < 40 ) {
             max_length = 40;
@@ -4508,6 +4505,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             _longest_ext_node_info = longest;
         }
         _length_of_longest_text = calcLengthOfLongestText();
+        System.out.println( "_length_of_longest_text=" + _length_of_longest_text );
+        //~~
     }
 
     final void calculateScaleDistance() {
@@ -5687,6 +5686,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     + getLongestExtNodeInfo()
                     + ForesterUtil
                     .roundToInt( ( getXcorrectionFactor() * getPhylogeny().getHeight() ) + getXdistance() );
+            
         }
         else {
             if ( !isNonLinedUpCladogram() && !isUniformBranchLengthsForCladogram() ) {

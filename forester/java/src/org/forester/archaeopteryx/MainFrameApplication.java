@@ -57,7 +57,6 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.plaf.synth.SynthLookAndFeel;
 
 import org.forester.analysis.TaxonomyDataManager;
 import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
@@ -196,30 +195,12 @@ public final class MainFrameApplication extends MainFrame {
             throw new IllegalArgumentException( "configuration is null" );
         }
         try {
-            boolean synth_exception = false;
-            if ( AptxConstants.__SYNTH_LF ) {
-                try {
-                    final SynthLookAndFeel synth = new SynthLookAndFeel();
-                    synth.load( MainFrameApplication.class.getResourceAsStream( "/resources/synth_look_and_feel_1.xml" ),
-                                MainFrameApplication.class );
-                    UIManager.setLookAndFeel( synth );
-                }
-                catch ( final Exception ex ) {
-                    synth_exception = true;
-                    ForesterUtil.printWarningMessage( AptxConstants.PRG_NAME,
-                                                      "could not create synth look and feel: "
-                                                              + ex.getLocalizedMessage() );
-                }
+            if ( _configuration.isUseNativeUI() ) {
+                UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName() );
             }
-            if ( !AptxConstants.__SYNTH_LF || synth_exception ) {
-                if ( _configuration.isUseNativeUI() ) {
-                    UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName() );
-                }
-                else {
-                    UIManager.setLookAndFeel( UIManager.getCrossPlatformLookAndFeelClassName() );
-                }
+            else {
+                UIManager.setLookAndFeel( UIManager.getCrossPlatformLookAndFeelClassName() );
             }
-            //UIManager.setLookAndFeel( "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel" );
         }
         catch ( final UnsupportedLookAndFeelException e ) {
             AptxUtil.dieWithSystemError( "unsupported look and feel: " + e.toString() );
@@ -816,8 +797,16 @@ public final class MainFrameApplication extends MainFrame {
         List<MolecularSequence> seqs = null;
         if ( ( file != null ) && !file.isDirectory() && ( result == JFileChooser.APPROVE_OPTION ) ) {
             try {
-                if ( FastaParser.isLikelyFasta( new FileInputStream( file ) ) ) {
-                    seqs = FastaParser.parse( new FileInputStream( file ) );
+                final FileInputStream fis1 = new FileInputStream( file );
+                if ( FastaParser.isLikelyFasta( fis1 ) ) {
+                    final FileInputStream fis2 = new FileInputStream( file );
+                    seqs = FastaParser.parse( fis2 );
+                    try {
+                        fis2.close();
+                     }
+                     catch ( final Exception e ) {
+                         // Ignore.
+                     }
                 }
                 else {
                     JOptionPane.showMessageDialog( this,
@@ -825,6 +814,12 @@ public final class MainFrameApplication extends MainFrame {
                                                    "Multiple sequence file format error",
                                                    JOptionPane.ERROR_MESSAGE );
                     return;
+                }
+                try {
+                    fis1.close();
+                }
+                catch ( final Exception e ) {
+                     // Ignore.
                 }
             }
             catch ( final MsaFormatException e ) {

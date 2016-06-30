@@ -17,11 +17,11 @@ native_ui: ?
 #     value for bootstrap support)
 #
 #  Font family name: 'font_family':
-#     Example: 'font_family: Sans,Helvetica'
+#     Example: 'font_family: Arial_Unicode_MS,Dialog,SansSerif,Sans,Arial,Helvetica'
 #     It is advisable to use more than one value for font_family (in
 #     decreasing order of preference). Font family names have to be
 #     comma separated (no spaces). Spaces in font names have to be
-#     replaced by underscores (e.g. 'Times_New_Roman').
+#     replaced by underscores (e.g. 'Arial_Unicode_MS').
 #
 #  Font size: 'font_size':
 #     Example: 'font_size: 10'
@@ -162,7 +162,7 @@ native_ui: ?
 
 
 min_confidence_value:                      0.0
-font_family:                               SansSerif,Sans-serif,Sans,Dialog,Tahoma,Helvetica,Arial,Verdana
+font_family:                               Arial_Unicode_MS,Dialog,SansSerif,Sans,Arial,Helvetica
 font_size:                                 10
 font_size_min:                             2
 font_size_max:                             20
