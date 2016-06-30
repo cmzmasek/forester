@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.10/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" rerootable="true">
+  <name>[3]</name>
+  <clade>
+    <clade>
+      <clade>
+        <name>not too long! 123</name>
+      </clade>
+      <clade>
+        <name>Æ ░ Ä ä, ö and ü</name>
+      </clade>
+    </clade>
+    <clade>
+      <clade>
+        <clade>
+          <name>महाभारत</name>
+        </clade>
+        <clade>
+          <name>한글</name>
+        </clade>
+        <clade>
+          <name>日本語ひらがなカタカナ</name>
+          <sequence>
+          </sequence>
+        </clade>
+      </clade>
+      <clade>
+        <clade>
+          <name>עברית</name>
+        </clade>
+        <clade>
+          <clade>
+            <clade>
+              <clade>
+                <name>ສາທາລະນະລັດ ປະຊາທິປະໄຕ ປະຊາຊົນລາວ</name>
+              </clade>
+              <clade>
+                <name>русский алфавит</name>
+              </clade>
+            </clade>
+            <clade>
+              <name>فارسی</name>
+            </clade>
+          </clade>
+          <clade>
+            <clade>
+              <clade>
+                <name>繁體字</name>
+              </clade>
+              <clade>
+                <name>ภาษาไทย</name>
+              </clade>
+            </clade>
+            <clade>
+              <name>Tiếng Việt</name>
+              <taxonomy>
+              </taxonomy>
+            </clade>
+          </clade>
+        </clade>
+      </clade>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>
