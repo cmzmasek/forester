@@ -37,11 +37,9 @@ import org.forester.util.ForesterConstants;
 public final class AptxConstants {
 
     final static boolean        __ALLOW_PHYLOGENETIC_INFERENCE                                = true;
-    public final static boolean __RELEASE                                                     = false;                                                                             // TODO remove me
-    public final static boolean __SNAPSHOT_RELEASE                                            = false;                                                                             // TODO remove me
     public final static String  PRG_NAME                                                      = "Archaeopteryx";
-    final static String         VERSION                                                       = "0.9912 beta";
-    final static String         PRG_DATE                                                      = "160630";
+    final static String         VERSION                                                       = "0.9913 beta";
+    final static String         PRG_DATE                                                      = "160701";
     final static String         DEFAULT_CONFIGURATION_FILE_NAME                               = "_aptx_configuration_file";
     final static String[]       DEFAULT_FONT_CHOICES                                          = { 
             "Arial Unicode MS", "Dialog", "SansSerif", "Sans", "Arial", "Helvetica" };
