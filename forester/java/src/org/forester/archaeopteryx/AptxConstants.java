@@ -68,10 +68,6 @@ public final class AptxConstants {
     static final String         APPLET_PARAM_NAME_FOR_DEFAULT_QUERY_SEQUENCE                  = "homology_type_analysis_query_sequence";
     static final String         APPLET_PARAM_NAME_FOR_DEFAULT_SEQUENCE_RELATION_TYPE          = "homology_type_analysis_initial_relation_type";
     static final int            MAX_TREES_TO_LOAD                                             = 100;
-    static final int            US_LETTER_SIZE_X                                              = 612;
-    static final int            US_LETTER_SIZE_Y                                              = 792;
-    static final int            A4_SIZE_X                                                     = 595;
-    static final int            A4_SIZE_Y                                                     = 845;
     final static float          PDF_LINE_WIDTH_DEFAULT                                        = 0.5f;
     final static String         APTX_WEB_SITE                                                 = "https://sites.google.com/site/cmzmasek/home/software/archaeopteryx";
     final static String         APTX_DOC_SITE                                                 = "https://sites.google.com/site/cmzmasek/home/software/archaeopteryx/documentation";

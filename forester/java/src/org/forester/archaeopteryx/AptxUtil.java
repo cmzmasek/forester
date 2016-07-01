@@ -902,14 +902,7 @@ public final class AptxUtil {
                                                                        final ControlPanel ac,
                                                                        final GraphicsExportType type,
                                                                        final Options options ) throws IOException {
-        if ( !options.isGraphicsExportUsingActualSize() ) {
-            if ( options.isGraphicsExportVisibleOnly() ) {
-                throw new IllegalArgumentException( "cannot export visible rectangle only without exporting in actual size" );
-            }
-            tree_panel.calcParametersForPainting( options.getPrintSizeX(), options.getPrintSizeY() );
-            tree_panel.resetPreferredSize();
-            tree_panel.repaint();
-        }
+        
         final RenderingHints rendering_hints = new RenderingHints( RenderingHints.KEY_RENDERING,
                                                                    RenderingHints.VALUE_RENDER_QUALITY );
         rendering_hints.put( RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY );
@@ -926,11 +919,11 @@ public final class AptxUtil {
             return "";
         }
         Rectangle visible = null;
-        if ( !options.isGraphicsExportUsingActualSize() ) {
-            width = options.getPrintSizeX();
-            height = options.getPrintSizeY();
-        }
-        else if ( options.isGraphicsExportVisibleOnly() ) {
+//        if ( !options.isGraphicsExportUsingActualSize() ) {
+//            width = options.getPrintSizeX();
+//            height = options.getPrintSizeY();
+//        }
+       /* else*/ if ( options.isGraphicsExportVisibleOnly() ) {
             visible = tree_panel.getVisibleRect();
             width = visible.width;
             height = visible.height;
@@ -967,14 +960,7 @@ public final class AptxUtil {
                                                       final ControlPanel ac,
                                                       final GraphicsExportType type,
                                                       final Options options ) throws IOException {
-        if ( !options.isGraphicsExportUsingActualSize() ) {
-            if ( options.isGraphicsExportVisibleOnly() ) {
-                throw new IllegalArgumentException( "cannot export visible rectangle only without exporting in actual size" );
-            }
-            tree_panel.calcParametersForPainting( options.getPrintSizeX(), options.getPrintSizeY() );
-            tree_panel.resetPreferredSize();
-            tree_panel.repaint();
-        }
+       
         final RenderingHints rendering_hints = new RenderingHints( RenderingHints.KEY_RENDERING,
                                                                    RenderingHints.VALUE_RENDER_QUALITY );
         rendering_hints.put( RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY );
@@ -995,11 +981,11 @@ public final class AptxUtil {
             throw new IOException( "\"" + file_name + "\" is a directory" );
         }
         Rectangle visible = null;
-        if ( !options.isGraphicsExportUsingActualSize() ) {
-            width = options.getPrintSizeX();
-            height = options.getPrintSizeY();
-        }
-        else if ( options.isGraphicsExportVisibleOnly() ) {
+//        if ( !options.isGraphicsExportUsingActualSize() ) {
+//            width = options.getPrintSizeX();
+//            height = options.getPrintSizeY();
+//        }
+        /*else*/ if ( options.isGraphicsExportVisibleOnly() ) {
             visible = tree_panel.getVisibleRect();
             width = visible.width;
             height = visible.height;

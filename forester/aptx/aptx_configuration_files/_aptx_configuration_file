@@ -40,15 +40,6 @@ native_ui: ?
 #                                    ext_node_sum_dep
 #                                    total_node_sum_dep (for "uniform" branch lengths)
 #
-#  Default size for graphics export and printing: 'graphics_export_x' and 'graphics_export_y':
-#     (Archaeopteryx tries to guess the locale, so setting these is not always necessary)
-#     Example: For A4 (portrait):
-#               'graphics_export_x: 595'
-#               'graphics_export_y: 845'
-#             For US Letter (portrait):
-#               'graphics_export_x: 612'
-#               'graphics_export_y: 792'
-#
 #  Default line width for PDF export: 'pdf_export_line_wdith':
 #     Example: 'pdf_export_line_width: 0.5'
 #
@@ -177,8 +168,6 @@ show_node_shapes_for_nodes_with_vis_data:  yes
 default_node_size:                         4
 default_node_shape:                        rectangle
 default_node_fill:                         solid
-#graphics_export_x:                         595
-#graphics_export_y:                         792
 pdf_export_line_width:                     0.5
 show_overview:                             yes
 overview_width:                            120

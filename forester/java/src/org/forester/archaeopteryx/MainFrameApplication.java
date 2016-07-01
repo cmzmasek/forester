@@ -1776,7 +1776,7 @@ public final class MainFrameApplication extends MainFrame {
                 .setTextMinSupportMenuItem( _choose_minimal_confidence_mi, getOptions(), getCurrentTreePanel() );
                 MainFrame.setTextForFontChooserMenuItem( _choose_font_mi, MainFrame
                                                          .createCurrentFontDesc( getMainPanel().getTreeFontSet() ) );
-                MainFrame.setTextForGraphicsSizeChooserMenuItem( _print_size_mi, getOptions() );
+              //  MainFrame.setTextForGraphicsSizeChooserMenuItem( _print_size_mi, getOptions() );
                 MainFrame.setTextForPdfLineWidthChooserMenuItem( _choose_pdf_width_mi, getOptions() );
                 MainFrame.setCycleNodeFillMenuItem( _cycle_node_fill_mi, getOptions() );
                 MainFrame.setCycleNodeShapeMenuItem( _cycle_node_shape_mi, getOptions() );
@@ -1845,13 +1845,13 @@ public final class MainFrameApplication extends MainFrame {
                                                       getConfiguration() ) );
         _options_jmenu.add( _antialias_print_cbmi = new JCheckBoxMenuItem( "Antialias" ) );
         _options_jmenu.add( _print_black_and_white_cbmi = new JCheckBoxMenuItem( "Export in Black and White" ) );
-        _options_jmenu
-        .add( _print_using_actual_size_cbmi = new JCheckBoxMenuItem( "Use Current Image Size for PDF export and Printing" ) );
-        _options_jmenu
-        .add( _graphics_export_using_actual_size_cbmi = new JCheckBoxMenuItem( "Use Current Image Size for PNG, JPG, and GIF export" ) );
+        //_options_jmenu
+        //.add( _print_using_actual_size_cbmi = new JCheckBoxMenuItem( "Use Current Image Size for PDF export and Printing" ) );
+        //_options_jmenu
+        //.add( _graphics_export_using_actual_size_cbmi = new JCheckBoxMenuItem( "Use Current Image Size for PNG, JPG, and GIF export" ) );
         _options_jmenu
         .add( _graphics_export_visible_only_cbmi = new JCheckBoxMenuItem( "Limit to Visible ('Screenshot') for PNG, JPG, and GIF export" ) );
-        _options_jmenu.add( _print_size_mi = new JMenuItem( "" ) );
+       // _options_jmenu.add( _print_size_mi = new JMenuItem( "" ) );
         _options_jmenu.add( _choose_pdf_width_mi = new JMenuItem( "" ) );
         _options_jmenu.addSeparator();
         _options_jmenu.add( customizeMenuItemAsLabel( new JMenuItem( "Newick/NHX/Nexus Read:" ), getConfiguration() ) );
@@ -1888,7 +1888,7 @@ public final class MainFrameApplication extends MainFrame {
         customizeJMenuItem( _choose_font_mi );
         customizeJMenuItem( _choose_minimal_confidence_mi );
         customizeJMenuItem( _switch_colors_mi );
-        customizeJMenuItem( _print_size_mi );
+       // customizeJMenuItem( _print_size_mi );
         customizeJMenuItem( _choose_pdf_width_mi );
         customizeJMenuItem( _overview_placment_mi );
         customizeCheckBoxMenuItem( _show_default_node_shapes_external_cbmi, getOptions()
@@ -1939,9 +1939,6 @@ public final class MainFrameApplication extends MainFrame {
         customizeCheckBoxMenuItem( _inverse_search_result_cbmi, getOptions().isInverseSearchResult() );
         customizeCheckBoxMenuItem( _color_all_found_nodes_when_coloring_subtree_cbmi, getOptions().isColorAllFoundNodesWhenColoringSubtree() ); 
         customizeCheckBoxMenuItem( _graphics_export_visible_only_cbmi, getOptions().isGraphicsExportVisibleOnly() );
-        customizeCheckBoxMenuItem( _print_using_actual_size_cbmi, getOptions().isPrintUsingActualSize() );
-        customizeCheckBoxMenuItem( _graphics_export_using_actual_size_cbmi, getOptions()
-                                   .isGraphicsExportUsingActualSize() );
         customizeCheckBoxMenuItem( _show_confidence_stddev_cbmi, getOptions().isShowConfidenceStddev() );
         customizeCheckBoxMenuItem( _use_brackets_for_conf_in_nh_export_cbmi, getOptions()
                                    .getNhConversionSupportValueStyle() == NH_CONVERSION_SUPPORT_VALUE_STYLE.IN_SQUARE_BRACKETS );

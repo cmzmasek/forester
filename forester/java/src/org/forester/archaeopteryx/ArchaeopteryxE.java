@@ -154,9 +154,6 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
     private JCheckBoxMenuItem           _graphics_export_visible_only_cbmi;
     private JCheckBoxMenuItem           _antialias_print_cbmi;
     private JCheckBoxMenuItem           _print_black_and_white_cbmi;
-    private JCheckBoxMenuItem           _print_using_actual_size_cbmi;
-    private JCheckBoxMenuItem           _graphics_export_using_actual_size_cbmi;
-    private JMenuItem                   _print_size_mi;
     private JMenuItem                   _choose_pdf_width_mi;
 
     @Override
@@ -491,15 +488,6 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         }
         else if ( o == _print_black_and_white_cbmi ) {
             updateOptions( getOptions() );
-        }
-        else if ( o == _print_using_actual_size_cbmi ) {
-            updateOptions( getOptions() );
-        }
-        else if ( o == _graphics_export_using_actual_size_cbmi ) {
-            updateOptions( getOptions() );
-        }
-        else if ( o == _print_size_mi ) {
-            choosePrintSize();
         }
         else if ( o == _choose_pdf_width_mi ) {
             choosePdfWidth();
@@ -905,53 +893,6 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         }
     }
 
-    private void choosePrintSize() {
-        final String s = ( String ) JOptionPane.showInputDialog( this,
-                                                                 "Please enter values for width and height,\nseparated by a comma.\n"
-                                                                         + "[current values: "
-                                                                         + getOptions().getPrintSizeX() + ", "
-                                                                         + getOptions().getPrintSizeY() + "]\n"
-                                                                         + "[A4: " + AptxConstants.A4_SIZE_X + ", "
-                                                                         + AptxConstants.A4_SIZE_Y + "]\n" + "[US Letter: "
-                                                                         + AptxConstants.US_LETTER_SIZE_X + ", "
-                                                                         + AptxConstants.US_LETTER_SIZE_Y + "]",
-                                                                         "Default Size for Graphics Export",
-                                                                         JOptionPane.QUESTION_MESSAGE,
-                                                                         null,
-                                                                         null,
-                                                                         getOptions().getPrintSizeX() + ", "
-                                                                                 + getOptions().getPrintSizeY() );
-        if ( !ForesterUtil.isEmpty( s ) && ( s.indexOf( ',' ) > 0 ) ) {
-            boolean success = true;
-            int x = 0;
-            int y = 0;
-            final String[] str_ary = s.split( "," );
-            if ( str_ary.length == 2 ) {
-                final String x_str = str_ary[ 0 ].trim();
-                final String y_str = str_ary[ 1 ].trim();
-                if ( !ForesterUtil.isEmpty( x_str ) && !ForesterUtil.isEmpty( y_str ) ) {
-                    try {
-                        x = Integer.parseInt( x_str );
-                        y = Integer.parseInt( y_str );
-                    }
-                    catch ( final Exception ex ) {
-                        success = false;
-                    }
-                }
-                else {
-                    success = false;
-                }
-            }
-            else {
-                success = false;
-            }
-            if ( success && ( x > 1 ) && ( y > 1 ) ) {
-                getOptions().setPrintSizeX( x );
-                getOptions().setPrintSizeY( y );
-            }
-        }
-    }
-
     private void customizeRadioButtonMenuItem( final JRadioButtonMenuItem item, final boolean is_selected ) {
         if ( item != null ) {
             item.setFont( MainFrame.menu_font );
@@ -1105,7 +1046,6 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
                         .setTextMinSupportMenuItem( _choose_minimal_confidence_mi, getOptions(), getCurrentTreePanel() );
                 MainFrame.setTextForFontChooserMenuItem( _choose_font_mi, MainFrame
                         .createCurrentFontDesc( getMainPanel().getTreeFontSet() ) );
-                setTextForGraphicsSizeChooserMenuItem( _print_size_mi, getOptions() );
                 setTextForPdfLineWidthChooserMenuItem( _choose_pdf_width_mi, getOptions() );
                 MainFrame.setCycleNodeFillMenuItem( _cycle_node_fill_mi, getOptions() );
                 MainFrame.setCycleNodeShapeMenuItem( _cycle_node_shape_mi, getOptions() );
@@ -1179,21 +1119,12 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         _options_jmenu.add( _antialias_print_cbmi = new JCheckBoxMenuItem( "Antialias" ) );
         _options_jmenu.add( _print_black_and_white_cbmi = new JCheckBoxMenuItem( "Export in Black and White" ) );
         _options_jmenu
-                .add( _print_using_actual_size_cbmi = new JCheckBoxMenuItem( "Use Current Image Size for PDF export and Printing" ) );
-        _options_jmenu
-                .add( _graphics_export_using_actual_size_cbmi = new JCheckBoxMenuItem( "Use Current Image Size for PNG, JPG, and GIF export" ) );
-        _options_jmenu
                 .add( _graphics_export_visible_only_cbmi = new JCheckBoxMenuItem( "Limit to Visible ('Screenshot') for PNG, JPG, and GIF export" ) );
-        _options_jmenu.add( _print_size_mi = new JMenuItem( "" ) );
         _options_jmenu.add( _choose_pdf_width_mi = new JMenuItem( "" ) );
         //
         customizeCheckBoxMenuItem( _antialias_print_cbmi, getOptions().isAntialiasPrint() );
         customizeCheckBoxMenuItem( _print_black_and_white_cbmi, getOptions().isPrintBlackAndWhite() );
         customizeCheckBoxMenuItem( _graphics_export_visible_only_cbmi, getOptions().isGraphicsExportVisibleOnly() );
-        customizeCheckBoxMenuItem( _print_using_actual_size_cbmi, getOptions().isPrintUsingActualSize() );
-        customizeCheckBoxMenuItem( _graphics_export_using_actual_size_cbmi, getOptions()
-                .isGraphicsExportUsingActualSize() );
-        customizeJMenuItem( _print_size_mi );
         customizeJMenuItem( _choose_pdf_width_mi );
         //
         customizeJMenuItem( _choose_font_mi );
@@ -1781,10 +1712,6 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         options.setSearchWithRegex( ( _search_with_regex_cbmi != null ) && _search_with_regex_cbmi.isSelected() );
         options.setInverseSearchResult( ( _inverse_search_result_cbmi != null )
                 && _inverse_search_result_cbmi.isSelected() );
-        options.setPrintUsingActualSize( ( _print_using_actual_size_cbmi != null )
-                                         && ( _print_using_actual_size_cbmi.isSelected() ) );
-        options.setGraphicsExportUsingActualSize( ( _graphics_export_using_actual_size_cbmi != null )
-                                                  && ( _graphics_export_using_actual_size_cbmi.isSelected() ) );
         options.setAntialiasPrint( ( _antialias_print_cbmi != null ) && _antialias_print_cbmi.isSelected() );
         options.setPrintBlackAndWhite( ( _print_black_and_white_cbmi != null )
                                        && _print_black_and_white_cbmi.isSelected() );
@@ -1823,13 +1750,6 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         }
         if ( _graphics_export_visible_only_cbmi != null ) {
             options.setGraphicsExportVisibleOnly( _graphics_export_visible_only_cbmi.isSelected() );
-            if ( _graphics_export_visible_only_cbmi.isSelected() && ( _graphics_export_using_actual_size_cbmi != null ) ) {
-                _graphics_export_using_actual_size_cbmi.setSelected( true );
-                _graphics_export_using_actual_size_cbmi.setEnabled( false );
-            }
-            else {
-                _graphics_export_using_actual_size_cbmi.setEnabled( true );
-            }
         }
     }
 
@@ -1870,11 +1790,6 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
             }
             showTextFrame( getMainPanel().getCurrentPhylogeny().toPhyloXML( 0 ), title );
         }
-    }
-
-    static void setTextForGraphicsSizeChooserMenuItem( final JMenuItem mi, final Options o ) {
-        mi.setText( "Enter Default Size for Graphics Export... (current: " + o.getPrintSizeX() + ", "
-                + o.getPrintSizeY() + ")" );
     }
 
     static void setTextForPdfLineWidthChooserMenuItem( final JMenuItem mi, final Options o ) {

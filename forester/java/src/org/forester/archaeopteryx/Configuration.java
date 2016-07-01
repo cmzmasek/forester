@@ -207,8 +207,6 @@ public final class Configuration {
     private EXT_NODE_DATA_RETURN_ON         _ext_node_data_return_on                               = EXT_NODE_DATA_RETURN_ON.WINODW;
     private int                             _frame_x_size;
     private int                             _frame_y_size;
-    private int                             _graphics_export_x                                     = -1;
-    private int                             _graphics_export_y                                     = -1;
     private Color                           _gui_background_color                                  = AptxConstants.GUI_BACKGROUND_DEFAULT;
     private Color                           _gui_button_background_color                           = AptxConstants.BUTTON_BACKGROUND_COLOR_DEFAULT;
     private Color                           _gui_button_border_color                               = AptxConstants.BUTTON_BORDER_COLOR_DEFAULT;
@@ -853,13 +851,13 @@ public final class Configuration {
         _ext_node_data_return_on = ext_node_data_return_on;
     }
 
-    private void setGraphicsExportX( final int graphics_export_x ) {
-        _graphics_export_x = graphics_export_x;
-    }
+    //private void setGraphicsExportX( final int graphics_export_x ) {
+    //    _graphics_export_x = graphics_export_x;
+    //}
 
-    private void setGraphicsExportY( final int graphics_export_y ) {
-        _graphics_export_y = graphics_export_y;
-    }
+    //private void setGraphicsExportY( final int graphics_export_y ) {
+    //    _graphics_export_y = graphics_export_y;
+    //}
 
     private void setInternalNumberAreConfidenceForNhParsing( final boolean internal_number_are_confidence_for_nh_parsing ) {
         _internal_number_are_confidence_for_nh_parsing = internal_number_are_confidence_for_nh_parsing;
@@ -971,18 +969,18 @@ public final class Configuration {
             }
         }
         else if ( key.equals( "graphics_export_x" ) ) {
-            final String str = ( ( String ) st.nextElement() ).trim();
-            final int i = parseInt( str );
-            if ( i > 0 ) {
-                setGraphicsExportX( i );
-            }
+           // final String str = ( ( String ) st.nextElement() ).trim();
+           // final int i = parseInt( str );
+           // if ( i > 0 ) {
+           //     setGraphicsExportX( i );
+           // }
         }
         else if ( key.equals( "graphics_export_y" ) ) {
-            final String str = ( ( String ) st.nextElement() ).trim();
-            final int i = parseInt( str );
-            if ( i > 0 ) {
-                setGraphicsExportY( i );
-            }
+            //final String str = ( ( String ) st.nextElement() ).trim();
+           // final int i = parseInt( str );
+            //if ( i > 0 ) {
+            //    setGraphicsExportY( i );
+            //}
         }
         else if ( key.equals( "pdf_export_line_width" ) ) {
             final String str = ( ( String ) st.nextElement() ).trim();
@@ -1633,14 +1631,7 @@ public final class Configuration {
         return _domain_colors;
     }
 
-    int getGraphicsExportX() {
-        return _graphics_export_x;
-    }
-
-    int getGraphicsExportY() {
-        return _graphics_export_y;
-    }
-
+ 
     Color getGuiBackgroundColor() {
         return _gui_background_color;
     }

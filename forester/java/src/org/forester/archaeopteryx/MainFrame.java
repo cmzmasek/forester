@@ -234,9 +234,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JCheckBoxMenuItem                _graphics_export_visible_only_cbmi;
     JCheckBoxMenuItem                _antialias_print_cbmi;
     JCheckBoxMenuItem                _print_black_and_white_cbmi;
-    JCheckBoxMenuItem                _print_using_actual_size_cbmi;
-    JCheckBoxMenuItem                _graphics_export_using_actual_size_cbmi;
-    JMenuItem                        _print_size_mi;
+    //JMenuItem                        _print_size_mi;
     JMenuItem                        _choose_pdf_width_mi;
     // _  parsing
     JCheckBoxMenuItem                _internal_number_are_confidence_for_nh_parsing_cbmi;
@@ -724,15 +722,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         else if ( o == _print_black_and_white_cbmi ) {
             updateOptions( getOptions() );
-        }
-        else if ( o == _print_using_actual_size_cbmi ) {
-            updateOptions( getOptions() );
-        }
-        else if ( o == _graphics_export_using_actual_size_cbmi ) {
-            updateOptions( getOptions() );
-        }
-        else if ( o == _print_size_mi ) {
-            choosePrintSize();
         }
         else if ( o == _choose_pdf_width_mi ) {
             choosePdfWidth();
@@ -1262,53 +1251,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             }
             if ( success && ( f > 0.0 ) ) {
                 getOptions().setPrintLineWidth( f );
-            }
-        }
-    }
-
-    void choosePrintSize() {
-        final String s = ( String ) JOptionPane.showInputDialog( this,
-                                                                 "Please enter values for width and height,\nseparated by a comma.\n"
-                                                                         + "[current values: "
-                                                                         + getOptions().getPrintSizeX() + ", "
-                                                                         + getOptions().getPrintSizeY() + "]\n"
-                                                                         + "[A4: " + AptxConstants.A4_SIZE_X + ", "
-                                                                         + AptxConstants.A4_SIZE_Y + "]\n" + "[US Letter: "
-                                                                         + AptxConstants.US_LETTER_SIZE_X + ", "
-                                                                         + AptxConstants.US_LETTER_SIZE_Y + "]",
-                                                                 "Default Size for Graphics Export",
-                                                                 JOptionPane.QUESTION_MESSAGE,
-                                                                 null,
-                                                                 null,
-                                                                 getOptions().getPrintSizeX() + ", "
-                                                                         + getOptions().getPrintSizeY() );
-        if ( !ForesterUtil.isEmpty( s ) && ( s.indexOf( ',' ) > 0 ) ) {
-            boolean success = true;
-            int x = 0;
-            int y = 0;
-            final String[] str_ary = s.split( "," );
-            if ( str_ary.length == 2 ) {
-                final String x_str = str_ary[ 0 ].trim();
-                final String y_str = str_ary[ 1 ].trim();
-                if ( !ForesterUtil.isEmpty( x_str ) && !ForesterUtil.isEmpty( y_str ) ) {
-                    try {
-                        x = Integer.parseInt( x_str );
-                        y = Integer.parseInt( y_str );
-                    }
-                    catch ( final Exception ex ) {
-                        success = false;
-                    }
-                }
-                else {
-                    success = false;
-                }
-            }
-            else {
-                success = false;
-            }
-            if ( success && ( x > 1 ) && ( y > 1 ) ) {
-                getOptions().setPrintSizeX( x );
-                getOptions().setPrintSizeY( y );
             }
         }
     }
@@ -1893,10 +1835,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if ( ( _color_by_taxonomic_group_cbmi != null ) && _color_by_taxonomic_group_cbmi.isEnabled() ) {
             options.setColorByTaxonomicGroup( _color_by_taxonomic_group_cbmi.isSelected() );
         }
-        options.setPrintUsingActualSize( ( _print_using_actual_size_cbmi != null )
-                && ( _print_using_actual_size_cbmi.isSelected() ) );
-        options.setGraphicsExportUsingActualSize( ( _graphics_export_using_actual_size_cbmi != null )
-                && ( _graphics_export_using_actual_size_cbmi.isSelected() ) );
         options.setAntialiasPrint( ( _antialias_print_cbmi != null ) && _antialias_print_cbmi.isSelected() );
         if ( ( _use_brackets_for_conf_in_nh_export_cbmi != null )
                 && _use_brackets_for_conf_in_nh_export_cbmi.isSelected() ) {
@@ -1935,14 +1873,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         options.setInverseSearchResult( ( _inverse_search_result_cbmi != null )
                 && _inverse_search_result_cbmi.isSelected() );
         if ( _graphics_export_visible_only_cbmi != null ) {
-            options.setGraphicsExportVisibleOnly( _graphics_export_visible_only_cbmi.isSelected() );
-            if ( _graphics_export_visible_only_cbmi.isSelected() && ( _graphics_export_using_actual_size_cbmi != null ) ) {
-                _graphics_export_using_actual_size_cbmi.setSelected( true );
-                _graphics_export_using_actual_size_cbmi.setEnabled( false );
-            }
-            else {
-                _graphics_export_using_actual_size_cbmi.setEnabled( true );
-            }
+            options.setGraphicsExportVisibleOnly( _graphics_export_visible_only_cbmi.isSelected() );    
         }
         if ( ( _rectangular_type_cbmi != null ) && _rectangular_type_cbmi.isSelected() ) {
             options.setPhylogenyGraphicsType( PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
@@ -2212,11 +2143,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if ( ( tp == null ) || ( tp.getPhylogeny() == null ) || tp.getPhylogeny().isEmpty() ) {
             return;
         }
-        if ( !op.isPrintUsingActualSize() ) {
-            tp.calcParametersForPainting( op.getPrintSizeX() - 80, op.getPrintSizeY() - 140 );
-            tp.resetPreferredSize();
-            tp.repaint();
-        }
         final String job_name = AptxConstants.PRG_NAME;
         boolean error = false;
         String printer_name = null;
@@ -2243,22 +2169,15 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                                      final Options opts,
                                      final TreePanel tp,
                                      final Component comp ) {
-        if ( !opts.isPrintUsingActualSize() ) {
-            tp.calcParametersForPainting( opts.getPrintSizeX(), opts.getPrintSizeY() );
-            tp.resetPreferredSize();
-            tp.repaint();
-        }
+       
         String pdf_written_to = "";
         boolean error = false;
         try {
             if ( opts.isPrintUsingActualSize() ) {
-                pdf_written_to = PdfExporter.writePhylogenyToPdf( file_name, tp, tp.getWidth(), tp.getHeight() );
+                pdf_written_to = PdfExporter.writePhylogenyToPdf( file_name, tp, tp.getWidth() , tp.getHeight()  );
             }
             else {
-                pdf_written_to = PdfExporter.writePhylogenyToPdf( file_name,
-                                                                  tp,
-                                                                  opts.getPrintSizeX(),
-                                                                  opts.getPrintSizeY() );
+                // Never false.
             }
         }
         catch ( final IOException e ) {
@@ -2335,11 +2254,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     static void setTextForFontChooserMenuItem( final JMenuItem mi, final String font_desc ) {
         mi.setText( "Select Default Font... (current: " + font_desc + ")" );
-    }
-
-    static void setTextForGraphicsSizeChooserMenuItem( final JMenuItem mi, final Options o ) {
-        mi.setText( "Enter Default Size for Graphics Export... (current: " + o.getPrintSizeX() + ", "
-                + o.getPrintSizeY() + ")" );
     }
 
     static void setTextForPdfLineWidthChooserMenuItem( final JMenuItem mi, final Options o ) {

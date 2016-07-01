@@ -4505,8 +4505,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             _longest_ext_node_info = longest;
         }
         _length_of_longest_text = calcLengthOfLongestText();
-        System.out.println( "_length_of_longest_text=" + _length_of_longest_text );
-        //~~
     }
 
     final void calculateScaleDistance() {

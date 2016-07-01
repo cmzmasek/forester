@@ -61,18 +61,28 @@ final class PdfExporter {
 
     private static final int HEIGHT_LIMIT = 100;
     private static final int WIDTH_LIMIT  = 60;
-
+    private static final int MARGIN_X = 20;
+    private static final int MARGIN_Y = 10;
+    
     private PdfExporter() {
         // Empty constructor.
     }
 
-    static String writePhylogenyToPdf( final String file_name, final TreePanel tree_panel, int width, int height )
+    static String writePhylogenyToPdf( final String file_name, final TreePanel tree_panel, final int width, final int height )
             throws IOException {
+        final int my_height;
+        final int my_width;
         if ( height < HEIGHT_LIMIT ) {
-            height = HEIGHT_LIMIT;
+            my_height = HEIGHT_LIMIT + 2 * MARGIN_Y;
+        }
+        else {
+            my_height = height + 2 * MARGIN_Y;
         }
         if ( width < WIDTH_LIMIT ) {
-            width = WIDTH_LIMIT;
+            my_width = WIDTH_LIMIT +  2 * MARGIN_X;
+        }
+        else {
+            my_width = width +  2 * MARGIN_X;
         }
         final Phylogeny phylogeny = tree_panel.getPhylogeny();
         if ( ( phylogeny == null ) || phylogeny.isEmpty() ) {
@@ -81,13 +91,16 @@ final class PdfExporter {
         if ( tree_panel.getMainPanel().getTreeFontSet().getSmallFont().getSize() < 1 ) {
             throw new IOException( "fonts are too small for PDF export" );
         }
+        if ( tree_panel.getMainPanel().getTreeFontSet().getLargeFont().getSize() < 1 ) {
+            throw new IOException( "fonts are too small for PDF export" );
+        }
         final File file = new File( file_name );
         if ( file.isDirectory() ) {
             throw new IOException( "[" + file_name + "] is a directory" );
         }
         final Document document = new Document();
-        document.setPageSize( new Rectangle( width, height ) );
-        document.setMargins( WIDTH_LIMIT / 2, WIDTH_LIMIT / 2, HEIGHT_LIMIT / 2, HEIGHT_LIMIT / 2 );
+        document.setPageSize( new Rectangle( my_width, my_height ) );
+        document.setMargins( MARGIN_X, MARGIN_X, MARGIN_Y, MARGIN_Y );
         PdfWriter writer = null;
         try {
             writer = PdfWriter.getInstance( document, new FileOutputStream( file_name ) );
@@ -115,10 +128,10 @@ final class PdfExporter {
         enableUnicode( mapper );
         final PdfContentByte cb = writer.getDirectContent();
         
-        final Graphics2D g2 = new PdfGraphics2D(cb, width, height, mapper); 
+        final Graphics2D g2 = new PdfGraphics2D(cb, my_width, my_height, mapper); 
     
         try {
-            tree_panel.paintPhylogeny( g2, true, false, width, height, 0, 0 );
+            tree_panel.paintPhylogeny( g2, true, false, my_width, my_height, 0, 0 );
         }
         catch ( final Exception e ) {
             AptxUtil.unexpectedException( e );
@@ -132,10 +145,7 @@ final class PdfExporter {
                 //Do nothing.
             }
         }
-        String msg = file.toString();
-        if ( ( width > 0 ) && ( height > 0 ) ) {
-            msg += " [size: " + width + ", " + height + "]";
-        }
+        final String msg = file.toString() +  " [size: " + my_width + ", " + my_height + "]";
         return msg;
     }
 

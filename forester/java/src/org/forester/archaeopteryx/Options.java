@@ -88,7 +88,7 @@ final public class Options {
     private short                             _default_node_shape_size;
     private boolean                           _editable;
     private NodeDataField                     _ext_desc_data_to_return;
-    private boolean                           _graphics_export_using_actual_size;
+    private final boolean                     _graphics_export_using_actual_size = true;
     private boolean                           _graphics_export_visible_only;
     private boolean                           _internal_number_are_confidence_for_nh_parsing;
     private boolean                           _inverse_search_result;
@@ -104,9 +104,7 @@ final public class Options {
     private PHYLOGENY_GRAPHICS_TYPE           _phylogeny_graphics_type;
     private boolean                           _print_black_and_white;
     private float                             _print_line_width;
-    private int                               _print_size_x;
-    private int                               _print_size_y;
-    private boolean                           _print_using_actual_size;
+    private final boolean                     _print_using_actual_size = true;
     private double                            _scale_bar_length;
     private boolean                           _search_case_sensitive;
     private boolean                           _show_annotation_ref_source;
@@ -197,18 +195,8 @@ final public class Options {
         _show_default_node_shapes_external = false;
         _show_default_node_shapes_for_marked_nodes = false;
         _color_all_found_nodes_when_coloring_subtree = false;
-        if ( AptxUtil.isUsOrCanada() ) {
-            _print_size_x = AptxConstants.US_LETTER_SIZE_X;
-            _print_size_y = AptxConstants.US_LETTER_SIZE_Y;
-        }
-        else {
-            _print_size_x = AptxConstants.A4_SIZE_X;
-            _print_size_y = AptxConstants.A4_SIZE_Y;
-        }
         _min_confidence_value = MIN_CONFIDENCE_DEFAULT;
         _print_black_and_white = false;
-        _print_using_actual_size = true;
-        _graphics_export_using_actual_size = true;
         _phylogeny_graphics_type = PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR;
         _base_font = new Font( Configuration.getDefaultFontFamilyName(), Font.PLAIN, 10 );
         _match_whole_terms_only = false;
@@ -294,14 +282,6 @@ final public class Options {
 
     final float getPrintLineWidth() {
         return _print_line_width;
-    }
-
-    final int getPrintSizeX() {
-        return _print_size_x;
-    }
-
-    final int getPrintSizeY() {
-        return _print_size_y;
     }
 
     final double getScaleBarLength() {
@@ -448,18 +428,8 @@ final public class Options {
         _editable = editable;
     }
 
-    final void setGraphicsExportUsingActualSize( final boolean graphics_export_using_actual_size ) {
-        _graphics_export_using_actual_size = graphics_export_using_actual_size;
-        if ( !graphics_export_using_actual_size ) {
-            setGraphicsExportVisibleOnly( false );
-        }
-    }
-
     final void setGraphicsExportVisibleOnly( final boolean graphics_export_visible_only ) {
         _graphics_export_visible_only = graphics_export_visible_only;
-        if ( graphics_export_visible_only ) {
-            setGraphicsExportUsingActualSize( true );
-        }
     }
 
     final void setInternalNumberAreConfidenceForNhParsing( final boolean internal_number_are_confidence_for_nh_parsing ) {
@@ -501,19 +471,7 @@ final public class Options {
     final void setPrintLineWidth( final float print_line_width ) {
         _print_line_width = print_line_width;
     }
-
-    final void setPrintSizeX( final int print_size_x ) {
-        _print_size_x = print_size_x;
-    }
-
-    final void setPrintSizeY( final int print_size_y ) {
-        _print_size_y = print_size_y;
-    }
-
-    final void setPrintUsingActualSize( final boolean print_using_actual_size ) {
-        _print_using_actual_size = print_using_actual_size;
-    }
-
+    
     final void setReplaceUnderscoresInNhParsing( final boolean nh_parsing_replace_underscores ) {
         _nh_parsing_replace_underscores = nh_parsing_replace_underscores;
     }
@@ -589,12 +547,6 @@ final public class Options {
             instance.setAbbreviateScientificTaxonNames( configuration.isAbbreviateScientificTaxonNames() );
             if ( configuration.getMinConfidenceValue() != MIN_CONFIDENCE_DEFAULT ) {
                 instance.setMinConfidenceValue( configuration.getMinConfidenceValue() );
-            }
-            if ( configuration.getGraphicsExportX() > 0 ) {
-                instance.setPrintSizeX( configuration.getGraphicsExportX() );
-            }
-            if ( configuration.getGraphicsExportY() > 0 ) {
-                instance.setPrintSizeY( configuration.getGraphicsExportY() );
             }
             if ( configuration.getBaseFontSize() > 0 ) {
                 instance.setBaseFont( instance.getBaseFont().deriveFont( ( float ) configuration.getBaseFontSize() ) );

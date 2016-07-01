@@ -21,9 +21,6 @@
         <copy verbose="true"
           file="../resources/phyloxml_schema/1.10/phyloxml.xsd"
           todir="${classes.dir}/resources"/>
-        <copy verbose="true"
-          file="../resources/synth_laf/synth_look_and_feel_1.xml"
-          todir="${classes.dir}/resources"/>
     </target>
 
 	<target name="compile" description="Compiles the Task" depends="clean">
