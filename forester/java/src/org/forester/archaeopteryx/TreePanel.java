@@ -420,12 +420,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ( e.isControlDown() ) {
             if ( notches < 0 ) {
                 getTreeFontSet().increaseFontSize();
-                getControlPanel().displayedPhylogenyMightHaveChanged( true );
             }
             else {
                 getTreeFontSet().decreaseFontSize( 1, false );
-                getControlPanel().displayedPhylogenyMightHaveChanged( true );
             }
+            getControlPanel().displayedPhylogenyMightHaveChanged( true );
+            resetPreferredSize();
+            updateOvSizes();
+            repaint();
         }
         else if ( e.isShiftDown() ) {
             if ( ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED )
@@ -714,6 +716,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 nodeTaxonomyDataAsSB( _ext_node_with_longest_txt_info.getNodeData().getTaxonomy(), sb );
             }
         }
+       
         return getFontMetricsForLargeDefaultFont().stringWidth( sb.toString() );
     }
 
@@ -4424,11 +4427,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ( ( _phylogeny == null ) || _phylogeny.isEmpty() ) {
             return;
         }
-        int max_length = ForesterUtil.roundToInt( ( getSize().getWidth() - 2 * MOVE )
+        int max_possible_length = ForesterUtil.roundToInt( ( getSize().getWidth() - 2 * MOVE )
                                                   * AptxConstants.EXT_NODE_INFO_LENGTH_MAX_RATIO );
-        if ( max_length < 40 ) {
-            max_length = 40;
-        }
+        if ( max_possible_length < 20 ) {
+             max_possible_length = 20;
+         }
         int longest = 30;
         int longest_txt = 0;
         _longest_domain = 0;
@@ -4489,8 +4492,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 // FIXME
                 sum += RenderableMsaSequence.DEFAULT_WIDTH + 30;
             }
-            if ( sum >= max_length ) {
-                _longest_ext_node_info = max_length;
+            if ( sum >= max_possible_length ) {
+                _longest_ext_node_info = max_possible_length;
                 // return; //FIXME why?
             }
             if ( sum > longest ) {
@@ -4498,12 +4501,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
         }
         _ext_node_with_longest_txt_info = longest_txt_node;
-        if ( longest >= max_length ) {
-            _longest_ext_node_info = max_length;
-        }
-        else {
-            _longest_ext_node_info = longest;
-        }
+         if ( longest >= max_possible_length ) {
+            _longest_ext_node_info = max_possible_length;
+         }
+         else {
+           _longest_ext_node_info = longest;
+         }
         _length_of_longest_text = calcLengthOfLongestText();
     }
 

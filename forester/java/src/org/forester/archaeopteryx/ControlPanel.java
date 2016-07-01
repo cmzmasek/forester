@@ -1381,6 +1381,11 @@ final class ControlPanel extends JPanel implements ActionListener {
     void displayedPhylogenyMightHaveChanged( final boolean recalc_longest_ext_node_info ) {
         if ( ( _mainpanel != null )
                 && ( ( _mainpanel.getCurrentPhylogeny() != null ) && !_mainpanel.getCurrentPhylogeny().isEmpty() ) ) {
+            
+            if ( recalc_longest_ext_node_info ) {
+                _mainpanel.getCurrentTreePanel().initNodeData();
+                _mainpanel.getCurrentTreePanel().calculateLongestExtNodeInfo();
+            }
             if ( getOptions().isShowOverview() ) {
                 _mainpanel.getCurrentTreePanel().updateOvSizes();
             }
@@ -1390,12 +1395,9 @@ final class ControlPanel extends JPanel implements ActionListener {
             _mainpanel.getCurrentTreePanel().calculateScaleDistance();
             _mainpanel.getCurrentTreePanel().calcMaxDepth();
             _mainpanel.adjustJScrollPane();
-            if ( recalc_longest_ext_node_info ) {
-                _mainpanel.getCurrentTreePanel().initNodeData();
-                _mainpanel.getCurrentTreePanel().calculateLongestExtNodeInfo();
-            }
+          
             _mainpanel.getCurrentTreePanel().repaint();
-            // _mainpanel.getCurrentTreePanel().setUpUrtFactors();
+            // _mainpanel.getCurrentTreePanel().setUpUrtFactor();
         }
     }
 
