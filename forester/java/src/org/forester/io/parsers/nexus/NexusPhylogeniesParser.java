@@ -49,12 +49,12 @@ import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.sequence.BasicSequence;
 import org.forester.sequence.MolecularSequence;
+import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
 
 public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, PhylogenyParser {
 
-    private static final String UTF_8 = "UTF-8";
-
+   
     final private static boolean DEBUG                               = false;
     
     final private static String            begin_trees               = NexusConstants.BEGIN_TREES.toLowerCase();
@@ -98,6 +98,8 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
     private StringBuilder                  _translate_sb;
     private Map<String, MolecularSequence> _seqs;
     private final boolean                  _add_sequences            = true;
+    private boolean                       _parse_beast_style_extended_tags           = false;
+           
 
     @Override
     public String getName() {
@@ -146,7 +148,7 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
         _rooted_info_present = false;
         _is_rooted = false;
         _seqs = new HashMap<String, MolecularSequence>();
-        _br = ParserUtils.createReader( _nexus_source, UTF_8 );
+        _br = ParserUtils.createReader( _nexus_source, ForesterConstants.UTF_8 );
         getNext();
     }
 
@@ -181,6 +183,7 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
         pars.setTaxonomyExtraction( _taxonomy_extraction );
         pars.setReplaceUnderscores( _replace_underscores );
         pars.setIgnoreQuotes( _ignore_quotes_in_nh_data );
+        pars.setParseBeastStyleExtendedTags( _parse_beast_style_extended_tags );
         if ( rooted_info_present ) {
             pars.setGuessRootedness( false );
         }
@@ -475,7 +478,11 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
             _translate_map.put( key, value );
         }
     }
-
+    
+    public final void setParseBeastStyleExtendedTags( final boolean parse_beast_style_extended_tags ) {
+        _parse_beast_style_extended_tags = parse_beast_style_extended_tags;
+    }
+    
     private final static String removeWhiteSpaceBeforeSemicolon( final String s ) {
         return s.replaceAll( "\\s+;", ";" );
     }

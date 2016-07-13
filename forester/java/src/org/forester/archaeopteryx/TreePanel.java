@@ -1996,7 +1996,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         .equalsIgnoreCase( "uniprot" ) ) ) {
             try {
                 uri_str = "http://www.uniprot.org/taxonomy/"
-                        + URLEncoder.encode( tax.getIdentifier().getValue(), ForesterConstants.UTF8 );
+                        + URLEncoder.encode( tax.getIdentifier().getValue(), ForesterConstants.UTF_8 );
             }
             catch ( final UnsupportedEncodingException e ) {
                 AptxUtil.showErrorMessage( this, e.toString() );
@@ -2006,7 +2006,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         else if ( !ForesterUtil.isEmpty( tax.getScientificName() ) ) {
             try {
                 uri_str = "http://www.uniprot.org/taxonomy/?query="
-                        + URLEncoder.encode( tax.getScientificName(), ForesterConstants.UTF8 );
+                        + URLEncoder.encode( tax.getScientificName(), ForesterConstants.UTF_8 );
             }
             catch ( final UnsupportedEncodingException e ) {
                 AptxUtil.showErrorMessage( this, e.toString() );
@@ -2016,7 +2016,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         else if ( !ForesterUtil.isEmpty( tax.getTaxonomyCode() ) ) {
             try {
                 uri_str = "http://www.uniprot.org/taxonomy/?query="
-                        + URLEncoder.encode( tax.getTaxonomyCode(), ForesterConstants.UTF8 );
+                        + URLEncoder.encode( tax.getTaxonomyCode(), ForesterConstants.UTF_8 );
             }
             catch ( final UnsupportedEncodingException e ) {
                 AptxUtil.showErrorMessage( this, e.toString() );
@@ -2026,7 +2026,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         else if ( !ForesterUtil.isEmpty( tax.getCommonName() ) ) {
             try {
                 uri_str = "http://www.uniprot.org/taxonomy/?query="
-                        + URLEncoder.encode( tax.getCommonName(), ForesterConstants.UTF8 );
+                        + URLEncoder.encode( tax.getCommonName(), ForesterConstants.UTF_8 );
             }
             catch ( final UnsupportedEncodingException e ) {
                 AptxUtil.showErrorMessage( this, e.toString() );

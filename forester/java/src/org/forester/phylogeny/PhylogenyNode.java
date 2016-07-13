@@ -86,7 +86,23 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
     private PhylogenyNode( final String nhx,
                            final NHXParser.TAXONOMY_EXTRACTION taxonomy_extraction,
                            final boolean replace_underscores ) throws NHXFormatException, PhyloXmlDataFormatException {
-        NHXParser.parseNHX( nhx, this, taxonomy_extraction, replace_underscores, false, false );
+        NHXParser.parseNHX( nhx, this, taxonomy_extraction, replace_underscores, false, false, false );
+        setId( PhylogenyNode.getNodeCount() );
+        PhylogenyNode.increaseNodeCount();
+        setSumExtNodes( 1 ); // For ext node, this number is 1 (not 0!!).
+    }
+    
+    private PhylogenyNode( final String nhx,
+                           final NHXParser.TAXONOMY_EXTRACTION taxonomy_extraction,
+                           final boolean replace_underscores,
+                           final boolean parse_extended_tags ) throws NHXFormatException, PhyloXmlDataFormatException {
+        NHXParser.parseNHX( nhx,
+                            this,
+                            taxonomy_extraction,
+                            replace_underscores,
+                            false,
+                            false,
+                            parse_extended_tags );
         setId( PhylogenyNode.getNodeCount() );
         PhylogenyNode.increaseNodeCount();
         setSumExtNodes( 1 ); // For ext node, this number is 1 (not 0!!).
@@ -1085,6 +1101,14 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
                                                              final boolean replace_underscores )
                                                                      throws NHXFormatException, PhyloXmlDataFormatException {
         return new PhylogenyNode( nhx, taxonomy_extraction, replace_underscores );
+    }
+    
+    public static PhylogenyNode createInstanceFromNhxString( final String nhx,
+                                                             final NHXParser.TAXONOMY_EXTRACTION taxonomy_extraction,
+                                                             final boolean replace_underscores,
+                                                             final boolean parse_extended_tags )
+                                                                     throws NHXFormatException, PhyloXmlDataFormatException {
+        return new PhylogenyNode( nhx, taxonomy_extraction, replace_underscores, parse_extended_tags );
     }
 
     /**

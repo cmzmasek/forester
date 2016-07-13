@@ -33,12 +33,12 @@ import java.util.List;
 
 import org.forester.io.parsers.util.ParserUtils;
 import org.forester.io.parsers.util.PhylogenyParserException;
+import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
 
 public class NexusCharactersParser {
 
-    private static final String UTF_8 = "UTF-8";
-    final private static String charstatelabels = NexusConstants.CHARSTATELABELS.toLowerCase();
+     final private static String charstatelabels = NexusConstants.CHARSTATELABELS.toLowerCase();
     private Object              _nexus_source;
     private String[]            _char_state_labels;
 
@@ -52,7 +52,7 @@ public class NexusCharactersParser {
 
     public void parse() throws IOException {
         reset();
-        final BufferedReader reader = ParserUtils.createReader( getNexusSource(), UTF_8 );
+        final BufferedReader reader = ParserUtils.createReader( getNexusSource(), ForesterConstants.UTF_8 );
         String line;
         boolean in_charstatelabels = false;
         final List<String> labels_list = new ArrayList<String>();

@@ -246,6 +246,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JCheckBoxMenuItem                _allow_errors_in_distance_to_parent_cbmi;
     JCheckBoxMenuItem                _use_brackets_for_conf_in_nh_export_cbmi;
     JCheckBoxMenuItem                _use_internal_names_for_conf_in_nh_export_cbmi;
+    JCheckBoxMenuItem                _parse_beast_style_extended_nexus_tags_cbmi;
     // _  search
     JCheckBoxMenuItem                _search_case_senstive_cbmi;
     JCheckBoxMenuItem                _search_whole_words_only_cbmi;
@@ -534,6 +535,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             getMainPanel().getControlPanel().search1();
         }
         else if ( o == _color_all_found_nodes_when_coloring_subtree_cbmi ) {
+            updateOptions( getOptions() );
+        }
+        else if ( o == _parse_beast_style_extended_nexus_tags_cbmi ) {
             updateOptions( getOptions() );
         }
         else if ( o == _show_scale_cbmi ) {
@@ -1912,6 +1916,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         if ( ( _color_all_found_nodes_when_coloring_subtree_cbmi != null ) && _color_all_found_nodes_when_coloring_subtree_cbmi.isEnabled() ) {
             options.setColorAllFoundNodesWhenColoringSubtree( _color_all_found_nodes_when_coloring_subtree_cbmi.isSelected() );
+        }
+        if ( ( _parse_beast_style_extended_nexus_tags_cbmi != null ) && _parse_beast_style_extended_nexus_tags_cbmi.isEnabled() ) {
+            options.setParseBeastStyleExtendedNexusTags(_parse_beast_style_extended_nexus_tags_cbmi.isSelected() );
         }
     }
 

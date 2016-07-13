@@ -119,6 +119,7 @@ final public class Options {
     private boolean                           _line_up_renderable_node_data;
     private boolean                           _right_align_domains;
     private boolean                           _color_all_found_nodes_when_coloring_subtree;
+    private boolean                           _parse_beast_style_extended_nexus_tags;
 
     private Options() {
         init();
@@ -195,6 +196,7 @@ final public class Options {
         _show_default_node_shapes_external = false;
         _show_default_node_shapes_for_marked_nodes = false;
         _color_all_found_nodes_when_coloring_subtree = false;
+        _parse_beast_style_extended_nexus_tags= true;
         _min_confidence_value = MIN_CONFIDENCE_DEFAULT;
         _print_black_and_white = false;
         _phylogeny_graphics_type = PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR;
@@ -590,5 +592,13 @@ final public class Options {
     
     final void setColorAllFoundNodesWhenColoringSubtree( final boolean color_all_found_nodes_when_coloring_subtree ) {
         _color_all_found_nodes_when_coloring_subtree = color_all_found_nodes_when_coloring_subtree;
+    }
+
+    final boolean isParseBeastStyleExtendedNexusTags() {
+        return _parse_beast_style_extended_nexus_tags;
+    }
+
+    final void setParseBeastStyleExtendedNexusTags( boolean parse_beast_style_extended_nexus_tags ) {
+        _parse_beast_style_extended_nexus_tags = parse_beast_style_extended_nexus_tags;
     }
 }

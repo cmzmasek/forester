@@ -49,7 +49,6 @@ import org.forester.util.ForesterUtil;
 
 public final class PhylogenyWriter {
 
-    private static final String UTF_8 = "UTF-8";
     public final static boolean         INDENT_PHYLOXML_DEAFULT         = true;
     public final static String          PHYLO_XML_INTENDATION_BASE      = "  ";
     public final static String          PHYLO_XML_VERSION_ENCODING_LINE = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
@@ -399,7 +398,7 @@ public final class PhylogenyWriter {
 
     public void toNexus( final File out_file, final Phylogeny tree, final NH_CONVERSION_SUPPORT_VALUE_STYLE svs )
             throws IOException {
-        final Writer writer = new BufferedWriter( new PrintWriter( out_file, UTF_8 ) );
+        final Writer writer = new BufferedWriter( new PrintWriter( out_file, ForesterConstants.UTF_8 ) );
         final List<Phylogeny> trees = new ArrayList<Phylogeny>( 1 );
         trees.add( tree );
         writeNexusStart( writer );
@@ -426,14 +425,14 @@ public final class PhylogenyWriter {
                             final List<Phylogeny> trees,
                             final int phyloxml_level,
                             final String separator ) throws IOException {
-        final Writer writer = new BufferedWriter( new PrintWriter( out_file, UTF_8 ) );
+        final Writer writer = new BufferedWriter( new PrintWriter( out_file, ForesterConstants.UTF_8 ) );
         toPhyloXML( writer, trees, phyloxml_level, separator );
         writer.flush();
         writer.close();
     }
 
     public void toPhyloXML( final File out_file, final Phylogeny tree, final int phyloxml_level ) throws IOException {
-        final Writer writer = new BufferedWriter( new PrintWriter( out_file, UTF_8 ) );
+        final Writer writer = new BufferedWriter( new PrintWriter( out_file, ForesterConstants.UTF_8 ) );
         writePhyloXmlStart( writer );
         toPhyloXMLNoPhyloXmlSource( writer, tree, phyloxml_level );
         writePhyloXmlEnd( writer );
@@ -633,7 +632,7 @@ public final class PhylogenyWriter {
         if ( out_file.exists() ) {
             throw new IOException( "attempt to overwrite existing file \"" + out_file.getAbsolutePath() + "\"" );
         }
-        final PrintWriter out = new PrintWriter( out_file, UTF_8 );
+        final PrintWriter out = new PrintWriter( out_file, ForesterConstants.UTF_8 );
         out.print( sb );
         out.flush();
         out.close();

@@ -59,6 +59,7 @@ public final class PhyloXmlMapping {
     public static final String COLOR_BLUE                                          = "blue";
     public static final String COLOR_GREEN                                         = "green";
     public static final String COLOR_RED                                           = "red";
+    public static final String COLOR_ALPHA                                         = "alpha";   
     public static final String CONFIDENCE                                          = "confidence";
     public static final String CONFIDENCE_SD_ATTR                                  = "stddev";
     public static final String CONFIDENCE_TYPE_ATTR                                = "type";

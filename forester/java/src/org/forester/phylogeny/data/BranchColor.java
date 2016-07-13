@@ -91,6 +91,9 @@ public class BranchColor implements PhylogenyData {
         PhylogenyDataUtil.appendElement( writer, PhyloXmlMapping.COLOR_RED, getValue().getRed() + "", indentation );
         PhylogenyDataUtil.appendElement( writer, PhyloXmlMapping.COLOR_GREEN, getValue().getGreen() + "", indentation );
         PhylogenyDataUtil.appendElement( writer, PhyloXmlMapping.COLOR_BLUE, getValue().getBlue() + "", indentation );
+        if ( getValue().getAlpha() != 255 ) {
+            PhylogenyDataUtil.appendElement( writer, PhyloXmlMapping.COLOR_ALPHA, getValue().getAlpha() + "", indentation );
+        }
         writer.write( ForesterUtil.LINE_SEPARATOR );
         writer.write( indentation );
         PhylogenyDataUtil.appendClose( writer, PhyloXmlMapping.COLOR );

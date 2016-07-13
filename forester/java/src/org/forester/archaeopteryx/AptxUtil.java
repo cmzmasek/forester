@@ -72,6 +72,7 @@ import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyMethods.DESCENDANT_SORT_PRIORITY;
 import org.forester.phylogeny.PhylogenyNode;
+import org.forester.phylogeny.data.BranchWidth;
 import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
@@ -788,6 +789,19 @@ public final class AptxUtil {
                 atv_control.setDrawPhylogram( false );
                 atv_control.setDrawPhylogramEnabled( false );
             }
+            
+            if ( t.getFirstExternalNode().getBranchData().getBranchColor() != null
+                    && atv_control.getUseVisualStylesCb() != null ) {
+                atv_control.getUseVisualStylesCb().setSelected( true );
+            }
+            if ( t.getFirstExternalNode().getBranchData().getBranchWidth() != null
+                    && t.getFirstExternalNode().getBranchData().getBranchWidth().getValue()
+                    != BranchWidth.BRANCH_WIDTH_DEFAULT_VALUE
+                    && atv_control.getUseBranchWidthsCb() != null ) {
+                atv_control.getUseBranchWidthsCb().setSelected( true );
+            }
+            
+            
             if ( configuration.doGuessCheckOption( Configuration.display_as_phylogram ) ) {
                 if ( atv_control.getDisplayAsPhylogramCb() != null ) {
                     if ( has_bl ) {

@@ -46,7 +46,7 @@ public class TreePanelUtil {
         final String upkb = SequenceAccessionTools.obtainUniProtAccessorFromDataFields( node );
         if ( !ForesterUtil.isEmpty( upkb ) ) {
             try {
-                uri_str = ForesterUtil.UNIPROT_KB + URLEncoder.encode( upkb, ForesterConstants.UTF8 );
+                uri_str = ForesterUtil.UNIPROT_KB + URLEncoder.encode( upkb, ForesterConstants.UTF_8 );
             }
             catch ( final UnsupportedEncodingException e ) {
                 AptxUtil.showErrorMessage( tp, e.toString() );
@@ -58,10 +58,10 @@ public class TreePanelUtil {
             if ( !ForesterUtil.isEmpty( v ) ) {
                 try {
                     if ( SequenceAccessionTools.isProteinDbQuery( v ) ) {
-                        uri_str = ForesterUtil.NCBI_PROTEIN + URLEncoder.encode( v, ForesterConstants.UTF8 );
+                        uri_str = ForesterUtil.NCBI_PROTEIN + URLEncoder.encode( v, ForesterConstants.UTF_8 );
                     }
                     else {
-                        uri_str = ForesterUtil.NCBI_NUCCORE + URLEncoder.encode( v, ForesterConstants.UTF8 );
+                        uri_str = ForesterUtil.NCBI_NUCCORE + URLEncoder.encode( v, ForesterConstants.UTF_8 );
                     }
                 }
                 catch ( final UnsupportedEncodingException e ) {
@@ -75,10 +75,10 @@ public class TreePanelUtil {
             if ( !ForesterUtil.isEmpty( v ) ) {
                 try {
                     if ( SequenceAccessionTools.isProteinDbQuery( v ) ) {
-                        uri_str = ForesterUtil.NCBI_PROTEIN + URLEncoder.encode( v, ForesterConstants.UTF8 );
+                        uri_str = ForesterUtil.NCBI_PROTEIN + URLEncoder.encode( v, ForesterConstants.UTF_8 );
                     }
                     else {
-                        uri_str = ForesterUtil.NCBI_NUCCORE + URLEncoder.encode( v, ForesterConstants.UTF8 );
+                        uri_str = ForesterUtil.NCBI_NUCCORE + URLEncoder.encode( v, ForesterConstants.UTF_8 );
                     }
                 }
                 catch ( final UnsupportedEncodingException e ) {
@@ -91,7 +91,7 @@ public class TreePanelUtil {
             final String v = SequenceAccessionTools.obtainGiNumberFromDataFields( node );
             if ( !ForesterUtil.isEmpty( v ) ) {
                 try {
-                    uri_str = ForesterUtil.NCBI_GI + URLEncoder.encode( v, ForesterConstants.UTF8 );
+                    uri_str = ForesterUtil.NCBI_GI + URLEncoder.encode( v, ForesterConstants.UTF_8 );
                 }
                 catch ( final UnsupportedEncodingException e ) {
                     AptxUtil.showErrorMessage( tp, e.toString() );

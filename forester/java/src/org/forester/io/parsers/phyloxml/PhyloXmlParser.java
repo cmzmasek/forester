@@ -59,7 +59,6 @@ import org.xml.sax.helpers.DefaultHandler;
 
 public class PhyloXmlParser implements PhylogenyParser {
 
-    private static final String  UTF_8                                      = "UTF-8";
     final public static String   JAXP_SCHEMA_LANGUAGE                       = "http://java.sun.com/xml/jaxp/properties/schemaLanguage";
     final public static String   W3C_XML_SCHEMA                             = "http://www.w3.org/2001/XMLSchema";
     final public static String   JAXP_SCHEMA_SOURCE                         = "http://java.sun.com/xml/jaxp/properties/schemaSource";
@@ -98,7 +97,7 @@ public class PhyloXmlParser implements PhylogenyParser {
             final ZipEntry zip_file_entry = ( ZipEntry ) zip_file_entries.nextElement();
             if ( !zip_file_entry.isDirectory() && ( zip_file_entry.getSize() > 0 ) ) {
                 final InputStream is = zip_file.getInputStream( zip_file_entry );
-                reader = new InputStreamReader( is, UTF_8 );
+                reader = new InputStreamReader( is, ForesterConstants.UTF_8 );
                 break;
             }
         }
@@ -185,7 +184,7 @@ public class PhyloXmlParser implements PhylogenyParser {
             if ( getSource() instanceof File ) {
                 if ( !getSource().toString().toLowerCase().endsWith( ".zip" ) ) {
                     final InputStream is = new FileInputStream( (File) getSource() );
-                    final InputStreamReader isr = new InputStreamReader( is, UTF_8 );
+                    final InputStreamReader isr = new InputStreamReader( is, ForesterConstants.UTF_8 );
                     xml_reader.parse( new InputSource( new BufferedReader( isr ) ) );
                 }
                 else {
@@ -199,18 +198,18 @@ public class PhyloXmlParser implements PhylogenyParser {
             }
             else if ( getSource() instanceof InputSource ) {
                 final InputSource is = ( InputSource ) getSource();
-                is.setEncoding( UTF_8 );
+                is.setEncoding( ForesterConstants.UTF_8 );
                 xml_reader.parse( is );
             }
             else if ( getSource() instanceof InputStream ) {
                 if ( !isZippedInputstream() ) {
                     final InputStream is = ( InputStream ) getSource();
-                    xml_reader.parse( new InputSource( new BufferedReader( new InputStreamReader( is, UTF_8 ) ) ) );
+                    xml_reader.parse( new InputSource( new BufferedReader( new InputStreamReader( is, ForesterConstants.UTF_8 ) ) ) );
                 }
                 else {
                     final ZipInputStream zip_is = new ZipInputStream( ( InputStream ) getSource() );
                     zip_is.getNextEntry();
-                    xml_reader.parse( new InputSource( new BufferedReader( new InputStreamReader( zip_is, UTF_8 ) ) ) );
+                    xml_reader.parse( new InputSource( new BufferedReader( new InputStreamReader( zip_is, ForesterConstants.UTF_8 ) ) ) );
                 }
             }
             else if ( getSource() instanceof StringBuffer ) {

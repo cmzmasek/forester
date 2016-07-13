@@ -27,19 +27,22 @@ package org.forester.util;
 
 public final class ForesterConstants {
 
-    public final static String  FORESTER_VERSION            = "1.041";
-    public final static String  FORESTER_DATE               = "160701";
+    public final static String  FORESTER_VERSION            = "1.042";
+    public final static String  FORESTER_DATE               = "160712";
     public final static String  PHYLO_XML_VERSION           = "1.10";
     public final static String  PHYLO_XML_LOCATION          = "http://www.phyloxml.org";
     public final static String  PHYLO_XML_XSD               = "phyloxml.xsd";
     public final static String  XML_SCHEMA_INSTANCE         = "http://www.w3.org/2001/XMLSchema-instance";
     public final static String  LOCAL_PHYLOXML_XSD_RESOURCE = "resources/phyloxml.xsd";
     public final static String  PHYLO_XML_SUFFIX            = ".xml";
-    public final static String  UTF8                        = "UTF-8";
+    public final static String  UTF_8 = "UTF-8";
+    public final static String  ISO_8859_1 = "ISO-8859-1";
     public final static String  PHYLO_XML_REFERENCE         = "Han MV and Zmasek CM (2009): \"phyloXML: XML for evolutionary biology and comparative genomics\", BMC Bioinformatics 10:356";
     public final static boolean RELEASE                     = false;
 
     public enum PhylogeneticTreeFormats {
         NH, NHX, NEXUS, PHYLOXML
     }
+
+  
 }

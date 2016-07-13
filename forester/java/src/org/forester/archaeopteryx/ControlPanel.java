@@ -2480,4 +2480,8 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
         return label;
     }
+
+    public JCheckBox getUseBranchWidthsCb() {
+        return _width_branches;
+    }
 }

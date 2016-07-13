@@ -344,6 +344,15 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
+        System.out.print( "Node construction and parsing of NHX (node level): " );
+        if ( Test.testNHXNodeParsing2() ) {
+            System.out.println( "OK." );
+            succeeded++;
+        }
+        else {
+            System.out.println( "failed." );
+            failed++;
+        }
         System.out.print( "NHX parsing iterating: " );
         if ( Test.testNHParsingIter() ) {
             System.out.println( "OK." );
@@ -9805,6 +9814,151 @@ public final class Test {
         return true;
     }
 
+    
+    private static boolean testNHXNodeParsing2() {
+        try {
+          
+            final PhylogenyNode n0_0 = PhylogenyNode
+                    .createInstanceFromNhxString( "n0:[ignore me 123]:1E-3", NHXParser.TAXONOMY_EXTRACTION.NO, true, true );
+            if ( !n0_0.getName().equals( "n0" ) ) {
+                return false;
+            }
+            if ( !isEqual( n0_0.getDistanceToParent(), 0.001 ) ) {
+                return false;
+            }
+            final PhylogenyNode n0_1 = PhylogenyNode
+                    .createInstanceFromNhxString( "n0[ignore me 123]:1E-3", NHXParser.TAXONOMY_EXTRACTION.NO, true, true );
+            if ( !n0_1.getName().equals( "n0" ) ) {
+                return false;
+            }
+            if ( !isEqual( n0_1.getDistanceToParent(), 0.001 ) ) {
+                return false;
+            }
+            final PhylogenyNode n0_2 = PhylogenyNode
+                    .createInstanceFromNhxString( "n0:1E-3[ignore me 123]", NHXParser.TAXONOMY_EXTRACTION.NO, true, true );
+            if ( !n0_2.getName().equals( "n0" ) ) {
+                return false;
+            }
+            if ( !isEqual( n0_2.getDistanceToParent(), 0.001 ) ) {
+                return false;
+            }
+            final PhylogenyNode n0_3 = PhylogenyNode
+                    .createInstanceFromNhxString( "n0:1E-3:[ignore me 123]", NHXParser.TAXONOMY_EXTRACTION.NO, true, true );
+            if ( !n0_3.getName().equals( "n0" ) ) {
+                return false;
+            }
+            if ( !isEqual( n0_3.getDistanceToParent(), 0.001 ) ) {
+                return false;
+            }
+            final PhylogenyNode n0_4 = PhylogenyNode
+                    .createInstanceFromNhxString( "n0:0.001:[ignore me 123]", NHXParser.TAXONOMY_EXTRACTION.NO, true, true );
+            if ( !n0_4.getName().equals( "n0" ) ) {
+                return false;
+            }
+            if ( !isEqual( n0_4.getDistanceToParent(), 0.001 ) ) {
+                return false;
+            }
+            final PhylogenyNode n1_0 = PhylogenyNode
+                    .createInstanceFromNhxString( "xyz|A/American_duck/NH/00321/|Duck|Canada[&!color=#FFFFFF]", NHXParser.TAXONOMY_EXTRACTION.NO, true, true );
+            if ( !n1_0.getName().equals( "xyz|A/American duck/NH/00321/|Duck|Canada" ) ) {
+                return false;
+            }
+            if ( n1_0.getBranchData().getBranchColor().getValue().getGreen()!=255 ) {
+               return false;
+            }
+            final PhylogenyNode n1_1 = PhylogenyNode
+                    .createInstanceFromNhxString( "xyz|A/American_duck/NH/00321/|Duck|Canada[&!color=#FFFFFF]:0.001", NHXParser.TAXONOMY_EXTRACTION.NO, true, true );
+            if ( !n1_1.getName().equals( "xyz|A/American duck/NH/00321/|Duck|Canada" ) ) {
+                return false;
+            }
+            if ( n1_1.getBranchData().getBranchColor().getValue().getGreen()!=255 ) {
+               return false;
+            }
+            if ( !isEqual( n1_1.getDistanceToParent(), 0.001 ) ) {
+                return false;
+            }
+            final PhylogenyNode n1_2 = PhylogenyNode
+                    .createInstanceFromNhxString( "xyz|A/American_duck/NH/00321/|Duck|Canada:0.001[&!color=#FFFFFF]", NHXParser.TAXONOMY_EXTRACTION.NO, true, true );
+            if ( !n1_2.getName().equals( "xyz|A/American duck/NH/00321/|Duck|Canada" ) ) {
+                return false;
+            }
+            if ( n1_2.getBranchData().getBranchColor().getValue().getGreen()!=255 ) {
+               return false;
+            }
+            if ( !isEqual( n1_2.getDistanceToParent(), 0.001 ) ) {
+                return false;
+            }
+            final PhylogenyNode n1_3 = PhylogenyNode
+                    .createInstanceFromNhxString( "xyz|A/American_duck/NH/00321/|Duck|Canada:1e-3[&boostrap=69,&!color=#FFFFFF]", NHXParser.TAXONOMY_EXTRACTION.NO, true, true );
+            if ( !n1_3.getName().equals( "xyz|A/American duck/NH/00321/|Duck|Canada" ) ) {
+                return false;
+            }
+            if ( n1_3.getBranchData().getBranchColor().getValue().getGreen()!=255 ) {
+               return false;
+            }
+            if ( !isEqual( n1_3.getDistanceToParent(), 0.001 ) ) {
+                return false;
+            }
+            if ( !isEqual( n1_3.getBranchData().getConfidence( 0 ).getValue(), 69 ) ) {
+                return false;
+            }
+            if ( !n1_3.getBranchData().getConfidence( 0 ).getType().equals( "bootstrap" ) ) {
+                return false;
+            }
+            final PhylogenyNode n1_4 = PhylogenyNode
+                    .createInstanceFromNhxString( "xyz|A/American_duck/NH/00321/|Duck|Canada[&bootstrap=69,&!colour=#FFFFFF]:1e-3", NHXParser.TAXONOMY_EXTRACTION.NO, true, true );
+            if ( !n1_4.getName().equals( "xyz|A/American duck/NH/00321/|Duck|Canada" ) ) {
+                return false;
+            }
+            if ( n1_4.getBranchData().getBranchColor().getValue().getGreen()!=255 ) {
+               return false;
+            }
+            if ( !isEqual( n1_4.getDistanceToParent(), 0.001 ) ) {
+                return false;
+            }
+            if ( !isEqual( n1_4.getBranchData().getConfidence( 0 ).getValue(), 69 ) ) {
+                return false;
+            }
+            if ( !n1_4.getBranchData().getConfidence( 0 ).getType().equals( "bootstrap" ) ) {
+                return false;
+            }
+            final PhylogenyNode n1_5 = PhylogenyNode
+                    .createInstanceFromNhxString( "xyz|A/American_duck/NH/00321/|Duck|Canada:1e-3[69.0]", NHXParser.TAXONOMY_EXTRACTION.NO, true, true );
+            if ( !n1_5.getName().equals( "xyz|A/American duck/NH/00321/|Duck|Canada" ) ) {
+                return false;
+            }
+            if ( !isEqual( n1_5.getDistanceToParent(), 0.001 ) ) {
+                return false;
+            }
+            if ( !isEqual( n1_5.getBranchData().getConfidence( 0 ).getValue(), 69 ) ) {
+                return false;
+            }       
+            final PhylogenyNode n1_6 = PhylogenyNode
+                    .createInstanceFromNhxString( "xyz|A/American_duck/NH/00321/|Duck|Canada[&prob=0.9500000000000000e+00,prob_stddev=0.1100000000000000e+00]:1e-3", NHXParser.TAXONOMY_EXTRACTION.NO, true, true );
+            if ( !n1_6.getName().equals( "xyz|A/American duck/NH/00321/|Duck|Canada" ) ) {
+                return false;
+            }
+           
+            if ( !isEqual( n1_6.getDistanceToParent(), 0.001 ) ) {
+                return false;
+            }
+            if ( !isEqual( n1_6.getBranchData().getConfidence( 0 ).getStandardDeviation(), 0.11 ) ) {
+                return false;
+            }
+            if ( !isEqual( n1_6.getBranchData().getConfidence( 0 ).getValue(), 0.95 ) ) {
+                return false;
+            }
+            if ( !n1_6.getBranchData().getConfidence( 0 ).getType().equals( "posterior probability" ) ) {
+                return false;
+            }
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace( System.out );
+            return false;
+        }
+        return true;
+    }
+    
     private static boolean testNHXParsing() {
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();

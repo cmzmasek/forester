@@ -1671,12 +1671,14 @@ public final class MainFrameApplication extends MainFrame {
     private void setSpecialOptionsForNexParser( final NexusPhylogeniesParser nex ) {
         nex.setReplaceUnderscores( getOptions().isReplaceUnderscoresInNhParsing() );
         nex.setTaxonomyExtraction( getOptions().getTaxonomyExtraction() );
+        nex.setParseBeastStyleExtendedTags( getOptions().isParseBeastStyleExtendedNexusTags() );
     }
 
     private void setSpecialOptionsForNhxParser( final NHXParser nhx ) {
         nhx.setReplaceUnderscores( getOptions().isReplaceUnderscoresInNhParsing() );
         nhx.setTaxonomyExtraction( getOptions().getTaxonomyExtraction() );
         nhx.setAllowErrorsInDistanceToParent( getOptions().isAllowErrorsInDistanceToParent() );
+        nhx.setParseBeastStyleExtendedTags( getOptions().isParseBeastStyleExtendedNexusTags() );
     }
 
     void buildAnalysisMenu() {
@@ -1845,19 +1847,19 @@ public final class MainFrameApplication extends MainFrame {
                                                       getConfiguration() ) );
         _options_jmenu.add( _antialias_print_cbmi = new JCheckBoxMenuItem( "Antialias" ) );
         _options_jmenu.add( _print_black_and_white_cbmi = new JCheckBoxMenuItem( "Export in Black and White" ) );
-        //_options_jmenu
-        //.add( _print_using_actual_size_cbmi = new JCheckBoxMenuItem( "Use Current Image Size for PDF export and Printing" ) );
-        //_options_jmenu
-        //.add( _graphics_export_using_actual_size_cbmi = new JCheckBoxMenuItem( "Use Current Image Size for PNG, JPG, and GIF export" ) );
-        _options_jmenu
+         _options_jmenu
         .add( _graphics_export_visible_only_cbmi = new JCheckBoxMenuItem( "Limit to Visible ('Screenshot') for PNG, JPG, and GIF export" ) );
-       // _options_jmenu.add( _print_size_mi = new JMenuItem( "" ) );
         _options_jmenu.add( _choose_pdf_width_mi = new JMenuItem( "" ) );
         _options_jmenu.addSeparator();
         _options_jmenu.add( customizeMenuItemAsLabel( new JMenuItem( "Newick/NHX/Nexus Read:" ), getConfiguration() ) );
         _options_jmenu
         .add( _internal_number_are_confidence_for_nh_parsing_cbmi = new JCheckBoxMenuItem( "Internal Node Names are Confidence Values" ) );
         _options_jmenu.add( _replace_underscores_cbmi = new JCheckBoxMenuItem( "Replace Underscores with Spaces" ) );
+        _options_jmenu.add( _parse_beast_style_extended_nexus_tags_cbmi = new JCheckBoxMenuItem( "Parse BEAST-style extended Newick/Nexus tags" ) ); 
+        
+        _parse_beast_style_extended_nexus_tags_cbmi.setToolTipText( "to parse elements in the form of \"[&!color=#800080]\" in Newick/Nexus formatted trees" );
+        
+        
         _options_jmenu
         .add( _allow_errors_in_distance_to_parent_cbmi = new JCheckBoxMenuItem( "Ignore Distance Values Format Errors" ) );
         _options_jmenu.add( _extract_taxonomy_no_rbmi = new JRadioButtonMenuItem( "No Taxonomy Extraction" ) );
@@ -1888,7 +1890,6 @@ public final class MainFrameApplication extends MainFrame {
         customizeJMenuItem( _choose_font_mi );
         customizeJMenuItem( _choose_minimal_confidence_mi );
         customizeJMenuItem( _switch_colors_mi );
-       // customizeJMenuItem( _print_size_mi );
         customizeJMenuItem( _choose_pdf_width_mi );
         customizeJMenuItem( _overview_placment_mi );
         customizeCheckBoxMenuItem( _show_default_node_shapes_external_cbmi, getOptions()
@@ -1938,6 +1939,8 @@ public final class MainFrameApplication extends MainFrame {
         customizeCheckBoxMenuItem( _search_whole_words_only_cbmi, getOptions().isMatchWholeTermsOnly() );
         customizeCheckBoxMenuItem( _inverse_search_result_cbmi, getOptions().isInverseSearchResult() );
         customizeCheckBoxMenuItem( _color_all_found_nodes_when_coloring_subtree_cbmi, getOptions().isColorAllFoundNodesWhenColoringSubtree() ); 
+        customizeCheckBoxMenuItem( _parse_beast_style_extended_nexus_tags_cbmi, getOptions().isParseBeastStyleExtendedNexusTags() ); 
+        
         customizeCheckBoxMenuItem( _graphics_export_visible_only_cbmi, getOptions().isGraphicsExportVisibleOnly() );
         customizeCheckBoxMenuItem( _show_confidence_stddev_cbmi, getOptions().isShowConfidenceStddev() );
         customizeCheckBoxMenuItem( _use_brackets_for_conf_in_nh_export_cbmi, getOptions()

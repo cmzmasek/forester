@@ -60,13 +60,11 @@ public class SequenceRelation implements PhylogenyData {
 
     @Override
     public StringBuffer asSimpleText() {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public StringBuffer asText() {
-        // TODO Auto-generated method stub
         return null;
     }
 

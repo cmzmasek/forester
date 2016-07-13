@@ -53,6 +53,7 @@ public class ColorParser implements PhylogenyDataPhyloXmlParser {
         int red = 0;
         int green = 0;
         int blue = 0;
+        int alpha = -1;
         for( int j = 0; j < element.getNumberOfChildElements(); ++j ) {
             final XmlElement c = element.getChildElement( j );
             if ( c.getQualifiedName().equals( PhyloXmlMapping.COLOR_RED ) ) {
@@ -64,9 +65,17 @@ public class ColorParser implements PhylogenyDataPhyloXmlParser {
             else if ( c.getQualifiedName().equals( PhyloXmlMapping.COLOR_BLUE ) ) {
                 blue = c.getValueAsInt();
             }
+            else if ( c.getQualifiedName().equals( PhyloXmlMapping.COLOR_ALPHA ) ) {
+                alpha = c.getValueAsInt();
+            }
         }
         final BranchColor color = new BranchColor();
-        color.setValue( new Color( red, green, blue ) );
+        if ( alpha < 0 ) { 
+            color.setValue( new Color( red, green, blue ) );
+        }
+        else { 
+            color.setValue( new Color( red, green, blue ) );
+        }
         return color;
     }
 
