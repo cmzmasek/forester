@@ -587,7 +587,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         getSearchResetButton0().setEnabled( true );
         getSearchResetButton0().setVisible( true );
         String[] queries = null;
-        Set<PhylogenyNode> nodes = null;
+        Set<Long> nodes = null;
         if ( ( query_str.indexOf( ',' ) >= 0 ) && !getOptions().isSearchWithRegex() ) {
             queries = query_str.split( ",+" );
         }
@@ -596,7 +596,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             queries[ 0 ] = query_str.trim();
         }
         if ( ( queries != null ) && ( queries.length > 0 ) ) {
-            nodes = new HashSet<PhylogenyNode>();
+            nodes = new HashSet<Long>();
             for( String query : queries ) {
                 if ( ForesterUtil.isEmpty( query ) ) {
                     continue;
@@ -626,15 +626,19 @@ final class ControlPanel extends JPanel implements ActionListener {
             }
             if ( getOptions().isInverseSearchResult() ) {
                 final List<PhylogenyNode> all = PhylogenyMethods.obtainAllNodesAsList( tree );
-                all.removeAll( nodes );
-                nodes = new HashSet<PhylogenyNode>();
-                nodes.addAll( all );
+                final Set<Long> temp_nodes = nodes;
+                nodes = new HashSet<Long>();
+                for( final PhylogenyNode n : all ) {
+                    if ( (!temp_nodes.contains( n.getId() )) && n.isHasNodeData() ) {
+                        nodes.add( n.getId() );
+                    }
+                }
             }
         }
         if ( ( nodes != null ) && ( nodes.size() > 0 ) ) {
             main_panel.getCurrentTreePanel().setFoundNodes0( new HashSet<Long>() );
-            for( final PhylogenyNode node : nodes ) {
-                main_panel.getCurrentTreePanel().getFoundNodes0().add( node.getId() );
+            for( final Long node : nodes ) {
+                main_panel.getCurrentTreePanel().getFoundNodes0().add( node );
             }
             setSearchFoundCountsOnLabel0( nodes.size() );
         }
@@ -649,7 +653,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         getSearchResetButton1().setEnabled( true );
         getSearchResetButton1().setVisible( true );
         String[] queries = null;
-        Set<PhylogenyNode> nodes = null;
+        Set<Long> nodes = null;
         if ( ( query_str.indexOf( ',' ) >= 0 ) && !getOptions().isSearchWithRegex() ) {
             queries = query_str.split( ",+" );
         }
@@ -658,7 +662,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             queries[ 0 ] = query_str.trim();
         }
         if ( ( queries != null ) && ( queries.length > 0 ) ) {
-            nodes = new HashSet<PhylogenyNode>();
+            nodes = new HashSet<Long>();
             for( String query : queries ) {
                 if ( ForesterUtil.isEmpty( query ) ) {
                     continue;
@@ -688,15 +692,19 @@ final class ControlPanel extends JPanel implements ActionListener {
             }
             if ( getOptions().isInverseSearchResult() ) {
                 final List<PhylogenyNode> all = PhylogenyMethods.obtainAllNodesAsList( tree );
-                all.removeAll( nodes );
-                nodes = new HashSet<PhylogenyNode>();
-                nodes.addAll( all );
+                final Set<Long> temp_nodes = nodes;
+                nodes = new HashSet<Long>();
+                for( final PhylogenyNode n : all ) {
+                    if ( (!temp_nodes.contains( n.getId() )) && n.isHasNodeData() ) {
+                        nodes.add( n.getId() );
+                    }
+                }
             }
         }
         if ( ( nodes != null ) && ( nodes.size() > 0 ) ) {
             main_panel.getCurrentTreePanel().setFoundNodes1( new HashSet<Long>() );
-            for( final PhylogenyNode node : nodes ) {
-                main_panel.getCurrentTreePanel().getFoundNodes1().add( node.getId() );
+            for( final Long node : nodes ) {
+                main_panel.getCurrentTreePanel().getFoundNodes1().add( node );
             }
             setSearchFoundCountsOnLabel1( nodes.size() );
         }
@@ -705,7 +713,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             searchReset1();
         }
     }
-
+    
     private void setDrawPhylogram( final int index, final boolean b ) {
         getIsDrawPhylogramList().set( index, b );
     }

@@ -57,7 +57,7 @@ public final class TreeColorSet {
             TAXONOMY, CONFIDENCE, BRANCH_LENGTH, BRANCH, NODE_BOX, COLLAPSED, MATCHING_NODES_A, MATCHING_NODES_B,
             MATCHING_NODES_A_AND_B, DUPLICATION, SPECIATION, DUPLICATION_OR_SPECATION, DOMAIN_LABEL, DOMAIN_BASE,
             BINARY_DOMAIN_COMBINATIONS, ANNOTATION, OVERVIEW };
-    static final String[]      SCHEME_NAMES               = { "Default", "Black", "Black & White", "Silver", "Green",
+    static final String[]      SCHEME_NAMES               = { "Default", "Black", "Black & White", "Simple", "Silver", "Green",
             "White & Blue", "Cyan", "Orange", "Blue", "Blue & White", "Neon" };
     private int                _color_scheme;
     private final Color[][]    _color_schemes             = { { new Color( 0, 0, 0 ), // background_color
@@ -120,7 +120,40 @@ public final class TreeColorSet {
             new Color( 0, 0, 0 ), // binary_domain_combinations_color
             new Color( 0, 0, 0 ) // annotation
             , new Color( 220, 220, 220 ) // ov
-            }, { new Color( 0, 0, 0 ), // background_color
+            }, 
+            
+            
+            
+            
+            { new Color( 255, 255, 255 ), // background_color
+                new Color( 0, 255, 255 ), // background_color_gradient_bottom
+                new Color( 0, 0, 153 ), //sequence __ NEW
+                new Color( 0, 0, 102 ), // taxonomy
+                new Color( 0, 0, 204 ), // support
+                new Color( 0, 51, 255 ), // branch_length_color
+                new Color( 0, 0, 0 ), // branch_color
+                new Color( 0, 51, 255 ), // box_color
+                new Color( 0, 51, 255 ), // collapesed_fill_color
+                new Color( 0, 0, 255 ), // found_color 0
+                new Color( 0, 255, 0 ), // found_color 1
+                new Color( 0, 255, 255 ), // found_color 0 + 1
+                new Color( 102, 51, 255 ), // duplication_box_color
+                new Color( 153, 153, 153 ), // speciation_box_color
+                new Color( 255, 255, 0 ), // duplication_speciation_color
+                new Color( 51, 51, 51), // domain_label
+                new Color(  51, 51, 51 ), // domains_base
+                new Color( 0, 0, 153 ), // binary_domain_combinations_color
+                new Color( 0, 0, 153 ),// annotation
+                new Color( 51, 51, 51 ) // ov
+            }  ,
+            
+            
+            
+            
+            
+            
+            
+            { new Color( 0, 0, 0 ), // background_color
             new Color( 0, 255, 255 ), // background_color_gradient_bottom
             new Color( 220, 220, 220 ), // sequence __ Silver
             new Color( 180, 180, 180 ), // taxonomy

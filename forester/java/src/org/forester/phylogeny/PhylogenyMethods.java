@@ -969,14 +969,14 @@ public class PhylogenyMethods {
         }
     }
 
-    public static List<PhylogenyNode> searchData( final String query,
+    public static List<Long> searchData( final String query,
                                                   final Phylogeny phy,
                                                   final boolean case_sensitive,
                                                   final boolean partial,
                                                   final boolean regex,
                                                   final boolean search_domains,
                                                   final double domains_confidence_threshold ) {
-        final List<PhylogenyNode> nodes = new ArrayList<PhylogenyNode>();
+        final List<Long> nodes = new ArrayList<Long>();
         if ( phy.isEmpty() || ( query == null ) ) {
             return nodes;
         }
@@ -1138,19 +1138,19 @@ public class PhylogenyMethods {
                 match = true;
             }
             if ( match ) {
-                nodes.add( node );
+                nodes.add( node.getId() );
             }
         }
         return nodes;
     }
 
-    public static List<PhylogenyNode> searchDataLogicalAnd( final String[] queries,
+    public static List<Long> searchDataLogicalAnd( final String[] queries,
                                                             final Phylogeny phy,
                                                             final boolean case_sensitive,
                                                             final boolean partial,
                                                             final boolean search_domains,
                                                             final double domains_confidence_threshold ) {
-        final List<PhylogenyNode> nodes = new ArrayList<PhylogenyNode>();
+        final List<Long> nodes = new ArrayList<Long>();
         if ( phy.isEmpty() || ( queries == null ) || ( queries.length < 1 ) ) {
             return nodes;
         }
@@ -1325,7 +1325,7 @@ public class PhylogenyMethods {
                 }
             }
             if ( all_matched ) {
-                nodes.add( node );
+                nodes.add( node.getId() );
             }
         }
         return nodes;
@@ -1627,6 +1627,9 @@ public class PhylogenyMethods {
                         }
                         n.getNodeData().getTaxonomy().setIdentifier( new Identifier( name ) );
                         break;
+                    }
+                    default: {
+                        throw new IllegalArgumentException( "don't know what to do with " + field );
                     }
                 }
             }

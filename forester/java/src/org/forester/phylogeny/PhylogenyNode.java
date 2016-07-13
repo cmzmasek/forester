@@ -515,6 +515,10 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
         }
         return _node_data;
     }
+    
+    public final boolean isHasNodeData() {
+        return ( !( _node_data == null || _node_data.isEmpty() ) );
+    }
 
     final public int getNumberOfDescendants() {
         if ( _descendants == null ) {

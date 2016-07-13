@@ -890,8 +890,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         fc.showDialog( this, "Select the Base Font" );
         getMainPanel().getTreeFontSet().setBaseFont( fc.getFont() );
         getControlPanel().displayedPhylogenyMightHaveChanged( true );
-        getMainPanel().getCurrentTreePanel().resetPreferredSize();
-        getMainPanel().getCurrentTreePanel().updateOvSizes();
+        if ( getMainPanel().getCurrentTreePanel() != null ) {
+            getMainPanel().getCurrentTreePanel().resetPreferredSize();
+            getMainPanel().getCurrentTreePanel().updateOvSizes();
+        }
        
         repaint();
     }

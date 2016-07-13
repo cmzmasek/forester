@@ -139,8 +139,8 @@ public final class Test {
     private final static String  PATH_TO_TEST_DATA         = System.getProperty( "user.dir" )
             + ForesterUtil.getFileSeparator() + "test_data"
             + ForesterUtil.getFileSeparator();
-    private final static boolean PERFORM_DB_TESTS          = true;
-    private static final boolean PERFORM_WEB_TREE_ACCESS   = true;
+    private final static boolean PERFORM_DB_TESTS          = false;
+    private static final boolean PERFORM_WEB_TREE_ACCESS   = false;
     private static final String  PHYLOXML_LOCAL_XSD        = PATH_TO_RESOURCES + "phyloxml_schema/"
             + ForesterConstants.PHYLO_XML_VERSION + "/"
             + ForesterConstants.PHYLO_XML_XSD;
@@ -8914,6 +8914,34 @@ public final class Test {
             if ( !p61.toNewHampshire()
                     .equals( "('H{omo} \"man\" sapiens:1',\"H{omo} 'man' sapiens;\",Hsapiens)';root \"1_ )';" ) ) {
                 System.out.println( p61.toNewHampshire() );
+                return false;
+            }
+            final String s62 = "(1[&type=\"X\",size=123,subtree=(1,2);]:0.003,2[&type=\"(X,Y:3)\"]:0.004)[&type=\"(X,Y)\"]:0.0;";
+            final Phylogeny p62 = factory.create( s62, new NHXParser() )[ 0 ];
+            if ( !p62.toNewHampshire()
+                    .equals( "(1:0.003,2:0.004):0.0;" ) ) {
+                System.out.println( p62.toNewHampshire() );
+                return false;
+            }
+            final String s63 = "(1:0.003[&type=\"X\",size=123,subtree=(1,2);],2:0.004[&type=\"(X,Y:3)\"]):0.0[&type=\"(X,Y)\"];";
+            final Phylogeny p63 = factory.create( s63, new NHXParser() )[ 0 ];
+            if ( !p63.toNewHampshire()
+                    .equals( "(1:0.003,2:0.004):0.0;" ) ) {
+                System.out.println( p63.toNewHampshire() );
+                return false;
+            }
+            final String s64 = "((1,2):[95.5],3);";
+            final Phylogeny p64 = factory.create( s64, new NHXParser() )[ 0 ];
+            if ( !p64.toNewHampshireX()
+                    .equals( "((1,2)[&&NHX:B=95.5],3)" ) ) {
+                System.out.println( p64.toNewHampshireX() );
+                return false;
+            }
+            final String s65 = "((1:0.1,2:0.2):0.3[10.2],3);";
+            final Phylogeny p65 = factory.create( s65, new NHXParser() )[ 0 ];
+            if ( !p65.toNewHampshireX()
+                    .equals( "((1:0.1,2:0.2):0.3[&&NHX:B=10.2],3)" ) ) {
+                System.out.println( p65.toNewHampshireX() );
                 return false;
             }
         }
