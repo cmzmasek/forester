@@ -12,11 +12,11 @@
 <!--          or Ruby's License.                                 -->
 <!--          see: http://www.ruby-lang.org/en/about/license.txt -->
 <!--                                                             -->
-<!-- Copyright (c) 2008-2013 Christian Zmasek                    -->
+<!-- Copyright (c) 2008-2016 Christian Zmasek                    -->
 <!--                                                             -->
 <!-- www.phyloxml.org                                            -->
-<!-- Version: 1.16                                               -->
-<!-- Last modified: 2013.09.30 by Christian  Zmasek              -->
+<!-- Version: 1.20                                               -->
+<!-- Last modified: 2016.07.06 by Christian Zmasek               -->
 <!--                                                             -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:phy="http://www.phyloxml.org"
    targetNamespace="http://www.phyloxml.org" elementFormDefault="qualified" attributeFormDefault="unqualified">
@@ -115,7 +115,7 @@
          <xs:element name="code" type="phy:TaxonomyCode" minOccurs="0"/>
          <xs:element name="scientific_name" type="xs:token" minOccurs="0"/>
          <xs:element name="authority" type="xs:token" minOccurs="0"/>
-         <xs:element name="common_name" type="xs:token" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element name="common_name" type="xs:token" minOccurs="0"/>
          <xs:element name="synonym" type="xs:token" minOccurs="0" maxOccurs="unbounded"/>
          <xs:element name="rank" type="phy:Rank" minOccurs="0"/>
          <xs:element name="uri" type="phy:Uri" minOccurs="0" maxOccurs="unbounded"/>
@@ -540,6 +540,7 @@
          <xs:element name="red" type="xs:unsignedByte"/>
          <xs:element name="green" type="xs:unsignedByte"/>
          <xs:element name="blue" type="xs:unsignedByte"/>
+         <xs:element name="alpha" type="xs:unsignedByte" minOccurs="0"/>
       </xs:sequence>
    </xs:complexType>
    <!-- SequenceRelation:-->

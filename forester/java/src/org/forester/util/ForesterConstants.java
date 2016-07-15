@@ -29,7 +29,7 @@ public final class ForesterConstants {
 
     public final static String  FORESTER_VERSION            = "1.042";
     public final static String  FORESTER_DATE               = "160712";
-    public final static String  PHYLO_XML_VERSION           = "1.10";
+    public final static String  PHYLO_XML_VERSION           = "1.20";
     public final static String  PHYLO_XML_LOCATION          = "http://www.phyloxml.org";
     public final static String  PHYLO_XML_XSD               = "phyloxml.xsd";
     public final static String  XML_SCHEMA_INSTANCE         = "http://www.w3.org/2001/XMLSchema-instance";

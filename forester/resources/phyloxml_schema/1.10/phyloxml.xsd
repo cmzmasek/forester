@@ -12,11 +12,11 @@
 <!--          or Ruby's License.                                 -->
 <!--          see: http://www.ruby-lang.org/en/about/license.txt -->
 <!--                                                             -->
-<!-- Copyright (c) 2008-2013 Christian Zmasek                    -->
+<!-- Copyright (c) 2008-2011 Christian M Zmasek                  -->
 <!--                                                             -->
 <!-- www.phyloxml.org                                            -->
-<!-- Version: 1.16                                               -->
-<!-- Last modified: 2013.09.30 by Christian  Zmasek              -->
+<!-- Version: 1.10                                               -->
+<!-- Last modified: 2010.10.01 by Christian M Zmasek             -->
 <!--                                                             -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:phy="http://www.phyloxml.org"
    targetNamespace="http://www.phyloxml.org" elementFormDefault="qualified" attributeFormDefault="unqualified">
@@ -85,6 +85,7 @@
          <xs:element name="confidence" type="phy:Confidence" minOccurs="0" maxOccurs="unbounded"/>
          <xs:element name="width" type="xs:double" minOccurs="0"/>
          <xs:element name="color" type="phy:BranchColor" minOccurs="0"/>
+         <xs:element name="node_id" type="phy:Id" minOccurs="0"/>
          <xs:element name="taxonomy" type="phy:Taxonomy" minOccurs="0" maxOccurs="unbounded"/>
          <xs:element name="sequence" type="phy:Sequence" minOccurs="0" maxOccurs="unbounded"/>
          <xs:element name="events" type="phy:Events" minOccurs="0"/>
@@ -98,7 +99,6 @@
       </xs:sequence>
       <xs:attribute name="branch_length" type="xs:double"/>
       <xs:attribute name="id_source" type="phy:id_source"/>
-      <xs:attribute name="collapse" type="xs:boolean"/>
    </xs:complexType>
    <!-- Taxonomy:-->
    <xs:complexType name="Taxonomy">
@@ -118,14 +118,14 @@
          <xs:element name="common_name" type="xs:token" minOccurs="0" maxOccurs="unbounded"/>
          <xs:element name="synonym" type="xs:token" minOccurs="0" maxOccurs="unbounded"/>
          <xs:element name="rank" type="phy:Rank" minOccurs="0"/>
-         <xs:element name="uri" type="phy:Uri" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element name="uri" type="phy:Uri" minOccurs="0"/>
          <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax" namespace="##other"/>
       </xs:sequence>
       <xs:attribute name="id_source" type="phy:id_source"/>
    </xs:complexType>
    <xs:simpleType name="TaxonomyCode">
       <xs:restriction base="xs:token">
-         <xs:pattern value="([A-Z9][A-Z]{2}[A-Z0-9]{2})|RAT|PIG|PEA"/>
+         <xs:pattern value="[a-zA-Z0-9_]{2,10}"/>
       </xs:restriction>
    </xs:simpleType>
    <xs:simpleType name="Rank">
@@ -157,11 +157,9 @@
          <xs:enumeration value="cohort"/>
          <xs:enumeration value="subcohort"/>
          <xs:enumeration value="infracohort"/>
-         <xs:enumeration value="magnorder"/>
          <xs:enumeration value="superorder"/>
          <xs:enumeration value="order"/>
          <xs:enumeration value="suborder"/>
-         <xs:enumeration value="infraorder"/>
          <xs:enumeration value="superfamily"/>
          <xs:enumeration value="family"/>
          <xs:enumeration value="subfamily"/>
@@ -175,14 +173,11 @@
          <xs:enumeration value="species"/>
          <xs:enumeration value="subspecies"/>
          <xs:enumeration value="variety"/>
-         <xs:enumeration value="varietas"/>
          <xs:enumeration value="subvariety"/>
          <xs:enumeration value="form"/>
          <xs:enumeration value="subform"/>
          <xs:enumeration value="cultivar"/>
          <xs:enumeration value="strain"/>
-         <xs:enumeration value="section"/>
-         <xs:enumeration value="subsection"/>
          <xs:enumeration value="unknown"/>
          <xs:enumeration value="other"/>
       </xs:restriction>
@@ -191,23 +186,21 @@
    <xs:complexType name="Sequence">
       <xs:annotation>
          <xs:documentation> Element Sequence is used to represent a molecular sequence (Protein, DNA, RNA) associated
-            with a node. 'symbol' is a short (maximal 20 characters) symbol of the sequence (e.g. 'ACTM') whereas
-            'name' is used for the full name (e.g. 'muscle Actin'). 'gene_name' can be used when protein and gene names differ.
-            'location' is used for the location of a sequence on a genome/chromosome. The actual sequence can be stored with the 
-            'mol_seq' element. Attribute 'type' is used to indicate the type of sequence ('dna', 'rna', or 'protein'). 
-            One intended use for 'id_ref' is to link a sequence to a taxonomy (via the taxonomy's 'id_source') in case 
-            of multiple sequences and taxonomies per node. </xs:documentation>
+            with a node. 'symbol' is a short (maximal ten characters) symbol of the sequence (e.g. 'ACTM') whereas
+            'name' is used for the full name (e.g. 'muscle Actin'). 'location' is used for the location of a sequence on
+            a genome/chromosome. The actual sequence can be stored with the 'mol_seq' element. Attribute 'type' is used
+            to indicate the type of sequence ('dna', 'rna', or 'protein'). One intended use for 'id_ref' is to link a
+            sequence to a taxonomy (via the taxonomy's 'id_source') in case of multiple sequences and taxonomies per
+            node. </xs:documentation>
       </xs:annotation>
       <xs:sequence>
          <xs:element name="symbol" type="phy:SequenceSymbol" minOccurs="0"/>
          <xs:element name="accession" type="phy:Accession" minOccurs="0"/>
          <xs:element name="name" type="xs:token" minOccurs="0"/>
-         <xs:element name="gene_name" type="xs:token" minOccurs="0"/>
          <xs:element name="location" type="xs:token" minOccurs="0"/>
          <xs:element name="mol_seq" type="phy:MolSeq" minOccurs="0"/>
-         <xs:element name="uri" type="phy:Uri" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element name="uri" type="phy:Uri" minOccurs="0"/>
          <xs:element name="annotation" type="phy:Annotation" minOccurs="0" maxOccurs="unbounded"/>
-         <xs:element name="cross_references" type="phy:CrossReferences" minOccurs="0"/>
          <xs:element name="domain_architecture" type="phy:DomainArchitecture" minOccurs="0"/>
          <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax" namespace="##other"/>
       </xs:sequence>
@@ -249,19 +242,9 @@
       <xs:simpleContent>
          <xs:extension base="xs:token">
             <xs:attribute name="source" type="xs:token" use="required"/>
-            <xs:attribute name="comment" type="xs:token"/>
          </xs:extension>
       </xs:simpleContent>
    </xs:complexType>
-   <!-- CrossReferences: -->
-   <xs:complexType name="CrossReferences">
-      <xs:annotation>
-         <xs:documentation> Used to store accessions to additional resources. </xs:documentation>
-      </xs:annotation> 
-      <xs:sequence>
-         <xs:element name="accession" type="phy:Accession" minOccurs="1" maxOccurs="unbounded"/>
-      </xs:sequence>
-   </xs:complexType> 
    <!-- DomainArchitecture: -->
    <xs:complexType name="DomainArchitecture">
       <xs:annotation>
@@ -359,7 +342,7 @@
          <xs:element name="desc" type="xs:token" minOccurs="0"/>
          <xs:element name="confidence" type="phy:Confidence" minOccurs="0"/>
          <xs:element name="property" type="phy:Property" minOccurs="0" maxOccurs="unbounded"/>
-         <xs:element name="uri" type="phy:Uri" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element name="uri" type="phy:Uri" minOccurs="0"/>
       </xs:sequence>
       <xs:attribute name="ref" type="phy:ref"/>
       <xs:attribute name="source" type="xs:token"/>
@@ -387,7 +370,7 @@
    </xs:complexType>
    <xs:simpleType name="ref">
       <xs:restriction base="xs:token">
-         <xs:pattern value="[a-zA-Z0-9_]+:\S+"/>
+         <xs:pattern value="[a-zA-Z0-9_]+:[a-zA-Z0-9_\.\-\s]+"/>
       </xs:restriction>
    </xs:simpleType>
    <xs:simpleType name="AppliesTo">
@@ -459,7 +442,6 @@
       <xs:simpleContent>
          <xs:extension base="xs:double">
             <xs:attribute name="type" type="xs:token" use="required"/>
-            <xs:attribute name="stddev" type="xs:double"/>
          </xs:extension>
       </xs:simpleContent>
    </xs:complexType>

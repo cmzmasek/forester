@@ -66,11 +66,11 @@ public class get_genome_counts_per_char {
         }
         final SortedSet<String> all_chars = getAllExternalPresentAndGainedCharacters( phy.getRoot() );
         final SortedSet<String> human = getAllExternalPresentAndGainedCharacters( phy.getNode( "HUMAN" ) );
-        final SortedSet<String> primates = getAllExternalPresentAndGainedCharacters( find( "Primates", phy ) );
-        final SortedSet<String> mammalia = getAllExternalPresentAndGainedCharacters( find( "Mammalia", phy ) );
-        final SortedSet<String> metazoa = getAllExternalPresentAndGainedCharacters( find( "Metazoa", phy ) );
-        final SortedSet<String> fungi = getAllExternalPresentAndGainedCharacters( find( "Fungi", phy ) );
-        final SortedSet<String> plants = getAllExternalPresentAndGainedCharacters( find( "Viridiplantae", phy ) );
+        final SortedSet<String> primates = getAllExternalPresentAndGainedCharacters( phy.getNode( find( "Primates", phy ) ) );
+        final SortedSet<String> mammalia = getAllExternalPresentAndGainedCharacters( phy.getNode(find( "Mammalia", phy ) ) );
+        final SortedSet<String> metazoa = getAllExternalPresentAndGainedCharacters( phy.getNode(find( "Metazoa", phy ) ) );
+        final SortedSet<String> fungi = getAllExternalPresentAndGainedCharacters( phy.getNode(find( "Fungi", phy ) ) );
+        final SortedSet<String> plants = getAllExternalPresentAndGainedCharacters( phy.getNode(find( "Viridiplantae", phy ) ) );
         System.out.println( "Sum of all external characters:\t" + all_chars.size() );
         System.out.println();
         final List<PhylogenyNode> ext = phy.getRoot().getAllExternalDescendants();
@@ -128,8 +128,8 @@ public class get_genome_counts_per_char {
         }
     }
 
-    private static PhylogenyNode find( final String s, final Phylogeny phy ) {
-        final List<PhylogenyNode> l = PhylogenyMethods.searchData( s, phy, true, false, false, false, 0 );
+    private static Long find( final String s, final Phylogeny phy ) {
+        final List<Long> l = PhylogenyMethods.searchData( s, phy, true, false, false, false, 0 );
         if ( l.size() != 1 ) {
             System.err.println( "error: " + s );
             System.exit( -1 );

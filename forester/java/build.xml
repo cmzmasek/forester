@@ -19,7 +19,7 @@
     <target name="copy_resources" description="Copies resources">
     <mkdir dir="${classes.dir}/resources" />
         <copy verbose="true"
-          file="../resources/phyloxml_schema/1.10/phyloxml.xsd"
+          file="../resources/phyloxml_schema/1.20/phyloxml.xsd"
           todir="${classes.dir}/resources"/>
     </target>
 
