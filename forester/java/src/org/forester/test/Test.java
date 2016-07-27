@@ -479,6 +479,15 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
+        System.out.print( "phyloXML parsing (validating against schema): " );
+        if ( testPhyloXMLparsingValidating() ) {
+            System.out.println( "OK." );
+            succeeded++;
+        }
+        else {
+            System.out.println( "failed." );
+            failed++;
+        }
         System.out.print( "Roundtrip phyloXML parsing (validating against schema): " );
         if ( Test.testBasicPhyloXMLparsingRoundtrip() ) {
             System.out.println( "OK." );
@@ -2733,6 +2742,42 @@ public final class Test {
             s.getNode( "'''\"" );
             s.getNode( "\"\"\"" );
             s.getNode( "dick & doof" );
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace( System.out );
+            return false;
+        }
+        return true;
+    }
+    
+    private static boolean testPhyloXMLparsingValidating() {
+        try {
+            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+            PhyloXmlParser xml_parser = null;
+            try {
+                xml_parser = PhyloXmlParser.createPhyloXmlParserXsdValidating();
+            }
+            catch ( final Exception e ) {
+                // Do nothing -- means were not running from jar.
+            }
+            if ( xml_parser == null ) {
+                xml_parser = PhyloXmlParser.createPhyloXmlParser();
+                if ( USE_LOCAL_PHYLOXML_SCHEMA ) {
+                    xml_parser.setValidateAgainstSchema( PHYLOXML_LOCAL_XSD );
+                }
+                else {
+                    xml_parser.setValidateAgainstSchema( PHYLOXML_REMOTE_XSD );
+                }
+            }
+            final Phylogeny[] phylogenies_0 = factory.create( new File( Test.PATH_TO_TEST_DATA + "phyloxml_test_1.xml" ),
+                                                              xml_parser );
+            if ( xml_parser.getErrorCount() > 0 ) {
+                System.out.println( xml_parser.getErrorMessages().toString() );
+                return false;
+            }
+            if ( phylogenies_0.length != 3 ) {
+                return false;
+            }
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );

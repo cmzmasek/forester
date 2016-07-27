@@ -315,8 +315,8 @@ public class Sequence implements PhylogenyData, MultipleUris, Comparable<Sequenc
         return result;
     }
 
-    public boolean hasSequenceRelations() {
-        return _seq_relations.size() > 0;
+    public boolean isHasSequenceRelations() {
+        return _seq_relations != null && _seq_relations.size() > 0;
     }
 
     public void init() {

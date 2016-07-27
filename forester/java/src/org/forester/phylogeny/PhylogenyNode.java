@@ -468,11 +468,11 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
 
     public final PhylogenyNode getNextExternalNodeWhileTakingIntoAccountCollapsedNodes() {
         //TODO work on me ~~
-        if ( isInternal() && !isCollapse() ) {
-            throw new UnsupportedOperationException( "attempt to get next external node of an uncollapsed internal node" );
-        }
         if ( isRoot() ) {
             return null;
+        }
+        if ( isInternal() && !isCollapse() ) {
+            throw new UnsupportedOperationException( "attempt to get next external node of an uncollapsed internal node" );
         }
         if ( getParent().isCollapse() ) {
             throw new UnsupportedOperationException( "attempt to get next external node of node with a collapsed parent" );
@@ -617,9 +617,10 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
 
     /**
      * Returns whether this PhylogenyNode should be drawn as collapsed.
+     * Root can not be collapsed.
      */
     final public boolean isCollapse() {
-        return _collapse;
+        return _collapse && _parent != null;
     }
 
     /**

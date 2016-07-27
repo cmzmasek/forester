@@ -253,6 +253,7 @@ public final class Configuration {
     private boolean                         _line_up_renderable_node_data                          = true;
     private boolean                         _right_align_domains                                   = false;
     private boolean                         _allow_thick_strokes                                   = false;
+    private boolean                         _could_read_config_file = false;
     static {
         for( final String font_name : AptxConstants.DEFAULT_FONT_CHOICES ) {
             if ( Arrays.binarySearch( AptxUtil.getAvailableFontFamiliesSorted(), font_name ) >= 0 ) {
@@ -276,6 +277,7 @@ public final class Configuration {
         else {
             config_filename = cf;
         }
+        _could_read_config_file = false;
         setDisplayColors( new TreeMap<String, Color>() );
         config_filename = config_filename.trim();
         URL u = null;
@@ -290,6 +292,7 @@ public final class Configuration {
                     bf.close();
                     ForesterUtil.programMessage( AptxConstants.PRG_NAME, "successfully read from configuration url ["
                             + config_filename + "]" );
+                    _could_read_config_file = true;
                 }
                 catch ( final Exception e ) {
                     ForesterUtil.printWarningMessage( AptxConstants.PRG_NAME, "failed to read configuration from ["
@@ -312,6 +315,7 @@ public final class Configuration {
                     final BufferedReader bf = new BufferedReader( new FileReader( f ) );
                     readConfig( bf );
                     bf.close();
+                    _could_read_config_file = true;
                 }
                 catch ( final Exception e ) {
                     if ( verbose ) {
@@ -1793,4 +1797,10 @@ public final class Configuration {
     static String getDefaultFontFamilyName() {
         return DEFAULT_FONT_FAMILY;
     }
+
+    public boolean isCouldReadConfigFile() {
+        return _could_read_config_file;
+    }
+
+    
 }

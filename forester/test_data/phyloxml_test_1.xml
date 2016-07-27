@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd"
+          xmlns="http://www.phyloxml.org">
+    <phylogeny branch_length_unit="c" rooted="true" rerootable="true" type="gene_tree">
+        <name>tree 0</name>
+        <id provider="treebank">1-1</id>
+        <description>test phylogeny</description>
+        <date>2002-05-30T09:00:00</date>
+        <confidence type="ml">0.999</confidence>
+        <confidence type="pp">0.955</confidence>
+        <clade branch_length="0.1" id_source="id111" collapse="true">
+            <name>root node</name>
+            <confidence type="bootstrap">90</confidence>
+            <confidence type="ml" stddev="1.1E-10">1e-3</confidence>
+            <confidence type="decay">2</confidence>
+            <width>10.5</width>
+            <color>
+                <red>2</red>
+                <green>22</green>
+                <blue>33</blue>
+                <alpha>123</alpha>
+            </color>
+            <taxonomy id_source="qwerty1">
+                <id provider="ncbi">1</id>
+                <code>ECDYS</code>
+                <scientific_name>ecdysozoa</scientific_name>
+                <authority>authority, 1999</authority>
+                <common_name>molting animals</common_name>
+                <synonym>Ecdy</synonym>
+                <synonym>The Ecdysozoa</synonym>
+                <rank>phylum</rank>
+                <uri type="img">http://www.molting.org/m.jpg</uri>
+                <uri type="source" desc="original source">http://www.ecdysozoa.org/</uri>
+            </taxonomy>
+            <taxonomy>
+                <id provider="ncbi">123</id>
+                <synonym>Æ Ä ä, ö and ü>– —</synonym>
+                <synonym>한글</synonym>
+                <synonym>日本語ひらがなカタカナ</synonym>
+                <synonym>русский алфавит</synonym>
+                <synonym>繁體字</synonym>
+                <synonym>ภาษาไทย</synonym>
+                <synonym>Tiếng Việt</synonym>
+            </taxonomy>
+            <sequence type="protein" id_source="idsource">
+                <symbol>BCL2L14</symbol>
+                <accession source="UniProtKB" comment="outdated">Q9BZR8</accession>
+                <name>Apoptosis facilitator Bcl-2-like 14 protein</name>
+                <gene_name>bcl2l14</gene_name>
+                <location>12p13-p12</location>
+                <mol_seq is_aligned="true">MCSTSGCDLEEIPLDDDDLNTIEFKILAYY</mol_seq>
+                <uri type="source" desc="UniProt link">http://www.pir.uniprot.org/cgi-bin/upEntry?id=B2L14_HUMAN</uri>
+                <annotation>
+                    <desc>intracellular organelle</desc>
+                </annotation>
+                <annotation ref="GO:0005829"/>
+                <annotation ref="GO:0006915" source="UniProtKB" evidence="experimental" type="function">
+                    <desc>apoptosis</desc>
+                    <confidence type="ml" stddev="0.3">1</confidence>
+                    <property datatype="xsd:double" applies_to="annotation" ref="AFFY:expression" unit="AFFY:x">0.2
+                    </property>
+                    <property datatype="xsd:string" applies_to="annotation" ref="MED:disease">lymphoma</property>
+                    <uri type="source" desc="google">http://www.google.com</uri>
+                    <uri type="source2" desc="bing">http://www.bing.com</uri>
+                </annotation>
+                <cross_references>
+                    <accession source="UNIPROTKB">383</accession>
+                    <accession source="PDB">1G5M</accession>
+                    <accession source="KEGG">hsa:596</accession>
+                    <accession source="PDB" comment="?">2G5M</accession>
+                </cross_references>
+            </sequence>
+            <sequence type="protein">
+                <symbol>BCL2</symbol>
+            </sequence>
+            <events>
+                <type>mixed</type>
+                <duplications>1</duplications>
+                <confidence type="bs">99</confidence>
+            </events>
+            <distribution>
+                <desc>irgendwo</desc>
+                <point geodetic_datum="WGS84" alt_unit="m">
+                    <lat>35.9296730123456789</lat>
+                    <long>-78.9482370123456789</long>
+                    <alt>1303</alt>
+                </point>
+                <point geodetic_datum="WGS84" alt_unit="m">
+                    <lat>129.549495485834893</lat>
+                    <long>-78.00000000000000</long>
+                    <alt>1400</alt>
+                </point>
+            </distribution>
+            <distribution>
+                <desc>anderswo</desc>
+            </distribution>
+            <date unit="MYA">
+                <desc>Silurian</desc>
+            </date>
+            <reference doi="10.1038/387489a0">
+                <desc>
+                    Aguinaldo, A. M. A.; J. M. Turbeville, L. S. Linford, M. C. Rivera, J. R. Garey, R. A. Raff, &amp;
+                    J. A. Lake (1997). "Evidence for a clade of nematodes, arthropods and other moulting animals".
+                    Nature 387 (6632): 489–493.
+                </desc>
+            </reference>
+            <reference doi="10.1036/59494">
+            </reference>
+            <property ref="F:foo" datatype="xsd:int" applies_to="clade">2</property>
+            <property ref="F:bar" datatype="xsd:int" applies_to="clade">33</property>
+            <clade>
+                <name>node a</name>
+                <branch_length>0.2</branch_length>
+                <color>
+                    <red>12</red>
+                    <green>14</green>
+                    <blue>16</blue>
+                </color>
+                <taxonomy>
+                    <id provider="ncbi">123</id>
+                    <code>CAEEL</code>
+                    <scientific_name>C elegans</scientific_name>
+                    <common_name>elegant nematode worm</common_name>
+                    <rank>species</rank>
+                    <uri>http://www.wormbase.org/</uri>
+                </taxonomy>
+                <sequence id_source="xyz">
+                    <name>CAEEL_XYZ</name>
+                </sequence>
+                <sequence id_source="abc">
+                    <name>CAEEL_ABC</name>
+                </sequence>
+                <events>
+                    <type>other</type>
+                    <duplications>58</duplications>
+                    <speciations>59403</speciations>
+                    <losses>58485</losses>
+                    <confidence type="p">0.9901</confidence>
+                </events>
+            </clade>
+            <clade>
+                <name>node b</name>
+                <events>
+                    <duplications>1</duplications>
+                    <confidence type="">80</confidence>
+                </events>
+                <binary_characters type="characters" present_count="2" lost_count="3" gained_count="1">
+                    <gained>
+                        <bc>c</bc>
+                    </gained>
+                    <lost>
+                        <bc>d</bc>
+                        <bc>e</bc>
+                        <bc>f</bc>
+                    </lost>
+                    <present>
+                        <bc>a</bc>
+                        <bc>b</bc>
+                    </present>
+                </binary_characters>
+                <clade>
+                    <name>node ba</name>
+                    <distribution>
+                        <desc>Africa</desc>
+                    </distribution>
+                    <date unit="mya">
+                        <desc>Silurian</desc>
+                        <value>435</value>
+                        <minimum>416</minimum>
+                        <maximum>443.7</maximum>
+                    </date>
+                </clade>
+                <clade collapse="false">
+                    <name>node bb</name>
+                    <taxonomy>
+                        <id provider="EOL">704294</id>
+                        <code>NEMVE</code>
+                        <scientific_name>Nematostella vectensis</scientific_name>
+                        <authority>Stephenson, 1935</authority>
+                        <common_name>starlet sea anemone</common_name>
+                        <synonym>Nematostella vectensis Stephenson1935</synonym>
+                        <synonym>See
+                            Anemone
+                        </synonym>
+                        <synonym></synonym>
+                        <rank>species</rank>
+                        <uri desc="EOL" type="linkout">http://www.eol.org/pages/704294</uri>
+                    </taxonomy>
+                    <binary_characters type="domains">
+                        <gained>
+                            <bc>A</bc>
+                            <bc>B</bc>
+                            <bc>C</bc>
+                        </gained>
+                        <lost>
+                            <bc>D</bc>
+                        </lost>
+                        <present>
+                            <bc>X</bc>
+                            <bc>M</bc>
+                        </present>
+                    </binary_characters>
+                    <date>
+                        <desc>Triassic</desc>
+                    </date>
+                </clade>
+                <clade>
+                    <name>node bc</name>
+                    <sequence>
+                        <name>bc seq</name>
+                        <domain_architecture length="124">
+                            <domain from="120" to="130" confidence="0.9">A</domain>
+                            <domain from="21" to="44" confidence="0" id="pfam">B</domain>
+                            <domain to="43" confidence="1.0E-89" from="34" id="">C</domain>
+                            <domain id="123" from="34" to="43" confidence="1.3e-34">D</domain>
+                        </domain_architecture>
+                    </sequence>
+                    <events>
+                        <speciations>1</speciations>
+                    </events>
+                    <date>
+                        <value>433</value>
+                    </date>
+                </clade>
+            </clade>
+        </clade>
+        <sequence_relation id_ref_0="abc" id_ref_1="xyz" distance="0.34" type="ultra_paralogy">
+            <confidence type="pp" stddev="1.1E-10">1e-3</confidence>
+        </sequence_relation>
+        <sequence_relation id_ref_0="xyz" id_ref_1="abc" distance="2" type="unknown">
+            <confidence type="pp" stddev="1.245836">99.0000001</confidence>
+        </sequence_relation>
+        <property datatype="xsd:double" applies_to="phylogeny" ref="TIME:time" unit="TIME:MYA">2</property>
+        <property datatype="xsd:string" applies_to="phylogeny" ref="GO:function">cell death</property>
+    </phylogeny>
+    <phylogeny rooted="true" rerootable="true">
+        <name>phylogeny2</name>
+        <clade>
+            <clade>
+                <name>A</name>
+            </clade>
+            <clade>
+                <name>B</name>
+            </clade>
+        </clade>
+    </phylogeny>
+    <phylogeny rooted="true" rerootable="true">
+        <name>phylogeny3</name>
+        <clade>
+            <clade id_source="i0">
+                <name>C</name>
+            </clade>
+            <clade id_source="i1">
+                <name>D</name>
+            </clade>
+        </clade>
+        <clade_relation id_ref_0="i0" id_ref_1="i1" distance="0.34" type="parent">
+            <confidence type="pp" stddev="1.1E-10">1e-3</confidence>
+        </clade_relation>
+        <clade_relation id_ref_0="i1" id_ref_1="i0" distance="2" type="child">
+            <confidence type="pp" stddev="1.1E-20">1e-4</confidence>
+        </clade_relation>
+    </phylogeny>
+</phyloxml>

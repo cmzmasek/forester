@@ -74,8 +74,10 @@ public class ImageLoader implements Runnable {
                     && !node.getNodeData().getTaxonomy().getUris().isEmpty() ) {
                 final List<Uri> us = new ArrayList<Uri>();
                 for( final Taxonomy t : node.getNodeData().getTaxonomies() ) {
-                    for( final Uri uri : t.getUris() ) {
-                        us.add( uri );
+                    if ( t.getUris() != null ) {
+                        for( final Uri uri : t.getUris() ) {
+                            us.add( uri );
+                        }
                     }
                 }
                 for( final Uri uri : us ) {

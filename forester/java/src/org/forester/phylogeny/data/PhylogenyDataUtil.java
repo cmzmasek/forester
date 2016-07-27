@@ -35,7 +35,7 @@ import org.forester.util.ForesterUtil;
 
 public final class PhylogenyDataUtil {
 
-    /** Value of -99.0 is used as default value. */
+    /** Value of -1024.0 is used as default value. */
     public final static double BRANCH_LENGTH_DEFAULT = -1024.0;
 
     public static void appendClose( final Writer w, final String element_name ) throws IOException {

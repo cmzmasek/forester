@@ -38,7 +38,7 @@ import org.forester.util.ForesterUtil;
 
 public class Confidence implements PhylogenyData, Comparable<Confidence> {
 
-    public final static int          CONFIDENCE_DEFAULT_VALUE = -9999;
+    public final static int          CONFIDENCE_DEFAULT_VALUE = -Integer.MAX_VALUE;
     private double                   _value;
     private double                   _sd;
     private String                   _type;

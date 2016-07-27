@@ -338,7 +338,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
             updateOptions( getOptions() );
         }
         else if ( o == _about_item ) {
-            MainFrame.about();
+            getMainPanel().getMainFrame().about();
         }
         else if ( o == _help_item ) {
             try {

@@ -455,7 +455,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
         final ArrayList<String> sequenceNamesToAdd = new ArrayList<String>();
         for( final Sequence seq : sequenceRelationQueries ) {
-            if ( seq.hasSequenceRelations() ) {
+            if ( seq.isHasSequenceRelations() ) {
                 boolean fFoundForCurrentType = false;
                 for( final SequenceRelation sq : seq.getSequenceRelations() ) {
                     if ( sq.getType().equals( relationType ) ) {

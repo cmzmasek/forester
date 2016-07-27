@@ -38,8 +38,8 @@ public final class AptxConstants {
 
     final static boolean        __ALLOW_PHYLOGENETIC_INFERENCE                                = true;
     public final static String  PRG_NAME                                                      = "Archaeopteryx";
-    final static String         VERSION                                                       = "0.9914 test";
-    final static String         PRG_DATE                                                      = "160714";
+    final static String         VERSION                                                       = "0.9915 test";
+    final static String         PRG_DATE                                                      = "160727";
     final static String         DEFAULT_CONFIGURATION_FILE_NAME                               = "_aptx_configuration_file";
     final static String[]       DEFAULT_FONT_CHOICES                                          = { 
             "Arial Unicode MS", "Dialog", "SansSerif", "Sans", "Arial", "Helvetica" };
@@ -68,6 +68,7 @@ public final class AptxConstants {
     static final int            MAX_TREES_TO_LOAD                                             = 100;
     final static float          PDF_LINE_WIDTH_DEFAULT                                        = 0.5f;
     final static String         APTX_WEB_SITE                                                 = "https://sites.google.com/site/cmzmasek/home/software/archaeopteryx";
+    final static String         APTX_MAILING_LIST                                             = "https://groups.google.com/forum/?fromgroups#!forum/archaeopteryx";
     final static String         APTX_DOC_SITE                                                 = "https://sites.google.com/site/cmzmasek/home/software/archaeopteryx/documentation";
     final static String         PHYLOXML_WEB_SITE                                             = ForesterConstants.PHYLO_XML_LOCATION;
     final static String         PHYLOXML_REFERENCE_URL                                        = "http://www.biomedcentral.com/1471-2105/10/356/";

@@ -176,6 +176,17 @@ public final class AptxUtil {
         }
         return false;
     }
+    
+    final static public boolean isHasNoBranchLengthSmallerThanZero( final Phylogeny phy ) {
+        final PhylogenyNodeIterator it = phy.iteratorPostorder();
+        while ( it.hasNext() ) {
+            final PhylogenyNode n = it.next(); 
+            if ( n.getDistanceToParent() < 0.0 && !n.isRoot() ) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     final static public boolean isHasAtLeastOneBranchWithSupportSD( final Phylogeny phy ) {
         final PhylogenyNodeIterator it = phy.iteratorPostorder();
@@ -771,12 +782,17 @@ public final class AptxUtil {
                                                                      final ControlPanel cp ) {
         if ( ( t != null ) && !t.isEmpty() ) {
             final boolean has_bl = AptxUtil.isHasAtLeastOneBranchLengthLargerThanZero( t );
+             
             if ( !has_bl ) {
                 cp.setDrawPhylogram( false );
                 cp.setDrawPhylogramEnabled( false );
             }
-            else if ( cp.getDisplayAsPhylogramCb() != null ) {
-                cp.setDrawPhylogramEnabled( true );
+            else {
+                final boolean has_all_bl = AptxUtil.isHasNoBranchLengthSmallerThanZero( t );
+                cp.setDrawPhylogram(  has_all_bl );
+                if ( cp.getDisplayAsPhylogramCb() != null ) {
+                    cp.setDrawPhylogramEnabled( true );
+                }
             }
         }
     }
@@ -789,7 +805,6 @@ public final class AptxUtil {
                 atv_control.setDrawPhylogram( false );
                 atv_control.setDrawPhylogramEnabled( false );
             }
-            
             if ( t.getFirstExternalNode().getBranchData().getBranchColor() != null
                     && atv_control.getUseVisualStylesCb() != null ) {
                 atv_control.getUseVisualStylesCb().setSelected( true );
@@ -805,7 +820,9 @@ public final class AptxUtil {
             if ( configuration.doGuessCheckOption( Configuration.display_as_phylogram ) ) {
                 if ( atv_control.getDisplayAsPhylogramCb() != null ) {
                     if ( has_bl ) {
-                        atv_control.setDrawPhylogram( true );
+                        final boolean has_all_bl = AptxUtil.isHasNoBranchLengthSmallerThanZero( t );
+                        
+                        atv_control.setDrawPhylogram( has_all_bl );
                         atv_control.setDrawPhylogramEnabled( true );
                     }
                     else {

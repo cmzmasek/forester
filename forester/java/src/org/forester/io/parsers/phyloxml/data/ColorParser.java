@@ -74,7 +74,7 @@ public class ColorParser implements PhylogenyDataPhyloXmlParser {
             color.setValue( new Color( red, green, blue ) );
         }
         else { 
-            color.setValue( new Color( red, green, blue ) );
+            color.setValue( new Color( red, green, blue, alpha ) );
         }
         return color;
     }
