@@ -44,10 +44,12 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -751,6 +753,22 @@ public final class AptxUtil {
         }
         return str_array;
     }
+    
+    final static String[] getAllPossibleRanks(final Map<String, Integer> present_ranks) {
+        final String[] str_array = new String[ PhyloXmlUtil.TAXONOMY_RANKS_LIST.size() - 2 ];
+        int i = 0;
+        for( final String e : PhyloXmlUtil.TAXONOMY_RANKS_LIST ) {
+            if ( !e.equals( PhyloXmlUtil.UNKNOWN ) && !e.equals( PhyloXmlUtil.OTHER ) ) {
+                if ( present_ranks != null && present_ranks.containsKey( e ) ) {
+                    str_array[ i++ ] = e + " (" +  present_ranks.get(e) + ")";
+                }
+                else {
+                    str_array[ i++ ] = e;
+                }
+            }
+        }
+        return str_array;
+    }
 
     final static String[] getAllRanks( final Phylogeny tree ) {
         final SortedSet<String> ranks = new TreeSet<String>();
@@ -1078,5 +1096,26 @@ public final class AptxUtil {
         // Convert to an IIOImage:
         final IIOImage iio_image = new IIOImage( image, null, null );
         writer.write( null, iio_image, image_write_param );
+    }
+
+    final static Map<String, Integer> getRankCounts(final Phylogeny tree) {
+        final Map<String, Integer> present_ranks = new HashMap<String, Integer>();
+    
+        if ( ( tree != null ) && !tree.isEmpty() ) {
+            for( final PhylogenyNodeIterator it = tree.iteratorPostorder(); it.hasNext(); ) {
+                final PhylogenyNode n = it.next();
+                if ( !n.isExternal() && n.getNodeData().isHasTaxonomy()
+                        && !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getRank() ) && !n.isRoot() ) {
+                    final String rank = n.getNodeData().getTaxonomy().getRank().toLowerCase();
+                    if (present_ranks.containsKey( rank ) ) {
+                        present_ranks.put( rank, present_ranks.get( rank ) + 1 );
+                    }
+                    else {
+                        present_ranks.put( rank, 1 );
+                    }
+                }
+            }
+        }
+        return present_ranks;
     }
 }

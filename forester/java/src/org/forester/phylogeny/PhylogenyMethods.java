@@ -68,6 +68,8 @@ import org.forester.util.ForesterUtil;
 
 public class PhylogenyMethods {
 
+    private static boolean _order_changed;
+
     private PhylogenyMethods() {
         // Hidden constructor.
     }
@@ -814,13 +816,13 @@ public class PhylogenyMethods {
             return;
         }
         else {
-            PhylogenyNode temp = null;
             if ( ( n.getNumberOfDescendants() == 2 )
                     && ( n.getChildNode1().getNumberOfExternalNodes() != n.getChildNode2().getNumberOfExternalNodes() )
                     && ( ( n.getChildNode1().getNumberOfExternalNodes() < n.getChildNode2().getNumberOfExternalNodes() ) == order ) ) {
-                temp = n.getChildNode1();
+                final PhylogenyNode temp = n.getChildNode1();
                 n.setChild1( n.getChildNode2() );
                 n.setChild2( temp );
+                _order_changed = true;
             }
             else if ( order_ext_alphabetically ) {
                 boolean all_ext = true;
@@ -837,6 +839,27 @@ public class PhylogenyMethods {
             for( int i = 0; i < n.getNumberOfDescendants(); ++i ) {
                 orderAppearance( n.getChildNode( i ), order, order_ext_alphabetically, pri );
             }
+        }
+    }
+    
+    public synchronized static void orderAppearanceX( final PhylogenyNode n,
+                                                      final boolean order_ext_alphabetically,
+                                                      final DESCENDANT_SORT_PRIORITY pri ) {
+        if ( n.isExternal() ) {
+            return;
+        }
+        else {
+           _order_changed = false;
+           orderAppearance( n,
+                            true,
+                            order_ext_alphabetically,
+                            pri );
+           if (!_order_changed ) {
+               orderAppearance( n,
+                                false,
+                                order_ext_alphabetically,
+                                pri );
+           }
         }
     }
 

@@ -49,6 +49,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.font.FontRenderContext;
+import java.awt.font.TextAttribute;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Arc2D;
@@ -68,6 +69,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.text.AttributedString;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
@@ -77,6 +79,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 
@@ -313,6 +316,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private float                        _y_distance                                        = 0.0f;
     private int                          _length_of_longest_text;
     private int                          _longest_domain;
+    private Map<String, AttributedString> _attributed_string_map = null;
     static {
         final DecimalFormatSymbols dfs = new DecimalFormatSymbols();
         dfs.setDecimalSeparator( '.' );
@@ -1396,6 +1400,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             case GET_EXT_DESC_DATA:
                 showExtDescNodeData( node );
                 break;
+            case UNCOLLAPSE_ALL:
+                uncollapseAll( node );
+                break;
+            case ORDER_SUBTREE:
+                orderSubtree( node );
+                break;
             default:
                 throw new IllegalArgumentException( "unknown action: " + action );
         }
@@ -1801,6 +1811,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             else if ( title.equals( Configuration.clickto_options[ Configuration.sort_descendents ][ 0 ] ) ) {
                 _node_popup_menu_items[ i ].setEnabled( node.getNumberOfDescendants() > 1 );
             }
+            else if ( title.equals( Configuration.clickto_options[ Configuration.uncollapse_all ][ 0 ] ) ) {
+                _node_popup_menu_items[ i ].setEnabled( isCanUncollapseAll( node ) );
+            }
             _node_popup_menu_items[ i ].addActionListener( this );
             _node_popup_menu.add( _node_popup_menu_items[ i ] );
         }
@@ -1857,6 +1870,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     private final void nodeTaxonomyDataAsSB( final Taxonomy taxonomy, final StringBuilder sb ) {
+        if ( _control_panel.isShowTaxonomyRank() && !ForesterUtil.isEmpty( taxonomy.getRank() ) ) {
+            sb.append( "[" );
+            sb.append( taxonomy.getRank() );
+            sb.append( "] " );
+        }
         if ( _control_panel.isShowTaxonomyCode() && !ForesterUtil.isEmpty( taxonomy.getTaxonomyCode() ) ) {
             sb.append( taxonomy.getTaxonomyCode() );
             sb.append( " " );
@@ -2713,7 +2731,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             x += drawTaxonomyImage( node.getXcoord() + 2 + half_box_size, node.getYcoord(), node, g );
         }
         if ( ( getControlPanel().isShowTaxonomyCode() || getControlPanel().isShowTaxonomyScientificNames() || getControlPanel()
-                .isShowTaxonomyCommonNames() ) && node.getNodeData().isHasTaxonomy() ) {
+                .isShowTaxonomyCommonNames() || getControlPanel().isShowTaxonomyRank() ) && node.getNodeData().isHasTaxonomy() ) {
             x += paintTaxonomy( g, node, is_in_found_nodes, to_pdf, to_graphics_file, x );
         }
         setColor( g, node, to_graphics_file, to_pdf, is_in_found_nodes, getTreeColorSet().getSequenceColor() );
@@ -2799,7 +2817,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
         }
         if ( sb_str.length() > 0 ) {
-            TreePanel.drawString( sb_str, pos_x, pos_y, g );
+            if ( !isAllowAttributedStrings() ) {
+                TreePanel.drawString( sb_str, pos_x, pos_y, g );
+            }
+            else {
+                drawStringX( sb_str, pos_x, pos_y, g );
+            }
         }
         // GUILHEM_END _____________
         if ( _sb.length() > 0 ) {
@@ -2867,6 +2890,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
         }
         return x;
+    }
+
+    private final boolean isAllowAttributedStrings() {
+        return false;
     }
 
     final private void paintNodeDataUnrootedCirc( final Graphics2D g,
@@ -4693,6 +4720,29 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             repaint();
         }
     }
+    
+    final void uncollapseAll( final PhylogenyNode node ) {
+        if ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED ) {
+            JOptionPane.showMessageDialog( this,
+                                           "Cannot uncollapse in unrooted display type",
+                                           "Attempt to uncollapse in unrooted display",
+                                           JOptionPane.WARNING_MESSAGE );
+            return;
+        }
+        if ( !node.isExternal() ) {
+            TreePanelUtil.uncollapseSubtree( node);
+            updateSetOfCollapsedExternalNodes();
+            _phylogeny.recalculateNumberOfExternalDescendants( true );
+            resetNodeIdToDistToLeafMap();
+            calculateLongestExtNodeInfo();
+            setNodeInPreorderToNull();
+            _control_panel.displayedPhylogenyMightHaveChanged( true );
+            resetPreferredSize();
+            updateOvSizes();
+            _main_panel.adjustJScrollPane();
+            repaint();
+        }
+    }
 
     final void collapseSpeciesSpecificSubtrees() {
         if ( ( _phylogeny == null ) || ( _phylogeny.getNumberOfExternalNodes() < 2 ) ) {
@@ -4711,6 +4761,44 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         repaint();
     }
 
+    final void collapseByTaxonomicRank( final String rank ) {
+        if ( ( _phylogeny == null ) || ( _phylogeny.getNumberOfExternalNodes() < 2 ) ) {
+            return;
+        }
+        setWaitCursor();
+        
+        final int collapsed = TreePanelUtil.collapseByTaxonomicRank( _phylogeny, rank, this );
+       
+        setArrowCursor();
+        repaint();
+        if ( collapsed > 0 ) {
+            String msg = "Collapsing via " + rank + " completed:\n";
+            if ( collapsed > 1 ) {
+                msg += "collapsed " + collapsed + " subtrees";
+            }
+            else {
+                msg += "collapsed one subtree";
+            }
+            setEdited( true );
+            JOptionPane.showMessageDialog( this,
+                                           msg,
+                                           "Taxonomy Rank-Collapsing Completed (" + rank + ")",
+                                           JOptionPane.INFORMATION_MESSAGE );
+        }
+        else {
+            String msg = "Could not taxonomy rank-collapse any subtree via " + rank + ".\n";
+            msg += "Possible solutions (given that suitable taxonomic information is present):\n";
+            msg += "select a different rank (e.g. phylum, genus, ...)\n";
+            msg += "  and/or\n";
+            msg += "execute:\n";
+            msg += "1. \"" + MainFrameApplication.OBTAIN_DETAILED_TAXONOMIC_INFORMATION + "\" (Tools)\n";
+            msg += "2. \"" + MainFrameApplication.INFER_ANCESTOR_TAXONOMIES + "\" (Analysis)";
+            JOptionPane.showMessageDialog( this, msg, "Taxonomy Rank-Collapsing Failed", JOptionPane.WARNING_MESSAGE );
+        }
+    }
+    
+    
+    
     final void colorRank( final String rank ) {
         if ( ( _phylogeny == null ) || ( _phylogeny.getNumberOfExternalNodes() < 2 ) ) {
             return;
@@ -4745,18 +4833,18 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             setEdited( true );
             JOptionPane.showMessageDialog( this,
                                            msg,
-                                           "Taxonomy Colorization Completed (" + rank + ")",
+                                           "Taxonomy Rank-Colorization Completed (" + rank + ")",
                                            JOptionPane.INFORMATION_MESSAGE );
         }
         else {
-            String msg = "Could not taxonomy colorize any subtree via " + rank + ".\n";
+            String msg = "Could not taxonomy rank-colorize any subtree via " + rank + ".\n";
             msg += "Possible solutions (given that suitable taxonomic information is present):\n";
             msg += "select a different rank (e.g. phylum, genus, ...)\n";
             msg += "  and/or\n";
             msg += "execute:\n";
             msg += "1. \"" + MainFrameApplication.OBTAIN_DETAILED_TAXONOMIC_INFORMATION + "\" (Tools)\n";
             msg += "2. \"" + MainFrameApplication.INFER_ANCESTOR_TAXONOMIES + "\" (Analysis)";
-            JOptionPane.showMessageDialog( this, msg, "Taxonomy Colorization Failed", JOptionPane.WARNING_MESSAGE );
+            JOptionPane.showMessageDialog( this, msg, "Taxonomy Rank-Colorization Failed", JOptionPane.WARNING_MESSAGE );
         }
     }
 
@@ -5001,7 +5089,23 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     final boolean isCanCollapse() {
         return ( getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.UNROOTED );
     }
-
+    
+    final boolean isCanUncollapseAll( final PhylogenyNode node ) {
+        if ( node.isExternal() || getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED ) {
+            return false;
+        }
+        if ( node.isCollapse() ) {
+            return true;
+        }
+        final PhylogenyNodeIterator it = new PreorderTreeIterator( node );
+        while ( it.hasNext() ) {
+            if ( it.next().isCollapse() ) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     final boolean isCanColorSubtree() {
         return ( getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.UNROOTED );
     }
@@ -5911,6 +6015,29 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         updateSubSuperTreeButton();
     }
 
+    final void orderSubtree( final PhylogenyNode node ) {
+        if ( node.isExternal() ) {
+            return;
+        }
+        DESCENDANT_SORT_PRIORITY pri = DESCENDANT_SORT_PRIORITY.NODE_NAME;
+        if ( getControlPanel().isShowTaxonomyScientificNames() || getControlPanel().isShowTaxonomyCode() ) {
+            pri = DESCENDANT_SORT_PRIORITY.TAXONOMY;
+        }
+        else if ( getControlPanel().isShowSeqNames() || getControlPanel().isShowSeqSymbols() || getControlPanel().isShowGeneNames() ) {
+            pri = DESCENDANT_SORT_PRIORITY.SEQUENCE;
+        }
+        PhylogenyMethods.orderAppearanceX( node, true, pri );
+      
+        setNodeInPreorderToNull();
+        getPhylogeny().externalNodesHaveChanged();
+        getPhylogeny().clearHashIdToNodeMap();
+        getPhylogeny().recalculateNumberOfExternalDescendants( true );
+        resetNodeIdToDistToLeafMap();
+        setEdited( true );
+        getControlPanel().displayedPhylogenyMightHaveChanged( true );
+        repaint();
+    }
+    
     final void swap( final PhylogenyNode node ) {
         if ( node.isExternal() || ( node.getNumberOfDescendants() < 2 ) ) {
             return;
@@ -6060,6 +6187,38 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     final private static void drawString( final String str, final float x, final float y, final Graphics2D g ) {
         g.drawString( str, x, y );
+    }
+    
+    
+    final private void drawStringX( final String str, final float x, final float y, final Graphics2D g ) {
+        //TODO
+        //FIXME
+        if ( getAttributedStringMap() == null /*&& getAttributedStringMap().containsKey(str) */ ) {
+            final AttributedString as = new AttributedString(str);
+            //Font plainFont = new Font("Times New Roman", Font.PLAIN, 24);
+            
+            as.addAttribute(TextAttribute.FONT, g.getFont());
+            as.addAttribute(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON, 1, 3);
+            as.addAttribute(TextAttribute.SUPERSCRIPT, TextAttribute.SUPERSCRIPT_SUPER, 3, 4);
+            
+            as.addAttribute(TextAttribute.FOREGROUND, Color.BLUE,  1, 2);
+            as.addAttribute(TextAttribute.FOREGROUND, Color.PINK,  3, 5);
+            as.addAttribute(TextAttribute.STRIKETHROUGH,
+                TextAttribute.STRIKETHROUGH_ON, 2, 4);
+            g.drawString(as.getIterator(), x, y);
+        }
+        else {
+            g.drawString( str, x, y );
+        }
+    }
+
+
+    private final Map<String, AttributedString> getAttributedStringMap() {
+        return _attributed_string_map ;
+    }
+    
+    private final void setAttributedStringMap( final Map<String, AttributedString> attributed_string_map ) {
+        _attributed_string_map = attributed_string_map;
     }
 
     final private static boolean plusPressed( final int key_code ) {

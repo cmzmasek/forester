@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 import javax.swing.Box;
@@ -183,6 +184,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem                        _confcolor_item;
     JMenuItem                        _color_rank_jmi;
     JMenuItem                        _collapse_species_specific_subtrees;
+    
     JMenuItem                        _obtain_detailed_taxonomic_information_jmi;
     JMenuItem                        _obtain_detailed_taxonomic_information_deleting_jmi;
     JMenuItem                        _obtain_seq_information_jmi;
@@ -1291,8 +1293,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     void colorRank() {
         if ( _mainpanel.getCurrentTreePanel() != null ) {
-            final String[] ranks = AptxUtil.getAllPossibleRanks();
-            final String rank = ( String ) JOptionPane
+            final Map<String, Integer> present_ranks = AptxUtil.getRankCounts( _mainpanel.getCurrentTreePanel().getPhylogeny());
+            final String[] ranks = AptxUtil.getAllPossibleRanks(present_ranks);
+            String rank = ( String ) JOptionPane
                     .showInputDialog( this,
                                       "What rank should the colorization be based on",
                                       "Rank Selection",
@@ -1301,6 +1304,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                                       ranks,
                                       null );
             if ( !ForesterUtil.isEmpty( rank ) ) {
+                if ( rank.indexOf( '(' ) > 0 ) {
+                    rank = rank.substring( 0, rank.indexOf( '(' ) ).trim();
+                }
                 _mainpanel.getCurrentTreePanel().colorRank( rank );
             }
         }

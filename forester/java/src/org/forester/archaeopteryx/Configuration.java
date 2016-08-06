@@ -68,13 +68,13 @@ public final class Configuration {
     }
     final static String                     clickto_options[][]                                    = {
         { "Display Node Data", "display" }, { "Collapse/Uncollapse", "display" }, { "Root/Reroot", "display" },
-        { "Go to Sub-/Super-Tree", "display" }, { "Swap Descendants", "display" },
+        { "Go to Sub/Supertree", "display" }, { "Swap Descendants", "display" },
         { "Colorize Node(s)", "display" }, { "Change Node Font(s)", "display" },
         { "Colorize Subtree(s)", "display" }, { "Open Sequence DB", "display" }, { "Open PDB", "display" },
         { "Open Taxonomy DB", "display" }, { "Launch BLAST", "display" }, { "Cut Subtree", "display" },
         { "Copy Subtree", "display" }, { "Paste Subtree", "display" }, { "Delete Subtree/Node", "display" },
         { "Add New Node", "display" }, { "Edit Node Data", "display" }, { "Sort Descendants", "display" },
-        { "List Node Data", "display" }, { "Select Node(s)", "display" }                      };
+        { "List Node Data", "display" }, { "Select Node(s)", "display" } , { "Uncollapse All", "display" },  { "Order Subtree", "display" },                     };
     private final static String             DEFAULT_SPECIES_COLORS[][]                             = {
         { "BRAFL", "0x00FFFF" }, { "SPHGR", "0x9620F0" }, { "STRPU", "0x9620F0" }, { "CIOIN", "0xFF1CAE" },
         { "CIOSA", "0xFF2CAE" }, { "BOVIN", "0x5C3317" }, { "CANFA", "0x8B2323" }, { "HUMAN", "0xFF2400" },
@@ -114,6 +114,9 @@ public final class Configuration {
     final static int                        sort_descendents                                       = 18;
     final static int                        get_ext_desc_data                                      = 19;
     final static int                        select_nodes                                           = 20;
+    final static int                        uncollapse_all                                         = 21;
+    final static int                        order_subtree                                         = 22;
+    
     // ------------------
     // Click-to options
     // ------------------
@@ -131,7 +134,8 @@ public final class Configuration {
         { "Rollover", "display", "yes" }, { "Relation Confidence", "nodisplay", "no" },
         { "Vector Data", "nodisplay", "no" }, { "Taxonomy Images", "display", "no" },
         { "Properties", "display", "no" }, { "Gene Name", "display", "yes" },
-        { "Multiple Seq Alignment", "display", "no" }, { "Branch Length Values", "display", "no" } };
+        { "Multiple Seq Alignment", "display", "no" }, { "Branch Length Values", "display", "no" }
+        , { "Taxonomy Rank", "display", "no" }};
     final static int                        display_as_phylogram                                   = 0;
     final static int                        show_node_names                                        = 1;
     final static int                        show_tax_code                                          = 2;
@@ -161,6 +165,8 @@ public final class Configuration {
     final static int                        show_gene_names                                        = 26;
     final static int                        show_mol_seqs                                          = 27;
     final static int                        write_branch_length_values                             = 28;
+    final static int                        show_tax_rank                                          = 29;
+    
     static final String                     VALIDATE_AGAINST_PHYLOXML_XSD_SCHEMA                   = "validate_against_phyloxml_xsd_schema";
     private static Hashtable<String, Color> _sequence_colors;
     private static Hashtable<String, Color> _annotation_colors;
@@ -548,6 +554,10 @@ public final class Configuration {
     public void setDisplayTaxonomyCode( final boolean b ) {
         display_options[ show_tax_code ][ 2 ] = b ? "yes" : "no";
     }
+    
+    public void setDisplayTaxonomyRank( final boolean b ) {
+        display_options[ show_tax_rank ][ 2 ] = b ? "yes" : "no";
+    }
 
     public void setDisplayTaxonomyCommonNames( final boolean b ) {
         display_options[ show_taxonomy_common_names ][ 2 ] = b ? "yes" : "no";
@@ -655,6 +665,9 @@ public final class Configuration {
         else if ( name.equals( "collapse_uncollapse" ) ) {
             index = Configuration.collapse_uncollapse;
         }
+        else if ( name.equals( "uncollapse_all" ) ) {
+            index = Configuration.uncollapse_all;
+        }
         else if ( name.equals( "reroot" ) ) {
             index = Configuration.reroot;
         }
@@ -663,6 +676,9 @@ public final class Configuration {
         }
         else if ( name.equals( "swap" ) ) {
             index = Configuration.swap;
+        }
+        else if ( name.equals( "order_subtree" ) ) {
+            index = Configuration.order_subtree;
         }
         else if ( name.equals( "sort_descendants" ) ) {
             index = Configuration.sort_descendents;
@@ -1385,6 +1401,9 @@ public final class Configuration {
             }
             else if ( key.equals( "show_taxonomy_code" ) ) {
                 key_index = Configuration.show_tax_code;
+            }
+            else if ( key.equals( "show_taxonomy_rank" ) ) {
+                key_index = Configuration.show_tax_rank;
             }
             else if ( key.equals( "write_confidence_values" ) ) {
                 key_index = Configuration.write_confidence_values;

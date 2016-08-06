@@ -42,6 +42,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.swing.ButtonGroup;
@@ -117,6 +118,7 @@ public final class MainFrameApplication extends MainFrame {
     // Application-only print menu items
     private JMenuItem                    _collapse_below_threshold;
     private JMenuItem                    _collapse_below_branch_length;
+    private JMenuItem                    _collapse_by_taxonomic_rank;
     private ButtonGroup                  _radio_group_1;
     private ButtonGroup                  _radio_group_2;
     // Others:
@@ -317,10 +319,8 @@ public final class MainFrameApplication extends MainFrame {
                     }
                 }
                 else {
-                    final int r = JOptionPane.showConfirmDialog( null,
-                                                                 "Exit Archaeopteryx?",
-                                                                 "Exit?",
-                                                                 JOptionPane.YES_NO_OPTION );
+                    final int r = JOptionPane
+                            .showConfirmDialog( null, "Exit Archaeopteryx?", "Exit?", JOptionPane.YES_NO_OPTION );
                     if ( r != JOptionPane.YES_OPTION ) {
                         return;
                     }
@@ -334,10 +334,9 @@ public final class MainFrameApplication extends MainFrame {
             @Override
             public void componentResized( final ComponentEvent e ) {
                 if ( _mainpanel.getCurrentTreePanel() != null ) {
-                    _mainpanel.getCurrentTreePanel().calcParametersForPainting( _mainpanel.getCurrentTreePanel()
-                                                                                .getWidth(),
-                                                                                _mainpanel.getCurrentTreePanel()
-                                                                                .getHeight() );
+                    _mainpanel.getCurrentTreePanel()
+                            .calcParametersForPainting( _mainpanel.getCurrentTreePanel().getWidth(),
+                                                        _mainpanel.getCurrentTreePanel().getHeight() );
                 }
             }
         } );
@@ -435,6 +434,12 @@ public final class MainFrameApplication extends MainFrame {
                     return;
                 }
                 collapseBelowThreshold();
+            }
+            else if ( o == _collapse_by_taxonomic_rank ) {
+                if ( isSubtreeDisplayed() ) {
+                    return;
+                }
+                collapseByTaxonomicRank();
             }
             else if ( o == _collapse_below_branch_length ) {
                 if ( isSubtreeDisplayed() ) {
@@ -719,8 +724,8 @@ public final class MainFrameApplication extends MainFrame {
                 JOptionPane.showMessageDialog( this,
                                                "Table contains " + t.getNumberOfRows() + " rows, but tree contains "
                                                        + phy.getNumberOfExternalNodes() + " external nodes",
-                                                       "Warning",
-                                                       JOptionPane.WARNING_MESSAGE );
+                                               "Warning",
+                                               JOptionPane.WARNING_MESSAGE );
             }
             final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
             int not_found = 0;
@@ -733,11 +738,10 @@ public final class MainFrameApplication extends MainFrame {
                         row = t.findRow( node_name );
                     }
                     catch ( final IllegalArgumentException e ) {
-                        JOptionPane
-                        .showMessageDialog( this,
-                                            e.getMessage(),
-                                            "Error Mapping Node Identifiers to Expression Value Identifiers",
-                                            JOptionPane.ERROR_MESSAGE );
+                        JOptionPane.showMessageDialog( this,
+                                                       e.getMessage(),
+                                                       "Error Mapping Node Identifiers to Expression Value Identifiers",
+                                                       JOptionPane.ERROR_MESSAGE );
                         return;
                     }
                     if ( row < 0 ) {
@@ -755,7 +759,7 @@ public final class MainFrameApplication extends MainFrame {
                         catch ( final NumberFormatException e ) {
                             JOptionPane.showMessageDialog( this,
                                                            "Could not parse \"" + t.getValueAsString( col, row )
-                                                           + "\" into a decimal value",
+                                                                   + "\" into a decimal value",
                                                            "Issue with Expression Value Table",
                                                            JOptionPane.ERROR_MESSAGE );
                             return;
@@ -766,15 +770,18 @@ public final class MainFrameApplication extends MainFrame {
                     if ( !l.isEmpty() ) {
                         if ( node.getNodeData().getProperties() != null ) {
                             node.getNodeData().getProperties()
-                            .removePropertiesWithGivenReferencePrefix( PhyloXmlUtil.VECTOR_PROPERTY_REF );
+                                    .removePropertiesWithGivenReferencePrefix( PhyloXmlUtil.VECTOR_PROPERTY_REF );
                         }
                         node.getNodeData().setVector( l );
                     }
                 }
             }
             if ( not_found > 0 ) {
-                JOptionPane.showMessageDialog( this, "Could not fine expression values for " + not_found
-                                               + " external node(s)", "Warning", JOptionPane.WARNING_MESSAGE );
+                JOptionPane
+                        .showMessageDialog( this,
+                                            "Could not fine expression values for " + not_found + " external node(s)",
+                                            "Warning",
+                                            JOptionPane.WARNING_MESSAGE );
             }
             getCurrentTreePanel().setStatisticsForExpressionValues( stats );
         }
@@ -803,10 +810,10 @@ public final class MainFrameApplication extends MainFrame {
                     seqs = FastaParser.parse( fis2 );
                     try {
                         fis2.close();
-                     }
-                     catch ( final Exception e ) {
-                         // Ignore.
-                     }
+                    }
+                    catch ( final Exception e ) {
+                        // Ignore.
+                    }
                 }
                 else {
                     JOptionPane.showMessageDialog( this,
@@ -819,7 +826,7 @@ public final class MainFrameApplication extends MainFrame {
                     fis1.close();
                 }
                 catch ( final Exception e ) {
-                     // Ignore.
+                    // Ignore.
                 }
             }
             catch ( final MsaFormatException e ) {
@@ -896,8 +903,11 @@ public final class MainFrameApplication extends MainFrame {
                             nodes = phy.getNodes( seq_name_split );
                         }
                         if ( nodes.size() > 1 ) {
-                            JOptionPane.showMessageDialog( this, "Split sequence name \"" + seq_name_split
-                                                           + "\" is not unique", "Sequence name not unique", JOptionPane.ERROR_MESSAGE );
+                            JOptionPane.showMessageDialog( this,
+                                                           "Split sequence name \"" + seq_name_split
+                                                                   + "\" is not unique",
+                                                           "Sequence name not unique",
+                                                           JOptionPane.ERROR_MESSAGE );
                             setArrowCursor();
                             return;
                         }
@@ -941,14 +951,18 @@ public final class MainFrameApplication extends MainFrame {
                                                    JOptionPane.INFORMATION_MESSAGE );
                 }
                 else {
-                    JOptionPane.showMessageDialog( this, "Attached " + attached_counter
-                                                   + " sequences out of a total of " + total_counter + " sequences.\n" + s, attached_counter
-                                                   + " sequences attached", JOptionPane.WARNING_MESSAGE );
+                    JOptionPane.showMessageDialog( this,
+                                                   "Attached " + attached_counter + " sequences out of a total of "
+                                                           + total_counter + " sequences.\n" + s,
+                                                   attached_counter + " sequences attached",
+                                                   JOptionPane.WARNING_MESSAGE );
                 }
             }
             else {
-                JOptionPane.showMessageDialog( this, "No maching tree node for any of the " + total_counter
-                                               + " sequences", "Could not attach any sequences", JOptionPane.ERROR_MESSAGE );
+                JOptionPane.showMessageDialog( this,
+                                               "No maching tree node for any of the " + total_counter + " sequences",
+                                               "Could not attach any sequences",
+                                               JOptionPane.ERROR_MESSAGE );
             }
         }
     }
@@ -1014,13 +1028,19 @@ public final class MainFrameApplication extends MainFrame {
                 repaint();
             }
             if ( to_be_removed.size() > 0 ) {
-                JOptionPane.showMessageDialog( this, "Collapsed " + to_be_removed.size()
-                                               + " branches with\nconfidence values below " + getMinNotCollapseConfidenceValue(), "Collapsed "
-                                                       + to_be_removed.size() + " branches", JOptionPane.INFORMATION_MESSAGE );
+                JOptionPane.showMessageDialog( this,
+                                               "Collapsed " + to_be_removed.size()
+                                                       + " branches with\nconfidence values below "
+                                                       + getMinNotCollapseConfidenceValue(),
+                                               "Collapsed " + to_be_removed.size() + " branches",
+                                               JOptionPane.INFORMATION_MESSAGE );
             }
             else {
-                JOptionPane.showMessageDialog( this, "No branch collapsed,\nminimum confidence value per branch is "
-                        + min_support, "No branch collapsed", JOptionPane.INFORMATION_MESSAGE );
+                JOptionPane.showMessageDialog( this,
+                                               "No branch collapsed,\nminimum confidence value per branch is "
+                                                       + min_support,
+                                               "No branch collapsed",
+                                               JOptionPane.INFORMATION_MESSAGE );
             }
         }
         else {
@@ -1031,18 +1051,38 @@ public final class MainFrameApplication extends MainFrame {
         }
     }
 
+    private void collapseByTaxonomicRank() {
+        if ( _mainpanel.getCurrentTreePanel() != null ) {
+            final Map<String, Integer> present_ranks = AptxUtil.getRankCounts( _mainpanel.getCurrentTreePanel().getPhylogeny());
+            final String[] ranks = AptxUtil.getAllPossibleRanks(present_ranks);
+             String rank = ( String ) JOptionPane
+                    .showInputDialog( this,
+                                      "What rank should the collapsing be based on",
+                                      "Rank Selection",
+                                      JOptionPane.QUESTION_MESSAGE,
+                                      null,
+                                      ranks,
+                                      null );
+            if ( !ForesterUtil.isEmpty( rank ) ) {
+                if ( rank.indexOf( '(' ) > 0 ) {
+                    rank = rank.substring( 0, rank.indexOf( '(' ) ).trim();
+                }
+                _mainpanel.getCurrentTreePanel().collapseByTaxonomicRank( rank );
+            }
+        }
+    }
+
     private void collapseBelowBranchLengthThreshold() {
         if ( getCurrentTreePanel() != null ) {
             final Phylogeny phy = getCurrentTreePanel().getPhylogeny();
             if ( ( phy != null ) && !phy.isEmpty() ) {
-                final String s = ( String ) JOptionPane
-                        .showInputDialog( this,
-                                          "Please enter the minimum branch length value\n",
-                                          "Minimal Branch Length Value",
-                                          JOptionPane.QUESTION_MESSAGE,
-                                          null,
-                                          null,
-                                          getMinNotCollapseBlValue() );
+                final String s = ( String ) JOptionPane.showInputDialog( this,
+                                                                         "Please enter the minimum branch length value\n",
+                                                                         "Minimal Branch Length Value",
+                                                                         JOptionPane.QUESTION_MESSAGE,
+                                                                         null,
+                                                                         null,
+                                                                         getMinNotCollapseBlValue() );
                 if ( !ForesterUtil.isEmpty( s ) ) {
                     boolean success = true;
                     double m = 0.0;
@@ -1141,9 +1181,12 @@ public final class MainFrameApplication extends MainFrame {
                 repaint();
             }
             if ( to_be_removed.size() > 0 ) {
-                JOptionPane.showMessageDialog( this, "Collapsed " + to_be_removed.size()
-                                               + " branches with\nbranch length values below " + getMinNotCollapseBlValue(), "Collapsed "
-                                                       + to_be_removed.size() + " branches", JOptionPane.INFORMATION_MESSAGE );
+                JOptionPane.showMessageDialog( this,
+                                               "Collapsed " + to_be_removed.size()
+                                                       + " branches with\nbranch length values below "
+                                                       + getMinNotCollapseBlValue(),
+                                               "Collapsed " + to_be_removed.size() + " branches",
+                                               JOptionPane.INFORMATION_MESSAGE );
             }
             else {
                 JOptionPane.showMessageDialog( this,
@@ -1189,7 +1232,8 @@ public final class MainFrameApplication extends MainFrame {
                 if ( getMsa() != null ) {
                     final PhylogeneticInferrer inferrer = new PhylogeneticInferrer( getMsa(),
                                                                                     getPhylogeneticInferenceOptions()
-                                                                                    .copy(), this );
+                                                                                            .copy(),
+                                                                                    this );
                     new Thread( inferrer ).start();
                 }
                 else {
@@ -1203,7 +1247,8 @@ public final class MainFrameApplication extends MainFrame {
                 if ( getSeqs() != null ) {
                     final PhylogeneticInferrer inferrer = new PhylogeneticInferrer( getSeqs(),
                                                                                     getPhylogeneticInferenceOptions()
-                                                                                    .copy(), this );
+                                                                                            .copy(),
+                                                                                    this );
                     new Thread( inferrer ).start();
                 }
                 else {
@@ -1256,24 +1301,23 @@ public final class MainFrameApplication extends MainFrame {
                     String all = "all ";
                     if ( counter_failed > 0 ) {
                         all = "";
-                        failed = "\nCould not extract taxonomic data for " + counter_failed
-                                + " named external nodes:\n" + sb_failed;
+                        failed = "\nCould not extract taxonomic data for " + counter_failed + " named external nodes:\n"
+                                + sb_failed;
                     }
                     JOptionPane.showMessageDialog( this,
                                                    "Extracted taxonomic data from " + all + counter
-                                                   + " named external nodes:\n" + sb.toString() + failed,
+                                                           + " named external nodes:\n" + sb.toString() + failed,
                                                    "Taxonomic Data Extraction Completed",
                                                    counter_failed > 0 ? JOptionPane.WARNING_MESSAGE
                                                            : JOptionPane.INFORMATION_MESSAGE );
                 }
                 else {
-                    JOptionPane
-                    .showMessageDialog( this,
-                                        "Could not extract any taxonomic data.\nMaybe node names are empty\n"
-                                                + "or not in the forms \"XYZ_CAEEL\", \"XYZ_6239\", or \"XYZ_Caenorhabditis_elegans\"\n"
-                                                + "or nodes already have taxonomic data?\n",
-                                                "No Taxonomic Data Extracted",
-                                                JOptionPane.ERROR_MESSAGE );
+                    JOptionPane.showMessageDialog( this,
+                                                   "Could not extract any taxonomic data.\nMaybe node names are empty\n"
+                                                           + "or not in the forms \"XYZ_CAEEL\", \"XYZ_6239\", or \"XYZ_Caenorhabditis_elegans\"\n"
+                                                           + "or nodes already have taxonomic data?\n",
+                                                   "No Taxonomic Data Extracted",
+                                                   JOptionPane.ERROR_MESSAGE );
                 }
             }
         }
@@ -1308,8 +1352,9 @@ public final class MainFrameApplication extends MainFrame {
         if ( getCurrentTreePanel() != null ) {
             final Phylogeny phy = getCurrentTreePanel().getPhylogeny();
             if ( ( phy != null ) && !phy.isEmpty() ) {
-                PhylogenyMethods
-                .transferNodeNameToField( phy, PhylogenyMethods.PhylogenyNodeField.SEQUENCE_NAME, false );
+                PhylogenyMethods.transferNodeNameToField( phy,
+                                                          PhylogenyMethods.PhylogenyNodeField.SEQUENCE_NAME,
+                                                          false );
             }
         }
     }
@@ -1339,7 +1384,7 @@ public final class MainFrameApplication extends MainFrame {
         if ( getMainPanel().getMainFrame() == null ) {
             // Must be "E" applet version.
             ( ( ArchaeopteryxE ) ( ( MainPanelApplets ) getMainPanel() ).getApplet() )
-            .setSelectedTypeInTypeMenu( PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
+                    .setSelectedTypeInTypeMenu( PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
         }
         else {
             getMainPanel().getMainFrame().setSelectedTypeInTypeMenu( PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
@@ -1484,8 +1529,9 @@ public final class MainFrameApplication extends MainFrame {
                     else {
                         try {
                             final PhylogenyParser parser = ParserUtils
-                                    .createParserDependingOnFileType( file, getConfiguration()
-                                                                      .isValidatePhyloXmlAgainstSchema() );
+                                    .createParserDependingOnFileType( file,
+                                                                      getConfiguration()
+                                                                              .isValidatePhyloXmlAgainstSchema() );
                             if ( parser instanceof NexusPhylogeniesParser ) {
                                 final NexusPhylogeniesParser nex = ( NexusPhylogeniesParser ) parser;
                                 setSpecialOptionsForNexParser( nex );
@@ -1535,13 +1581,12 @@ public final class MainFrameApplication extends MainFrame {
                                                        getMainPanel() );
                         _mainpanel.getControlPanel().showWhole();
                         if ( nhx_or_nexus && one_desc ) {
-                            JOptionPane
-                            .showMessageDialog( this,
-                                                "One or more trees contain (a) node(s) with one descendant, "
-                                                        + ForesterUtil.LINE_SEPARATOR
-                                                        + "possibly indicating illegal parentheses within node names.",
-                                                        "Warning: Possible Error in New Hampshire Formatted Data",
-                                                        JOptionPane.WARNING_MESSAGE );
+                            JOptionPane.showMessageDialog( this,
+                                                           "One or more trees contain (a) node(s) with one descendant, "
+                                                                   + ForesterUtil.LINE_SEPARATOR
+                                                                   + "possibly indicating illegal parentheses within node names.",
+                                                           "Warning: Possible Error in New Hampshire Formatted Data",
+                                                           JOptionPane.WARNING_MESSAGE );
                         }
                     }
                 }
@@ -1564,8 +1609,8 @@ public final class MainFrameApplication extends MainFrame {
         if ( ( file != null ) && ( result == JFileChooser.APPROVE_OPTION ) ) {
             if ( _open_filechooser_for_species_tree.getFileFilter() == MainFrame.xmlfilter ) {
                 try {
-                    final Phylogeny[] trees = PhylogenyMethods.readPhylogenies( PhyloXmlParser
-                                                                                .createPhyloXmlParserXsdValidating(), file );
+                    final Phylogeny[] trees = PhylogenyMethods
+                            .readPhylogenies( PhyloXmlParser.createPhyloXmlParserXsdValidating(), file );
                     t = trees[ 0 ];
                 }
                 catch ( final Exception e ) {
@@ -1586,8 +1631,8 @@ public final class MainFrameApplication extends MainFrame {
             // "*.*":
             else {
                 try {
-                    final Phylogeny[] trees = PhylogenyMethods.readPhylogenies( PhyloXmlParser
-                                                                                .createPhyloXmlParserXsdValidating(), file );
+                    final Phylogeny[] trees = PhylogenyMethods
+                            .readPhylogenies( PhyloXmlParser.createPhyloXmlParserXsdValidating(), file );
                     t = trees[ 0 ];
                 }
                 catch ( final Exception e ) {
@@ -1610,23 +1655,22 @@ public final class MainFrameApplication extends MainFrame {
                     if ( !node.getNodeData().isHasTaxonomy() ) {
                         exception = true;
                         t = null;
-                        JOptionPane
-                        .showMessageDialog( this,
-                                            "Species tree contains external node(s) without taxonomy information",
-                                            "Species tree not loaded",
-                                            JOptionPane.ERROR_MESSAGE );
+                        JOptionPane.showMessageDialog( this,
+                                                       "Species tree contains external node(s) without taxonomy information",
+                                                       "Species tree not loaded",
+                                                       JOptionPane.ERROR_MESSAGE );
                         break;
                     }
                     else {
                         if ( tax_set.contains( node.getNodeData().getTaxonomy() ) ) {
                             exception = true;
                             t = null;
-                            JOptionPane.showMessageDialog( this,
-                                                           "Taxonomy ["
-                                                                   + node.getNodeData().getTaxonomy().asSimpleText()
-                                                                   + "] is not unique in species tree",
-                                                                   "Species tree not loaded",
-                                                                   JOptionPane.ERROR_MESSAGE );
+                            JOptionPane
+                                    .showMessageDialog( this,
+                                                        "Taxonomy [" + node.getNodeData().getTaxonomy().asSimpleText()
+                                                                + "] is not unique in species tree",
+                                                        "Species tree not loaded",
+                                                        JOptionPane.ERROR_MESSAGE );
                             break;
                         }
                         else {
@@ -1705,7 +1749,7 @@ public final class MainFrameApplication extends MainFrame {
         _file_jmenu.addSeparator();
         final WebservicesManager webservices_manager = WebservicesManager.getInstance();
         _load_phylogeny_from_webservice_menu_items = new JMenuItem[ webservices_manager
-                                                                    .getAvailablePhylogeniesWebserviceClients().size() ];
+                .getAvailablePhylogeniesWebserviceClients().size() ];
         for( int i = 0; i < webservices_manager.getAvailablePhylogeniesWebserviceClients().size(); ++i ) {
             final PhylogeniesWebserviceClient client = webservices_manager.getAvailablePhylogeniesWebserviceClient( i );
             _load_phylogeny_from_webservice_menu_items[ i ] = new JMenuItem( client.getMenuName() );
@@ -1723,7 +1767,8 @@ public final class MainFrameApplication extends MainFrame {
         _save_all_item.setEnabled( false );
         _file_jmenu.addSeparator();
         _file_jmenu.add( _write_to_pdf_item = new JMenuItem( "Export to PDF file ..." ) );
-        if ( AptxUtil.canWriteFormat( "tif" ) || AptxUtil.canWriteFormat( "tiff" ) || AptxUtil.canWriteFormat( "TIF" ) ) {
+        if ( AptxUtil.canWriteFormat( "tif" ) || AptxUtil.canWriteFormat( "tiff" )
+                || AptxUtil.canWriteFormat( "TIF" ) ) {
             _file_jmenu.add( _write_to_tif_item = new JMenuItem( "Export to TIFF file..." ) );
         }
         _file_jmenu.add( _write_to_png_item = new JMenuItem( "Export to PNG file..." ) );
@@ -1743,8 +1788,9 @@ public final class MainFrameApplication extends MainFrame {
         _file_jmenu.addSeparator();
         _file_jmenu.add( _exit_item = new JMenuItem( "Exit" ) );
         customizeJMenuItem( _open_item );
-        _open_item
-        .setFont( new Font( _open_item.getFont().getFontName(), Font.BOLD, _open_item.getFont().getSize() + 4 ) );
+        _open_item.setFont( new Font( _open_item.getFont().getFontName(),
+                                      Font.BOLD,
+                                      _open_item.getFont().getSize() + 4 ) );
         customizeJMenuItem( _open_url_item );
         for( int i = 0; i < webservices_manager.getAvailablePhylogeniesWebserviceClients().size(); ++i ) {
             customizeJMenuItem( _load_phylogeny_from_webservice_menu_items[ i ] );
@@ -1774,11 +1820,13 @@ public final class MainFrameApplication extends MainFrame {
             public void stateChanged( final ChangeEvent e ) {
                 MainFrame.setOvPlacementColorChooseMenuItem( _overview_placment_mi, getOptions() );
                 MainFrame.setTextColorChooseMenuItem( _switch_colors_mi, getCurrentTreePanel() );
-                MainFrame
-                .setTextMinSupportMenuItem( _choose_minimal_confidence_mi, getOptions(), getCurrentTreePanel() );
-                MainFrame.setTextForFontChooserMenuItem( _choose_font_mi, MainFrame
-                                                         .createCurrentFontDesc( getMainPanel().getTreeFontSet() ) );
-              //  MainFrame.setTextForGraphicsSizeChooserMenuItem( _print_size_mi, getOptions() );
+                MainFrame.setTextMinSupportMenuItem( _choose_minimal_confidence_mi,
+                                                     getOptions(),
+                                                     getCurrentTreePanel() );
+                MainFrame.setTextForFontChooserMenuItem( _choose_font_mi,
+                                                         MainFrame.createCurrentFontDesc( getMainPanel()
+                                                                 .getTreeFontSet() ) );
+                //  MainFrame.setTextForGraphicsSizeChooserMenuItem( _print_size_mi, getOptions() );
                 MainFrame.setTextForPdfLineWidthChooserMenuItem( _choose_pdf_width_mi, getOptions() );
                 MainFrame.setCycleNodeFillMenuItem( _cycle_node_fill_mi, getOptions() );
                 MainFrame.setCycleNodeShapeMenuItem( _cycle_node_shape_mi, getOptions() );
@@ -1795,7 +1843,7 @@ public final class MainFrameApplication extends MainFrame {
         } );
         _options_jmenu.add( customizeMenuItemAsLabel( new JMenuItem( DISPLAY_SUBHEADER ), getConfiguration() ) );
         _options_jmenu
-        .add( _ext_node_dependent_cladogram_rbmi = new JRadioButtonMenuItem( MainFrame.NONUNIFORM_CLADOGRAMS_LABEL ) );
+                .add( _ext_node_dependent_cladogram_rbmi = new JRadioButtonMenuItem( MainFrame.NONUNIFORM_CLADOGRAMS_LABEL ) );
         _options_jmenu.add( _uniform_cladograms_rbmi = new JRadioButtonMenuItem( MainFrame.UNIFORM_CLADOGRAMS_LABEL ) );
         _options_jmenu.add( _non_lined_up_cladograms_rbmi = new JRadioButtonMenuItem( NON_LINED_UP_CLADOGRAMS_LABEL ) );
         _radio_group_1 = new ButtonGroup();
@@ -1805,14 +1853,16 @@ public final class MainFrameApplication extends MainFrame {
         _options_jmenu.add( _show_overview_cbmi = new JCheckBoxMenuItem( SHOW_OVERVIEW_LABEL ) );
         _options_jmenu.add( _show_scale_cbmi = new JCheckBoxMenuItem( DISPLAY_SCALE_LABEL ) );
         _options_jmenu
-        .add( _show_default_node_shapes_internal_cbmi = new JCheckBoxMenuItem( DISPLAY_NODE_BOXES_LABEL_INT ) );
+                .add( _show_default_node_shapes_internal_cbmi = new JCheckBoxMenuItem( DISPLAY_NODE_BOXES_LABEL_INT ) );
         _options_jmenu
-        .add( _show_default_node_shapes_external_cbmi = new JCheckBoxMenuItem( DISPLAY_NODE_BOXES_LABEL_EXT ) );
+                .add( _show_default_node_shapes_external_cbmi = new JCheckBoxMenuItem( DISPLAY_NODE_BOXES_LABEL_EXT ) );
         _options_jmenu
-        .add( _show_default_node_shapes_for_marked_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_NODE_BOXES_LABEL_MARKED ) );
-        _options_jmenu.add( _line_up_renderable_data_cbmi = new JCheckBoxMenuItem( MainFrame.LINE_UP_RENDERABLE_DATA ) );
+                .add( _show_default_node_shapes_for_marked_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_NODE_BOXES_LABEL_MARKED ) );
+        _options_jmenu
+                .add( _line_up_renderable_data_cbmi = new JCheckBoxMenuItem( MainFrame.LINE_UP_RENDERABLE_DATA ) );
         if ( getConfiguration().doDisplayOption( Configuration.show_domain_architectures ) ) {
-            _options_jmenu.add( _right_line_up_domains_cbmi = new JCheckBoxMenuItem( MainFrame.RIGHT_LINE_UP_DOMAINS ) );
+            _options_jmenu
+                    .add( _right_line_up_domains_cbmi = new JCheckBoxMenuItem( MainFrame.RIGHT_LINE_UP_DOMAINS ) );
             _options_jmenu.add( _show_domain_labels = new JCheckBoxMenuItem( MainFrame.SHOW_DOMAIN_LABELS_LABEL ) );
         }
         _options_jmenu.add( _show_annotation_ref_source = new JCheckBoxMenuItem( SHOW_ANN_REF_SOURCE_LABEL ) );
@@ -1841,40 +1891,40 @@ public final class MainFrameApplication extends MainFrame {
         _options_jmenu.add( _search_with_regex_cbmi = new JCheckBoxMenuItem( MainFrame.SEARCH_REGEX_LABEL ) );
         _search_with_regex_cbmi.setToolTipText( MainFrame.SEARCH_WITH_REGEX_TIP );
         _options_jmenu.add( _inverse_search_result_cbmi = new JCheckBoxMenuItem( INVERSE_SEARCH_RESULT_LABEL ) );
-        _options_jmenu.add( _color_all_found_nodes_when_coloring_subtree_cbmi = new JCheckBoxMenuItem( "Colorize All Found Nodes When Colorizing Subtree(s)" ) ); 
+        _options_jmenu
+                .add( _color_all_found_nodes_when_coloring_subtree_cbmi = new JCheckBoxMenuItem( "Colorize All Found Nodes When Colorizing Subtree(s)" ) );
         _options_jmenu.addSeparator();
-        _options_jmenu.add( customizeMenuItemAsLabel( new JMenuItem( "Graphics Export & Printing:" ),
-                                                      getConfiguration() ) );
+        _options_jmenu
+                .add( customizeMenuItemAsLabel( new JMenuItem( "Graphics Export & Printing:" ), getConfiguration() ) );
         _options_jmenu.add( _antialias_print_cbmi = new JCheckBoxMenuItem( "Antialias" ) );
         _options_jmenu.add( _print_black_and_white_cbmi = new JCheckBoxMenuItem( "Export in Black and White" ) );
-         _options_jmenu
-        .add( _graphics_export_visible_only_cbmi = new JCheckBoxMenuItem( "Limit to Visible ('Screenshot') for PNG, JPG, and GIF export" ) );
+        _options_jmenu
+                .add( _graphics_export_visible_only_cbmi = new JCheckBoxMenuItem( "Limit to Visible ('Screenshot') for PNG, JPG, and GIF export" ) );
         _options_jmenu.add( _choose_pdf_width_mi = new JMenuItem( "" ) );
         _options_jmenu.addSeparator();
         _options_jmenu.add( customizeMenuItemAsLabel( new JMenuItem( "Newick/NHX/Nexus Read:" ), getConfiguration() ) );
         _options_jmenu
-        .add( _internal_number_are_confidence_for_nh_parsing_cbmi = new JCheckBoxMenuItem( "Internal Node Names are Confidence Values" ) );
+                .add( _internal_number_are_confidence_for_nh_parsing_cbmi = new JCheckBoxMenuItem( "Internal Node Names are Confidence Values" ) );
         _options_jmenu.add( _replace_underscores_cbmi = new JCheckBoxMenuItem( "Replace Underscores with Spaces" ) );
-        _options_jmenu.add( _parse_beast_style_extended_nexus_tags_cbmi = new JCheckBoxMenuItem( "Parse BEAST-style extended Newick/Nexus tags" ) ); 
-        
-        _parse_beast_style_extended_nexus_tags_cbmi.setToolTipText( "to parse elements in the form of \"[&!color=#800080]\" in Newick/Nexus formatted trees" );
-        
-        
         _options_jmenu
-        .add( _allow_errors_in_distance_to_parent_cbmi = new JCheckBoxMenuItem( "Ignore Distance Values Format Errors" ) );
+                .add( _parse_beast_style_extended_nexus_tags_cbmi = new JCheckBoxMenuItem( "Parse BEAST-style extended Newick/Nexus tags" ) );
+        _parse_beast_style_extended_nexus_tags_cbmi
+                .setToolTipText( "to parse elements in the form of \"[&!color=#800080]\" in Newick/Nexus formatted trees" );
+        _options_jmenu
+                .add( _allow_errors_in_distance_to_parent_cbmi = new JCheckBoxMenuItem( "Ignore Distance Values Format Errors" ) );
         _options_jmenu.add( _extract_taxonomy_no_rbmi = new JRadioButtonMenuItem( "No Taxonomy Extraction" ) );
         _options_jmenu
-        .add( _extract_taxonomy_pfam_strict_rbmi = new JRadioButtonMenuItem( "Extract Taxonomy Codes/Ids from Pfam-style Node Names" ) );
+                .add( _extract_taxonomy_pfam_strict_rbmi = new JRadioButtonMenuItem( "Extract Taxonomy Codes/Ids from Pfam-style Node Names" ) );
         _options_jmenu
-        .add( _extract_taxonomy_pfam_relaxed_rbmi = new JRadioButtonMenuItem( "Extract Taxonomy Codes/Ids from Pfam-style like Node Names" ) );
+                .add( _extract_taxonomy_pfam_relaxed_rbmi = new JRadioButtonMenuItem( "Extract Taxonomy Codes/Ids from Pfam-style like Node Names" ) );
         _options_jmenu
-        .add( _extract_taxonomy_agressive_rbmi = new JRadioButtonMenuItem( "Extract Taxonomy Codes/Ids/Scientific Names from Node Names" ) );
+                .add( _extract_taxonomy_agressive_rbmi = new JRadioButtonMenuItem( "Extract Taxonomy Codes/Ids/Scientific Names from Node Names" ) );
         _extract_taxonomy_pfam_strict_rbmi
-        .setToolTipText( "To extract taxonomy codes/ids from node names in the form of e.g. \"BCL2_MOUSE/123-304\" or \"BCL2_10090/123-304\"" );
+                .setToolTipText( "To extract taxonomy codes/ids from node names in the form of e.g. \"BCL2_MOUSE/123-304\" or \"BCL2_10090/123-304\"" );
         _extract_taxonomy_pfam_relaxed_rbmi
-        .setToolTipText( "To extract taxonomy codes/ids from node names in the form of e.g. \"bax_MOUSE\" or \"bax_10090\"" );
+                .setToolTipText( "To extract taxonomy codes/ids from node names in the form of e.g. \"bax_MOUSE\" or \"bax_10090\"" );
         _extract_taxonomy_agressive_rbmi
-        .setToolTipText( "To extract taxonomy codes/ids or scientific names from node names in the form of e.g. \"MOUSE\" or \"10090\" or \"xyz_Nematostella_vectensis\"" );
+                .setToolTipText( "To extract taxonomy codes/ids or scientific names from node names in the form of e.g. \"MOUSE\" or \"10090\" or \"xyz_Nematostella_vectensis\"" );
         _radio_group_2 = new ButtonGroup();
         _radio_group_2.add( _extract_taxonomy_no_rbmi );
         _radio_group_2.add( _extract_taxonomy_pfam_strict_rbmi );
@@ -1882,27 +1932,28 @@ public final class MainFrameApplication extends MainFrame {
         _radio_group_2.add( _extract_taxonomy_agressive_rbmi );
         _options_jmenu.add( customizeMenuItemAsLabel( new JMenuItem( "Newick/Nexus Save:" ), getConfiguration() ) );
         _options_jmenu
-        .add( _use_brackets_for_conf_in_nh_export_cbmi = new JCheckBoxMenuItem( USE_BRACKETS_FOR_CONF_IN_NH_LABEL ) );
+                .add( _use_brackets_for_conf_in_nh_export_cbmi = new JCheckBoxMenuItem( USE_BRACKETS_FOR_CONF_IN_NH_LABEL ) );
         _use_brackets_for_conf_in_nh_export_cbmi
-        .setToolTipText( "e.g. \"0.1[90]\" for a branch with support 90 and a length of 0.1" );
+                .setToolTipText( "e.g. \"0.1[90]\" for a branch with support 90 and a length of 0.1" );
         _options_jmenu
-        .add( _use_internal_names_for_conf_in_nh_export_cbmi = new JCheckBoxMenuItem( USE_INTERNAL_NAMES_FOR_CONF_IN_NH_LABEL ) );
+                .add( _use_internal_names_for_conf_in_nh_export_cbmi = new JCheckBoxMenuItem( USE_INTERNAL_NAMES_FOR_CONF_IN_NH_LABEL ) );
         customizeJMenuItem( _choose_font_mi );
         customizeJMenuItem( _choose_minimal_confidence_mi );
         customizeJMenuItem( _switch_colors_mi );
         customizeJMenuItem( _choose_pdf_width_mi );
         customizeJMenuItem( _overview_placment_mi );
-        customizeCheckBoxMenuItem( _show_default_node_shapes_external_cbmi, getOptions()
-                                   .isShowDefaultNodeShapesExternal() );
-        customizeCheckBoxMenuItem( _show_default_node_shapes_internal_cbmi, getOptions()
-                                   .isShowDefaultNodeShapesInternal() );
-        customizeCheckBoxMenuItem( _show_default_node_shapes_for_marked_cbmi, getOptions()
-                                   .isShowDefaultNodeShapesForMarkedNodes() );
+        customizeCheckBoxMenuItem( _show_default_node_shapes_external_cbmi,
+                                   getOptions().isShowDefaultNodeShapesExternal() );
+        customizeCheckBoxMenuItem( _show_default_node_shapes_internal_cbmi,
+                                   getOptions().isShowDefaultNodeShapesInternal() );
+        customizeCheckBoxMenuItem( _show_default_node_shapes_for_marked_cbmi,
+                                   getOptions().isShowDefaultNodeShapesForMarkedNodes() );
         customizeJMenuItem( _cycle_node_shape_mi );
         customizeJMenuItem( _cycle_node_fill_mi );
         customizeJMenuItem( _choose_node_size_mi );
         customizeJMenuItem( _cycle_data_return );
-        customizeCheckBoxMenuItem( _color_labels_same_as_parent_branch, getOptions().isColorLabelsSameAsParentBranch() );
+        customizeCheckBoxMenuItem( _color_labels_same_as_parent_branch,
+                                   getOptions().isColorLabelsSameAsParentBranch() );
         customizeCheckBoxMenuItem( _color_by_taxonomic_group_cbmi, getOptions().isColorByTaxonomicGroup() );
         customizeCheckBoxMenuItem( _screen_antialias_cbmi, getOptions().isAntialiasScreen() );
         customizeCheckBoxMenuItem( _background_gradient_cbmi, getOptions().isBackgroundColorGradient() );
@@ -1922,8 +1973,8 @@ public final class MainFrameApplication extends MainFrame {
                                    getOptions().getNodeLabelDirection() == NODE_LABEL_DIRECTION.RADIAL );
         customizeCheckBoxMenuItem( _antialias_print_cbmi, getOptions().isAntialiasPrint() );
         customizeCheckBoxMenuItem( _print_black_and_white_cbmi, getOptions().isPrintBlackAndWhite() );
-        customizeCheckBoxMenuItem( _internal_number_are_confidence_for_nh_parsing_cbmi, getOptions()
-                                   .isInternalNumberAreConfidenceForNhParsing() );
+        customizeCheckBoxMenuItem( _internal_number_are_confidence_for_nh_parsing_cbmi,
+                                   getOptions().isInternalNumberAreConfidenceForNhParsing() );
         customizeRadioButtonMenuItem( _extract_taxonomy_no_rbmi,
                                       getOptions().getTaxonomyExtraction() == TAXONOMY_EXTRACTION.NO );
         customizeRadioButtonMenuItem( _extract_taxonomy_pfam_strict_rbmi,
@@ -1933,20 +1984,23 @@ public final class MainFrameApplication extends MainFrame {
         customizeRadioButtonMenuItem( _extract_taxonomy_agressive_rbmi,
                                       getOptions().getTaxonomyExtraction() == TAXONOMY_EXTRACTION.AGGRESSIVE );
         customizeCheckBoxMenuItem( _replace_underscores_cbmi, getOptions().isReplaceUnderscoresInNhParsing() );
-        customizeCheckBoxMenuItem( _allow_errors_in_distance_to_parent_cbmi, getOptions()
-                                   .isReplaceUnderscoresInNhParsing() );
+        customizeCheckBoxMenuItem( _allow_errors_in_distance_to_parent_cbmi,
+                                   getOptions().isReplaceUnderscoresInNhParsing() );
         customizeCheckBoxMenuItem( _search_with_regex_cbmi, getOptions().isSearchWithRegex() );
         customizeCheckBoxMenuItem( _search_whole_words_only_cbmi, getOptions().isMatchWholeTermsOnly() );
         customizeCheckBoxMenuItem( _inverse_search_result_cbmi, getOptions().isInverseSearchResult() );
-        customizeCheckBoxMenuItem( _color_all_found_nodes_when_coloring_subtree_cbmi, getOptions().isColorAllFoundNodesWhenColoringSubtree() ); 
-        customizeCheckBoxMenuItem( _parse_beast_style_extended_nexus_tags_cbmi, getOptions().isParseBeastStyleExtendedNexusTags() ); 
-        
+        customizeCheckBoxMenuItem( _color_all_found_nodes_when_coloring_subtree_cbmi,
+                                   getOptions().isColorAllFoundNodesWhenColoringSubtree() );
+        customizeCheckBoxMenuItem( _parse_beast_style_extended_nexus_tags_cbmi,
+                                   getOptions().isParseBeastStyleExtendedNexusTags() );
         customizeCheckBoxMenuItem( _graphics_export_visible_only_cbmi, getOptions().isGraphicsExportVisibleOnly() );
         customizeCheckBoxMenuItem( _show_confidence_stddev_cbmi, getOptions().isShowConfidenceStddev() );
-        customizeCheckBoxMenuItem( _use_brackets_for_conf_in_nh_export_cbmi, getOptions()
-                                   .getNhConversionSupportValueStyle() == NH_CONVERSION_SUPPORT_VALUE_STYLE.IN_SQUARE_BRACKETS );
-        customizeCheckBoxMenuItem( _use_internal_names_for_conf_in_nh_export_cbmi, getOptions()
-                                   .getNhConversionSupportValueStyle() == NH_CONVERSION_SUPPORT_VALUE_STYLE.AS_INTERNAL_NODE_NAMES );
+        customizeCheckBoxMenuItem( _use_brackets_for_conf_in_nh_export_cbmi,
+                                   getOptions()
+                                           .getNhConversionSupportValueStyle() == NH_CONVERSION_SUPPORT_VALUE_STYLE.IN_SQUARE_BRACKETS );
+        customizeCheckBoxMenuItem( _use_internal_names_for_conf_in_nh_export_cbmi,
+                                   getOptions()
+                                           .getNhConversionSupportValueStyle() == NH_CONVERSION_SUPPORT_VALUE_STYLE.AS_INTERNAL_NODE_NAMES );
         customizeCheckBoxMenuItem( _line_up_renderable_data_cbmi, getOptions().isLineUpRendarableNodeData() );
         customizeCheckBoxMenuItem( _right_line_up_domains_cbmi, getOptions().isRightLineUpDomains() );
         _jmenubar.add( _options_jmenu );
@@ -1962,11 +2016,11 @@ public final class MainFrameApplication extends MainFrame {
             _inference_menu.add( _inference_from_seqs_item = new JMenuItem( "From Unaligned Sequences..." ) );
             customizeJMenuItem( _inference_from_seqs_item );
             _inference_from_seqs_item
-            .setToolTipText( "Basic phylogenetic inference including multiple sequence alignment" );
+                    .setToolTipText( "Basic phylogenetic inference including multiple sequence alignment" );
         }
         else {
             _inference_menu
-            .add( _inference_from_seqs_item = new JMenuItem( "From Unaligned Sequences (no program found)" ) );
+                    .add( _inference_from_seqs_item = new JMenuItem( "From Unaligned Sequences (no program found)" ) );
             customizeJMenuItem( _inference_from_seqs_item );
             _inference_from_seqs_item.setEnabled( false );
         }
@@ -1985,7 +2039,7 @@ public final class MainFrameApplication extends MainFrame {
         _tools_menu.addSeparator();
         _tools_menu.add( _remove_visual_styles_item = new JMenuItem( "Delete All Visual Styles From Nodes" ) );
         _remove_visual_styles_item
-        .setToolTipText( "To remove all node visual styles (fonts, colors) from the current phylogeny" );
+                .setToolTipText( "To remove all node visual styles (fonts, colors) from the current phylogeny" );
         customizeJMenuItem( _remove_visual_styles_item );
         _tools_menu.add( _remove_branch_color_item = new JMenuItem( "Delete All Colors From Branches" ) );
         _remove_branch_color_item.setToolTipText( "To remove all branch color values from the current phylogeny" );
@@ -2007,26 +2061,29 @@ public final class MainFrameApplication extends MainFrame {
         _tools_menu.add( _collapse_species_specific_subtrees = new JMenuItem( "Collapse Species-Specific Subtrees" ) );
         customizeJMenuItem( _collapse_species_specific_subtrees );
         _collapse_species_specific_subtrees.setToolTipText( "To (reversibly) collapse species-specific subtrees" );
+        _tools_menu.add( _collapse_by_taxonomic_rank = new JMenuItem( "Collapse By Taxonomic Rank" ) );
+        customizeJMenuItem( _collapse_by_taxonomic_rank );
+        _collapse_by_taxonomic_rank.setToolTipText( "To (reversibly) collapse subtrees by taxonomic rank" );
         _tools_menu
-        .add( _collapse_below_threshold = new JMenuItem( "Collapse Branches with Confidence Below Threshold into Multifurcations" ) );
+                .add( _collapse_below_threshold = new JMenuItem( "Collapse Branches with Confidence Below Threshold into Multifurcations" ) );
         customizeJMenuItem( _collapse_below_threshold );
         _collapse_below_threshold
-        .setToolTipText( "To (permanently) collapse branches with confidence values below a threshold into multifurcations (in the case of multiple confidences per branch: without at least one confidence value above a threshold)" );
+                .setToolTipText( "To (permanently) collapse branches with confidence values below a threshold into multifurcations (in the case of multiple confidences per branch: without at least one confidence value above a threshold)" );
         //
         _tools_menu
-        .add( _collapse_below_branch_length = new JMenuItem( "Collapse Branches with Branch Lengths Below Threshold into Multifurcations" ) );
+                .add( _collapse_below_branch_length = new JMenuItem( "Collapse Branches with Branch Lengths Below Threshold into Multifurcations" ) );
         customizeJMenuItem( _collapse_below_branch_length );
         _collapse_below_branch_length
-        .setToolTipText( "To (permanently) collapse branches with branches with branch lengths below a threshold into multifurcations" );
+                .setToolTipText( "To (permanently) collapse branches with branches with branch lengths below a threshold into multifurcations" );
         //
         _tools_menu.addSeparator();
         _tools_menu
-        .add( _extract_tax_code_from_node_names_jmi = new JMenuItem( "Extract Taxonomic Data from Node Names" ) );
+                .add( _extract_tax_code_from_node_names_jmi = new JMenuItem( "Extract Taxonomic Data from Node Names" ) );
         customizeJMenuItem( _extract_tax_code_from_node_names_jmi );
         _extract_tax_code_from_node_names_jmi
-        .setToolTipText( "To extract SwissProt/Uniprot taxonomic codes (mnemonics) from nodes names in the form of 'xyz_CAEEL', Uniprot/NCBI identifiers form of 'xyz_6239', or scientific names form of 'xyz_Caenorhabditis_elegans'" );
+                .setToolTipText( "To extract SwissProt/Uniprot taxonomic codes (mnemonics) from nodes names in the form of 'xyz_CAEEL', Uniprot/NCBI identifiers form of 'xyz_6239', or scientific names form of 'xyz_Caenorhabditis_elegans'" );
         _tools_menu
-        .add( _move_node_names_to_tax_sn_jmi = new JMenuItem( "Transfer Node Names to Taxonomic Scientific Names" ) );
+                .add( _move_node_names_to_tax_sn_jmi = new JMenuItem( "Transfer Node Names to Taxonomic Scientific Names" ) );
         customizeJMenuItem( _move_node_names_to_tax_sn_jmi );
         _move_node_names_to_tax_sn_jmi.setToolTipText( "To interpret node names as taxonomic scientific names" );
         _tools_menu.add( _move_node_names_to_seq_names_jmi = new JMenuItem( "Transfer Node Names to Sequence Names" ) );
@@ -2037,15 +2094,15 @@ public final class MainFrameApplication extends MainFrame {
         customizeJMenuItem( _obtain_seq_information_jmi );
         _obtain_seq_information_jmi.setToolTipText( "To add additional sequence information" );
         _tools_menu
-        .add( _obtain_detailed_taxonomic_information_jmi = new JMenuItem( OBTAIN_DETAILED_TAXONOMIC_INFORMATION ) );
+                .add( _obtain_detailed_taxonomic_information_jmi = new JMenuItem( OBTAIN_DETAILED_TAXONOMIC_INFORMATION ) );
         customizeJMenuItem( _obtain_detailed_taxonomic_information_jmi );
         _obtain_detailed_taxonomic_information_jmi
-        .setToolTipText( "To add additional taxonomic information (from UniProt Taxonomy)" );
+                .setToolTipText( "To add additional taxonomic information (from UniProt Taxonomy)" );
         _tools_menu
-        .add( _obtain_detailed_taxonomic_information_deleting_jmi = new JMenuItem( "Obtain Detailed Taxonomic Information (deletes nodes!)" ) );
+                .add( _obtain_detailed_taxonomic_information_deleting_jmi = new JMenuItem( "Obtain Detailed Taxonomic Information (deletes nodes!)" ) );
         customizeJMenuItem( _obtain_detailed_taxonomic_information_deleting_jmi );
         _obtain_detailed_taxonomic_information_deleting_jmi
-        .setToolTipText( "To add additional taxonomic information, deletes nodes for which taxonomy cannot found (from UniProt Taxonomy)" );
+                .setToolTipText( "To add additional taxonomic information, deletes nodes for which taxonomy cannot found (from UniProt Taxonomy)" );
         _tools_menu.addSeparator();
         _tools_menu.add( _read_values_jmi = new JMenuItem( "Attach Vector/Expression Values" ) );
         customizeJMenuItem( _read_values_jmi );
@@ -2054,7 +2111,7 @@ public final class MainFrameApplication extends MainFrame {
         _tools_menu.add( _read_seqs_jmi = new JMenuItem( "Attach Molecular Sequences" ) );
         customizeJMenuItem( _read_seqs_jmi );
         _read_seqs_jmi
-        .setToolTipText( "To attach molecular sequences to tree nodes (from Fasta-formatted file) (beta)" );
+                .setToolTipText( "To attach molecular sequences to tree nodes (from Fasta-formatted file) (beta)" );
         _jmenubar.add( _tools_menu );
     }
 
@@ -2085,10 +2142,11 @@ public final class MainFrameApplication extends MainFrame {
         URL url = null;
         Phylogeny[] phys = null;
         final String message = "Please enter a complete URL, for example \"http://purl.org/phylo/treebase/phylows/study/TB2:S15480?format=nexus\"";
-        final String url_string = JOptionPane.showInputDialog( this,
-                                                               message,
-                                                               "Use URL/webservice to obtain a phylogeny",
-                                                               JOptionPane.QUESTION_MESSAGE );
+        final String url_string = JOptionPane
+                .showInputDialog( this,
+                                  message,
+                                  "Use URL/webservice to obtain a phylogeny",
+                                  JOptionPane.QUESTION_MESSAGE );
         boolean nhx_or_nexus = false;
         if ( ( url_string != null ) && ( url_string.length() > 0 ) ) {
             try {
@@ -2098,8 +2156,9 @@ public final class MainFrameApplication extends MainFrame {
                     parser = new TolParser();
                 }
                 else {
-                    parser = ParserUtils.createParserDependingOnUrlContents( url, getConfiguration()
-                                                                             .isValidatePhyloXmlAgainstSchema() );
+                    parser = ParserUtils
+                            .createParserDependingOnUrlContents( url,
+                                                                 getConfiguration().isValidatePhyloXmlAgainstSchema() );
                 }
                 if ( parser instanceof NexusPhylogeniesParser ) {
                     nhx_or_nexus = true;
@@ -2126,8 +2185,8 @@ public final class MainFrameApplication extends MainFrame {
                 JOptionPane.showMessageDialog( this,
                                                "Could not read from " + url + "\n"
                                                        + ForesterUtil.wordWrap( e.getLocalizedMessage(), 80 ),
-                                                       "Failed to read URL",
-                                                       JOptionPane.ERROR_MESSAGE );
+                                               "Failed to read URL",
+                                               JOptionPane.ERROR_MESSAGE );
             }
             catch ( final Exception e ) {
                 JOptionPane.showMessageDialog( this,
@@ -2198,11 +2257,10 @@ public final class MainFrameApplication extends MainFrame {
 
     static void warnIfNotPhyloXmlValidation( final Configuration c ) {
         if ( !c.isValidatePhyloXmlAgainstSchema() ) {
-            JOptionPane
-            .showMessageDialog( null,
-                                ForesterUtil
-                                .wordWrap( "phyloXML XSD-based validation is turned off [enable with line 'validate_against_phyloxml_xsd_schem: true' in configuration file]",
-                                           80 ),
+            JOptionPane.showMessageDialog( null,
+                                           ForesterUtil.wordWrap(
+                                                                  "phyloXML XSD-based validation is turned off [enable with line 'validate_against_phyloxml_xsd_schem: true' in configuration file]",
+                                                                  80 ),
                                            "Warning",
                                            JOptionPane.WARNING_MESSAGE );
         }

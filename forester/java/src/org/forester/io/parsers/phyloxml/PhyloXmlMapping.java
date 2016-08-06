@@ -125,6 +125,7 @@ public final class PhyloXmlMapping {
     public static final String TAXONOMY_RANK                                       = "rank";
     public static final String TAXONOMY_SCIENTIFIC_NAME                            = "scientific_name";
     public static final String TAXONOMY_SYNONYM                                    = "synonym";
+    public static final String TAXONOMY_LINEAGE                                    = "lineage";
     public static final String TYPE_ATTR                                           = "type";
     public static final String URI                                                 = "uri";
     public static final String URI_DESC_ATTR                                       = "desc";

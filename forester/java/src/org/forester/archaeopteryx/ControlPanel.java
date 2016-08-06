@@ -93,7 +93,9 @@ final class ControlPanel extends JPanel implements ActionListener {
         SUBTREE,
         SWAP,
         CHANGE_NODE_FONT,
-        COLOR_NODE_FONT;
+        COLOR_NODE_FONT,
+        UNCOLLAPSE_ALL,
+        ORDER_SUBTREE;
     }
     final static Font                         jcb_bold_font             = new Font( Configuration.getDefaultFontFamilyName(),
                                                                                     Font.BOLD,
@@ -116,6 +118,10 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JLabel                            _click_to_label;
     private List<String>                      _click_to_names;
     private int                               _collapse_cb_item;
+    private int                               _uncollapse_all_cb_item;
+    private int                               _order_subtree_cb_item;
+    
+    
     private JCheckBox                         _color_acc_species;
     private JCheckBox                         _color_acc_sequence;
     private JCheckBox                         _color_according_to_annotation;
@@ -146,7 +152,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     private int                               _open_tax_web_item;
     private int                               _color_node_font_item;
     private JButton                           _order;
-    private boolean                           _order_of_appearance;
     private int                               _paste_subtree_item;
     private int                               _reroot_cb_item;
     private JButton                           _return_to_super_tree;
@@ -178,6 +183,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JCheckBox                         _show_sequence_acc;
     private JComboBox<String>                 _show_sequence_relations;
     private JCheckBox                         _show_taxo_code;
+    private JCheckBox                         _show_taxo_rank;
     private JCheckBox                         _show_taxo_common_names;
     private JCheckBox                         _show_taxo_images_cb;
     private JCheckBox                         _show_taxo_scientific_names;
@@ -208,7 +214,6 @@ final class ControlPanel extends JPanel implements ActionListener {
             setBorder( BorderFactory.createRaisedBevelBorder() );
         }
         setLayout( new GridLayout( 0, 1, 2, 2 ) );
-        _order_of_appearance = true;
         setupControls();
     }
 
@@ -291,8 +296,8 @@ final class ControlPanel extends JPanel implements ActionListener {
                     else if ( isShowSeqNames() || isShowSeqSymbols() || isShowGeneNames() ) {
                         pri = DESCENDANT_SORT_PRIORITY.SEQUENCE;
                     }
-                    PhylogenyMethods.orderAppearance( tp.getPhylogeny().getRoot(), _order_of_appearance, true, pri );
-                    _order_of_appearance = !_order_of_appearance;
+                    PhylogenyMethods.orderAppearanceX( tp.getPhylogeny().getRoot(), true, pri );
+                  
                     tp.setNodeInPreorderToNull();
                     tp.getPhylogeny().externalNodesHaveChanged();
                     tp.getPhylogeny().clearHashIdToNodeMap();
@@ -740,6 +745,15 @@ final class ControlPanel extends JPanel implements ActionListener {
             }
             cb_index++;
         }
+if ( _configuration.doDisplayClickToOption( Configuration.uncollapse_all ) ) {
+            _uncollapse_all_cb_item = cb_index;
+            addClickToOption( Configuration.uncollapse_all,
+                              _configuration.getClickToTitle( Configuration.uncollapse_all ) );
+            if ( default_option == Configuration.uncollapse_all ) {
+                selected_index = cb_index;
+            }
+            cb_index++;
+}                
         if ( _configuration.doDisplayClickToOption( Configuration.reroot ) ) {
             _reroot_cb_item = cb_index;
             addClickToOption( Configuration.reroot, _configuration.getClickToTitle( Configuration.reroot ) );
@@ -764,6 +778,16 @@ final class ControlPanel extends JPanel implements ActionListener {
             }
             cb_index++;
         }
+if ( _configuration.doDisplayClickToOption( Configuration.order_subtree ) ) {
+            _order_subtree_cb_item = cb_index;
+            addClickToOption( Configuration.order_subtree,
+                              _configuration.getClickToTitle( Configuration.order_subtree ) );
+            if ( default_option == Configuration.order_subtree ) {
+                selected_index = cb_index;
+            }
+            cb_index++;
+}    
+        
         if ( _configuration.doDisplayClickToOption( Configuration.sort_descendents ) ) {
             _sort_descendents_item = cb_index;
             addClickToOption( Configuration.sort_descendents,
@@ -989,6 +1013,10 @@ final class ControlPanel extends JPanel implements ActionListener {
             setCheckbox( Configuration.show_taxonomy_common_names,
                          _configuration.doCheckOption( Configuration.show_taxonomy_common_names ) );
         }
+        if ( _configuration.doDisplayOption( Configuration.show_tax_rank ) ) {
+            addCheckbox( Configuration.show_tax_rank, _configuration.getDisplayTitle( Configuration.show_tax_rank ) );
+            setCheckbox( Configuration.show_tax_rank, _configuration.doCheckOption( Configuration.show_tax_rank ) );
+        }
         if ( _configuration.doDisplayOption( Configuration.show_seq_names ) ) {
             addCheckbox( Configuration.show_seq_names, _configuration.getDisplayTitle( Configuration.show_seq_names ) );
             setCheckbox( Configuration.show_seq_names, _configuration.doCheckOption( Configuration.show_seq_names ) );
@@ -1164,8 +1192,9 @@ final class ControlPanel extends JPanel implements ActionListener {
         _show_whole.setPreferredSize( new Dimension( 10, 10 ) );
         _return_to_super_tree = new JButton( RETURN_TO_SUPER_TREE_TEXT );
         _return_to_super_tree.setEnabled( false );
-        _order = new JButton( "Order Subtrees" );
+        _order = new JButton( "Order Tree" );
         _uncollapse_all = new JButton( "Uncollapse All" );
+       
         addJButton( _zoom_in_y, x_panel );
         addJButton( _zoom_out_x, y_panel );
         addJButton( _show_whole, y_panel );
@@ -1238,6 +1267,11 @@ final class ControlPanel extends JPanel implements ActionListener {
                 addJCheckBox( _show_taxo_code, ch_panel );
                 add( ch_panel );
                 break;
+            case Configuration.show_tax_rank:
+                _show_taxo_rank = new JCheckBox( title );
+                addJCheckBox( _show_taxo_rank, ch_panel );
+                add( ch_panel );
+                break;    
             case Configuration.show_taxonomy_images:
                 _show_taxo_images_cb = new JCheckBox( title );
                 addJCheckBox( _show_taxo_images_cb, ch_panel );
@@ -1569,6 +1603,10 @@ final class ControlPanel extends JPanel implements ActionListener {
     boolean isShowTaxonomyCode() {
         return ( ( _show_taxo_code != null ) && _show_taxo_code.isSelected() );
     }
+    
+    boolean isShowTaxonomyRank() {
+        return ( ( _show_taxo_rank != null ) && _show_taxo_rank.isSelected() );
+    }
 
     boolean isShowTaxonomyCommonNames() {
         return ( ( _show_taxo_common_names != null ) && _show_taxo_common_names.isSelected() );
@@ -1705,6 +1743,11 @@ final class ControlPanel extends JPanel implements ActionListener {
             case Configuration.show_tax_code:
                 if ( _show_taxo_code != null ) {
                     _show_taxo_code.setSelected( state );
+                }
+                break;
+            case Configuration.show_tax_rank:
+                if ( _show_taxo_rank != null ) {
+                    _show_taxo_rank.setSelected( state );
                 }
                 break;
             case Configuration.show_taxonomy_images:
@@ -1888,6 +1931,12 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
         else if ( action == _change_node_font_item ) {
             setActionWhenNodeClicked( NodeClickAction.CHANGE_NODE_FONT );
+        }
+        else if ( action == _uncollapse_all_cb_item ) {
+            setActionWhenNodeClicked( NodeClickAction.UNCOLLAPSE_ALL );
+        }
+        else if ( action == _order_subtree_cb_item ) {
+            setActionWhenNodeClicked( NodeClickAction.ORDER_SUBTREE );
         }
         else {
             throw new RuntimeException( "unknown action: " + action );

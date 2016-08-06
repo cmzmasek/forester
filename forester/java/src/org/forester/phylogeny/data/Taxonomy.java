@@ -248,8 +248,8 @@ public class Taxonomy implements PhylogenyData, MultipleUris, Comparable<Taxonom
 
     public boolean isEmpty() {
         return ( ( getIdentifier() == null ) && ForesterUtil.isEmpty( getTaxonomyCode() )
-                && ForesterUtil.isEmpty( getCommonName() ) && ForesterUtil.isEmpty( getScientificName() ) && ForesterUtil
-                .isEmpty( _lineage ) );
+                && ForesterUtil.isEmpty( getCommonName() ) && ForesterUtil.isEmpty( getScientificName() )
+                && ForesterUtil.isEmpty( _lineage ) );
     }
 
     /**
@@ -391,8 +391,10 @@ public class Taxonomy implements PhylogenyData, MultipleUris, Comparable<Taxonom
             PhylogenyDataUtil.appendElement( writer, PhyloXmlMapping.TAXONOMY_AUTHORITY, getAuthority(), indentation );
         }
         if ( !ForesterUtil.isEmpty( getCommonName() ) ) {
-            PhylogenyDataUtil
-            .appendElement( writer, PhyloXmlMapping.TAXONOMY_COMMON_NAME, getCommonName(), indentation );
+            PhylogenyDataUtil.appendElement( writer,
+                                             PhyloXmlMapping.TAXONOMY_COMMON_NAME,
+                                             getCommonName(),
+                                             indentation );
         }
         if ( _synonyms != null ) {
             for( final String syn : getSynonyms() ) {
@@ -409,6 +411,24 @@ public class Taxonomy implements PhylogenyData, MultipleUris, Comparable<Taxonom
                 if ( uri != null ) {
                     uri.toPhyloXML( writer, level, indentation );
                 }
+            }
+        }
+        if ( getLineage() != null ) {
+            final StringBuilder sb = new StringBuilder();
+            boolean first = true;
+            for( final String lin : getLineage() ) {
+                if ( !ForesterUtil.isEmpty( lin ) ) {
+                    if ( first ) {
+                        first = false;
+                    }
+                    else {
+                        sb.append( "," );
+                    }
+                    sb.append( lin );
+                }
+            }
+            if ( sb.length() > 0 ) {
+                PhylogenyDataUtil.appendElement( writer, PhyloXmlMapping.TAXONOMY_LINEAGE, sb.toString(), indentation );
             }
         }
         writer.write( ForesterUtil.LINE_SEPARATOR );
