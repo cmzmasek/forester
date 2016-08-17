@@ -42,7 +42,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.swing.ButtonGroup;
@@ -118,7 +117,6 @@ public final class MainFrameApplication extends MainFrame {
     // Application-only print menu items
     private JMenuItem                    _collapse_below_threshold;
     private JMenuItem                    _collapse_below_branch_length;
-    private JMenuItem                    _collapse_by_taxonomic_rank;
     private ButtonGroup                  _radio_group_1;
     private ButtonGroup                  _radio_group_2;
     // Others:
@@ -435,12 +433,7 @@ public final class MainFrameApplication extends MainFrame {
                 }
                 collapseBelowThreshold();
             }
-            else if ( o == _collapse_by_taxonomic_rank ) {
-                if ( isSubtreeDisplayed() ) {
-                    return;
-                }
-                collapseByTaxonomicRank();
-            }
+           
             else if ( o == _collapse_below_branch_length ) {
                 if ( isSubtreeDisplayed() ) {
                     return;
@@ -983,7 +976,7 @@ public final class MainFrameApplication extends MainFrame {
         }
     }
 
-    private void collapse( final Phylogeny phy ) {
+    private void collapseBelowThreshold( final Phylogeny phy ) {
         final PhylogenyNodeIterator it = phy.iteratorPostorder();
         final List<PhylogenyNode> to_be_removed = new ArrayList<PhylogenyNode>();
         double min_support = Double.MAX_VALUE;
@@ -1051,27 +1044,6 @@ public final class MainFrameApplication extends MainFrame {
         }
     }
 
-    private void collapseByTaxonomicRank() {
-        if ( _mainpanel.getCurrentTreePanel() != null ) {
-            final Map<String, Integer> present_ranks = AptxUtil.getRankCounts( _mainpanel.getCurrentTreePanel().getPhylogeny());
-            final String[] ranks = AptxUtil.getAllPossibleRanks(present_ranks);
-             String rank = ( String ) JOptionPane
-                    .showInputDialog( this,
-                                      "What rank should the collapsing be based on",
-                                      "Rank Selection",
-                                      JOptionPane.QUESTION_MESSAGE,
-                                      null,
-                                      ranks,
-                                      null );
-            if ( !ForesterUtil.isEmpty( rank ) ) {
-                if ( rank.indexOf( '(' ) > 0 ) {
-                    rank = rank.substring( 0, rank.indexOf( '(' ) ).trim();
-                }
-                _mainpanel.getCurrentTreePanel().collapseByTaxonomicRank( rank );
-            }
-        }
-    }
-
     private void collapseBelowBranchLengthThreshold() {
         if ( getCurrentTreePanel() != null ) {
             final Phylogeny phy = getCurrentTreePanel().getPhylogeny();
@@ -1135,7 +1107,7 @@ public final class MainFrameApplication extends MainFrame {
                     }
                     if ( success && ( m >= 0.0 ) ) {
                         setMinNotCollapseConfidenceValue( m );
-                        collapse( phy );
+                        collapseBelowThreshold( phy );
                     }
                 }
             }
@@ -1844,12 +1816,10 @@ public final class MainFrameApplication extends MainFrame {
         _options_jmenu.add( customizeMenuItemAsLabel( new JMenuItem( DISPLAY_SUBHEADER ), getConfiguration() ) );
         _options_jmenu
                 .add( _ext_node_dependent_cladogram_rbmi = new JRadioButtonMenuItem( MainFrame.NONUNIFORM_CLADOGRAMS_LABEL ) );
-        _options_jmenu.add( _uniform_cladograms_rbmi = new JRadioButtonMenuItem( MainFrame.UNIFORM_CLADOGRAMS_LABEL ) );
         _options_jmenu.add( _non_lined_up_cladograms_rbmi = new JRadioButtonMenuItem( NON_LINED_UP_CLADOGRAMS_LABEL ) );
         _radio_group_1 = new ButtonGroup();
         _radio_group_1.add( _ext_node_dependent_cladogram_rbmi );
-        _radio_group_1.add( _uniform_cladograms_rbmi );
-        _radio_group_1.add( _non_lined_up_cladograms_rbmi );
+         _radio_group_1.add( _non_lined_up_cladograms_rbmi );
         _options_jmenu.add( _show_overview_cbmi = new JCheckBoxMenuItem( SHOW_OVERVIEW_LABEL ) );
         _options_jmenu.add( _show_scale_cbmi = new JCheckBoxMenuItem( DISPLAY_SCALE_LABEL ) );
         _options_jmenu
@@ -1858,8 +1828,16 @@ public final class MainFrameApplication extends MainFrame {
                 .add( _show_default_node_shapes_external_cbmi = new JCheckBoxMenuItem( DISPLAY_NODE_BOXES_LABEL_EXT ) );
         _options_jmenu
                 .add( _show_default_node_shapes_for_marked_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_NODE_BOXES_LABEL_MARKED ) );
+      
+        _options_jmenu
+        .add( _collapsed_with_average_height_cbmi = new JCheckBoxMenuItem( "Proportional Height of Collapsed Subtrees" ) );
+
+        
         _options_jmenu
                 .add( _line_up_renderable_data_cbmi = new JCheckBoxMenuItem( MainFrame.LINE_UP_RENDERABLE_DATA ) );
+        
+       
+        
         if ( getConfiguration().doDisplayOption( Configuration.show_domain_architectures ) ) {
             _options_jmenu
                     .add( _right_line_up_domains_cbmi = new JCheckBoxMenuItem( MainFrame.RIGHT_LINE_UP_DOMAINS ) );
@@ -1962,12 +1940,11 @@ public final class MainFrameApplication extends MainFrame {
         customizeCheckBoxMenuItem( _abbreviate_scientific_names, getOptions().isAbbreviateScientificTaxonNames() );
         customizeCheckBoxMenuItem( _search_case_senstive_cbmi, getOptions().isSearchCaseSensitive() );
         customizeCheckBoxMenuItem( _show_scale_cbmi, getOptions().isShowScale() );
+        customizeCheckBoxMenuItem( _collapsed_with_average_height_cbmi, getOptions().isCollapsedWithAverageHeigh() );
         customizeRadioButtonMenuItem( _non_lined_up_cladograms_rbmi,
                                       getOptions().getCladogramType() == CLADOGRAM_TYPE.NON_LINED_UP );
-        customizeRadioButtonMenuItem( _uniform_cladograms_rbmi,
-                                      getOptions().getCladogramType() == CLADOGRAM_TYPE.TOTAL_NODE_SUM_DEP );
         customizeRadioButtonMenuItem( _ext_node_dependent_cladogram_rbmi,
-                                      getOptions().getCladogramType() == CLADOGRAM_TYPE.EXT_NODE_SUM_DEP );
+                                      getOptions().getCladogramType() == CLADOGRAM_TYPE.LINED_UP );
         customizeCheckBoxMenuItem( _show_overview_cbmi, getOptions().isShowOverview() );
         customizeCheckBoxMenuItem( _label_direction_cbmi,
                                    getOptions().getNodeLabelDirection() == NODE_LABEL_DIRECTION.RADIAL );
@@ -2058,12 +2035,9 @@ public final class MainFrameApplication extends MainFrame {
         _delete_not_selected_nodes_item.setToolTipText( "To delete all not selected external nodes" );
         customizeJMenuItem( _delete_not_selected_nodes_item );
         _tools_menu.addSeparator();
-        _tools_menu.add( _collapse_species_specific_subtrees = new JMenuItem( "Collapse Species-Specific Subtrees" ) );
+        _tools_menu.add( _collapse_species_specific_subtrees = new JMenuItem( "Collapse Single Taxonomy-Subtrees" ) );
         customizeJMenuItem( _collapse_species_specific_subtrees );
-        _collapse_species_specific_subtrees.setToolTipText( "To (reversibly) collapse species-specific subtrees" );
-        _tools_menu.add( _collapse_by_taxonomic_rank = new JMenuItem( "Collapse By Taxonomic Rank" ) );
-        customizeJMenuItem( _collapse_by_taxonomic_rank );
-        _collapse_by_taxonomic_rank.setToolTipText( "To (reversibly) collapse subtrees by taxonomic rank" );
+        _collapse_species_specific_subtrees.setToolTipText( "To (reversibly) collapse subtrees associated with only one taxonomy (such as species specific subtrees)" );
         _tools_menu
                 .add( _collapse_below_threshold = new JMenuItem( "Collapse Branches with Confidence Below Threshold into Multifurcations" ) );
         customizeJMenuItem( _collapse_below_threshold );

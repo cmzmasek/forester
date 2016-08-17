@@ -107,7 +107,6 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
     private JCheckBoxMenuItem           _background_gradient_cbmi;
     private JCheckBoxMenuItem           _color_by_taxonomic_group_cbmi;
     private JRadioButtonMenuItem        _non_lined_up_cladograms_rbmi;
-    private JRadioButtonMenuItem        _uniform_cladograms_rbmi;
     private JRadioButtonMenuItem        _ext_node_dependent_cladogram_rbmi;
     private Options                     _options;
     private JMenuItem                   _choose_font_mi;
@@ -255,10 +254,6 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
             MainFrame.cycleNodeShape( getOptions() );
         }
         else if ( o == _non_lined_up_cladograms_rbmi ) {
-            updateOptions( getOptions() );
-            _mainpanel.getControlPanel().showWhole();
-        }
-        else if ( o == _uniform_cladograms_rbmi ) {
             updateOptions( getOptions() );
             _mainpanel.getControlPanel().showWhole();
         }
@@ -1063,12 +1058,10 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
                                                                 getConfiguration() ) );
         _options_jmenu
                 .add( _ext_node_dependent_cladogram_rbmi = new JRadioButtonMenuItem( MainFrame.NONUNIFORM_CLADOGRAMS_LABEL ) );
-        _options_jmenu.add( _uniform_cladograms_rbmi = new JRadioButtonMenuItem( MainFrame.UNIFORM_CLADOGRAMS_LABEL ) );
         _options_jmenu
                 .add( _non_lined_up_cladograms_rbmi = new JRadioButtonMenuItem( MainFrame.NON_LINED_UP_CLADOGRAMS_LABEL ) );
         _radio_group_1 = new ButtonGroup();
         _radio_group_1.add( _ext_node_dependent_cladogram_rbmi );
-        _radio_group_1.add( _uniform_cladograms_rbmi );
         _radio_group_1.add( _non_lined_up_cladograms_rbmi );
         _options_jmenu.add( _show_overview_cbmi = new JCheckBoxMenuItem( MainFrame.SHOW_OVERVIEW_LABEL ) );
         _options_jmenu.add( _show_scale_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_SCALE_LABEL ) );
@@ -1153,10 +1146,8 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         customizeCheckBoxMenuItem( _show_scale_cbmi, getOptions().isShowScale() );
         customizeRadioButtonMenuItem( _non_lined_up_cladograms_rbmi,
                                       getOptions().getCladogramType() == CLADOGRAM_TYPE.NON_LINED_UP );
-        customizeRadioButtonMenuItem( _uniform_cladograms_rbmi,
-                                      getOptions().getCladogramType() == CLADOGRAM_TYPE.TOTAL_NODE_SUM_DEP );
-        customizeRadioButtonMenuItem( _ext_node_dependent_cladogram_rbmi,
-                                      getOptions().getCladogramType() == CLADOGRAM_TYPE.EXT_NODE_SUM_DEP );
+         customizeRadioButtonMenuItem( _ext_node_dependent_cladogram_rbmi,
+                                      getOptions().getCladogramType() == CLADOGRAM_TYPE.LINED_UP );
         customizeCheckBoxMenuItem( _show_overview_cbmi, getOptions().isShowOverview() );
         customizeCheckBoxMenuItem( _search_with_regex_cbmi, getOptions().isSearchWithRegex() );
         customizeCheckBoxMenuItem( _search_whole_words_only_cbmi, getOptions().isMatchWholeTermsOnly() );
@@ -1685,11 +1676,9 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         if ( ( _non_lined_up_cladograms_rbmi != null ) && ( _non_lined_up_cladograms_rbmi.isSelected() ) ) {
             options.setCladogramType( CLADOGRAM_TYPE.NON_LINED_UP );
         }
-        else if ( ( _uniform_cladograms_rbmi != null ) && ( _uniform_cladograms_rbmi.isSelected() ) ) {
-            options.setCladogramType( CLADOGRAM_TYPE.TOTAL_NODE_SUM_DEP );
-        }
+       
         else if ( ( _ext_node_dependent_cladogram_rbmi != null ) && ( _ext_node_dependent_cladogram_rbmi.isSelected() ) ) {
-            options.setCladogramType( CLADOGRAM_TYPE.EXT_NODE_SUM_DEP );
+            options.setCladogramType( CLADOGRAM_TYPE.LINED_UP );
         }
         options.setSearchCaseSensitive( ( _search_case_senstive_cbmi != null )
                 && _search_case_senstive_cbmi.isSelected() );

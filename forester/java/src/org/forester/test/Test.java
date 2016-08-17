@@ -3352,7 +3352,7 @@ public final class Test {
             if ( t2.getNumberOfExternalNodes() != 4 ) {
                 return false;
             }
-            if ( t2.getHeight() != 8.5 ) {
+            if ( t2.calculateHeight(false) != 8.5 ) {
                 return false;
             }
             if ( !t2.isCompletelyBinary() ) {
@@ -3365,7 +3365,7 @@ public final class Test {
             if ( t3.getNumberOfExternalNodes() != 5 ) {
                 return false;
             }
-            if ( t3.getHeight() != 11 ) {
+            if ( t3.calculateHeight(true) != 11 ) {
                 return false;
             }
             if ( t3.isCompletelyBinary() ) {
@@ -3376,7 +3376,7 @@ public final class Test {
             if ( t4.getNumberOfExternalNodes() != 9 ) {
                 return false;
             }
-            if ( t4.getHeight() != 11 ) {
+            if ( t4.calculateHeight(false) != 11 ) {
                 return false;
             }
             if ( t4.isCompletelyBinary() ) {
@@ -3387,17 +3387,17 @@ public final class Test {
             if ( t5.getNumberOfExternalNodes() != 8 ) {
                 return false;
             }
-            if ( t5.getHeight() != 15 ) {
+            if ( t5.calculateHeight(false) != 15 ) {
                 return false;
             }
             final StringBuffer sb6 = new StringBuffer( "(X,Y,Z,(((A111)A11:2)A1:2,(X,Y,Z,A21:1,A22:2,A23)A2:11,A3:2)A:2,B:10,C:3,D:8)" );
             final Phylogeny t6 = factory.create( sb6.toString(), new NHXParser() )[ 0 ];
-            if ( t6.getHeight() != 15 ) {
+            if ( t6.calculateHeight(true) != 15 ) {
                 return false;
             }
             final StringBuffer sb7 = new StringBuffer( "(((A11:2)A1:2,(A21:1,A22:2,A23)A2:11,A3:2)A:2,B:10,C:15,D:8)" );
             final Phylogeny t7 = factory.create( sb7.toString(), new NHXParser() )[ 0 ];
-            if ( t7.getHeight() != 15 ) {
+            if ( t7.calculateHeight(true) != 15 ) {
                 return false;
             }
             final StringBuffer sb8 = new StringBuffer( "(((A11:11)A1:2,(A21:2,A22:2,A23,A24,AA:)A2:11,A3:2)A:2,B:15,C:15,D:15)" );
@@ -3405,17 +3405,17 @@ public final class Test {
             if ( t8.getNumberOfExternalNodes() != 10 ) {
                 return false;
             }
-            if ( t8.getHeight() != 15 ) {
+            if ( t8.calculateHeight(true) != 15 ) {
                 return false;
             }
             final char[] a9 = new char[] { 'a' };
             final Phylogeny t9 = factory.create( a9, new NHXParser() )[ 0 ];
-            if ( t9.getHeight() != 0 ) {
+            if ( t9.calculateHeight(true) != 0 ) {
                 return false;
             }
             final char[] a10 = new char[] { 'a', ':', '6' };
             final Phylogeny t10 = factory.create( a10, new NHXParser() )[ 0 ];
-            if ( t10.getHeight() != 6 ) {
+            if ( t10.calculateHeight(true) != 6 ) {
                 return false;
             }
         }

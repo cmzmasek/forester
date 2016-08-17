@@ -79,7 +79,7 @@ public final class AptxConstants {
     final static short          NUMBER_OF_DIGITS_AFTER_COMMA_FOR_BRANCH_LENGTH_VALUES_DEFAULT = 3;
     final static short          NUMBER_OF_DIGITS_AFTER_COMMA_FOR_CONFIDENCE_VALUES_DEFAULT    = 2;
     public static final boolean NH_PARSING_IGNORE_QUOTES_DEFAULT                              = false;
-    static final CLADOGRAM_TYPE CLADOGRAM_TYPE_DEFAULT                                        = CLADOGRAM_TYPE.EXT_NODE_SUM_DEP;
+    static final CLADOGRAM_TYPE CLADOGRAM_TYPE_DEFAULT                                        = CLADOGRAM_TYPE.LINED_UP;
     final static boolean        VALIDATE_AGAINST_PHYLOXML_XSD_SCJEMA_DEFAULT                  = true;
     final static String         BACKUP_FILE_SUFFIX                                            = ".BAK";
     final static double         MIN_NOT_COLLAPSE_DEFAULT                                      = 50;

@@ -60,6 +60,7 @@ import javax.swing.ListCellRenderer;
 
 import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
+import org.forester.archaeopteryx.util.TypomaticJButton;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyMethods.DESCENDANT_SORT_PRIORITY;
@@ -73,39 +74,36 @@ import org.forester.util.ForesterUtil;
 final class ControlPanel extends JPanel implements ActionListener {
 
     enum NodeClickAction {
-        ADD_NEW_NODE,
-        BLAST,
-        COLLAPSE,
-        COLOR_SUBTREE,
-        COPY_SUBTREE,
-        CUT_SUBTREE,
-        DELETE_NODE_OR_SUBTREE,
-        EDIT_NODE_DATA,
-        GET_EXT_DESC_DATA,
-        OPEN_PDB_WEB,
-        OPEN_SEQ_WEB,
-        OPEN_TAX_WEB,
-        PASTE_SUBTREE,
-        REROOT,
-        SELECT_NODES,
-        SHOW_DATA,
-        SORT_DESCENDENTS,
-        SUBTREE,
-        SWAP,
-        CHANGE_NODE_FONT,
-        COLOR_NODE_FONT,
-        UNCOLLAPSE_ALL,
-        ORDER_SUBTREE;
+                          ADD_NEW_NODE,
+                          BLAST,
+                          COLLAPSE,
+                          COLOR_SUBTREE,
+                          COPY_SUBTREE,
+                          CUT_SUBTREE,
+                          DELETE_NODE_OR_SUBTREE,
+                          EDIT_NODE_DATA,
+                          GET_EXT_DESC_DATA,
+                          OPEN_PDB_WEB,
+                          OPEN_SEQ_WEB,
+                          OPEN_TAX_WEB,
+                          PASTE_SUBTREE,
+                          REROOT,
+                          SELECT_NODES,
+                          SHOW_DATA,
+                          SORT_DESCENDENTS,
+                          SUBTREE,
+                          SWAP,
+                          CHANGE_NODE_FONT,
+                          COLOR_NODE_FONT,
+                          UNCOLLAPSE_ALL,
+                          ORDER_SUBTREE;
     }
-    final static Font                         jcb_bold_font             = new Font( Configuration.getDefaultFontFamilyName(),
-                                                                                    Font.BOLD,
-                                                                                    9 );
-    final static Font                         jcb_font                  = new Font( Configuration.getDefaultFontFamilyName(),
-                                                                                    Font.PLAIN,
-                                                                                    9 );
-    final static Font                         js_font                   = new Font( Configuration.getDefaultFontFamilyName(),
-                                                                                    Font.PLAIN,
-                                                                                    9 );
+    final static Font                         jcb_bold_font             = new Font( Configuration
+            .getDefaultFontFamilyName(), Font.BOLD, 9 );
+    final static Font                         jcb_font                  = new Font( Configuration
+            .getDefaultFontFamilyName(), Font.PLAIN, 9 );
+    final static Font                         js_font                   = new Font( Configuration
+            .getDefaultFontFamilyName(), Font.PLAIN, 9 );
     private static final String               RETURN_TO_SUPER_TREE_TEXT = "Back to Super Tree";
     private static final String               SEARCH_TIP_TEXT           = "Enter text to search for. Use ',' for logical OR and '+' for logical AND (not used in this manner for regular expression searches).";
     private static final long                 serialVersionUID          = -8463483932821545633L;
@@ -120,8 +118,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     private int                               _collapse_cb_item;
     private int                               _uncollapse_all_cb_item;
     private int                               _order_subtree_cb_item;
-    
-    
     private JCheckBox                         _color_acc_species;
     private JCheckBox                         _color_acc_sequence;
     private JCheckBox                         _color_according_to_annotation;
@@ -140,6 +136,8 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JCheckBox                         _display_internal_data;
     private JLabel                            _domain_display_label;
     private JTextField                        _domain_structure_evalue_thr_tf;
+    private JTextField                        _depth_collapse_depth_tf;
+    private JTextField                        _rank_collapse_depth_tf;
     private List<Boolean>                     _draw_phylogram;
     private JCheckBox                         _dynamically_hide_data;
     private int                               _edit_node_data_item;
@@ -204,6 +202,12 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JButton                           _zoom_out_domain_structure;
     private JButton                           _zoom_out_x;
     private JButton                           _zoom_out_y;
+    private JButton                           _decr_depth_collapse_level;
+    private JButton                           _incr_depth_collapse_level;
+    private JLabel                            _depth_collapse_label;
+    private JButton                           _decr_rank_collapse_level;
+    private JButton                           _incr_rank_collapse_level;
+    private JLabel                            _rank_collapse_label;
 
     ControlPanel( final MainPanel ap, final Configuration configuration ) {
         init();
@@ -297,7 +301,6 @@ final class ControlPanel extends JPanel implements ActionListener {
                         pri = DESCENDANT_SORT_PRIORITY.SEQUENCE;
                     }
                     PhylogenyMethods.orderAppearanceX( tp.getPhylogeny().getRoot(), true, pri );
-                  
                     tp.setNodeInPreorderToNull();
                     tp.getPhylogeny().externalNodesHaveChanged();
                     tp.getPhylogeny().clearHashIdToNodeMap();
@@ -342,6 +345,50 @@ final class ControlPanel extends JPanel implements ActionListener {
                         && !_dynamically_hide_data.isSelected() ) {
                     setDynamicHidingIsOn( false );
                     displayedPhylogenyMightHaveChanged( true );
+                }
+                else if ( ( e.getSource() == _decr_depth_collapse_level )
+                        || ( e.getSource() == _incr_depth_collapse_level ) ) {
+                    if ( e.getSource() == _decr_depth_collapse_level ) {
+                        _mainpanel.getCurrentTreePanel().decreaseDepthCollapseLevel();
+                    }
+                    else {
+                        _mainpanel.getCurrentTreePanel().increaseDepthCollapseLevel();
+                    }
+                    search0();
+                    search1();
+                    _mainpanel.getCurrentTreePanel().updateSetOfCollapsedExternalNodes();
+                    _mainpanel.getCurrentTreePanel().getPhylogeny().recalculateNumberOfExternalDescendants( true );
+                    _mainpanel.getCurrentTreePanel().resetNodeIdToDistToLeafMap();
+                    _mainpanel.getCurrentTreePanel().calculateLongestExtNodeInfo();
+                    _mainpanel.getCurrentTreePanel().setNodeInPreorderToNull();
+                    displayedPhylogenyMightHaveChanged( true );
+                    _mainpanel.getCurrentTreePanel().resetPreferredSize();
+                    _mainpanel.getCurrentTreePanel().updateOvSizes();
+                    _mainpanel.adjustJScrollPane();
+                    showWhole();
+                    repaint();
+                }
+                else if ( ( e.getSource() == _decr_rank_collapse_level )
+                        || ( e.getSource() == _incr_rank_collapse_level ) ) {
+                    if ( e.getSource() == _decr_rank_collapse_level ) {
+                        _mainpanel.getCurrentTreePanel().decreaseRankCollapseLevel();
+                    }
+                    else {
+                        _mainpanel.getCurrentTreePanel().increaseRankCollapseLevel();
+                    }
+                    search0();
+                    search1();
+                    _mainpanel.getCurrentTreePanel().updateSetOfCollapsedExternalNodes();
+                    _mainpanel.getCurrentTreePanel().getPhylogeny().recalculateNumberOfExternalDescendants( true );
+                    _mainpanel.getCurrentTreePanel().resetNodeIdToDistToLeafMap();
+                    _mainpanel.getCurrentTreePanel().calculateLongestExtNodeInfo();
+                    _mainpanel.getCurrentTreePanel().setNodeInPreorderToNull();
+                    displayedPhylogenyMightHaveChanged( true );
+                    _mainpanel.getCurrentTreePanel().resetPreferredSize();
+                    _mainpanel.getCurrentTreePanel().updateOvSizes();
+                    _mainpanel.adjustJScrollPane();
+                    showWhole();
+                    repaint();
                 }
                 else {
                     displayedPhylogenyMightHaveChanged( true );
@@ -403,7 +450,8 @@ final class ControlPanel extends JPanel implements ActionListener {
     public JComboBox<SEQUENCE_RELATION_TYPE> getSequenceRelationTypeBox() {
         if ( _sequence_relation_type_box == null ) {
             _sequence_relation_type_box = new JComboBox<SEQUENCE_RELATION_TYPE>();
-            for( final SequenceRelation.SEQUENCE_RELATION_TYPE type : SequenceRelation.SEQUENCE_RELATION_TYPE.values() ) {
+            for( final SequenceRelation.SEQUENCE_RELATION_TYPE type : SequenceRelation.SEQUENCE_RELATION_TYPE
+                    .values() ) {
                 _sequence_relation_type_box.addItem( type );
             }
             _sequence_relation_type_box.addActionListener( new ActionListener() {
@@ -525,11 +573,8 @@ final class ControlPanel extends JPanel implements ActionListener {
                                                            final int index,
                                                            final boolean isSelected,
                                                            final boolean cellHasFocus ) {
-                final Component component = new DefaultListCellRenderer().getListCellRendererComponent( list,
-                                                                                                        value,
-                                                                                                        index,
-                                                                                                        isSelected,
-                                                                                                        cellHasFocus );
+                final Component component = new DefaultListCellRenderer()
+                        .getListCellRendererComponent( list, value, index, isSelected, cellHasFocus );
                 if ( ( value != null ) && ( value instanceof SequenceRelation.SEQUENCE_RELATION_TYPE ) ) {
                     ( ( DefaultListCellRenderer ) component ).setText( SequenceRelation
                             .getPrintableNameByType( ( SequenceRelation.SEQUENCE_RELATION_TYPE ) value ) );
@@ -556,7 +601,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     }// addSequenceRelationBlock
 
     /* GUILHEM_END */
-    
     private List<Boolean> getIsDrawPhylogramList() {
         return _draw_phylogram;
     }
@@ -614,19 +658,20 @@ final class ControlPanel extends JPanel implements ActionListener {
                                                                          getOptions().isSearchCaseSensitive(),
                                                                          !getOptions().isMatchWholeTermsOnly(),
                                                                          isShowDomainArchitectures(),
-                                                                         tp != null ? Math.pow( 10,
-                                                                                                tp.getDomainStructureEvalueThresholdExp() )
-                                                                                                : 0 ) );
+                                                                         tp != null
+                                                                                 ? Math.pow( 10,
+                                                                                             tp.getDomainStructureEvalueThresholdExp() )
+                                                                                 : 0 ) );
                 }
                 else {
-                    nodes.addAll( PhylogenyMethods.searchData( query,
-                                                               tree,
-                                                               getOptions().isSearchCaseSensitive(),
-                                                               !getOptions().isMatchWholeTermsOnly(),
-                                                               getOptions().isSearchWithRegex(),
-                                                               isShowDomainArchitectures(),
-                                                               tp != null ? Math.pow( 10, tp
-                                                                                      .getDomainStructureEvalueThresholdExp() ) : 0 ) );
+                    nodes.addAll( PhylogenyMethods
+                            .searchData( query,
+                                         tree,
+                                         getOptions().isSearchCaseSensitive(),
+                                         !getOptions().isMatchWholeTermsOnly(),
+                                         getOptions().isSearchWithRegex(),
+                                         isShowDomainArchitectures(),
+                                         tp != null ? Math.pow( 10, tp.getDomainStructureEvalueThresholdExp() ) : 0 ) );
                 }
             }
             if ( getOptions().isInverseSearchResult() ) {
@@ -634,7 +679,7 @@ final class ControlPanel extends JPanel implements ActionListener {
                 final Set<Long> temp_nodes = nodes;
                 nodes = new HashSet<Long>();
                 for( final PhylogenyNode n : all ) {
-                    if ( (!temp_nodes.contains( n.getId() )) && n.isHasNodeData() ) {
+                    if ( ( !temp_nodes.contains( n.getId() ) ) && n.isHasNodeData() ) {
                         nodes.add( n.getId() );
                     }
                 }
@@ -680,19 +725,20 @@ final class ControlPanel extends JPanel implements ActionListener {
                                                                          getOptions().isSearchCaseSensitive(),
                                                                          !getOptions().isMatchWholeTermsOnly(),
                                                                          isShowDomainArchitectures(),
-                                                                         tp != null ? Math.pow( 10,
-                                                                                                tp.getDomainStructureEvalueThresholdExp() )
-                                                                                                : 0 ) );
+                                                                         tp != null
+                                                                                 ? Math.pow( 10,
+                                                                                             tp.getDomainStructureEvalueThresholdExp() )
+                                                                                 : 0 ) );
                 }
                 else {
-                    nodes.addAll( PhylogenyMethods.searchData( query,
-                                                               tree,
-                                                               getOptions().isSearchCaseSensitive(),
-                                                               !getOptions().isMatchWholeTermsOnly(),
-                                                               getOptions().isSearchWithRegex(),
-                                                               isShowDomainArchitectures(),
-                                                               tp != null ? Math.pow( 10, tp
-                                                                                      .getDomainStructureEvalueThresholdExp() ) : 0 ) );
+                    nodes.addAll( PhylogenyMethods
+                            .searchData( query,
+                                         tree,
+                                         getOptions().isSearchCaseSensitive(),
+                                         !getOptions().isMatchWholeTermsOnly(),
+                                         getOptions().isSearchWithRegex(),
+                                         isShowDomainArchitectures(),
+                                         tp != null ? Math.pow( 10, tp.getDomainStructureEvalueThresholdExp() ) : 0 ) );
                 }
             }
             if ( getOptions().isInverseSearchResult() ) {
@@ -700,7 +746,7 @@ final class ControlPanel extends JPanel implements ActionListener {
                 final Set<Long> temp_nodes = nodes;
                 nodes = new HashSet<Long>();
                 for( final PhylogenyNode n : all ) {
-                    if ( (!temp_nodes.contains( n.getId() )) && n.isHasNodeData() ) {
+                    if ( ( !temp_nodes.contains( n.getId() ) ) && n.isHasNodeData() ) {
                         nodes.add( n.getId() );
                     }
                 }
@@ -718,7 +764,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             searchReset1();
         }
     }
-    
+
     private void setDrawPhylogram( final int index, final boolean b ) {
         getIsDrawPhylogramList().set( index, b );
     }
@@ -745,7 +791,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             }
             cb_index++;
         }
-if ( _configuration.doDisplayClickToOption( Configuration.uncollapse_all ) ) {
+        if ( _configuration.doDisplayClickToOption( Configuration.uncollapse_all ) ) {
             _uncollapse_all_cb_item = cb_index;
             addClickToOption( Configuration.uncollapse_all,
                               _configuration.getClickToTitle( Configuration.uncollapse_all ) );
@@ -753,7 +799,7 @@ if ( _configuration.doDisplayClickToOption( Configuration.uncollapse_all ) ) {
                 selected_index = cb_index;
             }
             cb_index++;
-}                
+        }
         if ( _configuration.doDisplayClickToOption( Configuration.reroot ) ) {
             _reroot_cb_item = cb_index;
             addClickToOption( Configuration.reroot, _configuration.getClickToTitle( Configuration.reroot ) );
@@ -778,7 +824,7 @@ if ( _configuration.doDisplayClickToOption( Configuration.uncollapse_all ) ) {
             }
             cb_index++;
         }
-if ( _configuration.doDisplayClickToOption( Configuration.order_subtree ) ) {
+        if ( _configuration.doDisplayClickToOption( Configuration.order_subtree ) ) {
             _order_subtree_cb_item = cb_index;
             addClickToOption( Configuration.order_subtree,
                               _configuration.getClickToTitle( Configuration.order_subtree ) );
@@ -786,8 +832,7 @@ if ( _configuration.doDisplayClickToOption( Configuration.order_subtree ) ) {
                 selected_index = cb_index;
             }
             cb_index++;
-}    
-        
+        }
         if ( _configuration.doDisplayClickToOption( Configuration.sort_descendents ) ) {
             _sort_descendents_item = cb_index;
             addClickToOption( Configuration.sort_descendents,
@@ -817,7 +862,8 @@ if ( _configuration.doDisplayClickToOption( Configuration.order_subtree ) ) {
         }
         if ( _configuration.doDisplayClickToOption( Configuration.color_subtree ) ) {
             _color_subtree_cb_item = cb_index;
-            addClickToOption( Configuration.color_subtree, _configuration.getClickToTitle( Configuration.color_subtree ) );
+            addClickToOption( Configuration.color_subtree,
+                              _configuration.getClickToTitle( Configuration.color_subtree ) );
             if ( default_option == Configuration.color_subtree ) {
                 selected_index = cb_index;
             }
@@ -825,7 +871,8 @@ if ( _configuration.doDisplayClickToOption( Configuration.order_subtree ) ) {
         }
         if ( _configuration.doDisplayClickToOption( Configuration.open_seq_web ) ) {
             _open_seq_web_item = cb_index;
-            addClickToOption( Configuration.open_seq_web, _configuration.getClickToTitle( Configuration.open_seq_web ) );
+            addClickToOption( Configuration.open_seq_web,
+                              _configuration.getClickToTitle( Configuration.open_seq_web ) );
             if ( default_option == Configuration.open_seq_web ) {
                 selected_index = cb_index;
             }
@@ -833,7 +880,8 @@ if ( _configuration.doDisplayClickToOption( Configuration.order_subtree ) ) {
         }
         if ( _configuration.doDisplayClickToOption( Configuration.open_pdb_web ) ) {
             _open_pdb_item = cb_index;
-            addClickToOption( Configuration.open_pdb_web, _configuration.getClickToTitle( Configuration.open_pdb_web ) );
+            addClickToOption( Configuration.open_pdb_web,
+                              _configuration.getClickToTitle( Configuration.open_pdb_web ) );
             if ( default_option == Configuration.open_pdb_web ) {
                 selected_index = cb_index;
             }
@@ -841,7 +889,8 @@ if ( _configuration.doDisplayClickToOption( Configuration.order_subtree ) ) {
         }
         if ( _configuration.doDisplayClickToOption( Configuration.open_tax_web ) ) {
             _open_tax_web_item = cb_index;
-            addClickToOption( Configuration.open_tax_web, _configuration.getClickToTitle( Configuration.open_tax_web ) );
+            addClickToOption( Configuration.open_tax_web,
+                              _configuration.getClickToTitle( Configuration.open_tax_web ) );
             if ( default_option == Configuration.open_tax_web ) {
                 selected_index = cb_index;
             }
@@ -857,7 +906,8 @@ if ( _configuration.doDisplayClickToOption( Configuration.order_subtree ) ) {
         }
         if ( _configuration.doDisplayClickToOption( Configuration.select_nodes ) ) {
             _select_nodes_item = cb_index;
-            addClickToOption( Configuration.select_nodes, _configuration.getClickToTitle( Configuration.select_nodes ) );
+            addClickToOption( Configuration.select_nodes,
+                              _configuration.getClickToTitle( Configuration.select_nodes ) );
             if ( default_option == Configuration.select_nodes ) {
                 selected_index = cb_index;
             }
@@ -866,8 +916,8 @@ if ( _configuration.doDisplayClickToOption( Configuration.order_subtree ) ) {
         if ( _configuration.doDisplayClickToOption( Configuration.get_ext_desc_data ) ) {
             _get_ext_desc_data = cb_index;
             if ( !ForesterUtil.isEmpty( getConfiguration().getLabelForGetExtDescendentsData() ) ) {
-                addClickToOption( Configuration.get_ext_desc_data, getConfiguration()
-                                  .getLabelForGetExtDescendentsData() );
+                addClickToOption( Configuration.get_ext_desc_data,
+                                  getConfiguration().getLabelForGetExtDescendentsData() );
             }
             else {
                 addClickToOption( Configuration.get_ext_desc_data,
@@ -881,7 +931,8 @@ if ( _configuration.doDisplayClickToOption( Configuration.order_subtree ) ) {
         if ( getOptions().isEditable() ) {
             if ( _configuration.doDisplayClickToOption( Configuration.cut_subtree ) ) {
                 _cut_subtree_item = cb_index;
-                addClickToOption( Configuration.cut_subtree, _configuration.getClickToTitle( Configuration.cut_subtree ) );
+                addClickToOption( Configuration.cut_subtree,
+                                  _configuration.getClickToTitle( Configuration.cut_subtree ) );
                 if ( default_option == Configuration.cut_subtree ) {
                     selected_index = cb_index;
                 }
@@ -952,7 +1003,8 @@ if ( _configuration.doDisplayClickToOption( Configuration.order_subtree ) ) {
                          _configuration.doCheckOption( Configuration.dynamically_hide_data ) );
         }
         if ( _configuration.doDisplayOption( Configuration.node_data_popup ) ) {
-            addCheckbox( Configuration.node_data_popup, _configuration.getDisplayTitle( Configuration.node_data_popup ) );
+            addCheckbox( Configuration.node_data_popup,
+                         _configuration.getDisplayTitle( Configuration.node_data_popup ) );
             setCheckbox( Configuration.node_data_popup, _configuration.doCheckOption( Configuration.node_data_popup ) );
         }
         if ( _configuration.doDisplayOption( Configuration.display_internal_data ) ) {
@@ -994,7 +1046,8 @@ if ( _configuration.doDisplayClickToOption( Configuration.order_subtree ) ) {
         }
         add( label );
         if ( _configuration.doDisplayOption( Configuration.show_node_names ) ) {
-            addCheckbox( Configuration.show_node_names, _configuration.getDisplayTitle( Configuration.show_node_names ) );
+            addCheckbox( Configuration.show_node_names,
+                         _configuration.getDisplayTitle( Configuration.show_node_names ) );
             setCheckbox( Configuration.show_node_names, _configuration.doCheckOption( Configuration.show_node_names ) );
         }
         if ( _configuration.doDisplayOption( Configuration.show_tax_code ) ) {
@@ -1022,13 +1075,15 @@ if ( _configuration.doDisplayClickToOption( Configuration.order_subtree ) ) {
             setCheckbox( Configuration.show_seq_names, _configuration.doCheckOption( Configuration.show_seq_names ) );
         }
         if ( _configuration.doDisplayOption( Configuration.show_gene_names ) ) {
-            addCheckbox( Configuration.show_gene_names, _configuration.getDisplayTitle( Configuration.show_gene_names ) );
+            addCheckbox( Configuration.show_gene_names,
+                         _configuration.getDisplayTitle( Configuration.show_gene_names ) );
             setCheckbox( Configuration.show_gene_names, _configuration.doCheckOption( Configuration.show_gene_names ) );
         }
         if ( _configuration.doDisplayOption( Configuration.show_seq_symbols ) ) {
             addCheckbox( Configuration.show_seq_symbols,
                          _configuration.getDisplayTitle( Configuration.show_seq_symbols ) );
-            setCheckbox( Configuration.show_seq_symbols, _configuration.doCheckOption( Configuration.show_seq_symbols ) );
+            setCheckbox( Configuration.show_seq_symbols,
+                         _configuration.doCheckOption( Configuration.show_seq_symbols ) );
         }
         if ( _configuration.doDisplayOption( Configuration.show_sequence_acc ) ) {
             addCheckbox( Configuration.show_sequence_acc,
@@ -1037,7 +1092,8 @@ if ( _configuration.doDisplayClickToOption( Configuration.order_subtree ) ) {
                          _configuration.doCheckOption( Configuration.show_sequence_acc ) );
         }
         if ( _configuration.doDisplayOption( Configuration.show_annotation ) ) {
-            addCheckbox( Configuration.show_annotation, _configuration.getDisplayTitle( Configuration.show_annotation ) );
+            addCheckbox( Configuration.show_annotation,
+                         _configuration.getDisplayTitle( Configuration.show_annotation ) );
             setCheckbox( Configuration.show_annotation, _configuration.doCheckOption( Configuration.show_annotation ) );
         }
         if ( _configuration.doDisplayOption( Configuration.write_confidence_values ) ) {
@@ -1081,10 +1137,12 @@ if ( _configuration.doDisplayClickToOption( Configuration.order_subtree ) ) {
         if ( _configuration.doDisplayOption( Configuration.show_vector_data ) ) {
             addCheckbox( Configuration.show_vector_data,
                          _configuration.getDisplayTitle( Configuration.show_vector_data ) );
-            setCheckbox( Configuration.show_vector_data, _configuration.doCheckOption( Configuration.show_vector_data ) );
+            setCheckbox( Configuration.show_vector_data,
+                         _configuration.doCheckOption( Configuration.show_vector_data ) );
         }
         if ( _configuration.doDisplayOption( Configuration.show_properties ) ) {
-            addCheckbox( Configuration.show_properties, _configuration.getDisplayTitle( Configuration.show_properties ) );
+            addCheckbox( Configuration.show_properties,
+                         _configuration.getDisplayTitle( Configuration.show_properties ) );
             setCheckbox( Configuration.show_properties, _configuration.doCheckOption( Configuration.show_properties ) );
         }
         if ( _configuration.doDisplayOption( Configuration.show_taxonomy_images ) ) {
@@ -1164,15 +1222,15 @@ if ( _configuration.doDisplayClickToOption( Configuration.order_subtree ) ) {
         add( y_panel );
         add( z_panel );
         if ( getConfiguration().isUseNativeUI() ) {
-            _zoom_in_x = new JButton( "+" );
-            _zoom_out_x = new JButton( "-" );
+            _zoom_in_x = new TypomaticJButton( "+" );
+            _zoom_out_x = new TypomaticJButton( "-" );
         }
         else {
-            _zoom_in_x = new JButton( "X+" );
-            _zoom_out_x = new JButton( "X-" );
+            _zoom_in_x = new TypomaticJButton( "X+" );
+            _zoom_out_x = new TypomaticJButton( "X-" );
         }
-        _zoom_in_y = new JButton( "Y+" );
-        _zoom_out_y = new JButton( "Y-" );
+        _zoom_in_y = new TypomaticJButton( "Y+" );
+        _zoom_out_y = new TypomaticJButton( "Y-" );
         _show_whole = new JButton( "F" );
         _show_whole.setToolTipText( "To fit the complete phylogeny to the current display size [F or Home]" );
         _zoom_in_x.setToolTipText( "To zoom in horizontally [Shift+cursor-right]" );
@@ -1194,7 +1252,6 @@ if ( _configuration.doDisplayClickToOption( Configuration.order_subtree ) ) {
         _return_to_super_tree.setEnabled( false );
         _order = new JButton( "Order Tree" );
         _uncollapse_all = new JButton( "Uncollapse All" );
-       
         addJButton( _zoom_in_y, x_panel );
         addJButton( _zoom_out_x, y_panel );
         addJButton( _show_whole, y_panel );
@@ -1202,6 +1259,12 @@ if ( _configuration.doDisplayClickToOption( Configuration.order_subtree ) ) {
         addJButton( _zoom_out_y, z_panel );
         if ( getConfiguration().doDisplayOption( Configuration.show_domain_architectures ) ) {
             setUpControlsForDomainStrucures();
+        }
+        if ( true ) {
+            setUpControlsForDepthCollapse();
+        }
+        if ( true ) {
+            setUpControlsForRankCollapse();
         }
         final JLabel spacer2 = new JLabel( "" );
         add( spacer2 );
@@ -1271,7 +1334,7 @@ if ( _configuration.doDisplayClickToOption( Configuration.order_subtree ) ) {
                 _show_taxo_rank = new JCheckBox( title );
                 addJCheckBox( _show_taxo_rank, ch_panel );
                 add( ch_panel );
-                break;    
+                break;
             case Configuration.show_taxonomy_images:
                 _show_taxo_images_cb = new JCheckBox( title );
                 addJCheckBox( _show_taxo_images_cb, ch_panel );
@@ -1423,7 +1486,6 @@ if ( _configuration.doDisplayClickToOption( Configuration.order_subtree ) ) {
     void displayedPhylogenyMightHaveChanged( final boolean recalc_longest_ext_node_info ) {
         if ( ( _mainpanel != null )
                 && ( ( _mainpanel.getCurrentPhylogeny() != null ) && !_mainpanel.getCurrentPhylogeny().isEmpty() ) ) {
-            
             if ( recalc_longest_ext_node_info ) {
                 _mainpanel.getCurrentTreePanel().initNodeData();
                 _mainpanel.getCurrentTreePanel().calculateLongestExtNodeInfo();
@@ -1434,10 +1496,12 @@ if ( _configuration.doDisplayClickToOption( Configuration.order_subtree ) ) {
             _mainpanel.getCurrentTreePanel().recalculateMaxDistanceToRoot();
             setVisibilityOfDomainStrucureControls();
             updateDomainStructureEvaluethresholdDisplay();
+            updateDepthCollapseDepthDisplay();
+            updateRankCollapseRankDisplay();
+            getMainPanel().getControlPanel();
             _mainpanel.getCurrentTreePanel().calculateScaleDistance();
             _mainpanel.getCurrentTreePanel().calcMaxDepth();
             _mainpanel.adjustJScrollPane();
-          
             _mainpanel.getCurrentTreePanel().repaint();
             // _mainpanel.getCurrentTreePanel().setUpUrtFactor();
         }
@@ -1603,7 +1667,7 @@ if ( _configuration.doDisplayClickToOption( Configuration.order_subtree ) ) {
     boolean isShowTaxonomyCode() {
         return ( ( _show_taxo_code != null ) && _show_taxo_code.isSelected() );
     }
-    
+
     boolean isShowTaxonomyRank() {
         return ( ( _show_taxo_rank != null ) && _show_taxo_rank.isSelected() );
     }
@@ -1617,7 +1681,8 @@ if ( _configuration.doDisplayClickToOption( Configuration.order_subtree ) ) {
     }
 
     boolean isUseVisualStyles() {
-        return ( ( ( getUseVisualStylesCb() != null ) && getUseVisualStylesCb().isSelected() ) || ( ( getUseVisualStylesCb() == null ) && _color_branches ) );
+        return ( ( ( getUseVisualStylesCb() != null ) && getUseVisualStylesCb().isSelected() )
+                || ( ( getUseVisualStylesCb() == null ) && _color_branches ) );
     }
 
     boolean isWidthBranches() {
@@ -2019,8 +2084,8 @@ if ( _configuration.doDisplayClickToOption( Configuration.order_subtree ) ) {
         _domain_display_label = new JLabel( "Domain Architectures:" );
         add( customizeLabel( _domain_display_label, getConfiguration() ) );
         add( _domain_display_label );
-        _zoom_in_domain_structure = new JButton( "d+" );
-        _zoom_out_domain_structure = new JButton( "d-" );
+        _zoom_in_domain_structure = new TypomaticJButton( "d+" );
+        _zoom_out_domain_structure = new TypomaticJButton( "d-" );
         _decr_domain_structure_evalue_thr = new JButton( "-" );
         _incr_domain_structure_evalue_thr = new JButton( "+" );
         _zoom_in_domain_structure.setPreferredSize( new Dimension( 10, 10 ) );
@@ -2049,6 +2114,66 @@ if ( _configuration.doDisplayClickToOption( Configuration.order_subtree ) ) {
         addJButton( _decr_domain_structure_evalue_thr, d2_panel );
         addJTextField( _domain_structure_evalue_thr_tf, d2_panel );
         addJButton( _incr_domain_structure_evalue_thr, d2_panel );
+    }
+
+    void setUpControlsForDepthCollapse() {
+        _depth_collapse_label = new JLabel( "Collapse by Node Depth:" );
+        _depth_collapse_label
+                .setToolTipText( "to automaticall collapse nodes with a depth equal or larger than a threshold" );
+        add( customizeLabel( _depth_collapse_label, getConfiguration() ) );
+        add( _depth_collapse_label );
+        _decr_depth_collapse_level = new TypomaticJButton( "-" );
+        _incr_depth_collapse_level = new TypomaticJButton( "+" );
+        _decr_depth_collapse_level.setPreferredSize( new Dimension( 10, 10 ) );
+        _incr_depth_collapse_level.setPreferredSize( new Dimension( 10, 10 ) );
+        _decr_depth_collapse_level.setToolTipText( "to decrease the depth threshold (wraps around)" );
+        _incr_depth_collapse_level.setToolTipText( "to increase the depth threshold (wraps around)" );
+        _depth_collapse_depth_tf = new JTextField( 3 );
+        _depth_collapse_depth_tf.setToolTipText( "the current depth threshold" );
+        _depth_collapse_depth_tf.setEditable( false );
+        if ( !getConfiguration().isUseNativeUI() ) {
+            _depth_collapse_depth_tf.setForeground( getConfiguration().getGuiMenuBackgroundColor() );
+            _depth_collapse_depth_tf.setBackground( getConfiguration().getGuiCheckboxTextColor() );
+            _depth_collapse_depth_tf.setBorder( null );
+        }
+        final JPanel panel = new JPanel( new GridLayout( 1, 3, 0, 0 ) );
+        if ( !_configuration.isUseNativeUI() ) {
+            panel.setBackground( getBackground() );
+        }
+        add( panel );
+        addJButton( _decr_depth_collapse_level, panel );
+        addJTextField( _depth_collapse_depth_tf, panel );
+        addJButton( _incr_depth_collapse_level, panel );
+    }
+
+    void setUpControlsForRankCollapse() {
+        _rank_collapse_label = new JLabel( "Collapse by Node Rank:" );
+        _rank_collapse_label
+                .setToolTipText( "to automatically collapse nodes with a taxonomic rank equal or lower than a threshold" );
+        add( customizeLabel( _rank_collapse_label, getConfiguration() ) );
+        add( _rank_collapse_label );
+        _decr_rank_collapse_level = new TypomaticJButton( "-" );
+        _incr_rank_collapse_level = new TypomaticJButton( "+" );
+        _decr_rank_collapse_level.setPreferredSize( new Dimension( 10, 10 ) );
+        _incr_rank_collapse_level.setPreferredSize( new Dimension( 10, 10 ) );
+        _decr_rank_collapse_level.setToolTipText( "to decrease the taxonomic rank threshold (wraps around)" );
+        _incr_rank_collapse_level.setToolTipText( "to increase the taxonomic rank threshold (wraps around)" );
+        _rank_collapse_depth_tf = new JTextField( 3 );
+        _rank_collapse_depth_tf.setToolTipText( "the current taxonomic rank threshold" );
+        _rank_collapse_depth_tf.setEditable( false );
+        if ( !getConfiguration().isUseNativeUI() ) {
+            _rank_collapse_depth_tf.setForeground( getConfiguration().getGuiMenuBackgroundColor() );
+            _rank_collapse_depth_tf.setBackground( getConfiguration().getGuiCheckboxTextColor() );
+            _rank_collapse_depth_tf.setBorder( null );
+        }
+        final JPanel panel = new JPanel( new GridLayout( 1, 3, 0, 0 ) );
+        if ( !_configuration.isUseNativeUI() ) {
+            panel.setBackground( getBackground() );
+        }
+        add( panel );
+        addJButton( _decr_rank_collapse_level, panel );
+        addJTextField( _rank_collapse_depth_tf, panel );
+        addJButton( _incr_rank_collapse_level, panel );
     }
 
     void setupSearchTools0() {
@@ -2173,9 +2298,9 @@ if ( _configuration.doDisplayClickToOption( Configuration.order_subtree ) ) {
 
     void setVisibilityOfDomainStrucureCB() {
         try {
-            if ( ( getCurrentTreePanel() != null )
-                    && ( ( getCurrentTreePanel().getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR ) || ( getCurrentTreePanel()
-                            .getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED ) ) ) {
+            if ( ( getCurrentTreePanel() != null ) && ( ( getCurrentTreePanel()
+                    .getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR )
+                    || ( getCurrentTreePanel().getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED ) ) ) {
                 if ( getMainPanel().getMainFrame()._right_line_up_domains_cbmi != null ) {
                     getMainPanel().getMainFrame()._right_line_up_domains_cbmi.setVisible( false );
                 }
@@ -2240,14 +2365,11 @@ if ( _configuration.doDisplayClickToOption( Configuration.order_subtree ) ) {
                     }
                 }
             }
-            if ( isDrawPhylogram()
-                    || ( ( getCurrentTreePanel() != null ) && ( ( getCurrentTreePanel().getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR ) || ( getCurrentTreePanel()
-                            .getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED ) ) ) ) {
+            if ( isDrawPhylogram() || ( ( getCurrentTreePanel() != null ) && ( ( getCurrentTreePanel()
+                    .getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR )
+                    || ( getCurrentTreePanel().getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED ) ) ) ) {
                 if ( mf._non_lined_up_cladograms_rbmi != null ) {
                     mf._non_lined_up_cladograms_rbmi.setVisible( false );
-                }
-                if ( mf._uniform_cladograms_rbmi != null ) {
-                    mf._uniform_cladograms_rbmi.setVisible( false );
                 }
                 if ( mf._ext_node_dependent_cladogram_rbmi != null ) {
                     mf._ext_node_dependent_cladogram_rbmi.setVisible( false );
@@ -2256,9 +2378,6 @@ if ( _configuration.doDisplayClickToOption( Configuration.order_subtree ) ) {
             else {
                 if ( mf._non_lined_up_cladograms_rbmi != null ) {
                     mf._non_lined_up_cladograms_rbmi.setVisible( true );
-                }
-                if ( mf._uniform_cladograms_rbmi != null ) {
-                    mf._uniform_cladograms_rbmi.setVisible( true );
                 }
                 if ( mf._ext_node_dependent_cladogram_rbmi != null ) {
                     mf._ext_node_dependent_cladogram_rbmi.setVisible( true );
@@ -2310,7 +2429,8 @@ if ( _configuration.doDisplayClickToOption( Configuration.order_subtree ) ) {
      * Fit entire tree into window.
      */
     void showWhole() {
-        if ( ( _mainpanel.getCurrentScrollPane() == null ) || _mainpanel.getCurrentTreePanel().getPhylogeny().isEmpty() ) {
+        if ( ( _mainpanel.getCurrentScrollPane() == null )
+                || _mainpanel.getCurrentTreePanel().getPhylogeny().isEmpty() ) {
             return;
         }
         getCurrentTreePanel().updateSetOfCollapsedExternalNodes();
@@ -2385,13 +2505,15 @@ if ( _configuration.doDisplayClickToOption( Configuration.order_subtree ) ) {
                 e.setSelectedTypeInTypeMenu( e.getCurrentTreePanel().getPhylogenyGraphicsType() );
             }
             else {
-                getMainPanel().getMainFrame().setSelectedTypeInTypeMenu( getMainPanel().getCurrentTreePanel()
-                        .getPhylogenyGraphicsType() );
+                getMainPanel().getMainFrame()
+                        .setSelectedTypeInTypeMenu( getMainPanel().getCurrentTreePanel().getPhylogenyGraphicsType() );
             }
             getMainPanel().getCurrentTreePanel().updateSubSuperTreeButton();
             getMainPanel().getControlPanel().search0();
             getMainPanel().getControlPanel().search1();
             getMainPanel().getControlPanel().updateDomainStructureEvaluethresholdDisplay();
+            getMainPanel().getControlPanel().updateDepthCollapseDepthDisplay();
+            getMainPanel().getControlPanel().updateRankCollapseRankDisplay();
             getSequenceRelationTypeBox().removeAllItems();
             for( final SequenceRelation.SEQUENCE_RELATION_TYPE type : getMainPanel().getCurrentPhylogeny()
                     .getRelevantSequenceRelationTypes() ) {
@@ -2406,7 +2528,7 @@ if ( _configuration.doDisplayClickToOption( Configuration.order_subtree ) ) {
     /**
      * Uncollapse all nodes.
      */
-    void uncollapseAll( final TreePanel tp ) {
+    final void uncollapseAll( final TreePanel tp ) {
         final Phylogeny t = tp.getPhylogeny();
         if ( ( t != null ) && !t.isEmpty() ) {
             for( final PhylogenyNodeIterator iter = t.iteratorPreorder(); iter.hasNext(); ) {
@@ -2418,18 +2540,88 @@ if ( _configuration.doDisplayClickToOption( Configuration.order_subtree ) ) {
             t.recalculateNumberOfExternalDescendants( false );
             tp.setNodeInPreorderToNull();
             t.clearHashIdToNodeMap();
+            tp.resetDepthCollapseDepthValue();
+            tp.resetRankCollapseRankValue();
             showWhole();
         }
     }
 
-    void updateDomainStructureEvaluethresholdDisplay() {
+    final void updateDomainStructureEvaluethresholdDisplay() {
         if ( _domain_structure_evalue_thr_tf != null ) {
-            _domain_structure_evalue_thr_tf.setText( "10^"
-                    + getMainPanel().getCurrentTreePanel().getDomainStructureEvalueThresholdExp() );
+            _domain_structure_evalue_thr_tf
+                    .setText( "10^" + getMainPanel().getCurrentTreePanel().getDomainStructureEvalueThresholdExp() );
         }
     }
 
-    void zoomInX( final float factor, final float x_correction_factor ) {
+    private final String obtainDepthCollapseDepthValue() {
+        if ( getMainPanel().getCurrentTreePanel() == null ) {
+            return "";
+        }
+        final TreePanel tp = getMainPanel().getCurrentTreePanel();
+        final Phylogeny p = tp.getPhylogeny();
+        if ( ( p == null ) || ( p.getNumberOfExternalNodes() < 3 ) ) {
+            return "off";
+        }
+        else if ( tp.getDepthCollapseDepthValue() < 0 ) {
+            tp.setDepthCollapseDepthValue( PhylogenyMethods.calculateMaxDepth( p ) );
+            return "off";
+        }
+        else if ( tp.getDepthCollapseDepthValue() == PhylogenyMethods.calculateMaxDepth( p ) ) {
+            return "off";
+        }
+        return String.valueOf( tp.getDepthCollapseDepthValue() );
+    }
+
+    private final String obtainRankCollapseDepthValue() {
+        if ( getMainPanel().getCurrentTreePanel() == null ) {
+            return "";
+        }
+        final TreePanel tp = getMainPanel().getCurrentTreePanel();
+        final Phylogeny p = tp.getPhylogeny();
+        if ( ( p == null ) || ( p.getNumberOfExternalNodes() < 3 ) ) {
+            return "off";
+        }
+        else {
+            final String ranks[] = PhylogenyMethods.obtainPresentRanksSorted( p );
+            if ( ranks.length < 1 ) {
+                return "off";
+            }
+            else if ( tp.getRankCollapseRankValue() < 0 ) {
+                tp.setRankCollapseRankValue( ranks.length - 1 );
+                return "off";
+            }
+            else if ( tp.getRankCollapseRankValue() == ( ranks.length - 1 ) ) {
+                return "off";
+            }
+        }
+        return String.valueOf( tp.getRankCollapseRankValue() );
+    }
+
+    final void updateDepthCollapseDepthDisplay() {
+        if ( _depth_collapse_depth_tf != null ) {
+            _depth_collapse_depth_tf.setText( " " + obtainDepthCollapseDepthValue() );
+        }
+    }
+
+    final void updateRankCollapseRankDisplay() {
+        if ( _rank_collapse_depth_tf != null ) {
+            final String r = obtainRankCollapseDepthValue();
+            if ( r.equals( "off" ) ) {
+                _rank_collapse_depth_tf.setText( " off" );
+                _rank_collapse_depth_tf.setToolTipText( "the current taxonomic rank threshold" );
+            }
+            else {
+                final String ranks[] = PhylogenyMethods
+                        .obtainPresentRanksSorted( getMainPanel().getCurrentTreePanel().getPhylogeny() );
+                final int rr = Integer.parseInt( r );
+                _rank_collapse_depth_tf.setText( ranks[ rr ] );
+                _rank_collapse_depth_tf.setToolTipText( ( rr + 1 ) + "/" + ( ranks.length - 1 ) + ": "
+                        + ranks[ Integer.parseInt( r ) ] );
+            }
+        }
+    }
+
+    final void zoomInX( final float factor, final float x_correction_factor ) {
         final JScrollBar sb = getMainPanel().getCurrentScrollPane().getHorizontalScrollBar();
         final TreePanel treepanel = getMainPanel().getCurrentTreePanel();
         treepanel.multiplyUrtFactor( 1f );
@@ -2437,14 +2629,15 @@ if ( _configuration.doDisplayClickToOption( Configuration.order_subtree ) ) {
                 || ( treepanel.getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED )
                 || isDrawPhylogram( getMainPanel().getCurrentTabIndex() )
                 || ( getOptions().getCladogramType() == CLADOGRAM_TYPE.NON_LINED_UP ) ) {
-            final double x = ( sb.getMaximum() - sb.getMinimum() ) / ( sb.getValue() + ( sb.getVisibleAmount() / 2.0 ) );
+            final double x = ( sb.getMaximum() - sb.getMinimum() )
+                    / ( sb.getValue() + ( sb.getVisibleAmount() / 2.0 ) );
             treepanel.setXdistance( ( treepanel.getXdistance() * factor ) );
             treepanel.setXcorrectionFactor( ( treepanel.getXcorrectionFactor() * x_correction_factor ) );
             getMainPanel().adjustJScrollPane();
             treepanel.resetPreferredSize();
             getMainPanel().getCurrentScrollPane().getViewport().validate();
-            sb.setValue( ForesterUtil.roundToInt( ( ( sb.getMaximum() - sb.getMinimum() ) / x )
-                    - ( sb.getVisibleAmount() / 2.0 ) ) );
+            sb.setValue( ForesterUtil
+                    .roundToInt( ( ( sb.getMaximum() - sb.getMinimum() ) / x ) - ( sb.getVisibleAmount() / 2.0 ) ) );
         }
         else {
             final int x = sb.getMaximum() - sb.getMinimum() - sb.getVisibleAmount() - sb.getValue();
@@ -2459,7 +2652,7 @@ if ( _configuration.doDisplayClickToOption( Configuration.order_subtree ) ) {
         treepanel.updateOvSizes();
     }
 
-    void zoomInY( final float factor ) {
+    final void zoomInY( final float factor ) {
         final JScrollBar sb = getMainPanel().getCurrentScrollPane().getVerticalScrollBar();
         final TreePanel treepanel = getMainPanel().getCurrentTreePanel();
         treepanel.multiplyUrtFactor( 1.1f );
@@ -2468,13 +2661,13 @@ if ( _configuration.doDisplayClickToOption( Configuration.order_subtree ) ) {
         getMainPanel().adjustJScrollPane();
         treepanel.resetPreferredSize();
         getMainPanel().getCurrentScrollPane().getViewport().validate();
-        sb.setValue( ForesterUtil.roundToInt( ( ( sb.getMaximum() - sb.getMinimum() ) / x )
-                - ( sb.getVisibleAmount() / 2.0 ) ) );
+        sb.setValue( ForesterUtil
+                .roundToInt( ( ( sb.getMaximum() - sb.getMinimum() ) / x ) - ( sb.getVisibleAmount() / 2.0 ) ) );
         treepanel.resetPreferredSize();
         treepanel.updateOvSizes();
     }
 
-    void zoomOutX( final float factor, final float x_correction_factor ) {
+    final void zoomOutX( final float factor, final float x_correction_factor ) {
         final TreePanel treepanel = getMainPanel().getCurrentTreePanel();
         treepanel.multiplyUrtFactor( 1f );
         if ( ( treepanel.getXdistance() * factor ) > 0.0 ) {
@@ -2512,24 +2705,25 @@ if ( _configuration.doDisplayClickToOption( Configuration.order_subtree ) ) {
         }
     }
 
-    void zoomOutY( final float factor ) {
+    final void zoomOutY( final float factor ) {
         final TreePanel treepanel = getMainPanel().getCurrentTreePanel();
         treepanel.multiplyUrtFactor( 0.9f );
         if ( ( treepanel.getYdistance() * factor ) > 0.0 ) {
             final JScrollBar sb = getMainPanel().getCurrentScrollPane().getVerticalScrollBar();
-            final double x = ( sb.getMaximum() - sb.getMinimum() ) / ( sb.getValue() + ( sb.getVisibleAmount() / 2.0 ) );
+            final double x = ( sb.getMaximum() - sb.getMinimum() )
+                    / ( sb.getValue() + ( sb.getVisibleAmount() / 2.0 ) );
             treepanel.setYdistance( ( treepanel.getYdistance() * factor ) );
             getMainPanel().adjustJScrollPane();
             treepanel.resetPreferredSize();
             getMainPanel().getCurrentScrollPane().getViewport().validate();
-            sb.setValue( ForesterUtil.roundToInt( ( ( sb.getMaximum() - sb.getMinimum() ) / x )
-                    - ( sb.getVisibleAmount() / 2.0 ) ) );
+            sb.setValue( ForesterUtil
+                    .roundToInt( ( ( sb.getMaximum() - sb.getMinimum() ) / x ) - ( sb.getVisibleAmount() / 2.0 ) ) );
             treepanel.resetPreferredSize();
             treepanel.updateOvSizes();
         }
     }
 
-    static JLabel customizeLabel( final JLabel label, final Configuration configuration ) {
+    final static JLabel customizeLabel( final JLabel label, final Configuration configuration ) {
         label.setFont( ControlPanel.jcb_bold_font );
         if ( !configuration.isUseNativeUI() ) {
             label.setForeground( configuration.getGuiCheckboxTextColor() );
@@ -2538,7 +2732,7 @@ if ( _configuration.doDisplayClickToOption( Configuration.order_subtree ) ) {
         return label;
     }
 
-    public JCheckBox getUseBranchWidthsCb() {
+    final public JCheckBox getUseBranchWidthsCb() {
         return _width_branches;
     }
 }

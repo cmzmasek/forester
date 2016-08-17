@@ -131,19 +131,19 @@ public class Phylogeny {
      *            the root-node of a subtree
      * @return the height of the subtree emanating at n
      */
-    public double calculateSubtreeHeight( final PhylogenyNode n ) {
-        if ( n.isExternal() || n.isCollapse() ) {
-            return ForesterUtil.isLargerOrEqualToZero( n.getDistanceToParent() );
+    public double calculateSubtreeHeight( final PhylogenyNode n, final boolean take_collapse_into_account ) {
+        if ( n.isExternal() || ( take_collapse_into_account && n.isCollapse() ) ) {
+            return n.getDistanceToParent() > 0 ? n.getDistanceToParent() : 0;
         }
         else {
             double max = -Double.MAX_VALUE;
             for( int i = 0; i < n.getNumberOfDescendants(); ++i ) {
-                final double l = calculateSubtreeHeight( n.getChildNode( i ) );
+                final double l = calculateSubtreeHeight( n.getChildNode( i ),  take_collapse_into_account );
                 if ( l > max ) {
                     max = l;
                 }
             }
-            return max + ForesterUtil.isLargerOrEqualToZero( n.getDistanceToParent() );
+            return max + ( n.getDistanceToParent() > 0 ? n.getDistanceToParent() : 0) ;
         }
     }
 
@@ -370,17 +370,15 @@ public class Phylogeny {
 
     /**
      * This calculates the height for rooted, tree-shaped phylogenies. The
-     * height is the longest distance from the root to an external node. Please
-     * note. Child nodes of collapsed nodes are ignored -- which is useful for
-     * display purposes but might be misleading for other applications.
+     * height is the longest distance from the root to an external node.
      *
      * @return the height for rooted, tree-shaped phylogenies
      */
-    public double getHeight() {
+    public double calculateHeight(final boolean take_collapse_into_account) {
         if ( isEmpty() ) {
             return 0.0;
         }
-        return calculateSubtreeHeight( getRoot() );
+        return calculateSubtreeHeight( getRoot(), take_collapse_into_account );
     }
 
     public Identifier getIdentifier() {

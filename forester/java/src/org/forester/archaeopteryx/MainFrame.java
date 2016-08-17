@@ -94,7 +94,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     final static MsaFileFilter       msafilter                               = new MsaFileFilter();
     final static SequencesFileFilter seqsfilter                              = new SequencesFileFilter();
     final static DefaultFilter       defaultfilter                           = new DefaultFilter();
-    static final String              USE_MOUSEWHEEL_SHIFT_TO_ROTATE          = "In this display type, use mousewheel + Shift to rotate [or A and S]";
+    static final String              USE_MOUSEWHEEL_SHIFT_TO_ROTATE          = "rotate with mousewheel + Shift (or A and S), D toggles between horizontal and radial labels";
     static final String              PHYLOXML_REF_TOOL_TIP                   = AptxConstants.PHYLOXML_REFERENCE;                                                                                                                                                //TODO //FIXME
     static final String              APTX_REF_TOOL_TIP                       = AptxConstants.APTX_REFERENCE;
     private static final long        serialVersionUID                        = 3655000897845508358L;
@@ -119,8 +119,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String              INVERSE_SEARCH_RESULT_LABEL             = "Negate Result";
     static final String              COLOR_BY_TAXONOMIC_GROUP                = "Colorize by Taxonomic Group";
     static final String              DISPLAY_SCALE_LABEL                     = "Scale";
-    static final String              NON_LINED_UP_CLADOGRAMS_LABEL           = "Non-Lined Up Cladograms";
-    static final String              UNIFORM_CLADOGRAMS_LABEL                = "Total Node Sum Dependent Cladograms";
+    static final String              NON_LINED_UP_CLADOGRAMS_LABEL           = "Non-Lined Up Cladogram";
     static final String              LABEL_DIRECTION_LABEL                   = "Radial Labels";
     static final String              LABEL_DIRECTION_TIP                     = "To use radial node labels in radial and unrooted display types";
     static final String              SEARCH_WITH_REGEX_TIP                   = "To search using regular expressions (~Java/Perl syntax). For example, use \"^B.+\\d{2,}$\" to search for everything starting with a B and ending with at least two digits.";
@@ -132,7 +131,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String              DISPLAY_NODE_BOXES_LABEL_MARKED         = "Shapes for Nodes with Visual Data";
     static final String              SHOW_OVERVIEW_LABEL                     = "Overview";
     static final String              FONT_SIZE_MENU_LABEL                    = "Font Size";
-    static final String              NONUNIFORM_CLADOGRAMS_LABEL             = "External Node Sum Dependent Cladograms";
+    static final String              NONUNIFORM_CLADOGRAMS_LABEL             = "Lined Up Cladogram";
     static final String              SHOW_DOMAIN_LABELS_LABEL                = "Domain Labels";
     static final String              SHOW_ANN_REF_SOURCE_LABEL               = "Seq Annotation Ref Sources";
     static final String              COLOR_LABELS_TIP                        = "To use parent branch colors for node labels as well, need to turn off taxonomy dependent colorization and turn on branch colorization for this to become apparent";
@@ -211,7 +210,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JCheckBoxMenuItem                _screen_antialias_cbmi;
     JCheckBoxMenuItem                _background_gradient_cbmi;
     JRadioButtonMenuItem             _non_lined_up_cladograms_rbmi;
-    JRadioButtonMenuItem             _uniform_cladograms_rbmi;
     JRadioButtonMenuItem             _ext_node_dependent_cladogram_rbmi;
     JCheckBoxMenuItem                _color_by_taxonomic_group_cbmi;
     JCheckBoxMenuItem                _show_scale_cbmi;                                                                                                                                                                                                      //TODO fix me
@@ -232,6 +230,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JCheckBoxMenuItem                _show_confidence_stddev_cbmi;
     JCheckBoxMenuItem                _right_line_up_domains_cbmi;
     JCheckBoxMenuItem                _line_up_renderable_data_cbmi;
+    JCheckBoxMenuItem                _collapsed_with_average_height_cbmi;
     // _  print
     JCheckBoxMenuItem                _graphics_export_visible_only_cbmi;
     JCheckBoxMenuItem                _antialias_print_cbmi;
@@ -500,10 +499,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             updateOptions( getOptions() );
             showWhole();
         }
-        else if ( o == _uniform_cladograms_rbmi ) {
-            updateOptions( getOptions() );
-            showWhole();
-        }
         else if ( o == _ext_node_dependent_cladogram_rbmi ) {
             updateOptions( getOptions() );
             showWhole();
@@ -576,6 +571,13 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         else if ( o == _line_up_renderable_data_cbmi ) {
             if ( !_line_up_renderable_data_cbmi.isSelected() ) {
                 _right_line_up_domains_cbmi.setSelected( false );
+            }
+            updateOptions( getOptions() );
+        }
+        
+        else if ( o == _collapsed_with_average_height_cbmi ) {
+            if ( _collapsed_with_average_height_cbmi.isSelected() ) {
+                _collapsed_with_average_height_cbmi.setSelected( true );
             }
             updateOptions( getOptions() );
         }
@@ -1212,6 +1214,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         customizeCheckBoxMenuItem( _convex_type_cbmi, false );
         customizeCheckBoxMenuItem( _unrooted_type_cbmi, false );
         customizeCheckBoxMenuItem( _circular_type_cbmi, false );
+        _triangular_type_cbmi.setToolTipText( "not suitable for phylograms" );
+        _curved_type_cbmi.setToolTipText( "not suitable for phylograms" );
         _unrooted_type_cbmi.setToolTipText( MainFrame.USE_MOUSEWHEEL_SHIFT_TO_ROTATE );
         _circular_type_cbmi.setToolTipText( MainFrame.USE_MOUSEWHEEL_SHIFT_TO_ROTATE );
         initializeTypeMenu( getOptions() );
@@ -1838,11 +1842,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if ( ( _non_lined_up_cladograms_rbmi != null ) && ( _non_lined_up_cladograms_rbmi.isSelected() ) ) {
             options.setCladogramType( CLADOGRAM_TYPE.NON_LINED_UP );
         }
-        else if ( ( _uniform_cladograms_rbmi != null ) && ( _uniform_cladograms_rbmi.isSelected() ) ) {
-            options.setCladogramType( CLADOGRAM_TYPE.TOTAL_NODE_SUM_DEP );
-        }
         else if ( ( _ext_node_dependent_cladogram_rbmi != null ) && ( _ext_node_dependent_cladogram_rbmi.isSelected() ) ) {
-            options.setCladogramType( CLADOGRAM_TYPE.EXT_NODE_SUM_DEP );
+            options.setCladogramType( CLADOGRAM_TYPE.LINED_UP );
         }
         options.setSearchCaseSensitive( ( _search_case_senstive_cbmi != null )
                 && _search_case_senstive_cbmi.isSelected() );
@@ -1939,6 +1940,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if ( ( _parse_beast_style_extended_nexus_tags_cbmi != null ) && _parse_beast_style_extended_nexus_tags_cbmi.isEnabled() ) {
             options.setParseBeastStyleExtendedNexusTags(_parse_beast_style_extended_nexus_tags_cbmi.isSelected() );
         }
+        if ( ( _collapsed_with_average_height_cbmi != null ) && _collapsed_with_average_height_cbmi.isEnabled() ) {
+            options.setCollapsedWithAverageHeigh(_collapsed_with_average_height_cbmi.isSelected() );
+        }
+        
     }
 
     void updateTypeCheckboxes( final Options options, final Object o ) {

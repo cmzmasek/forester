@@ -204,12 +204,10 @@ public final class MainFrameApplet extends MainFrame {
                                                                 getConfiguration() ) );
         _options_jmenu
         .add( _ext_node_dependent_cladogram_rbmi = new JRadioButtonMenuItem( MainFrame.NONUNIFORM_CLADOGRAMS_LABEL ) );
-        _options_jmenu.add( _uniform_cladograms_rbmi = new JRadioButtonMenuItem( MainFrame.UNIFORM_CLADOGRAMS_LABEL ) );
         _options_jmenu.add( _non_lined_up_cladograms_rbmi = new JRadioButtonMenuItem( NON_LINED_UP_CLADOGRAMS_LABEL ) );
         _radio_group_1 = new ButtonGroup();
         _radio_group_1.add( _ext_node_dependent_cladogram_rbmi );
-        _radio_group_1.add( _uniform_cladograms_rbmi );
-        _radio_group_1.add( _non_lined_up_cladograms_rbmi );
+         _radio_group_1.add( _non_lined_up_cladograms_rbmi );
         _options_jmenu.add( _show_overview_cbmi = new JCheckBoxMenuItem( MainFrame.SHOW_OVERVIEW_LABEL ) );
         _options_jmenu.add( _show_scale_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_SCALE_LABEL ) );
         _options_jmenu
@@ -289,10 +287,8 @@ public final class MainFrameApplet extends MainFrame {
         customizeCheckBoxMenuItem( _show_scale_cbmi, getOptions().isShowScale() );
         customizeRadioButtonMenuItem( _non_lined_up_cladograms_rbmi,
                                       getOptions().getCladogramType() == CLADOGRAM_TYPE.NON_LINED_UP );
-        customizeRadioButtonMenuItem( _uniform_cladograms_rbmi,
-                                      getOptions().getCladogramType() == CLADOGRAM_TYPE.TOTAL_NODE_SUM_DEP );
-        customizeRadioButtonMenuItem( _ext_node_dependent_cladogram_rbmi,
-                                      getOptions().getCladogramType() == CLADOGRAM_TYPE.EXT_NODE_SUM_DEP );
+       customizeRadioButtonMenuItem( _ext_node_dependent_cladogram_rbmi,
+                                      getOptions().getCladogramType() == CLADOGRAM_TYPE.LINED_UP );
         customizeCheckBoxMenuItem( _show_overview_cbmi, getOptions().isShowOverview() );
         customizeCheckBoxMenuItem( _label_direction_cbmi,
                                    getOptions().getNodeLabelDirection() == NODE_LABEL_DIRECTION.RADIAL );

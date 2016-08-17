@@ -195,128 +195,138 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
         }
     }
-    public final static boolean          SPECIAL_DOMAIN_COLORING                            = true;
-    final static Cursor                  ARROW_CURSOR                                       = Cursor.getPredefinedCursor( Cursor.DEFAULT_CURSOR );
-    final static Cursor                  CUT_CURSOR                                         = Cursor.getPredefinedCursor( Cursor.CROSSHAIR_CURSOR );
-    final static Cursor                  HAND_CURSOR                                        = Cursor.getPredefinedCursor( Cursor.HAND_CURSOR );
-    final static Cursor                  MOVE_CURSOR                                        = Cursor.getPredefinedCursor( Cursor.MOVE_CURSOR );
-    final static Cursor                  WAIT_CURSOR                                        = Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR );
-    final private static double          _180_OVER_PI                                       = 180.0 / Math.PI;
-    private static final float           ANGLE_ROTATION_UNIT                                = ( float ) ( Math.PI / 32 );
-    private final static int             CONFIDENCE_LEFT_MARGIN                             = 4;
-    private final static int             EURO_D                                             = 10;
-    private final static NumberFormat    FORMATTER_BRANCH_LENGTH;
-    private final static NumberFormat    FORMATTER_CONFIDENCE;
-    private static final float           HALF_PI                                            = ( float ) ( Math.PI / 2.0 );
-    private final static int             LIMIT_FOR_HQ_RENDERING                             = 2000;
-    private final static int             MAX_NODE_FRAMES                                    = 10;
-    private final static int             MAX_SUBTREES                                       = 100;
-    private final static int             MIN_ROOT_LENGTH                                    = 3;
-    private final static int             MOVE                                               = 20;
-    private final static String          NODE_POPMENU_NODE_CLIENT_PROPERTY                  = "node";
-    private static final float           ONEHALF_PI                                         = ( float ) ( 1.5 * Math.PI );
-    private static final short           OV_BORDER                                          = 10;
-    private final static double          OVERVIEW_FOUND_NODE_BOX_SIZE                       = 2;
-    private final static double          OVERVIEW_FOUND_NODE_BOX_SIZE_HALF                  = 1;
-    private static final float           PI                                                 = ( float ) ( Math.PI );
-    final private static Font            POPUP_FONT                                         = new Font( Configuration.getDefaultFontFamilyName(),
-                                                                                                        Font.PLAIN,
-                                                                                                        12 );
-    private static final float           ROUNDED_D                                          = 8;
-    private final static long            serialVersionUID                                   = -978349745916505029L;
-    private static final BasicStroke     STROKE_0025                                        = new BasicStroke( 0.025f );
-    private static final BasicStroke     STROKE_005                                         = new BasicStroke( 0.05f );
-    private static final BasicStroke     STROKE_01                                          = new BasicStroke( 0.1f );
-    private static final BasicStroke     STROKE_025                                         = new BasicStroke( 0.25f );
-    private static final BasicStroke     STROKE_05                                          = new BasicStroke( 0.5f );
-    private static final BasicStroke     STROKE_075                                         = new BasicStroke( 0.75f );
-    private static final BasicStroke     STROKE_1                                           = new BasicStroke( 1f );
-    private static final BasicStroke     STROKE_2                                           = new BasicStroke( 2f );
-    private static final double          TWO_PI                                             = 2 * Math.PI;
-    private final static int             WIGGLE                                             = 2;
-    private static final String          SHOW_ONLY_THIS_CONF_TYPE                           = null;                                                     //TODO remove me
-    HashMap<Long, Short>                 _nodeid_dist_to_leaf                               = new HashMap<Long, Short>();
-    final private Arc2D                  _arc                                               = new Arc2D.Double();
-    private AffineTransform              _at;
-    private int                          _circ_max_depth;
-    final private Set<Long>              _collapsed_external_nodeid_set                     = new HashSet<Long>();
-    private JColorChooser                _color_chooser                                     = null;
-    private Configuration                _configuration                                     = null;
-    private ControlPanel                 _control_panel                                     = null;
-    private final CubicCurve2D           _cubic_curve                                       = new CubicCurve2D.Float();
-    private Set<Long>                    _current_external_nodes                            = null;
-    private StringBuilder                _current_external_nodes_data_buffer                = new StringBuilder();
-    private int                          _current_external_nodes_data_buffer_change_counter = 0;
-    private int                          _domain_structure_e_value_thr_exp                  = AptxConstants.DOMAIN_STRUCTURE_E_VALUE_THR_DEFAULT_EXP;
-    private double                       _domain_structure_width                            = AptxConstants.DOMAIN_STRUCTURE_DEFAULT_WIDTH;
-    private int                          _dynamic_hiding_factor                             = 0;
-    private boolean                      _edited                                            = false;
-    private final Ellipse2D              _ellipse                                           = new Ellipse2D.Float();
-    private int                          _external_node_index                               = 0;
-    private Set<Long>                    _found_nodes_0                                     = null;
-    private Set<Long>                    _found_nodes_1                                     = null;
-    private final FontRenderContext      _frc                                               = new FontRenderContext( null,
-                                                                                                                     false,
-                                                                                                                     false );
-    private PHYLOGENY_GRAPHICS_TYPE      _graphics_type                                     = PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR;
-    private PhylogenyNode                _highlight_node                                    = null;
-    private boolean                      _in_ov                                             = false;
-    private boolean                      _in_ov_rect                                        = false;
-    private float                        _last_drag_point_x                                 = 0;
-    private float                        _last_drag_point_y                                 = 0;
-    private final Line2D                 _line                                              = new Line2D.Float();
-    private int                          _longest_ext_node_info                             = 0;
-    private PhylogenyNode                _ext_node_with_longest_txt_info                    = null;
-    private MainPanel                    _main_panel                                        = null;
-    private double                       _max_distance_to_root                              = -1;
-    private Popup                        _node_desc_popup;
-    private int                          _node_frame_index                                  = 0;
-    private final NodeFrame[]            _node_frames                                       = new NodeFrame[ TreePanel.MAX_NODE_FRAMES ];
-    private JPopupMenu                   _node_popup_menu                                   = null;
-    private JMenuItem                    _node_popup_menu_items[]                           = null;
-    private PhylogenyNode[]              _nodes_in_preorder                                 = null;
-    private Options                      _options                                           = null;
-    private float                        _ov_max_height                                     = 0;
-    private float                        _ov_max_width                                      = 0;
-    private boolean                      _ov_on                                             = false;
-    private final Rectangle2D            _ov_rectangle                                      = new Rectangle2D.Float();
-    private final Rectangle              _ov_virtual_rectangle                              = new Rectangle();
-    private float                        _ov_x_correction_factor                            = 0.0f;
-    private float                        _ov_x_distance                                     = 0;
-    private int                          _ov_x_position                                     = 0;
-    private float                        _ov_y_distance                                     = 0;
-    private int                          _ov_y_position                                     = 0;
-    private int                          _ov_y_start                                        = 0;
-    private final boolean                _phy_has_branch_lengths;
-    private Phylogeny                    _phylogeny                                         = null;
-    private final Path2D.Float           _polygon                                           = new Path2D.Float();
-    private final StringBuffer           _popup_buffer                                      = new StringBuffer();
-    private final QuadCurve2D            _quad_curve                                        = new QuadCurve2D.Float();
-    private Sequence                     _query_sequence                                    = null;
-    private final Rectangle2D            _rectangle                                         = new Rectangle2D.Float();
-    private final RenderingHints         _rendering_hints                                   = new RenderingHints( RenderingHints.KEY_RENDERING,
-                                                                                                                  RenderingHints.VALUE_RENDER_DEFAULT );
-    private JTextArea                    _rollover_popup;
-    private PhylogenyNode                _root;
-    private final StringBuilder          _sb                                                = new StringBuilder();
-    private double                       _scale_distance                                    = 0.0;
-    private String                       _scale_label                                       = null;
-    private DescriptiveStatistics        _statistics_for_vector_data;
-    private final Phylogeny[]            _sub_phylogenies                                   = new Phylogeny[ TreePanel.MAX_SUBTREES ];
-    private final PhylogenyNode[]        _sub_phylogenies_temp_roots                        = new PhylogenyNode[ TreePanel.MAX_SUBTREES ];
-    private int                          _subtree_index                                     = 0;
-    private File                         _treefile                                          = null;
-    private float                        _urt_factor                                        = 1;
-    private float                        _urt_factor_ov                                     = 1;
-    final private HashMap<Long, Double>  _urt_nodeid_angle_map                              = new HashMap<Long, Double>();
-    final private HashMap<Long, Integer> _urt_nodeid_index_map                              = new HashMap<Long, Integer>();
-    private double                       _urt_starting_angle                                = ( float ) ( Math.PI / 2 );
-    private float                        _x_correction_factor                               = 0.0f;
-    private float                        _x_distance                                        = 0.0f;
-    private float                        _y_distance                                        = 0.0f;
-    private int                          _length_of_longest_text;
-    private int                          _longest_domain;
-    private Map<String, AttributedString> _attributed_string_map = null;
+    public final static boolean           SPECIAL_DOMAIN_COLORING                            = true;
+    final static Cursor                   ARROW_CURSOR                                       = Cursor
+            .getPredefinedCursor( Cursor.DEFAULT_CURSOR );
+    final static Cursor                   CUT_CURSOR                                         = Cursor
+            .getPredefinedCursor( Cursor.CROSSHAIR_CURSOR );
+    final static Cursor                   HAND_CURSOR                                        = Cursor
+            .getPredefinedCursor( Cursor.HAND_CURSOR );
+    final static Cursor                   MOVE_CURSOR                                        = Cursor
+            .getPredefinedCursor( Cursor.MOVE_CURSOR );
+    final static Cursor                   WAIT_CURSOR                                        = Cursor
+            .getPredefinedCursor( Cursor.WAIT_CURSOR );
+    final private static double           _180_OVER_PI                                       = 180.0 / Math.PI;
+    private static final float            ANGLE_ROTATION_UNIT                                = ( float ) ( Math.PI
+            / 32 );
+    private final static int              CONFIDENCE_LEFT_MARGIN                             = 4;
+    private final static int              EURO_D                                             = 10;
+    private final static NumberFormat     FORMATTER_BRANCH_LENGTH;
+    private final static NumberFormat     FORMATTER_CONFIDENCE;
+    private static final float            HALF_PI                                            = ( float ) ( Math.PI
+            / 2.0 );
+    private final static int              LIMIT_FOR_HQ_RENDERING                             = 2000;
+    private final static int              MAX_NODE_FRAMES                                    = 10;
+    private final static int              MAX_SUBTREES                                       = 100;
+    private final static int              MIN_ROOT_LENGTH                                    = 3;
+    private final static int              MOVE                                               = 20;
+    private final static String           NODE_POPMENU_NODE_CLIENT_PROPERTY                  = "node";
+    private static final float            ONEHALF_PI                                         = ( float ) ( 1.5
+            * Math.PI );
+    private static final short            OV_BORDER                                          = 10;
+    private final static double           OVERVIEW_FOUND_NODE_BOX_SIZE                       = 2;
+    private final static double           OVERVIEW_FOUND_NODE_BOX_SIZE_HALF                  = 1;
+    private static final float            PI                                                 = ( float ) ( Math.PI );
+    final private static Font             POPUP_FONT                                         = new Font( Configuration
+            .getDefaultFontFamilyName(), Font.PLAIN, 12 );
+    private static final float            ROUNDED_D                                          = 8;
+    private final static long             serialVersionUID                                   = -978349745916505029L;
+    private static final BasicStroke      STROKE_0025                                        = new BasicStroke( 0.025f );
+    private static final BasicStroke      STROKE_005                                         = new BasicStroke( 0.05f );
+    private static final BasicStroke      STROKE_01                                          = new BasicStroke( 0.1f );
+    private static final BasicStroke      STROKE_025                                         = new BasicStroke( 0.25f );
+    private static final BasicStroke      STROKE_05                                          = new BasicStroke( 0.5f );
+    private static final BasicStroke      STROKE_075                                         = new BasicStroke( 0.75f );
+    private static final BasicStroke      STROKE_1                                           = new BasicStroke( 1f );
+    private static final BasicStroke      STROKE_2                                           = new BasicStroke( 2f );
+    private static final double           TWO_PI                                             = 2 * Math.PI;
+    private final static int              WIGGLE                                             = 2;
+    private static final String           SHOW_ONLY_THIS_CONF_TYPE                           = null;                                                     //TODO remove me
+    HashMap<Long, Short>                  _nodeid_dist_to_leaf                               = new HashMap<Long, Short>();
+    final private Arc2D                   _arc                                               = new Arc2D.Double();
+    private AffineTransform               _at;
+    private int                           _circ_max_depth;
+    final private Set<Long>               _collapsed_external_nodeid_set                     = new HashSet<Long>();
+    private JColorChooser                 _color_chooser                                     = null;
+    private Configuration                 _configuration                                     = null;
+    private ControlPanel                  _control_panel                                     = null;
+    private final CubicCurve2D            _cubic_curve                                       = new CubicCurve2D.Float();
+    private Set<Long>                     _current_external_nodes                            = null;
+    private StringBuilder                 _current_external_nodes_data_buffer                = new StringBuilder();
+    private int                           _current_external_nodes_data_buffer_change_counter = 0;
+    private int                           _domain_structure_e_value_thr_exp                  = AptxConstants.DOMAIN_STRUCTURE_E_VALUE_THR_DEFAULT_EXP;
+    private double                        _domain_structure_width                            = AptxConstants.DOMAIN_STRUCTURE_DEFAULT_WIDTH;
+    private int                           _dynamic_hiding_factor                             = 0;
+    private boolean                       _edited                                            = false;
+    private final Ellipse2D               _ellipse                                           = new Ellipse2D.Float();
+    private int                           _external_node_index                               = 0;
+    private Set<Long>                     _found_nodes_0                                     = null;
+    private Set<Long>                     _found_nodes_1                                     = null;
+    private final FontRenderContext       _frc                                               = new FontRenderContext( null,
+                                                                                                                      false,
+                                                                                                                      false );
+    private PHYLOGENY_GRAPHICS_TYPE       _graphics_type                                     = PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR;
+    private PhylogenyNode                 _highlight_node                                    = null;
+    private boolean                       _in_ov                                             = false;
+    private boolean                       _in_ov_rect                                        = false;
+    private float                         _last_drag_point_x                                 = 0;
+    private float                         _last_drag_point_y                                 = 0;
+    private final Line2D                  _line                                              = new Line2D.Float();
+    private int                           _longest_ext_node_info                             = 0;
+    private PhylogenyNode                 _ext_node_with_longest_txt_info                    = null;
+    private MainPanel                     _main_panel                                        = null;
+    private double                        _max_distance_to_root                              = -1;
+    private Popup                         _node_desc_popup;
+    private int                           _node_frame_index                                  = 0;
+    private final NodeFrame[]             _node_frames                                       = new NodeFrame[ TreePanel.MAX_NODE_FRAMES ];
+    private JPopupMenu                    _node_popup_menu                                   = null;
+    private JMenuItem                     _node_popup_menu_items[]                           = null;
+    private PhylogenyNode[]               _nodes_in_preorder                                 = null;
+    private Options                       _options                                           = null;
+    private float                         _ov_max_height                                     = 0;
+    private float                         _ov_max_width                                      = 0;
+    private boolean                       _ov_on                                             = false;
+    private final Rectangle2D             _ov_rectangle                                      = new Rectangle2D.Float();
+    private final Rectangle               _ov_virtual_rectangle                              = new Rectangle();
+    private float                         _ov_x_correction_factor                            = 0.0f;
+    private float                         _ov_x_distance                                     = 0;
+    private int                           _ov_x_position                                     = 0;
+    private float                         _ov_y_distance                                     = 0;
+    private int                           _ov_y_position                                     = 0;
+    private int                           _ov_y_start                                        = 0;
+    private final boolean                 _phy_has_branch_lengths;
+    private Phylogeny                     _phylogeny                                         = null;
+    private final Path2D.Float            _polygon                                           = new Path2D.Float();
+    private final StringBuffer            _popup_buffer                                      = new StringBuffer();
+    private final QuadCurve2D             _quad_curve                                        = new QuadCurve2D.Float();
+    private Sequence                      _query_sequence                                    = null;
+    private final Rectangle2D             _rectangle                                         = new Rectangle2D.Float();
+    private final RenderingHints          _rendering_hints                                   = new RenderingHints( RenderingHints.KEY_RENDERING,
+                                                                                                                   RenderingHints.VALUE_RENDER_DEFAULT );
+    private JTextArea                     _rollover_popup;
+    private PhylogenyNode                 _root;
+    private final StringBuilder           _sb                                                = new StringBuilder();
+    private double                        _scale_distance                                    = 0.0;
+    private String                        _scale_label                                       = null;
+    private DescriptiveStatistics         _statistics_for_vector_data;
+    private final Phylogeny[]             _sub_phylogenies                                   = new Phylogeny[ TreePanel.MAX_SUBTREES ];
+    private final PhylogenyNode[]         _sub_phylogenies_temp_roots                        = new PhylogenyNode[ TreePanel.MAX_SUBTREES ];
+    private int                           _subtree_index                                     = 0;
+    private File                          _treefile                                          = null;
+    private float                         _urt_factor                                        = 1;
+    private float                         _urt_factor_ov                                     = 1;
+    final private HashMap<Long, Double>   _urt_nodeid_angle_map                              = new HashMap<Long, Double>();
+    final private HashMap<Long, Integer>  _urt_nodeid_index_map                              = new HashMap<Long, Integer>();
+    private double                        _urt_starting_angle                                = ( float ) ( Math.PI
+            / 2 );
+    private float                         _x_correction_factor                               = 0.0f;
+    private float                         _x_distance                                        = 0.0f;
+    private float                         _y_distance                                        = 0.0f;
+    private int                           _length_of_longest_text;
+    private int                           _longest_domain;
+    private Map<String, AttributedString> _attributed_string_map                             = null;
+    private int                           _depth_collapse_level                              = -1;
+    private int                           _rank_collapse_level                               = -1;
     static {
         final DecimalFormatSymbols dfs = new DecimalFormatSymbols();
         dfs.setDecimalSeparator( '.' );
@@ -361,8 +371,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         addMouseWheelListener( this );
         calculateScaleDistance();
         FORMATTER_CONFIDENCE.setMaximumFractionDigits( configuration.getNumberOfDigitsAfterCommaForConfidenceValues() );
-        FORMATTER_BRANCH_LENGTH.setMaximumFractionDigits( configuration
-                                                          .getNumberOfDigitsAfterCommaForBranchLengthValues() );
+        FORMATTER_BRANCH_LENGTH
+                .setMaximumFractionDigits( configuration.getNumberOfDigitsAfterCommaForBranchLengthValues() );
     }
 
     @Override
@@ -636,11 +646,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             g.setColor( Color.BLACK );
         }
         else if ( ( ( action == NodeClickAction.COPY_SUBTREE ) || ( action == NodeClickAction.CUT_SUBTREE )
-                || ( action == NodeClickAction.DELETE_NODE_OR_SUBTREE ) || ( action == NodeClickAction.PASTE_SUBTREE ) || ( action == NodeClickAction.ADD_NEW_NODE ) )
-                && ( getCutOrCopiedTree() != null )
-                && ( getCopiedAndPastedNodes() != null )
-                && !to_pdf
-                && !to_graphics_file && getCopiedAndPastedNodes().contains( node.getId() ) ) {
+                || ( action == NodeClickAction.DELETE_NODE_OR_SUBTREE ) || ( action == NodeClickAction.PASTE_SUBTREE )
+                || ( action == NodeClickAction.ADD_NEW_NODE ) ) && ( getCutOrCopiedTree() != null )
+                && ( getCopiedAndPastedNodes() != null ) && !to_pdf && !to_graphics_file
+                && getCopiedAndPastedNodes().contains( node.getId() ) ) {
             g.setColor( getTreeColorSet().getFoundColor0() );
         }
         else if ( getControlPanel().isUseVisualStyles() && ( PhylogenyMethods.getBranchColorValue( node ) != null ) ) {
@@ -678,7 +687,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         }
                     }
                     else if ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getMolecularSequence() ) ) {
-                        if ( ForesterUtil.seqIsLikelyToBeAa( node.getNodeData().getSequence().getMolecularSequence() ) ) {
+                        if ( ForesterUtil
+                                .seqIsLikelyToBeAa( node.getNodeData().getSequence().getMolecularSequence() ) ) {
                             type = 'p';
                         }
                         else {
@@ -720,7 +730,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 nodeTaxonomyDataAsSB( _ext_node_with_longest_txt_info.getNodeData().getTaxonomy(), sb );
             }
         }
-       
         return getFontMetricsForLargeDefaultFont().stringWidth( sb.toString() );
     }
 
@@ -931,8 +940,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         else {
             al = new SubtreeColorizationActionListener( _color_chooser, node );
         }
-        final JDialog dialog = JColorChooser
-                .createDialog( this, "Subtree colorization", true, _color_chooser, al, null );
+        final JDialog dialog = JColorChooser.createDialog( this,
+                                                           "Subtree colorization",
+                                                           true,
+                                                           _color_chooser,
+                                                           al,
+                                                           null );
         setEdited( true );
         dialog.setVisible( true );
     }
@@ -1080,7 +1093,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.draw( _arc );
     }
 
-    final private void drawLine( final double x1, final double y1, final double x2, final double y2, final Graphics2D g ) {
+    final private void drawLine( final double x1,
+                                 final double y1,
+                                 final double x2,
+                                 final double y2,
+                                 final Graphics2D g ) {
         if ( ( x1 == x2 ) && ( y1 == y2 ) ) {
             return;
         }
@@ -1123,7 +1140,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
-    final private void drawRect( final float x, final float y, final float width, final float heigth, final Graphics2D g ) {
+    final private void drawRect( final float x,
+                                 final float y,
+                                 final float width,
+                                 final float heigth,
+                                 final Graphics2D g ) {
         _rectangle.setFrame( x, y, width, heigth );
         g.draw( _rectangle );
     }
@@ -1416,7 +1437,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final private void increaseOvSize() {
-        if ( ( getOvMaxWidth() < ( getMainPanel().getCurrentScrollPane().getViewport().getVisibleRect().getWidth() / 2 ) )
+        if ( ( getOvMaxWidth() < ( getMainPanel().getCurrentScrollPane().getViewport().getVisibleRect().getWidth()
+                / 2 ) )
                 && ( getOvMaxHeight() < ( getMainPanel().getCurrentScrollPane().getViewport().getVisibleRect()
                         .getHeight() / 2 ) ) ) {
             setOvMaxWidth( getOvMaxWidth() + 5 );
@@ -1435,6 +1457,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         setTreeFile( null );
         setEdited( false );
         initializeOvSettings();
+        resetDepthCollapseDepthValue();
+        resetRankCollapseRankValue();
         setStartingAngle( ( TWO_PI * 3 ) / 4 );
         final ImageLoader il = new ImageLoader( this );
         new Thread( il ).start();
@@ -1448,8 +1472,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     final private boolean inOvVirtualRectangle( final int x, final int y ) {
         return ( ( x >= ( getOvVirtualRectangle().x - 1 ) )
                 && ( x <= ( getOvVirtualRectangle().x + getOvVirtualRectangle().width + 1 ) )
-                && ( y >= ( getOvVirtualRectangle().y - 1 ) ) && ( y <= ( getOvVirtualRectangle().y
-                        + getOvVirtualRectangle().height + 1 ) ) );
+                && ( y >= ( getOvVirtualRectangle().y - 1 ) )
+                && ( y <= ( getOvVirtualRectangle().y + getOvVirtualRectangle().height + 1 ) ) );
     }
 
     final private boolean inOvVirtualRectangle( final MouseEvent e ) {
@@ -1472,12 +1496,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final private boolean isCanOpenTaxWeb( final PhylogenyNode node ) {
-        if ( node.getNodeData().isHasTaxonomy()
-                && ( ( !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getScientificName() ) )
-                        || ( !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getTaxonomyCode() ) )
-                        || ( !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getCommonName() ) ) || ( ( node
-                                .getNodeData().getTaxonomy().getIdentifier() != null ) && !ForesterUtil.isEmpty( node
-                                                                                                                 .getNodeData().getTaxonomy().getIdentifier().getValue() ) ) ) ) {
+        if ( node.getNodeData().isHasTaxonomy() && ( ( !ForesterUtil
+                .isEmpty( node.getNodeData().getTaxonomy().getScientificName() ) )
+                || ( !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getTaxonomyCode() ) )
+                || ( !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getCommonName() ) )
+                || ( ( node.getNodeData().getTaxonomy().getIdentifier() != null )
+                        && !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getIdentifier().getValue() ) ) ) ) {
             return true;
         }
         else {
@@ -1511,23 +1535,19 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             y_dist = 40 + ( int ) getYdistance();
         }
         return ( ( node.getYcoord() < ( getVisibleRect().getMinY() - y_dist ) )
-                || ( node.getYcoord() > ( getVisibleRect().getMaxY() + y_dist ) ) || ( ( node.getParent() != null ) && ( node
-                        .getParent().getXcoord() > getVisibleRect().getMaxX() ) ) );
+                || ( node.getYcoord() > ( getVisibleRect().getMaxY() + y_dist ) )
+                || ( ( node.getParent() != null ) && ( node.getParent().getXcoord() > getVisibleRect().getMaxX() ) ) );
     }
 
     final private boolean isNodeDataInvisibleUnrootedCirc( final PhylogenyNode node ) {
         return ( ( node.getYcoord() < ( getVisibleRect().getMinY() - 20 ) )
                 || ( node.getYcoord() > ( getVisibleRect().getMaxY() + 20 ) )
-                || ( node.getXcoord() < ( getVisibleRect().getMinX() - 20 ) ) || ( node.getXcoord() > ( getVisibleRect()
-                        .getMaxX() + 20 ) ) );
+                || ( node.getXcoord() < ( getVisibleRect().getMinX() - 20 ) )
+                || ( node.getXcoord() > ( getVisibleRect().getMaxX() + 20 ) ) );
     }
 
     final private boolean isNonLinedUpCladogram() {
         return getOptions().getCladogramType() == CLADOGRAM_TYPE.NON_LINED_UP;
-    }
-
-    final private boolean isUniformBranchLengthsForCladogram() {
-        return getOptions().getCladogramType() == CLADOGRAM_TYPE.TOTAL_NODE_SUM_DEP;
     }
 
     final private void keyPressedCalls( final KeyEvent e ) {
@@ -1842,7 +1862,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     }
                     sb.append( node.getNodeData().getSequence().getGeneName() );
                 }
-                if ( getControlPanel().isShowSeqNames() && ( node.getNodeData().getSequence().getName().length() > 0 ) ) {
+                if ( getControlPanel().isShowSeqNames()
+                        && ( node.getNodeData().getSequence().getName().length() > 0 ) ) {
                     if ( sb.length() > 0 ) {
                         sb.append( " " );
                     }
@@ -1945,7 +1966,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     AptxUtil.launchWebBrowser( new URI( uri_str ),
                                                isApplet(),
                                                isApplet() ? obtainApplet() : null,
-                            "_aptx_seq" );
+                                               "_aptx_seq" );
                 }
                 catch ( final IOException e ) {
                     AptxUtil.showErrorMessage( this, e.toString() );
@@ -1973,7 +1994,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 AptxUtil.launchWebBrowser( new URI( uri_str ),
                                            isApplet(),
                                            isApplet() ? obtainApplet() : null,
-                        "_aptx_seq" );
+                                           "_aptx_seq" );
             }
             catch ( final IOException e ) {
                 AptxUtil.showErrorMessage( this, e.toString() );
@@ -2007,11 +2028,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 e.printStackTrace();
             }
         }
-        else if ( ( tax.getIdentifier() != null )
-                && !ForesterUtil.isEmpty( tax.getIdentifier().getValue() )
+        else if ( ( tax.getIdentifier() != null ) && !ForesterUtil.isEmpty( tax.getIdentifier().getValue() )
                 && !ForesterUtil.isEmpty( tax.getIdentifier().getProvider() )
-                && ( tax.getIdentifier().getProvider().equalsIgnoreCase( "ncbi" ) || tax.getIdentifier().getProvider()
-                        .equalsIgnoreCase( "uniprot" ) ) ) {
+                && ( tax.getIdentifier().getProvider().equalsIgnoreCase( "ncbi" )
+                        || tax.getIdentifier().getProvider().equalsIgnoreCase( "uniprot" ) ) ) {
             try {
                 uri_str = "http://www.uniprot.org/taxonomy/"
                         + URLEncoder.encode( tax.getIdentifier().getValue(), ForesterConstants.UTF_8 );
@@ -2056,7 +2076,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 AptxUtil.launchWebBrowser( new URI( uri_str ),
                                            isApplet(),
                                            isApplet() ? obtainApplet() : null,
-                        "_aptx_tax" );
+                                           "_aptx_tax" );
             }
             catch ( final IOException e ) {
                 AptxUtil.showErrorMessage( this, e.toString() );
@@ -2085,21 +2105,29 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         if ( !node.isRoot() ) {
             if ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE ) {
-                TreePanel.drawString( FORMATTER_BRANCH_LENGTH.format( node.getDistanceToParent() ), node.getParent()
-                                      .getXcoord() + EURO_D, node.getYcoord() - getTreeFontSet().getSmallMaxDescent(), g );
+                TreePanel.drawString( FORMATTER_BRANCH_LENGTH.format( node.getDistanceToParent() ),
+                                      node.getParent().getXcoord() + EURO_D,
+                                      node.getYcoord() - getTreeFontSet().getSmallMaxDescent(),
+                                      g );
             }
             else if ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.ROUNDED ) {
-                TreePanel.drawString( FORMATTER_BRANCH_LENGTH.format( node.getDistanceToParent() ), node.getParent()
-                                      .getXcoord() + ROUNDED_D, node.getYcoord() - getTreeFontSet().getSmallMaxDescent(), g );
+                TreePanel.drawString( FORMATTER_BRANCH_LENGTH.format( node.getDistanceToParent() ),
+                                      node.getParent().getXcoord() + ROUNDED_D,
+                                      node.getYcoord() - getTreeFontSet().getSmallMaxDescent(),
+                                      g );
             }
             else {
-                TreePanel.drawString( FORMATTER_BRANCH_LENGTH.format( node.getDistanceToParent() ), node.getParent()
-                                      .getXcoord() + 3, node.getYcoord() - getTreeFontSet().getSmallMaxDescent(), g );
+                TreePanel.drawString( FORMATTER_BRANCH_LENGTH.format( node.getDistanceToParent() ),
+                                      node.getParent().getXcoord() + 3,
+                                      node.getYcoord() - getTreeFontSet().getSmallMaxDescent(),
+                                      g );
             }
         }
         else {
-            TreePanel.drawString( FORMATTER_BRANCH_LENGTH.format( node.getDistanceToParent() ), 3, node.getYcoord()
-                                  - getTreeFontSet().getSmallMaxDescent(), g );
+            TreePanel.drawString( FORMATTER_BRANCH_LENGTH.format( node.getDistanceToParent() ),
+                                  3,
+                                  node.getYcoord() - getTreeFontSet().getSmallMaxDescent(),
+                                  g );
         }
     }
 
@@ -2120,8 +2148,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         else if ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CURVED ) {
             final float dx = x2 - x1;
             final float dy = y2 - y1;
-            _cubic_curve.setCurve( x1, y1, x1 + ( dx * 0.4f ), y1 + ( dy * 0.2f ), x1 + ( dx * 0.6f ), y1
-                                   + ( dy * 0.8f ), x2, y2 );
+            _cubic_curve.setCurve( x1,
+                                   y1,
+                                   x1 + ( dx * 0.4f ),
+                                   y1 + ( dy * 0.2f ),
+                                   x1 + ( dx * 0.6f ),
+                                   y1 + ( dy * 0.8f ),
+                                   x2,
+                                   y2 );
             ( g ).draw( _cubic_curve );
         }
         else {
@@ -2159,8 +2193,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         else if ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CURVED ) {
             final float dx = x2 - x1;
             final float dy = y2 - y1;
-            _cubic_curve.setCurve( x1, y1, x1 + ( dx * 0.4f ), y1 + ( dy * 0.2f ), x1 + ( dx * 0.6f ), y1
-                                   + ( dy * 0.8f ), x2, y2 );
+            _cubic_curve.setCurve( x1,
+                                   y1,
+                                   x1 + ( dx * 0.4f ),
+                                   y1 + ( dy * 0.2f ),
+                                   x1 + ( dx * 0.6f ),
+                                   y1 + ( dy * 0.8f ),
+                                   x2,
+                                   y2 );
             g.draw( _cubic_curve );
         }
         else {
@@ -2170,10 +2210,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             if ( node.isFirstChildNode() || node.isLastChildNode()
                     || ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE )
                     || ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.ROUNDED ) ) {
-                if ( !to_graphics_file
-                        && !to_pdf
-                        && ( ( ( y2 < ( getVisibleRect().getMinY() - 20 ) ) && ( y1 < ( getVisibleRect().getMinY() - 20 ) ) ) || ( ( y2 > ( getVisibleRect()
-                                .getMaxY() + 20 ) ) && ( y1 > ( getVisibleRect().getMaxY() + 20 ) ) ) ) ) {
+                if ( !to_graphics_file && !to_pdf
+                        && ( ( ( y2 < ( getVisibleRect().getMinY() - 20 ) )
+                                && ( y1 < ( getVisibleRect().getMinY() - 20 ) ) )
+                                || ( ( y2 > ( getVisibleRect().getMaxY() + 20 ) )
+                                        && ( y1 > ( getVisibleRect().getMaxY() + 20 ) ) ) ) ) {
                     // Do nothing.
                 }
                 else {
@@ -2206,8 +2247,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 }
             }
             // draw the horizontal line
-            if ( !to_graphics_file && !to_pdf
-                    && ( ( y2 < ( getVisibleRect().getMinY() - 20 ) ) || ( y2 > ( getVisibleRect().getMaxY() + 20 ) ) ) ) {
+            if ( !to_graphics_file && !to_pdf && ( ( y2 < ( getVisibleRect().getMinY() - 20 ) )
+                    || ( y2 > ( getVisibleRect().getMaxY() + 20 ) ) ) ) {
                 return;
             }
             float x1_r = 0;
@@ -2362,23 +2403,49 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             c = getTreeColorSet().getCollapseFillColor();
         }
         double d = node.getAllExternalDescendants().size();
-        if ( d > 1000 ) {
-            d = ( 3 * _y_distance ) / 3;
+        float xxx;
+        double s = 0;
+        if ( getControlPanel().isDrawPhylogram() ) {
+            if ( d > 1000 ) {
+                d = 0.75 * _y_distance;
+            }
+            else {
+                d = 0.25 * Math.log10( d ) * _y_distance;
+            }
+            final float half_box_size = 0.5f * getOptions().getDefaultNodeShapeSize();
+            if ( d < half_box_size ) {
+                d = half_box_size;
+            }
+            _polygon.reset();
+            final float xx = node.getXcoord() - ( getOptions().getDefaultNodeShapeSize() );
+            xxx = xx > ( node.getParent().getXcoord() + 1 ) ? xx : node.getParent().getXcoord() + 1;
+            _polygon.moveTo( xxx, node.getYcoord() + 0.5 );
+            _polygon.lineTo( xxx, node.getYcoord() - 0.5 );
+            s = _options.isCollapsedWithAverageHeigh()
+                    ? PhylogenyMethods.calculateAverageTreeHeight( node ) * _x_correction_factor : 1;
+            _polygon.lineTo( node.getXcoord() + s, node.getYcoord() - d );
+            _polygon.lineTo( node.getXcoord() + s, node.getYcoord() + d );
+            _polygon.closePath();
         }
         else {
-            d = ( Math.log10( d ) * _y_distance ) / 2.5;
+            if ( d > 1000 ) {
+                d = _y_distance;
+            }
+            else {
+                d = ( Math.log10( d ) * _y_distance ) / 2.5;
+            }
+            final int box_size = getOptions().getDefaultNodeShapeSize() + 1;
+            if ( d < box_size ) {
+                d = box_size;
+            }
+            final float xx = node.getXcoord() - ( 2 * box_size );
+            xxx = xx > ( node.getParent().getXcoord() + 1 ) ? xx : node.getParent().getXcoord() + 1;
+            _polygon.reset();
+            _polygon.moveTo( xxx, node.getYcoord() );
+            _polygon.lineTo( node.getXcoord() + 1, node.getYcoord() - d );
+            _polygon.lineTo( node.getXcoord() + 1, node.getYcoord() + d );
+            _polygon.closePath();
         }
-        final int box_size = getOptions().getDefaultNodeShapeSize() + 1;
-        if ( d < box_size ) {
-            d = box_size;
-        }
-        final float xx = node.getXcoord() - ( 2 * box_size );
-        final float xxx = xx > ( node.getParent().getXcoord() + 1 ) ? xx : node.getParent().getXcoord() + 1;
-        _polygon.reset();
-        _polygon.moveTo( xxx, node.getYcoord() );
-        _polygon.lineTo( node.getXcoord() + 1, node.getYcoord() - d );
-        _polygon.lineTo( node.getXcoord() + 1, node.getYcoord() + d );
-        _polygon.closePath();
         if ( getOptions().getDefaultNodeFill() == NodeVisualData.NodeFill.SOLID ) {
             g.setColor( c );
             g.fill( _polygon );
@@ -2390,13 +2457,18 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             g.draw( _polygon );
         }
         else if ( getOptions().getDefaultNodeFill() == NodeFill.GRADIENT ) {
-            g.setPaint( new GradientPaint( xxx, node.getYcoord(), getBackground(), node.getXcoord(), ( float ) ( node
-                    .getYcoord() - d ), c, false ) );
+            g.setPaint( new GradientPaint( xxx,
+                                           node.getYcoord(),
+                                           getBackground(),
+                                           node.getXcoord(),
+                                           ( float ) ( node.getYcoord() - d ),
+                                           c,
+                                           false ) );
             g.fill( _polygon );
             g.setPaint( c );
             g.draw( _polygon );
         }
-        paintNodeData( g, node, to_graphics_file, to_pdf, is_in_found_nodes );
+        paintNodeData( g, node, to_graphics_file, to_pdf, is_in_found_nodes, s );
     }
 
     final private void paintConfidenceValues( final Graphics2D g,
@@ -2408,9 +2480,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         Collections.sort( confidences );
         final StringBuilder sb = new StringBuilder();
         for( final Confidence confidence : confidences ) {
-            if ( ForesterUtil.isEmpty( SHOW_ONLY_THIS_CONF_TYPE )
-                    || ( !ForesterUtil.isEmpty( confidence.getType() ) && confidence.getType()
-                            .equalsIgnoreCase( SHOW_ONLY_THIS_CONF_TYPE ) ) ) {
+            if ( ForesterUtil.isEmpty( SHOW_ONLY_THIS_CONF_TYPE ) || ( !ForesterUtil.isEmpty( confidence.getType() )
+                    && confidence.getType().equalsIgnoreCase( SHOW_ONLY_THIS_CONF_TYPE ) ) ) {
                 final double value = confidence.getValue();
                 if ( value != Confidence.CONFIDENCE_DEFAULT_VALUE ) {
                     if ( value < getOptions().getMinConfidenceValue() ) {
@@ -2422,14 +2493,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     else {
                         not_first = true;
                     }
-                    sb.append( FORMATTER_CONFIDENCE.format( ForesterUtil.round( value, getOptions()
-                                                                                .getNumberOfDigitsAfterCommaForConfidenceValues() ) ) );
+                    sb.append( FORMATTER_CONFIDENCE.format( ForesterUtil
+                            .round( value, getOptions().getNumberOfDigitsAfterCommaForConfidenceValues() ) ) );
                     if ( getOptions().isShowConfidenceStddev() ) {
                         if ( confidence.getStandardDeviation() != Confidence.CONFIDENCE_DEFAULT_VALUE ) {
                             sb.append( "(" );
-                            sb.append( FORMATTER_CONFIDENCE.format( ForesterUtil.round( confidence
-                                                                                        .getStandardDeviation(), getOptions()
-                                                                                        .getNumberOfDigitsAfterCommaForConfidenceValues() ) ) );
+                            sb.append( FORMATTER_CONFIDENCE
+                                    .format( ForesterUtil.round( confidence.getStandardDeviation(),
+                                                                 getOptions()
+                                                                         .getNumberOfDigitsAfterCommaForConfidenceValues() ) ) );
                             sb.append( ")" );
                         }
                     }
@@ -2454,11 +2526,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             final String conf_str = sb.toString();
             TreePanel.drawString( conf_str,
-                                  parent_x
-                                  + ( ( x - parent_x - getTreeFontSet().getFontMetricsSmall()
-                                          .stringWidth( conf_str ) ) / 2 ),
-                                          ( node.getYcoord() + getTreeFontSet().getSmallMaxAscent() ) - 1,
-                                          g );
+                                  parent_x + ( ( x - parent_x
+                                          - getTreeFontSet().getFontMetricsSmall().stringWidth( conf_str ) ) / 2 ),
+                                  ( node.getYcoord() + getTreeFontSet().getSmallMaxAscent() ) - 1,
+                                  g );
         }
     }
 
@@ -2474,25 +2545,25 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             if ( AptxConstants.SPECIAL_CUSTOM ) {
                 g.setColor( Color.BLUE );
             }
-            TreePanel
-            .drawString( gained,
-                         parent_x
-                         + ( ( x - parent_x - getFontMetricsForLargeDefaultFont().stringWidth( gained ) ) / 2 ),
-                         ( node.getYcoord() - getFontMetricsForLargeDefaultFont().getMaxDescent() ),
-                         g );
+            TreePanel.drawString( gained,
+                                  parent_x + ( ( x - parent_x
+                                          - getFontMetricsForLargeDefaultFont().stringWidth( gained ) ) / 2 ),
+                                  ( node.getYcoord() - getFontMetricsForLargeDefaultFont().getMaxDescent() ),
+                                  g );
             g.setColor( getTreeColorSet().getLostCharactersColor() );
-            TreePanel
-            .drawString( lost,
-                         parent_x
-                         + ( ( x - parent_x - getFontMetricsForLargeDefaultFont().stringWidth( lost ) ) / 2 ),
-                         ( node.getYcoord() + getFontMetricsForLargeDefaultFont().getMaxAscent() ),
-                         g );
+            TreePanel.drawString( lost,
+                                  parent_x + ( ( x - parent_x
+                                          - getFontMetricsForLargeDefaultFont().stringWidth( lost ) ) / 2 ),
+                                  ( node.getYcoord() + getFontMetricsForLargeDefaultFont().getMaxAscent() ),
+                                  g );
         }
     }
 
     private void paintMolecularSequences( final Graphics2D g, final PhylogenyNode node, final boolean to_pdf ) {
-        final RenderableMsaSequence rs = RenderableMsaSequence.createInstance( node.getNodeData().getSequence()
-                                                                               .getMolecularSequence(), node.getNodeData().getSequence().getType(), getConfiguration() );
+        final RenderableMsaSequence rs = RenderableMsaSequence
+                .createInstance( node.getNodeData().getSequence().getMolecularSequence(),
+                                 node.getNodeData().getSequence().getType(),
+                                 getConfiguration() );
         if ( rs != null ) {
             final int default_height = 8;
             final float y = getYdistance();
@@ -2543,17 +2614,20 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 || ( getOptions().isShowDefaultNodeShapesExternal() && node.isExternal() )
                 || ( getOptions().isShowDefaultNodeShapesInternal() && node.isInternal() )
                 || ( getOptions().isShowDefaultNodeShapesForMarkedNodes()
-                        && ( node.getNodeData().getNodeVisualData() != null ) && ( !node.getNodeData()
-                                .getNodeVisualData().isEmpty() ) )
-                                || ( getControlPanel().isUseVisualStyles() && ( ( node.getNodeData().getNodeVisualData() != null ) && ( ( node
-                                        .getNodeData().getNodeVisualData().getNodeColor() != null )
-                                        || ( node.getNodeData().getNodeVisualData().getSize() != NodeVisualData.DEFAULT_SIZE )
-                                        || ( node.getNodeData().getNodeVisualData().getFillType() != NodeFill.DEFAULT ) || ( node
-                                                .getNodeData().getNodeVisualData().getShape() != NodeShape.DEFAULT ) ) ) )
-                                                || ( getControlPanel().isEvents() && node.isHasAssignedEvent() && ( node.getNodeData().getEvent()
-                                                        .isDuplication()
-                                                        || node.getNodeData().getEvent().isSpeciation() || node.getNodeData().getEvent()
-                                                        .isSpeciationOrDuplication() ) ) ) {
+                        && ( node.getNodeData().getNodeVisualData() != null )
+                        && ( !node.getNodeData().getNodeVisualData().isEmpty() ) )
+                || ( getControlPanel().isUseVisualStyles()
+                        && ( ( node.getNodeData().getNodeVisualData() != null )
+                                && ( ( node.getNodeData().getNodeVisualData().getNodeColor() != null )
+                                        || ( node.getNodeData().getNodeVisualData()
+                                                .getSize() != NodeVisualData.DEFAULT_SIZE )
+                                        || ( node.getNodeData().getNodeVisualData().getFillType() != NodeFill.DEFAULT )
+                                        || ( node.getNodeData().getNodeVisualData()
+                                                .getShape() != NodeShape.DEFAULT ) ) ) )
+                || ( getControlPanel().isEvents() && node.isHasAssignedEvent()
+                        && ( node.getNodeData().getEvent().isDuplication()
+                                || node.getNodeData().getEvent().isSpeciation()
+                                || node.getNodeData().getEvent().isSpeciationOrDuplication() ) ) ) {
             NodeVisualData vis = null;
             if ( getControlPanel().isUseVisualStyles() && ( node.getNodeData().getNodeVisualData() != null )
                     && ( !node.getNodeData().getNodeVisualData().isEmpty() ) ) {
@@ -2643,8 +2717,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             if ( shape == NodeShape.CIRCLE ) {
                 if ( fill == NodeFill.GRADIENT ) {
-                    drawOvalGradient( x - half_box_size, y - half_box_size, box_size, box_size, g, to_pdf ? Color.WHITE
-                            : outline_color, to_pdf ? outline_color : getBackground(), outline_color );
+                    drawOvalGradient( x - half_box_size,
+                                      y - half_box_size,
+                                      box_size,
+                                      box_size,
+                                      g,
+                                      to_pdf ? Color.WHITE : outline_color,
+                                      to_pdf ? outline_color : getBackground(),
+                                      outline_color );
                 }
                 else if ( fill == NodeFill.NONE ) {
                     Color background = getBackground();
@@ -2672,8 +2752,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             else if ( shape == NodeVisualData.NodeShape.RECTANGLE ) {
                 if ( fill == NodeVisualData.NodeFill.GRADIENT ) {
-                    drawRectGradient( x - half_box_size, y - half_box_size, box_size, box_size, g, to_pdf ? Color.WHITE
-                            : outline_color, to_pdf ? outline_color : getBackground(), outline_color );
+                    drawRectGradient( x - half_box_size,
+                                      y - half_box_size,
+                                      box_size,
+                                      box_size,
+                                      g,
+                                      to_pdf ? Color.WHITE : outline_color,
+                                      to_pdf ? outline_color : getBackground(),
+                                      outline_color );
                 }
                 else if ( fill == NodeVisualData.NodeFill.NONE ) {
                     Color background = getBackground();
@@ -2706,14 +2792,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                      final PhylogenyNode node,
                                      final boolean to_graphics_file,
                                      final boolean to_pdf,
-                                     final boolean is_in_found_nodes ) {
+                                     final boolean is_in_found_nodes,
+                                     final double add ) {
         if ( isNodeDataInvisible( node ) && !to_graphics_file && !to_pdf ) {
             return 0;
         }
         if ( getControlPanel().isWriteBranchLengthValues()
                 && ( ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR )
-                        || ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.ROUNDED ) || ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE ) )
-                        && ( !node.isRoot() ) && ( node.getDistanceToParent() != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT ) ) {
+                        || ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.ROUNDED )
+                        || ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE ) )
+                && ( !node.isRoot() ) && ( node.getDistanceToParent() != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT ) ) {
             paintBranchLength( g, node, to_pdf, to_graphics_file );
         }
         if ( !getControlPanel().isShowInternalData() && !node.isExternal() && !node.isCollapse() ) {
@@ -2721,17 +2809,18 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         _sb.setLength( 0 );
         int x = 0;
+        if ( add > 0 ) {
+            x += add;
+        }
         final int half_box_size = getOptions().getDefaultNodeShapeSize() / 2;
-        if ( getControlPanel().isShowTaxonomyImages()
-                && ( getImageMap() != null )
-                && !getImageMap().isEmpty()
-                && node.getNodeData().isHasTaxonomy()
-                && ( ( node.getNodeData().getTaxonomy().getUris() != null ) && !node.getNodeData().getTaxonomy()
-                        .getUris().isEmpty() ) ) {
+        if ( getControlPanel().isShowTaxonomyImages() && ( getImageMap() != null ) && !getImageMap().isEmpty()
+                && node.getNodeData().isHasTaxonomy() && ( ( node.getNodeData().getTaxonomy().getUris() != null )
+                        && !node.getNodeData().getTaxonomy().getUris().isEmpty() ) ) {
             x += drawTaxonomyImage( node.getXcoord() + 2 + half_box_size, node.getYcoord(), node, g );
         }
-        if ( ( getControlPanel().isShowTaxonomyCode() || getControlPanel().isShowTaxonomyScientificNames() || getControlPanel()
-                .isShowTaxonomyCommonNames() || getControlPanel().isShowTaxonomyRank() ) && node.getNodeData().isHasTaxonomy() ) {
+        if ( ( getControlPanel().isShowTaxonomyCode() || getControlPanel().isShowTaxonomyScientificNames()
+                || getControlPanel().isShowTaxonomyCommonNames() || getControlPanel().isShowTaxonomyRank() )
+                && node.getNodeData().isHasTaxonomy() ) {
             x += paintTaxonomy( g, node, is_in_found_nodes, to_pdf, to_graphics_file, x );
         }
         setColor( g, node, to_graphics_file, to_pdf, is_in_found_nodes, getTreeColorSet().getSequenceColor() );
@@ -2778,15 +2867,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             else {
                 final List<SequenceRelation> seqRelations = node.getNodeData().getSequence().getSequenceRelations();
                 for( final SequenceRelation seqRelation : seqRelations ) {
-                    final boolean fGotRelationWithQuery = ( seqRelation.getRef0().isEqual( _query_sequence ) || seqRelation
-                            .getRef1().isEqual( _query_sequence ) )
-                            && seqRelation.getType().equals( getControlPanel().getSequenceRelationTypeBox()
-                                                             .getSelectedItem() );
+                    final boolean fGotRelationWithQuery = ( seqRelation.getRef0().isEqual( _query_sequence )
+                            || seqRelation.getRef1().isEqual( _query_sequence ) )
+                            && seqRelation.getType()
+                                    .equals( getControlPanel().getSequenceRelationTypeBox().getSelectedItem() );
                     if ( fGotRelationWithQuery ) { // we will underline the text to show that this sequence is ortholog to the query
                         final double linePosX = node.getXcoord() + 2 + half_box_size;
-                        final String sConfidence = ( !getControlPanel().isShowSequenceRelationConfidence() || ( seqRelation
-                                .getConfidence() == null ) ) ? null : " (" + seqRelation.getConfidence().getValue()
-                                        + ")";
+                        final String sConfidence = ( !getControlPanel().isShowSequenceRelationConfidence()
+                                || ( seqRelation.getConfidence() == null ) ) ? null
+                                        : " (" + seqRelation.getConfidence().getValue() + ")";
                         if ( sConfidence != null ) {
                             float confidenceX = pos_x;
                             if ( sb_str.length() > 0 ) {
@@ -2795,7 +2884,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                             }
                             if ( confidenceX > linePosX ) { // let's only display confidence value if we are already displaying at least one of Prot/Gene Name and Taxonomy Code
                                 final int confidenceWidth = ( int ) new TextLayout( sConfidence, g.getFont(), _frc )
-                                .getBounds().getWidth();
+                                        .getBounds().getWidth();
                                 TreePanel.drawString( sConfidence, confidenceX, pos_y, g );
                                 x += CONFIDENCE_LEFT_MARGIN + confidenceWidth;
                             }
@@ -2808,8 +2897,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                             else {
                                 nodeTextBoundsWidth += 2;
                             }
-                            g.drawLine( ( int ) linePosX + 1, 3 + ( int ) pos_y, ( int ) linePosX + x
-                                        + nodeTextBoundsWidth, 3 + ( int ) pos_y );
+                            g.drawLine( ( int ) linePosX + 1,
+                                        3 + ( int ) pos_y,
+                                        ( int ) linePosX + x + nodeTextBoundsWidth,
+                                        3 + ( int ) pos_y );
                             break;
                         }
                     }
@@ -2843,9 +2934,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             else if ( getControlPanel().isColorAccordingToAnnotation() ) {
                 g.setColor( calculateColorForAnnotation( ann ) );
             }
-            final String ann_str = TreePanelUtil.createAnnotationString( ann, getOptions().isShowAnnotationRefSource() );
-            TreePanel.drawString( ann_str, node.getXcoord() + x + 3 + half_box_size, node.getYcoord()
-                                  + ( getFontMetricsForLargeDefaultFont().getAscent() / down_shift_factor ), g );
+            final String ann_str = TreePanelUtil.createAnnotationString( ann,
+                                                                         getOptions().isShowAnnotationRefSource() );
+            TreePanel.drawString( ann_str,
+                                  node.getXcoord() + x + 3 + half_box_size,
+                                  node.getYcoord()
+                                          + ( getFontMetricsForLargeDefaultFont().getAscent() / down_shift_factor ),
+                                  g );
             _sb.setLength( 0 );
             _sb.append( ann_str );
             if ( _sb.length() > 0 ) {
@@ -2870,22 +2965,28 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 }
                 if ( getControlPanel().isShowBinaryCharacters() ) {
                     TreePanel.drawString( node.getNodeData().getBinaryCharacters().getPresentCharactersAsStringBuffer()
-                                          .toString(), node.getXcoord() + x + 1 + half_box_size, node.getYcoord()
-                                          + ( getFontMetricsForLargeDefaultFont().getAscent() / down_shift_factor ), g );
-                    paintGainedAndLostCharacters( g, node, node.getNodeData().getBinaryCharacters()
-                                                  .getGainedCharactersAsStringBuffer().toString(), node.getNodeData().getBinaryCharacters()
-                                                  .getLostCharactersAsStringBuffer().toString() );
+                            .toString(),
+                                          node.getXcoord() + x + 1 + half_box_size,
+                                          node.getYcoord() + ( getFontMetricsForLargeDefaultFont().getAscent()
+                                                  / down_shift_factor ),
+                                          g );
+                    paintGainedAndLostCharacters( g,
+                                                  node,
+                                                  node.getNodeData().getBinaryCharacters()
+                                                          .getGainedCharactersAsStringBuffer().toString(),
+                                                  node.getNodeData().getBinaryCharacters()
+                                                          .getLostCharactersAsStringBuffer().toString() );
                 }
                 else {
-                    TreePanel
-                    .drawString( " " + node.getNodeData().getBinaryCharacters().getPresentCount(),
-                                 node.getXcoord() + x + 4 + half_box_size,
-                                 node.getYcoord()
-                                 + ( getFontMetricsForLargeDefaultFont().getAscent() / down_shift_factor ),
-                                 g );
-                    paintGainedAndLostCharacters( g, node, "+"
-                            + node.getNodeData().getBinaryCharacters().getGainedCount(), "-"
-                                    + node.getNodeData().getBinaryCharacters().getLostCount() );
+                    TreePanel.drawString( " " + node.getNodeData().getBinaryCharacters().getPresentCount(),
+                                          node.getXcoord() + x + 4 + half_box_size,
+                                          node.getYcoord() + ( getFontMetricsForLargeDefaultFont().getAscent()
+                                                  / down_shift_factor ),
+                                          g );
+                    paintGainedAndLostCharacters( g,
+                                                  node,
+                                                  "+" + node.getNodeData().getBinaryCharacters().getGainedCount(),
+                                                  "-" + node.getNodeData().getBinaryCharacters().getLostCount() );
                 }
             }
         }
@@ -2909,8 +3010,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         _sb.setLength( 0 );
         _sb.append( " " );
         if ( node.getNodeData().isHasTaxonomy()
-                && ( getControlPanel().isShowTaxonomyCode() || getControlPanel().isShowTaxonomyScientificNames() || getControlPanel()
-                        .isShowTaxonomyCommonNames() ) ) {
+                && ( getControlPanel().isShowTaxonomyCode() || getControlPanel().isShowTaxonomyScientificNames()
+                        || getControlPanel().isShowTaxonomyCommonNames() ) ) {
             final Taxonomy taxonomy = node.getNodeData().getTaxonomy();
             if ( _control_panel.isShowTaxonomyCode() && !ForesterUtil.isEmpty( taxonomy.getTaxonomyCode() ) ) {
                 _sb.append( taxonomy.getTaxonomyCode() );
@@ -2958,7 +3059,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             _sb.append( node.getName() );
         }
         if ( node.getNodeData().isHasSequence() ) {
-            if ( getControlPanel().isShowSequenceAcc() && ( node.getNodeData().getSequence().getAccession() != null ) ) {
+            if ( getControlPanel().isShowSequenceAcc()
+                    && ( node.getNodeData().getSequence().getAccession() != null ) ) {
                 if ( _sb.length() > 0 ) {
                     _sb.append( " " );
                 }
@@ -3038,15 +3140,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     final private void paintNodeLite( final Graphics2D g, final PhylogenyNode node ) {
         if ( node.isCollapse() ) {
-            if ( !node.isRoot() && !node.getParent().isCollapse() ) {
-                paintCollapsedNode( g, node, false, false, false );
-            }
             return;
         }
         if ( isInFoundNodes( node ) || isInCurrentExternalNodes( node ) ) {
             g.setColor( getColorForFoundNode( node ) );
-            drawRectFilled( node.getXSecondary() - OVERVIEW_FOUND_NODE_BOX_SIZE_HALF, node.getYSecondary()
-                            - OVERVIEW_FOUND_NODE_BOX_SIZE_HALF, OVERVIEW_FOUND_NODE_BOX_SIZE, OVERVIEW_FOUND_NODE_BOX_SIZE, g );
+            drawRectFilled( node.getXSecondary() - OVERVIEW_FOUND_NODE_BOX_SIZE_HALF,
+                            node.getYSecondary() - OVERVIEW_FOUND_NODE_BOX_SIZE_HALF,
+                            OVERVIEW_FOUND_NODE_BOX_SIZE,
+                            OVERVIEW_FOUND_NODE_BOX_SIZE,
+                            g );
         }
         float new_x = 0;
         if ( !node.isExternal() && !node.isCollapse() ) {
@@ -3055,18 +3157,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final int parent_max_branch_to_leaf = getMaxBranchesToLeaf( node );
             for( int i = 0; i < node.getNumberOfDescendants(); ++i ) {
                 final PhylogenyNode child_node = node.getChildNode( i );
-                int factor_x;
-                if ( !isUniformBranchLengthsForCladogram() ) {
-                    factor_x = node.getNumberOfExternalNodes() - child_node.getNumberOfExternalNodes();
-                }
-                else {
-                    factor_x = parent_max_branch_to_leaf - getMaxBranchesToLeaf( child_node );
-                }
+                final int factor_x = node.getNumberOfExternalNodes() - child_node.getNumberOfExternalNodes();
                 if ( first_child ) {
                     first_child = false;
-                    y2 = node.getYSecondary()
-                            - ( getOvYDistance() * ( node.getNumberOfExternalNodes() - child_node
-                                    .getNumberOfExternalNodes() ) );
+                    y2 = node.getYSecondary() - ( getOvYDistance()
+                            * ( node.getNumberOfExternalNodes() - child_node.getNumberOfExternalNodes() ) );
                 }
                 else {
                     y2 += getOvYDistance() * child_node.getNumberOfExternalNodes();
@@ -3103,12 +3198,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             ++_external_node_index;
         }
         // Confidence values
-        if ( getControlPanel().isShowConfidenceValues()
-                && !node.isExternal()
-                && !node.isRoot()
+        if ( getControlPanel().isShowConfidenceValues() && !node.isExternal() && !node.isRoot()
                 && ( ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.ROUNDED )
-                        || ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR ) || ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE ) )
-                        && node.getBranchData().isHasConfidences() ) {
+                        || ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR )
+                        || ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE ) )
+                && node.getBranchData().isHasConfidences() ) {
             paintConfidenceValues( g, node, to_pdf, to_graphics_file );
         }
         // Draw a line to root:
@@ -3132,20 +3226,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ( !node.isExternal() && !node.isCollapse() ) {
             boolean first_child = true;
             float y2 = 0.0f;
-            final int parent_max_branch_to_leaf = getMaxBranchesToLeaf( node );
             for( int i = 0; i < node.getNumberOfDescendants(); ++i ) {
                 final PhylogenyNode child_node = node.getChildNode( i );
-                int factor_x;
-                if ( !isUniformBranchLengthsForCladogram() ) {
-                    factor_x = node.getNumberOfExternalNodes() - child_node.getNumberOfExternalNodes();
-                }
-                else {
-                    factor_x = parent_max_branch_to_leaf - getMaxBranchesToLeaf( child_node );
-                }
+                final int factor_x = node.getNumberOfExternalNodes() - child_node.getNumberOfExternalNodes();
                 if ( first_child ) {
                     first_child = false;
-                    y2 = node.getYcoord()
-                            - ( _y_distance * ( node.getNumberOfExternalNodes() - child_node.getNumberOfExternalNodes() ) );
+                    y2 = node.getYcoord() - ( _y_distance
+                            * ( node.getNumberOfExternalNodes() - child_node.getNumberOfExternalNodes() ) );
                 }
                 else {
                     y2 += _y_distance * child_node.getNumberOfExternalNodes();
@@ -3179,14 +3266,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 && ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getMolecularSequence() ) ) ) {
             paintMolecularSequences( g, node, to_pdf );
         }
-        if ( dynamically_hide
-                && !is_in_found_nodes
-                && ( ( node.isExternal() && ( ( _external_node_index % dynamic_hiding_factor ) != 1 ) ) || ( !node
-                        .isExternal() && ( ( new_x_min < 20 ) || ( ( _y_distance * node.getNumberOfExternalNodes() ) < getFontMetricsForLargeDefaultFont()
+        if ( dynamically_hide && !is_in_found_nodes && ( ( node.isExternal()
+                && ( ( _external_node_index % dynamic_hiding_factor ) != 1 ) )
+                || ( !node.isExternal() && ( ( new_x_min < 20 )
+                        || ( ( _y_distance * node.getNumberOfExternalNodes() ) < getFontMetricsForLargeDefaultFont()
                                 .getHeight() ) ) ) ) ) {
             return;
         }
-        final int x = paintNodeData( g, node, to_graphics_file, to_pdf, is_in_found_nodes );
+        final int x = paintNodeData( g, node, to_graphics_file, to_pdf, is_in_found_nodes, 0 );
         paintNodeWithRenderableData( x, g, node, to_graphics_file, to_pdf );
     }
 
@@ -3202,8 +3289,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return;
         }
         if ( getControlPanel().isShowDomainArchitectures() && node.getNodeData().isHasSequence()
-                && ( node.getNodeData().getSequence().getDomainArchitecture() != null )
-                && ( node.getNodeData().getSequence().getDomainArchitecture() instanceof RenderableDomainArchitecture ) ) {
+                && ( node.getNodeData().getSequence().getDomainArchitecture() != null ) && ( node.getNodeData()
+                        .getSequence().getDomainArchitecture() instanceof RenderableDomainArchitecture ) ) {
             RenderableDomainArchitecture rds = null;
             try {
                 rds = ( RenderableDomainArchitecture ) node.getNodeData().getSequence().getDomainArchitecture();
@@ -3223,15 +3310,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     if ( getOptions().isLineUpRendarableNodeData() ) {
                         if ( getOptions().isRightLineUpDomains() ) {
                             rds.render( ( float ) ( ( getMaxDistanceToRoot() * getXcorrectionFactor() )
-                                    + _length_of_longest_text + ( ( _longest_domain - rds.getTotalLength() ) * rds
-                                            .getRenderingFactorWidth() ) ), node.getYcoord() - ( h / 2.0f ), g, this, to_pdf );
-                        }
-                        else {
-                            rds.render( ( float ) ( ( getMaxDistanceToRoot() * getXcorrectionFactor() ) + _length_of_longest_text ),
+                                    + _length_of_longest_text
+                                    + ( ( _longest_domain - rds.getTotalLength() ) * rds.getRenderingFactorWidth() ) ),
                                         node.getYcoord() - ( h / 2.0f ),
                                         g,
                                         this,
                                         to_pdf );
+                        }
+                        else {
+                            rds.render( ( float ) ( ( getMaxDistanceToRoot() * getXcorrectionFactor() )
+                                    + _length_of_longest_text ), node.getYcoord() - ( h / 2.0f ), g, this, to_pdf );
                         }
                     }
                     else {
@@ -3240,13 +3328,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 }
                 else {
                     if ( getOptions().isRightLineUpDomains() ) {
-                        rds.render( ( ( getPhylogeny().getFirstExternalNode().getXcoord() + _length_of_longest_text ) - 20 )
-                                    + ( ( _longest_domain - rds.getTotalLength() ) * rds
-                                            .getRenderingFactorWidth() ),
-                                            node.getYcoord() - ( h / 2.0f ),
-                                            g,
-                                            this,
-                                            to_pdf );
+                        rds.render( ( ( getPhylogeny().getFirstExternalNode().getXcoord() + _length_of_longest_text )
+                                - 20 ) + ( ( _longest_domain - rds.getTotalLength() ) * rds.getRenderingFactorWidth() ),
+                                    node.getYcoord() - ( h / 2.0f ),
+                                    g,
+                                    this,
+                                    to_pdf );
                     }
                     else {
                         rds.render( getPhylogeny().getFirstExternalNode().getXcoord() + _length_of_longest_text,
@@ -3273,11 +3360,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     rv.render( ( float ) ( node.getXcoord() + x + domain_add ), node.getYcoord() - 3, g, this, to_pdf );
                 }
                 else {
-                    rv.render( ( float ) ( getPhylogeny().getFirstExternalNode().getXcoord() + _length_of_longest_text + domain_add ),
-                               node.getYcoord() - 3,
-                               g,
-                               this,
-                               to_pdf );
+                    rv.render( ( float ) ( getPhylogeny().getFirstExternalNode().getXcoord() + _length_of_longest_text
+                            + domain_add ), node.getYcoord() - 3, g, this, to_pdf );
                 }
             }
         }
@@ -3324,10 +3408,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final private void paintPhylogenyLite( final Graphics2D g ) {
-        _phylogeny
-        .getRoot()
-        .setXSecondary( ( float ) ( getVisibleRect().x + getOvXPosition() + ( MOVE / ( getVisibleRect().width / getOvRectangle()
-                .getWidth() ) ) ) );
+        _phylogeny.getRoot().setXSecondary( ( float ) ( getVisibleRect().x + getOvXPosition()
+                + ( MOVE / ( getVisibleRect().width / getOvRectangle().getWidth() ) ) ) );
         _phylogeny.getRoot().setYSecondary( ( getVisibleRect().y + getOvYStart() ) );
         final Stroke s = g.getStroke();
         g.setStroke( STROKE_05 );
@@ -3409,9 +3491,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final float start_x = node.getXcoord() + 3 + ( getOptions().getDefaultNodeShapeSize() / 2 ) + x_shift;
         float start_y;
         if ( !using_visual_font ) {
-            start_y = node.getYcoord()
-                    + ( getFontMetricsForLargeDefaultFont().getAscent() / ( node.getNumberOfDescendants() == 1 ? 1
-                            : 3.0f ) );
+            start_y = node.getYcoord() + ( getFontMetricsForLargeDefaultFont().getAscent()
+                    / ( node.getNumberOfDescendants() == 1 ? 1 : 3.0f ) );
         }
         else {
             start_y = node.getYcoord()
@@ -3422,12 +3503,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final String label = _sb.toString();
         /* GUILHEM_BEG */
         if ( _control_panel.isShowSequenceRelations() && ( label.length() > 0 )
-                && ( node.getNodeData().isHasSequence() ) && node.getNodeData().getSequence().equals( _query_sequence ) ) {
+                && ( node.getNodeData().isHasSequence() )
+                && node.getNodeData().getSequence().equals( _query_sequence ) ) {
             // invert font color and background color to show that this is the query sequence
-            final Rectangle2D nodeTextBounds = new TextLayout( label, g.getFont(), new FontRenderContext( null,
-                                                                                                          false,
-                                                                                                          false ) )
-            .getBounds();
+            final Rectangle2D nodeTextBounds = new TextLayout( label,
+                                                               g.getFont(),
+                                                               new FontRenderContext( null, false, false ) )
+                                                                       .getBounds();
             g.fillRect( ( int ) start_x - 1, ( int ) start_y - 8, ( int ) nodeTextBounds.getWidth() + 4, 11 );
             g.setColor( getTreeColorSet().getBackgroundColor() );
         }
@@ -3686,8 +3768,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             g.setColor( getTaxonomyBasedColor( node ) );
         }
         else if ( getControlPanel().isColorAccordingToAnnotation()
-                && ( node.getNodeData().isHasSequence() && ( node.getNodeData().getSequence().getAnnotations() != null ) && ( !node
-                        .getNodeData().getSequence().getAnnotations().isEmpty() ) ) ) {
+                && ( node.getNodeData().isHasSequence() && ( node.getNodeData().getSequence().getAnnotations() != null )
+                        && ( !node.getNodeData().getSequence().getAnnotations().isEmpty() ) ) ) {
             g.setColor( calculateColorForAnnotation( node.getNodeData().getSequence().getAnnotations() ) );
         }
         else if ( getOptions().isColorLabelsSameAsParentBranch() && getControlPanel().isUseVisualStyles()
@@ -3905,8 +3987,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         else {
                             ann_str = ann.toString();
                         }
-                        sb.append( SequenceWriter.toFasta( ann_str, n.getNodeData().getSequence()
-                                                           .getMolecularSequence(), 60 ) );
+                        sb.append( SequenceWriter.toFasta( ann_str,
+                                                           n.getNodeData().getSequence().getMolecularSequence(),
+                                                           60 ) );
                         data.add( sb.toString() );
                     }
                     break;
@@ -3940,7 +4023,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                 final String name = d.getName();
                                 if ( !( s.contains( name ) ) ) {
                                     data.add( name );
-                                    if ( getOptions().getExtDescNodeDataToReturn() == NodeDataField.DOMAINS_COLLAPSED_PER_PROTEIN ) {
+                                    if ( getOptions()
+                                            .getExtDescNodeDataToReturn() == NodeDataField.DOMAINS_COLLAPSED_PER_PROTEIN ) {
                                         s.add( name );
                                     }
                                 }
@@ -3998,8 +4082,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         else if ( getConfiguration().getExtNodeDataReturnOn() == EXT_NODE_DATA_RETURN_ON.WINODW ) {
             if ( sb.length() < 1 ) {
-                TreePanelUtil.showInformationMessage( this, "No Appropriate Data (" + obtainTitleForExtDescNodeData()
-                                                      + ")", "Descendants of selected node do not contain selected data" );
+                TreePanelUtil.showInformationMessage( this,
+                                                      "No Appropriate Data (" + obtainTitleForExtDescNodeData() + ")",
+                                                      "Descendants of selected node do not contain selected data" );
                 clearCurrentExternalNodesDataBuffer();
             }
             else {
@@ -4007,21 +4092,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 String title;
                 if ( ( getFoundNodes0() != null ) && !getFoundNodes0().isEmpty() ) {
                     title = ( getOptions().getExtDescNodeDataToReturn() == NodeDataField.UNKNOWN ? "Data"
-                            : obtainTitleForExtDescNodeData() )
-                            + " for "
-                            + data.size()
-                            + " nodes, unique entries: "
+                            : obtainTitleForExtDescNodeData() ) + " for " + data.size() + " nodes, unique entries: "
                             + size;
                 }
                 else {
                     title = ( getOptions().getExtDescNodeDataToReturn() == NodeDataField.UNKNOWN ? "Data"
-                            : obtainTitleForExtDescNodeData() )
-                            + " for "
-                            + data.size()
-                            + "/"
-                            + node.getNumberOfExternalNodes()
-                            + " external descendats of node "
-                            + node
+                            : obtainTitleForExtDescNodeData() ) + " for " + data.size() + "/"
+                            + node.getNumberOfExternalNodes() + " external descendats of node " + node
                             + ", unique entries: " + size;
                 }
                 final String s = sb.toString().trim();
@@ -4040,11 +4117,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     final private void showNodeDataPopup( final MouseEvent e, final PhylogenyNode node ) {
         try {
             if ( ( node.getName().length() > 0 )
-                    || ( node.getNodeData().isHasTaxonomy() && !TreePanelUtil.isTaxonomyEmpty( node.getNodeData()
-                                                                                               .getTaxonomy() ) )
-                                                                                               || ( node.getNodeData().isHasSequence() && !TreePanelUtil.isSequenceEmpty( node.getNodeData()
-                                                                                                                                                                          .getSequence() ) ) || ( node.getNodeData().isHasDate() )
-                                                                                                                                                                          || ( node.getNodeData().isHasDistribution() ) || node.getBranchData().isHasConfidences() ) {
+                    || ( node.getNodeData().isHasTaxonomy()
+                            && !TreePanelUtil.isTaxonomyEmpty( node.getNodeData().getTaxonomy() ) )
+                    || ( node.getNodeData().isHasSequence()
+                            && !TreePanelUtil.isSequenceEmpty( node.getNodeData().getSequence() ) )
+                    || ( node.getNodeData().isHasDate() ) || ( node.getNodeData().isHasDistribution() )
+                    || node.getBranchData().isHasConfidences() ) {
                 _popup_buffer.setLength( 0 );
                 short lines = 0;
                 if ( node.getName().length() > 0 ) {
@@ -4124,7 +4202,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         _popup_buffer.append( "]" );
                     }
                     if ( !enc_data ) {
-                        if ( ( tax.getIdentifier() != null ) && !ForesterUtil.isEmpty( tax.getIdentifier().getValue() ) ) {
+                        if ( ( tax.getIdentifier() != null )
+                                && !ForesterUtil.isEmpty( tax.getIdentifier().getValue() ) ) {
                             if ( !ForesterUtil.isEmpty( tax.getIdentifier().getProvider() ) ) {
                                 _popup_buffer.append( "[" );
                                 _popup_buffer.append( tax.getIdentifier().getProvider() );
@@ -4207,15 +4286,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                             _popup_buffer.append( confidence.getType() );
                             _popup_buffer.append( "] " );
                         }
-                        _popup_buffer
-                        .append( FORMATTER_CONFIDENCE.format( ForesterUtil.round( confidence.getValue(),
-                                                                                  getOptions()
-                                                                                  .getNumberOfDigitsAfterCommaForConfidenceValues() ) ) );
+                        _popup_buffer.append( FORMATTER_CONFIDENCE.format( ForesterUtil.round( confidence.getValue(),
+                                                                                               getOptions()
+                                                                                                       .getNumberOfDigitsAfterCommaForConfidenceValues() ) ) );
                         if ( confidence.getStandardDeviation() != Confidence.CONFIDENCE_DEFAULT_VALUE ) {
                             _popup_buffer.append( " (sd=" );
-                            _popup_buffer.append( FORMATTER_CONFIDENCE.format( ForesterUtil.round( confidence
-                                                                                                   .getStandardDeviation(), getOptions()
-                                                                                                   .getNumberOfDigitsAfterCommaForConfidenceValues() ) ) );
+                            _popup_buffer.append( FORMATTER_CONFIDENCE
+                                    .format( ForesterUtil.round( confidence.getStandardDeviation(),
+                                                                 getOptions()
+                                                                         .getNumberOfDigitsAfterCommaForConfidenceValues() ) ) );
                             _popup_buffer.append( ")" );
                         }
                     }
@@ -4236,7 +4315,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 if ( _popup_buffer.length() > 0 ) {
                     if ( !getConfiguration().isUseNativeUI() ) {
                         _rollover_popup
-                        .setBorder( BorderFactory.createLineBorder( getTreeColorSet().getBranchColor() ) );
+                                .setBorder( BorderFactory.createLineBorder( getTreeColorSet().getBranchColor() ) );
                         _rollover_popup.setBackground( getTreeColorSet().getBackgroundColor() );
                         if ( isInFoundNodes0( node ) && !isInFoundNodes1( node ) ) {
                             _rollover_popup.setForeground( getTreeColorSet().getFoundColor0() );
@@ -4255,11 +4334,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         _rollover_popup.setBorder( BorderFactory.createLineBorder( Color.BLACK ) );
                     }
                     _rollover_popup.setText( _popup_buffer.toString() );
-                    _node_desc_popup = PopupFactory.getSharedInstance().getPopup( null,
-                                                                                  _rollover_popup,
-                                                                                  e.getLocationOnScreen().x + 10,
-                                                                                  e.getLocationOnScreen().y
-                                                                                  - ( lines * 20 ) );
+                    _node_desc_popup = PopupFactory.getSharedInstance()
+                            .getPopup( null,
+                                       _rollover_popup,
+                                       e.getLocationOnScreen().x + 10,
+                                       e.getLocationOnScreen().y - ( lines * 20 ) );
                     _node_desc_popup.show();
                 }
             }
@@ -4345,7 +4424,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ( getMainPanel().getMainFrame() == null ) {
             // Must be "E" applet version.
             ( ( ArchaeopteryxE ) ( ( MainPanelApplets ) getMainPanel() ).getApplet() )
-            .setSelectedTypeInTypeMenu( getPhylogenyGraphicsType() );
+                    .setSelectedTypeInTypeMenu( getPhylogenyGraphicsType() );
         }
         else {
             getMainPanel().getMainFrame().setSelectedTypeInTypeMenu( getPhylogenyGraphicsType() );
@@ -4369,22 +4448,23 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             calculateLongestExtNodeInfo();
             if ( ( getLongestExtNodeInfo() > ( x * 0.6 ) )
                     && ( getTreeFontSet().getLargeFont().getSize() > ( 2 + TreeFontSet.FONT_SIZE_CHANGE_STEP ) ) ) {
-                while ( ( getLongestExtNodeInfo() > ( x * 0.7 ) ) && ( getTreeFontSet().getLargeFont().getSize() > 2 ) ) {
+                while ( ( getLongestExtNodeInfo() > ( x * 0.7 ) )
+                        && ( getTreeFontSet().getLargeFont().getSize() > 2 ) ) {
                     getMainPanel().getTreeFontSet().decreaseFontSize( getConfiguration().getMinBaseFontSize(), true );
                     calculateLongestExtNodeInfo();
                 }
             }
             else {
-                while ( ( getLongestExtNodeInfo() < ( x * 0.6 ) )
-                        && ( getTreeFontSet().getLargeFont().getSize() <= ( getTreeFontSet().getLargeFontMemory()
-                                .getSize() - TreeFontSet.FONT_SIZE_CHANGE_STEP ) ) ) {
+                while ( ( getLongestExtNodeInfo() < ( x * 0.6 ) ) && ( getTreeFontSet().getLargeFont()
+                        .getSize() <= ( getTreeFontSet().getLargeFontMemory().getSize()
+                                - TreeFontSet.FONT_SIZE_CHANGE_STEP ) ) ) {
                     getMainPanel().getTreeFontSet().increaseFontSize();
                     calculateLongestExtNodeInfo();
                 }
             }
             //_length_of_longest_text = calcLengthOfLongestText();
             int ext_nodes = _phylogeny.getRoot().getNumberOfExternalNodes();
-            final int max_depth = PhylogenyMethods.calculateMaxDepth( _phylogeny );
+            final int max_depth = PhylogenyMethods.calculateMaxDepthConsiderCollapsed( _phylogeny ) + 1;
             if ( ext_nodes == 1 ) {
                 ext_nodes = max_depth;
                 if ( ext_nodes < 1 ) {
@@ -4394,7 +4474,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             updateOvSizes();
             float xdist = 0;
             float ov_xdist = 0;
-            if ( !isNonLinedUpCladogram() && !isUniformBranchLengthsForCladogram() ) {
+            if ( !isNonLinedUpCladogram() ) {
                 xdist = ( float ) ( ( x - getLongestExtNodeInfo() - TreePanel.MOVE ) / ( ext_nodes + 3.0 ) );
                 ov_xdist = ( float ) ( getOvMaxWidth() / ( ext_nodes + 3.0 ) );
             }
@@ -4415,9 +4495,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             setXdistance( xdist );
             setYdistance( ydist );
             setOvXDistance( ov_xdist );
-            final double height = _phylogeny.getHeight();
+            final double height = _phylogeny.calculateHeight( !_options.isCollapsedWithAverageHeigh() );
             if ( height > 0 ) {
-                final float corr = ( float ) ( ( x - ( 2.0 * TreePanel.MOVE ) - getLongestExtNodeInfo() - getXdistance() ) / height ); 
+                final float corr = ( float ) ( ( x - ( 2.0 * TreePanel.MOVE ) - getLongestExtNodeInfo()
+                        - getXdistance() ) / height );
                 setXcorrectionFactor( corr > 0 ? corr : 0 );
                 final float ov_corr = ( float ) ( ( getOvMaxWidth() - getOvXDistance() ) / height );
                 setOvXcorrectionFactor( ov_corr > 0 ? ov_corr : 0 );
@@ -4454,11 +4535,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ( ( _phylogeny == null ) || _phylogeny.isEmpty() ) {
             return;
         }
-        int max_possible_length = ForesterUtil.roundToInt( ( getSize().getWidth() - 2 * MOVE )
-                                                  * AptxConstants.EXT_NODE_INFO_LENGTH_MAX_RATIO );
+        int max_possible_length = ForesterUtil
+                .roundToInt( ( getSize().getWidth() - ( 2 * MOVE ) ) * AptxConstants.EXT_NODE_INFO_LENGTH_MAX_RATIO );
         if ( max_possible_length < 20 ) {
-             max_possible_length = 20;
-         }
+            max_possible_length = 20;
+        }
         int longest = 30;
         int longest_txt = 0;
         _longest_domain = 0;
@@ -4491,7 +4572,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             if ( getControlPanel().isShowBinaryCharacters() && node.getNodeData().isHasBinaryCharacters() ) {
                 sum += getFontMetricsForLargeDefaultFont().stringWidth( node.getNodeData().getBinaryCharacters()
-                                                                        .getGainedCharactersAsStringBuffer().toString() );
+                        .getGainedCharactersAsStringBuffer().toString() );
             }
             if ( getControlPanel().isShowVectorData() && ( node.getNodeData().getVector() != null )
                     && ( node.getNodeData().getVector().size() > 0 ) ) {
@@ -4507,8 +4588,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 // FIXME
                 // TODO this might need some clean up
                 final DomainArchitecture d = node.getNodeData().getSequence().getDomainArchitecture();
-                sum += ( ( _domain_structure_width / ( ( RenderableDomainArchitecture ) d ).getOriginalSize()
-                        .getWidth() ) * d.getTotalLength() ) + 10;
+                sum += ( ( _domain_structure_width
+                        / ( ( RenderableDomainArchitecture ) d ).getOriginalSize().getWidth() ) * d.getTotalLength() )
+                        + 10;
                 if ( d.getTotalLength() > _longest_domain ) {
                     _longest_domain = d.getTotalLength();
                 }
@@ -4528,12 +4610,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
         }
         _ext_node_with_longest_txt_info = longest_txt_node;
-         if ( longest >= max_possible_length ) {
+        if ( longest >= max_possible_length ) {
             _longest_ext_node_info = max_possible_length;
-         }
-         else {
-           _longest_ext_node_info = longest;
-         }
+        }
+        else {
+            _longest_ext_node_info = longest;
+        }
         _length_of_longest_text = calcLengthOfLongestText();
     }
 
@@ -4640,15 +4722,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     if ( ref.startsWith( PhyloXmlUtil.VECTOR_PROPERTY_REF ) ) {
                         final Property p = pm.getProperty( ref );
                         final String value_str = p.getValue();
-                        final String index_str = ref
-                                .substring( PhyloXmlUtil.VECTOR_PROPERTY_REF.length(), ref.length() );
+                        final String index_str = ref.substring( PhyloXmlUtil.VECTOR_PROPERTY_REF.length(),
+                                                                ref.length() );
                         double d = -100;
                         try {
                             d = Double.parseDouble( value_str );
                         }
                         catch ( final NumberFormatException e ) {
-                            JOptionPane.showMessageDialog( this, "Could not parse \"" + value_str
-                                                           + "\" into a decimal value", "Problem with Vector Data", JOptionPane.ERROR_MESSAGE );
+                            JOptionPane.showMessageDialog( this,
+                                                           "Could not parse \"" + value_str + "\" into a decimal value",
+                                                           "Problem with Vector Data",
+                                                           JOptionPane.ERROR_MESSAGE );
                             return;
                         }
                         int i = -1;
@@ -4658,7 +4742,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         catch ( final NumberFormatException e ) {
                             JOptionPane.showMessageDialog( this,
                                                            "Could not parse \"" + index_str
-                                                           + "\" into index for vector data",
+                                                                   + "\" into index for vector data",
                                                            "Problem with Vector Data",
                                                            JOptionPane.ERROR_MESSAGE );
                             return;
@@ -4720,7 +4804,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             repaint();
         }
     }
-    
+
     final void uncollapseAll( final PhylogenyNode node ) {
         if ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED ) {
             JOptionPane.showMessageDialog( this,
@@ -4730,7 +4814,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return;
         }
         if ( !node.isExternal() ) {
-            TreePanelUtil.uncollapseSubtree( node);
+            TreePanelUtil.uncollapseSubtree( node );
             updateSetOfCollapsedExternalNodes();
             _phylogeny.recalculateNumberOfExternalDescendants( true );
             resetNodeIdToDistToLeafMap();
@@ -4756,49 +4840,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         calculateLongestExtNodeInfo();
         setNodeInPreorderToNull();
         resetPreferredSize();
+        resetDepthCollapseDepthValue();
+        resetRankCollapseRankValue();
         _main_panel.adjustJScrollPane();
+        getControlPanel().showWhole();
         setArrowCursor();
-        repaint();
     }
 
-    final void collapseByTaxonomicRank( final String rank ) {
-        if ( ( _phylogeny == null ) || ( _phylogeny.getNumberOfExternalNodes() < 2 ) ) {
-            return;
-        }
-        setWaitCursor();
-        
-        final int collapsed = TreePanelUtil.collapseByTaxonomicRank( _phylogeny, rank, this );
-       
-        setArrowCursor();
-        repaint();
-        if ( collapsed > 0 ) {
-            String msg = "Collapsing via " + rank + " completed:\n";
-            if ( collapsed > 1 ) {
-                msg += "collapsed " + collapsed + " subtrees";
-            }
-            else {
-                msg += "collapsed one subtree";
-            }
-            setEdited( true );
-            JOptionPane.showMessageDialog( this,
-                                           msg,
-                                           "Taxonomy Rank-Collapsing Completed (" + rank + ")",
-                                           JOptionPane.INFORMATION_MESSAGE );
-        }
-        else {
-            String msg = "Could not taxonomy rank-collapse any subtree via " + rank + ".\n";
-            msg += "Possible solutions (given that suitable taxonomic information is present):\n";
-            msg += "select a different rank (e.g. phylum, genus, ...)\n";
-            msg += "  and/or\n";
-            msg += "execute:\n";
-            msg += "1. \"" + MainFrameApplication.OBTAIN_DETAILED_TAXONOMIC_INFORMATION + "\" (Tools)\n";
-            msg += "2. \"" + MainFrameApplication.INFER_ANCESTOR_TAXONOMIES + "\" (Analysis)";
-            JOptionPane.showMessageDialog( this, msg, "Taxonomy Rank-Collapsing Failed", JOptionPane.WARNING_MESSAGE );
-        }
-    }
-    
-    
-    
+  
+
     final void colorRank( final String rank ) {
         if ( ( _phylogeny == null ) || ( _phylogeny.getNumberOfExternalNodes() < 2 ) ) {
             return;
@@ -4842,9 +4892,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             msg += "select a different rank (e.g. phylum, genus, ...)\n";
             msg += "  and/or\n";
             msg += "execute:\n";
-            msg += "1. \"" + MainFrameApplication.OBTAIN_DETAILED_TAXONOMIC_INFORMATION + "\" (Tools)\n";
-            msg += "2. \"" + MainFrameApplication.INFER_ANCESTOR_TAXONOMIES + "\" (Analysis)";
-            JOptionPane.showMessageDialog( this, msg, "Taxonomy Rank-Colorization Failed", JOptionPane.WARNING_MESSAGE );
+            msg += "1. \"" + MainFrame.OBTAIN_DETAILED_TAXONOMIC_INFORMATION + "\" (Tools)\n";
+            msg += "2. \"" + MainFrame.INFER_ANCESTOR_TAXONOMIES + "\" (Analysis)";
+            JOptionPane.showMessageDialog( this,
+                                           msg,
+                                           "Taxonomy Rank-Colorization Failed",
+                                           JOptionPane.WARNING_MESSAGE );
         }
     }
 
@@ -5032,14 +5085,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             if ( node.getNodeData().isHasSequence()
                     && ( node.getNodeData().getSequence().getDomainArchitecture() != null ) ) {
                 RenderableDomainArchitecture rds = null;
-                if ( !( node.getNodeData().getSequence().getDomainArchitecture() instanceof RenderableDomainArchitecture ) ) {
+                if ( !( node.getNodeData().getSequence()
+                        .getDomainArchitecture() instanceof RenderableDomainArchitecture ) ) {
                     if ( SPECIAL_DOMAIN_COLORING ) {
                         rds = new RenderableDomainArchitecture( node.getNodeData().getSequence()
-                                                                .getDomainArchitecture(), node.getName() );
+                                .getDomainArchitecture(), node.getName() );
                     }
                     else {
                         rds = new RenderableDomainArchitecture( node.getNodeData().getSequence()
-                                                                .getDomainArchitecture() );
+                                .getDomainArchitecture() );
                     }
                     node.getNodeData().getSequence().setDomainArchitecture( rds );
                 }
@@ -5071,15 +5125,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     final boolean inOv( final MouseEvent e ) {
         return ( ( e.getX() > ( getVisibleRect().x + getOvXPosition() + 1 ) )
                 && ( e.getX() < ( ( getVisibleRect().x + getOvXPosition() + getOvMaxWidth() ) - 1 ) )
-                && ( e.getY() > ( getVisibleRect().y + getOvYPosition() + 1 ) ) && ( e.getY() < ( ( getVisibleRect().y
-                        + getOvYPosition() + getOvMaxHeight() ) - 1 ) ) );
+                && ( e.getY() > ( getVisibleRect().y + getOvYPosition() + 1 ) )
+                && ( e.getY() < ( ( getVisibleRect().y + getOvYPosition() + getOvMaxHeight() ) - 1 ) ) );
     }
 
     final boolean inOvRectangle( final MouseEvent e ) {
         return ( ( e.getX() >= ( getOvRectangle().getX() - 1 ) )
                 && ( e.getX() <= ( getOvRectangle().getX() + getOvRectangle().getWidth() + 1 ) )
-                && ( e.getY() >= ( getOvRectangle().getY() - 1 ) ) && ( e.getY() <= ( getOvRectangle().getY()
-                        + getOvRectangle().getHeight() + 1 ) ) );
+                && ( e.getY() >= ( getOvRectangle().getY() - 1 ) )
+                && ( e.getY() <= ( getOvRectangle().getY() + getOvRectangle().getHeight() + 1 ) ) );
     }
 
     final boolean isApplet() {
@@ -5089,9 +5143,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     final boolean isCanCollapse() {
         return ( getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.UNROOTED );
     }
-    
+
     final boolean isCanUncollapseAll( final PhylogenyNode node ) {
-        if ( node.isExternal() || getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED ) {
+        if ( node.isExternal() || ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED ) ) {
             return false;
         }
         if ( node.isCollapse() ) {
@@ -5105,7 +5159,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         return false;
     }
-    
+
     final boolean isCanColorSubtree() {
         return ( getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.UNROOTED );
     }
@@ -5115,8 +5169,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final boolean isCanCut( final PhylogenyNode node ) {
-        return ( ( getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.UNROOTED ) && getOptions().isEditable() && !node
-                .isRoot() );
+        return ( ( getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.UNROOTED ) && getOptions().isEditable()
+                && !node.isRoot() );
     }
 
     final boolean isCanDelete() {
@@ -5133,8 +5187,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final boolean isCanSubtree( final PhylogenyNode node ) {
-        return ( ( getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.UNROOTED ) && !node.isExternal() && ( !node
-                .isRoot() || ( _subtree_index > 0 ) ) );
+        return ( ( getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.UNROOTED ) && !node.isExternal()
+                && ( !node.isRoot() || ( _subtree_index > 0 ) ) );
     }
 
     final boolean isCurrentTreeIsSubtree() {
@@ -5200,7 +5254,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 y = max_y;
             }
             getMainPanel().getCurrentScrollPane().getViewport()
-            .setViewPosition( new Point( ForesterUtil.roundToInt( x ), ForesterUtil.roundToInt( y ) ) );
+                    .setViewPosition( new Point( ForesterUtil.roundToInt( x ), ForesterUtil.roundToInt( y ) ) );
             setInOvRect( true );
             repaint();
         }
@@ -5447,8 +5501,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                   g );
         if ( isInFoundNodes( c ) || isInCurrentExternalNodes( c ) ) {
             g.setColor( getColorForFoundNode( c ) );
-            drawRectFilled( c.getXSecondary() - OVERVIEW_FOUND_NODE_BOX_SIZE_HALF, c.getYSecondary()
-                            - OVERVIEW_FOUND_NODE_BOX_SIZE_HALF, OVERVIEW_FOUND_NODE_BOX_SIZE, OVERVIEW_FOUND_NODE_BOX_SIZE, g );
+            drawRectFilled( c.getXSecondary() - OVERVIEW_FOUND_NODE_BOX_SIZE_HALF,
+                            c.getYSecondary() - OVERVIEW_FOUND_NODE_BOX_SIZE_HALF,
+                            OVERVIEW_FOUND_NODE_BOX_SIZE,
+                            OVERVIEW_FOUND_NODE_BOX_SIZE,
+                            g );
         }
     }
 
@@ -5537,8 +5594,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             else {
                 if ( !to_graphics_file ) {
-                    g.setPaint( new GradientPaint( r.x, r.y, getTreeColorSet().getBackgroundColor(), r.x, r.y
-                                                   + r.height, getTreeColorSet().getBackgroundColorGradientBottom() ) );
+                    g.setPaint( new GradientPaint( r.x,
+                                                   r.y,
+                                                   getTreeColorSet().getBackgroundColor(),
+                                                   r.x,
+                                                   r.y + r.height,
+                                                   getTreeColorSet().getBackgroundColorGradientBottom() ) );
                     g.fill( r );
                 }
                 else {
@@ -5560,19 +5621,19 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 && ( getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR ) ) {
             _external_node_index = 0;
             // Position starting X of tree
-            if ( !_phylogeny.isRooted() /*|| ( _subtree_index > 0 )*/) {
+            if ( !_phylogeny.isRooted() /*|| ( _subtree_index > 0 )*/ ) {
                 _phylogeny.getRoot().setXcoord( TreePanel.MOVE );
             }
             else if ( ( _phylogeny.getRoot().getDistanceToParent() > 0.0 ) && getControlPanel().isDrawPhylogram() ) {
-                _phylogeny.getRoot().setXcoord( ( float ) ( TreePanel.MOVE + ( _phylogeny.getRoot()
-                        .getDistanceToParent() * getXcorrectionFactor() ) ) );
+                _phylogeny.getRoot().setXcoord( ( float ) ( TreePanel.MOVE
+                        + ( _phylogeny.getRoot().getDistanceToParent() * getXcorrectionFactor() ) ) );
             }
             else {
                 _phylogeny.getRoot().setXcoord( TreePanel.MOVE + getXdistance() );
             }
             // Position starting Y of tree
             _phylogeny.getRoot().setYcoord( ( getYdistance() * _phylogeny.getRoot().getNumberOfExternalNodes() )
-                                            + ( TreePanel.MOVE / 2.0f ) );
+                    + ( TreePanel.MOVE / 2.0f ) );
             final int dynamic_hiding_factor = calcDynamicHidingFactor();
             if ( getControlPanel().isDynamicallyHideData() ) {
                 if ( dynamic_hiding_factor > 1 ) {
@@ -5628,8 +5689,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final boolean radial_labels = getOptions().getNodeLabelDirection() == NODE_LABEL_DIRECTION.RADIAL;
             _dynamic_hiding_factor = 0;
             if ( getControlPanel().isDynamicallyHideData() ) {
-                _dynamic_hiding_factor = ( int ) ( ( getFontMetricsForLargeDefaultFont().getHeight() * 1.5 * getPhylogeny()
-                        .getNumberOfExternalNodes() ) / ( TWO_PI * 10 ) );
+                _dynamic_hiding_factor = ( int ) ( ( getFontMetricsForLargeDefaultFont().getHeight() * 1.5
+                        * getPhylogeny().getNumberOfExternalNodes() ) / ( TWO_PI * 10 ) );
             }
             if ( getControlPanel().getDynamicallyHideData() != null ) {
                 if ( _dynamic_hiding_factor > 1 ) {
@@ -5669,12 +5730,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
         }
         else if ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR ) {
-            final int radius = ( int ) ( ( Math.min( getPreferredSize().getWidth(), getPreferredSize().getHeight() ) / 2 ) - ( MOVE + getLongestExtNodeInfo() ) );
+            final int radius = ( int ) ( ( Math.min( getPreferredSize().getWidth(), getPreferredSize().getHeight() )
+                    / 2 ) - ( MOVE + getLongestExtNodeInfo() ) );
             final int d = radius + MOVE + getLongestExtNodeInfo();
             _dynamic_hiding_factor = 0;
             if ( getControlPanel().isDynamicallyHideData() && ( radius > 0 ) ) {
-                _dynamic_hiding_factor = ( int ) ( ( getFontMetricsForLargeDefaultFont().getHeight() * 1.5 * getPhylogeny()
-                        .getNumberOfExternalNodes() ) / ( TWO_PI * radius ) );
+                _dynamic_hiding_factor = ( int ) ( ( getFontMetricsForLargeDefaultFont().getHeight() * 1.5
+                        * getPhylogeny().getNumberOfExternalNodes() ) / ( TWO_PI * radius ) );
             }
             if ( getControlPanel().getDynamicallyHideData() != null ) {
                 if ( _dynamic_hiding_factor > 1 ) {
@@ -5706,9 +5768,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                    getStartingAngle(),
                                    x_pos + radius_ov,
                                    y_pos + radius_ov,
-                                   ( int ) ( radius_ov - ( getLongestExtNodeInfo() / ( getVisibleRect().width / getOvRectangle()
-                                           .getWidth() ) ) ),
-                                           g );
+                                   ( int ) ( radius_ov - ( getLongestExtNodeInfo()
+                                           / ( getVisibleRect().width / getOvRectangle().getWidth() ) ) ),
+                                   g );
                 g.setTransform( _at );
                 paintOvRectangle( g );
             }
@@ -5787,24 +5849,19 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         y = TreePanel.MOVE
                 + ForesterUtil.roundToInt( getYdistance() * getPhylogeny().getRoot().getNumberOfExternalNodes() * 2 );
         if ( getControlPanel().isDrawPhylogram() ) {
-            x = TreePanel.MOVE
-                    + getLongestExtNodeInfo()
-                    + ForesterUtil
-                    .roundToInt( ( getXcorrectionFactor() * getPhylogeny().getHeight() ) + getXdistance() );
-            
+            x = TreePanel.MOVE + getLongestExtNodeInfo()
+                    + ForesterUtil.roundToInt( ( getXcorrectionFactor()
+                            * getPhylogeny().calculateHeight( !_options.isCollapsedWithAverageHeigh() ) )
+                            + getXdistance() );
         }
         else {
-            if ( !isNonLinedUpCladogram() && !isUniformBranchLengthsForCladogram() ) {
-                x = TreePanel.MOVE
-                        + getLongestExtNodeInfo()
-                        + ForesterUtil.roundToInt( getXdistance()
-                                                   * ( getPhylogeny().getRoot().getNumberOfExternalNodes() + 2 ) );
+            if ( !isNonLinedUpCladogram() ) {
+                x = TreePanel.MOVE + getLongestExtNodeInfo() + ForesterUtil
+                        .roundToInt( getXdistance() * ( getPhylogeny().getRoot().getNumberOfExternalNodes() + 2 ) );
             }
             else {
-                x = TreePanel.MOVE
-                        + getLongestExtNodeInfo()
-                        + ForesterUtil.roundToInt( getXdistance()
-                                                   * ( PhylogenyMethods.calculateMaxDepth( getPhylogeny() ) + 1 ) );
+                x = TreePanel.MOVE + getLongestExtNodeInfo() + ForesterUtil
+                        .roundToInt( getXdistance() * ( PhylogenyMethods.calculateMaxDepth( getPhylogeny() ) + 1 ) );
             }
         }
         setPreferredSize( new Dimension( x, y ) );
@@ -6023,11 +6080,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ( getControlPanel().isShowTaxonomyScientificNames() || getControlPanel().isShowTaxonomyCode() ) {
             pri = DESCENDANT_SORT_PRIORITY.TAXONOMY;
         }
-        else if ( getControlPanel().isShowSeqNames() || getControlPanel().isShowSeqSymbols() || getControlPanel().isShowGeneNames() ) {
+        else if ( getControlPanel().isShowSeqNames() || getControlPanel().isShowSeqSymbols()
+                || getControlPanel().isShowGeneNames() ) {
             pri = DESCENDANT_SORT_PRIORITY.SEQUENCE;
         }
         PhylogenyMethods.orderAppearanceX( node, true, pri );
-      
         setNodeInPreorderToNull();
         getPhylogeny().externalNodesHaveChanged();
         getPhylogeny().clearHashIdToNodeMap();
@@ -6037,7 +6094,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         getControlPanel().displayedPhylogenyMightHaveChanged( true );
         repaint();
     }
-    
+
     final void swap( final PhylogenyNode node ) {
         if ( node.isExternal() || ( node.getNumberOfDescendants() < 2 ) ) {
             return;
@@ -6102,7 +6159,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final void updateOvSizes() {
-        if ( ( getWidth() > ( 1.05 * getVisibleRect().width ) ) || ( getHeight() > ( 1.05 * getVisibleRect().height ) ) ) {
+        if ( ( getWidth() > ( 1.05 * getVisibleRect().width ) )
+                || ( getHeight() > ( 1.05 * getVisibleRect().height ) ) ) {
             setOvOn( true );
             float l = getLongestExtNodeInfo();
             final float w_ratio = getOvMaxWidth() / getWidth();
@@ -6110,7 +6168,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final int ext_nodes = _phylogeny.getRoot().getNumberOfExternalNodes();
             setOvYDistance( getOvMaxHeight() / ( 2 * ext_nodes ) );
             float ov_xdist = 0;
-            if ( !isNonLinedUpCladogram() && !isUniformBranchLengthsForCladogram() ) {
+            if ( !isNonLinedUpCladogram() ) {
                 ov_xdist = ( ( getOvMaxWidth() - l ) / ( ext_nodes ) );
             }
             else {
@@ -6124,7 +6182,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 ydist = 0.0f;
             }
             setOvXDistance( ov_xdist );
-            final double height = _phylogeny.getHeight();
+            final double height = _phylogeny.calculateHeight( !_options.isCollapsedWithAverageHeigh() );
             if ( height > 0 ) {
                 final float ov_corr = ( float ) ( ( ( getOvMaxWidth() - l ) - getOvXDistance() ) / height );
                 setOvXcorrectionFactor( ov_corr > 0 ? ov_corr : 0 );
@@ -6188,41 +6246,142 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     final private static void drawString( final String str, final float x, final float y, final Graphics2D g ) {
         g.drawString( str, x, y );
     }
-    
-    
+
     final private void drawStringX( final String str, final float x, final float y, final Graphics2D g ) {
         //TODO
         //FIXME
         if ( getAttributedStringMap() == null /*&& getAttributedStringMap().containsKey(str) */ ) {
-            final AttributedString as = new AttributedString(str);
+            final AttributedString as = new AttributedString( str );
             //Font plainFont = new Font("Times New Roman", Font.PLAIN, 24);
-            
-            as.addAttribute(TextAttribute.FONT, g.getFont());
-            as.addAttribute(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON, 1, 3);
-            as.addAttribute(TextAttribute.SUPERSCRIPT, TextAttribute.SUPERSCRIPT_SUPER, 3, 4);
-            
-            as.addAttribute(TextAttribute.FOREGROUND, Color.BLUE,  1, 2);
-            as.addAttribute(TextAttribute.FOREGROUND, Color.PINK,  3, 5);
-            as.addAttribute(TextAttribute.STRIKETHROUGH,
-                TextAttribute.STRIKETHROUGH_ON, 2, 4);
-            g.drawString(as.getIterator(), x, y);
+            as.addAttribute( TextAttribute.FONT, g.getFont() );
+            as.addAttribute( TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON, 1, 3 );
+            as.addAttribute( TextAttribute.SUPERSCRIPT, TextAttribute.SUPERSCRIPT_SUPER, 3, 4 );
+            as.addAttribute( TextAttribute.FOREGROUND, Color.BLUE, 1, 2 );
+            as.addAttribute( TextAttribute.FOREGROUND, Color.PINK, 3, 5 );
+            as.addAttribute( TextAttribute.STRIKETHROUGH, TextAttribute.STRIKETHROUGH_ON, 2, 4 );
+            g.drawString( as.getIterator(), x, y );
         }
         else {
             g.drawString( str, x, y );
         }
     }
 
-
     private final Map<String, AttributedString> getAttributedStringMap() {
-        return _attributed_string_map ;
+        return _attributed_string_map;
     }
-    
+
     private final void setAttributedStringMap( final Map<String, AttributedString> attributed_string_map ) {
         _attributed_string_map = attributed_string_map;
     }
 
     final private static boolean plusPressed( final int key_code ) {
         return ( ( key_code == KeyEvent.VK_ADD ) || ( key_code == KeyEvent.VK_PLUS )
-                || ( key_code == KeyEvent.VK_EQUALS ) || ( key_code == KeyEvent.VK_SEMICOLON ) || ( key_code == KeyEvent.VK_1 ) );
+                || ( key_code == KeyEvent.VK_EQUALS ) || ( key_code == KeyEvent.VK_SEMICOLON )
+                || ( key_code == KeyEvent.VK_1 ) );
+    }
+
+    public void decreaseDepthCollapseLevel() {
+        if ( ( _phylogeny != null ) && ( _phylogeny.getNumberOfExternalNodes() > 2 ) ) {
+            if ( _depth_collapse_level <= 1 ) {
+                _depth_collapse_level = PhylogenyMethods.calculateMaxDepth( _phylogeny );
+                uncollapseAll();
+            }
+            else {
+                --_depth_collapse_level;
+                PhylogenyMethods.collapseToDepth( _phylogeny, _depth_collapse_level );
+            }
+            
+        }
+    }
+
+    public void increaseDepthCollapseLevel() {
+        if ( ( _phylogeny != null ) && ( _phylogeny.getNumberOfExternalNodes() > 2 ) ) {
+            final int max = PhylogenyMethods.calculateMaxDepth( _phylogeny );
+            if ( _depth_collapse_level >= max ) {
+                _depth_collapse_level = 1;
+            }
+            else {
+                ++_depth_collapse_level;
+            }
+            PhylogenyMethods.collapseToDepth( _phylogeny, _depth_collapse_level );
+        }
+    }
+
+    public void decreaseRankCollapseLevel() {
+        if ( ( _phylogeny != null ) && ( _phylogeny.getNumberOfExternalNodes() > 2 ) ) {
+            final String ranks[] = PhylogenyMethods.obtainPresentRanksSorted( _phylogeny );
+            if ( ranks.length > 1 ) {
+                if ( _rank_collapse_level <= 0 ) {
+                    _rank_collapse_level = ranks.length - 1;
+                    uncollapseAll();
+                }
+                else {
+                    --_rank_collapse_level;
+                    PhylogenyMethods.collapseToRank( _phylogeny, mapToAbsoluteRankLevel( ranks, _rank_collapse_level ) );
+                }
+            }
+        }
+    }
+
+    
+    public void increaseRankCollapseLevel() {
+        if ( ( _phylogeny != null ) && ( _phylogeny.getNumberOfExternalNodes() > 2 ) ) {
+            final String ranks[] = PhylogenyMethods.obtainPresentRanksSorted( _phylogeny );
+            if ( ranks.length > 1 ) {
+                if ( _rank_collapse_level >= (ranks.length - 1 ) ) {
+                    _rank_collapse_level = 0;
+                    PhylogenyMethods.collapseToRank( _phylogeny,mapToAbsoluteRankLevel( ranks, _rank_collapse_level ) );
+                }
+                else if ( _rank_collapse_level == (ranks.length - 2 ) ) {
+                    ++_rank_collapse_level;
+                    uncollapseAll();
+                }
+                else {
+                    ++_rank_collapse_level;
+                    PhylogenyMethods.collapseToRank( _phylogeny,mapToAbsoluteRankLevel( ranks, _rank_collapse_level ) );
+                }
+            }
+        }
+    }
+
+   
+    private final static int mapToAbsoluteRankLevel( final String present_ranks_sorted[],
+                                                     final int rank_collapse_level ) {
+        final String rank_str = present_ranks_sorted[ rank_collapse_level ];
+        if ( !TaxonomyUtil.RANK_TO_INT.containsKey( rank_str ) ) {
+            throw new IllegalStateException( "unexpected exception: cannot find rank " + rank_str );
+        }
+        return TaxonomyUtil.RANK_TO_INT.get( rank_str );
+    }
+    
+    private final void uncollapseAll() {
+        final PhylogenyNodeIterator it = new PreorderTreeIterator(_phylogeny  );
+        while ( it.hasNext() ) {
+            it.next().setCollapse( false );
+        }
+    }
+    
+    final int resetDepthCollapseDepthValue() {
+        return _depth_collapse_level = -1;
+    }
+
+    final int getDepthCollapseDepthValue() {
+        return _depth_collapse_level;
+    }
+
+    final void setDepthCollapseDepthValue( final int depth_collapse_level ) {
+        _depth_collapse_level = depth_collapse_level;
+    }
+    
+    final int resetRankCollapseRankValue() {
+        return _rank_collapse_level = -1;
+    }
+
+    final int getRankCollapseRankValue() {
+        return _rank_collapse_level;
+    }
+
+    final void setRankCollapseRankValue( final int rank_collapse_level ) {
+        _rank_collapse_level = rank_collapse_level;
     }
 }

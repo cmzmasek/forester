@@ -205,6 +205,9 @@ public class TreePanelUtil {
 
     final static void collapseSpeciesSpecificSubtrees( final Phylogeny phy ) {
         boolean inferred = false;
+        for( final PhylogenyNodeIterator iter = phy.iteratorPreorder(); iter.hasNext(); ) {
+            iter.next().setCollapse( false );
+        }
         for( final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
             if ( !n.isExternal() && !n.isCollapse() && ( n.getNumberOfDescendants() > 1 ) ) {
@@ -318,7 +321,6 @@ public class TreePanelUtil {
                 ++collapsed;
                 if ( !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getScientificName() ) ) {
                     true_lineage_set.add( n.getNodeData().getTaxonomy().getScientificName() );
-                    System.out.println( "1 true_lineage_set added " +  n.getNodeData().getTaxonomy().getScientificName()  );
                 }
             }
         }
@@ -330,8 +332,6 @@ public class TreePanelUtil {
                 if ( !true_lineage_set.isEmpty() ) {
                     for( final String lin : node.getNodeData().getTaxonomy().getLineage() ) {
                         if ( true_lineage_set.contains( lin ) ) {
-                            //TreePanelUtil
-                            //     .colorizeSubtree( node, new BranchColor( true_lineage_to_color_map.get( lin ) ) );
                             TreePanelUtil.collapseSubtree( node, true );
                             ++collapsed;
                             success = true;
@@ -347,12 +347,9 @@ public class TreePanelUtil {
                         if ( lineage_to_rank_map.containsKey( lin )
                                 && !ForesterUtil.isEmpty( lineage_to_rank_map.get( lin ) )
                                 && lineage_to_rank_map.get( lin ).equalsIgnoreCase( rank ) ) {
-                            //final BranchColor c = new BranchColor( tree_panel.calculateTaxonomyBasedColor( temp_tax ) );
-                            //TreePanelUtil.colorizeSubtree( node, c );
-                            TreePanelUtil.collapseSubtree( node, true );
+                             TreePanelUtil.collapseSubtree( node, true );
                             ++collapsed;
                             true_lineage_set.add( lin );
-                            System.out.println( "2 true_lineage_set added " +  lin  );
                             break;
                         }
                         else {
@@ -367,12 +364,9 @@ public class TreePanelUtil {
                                 lineage_to_rank_map.put( lin, up.getRank() );
                                 System.out.println( lin + "->" + up.getRank() );
                                 if ( up.getRank().equalsIgnoreCase( rank ) ) {
-                                    // final BranchColor c = new BranchColor( tree_panel.calculateTaxonomyBasedColor( temp_tax ) );
-                                    // TreePanelUtil.colorizeSubtree( node, c );
                                     TreePanelUtil.collapseSubtree( node, true );
                                     ++collapsed;
                                     true_lineage_set.add( lin );
-                                    System.out.println( "3 true_lineage_set added " +  lin  );
                                     break;
                                 }
                             }

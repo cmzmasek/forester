@@ -42,6 +42,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import org.forester.archaeopteryx.TreePanelUtil;
 import org.forester.io.parsers.FastaParser;
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
@@ -62,9 +63,11 @@ import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
+import org.forester.phylogeny.iterators.PreorderTreeIterator;
 import org.forester.util.BasicDescriptiveStatistics;
 import org.forester.util.DescriptiveStatistics;
 import org.forester.util.ForesterUtil;
+import org.forester.util.TaxonomyUtil;
 
 public class PhylogenyMethods {
 
@@ -269,6 +272,47 @@ public class PhylogenyMethods {
         }
         return max;
     }
+    
+    public static String[] obtainPresentRanksSorted( final Phylogeny phy ) {
+        final Set<String> present_ranks = new HashSet<String>();
+        for( final PhylogenyNodeIterator iter = phy.iteratorPreorder(); iter.hasNext(); ) {
+            final PhylogenyNode node = iter.next();
+            if ( !node.isExternal() && !node.isRoot() && ( node.getNodeData().getTaxonomy() != null )
+                    && !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getRank() ) ) {
+                final String current_rank = node.getNodeData().getTaxonomy().getRank();
+                if ( TaxonomyUtil.RANK_TO_INT.containsKey( current_rank ) ) {
+                    present_ranks.add( current_rank );
+                }
+            }
+        }
+        final String ordered_ranks[] = new String[present_ranks.size() + 1];
+        int c = 0;
+        for( final String rank : TaxonomyUtil.RANKS ) {
+             if ( present_ranks.contains( rank ) ) {
+                 ordered_ranks[ c++ ] = rank;
+             }
+        }
+        ordered_ranks[ c ] = "off";
+        return ordered_ranks;
+    }
+
+    public static int calculateMaxDepthConsiderCollapsed( final Phylogeny phy ) {
+        int max = 0;
+        for( final PhylogenyNodeIterator iter = phy.iteratorExternalForward(); iter.hasNext(); ) {
+            PhylogenyNode n = iter.next();
+            int steps = 0;
+            while ( n.getParent() != null ) {
+                if ( !n.isCollapse() ) {
+                    steps++;
+                }
+                n = n.getParent();
+            }
+            if ( steps > max ) {
+                max = steps;
+            }
+        }
+        return max;
+    }
 
     public static double calculateMaxDistanceToRoot( final Phylogeny phy ) {
         double max = 0.0;
@@ -412,7 +456,8 @@ public class PhylogenyMethods {
         return deleted;
     }
 
-    public static void deleteExternalNodesPositiveSelectionT( final List<Taxonomy> species_to_keep, final Phylogeny phy ) {
+    public static void deleteExternalNodesPositiveSelectionT( final List<Taxonomy> species_to_keep,
+                                                              final Phylogeny phy ) {
         final Set<Long> to_delete = new HashSet<Long>();
         for( final PhylogenyNodeIterator it = phy.iteratorExternalForward(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
@@ -818,7 +863,8 @@ public class PhylogenyMethods {
         else {
             if ( ( n.getNumberOfDescendants() == 2 )
                     && ( n.getChildNode1().getNumberOfExternalNodes() != n.getChildNode2().getNumberOfExternalNodes() )
-                    && ( ( n.getChildNode1().getNumberOfExternalNodes() < n.getChildNode2().getNumberOfExternalNodes() ) == order ) ) {
+                    && ( ( n.getChildNode1().getNumberOfExternalNodes() < n.getChildNode2()
+                            .getNumberOfExternalNodes() ) == order ) ) {
                 final PhylogenyNode temp = n.getChildNode1();
                 n.setChild1( n.getChildNode2() );
                 n.setChild2( temp );
@@ -841,7 +887,7 @@ public class PhylogenyMethods {
             }
         }
     }
-    
+
     public synchronized static void orderAppearanceX( final PhylogenyNode n,
                                                       final boolean order_ext_alphabetically,
                                                       final DESCENDANT_SORT_PRIORITY pri ) {
@@ -849,17 +895,11 @@ public class PhylogenyMethods {
             return;
         }
         else {
-           _order_changed = false;
-           orderAppearance( n,
-                            true,
-                            order_ext_alphabetically,
-                            pri );
-           if (!_order_changed ) {
-               orderAppearance( n,
-                                false,
-                                order_ext_alphabetically,
-                                pri );
-           }
+            _order_changed = false;
+            orderAppearance( n, true, order_ext_alphabetically, pri );
+            if ( !_order_changed ) {
+                orderAppearance( n, false, order_ext_alphabetically, pri );
+            }
         }
     }
 
@@ -902,7 +942,8 @@ public class PhylogenyMethods {
         PhylogenyNode.setNodeCount( i );
     }
 
-    public final static Phylogeny[] readPhylogenies( final PhylogenyParser parser, final File file ) throws IOException {
+    public final static Phylogeny[] readPhylogenies( final PhylogenyParser parser, final File file )
+            throws IOException {
         final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
         final Phylogeny[] trees = factory.create( file, parser );
         if ( ( trees == null ) || ( trees.length == 0 ) ) {
@@ -960,21 +1001,21 @@ public class PhylogenyMethods {
     }
 
     private static enum NDF {
-        NodeName( "NN" ),
-        TaxonomyCode( "TC" ),
-        TaxonomyCommonName( "CN" ),
-        TaxonomyScientificName( "TS" ),
-        TaxonomyIdentifier( "TI" ),
-        TaxonomySynonym( "SY" ),
-        SequenceName( "SN" ),
-        GeneName( "GN" ),
-        SequenceSymbol( "SS" ),
-        SequenceAccession( "SA" ),
-        Domain( "DO" ),
-        Annotation( "AN" ),
-        CrossRef( "XR" ),
-        BinaryCharacter( "BC" ),
-        MolecularSequence( "MS" );
+                             NodeName( "NN" ),
+                             TaxonomyCode( "TC" ),
+                             TaxonomyCommonName( "CN" ),
+                             TaxonomyScientificName( "TS" ),
+                             TaxonomyIdentifier( "TI" ),
+                             TaxonomySynonym( "SY" ),
+                             SequenceName( "SN" ),
+                             GeneName( "GN" ),
+                             SequenceSymbol( "SS" ),
+                             SequenceAccession( "SA" ),
+                             Domain( "DO" ),
+                             Annotation( "AN" ),
+                             CrossRef( "XR" ),
+                             BinaryCharacter( "BC" ),
+                             MolecularSequence( "MS" );
 
         private final String _text;
 
@@ -993,12 +1034,12 @@ public class PhylogenyMethods {
     }
 
     public static List<Long> searchData( final String query,
-                                                  final Phylogeny phy,
-                                                  final boolean case_sensitive,
-                                                  final boolean partial,
-                                                  final boolean regex,
-                                                  final boolean search_domains,
-                                                  final double domains_confidence_threshold ) {
+                                         final Phylogeny phy,
+                                         final boolean case_sensitive,
+                                         final boolean partial,
+                                         final boolean regex,
+                                         final boolean search_domains,
+                                         final double domains_confidence_threshold ) {
         final List<Long> nodes = new ArrayList<Long>();
         if ( phy.isEmpty() || ( query == null ) ) {
             return nodes;
@@ -1021,8 +1062,7 @@ public class PhylogenyMethods {
                     && match( node.getName(), my_query, case_sensitive, partial, regex ) ) {
                 match = true;
             }
-            else if ( ( ( ndf == null ) || ( ndf == NDF.TaxonomyCode ) )
-                    && node.getNodeData().isHasTaxonomy()
+            else if ( ( ( ndf == null ) || ( ndf == NDF.TaxonomyCode ) ) && node.getNodeData().isHasTaxonomy()
                     && match( node.getNodeData().getTaxonomy().getTaxonomyCode(),
                               my_query,
                               case_sensitive,
@@ -1030,8 +1070,7 @@ public class PhylogenyMethods {
                               regex ) ) {
                 match = true;
             }
-            else if ( ( ( ndf == null ) || ( ndf == NDF.TaxonomyCommonName ) )
-                    && node.getNodeData().isHasTaxonomy()
+            else if ( ( ( ndf == null ) || ( ndf == NDF.TaxonomyCommonName ) ) && node.getNodeData().isHasTaxonomy()
                     && match( node.getNodeData().getTaxonomy().getCommonName(),
                               my_query,
                               case_sensitive,
@@ -1039,8 +1078,7 @@ public class PhylogenyMethods {
                               regex ) ) {
                 match = true;
             }
-            else if ( ( ( ndf == null ) || ( ndf == NDF.TaxonomyScientificName ) )
-                    && node.getNodeData().isHasTaxonomy()
+            else if ( ( ( ndf == null ) || ( ndf == NDF.TaxonomyScientificName ) ) && node.getNodeData().isHasTaxonomy()
                     && match( node.getNodeData().getTaxonomy().getScientificName(),
                               my_query,
                               case_sensitive,
@@ -1048,8 +1086,7 @@ public class PhylogenyMethods {
                               regex ) ) {
                 match = true;
             }
-            else if ( ( ( ndf == null ) || ( ndf == NDF.TaxonomyIdentifier ) )
-                    && node.getNodeData().isHasTaxonomy()
+            else if ( ( ( ndf == null ) || ( ndf == NDF.TaxonomyIdentifier ) ) && node.getNodeData().isHasTaxonomy()
                     && ( node.getNodeData().getTaxonomy().getIdentifier() != null )
                     && match( node.getNodeData().getTaxonomy().getIdentifier().getValue(),
                               my_query,
@@ -1073,16 +1110,22 @@ public class PhylogenyMethods {
                 match = true;
             }
             if ( !match && ( ( ndf == null ) || ( ndf == NDF.GeneName ) ) && node.getNodeData().isHasSequence()
-                    && match( node.getNodeData().getSequence().getGeneName(), my_query, case_sensitive, partial, regex ) ) {
+                    && match( node.getNodeData().getSequence().getGeneName(),
+                              my_query,
+                              case_sensitive,
+                              partial,
+                              regex ) ) {
                 match = true;
             }
             if ( !match && ( ( ndf == null ) || ( ndf == NDF.SequenceSymbol ) ) && node.getNodeData().isHasSequence()
-                    && match( node.getNodeData().getSequence().getSymbol(), my_query, case_sensitive, partial, regex ) ) {
+                    && match( node.getNodeData().getSequence().getSymbol(),
+                              my_query,
+                              case_sensitive,
+                              partial,
+                              regex ) ) {
                 match = true;
             }
-            if ( !match
-                    && ( ( ndf == null ) || ( ndf == NDF.SequenceAccession ) )
-                    && node.getNodeData().isHasSequence()
+            if ( !match && ( ( ndf == null ) || ( ndf == NDF.SequenceAccession ) ) && node.getNodeData().isHasSequence()
                     && ( node.getNodeData().getSequence().getAccession() != null )
                     && match( node.getNodeData().getSequence().getAccession().getValue(),
                               my_query,
@@ -1150,9 +1193,7 @@ public class PhylogenyMethods {
                     }
                 }
             }
-            if ( !match
-                    && ( ndf == NDF.MolecularSequence )
-                    && node.getNodeData().isHasSequence()
+            if ( !match && ( ndf == NDF.MolecularSequence ) && node.getNodeData().isHasSequence()
                     && match( node.getNodeData().getSequence().getMolecularSequence(),
                               my_query,
                               case_sensitive,
@@ -1168,11 +1209,11 @@ public class PhylogenyMethods {
     }
 
     public static List<Long> searchDataLogicalAnd( final String[] queries,
-                                                            final Phylogeny phy,
-                                                            final boolean case_sensitive,
-                                                            final boolean partial,
-                                                            final boolean search_domains,
-                                                            final double domains_confidence_threshold ) {
+                                                   final Phylogeny phy,
+                                                   final boolean case_sensitive,
+                                                   final boolean partial,
+                                                   final boolean search_domains,
+                                                   final double domains_confidence_threshold ) {
         final List<Long> nodes = new ArrayList<Long>();
         if ( phy.isEmpty() || ( queries == null ) || ( queries.length < 1 ) ) {
             return nodes;
@@ -1200,8 +1241,7 @@ public class PhylogenyMethods {
                         && match( node.getName(), query, case_sensitive, partial, false ) ) {
                     match = true;
                 }
-                else if ( ( ( ndf == null ) || ( ndf == NDF.TaxonomyCode ) )
-                        && node.getNodeData().isHasTaxonomy()
+                else if ( ( ( ndf == null ) || ( ndf == NDF.TaxonomyCode ) ) && node.getNodeData().isHasTaxonomy()
                         && match( node.getNodeData().getTaxonomy().getTaxonomyCode(),
                                   query,
                                   case_sensitive,
@@ -1209,8 +1249,7 @@ public class PhylogenyMethods {
                                   false ) ) {
                     match = true;
                 }
-                else if ( ( ( ndf == null ) || ( ndf == NDF.TaxonomyCommonName ) )
-                        && node.getNodeData().isHasTaxonomy()
+                else if ( ( ( ndf == null ) || ( ndf == NDF.TaxonomyCommonName ) ) && node.getNodeData().isHasTaxonomy()
                         && match( node.getNodeData().getTaxonomy().getCommonName(),
                                   query,
                                   case_sensitive,
@@ -1227,8 +1266,7 @@ public class PhylogenyMethods {
                                   false ) ) {
                     match = true;
                 }
-                else if ( ( ( ndf == null ) || ( ndf == NDF.TaxonomyIdentifier ) )
-                        && node.getNodeData().isHasTaxonomy()
+                else if ( ( ( ndf == null ) || ( ndf == NDF.TaxonomyIdentifier ) ) && node.getNodeData().isHasTaxonomy()
                         && ( node.getNodeData().getTaxonomy().getIdentifier() != null )
                         && match( node.getNodeData().getTaxonomy().getIdentifier().getValue(),
                                   query,
@@ -1248,22 +1286,30 @@ public class PhylogenyMethods {
                     }
                 }
                 if ( !match && ( ( ndf == null ) || ( ndf == NDF.SequenceName ) ) && node.getNodeData().isHasSequence()
-                        && match( node.getNodeData().getSequence().getName(), query, case_sensitive, partial, false ) ) {
+                        && match( node.getNodeData().getSequence().getName(),
+                                  query,
+                                  case_sensitive,
+                                  partial,
+                                  false ) ) {
                     match = true;
                 }
-                if ( !match
-                        && ( ( ndf == null ) || ( ndf == NDF.GeneName ) )
-                        && node.getNodeData().isHasSequence()
-                        && match( node.getNodeData().getSequence().getGeneName(), query, case_sensitive, partial, false ) ) {
+                if ( !match && ( ( ndf == null ) || ( ndf == NDF.GeneName ) ) && node.getNodeData().isHasSequence()
+                        && match( node.getNodeData().getSequence().getGeneName(),
+                                  query,
+                                  case_sensitive,
+                                  partial,
+                                  false ) ) {
                     match = true;
                 }
                 if ( !match && ( ( ndf == null ) || ( ndf == NDF.SequenceSymbol ) )
-                        && node.getNodeData().isHasSequence()
-                        && match( node.getNodeData().getSequence().getSymbol(), query, case_sensitive, partial, false ) ) {
+                        && node.getNodeData().isHasSequence() && match( node.getNodeData().getSequence().getSymbol(),
+                                                                        query,
+                                                                        case_sensitive,
+                                                                        partial,
+                                                                        false ) ) {
                     match = true;
                 }
-                if ( !match
-                        && ( ( ndf == null ) || ( ndf == NDF.SequenceAccession ) )
+                if ( !match && ( ( ndf == null ) || ( ndf == NDF.SequenceAccession ) )
                         && node.getNodeData().isHasSequence()
                         && ( node.getNodeData().getSequence().getAccession() != null )
                         && match( node.getNodeData().getSequence().getAccession().getValue(),
@@ -1332,9 +1378,7 @@ public class PhylogenyMethods {
                         }
                     }
                 }
-                if ( !match
-                        && ( ndf == NDF.MolecularSequence )
-                        && node.getNodeData().isHasSequence()
+                if ( !match && ( ndf == NDF.MolecularSequence ) && node.getNodeData().isHasSequence()
                         && match( node.getNodeData().getSequence().getMolecularSequence(),
                                   query,
                                   case_sensitive,
@@ -1487,8 +1531,8 @@ public class PhylogenyMethods {
             }
             else if ( !( ref_ext_taxo.contains( n.getNodeData().getTaxonomy().getScientificName() ) )
                     && !( ref_ext_taxo.contains( n.getNodeData().getTaxonomy().getTaxonomyCode() ) )
-                    && !( ( n.getNodeData().getTaxonomy().getIdentifier() != null ) && ref_ext_taxo.contains( n
-                            .getNodeData().getTaxonomy().getIdentifier().getValuePlusProvider() ) ) ) {
+                    && !( ( n.getNodeData().getTaxonomy().getIdentifier() != null ) && ref_ext_taxo
+                            .contains( n.getNodeData().getTaxonomy().getIdentifier().getValuePlusProvider() ) ) ) {
                 nodes_to_delete.add( n );
             }
         }
@@ -1543,7 +1587,8 @@ public class PhylogenyMethods {
         return true;
     }
 
-    final static public void transferInternalNodeNamesToConfidence( final Phylogeny phy, final String confidence_type ) {
+    final static public void transferInternalNodeNamesToConfidence( final Phylogeny phy,
+                                                                    final String confidence_type ) {
         final PhylogenyNodeIterator it = phy.iteratorPostorder();
         while ( it.hasNext() ) {
             transferInternalNodeNameToConfidence( confidence_type, it.next() );
@@ -1570,7 +1615,8 @@ public class PhylogenyMethods {
 
     final static public void transferNodeNameToField( final Phylogeny phy,
                                                       final PhylogenyNodeField field,
-                                                      final boolean external_only ) throws PhyloXmlDataFormatException {
+                                                      final boolean external_only )
+            throws PhyloXmlDataFormatException {
         final PhylogenyNodeIterator it = phy.iteratorPostorder();
         while ( it.hasNext() ) {
             final PhylogenyNode n = it.next();
@@ -1688,6 +1734,20 @@ public class PhylogenyMethods {
             return PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT;
         }
         return d;
+    }
+
+    public static double calculateAverageTreeHeight( final PhylogenyNode node ) {
+        final List<PhylogenyNode> ext = node.getAllExternalDescendants();
+        double s = 0;
+        for( PhylogenyNode n : ext ) {
+            while ( n != node ) {
+                if ( n.getDistanceToParent() > 0 ) {
+                    s += n.getDistanceToParent();
+                }
+                n = n.getParent();
+            }
+        }
+        return s / ext.size();
     }
 
     /**
@@ -1825,19 +1885,21 @@ public class PhylogenyMethods {
     }
 
     public static enum DESCENDANT_SORT_PRIORITY {
-        NODE_NAME, SEQUENCE, TAXONOMY;
+                                                 NODE_NAME,
+                                                 SEQUENCE,
+                                                 TAXONOMY;
     }
 
     public static enum PhylogenyNodeField {
-        CLADE_NAME,
-        SEQUENCE_NAME,
-        SEQUENCE_SYMBOL,
-        TAXONOMY_CODE,
-        TAXONOMY_COMMON_NAME,
-        TAXONOMY_ID,
-        TAXONOMY_ID_UNIPROT_1,
-        TAXONOMY_ID_UNIPROT_2,
-        TAXONOMY_SCIENTIFIC_NAME;
+                                           CLADE_NAME,
+                                           SEQUENCE_NAME,
+                                           SEQUENCE_SYMBOL,
+                                           TAXONOMY_CODE,
+                                           TAXONOMY_COMMON_NAME,
+                                           TAXONOMY_ID,
+                                           TAXONOMY_ID_UNIPROT_1,
+                                           TAXONOMY_ID_UNIPROT_2,
+                                           TAXONOMY_SCIENTIFIC_NAME;
     }
 
     public static void addMolecularSeqsToTree( final Phylogeny phy, final Msa msa ) {
@@ -1977,4 +2039,93 @@ public class PhylogenyMethods {
             return 0;
         }
     }
+
+    public final static Map<Long, Integer> calculateDepths( final Phylogeny phy ) {
+        final Map<Long, Integer> depths = new HashMap<Long, Integer>();
+        calculateDepthsHelper( phy.getRoot(), 0, depths );
+        return depths;
+    }
+
+    private final static void calculateDepthsHelper( final PhylogenyNode n, int d, final Map<Long, Integer> depths ) {
+        depths.put( n.getId(), d );
+        ++d;
+        final List<PhylogenyNode> descs = n.getDescendants();
+        for( final PhylogenyNode desc : descs ) {
+            calculateDepthsHelper( desc, d, depths );
+        }
+    }
+
+    public final static void collapseToDepth( final Phylogeny phy, final int depth ) {
+         if ( phy.getNumberOfExternalNodes() < 3 ) {
+            return;
+        }
+        collapseToDepthHelper( phy.getRoot(), 0, depth );
+    }
+
+    private final static void collapseToDepthHelper( final PhylogenyNode n, int d, final int depth ) {
+        if ( n.isExternal() ) {
+            n.setCollapse( false );
+            return;
+        }
+        if ( d >= depth ) {
+            n.setCollapse( true );
+            final PhylogenyNodeIterator it = new PreorderTreeIterator( n );
+            while ( it.hasNext() ) {
+                it.next().setCollapse( true );
+            }
+        }
+        else {
+            n.setCollapse( false );
+            ++d;
+            final List<PhylogenyNode> descs = n.getDescendants();
+            for( final PhylogenyNode desc : descs ) {
+                collapseToDepthHelper( desc, d, depth );
+            }
+        }
+    }
+
+   
+    
+    public final static void collapseToRank( final Phylogeny phy, final int rank ) {
+        if ( phy.getNumberOfExternalNodes() < 3 ) {
+            return;
+        }
+        if ( rank < 0 || rank >= TaxonomyUtil.RANKS.length ) {
+            throw new IllegalArgumentException( "Rank " + rank + " is out of range" );
+        }
+        collapseToRankHelper( phy.getRoot(), rank );
+    }
+
+    private final static void collapseToRankHelper( final PhylogenyNode n, final int target_rank ) {
+        if ( n.isExternal() ) {
+            n.setCollapse( false );
+            return;
+        }
+        if ( ( n.getNodeData().getTaxonomy() != null )
+                && !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getRank() ) ) {
+            final String current_rank = n.getNodeData().getTaxonomy().getRank();
+            if ( !TaxonomyUtil.RANK_TO_INT.containsKey( current_rank ) ) {
+                System.out.println( "Don't know rank \"" + current_rank + "\", ignoring." );
+            }
+            else {
+                if ( TaxonomyUtil.RANK_TO_INT.get( current_rank ) >= target_rank ) {
+                    n.setCollapse( true );
+                    
+                    final PhylogenyNodeIterator it = new PreorderTreeIterator( n );
+                    while ( it.hasNext() ) {
+                        it.next().setCollapse( true );
+                    }
+                    return;
+                }
+            }
+        }
+        n.setCollapse( false );
+        final List<PhylogenyNode> descs = n.getDescendants();
+        for( final PhylogenyNode desc : descs ) {
+            collapseToRankHelper( desc, target_rank );
+        }
+    }
+    
+   
+    
 }

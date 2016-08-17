@@ -543,10 +543,10 @@ public class SDIR {
         double diff = 0.0;
         double height = 0.0;
         final double[] height_diff = new double[ 2 ];
-        final double l0 = t.calculateSubtreeHeight( t.getRoot().getChildNode( 0 ) );
-        final double l1 = t.calculateSubtreeHeight( t.getRoot().getChildNode( 1 ) );
+        final double l0 = t.calculateSubtreeHeight( t.getRoot().getChildNode( 0 ), false );
+        final double l1 = t.calculateSubtreeHeight( t.getRoot().getChildNode( 1 ), false );
         diff = l0 - l1;
-        height = t.getHeight();
+        height = t.calculateHeight(false);
         if ( d > 0.0 ) {
             if ( ( 2 * d ) > Math.abs( diff ) ) {
                 child0.setDistanceToParent( d - ( diff / 2.0 ) );

@@ -988,20 +988,6 @@ public final class Configuration {
                 setMaxBaseFontSize( i );
             }
         }
-        else if ( key.equals( "graphics_export_x" ) ) {
-           // final String str = ( ( String ) st.nextElement() ).trim();
-           // final int i = parseInt( str );
-           // if ( i > 0 ) {
-           //     setGraphicsExportX( i );
-           // }
-        }
-        else if ( key.equals( "graphics_export_y" ) ) {
-            //final String str = ( ( String ) st.nextElement() ).trim();
-           // final int i = parseInt( str );
-            //if ( i > 0 ) {
-            //    setGraphicsExportY( i );
-            //}
-        }
         else if ( key.equals( "pdf_export_line_width" ) ) {
             final String str = ( ( String ) st.nextElement() ).trim();
             final float f = parseFloat( str );
@@ -1083,21 +1069,13 @@ public final class Configuration {
             if ( type_str.equalsIgnoreCase( Options.CLADOGRAM_TYPE.NON_LINED_UP.toString() ) ) {
                 setCladogramType( Options.CLADOGRAM_TYPE.NON_LINED_UP );
             }
-            else if ( type_str.equalsIgnoreCase( Options.CLADOGRAM_TYPE.EXT_NODE_SUM_DEP.toString() ) ) {
-                setCladogramType( Options.CLADOGRAM_TYPE.EXT_NODE_SUM_DEP );
-            }
-            else if ( type_str.equalsIgnoreCase( Options.CLADOGRAM_TYPE.TOTAL_NODE_SUM_DEP.toString() ) ) {
-                setCladogramType( Options.CLADOGRAM_TYPE.TOTAL_NODE_SUM_DEP );
+            else if ( type_str.equalsIgnoreCase( Options.CLADOGRAM_TYPE.LINED_UP.toString() ) ) {
+                setCladogramType( Options.CLADOGRAM_TYPE.LINED_UP );
             }
             else {
                 ForesterUtil.printWarningMessage( AptxConstants.PRG_NAME, "unknown value [" + type_str
                                                   + "] for [cladogram_type]" );
             }
-        }
-        else if ( key.equals( "non_lined_up_cladogram" ) ) {
-            ForesterUtil
-            .printWarningMessage( AptxConstants.PRG_NAME,
-                                  "configuration key [non_lined_up_cladogram] is deprecated, use [cladogram_type] instead" );
         }
         else if ( key.equals( "hide_controls_and_menus" ) ) {
             _hide_controls_and_menus = parseBoolean( ( String ) st.nextElement() );

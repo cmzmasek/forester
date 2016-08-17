@@ -35,6 +35,7 @@ import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.parsers.phyloxml.PhyloXmlMapping;
 import org.forester.io.parsers.phyloxml.PhyloXmlUtil;
 import org.forester.util.ForesterUtil;
+import org.forester.util.TaxonomyUtil;
 
 public class Taxonomy implements PhylogenyData, MultipleUris, Comparable<Taxonomy> {
 
@@ -304,7 +305,7 @@ public class Taxonomy implements PhylogenyData, MultipleUris, Comparable<Taxonom
     }
 
     public void setRank( final String rank ) throws PhyloXmlDataFormatException {
-        if ( !ForesterUtil.isEmpty( rank ) && !PhyloXmlUtil.TAXONOMY_RANKS_SET.contains( rank ) ) {
+        if ( !ForesterUtil.isEmpty( rank ) && !TaxonomyUtil.TAXONOMY_RANKS_SET.contains( rank ) ) {
             throw new PhyloXmlDataFormatException( "illegal rank: [" + rank + "]" );
         }
         _rank = rank;

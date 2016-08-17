@@ -41,7 +41,7 @@ import org.forester.util.ForesterUtil;
 final public class Options {
 
     public static enum CLADOGRAM_TYPE {
-        EXT_NODE_SUM_DEP, NON_LINED_UP, TOTAL_NODE_SUM_DEP;
+        LINED_UP, NON_LINED_UP;
     }
 
     public static enum NODE_LABEL_DIRECTION {
@@ -120,7 +120,8 @@ final public class Options {
     private boolean                           _right_align_domains;
     private boolean                           _color_all_found_nodes_when_coloring_subtree;
     private boolean                           _parse_beast_style_extended_nexus_tags;
-
+    private boolean                           _collapsed_with_average_height;
+    
     private Options() {
         init();
     }
@@ -224,6 +225,7 @@ final public class Options {
         _ext_desc_data_to_return = NodeDataField.UNKNOWN;
         _line_up_renderable_node_data = true;
         _right_align_domains = false;
+        _collapsed_with_average_height= true;
     }
 
     final private void setNumberOfDigitsAfterCommaForBranchLength( final short number_of_digits_after_comma_for_branch_length_values ) {
@@ -598,7 +600,17 @@ final public class Options {
         return _parse_beast_style_extended_nexus_tags;
     }
 
-    final void setParseBeastStyleExtendedNexusTags( boolean parse_beast_style_extended_nexus_tags ) {
+    final void setParseBeastStyleExtendedNexusTags( final boolean parse_beast_style_extended_nexus_tags ) {
         _parse_beast_style_extended_nexus_tags = parse_beast_style_extended_nexus_tags;
     }
+    
+    final boolean isCollapsedWithAverageHeigh() {
+        return _collapsed_with_average_height;
+    }
+
+    final void setCollapsedWithAverageHeigh( final boolean collapsed_with_average_height ) {
+        _collapsed_with_average_height = collapsed_with_average_height;
+    }
+    
+    
 }

@@ -789,14 +789,14 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
     }
 
     /**
-     * Inserts PhylogenyNode n at the specified position i into the list of
+     * Inserts PhylogenyNode node at the specified position i into the list of
      * child nodes. This does not allow null slots in the list of child nodes:
-     * If i is larger than the number of child nodes, n is just added to the
-     * list, not place at index i.
+     * If i is larger than the number of child nodes, node is just added to the
+     * list, not placed at index i.
      *
      * @param i
      *            the index of position where to add the child
-     * @param n
+     * @param node
      *            the PhylogenyNode to add
      */
     final public void setChildNode( final int i, final PhylogenyNode node ) {

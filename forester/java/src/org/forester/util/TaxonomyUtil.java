@@ -1,8 +1,12 @@
 
 package org.forester.util;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public final class TaxonomyUtil {
 
@@ -24,7 +28,7 @@ public final class TaxonomyUtil {
         }
         _default_taxcode_taxgroup_map.put( code, group );
     }
-    private final static Map<String, String>  _default_taxcode_taxgroup_map = new HashMap<String, String>();
+    private final static Map<String, String> _default_taxcode_taxgroup_map = new HashMap<String, String>();
     static {
         put( "BUFBU", "deuterostomia" );
         put( "NOTVI", "deuterostomia" );
@@ -574,7 +578,7 @@ public final class TaxonomyUtil {
         put( "HELPH", "bacteria" );
         put( "AQUAE", "bacteria" );
     }
-    private final static Map<String, Integer> FAKE_CODE_TO_ID_MAP           = new HashMap<String, Integer>();
+    private final static Map<String, Integer> FAKE_CODE_TO_ID_MAP = new HashMap<String, Integer>();
     static {
         FAKE_CODE_TO_ID_MAP.put( "CTEXX", 283909 );
         FAKE_CODE_TO_ID_MAP.put( "HMAXX", 6085 );
@@ -604,5 +608,80 @@ public final class TaxonomyUtil {
         FAKE_CODE_TO_ID_MAP.put( "SAGXX", 876976 );
         FAKE_CODE_TO_ID_MAP.put( "ALIXX", 87102 );
         FAKE_CODE_TO_ID_MAP.put( "TTRXX", 529818 );
+    }
+    public final static List<String>             TAXONOMY_RANKS_LIST = new ArrayList<String>();
+    public final static Set<String>              TAXONOMY_RANKS_SET  = new HashSet<String>();
+    public static final String                   OTHER               = "other";
+    public static final String                   UNKNOWN             = "unknown";;
+    final public static HashMap<String, Integer> RANK_TO_INT         = new HashMap<String, Integer>();
+    static {
+        TAXONOMY_RANKS_LIST.add( "domain" );
+        TAXONOMY_RANKS_LIST.add( "superkingdom" );
+        TAXONOMY_RANKS_LIST.add( "kingdom" );
+        TAXONOMY_RANKS_LIST.add( "subkingdom" );
+        TAXONOMY_RANKS_LIST.add( "branch" );
+        TAXONOMY_RANKS_LIST.add( "infrakingdom" );
+        TAXONOMY_RANKS_LIST.add( "superphylum" );
+        TAXONOMY_RANKS_LIST.add( "phylum" );
+        TAXONOMY_RANKS_LIST.add( "subphylum" );
+        TAXONOMY_RANKS_LIST.add( "infraphylum" );
+        TAXONOMY_RANKS_LIST.add( "microphylum" );
+        TAXONOMY_RANKS_LIST.add( "superdivision" );
+        TAXONOMY_RANKS_LIST.add( "division" );
+        TAXONOMY_RANKS_LIST.add( "subdivision" );
+        TAXONOMY_RANKS_LIST.add( "infradivision" );
+        TAXONOMY_RANKS_LIST.add( "superclass" );
+        TAXONOMY_RANKS_LIST.add( "class" );
+        TAXONOMY_RANKS_LIST.add( "subclass" );
+        TAXONOMY_RANKS_LIST.add( "infraclass" );
+        TAXONOMY_RANKS_LIST.add( "superlegion" );
+        TAXONOMY_RANKS_LIST.add( "legion" );
+        TAXONOMY_RANKS_LIST.add( "sublegion" );
+        TAXONOMY_RANKS_LIST.add( "infralegion" );
+        TAXONOMY_RANKS_LIST.add( "supercohort" );
+        TAXONOMY_RANKS_LIST.add( "cohort" );
+        TAXONOMY_RANKS_LIST.add( "subcohort" );
+        TAXONOMY_RANKS_LIST.add( "infracohort" );
+        TAXONOMY_RANKS_LIST.add( "superorder" );
+        TAXONOMY_RANKS_LIST.add( "order" );
+        TAXONOMY_RANKS_LIST.add( "suborder" );
+        TAXONOMY_RANKS_LIST.add( "infraorder" );
+        TAXONOMY_RANKS_LIST.add( "superfamily" );
+        TAXONOMY_RANKS_LIST.add( "family" );
+        TAXONOMY_RANKS_LIST.add( "subfamily" );
+        TAXONOMY_RANKS_LIST.add( "supertribe" );
+        TAXONOMY_RANKS_LIST.add( "tribe" );
+        TAXONOMY_RANKS_LIST.add( "subtribe" );
+        TAXONOMY_RANKS_LIST.add( "infratribe" );
+        TAXONOMY_RANKS_LIST.add( "genus" );
+        TAXONOMY_RANKS_LIST.add( "subgenus" );
+        TAXONOMY_RANKS_LIST.add( "superspecies" );
+        TAXONOMY_RANKS_LIST.add( "species" );
+        TAXONOMY_RANKS_LIST.add( "subspecies" );
+        TAXONOMY_RANKS_LIST.add( "variety" );
+        TAXONOMY_RANKS_LIST.add( "varietas" );
+        TAXONOMY_RANKS_LIST.add( "subvariety" );
+        TAXONOMY_RANKS_LIST.add( "form" );
+        TAXONOMY_RANKS_LIST.add( "subform" );
+        TAXONOMY_RANKS_LIST.add( "cultivar" );
+        TAXONOMY_RANKS_LIST.add( "strain" );
+        TAXONOMY_RANKS_LIST.add( "section" );
+        TAXONOMY_RANKS_LIST.add( "subsection" );
+        TAXONOMY_RANKS_LIST.add( UNKNOWN );
+        TAXONOMY_RANKS_LIST.add( OTHER );
+    }
+    final public static String RANKS[] = new String[ TAXONOMY_RANKS_LIST.size() - 2 ];
+    static {
+        // same thing as set:
+        for( final String rank : TAXONOMY_RANKS_LIST ) {
+            System.out.println( "=" + rank );
+            TAXONOMY_RANKS_SET.add( rank );
+        }
+        final int l = RANKS.length;
+        for( int i = 0; i < l; ++i ) {
+            System.out.println( "i=" + i );
+            RANKS[ i ] = TAXONOMY_RANKS_LIST.get( i );
+            RANK_TO_INT.put( RANKS[ i ], i );
+        }
     }
 }

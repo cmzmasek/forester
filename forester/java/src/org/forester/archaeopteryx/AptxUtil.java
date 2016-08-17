@@ -67,7 +67,6 @@ import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.nexus.NexusPhylogeniesParser;
 import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
-import org.forester.io.parsers.phyloxml.PhyloXmlUtil;
 import org.forester.io.parsers.tol.TolParser;
 import org.forester.io.parsers.util.ParserUtils;
 import org.forester.phylogeny.Phylogeny;
@@ -81,6 +80,7 @@ import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.util.AsciiHistogram;
 import org.forester.util.DescriptiveStatistics;
 import org.forester.util.ForesterUtil;
+import org.forester.util.TaxonomyUtil;
 
 public final class AptxUtil {
 
@@ -133,11 +133,14 @@ public final class AptxUtil {
         first = normalizeCharForRGB( first );
         second = normalizeCharForRGB( second );
         third = normalizeCharForRGB( third );
-        if ( ( first > 235 ) && ( second > 235 ) && ( third > 235 ) ) {
+        if ( ( first > 200 ) && ( second > 200 ) && ( third > 200 ) ) {
             first = 0;
         }
         else if ( ( first < 60 ) && ( second < 60 ) && ( third < 60 ) ) {
             second = 255;
+        }
+        else if ( Math.abs( first - second ) < 40 && Math.abs( second - third ) < 40 ) {
+            third = 255;
         }
         return new Color( first, second, third );
     }
@@ -744,10 +747,10 @@ public final class AptxUtil {
     }
 
     final static String[] getAllPossibleRanks() {
-        final String[] str_array = new String[ PhyloXmlUtil.TAXONOMY_RANKS_LIST.size() - 2 ];
+        final String[] str_array = new String[ TaxonomyUtil.TAXONOMY_RANKS_LIST.size() - 2 ];
         int i = 0;
-        for( final String e : PhyloXmlUtil.TAXONOMY_RANKS_LIST ) {
-            if ( !e.equals( PhyloXmlUtil.UNKNOWN ) && !e.equals( PhyloXmlUtil.OTHER ) ) {
+        for( final String e : TaxonomyUtil.TAXONOMY_RANKS_LIST ) {
+            if ( !e.equals( TaxonomyUtil.UNKNOWN ) && !e.equals( TaxonomyUtil.OTHER ) ) {
                 str_array[ i++ ] = e;
             }
         }
@@ -755,10 +758,10 @@ public final class AptxUtil {
     }
     
     final static String[] getAllPossibleRanks(final Map<String, Integer> present_ranks) {
-        final String[] str_array = new String[ PhyloXmlUtil.TAXONOMY_RANKS_LIST.size() - 2 ];
+        final String[] str_array = new String[ TaxonomyUtil.TAXONOMY_RANKS_LIST.size() - 2 ];
         int i = 0;
-        for( final String e : PhyloXmlUtil.TAXONOMY_RANKS_LIST ) {
-            if ( !e.equals( PhyloXmlUtil.UNKNOWN ) && !e.equals( PhyloXmlUtil.OTHER ) ) {
+        for( final String e : TaxonomyUtil.TAXONOMY_RANKS_LIST ) {
+            if ( !e.equals( TaxonomyUtil.UNKNOWN ) && !e.equals( TaxonomyUtil.OTHER ) ) {
                 if ( present_ranks != null && present_ranks.containsKey( e ) ) {
                     str_array[ i++ ] = e + " (" +  present_ranks.get(e) + ")";
                 }
