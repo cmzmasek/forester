@@ -2604,6 +2604,8 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     final void updateRankCollapseRankDisplay() {
+      
+        
         if ( _rank_collapse_depth_tf != null ) {
             final String r = obtainRankCollapseDepthValue();
             if ( r.equals( "off" ) ) {

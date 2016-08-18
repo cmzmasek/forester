@@ -332,28 +332,7 @@ public class Phylogeny {
         return _external_nodes_set;
     }
 
-    /**
-     * Returns the number of duplications of this Phylogeny (int). A return
-     * value of -1 indicates that the number of duplications is unknown.
-     */
-    // public int getNumberOfDuplications() {
-    // return _number_of_duplications;
-    // } // getNumberOfDuplications()
-    /**
-     * Sets the number of duplications of this Phylogeny (int). A value of -1
-     * indicates that the number of duplications is unknown.
-     *
-     * @param clean_nh
-     *            set to true for clean NH format
-     */
-    // public void setNumberOfDuplications( int i ) {
-    // if ( i < 0 ) {
-    // _number_of_duplications = -1;
-    // }
-    // else {
-    // _number_of_duplications = i;
-    // }
-    // } // setNumberOfDuplications( int )
+ 
     /**
      * Returns the first external PhylogenyNode.
      */

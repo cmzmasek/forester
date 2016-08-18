@@ -66,6 +66,7 @@ import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.phylogeny.iterators.PreorderTreeIterator;
 import org.forester.util.BasicDescriptiveStatistics;
 import org.forester.util.DescriptiveStatistics;
+import org.forester.util.FailedConditionCheckException;
 import org.forester.util.ForesterUtil;
 import org.forester.util.TaxonomyUtil;
 
@@ -2126,6 +2127,20 @@ public class PhylogenyMethods {
         }
     }
     
-   
+    public final static PhylogenyNode getFirstExternalNode( final PhylogenyNode node ) {
+        PhylogenyNode n = node;
+        while ( n.isInternal() ) {
+            n = n.getFirstChildNode();
+        }
+        return n;
+    }
+    
+    public final static PhylogenyNode getLastExternalNode( final PhylogenyNode node ) {
+        PhylogenyNode n = node;
+        while ( n.isInternal() ) {
+            n = n.getLastChildNode();
+        }
+        return n;
+    }
     
 }

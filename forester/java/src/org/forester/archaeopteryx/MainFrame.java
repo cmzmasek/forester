@@ -231,6 +231,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JCheckBoxMenuItem                _right_line_up_domains_cbmi;
     JCheckBoxMenuItem                _line_up_renderable_data_cbmi;
     JCheckBoxMenuItem                _collapsed_with_average_height_cbmi;
+    JCheckBoxMenuItem                _show_abbreviated_labels_for_collapsed_nodes_cbmi;
     // _  print
     JCheckBoxMenuItem                _graphics_export_visible_only_cbmi;
     JCheckBoxMenuItem                _antialias_print_cbmi;
@@ -578,6 +579,12 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         else if ( o == _collapsed_with_average_height_cbmi ) {
             if ( _collapsed_with_average_height_cbmi.isSelected() ) {
                 _collapsed_with_average_height_cbmi.setSelected( true );
+            }
+            updateOptions( getOptions() );
+        }
+        else if ( o == _show_abbreviated_labels_for_collapsed_nodes_cbmi ) {
+            if ( _show_abbreviated_labels_for_collapsed_nodes_cbmi.isSelected() ) {
+                _show_abbreviated_labels_for_collapsed_nodes_cbmi.setSelected( true );
             }
             updateOptions( getOptions() );
         }
@@ -1942,6 +1949,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         if ( ( _collapsed_with_average_height_cbmi != null ) && _collapsed_with_average_height_cbmi.isEnabled() ) {
             options.setCollapsedWithAverageHeigh(_collapsed_with_average_height_cbmi.isSelected() );
+        }
+        if ( ( _show_abbreviated_labels_for_collapsed_nodes_cbmi != null ) && _show_abbreviated_labels_for_collapsed_nodes_cbmi.isEnabled() ) {
+            options.setShowAbbreviatedLabelsForCollapsedNodes(_show_abbreviated_labels_for_collapsed_nodes_cbmi.isSelected() );
         }
         
     }

@@ -121,6 +121,7 @@ final public class Options {
     private boolean                           _color_all_found_nodes_when_coloring_subtree;
     private boolean                           _parse_beast_style_extended_nexus_tags;
     private boolean                           _collapsed_with_average_height;
+    private boolean                           _show_abbreviated_labels_for_collapsed_nodes;
     
     private Options() {
         init();
@@ -225,7 +226,8 @@ final public class Options {
         _ext_desc_data_to_return = NodeDataField.UNKNOWN;
         _line_up_renderable_node_data = true;
         _right_align_domains = false;
-        _collapsed_with_average_height= true;
+        _collapsed_with_average_height = true;
+        _show_abbreviated_labels_for_collapsed_nodes = true;
     }
 
     final private void setNumberOfDigitsAfterCommaForBranchLength( final short number_of_digits_after_comma_for_branch_length_values ) {
@@ -610,6 +612,14 @@ final public class Options {
 
     final void setCollapsedWithAverageHeigh( final boolean collapsed_with_average_height ) {
         _collapsed_with_average_height = collapsed_with_average_height;
+    }
+
+    final boolean isShowAbbreviatedLabelsForCollapsedNodes() {
+        return _show_abbreviated_labels_for_collapsed_nodes;
+    }
+    
+    final void setShowAbbreviatedLabelsForCollapsedNodes(final boolean show_abbreviated_labels_for_collapsed_nodes) {
+        _show_abbreviated_labels_for_collapsed_nodes =  show_abbreviated_labels_for_collapsed_nodes;
     }
     
     

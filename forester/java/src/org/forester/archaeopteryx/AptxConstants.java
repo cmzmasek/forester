@@ -38,8 +38,8 @@ public final class AptxConstants {
 
     final static boolean        __ALLOW_PHYLOGENETIC_INFERENCE                                = true;
     public final static String  PRG_NAME                                                      = "Archaeopteryx";
-    final static String         VERSION                                                       = "0.9915 test";
-    final static String         PRG_DATE                                                      = "160727";
+    final static String         VERSION                                                       = "0.9916 beta";
+    final static String         PRG_DATE                                                      = "160817";
     final static String         DEFAULT_CONFIGURATION_FILE_NAME                               = "_aptx_configuration_file";
     final static String[]       DEFAULT_FONT_CHOICES                                          = { 
             "Arial Unicode MS", "Dialog", "SansSerif", "Sans", "Arial", "Helvetica" };
@@ -106,4 +106,5 @@ public final class AptxConstants {
                                                                                                            150,
                                                                                                            150 );
     final static short          DEFAULT_NODE_SHAPE_SIZE_DEFAULT                               = 4;
+    static final int            MAX_LENGTH_FOR_COLLAPSED_NAME = 8;
 }

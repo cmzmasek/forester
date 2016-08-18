@@ -1834,6 +1834,11 @@ public final class MainFrameApplication extends MainFrame {
 
         
         _options_jmenu
+        .add( _show_abbreviated_labels_for_collapsed_nodes_cbmi = new JCheckBoxMenuItem( "Add Abbreviated Labels to Collapsed Subtrees" ) );
+
+     
+        
+        _options_jmenu
                 .add( _line_up_renderable_data_cbmi = new JCheckBoxMenuItem( MainFrame.LINE_UP_RENDERABLE_DATA ) );
         
        
@@ -1941,6 +1946,8 @@ public final class MainFrameApplication extends MainFrame {
         customizeCheckBoxMenuItem( _search_case_senstive_cbmi, getOptions().isSearchCaseSensitive() );
         customizeCheckBoxMenuItem( _show_scale_cbmi, getOptions().isShowScale() );
         customizeCheckBoxMenuItem( _collapsed_with_average_height_cbmi, getOptions().isCollapsedWithAverageHeigh() );
+        customizeCheckBoxMenuItem( _show_abbreviated_labels_for_collapsed_nodes_cbmi, getOptions().isShowAbbreviatedLabelsForCollapsedNodes() );
+        
         customizeRadioButtonMenuItem( _non_lined_up_cladograms_rbmi,
                                       getOptions().getCladogramType() == CLADOGRAM_TYPE.NON_LINED_UP );
         customizeRadioButtonMenuItem( _ext_node_dependent_cladogram_rbmi,

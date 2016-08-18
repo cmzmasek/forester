@@ -2399,6 +2399,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 && ( PhylogenyMethods.getBranchColorValue( node ) != null ) ) {
             c = PhylogenyMethods.getBranchColorValue( node );
         }
+        else if ( to_pdf ) {
+            g.setColor( getTreeColorSet().getBranchColorForPdf() );
+        }
         else {
             c = getTreeColorSet().getCollapseFillColor();
         }
@@ -2825,7 +2828,45 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         setColor( g, node, to_graphics_file, to_pdf, is_in_found_nodes, getTreeColorSet().getSequenceColor() );
         if ( node.isCollapse() && ( ( !node.isRoot() && !node.getParent().isCollapse() ) || node.isRoot() ) ) {
-            if ( _sb.length() > 0 ) {
+            if ( _sb.length() == 0 ) {
+                if ( getOptions().isShowAbbreviatedLabelsForCollapsedNodes()
+                        && ( getControlPanel().isShowTaxonomyCode() || getControlPanel().isShowTaxonomyScientificNames()
+                                || getControlPanel().isShowSeqNames() || getControlPanel().isShowNodeNames() ) ) {
+                    final PhylogenyNode first = PhylogenyMethods.getFirstExternalNode( node );
+                    final PhylogenyNode last = PhylogenyMethods.getLastExternalNode( node );
+                    if ( getControlPanel().isShowTaxonomyCode() && first.getNodeData().isHasTaxonomy()
+                            && last.getNodeData().isHasTaxonomy()
+                            && !ForesterUtil.isEmpty( first.getNodeData().getTaxonomy().getTaxonomyCode() )
+                            && !ForesterUtil.isEmpty( last.getNodeData().getTaxonomy().getTaxonomyCode() ) ) {
+                        addLabelForCollapsed( first.getNodeData().getTaxonomy().getTaxonomyCode(),
+                                              last.getNodeData().getTaxonomy().getTaxonomyCode(),
+                                              node.getAllExternalDescendants().size() );
+                    }
+                    else if ( getControlPanel().isShowTaxonomyScientificNames() && first.getNodeData().isHasTaxonomy()
+                            && last.getNodeData().isHasTaxonomy()
+                            && !ForesterUtil.isEmpty( first.getNodeData().getTaxonomy().getScientificName() )
+                            && !ForesterUtil.isEmpty( last.getNodeData().getTaxonomy().getScientificName() ) ) {
+                        addLabelForCollapsed( first.getNodeData().getTaxonomy().getScientificName(),
+                                              last.getNodeData().getTaxonomy().getScientificName(),
+                                              node.getAllExternalDescendants().size() );
+                    }
+                    else if ( getControlPanel().isShowSeqNames() && first.getNodeData().isHasSequence()
+                            && last.getNodeData().isHasSequence()
+                            && !ForesterUtil.isEmpty( first.getNodeData().getSequence().getName() )
+                            && !ForesterUtil.isEmpty( last.getNodeData().getSequence().getName() ) ) {
+                        addLabelForCollapsed( first.getNodeData().getSequence().getName(),
+                                              last.getNodeData().getSequence().getName(),
+                                              node.getAllExternalDescendants().size() );
+                    }
+                    else if ( getControlPanel().isShowNodeNames() && !ForesterUtil.isEmpty( first.getName() )
+                            && !ForesterUtil.isEmpty( last.getName() ) ) {
+                        addLabelForCollapsed( first.getName(),
+                                              last.getName(),
+                                              node.getAllExternalDescendants().size() );
+                    }
+                }
+            }
+            else if ( _sb.length() > 0 ) {
                 _sb.setLength( 0 );
                 _sb.append( " (" );
                 _sb.append( node.getAllExternalDescendants().size() );
@@ -2991,6 +3032,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
         }
         return x;
+    }
+
+    private final void addLabelForCollapsed( final String first, final String last, final int size ) {
+        _sb.append( first.length() < AptxConstants.MAX_LENGTH_FOR_COLLAPSED_NAME ? first
+                : first.substring( 0, AptxConstants.MAX_LENGTH_FOR_COLLAPSED_NAME - 1 ) );
+        _sb.append( " ... " );
+        _sb.append( last.length() < AptxConstants.MAX_LENGTH_FOR_COLLAPSED_NAME ? last
+                : last.substring( 0, AptxConstants.MAX_LENGTH_FOR_COLLAPSED_NAME - 1 ) );
+        _sb.append( " (" + size + ")" );
     }
 
     private final boolean isAllowAttributedStrings() {
@@ -4847,8 +4897,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         setArrowCursor();
     }
 
-  
-
     final void colorRank( final String rank ) {
         if ( ( _phylogeny == null ) || ( _phylogeny.getNumberOfExternalNodes() < 2 ) ) {
             return;
@@ -6051,7 +6099,20 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             _sub_phylogenies_temp_roots[ _subtree_index ] = node;
             ++_subtree_index;
             _phylogeny = TreePanelUtil.subTree( node, _phylogeny );
+            if ( _phylogeny.getRoot().isCollapse() ) {
+                _phylogeny.getRoot().setCollapse( false );
+            }
+            _phylogeny.externalNodesHaveChanged();
+            _phylogeny.clearHashIdToNodeMap();
+            _phylogeny.recalculateNumberOfExternalDescendants( true );
             updateSubSuperTreeButton();
+            getMainPanel().getControlPanel().search0();
+            getMainPanel().getControlPanel().search1();
+            resetRankCollapseRankValue();
+            resetDepthCollapseDepthValue();
+            getMainPanel().getControlPanel().updateDomainStructureEvaluethresholdDisplay();
+            getMainPanel().getControlPanel().updateDepthCollapseDepthDisplay();
+            getMainPanel().getControlPanel().updateRankCollapseRankDisplay();
         }
         else if ( node.isRoot() && isCurrentTreeIsSubtree() ) {
             superTree();
@@ -6069,6 +6130,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         _sub_phylogenies[ _subtree_index ] = null;
         _sub_phylogenies_temp_roots[ _subtree_index ] = null;
         _phylogeny = _sub_phylogenies[ --_subtree_index ];
+        _phylogeny.externalNodesHaveChanged();
+        _phylogeny.clearHashIdToNodeMap();
+        _phylogeny.recalculateNumberOfExternalDescendants( true );
+        getMainPanel().getControlPanel().search0();
+        getMainPanel().getControlPanel().search1();
+        resetRankCollapseRankValue();
+        resetDepthCollapseDepthValue();
+        getMainPanel().getControlPanel().updateDomainStructureEvaluethresholdDisplay();
+        getMainPanel().getControlPanel().updateDepthCollapseDepthDisplay();
+        getMainPanel().getControlPanel().updateRankCollapseRankDisplay();
         updateSubSuperTreeButton();
     }
 
@@ -6290,7 +6361,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 --_depth_collapse_level;
                 PhylogenyMethods.collapseToDepth( _phylogeny, _depth_collapse_level );
             }
-            
         }
     }
 
@@ -6317,34 +6387,35 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 }
                 else {
                     --_rank_collapse_level;
-                    PhylogenyMethods.collapseToRank( _phylogeny, mapToAbsoluteRankLevel( ranks, _rank_collapse_level ) );
+                    PhylogenyMethods.collapseToRank( _phylogeny,
+                                                     mapToAbsoluteRankLevel( ranks, _rank_collapse_level ) );
                 }
             }
         }
     }
 
-    
     public void increaseRankCollapseLevel() {
         if ( ( _phylogeny != null ) && ( _phylogeny.getNumberOfExternalNodes() > 2 ) ) {
             final String ranks[] = PhylogenyMethods.obtainPresentRanksSorted( _phylogeny );
             if ( ranks.length > 1 ) {
-                if ( _rank_collapse_level >= (ranks.length - 1 ) ) {
+                if ( _rank_collapse_level >= ( ranks.length - 1 ) ) {
                     _rank_collapse_level = 0;
-                    PhylogenyMethods.collapseToRank( _phylogeny,mapToAbsoluteRankLevel( ranks, _rank_collapse_level ) );
+                    PhylogenyMethods.collapseToRank( _phylogeny,
+                                                     mapToAbsoluteRankLevel( ranks, _rank_collapse_level ) );
                 }
-                else if ( _rank_collapse_level == (ranks.length - 2 ) ) {
+                else if ( _rank_collapse_level == ( ranks.length - 2 ) ) {
                     ++_rank_collapse_level;
                     uncollapseAll();
                 }
                 else {
                     ++_rank_collapse_level;
-                    PhylogenyMethods.collapseToRank( _phylogeny,mapToAbsoluteRankLevel( ranks, _rank_collapse_level ) );
+                    PhylogenyMethods.collapseToRank( _phylogeny,
+                                                     mapToAbsoluteRankLevel( ranks, _rank_collapse_level ) );
                 }
             }
         }
     }
 
-   
     private final static int mapToAbsoluteRankLevel( final String present_ranks_sorted[],
                                                      final int rank_collapse_level ) {
         final String rank_str = present_ranks_sorted[ rank_collapse_level ];
@@ -6353,14 +6424,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         return TaxonomyUtil.RANK_TO_INT.get( rank_str );
     }
-    
+
     private final void uncollapseAll() {
-        final PhylogenyNodeIterator it = new PreorderTreeIterator(_phylogeny  );
+        final PhylogenyNodeIterator it = new PreorderTreeIterator( _phylogeny );
         while ( it.hasNext() ) {
             it.next().setCollapse( false );
         }
     }
-    
+
     final int resetDepthCollapseDepthValue() {
         return _depth_collapse_level = -1;
     }
@@ -6372,7 +6443,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     final void setDepthCollapseDepthValue( final int depth_collapse_level ) {
         _depth_collapse_level = depth_collapse_level;
     }
-    
+
     final int resetRankCollapseRankValue() {
         return _rank_collapse_level = -1;
     }

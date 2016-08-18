@@ -674,12 +674,10 @@ public final class TaxonomyUtil {
     static {
         // same thing as set:
         for( final String rank : TAXONOMY_RANKS_LIST ) {
-            System.out.println( "=" + rank );
             TAXONOMY_RANKS_SET.add( rank );
         }
         final int l = RANKS.length;
         for( int i = 0; i < l; ++i ) {
-            System.out.println( "i=" + i );
             RANKS[ i ] = TAXONOMY_RANKS_LIST.get( i );
             RANK_TO_INT.put( RANKS[ i ], i );
         }
