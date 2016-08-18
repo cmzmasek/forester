@@ -32,13 +32,10 @@ native_ui: ?
 #
 #  Show branch length branch values: 'show_branch_length_values': values: 'yes'/'no'
 #
-#  Do/do not line up cladogram display: 'non_lined_up_cladogram': values: 'yes'/'no'
-#
 #  Cladogram display type: 'cladogram_type'
-#     Example: 'cladogram_type: ext_node_sum_dep'
-#     The three possible values are: non_lined_up
-#                                    ext_node_sum_dep
-#                                    total_node_sum_dep (for "uniform" branch lengths)
+#     Example: 'cladogram_type: non_lined_up'
+#     The three possible values are: lined_up
+#                                    non_lined_up
 #
 #  Default line width for PDF export: 'pdf_export_line_wdith':
 #     Example: 'pdf_export_line_width: 0.5'
@@ -159,7 +156,7 @@ font_size_min:                             2
 font_size_max:                             20
 antialias_screen:                          yes
 show_scale:                                yes
-cladogram_type:                            ext_node_sum_dep
+cladogram_type:                            non_lined_up
 phylogeny_graphics_type:                   rectangular
 node_label_direction:                      horizontal
 show_default_node_shapes_internal:         no
@@ -191,6 +188,7 @@ list_node_data_custom_label:
 internal_labels_are_confidence_values:     no
 replace_underscores_in_nh_parsing:         no
 taxonomy_extraction_in_nh_parsing:         no
+#  phyloXML parsing:
 validate_against_phyloxml_xsd_schema:      true
 
 
@@ -218,6 +216,7 @@ show_seq_acc:                   display   no
 show_gene_names:                display   yes
 show_taxonomy_code:             display   yes
 show_taxonomy_scientific_names: display   yes
+show_taxonomy_rank:             display   no
 show_taxonomy_common_names:     display   no
 show_taxonomy_images:           display   no
 show_annotations:               display   no
@@ -243,9 +242,11 @@ show_vector_data:               display   no
 #  Format: 'name: display/nodisplay'
 click_to: display_node_data        display
 click_to: collapse_uncollapse      display
+click_to: uncollapse_all           display
 click_to: reroot                   display
 click_to: subtree                  display
 click_to: swap                     display
+click_to: order_subtree            display
 click_to: sort_descendants         display
 click_to: color_subtree            display
 click_to: change_node_font         display
