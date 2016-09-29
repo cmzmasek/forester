@@ -122,6 +122,7 @@ final public class Options {
     private boolean                           _parse_beast_style_extended_nexus_tags;
     private boolean                           _collapsed_with_average_height;
     private boolean                           _show_abbreviated_labels_for_collapsed_nodes;
+    private boolean                           _align_ext_labels_in_phylogram;
     
     private Options() {
         init();
@@ -228,6 +229,7 @@ final public class Options {
         _right_align_domains = false;
         _collapsed_with_average_height = true;
         _show_abbreviated_labels_for_collapsed_nodes = true;
+        _align_ext_labels_in_phylogram = true;
     }
 
     final private void setNumberOfDigitsAfterCommaForBranchLength( final short number_of_digits_after_comma_for_branch_length_values ) {
@@ -620,6 +622,14 @@ final public class Options {
     
     final void setShowAbbreviatedLabelsForCollapsedNodes(final boolean show_abbreviated_labels_for_collapsed_nodes) {
         _show_abbreviated_labels_for_collapsed_nodes =  show_abbreviated_labels_for_collapsed_nodes;
+    }
+    
+    final boolean isAlignExtLabelsInPhylogram() {
+        return _align_ext_labels_in_phylogram;
+    }
+
+    final void setAlignExtLabelsInPhylogram( final boolean align_ext_labels_in_phylogram ) {
+        _align_ext_labels_in_phylogram = align_ext_labels_in_phylogram;
     }
     
     

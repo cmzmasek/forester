@@ -1004,7 +1004,7 @@ public class PhylogenyMethods {
     private static enum NDF {
                              NodeName( "NN" ),
                              TaxonomyCode( "TC" ),
-                             TaxonomyCommonName( "CN" ),
+                             TaxonomyCommonName( "TN" ),
                              TaxonomyScientificName( "TS" ),
                              TaxonomyIdentifier( "TI" ),
                              TaxonomySynonym( "SY" ),
@@ -2141,6 +2141,16 @@ public class PhylogenyMethods {
             n = n.getLastChildNode();
         }
         return n;
+    }
+
+    public final static boolean isHasCollapsedNodes( final Phylogeny phy ) {
+        for( final PhylogenyNodeIterator iter = phy.iteratorPreorder(); iter.hasNext(); ) {
+            final PhylogenyNode n = iter.next();
+            if ( !n.isExternal() && ( n.isCollapse() ) ) {
+                return true;
+            }
+        }
+        return false;
     }
     
 }

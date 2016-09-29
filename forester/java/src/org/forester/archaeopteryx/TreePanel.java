@@ -239,6 +239,29 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private static final BasicStroke      STROKE_075                                         = new BasicStroke( 0.75f );
     private static final BasicStroke      STROKE_1                                           = new BasicStroke( 1f );
     private static final BasicStroke      STROKE_2                                           = new BasicStroke( 2f );
+    private static final BasicStroke      STROKE_01_DASHED                                  = new BasicStroke( 0.1f,
+                                                                                                                BasicStroke.CAP_SQUARE,
+                                                                                                                BasicStroke.JOIN_ROUND,
+                                                                                                                0,
+                                                                                                                new float[] {
+                                                                                                                        2.0f },   0f );
+   
+    
+    
+    private static final BasicStroke      STROKE_005_DASHED                                  = new BasicStroke( 0.05f,
+                                                                                                                BasicStroke.CAP_SQUARE,
+                                                                                                                BasicStroke.JOIN_ROUND,
+                                                                                                                0,
+                                                                                                                new float[] {
+                                                                                                                        2.0f },
+                                                                                                                0f );
+    private static final BasicStroke      STROKE_001_DASHED                                  = new BasicStroke( 0.01f,
+                                                                                                                BasicStroke.CAP_SQUARE,
+                                                                                                                BasicStroke.JOIN_ROUND,
+                                                                                                                0,
+                                                                                                                new float[] {
+                                                                                                                        2.0f },
+                                                                                                                0f );
     private static final double           TWO_PI                                             = 2 * Math.PI;
     private final static int              WIGGLE                                             = 2;
     private static final String           SHOW_ONLY_THIS_CONF_TYPE                           = null;                                                     //TODO remove me
@@ -2827,8 +2850,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             x += paintTaxonomy( g, node, is_in_found_nodes, to_pdf, to_graphics_file, x );
         }
         setColor( g, node, to_graphics_file, to_pdf, is_in_found_nodes, getTreeColorSet().getSequenceColor() );
+        boolean saw_species = _sb.length() > 0;
+        _sb.setLength( 0 );
+        nodeDataAsSB( node, _sb );
         if ( node.isCollapse() && ( ( !node.isRoot() && !node.getParent().isCollapse() ) || node.isRoot() ) ) {
-            if ( _sb.length() == 0 ) {
+            if ( _sb.length() == 0 && !saw_species ) {
                 if ( getOptions().isShowAbbreviatedLabelsForCollapsedNodes()
                         && ( getControlPanel().isShowTaxonomyCode() || getControlPanel().isShowTaxonomyScientificNames()
                                 || getControlPanel().isShowSeqNames() || getControlPanel().isShowNodeNames() ) ) {
@@ -2838,6 +2864,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                             && last.getNodeData().isHasTaxonomy()
                             && !ForesterUtil.isEmpty( first.getNodeData().getTaxonomy().getTaxonomyCode() )
                             && !ForesterUtil.isEmpty( last.getNodeData().getTaxonomy().getTaxonomyCode() ) ) {
+                       
                         addLabelForCollapsed( first.getNodeData().getTaxonomy().getTaxonomyCode(),
                                               last.getNodeData().getTaxonomy().getTaxonomyCode(),
                                               node.getAllExternalDescendants().size() );
@@ -2846,7 +2873,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                             && last.getNodeData().isHasTaxonomy()
                             && !ForesterUtil.isEmpty( first.getNodeData().getTaxonomy().getScientificName() )
                             && !ForesterUtil.isEmpty( last.getNodeData().getTaxonomy().getScientificName() ) ) {
-                        addLabelForCollapsed( first.getNodeData().getTaxonomy().getScientificName(),
+                         addLabelForCollapsed( first.getNodeData().getTaxonomy().getScientificName(),
                                               last.getNodeData().getTaxonomy().getScientificName(),
                                               node.getAllExternalDescendants().size() );
                     }
@@ -2866,23 +2893,35 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     }
                 }
             }
-            else if ( _sb.length() > 0 ) {
-                _sb.setLength( 0 );
+            else if ( _sb.length() > 0 || saw_species ) {
+              //  _sb.setLength( 0 );
                 _sb.append( " (" );
                 _sb.append( node.getAllExternalDescendants().size() );
                 _sb.append( ")" );
+              
             }
         }
         else {
-            _sb.setLength( 0 );
+           // _sb.setLength( 0 );
         }
-        nodeDataAsSB( node, _sb );
+       
+       // nodeDataAsSB( node, _sb );
+        
         final boolean using_visual_font = setFont( g, node, is_in_found_nodes );
         float down_shift_factor = 3.0f;
         if ( !node.isExternal() && ( node.getNumberOfDescendants() == 1 ) ) {
             down_shift_factor = 1;
         }
-        final float pos_x = node.getXcoord() + x + 2 + half_box_size;
+        float pos_x;
+        if ( getControlPanel().isDrawPhylogram() && getOptions().isAlignExtLabelsInPhylogram() && (node.isExternal() || node.isCollapse() ) ) {
+            pos_x = ( float ) ( ( getMaxDistanceToRoot() * getXcorrectionFactor() )
+                    + ( getOptions().getDefaultNodeShapeSize() / 2 ) + x + ( 2 * TreePanel.MOVE ) + getXdistance()
+                    + 3 );
+           
+        }
+        else {
+            pos_x = node.getXcoord() + x + 2 + half_box_size;
+        }
         float pos_y;
         if ( !using_visual_font ) {
             pos_y = ( node.getYcoord() + ( getFontMetricsForLargeDefaultFont().getAscent() / down_shift_factor ) );
@@ -2890,64 +2929,19 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         else {
             pos_y = ( node.getYcoord() + ( getFontMetrics( g.getFont() ).getAscent() / down_shift_factor ) );
         }
+        if ( getControlPanel().isDrawPhylogram() && getOptions().isAlignExtLabelsInPhylogram() && (node.isExternal() || node.isCollapse() ) ) {
+            drawConnection( node.getXcoord(), pos_x - x, node.getYcoord(), 5, 20, g, to_pdf );
+            if ( node.isCollapse()) {
+                pos_x -= add;
+            }
+        }
         final String sb_str = _sb.toString();
         // GUILHEM_BEG ______________
         if ( _control_panel.isShowSequenceRelations() && node.getNodeData().isHasSequence()
                 && ( _query_sequence != null ) ) {
-            int nodeTextBoundsWidth = 0;
-            if ( sb_str.length() > 0 ) {
-                final Rectangle2D node_text_bounds = new TextLayout( sb_str, g.getFont(), _frc ).getBounds(); //would like to remove this 'new', but how...
-                nodeTextBoundsWidth = ( int ) node_text_bounds.getWidth();
-            }
-            if ( node.getNodeData().getSequence().equals( _query_sequence ) ) {
-                if ( nodeTextBoundsWidth > 0 ) { // invert font color and background color to show that this is the query sequence
-                    g.fillRect( ( int ) pos_x - 1, ( int ) pos_y - 8, nodeTextBoundsWidth + 5, 11 );
-                    g.setColor( getTreeColorSet().getBackgroundColor() );
-                }
-            }
-            else {
-                final List<SequenceRelation> seqRelations = node.getNodeData().getSequence().getSequenceRelations();
-                for( final SequenceRelation seqRelation : seqRelations ) {
-                    final boolean fGotRelationWithQuery = ( seqRelation.getRef0().isEqual( _query_sequence )
-                            || seqRelation.getRef1().isEqual( _query_sequence ) )
-                            && seqRelation.getType()
-                                    .equals( getControlPanel().getSequenceRelationTypeBox().getSelectedItem() );
-                    if ( fGotRelationWithQuery ) { // we will underline the text to show that this sequence is ortholog to the query
-                        final double linePosX = node.getXcoord() + 2 + half_box_size;
-                        final String sConfidence = ( !getControlPanel().isShowSequenceRelationConfidence()
-                                || ( seqRelation.getConfidence() == null ) ) ? null
-                                        : " (" + seqRelation.getConfidence().getValue() + ")";
-                        if ( sConfidence != null ) {
-                            float confidenceX = pos_x;
-                            if ( sb_str.length() > 0 ) {
-                                confidenceX += new TextLayout( sb_str, g.getFont(), _frc ).getBounds().getWidth()
-                                        + CONFIDENCE_LEFT_MARGIN;
-                            }
-                            if ( confidenceX > linePosX ) { // let's only display confidence value if we are already displaying at least one of Prot/Gene Name and Taxonomy Code
-                                final int confidenceWidth = ( int ) new TextLayout( sConfidence, g.getFont(), _frc )
-                                        .getBounds().getWidth();
-                                TreePanel.drawString( sConfidence, confidenceX, pos_y, g );
-                                x += CONFIDENCE_LEFT_MARGIN + confidenceWidth;
-                            }
-                        }
-                        if ( ( x + nodeTextBoundsWidth ) > 0 ) /* we only underline if there is something displayed */
-                        {
-                            if ( nodeTextBoundsWidth == 0 ) {
-                                nodeTextBoundsWidth -= 3; /* the gap between taxonomy code and node name should not be underlined if nothing comes after it */
-                            }
-                            else {
-                                nodeTextBoundsWidth += 2;
-                            }
-                            g.drawLine( ( int ) linePosX + 1,
-                                        3 + ( int ) pos_y,
-                                        ( int ) linePosX + x + nodeTextBoundsWidth,
-                                        3 + ( int ) pos_y );
-                            break;
-                        }
-                    }
-                }
-            }
+            x = paintSequenceRelation( g, node, x, half_box_size, pos_x, pos_y, sb_str );
         }
+        // GUILHEM_END _____________
         if ( sb_str.length() > 0 ) {
             if ( !isAllowAttributedStrings() ) {
                 TreePanel.drawString( sb_str, pos_x, pos_y, g );
@@ -2956,7 +2950,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 drawStringX( sb_str, pos_x, pos_y, g );
             }
         }
-        // GUILHEM_END _____________
+       
         if ( _sb.length() > 0 ) {
             if ( !using_visual_font && !is_in_found_nodes ) {
                 x += getFontMetricsForLargeDefaultFont().stringWidth( _sb.toString() ) + 5;
@@ -3032,6 +3026,109 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
         }
         return x;
+    }
+
+    private final int paintSequenceRelation( final Graphics2D g,
+                      final PhylogenyNode node,
+                      int x,
+                      final int half_box_size,
+                      float pos_x,
+                      float pos_y,
+                      final String sb_str ) {
+        int nodeTextBoundsWidth = 0;
+        if ( sb_str.length() > 0 ) {
+            final Rectangle2D node_text_bounds = new TextLayout( sb_str, g.getFont(), _frc ).getBounds(); //would like to remove this 'new', but how...
+            nodeTextBoundsWidth = ( int ) node_text_bounds.getWidth();
+        }
+        if ( node.getNodeData().getSequence().equals( _query_sequence ) ) {
+            if ( nodeTextBoundsWidth > 0 ) { // invert font color and background color to show that this is the query sequence
+                g.fillRect( ( int ) pos_x - 1, ( int ) pos_y - 8, nodeTextBoundsWidth + 5, 11 );
+                g.setColor( getTreeColorSet().getBackgroundColor() );
+            }
+        }
+        else {
+            final List<SequenceRelation> seqRelations = node.getNodeData().getSequence().getSequenceRelations();
+            for( final SequenceRelation seqRelation : seqRelations ) {
+                final boolean fGotRelationWithQuery = ( seqRelation.getRef0().isEqual( _query_sequence )
+                        || seqRelation.getRef1().isEqual( _query_sequence ) )
+                        && seqRelation.getType()
+                                .equals( getControlPanel().getSequenceRelationTypeBox().getSelectedItem() );
+                if ( fGotRelationWithQuery ) { // we will underline the text to show that this sequence is ortholog to the query
+                    final double linePosX = node.getXcoord() + 2 + half_box_size;
+                    final String sConfidence = ( !getControlPanel().isShowSequenceRelationConfidence()
+                            || ( seqRelation.getConfidence() == null ) ) ? null
+                                    : " (" + seqRelation.getConfidence().getValue() + ")";
+                    if ( sConfidence != null ) {
+                        float confidenceX = pos_x;
+                        if ( sb_str.length() > 0 ) {
+                            confidenceX += new TextLayout( sb_str, g.getFont(), _frc ).getBounds().getWidth()
+                                    + CONFIDENCE_LEFT_MARGIN;
+                        }
+                        if ( confidenceX > linePosX ) { // let's only display confidence value if we are already displaying at least one of Prot/Gene Name and Taxonomy Code
+                            final int confidenceWidth = ( int ) new TextLayout( sConfidence, g.getFont(), _frc )
+                                    .getBounds().getWidth();
+                            TreePanel.drawString( sConfidence, confidenceX, pos_y, g );
+                            x += CONFIDENCE_LEFT_MARGIN + confidenceWidth;
+                        }
+                    }
+                    if ( ( x + nodeTextBoundsWidth ) > 0 ) /* we only underline if there is something displayed */
+                    {
+                        if ( nodeTextBoundsWidth == 0 ) {
+                            nodeTextBoundsWidth -= 3; /* the gap between taxonomy code and node name should not be underlined if nothing comes after it */
+                        }
+                        else {
+                            nodeTextBoundsWidth += 2;
+                        }
+                        g.drawLine( ( int ) linePosX + 1,
+                                    3 + ( int ) pos_y,
+                                    ( int ) linePosX + x + nodeTextBoundsWidth,
+                                    3 + ( int ) pos_y );
+                        break;
+                    }
+                }
+            }
+        }
+        return x;
+    }
+
+    private final void drawConnection( final float x1,
+                                       final float x2,
+                                       final float y,
+                                       final int dist_left,
+                                       final int dist_right,
+                                       final Graphics2D g,
+                                       final boolean pdf ) {
+        if ( ( ( x1 + dist_left ) < ( x2 - dist_right ) ) ) {
+            final Stroke strok = g.getStroke();
+            Color col = null;
+            if ( strok == STROKE_005 ) {
+                g.setStroke( STROKE_001_DASHED );
+            }
+            else if ( strok == STROKE_01 ) {
+                g.setStroke( STROKE_005_DASHED );
+            }
+            else {
+                g.setStroke( STROKE_01_DASHED );
+            }
+            if ( pdf ) {
+                col = g.getColor();
+                g.setColor( lighter( col ) );
+            }
+            drawLine( x1 + dist_left, y, x2 - dist_right, y, g );
+            g.setStroke( strok );
+            if ( pdf ) {
+                g.setColor( col );
+            }
+        }
+    }
+
+    public static Color lighter( final Color color ) {
+        if ( ( color.getRed() == 0 ) && ( color.getGreen() == 0 ) && ( color.getBlue() == 0 ) ) {
+            return new Color( 200, 200, 200 );
+        }
+        else {
+            return color;
+        }
     }
 
     private final void addLabelForCollapsed( final String first, final String last, final int size ) {
@@ -3538,7 +3635,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final Taxonomy taxonomy = node.getNodeData().getTaxonomy();
         final boolean using_visual_font = setFont( g, node, is_in_found_nodes );
         setColor( g, node, to_graphics_file, to_pdf, is_in_found_nodes, getTreeColorSet().getTaxonomyColor() );
-        final float start_x = node.getXcoord() + 3 + ( getOptions().getDefaultNodeShapeSize() / 2 ) + x_shift;
+        float start_x = node.getXcoord() + 3 + ( getOptions().getDefaultNodeShapeSize() / 2 ) + x_shift;
+        if ( getControlPanel().isDrawPhylogram() && getOptions().isAlignExtLabelsInPhylogram() && node.isExternal() ) {
+            start_x = ( float ) ( ( getMaxDistanceToRoot() * getXcorrectionFactor() )
+                    + ( getOptions().getDefaultNodeShapeSize() / 2 ) + x_shift + ( 2 * TreePanel.MOVE ) + getXdistance()
+                    + 3 );
+        }
         float start_y;
         if ( !using_visual_font ) {
             start_y = node.getYcoord() + ( getFontMetricsForLargeDefaultFont().getAscent()
@@ -4546,6 +4648,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             setYdistance( ydist );
             setOvXDistance( ov_xdist );
             final double height = _phylogeny.calculateHeight( !_options.isCollapsedWithAverageHeigh() );
+            //final double height = PhylogenyMethods.calculateMaxDepth( _phylogeny );
             if ( height > 0 ) {
                 final float corr = ( float ) ( ( x - ( 2.0 * TreePanel.MOVE ) - getLongestExtNodeInfo()
                         - getXdistance() ) / height );
@@ -5827,6 +5930,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     final void recalculateMaxDistanceToRoot() {
         _max_distance_to_root = PhylogenyMethods.calculateMaxDistanceToRoot( getPhylogeny() );
+        if ( getPhylogeny().getRoot().getDistanceToParent() > 0 ) {
+            _max_distance_to_root += getPhylogeny().getRoot().getDistanceToParent();
+        }
     }
 
     /**
@@ -6292,6 +6398,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         else {
             getControlPanel().activateButtonToReturnToSuperTree( _subtree_index );
+        }
+    }
+    
+    final void updateButtonToUncollapseAll() {
+        if ( PhylogenyMethods.isHasCollapsedNodes(_phylogeny) ) {
+            getControlPanel().activateButtonToUncollapseAll();
+        }
+        else {
+            getControlPanel().deactivateButtonToUncollapseAll();
         }
     }
 

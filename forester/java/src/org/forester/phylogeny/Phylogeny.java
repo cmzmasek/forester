@@ -143,7 +143,7 @@ public class Phylogeny {
                     max = l;
                 }
             }
-            return max + ( n.getDistanceToParent() > 0 ? n.getDistanceToParent() : 0) ;
+            return max + ( n.getDistanceToParent() > 0 ? n.getDistanceToParent() : 0);
         }
     }
 
@@ -1064,7 +1064,7 @@ public class Phylogeny {
      */
     public void setRooted( final boolean b ) {
         _rooted = b;
-    } // setRooted( boolean )
+    }
 
     public void setSequenceRelationQueries( final Collection<Sequence> sequencesByName ) {
         _sequenceRelationQueries = sequencesByName;

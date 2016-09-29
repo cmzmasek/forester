@@ -104,7 +104,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             .getDefaultFontFamilyName(), Font.PLAIN, 9 );
     final static Font                         js_font                   = new Font( Configuration
             .getDefaultFontFamilyName(), Font.PLAIN, 9 );
-    private static final String               RETURN_TO_SUPER_TREE_TEXT = "Back to Super Tree";
+    private static final String               RETURN_TO_SUPER_TREE_TEXT = "R";
     private static final String               SEARCH_TIP_TEXT           = "Enter text to search for. Use ',' for logical OR and '+' for logical AND (not used in this manner for regular expression searches).";
     private static final long                 serialVersionUID          = -8463483932821545633L;
     private NodeClickAction                   _action_when_node_clicked;
@@ -631,12 +631,13 @@ final class ControlPanel extends JPanel implements ActionListener {
         return getIsDrawPhylogramList().get( index );
     }
 
-    private void search0( final MainPanel main_panel, final Phylogeny tree, final String query_str ) {
+    private void search0( final MainPanel main_panel, final Phylogeny tree, String query_str ) {
         getSearchFoundCountsLabel0().setVisible( true );
         getSearchResetButton0().setEnabled( true );
         getSearchResetButton0().setVisible( true );
         String[] queries = null;
         Set<Long> nodes = null;
+        query_str = query_str.replaceAll("\\s+", " " );
         if ( ( query_str.indexOf( ',' ) >= 0 ) && !getOptions().isSearchWithRegex() ) {
             queries = query_str.split( ",+" );
         }
@@ -698,12 +699,13 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
     }
 
-    private void search1( final MainPanel main_panel, final Phylogeny tree, final String query_str ) {
+    private void search1( final MainPanel main_panel, final Phylogeny tree, String query_str ) {
         getSearchFoundCountsLabel1().setVisible( true );
         getSearchResetButton1().setEnabled( true );
         getSearchResetButton1().setVisible( true );
         String[] queries = null;
         Set<Long> nodes = null;
+        query_str = query_str.replaceAll("\\s+", " " );
         if ( ( query_str.indexOf( ',' ) >= 0 ) && !getOptions().isSearchWithRegex() ) {
             queries = query_str.split( ",+" );
         }
@@ -1200,6 +1202,12 @@ final class ControlPanel extends JPanel implements ActionListener {
         _return_to_super_tree.setForeground( getConfiguration().getGuiCheckboxAndButtonActiveColor() );
         _return_to_super_tree.setEnabled( true );
     }
+    
+    void activateButtonToUncollapseAll() {
+        _uncollapse_all.setForeground( getConfiguration().getGuiCheckboxAndButtonActiveColor() );
+        _uncollapse_all.setEnabled( true );
+    }
+    
 
     /**
      * Add zoom and quick edit buttons. (Last modified 8/9/04)
@@ -1211,10 +1219,12 @@ final class ControlPanel extends JPanel implements ActionListener {
         final JPanel x_panel = new JPanel( new GridLayout( 1, 1, 0, 0 ) );
         final JPanel y_panel = new JPanel( new GridLayout( 1, 3, 0, 0 ) );
         final JPanel z_panel = new JPanel( new GridLayout( 1, 1, 0, 0 ) );
+        final JPanel o_panel = new JPanel( new GridLayout( 1, 3, 0, 0 ) );
         if ( !getConfiguration().isUseNativeUI() ) {
             x_panel.setBackground( getBackground() );
             y_panel.setBackground( getBackground() );
             z_panel.setBackground( getBackground() );
+            o_panel.setBackground( getBackground() );
         }
         add( _zoom_label = new JLabel( "Zoom:" ) );
         customizeLabel( _zoom_label, getConfiguration() );
@@ -1249,14 +1259,25 @@ final class ControlPanel extends JPanel implements ActionListener {
         _zoom_in_y.setPreferredSize( new Dimension( 10, 10 ) );
         _show_whole.setPreferredSize( new Dimension( 10, 10 ) );
         _return_to_super_tree = new JButton( RETURN_TO_SUPER_TREE_TEXT );
+        _return_to_super_tree.setToolTipText( "return to the super-tree (if in sub-tree)" );
         _return_to_super_tree.setEnabled( false );
-        _order = new JButton( "Order Tree" );
-        _uncollapse_all = new JButton( "Uncollapse All" );
+        _order = new JButton( "O" );
+        _order.setToolTipText( "order all" );
+        _uncollapse_all = new JButton( "U" );
+        _uncollapse_all.setToolTipText( "uncollapse all" );
         addJButton( _zoom_in_y, x_panel );
         addJButton( _zoom_out_x, y_panel );
         addJButton( _show_whole, y_panel );
         addJButton( _zoom_in_x, y_panel );
         addJButton( _zoom_out_y, z_panel );
+        
+        final JLabel spacer2 = new JLabel( "" );
+        add( spacer2 );
+        add( o_panel );
+        addJButton( _order, o_panel );
+        addJButton( _return_to_super_tree, o_panel );
+        addJButton( _uncollapse_all, o_panel );
+        
         if ( getConfiguration().doDisplayOption( Configuration.show_domain_architectures ) ) {
             setUpControlsForDomainStrucures();
         }
@@ -1266,11 +1287,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         if ( true ) {
             setUpControlsForRankCollapse();
         }
-        final JLabel spacer2 = new JLabel( "" );
-        add( spacer2 );
-        addJButton( _return_to_super_tree, this );
-        addJButton( _order, this );
-        addJButton( _uncollapse_all, this );
+      
         final JLabel spacer3 = new JLabel( "" );
         add( spacer3 );
         setVisibilityOfDomainStrucureControls();
@@ -1482,6 +1499,12 @@ final class ControlPanel extends JPanel implements ActionListener {
         _return_to_super_tree.setForeground( getConfiguration().getGuiButtonTextColor() );
         _return_to_super_tree.setEnabled( false );
     }
+    
+    void  deactivateButtonToUncollapseAll() {
+        _uncollapse_all.setForeground( getConfiguration().getGuiButtonTextColor() );
+        _uncollapse_all.setEnabled( false );
+    }
+    
 
     void displayedPhylogenyMightHaveChanged( final boolean recalc_longest_ext_node_info ) {
         if ( ( _mainpanel != null )
@@ -1499,6 +1522,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             updateDepthCollapseDepthDisplay();
             updateRankCollapseRankDisplay();
             getMainPanel().getControlPanel();
+            _mainpanel.getCurrentTreePanel().updateButtonToUncollapseAll();
             _mainpanel.getCurrentTreePanel().calculateScaleDistance();
             _mainpanel.getCurrentTreePanel().calcMaxDepth();
             _mainpanel.adjustJScrollPane();
@@ -2509,6 +2533,7 @@ final class ControlPanel extends JPanel implements ActionListener {
                         .setSelectedTypeInTypeMenu( getMainPanel().getCurrentTreePanel().getPhylogenyGraphicsType() );
             }
             getMainPanel().getCurrentTreePanel().updateSubSuperTreeButton();
+            getMainPanel().getCurrentTreePanel().updateButtonToUncollapseAll();
             getMainPanel().getControlPanel().search0();
             getMainPanel().getControlPanel().search1();
             getMainPanel().getControlPanel().updateDomainStructureEvaluethresholdDisplay();
