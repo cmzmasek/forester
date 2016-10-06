@@ -289,25 +289,10 @@ final class ControlPanel extends JPanel implements ActionListener {
                     showWhole();
                 }
                 else if ( e.getSource() == _return_to_super_tree ) {
-                    _mainpanel.getCurrentTreePanel().superTree();
-                    showWhole();
+                    returnedToSuperTreePressed();
                 }
                 else if ( e.getSource() == _order ) {
-                    DESCENDANT_SORT_PRIORITY pri = DESCENDANT_SORT_PRIORITY.NODE_NAME;
-                    if ( isShowTaxonomyScientificNames() || isShowTaxonomyCode() ) {
-                        pri = DESCENDANT_SORT_PRIORITY.TAXONOMY;
-                    }
-                    else if ( isShowSeqNames() || isShowSeqSymbols() || isShowGeneNames() ) {
-                        pri = DESCENDANT_SORT_PRIORITY.SEQUENCE;
-                    }
-                    PhylogenyMethods.orderAppearanceX( tp.getPhylogeny().getRoot(), true, pri );
-                    tp.setNodeInPreorderToNull();
-                    tp.getPhylogeny().externalNodesHaveChanged();
-                    tp.getPhylogeny().clearHashIdToNodeMap();
-                    tp.getPhylogeny().recalculateNumberOfExternalDescendants( true );
-                    tp.resetNodeIdToDistToLeafMap();
-                    tp.setEdited( true );
-                    displayedPhylogenyMightHaveChanged( true );
+                    orderPressed( tp );
                 }
                 else if ( e.getSource() == _uncollapse_all ) {
                     uncollapseAll( tp );
@@ -403,6 +388,31 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
         catch ( final Error err ) {
             AptxUtil.unexpectedError( err );
+        }
+    }
+
+    void orderPressed( final TreePanel tp ) {
+        DESCENDANT_SORT_PRIORITY pri = DESCENDANT_SORT_PRIORITY.NODE_NAME;
+        if ( isShowTaxonomyScientificNames() || isShowTaxonomyCode() ) {
+            pri = DESCENDANT_SORT_PRIORITY.TAXONOMY;
+        }
+        else if ( isShowSeqNames() || isShowSeqSymbols() || isShowGeneNames() ) {
+            pri = DESCENDANT_SORT_PRIORITY.SEQUENCE;
+        }
+        PhylogenyMethods.orderAppearanceX( tp.getPhylogeny().getRoot(), true, pri );
+        tp.setNodeInPreorderToNull();
+        tp.getPhylogeny().externalNodesHaveChanged();
+        tp.getPhylogeny().clearHashIdToNodeMap();
+        tp.getPhylogeny().recalculateNumberOfExternalDescendants( true );
+        tp.resetNodeIdToDistToLeafMap();
+        tp.setEdited( true );
+        displayedPhylogenyMightHaveChanged( true );
+    }
+
+    void returnedToSuperTreePressed() {
+        if ( getCurrentTreePanel().isCurrentTreeIsSubtree() ) {
+            _mainpanel.getCurrentTreePanel().superTree();
+            showWhole();
         }
     }
 
@@ -637,7 +647,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         getSearchResetButton0().setVisible( true );
         String[] queries = null;
         Set<Long> nodes = null;
-        query_str = query_str.replaceAll("\\s+", " " );
+        query_str = query_str.replaceAll( "\\s+", " " );
         if ( ( query_str.indexOf( ',' ) >= 0 ) && !getOptions().isSearchWithRegex() ) {
             queries = query_str.split( ",+" );
         }
@@ -705,7 +715,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         getSearchResetButton1().setVisible( true );
         String[] queries = null;
         Set<Long> nodes = null;
-        query_str = query_str.replaceAll("\\s+", " " );
+        query_str = query_str.replaceAll( "\\s+", " " );
         if ( ( query_str.indexOf( ',' ) >= 0 ) && !getOptions().isSearchWithRegex() ) {
             queries = query_str.split( ",+" );
         }
@@ -1202,12 +1212,11 @@ final class ControlPanel extends JPanel implements ActionListener {
         _return_to_super_tree.setForeground( getConfiguration().getGuiCheckboxAndButtonActiveColor() );
         _return_to_super_tree.setEnabled( true );
     }
-    
+
     void activateButtonToUncollapseAll() {
         _uncollapse_all.setForeground( getConfiguration().getGuiCheckboxAndButtonActiveColor() );
         _uncollapse_all.setEnabled( true );
     }
-    
 
     /**
      * Add zoom and quick edit buttons. (Last modified 8/9/04)
@@ -1242,11 +1251,11 @@ final class ControlPanel extends JPanel implements ActionListener {
         _zoom_in_y = new TypomaticJButton( "Y+" );
         _zoom_out_y = new TypomaticJButton( "Y-" );
         _show_whole = new JButton( "F" );
-        _show_whole.setToolTipText( "To fit the complete phylogeny to the current display size [F or Home]" );
-        _zoom_in_x.setToolTipText( "To zoom in horizontally [Shift+cursor-right]" );
-        _zoom_in_y.setToolTipText( "To zoom in vertically [Shift+cursor-up]" );
-        _zoom_out_x.setToolTipText( "To zoom out horizontally [Shift+cursor-left]" );
-        _zoom_out_y.setToolTipText( "To zoom out vertically [Shift+cursor-down]" );
+        _show_whole.setToolTipText( "fit and center to display [Alt+C or Home]" );
+        _zoom_in_x.setToolTipText( "zoom in horizontally [Alt+Right or Shift+Alt+mousewheel]" );
+        _zoom_in_y.setToolTipText( "zoom in vertically [Alt+Up or Shift+mousewheel]" );
+        _zoom_out_x.setToolTipText( "zoom out horizontally [Alt+Left or Shift+Alt+mousewheel]" );
+        _zoom_out_y.setToolTipText( "zoom out vertically [Alt+Down or Shift+mousewheel]" );
         if ( getConfiguration().isUseNativeUI() && ForesterUtil.isMac() ) {
             _zoom_out_x.setPreferredSize( new Dimension( 55, 10 ) );
             _zoom_in_x.setPreferredSize( new Dimension( 55, 10 ) );
@@ -1259,25 +1268,23 @@ final class ControlPanel extends JPanel implements ActionListener {
         _zoom_in_y.setPreferredSize( new Dimension( 10, 10 ) );
         _show_whole.setPreferredSize( new Dimension( 10, 10 ) );
         _return_to_super_tree = new JButton( RETURN_TO_SUPER_TREE_TEXT );
-        _return_to_super_tree.setToolTipText( "return to the super-tree (if in sub-tree)" );
+        _return_to_super_tree.setToolTipText( "return to the super-tree (if in sub-tree) [Alt+R]" );
         _return_to_super_tree.setEnabled( false );
         _order = new JButton( "O" );
-        _order.setToolTipText( "order all" );
+        _order.setToolTipText( "order all [Alt+O]" );
         _uncollapse_all = new JButton( "U" );
-        _uncollapse_all.setToolTipText( "uncollapse all" );
+        _uncollapse_all.setToolTipText( "uncollapse all [Alt+U]" );
         addJButton( _zoom_in_y, x_panel );
         addJButton( _zoom_out_x, y_panel );
         addJButton( _show_whole, y_panel );
         addJButton( _zoom_in_x, y_panel );
         addJButton( _zoom_out_y, z_panel );
-        
         final JLabel spacer2 = new JLabel( "" );
         add( spacer2 );
         add( o_panel );
         addJButton( _order, o_panel );
         addJButton( _return_to_super_tree, o_panel );
         addJButton( _uncollapse_all, o_panel );
-        
         if ( getConfiguration().doDisplayOption( Configuration.show_domain_architectures ) ) {
             setUpControlsForDomainStrucures();
         }
@@ -1287,7 +1294,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         if ( true ) {
             setUpControlsForRankCollapse();
         }
-      
         final JLabel spacer3 = new JLabel( "" );
         add( spacer3 );
         setVisibilityOfDomainStrucureControls();
@@ -1499,12 +1505,11 @@ final class ControlPanel extends JPanel implements ActionListener {
         _return_to_super_tree.setForeground( getConfiguration().getGuiButtonTextColor() );
         _return_to_super_tree.setEnabled( false );
     }
-    
-    void  deactivateButtonToUncollapseAll() {
+
+    void deactivateButtonToUncollapseAll() {
         _uncollapse_all.setForeground( getConfiguration().getGuiButtonTextColor() );
         _uncollapse_all.setEnabled( false );
     }
-    
 
     void displayedPhylogenyMightHaveChanged( final boolean recalc_longest_ext_node_info ) {
         if ( ( _mainpanel != null )
@@ -2629,8 +2634,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     final void updateRankCollapseRankDisplay() {
-      
-        
         if ( _rank_collapse_depth_tf != null ) {
             final String r = obtainRankCollapseDepthValue();
             if ( r.equals( "off" ) ) {
