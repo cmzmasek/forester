@@ -505,6 +505,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             showWhole();
         }
         else if ( o == _search_case_senstive_cbmi ) {
+            if ( ( _search_with_regex_cbmi != null ) && _search_case_senstive_cbmi.isSelected() ) {
+                _search_with_regex_cbmi.setSelected( false );
+            }
             updateOptions( getOptions() );
             getMainPanel().getControlPanel().search0();
             getMainPanel().getControlPanel().search1();
@@ -527,7 +530,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 _search_whole_words_only_cbmi.setSelected( false );
             }
             if ( ( _search_case_senstive_cbmi != null ) && _search_with_regex_cbmi.isSelected() ) {
-                _search_case_senstive_cbmi.setSelected( true );
+                _search_case_senstive_cbmi.setSelected( false );
             }
             updateOptions( getOptions() );
             getMainPanel().getControlPanel().search0();
