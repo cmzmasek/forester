@@ -113,10 +113,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String              OPTIONS_HEADER                          = "Options";
     static final String              SEARCH_SUBHEADER                        = "Search:";
     static final String              DISPLAY_SUBHEADER                       = "Display:";
-    static final String              SEARCH_TERMS_ONLY_LABEL                 = "Match Complete Terms Only";
-    static final String              SEARCH_REGEX_LABEL                      = "Search with Regular Expressions";
-    static final String              SEARCH_CASE_SENSITIVE_LABEL             = "Case Sensitive";
-    static final String              INVERSE_SEARCH_RESULT_LABEL             = "Negate Result";
+    static final String              SEARCH_TERMS_ONLY_LABEL                 = "Words";
+    static final String              SEARCH_REGEX_LABEL                      = "Regex";
+    static final String              SEARCH_CASE_SENSITIVE_LABEL             = "Match Case";
+    static final String              INVERSE_SEARCH_RESULT_LABEL             = "Inverse";
     static final String              COLOR_BY_TAXONOMIC_GROUP                = "Colorize by Taxonomic Group";
     static final String              DISPLAY_SCALE_LABEL                     = "Scale";
     static final String              NON_LINED_UP_CLADOGRAMS_LABEL           = "Non-Lined Up Cladogram";
