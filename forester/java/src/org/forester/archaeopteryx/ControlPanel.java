@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -54,10 +55,12 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollBar;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 
+import org.forester.archaeopteryx.ControlPanel.TreeDisplayType;
 import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
 import org.forester.archaeopteryx.util.TypomaticJButton;
@@ -71,7 +74,14 @@ import org.forester.phylogeny.data.SequenceRelation.SEQUENCE_RELATION_TYPE;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.util.ForesterUtil;
 
+
 final class ControlPanel extends JPanel implements ActionListener {
+
+    enum TreeDisplayType {
+                          CLADOGRAM,
+                          ALIGNED_PHYLOGRAM,
+                          UNALIGNED_PHYLOGRAM
+    };
 
     enum NodeClickAction {
                           ADD_NEW_NODE,
@@ -131,14 +141,17 @@ final class ControlPanel extends JPanel implements ActionListener {
     private int                               _cut_subtree_item;
     private JButton                           _decr_domain_structure_evalue_thr;
     private int                               _delete_node_or_subtree_item;
-    private JCheckBox                         _display_as_phylogram_cb;
+    private JRadioButton                      _display_as_unaligned_phylogram_rb;
+    private JRadioButton                      _display_as_aligned_phylogram_rb;
+    private JRadioButton                      _display_as_cladogram_rb;
+    private ButtonGroup                       _display_as_buttongroup;
     // Tree checkboxes
     private JCheckBox                         _display_internal_data;
     private JLabel                            _domain_display_label;
     private JTextField                        _domain_structure_evalue_thr_tf;
     private JTextField                        _depth_collapse_depth_tf;
     private JTextField                        _rank_collapse_depth_tf;
-    private List<Boolean>                     _draw_phylogram;
+    private List<TreeDisplayType>             _tree_display_types;
     private JCheckBox                         _dynamically_hide_data;
     private int                               _edit_node_data_item;
     private int                               _get_ext_desc_data;
@@ -208,7 +221,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JButton                           _decr_rank_collapse_level;
     private JButton                           _incr_rank_collapse_level;
     private JLabel                            _rank_collapse_label;
-
+    
     ControlPanel( final MainPanel ap, final Configuration configuration ) {
         init();
         _mainpanel = ap;
@@ -263,8 +276,16 @@ final class ControlPanel extends JPanel implements ActionListener {
                 displayedPhylogenyMightHaveChanged( true );
             }
             else if ( ( tp != null ) && ( tp.getPhylogeny() != null ) ) {
-                if ( e.getSource() == getDisplayAsPhylogramCb() ) {
-                    setDrawPhylogram( getDisplayAsPhylogramCb().isSelected() );
+                if ( e.getSource() == getDisplayAsUnalignedPhylogramRb() ) {
+                    setTreeDisplayType( TreeDisplayType.UNALIGNED_PHYLOGRAM );
+                    showWhole();
+                }
+                if ( e.getSource() == getDisplayAsAlignedPhylogramRb() ) {
+                    setTreeDisplayType( TreeDisplayType.ALIGNED_PHYLOGRAM );
+                    showWhole();
+                }
+                if ( e.getSource() == getDisplayAsCladogramRb() ) {
+                    setTreeDisplayType( TreeDisplayType.CLADOGRAM );
                     showWhole();
                 }
                 // Zoom buttons
@@ -424,8 +445,16 @@ final class ControlPanel extends JPanel implements ActionListener {
         return _color_acc_species;
     }
 
-    public JCheckBox getDisplayAsPhylogramCb() {
-        return _display_as_phylogram_cb;
+    public JRadioButton getDisplayAsCladogramRb() {
+        return _display_as_cladogram_rb;
+    }
+
+    public JRadioButton getDisplayAsAlignedPhylogramRb() {
+        return _display_as_aligned_phylogram_rb;
+    }
+
+    public JRadioButton getDisplayAsUnalignedPhylogramRb() {
+        return _display_as_unaligned_phylogram_rb;
     }
 
     public JCheckBox getDynamicallyHideData() {
@@ -611,8 +640,8 @@ final class ControlPanel extends JPanel implements ActionListener {
     }// addSequenceRelationBlock
 
     /* GUILHEM_END */
-    private List<Boolean> getIsDrawPhylogramList() {
-        return _draw_phylogram;
+    private List<TreeDisplayType> getTreeDisplayTypes() {
+        return _tree_display_types;
     }
 
     // This takes care of ArchaeopteryxE-issue.
@@ -631,14 +660,14 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     private void init() {
-        _draw_phylogram = new ArrayList<Boolean>();
+        _tree_display_types = new ArrayList<TreeDisplayType>();
         setSpeciesColors( new HashMap<String, Color>() );
         setSequenceColors( new HashMap<String, Color>() );
         setAnnotationColors( new HashMap<String, Color>() );
     }
 
-    private boolean isDrawPhylogram( final int index ) {
-        return getIsDrawPhylogramList().get( index );
+    private TreeDisplayType getTreeDisplayType( final int index ) {
+        return getTreeDisplayTypes().get( index );
     }
 
     private void search0( final MainPanel main_panel, final Phylogeny tree, String query_str ) {
@@ -777,8 +806,8 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
     }
 
-    private void setDrawPhylogram( final int index, final boolean b ) {
-        getIsDrawPhylogramList().set( index, b );
+    private void setTreeDisplayType( final int index, final TreeDisplayType t ) {
+        getTreeDisplayTypes().set( index, t );
     }
 
     private void setupClickToOptions() {
@@ -1002,12 +1031,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     private void setupDisplayCheckboxes() {
-        if ( _configuration.doDisplayOption( Configuration.display_as_phylogram ) ) {
-            addCheckbox( Configuration.display_as_phylogram,
-                         _configuration.getDisplayTitle( Configuration.display_as_phylogram ) );
-            setCheckbox( Configuration.display_as_phylogram,
-                         _configuration.doCheckOption( Configuration.display_as_phylogram ) );
-        }
+        
         if ( _configuration.doDisplayOption( Configuration.dynamically_hide_data ) ) {
             addCheckbox( Configuration.dynamically_hide_data,
                          _configuration.getDisplayTitle( Configuration.dynamically_hide_data ) );
@@ -1302,12 +1326,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     void addCheckbox( final int which, final String title ) {
         final JPanel ch_panel = new JPanel( new BorderLayout( 0, 0 ) );
         switch ( which ) {
-            case Configuration.display_as_phylogram:
-                _display_as_phylogram_cb = new JCheckBox( title );
-                getDisplayAsPhylogramCb().setToolTipText( "To switch between phylogram and cladogram display" );
-                addJCheckBox( getDisplayAsPhylogramCb(), ch_panel );
-                add( ch_panel );
-                break;
             case Configuration.display_internal_data:
                 _display_internal_data = new JCheckBox( title );
                 _display_internal_data.setToolTipText( "To allow or disallow display of internal labels" );
@@ -1491,6 +1509,16 @@ final class ControlPanel extends JPanel implements ActionListener {
         jcb.addActionListener( this );
     }
 
+    private final void setupJRadioButton( final JRadioButton rb ) {
+        rb.setFocusPainted( false );
+        rb.setFont( ControlPanel.jcb_font );
+        if ( !_configuration.isUseNativeUI() ) {
+            rb.setBackground( getConfiguration().getGuiBackgroundColor() );
+            rb.setForeground( getConfiguration().getGuiCheckboxTextColor() );
+        }
+        rb.addActionListener( this );
+    }
+
     void addJTextField( final JTextField tf, final JPanel p ) {
         if ( !_configuration.isUseNativeUI() ) {
             tf.setForeground( getConfiguration().getGuiBackgroundColor() );
@@ -1626,7 +1654,8 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     boolean isDrawPhylogram() {
-        return isDrawPhylogram( getMainPanel().getCurrentTabIndex() );
+        final TreeDisplayType t = getTreeDisplayType( getMainPanel().getCurrentTabIndex() );
+        return ((t == TreeDisplayType.ALIGNED_PHYLOGRAM) ||( t == TreeDisplayType.UNALIGNED_PHYLOGRAM));
     }
 
     boolean isDynamicallyHideData() {
@@ -1723,11 +1752,16 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     void phylogenyAdded( final Configuration configuration ) {
-        getIsDrawPhylogramList().add( configuration.isDrawAsPhylogram() );
+        if (configuration.isDrawAsPhylogram()) {
+            getTreeDisplayTypes().add( TreeDisplayType.UNALIGNED_PHYLOGRAM);
+        }
+        else {
+            getTreeDisplayTypes().add( TreeDisplayType.CLADOGRAM);
+        }
     }
 
     void phylogenyRemoved( final int index ) {
-        getIsDrawPhylogramList().remove( index );
+        getTreeDisplayTypes().remove( index );
     }
 
     void search0() {
@@ -1795,8 +1829,10 @@ final class ControlPanel extends JPanel implements ActionListener {
     void setCheckbox( final int which, final boolean state ) {
         switch ( which ) {
             case Configuration.display_as_phylogram:
-                if ( getDisplayAsPhylogramCb() != null ) {
-                    getDisplayAsPhylogramCb().setSelected( state );
+                if ( getDisplayAsUnalignedPhylogramRb() != null ) {
+                    getDisplayAsUnalignedPhylogramRb().setSelected( state );
+                    getDisplayAsAlignedPhylogramRb().setSelected( !state );
+                    getDisplayAsCladogramRb().setSelected( !state );
                 }
                 break;
             case Configuration.display_internal_data:
@@ -2044,13 +2080,31 @@ final class ControlPanel extends JPanel implements ActionListener {
         _color_branches = color_branches;
     }
 
-    void setDrawPhylogram( final boolean b ) {
-        getDisplayAsPhylogramCb().setSelected( b );
-        setDrawPhylogram( getMainPanel().getCurrentTabIndex(), b );
+    void setTreeDisplayType( final TreeDisplayType t ) {
+        switch (t) {
+            case UNALIGNED_PHYLOGRAM:
+                getDisplayAsUnalignedPhylogramRb().setSelected( true );
+                break;
+            case ALIGNED_PHYLOGRAM:
+                getDisplayAsAlignedPhylogramRb().setSelected( true );
+                break;
+           case CLADOGRAM:
+                getDisplayAsCladogramRb().setSelected( true );
+                break;
+        }
+        setTreeDisplayType(  getMainPanel().getCurrentTabIndex(), t );
     }
 
     void setDrawPhylogramEnabled( final boolean b ) {
-        getDisplayAsPhylogramCb().setEnabled( b );
+        if ( getDisplayAsAlignedPhylogramRb() != null &&
+                getDisplayAsUnalignedPhylogramRb() != null &&
+                getDisplayAsCladogramRb() != null
+                ) {
+    
+        getDisplayAsAlignedPhylogramRb().setEnabled( b );
+        getDisplayAsUnalignedPhylogramRb().setEnabled( b );
+        getDisplayAsCladogramRb().setEnabled( b );
+    }
     }
 
     void setDynamicHidingIsOn( final boolean is_on ) {
@@ -2091,7 +2145,8 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     void setupControls() {
-        // The tree display options:
+       
+        setupTreeDisplayTypeOptions();
         setupDisplayCheckboxes();
         /* GUILHEM_BEG */
         // The sequence relation query selection combo-box
@@ -2109,6 +2164,33 @@ final class ControlPanel extends JPanel implements ActionListener {
         setupSearchTools1();
     }
 
+    void setupTreeDisplayTypeOptions() {
+        _display_as_unaligned_phylogram_rb = new JRadioButton( "PH" );
+        _display_as_aligned_phylogram_rb = new JRadioButton( "aPH" );
+        _display_as_cladogram_rb = new JRadioButton( "CL" );
+        _display_as_buttongroup = new ButtonGroup();
+        _display_as_buttongroup.add( _display_as_unaligned_phylogram_rb );
+        _display_as_buttongroup.add( _display_as_aligned_phylogram_rb );
+        _display_as_buttongroup.add( _display_as_cladogram_rb );
+        getDisplayAsUnalignedPhylogramRb().setToolTipText( "(unaligned) phylogram" );
+        getDisplayAsAlignedPhylogramRb().setToolTipText( "aligned phylogram" );
+        getDisplayAsCladogramRb().setToolTipText( "cladogram" );
+        setupJRadioButton( getDisplayAsUnalignedPhylogramRb() );
+        setupJRadioButton( getDisplayAsAlignedPhylogramRb() );
+        setupJRadioButton( getDisplayAsCladogramRb() );
+        final JPanel p = new JPanel(new GridLayout( 1, 3, 0, 0 ));
+        p.setFont( ControlPanel.jcb_font );
+        if ( !_configuration.isUseNativeUI() ) {
+            p.setBackground( getConfiguration().getGuiBackgroundColor() );
+            p.setForeground( getConfiguration().getGuiCheckboxTextColor() );
+        }
+        p.add(  _display_as_unaligned_phylogram_rb );
+        p.add( _display_as_aligned_phylogram_rb );
+        p.add( _display_as_cladogram_rb );
+        add( p );
+    }
+    
+    
     void setUpControlsForDomainStrucures() {
         _domain_display_label = new JLabel( "Domain Architectures:" );
         add( customizeLabel( _domain_display_label, getConfiguration() ) );
@@ -2522,11 +2604,12 @@ final class ControlPanel extends JPanel implements ActionListener {
             if ( getCurrentTreePanel().isPhyHasBranchLengths()
                     && ( getCurrentTreePanel().getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR ) ) {
                 setDrawPhylogramEnabled( true );
-                setDrawPhylogram( isDrawPhylogram() );
+              
+                setTreeDisplayType( getTreeDisplayType(  getMainPanel().getCurrentTabIndex() ) );
             }
             else {
                 setDrawPhylogramEnabled( false );
-                setDrawPhylogram( false );
+                setTreeDisplayType( TreeDisplayType.CLADOGRAM );
             }
             if ( getMainPanel().getMainFrame() == null ) {
                 // Must be "E" applet version.
@@ -2735,6 +2818,12 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
     }
 
+    private final boolean isDrawPhylogram( int currentTabIndex ) {
+        TreeDisplayType t = getTreeDisplayType( currentTabIndex );
+        return ((t==TreeDisplayType.ALIGNED_PHYLOGRAM)|(t==TreeDisplayType.UNALIGNED_PHYLOGRAM));
+        
+    }
+
     final void zoomOutY( final float factor ) {
         final TreePanel treepanel = getMainPanel().getCurrentTreePanel();
         treepanel.multiplyUrtFactor( 0.9f );
@@ -2764,5 +2853,15 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     final public JCheckBox getUseBranchWidthsCb() {
         return _width_branches;
+    }
+
+    public TreeDisplayType getTreeDisplayType() {
+        if (_display_as_unaligned_phylogram_rb.isSelected() ) {
+            return TreeDisplayType.UNALIGNED_PHYLOGRAM;
+        }
+        else if (_display_as_aligned_phylogram_rb.isSelected() ) {
+            return TreeDisplayType.ALIGNED_PHYLOGRAM;
+        }
+        return TreeDisplayType.CLADOGRAM;
     }
 }

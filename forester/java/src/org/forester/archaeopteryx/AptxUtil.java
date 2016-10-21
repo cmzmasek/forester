@@ -63,6 +63,7 @@ import javax.swing.JApplet;
 import javax.swing.JOptionPane;
 import javax.swing.text.MaskFormatter;
 
+import org.forester.archaeopteryx.ControlPanel.TreeDisplayType;
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.nexus.NexusPhylogeniesParser;
 import org.forester.io.parsers.nhx.NHXParser;
@@ -805,13 +806,16 @@ public final class AptxUtil {
             final boolean has_bl = AptxUtil.isHasAtLeastOneBranchLengthLargerThanZero( t );
              
             if ( !has_bl ) {
-                cp.setDrawPhylogram( false );
+                cp.setTreeDisplayType( TreeDisplayType.CLADOGRAM );
                 cp.setDrawPhylogramEnabled( false );
             }
             else {
                 final boolean has_all_bl = AptxUtil.isHasNoBranchLengthSmallerThanZero( t );
-                cp.setDrawPhylogram(  has_all_bl );
-                if ( cp.getDisplayAsPhylogramCb() != null ) {
+                if (has_all_bl) {
+                    cp.setTreeDisplayType( TreeDisplayType.UNALIGNED_PHYLOGRAM );
+                }
+               
+                if ( cp.getDisplayAsUnalignedPhylogramRb() != null ) {
                     cp.setDrawPhylogramEnabled( true );
                 }
             }
@@ -823,7 +827,7 @@ public final class AptxUtil {
         if ( ( t != null ) && !t.isEmpty() ) {
             final boolean has_bl = AptxUtil.isHasAtLeastOneBranchLengthLargerThanZero( t );
             if ( !has_bl ) {
-                atv_control.setDrawPhylogram( false );
+                atv_control.setTreeDisplayType( TreeDisplayType.CLADOGRAM );
                 atv_control.setDrawPhylogramEnabled( false );
             }
             if ( t.getFirstExternalNode().getBranchData().getBranchColor() != null
@@ -839,15 +843,17 @@ public final class AptxUtil {
             
             
             if ( configuration.doGuessCheckOption( Configuration.display_as_phylogram ) ) {
-                if ( atv_control.getDisplayAsPhylogramCb() != null ) {
+                if ( atv_control.getDisplayAsAlignedPhylogramRb() != null ) {
                     if ( has_bl ) {
                         final boolean has_all_bl = AptxUtil.isHasNoBranchLengthSmallerThanZero( t );
-                        
-                        atv_control.setDrawPhylogram( has_all_bl );
+                        if (has_all_bl) {
+                            atv_control.setTreeDisplayType( TreeDisplayType.UNALIGNED_PHYLOGRAM );
+                        }
+                       
                         atv_control.setDrawPhylogramEnabled( true );
                     }
                     else {
-                        atv_control.setDrawPhylogram( false );
+                        atv_control.setTreeDisplayType( TreeDisplayType.CLADOGRAM );
                     }
                 }
             }

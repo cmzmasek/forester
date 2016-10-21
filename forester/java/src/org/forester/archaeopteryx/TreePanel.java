@@ -97,6 +97,7 @@ import javax.swing.PopupFactory;
 
 import org.forester.archaeopteryx.Configuration.EXT_NODE_DATA_RETURN_ON;
 import org.forester.archaeopteryx.ControlPanel.NodeClickAction;
+import org.forester.archaeopteryx.ControlPanel.TreeDisplayType;
 import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
@@ -2926,7 +2927,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             down_shift_factor = 1;
         }
         float pos_x;
-        if ( getControlPanel().isDrawPhylogram() && getOptions().isAlignExtLabelsInPhylogram()
+        if ( getControlPanel().getTreeDisplayType() == TreeDisplayType.ALIGNED_PHYLOGRAM
                 && ( node.isExternal() || node.isCollapse() ) ) {
             pos_x = ( float ) ( ( getMaxDistanceToRoot() * getXcorrectionFactor() )
                     + ( getOptions().getDefaultNodeShapeSize() / 2 ) + x + ( 2 * TreePanel.MOVE ) + getXdistance()
@@ -2942,7 +2943,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         else {
             pos_y = ( node.getYcoord() + ( getFontMetrics( g.getFont() ).getAscent() / down_shift_factor ) );
         }
-        if ( getControlPanel().isDrawPhylogram() && getOptions().isAlignExtLabelsInPhylogram()
+        if ( getControlPanel().getTreeDisplayType() == TreeDisplayType.ALIGNED_PHYLOGRAM
                 && ( node.isExternal() || node.isCollapse() ) ) {
             drawConnection( node.getXcoord(), pos_x - x, node.getYcoord(), 5, 20, g, to_pdf );
             if ( node.isCollapse() ) {
@@ -3649,7 +3650,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final boolean using_visual_font = setFont( g, node, is_in_found_nodes );
         setColor( g, node, to_graphics_file, to_pdf, is_in_found_nodes, getTreeColorSet().getTaxonomyColor() );
         float start_x = node.getXcoord() + 3 + ( getOptions().getDefaultNodeShapeSize() / 2 ) + x_shift;
-        if ( getControlPanel().isDrawPhylogram() && getOptions().isAlignExtLabelsInPhylogram() && node.isExternal() ) {
+        if ( getControlPanel().getTreeDisplayType() == TreeDisplayType.ALIGNED_PHYLOGRAM && node.isExternal() ) {
             start_x = ( float ) ( ( getMaxDistanceToRoot() * getXcorrectionFactor() )
                     + ( getOptions().getDefaultNodeShapeSize() / 2 ) + x_shift + ( 2 * TreePanel.MOVE ) + getXdistance()
                     + 3 );
