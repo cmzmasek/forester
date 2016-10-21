@@ -31,14 +31,6 @@
 		</javac> 
 	</target>
 
-	<target name="compile_applets_only" description="Compiles the Task" depends="clean">
-		<mkdir dir="${classes.dir}" />
-		<javac source="1.8" target="1.8" debug="true" debuglevel="lines,source" srcdir="${src.dir}" destdir="${classes.dir}" optimize="on" verbose="false" classpath="${itextjar};${commonscodecjar};${openchartjar}">
-			<compilerarg value="-Xlint:deprecation" />
-			<compilerarg value="-Xlint:unchecked" />
-		</javac> 
-	</target>
-
 	<target name="jar" description="JARs the classes files" depends="compile,copy_resources">
 		<unjar src="${itextjar}" dest="${classes.dir}">
             <patternset>
@@ -67,44 +59,8 @@
 		</jar>
 	</target>
 
-	<target name="jar_applets_only" description="JARs the classes files" depends="compile_applets_only,copy_resources">
-		<unjar src="${itextjar}" dest="${classes.dir}">
-		    <patternset>
-		        <include name="**/*.class" />
-		        <include name="**/*.afm" />
-		        <include name="**/*.txt" />
-		        <exclude name="**/*Test*.class" />
-		    </patternset>
-		 </unjar>
-		<unjar src="${commonscodecjar}" dest="${classes.dir}">
-            <patternset>
-                <include name="**/*.class" />
-                <exclude name="**/*Test*.class" />
-            </patternset>
-        </unjar>
-		<jar level="9" destfile="${archaeopteryx_applets_jar}" basedir="${classes.dir}" excludes="org/forester/application/** 
-			          org/forester/development/**
-			          org/forester/evoinference/**
-			          org/forester/go/**
-			          org/forester/go/etc/**
-			          org/forester/msa_compactor/**
-			          org/forester/pccx/**
-			          org/forester/surfacing/**
-			          org/forester/test/**
-			          org/forester/tools/**"
-			          duplicate="fail" index="true">
-			<manifest>
-                <attribute name="Permissions" value="all-permissions" />
-                <attribute name="Codebase" value="*" />
-                <attribute name="Application-Name" value="Archaeopteryx" />
-            </manifest>
-		</jar>
-	</target>
-
 	<target name="all" description="" depends="jar">
 	</target>
 
-	<target name="applets_only" description="" depends="jar_applets_only">
-	</target>
 
 </project>
