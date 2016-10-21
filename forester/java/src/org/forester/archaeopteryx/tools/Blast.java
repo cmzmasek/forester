@@ -28,12 +28,6 @@ package org.forester.archaeopteryx.tools;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Vector;
-
-import javax.swing.JApplet;
 
 import org.forester.archaeopteryx.AptxUtil;
 import org.forester.archaeopteryx.TreePanel;
@@ -46,7 +40,7 @@ public final class Blast {
 
     final public static void openNcbiBlastWeb( final String query,
                                                final boolean is_nucleic_acids,
-                                               final JApplet applet,
+                                             
                                                final TreePanel p ) {
         //http://www.ncbi.nlm.nih.gov/blast/Blast.cgi?CMD=Web&PAGE=Proteins&DATABASE=swissprot&QUERY=gi|163848401
         final StringBuilder uri_str = new StringBuilder();
@@ -60,7 +54,7 @@ public final class Blast {
         uri_str.append( "&QUERY=" );
         uri_str.append( query );
         try {
-            AptxUtil.launchWebBrowser( new URI( uri_str.toString() ), applet != null, applet, "_aptx_blast" );
+            AptxUtil.launchWebBrowser( new URI( uri_str.toString() ), "_aptx_blast" );
         }
         catch ( final IOException e ) {
             AptxUtil.showErrorMessage( p, e.toString() );

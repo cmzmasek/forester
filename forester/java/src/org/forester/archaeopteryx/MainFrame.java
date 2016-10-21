@@ -40,7 +40,6 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 import javax.swing.Box;
-import javax.swing.JApplet;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -327,14 +326,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     @Override
     public void actionPerformed( final ActionEvent e ) {
         final Object o = e.getSource();
-        boolean is_applet = false;
-        JApplet applet = null;
-        if ( getCurrentTreePanel() != null ) {
-            is_applet = getCurrentTreePanel().isApplet();
-            if ( is_applet ) {
-                applet = getCurrentTreePanel().obtainApplet();
-            }
-        }
+      
         if ( o == _exit_item ) {
             close();
         }
@@ -607,7 +599,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         else if ( o == _help_item ) {
             try {
-                AptxUtil.openWebsite( AptxConstants.APTX_DOC_SITE, is_applet, applet );
+                AptxUtil.openWebsite( AptxConstants.APTX_DOC_SITE );
             }
             catch ( final IOException e1 ) {
                 ForesterUtil.printErrorMessage( AptxConstants.PRG_NAME, e1.toString() );
@@ -615,7 +607,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         else if ( o == _website_item ) {
             try {
-                AptxUtil.openWebsite( AptxConstants.APTX_WEB_SITE, is_applet, applet );
+                AptxUtil.openWebsite( AptxConstants.APTX_WEB_SITE);
             }
             catch ( final IOException e1 ) {
                 ForesterUtil.printErrorMessage( AptxConstants.PRG_NAME, e1.toString() );
@@ -623,7 +615,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         else if ( o == _mailing_list_item ) {
             try {
-                AptxUtil.openWebsite( AptxConstants.APTX_MAILING_LIST, is_applet, applet );
+                AptxUtil.openWebsite( AptxConstants.APTX_MAILING_LIST );
             }
             catch ( final IOException e1 ) {
                 ForesterUtil.printErrorMessage( AptxConstants.PRG_NAME, e1.toString() );
@@ -631,7 +623,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         else if ( o == _phyloxml_website_item ) {
             try {
-                AptxUtil.openWebsite( AptxConstants.PHYLOXML_WEB_SITE, is_applet, applet );
+                AptxUtil.openWebsite( AptxConstants.PHYLOXML_WEB_SITE );
             }
             catch ( final IOException e1 ) {
                 ForesterUtil.printErrorMessage( AptxConstants.PRG_NAME, e1.toString() );
@@ -639,7 +631,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         else if ( o == _aptx_ref_item ) {
             try {
-                AptxUtil.openWebsite( AptxConstants.APTX_REFERENCE_URL, is_applet, applet );
+                AptxUtil.openWebsite( AptxConstants.APTX_REFERENCE_URL );
             }
             catch ( final IOException e1 ) {
                 ForesterUtil.printErrorMessage( AptxConstants.PRG_NAME, e1.toString() );
@@ -647,7 +639,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         else if ( o == _phyloxml_ref_item ) {
             try {
-                AptxUtil.openWebsite( AptxConstants.PHYLOXML_REFERENCE_URL, is_applet, applet );
+                AptxUtil.openWebsite( AptxConstants.PHYLOXML_REFERENCE_URL );
             }
             catch ( final IOException e1 ) {
                 ForesterUtil.printErrorMessage( AptxConstants.PRG_NAME, e1.toString() );

@@ -56,7 +56,6 @@ import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.phylogeny.iterators.PostorderTreeIterator;
 import org.forester.phylogeny.iterators.PreorderTreeIterator;
 import org.forester.util.FailedConditionCheckException;
-import org.forester.util.ForesterUtil;
 
 public class Phylogeny {
 

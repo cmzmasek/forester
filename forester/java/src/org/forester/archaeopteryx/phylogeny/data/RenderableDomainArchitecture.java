@@ -38,8 +38,8 @@ import java.math.BigDecimal;
 import java.util.Map;
 import java.util.SortedMap;
 
-import org.forester.archaeopteryx.AptxUtil;
 import org.forester.archaeopteryx.AptxConstants;
+import org.forester.archaeopteryx.AptxUtil;
 import org.forester.archaeopteryx.TreePanel;
 import org.forester.phylogeny.data.DomainArchitecture;
 import org.forester.phylogeny.data.PhylogenyData;

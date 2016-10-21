@@ -84,7 +84,6 @@ import java.util.Set;
 import java.util.SortedSet;
 
 import javax.swing.BorderFactory;
-import javax.swing.JApplet;
 import javax.swing.JColorChooser;
 import javax.swing.JDialog;
 import javax.swing.JMenuItem;
@@ -741,12 +740,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         type = 'n';
                     }
                 }
-                JApplet applet = null;
-                if ( isApplet() ) {
-                    applet = obtainApplet();
-                }
+               
+               
                 try {
-                    Blast.openNcbiBlastWeb( query, type == 'n', applet, this );
+                    Blast.openNcbiBlastWeb( query, type == 'n', this );
                 }
                 catch ( final Exception e ) {
                     e.printStackTrace();
@@ -2005,8 +2002,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             for( final String uri_str : uri_strs ) {
                 try {
                     AptxUtil.launchWebBrowser( new URI( uri_str ),
-                                               isApplet(),
-                                               isApplet() ? obtainApplet() : null,
                                                "_aptx_seq" );
                 }
                 catch ( final IOException e ) {
@@ -2033,8 +2028,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ( !ForesterUtil.isEmpty( uri_str ) ) {
             try {
                 AptxUtil.launchWebBrowser( new URI( uri_str ),
-                                           isApplet(),
-                                           isApplet() ? obtainApplet() : null,
+                                          
                                            "_aptx_seq" );
             }
             catch ( final IOException e ) {
@@ -2115,8 +2109,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ( !ForesterUtil.isEmpty( uri_str ) ) {
             try {
                 AptxUtil.launchWebBrowser( new URI( uri_str ),
-                                           isApplet(),
-                                           isApplet() ? obtainApplet() : null,
                                            "_aptx_tax" );
             }
             catch ( final IOException e ) {
@@ -4268,14 +4260,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                             + ", unique entries: " + size;
                 }
                 final String s = sb.toString().trim();
-                if ( getMainPanel().getMainFrame() == null ) {
-                    // Must be "E" applet version.
-                    final ArchaeopteryxE ae = ( ArchaeopteryxE ) ( ( MainPanelApplets ) getMainPanel() ).getApplet();
-                    ae.showTextFrame( s, title );
-                }
-                else {
+               
                     getMainPanel().getMainFrame().showTextFrame( s, title );
-                }
+                
             }
         }
     }
@@ -4587,14 +4574,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         else {
             getControlPanel().setDrawPhylogramEnabled( false );
         }
-        if ( getMainPanel().getMainFrame() == null ) {
-            // Must be "E" applet version.
-            ( ( ArchaeopteryxE ) ( ( MainPanelApplets ) getMainPanel() ).getApplet() )
-                    .setSelectedTypeInTypeMenu( getPhylogenyGraphicsType() );
-        }
-        else {
+       
             getMainPanel().getMainFrame().setSelectedTypeInTypeMenu( getPhylogenyGraphicsType() );
-        }
+        
     }
 
     final void calcMaxDepth() {
@@ -5301,9 +5283,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 && ( e.getY() <= ( getOvRectangle().getY() + getOvRectangle().getHeight() + 1 ) ) );
     }
 
-    final boolean isApplet() {
-        return getMainPanel() instanceof MainPanelApplets;
-    }
+    
 
     final boolean isCanCollapse() {
         return ( getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.UNROOTED );
@@ -5606,9 +5586,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         _urt_factor *= f;
     }
 
-    final JApplet obtainApplet() {
-        return ( ( MainPanelApplets ) getMainPanel() ).getApplet();
-    }
+  
 
     final void paintBranchCircular( final PhylogenyNode p,
                                     final PhylogenyNode c,

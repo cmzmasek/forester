@@ -60,7 +60,6 @@ import javax.swing.JScrollBar;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 
-import org.forester.archaeopteryx.ControlPanel.TreeDisplayType;
 import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
 import org.forester.archaeopteryx.util.TypomaticJButton;
@@ -644,19 +643,8 @@ final class ControlPanel extends JPanel implements ActionListener {
         return _tree_display_types;
     }
 
-    // This takes care of ArchaeopteryxE-issue.
-    // Can, and will, return null prior to  ArchaeopteryxE initialization completion.
-    final private MainFrame getMainFrame() {
-        MainFrame mf = getMainPanel().getMainFrame();
-        if ( mf == null ) {
-            // Must be "E" applet version.
-            final ArchaeopteryxE e = ( ArchaeopteryxE ) ( ( MainPanelApplets ) getMainPanel() ).getApplet();
-            if ( e.getMainPanel() == null ) {
-                return null;
-            }
-            mf = e.getMainPanel().getMainFrame();
-        }
-        return mf;
+     final private MainFrame getMainFrame() {
+        return getMainPanel().getMainFrame();
     }
 
     private void init() {
@@ -2611,15 +2599,10 @@ final class ControlPanel extends JPanel implements ActionListener {
                 setDrawPhylogramEnabled( false );
                 setTreeDisplayType( TreeDisplayType.CLADOGRAM );
             }
-            if ( getMainPanel().getMainFrame() == null ) {
-                // Must be "E" applet version.
-                final ArchaeopteryxE e = ( ArchaeopteryxE ) ( ( MainPanelApplets ) getMainPanel() ).getApplet();
-                e.setSelectedTypeInTypeMenu( e.getCurrentTreePanel().getPhylogenyGraphicsType() );
-            }
-            else {
+           
                 getMainPanel().getMainFrame()
                         .setSelectedTypeInTypeMenu( getMainPanel().getCurrentTreePanel().getPhylogenyGraphicsType() );
-            }
+            
             getMainPanel().getCurrentTreePanel().updateSubSuperTreeButton();
             getMainPanel().getCurrentTreePanel().updateButtonToUncollapseAll();
             getMainPanel().getControlPanel().search0();

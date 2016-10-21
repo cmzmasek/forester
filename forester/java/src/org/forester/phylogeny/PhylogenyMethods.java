@@ -42,7 +42,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.forester.archaeopteryx.TreePanelUtil;
 import org.forester.io.parsers.FastaParser;
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
@@ -66,7 +65,6 @@ import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.phylogeny.iterators.PreorderTreeIterator;
 import org.forester.util.BasicDescriptiveStatistics;
 import org.forester.util.DescriptiveStatistics;
-import org.forester.util.FailedConditionCheckException;
 import org.forester.util.ForesterUtil;
 import org.forester.util.TaxonomyUtil;
 

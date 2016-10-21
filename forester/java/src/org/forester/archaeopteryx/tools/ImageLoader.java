@@ -35,8 +35,8 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
-import org.forester.archaeopteryx.AptxUtil;
 import org.forester.archaeopteryx.AptxConstants;
+import org.forester.archaeopteryx.AptxUtil;
 import org.forester.archaeopteryx.TreePanel;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Taxonomy;

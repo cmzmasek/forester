@@ -32,7 +32,6 @@ import javax.swing.JOptionPane;
 import org.forester.analysis.AncestralTaxonomyInference;
 import org.forester.analysis.AncestralTaxonomyInferenceException;
 import org.forester.archaeopteryx.MainFrame;
-import org.forester.archaeopteryx.MainFrameApplication;
 import org.forester.archaeopteryx.TreePanel;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.ws.seqdb.SequenceDbWsTools;

@@ -59,7 +59,6 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
-import javax.swing.JApplet;
 import javax.swing.JOptionPane;
 import javax.swing.text.MaskFormatter;
 
@@ -245,13 +244,8 @@ public final class AptxUtil {
     }
 
     final public static void launchWebBrowser( final URI uri,
-                                               final boolean is_applet,
-                                               final JApplet applet,
-                                               final String frame_name ) throws IOException {
-        if ( is_applet ) {
-            applet.getAppletContext().showDocument( uri.toURL(), frame_name );
-        }
-        else {
+                                             final String frame_name ) throws IOException {
+       
             // This requires Java 1.6:
             // =======================
             // boolean no_desktop = false;
@@ -282,7 +276,7 @@ public final class AptxUtil {
                 throw new IOException( e );
             }
             // }
-        }
+        
     }
 
     public static Set<Taxonomy> obtainAllDistinctTaxonomies( final PhylogenyNode node ) {
@@ -880,9 +874,9 @@ public final class AptxUtil {
         }
     }
 
-    final static void openWebsite( final String url, final boolean is_applet, final JApplet applet ) throws IOException {
+    final static void openWebsite( final String url ) throws IOException {
         try {
-            AptxUtil.launchWebBrowser( new URI( url ), is_applet, applet, AptxConstants.PRG_NAME );
+            AptxUtil.launchWebBrowser( new URI( url ),  AptxConstants.PRG_NAME );
         }
         catch ( final Exception e ) {
             throw new IOException( e );

@@ -1353,14 +1353,9 @@ public final class MainFrameApplication extends MainFrame {
         _mainpanel.getControlPanel().showWhole();
         _mainpanel.getCurrentTreePanel().setPhylogenyGraphicsType( PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
         _mainpanel.getOptions().setPhylogenyGraphicsType( PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
-        if ( getMainPanel().getMainFrame() == null ) {
-            // Must be "E" applet version.
-            ( ( ArchaeopteryxE ) ( ( MainPanelApplets ) getMainPanel() ).getApplet() )
-                    .setSelectedTypeInTypeMenu( PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
-        }
-        else {
-            getMainPanel().getMainFrame().setSelectedTypeInTypeMenu( PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
-        }
+       
+        getMainPanel().getMainFrame().setSelectedTypeInTypeMenu( PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
+       
         activateSaveAllIfNeeded();
         System.gc();
     }

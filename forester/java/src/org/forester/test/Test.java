@@ -40,9 +40,6 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.SortedSet;
 
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-
 import org.forester.application.support_transfer;
 import org.forester.archaeopteryx.AptxUtil;
 import org.forester.archaeopteryx.TreePanelUtil;
