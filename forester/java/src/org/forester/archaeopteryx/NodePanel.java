@@ -60,7 +60,7 @@ import org.forester.phylogeny.data.Event;
 import org.forester.phylogeny.data.PhylogenyData;
 import org.forester.phylogeny.data.PhylogenyDataUtil;
 import org.forester.phylogeny.data.Point;
-import org.forester.phylogeny.data.PropertiesMap;
+import org.forester.phylogeny.data.PropertiesList;
 import org.forester.phylogeny.data.Property;
 import org.forester.phylogeny.data.Reference;
 import org.forester.phylogeny.data.Sequence;
@@ -370,13 +370,13 @@ class NodePanel extends JPanel implements TreeSelectionListener {
     }
 
     private static void addProperties( final DefaultMutableTreeNode top,
-                                       final PropertiesMap properties,
+                                       final PropertiesList properties,
                                        final String string ) {
-        final SortedMap<String, Property> properties_map = properties.getProperties();
+        final List<Property> properties_map = properties.getProperties();
         final DefaultMutableTreeNode category = new DefaultMutableTreeNode( "Properties " );
         top.add( category );
-        for( final String key : properties_map.keySet() ) {
-            final Property prop = properties_map.get( key );
+        for( final Property prop : properties_map ) {
+          
             category.add( new DefaultMutableTreeNode( prop.getRef() + "=" + prop.getValue() + " " + prop.getUnit()
                     + " [" + prop.getAppliesTo().toString() + "]" ) );
         }

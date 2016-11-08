@@ -96,10 +96,10 @@ import javax.swing.PopupFactory;
 
 import org.forester.archaeopteryx.Configuration.EXT_NODE_DATA_RETURN_ON;
 import org.forester.archaeopteryx.ControlPanel.NodeClickAction;
-import org.forester.archaeopteryx.ControlPanel.TreeDisplayType;
 import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
+import org.forester.archaeopteryx.Options.PHYLOGENY_DISPLAY_TYPE;
 import org.forester.archaeopteryx.phylogeny.data.RenderableDomainArchitecture;
 import org.forester.archaeopteryx.phylogeny.data.RenderableMsaSequence;
 import org.forester.archaeopteryx.phylogeny.data.RenderableVector;
@@ -122,7 +122,7 @@ import org.forester.phylogeny.data.NodeVisualData;
 import org.forester.phylogeny.data.NodeVisualData.NodeFill;
 import org.forester.phylogeny.data.NodeVisualData.NodeShape;
 import org.forester.phylogeny.data.PhylogenyDataUtil;
-import org.forester.phylogeny.data.PropertiesMap;
+import org.forester.phylogeny.data.PropertiesList;
 import org.forester.phylogeny.data.Property;
 import org.forester.phylogeny.data.ProteinDomain;
 import org.forester.phylogeny.data.Sequence;
@@ -383,7 +383,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         init();
         // if ( !_phylogeny.isEmpty() ) {
         _phylogeny.recalculateNumberOfExternalDescendants( true );
-        checkForVectorProperties( _phylogeny );
+       
         // }
         setBackground( getTreeColorSet().getBackgroundColor() );
         final MouseListener mouse_listener = new MouseListener( this );
@@ -1741,7 +1741,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 decreaseOvSize();
             }
         }
-        if ( e.getKeyCode() == KeyEvent.VK_HOME ) {
+        if ( e.getKeyCode() == KeyEvent.VK_HOME
+                || e.getKeyCode() == KeyEvent.VK_ESCAPE ) {
             getControlPanel().showWhole();
         }
         else if ( e.getKeyCode() == KeyEvent.VK_PAGE_UP ) {
@@ -2919,7 +2920,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             down_shift_factor = 1;
         }
         float pos_x;
-        if ( getControlPanel().getTreeDisplayType() == TreeDisplayType.ALIGNED_PHYLOGRAM
+        if ( getControlPanel().getTreeDisplayType() == Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM
                 && ( node.isExternal() || node.isCollapse() ) ) {
             pos_x = ( float ) ( ( getMaxDistanceToRoot() * getXcorrectionFactor() )
                     + ( getOptions().getDefaultNodeShapeSize() / 2 ) + x + ( 2 * TreePanel.MOVE ) + getXdistance()
@@ -2935,7 +2936,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         else {
             pos_y = ( node.getYcoord() + ( getFontMetrics( g.getFont() ).getAscent() / down_shift_factor ) );
         }
-        if ( getControlPanel().getTreeDisplayType() == TreeDisplayType.ALIGNED_PHYLOGRAM
+        if ( getControlPanel().getTreeDisplayType() == Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM
                 && ( node.isExternal() || node.isCollapse() ) ) {
             drawConnection( node.getXcoord(), pos_x - x, node.getYcoord(), 5, 20, g, to_pdf );
             if ( node.isCollapse() ) {
@@ -3307,7 +3308,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ( !node.isExternal() && !node.isCollapse() ) {
             boolean first_child = true;
             float y2 = 0.0f;
-            final int parent_max_branch_to_leaf = getMaxBranchesToLeaf( node );
+            //final int parent_max_branch_to_leaf = getMaxBranchesToLeaf( node );
             for( int i = 0; i < node.getNumberOfDescendants(); ++i ) {
                 final PhylogenyNode child_node = node.getChildNode( i );
                 final int factor_x = node.getNumberOfExternalNodes() - child_node.getNumberOfExternalNodes();
@@ -3642,7 +3643,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final boolean using_visual_font = setFont( g, node, is_in_found_nodes );
         setColor( g, node, to_graphics_file, to_pdf, is_in_found_nodes, getTreeColorSet().getTaxonomyColor() );
         float start_x = node.getXcoord() + 3 + ( getOptions().getDefaultNodeShapeSize() / 2 ) + x_shift;
-        if ( getControlPanel().getTreeDisplayType() == TreeDisplayType.ALIGNED_PHYLOGRAM && node.isExternal() ) {
+        if ( getControlPanel().getTreeDisplayType() == Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM && node.isExternal() ) {
             start_x = ( float ) ( ( getMaxDistanceToRoot() * getXcorrectionFactor() )
                     + ( getOptions().getDefaultNodeShapeSize() / 2 ) + x_shift + ( 2 * TreePanel.MOVE ) + getXdistance()
                     + 3 );
@@ -3882,25 +3883,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     private final StringBuffer propertiesToString( final PhylogenyNode node ) {
-        final PropertiesMap properties = node.getNodeData().getProperties();
-        final StringBuffer sb = new StringBuffer();
-        boolean first = true;
-        for( final String ref : properties.getPropertyRefs() ) {
-            if ( first ) {
-                first = false;
-            }
-            else {
-                sb.append( " " );
-            }
-            final Property p = properties.getProperty( ref );
-            sb.append( TreePanelUtil.getPartAfterColon( p.getRef() ) );
-            sb.append( "=" );
-            sb.append( p.getValue() );
-            if ( !ForesterUtil.isEmpty( p.getUnit() ) ) {
-                sb.append( TreePanelUtil.getPartAfterColon( p.getUnit() ) );
-            }
-        }
-        return sb;
+       
+        return node.getNodeData().getProperties().asText();
     }
 
     private void setColor( final Graphics2D g,
@@ -4453,17 +4437,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     }
                 }
                 if ( node.getNodeData().isHasProperties() ) {
-                    final PropertiesMap properties = node.getNodeData().getProperties();
-                    for( final String ref : properties.getPropertyRefs() ) {
+                    if ( _popup_buffer.length() > 0 ) {
                         _popup_buffer.append( "\n" );
-                        final Property p = properties.getProperty( ref );
-                        _popup_buffer.append( TreePanelUtil.getPartAfterColon( p.getRef() ) );
-                        _popup_buffer.append( "=" );
-                        _popup_buffer.append( p.getValue() );
-                        if ( !ForesterUtil.isEmpty( p.getUnit() ) ) {
-                            _popup_buffer.append( TreePanelUtil.getPartAfterColon( p.getUnit() ) );
-                        }
                     }
+                    _popup_buffer.append(node.getNodeData().getProperties().asText());
+                   
                 }
                 if ( _popup_buffer.length() > 0 ) {
                     if ( !getConfiguration().isUseNativeUI() ) {
@@ -4859,66 +4837,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
-    void checkForVectorProperties( final Phylogeny phy ) {
-        final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
-        for( final PhylogenyNodeIterator iter = phy.iteratorPreorder(); iter.hasNext(); ) {
-            final PhylogenyNode node = iter.next();
-            if ( node.getNodeData().getProperties() != null ) {
-                final PropertiesMap pm = node.getNodeData().getProperties();
-                final double[] vector = new double[ pm.getProperties().size() ];
-                int counter = 0;
-                for( final String ref : pm.getProperties().keySet() ) {
-                    if ( ref.startsWith( PhyloXmlUtil.VECTOR_PROPERTY_REF ) ) {
-                        final Property p = pm.getProperty( ref );
-                        final String value_str = p.getValue();
-                        final String index_str = ref.substring( PhyloXmlUtil.VECTOR_PROPERTY_REF.length(),
-                                                                ref.length() );
-                        double d = -100;
-                        try {
-                            d = Double.parseDouble( value_str );
-                        }
-                        catch ( final NumberFormatException e ) {
-                            JOptionPane.showMessageDialog( this,
-                                                           "Could not parse \"" + value_str + "\" into a decimal value",
-                                                           "Problem with Vector Data",
-                                                           JOptionPane.ERROR_MESSAGE );
-                            return;
-                        }
-                        int i = -1;
-                        try {
-                            i = Integer.parseInt( index_str );
-                        }
-                        catch ( final NumberFormatException e ) {
-                            JOptionPane.showMessageDialog( this,
-                                                           "Could not parse \"" + index_str
-                                                                   + "\" into index for vector data",
-                                                           "Problem with Vector Data",
-                                                           JOptionPane.ERROR_MESSAGE );
-                            return;
-                        }
-                        if ( i < 0 ) {
-                            JOptionPane.showMessageDialog( this,
-                                                           "Attempt to use negative index for vector data",
-                                                           "Problem with Vector Data",
-                                                           JOptionPane.ERROR_MESSAGE );
-                            return;
-                        }
-                        vector[ i ] = d;
-                        ++counter;
-                        stats.addValue( d );
-                    }
-                }
-                final List<Double> vector_l = new ArrayList<Double>( counter );
-                for( int i = 0; i < counter; ++i ) {
-                    vector_l.add( vector[ i ] );
-                }
-                node.getNodeData().setVector( vector_l );
-            }
-        }
-        if ( stats.getN() > 0 ) {
-            _statistics_for_vector_data = stats;
-        }
-    }
+   
 
     void clearCurrentExternalNodesDataBuffer() {
         setCurrentExternalNodesDataBuffer( new StringBuilder() );

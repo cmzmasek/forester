@@ -761,10 +761,7 @@ public final class MainFrameApplication extends MainFrame {
                         l.add( d );
                     }
                     if ( !l.isEmpty() ) {
-                        if ( node.getNodeData().getProperties() != null ) {
-                            node.getNodeData().getProperties()
-                                    .removePropertiesWithGivenReferencePrefix( PhyloXmlUtil.VECTOR_PROPERTY_REF );
-                        }
+                       
                         node.getNodeData().setVector( l );
                     }
                 }

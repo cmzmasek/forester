@@ -45,7 +45,7 @@ public class NodeData implements PhylogenyData {
     private List<Distribution> _distributions;
     private Date               _date;
     private BinaryCharacters   _binary_characters;
-    private PropertiesMap      _properties;
+    private PropertiesList      _properties;
     private List<Reference>    _references;
     private List<Double>       _vector;
     private NodeVisualData     _node_visual_data;
@@ -155,7 +155,7 @@ public class NodeData implements PhylogenyData {
             new_data.setDate( ( Date ) getDate().copy() );
         }
         if ( isHasProperties() ) {
-            new_data.setProperties( ( PropertiesMap ) getProperties().copy() );
+            new_data.setProperties( ( PropertiesList ) getProperties().copy() );
         }
         return new_data;
     }
@@ -192,7 +192,7 @@ public class NodeData implements PhylogenyData {
         return _event;
     }
 
-    public PropertiesMap getProperties() {
+    public PropertiesList getProperties() {
         return _properties;
     }
 
@@ -348,7 +348,7 @@ public class NodeData implements PhylogenyData {
         _event = event;
     }
 
-    public void setProperties( final PropertiesMap custom_data ) {
+    public void setProperties( final PropertiesList custom_data ) {
         _properties = custom_data;
     }
 

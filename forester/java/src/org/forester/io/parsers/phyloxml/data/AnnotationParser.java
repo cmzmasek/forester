@@ -31,7 +31,7 @@ import org.forester.io.parsers.phyloxml.XmlElement;
 import org.forester.phylogeny.data.Annotation;
 import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.data.PhylogenyData;
-import org.forester.phylogeny.data.PropertiesMap;
+import org.forester.phylogeny.data.PropertiesList;
 import org.forester.phylogeny.data.Property;
 import org.forester.phylogeny.data.Uri;
 
@@ -81,7 +81,7 @@ public class AnnotationParser implements PhylogenyDataPhyloXmlParser {
             }
             else if ( child_element.getQualifiedName().equals( PhyloXmlMapping.PROPERTY ) ) {
                 if ( annotation.getProperties() == null ) {
-                    annotation.setProperties( new PropertiesMap() );
+                    annotation.setProperties( new PropertiesList() );
                 }
                 annotation.getProperties()
                 .addProperty( ( Property ) PropertyParser.getInstance().parse( child_element ) );

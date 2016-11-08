@@ -57,7 +57,7 @@ import org.forester.phylogeny.data.Event;
 import org.forester.phylogeny.data.Identifier;
 import org.forester.phylogeny.data.NodeVisualData;
 import org.forester.phylogeny.data.PhylogenyDataUtil;
-import org.forester.phylogeny.data.PropertiesMap;
+import org.forester.phylogeny.data.PropertiesList;
 import org.forester.phylogeny.data.Property;
 import org.forester.phylogeny.data.Property.AppliesTo;
 import org.forester.phylogeny.data.Reference;
@@ -334,7 +334,7 @@ public final class PhyloXmlHandler extends DefaultHandler {
                 }
                 else {
                     if ( !node.getNodeData().isHasProperties() ) {
-                        node.getNodeData().setProperties( new PropertiesMap() );
+                        node.getNodeData().setProperties( new PropertiesList() );
                     }
                     node.getNodeData().getProperties().addProperty( prop );
                 }

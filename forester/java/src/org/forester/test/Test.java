@@ -88,7 +88,7 @@ import org.forester.phylogeny.data.Identifier;
 import org.forester.phylogeny.data.PhylogenyData;
 import org.forester.phylogeny.data.PhylogenyDataUtil;
 import org.forester.phylogeny.data.Polygon;
-import org.forester.phylogeny.data.PropertiesMap;
+import org.forester.phylogeny.data.PropertiesList;
 import org.forester.phylogeny.data.Property;
 import org.forester.phylogeny.data.Property.AppliesTo;
 import org.forester.phylogeny.data.ProteinDomain;
@@ -136,8 +136,8 @@ public final class Test {
     private final static String  PATH_TO_TEST_DATA         = System.getProperty( "user.dir" )
             + ForesterUtil.getFileSeparator() + "test_data"
             + ForesterUtil.getFileSeparator();
-    private final static boolean PERFORM_DB_TESTS          = true;
-    private static final boolean PERFORM_WEB_TREE_ACCESS   = true;
+    private final static boolean PERFORM_DB_TESTS          = false;
+    private static final boolean PERFORM_WEB_TREE_ACCESS   = false;
     private static final String  PHYLOXML_LOCAL_XSD        = PATH_TO_RESOURCES + "phyloxml_schema/"
             + ForesterConstants.PHYLO_XML_VERSION + "/"
             + ForesterConstants.PHYLO_XML_XSD;
@@ -2213,27 +2213,27 @@ public final class Test {
                 return false;
             }
             if ( ( t3.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 2 ) ).getProperties()
-                    .getProperty( "AFFY:expression" ).getAppliesTo() != AppliesTo.ANNOTATION ) {
+                    .getProperties( "AFFY:expression" ).get( 0 ).getAppliesTo() != AppliesTo.ANNOTATION ) {
                 return false;
             }
             if ( !( t3.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 2 ) ).getProperties()
-                    .getProperty( "AFFY:expression" ).getDataType().equals( "xsd:double" ) ) {
+                    .getProperties( "AFFY:expression" ).get( 0 ).getDataType().equals( "xsd:double" ) ) {
                 return false;
             }
             if ( !( t3.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 2 ) ).getProperties()
-                    .getProperty( "AFFY:expression" ).getRef().equals( "AFFY:expression" ) ) {
+                    .getProperties( "AFFY:expression" ).get( 0 ).getRef().equals( "AFFY:expression" ) ) {
                 return false;
             }
             if ( !( t3.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 2 ) ).getProperties()
-                    .getProperty( "AFFY:expression" ).getUnit().equals( "AFFY:x" ) ) {
+                    .getProperties( "AFFY:expression" ).get( 0 ).getUnit().equals( "AFFY:x" ) ) {
                 return false;
             }
             if ( !( t3.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 2 ) ).getProperties()
-                    .getProperty( "AFFY:expression" ).getValue().equals( "0.2" ) ) {
+                    .getProperties( "AFFY:expression" ).get( 0 ).getValue().equals( "0.2" ) ) {
                 return false;
             }
             if ( !( t3.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 2 ) ).getProperties()
-                    .getProperty( "MED:disease" ).getValue().equals( "lymphoma" ) ) {
+                    .getProperties( "MED:disease" ).get( 0 ).getValue().equals( "lymphoma" ) ) {
                 return false;
             }
             if ( !( t3.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 1 ) ).getRef()
@@ -2408,27 +2408,27 @@ public final class Test {
                 return false;
             }
             if ( ( t3_rt.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 2 ) ).getProperties()
-                    .getProperty( "AFFY:expression" ).getAppliesTo() != AppliesTo.ANNOTATION ) {
+                    .getProperties( "AFFY:expression" ).get( 0 ).getAppliesTo() != AppliesTo.ANNOTATION ) {
                 return false;
             }
             if ( !( t3_rt.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 2 ) ).getProperties()
-                    .getProperty( "AFFY:expression" ).getDataType().equals( "xsd:double" ) ) {
+                    .getProperties( "AFFY:expression" ).get( 0 ).getDataType().equals( "xsd:double" ) ) {
                 return false;
             }
             if ( !( t3_rt.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 2 ) ).getProperties()
-                    .getProperty( "AFFY:expression" ).getRef().equals( "AFFY:expression" ) ) {
+                    .getProperties( "AFFY:expression" ).get( 0 ).getRef().equals( "AFFY:expression" ) ) {
                 return false;
             }
             if ( !( t3_rt.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 2 ) ).getProperties()
-                    .getProperty( "AFFY:expression" ).getUnit().equals( "AFFY:x" ) ) {
+                    .getProperties( "AFFY:expression" ).get( 0 ).getUnit().equals( "AFFY:x" ) ) {
                 return false;
             }
             if ( !( t3_rt.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 2 ) ).getProperties()
-                    .getProperty( "AFFY:expression" ).getValue().equals( "0.2" ) ) {
+                    .getProperties( "AFFY:expression" ).get( 0 ).getValue().equals( "0.2" ) ) {
                 return false;
             }
             if ( !( t3_rt.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 2 ) ).getProperties()
-                    .getProperty( "MED:disease" ).getValue().equals( "lymphoma" ) ) {
+                    .getProperties( "MED:disease" ).get( 0 ).getValue().equals( "lymphoma" ) ) {
                 return false;
             }
             if ( !( t3_rt.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 1 ) ).getRef()
@@ -10805,7 +10805,7 @@ public final class Test {
 
     private static boolean testPropertiesMap() {
         try {
-            final PropertiesMap pm = new PropertiesMap();
+            final PropertiesList pm = new PropertiesList();
             final Property p0 = new Property( "dimensions:diameter", "1", "metric:mm", "xsd:decimal", AppliesTo.NODE );
             final Property p1 = new Property( "dimensions:length", "2", "metric:mm", "xsd:decimal", AppliesTo.NODE );
             final Property p2 = new Property( "something:else",
@@ -10816,10 +10816,10 @@ public final class Test {
             pm.addProperty( p0 );
             pm.addProperty( p1 );
             pm.addProperty( p2 );
-            if ( !pm.getProperty( "dimensions:diameter" ).getValue().equals( "1" ) ) {
+            if ( !pm.getProperties( "dimensions:diameter" ).get( 0 ).getValue().equals( "1" ) ) {
                 return false;
             }
-            if ( !pm.getProperty( "dimensions:length" ).getValue().equals( "2" ) ) {
+            if ( !pm.getProperties( "dimensions:length" ).get( 0 ).getValue().equals( "2" ) ) {
                 return false;
             }
             if ( pm.getProperties().size() != 3 ) {
@@ -10834,16 +10834,7 @@ public final class Test {
             if ( pm.getProperties().size() != 3 ) {
                 return false;
             }
-            pm.removeProperty( "dimensions:diameter" );
-            if ( pm.getProperties().size() != 2 ) {
-                return false;
-            }
-            if ( pm.getPropertiesWithGivenReferencePrefix( "dimensions" ).size() != 1 ) {
-                return false;
-            }
-            if ( pm.getPropertiesWithGivenReferencePrefix( "something" ).size() != 1 ) {
-                return false;
-            }
+           
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );

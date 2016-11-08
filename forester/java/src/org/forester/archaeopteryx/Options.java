@@ -51,6 +51,12 @@ final public class Options {
     public static enum PHYLOGENY_GRAPHICS_TYPE {
         CIRCULAR, CONVEX, CURVED, EURO_STYLE, RECTANGULAR, ROUNDED, TRIANGULAR, UNROOTED;
     }
+    
+    static enum PHYLOGENY_DISPLAY_TYPE {
+        CLADOGRAM,
+        ALIGNED_PHYLOGRAM,
+        UNALIGNED_PHYLOGRAM
+    }
 
     static enum OVERVIEW_PLACEMENT_TYPE {
         LOWER_LEFT( "lower left" ),
@@ -73,6 +79,7 @@ final public class Options {
             return toString().replaceAll( " ", "_" );
         }
     }
+   
     static final double                       MIN_CONFIDENCE_DEFAULT = 0.0;
     private boolean                           _abbreviate_scientific_names;
     private boolean                           _allow_errors_in_distance_to_parent;

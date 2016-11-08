@@ -39,7 +39,7 @@ public class Annotation implements PhylogenyData, MultipleUris, Comparable<Annot
     private Confidence    _confidence;
     private String        _desc;
     private String        _evidence;
-    private PropertiesMap _properties;
+    private PropertiesList _properties;
     private final String  _ref_source;
     private final String  _ref_value;
     private String        _source;
@@ -130,7 +130,7 @@ public class Annotation implements PhylogenyData, MultipleUris, Comparable<Annot
         ann.setEvidence( getEvidence() );
         ann.setSource( new String( getSource() ) );
         if ( getProperties() != null ) {
-            ann.setProperties( ( PropertiesMap ) getProperties().copy() );
+            ann.setProperties( ( PropertiesList ) getProperties().copy() );
         }
         else {
             ann.setProperties( null );
@@ -175,7 +175,7 @@ public class Annotation implements PhylogenyData, MultipleUris, Comparable<Annot
         return _evidence;
     }
 
-    public PropertiesMap getProperties() {
+    public PropertiesList getProperties() {
         return _properties;
     }
 
@@ -235,7 +235,7 @@ public class Annotation implements PhylogenyData, MultipleUris, Comparable<Annot
         _evidence = evidence;
     }
 
-    public void setProperties( final PropertiesMap property ) {
+    public void setProperties( final PropertiesList property ) {
         _properties = property;
     }
 

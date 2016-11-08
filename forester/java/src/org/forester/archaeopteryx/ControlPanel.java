@@ -76,12 +76,6 @@ import org.forester.util.ForesterUtil;
 
 final class ControlPanel extends JPanel implements ActionListener {
 
-    enum TreeDisplayType {
-                          CLADOGRAM,
-                          ALIGNED_PHYLOGRAM,
-                          UNALIGNED_PHYLOGRAM
-    };
-
     enum NodeClickAction {
                           ADD_NEW_NODE,
                           BLAST,
@@ -150,7 +144,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JTextField                        _domain_structure_evalue_thr_tf;
     private JTextField                        _depth_collapse_depth_tf;
     private JTextField                        _rank_collapse_depth_tf;
-    private List<TreeDisplayType>             _tree_display_types;
+    private List<Options.PHYLOGENY_DISPLAY_TYPE>             _tree_display_types;
     private JCheckBox                         _dynamically_hide_data;
     private int                               _edit_node_data_item;
     private int                               _get_ext_desc_data;
@@ -276,15 +270,15 @@ final class ControlPanel extends JPanel implements ActionListener {
             }
             else if ( ( tp != null ) && ( tp.getPhylogeny() != null ) ) {
                 if ( e.getSource() == getDisplayAsUnalignedPhylogramRb() ) {
-                    setTreeDisplayType( TreeDisplayType.UNALIGNED_PHYLOGRAM );
+                    setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM );
                     showWhole();
                 }
                 if ( e.getSource() == getDisplayAsAlignedPhylogramRb() ) {
-                    setTreeDisplayType( TreeDisplayType.ALIGNED_PHYLOGRAM );
+                    setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM );
                     showWhole();
                 }
                 if ( e.getSource() == getDisplayAsCladogramRb() ) {
-                    setTreeDisplayType( TreeDisplayType.CLADOGRAM );
+                    setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.CLADOGRAM );
                     showWhole();
                 }
                 // Zoom buttons
@@ -639,7 +633,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     }// addSequenceRelationBlock
 
     /* GUILHEM_END */
-    private List<TreeDisplayType> getTreeDisplayTypes() {
+    private List<Options.PHYLOGENY_DISPLAY_TYPE> getTreeDisplayTypes() {
         return _tree_display_types;
     }
 
@@ -648,13 +642,13 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     private void init() {
-        _tree_display_types = new ArrayList<TreeDisplayType>();
+        _tree_display_types = new ArrayList<Options.PHYLOGENY_DISPLAY_TYPE>();
         setSpeciesColors( new HashMap<String, Color>() );
         setSequenceColors( new HashMap<String, Color>() );
         setAnnotationColors( new HashMap<String, Color>() );
     }
 
-    private TreeDisplayType getTreeDisplayType( final int index ) {
+    private Options.PHYLOGENY_DISPLAY_TYPE getTreeDisplayType( final int index ) {
         return getTreeDisplayTypes().get( index );
     }
 
@@ -794,7 +788,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
     }
 
-    private void setTreeDisplayType( final int index, final TreeDisplayType t ) {
+    private void setTreeDisplayType( final int index, final Options.PHYLOGENY_DISPLAY_TYPE t ) {
         getTreeDisplayTypes().set( index, t );
     }
 
@@ -1263,7 +1257,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         _zoom_in_y = new TypomaticJButton( "Y+" );
         _zoom_out_y = new TypomaticJButton( "Y-" );
         _show_whole = new JButton( "F" );
-        _show_whole.setToolTipText( "fit and center to display [Alt+C or Home]" );
+        _show_whole.setToolTipText( "fit and center tree display [Alt+C, Home, or Esc]" );
         _zoom_in_x.setToolTipText( "zoom in horizontally [Alt+Right or Shift+Alt+mousewheel]" );
         _zoom_in_y.setToolTipText( "zoom in vertically [Alt+Up or Shift+mousewheel]" );
         _zoom_out_x.setToolTipText( "zoom out horizontally [Alt+Left or Shift+Alt+mousewheel]" );
@@ -1642,8 +1636,8 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     boolean isDrawPhylogram() {
-        final TreeDisplayType t = getTreeDisplayType( getMainPanel().getCurrentTabIndex() );
-        return ((t == TreeDisplayType.ALIGNED_PHYLOGRAM) ||( t == TreeDisplayType.UNALIGNED_PHYLOGRAM));
+        final Options.PHYLOGENY_DISPLAY_TYPE t = getTreeDisplayType( getMainPanel().getCurrentTabIndex() );
+        return ((t == Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM) ||( t == Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM));
     }
 
     boolean isDynamicallyHideData() {
@@ -1741,10 +1735,10 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     void phylogenyAdded( final Configuration configuration ) {
         if (configuration.isDrawAsPhylogram()) {
-            getTreeDisplayTypes().add( TreeDisplayType.UNALIGNED_PHYLOGRAM);
+            getTreeDisplayTypes().add( Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM);
         }
         else {
-            getTreeDisplayTypes().add( TreeDisplayType.CLADOGRAM);
+            getTreeDisplayTypes().add( Options.PHYLOGENY_DISPLAY_TYPE.CLADOGRAM);
         }
     }
 
@@ -2068,7 +2062,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         _color_branches = color_branches;
     }
 
-    void setTreeDisplayType( final TreeDisplayType t ) {
+    void setTreeDisplayType( final Options.PHYLOGENY_DISPLAY_TYPE t ) {
         switch (t) {
             case UNALIGNED_PHYLOGRAM:
                 getDisplayAsUnalignedPhylogramRb().setSelected( true );
@@ -2153,9 +2147,9 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     void setupTreeDisplayTypeOptions() {
-        _display_as_unaligned_phylogram_rb = new JRadioButton( "PH" );
-        _display_as_aligned_phylogram_rb = new JRadioButton( "aPH" );
-        _display_as_cladogram_rb = new JRadioButton( "CL" );
+        _display_as_unaligned_phylogram_rb = new JRadioButton( "P" );
+        _display_as_aligned_phylogram_rb = new JRadioButton( "A" );
+        _display_as_cladogram_rb = new JRadioButton( "C" );
         _display_as_buttongroup = new ButtonGroup();
         _display_as_buttongroup.add( _display_as_unaligned_phylogram_rb );
         _display_as_buttongroup.add( _display_as_aligned_phylogram_rb );
@@ -2597,7 +2591,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             }
             else {
                 setDrawPhylogramEnabled( false );
-                setTreeDisplayType( TreeDisplayType.CLADOGRAM );
+                setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.CLADOGRAM );
             }
            
                 getMainPanel().getMainFrame()
@@ -2802,8 +2796,8 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     private final boolean isDrawPhylogram( int currentTabIndex ) {
-        TreeDisplayType t = getTreeDisplayType( currentTabIndex );
-        return ((t==TreeDisplayType.ALIGNED_PHYLOGRAM)|(t==TreeDisplayType.UNALIGNED_PHYLOGRAM));
+        Options.PHYLOGENY_DISPLAY_TYPE t = getTreeDisplayType( currentTabIndex );
+        return ((t==Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM)|(t==Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM));
         
     }
 
@@ -2838,13 +2832,13 @@ final class ControlPanel extends JPanel implements ActionListener {
         return _width_branches;
     }
 
-    public TreeDisplayType getTreeDisplayType() {
+    public Options.PHYLOGENY_DISPLAY_TYPE getTreeDisplayType() {
         if (_display_as_unaligned_phylogram_rb.isSelected() ) {
-            return TreeDisplayType.UNALIGNED_PHYLOGRAM;
+            return Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM;
         }
         else if (_display_as_aligned_phylogram_rb.isSelected() ) {
-            return TreeDisplayType.ALIGNED_PHYLOGRAM;
+            return Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM;
         }
-        return TreeDisplayType.CLADOGRAM;
+        return Options.PHYLOGENY_DISPLAY_TYPE.CLADOGRAM;
     }
 }
