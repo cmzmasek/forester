@@ -60,16 +60,17 @@ import org.forester.util.ForesterUtil;
 
 public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParser {
 
-    private final static Pattern  MB_BL_PATTERN                              = Pattern.compile( "length.median=([-+eE0-9\\.]+)" );
-    private final static Pattern  MB_PROB_PATTERN                            = Pattern.compile( "prob=([-+eE0-9\\.]+)" );
-    private final static Pattern  MB_PROB_SD_PATTERN                         = Pattern.compile( "prob.stddev=([-+eE0-9\\.]+)" );
-    private final static Pattern  NUMBERS_ONLY_PATTERN                       = Pattern.compile( "^[0-9\\.]+$" );
-    
-    private final static Pattern  BEAST_STYLE_EXTENDED_BOOTSTRAP_PATTERN              = Pattern.compile( "boot?strap=([\\d\\.]+)" );
-    private final static Pattern  BEAST_STYLE_EXTENDED_COLOR_PATTERN                  = Pattern.compile( "colou?r=(#[\\da-fA-F]{6})" );
-    private final static Pattern  ENDS_WITH_NUMBER_PATTERN                   = Pattern.compile( "(:[-+eE0-9\\.]+$)" );
-    
-    
+    private final static Pattern MB_BL_PATTERN                              = Pattern
+            .compile( "length.median=([-+eE0-9\\.]+)" );
+    private final static Pattern MB_PROB_PATTERN                            = Pattern.compile( "prob=([-+eE0-9\\.]+)" );
+    private final static Pattern MB_PROB_SD_PATTERN                         = Pattern
+            .compile( "prob.stddev=([-+eE0-9\\.]+)" );
+    private final static Pattern NUMBERS_ONLY_PATTERN                       = Pattern.compile( "^[-+]?[0-9\\.]+$" );
+    private final static Pattern BEAST_STYLE_EXTENDED_BOOTSTRAP_PATTERN     = Pattern
+            .compile( "boot?strap=([\\d\\.]+)" );
+    private final static Pattern BEAST_STYLE_EXTENDED_COLOR_PATTERN         = Pattern
+            .compile( "colou?r=(#[\\da-fA-F]{6})" );
+    private final static Pattern ENDS_WITH_NUMBER_PATTERN                   = Pattern.compile( "(:[-+eE0-9\\.]+$)" );
     public final static boolean  REPLACE_UNDERSCORES_DEFAULT                = false;
     private final static boolean ALLOW_ERRORS_IN_DISTANCE_TO_PARENT_DEFAULT = false;
     private final static byte    BUFFERED_READER                            = 3;
@@ -77,9 +78,8 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
     private final static boolean GUESS_IF_SUPPORT_VALUES                    = true;
     private final static boolean GUESS_ROOTEDNESS_DEFAULT                   = true;
     private final static boolean IGNORE_QUOTES_DEFAULT                      = false;
-   
     private final static char    BELL                                       = 7;
-    private final static String  ENCODING_DEFAULT = ForesterConstants.UTF_8;
+    private final static String  ENCODING_DEFAULT                           = ForesterConstants.UTF_8;
     private boolean              _allow_errors_in_distance_to_parent;
     private int                  _clade_level;
     private StringBuilder        _current_anotation;
@@ -101,6 +101,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
     private boolean              _saw_closing_paren;
     private boolean              _saw_colon                                 = false;
     private boolean              _saw_open_bracket                          = false;
+    private boolean              _after_close_paren                         = false;
     private Object               _source;
     private int                  _source_length;
     private TAXONOMY_EXTRACTION  _taxonomy_extraction;
@@ -111,7 +112,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
         _encoding = ENCODING_DEFAULT;
         init();
     }
-    
+
     public NHXParser( final String encoding ) {
         _encoding = encoding;
         init();
@@ -162,6 +163,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
         _in_open_bracket = false;
         _in_double_quote = false;
         _in_single_quote = false;
+        _after_close_paren = false;
         _clade_level = 0;
         _current_anotation = new StringBuilder();
         _current_phylogeny = null;
@@ -216,7 +218,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
             _nhx_source = nhx_source;
             _input_type = NHXParser.BUFFERED_READER;
             _source_length = 0;
-            InputStream is = new ByteArrayInputStream( (( String ) nhx_source ).getBytes(getEncoding()));
+            final InputStream is = new ByteArrayInputStream( ( ( String ) nhx_source ).getBytes( getEncoding() ) );
             final InputStreamReader isr = new InputStreamReader( is, getEncoding() );
             _nhx_source = new BufferedReader( isr );
         }
@@ -273,25 +275,25 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
             }
             final InputStream is = ( InputStream ) nhx_source;
             final InputStreamReader isr = new InputStreamReader( is, getEncoding() );
-             _nhx_source = new BufferedReader( isr );
+            _nhx_source = new BufferedReader( isr );
         }
         else {
             throw new IllegalArgumentException( getClass() + " can only parse objects of type String,"
-                    + " char[], File, InputStream, or URL "
-                    + " [attempt to parse object of " + nhx_source.getClass() + "]." );
+                    + " char[], File, InputStream, or URL " + " [attempt to parse object of " + nhx_source.getClass()
+                    + "]." );
         }
     }
 
-    private final Phylogeny finishPhylogeny() throws PhylogenyParserException, NHXFormatException,
-    PhyloXmlDataFormatException {
+    private final Phylogeny finishPhylogeny()
+            throws PhylogenyParserException, NHXFormatException, PhyloXmlDataFormatException {
         if ( _current_phylogeny != null ) {
             parseNHX( _current_anotation != null ? _current_anotation.toString() : "",
-                    _current_phylogeny.getRoot(),
-                    getTaxonomyExtraction(),
-                    isReplaceUnderscores(),
-                    isAllowErrorsInDistanceToParent(),
-                    true,
-                    isParseBeastStyleExtendedTags());
+                      _current_phylogeny.getRoot(),
+                      getTaxonomyExtraction(),
+                      isReplaceUnderscores(),
+                      isAllowErrorsInDistanceToParent(),
+                      true,
+                      isParseBeastStyleExtendedTags() );
             if ( GUESS_IF_SUPPORT_VALUES ) {
                 if ( isBranchLengthsLikeBootstrapValues( _current_phylogeny ) ) {
                     moveBranchLengthsToConfidenceValues( _current_phylogeny );
@@ -309,8 +311,8 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
         return null;
     }
 
-    private final Phylogeny finishSingleNodePhylogeny() throws PhylogenyParserException, NHXFormatException,
-    PhyloXmlDataFormatException {
+    private final Phylogeny finishSingleNodePhylogeny()
+            throws PhylogenyParserException, NHXFormatException, PhyloXmlDataFormatException {
         final PhylogenyNode new_node = new PhylogenyNode();
         parseNHX( _current_anotation.toString(),
                   new_node,
@@ -318,7 +320,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                   isReplaceUnderscores(),
                   isAllowErrorsInDistanceToParent(),
                   true,
-                  isParseBeastStyleExtendedTags());
+                  isParseBeastStyleExtendedTags() );
         _current_phylogeny = new Phylogeny();
         _current_phylogeny.setRoot( new_node );
         return _current_phylogeny;
@@ -427,7 +429,8 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                     if ( c == '&' ) {
                         _current_anotation.append( "[&" );
                     }
-                    else if ( _saw_colon ) {
+                    else if ( ( _saw_colon || _after_close_paren )
+                            && ( ( ( c > 47 ) && ( c < 58 ) ) || ( c == 46 ) || ( c == 45 ) || ( c == 43 ) ) ) {
                         _current_anotation.append( "[" + c );
                     }
                     else {
@@ -438,6 +441,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                 _saw_open_bracket = false;
             }
             else if ( ( c == '(' ) && !_in_open_bracket ) {
+                _after_close_paren = false;
                 final Phylogeny phy = processOpenParen();
                 if ( phy != null ) {
                     ++_i;
@@ -446,9 +450,11 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                 }
             }
             else if ( ( c == ')' ) && !_in_open_bracket ) {
+                _after_close_paren = true;
                 processCloseParen();
             }
             else if ( ( c == ',' ) && !_in_open_bracket ) {
+                _after_close_paren = false;
                 processComma();
             }
             else {
@@ -486,8 +492,8 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
         return c;
     }
 
-    private final void processCloseParen() throws PhylogenyParserException, NHXFormatException,
-    PhyloXmlDataFormatException {
+    private final void processCloseParen()
+            throws PhylogenyParserException, NHXFormatException, PhyloXmlDataFormatException {
         if ( _clade_level < 0 ) {
             throw new PhylogenyParserException( "error in NH (Newick)/NHX formatted data: most likely cause: number of close parens is larger than number of open parens" );
         }
@@ -500,7 +506,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                       isReplaceUnderscores(),
                       isAllowErrorsInDistanceToParent(),
                       true,
-                      isParseBeastStyleExtendedTags());
+                      isParseBeastStyleExtendedTags() );
             _current_anotation = new StringBuilder();
             _current_node.addAsChild( new_node );
         }
@@ -511,7 +517,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                       isReplaceUnderscores(),
                       isAllowErrorsInDistanceToParent(),
                       true,
-                      isParseBeastStyleExtendedTags());
+                      isParseBeastStyleExtendedTags() );
             _current_anotation = new StringBuilder();
         }
         if ( !_current_node.isRoot() ) {
@@ -529,7 +535,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                       isReplaceUnderscores(),
                       isAllowErrorsInDistanceToParent(),
                       true,
-                      isParseBeastStyleExtendedTags());
+                      isParseBeastStyleExtendedTags() );
             if ( _current_node == null ) {
                 throw new NHXFormatException( "format might not be NH or NHX" );
             }
@@ -542,14 +548,14 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                       isReplaceUnderscores(),
                       isAllowErrorsInDistanceToParent(),
                       true,
-                      isParseBeastStyleExtendedTags());
+                      isParseBeastStyleExtendedTags() );
         }
         _current_anotation = new StringBuilder();
         _saw_closing_paren = false;
     }
 
-    private final Phylogeny processOpenParen() throws PhylogenyParserException, NHXFormatException,
-    PhyloXmlDataFormatException {
+    private final Phylogeny processOpenParen()
+            throws PhylogenyParserException, NHXFormatException, PhyloXmlDataFormatException {
         Phylogeny phy = null;
         final PhylogenyNode new_node = new PhylogenyNode();
         if ( _clade_level == 0 ) {
@@ -586,8 +592,8 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                                        final boolean replace_underscores,
                                        final boolean allow_errors_in_distance_to_parent,
                                        final boolean replace_bell,
-                                       final boolean parse_beast_style_extended_tags ) throws NHXFormatException,
-                                       PhyloXmlDataFormatException {
+                                       final boolean parse_beast_style_extended_tags )
+            throws NHXFormatException, PhyloXmlDataFormatException {
         if ( ( taxonomy_extraction != TAXONOMY_EXTRACTION.NO ) && replace_underscores ) {
             throw new IllegalArgumentException( "cannot extract taxonomies and replace under scores at the same time" );
         }
@@ -623,7 +629,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                     }
                     final Matcher ewn_matcher = ENDS_WITH_NUMBER_PATTERN.matcher( s );
                     if ( ewn_matcher.find() ) {
-                        b = ewn_matcher.group(1);
+                        b = b + ewn_matcher.group( 1 );
                     }
                 }
                 s = s.substring( 0, ob ) + b;
@@ -632,7 +638,6 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                 }
             }
             final StringTokenizer t = new StringTokenizer( s, ":" );
-          
             if ( t.countTokens() > 0 ) {
                 if ( !s.startsWith( ":" ) ) {
                     if ( ( s.indexOf( BELL ) <= -1 ) || !replace_bell ) {
@@ -685,14 +690,15 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                         if ( !node_to_annotate.getNodeData().isHasTaxonomy() ) {
                             node_to_annotate.getNodeData().setTaxonomy( new Taxonomy() );
                         }
-                        node_to_annotate.getNodeData().getTaxonomy().setIdentifier( new Identifier( s.substring( 2 ) ) );
+                        node_to_annotate.getNodeData().getTaxonomy()
+                                .setIdentifier( new Identifier( s.substring( 2 ) ) );
                     }
                     else if ( s.startsWith( NHXtags.SEQUENCE_ACCESSION ) ) {
                         if ( !node_to_annotate.getNodeData().isHasSequence() ) {
                             node_to_annotate.getNodeData().setSequence( new Sequence() );
                         }
                         node_to_annotate.getNodeData().getSequence()
-                        .setAccession( new Accession( s.substring( 3 ), "?" ) );
+                                .setAccession( new Accession( s.substring( 3 ), "?" ) );
                     }
                     else if ( s.startsWith( NHXtags.GENE_NAME ) ) {
                         if ( !node_to_annotate.getNodeData().isHasSequence() ) {
@@ -742,41 +748,36 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
         }
     }
 
-    private final static void processBeastStyleExtendedData( final String s,
-                                                     final PhylogenyNode node_to_annotate )
+    private final static void processBeastStyleExtendedData( final String s, final PhylogenyNode node_to_annotate )
             throws NHXFormatException {
         final Matcher ft_bs_matcher = BEAST_STYLE_EXTENDED_BOOTSTRAP_PATTERN.matcher( s );
-       
         double bs = -1;
         if ( ft_bs_matcher.find() ) {
             try {
                 bs = Double.parseDouble( ft_bs_matcher.group( 1 ) );
             }
             catch ( final NumberFormatException e ) {
-                throw new NHXFormatException( "failed to parse bootstrap support from \""
-                        + s + "\"" );
+                throw new NHXFormatException( "failed to parse bootstrap support from \"" + s + "\"" );
             }
             if ( bs >= 0.0 ) {
-                node_to_annotate.getBranchData()
-                .addConfidence( new Confidence( bs, "bootstrap" ) );
+                node_to_annotate.getBranchData().addConfidence( new Confidence( bs, "bootstrap" ) );
             }
         }
         final Matcher ft_color_matcher = BEAST_STYLE_EXTENDED_COLOR_PATTERN.matcher( s );
         Color c = null;
         if ( ft_color_matcher.find() ) {
             try {
-                c = Color.decode(ft_color_matcher.group( 1 ) );
+                c = Color.decode( ft_color_matcher.group( 1 ) );
             }
             catch ( final NumberFormatException e ) {
-                throw new NHXFormatException( "failed to parse color from \""
-                        + s + "\""  );
+                throw new NHXFormatException( "failed to parse color from \"" + s + "\"" );
             }
         }
         if ( c != null ) {
             node_to_annotate.getBranchData().setBranchColor( new BranchColor( c ) );
         }
     }
-    
+
     private final static void processMrBayes3Data( final String s, final PhylogenyNode node_to_annotate )
             throws NHXFormatException {
         double sd = -1;
@@ -802,7 +803,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
             if ( prob >= 0.0 ) {
                 if ( sd >= 0.0 ) {
                     node_to_annotate.getBranchData()
-                    .addConfidence( new Confidence( prob, "posterior probability", sd ) );
+                            .addConfidence( new Confidence( prob, "posterior probability", sd ) );
                 }
                 else {
                     node_to_annotate.getBranchData().addConfidence( new Confidence( prob, "posterior probability" ) );
@@ -817,7 +818,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
             }
             catch ( final NumberFormatException e ) {
                 throw new NHXFormatException( "failed to parse median branch length (Mr Bayes output) from \"" + s
-                                              + "\"" );
+                        + "\"" );
             }
             if ( bl >= 0.0 ) {
                 node_to_annotate.setDistanceToParent( bl );
@@ -838,6 +839,9 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
     }
 
     public static enum TAXONOMY_EXTRACTION {
-        AGGRESSIVE, NO, PFAM_STYLE_RELAXED, PFAM_STYLE_STRICT;
+                                            AGGRESSIVE,
+                                            NO,
+                                            PFAM_STYLE_RELAXED,
+                                            PFAM_STYLE_STRICT;
     }
 }
