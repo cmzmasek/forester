@@ -1,10 +1,10 @@
 #
 # = lib/evo/apps/taxonomy_processor - TaxonomyProcessor class
 #
-# Copyright::  Copyright (C) 2006-2007 Christian M. Zmasek
+# Copyright::  Copyright (C) 20017 Christian M. Zmasek
 # License::    GNU Lesser General Public License (LGPL)
 #
-# $Id: taxonomy_processor.rb,v 1.26 2010/12/13 19:00:11 cmzmasek Exp $
+
 
 
 require 'lib/evo/util/util'
@@ -22,12 +22,12 @@ module Evoruby
   class TaxonomyProcessor
 
     PRG_NAME       = "tap"
-    PRG_DATE       = "130411"
+    PRG_DATE       = "170206"
     PRG_DESC       = "replacement of species names in multiple sequence files"
     PRG_VERSION    = "2.002"
-    COPYRIGHT      = "2013 Christian M Zmasek"
+    COPYRIGHT      = "2017 Christian M Zmasek"
     CONTACT        = "phylosoft@gmail.com"
-    WWW            = "https://sites.google.com/site/cmzmasek/home/software/forester"
+    WWW            = ""
 
     EXTRACT_TAXONOMY_OPTION = "t"
 

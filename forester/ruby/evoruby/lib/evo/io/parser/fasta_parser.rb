@@ -1,17 +1,15 @@
 #
 # = lib/evo/io/parser/fasta_parser - FastaParser class
 #
-# Copyright::  Copyright (C) 2006-2007 Christian M. Zmasek
+# Copyright::  Copyright (C) 20017 Christian M. Zmasek
 # License::    GNU Lesser General Public License (LGPL)
-#
-# $Id: fasta_parser.rb,v 1.11 2010/10/08 22:04:17 cmzmasek Exp $
 #
 # last modified: 05/17/2007
 
 require 'lib/evo/io/parser/msa_parser'
 require 'lib/evo/msa/msa'
 
-require 'iconv'
+#require 'iconv'
 
 module Evoruby
 

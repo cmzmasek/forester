@@ -138,10 +138,10 @@ module Evoruby
         www,
         io = STDOUT )
 
-      if RUBY_VERSION !~ /1.9/
-        puts( "Your ruby version is #{RUBY_VERSION}, expected 1.9.x " )
-        exit( -1 )
-      end
+    #  if RUBY_VERSION !~ /1.9/
+    #    puts( "Your ruby version is #{RUBY_VERSION}, expected 1.9.x " )
+    #    exit( -1 )
+    #  end
 
       ruby_version = RUBY_VERSION
       l = prg_name.length + prg_version.length + date.length + ruby_version.length + 12

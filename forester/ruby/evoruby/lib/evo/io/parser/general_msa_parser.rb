@@ -4,14 +4,12 @@
 # Copyright::  Copyright (C) 2006-2007 Christian M. Zmasek
 # License::    GNU Lesser General Public License (LGPL)
 #
-# $Id: general_msa_parser.rb,v 1.8 2009/10/08 22:44:54 cmzmasek Exp $
-#
 # last modified: 2009/10/08
 
 require 'lib/evo/io/parser/msa_parser'
 require 'lib/evo/msa/msa'
 
-require 'iconv'
+#require 'iconv'
 
 module Evoruby
 
