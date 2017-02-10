@@ -68,6 +68,7 @@ public final class AptxConstants {
     static final int            MAX_TREES_TO_LOAD                                             = 100;
     final static float          PDF_LINE_WIDTH_DEFAULT                                        = 0.5f;
     final static String         APTX_WEB_SITE                                                 = "https://sites.google.com/site/cmzmasek/home/software/archaeopteryx";
+    final static String         APTX_JS_WEB_SITE                                              = "https://sites.google.com/site/cmzmasek/home/software/archaeopteryx-js";
     final static String         APTX_MAILING_LIST                                             = "https://groups.google.com/forum/?fromgroups#!forum/archaeopteryx";
     final static String         APTX_DOC_SITE                                                 = "https://sites.google.com/site/cmzmasek/home/software/archaeopteryx/documentation";
     final static String         PHYLOXML_WEB_SITE                                             = ForesterConstants.PHYLO_XML_LOCATION;

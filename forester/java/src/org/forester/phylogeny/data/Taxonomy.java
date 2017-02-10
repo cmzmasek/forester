@@ -324,16 +324,6 @@ public class Taxonomy implements PhylogenyData, MultipleUris, Comparable<Taxonom
                 && !PhyloXmlUtil.TAXOMONY_CODE_PATTERN.matcher( taxonomy_code ).matches() ) {
             throw new PhyloXmlDataFormatException( "illegal taxonomy code: [" + taxonomy_code + "]" );
         }
-        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        //TODO FIXME (added on 13-11-18) remove me eventually
-        if ( taxonomy_code.equals( "ACIBL" ) ) {
-            taxonomy_code = "KORVE";
-        }
-        else if ( taxonomy_code.equals( "PYRKO" ) ) {
-            taxonomy_code = "THEKO";
-        }
-        //TODO FIXME (added on 13-11-18) remove me eventually
-        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         _taxonomy_code = taxonomy_code;
     }
 
