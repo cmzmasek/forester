@@ -404,24 +404,6 @@ public class Taxonomy implements PhylogenyData, MultipleUris, Comparable<Taxonom
                 }
             }
         }
-        if ( getLineage() != null ) {
-            final StringBuilder sb = new StringBuilder();
-            boolean first = true;
-            for( final String lin : getLineage() ) {
-                if ( !ForesterUtil.isEmpty( lin ) ) {
-                    if ( first ) {
-                        first = false;
-                    }
-                    else {
-                        sb.append( "," );
-                    }
-                    sb.append( lin );
-                }
-            }
-            if ( sb.length() > 0 ) {
-                PhylogenyDataUtil.appendElement( writer, PhyloXmlMapping.TAXONOMY_LINEAGE, sb.toString(), indentation );
-            }
-        }
         writer.write( ForesterUtil.LINE_SEPARATOR );
         writer.write( indentation );
         PhylogenyDataUtil.appendClose( writer, PhyloXmlMapping.TAXONOMY );

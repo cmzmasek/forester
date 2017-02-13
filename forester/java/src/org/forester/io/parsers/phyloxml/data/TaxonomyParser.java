@@ -79,12 +79,6 @@ public class TaxonomyParser implements PhylogenyDataPhyloXmlParser {
                 else if ( child_element.getQualifiedName().equals( PhyloXmlMapping.URI ) ) {
                     taxonomy.addUri( ( Uri ) UriParser.getInstance().parse( child_element ) );
                 }
-                else if ( child_element.getQualifiedName().equals( PhyloXmlMapping.TAXONOMY_LINEAGE ) ) {
-                    final String[] lineage = child_element.getValueAsString().split( "," );
-                    if ( lineage != null && lineage.length > 0 ) {
-                       taxonomy.setLineage( Arrays.asList(lineage) );
-                    }
-                }
             }
         }
         return taxonomy;
