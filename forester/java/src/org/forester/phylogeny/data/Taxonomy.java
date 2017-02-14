@@ -324,16 +324,6 @@ public class Taxonomy implements PhylogenyData, MultipleUris, Comparable<Taxonom
                 && !PhyloXmlUtil.TAXOMONY_CODE_PATTERN.matcher( taxonomy_code ).matches() ) {
             throw new PhyloXmlDataFormatException( "illegal taxonomy code: [" + taxonomy_code + "]" );
         }
-        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        //TODO FIXME (added on 13-11-18) remove me eventually
-        if ( taxonomy_code.equals( "ACIBL" ) ) {
-            taxonomy_code = "KORVE";
-        }
-        else if ( taxonomy_code.equals( "PYRKO" ) ) {
-            taxonomy_code = "THEKO";
-        }
-        //TODO FIXME (added on 13-11-18) remove me eventually
-        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         _taxonomy_code = taxonomy_code;
     }
 
@@ -412,24 +402,6 @@ public class Taxonomy implements PhylogenyData, MultipleUris, Comparable<Taxonom
                 if ( uri != null ) {
                     uri.toPhyloXML( writer, level, indentation );
                 }
-            }
-        }
-        if ( getLineage() != null ) {
-            final StringBuilder sb = new StringBuilder();
-            boolean first = true;
-            for( final String lin : getLineage() ) {
-                if ( !ForesterUtil.isEmpty( lin ) ) {
-                    if ( first ) {
-                        first = false;
-                    }
-                    else {
-                        sb.append( "," );
-                    }
-                    sb.append( lin );
-                }
-            }
-            if ( sb.length() > 0 ) {
-                PhylogenyDataUtil.appendElement( writer, PhyloXmlMapping.TAXONOMY_LINEAGE, sb.toString(), indentation );
             }
         }
         writer.write( ForesterUtil.LINE_SEPARATOR );

@@ -273,6 +273,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem                        _about_item;
     JMenuItem                        _help_item;
     JMenuItem                        _website_item;
+    JMenuItem                        _aptxjs_website_item;
     JMenuItem                        _mailing_list_item;
     JMenuItem                        _phyloxml_website_item;
     JMenuItem                        _phyloxml_ref_item;
@@ -608,6 +609,14 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         else if ( o == _website_item ) {
             try {
                 AptxUtil.openWebsite( AptxConstants.APTX_WEB_SITE);
+            }
+            catch ( final IOException e1 ) {
+                ForesterUtil.printErrorMessage( AptxConstants.PRG_NAME, e1.toString() );
+            }
+        }
+        else if ( o == _aptxjs_website_item ) {
+            try {
+                AptxUtil.openWebsite( AptxConstants.APTX_JS_WEB_SITE);;
             }
             catch ( final IOException e1 ) {
                 ForesterUtil.printErrorMessage( AptxConstants.PRG_NAME, e1.toString() );
@@ -1180,6 +1189,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _help_jmenu.add( _help_item = new JMenuItem( "Documentation" ) );
         _help_jmenu.addSeparator();
         _help_jmenu.add( _website_item = new JMenuItem( "Archaeopteryx Home" ) );
+        _help_jmenu.add( _aptxjs_website_item = new JMenuItem( "NEW! Archaeopteryx online version: Archaeopteryx.js" ) );
         _help_jmenu.add( _mailing_list_item = new JMenuItem( "Mailing List" ) );
         _aptx_ref_item = new JMenuItem( "Archaeopteryx Reference" ); //TODO need to add this...
         _help_jmenu.add( _phyloxml_website_item = new JMenuItem( "phyloXML Home" ) );
@@ -1188,6 +1198,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _help_jmenu.add( _about_item = new JMenuItem( "About" ) );
         customizeJMenuItem( _help_item );
         customizeJMenuItem( _website_item );
+        customizeJMenuItem( _aptxjs_website_item );
         customizeJMenuItem( _mailing_list_item );
         customizeJMenuItem( _phyloxml_website_item );
         customizeJMenuItem( _aptx_ref_item );
