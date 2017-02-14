@@ -35,7 +35,7 @@ import org.forester.io.parsers.FastaParser;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
-import org.forester.phylogeny.data.PropertiesMap;
+import org.forester.phylogeny.data.PropertiesList;
 import org.forester.phylogeny.data.Property;
 import org.forester.phylogeny.data.Property.AppliesTo;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
@@ -72,9 +72,9 @@ public class map_lengths {
                     node_name = node_name.substring( 0, node_name.indexOf( "/" ) );
                     final PhylogenyNode n = phy.getNode( node_name );
                     if ( n.getNodeData().getProperties() == null ) {
-                        n.getNodeData().setProperties( new PropertiesMap() );
+                        n.getNodeData().setProperties( new PropertiesList() );
                     }
-                    final PropertiesMap properties = n.getNodeData().getProperties();
+                    final PropertiesList properties = n.getNodeData().getProperties();
                     final Property p = new Property( "r:" + i, "" + actual_length, "", "xsd:integer", AppliesTo.NODE );
                     properties.addProperty( p );
                 }
