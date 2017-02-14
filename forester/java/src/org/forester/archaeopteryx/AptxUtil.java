@@ -62,7 +62,6 @@ import javax.imageio.stream.ImageOutputStream;
 import javax.swing.JOptionPane;
 import javax.swing.text.MaskFormatter;
 
-import org.forester.archaeopteryx.Options.PHYLOGENY_DISPLAY_TYPE;
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.nexus.NexusPhylogeniesParser;
 import org.forester.io.parsers.nhx.NHXParser;

@@ -77,7 +77,6 @@ import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
 import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
-import org.forester.io.parsers.phyloxml.PhyloXmlUtil;
 import org.forester.io.parsers.tol.TolParser;
 import org.forester.io.parsers.util.ParserUtils;
 import org.forester.io.writers.SequenceWriter;

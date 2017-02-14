@@ -25,8 +25,6 @@
 
 package org.forester.io.parsers.phyloxml.data;
 
-import java.util.Arrays;
-
 import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.parsers.phyloxml.PhyloXmlMapping;
 import org.forester.io.parsers.phyloxml.XmlElement;
