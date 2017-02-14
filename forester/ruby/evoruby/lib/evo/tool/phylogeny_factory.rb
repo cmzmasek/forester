@@ -1,10 +1,10 @@
 #
 # = lib/evo/apps/phylogeny_factory - PhylogenyFactory class
 #
-# Copyright::  Copyright (C) 2006-2007 Christian M. Zmasek
-# License::    GNU Lesser General Public License (LGPL)
+# Copyright::    Copyright (C) 2017 Christian M. Zmasek
+# License::      GNU Lesser General Public License (LGPL)
 #
-# $Id: phylogeny_factory.rb,v 1.32 2010/12/13 19:00:11 cmzmasek Exp $
+# Last modified: 2017/02/07
 
 require 'lib/evo/util/constants'
 require 'lib/evo/util/util'
@@ -21,9 +21,9 @@ module Evoruby
     PRG_DATE       = "1301111"
     PRG_DESC       = "automated phylogeny reconstruction using queing system"
     PRG_VERSION    = "1.100"
-    COPYRIGHT      = "2013 Christian M Zmasek"
-    CONTACT        = "phylosoft@gmail.com"
-    WWW            = "www.phylosoft.org"
+    COPYRIGHT      = "2017 Christian M Zmasek"
+    CONTACT        = "cmzmasek at yahoo dot com"
+    WWW            = "https://sites.google.com/site/cmzmasek/home/software/forester"
 
     USE_JOB_SUBMISSION_SYSTEM_OPTION  = 's'
     BS_OPTION                         = 'b'

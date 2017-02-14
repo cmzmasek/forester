@@ -1696,6 +1696,9 @@ public class PhylogenyMethods {
                         n.getNodeData().getTaxonomy().setIdentifier( new Identifier( name ) );
                         break;
                     }
+                    case CLADE_NAME:
+                        n.setName( name );
+                        break;
                     default: {
                         throw new IllegalArgumentException( "don't know what to do with " + field );
                     }

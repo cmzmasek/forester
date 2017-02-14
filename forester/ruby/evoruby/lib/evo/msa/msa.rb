@@ -1,11 +1,10 @@
 #
 # = lib/evo/msa/msa.rb - Msa class
 #
-# Copyright::  Copyright (C) 2006-2007 Christian M. Zmasek
-# License::    GNU Lesser General Public License (LGPL)
+# Copyright::    Copyright (C) 2017 Christian M. Zmasek
+# License::      GNU Lesser General Public License (LGPL)
 #
-# $Id: msa.rb,v 1.11 2009/01/03 00:42:08 cmzmasek Exp $
-#
+# Last modified: 2017/02/07
 
 
 require 'lib/evo/util/constants'
@@ -517,8 +516,7 @@ module Evoruby
       x = get_number_of_seqs / n
       for i in 0 ... n
         msa = Msa.new()
-        s = 0
-
+        #s = 0
         if ( ( r > 0 ) && ( i == ( n - 1 ) ) )
           y = x + r
           if ( verbose )

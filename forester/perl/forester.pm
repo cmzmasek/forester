@@ -166,12 +166,12 @@ our @EXPORT = qw( executeConsense
 # Software directory:
 # ---------------------
 
-our $SOFTWARE_DIR              = "/home/czmasek/SOFTWARE/";
+our $SOFTWARE_DIR              = "/home/zma/SOFTWARE/";
 
 
 # Java virtual machine:
 # ---------------------
-our $JAVA                      = $SOFTWARE_DIR."JAVA/jdk1.6.0_03/bin/java";
+our $JAVA                      = "java";
 
 
 # Where all the temporary files can be created:
@@ -181,49 +181,49 @@ our $TEMP_DIR_DEFAULT          = "/tmp/";
 
 # Programs from Joe Felsenstein's PHYLIP package:
 # -----------------------------------------------
-our $SEQBOOT                   = $SOFTWARE_DIR."PHYLIP/phylip-3.68/src/seqboot";
-our $NEIGHBOR                  = $SOFTWARE_DIR."PHYLIP/phylip-3.68/src/neighbor";
-our $PROTPARS                  = $SOFTWARE_DIR."PHYLIP/phylip-3.68/src/protpars";
-our $PROML                     = $SOFTWARE_DIR."PHYLIP/phylip-3.68/src/proml";
-our $FITCH                     = $SOFTWARE_DIR."PHYLIP/phylip-3.68/src/fitch";
-our $CONSENSE                  = $SOFTWARE_DIR."PHYLIP/phylip-3.68/src/consense";
-our $PHYLIP_VERSION            = "3.68";
+our $SEQBOOT                   = $SOFTWARE_DIR."PHYLO/Phylip/Phylip3.695/phylip-3.696/exe/seqboot";
+our $NEIGHBOR                  = $SOFTWARE_DIR."PHYLO/Phylip/Phylip3.695/phylip-3.696/exe/neighbor";
+our $PROTPARS                  = $SOFTWARE_DIR."PHYLO/Phylip/Phylip3.695/phylip-3.696/exe/protpars";
+our $PROML                     = $SOFTWARE_DIR."PHYLO/Phylip/Phylip3.695/phylip-3.696/exe/proml";
+our $FITCH                     = $SOFTWARE_DIR."PHYLO/Phylip/Phylip3.695/phylip-3.696/exe/fitch";
+our $CONSENSE                  = $SOFTWARE_DIR."PHYLO/Phylip/Phylip3.695/phylip-3.696/exe/consense";
+our $PHYLIP_VERSION            = "3.695";
 
 # TREE-PUZZLE:
 # ------------
-our $PUZZLE                    = $SOFTWARE_DIR."TREE_PUZZLE/tree-puzzle-5.2/src/puzzle";
+our $PUZZLE                    = $SOFTWARE_DIR."PHYLO/TREE-PUZZLE/tree-puzzle-5.2/src/puzzle";
 our $PUZZLE_VERSION            = "5.2";
 
 # FASTME:
 # -----------------------------------------------------
-our $FASTME                    = $SOFTWARE_DIR."FASTME/fastme2.0/fastme";
+our $FASTME                    = $SOFTWARE_DIR."PHYLO/FastME/fastme2.0/fastme";
 our $FASTME_VERSION            = "2.0";
 
 # BIONJ:
 # -----------------------------------------------------
-our $BIONJ                    = $SOFTWARE_DIR."BIONJ/bionj";
-our $BIONJ_VERSION            = "[1997]";
+our $BIONJ                    = "";
+our $BIONJ_VERSION            = "";
 
 # WEIGHBOR:
 # -----------------------------------------------------
-our $WEIGHBOR                 = $SOFTWARE_DIR."WEIGHBOR/Weighbor/weighbor";
-our $WEIGHBOR_VERSION         = "1.2.1";
+our $WEIGHBOR                 = "";
+our $WEIGHBOR_VERSION         = "";
 
 # PHYML:
 # -----------------------------------------------------
-our $PHYML                    = $SOFTWARE_DIR."PHYML/phyml_v2.4.4/exe/phyml_linux";
-our $PHYML_VERSION            = "2.4.4";
+our $PHYML                    = $SOFTWARE_DIR."PHYLO/PhyML/PhyML-3.1/PhyML-3.1/PhyML-3.1_linux64";
+our $PHYML_VERSION            = "3.1";
 
 # RAXML:
 # -----------------------------------------------------
-our $RAXML                    = $SOFTWARE_DIR."RAXML/RAxML-7.0.4/raxmlHPC";
-our $RAXML_VERSION            = "7.0.4";
+our $RAXML                    = $SOFTWARE_DIR."PHYLO/RAxML/20161215/standard-RAxML-master/raxmlHPC-AVX";
+our $RAXML_VERSION            = "8.2.9";
 
 
-# forester.jar. This jar file is currently available at: http://www.phylosoft.org 
-# -------------------------------------------------------------------------------
+# forester.jar. This jar file is currently available at: https://sites.google.com/site/cmzmasek/home/software/forester 
+# --------------------------------------------------------------------------------------------------------------------
 
-our $FORESTER_JAR             = $SOFTWARE_DIR."FORESTER/DEV/forester/forester/java/forester.jar";
+our $FORESTER_JAR             = "/home/zma/git/forester/forester/java/forester.jar";
 
 
 
@@ -734,7 +734,7 @@ sub executeFastme {
       
     &testForTextFilePresence( $inpwd );
     my $command = "";
-    if ( $bs > 0 ) {
+    if ( $bs > 1 ) {
         $command = "$FASTME -b $init_opt -i $inpwd -n $bs -s b";
     }
     else {

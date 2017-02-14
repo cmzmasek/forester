@@ -1,15 +1,13 @@
 #
 # = lib/evo/io/parser/fasta_parser - FastaParser class
 #
-# Copyright::  Copyright (C) 20017 Christian M. Zmasek
-# License::    GNU Lesser General Public License (LGPL)
+# Copyright::    Copyright (C) 2017 Christian M. Zmasek
+# License::      GNU Lesser General Public License (LGPL)
 #
-# last modified: 05/17/2007
+# Last modified: 2017/02/07
 
 require 'lib/evo/io/parser/msa_parser'
 require 'lib/evo/msa/msa'
-
-#require 'iconv'
 
 module Evoruby
 
@@ -24,10 +22,10 @@ module Evoruby
       current_seq = String.new()
       name        = String.new()
       saw_first_seq = false
-      ic = Iconv.new( 'UTF-8//IGNORE', 'UTF-8' )
       File.open( path ) do | file |
         while line = file.gets
-          line = ic.iconv( line )
+          
+          line.encode!("UTF-8", :invalid => :replace, :undef => :replace, :replace => "?")          
           if can_ignore?( line, saw_first_seq )
 
           elsif line =~ /^\s*>\s*(.+)/

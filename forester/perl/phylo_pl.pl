@@ -1,12 +1,9 @@
 #!/usr/bin/perl -W
 #
-# $Id: phylo_pl.pl,v 1.32 2010/12/13 19:00:22 cmzmasek Exp $
-#
 # FORESTER -- software libraries and applications
 # for evolutionary biology research and applications.
 #
-# Copyright (C) 2008-2014 Christian M. Zmasek
-# Copyright (C) 2008-2009 Burnham Institute for Medical Research
+# Copyright (C) 2017 Christian M. Zmasek
 # All rights reserved
 # 
 # This library is free software; you can redistribute it and/or
@@ -23,8 +20,8 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #
-# Contact: phylosoft @ gmail . com
-#     WWW: www.phylosoft.org/forester
+# Contact: cmzmasek at yahoo dot com
+#     WWW: https://sites.google.com/site/cmzmasek/home/software/forester
 #
 #
 #
@@ -61,7 +58,7 @@ use lib $FindBin::Bin;
 use forester;
 
 my $VERSION                = "1.0.1";
-my $LAST_MODIFIED          = "2009.10.02";
+my $LAST_MODIFIED          = "2017/02/07";
 
 my $RAXML_MODEL_BASE       = "PROTGAMMA";
 my $RAXML_ALGORITHM        = "a";
@@ -1669,13 +1666,12 @@ Y
 sub printUsage {
 
     print <<END;
-
-Copyright (C) 2002-2007 Christian M. Zmasek
+Copyright (C) 2017 Christian M Zmasek
 All rights reserved
 
-Author: Christian M. Zmasek
-phylosoft\@gmail.com
-http://www.phylosoft.org
+Author: Christian M Zmasek
+cmzmasek at yahoo dot com
+https://sites.google.com/site/cmzmasek/home/software/forester
 
   Requirements  phylo_pl is part of the FORESTER collection of programs.
   ------------  Many of its global variables are set via forester.pm.

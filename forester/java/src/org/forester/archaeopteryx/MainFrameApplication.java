@@ -103,8 +103,8 @@ import org.forester.util.ForesterUtil;
 
 public final class MainFrameApplication extends MainFrame {
 
-    private final static int             FRAME_X_SIZE                    = 800;
-    private final static int             FRAME_Y_SIZE                    = 800;
+    private final static int             FRAME_X_SIZE                    = 900;
+    private final static int             FRAME_Y_SIZE                    = 900;
     // Filters for the file-open dialog (classes defined in this file)
     private static final long            serialVersionUID                = -799735726778865234L;
     private static final boolean         PREPROCESS_TREES                = false;

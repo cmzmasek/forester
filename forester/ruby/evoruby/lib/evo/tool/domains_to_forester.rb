@@ -1,12 +1,8 @@
 #
 # = lib/evo/apps/domains_to_forester - DomainsToForester class
 #
-# Copyright::  Copyright (C) 2006-2007 Christian M. Zmasek
-# License::    GNU Lesser General Public License (LGPL)
-#
-# $Id: Exp $
-#
-# last modified: 06/11/2007
+# Copyright::    Copyright (C) 2017 Christian M. Zmasek
+# License::      GNU Lesser General Public License (LGPL)
 
 require 'lib/evo/util/constants'
 require 'lib/evo/util/util'
@@ -17,28 +13,24 @@ require 'lib/evo/sequence/protein_domain'
 require 'lib/evo/sequence/domain_structure'
 
 module Evoruby
-
   class DomainsToForester
 
     PRG_NAME       = "d2f"
-    PRG_DESC       = "parsed hmmpfam output to forester format"
-    PRG_VERSION    = "1.001"
-    PRG_DATE       = "20120807"
-    COPYRIGHT      = "2012 Christian M Zmasek"
-    CONTACT        = "phylosoft@gmail.com"
-    WWW            = "www.phylosoft.org"
+    PRG_DESC       = "converting of parsed hmmpfam output to forester format"
+    PRG_VERSION    = "1.002"
+    PRG_DATE       = "20170213"
+    WWW            = "https://sites.google.com/site/cmzmasek/home/software/forester"
 
     E_VALUE_THRESHOLD_OPTION         = "e"
     OVERWRITE_IF_SAME_FROM_TO_OPTION = "o"
     HELP_OPTION_1                    = "help"
     HELP_OPTION_2                    = "h"
-
     def parse( domains_list_file,
-        original_seqs_file,
-        outfile,
-        column_delimiter,
-        e_value_threshold,
-        overwrite_if_same_from_to )
+      original_seqs_file,
+      outfile,
+      column_delimiter,
+      e_value_threshold,
+      overwrite_if_same_from_to )
       Util.check_file_for_readability( domains_list_file )
       Util.check_file_for_readability( original_seqs_file )
       Util.check_file_for_writability( outfile )
@@ -56,7 +48,7 @@ module Evoruby
       File.open( domains_list_file ) do | file |
         while line = file.gets
           if !is_ignorable?( line )
-            
+
             a = line.split( column_delimiter )
             l = a.length
             if ( ( l < 4 ) || ( e_value_threshold >= 0.0 && l < 5 ) )
@@ -67,14 +59,7 @@ module Evoruby
             domain_name  = a[ 1 ]
             seq_from     = -1
             seq_to       = -1
-            ##########################################
-            if domain_name =~ /RRM_\d/
-              puts "ignoring " + line 
-              next
-            end
-            ##########################################
-            
-            
+
             begin
               seq_from = a[ 2 ].to_i
             rescue Exception
@@ -134,19 +119,19 @@ module Evoruby
 
     end # parse
 
-
-
-
     def run()
 
       Util.print_program_information( PRG_NAME,
-        PRG_VERSION,
-        PRG_DESC,
-        PRG_DATE,
-        COPYRIGHT,
-        CONTACT,
-        WWW,
-        STDOUT )
+      PRG_VERSION,
+      PRG_DESC,
+      PRG_DATE,
+      WWW,
+      STDOUT )
+
+      if ( ARGV == nil || ( ARGV.length < 1 )  )
+        print_help
+        exit( -1 )
+      end
 
       begin
         cla = CommandLineArguments.new( ARGV )
@@ -155,12 +140,12 @@ module Evoruby
       end
 
       if ( cla.is_option_set?( HELP_OPTION_1 ) ||
-           cla.is_option_set?( HELP_OPTION_2 ) )
+      cla.is_option_set?( HELP_OPTION_2 ) )
         print_help
         exit( 0 )
       end
 
-      if cla.get_number_of_files != 3
+      unless ( cla.get_number_of_files == 1 || cla.get_number_of_files == 2 || cla.get_number_of_files == 3 )
         print_help
         exit( -1 )
       end
@@ -172,14 +157,9 @@ module Evoruby
       disallowed = cla.validate_allowed_options_as_str( allowed_opts )
       if ( disallowed.length > 0 )
         Util.fatal_error( PRG_NAME,
-          "unknown option(s): " + disallowed,
-          STDOUT )
+        "unknown option(s): " + disallowed,
+        STDOUT )
       end
-
-      domains_list_file       = cla.get_file_name( 0 )
-      original_sequences_file = cla.get_file_name( 1 )
-      outfile                 = cla.get_file_name( 2 )
-
 
       e_value_threshold = -1.0
       if cla.is_option_set?( E_VALUE_THRESHOLD_OPTION )
@@ -192,35 +172,73 @@ module Evoruby
           Util.fatal_error( PRG_NAME, "attempt to use a negative E-value threshold", STDOUT )
         end
       end
+
+      domains_list_file = cla.get_file_name( 0 )
+      original_sequences_file = ""
+      outfile = ""
+      if (cla.get_number_of_files == 3)
+        original_sequences_file = cla.get_file_name( 1 )
+        outfile = cla.get_file_name( 2 )
+      elsif (cla.get_number_of_files == 1 || cla.get_number_of_files == 2 )
+        if ( cla.get_number_of_files == 2 )
+          original_sequences_file = cla.get_file_name( 1 )
+        else
+          hmmscan_index = domains_list_file.index("hmmscan")
+          if ( hmmscan_index != nil )
+            prefix = domains_list_file[0 .. hmmscan_index-1 ]
+            suffix = Constants::ID_NORMALIZED_FASTA_FILE_SUFFIX
+            files = Dir.entries( "." )
+            matching_files = Util.get_matching_files( files, prefix, suffix)
+            if matching_files.length < 1
+              Util.fatal_error( PRG_NAME, 'no file matching [' + prefix +
+              '...' + suffix + '] present in current directory: need to indicate <file containing complete sequences in fasta format> as second argument' )
+            end
+            if matching_files.length > 1
+              Util.fatal_error( PRG_NAME, 'more than one file matching [' +
+              prefix  + '...' + suffix + '] present in current directory: need to indicate <file containing complete sequences in fasta format> as second argument' )
+            end
+            original_sequences_file = matching_files[ 0 ]
+          end
+        end
+        outfile = domains_list_file
+        if (outfile.end_with?(Constants::DOMAIN_TABLE_SUFFIX) )
+          outfile = outfile.chomp(Constants::DOMAIN_TABLE_SUFFIX)
+        end
+        if ( e_value_threshold >= 0.0 )
+          outfile = outfile + Constants::DOMAINS_TO_FORESTER_EVALUE_CUTOFF_SUFFIX + e_value_threshold.to_s
+        end
+        outfile = outfile + Constants::DOMAINS_TO_FORESTER_OUTFILE_SUFFIX
+      end
+
       overwrite_if_same_from_to = false
       if ( cla.is_option_set?( OVERWRITE_IF_SAME_FROM_TO_OPTION ) )
         overwrite_if_same_from_to = true
       end
 
       puts
-      puts( "Domains list file                      : " + domains_list_file )
-      puts( "Fasta sequencefile (complete sequences): " + original_sequences_file )
-      puts( "Outputfile                             : " + outfile )
+      puts( "Domain table                            : " + domains_list_file )
+      puts( "Fasta sequence file (complete sequences): " + original_sequences_file )
+      puts( "Outputfile                              : " + outfile )
       if ( e_value_threshold >= 0.0 )
-        puts( "E-value threshold                      : " + e_value_threshold.to_s )
+        puts( "E-value threshold                       : " + e_value_threshold.to_s )
       else
-        puts( "E-value threshold                      : no threshold" )
+        puts( "E-value threshold                       : no threshold" )
       end
       if ( overwrite_if_same_from_to )
-        puts( "Overwrite if same from and to          : true" )
+        puts( "Overwrite if same from and to           : true" )
       else
-        puts( "Overwrite if same from and to          : false" )
+        puts( "Overwrite if same from and to           : false" )
       end
 
       puts
 
       begin
         parse( domains_list_file,
-          original_sequences_file,
-          outfile,
-          " ",
-          e_value_threshold,
-          overwrite_if_same_from_to )
+        original_sequences_file,
+        outfile,
+        " ",
+        e_value_threshold,
+        overwrite_if_same_from_to )
 
       rescue ArgumentError, IOError, StandardError => e
         Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
@@ -228,8 +246,9 @@ module Evoruby
         Util.fatal_error( PRG_NAME, "unexpected exception: " + e.to_s, STDOUT )
       end
 
-
       puts
+      Util.print_message( PRG_NAME, "wrote: " + outfile )
+      Util.print_message( PRG_NAME, "next steps in standard analysis pipeline: hmmsearch followed by dsx.rb")
       Util.print_message( PRG_NAME, 'OK' )
       puts
 
@@ -241,21 +260,25 @@ module Evoruby
       puts
       puts( "Usage:" )
       puts
-      puts( "  " + PRG_NAME + ".rb [options] <domains list file (parsed hmmpfam output)> <file containing complete sequences in fasta format> <outputfile>" )
+      puts( "  " + PRG_NAME + ".rb [options] <domain table (parsed hmmpfam output)> [file containing complete sequences in fasta format] [outputfile]" )
       puts()
       puts( "  options: -" + E_VALUE_THRESHOLD_OPTION  + "=<f> : E-value threshold, default is no threshold" )
       puts( "               -" + OVERWRITE_IF_SAME_FROM_TO_OPTION  + " : overwrite domain with same start and end with domain with better E-value" )
       puts
+      puts( "Examples:" )
+      puts
+      puts( "  " + PRG_NAME + ".rb P53_hmmscan_#{Constants::PFAM_V_FOR_EX}_10_domain_table P53_ni.fasta P53_hmmscan_300_10.dff" )
+      puts
+      puts( "  " + PRG_NAME + ".rb P53_hmmscan_#{Constants::PFAM_V_FOR_EX}_10_domain_table P53_ni.fasta" )
+      puts
+      puts( "  " + PRG_NAME + ".rb P53_hmmscan_#{Constants::PFAM_V_FOR_EX}_10_domain_table" )
+      puts()
     end
-
-
 
     def is_ignorable?( line )
       return ( line !~ /[A-Za-z0-9-]/ || line =~ /^\s*#/)
     end
 
-
   end # class DomainsToForester
-
 
 end # module Evoruby

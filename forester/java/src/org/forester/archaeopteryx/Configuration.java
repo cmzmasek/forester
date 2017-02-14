@@ -1665,6 +1665,10 @@ public final class Configuration {
         return _gui_menu_text_color;
     }
 
+    static int getGuiFontSize() {
+        return 11;
+    }
+    
     int getMaxBaseFontSize() {
         return _max_base_font_size;
     }

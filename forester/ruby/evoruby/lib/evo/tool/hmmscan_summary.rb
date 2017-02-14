@@ -1,29 +1,22 @@
 #
 # = lib/evo/tool/hmmscan_summary.rb - HmmscanSummary class
 #
-# Copyright::  Copyright (C) 2012 Christian M. Zmasek
-# License::    GNU Lesser General Public License (LGPL)
-#
-# $Id: hmmscan_parser.rb,v 1.5 2010/12/13 19:00:11 cmzmasek Exp $
-#
+# Copyright::    Copyright (C) 2017 Christian M Zmasek
+# License::      GNU Lesser General Public License (LGPL)
 
 require 'set'
-
 require 'lib/evo/util/constants'
 require 'lib/evo/util/util'
 require 'lib/evo/util/command_line_arguments'
 require 'lib/evo/io/parser/hmmscan_parser'
 
 module Evoruby
-
   class HmmscanSummary
 
     PRG_NAME       = "hsp"
-    PRG_VERSION    = "2.002"
-    PRG_DESC       = "hmmscan summary"
-    PRG_DATE       = "130319"
-    COPYRIGHT      = "2013 Christian M Zmasek"
-    CONTACT        = "phyloxml@gmail.com"
+    PRG_VERSION    = "2.003"
+    PRG_DESC       = "Summarize hmmscan output tables into simpler tables"
+    PRG_DATE       = "170213"
     WWW            = "https://sites.google.com/site/cmzmasek/home/software/forester"
 
     DELIMITER_OPTION              = "d"
@@ -36,9 +29,9 @@ module Evoruby
     HELP_OPTION_1                 = "help"
     HELP_OPTION_2                 = "h"
 
-    USE_AVOID_HMMS = true
-    AVOID_HHMS = [ "RRM_1", "RRM_2", "RRM_3", "RRM_4", "RRM_5", "RRM_6" ]
-    LIMIT_FOR_CLOSE_DOMAINS = 20
+    USE_AVOID_HMMS = false
+    AVOID_HHMS = [ "x", "y", "z" ]
+    LIMIT_FOR_CLOSE_DOMAINS = 20 # Used for protein architecture summary
 
     def initialize
       @domain_counts = Hash.new
@@ -47,13 +40,16 @@ module Evoruby
     def run
 
       Util.print_program_information( PRG_NAME,
-        PRG_VERSION,
-        PRG_DESC,
-        PRG_DATE,
-        COPYRIGHT,
-        CONTACT,
-        WWW,
-        STDOUT )
+      PRG_VERSION,
+      PRG_DESC,
+      PRG_DATE,
+      WWW,
+      STDOUT )
+
+      if ( ARGV == nil || ( ARGV.length < 1 )  )
+        print_help
+        exit( -1 )
+      end
 
       begin
         cla = CommandLineArguments.new( ARGV )
@@ -62,14 +58,9 @@ module Evoruby
       end
 
       if ( cla.is_option_set?( HELP_OPTION_1 ) ||
-           cla.is_option_set?( HELP_OPTION_2 ) )
+      cla.is_option_set?( HELP_OPTION_2 ) )
         print_help
         exit( 0 )
-      end
-
-      if ( cla.get_number_of_files != 2 )
-        print_help
-        exit( -1 )
       end
 
       allowed_opts = Array.new
@@ -84,12 +75,21 @@ module Evoruby
       disallowed = cla.validate_allowed_options_as_str( allowed_opts )
       if ( disallowed.length > 0 )
         Util.fatal_error( PRG_NAME,
-          "unknown option(s): " + disallowed,
-          STDOUT )
+        "unknown option(s): " + disallowed,
+        STDOUT )
       end
 
       inpath = cla.get_file_name( 0 )
-      outpath = cla.get_file_name( 1 )
+
+      outpath = ""
+      if ( cla.get_number_of_files == 1 )
+        outpath = inpath + Constants::DOMAIN_TABLE_SUFFIX
+      elsif ( cla.get_number_of_files == 2 )
+        outpath = cla.get_file_name( 1 )
+      else
+        print_help
+        exit( -1 )
+      end
 
       column_delimiter = "\t"
       if ( cla.is_option_set?( DELIMITER_OPTION ) )
@@ -155,7 +155,7 @@ module Evoruby
       puts()
       puts( "hmmpfam outputfile  : " + inpath )
       puts( "outputfile          : " + outpath )
-      puts( "species             : " + species )
+
       if ( i_e_value_threshold >= 0.0 )
         puts( "i-E-value threshold : " + i_e_value_threshold.to_s )
       else
@@ -174,28 +174,29 @@ module Evoruby
       if ( column_delimiter == "\t" )
         puts( "column delimiter    : TAB" )
       else
-        puts( "column delimiter     : " + column_delimiter )
-      end
-      if fs_e_value_threshold >= 0.0
-        puts( "E-value threshold   : " + fs_e_value_threshold.to_s )
-      else
-        puts( "E-value threshold   : no threshold" )
+        puts( "column delimiter    : " + column_delimiter )
       end
       if !hmm_for_protein_output.empty?
         puts( "HMM for proteins    : " + hmm_for_protein_output )
+        puts( "species             : " + species )
+        if fs_e_value_threshold >= 0.0
+          puts( "E-value threshold   : " + fs_e_value_threshold.to_s )
+        else
+          puts( "E-value threshold   : no threshold" )
+        end
       end
       puts()
 
       begin
         parse( inpath,
-          outpath,
-          column_delimiter,
-          i_e_value_threshold,
-          ignore_dufs,
-          parse_descriptions,
-          fs_e_value_threshold,
-          hmm_for_protein_output,
-          species )
+        outpath,
+        column_delimiter,
+        i_e_value_threshold,
+        ignore_dufs,
+        parse_descriptions,
+        fs_e_value_threshold,
+        hmm_for_protein_output,
+        species )
       rescue IOError => e
         Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
       end
@@ -207,6 +208,8 @@ module Evoruby
       puts
       puts( Util.draw_histogram( domain_counts, "#" ) )
       puts
+      Util.print_message( PRG_NAME, "wrote: " + outpath )
+      Util.print_message( PRG_NAME, "next step in standard analysis pipeline: d2f.rb")
       Util.print_message( PRG_NAME, 'OK' )
       puts
 
@@ -216,14 +219,14 @@ module Evoruby
 
     # raises ArgumentError, IOError
     def parse( inpath,
-        outpath,
-        column_delimiter,
-        i_e_value_threshold,
-        ignore_dufs,
-        get_descriptions,
-        fs_e_value_threshold,
-        hmm_for_protein_output,
-        species )
+      outpath,
+      column_delimiter,
+      i_e_value_threshold,
+      ignore_dufs,
+      get_descriptions,
+      fs_e_value_threshold,
+      hmm_for_protein_output,
+      species )
 
       Util.check_file_for_readability( inpath )
       Util.check_file_for_writability( outpath )
@@ -246,27 +249,28 @@ module Evoruby
 
       results.each do | r |
         model     = r.model
+        desc      = r.desc
         query     = r.query
         i_e_value = r.i_e_value
         env_from  = r.env_from
         env_to    = r.env_to
 
         if ( ( i_e_value_threshold < 0.0 ) || ( i_e_value <= i_e_value_threshold ) ) &&
-           ( !ignore_dufs || ( model !~ /^DUF\d+/ ) )
+        ( !ignore_dufs || ( model !~ /^DUF\d+/ ) )
           count_model( model )
           outfile.print( query +
-             column_delimiter )
+          column_delimiter )
           if ( get_descriptions )
             outfile.print( desc +
-               column_delimiter )
+            column_delimiter )
           end
           outfile.print( model +
-             column_delimiter +
-             env_from.to_s +
-             column_delimiter +
-             env_to.to_s +
-             column_delimiter +
-             i_e_value.to_s )
+          column_delimiter +
+          env_from.to_s +
+          column_delimiter +
+          env_to.to_s +
+          column_delimiter +
+          i_e_value.to_s )
           outfile.print( Constants::LINE_DELIMITER )
         end
 
@@ -274,10 +278,10 @@ module Evoruby
           if  !prev_query.empty? && prev_query != query
             if !hmmscan_results_per_protein.empty?
               process_hmmscan_results_per_protein( hmmscan_results_per_protein,
-                fs_e_value_threshold,
-                hmm_for_protein_output,
-                i_e_value_threshold,
-                species )
+              fs_e_value_threshold,
+              hmm_for_protein_output,
+              i_e_value_threshold,
+              species )
             end
             hmmscan_results_per_protein.clear
           end
@@ -295,10 +299,10 @@ module Evoruby
 
       if !hmm_for_protein_output.empty? && !hmmscan_results_per_protein.empty?
         process_hmmscan_results_per_protein( hmmscan_results_per_protein,
-          fs_e_value_threshold,
-          hmm_for_protein_output,
-          i_e_value_threshold,
-          species )
+        fs_e_value_threshold,
+        hmm_for_protein_output,
+        i_e_value_threshold,
+        species )
       end
 
       outfile.flush()
@@ -323,10 +327,10 @@ module Evoruby
     end
 
     def process_hmmscan_results_per_protein( hmmscan_results_per_protein,
-        fs_e_value_threshold,
-        hmm_for_protein_output,
-        i_e_value_threshold,
-        species )
+      fs_e_value_threshold,
+      hmm_for_protein_output,
+      i_e_value_threshold,
+      species )
 
       dc = 0
       # filter according to i-Evalue threshold
@@ -334,7 +338,6 @@ module Evoruby
       hmmscan_results_per_protein_filtered = []
 
       hmmscan_results_per_protein.each do | r |
-
 
         if r.model == hmm_for_protein_output
           if fs_e_value_threshold > 0.0 && r.fs_e_value > fs_e_value_threshold
@@ -453,19 +456,24 @@ module Evoruby
       s
     end
 
-
     def print_help()
       puts( "Usage:" )
       puts()
-      puts( "  " + PRG_NAME + ".rb [options] <hmmscan outputfile> <outputfile>" )
+      puts( "  " + PRG_NAME + ".rb [options] <hmmscan outputfile> [outputfile]" )
       puts()
-      puts( "  options: -" + DELIMITER_OPTION + ": column delimiter for outputfile, default is TAB" )
-      puts( "           -" + I_E_VALUE_THRESHOLD_OPTION  + ": i-E-value threshold, default is no threshold" )
-      puts( "           -" + PARSE_OUT_DESCRIPITION_OPTION  + ": parse query description (in addition to query name)" )
-      puts( "           -" + IGNORE_DUF_OPTION  + ": ignore DUFs" )
-      puts( "           -" + FS_E_VALUE_THRESHOLD_OPTION  + ": E-value threshold for full protein sequences, only for protein summary" )
-      puts( "           -" + HMM_FOR_PROTEIN_OUTPUT + ": HMM for protein summary" )
-      puts( "           -" + SPECIES_OPTION + ": species for protein summary" )
+      puts( "  options: -" + DELIMITER_OPTION + "=<s> : column delimiter for outputfile, default is TAB" )
+      puts( "           -" + I_E_VALUE_THRESHOLD_OPTION  + "=<f>: i-E-value threshold, default is no threshold" )
+      puts( "           -" + PARSE_OUT_DESCRIPITION_OPTION  + "     : parse query description (in addition to query name)" )
+      puts( "           -" + IGNORE_DUF_OPTION  + "     : ignore DUFs" )
+      puts( "           -" + HMM_FOR_PROTEIN_OUTPUT + "=<s> : HMM for protein architectures summary" )
+      puts( "           -" + FS_E_VALUE_THRESHOLD_OPTION  + "=<f>: E-value threshold for full protein sequences, only for protein architectures summary" )
+      puts( "           -" + SPECIES_OPTION + "=<s> : species for protein architectures summary" )
+      puts()
+      puts( "Example:" )
+      puts()
+      puts( "  " + "hmmscan --nobias --domtblout P53_hmmscan_#{Constants::PFAM_V_FOR_EX}_10 -E 10 Pfam-A.hmm P53_ni.fasta" )
+      puts()
+      puts( "  " + PRG_NAME + ".rb P53_hmmscan_300_10" )
       puts()
     end
 

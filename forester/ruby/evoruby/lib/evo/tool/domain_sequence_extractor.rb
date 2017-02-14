@@ -1,11 +1,8 @@
 #
-# = lib/evo/apps/domain_sequence_extractor.rb - DomainSequenceExtractor class
+# = lib/evo/apps/taxonomy_processor - TaxonomyProcessor class
 #
-# Copyright::  Copyright (C) 2012 Christian M. Zmasek
-# License::    GNU Lesser General Public License (LGPL)
-#
-# $Id:Exp $
-
+# Copyright::    Copyright (C) 2017 Christian M. Zmasek
+# License::      GNU Lesser General Public License (LGPL)
 
 require 'lib/evo/util/constants'
 require 'lib/evo/util/util'
@@ -13,16 +10,13 @@ require 'lib/evo/util/command_line_arguments'
 require 'lib/evo/io/parser/hmmscan_domain_extractor'
 
 module Evoruby
-
   class DomainSequenceExtractor
 
     PRG_NAME       = "dsx"
-    PRG_VERSION    = "2.000"
+    PRG_VERSION    = "2.001"
     PRG_DESC       = "extraction of domain sequences from hmmscan output"
-    PRG_DATE       = "20121001"
-    COPYRIGHT      = "2012 Christian M Zmasek"
-    CONTACT        = "phylosoft@gmail.com"
-    WWW            = "www.phylosoft.org"
+    PRG_DATE       = "20170213"
+    WWW            = "https://sites.google.com/site/cmzmasek/home/software/forester"
 
     E_VALUE_THRESHOLD_OPTION           = 'e'
     LENGTH_THRESHOLD_OPTION            = 'l'
@@ -35,17 +29,14 @@ module Evoruby
     FAILED_SEQS_SUFFIX                 = '_with_no_passing_domains.fasta'
     HELP_OPTION_1                      = 'help'
     HELP_OPTION_2                      = 'h'
-
     def run()
 
       Util.print_program_information( PRG_NAME,
-        PRG_VERSION,
-        PRG_DESC ,
-        PRG_DATE,
-        COPYRIGHT,
-        CONTACT,
-        WWW,
-        STDOUT )
+      PRG_VERSION,
+      PRG_DESC ,
+      PRG_DATE,
+      WWW,
+      STDOUT )
 
       ld = Constants::LINE_DELIMITER
 
@@ -56,7 +47,7 @@ module Evoruby
       end
 
       if ( cla.is_option_set?( HELP_OPTION_1 ) ||
-           cla.is_option_set?( HELP_OPTION_2 ) )
+      cla.is_option_set?( HELP_OPTION_2 ) )
         print_help
         exit( 0 )
       end
@@ -77,8 +68,8 @@ module Evoruby
       disallowed = cla.validate_allowed_options_as_str( allowed_opts )
       if ( disallowed.length > 0 )
         Util.fatal_error( PRG_NAME,
-          "unknown option(s): " + disallowed,
-          STDOUT )
+        "unknown option(s): " + disallowed,
+        STDOUT )
       end
 
       domain_id           = cla.get_file_name( 0 )
@@ -91,7 +82,6 @@ module Evoruby
       elsif outfile.downcase.end_with?( ".fsa" )
         outfile = outfile[ 0 .. outfile.length - 5 ]
       end
-
 
       add_position = false
       if ( cla.is_option_set?( ADD_POSITION_OPTION ) )
@@ -132,7 +122,6 @@ module Evoruby
         end
       end
 
-
       min_linker = nil
       if ( cla.is_option_set?( MIN_LINKER_OPT ) )
         begin
@@ -144,7 +133,6 @@ module Evoruby
           Forester::Util.fatal_error( PRG_NAME, "unexpected value for min linker " + min_linker.to_s, STDOUT )
         end
       end
-
 
       log = String.new
 
@@ -183,7 +171,6 @@ module Evoruby
 
       end
 
-
       if ( add_position )
         puts( "Add positions (rel to complete seq) to extracted domains: true" )
         log << "Add positions (rel to complete seq) to extracted domains: true" + ld
@@ -206,18 +193,18 @@ module Evoruby
       begin
         parser = HmmscanDomainExtractor.new()
         domain_count = parser.parse( domain_id,
-          hmmsearch_output,
-          fasta_sequence_file,
-          outfile,
-          outfile + PASSED_SEQS_SUFFIX,
-          outfile + FAILED_SEQS_SUFFIX,
-          e_value_threshold,
-          length_threshold,
-          add_position,
-          add_domain_number,
-          add_species,
-          min_linker,
-          log )
+        hmmsearch_output,
+        fasta_sequence_file,
+        outfile,
+        outfile + PASSED_SEQS_SUFFIX,
+        outfile + FAILED_SEQS_SUFFIX,
+        e_value_threshold,
+        length_threshold,
+        add_position,
+        add_domain_number,
+        add_species,
+        min_linker,
+        log )
       rescue ArgumentError, IOError => e
         Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
 

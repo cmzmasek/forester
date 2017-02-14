@@ -1,18 +1,26 @@
 #
 # = lib/evo/util/util.rb - Util class
 #
-# Copyright::  Copyright (C) 2006-2007 Christian M. Zmasek
-# License::    GNU Lesser General Public License (LGPL)
+# Copyright::    Copyright (C) 2017 Christian M. Zmasek
+# License::      GNU Lesser General Public License (LGPL)
 #
-# $Id: util.rb,v 1.17 2009/10/06 22:22:46 cmzmasek Exp $
-#
-# last modified: 05/15/2007
+# Last modified: 2017/02/07
 
 require 'lib/evo/util/constants'
 
 module Evoruby
-
   class Util
+    def Util.get_matching_files( files, prefix_pattern, suffix_pattern )
+      matching_files = Array.new
+      files.each { | file |
+        if ( !File.directory?( file ) &&
+        file !~ /^\./ &&
+        file =~ /^#{prefix_pattern}.*#{suffix_pattern}$/ )
+          matching_files << file
+        end
+      }
+      matching_files
+    end
 
     def Util.normalize_seq_name( name, length, exception_if_too_long = false )
       if name.length > length
@@ -22,7 +30,8 @@ module Evoruby
         end
         name = name[ 0, length ]
       elsif name.length < length
-        for i in 0 ... length - name.length
+        t = length - name.length
+        t.times do
           name = name + " "
         end
       end
@@ -104,7 +113,6 @@ module Evoruby
       value
     end
 
-
     # raises ArgumentError
     def Util.file2array( path, split_by_semicolon )
       Util.check_file_for_readability( path )
@@ -130,18 +138,11 @@ module Evoruby
     end
 
     def Util.print_program_information( prg_name,
-        prg_version,
-        prg_desc,
-        date,
-        copyright,
-        contact,
-        www,
-        io = STDOUT )
-
-    #  if RUBY_VERSION !~ /1.9/
-    #    puts( "Your ruby version is #{RUBY_VERSION}, expected 1.9.x " )
-    #    exit( -1 )
-    #  end
+      prg_version,
+      prg_desc,
+      date,
+      www,
+      io = STDOUT )
 
       ruby_version = RUBY_VERSION
       l = prg_name.length + prg_version.length + date.length + ruby_version.length + 12
@@ -156,11 +157,7 @@ module Evoruby
       io.print( prg_desc )
       io.print( Constants::LINE_DELIMITER )
       io.print( Constants::LINE_DELIMITER )
-      io.print( "Copyright (C) " + copyright )
-      io.print( Constants::LINE_DELIMITER )
-      io.print( "Contact: " + contact )
-      io.print( Constants::LINE_DELIMITER )
-      io.print( "         " + www )
+      io.print( "Website: " + www )
       io.print( Constants::LINE_DELIMITER )
       io.print( Constants::LINE_DELIMITER )
     end

@@ -1,10 +1,12 @@
 #
-# To change this template, choose Tools | Templates
-# and open the template in the editor.
-
+# = lib/evo/io/parser/hmmscan_parser.rb - HmmscanParser class
+#
+# Copyright::    Copyright (C) 2017 Christian M. Zmasek
+# License::      GNU Lesser General Public License (LGPL)
+#
+# Last modified: 2017/02/12
 
 class HmmscanParser
-
   def initialize file
     @file = file
   end
@@ -51,6 +53,8 @@ class HmmscanParser
       r.env_from   = $20.to_i
       r.env_to     = $21.to_i
 
+      r.desc       = $23
+
       if r.number > r.out_of || r.hmm_from > r.hmm_to || r.ali_from > r.ali_to || r.env_from > r.env_to
         raise IOError, "illogical format: " + line
       end
@@ -81,5 +85,6 @@ class HmmscanResult
   attr_accessor :ali_to
   attr_accessor :env_from
   attr_accessor :env_to
+  attr_accessor :desc
 
 end

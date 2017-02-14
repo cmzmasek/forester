@@ -2,12 +2,12 @@
 #
 # = lib/evo/apps/phylogenies_decorator
 #
-# Copyright::  Copyright (C) 2006-2008 Christian M. Zmasek
-# License::    GNU Lesser General Public License (LGPL)
+# Copyright::    Copyright (C) 2017 Christian M. Zmasek
+# License::      GNU Lesser General Public License (LGPL)
+#
+# Last modified: 2017/02/09
 #
 # decoration of phylogenies with sequence/species names and domain architectures
-#
-# $Id: phylogenies_decorator.rb,v 1.34 2010/12/13 19:00:11 cmzmasek Exp $
 #
 # Environment variable FORESTER_HOME needs to point to the appropriate
 # directory (e.g. setenv FORESTER_HOME $HOME/SOFTWARE_DEV/ECLIPSE_WORKSPACE/forester/)
@@ -22,7 +22,8 @@ module Evoruby
 
     #DECORATOR_OPTIONS_SEQ_NAMES = '-r=1 -mdn'
     #DECORATOR_OPTIONS_SEQ_NAMES = '-p -t -sn'
-    DECORATOR_OPTIONS_SEQ_NAMES = '-p -t -tc -mp -or'
+    #DECORATOR_OPTIONS_SEQ_NAMES = '-p -t -tc -mp -or'
+    DECORATOR_OPTIONS_SEQ_NAMES = '-p -t -mp -or'
     # -mdn is a hidden expert option to rename e.g. "6_ORYLA3" to "6_[3]_ORYLA"
     #DECORATOR_OPTIONS_SEQ_NAMES = '-sn -r=1'
     #DECORATOR_OPTIONS_DOMAINS = '-r=1'
@@ -31,7 +32,8 @@ module Evoruby
     DOMAINS_MAPFILE_SUFFIX    = '_hmmscan_10.dff'
     SLEEP_TIME                = 0.05
     REMOVE_NI                 = true
-    IDS_ONLY                  = true
+    IDS_ONLY                  = true #TODO this should be a command line option
+    FIXED_NIM_FILE            = 'all.nim' #TODO this should be a command line option
     TMP_FILE_1                  = '___PD1___'
     TMP_FILE_2                  = '___PD2___'
     LOG_FILE                  = '00_phylogenies_decorator.log'
@@ -39,11 +41,11 @@ module Evoruby
     JAVA_HOME                 = ENV[Constants::JAVA_HOME_ENV_VARIABLE]
 
     PRG_NAME       = "phylogenies_decorator"
-    PRG_DATE       = "2013.11.15"
+    PRG_DATE       = "170209"
     PRG_DESC       = "decoration of phylogenies with sequence/species names and domain architectures"
     PRG_VERSION    = "1.02"
-    COPYRIGHT      = "2013 Christian M Zmasek"
-    CONTACT        = "phylosoft@gmail.com"
+    COPYRIGHT      = "2017 Christian M Zmasek"
+    CONTACT        = "phyloxml at gmail dot com"
     WWW            = "https://sites.google.com/site/cmzmasek/home/software/forester"
 
     HELP_OPTION_1       = "help"
@@ -151,7 +153,7 @@ module Evoruby
             outfile = outfile.sub( /_ni_/, '_' )
           end
 
-          if File.exists?( outfile )
+          if File.exist?( outfile )
             msg = counter.to_s + ': ' + phylogeny_file + ' -> ' +  outfile +
             ' : already exists, skipping'
             Util.print_message( PRG_NAME, msg  )
@@ -174,8 +176,12 @@ module Evoruby
           domains_mapfile_name = nil
           seqs_file_name = nil
 
-          ids_mapfile_name = get_file( files, phylogeny_id, IDS_MAPFILE_SUFFIX )
-
+          if ( FIXED_NIM_FILE == nil )
+            ids_mapfile_name = get_file( files, phylogeny_id, IDS_MAPFILE_SUFFIX )
+          else
+            ids_mapfile_name = FIXED_NIM_FILE
+          end
+          
           unless IDS_ONLY
             domains_mapfile_name = get_file( files, phylogeny_id, DOMAINS_MAPFILE_SUFFIX )
             seqs_file_name = get_seq_file( files, phylogeny_id )
@@ -213,7 +219,7 @@ module Evoruby
 
             cmd = decorator + ' ' + DECORATOR_OPTIONS_DOMAINS + ' ' +
             '-f=d ' + TMP_FILE_1 + ' ' +
-            domains_mapfile_name + ' ' +TMP_FILE_2
+            domains_mapfile_name + ' ' + TMP_FILE_2
             puts cmd
             begin
               execute_cmd( cmd, log )
@@ -276,17 +282,7 @@ module Evoruby
     end
 
     def get_file( files_in_dir, phylogeny_id, suffix_pattern )
-      matching_files = Array.new
-
-      files_in_dir.each { | file |
-
-        if ( !File.directory?( file ) &&
-        file !~ /^\./ &&
-        file !~ /^00/ &&
-        file =~ /^#{phylogeny_id}.*#{suffix_pattern}$/ )
-          matching_files << file
-        end
-      }
+      matching_files = Util.get_matching_files( files_in_dir, phylogeny_id, suffix_pattern )
       if matching_files.length < 1
         Util.fatal_error( PRG_NAME, 'no file matching [' + phylogeny_id +
         '...' + suffix_pattern + '] present in current directory' )

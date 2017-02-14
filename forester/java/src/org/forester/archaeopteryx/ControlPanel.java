@@ -102,11 +102,11 @@ final class ControlPanel extends JPanel implements ActionListener {
                           ORDER_SUBTREE;
     }
     final static Font                         jcb_bold_font             = new Font( Configuration
-            .getDefaultFontFamilyName(), Font.BOLD, 9 );
+            .getDefaultFontFamilyName(), Font.BOLD, Configuration.getGuiFontSize() );
     final static Font                         jcb_font                  = new Font( Configuration
-            .getDefaultFontFamilyName(), Font.PLAIN, 9 );
+            .getDefaultFontFamilyName(), Font.PLAIN, Configuration.getGuiFontSize());
     final static Font                         js_font                   = new Font( Configuration
-            .getDefaultFontFamilyName(), Font.PLAIN, 9 );
+            .getDefaultFontFamilyName(), Font.PLAIN, Configuration.getGuiFontSize() );
     private static final String               RETURN_TO_SUPER_TREE_TEXT = "R";
     private static final String               SEARCH_TIP_TEXT           = "Enter text to search for. Use ',' for logical OR and '+' for logical AND (not used in this manner for regular expression searches).";
     private static final long                 serialVersionUID          = -8463483932821545633L;

@@ -1,10 +1,10 @@
 #
 # = lib/evo/io/parser/general_msa_parser - GeneralMsaParser class
 #
-# Copyright::  Copyright (C) 2006-2007 Christian M. Zmasek
-# License::    GNU Lesser General Public License (LGPL)
+# Copyright::    Copyright (C) 2017 Christian M. Zmasek
+# License::      GNU Lesser General Public License (LGPL)
 #
-# last modified: 2009/10/08
+# Last modified: 2017/02/07
 
 require 'lib/evo/io/parser/msa_parser'
 require 'lib/evo/msa/msa'
