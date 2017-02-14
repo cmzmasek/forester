@@ -3416,7 +3416,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 && ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getMolecularSequence() ) ) ) {
             paintMolecularSequences( g, node, to_pdf );
         }
-        if ( dynamically_hide && !is_in_found_nodes && ( ( node.isExternal()
+        if ( dynamically_hide && ( ( node.isExternal()
                 && ( ( _external_node_index % dynamic_hiding_factor ) != 1 ) )
                 || ( !node.isExternal() && ( ( new_x_min < 20 )
                         || ( ( _y_distance * node.getNumberOfExternalNodes() ) < getFontMetricsForLargeDefaultFont()
