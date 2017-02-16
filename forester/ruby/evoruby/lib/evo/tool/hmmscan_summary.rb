@@ -153,7 +153,7 @@ module Evoruby
       end
 
       puts()
-      puts( "hmmpfam outputfile  : " + inpath )
+      puts( "hmmscan outputfile  : " + inpath )
       puts( "outputfile          : " + outpath )
 
       if ( i_e_value_threshold >= 0.0 )
@@ -469,9 +469,11 @@ module Evoruby
       puts( "           -" + FS_E_VALUE_THRESHOLD_OPTION  + "=<f>: E-value threshold for full protein sequences, only for protein architectures summary" )
       puts( "           -" + SPECIES_OPTION + "=<s> : species for protein architectures summary" )
       puts()
-      puts( "Example:" )
+      puts( "  [next step in standard analysis pipeline: d2f.rb]")
       puts()
-      puts( "  " + "hmmscan --nobias --domtblout P53_hmmscan_#{Constants::PFAM_V_FOR_EX}_10 -E 10 Pfam-A.hmm P53_ni.fasta" )
+      puts( "Examples:" )
+      puts()
+      puts( "  " + "hmmscan --max --domtblout P53_hmmscan_#{Constants::PFAM_V_FOR_EX}_10 -E 10 Pfam-A.hmm P53_ni.fasta" )
       puts()
       puts( "  " + PRG_NAME + ".rb P53_hmmscan_300_10" )
       puts()

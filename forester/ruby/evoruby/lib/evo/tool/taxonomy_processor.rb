@@ -19,7 +19,7 @@ module Evoruby
   class TaxonomyProcessor
 
     PRG_NAME       = "tap"
-    PRG_DATE       = "170213"
+    PRG_DATE       = "170214"
     PRG_DESC       = "Replacement of labels in multiple sequence files"
     PRG_VERSION    = "2.004"
     WWW            = "https://sites.google.com/site/cmzmasek/home/software/forester"
@@ -207,6 +207,8 @@ module Evoruby
       puts()
       puts( "  options: -" + EXTRACT_TAXONOMY_OPTION + "    : to extract taxonomy information from bracketed expressions" )
       puts( "           -" + ANNOTATION_OPTION + "=<s>: to add an annotation to all entries" )
+      puts()
+      puts( "  [next steps in standard analysis pipeline: hmmscan followed by hsp.rb]")
       puts()
       puts( "Example:" )
       puts()

@@ -183,7 +183,7 @@ module Evoruby
         if ( cla.get_number_of_files == 2 )
           original_sequences_file = cla.get_file_name( 1 )
         else
-          hmmscan_index = domains_list_file.index("hmmscan")
+          hmmscan_index = domains_list_file.index(Constants::HMMSCAN)
           if ( hmmscan_index != nil )
             prefix = domains_list_file[0 .. hmmscan_index-1 ]
             suffix = Constants::ID_NORMALIZED_FASTA_FILE_SUFFIX
@@ -198,14 +198,18 @@ module Evoruby
               prefix  + '...' + suffix + '] present in current directory: need to indicate <file containing complete sequences in fasta format> as second argument' )
             end
             original_sequences_file = matching_files[ 0 ]
+          else
+            Util.fatal_error( PRG_NAME, 'input files do not seem in format for standard analysis pipeline, need to explicitly indicate all' )
           end
+
         end
         outfile = domains_list_file
         if (outfile.end_with?(Constants::DOMAIN_TABLE_SUFFIX) )
           outfile = outfile.chomp(Constants::DOMAIN_TABLE_SUFFIX)
         end
         if ( e_value_threshold >= 0.0 )
-          outfile = outfile + Constants::DOMAINS_TO_FORESTER_EVALUE_CUTOFF_SUFFIX + e_value_threshold.to_s
+          e = e_value_threshold >= 1 ? e_value_threshold.to_i : e_value_threshold.to_s.sub!('.','_')
+          outfile = outfile + Constants::DOMAINS_TO_FORESTER_EVALUE_CUTOFF_SUFFIX + e.to_s
         end
         outfile = outfile + Constants::DOMAINS_TO_FORESTER_OUTFILE_SUFFIX
       end
@@ -248,7 +252,7 @@ module Evoruby
 
       puts
       Util.print_message( PRG_NAME, "wrote: " + outfile )
-      Util.print_message( PRG_NAME, "next steps in standard analysis pipeline: hmmsearch followed by dsx.rb")
+      Util.print_message( PRG_NAME, "next step in standard analysis pipeline: dsx.rb")
       Util.print_message( PRG_NAME, 'OK' )
       puts
 
@@ -262,16 +266,18 @@ module Evoruby
       puts
       puts( "  " + PRG_NAME + ".rb [options] <domain table (parsed hmmpfam output)> [file containing complete sequences in fasta format] [outputfile]" )
       puts()
-      puts( "  options: -" + E_VALUE_THRESHOLD_OPTION  + "=<f> : E-value threshold, default is no threshold" )
-      puts( "               -" + OVERWRITE_IF_SAME_FROM_TO_OPTION  + " : overwrite domain with same start and end with domain with better E-value" )
+      puts( "  options: -" + E_VALUE_THRESHOLD_OPTION  + "=<f>: E-value threshold, default is no threshold" )
+      puts( "           -" + OVERWRITE_IF_SAME_FROM_TO_OPTION  + "    : overwrite domain with same start and end with domain with better E-value" )
       puts
+      puts( "  [next step in standard analysis pipeline: dsx.rb]")
+      puts()
       puts( "Examples:" )
       puts
-      puts( "  " + PRG_NAME + ".rb P53_hmmscan_#{Constants::PFAM_V_FOR_EX}_10_domain_table P53_ni.fasta P53_hmmscan_300_10.dff" )
+      puts( "  " + PRG_NAME + ".rb -o P53_hmmscan_#{Constants::PFAM_V_FOR_EX}_10_domain_table P53_ni.fasta P53_hmmscan_#{Constants::PFAM_V_FOR_EX}_10.dff" )
       puts
-      puts( "  " + PRG_NAME + ".rb P53_hmmscan_#{Constants::PFAM_V_FOR_EX}_10_domain_table P53_ni.fasta" )
+      puts( "  " + PRG_NAME + ".rb -o P53_hmmscan_#{Constants::PFAM_V_FOR_EX}_10_domain_table P53_ni.fasta" )
       puts
-      puts( "  " + PRG_NAME + ".rb P53_hmmscan_#{Constants::PFAM_V_FOR_EX}_10_domain_table" )
+      puts( "  " + PRG_NAME + ".rb -o P53_hmmscan_#{Constants::PFAM_V_FOR_EX}_10_domain_table" )
       puts()
     end
 

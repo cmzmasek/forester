@@ -1,11 +1,8 @@
 #
 # = lib/evo/tool/hmmscan_summary.rb - HmmscanSummary class
 #
-# Copyright::  Copyright (C) 2012 Christian M. Zmasek
-# License::    GNU Lesser General Public License (LGPL)
-#
-# $Id: hmmscan_parser.rb,v 1.5 2010/12/13 19:00:11 cmzmasek Exp $
-#
+# Copyright::    Copyright (C) 2017 Christian M. Zmasek
+# License::      GNU Lesser General Public License (LGPL)
 
 require 'lib/evo/util/constants'
 require 'lib/evo/util/util'

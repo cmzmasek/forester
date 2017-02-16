@@ -13,9 +13,9 @@ module Evoruby
   class DomainSequenceExtractor
 
     PRG_NAME       = "dsx"
-    PRG_VERSION    = "2.001"
-    PRG_DESC       = "extraction of domain sequences from hmmscan output"
-    PRG_DATE       = "20170213"
+    PRG_VERSION    = "2.002"
+    PRG_DESC       = "Extraction of domain sequences from hmmscan output"
+    PRG_DATE       = "20170214"
     WWW            = "https://sites.google.com/site/cmzmasek/home/software/forester"
 
     E_VALUE_THRESHOLD_OPTION           = 'e'
@@ -23,7 +23,6 @@ module Evoruby
     ADD_POSITION_OPTION                = 'p'
     ADD_DOMAIN_NUMBER_OPTION           = 'd'
     ADD_SPECIES                        = 's'
-    MIN_LINKER_OPT                     = 'ml'
     LOG_FILE_SUFFIX                    = '_domain_seq_extr.log'
     PASSED_SEQS_SUFFIX                 = '_with_passing_domains.fasta'
     FAILED_SEQS_SUFFIX                 = '_with_no_passing_domains.fasta'
@@ -38,7 +37,10 @@ module Evoruby
       WWW,
       STDOUT )
 
-      ld = Constants::LINE_DELIMITER
+      if ( ARGV == nil || ( ARGV.length < 1 )  )
+        print_help
+        exit( -1 )
+      end
 
       begin
         cla = CommandLineArguments.new( ARGV )
@@ -52,7 +54,7 @@ module Evoruby
         exit( 0 )
       end
 
-      if ( cla.get_number_of_files != 4 )
+      unless ( cla.get_number_of_files == 2 || cla.get_number_of_files == 3 || cla.get_number_of_files == 4 )
         print_help
         exit( -1 )
       end
@@ -63,7 +65,6 @@ module Evoruby
       allowed_opts.push( ADD_DOMAIN_NUMBER_OPTION )
       allowed_opts.push( LENGTH_THRESHOLD_OPTION )
       allowed_opts.push( ADD_SPECIES )
-      allowed_opts.push( MIN_LINKER_OPT )
 
       disallowed = cla.validate_allowed_options_as_str( allowed_opts )
       if ( disallowed.length > 0 )
@@ -72,10 +73,71 @@ module Evoruby
         STDOUT )
       end
 
+      e_value_threshold = 0.1
+      if ( cla.is_option_set?( E_VALUE_THRESHOLD_OPTION ) )
+        begin
+          e_value_threshold = cla.get_option_value_as_float( E_VALUE_THRESHOLD_OPTION )
+        rescue ArgumentError => e
+          Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
+        end
+        if ( e_value_threshold < 0.0 )
+          Util.fatal_error( PRG_NAME, "attempt to use a negative E-value threshold", STDOUT )
+        end
+      end
+
+      length_threshold = 50
+      if ( cla.is_option_set?( LENGTH_THRESHOLD_OPTION ) )
+        begin
+          length_threshold = cla.get_option_value_as_int( LENGTH_THRESHOLD_OPTION )
+        rescue ArgumentError => e
+          Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
+        end
+        if ( length_threshold < 0)
+          Util.fatal_error( PRG_NAME, "attempt to use a negative length threshold", STDOUT )
+        end
+      end
+
       domain_id           = cla.get_file_name( 0 )
-      hmmsearch_output    = cla.get_file_name( 1 )
-      fasta_sequence_file = cla.get_file_name( 2 )
-      outfile             = cla.get_file_name( 3 )
+      hmmscan_output      = cla.get_file_name( 1 )
+      fasta_sequence_file = ""
+      outfile             = ""
+
+      if (cla.get_number_of_files == 4)
+        fasta_sequence_file = cla.get_file_name( 2 )
+        outfile             = cla.get_file_name( 3 )
+      elsif (cla.get_number_of_files == 2 || cla.get_number_of_files == 3)
+        if (cla.get_number_of_files == 3)
+          fasta_sequence_file = cla.get_file_name( 2 )
+        else
+          hmmscan_index = hmmscan_output.index(Constants::HMMSCAN)
+          if ( hmmscan_index != nil )
+            prefix = hmmscan_output[0 .. hmmscan_index-1 ]
+            suffix = Constants::ID_NORMALIZED_FASTA_FILE_SUFFIX
+            files = Dir.entries( "." )
+            matching_files = Util.get_matching_files( files, prefix, suffix)
+            if matching_files.length < 1
+              Util.fatal_error( PRG_NAME, 'no file matching [' + prefix +
+              '...' + suffix + '] present in current directory: need to indicate <file containing complete sequences in fasta format> as second argument' )
+            end
+            if matching_files.length > 1
+              Util.fatal_error( PRG_NAME, 'more than one file matching [' +
+              prefix  + '...' + suffix + '] present in current directory: need to indicate <file containing complete sequences in fasta format> as second argument' )
+            end
+            fasta_sequence_file = matching_files[ 0 ]
+          else
+            Util.fatal_error( PRG_NAME, 'input files do not seem in format for standard analysis pipeline, need to explicitly indicate all' )
+          end
+        end
+        hmmscan_index = hmmscan_output.index(Constants::HMMSCAN)
+        if ( hmmscan_index != nil )
+          outfile = hmmscan_output.sub(Constants::HMMSCAN, "_") + "_" + domain_id
+          e = e_value_threshold >= 1 ? e_value_threshold.to_i : e_value_threshold.to_s.sub!('.','_')
+          outfile += "_E" + e.to_s
+          outfile += "_L" + length_threshold.to_i.to_s
+        else
+          Util.fatal_error( PRG_NAME, 'input files do not seem in format for standard analysis pipeline, need to explicitly indicate all' )
+        end
+      end
 
       if outfile.downcase.end_with?( ".fasta" )
         outfile = outfile[ 0 .. outfile.length - 7 ]
@@ -88,59 +150,24 @@ module Evoruby
         add_position = true
       end
 
-      add_domain_number           = false
+      add_domain_number = false
       if ( cla.is_option_set?( ADD_DOMAIN_NUMBER_OPTION ) )
         add_domain_number = true
       end
 
       add_species = false
-      if cla.is_option_set? ADD_SPECIES
+      if cla.is_option_set?( ADD_SPECIES )
         add_species = true
       end
 
-      e_value_threshold = -1.0
-      if ( cla.is_option_set?( E_VALUE_THRESHOLD_OPTION ) )
-        begin
-          e_value_threshold = cla.get_option_value_as_float( E_VALUE_THRESHOLD_OPTION )
-        rescue ArgumentError => e
-          Forester::Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
-        end
-        if ( e_value_threshold < 0.0 )
-          Forester::Util.fatal_error( PRG_NAME, "attempt to use a negative E-value threshold", STDOUT )
-        end
-      end
-
-      length_threshold = -1
-      if ( cla.is_option_set?( LENGTH_THRESHOLD_OPTION ) )
-        begin
-          length_threshold = cla.get_option_value_as_int( LENGTH_THRESHOLD_OPTION )
-        rescue ArgumentError => e
-          Forester::Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
-        end
-        if ( length_threshold < 0)
-          Forester::Util.fatal_error( PRG_NAME, "attempt to use a negative length threshold", STDOUT )
-        end
-      end
-
-      min_linker = nil
-      if ( cla.is_option_set?( MIN_LINKER_OPT ) )
-        begin
-          min_linker = cla.get_option_value_as_int( MIN_LINKER_OPT )
-        rescue ArgumentError => e
-          Forester::Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
-        end
-        if ( !min_linker || min_linker > 100 || min_linker < -100 )
-          Forester::Util.fatal_error( PRG_NAME, "unexpected value for min linker " + min_linker.to_s, STDOUT )
-        end
-      end
-
       log = String.new
+      ld = Constants::LINE_DELIMITER
 
       puts()
       puts( "Domain                                 : " + domain_id )
       log << "Domain                                 : " + domain_id + ld
-      puts( "Hmmscan outputfile                     : " + hmmsearch_output )
-      log << "Hmmscan outputfile                     : " + hmmsearch_output + ld
+      puts( "Hmmscan outputfile                     : " + hmmscan_output )
+      log << "Hmmscan outputfile                     : " + hmmscan_output + ld
       puts( "Fasta sequencefile (complete sequences): " + fasta_sequence_file )
       log << "Fasta sequencefile (complete sequences): " + fasta_sequence_file + ld
       puts( "Outputfile                             : " + outfile + ".fasta" )
@@ -165,11 +192,6 @@ module Evoruby
         puts( "Length threshold  : no threshold" )
         log << "Length threshold  : no threshold" + ld
       end
-      if ( min_linker )
-        puts( "Min linker        : " + min_linker.to_s )
-        log << "Min linker        :  " + min_linker.to_s +  ld
-
-      end
 
       if ( add_position )
         puts( "Add positions (rel to complete seq) to extracted domains: true" )
@@ -193,7 +215,7 @@ module Evoruby
       begin
         parser = HmmscanDomainExtractor.new()
         domain_count = parser.parse( domain_id,
-        hmmsearch_output,
+        hmmscan_output,
         fasta_sequence_file,
         outfile,
         outfile + PASSED_SEQS_SUFFIX,
@@ -203,7 +225,7 @@ module Evoruby
         add_position,
         add_domain_number,
         add_species,
-        min_linker,
+        false,
         log )
       rescue ArgumentError, IOError => e
         Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
@@ -239,14 +261,21 @@ module Evoruby
       puts()
       puts( "Usage:" )
       puts()
-      puts( "  " + PRG_NAME + ".rb [options] <domain> <hmmscan outputfile> <file containing complete sequences in fasta format> <outputfile>" )
+      puts( "  " + PRG_NAME + ".rb [options] <domain> <hmmscan outputfile> [file containing complete sequences in fasta format] [outputfile]" )
       puts()
-      puts( "  options: -" + E_VALUE_THRESHOLD_OPTION  + "=<f>: iE-value threshold, default is no threshold" )
-      puts( "           -" + LENGTH_THRESHOLD_OPTION   + "=<i>: length threshold, default is no threshold" )
-      puts( "           -" + ADD_POSITION_OPTION  + ": to add positions (rel to complete seq) to extracted domains" )
-      puts( "           -" + ADD_DOMAIN_NUMBER_OPTION  + ": to add numbers to extracted domains (in case of more than one domain per complete seq) (example \"domain~2-3\")" )
-      puts( "           -" + ADD_SPECIES  + ": to add species [in brackets]" )
-      puts( "           -" + MIN_LINKER_OPT  + "=<i>: to extract pairs of same domains with a distance inbetween shorter than a given value" )
+      puts( "  options: -" + E_VALUE_THRESHOLD_OPTION  + "=<f> : iE-value threshold, default is 0.1" )
+      puts( "           -" + LENGTH_THRESHOLD_OPTION   + "=<i> : length threshold, default is 50" )
+      puts( "           -" + ADD_DOMAIN_NUMBER_OPTION  + "     : to add numbers to extracted domains (in case of more than one domain per complete seq) (example \"domain~2-3\")" )
+      puts( "           -" + ADD_POSITION_OPTION  + "     : to add positions (rel to complete seq) to extracted domains" )
+      puts( "           -" + ADD_SPECIES  + "     : to add species [in brackets]" )
+      puts()
+      puts( "Examples:" )
+      puts
+      puts( "  " + PRG_NAME + ".rb -d -e=1e-6 -l=50 Pkinase P53_hmmscan_#{Constants::PFAM_V_FOR_EX}_10 P53_ni.fasta P53_#{Constants::PFAM_V_FOR_EX}_10_Pkinase_E1_0e-06_L50" )
+      puts
+      puts( "  " + PRG_NAME + ".rb -d -e=1e-6 -l=50 Pkinase P53_hmmscan_#{Constants::PFAM_V_FOR_EX}_10 P53_ni.fasta" )
+      puts
+      puts( "  " + PRG_NAME + ".rb -d -e=1e-6 -l=50 Pkinase P53_hmmscan_#{Constants::PFAM_V_FOR_EX}_10" )
       puts()
     end
 
