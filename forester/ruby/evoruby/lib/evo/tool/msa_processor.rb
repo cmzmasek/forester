@@ -9,7 +9,6 @@
 
 require 'date'
 require 'set'
-
 require 'lib/evo/util/constants'
 require 'lib/evo/util/util'
 require 'lib/evo/util/command_line_arguments'
@@ -23,17 +22,13 @@ require 'lib/evo/io/parser/general_msa_parser'
 require 'lib/evo/io/writer/msa_writer'
 
 module Evoruby
-
   class MsaProcessor
 
     PRG_NAME       = "msa_pro"
-    PRG_DATE       = "131112"
+    PRG_DATE       = "170215"
     PRG_DESC       = "processing of multiple sequence alignments"
     PRG_VERSION    = "1.08"
-    COPYRIGHT      = "2008-2010 Christian M Zmasek"
-    CONTACT        = "phylosoft@gmail.com"
-    WWW            = "www.phylosoft.org"
-
+    WWW            = "https://sites.google.com/site/cmzmasek/home/software/forester"
 
     NAME_LENGTH_DEFAULT                = 10
     WIDTH_DEFAULT_FASTA                = 60
@@ -61,8 +56,6 @@ module Evoruby
     LOG_SUFFIX                         = "_msa_pro.log"
     HELP_OPTION_1                      = "help"
     HELP_OPTION_2                      = "h"
-
-
     def initialize()
       @input_format_set = false
       @output_format_set = false
@@ -95,17 +88,14 @@ module Evoruby
       @last             = -1
     end
 
-
     def run()
 
       Util.print_program_information( PRG_NAME,
-        PRG_VERSION,
-        PRG_DESC,
-        PRG_DATE,
-        COPYRIGHT,
-        CONTACT,
-        WWW,
-        STDOUT )
+      PRG_VERSION,
+      PRG_DESC,
+      PRG_DATE,
+      WWW,
+      STDOUT )
 
       if ( ARGV == nil || ARGV.length < 1 )
         Util.print_message( PRG_NAME, "Illegal number of arguments" )
@@ -120,7 +110,7 @@ module Evoruby
       end
 
       if ( cla.is_option_set?( HELP_OPTION_1 ) ||
-           cla.is_option_set?( HELP_OPTION_2 ) )
+      cla.is_option_set?( HELP_OPTION_2 ) )
         print_help
         exit( 0 )
       end
@@ -155,7 +145,7 @@ module Evoruby
       disallowed = cla.validate_allowed_options_as_str( allowed_opts )
       if ( disallowed.length > 0 )
         Util.fatal_error( PRG_NAME,
-          "unknown option(s): " + disallowed )
+        "unknown option(s): " + disallowed )
       end
 
       input = cla.get_file_name( 0 )
@@ -430,8 +420,6 @@ module Evoruby
           msa = sort( msa )
         end
 
-
-
         if ( @split > 0 )
           begin
             msas = msa.split( @split, true )
@@ -518,8 +506,8 @@ module Evoruby
           if removed.size > 0
             identicals = msa.get_identical_seqs_detected
             log << "the following " + identicals.size.to_s + " sequences are identical:" + ld
-            identicals.each { | s |
-              log << s + ld
+            identicals.each { | identical |
+              log << identical + ld
             }
             log << "ignoring the following " + removed.size.to_s + " redundant sequences:" + ld
             removed.each { | seq_name |
@@ -576,12 +564,10 @@ module Evoruby
           Util.fatal_error( PRG_NAME, "error: " + e.to_s )
         end
 
-
       end
       Util.print_message( PRG_NAME, "OK" )
       puts
     end
-
 
     private
 
@@ -604,76 +590,93 @@ module Evoruby
       @fasta_input = fi
       @input_format_set = true
     end
+
     def set_phylip_input( pi = true )
       @phylip_input = pi
       @input_format_set = true
     end
+
     def set_name_length( i )
       @name_length = i
       @name_length_set = true
     end
+
     def set_width( i )
       @width = i
     end
+
     def set_fasta_output( fo = true )
       @fasta_output = fo
       @output_format_set = true
     end
+
     def set_pi_output( pso = true )
       @pi_output = pso
       @output_format_set = true
     end
+
     def set_nexus_output( nexus = true )
       @nexus_output = nexus
       @output_format_set = true
     end
+
     def set_clean( c = true )
       @clean = c
     end
+
     def set_remove_gap_columns( rgc = true )
       @rgc = rgc
     end
+
     def set_remove_gap_only_columns( rgoc = true )
       @rgoc = rgoc
     end
+
     def set_remove_gaps( rg = true )
       @rg = rg
     end
+
     def set_remove_gap_ratio( rgr )
       @rgr = rgr
     end
+
     def set_remove_seqs_gap_ratio( rsgr )
       @rsgr = rsgr
     end
+
     def set_remove_seqs_min_non_gap_length( rsl )
       @rsl = rsl
     end
+
     def set_remove_seqs( file )
       @seqs_name_file = file
       @remove_seqs    = true
       @keep_seqs      = false
     end
+
     def set_keep_seqs( file )
       @seqs_name_file = file
       @keep_seqs      = true
       @remove_seqs    = false
     end
+
     def set_trim( first, last )
       @trim            = true
       @first           = first
       @last            = last
     end
+
     def set_remove_matching( remove )
       @remove_matching  = remove
     end
+
     def set_keep_matching( keep )
       @keep_matching = keep
     end
+
     def set_rem_red( rr )
       @rem_red = rr
     end
-
-
 
     def set_split( s )
       if ( s > 0 )
@@ -843,7 +846,6 @@ module Evoruby
         @die_if_name_too_long = true
       end
 
-
     end
 
     def print_help()
@@ -875,11 +877,6 @@ module Evoruby
       puts()
     end
 
-
-
-
-
   end # class MsaProcessor
-
 
 end # module Evoruby

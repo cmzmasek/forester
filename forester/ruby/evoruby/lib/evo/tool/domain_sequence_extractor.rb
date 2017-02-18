@@ -18,6 +18,9 @@ module Evoruby
     PRG_DATE       = "20170214"
     WWW            = "https://sites.google.com/site/cmzmasek/home/software/forester"
 
+    E_VALUE_THRESHOLD_DEFAULT = 0.1
+    LENGTH_THRESHOLD_DEFAULT  = 50
+
     E_VALUE_THRESHOLD_OPTION           = 'e'
     LENGTH_THRESHOLD_OPTION            = 'l'
     ADD_POSITION_OPTION                = 'p'
@@ -73,7 +76,7 @@ module Evoruby
         STDOUT )
       end
 
-      e_value_threshold = 0.1
+      e_value_threshold = E_VALUE_THRESHOLD_DEFAULT
       if ( cla.is_option_set?( E_VALUE_THRESHOLD_OPTION ) )
         begin
           e_value_threshold = cla.get_option_value_as_float( E_VALUE_THRESHOLD_OPTION )
@@ -85,7 +88,7 @@ module Evoruby
         end
       end
 
-      length_threshold = 50
+      length_threshold = LENGTH_THRESHOLD_DEFAULT
       if ( cla.is_option_set?( LENGTH_THRESHOLD_OPTION ) )
         begin
           length_threshold = cla.get_option_value_as_int( LENGTH_THRESHOLD_OPTION )
@@ -164,41 +167,40 @@ module Evoruby
       ld = Constants::LINE_DELIMITER
 
       puts()
-      puts( "Domain                                 : " + domain_id )
-      log << "Domain                                 : " + domain_id + ld
-      puts( "Hmmscan outputfile                     : " + hmmscan_output )
-      log << "Hmmscan outputfile                     : " + hmmscan_output + ld
-      puts( "Fasta sequencefile (complete sequences): " + fasta_sequence_file )
-      log << "Fasta sequencefile (complete sequences): " + fasta_sequence_file + ld
-      puts( "Outputfile                             : " + outfile + ".fasta" )
-      log << "Outputfile                             : " + outfile + ld
-      puts( "Passed sequences outfile (fasta)       : " + outfile + PASSED_SEQS_SUFFIX )
-      log << "Passed sequences outfile (fasta)       : " + outfile + PASSED_SEQS_SUFFIX + ld
-      puts( "Failed sequences outfile (fasta)       : " + outfile + FAILED_SEQS_SUFFIX )
-      log << "Failed sequences outfile (fasta)       : " + outfile + FAILED_SEQS_SUFFIX + ld
-      puts( "Logfile                                : " + outfile + LOG_FILE_SUFFIX )
-      log <<  "Logfile                                : " + outfile + LOG_FILE_SUFFIX + ld
+      puts( "Domain                                                                             : " + domain_id )
+      log << "Domain                                                                             : " + domain_id + ld
+      puts( "Hmmscan outputfile                                                                 : " + hmmscan_output )
+      log << "Hmmscan outputfile                                                                 : " + hmmscan_output + ld
+      puts( "Fasta sequencefile (complete sequences)                                            : " + fasta_sequence_file )
+      log << "Fasta sequencefile (complete sequences)                                            : " + fasta_sequence_file + ld
+      puts( "Outputfile                                                                         : " + outfile + ".fasta" )
+      log << "Outputfile                                                                         : " + outfile + ld
+      puts( "Passed sequences outfile (fasta)                                                   : " + outfile + PASSED_SEQS_SUFFIX )
+      log << "Passed sequences outfile (fasta)                                                   : " + outfile + PASSED_SEQS_SUFFIX + ld
+      puts( "Failed sequences outfile (fasta)                                                   : " + outfile + FAILED_SEQS_SUFFIX )
+      log << "Failed sequences outfile (fasta)                                                   : " + outfile + FAILED_SEQS_SUFFIX + ld
+      puts( "Logfile                                                                            : " + outfile + LOG_FILE_SUFFIX )
+      log << "Logfile                                                                            : " + outfile + LOG_FILE_SUFFIX + ld
       if ( e_value_threshold >= 0.0 )
-        puts( "E-value threshold : " + e_value_threshold.to_s )
-        log << "E-value threshold : " + e_value_threshold.to_s + ld
+        puts( "iE-value threshold                                                                 : " + e_value_threshold.to_s )
+        log << "iE-value threshold                                                                 : " + e_value_threshold.to_s + ld
       else
-        puts( "E-value threshold : no threshold" )
-        log << "E-value threshold : no threshold" + ld
+        puts( "iE-value threshold                                                                 : no threshold" )
+        log << "iE-value threshold                                                                 : no threshold" + ld
       end
       if ( length_threshold > 0 )
-        puts( "Length threshold  : " + length_threshold.to_s )
-        log << "Length threshold  : " + length_threshold.to_s + ld
+        puts( "Length threshold (env)                                                             : " + length_threshold.to_s )
+        log << "Length threshold (env)                                                             : " + length_threshold.to_s + ld
       else
-        puts( "Length threshold  : no threshold" )
-        log << "Length threshold  : no threshold" + ld
+        puts( "Length threshold (env)                                                             : no threshold" )
+        log << "Length threshold  (env)                                                            : no threshold" + ld
       end
-
       if ( add_position )
-        puts( "Add positions (rel to complete seq) to extracted domains: true" )
-        log << "Add positions (rel to complete seq) to extracted domains: true" + ld
+        puts( "Add positions (rel to complete seq) to extracted domains                           : true" )
+        log << "Add positions (rel to complete seq) to extracted domains                           : true" + ld
       else
-        puts( "Add positions (rel to complete seq) to extracted domains: false" )
-        log << "Add positions (rel to complete seq) to extracted domains: false" + ld
+        puts( "Add positions (rel to complete seq) to extracted domains                           : false" )
+        log << "Add positions (rel to complete seq) to extracted domains                           : false" + ld
       end
 
       if ( add_domain_number )
@@ -210,6 +212,7 @@ module Evoruby
       end
 
       puts
+      log <<  ld
 
       domain_count = 0
       begin
@@ -238,10 +241,10 @@ module Evoruby
 
       puts
       Util.print_message( PRG_NAME, "extracted a total of " + domain_count.to_s + " domains" )
-      Util.print_message( PRG_NAME, "wrote;               " + outfile + ".fasta")
-      Util.print_message( PRG_NAME, "wrote:               " + outfile + LOG_FILE_SUFFIX )
-      Util.print_message( PRG_NAME, "wrote:               " + outfile + PASSED_SEQS_SUFFIX )
-      Util.print_message( PRG_NAME, "wrote:               " + outfile + FAILED_SEQS_SUFFIX )
+      Util.print_message( PRG_NAME, "wrote: " + outfile + ".fasta")
+      Util.print_message( PRG_NAME, "wrote: " + outfile + LOG_FILE_SUFFIX )
+      Util.print_message( PRG_NAME, "wrote: " + outfile + PASSED_SEQS_SUFFIX )
+      Util.print_message( PRG_NAME, "wrote: " + outfile + FAILED_SEQS_SUFFIX )
 
       begin
         f = File.open( outfile + LOG_FILE_SUFFIX, 'a' )
@@ -261,10 +264,10 @@ module Evoruby
       puts()
       puts( "Usage:" )
       puts()
-      puts( "  " + PRG_NAME + ".rb [options] <domain> <hmmscan outputfile> [file containing complete sequences in fasta format] [outputfile]" )
+      puts( "  " + PRG_NAME + ".rb [options] <target domain> <hmmscan outputfile> [file containing complete sequences in fasta format] [outputfile]" )
       puts()
-      puts( "  options: -" + E_VALUE_THRESHOLD_OPTION  + "=<f> : iE-value threshold, default is 0.1" )
-      puts( "           -" + LENGTH_THRESHOLD_OPTION   + "=<i> : length threshold, default is 50" )
+      puts( "  options: -" + E_VALUE_THRESHOLD_OPTION  + "=<f> : iE-value threshold for target domain, default is " + E_VALUE_THRESHOLD_DEFAULT.to_s )
+      puts( "           -" + LENGTH_THRESHOLD_OPTION   + "=<i> : length threshold target domain (env), default is " + LENGTH_THRESHOLD_DEFAULT.to_s )
       puts( "           -" + ADD_DOMAIN_NUMBER_OPTION  + "     : to add numbers to extracted domains (in case of more than one domain per complete seq) (example \"domain~2-3\")" )
       puts( "           -" + ADD_POSITION_OPTION  + "     : to add positions (rel to complete seq) to extracted domains" )
       puts( "           -" + ADD_SPECIES  + "     : to add species [in brackets]" )

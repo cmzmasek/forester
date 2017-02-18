@@ -3,6 +3,8 @@
 #
 # Copyright::    Copyright (C) 2017 Christian M. Zmasek
 # License::      GNU Lesser General Public License (LGPL)
+#
+# Last modified: 2017/02/16
 
 require 'lib/evo/util/constants'
 require 'lib/evo/msa/msa_factory'
@@ -75,21 +77,46 @@ module Evoruby
 
       ld = Constants::LINE_DELIMITER
 
-      domain_pass_counter     = 0
-      domain_fail_counter     = 0
-      proteins_with_failing_domains = 0
+      domain_pass_counter                = 0
+      domain_fail_counter                = 0
+      proteins_with_failing_domains      = 0
+      domain_not_present_counter         = 0
+      protein_counter                    = 1
       max_domain_copy_number_per_protein = -1
       max_domain_copy_number_sequence    = ""
+      passing_target_length_sum          = 0
+      overall_target_length_sum          = 0
+      overall_target_length_min          = 10000000
+      overall_target_length_max          = 0
+      passing_target_length_min          = 10000000
+      passing_target_length_max          = 0
 
       hmmscan_datas = []
 
       hmmscan_parser = HmmscanParser.new( hmmscan_output )
       results = hmmscan_parser.parse
 
+      prev_query = nil
+      saw_target = false
+
       results.each do | r |
+
+        if ( prev_query != nil ) && ( r.query != prev_query )
+          protein_counter += 1
+          if !saw_target
+            log << domain_not_present_counter.to_s + ": " + prev_query.to_s + " lacks target domain" + ld
+            domain_not_present_counter += 1
+          end
+          saw_target = false
+        end
+
+        prev_query = r.query
+
         if domain_id != r.model
           next
         end
+
+        saw_target = true
 
         sequence  = r.query
         number    = r.number
@@ -97,33 +124,47 @@ module Evoruby
         env_from  = r.env_from
         env_to    = r.env_to
         i_e_value = r.i_e_value
+        prev_query = r.query
+
+        length = env_to - env_from + 1
+
+        overall_target_length_sum += length
+        if length > overall_target_length_max
+          overall_target_length_max = length
+        end
+        if length < overall_target_length_min
+          overall_target_length_min = length
+        end
 
         if ( ( ( e_value_threshold < 0.0 ) || ( i_e_value <= e_value_threshold ) ) &&
-        ( ( length_threshold <= 0 )   || ( env_to - env_from + 1 ) >= length_threshold.to_f ) )
+        ( ( length_threshold <= 0 ) || ( length >= length_threshold.to_f ) ) )
           hmmscan_datas << HmmsearchData.new( sequence, number, out_of, env_from, env_to, i_e_value )
+          passing_target_length_sum += length
+          if length > passing_target_length_max
+            passing_target_length_max = length
+          end
+          if length < passing_target_length_min
+            passing_target_length_min = length
+          end
           if ( number > max_domain_copy_number_per_protein )
             max_domain_copy_number_sequence    = sequence
             max_domain_copy_number_per_protein = number
           end
-        else # failed
-          print( domain_fail_counter.to_s + ": " + sequence.to_s + " did not meet threshold(s)" )
-          log << domain_fail_counter.to_s + ": " + sequence.to_s + " did not meet threshold(s)"
+        else # no pass
+          log << domain_fail_counter.to_s + ": " + sequence.to_s + " fails threshold(s)"
           if ( ( e_value_threshold.to_f >= 0.0 ) && ( i_e_value > e_value_threshold ) )
-            print( " iE=" + i_e_value.to_s )
             log << " iE=" + i_e_value.to_s
           end
           if ( ( length_threshold.to_f > 0 ) && ( env_to - env_from + 1 ) < length_threshold.to_f )
             le = env_to - env_from + 1
-            print( " l=" + le.to_s )
             log << " l=" + le.to_s
           end
-          print( ld )
           log << ld
-          domain_fail_counter  += 1
+          domain_fail_counter += 1
         end
 
         if number > out_of
-          error_msg = "number > out_of ! (this should not have happened)"
+          error_msg = "number > out_of (this should not have happened)"
           raise StandardError, error_msg
         end
 
@@ -152,7 +193,7 @@ module Evoruby
               error_msg = "this should not have happened"
               raise StandardError, error_msg
             end
-          else
+          else # no pass
             if failed_seqs.find_by_name_start( sequence, true ).length < 1
               add_sequence( sequence, in_msa, failed_seqs )
               proteins_with_failing_domains += 1
@@ -163,6 +204,12 @@ module Evoruby
           end
           hmmscan_datas.clear
         end
+
+      end # results.each do | r |
+
+      if (prev_query != nil) && (!saw_target)
+        log << domain_not_present_counter.to_s + ": " + prev_query.to_s + " lacks target domain" + ld
+        domain_not_present_counter += 1
       end
 
       if domain_pass_counter < 1
@@ -170,14 +217,53 @@ module Evoruby
         raise IOError, error_msg
       end
 
+      if ( domain_not_present_counter + passed_seqs.get_number_of_seqs + proteins_with_failing_domains ) != protein_counter
+        error_msg = "not present + passing + not passing != proteins in sequence (fasta) file (this should not have happened)"
+        raise StandardError, error_msg
+      end
+
+      puts
       log << ld
-      puts( "Max domain copy number per protein : " + max_domain_copy_number_per_protein.to_s )
-      log << "Max domain copy number per protein : " + max_domain_copy_number_per_protein.to_s
+
+      log << ld
+      avg_pass = ( passing_target_length_sum / domain_pass_counter )
+      puts( "Passing target domain lengths: average: " + avg_pass.to_s  )
+      log << "Passing target domain lengths: average: " + avg_pass.to_s
+      log << ld
+      puts( "Passing target domain lengths: min-max: " + passing_target_length_min.to_s + "-"  + passing_target_length_max.to_s)
+      log << "Passing target domain lengths: min-max: " + passing_target_length_min.to_s + "-"  + passing_target_length_max.to_s
+      log << ld
+      puts( "Passing target domain lengths:     sum: " + domain_pass_counter.to_s  )
+      log << "Passing target domain lengths:     sum: " + domain_pass_counter.to_s
+      log << ld
+      log << ld
+      puts
+      sum = domain_pass_counter + domain_fail_counter
+      avg_all = overall_target_length_sum / sum
+      puts( "All target domain lengths:     average: " + avg_all.to_s  )
+      log << "All target domain lengths:     average: " +avg_all.to_s
+      log << ld
+      puts( "All target domain lengths:     min-max: " + overall_target_length_min.to_s + "-"  + overall_target_length_max.to_s)
+      log << "All target domain lengths:     min-max: " + overall_target_length_min.to_s + "-"  + overall_target_length_max.to_s
+      log << ld
+      puts( "All target domain lengths:         sum: " + sum.to_s  )
+      log << "All target domain lengths:         sum: " + sum.to_s
+
+      puts
+      puts( "Proteins with passing target domain(s): " + passed_seqs.get_number_of_seqs.to_s )
+      puts( "Proteins with no passing target domain: " + proteins_with_failing_domains.to_s )
+      puts( "Proteins with no target domain        : " + domain_not_present_counter.to_s )
+
+      log << ld
+      log << ld
+      puts
+      puts( "Max target domain copy number per protein (includes non-passing): " + max_domain_copy_number_per_protein.to_s )
+      log << "Max target domain copy number per protein (includes non-passing): " + max_domain_copy_number_per_protein.to_s
       log << ld
 
       if ( max_domain_copy_number_per_protein > 1 )
-        puts( "First protein with this copy number: " + max_domain_copy_number_sequence )
-        log << "First protein with this copy number: " + max_domain_copy_number_sequence
+        puts( "First target protein with this copy number: " + max_domain_copy_number_sequence )
+        log << "First target protein with this copy number: " + max_domain_copy_number_sequence
         log << ld
       end
 
@@ -232,22 +318,24 @@ module Evoruby
       end
 
       log << ld
-      log << "passing domains                             : " + domain_pass_counter.to_s + ld
-      log << "failing domains                             : " + domain_fail_counter.to_s + ld
-      log << "input proteins                              : " + in_msa.get_number_of_seqs.to_s + ld
-      log << "proteins with passing domains               : " + passed_seqs.get_number_of_seqs.to_s + ld
-      log << "proteins with no passing domains            : " + proteins_with_failing_domains.to_s + ld
+      log << "passing target domains                       : " + domain_pass_counter.to_s + ld
+      log << "failing target domains                       : " + domain_fail_counter.to_s + ld
+      log << "proteins in sequence (fasta) file            : " + in_msa.get_number_of_seqs.to_s + ld
+      log << "proteins in hmmscan outputfile               : " + protein_counter.to_s + ld
+      log << "proteins with passing target domain(s)       : " + passed_seqs.get_number_of_seqs.to_s + ld
+      log << "proteins with no passing target domain       : " + proteins_with_failing_domains.to_s + ld
+      log << "proteins with no target domain               : " + domain_not_present_counter.to_s + ld
       if min_linker
-        log << "min linker length                           : " + min_linker.to_s + ld
-        log << "single domains                              : " + out_msa_singles.get_number_of_seqs.to_s + ld
-        log << "domains in close pairs                      : " + (2 * out_msa_pairs.get_number_of_seqs).to_s + ld
-        log << "isolated domains                            : " + out_msa_isolated.get_number_of_seqs.to_s + ld
-        log << "proteins wih single domains                 : " + out_msa_single_domains_protein_seqs.get_number_of_seqs.to_s + ld
-        log << "proteins wih close pair domains             : " + out_msa_close_pairs_protein_seqs.get_number_of_seqs.to_s + ld
-        log << "proteins wih close pair domains only        : " + out_msa_close_pairs_only_protein_seqs.get_number_of_seqs.to_s + ld
-        log << "proteins wih isolated domains               : " + out_msa_isolated_protein_seqs.get_number_of_seqs.to_s + ld
-        log << "proteins wih isolated domains only          : " + out_msa_isolated_only_protein_seqs.get_number_of_seqs.to_s + ld
-        log << "proteins wih close pair and isolated domains: " + out_msa_isolated_and_close_pair_protein_seqs.get_number_of_seqs.to_s + ld
+        log << "min linker length                            : " + min_linker.to_s + ld
+        log << "single domains                               : " + out_msa_singles.get_number_of_seqs.to_s + ld
+        log << "domains in close pairs                       : " + (2 * out_msa_pairs.get_number_of_seqs).to_s + ld
+        log << "isolated domains                             : " + out_msa_isolated.get_number_of_seqs.to_s + ld
+        log << "proteins with single domains                 : " + out_msa_single_domains_protein_seqs.get_number_of_seqs.to_s + ld
+        log << "proteins with close pair domains             : " + out_msa_close_pairs_protein_seqs.get_number_of_seqs.to_s + ld
+        log << "proteins with close pair domains only        : " + out_msa_close_pairs_only_protein_seqs.get_number_of_seqs.to_s + ld
+        log << "proteins with isolated domains               : " + out_msa_isolated_protein_seqs.get_number_of_seqs.to_s + ld
+        log << "proteins with isolated domains only          : " + out_msa_isolated_only_protein_seqs.get_number_of_seqs.to_s + ld
+        log << "proteins with close pair and isolated domains: " + out_msa_isolated_and_close_pair_protein_seqs.get_number_of_seqs.to_s + ld
       end
 
       log << ld
@@ -473,7 +561,7 @@ module Evoruby
         error_msg = "sequence \"" + sequence + "\" not unique in sequence file"
         raise IOError, error_msg
       end
-      # hmmsearch is 1 based, wheres sequences are 0 bases in this package.
+      # hmmscan is 1 based, whereas sequences are 0 bases in this package.
       seq = in_msa.get_sequence( seqs[ 0 ] ).get_subsequence( seq_from - 1, seq_to - 1 )
 
       orig_name = seq.get_name

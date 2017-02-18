@@ -32,7 +32,7 @@ module Evoruby
     DOMAINS_MAPFILE_SUFFIX    = '_hmmscan_10.dff'
     SLEEP_TIME                = 0.05
     REMOVE_NI                 = true
-    IDS_ONLY                  = true #TODO this should be a command line option
+    IDS_ONLY                  = false #TODO this should be a command line option
     FIXED_NIM_FILE            = 'all.nim' #TODO this should be a command line option
     TMP_FILE_1                  = '___PD1___'
     TMP_FILE_2                  = '___PD2___'
@@ -44,8 +44,6 @@ module Evoruby
     PRG_DATE       = "170209"
     PRG_DESC       = "decoration of phylogenies with sequence/species names and domain architectures"
     PRG_VERSION    = "1.02"
-    COPYRIGHT      = "2017 Christian M Zmasek"
-    CONTACT        = "phyloxml at gmail dot com"
     WWW            = "https://sites.google.com/site/cmzmasek/home/software/forester"
 
     HELP_OPTION_1       = "help"
@@ -58,8 +56,6 @@ module Evoruby
       PRG_VERSION,
       PRG_DESC,
       PRG_DATE,
-      COPYRIGHT,
-      CONTACT,
       WWW,
       STDOUT )
 
@@ -122,10 +118,10 @@ module Evoruby
       log << 'input suffix     : ' + in_suffix + NL
       log << 'output suffix    : ' + out_suffix + NL
 
-      if ( File.exists?( TMP_FILE_1 ) )
+      if ( File.exist?( TMP_FILE_1 ) )
         File.delete( TMP_FILE_1 )
       end
-      if ( File.exists?( TMP_FILE_2 ) )
+      if ( File.exist?( TMP_FILE_2 ) )
         File.delete( TMP_FILE_2 )
       end
 
