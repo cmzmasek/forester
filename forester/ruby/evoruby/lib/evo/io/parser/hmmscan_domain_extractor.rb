@@ -79,6 +79,7 @@ module Evoruby
 
       domain_pass_counter                = 0
       domain_fail_counter                = 0
+      passing_domains_per_protein        = 0
       proteins_with_failing_domains      = 0
       domain_not_present_counter         = 0
       protein_counter                    = 1
@@ -87,9 +88,14 @@ module Evoruby
       passing_target_length_sum          = 0
       overall_target_length_sum          = 0
       overall_target_length_min          = 10000000
-      overall_target_length_max          = 0
+      overall_target_length_max          = -1
       passing_target_length_min          = 10000000
-      passing_target_length_max          = 0
+      passing_target_length_max          = -1
+
+      overall_target_ie_min          = 10000000
+      overall_target_ie_max          = -1
+      passing_target_ie_min          = 10000000
+      passing_target_ie_max          = -1
 
       hmmscan_datas = []
 
@@ -103,6 +109,7 @@ module Evoruby
 
         if ( prev_query != nil ) && ( r.query != prev_query )
           protein_counter += 1
+          passing_domains_per_protein = 0
           if !saw_target
             log << domain_not_present_counter.to_s + ": " + prev_query.to_s + " lacks target domain" + ld
             domain_not_present_counter += 1
@@ -136,19 +143,33 @@ module Evoruby
           overall_target_length_min = length
         end
 
+        if i_e_value > overall_target_ie_max
+          overall_target_ie_max = i_e_value
+        end
+        if i_e_value < overall_target_ie_min
+          overall_target_ie_min = i_e_value
+        end
+
         if ( ( ( e_value_threshold < 0.0 ) || ( i_e_value <= e_value_threshold ) ) &&
         ( ( length_threshold <= 0 ) || ( length >= length_threshold.to_f ) ) )
           hmmscan_datas << HmmsearchData.new( sequence, number, out_of, env_from, env_to, i_e_value )
           passing_target_length_sum += length
+          passing_domains_per_protein += 1
           if length > passing_target_length_max
             passing_target_length_max = length
           end
           if length < passing_target_length_min
             passing_target_length_min = length
           end
-          if ( number > max_domain_copy_number_per_protein )
+          if i_e_value > passing_target_ie_max
+            passing_target_ie_max = i_e_value
+          end
+          if i_e_value < passing_target_ie_min
+            passing_target_ie_min = i_e_value
+          end
+          if ( passing_domains_per_protein > max_domain_copy_number_per_protein )
             max_domain_copy_number_sequence    = sequence
-            max_domain_copy_number_per_protein = number
+            max_domain_copy_number_per_protein = passing_domains_per_protein
           end
         else # no pass
           log << domain_fail_counter.to_s + ": " + sequence.to_s + " fails threshold(s)"
@@ -230,24 +251,30 @@ module Evoruby
       puts( "Passing target domain lengths: average: " + avg_pass.to_s  )
       log << "Passing target domain lengths: average: " + avg_pass.to_s
       log << ld
-      puts( "Passing target domain lengths: min-max: " + passing_target_length_min.to_s + "-"  + passing_target_length_max.to_s)
-      log << "Passing target domain lengths: min-max: " + passing_target_length_min.to_s + "-"  + passing_target_length_max.to_s
+      puts( "Passing target domain lengths: min-max: " + passing_target_length_min.to_s + " - "  + passing_target_length_max.to_s)
+      log << "Passing target domain lengths: min-max: " + passing_target_length_min.to_s + " - "  + passing_target_length_max.to_s
       log << ld
-      puts( "Passing target domain lengths:     sum: " + domain_pass_counter.to_s  )
-      log << "Passing target domain lengths:     sum: " + domain_pass_counter.to_s
+      puts( "Passing target domain iE:      min-max: " + passing_target_ie_min.to_s + " - "  + passing_target_ie_max.to_s)
+      log << "Passing target domain iE:      min-max: " + passing_target_ie_min.to_s + " - "  + passing_target_ie_max.to_s
+      log << ld
+      puts( "Passing target domains:            sum: " + domain_pass_counter.to_s  )
+      log << "Passing target domains:            sum: " + domain_pass_counter.to_s
       log << ld
       log << ld
       puts
       sum = domain_pass_counter + domain_fail_counter
       avg_all = overall_target_length_sum / sum
       puts( "All target domain lengths:     average: " + avg_all.to_s  )
-      log << "All target domain lengths:     average: " +avg_all.to_s
+      log << "All target domain lengths:     average: " + avg_all.to_s
       log << ld
-      puts( "All target domain lengths:     min-max: " + overall_target_length_min.to_s + "-"  + overall_target_length_max.to_s)
-      log << "All target domain lengths:     min-max: " + overall_target_length_min.to_s + "-"  + overall_target_length_max.to_s
+      puts( "All target domain lengths:     min-max: " + overall_target_length_min.to_s + " - "  + overall_target_length_max.to_s)
+      log << "All target domain lengths:     min-max: " + overall_target_length_min.to_s + " - "  + overall_target_length_max.to_s
       log << ld
-      puts( "All target domain lengths:         sum: " + sum.to_s  )
-      log << "All target domain lengths:         sum: " + sum.to_s
+      puts( "All target target domain iE:   min-max: " + overall_target_ie_min.to_s + " - "  + overall_target_ie_max.to_s)
+      log << "All target target domain iE:   min-max: " + overall_target_ie_min.to_s + " - "  + overall_target_ie_max.to_s
+      log << ld
+      puts( "All target domains:                sum: " + sum.to_s  )
+      log << "All target domains:                sum: " + sum.to_s
 
       puts
       puts( "Proteins with passing target domain(s): " + passed_seqs.get_number_of_seqs.to_s )
@@ -257,8 +284,8 @@ module Evoruby
       log << ld
       log << ld
       puts
-      puts( "Max target domain copy number per protein (includes non-passing): " + max_domain_copy_number_per_protein.to_s )
-      log << "Max target domain copy number per protein (includes non-passing): " + max_domain_copy_number_per_protein.to_s
+      puts( "Max target domain copy number per protein: " + max_domain_copy_number_per_protein.to_s )
+      log << "Max target domain copy number per protein: " + max_domain_copy_number_per_protein.to_s
       log << ld
 
       if ( max_domain_copy_number_per_protein > 1 )
