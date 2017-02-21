@@ -15,7 +15,7 @@ module Evoruby
     PRG_NAME       = "dsx"
     PRG_VERSION    = "2.002"
     PRG_DESC       = "Extraction of domain sequences from hmmscan output"
-    PRG_DATE       = "20170214"
+    PRG_DATE       = "20170220"
     WWW            = "https://sites.google.com/site/cmzmasek/home/software/forester"
 
     E_VALUE_THRESHOLD_DEFAULT = 0.1

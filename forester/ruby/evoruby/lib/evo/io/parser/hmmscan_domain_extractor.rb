@@ -4,7 +4,7 @@
 # Copyright::    Copyright (C) 2017 Christian M. Zmasek
 # License::      GNU Lesser General Public License (LGPL)
 #
-# Last modified: 2017/02/16
+# Last modified: 2017/02/20
 
 require 'lib/evo/util/constants'
 require 'lib/evo/msa/msa_factory'
