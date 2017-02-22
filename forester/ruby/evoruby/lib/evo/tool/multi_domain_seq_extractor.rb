@@ -1,5 +1,5 @@
 #
-# = lib/evo/tool/domain_sequence_extractor - DomainSequenceExtractor class
+# = lib/evo/tool/multi_domain_seq_extractor - MultiDomainSeqExtractor class
 #
 # Copyright::    Copyright (C) 2017 Christian M. Zmasek
 # License::      GNU Lesser General Public License (LGPL)
@@ -7,14 +7,14 @@
 require 'lib/evo/util/constants'
 require 'lib/evo/util/util'
 require 'lib/evo/util/command_line_arguments'
-require 'lib/evo/io/parser/hmmscan_domain_extractor'
+require 'lib/evo/io/parser/hmmscan_multi_domain_extractor'
 
 module Evoruby
-  class DomainSequenceExtractor
+  class MultiDomainSeqExtractor
 
-    PRG_NAME       = "dsx"
-    PRG_VERSION    = "2.002"
-    PRG_DESC       = "Extraction of domain sequences from hmmscan output"
+    PRG_NAME       = "mdsx"
+    PRG_VERSION    = "1.000"
+    PRG_DESC       = "Extraction of multi domain sequences from hmmscan output"
     PRG_DATE       = "20170220"
     WWW            = "https://sites.google.com/site/cmzmasek/home/software/forester"
 
@@ -26,7 +26,7 @@ module Evoruby
     ADD_POSITION_OPTION                = 'p'
     ADD_DOMAIN_NUMBER_OPTION           = 'd'
     ADD_SPECIES                        = 's'
-    LOG_FILE_SUFFIX                    = '_domain_seq_extr.log'
+    LOG_FILE_SUFFIX                    = '_multi_domain_seq_extr.log'
     PASSED_SEQS_SUFFIX                 = '_with_passing_domains.fasta'
     FAILED_SEQS_SUFFIX                 = '_with_no_passing_domains.fasta'
     HELP_OPTION_1                      = 'help'
@@ -216,7 +216,7 @@ module Evoruby
 
       domain_count = 0
       begin
-        parser = HmmscanDomainExtractor.new()
+        parser = HmmscanMultiDomainExtractor.new()
         domain_count = parser.parse( domain_id,
         hmmscan_output,
         fasta_sequence_file,
@@ -228,7 +228,6 @@ module Evoruby
         add_position,
         add_domain_number,
         add_species,
-        false,
         log )
       rescue ArgumentError, IOError => e
         Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )

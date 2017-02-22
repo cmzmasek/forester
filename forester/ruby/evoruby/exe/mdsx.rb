@@ -6,12 +6,12 @@
 # License::      GNU Lesser General Public License (LGPL)
 
 
-require 'lib/evo/tool/domain_sequence_extractor'
+require 'lib/evo/tool/multi_domain_seq_extractor'
 
 module Evoruby
 
-    dsx = DomainSequenceExtractor.new()
+    mdsx = MultiDomainSeqExtractor.new()
 
-    dsx.run()
+    mdsx.run()
 
 end  # module Evoruby
