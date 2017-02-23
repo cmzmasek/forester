@@ -16,6 +16,7 @@ require 'lib/evo/io/parser/hmmscan_parser'
 module Evoruby
   class HmmscanMultiDomainExtractor
     def initialize
+      @passed = Hash.new
     end
 
     # raises ArgumentError, IOError, StandardError
@@ -81,71 +82,57 @@ module Evoruby
 
       ####
 
-      pc0 = PassCondition.new('Bcl-2', 0.01, -1, 0.5 )
+      target_domain_ary = Array.new
 
-      pcs = Hash.new
-      pcs["Bcl-2"] = pc0
+      target_domain_ary.push(TargetDomain.new('Bcl-2', 0.01, -1, 0.5 ))
+      target_domain_ary.push(TargetDomain.new('BH4', 0.01, -1, 0.5 ))
+      target_domain_ary.push(TargetDomain.new('Bcl-2_3', 0.01, -1, 0.5 ))
+      target_domain_ary.push(TargetDomain.new('Chordopox_A33R', 1000, -1, 0.1 ))
 
-      prev_query = nil
-      domains_in_query_ary = Array.new
-      queries_ary = Array.new
+      target_domains = Hash.new
+
+      target_domain_ary.each do |target_domain|
+        target_domains[target_domain.name] = target_domain
+      end
+
+      target_domain_names = Set.new
+
+      target_domains.each_key {|key| target_domain_names.add( key ) }
+
+      prev_query_seq_name = nil
+      domains_in_query_seq = Array.new
+      passing_sequences = Array.new
+      total_sequences = 0
+      @passed = Hash.new
       results.each do |hmmscan_result|
-        if ( prev_query != nil ) && ( hmmscan_result.query != prev_query )
-          ###--
-          pass = true
-          domains_in_query_ary.each do |domain_in_query|
-            if pcs.has_key?(domain_in_query.model)
-              pc = pcs[domain_in_query.model]
-              #  @abs_len = abs_len
-              #  @percent_len = rel_len
-              if (pc.i_e_value != nil) && (pc.i_e_value >= 0)
-                if domain_in_query.i_e_value > pc.i_e_value
-                  pass = false
-                  #break
-                end
-              end
-              if (pc.abs_len != nil) && (pc.abs_len > 0)
-                length = 1 + domain_in_query.env_to - domain_in_query.env_from
-                if length < pc.abs_len
-                  pass = false
-                  #break
-                end
-              end
-              if (pc.rel_len != nil) && (pc.rel_len > 0)
-                length = 1 + domain_in_query.env_to - domain_in_query.env_from
-                if length < (pc.rel_len * domain_in_query.tlen)
-                  pass = false
-                  #break
-                end
-              end
-            end
+        if ( prev_query_seq_name != nil ) && ( hmmscan_result.query != prev_query_seq_name )
+          if checkit2(domains_in_query_seq, target_domain_names, target_domains)
+            passing_sequences.push(domains_in_query_seq)
           end
-          if pass == true
-            queries_ary.push(domains_in_query_ary)
-          end
-          domains_in_query_ary = Array.new
-          ###--
+          domains_in_query_seq = Array.new
+          total_sequences += 1
         end
-        prev_query = hmmscan_result.query
-        domains_in_query_ary.push(hmmscan_result)
-      end
-      if prev_query != nil
-        queries_ary.push(domains_in_query_ary)
-      end
-      puts  queries_ary[0][0].model
-      puts  queries_ary[0][0].i_e_value
-      puts  queries_ary[0][1].model
-      puts  queries_ary[0][2].model
-      puts  queries_ary[1][0].model
-      puts  queries_ary[1][0].i_e_value
-      puts  queries_ary[1][1].model
-      puts  queries_ary[2][2].model
-      queries_ary.each do | query_ary |
-        query_ary.each do | domain |
-          # puts domain.model
+        prev_query_seq_name = hmmscan_result.query
+        domains_in_query_seq.push(hmmscan_result)
+      end # each result
+
+      if prev_query_seq_name != nil
+        total_sequences += 1
+        if checkit2(domains_in_query_seq, target_domain_names, target_domains)
+          passing_sequences.push(domains_in_query_seq)
         end
-        #puts
       end
+
+      passing_sequences.each do | domains |
+        domains.each do | domain |
+          puts domain.query + ": " + domain.model
+        end
+        puts
+      end
+
+      puts @passed
+      puts "total sequences  : " + total_sequences.to_s
+      puts "passing sequences: " + passing_sequences.size.to_s
 
       ####
 
@@ -172,7 +159,6 @@ module Evoruby
 
         saw_target = true
 
-        #   target    = r.model
         sequence  = r.query
         # sequence_len = r.qlen
         number    = r.number
@@ -354,6 +340,48 @@ module Evoruby
 
     private
 
+    def checkit2(domains_in_query_seq, target_domain_names, target_domains)
+      domain_names_in_query_seq = Set.new
+      domains_in_query_seq.each do |domain|
+        domain_names_in_query_seq.add(domain.model)
+      end
+      if (target_domain_names.subset?(domain_names_in_query_seq))
+
+        domains_in_query_seq.each do |domain|
+          if target_domains.has_key?(domain.model)
+            target_domain = target_domains[domain.model]
+            if (target_domain.i_e_value != nil) && (target_domain.i_e_value >= 0)
+              if domain.i_e_value > target_domain.i_e_value
+                return false
+              end
+            end
+            if (target_domain.abs_len != nil) && (target_domain.abs_len > 0)
+              length = 1 + domain.env_to - domain.env_from
+              if length < target_domain.abs_len
+                return false
+              end
+            end
+            if (target_domain.rel_len != nil) && (target_domain.rel_len > 0)
+              length = 1 + domain.env_to - domain.env_from
+              if length < (target_domain.rel_len * domain.tlen)
+                return false
+              end
+            end
+            #puts domain.model + " passed"
+            if ( @passed.key?(domain.model) )
+              @passed[domain.model] =  @passed[domain.model] + 1
+            else
+              @passed[domain.model] = 1
+            end
+          end
+        end
+
+      else
+        return false
+      end
+      true
+    end
+
     def write_msa( msa, filename )
       io = MsaIO.new()
       w = FastaWriter.new()
@@ -493,14 +521,14 @@ module Evoruby
     attr_reader :seq_name, :number, :out_of, :env_from, :env_to, :i_e_value
   end
 
-  class PassCondition
-    def initialize( hmm, i_e_value, abs_len, rel_len )
-      @hmm = hmm
+  class TargetDomain
+    def initialize( name, i_e_value, abs_len, rel_len )
+      @name = name
       @i_e_value = i_e_value
       @abs_len = abs_len
       @percent_len = rel_len
     end
-    attr_reader :hmm, :i_e_value, :abs_len, :rel_len
+    attr_reader :name, :i_e_value, :abs_len, :rel_len
   end
 
 end # module Evoruby
