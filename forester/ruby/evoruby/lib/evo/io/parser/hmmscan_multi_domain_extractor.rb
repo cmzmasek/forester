@@ -85,10 +85,10 @@ module Evoruby
       ####
       # Import: if multiple copies of same domain, threshold need to be same!
       target_domain_ary = Array.new
-      target_domain_ary.push(TargetDomain.new('Hexokinase_1', 0.1, -1, 0.5, 1 ))
-      target_domain_ary.push(TargetDomain.new('Hexokinase_2', 0.1, -1, 0.5, 1 ))
-      target_domain_ary.push(TargetDomain.new('Hexokinase_2', 0.1, -1, 0.5, 1 ))
-      target_domain_ary.push(TargetDomain.new('Hexokinase_1', 0.1, -1, 0.5, 1 ))
+      target_domain_ary.push(TargetDomain.new('Hexokinase_1', 1e-6, -1, 0.6, 1 ))
+      target_domain_ary.push(TargetDomain.new('Hexokinase_2', 1e-6, -1, 0.6, 1 ))
+      # target_domain_ary.push(TargetDomain.new('Hexokinase_2', 0.1, -1, 0.5, 1 ))
+      # target_domain_ary.push(TargetDomain.new('Hexokinase_1', 0.1, -1, 0.5, 1 ))
 
       #target_domain_ary.push(TargetDomain.new('BH4', 0.1, -1, 0.5, 0 ))
       #target_domain_ary.push(TargetDomain.new('Bcl-2', 0.1, -1, 0.5, 1 ))
@@ -124,9 +124,11 @@ module Evoruby
       passing_sequences = Array.new
       total_sequences = 0
       @passed = Hash.new
+      out_domain_msas = Hash.new
+      out_domain_architecture_msa = Msa.new
       results.each do |hmmscan_result|
         if ( prev_query_seq_name != nil ) && ( hmmscan_result.query != prev_query_seq_name )
-          if checkit2(domains_in_query_seq, target_domain_names, target_domains, target_domain_architecure)
+          if checkit2(domains_in_query_seq, target_domain_names, target_domains, in_msa, out_domain_msas, out_domain_architecture_msa, target_domain_architecure)
             passing_sequences.push(domains_in_query_seq)
           end
           domains_in_query_seq = Array.new
@@ -138,10 +140,18 @@ module Evoruby
 
       if prev_query_seq_name != nil
         total_sequences += 1
-        if checkit2(domains_in_query_seq, target_domain_names, target_domains, target_domain_architecure)
+        if checkit2(domains_in_query_seq, target_domain_names, target_domains, in_msa, out_domain_msas, out_domain_architecture_msa, target_domain_architecure)
           passing_sequences.push(domains_in_query_seq)
         end
       end
+
+      out_domain_msas.keys.sort.each do |domain_name|
+        puts "writing #{domain_name}"
+        write_msa( out_domain_msas[domain_name], domain_name + ".fasta" )
+      end
+
+      puts "writing target_domain_architecure"
+      write_msa( out_domain_architecture_msa, "target_domain_architecure" + ".fasta" )
 
       passing_sequences.each do | domains |
 
@@ -168,192 +178,9 @@ module Evoruby
       puts "total sequences  : " + total_sequences.to_s
       puts "passing sequences: " + passing_sequences.size.to_s
 
-      ####
-
-      prev_query = nil
-      saw_target = false
-
-      results.each do | r |
-
-        if ( prev_query != nil ) && ( r.query != prev_query )
-          protein_counter += 1
-          passing_domains_per_protein = 0
-          if !saw_target
-            log << domain_not_present_counter.to_s + ": " + prev_query.to_s + " lacks target domain" + ld
-            domain_not_present_counter += 1
-          end
-          saw_target = false
-        end
-
-        prev_query = r.query
-
-        if domain_id != r.model
-          next
-        end
-
-        saw_target = true
-
-        sequence  = r.query
-        number    = r.number
-        out_of    = r.out_of
-        env_from  = r.env_from
-        env_to    = r.env_to
-        i_e_value = r.i_e_value
-        prev_query = r.query
-
-        length = 1 + env_to - env_from
-
-        overall_target_length_sum += length
-        if length > overall_target_length_max
-          overall_target_length_max = length
-        end
-        if length < overall_target_length_min
-          overall_target_length_min = length
-        end
-
-        if i_e_value > overall_target_ie_max
-          overall_target_ie_max = i_e_value
-        end
-        if i_e_value < overall_target_ie_min
-          overall_target_ie_min = i_e_value
-        end
-
-        if ( ( ( e_value_threshold < 0.0 ) || ( i_e_value <= e_value_threshold ) ) &&
-        ( ( length_threshold <= 0 ) || ( length >= length_threshold.to_f ) ) )
-          hmmscan_datas << HmmscanData.new( sequence, number, out_of, env_from, env_to, i_e_value )
-          passing_target_length_sum += length
-          passing_domains_per_protein += 1
-          if length > passing_target_length_max
-            passing_target_length_max = length
-          end
-          if length < passing_target_length_min
-            passing_target_length_min = length
-          end
-          if i_e_value > passing_target_ie_max
-            passing_target_ie_max = i_e_value
-          end
-          if i_e_value < passing_target_ie_min
-            passing_target_ie_min = i_e_value
-          end
-          if ( passing_domains_per_protein > max_domain_copy_number_per_protein )
-            max_domain_copy_number_sequence    = sequence
-            max_domain_copy_number_per_protein = passing_domains_per_protein
-          end
-        else # no pass
-          log << domain_fail_counter.to_s + ": " + sequence.to_s + " fails threshold(s)"
-          if ( ( e_value_threshold.to_f >= 0.0 ) && ( i_e_value > e_value_threshold ) )
-            log << " iE=" + i_e_value.to_s
-          end
-          if ( ( length_threshold.to_f > 0 ) && ( env_to - env_from + 1 ) < length_threshold.to_f )
-            le = env_to - env_from + 1
-            log << " l=" + le.to_s
-          end
-          log << ld
-          domain_fail_counter += 1
-        end
-
-        if number > out_of
-          error_msg = "number > out_of (this should not have happened)"
-          raise StandardError, error_msg
-        end
-
-        if number == out_of
-          if !hmmscan_datas.empty?
-            process_hmmscan_datas( hmmscan_datas,
-            in_msa,
-            add_domain_number,
-            out_msa )
-            domain_pass_counter += hmmscan_datas.length
-            if passed_seqs.find_by_name_start( sequence, true ).length < 1
-              add_sequence( sequence, in_msa, passed_seqs )
-            else
-              error_msg = "this should not have happened"
-              raise StandardError, error_msg
-            end
-          else # no pass
-            if failed_seqs.find_by_name_start( sequence, true ).length < 1
-              add_sequence( sequence, in_msa, failed_seqs )
-              proteins_with_failing_domains += 1
-            else
-              error_msg = "this should not have happened"
-              raise StandardError, error_msg
-            end
-          end
-          hmmscan_datas.clear
-        end
-
-      end # results.each do | r |
-
-      if (prev_query != nil) && (!saw_target)
-        log << domain_not_present_counter.to_s + ": " + prev_query.to_s + " lacks target domain" + ld
-        domain_not_present_counter += 1
-      end
-
-      if domain_pass_counter < 1
-        error_msg = "no domain sequences were extracted"
-        raise IOError, error_msg
-      end
-
-      if ( domain_not_present_counter + passed_seqs.get_number_of_seqs + proteins_with_failing_domains ) != protein_counter
-        error_msg = "not present + passing + not passing != proteins in sequence (fasta) file (this should not have happened)"
-        raise StandardError, error_msg
-      end
-
-      puts
-      log << ld
-
-      log << ld
-      avg_pass = ( passing_target_length_sum / domain_pass_counter )
-      puts( "Passing target domain lengths: average: " + avg_pass.to_s  )
-      log << "Passing target domain lengths: average: " + avg_pass.to_s
-      log << ld
-      puts( "Passing target domain lengths: min-max: " + passing_target_length_min.to_s + " - "  + passing_target_length_max.to_s)
-      log << "Passing target domain lengths: min-max: " + passing_target_length_min.to_s + " - "  + passing_target_length_max.to_s
-      log << ld
-      puts( "Passing target domain iE:      min-max: " + passing_target_ie_min.to_s + " - "  + passing_target_ie_max.to_s)
-      log << "Passing target domain iE:      min-max: " + passing_target_ie_min.to_s + " - "  + passing_target_ie_max.to_s
-      log << ld
-      puts( "Passing target domains:            sum: " + domain_pass_counter.to_s  )
-      log << "Passing target domains:            sum: " + domain_pass_counter.to_s
-      log << ld
-      log << ld
-      puts
-      sum = domain_pass_counter + domain_fail_counter
-      avg_all = overall_target_length_sum / sum
-      puts( "All target domain lengths:     average: " + avg_all.to_s  )
-      log << "All target domain lengths:     average: " + avg_all.to_s
-      log << ld
-      puts( "All target domain lengths:     min-max: " + overall_target_length_min.to_s + " - "  + overall_target_length_max.to_s)
-      log << "All target domain lengths:     min-max: " + overall_target_length_min.to_s + " - "  + overall_target_length_max.to_s
-      log << ld
-      puts( "All target target domain iE:   min-max: " + overall_target_ie_min.to_s + " - "  + overall_target_ie_max.to_s)
-      log << "All target target domain iE:   min-max: " + overall_target_ie_min.to_s + " - "  + overall_target_ie_max.to_s
-      log << ld
-      puts( "All target domains:                sum: " + sum.to_s  )
-      log << "All target domains:                sum: " + sum.to_s
-
-      puts
-      puts( "Proteins with passing target domain(s): " + passed_multi_seqs.get_number_of_seqs.to_s )
-      #puts( "Proteins with passing target domain(s): " + passed_seqs.get_number_of_seqs.to_s )
-      puts( "Proteins with no passing target domain: " + proteins_with_failing_domains.to_s )
-      puts( "Proteins with no target domain        : " + domain_not_present_counter.to_s )
-
-      log << ld
-      log << ld
-      puts
-      puts( "Max target domain copy number per protein: " + max_domain_copy_number_per_protein.to_s )
-      log << "Max target domain copy number per protein: " + max_domain_copy_number_per_protein.to_s
-      log << ld
-
-      if ( max_domain_copy_number_per_protein > 1 )
-        puts( "First target protein with this copy number: " + max_domain_copy_number_sequence )
-        log << "First target protein with this copy number: " + max_domain_copy_number_sequence
-        log << ld
-      end
-
-      write_msa( out_msa, outfile + ".fasta"  )
-      write_msa( passed_multi_seqs, passed_seqs_outfile )
-      write_msa( failed_seqs, failed_seqs_outfile )
+      # write_msa( out_msa, outfile + ".fasta"  )
+      # write_msa( passed_multi_seqs, passed_seqs_outfile )
+      # write_msa( failed_seqs, failed_seqs_outfile )
 
       log << ld
       log << "passing target domains                       : " + domain_pass_counter.to_s + ld
@@ -372,7 +199,18 @@ module Evoruby
 
     private
 
-    def checkit2(domains_in_query_seq, target_domain_names, target_domains, target_domain_architecture = nil)
+    # domains_in_query_seq: Array of HmmscanResult
+    # target_domain_names: Set of String
+    # target_domains: Hash String->TargetDomain
+    # target_domain_architecture: String
+    def checkit2(domains_in_query_seq,
+      target_domain_names,
+      target_domains,
+      in_msa,
+      out_domain_msas,
+      out_domain_architecture_msa,
+      target_domain_architecture = nil)
+
       domain_names_in_query_seq = Set.new
       domains_in_query_seq.each do |domain|
         domain_names_in_query_seq.add(domain.model)
@@ -380,6 +218,7 @@ module Evoruby
       if (target_domain_names.subset?(domain_names_in_query_seq))
 
         passed_domains = Array.new
+        passed_domains_counts = Hash.new
 
         domains_in_query_seq.each do |domain|
           if target_domains.has_key?(domain.model)
@@ -407,8 +246,14 @@ module Evoruby
               passed_domains.push(domain)
             end
 
+            if (passed_domains_counts.key?(domain.model))
+              passed_domains_counts[domain.model] = passed_domains_counts[domain.model] + 1
+            else
+              passed_domains_counts[domain.model] = 1
+            end
+
             if (@passed.key?(domain.model))
-              @passed[domain.model] =  @passed[domain.model] + 1
+              @passed[domain.model] = @passed[domain.model] + 1
             else
               @passed[domain.model] = 1
             end
@@ -418,17 +263,83 @@ module Evoruby
       else
         return false
       end
+      passed_domains.sort! { |a,b| a.ali_from <=> b.ali_from }
       # Compare architectures
       if target_domain_architecture != nil
         if !compareArchitectures(target_domain_architecture, passed_domains)
           return false
         end
       end
+
+      domain_counter = Hash.new
+
+      min_env_from = 10000000
+      max_env_from = 0
+      min_env_to = 10000000
+      max_env_to = 0
+
+      query_seq = nil
+
+      passed_domains.each do |domain|
+        domain_name = domain.model
+
+        unless out_domain_msas.has_key? domain_name
+          out_domain_msas[ domain_name ] = Msa.new
+        end
+
+        if domain_counter.key?(domain_name)
+          domain_counter[domain_name] = domain_counter[domain_name] + 1
+        else
+          domain_counter[domain_name] = 1
+        end
+
+        if query_seq == nil
+          query_seq = domain.query
+          query_seq.freeze
+        elsif query_seq != domain.query
+          error_msg = "seq names do not match: this should not have happened"
+          raise StandardError, error_msg
+        end
+
+        extract_domain( query_seq,
+        domain_counter[domain_name],
+        passed_domains_counts[domain_name],
+        domain.env_from,
+        domain.env_to,
+        in_msa,
+        out_domain_msas[ domain_name ] )
+
+        if domain.env_from < min_env_from
+          min_env_from = domain.env_from
+        end
+        if domain.env_from > max_env_from
+          max_env_from = domain.env_from
+        end
+        if domain.env_to < min_env_to
+          min_env_to = domain.env_to
+        end
+        if domain.env_to > max_env_to
+          max_env_to = domain.env_to
+        end
+      end
+
+      puts "env from: #{min_env_from} - #{max_env_from}"
+      puts "env to  : #{min_env_to} - #{max_env_to}"
+
+      extract_domain( query_seq,
+      1,
+      1,
+      min_env_from,
+      max_env_to,
+      in_msa,
+      out_domain_architecture_msa )
+
+      puts passed_domains_counts
       true
     end
 
-    def compareArchitectures(target_domain_architecture, passed_domains)
-      passed_domains.sort! { |a,b| a.ali_from <=> b.ali_from }
+    # passed_domains needs to be sorted!
+    def compareArchitectures(target_domain_architecture, passed_domains, strict = false)
       domain_architecture = ""
       passed_domains.each do |domain|
         if domain_architecture.length > 0
@@ -436,7 +347,12 @@ module Evoruby
         end
         domain_architecture += domain.model
       end
-      pass = (target_domain_architecture == domain_architecture)
+      pass = false
+      if strict
+        pass = (target_domain_architecture == domain_architecture)
+      else
+        pass = (domain_architecture.index(target_domain_architecture) != nil)
+      end
       if !pass
         if (@non_passsing_domain_architectures.key?(domain_architecture))
           @non_passsing_domain_architectures[domain_architecture] = @non_passsing_domain_architectures[domain_architecture] + 1
@@ -452,6 +368,7 @@ module Evoruby
       w = FastaWriter.new()
       w.set_line_width( 60 )
       w.clean( true )
+      File.delete(filename) if File.exist?(filename) #TODO remove me
       begin
         io.write_to_file( msa, filename, w )
       rescue Exception
@@ -474,50 +391,14 @@ module Evoruby
       add_to_msa.add_sequence( seq )
     end
 
-    def process_hmmscan_datas( hmmscan_datas,
-      in_msa,
-      add_domain_number,
-      out_msa )
-
-      actual_out_of = hmmscan_datas.size
-
-      seq_name = ""
-      prev_seq_name = nil
-
-      hmmscan_datas.each_with_index do |hmmscan_data, index|
-        if hmmscan_data.number < ( index + 1 )
-          error_msg = "hmmscan_data.number < ( index + 1 ) (this should not have happened)"
-          raise StandardError, error_msg
-        end
-
-        seq_name = hmmscan_data.seq_name
-
-        extract_domain( seq_name,
-        index + 1,
-        actual_out_of,
-        hmmscan_data.env_from,
-        hmmscan_data.env_to,
-        in_msa,
-        out_msa,
-        add_domain_number )
-
-        if prev_seq_name && prev_seq_name != seq_name
-          error_msg = "this should not have happened"
-          raise StandardError, error_msg
-        end
-        prev_seq_name = seq_name
-      end # each
-    end # def process_hmmscan_data
-
-    def extract_domain( sequence,
+    def extract_domain( seq_name,
       number,
       out_of,
       seq_from,
       seq_to,
       in_msa,
-      out_msa,
-      add_domain_number)
-      if number.is_a?( Fixnum ) && ( number < 1 || out_of < 1 || number > out_of )
+      out_msa)
+      if number < 1 || out_of < 1 || number > out_of
         error_msg = "number=" + number.to_s + ", out of=" + out_of.to_s
         raise StandardError, error_msg
       end
@@ -525,13 +406,13 @@ module Evoruby
         error_msg = "impossible: seq-from=" + seq_from.to_s + ", seq-to=" + seq_to.to_s
         raise StandardError, error_msg
       end
-      seqs = in_msa.find_by_name_start( sequence, true )
+      seqs = in_msa.find_by_name_start(seq_name, true)
       if seqs.length < 1
-        error_msg = "sequence \"" + sequence + "\" not found in sequence file"
+        error_msg = "sequence \"" + seq_name + "\" not found in sequence file"
         raise IOError, error_msg
       end
       if seqs.length > 1
-        error_msg = "sequence \"" + sequence + "\" not unique in sequence file"
+        error_msg = "sequence \"" + seq_name + "\" not unique in sequence file"
         raise IOError, error_msg
       end
       # hmmscan is 1 based, whereas sequences are 0 bases in this package.
@@ -541,7 +422,7 @@ module Evoruby
 
       seq.set_name( orig_name.split[ 0 ] )
 
-      if out_of != 1 && add_domain_number
+      if out_of != 1
         seq.set_name( seq.get_name + "~" + number.to_s + "-" + out_of.to_s )
       end
 
@@ -553,18 +434,6 @@ module Evoruby
     end
 
   end # class HmmscanDomainExtractor
-
-  class HmmscanData
-    def initialize( seq_name, number, out_of, env_from, env_to, i_e_value )
-      @seq_name = seq_name
-      @number = number
-      @out_of = out_of
-      @env_from = env_from
-      @env_to = env_to
-      @i_e_value = i_e_value
-    end
-    attr_reader :seq_name, :number, :out_of, :env_from, :env_to, :i_e_value
-  end
 
   class TargetDomain
     def initialize( name, i_e_value, abs_len, rel_len, position )
