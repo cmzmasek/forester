@@ -280,6 +280,8 @@ module Evoruby
 
       query_seq = nil
 
+      concatenated_domains = ''
+
       passed_domains.each do |domain|
         domain_name = domain.model
 
@@ -301,13 +303,15 @@ module Evoruby
           raise StandardError, error_msg
         end
 
-        extract_domain( query_seq,
+        extracted_domain_seq = extract_domain( query_seq,
         domain_counter[domain_name],
         passed_domains_counts[domain_name],
         domain.env_from,
         domain.env_to,
         in_msa,
         out_domain_msas[ domain_name ] )
+
+        concatenated_domains += extracted_domain_seq
 
         if domain.env_from < min_env_from
           min_env_from = domain.env_from
@@ -335,6 +339,7 @@ module Evoruby
       out_domain_architecture_msa )
 
       puts passed_domains_counts
+      puts concatenated_domains
       true
     end
 
@@ -427,6 +432,8 @@ module Evoruby
       end
 
       out_msa.add_sequence( seq )
+
+      seq.get_sequence_as_string
     end
 
     def is_ignorable?( line )
