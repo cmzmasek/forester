@@ -77,8 +77,6 @@ module Evoruby
       passing_target_ie_min          = 10000000
       passing_target_ie_max          = -1
 
-      hmmscan_datas = []
-
       hmmscan_parser = HmmscanParser.new( hmmscan_output )
       results = hmmscan_parser.parse
 
@@ -113,7 +111,7 @@ module Evoruby
 
       target_domain_architecure.freeze
 
-      puts target_domain_architecure
+      puts 'Target domain architecture: ' + target_domain_architecure
 
       target_domain_names = Set.new
 
@@ -157,14 +155,13 @@ module Evoruby
 
         seq = domains[0].query
         # puts seq + "::"
-        ################
+
         if passed_seqs.find_by_name_start( seq, true ).length < 1
           add_sequence( seq, in_msa, passed_multi_seqs )
         else
           error_msg = "this should not have happened"
           raise StandardError, error_msg
         end
-        ################
 
         domains.each do | domain |
           #puts domain.query + ": " + domain.model
@@ -172,9 +169,24 @@ module Evoruby
         #puts
       end
 
-      puts @non_passsing_domain_architectures
+      puts
 
-      puts @passed
+      puts 'Non passing domain architectures:'
+      @non_passsing_domain_architectures = @non_passsing_domain_architectures.sort{|a, b|a<=>b}.to_h
+      @non_passsing_domain_architectures.each do |da, count|
+        puts da + ': ' + count.to_s
+      end
+
+      puts
+
+      puts 'Passing domain counts:'
+      @passed = @passed.sort{|a, b|a<=>b}.to_h
+      @passed.each do |dom, count|
+        puts dom + ': ' + count.to_s
+      end
+
+      puts
+
       puts "total sequences  : " + total_sequences.to_s
       puts "passing sequences: " + passing_sequences.size.to_s
 
@@ -209,7 +221,7 @@ module Evoruby
       in_msa,
       out_domain_msas,
       out_domain_architecture_msa,
-      target_domain_architecture = nil)
+      target_domain_architecture)
 
       domain_names_in_query_seq = Set.new
       domains_in_query_seq.each do |domain|
@@ -223,28 +235,27 @@ module Evoruby
         domains_in_query_seq.each do |domain|
           if target_domains.has_key?(domain.model)
             target_domain = target_domains[domain.model]
+
             if (target_domain.i_e_value != nil) && (target_domain.i_e_value >= 0)
               if domain.i_e_value > target_domain.i_e_value
-                return false
+                next
               end
             end
             if (target_domain.abs_len != nil) && (target_domain.abs_len > 0)
               length = 1 + domain.env_to - domain.env_from
               if length < target_domain.abs_len
-                return false
+                next
               end
             end
             if (target_domain.rel_len != nil) && (target_domain.rel_len > 0)
               length = 1 + domain.env_to - domain.env_from
+              puts (target_domain.rel_len * domain.tlen)
               if length < (target_domain.rel_len * domain.tlen)
-                return false
+                next
               end
             end
 
-            # For domain architecture comparison
-            if target_domain_architecture != nil
-              passed_domains.push(domain)
-            end
+            passed_domains.push(domain)
 
             if (passed_domains_counts.key?(domain.model))
               passed_domains_counts[domain.model] = passed_domains_counts[domain.model] + 1
@@ -257,18 +268,16 @@ module Evoruby
             else
               @passed[domain.model] = 1
             end
-          end
-        end
-
+          end # if target_domains.has_key?(domain.model)
+        end # domains_in_query_seq.each do |domain|
       else
         return false
       end
+
       passed_domains.sort! { |a,b| a.ali_from <=> b.ali_from }
       # Compare architectures
-      if target_domain_architecture != nil
-        if !compareArchitectures(target_domain_architecture, passed_domains)
-          return false
-        end
+      if !compareArchitectures(target_domain_architecture, passed_domains)
+        return false
       end
 
       domain_counter = Hash.new
@@ -302,6 +311,7 @@ module Evoruby
           error_msg = "seq names do not match: this should not have happened"
           raise StandardError, error_msg
         end
+        puts "query: " + query_seq
 
         extracted_domain_seq = extract_domain( query_seq,
         domain_counter[domain_name],
@@ -436,18 +446,22 @@ module Evoruby
       seq.get_sequence_as_string
     end
 
-    def is_ignorable?( line )
-      return ( line !~ /[A-Za-z0-9-]/ || line =~/^#/ )
-    end
-
-  end # class HmmscanDomainExtractor
+  end # class HmmscanMultiDomainExtractor
 
   class TargetDomain
     def initialize( name, i_e_value, abs_len, rel_len, position )
+      if (name == nil) || name.size < 1
+        error_msg = "target domain name nil or empty"
+        raise StandardError, error_msg
+      end
+      if rel_len > 1
+        error_msg = "target domain relative length is greater than 1"
+        raise StandardError, error_msg
+      end
       @name = name
       @i_e_value = i_e_value
       @abs_len = abs_len
-      @percent_len = rel_len
+      @rel_len = rel_len
       @position = position
     end
     attr_reader :name, :i_e_value, :abs_len, :rel_len, :position
