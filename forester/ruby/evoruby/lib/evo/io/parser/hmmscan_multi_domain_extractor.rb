@@ -15,30 +15,36 @@ require 'lib/evo/io/parser/hmmscan_parser'
 
 module Evoruby
   class HmmscanMultiDomainExtractor
+
+    OUTPUT_ID = 'MDSX'
+
+    PASSING_FL_SEQS_SUFFIX   = "_#{OUTPUT_ID}_passing_full_length_seqs.fasta"
+    FAILING_FL_SEQS_SUFFIX   = "_#{OUTPUT_ID}_failing_full_length_seqs.fasta"
+    TARGET_DA_SUFFIX         = "_#{OUTPUT_ID}_target_da.fasta"
+    CONCAT_TARGET_DOM_SUFFIX = "_#{OUTPUT_ID}_concat_target_dom.fasta"
     def initialize
       @passed = Hash.new
       @non_passsing_domain_architectures = Hash.new
     end
 
     # raises ArgumentError, IOError, StandardError
-    def parse( domain_id,
+    def parse( target_da,
       hmmscan_output,
       fasta_sequence_file,
-      outfile,
-      passed_seqs_outfile,
-      failed_seqs_outfile,
-      e_value_threshold,
-      length_threshold,
-      add_position,
-      add_domain_number,
-      add_species,
-      log )
+      outfile_base,
+      log_str )
+
+      passing_fl_seqs_outfile   = outfile_base + PASSING_FL_SEQS_SUFFIX
+      failing_fl_seqs_outfile   = outfile_base + FAILING_FL_SEQS_SUFFIX
+      target_da_outfile         = outfile_base + TARGET_DA_SUFFIX
+      concat_target_dom_outfile = outfile_base + CONCAT_TARGET_DOM_SUFFIX
 
       Util.check_file_for_readability( hmmscan_output )
       Util.check_file_for_readability( fasta_sequence_file )
-      Util.check_file_for_writability( outfile + ".fasta" )
-      Util.check_file_for_writability( passed_seqs_outfile )
-      Util.check_file_for_writability( failed_seqs_outfile )
+      Util.check_file_for_writability( passing_fl_seqs_outfile )
+      Util.check_file_for_writability( failing_fl_seqs_outfile )
+      Util.check_file_for_writability( target_da_outfile )
+      Util.check_file_for_writability( concat_target_dom_outfile )
 
       in_msa = nil
       factory = MsaFactory.new()
@@ -51,9 +57,9 @@ module Evoruby
 
       out_msa = Msa.new
 
-      failed_seqs = Msa.new
-      passed_seqs = Msa.new
-      passed_multi_seqs = Msa.new
+      failed_seqs_msa = Msa.new
+      passed_seqs_msa = Msa.new
+      # passed_multi_seqs_msa = Msa.new
 
       ld = Constants::LINE_DELIMITER
 
@@ -83,8 +89,12 @@ module Evoruby
       ####
       # Import: if multiple copies of same domain, threshold need to be same!
       target_domain_ary = Array.new
-      target_domain_ary.push(TargetDomain.new('Hexokinase_1', 1e-6, -1, 0.6, 1 ))
-      target_domain_ary.push(TargetDomain.new('Hexokinase_2', 1e-6, -1, 0.6, 1 ))
+
+      target_domain_ary.push(TargetDomain.new('DNA_pol_B_exo1', 1e-6, -1, 0.6, 0 ))
+      target_domain_ary.push(TargetDomain.new('DNA_pol_B', 1e-6, -1, 0.6, 1 ))
+
+      # target_domain_ary.push(TargetDomain.new('Hexokinase_1', 1e-6, -1, 0.6, 0 ))
+      # target_domain_ary.push(TargetDomain.new('Hexokinase_2', 1e-6, -1, 0.6, 1 ))
       # target_domain_ary.push(TargetDomain.new('Hexokinase_2', 0.1, -1, 0.5, 1 ))
       # target_domain_ary.push(TargetDomain.new('Hexokinase_1', 0.1, -1, 0.5, 1 ))
 
@@ -119,16 +129,21 @@ module Evoruby
 
       prev_query_seq_name = nil
       domains_in_query_seq = Array.new
-      passing_sequences = Array.new
+      passing_sequences = Array.new # This will be an Array of Array of HmmscanResult for the same query seq.
+      failing_sequences = Array.new # This will be an Array of Array of HmmscanResult for the same query seq.
       total_sequences = 0
       @passed = Hash.new
       out_domain_msas = Hash.new
       out_domain_architecture_msa = Msa.new
+      out_concatenated_domains_msa = Msa.new
       results.each do |hmmscan_result|
         if ( prev_query_seq_name != nil ) && ( hmmscan_result.query != prev_query_seq_name )
-          if checkit2(domains_in_query_seq, target_domain_names, target_domains, in_msa, out_domain_msas, out_domain_architecture_msa, target_domain_architecure)
+          if checkit2(domains_in_query_seq, target_domain_names, target_domains, in_msa, out_domain_msas, out_domain_architecture_msa, out_contactenated_domains_msa, target_domain_architecure)
             passing_sequences.push(domains_in_query_seq)
+          else
+            failing_sequences.push(domains_in_query_seq)
           end
+
           domains_in_query_seq = Array.new
           total_sequences += 1
         end
@@ -138,8 +153,10 @@ module Evoruby
 
       if prev_query_seq_name != nil
         total_sequences += 1
-        if checkit2(domains_in_query_seq, target_domain_names, target_domains, in_msa, out_domain_msas, out_domain_architecture_msa, target_domain_architecure)
+        if checkit2(domains_in_query_seq, target_domain_names, target_domains, in_msa, out_domain_msas, out_domain_architecture_msa, out_contactenated_domains_msa, target_domain_architecure)
           passing_sequences.push(domains_in_query_seq)
+        else
+          failing_sequences.push(domains_in_query_seq)
         end
       end
 
@@ -149,29 +166,34 @@ module Evoruby
       end
 
       puts "writing target_domain_architecure"
-      write_msa( out_domain_architecture_msa, "target_domain_architecure" + ".fasta" )
+      write_msa( out_domain_architecture_msa, target_da_outfile )
+
+      puts "writing contactenated_domains_msa"
+      write_msa( out_concatenated_domains_msa, concat_target_dom_outfile )
 
       passing_sequences.each do | domains |
-
-        seq = domains[0].query
-        # puts seq + "::"
-
-        if passed_seqs.find_by_name_start( seq, true ).length < 1
-          add_sequence( seq, in_msa, passed_multi_seqs )
+        query_name = domains[0].query
+        if passed_seqs_msa.find_by_name_start( query_name, true ).length < 1
+          add_sequence( query_name, in_msa, passed_seqs_msa )
         else
           error_msg = "this should not have happened"
           raise StandardError, error_msg
         end
+      end
 
-        domains.each do | domain |
-          #puts domain.query + ": " + domain.model
+      failing_sequences.each do | domains |
+        query_name = domains[0].query
+        if failed_seqs_msa.find_by_name_start( query_name, true ).length < 1
+          add_sequence( query_name, in_msa, failed_seqs_msa )
+        else
+          error_msg = "this should not have happened"
+          raise StandardError, error_msg
         end
-        #puts
       end
 
       puts
 
-      puts 'Non passing domain architectures:'
+      puts 'Non passing domain architectures containing target domain(s):'
       @non_passsing_domain_architectures = @non_passsing_domain_architectures.sort{|a, b|a<=>b}.to_h
       @non_passsing_domain_architectures.each do |da, count|
         puts da + ': ' + count.to_s
@@ -179,7 +201,7 @@ module Evoruby
 
       puts
 
-      puts 'Passing domain counts:'
+      puts 'Passing target domain counts:'
       @passed = @passed.sort{|a, b|a<=>b}.to_h
       @passed.each do |dom, count|
         puts dom + ': ' + count.to_s
@@ -190,20 +212,19 @@ module Evoruby
       puts "total sequences  : " + total_sequences.to_s
       puts "passing sequences: " + passing_sequences.size.to_s
 
-      # write_msa( out_msa, outfile + ".fasta"  )
-      # write_msa( passed_multi_seqs, passed_seqs_outfile )
-      # write_msa( failed_seqs, failed_seqs_outfile )
+      write_msa( passed_seqs_msa, passing_fl_seqs_outfile )
+      write_msa( failed_seqs_msa, failing_fl_seqs_outfile )
 
-      log << ld
-      log << "passing target domains                       : " + domain_pass_counter.to_s + ld
-      log << "failing target domains                       : " + domain_fail_counter.to_s + ld
-      log << "proteins in sequence (fasta) file            : " + in_msa.get_number_of_seqs.to_s + ld
-      log << "proteins in hmmscan outputfile               : " + protein_counter.to_s + ld
-      log << "proteins with passing target domain(s)       : " + passed_seqs.get_number_of_seqs.to_s + ld
-      log << "proteins with no passing target domain       : " + proteins_with_failing_domains.to_s + ld
-      log << "proteins with no target domain               : " + domain_not_present_counter.to_s + ld
+      log_str << ld
+      log_str << "passing target domains                       : " + domain_pass_counter.to_s + ld
+      log_str << "failing target domains                       : " + domain_fail_counter.to_s + ld
+      log_str << "proteins in sequence (fasta) file            : " + in_msa.get_number_of_seqs.to_s + ld
+      log_str << "proteins in hmmscan outputfile               : " + protein_counter.to_s + ld
+      log_str << "proteins with passing target domain(s)       : " + passed_seqs_msa.get_number_of_seqs.to_s + ld
+      log_str << "proteins with no passing target domain       : " + proteins_with_failing_domains.to_s + ld
+      log_str << "proteins with no target domain               : " + domain_not_present_counter.to_s + ld
 
-      log << ld
+      log_str << ld
 
       return domain_pass_counter
 
@@ -221,6 +242,7 @@ module Evoruby
       in_msa,
       out_domain_msas,
       out_domain_architecture_msa,
+      out_contactenated_domains_msa,
       target_domain_architecture)
 
       domain_names_in_query_seq = Set.new
@@ -249,7 +271,7 @@ module Evoruby
             end
             if (target_domain.rel_len != nil) && (target_domain.rel_len > 0)
               length = 1 + domain.env_to - domain.env_from
-              puts (target_domain.rel_len * domain.tlen)
+              #  puts (target_domain.rel_len * domain.tlen)
               if length < (target_domain.rel_len * domain.tlen)
                 next
               end
@@ -311,7 +333,6 @@ module Evoruby
           error_msg = "seq names do not match: this should not have happened"
           raise StandardError, error_msg
         end
-        puts "query: " + query_seq
 
         extracted_domain_seq = extract_domain( query_seq,
         domain_counter[domain_name],
@@ -337,8 +358,8 @@ module Evoruby
         end
       end
 
-      puts "env from: #{min_env_from} - #{max_env_from}"
-      puts "env to  : #{min_env_to} - #{max_env_to}"
+      #puts "env from: #{min_env_from} - #{max_env_from}"
+      #puts "env to  : #{min_env_to} - #{max_env_to}"
 
       extract_domain( query_seq,
       1,
@@ -349,7 +370,9 @@ module Evoruby
       out_domain_architecture_msa )
 
       puts passed_domains_counts
-      puts concatenated_domains
+
+      out_contactenated_domains_msa.add( query_seq, concatenated_domains)
+
       true
     end
 
