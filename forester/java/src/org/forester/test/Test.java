@@ -13251,6 +13251,18 @@ public final class Test {
                 System.out.println( n10.toString() );
                 return false;
             }
+            final PhylogenyNode n10v = PhylogenyNode
+                    .createInstanceFromNhxString( "BLAGG_BPM1-blag", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
+            if ( !n10v.getNodeData().getTaxonomy().getTaxonomyCode().equals( "BPM1" ) ) {
+                System.out.println( n10v.toString() );
+                return false;
+            }
+            final PhylogenyNode n10v2 = PhylogenyNode
+                    .createInstanceFromNhxString( "BLAGG_ABV-blag", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
+            if ( !n10v2.getNodeData().getTaxonomy().getTaxonomyCode().equals( "ABV" ) ) {
+                System.out.println( n10v2.toString() );
+                return false;
+            }
             final PhylogenyNode n11 = PhylogenyNode
                     .createInstanceFromNhxString( "BLAG@_Mus_musculus", NHXParser.TAXONOMY_EXTRACTION.AGGRESSIVE );
             if ( !n11.getNodeData().getTaxonomy().getScientificName().equals( "Mus musculus" ) ) {
