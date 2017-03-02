@@ -56,8 +56,8 @@ import org.forester.util.ForesterUtil;
 public final class ParserUtils {
 
     final private static String  SN_BN                                = "[A-Z][a-z]{2,30}[_ ][a-z]{3,30}";
-    final public static String   TAX_CODE                             = "(?:[A-Z9][A-Z]{2}[A-Z0-9]{2})|RAT|PIG|PEA|(?:[A-Z1-9]{4})";
-    final public static String   TAX_CODE_LO                          = "(?:[A-Z]{5})|RAT|PIG|PEA|(?:[A-Z1-9]{4})";
+    final public static String   TAX_CODE                             = "(?:[A-Z0-9]{3,5})";
+    final public static String   TAX_CODE_LO                          = "(?:[A-Z]{5})|RAT|PIG|PEA";
     final public static Pattern  TAXOMONY_CODE_PATTERN_A              = Pattern.compile( "(?:\\b|_)(" + TAX_CODE
                                                                                          + ")(?:\\b|_)" );
     final public static Pattern  TAXOMONY_CODE_PATTERN_A_LO           = Pattern.compile( "_(" + TAX_CODE_LO
