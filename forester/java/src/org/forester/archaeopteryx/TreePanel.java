@@ -5709,10 +5709,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 }
             }
             final boolean disallow_shortcutting = ( dynamic_hiding_factor < 40 )
-                    || getControlPanel().isUseVisualStyles() || getOptions().isShowDefaultNodeShapesForMarkedNodes()
-                    || ( ( getFoundNodes0() != null ) && !getFoundNodes0().isEmpty() )
-                    || ( ( getFoundNodes1() != null ) && !getFoundNodes1().isEmpty() )
-                    || ( ( getCurrentExternalNodes() != null ) && !getCurrentExternalNodes().isEmpty() )
+                   /* || getControlPanel().isUseVisualStyles() || getOptions().isShowDefaultNodeShapesForMarkedNodes()*/ //TODO check if this is really not needed.
                     || to_graphics_file || to_pdf;
             for( final PhylogenyNode element : _nodes_in_preorder ) {
                 paintNodeRectangular( g,
