@@ -151,12 +151,12 @@ native_ui: ?
 
 min_confidence_value:                      0.0
 font_family:                               Arial_Unicode_MS,Dialog,SansSerif,Sans,Arial,Helvetica
-font_size:                                 10
+font_size:                                 11
 font_size_min:                             2
 font_size_max:                             20
 antialias_screen:                          yes
 show_scale:                                yes
-cladogram_type:                            non_lined_up
+cladogram_type:                            lined_up
 phylogeny_graphics_type:                   rectangular
 node_label_direction:                      horizontal
 show_default_node_shapes_internal:         no
