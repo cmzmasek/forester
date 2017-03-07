@@ -66,7 +66,7 @@ module Evoruby
       fasta_sequence_file = ""
       outfile             = ""
 
-      if (cla.get_number_of_files == 3)
+      if cla.get_number_of_files == 3
         fasta_sequence_file = cla.get_file_name( 2 )
       else
         hmmscan_index = hmmscan_output.index(Constants::HMMSCAN)
@@ -89,8 +89,8 @@ module Evoruby
         end
       end
       hmmscan_index = hmmscan_output.index(Constants::HMMSCAN)
-      if ( hmmscan_index != nil )
-        outfile = hmmscan_output.sub(Constants::HMMSCAN, "_") + "_MDSX"
+      if hmmscan_index != nil
+        outfile = hmmscan_output.sub(Constants::HMMSCAN, '_')
       else
         Util.fatal_error( PRG_NAME, 'input files do not seem in format for standard analysis pipeline, need to explicitly indicate all' )
       end
@@ -131,11 +131,10 @@ module Evoruby
       rescue Exception => e
         puts e.backtrace
         Util.fatal_error( PRG_NAME, "unexpected exception: " + e.to_s, STDOUT )
-
       end
 
       puts
-      Util.print_message( PRG_NAME, "extracted a total of " + domain_count.to_s + " domains" )
+  
       #  Util.print_message( PRG_NAME, "wrote: " + outfile + ".fasta")
       #  Util.print_message( PRG_NAME, "wrote: " + outfile + LOG_FILE_SUFFIX )
       #  Util.print_message( PRG_NAME, "wrote: " + outfile + PASSED_SEQS_SUFFIX )
