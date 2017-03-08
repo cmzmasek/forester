@@ -16,14 +16,16 @@ require 'lib/evo/io/parser/hmmscan_parser'
 module Evoruby
   class HmmscanMultiDomainExtractor
 
+    TESTING = false
     OUTPUT_ID = 'mdsx'
     DOMAIN_DELIMITER = ' -- '
 
     PASSING_FL_SEQS_SUFFIX    = "_#{OUTPUT_ID}_passing_full_length_seqs.fasta"
     FAILING_FL_SEQS_SUFFIX    = "_#{OUTPUT_ID}_failing_full_length_seqs.fasta"
     TARGET_DA_SUFFIX          = "_#{OUTPUT_ID}_target_da.fasta"
-    CONCAT_TARGET_DOM_SUFFIX  = "_#{OUTPUT_ID}_concat_target_dom.fasta"
+    CONCAT_TARGET_DOM_SUFFIX  = "_#{OUTPUT_ID}_concat_target_doms.fasta"
     TARGET_DOM_OUTPUT_MIDPART = "_#{OUTPUT_ID}_target_dom_"
+    LOG_FILE_SUFFIX           = "_#{OUTPUT_ID}.log"
     def initialize
       @passing_domains_data = nil
       @failing_domains_data = nil
@@ -31,6 +33,7 @@ module Evoruby
       @passsing_domain_architectures = nil
       @failing_proteins_bc_not_all_target_doms_present = nil
       @failing_proteins_bc_missing_cutoffs = nil
+      @log = nil
     end
 
     # raises ArgumentError, IOError, StandardError
@@ -44,6 +47,7 @@ module Evoruby
       failing_fl_seqs_outfile   = outfile_base + FAILING_FL_SEQS_SUFFIX
       target_da_outfile         = outfile_base + TARGET_DA_SUFFIX
       concat_target_dom_outfile = outfile_base + CONCAT_TARGET_DOM_SUFFIX
+      logfile                   = outfile_base + LOG_FILE_SUFFIX
 
       Util.check_file_for_readability( hmmscan_output )
       Util.check_file_for_readability( fasta_sequence_file )
@@ -51,6 +55,9 @@ module Evoruby
       Util.check_file_for_writability( failing_fl_seqs_outfile )
       Util.check_file_for_writability( target_da_outfile )
       Util.check_file_for_writability( concat_target_dom_outfile )
+      Util.check_file_for_writability( logfile )
+
+      @log = log_str
 
       in_msa = nil
       factory = MsaFactory.new()
@@ -64,14 +71,11 @@ module Evoruby
       failed_seqs_msa = Msa.new
       passed_seqs_msa = Msa.new
 
-      ld = Constants::LINE_DELIMITER
-
       hmmscan_parser = HmmscanParser.new( hmmscan_output )
       results = hmmscan_parser.parse
 
       ####
       # Import: if multiple copies of same domain, thresholds need to be same!
-      target_domain_ary = Array.new
 
       #target_domain_ary.push(TargetDomain.new('DNA_pol_B_exo1', 1e-6, -1, 0.6, 0 ))
       #target_domain_ary.push(TargetDomain.new('DNA_pol_B', 1e-6, -1, 0.6, 1 ))
@@ -81,9 +85,11 @@ module Evoruby
       # target_domain_ary.push(TargetDomain.new('Hexokinase_2', 0.1, -1, 0.5, 1 ))
       # target_domain_ary.push(TargetDomain.new('Hexokinase_1', 0.1, -1, 0.5, 1 ))
 
-      target_domain_ary.push(TargetDomain.new('BH4', 1, -1, 0.2, 0 ))
-      target_domain_ary.push(TargetDomain.new('Bcl-2', 1, -1, 0.2, 1 ))
-      target_domain_ary.push(TargetDomain.new('Bcl-2', 1, -1, 0.2, 2 ))
+      target_domain_ary = parse_da target_da
+
+      # target_domain_ary.push(TargetDomain.new('BH4', 1, -1, 0.2, 0 ))
+      # target_domain_ary.push(TargetDomain.new('Bcl-2', 1, -1, 0.2, 1 ))
+      # target_domain_ary.push(TargetDomain.new('Bcl-2', 1, -1, 0.2, 2 ))
       # target_domain_ary.push(TargetDomain.new('Bcl-2_3', 0.01, -1, 0.5, 2 ))
 
       #  target_domain_ary.push(TargetDomain.new('Nitrate_red_del', 1000, -1, 0.1, 0 ))
@@ -105,7 +111,12 @@ module Evoruby
 
       target_domain_architecure.freeze
 
-      puts 'Target domain architecture: ' + target_domain_architecure
+      log 'Hmmscan outputfile             : ' + hmmscan_output
+      log 'Full length fasta sequence file: ' + fasta_sequence_file
+      log 'Target domain architecture     : ' + target_domain_architecure
+      target_domain_ary.each do |x|
+        log x.to_str
+      end
 
       target_domain_names = Set.new
 
@@ -128,7 +139,7 @@ module Evoruby
       out_concatenated_domains_msa = Msa.new
       results.each do |hmmscan_result|
         if ( prev_query_seq_name != nil ) && ( hmmscan_result.query != prev_query_seq_name )
-          if checkit2(domains_in_query_seq, target_domain_names, target_domains, in_msa, out_domain_msas, out_domain_architecture_msa, out_concatenated_domains_msa, target_domain_architecure)
+          if compare(domains_in_query_seq, target_domain_names, target_domains, in_msa, out_domain_msas, out_domain_architecture_msa, out_concatenated_domains_msa, target_domain_architecure)
             passing_sequences.push(domains_in_query_seq)
           else
             failing_sequences.push(domains_in_query_seq)
@@ -141,44 +152,46 @@ module Evoruby
       end # each result
 
       if prev_query_seq_name != nil
-        total_sequences += 1
-        if checkit2(domains_in_query_seq, target_domain_names, target_domains, in_msa, out_domain_msas, out_domain_architecture_msa, out_concatenated_domains_msa, target_domain_architecure)
+        if compare(domains_in_query_seq, target_domain_names, target_domains, in_msa, out_domain_msas, out_domain_architecture_msa, out_concatenated_domains_msa, target_domain_architecure)
           passing_sequences.push(domains_in_query_seq)
         else
           failing_sequences.push(domains_in_query_seq)
         end
+        total_sequences += 1
       end
 
-      puts
-
-      puts 'Failing domain architectures containing one or more target domain(s):'
-      @failing_domain_architectures = @failing_domain_architectures .sort{|a, b|a<=>b}.to_h
-      failing_da_sum = 0
-      @failing_domain_architectures .each do |da, count|
-        failing_da_sum += count
-        puts count.to_s.rjust(4) + ': ' + da
+      if in_msa.get_number_of_seqs < total_sequences
+        error_msg = "hmmscan output contains more protein sequences than fasta sequence file"
+        raise IOError, error_msg
       end
 
-      puts
-
-      puts 'Passing domain architectures containing target domain(s):'
+      log
+      log 'Passing domain architectures containing target domain(s):'
       @passsing_domain_architectures = @passsing_domain_architectures.sort{|a, b|a<=>b}.to_h
       passing_da_sum = 0
       @passsing_domain_architectures.each do |da, count|
         passing_da_sum += count
-        puts count.to_s.rjust(4) + ': ' + da
+        log count.to_s.rjust(4) + ': ' + da
       end
-
-      puts 'Passing domain(s):'
+      log
+      log 'Failing domain architectures containing one or more target domain(s):'
+      @failing_domain_architectures = @failing_domain_architectures .sort{|a, b|a<=>b}.to_h
+      failing_da_sum = 0
+      @failing_domain_architectures .each do |da, count|
+        failing_da_sum += count
+        log count.to_s.rjust(4) + ': ' + da
+      end
+      log
+      log 'Passing target domain(s):'
       @passing_domains_data = @passing_domains_data.sort{|a, b|a<=>b}.to_h
       @passing_domains_data.each do |n, d|
-        puts d.to_str
+        log d.to_str
       end
-
-      puts 'Failing domain(s):'
+      log
+      log'Failing target domain(s):'
       @failing_domains_data = @failing_domains_data.sort{|a, b|a<=>b}.to_h
       @failing_domains_data.each do |n, d|
-        puts d.to_str
+        log d.to_str
       end
 
       unless total_sequences == (passing_sequences.size + failing_sequences.size)
@@ -201,60 +214,60 @@ module Evoruby
         raise StandardError, error_msg
       end
 
-      puts
-
-      puts "Protein sequences in sequence (fasta) file: " + in_msa.get_number_of_seqs.to_s.rjust(5)
-      puts "Protein sequences in hmmscan output file  : " + total_sequences.to_s.rjust(5)
-      puts "  Passing protein sequences               : " + passing_sequences.size.to_s.rjust(5)
-      puts "  Failing protein sequences               : " + failing_sequences.size.to_s.rjust(5)
-      puts "    Not all target domain present         : " + @failing_proteins_bc_not_all_target_doms_present.to_s.rjust(5)
-      puts "    Target domain(s) failing cutoffs      : " + @failing_proteins_bc_missing_cutoffs.to_s.rjust(5)
-
-      puts
+      log
+      log "Protein sequences in sequence (fasta) file: " + in_msa.get_number_of_seqs.to_s.rjust(5)
+      log "Protein sequences in hmmscan output file  : " + total_sequences.to_s.rjust(5)
+      log "  Passing protein sequences               : " + passing_sequences.size.to_s.rjust(5)
+      log "  Failing protein sequences               : " + failing_sequences.size.to_s.rjust(5)
+      log "    Not all target domain present         : " + @failing_proteins_bc_not_all_target_doms_present.to_s.rjust(5)
+      log "    Target domain(s) failing cutoffs      : " + @failing_proteins_bc_missing_cutoffs.to_s.rjust(5)
+      log
 
       out_domain_msas.keys.sort.each do |domain_name|
         file_name = outfile_base + TARGET_DOM_OUTPUT_MIDPART + domain_name + '.fasta'
-
-        write_msa( out_domain_msas[domain_name], file_name )
-        puts "wrote #{domain_name}"
+        write_msa out_domain_msas[domain_name], file_name
+        log "Wrote passing target domain sequence for " +  domain_name.ljust(16) + ': ' + file_name
       end
 
-      write_msa( out_domain_architecture_msa, target_da_outfile )
-      puts "wrote target_domain_architecure"
+      write_msa out_domain_architecture_msa, target_da_outfile
+      log 'Wrote target domain architecture                         : ' + target_da_outfile
 
-      write_msa( out_concatenated_domains_msa, concat_target_dom_outfile )
-      puts "wrote concatenated_domains_msa"
+      write_msa out_concatenated_domains_msa, concat_target_dom_outfile
+      log 'Wrote concatenated target domain(s)                      : ' + concat_target_dom_outfile
 
       passing_sequences.each do | domains |
         query_name = domains[0].query
-        if passed_seqs_msa.find_by_name_start( query_name, true ).length < 1
+        if (!TESTING) || (passed_seqs_msa.find_by_name_start( query_name, true ).length < 1)
           add_sequence( query_name, in_msa, passed_seqs_msa )
         else
-          error_msg = "this should not have happened"
+          error_msg = 'this should not have happened'
           raise StandardError, error_msg
         end
       end
 
       failing_sequences.each do | domains |
         query_name = domains[0].query
-        if failed_seqs_msa.find_by_name_start( query_name, true ).length < 1
+        if (!TESTING) || (failed_seqs_msa.find_by_name_start( query_name, true ).length < 1)
           add_sequence( query_name, in_msa, failed_seqs_msa )
         else
-          error_msg = "this should not have happened"
+          error_msg = 'this should not have happened'
           raise StandardError, error_msg
         end
       end
 
-      write_msa( passed_seqs_msa, passing_fl_seqs_outfile )
-      puts "wrote ..."
-      write_msa( failed_seqs_msa, failing_fl_seqs_outfile )
-      puts "wrote ..."
+      write_msa passed_seqs_msa, passing_fl_seqs_outfile
+      log 'Wrote passing full length protein sequences              : ' + passing_fl_seqs_outfile
+      write_msa failed_seqs_msa, failing_fl_seqs_outfile
+      log 'Wrote failing full length protein sequences              : ' + failing_fl_seqs_outfile
 
-      log_str << ld
-
-      log_str << "proteins in sequence (fasta) file            : " + in_msa.get_number_of_seqs.to_s + ld
-
-      log_str << ld
+      begin
+        f = File.open( logfile, 'w' )
+        f.print( @log )
+        f.close
+      rescue Exception => e
+        Util.fatal_error( PRG_NAME, "error: " + e.to_s )
+      end
+      log 'Wrote log file                                           : ' + logfile
 
     end # parse
 
@@ -264,7 +277,7 @@ module Evoruby
     # target_domain_names: Set of String
     # target_domains: Hash String->TargetDomain
     # target_domain_architecture: String
-    def checkit2(domains_in_query_seq,
+    def compare(domains_in_query_seq,
       target_domain_names,
       target_domains,
       in_msa,
@@ -442,7 +455,7 @@ module Evoruby
       w = FastaWriter.new()
       w.set_line_width( 60 )
       w.clean( true )
-      File.delete(filename) if File.exist?(filename) #TODO remove me
+      File.delete(filename) if File.exist?(filename)
       begin
         io.write_to_file( msa, filename, w )
       rescue Exception
@@ -505,13 +518,42 @@ module Evoruby
       seq.get_sequence_as_string
     end
 
+    def parse_da( target_da_str )
+      target_domain_hash = Hash.new
+      target_domain_ary = Array.new
+      target_das = target_da_str.split '--'
+      target_das.each do |x|
+        inds = x.split '='
+        unless inds.size == 4
+          raise IOError, 'domain architecture is ill formatted: ' + x
+        end
+        target_domain_name = inds[0]
+        ie_cutoff = inds[1].to_f
+        abs_len_cutoff = inds[2].to_i
+        rel_len_cutoff = inds[3].to_f
+        if target_domain_hash.has_key? target_domain_name
+          target_domain_ary.push target_domain_hash[target_domain_name]
+        else
+          td = TargetDomain.new(target_domain_name, ie_cutoff, abs_len_cutoff, rel_len_cutoff)
+          target_domain_hash[target_domain_name] = td
+          target_domain_ary.push td
+        end
+      end
+      target_domain_ary
+    end
+
+    def log(str = '')
+      puts str
+      @log << str << Constants::LINE_DELIMITER
+    end
+
   end # class HmmscanMultiDomainExtractor
 
   class DomainData
     def initialize( name )
       if (name == nil) || name.size < 1
         error_msg = "domain name nil or empty"
-        raise StandardError, error_msg
+        raise IOError, error_msg
       end
       @name = name
       @count = 0
@@ -526,16 +568,16 @@ module Evoruby
     def add( name, length, i_e_value)
       if name != @name
         error_msg = "domain names do not match"
-        raise StandardError, error_msg
+        raise IOError, error_msg
       end
 
       if length < 0
         error_msg = "length cannot me negative"
-        raise StandardError, error_msg
+        raise IOError, error_msg
       end
       if i_e_value < 0
         error_msg = "iE-value cannot me negative"
-        raise StandardError, error_msg
+        raise IOError, error_msg
       end
       @count += 1
       @i_e_value_sum += i_e_value
@@ -570,7 +612,7 @@ module Evoruby
 
     def to_str
       s = ''
-      s << @name.rjust(24) + ': '
+      s << @name.rjust(16) + ': '
       s << @count.to_s.rjust(4) + '  '
       s << avg_length.round(1).to_s.rjust(6) + ' '
       s << @len_min.to_s.rjust(4) + ' -'
@@ -586,22 +628,41 @@ module Evoruby
   end
 
   class TargetDomain
-    def initialize( name, i_e_value, abs_len, rel_len, position )
+    def initialize(name, i_e_value, abs_len, rel_len)
       if (name == nil) || name.size < 1
         error_msg = "target domain name nil or empty"
-        raise StandardError, error_msg
+        raise IOError, error_msg
       end
       if rel_len > 1
-        error_msg = "target domain relative length is greater than 1"
-        raise StandardError, error_msg
+        error_msg = name + ": target domain relative length is greater than 1"
+        raise IOError, error_msg
+      end
+      if (abs_len <= 0) && (rel_len <= 0)
+        error_msg = name + ": need to have either absolute length or relative length cutoff"
+        raise IOError, error_msg
+      end
+      if (abs_len > 0) && (rel_len > 0)
+        error_msg = name + ": cannot have both absolute length and relative length cutoff"
+        raise IOError, error_msg
       end
       @name = name
       @i_e_value = i_e_value
       @abs_len = abs_len
       @rel_len = rel_len
-      @position = position
     end
-    attr_reader :name, :i_e_value, :abs_len, :rel_len, :position
+
+    def to_str
+      s = @name.rjust(16) + ':'
+      s << ' iE-cutoff: ' + ("%.2E" % @i_e_value).rjust(9)
+      if @abs_len > 0
+        s << ', abs len-cutoff: ' + @abs_len.to_s.rjust(4)
+      end
+      if @rel_len > 0
+        s << ', rel len-cutoff: ' + @rel_len.to_s.rjust(4)
+      end
+      s
+    end
+    attr_reader :name, :i_e_value, :abs_len, :rel_len
   end
 
 end # module Evoruby

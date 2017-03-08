@@ -15,10 +15,9 @@ module Evoruby
     PRG_NAME       = "mdsx"
     PRG_VERSION    = "1.000"
     PRG_DESC       = "Extraction of multi domain sequences from hmmscan output"
-    PRG_DATE       = "20170220"
+    PRG_DATE       = "20170307"
     WWW            = "https://sites.google.com/site/cmzmasek/home/software/forester"
 
-    LOG_FILE_SUFFIX                    = '_MDSX.log'
     HELP_OPTION_1                      = 'help'
     HELP_OPTION_2                      = 'h'
     def run()
@@ -64,7 +63,7 @@ module Evoruby
       domain_id           = cla.get_file_name( 0 )
       hmmscan_output      = cla.get_file_name( 1 )
       fasta_sequence_file = ""
-      outfile             = ""
+      outfile_base        = ""
 
       if cla.get_number_of_files == 3
         fasta_sequence_file = cla.get_file_name( 2 )
@@ -90,41 +89,26 @@ module Evoruby
       end
       hmmscan_index = hmmscan_output.index(Constants::HMMSCAN)
       if hmmscan_index != nil
-        outfile = hmmscan_output.sub(Constants::HMMSCAN, '_')
+        outfile_base = hmmscan_output.sub(Constants::HMMSCAN, '_')
       else
         Util.fatal_error( PRG_NAME, 'input files do not seem in format for standard analysis pipeline, need to explicitly indicate all' )
       end
 
-      log = String.new
-      ld = Constants::LINE_DELIMITER
+      log_str = ''
 
-      #      puts()
-      #      puts( "Domain                                                                             : " + domain_id )
-      #      log << "Domain                                                                             : " + domain_id + ld
-      #      puts( "Hmmscan outputfile                                                                 : " + hmmscan_output )
-      #      log << "Hmmscan outputfile                                                                 : " + hmmscan_output + ld
-      #      puts( "Fasta sequencefile (complete sequences)                                            : " + fasta_sequence_file )
-      #      log << "Fasta sequencefile (complete sequences)                                            : " + fasta_sequence_file + ld
-      #      puts( "Outputfile                                                                         : " + outfile + ".fasta" )
-      #      log << "Outputfile                                                                         : " + outfile + ld
-      #      puts( "Passed sequences outfile (fasta)                                                   : " + outfile + PASSED_SEQS_SUFFIX )
-      #      log << "Passed sequences outfile (fasta)                                                   : " + outfile + PASSED_SEQS_SUFFIX + ld
-      #      puts( "Failed sequences outfile (fasta)                                                   : " + outfile + FAILED_SEQS_SUFFIX )
-      #      log << "Failed sequences outfile (fasta)                                                   : " + outfile + FAILED_SEQS_SUFFIX + ld
-      #      puts( "Logfile                                                                            : " + outfile + LOG_FILE_SUFFIX )
-      #      log << "Logfile                                                                            : " + outfile + LOG_FILE_SUFFIX + ld
+      log_str << PRG_NAME << Constants::LINE_DELIMITER
+      log_str <<  PRG_VERSION << Constants::LINE_DELIMITER
+      log_str << PRG_DESC << Constants::LINE_DELIMITER
+      log_str << PRG_DATE << Constants::LINE_DELIMITER
+      log_str << Constants::LINE_DELIMITER
 
-      puts
-      log <<  ld
-
-      domain_count = 0
       begin
         parser = HmmscanMultiDomainExtractor.new()
-        domain_count = parser.parse( domain_id,
+        parser.parse( domain_id,
         hmmscan_output,
         fasta_sequence_file,
-        outfile,
-        log )
+        outfile_base,
+        log_str)
       rescue ArgumentError, IOError => e
         Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
 
@@ -134,42 +118,26 @@ module Evoruby
       end
 
       puts
-  
-      #  Util.print_message( PRG_NAME, "wrote: " + outfile + ".fasta")
-      #  Util.print_message( PRG_NAME, "wrote: " + outfile + LOG_FILE_SUFFIX )
-      #  Util.print_message( PRG_NAME, "wrote: " + outfile + PASSED_SEQS_SUFFIX )
-      #  Util.print_message( PRG_NAME, "wrote: " + outfile + FAILED_SEQS_SUFFIX )
-
-      begin
-        f = File.open( outfile + LOG_FILE_SUFFIX, 'a' )
-        f.print( log )
-        f.close
-      rescue Exception => e
-        Util.fatal_error( PRG_NAME, "error: " + e.to_s )
-      end
-
-      puts
       Util.print_message( PRG_NAME, "OK" )
       puts
 
     end
 
     def print_help()
-      puts()
-      puts( "Usage:" )
-      puts()
-      puts( "  " + PRG_NAME + ".rb <da> <hmmscan outputfile> [file containing complete sequences in fasta format]" )
-      puts()
-      puts( "  options: -"  )
-      puts()
-      puts( "Examples:" )
       puts
-      puts( "  " + PRG_NAME + ".rb " )
+      puts "Usage:"
       puts
-
-      puts()
+      puts "  " + PRG_NAME + ".rb <da> <hmmscan outputfile> [file containing complete sequences in fasta format]"
+      puts
+      puts "  options: -"
+      puts
+      puts "Examples:"
+      puts
+      puts "  " + PRG_NAME + ".rb "
+      puts
+      puts
     end
 
-  end # class DomainSequenceExtractor
+  end # class MultiDomainSeqExtractor
 
 end # module Evoruby

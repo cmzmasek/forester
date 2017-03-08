@@ -6,22 +6,18 @@
 #
 # Last modified: 2017/02/07
 
-
 require 'lib/evo/util/constants'
 require 'lib/evo/util/util'
 require 'lib/evo/sequence/sequence'
 
 module Evoruby
-
   class Msa
-
     def initialize()
       @sequences = Array.new
       @identical_seqs_detected = Array.new
       @name_to_seq_indices = Hash.new
       @namestart_to_seq_indices = Hash.new
     end
-
 
     def add_sequence( sequence )
       @sequences.push( sequence )
@@ -34,8 +30,8 @@ module Evoruby
     def get_sequence( index )
       if ( index < 0 || index > get_number_of_seqs() - 1 )
         error_msg = "attempt to get sequence " <<
-         index.to_s << " in alignment of " << get_number_of_seqs().to_s <<
-         " sequences"
+        index.to_s << " in alignment of " << get_number_of_seqs().to_s <<
+        " sequences"
         raise ArgumentError, error_msg
       end
       return @sequences[ index ]
@@ -44,8 +40,8 @@ module Evoruby
     def remove_sequence!( index )
       if ( index < 0 || index > get_number_of_seqs() - 1 )
         error_msg = "attempt to remove sequence " <<
-         index.to_s << " in alignment of " << get_number_of_seqs().to_s <<
-         " sequences"
+        index.to_s << " in alignment of " << get_number_of_seqs().to_s <<
+        " sequences"
         raise ArgumentError, error_msg
       end
       @name_to_seq_indices.clear
@@ -56,7 +52,6 @@ module Evoruby
     def get_identical_seqs_detected
       @identical_seqs_detected
     end
-
 
     def is_aligned()
       if ( get_number_of_seqs < 1 )
@@ -90,7 +85,7 @@ module Evoruby
           name = name.downcase
         end
         if current_name == name ||
-           ( partial_match && current_name.include?( name ) )
+        ( partial_match && current_name.include?( name ) )
           indices.push( i )
         end
       end
@@ -127,26 +122,26 @@ module Evoruby
       get_sequence( indices[ 0 ] )
     end
 
-    def find_by_name_start( name, case_sensitive )
+    def find_by_name_start(name, case_sensitive = true)
       if case_sensitive && @namestart_to_seq_indices.has_key?( name )
         return @namestart_to_seq_indices[ name ]
       end
       indices = []
-      for i in 0 ... get_number_of_seqs()
-        get_sequence( i ).get_name() =~ /^\s*(\S+)/
+      for i in 0 ... get_number_of_seqs
+        get_sequence(i).get_name =~ /^\s*(\S+)/
         current_name = $1
         if case_sensitive
-          if !@namestart_to_seq_indices.has_key?( current_name )
-            @namestart_to_seq_indices[ current_name ] = []
+          unless @namestart_to_seq_indices.has_key?(current_name)
+            @namestart_to_seq_indices[current_name] = []
           end
-          @namestart_to_seq_indices[ current_name ].push( i )
+          @namestart_to_seq_indices[current_name].push( i )
         end
         if !case_sensitive
           current_name = current_name.downcase
           name = name.downcase
         end
-        if  current_name == name
-          indices.push( i )
+        if current_name == name
+          indices.push(i)
         end
       end
       indices
@@ -160,7 +155,7 @@ module Evoruby
           name = name.downcase
         end
         if current_name == name ||
-           ( partial_match && current_name.include?( name ) )
+        ( partial_match && current_name.include?( name ) )
           return true
         end
       end
@@ -192,7 +187,6 @@ module Evoruby
       end
       get_sequence( indices[ 0 ] )
     end
-
 
     def get_sub_alignment( seq_numbers )
       msa = Msa.new()
@@ -229,7 +223,6 @@ module Evoruby
       end
       s
     end
-
 
     def print_overlap_diagram( min_overlap = 1, io = STDOUT, max_name_length = 10 )
       if ( !is_aligned() )
@@ -273,7 +266,7 @@ module Evoruby
       overlap_count = 0
       for i in 0...seq_1.get_length()
         if !Util.is_aa_gap_character?( seq_1.get_character_code( i ) ) &&
-           !Util.is_aa_gap_character?( seq_2.get_character_code( i ) )
+        !Util.is_aa_gap_character?( seq_2.get_character_code( i ) )
           overlap_count += 1
           if overlap_count >= min_overlap
             return true
@@ -289,7 +282,7 @@ module Evoruby
       overlap_count = 0
       for i in 0...seq_1.get_length
         if !Util.is_aa_gap_character?( seq_1.get_character_code( i ) ) &&
-           !Util.is_aa_gap_character?( seq_2.get_character_code( i ) )
+        !Util.is_aa_gap_character?( seq_2.get_character_code( i ) )
           overlap_count += 1
         end
       end
@@ -302,10 +295,10 @@ module Evoruby
       identities_count = 0
       for i in 0...seq_1.get_length
         if !Util.is_aa_gap_character?( seq_1.get_character_code( i ) ) &&
-           !Util.is_aa_gap_character?( seq_2.get_character_code( i ) ) &&
-           seq_1.get_character_code( i ) != 63 &&
-           ( seq_1.get_residue( i ).downcase() ==
-             seq_2.get_residue( i ).downcase() )
+        !Util.is_aa_gap_character?( seq_2.get_character_code( i ) ) &&
+        seq_1.get_character_code( i ) != 63 &&
+        ( seq_1.get_residue( i ).downcase() ==
+        seq_2.get_residue( i ).downcase() )
           identities_count += 1
         end
       end
@@ -324,7 +317,6 @@ module Evoruby
     def remove_gap_columns_w_gap_ratio!( gap_ratio )
       remove_columns!( get_gap_columns_w_gap_ratio( gap_ratio ) )
     end
-
 
     def remove_sequences_by_gap_ratio!( gap_ratio )
       if ( !is_aligned() )
@@ -345,7 +337,6 @@ module Evoruby
       removed
     end
 
-
     def remove_redundant_sequences!( consider_taxonomy = false, verbose = false )
       n = get_number_of_seqs
       removed = Array.new
@@ -355,10 +346,10 @@ module Evoruby
         for j in ( i + 1 ) ... n
           if !to_be_removed.include?( i ) && !to_be_removed.include?( j )
             if  !consider_taxonomy ||
-               ( ( get_sequence( i ).get_taxonomy == nil && get_sequence( j ).get_taxonomy == nil ) ||
-                 ( get_sequence( i ).get_taxonomy == get_sequence( j ).get_taxonomy ) )
+            ( ( get_sequence( i ).get_taxonomy == nil && get_sequence( j ).get_taxonomy == nil ) ||
+            ( get_sequence( i ).get_taxonomy == get_sequence( j ).get_taxonomy ) )
               if Util.clean_seq_str( get_sequence( i ).get_sequence_as_string ) ==
-                 Util.clean_seq_str( get_sequence( j ).get_sequence_as_string )
+              Util.clean_seq_str( get_sequence( j ).get_sequence_as_string )
                 to_be_removed.add( j )
 
                 tax_i = ""
@@ -388,7 +379,6 @@ module Evoruby
       }
       removed
     end
-
 
     def remove_sequences_by_non_gap_length!( min_non_gap_length )
       n = get_number_of_seqs
@@ -504,7 +494,6 @@ module Evoruby
       return cols
     end
 
-
     # Split an alignment into n alignemnts of equal size, except last one
     def split( n, verbose = false )
       if ( n < 2 || n > get_number_of_seqs )
@@ -537,7 +526,6 @@ module Evoruby
       end
       msas
     end
-
 
     private
 
@@ -587,7 +575,6 @@ module Evoruby
       end
       return self
     end
-
 
   end # class Msa
 
