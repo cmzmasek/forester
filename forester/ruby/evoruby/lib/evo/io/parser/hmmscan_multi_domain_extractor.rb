@@ -20,6 +20,9 @@ module Evoruby
     OUTPUT_ID = 'mdsx'
     DOMAIN_DELIMITER = ' -- '
 
+    IE_CUTOFF_FOR_DA_OVERVIEW      = 1E-6
+    REL_LEN_CUTOFF_FOR_DA_OVERVIEW = 0.5
+
     PASSING_FL_SEQS_SUFFIX    = "_#{OUTPUT_ID}_passing_full_length_seqs.fasta"
     FAILING_FL_SEQS_SUFFIX    = "_#{OUTPUT_ID}_failing_full_length_seqs.fasta"
     TARGET_DA_SUFFIX          = "_#{OUTPUT_ID}_target_da.fasta"
@@ -33,6 +36,7 @@ module Evoruby
       @passsing_domain_architectures = nil
       @failing_proteins_bc_not_all_target_doms_present = nil
       @failing_proteins_bc_missing_cutoffs = nil
+      @encountered_domain_architectures = nil
       @log = nil
     end
 
@@ -99,14 +103,14 @@ module Evoruby
 
       target_domains = Hash.new
 
-      target_domain_architecure = ""
+      target_domain_architecure = ''
 
       target_domain_ary.each do |target_domain|
         target_domains[target_domain.name] = target_domain
         if target_domain_architecure.length > 0
-          target_domain_architecure += DOMAIN_DELIMITER
+          target_domain_architecure << DOMAIN_DELIMITER
         end
-        target_domain_architecure += target_domain.name
+        target_domain_architecure << target_domain.name
       end
 
       target_domain_architecure.freeze
@@ -132,6 +136,7 @@ module Evoruby
       @passsing_domain_architectures = Hash.new
       @passing_domains_data = Hash.new
       @failing_domains_data = Hash.new
+      @encountered_domain_architectures= Hash.new
       @failing_proteins_bc_not_all_target_doms_present = 0
       @failing_proteins_bc_missing_cutoffs = 0
       out_domain_msas = Hash.new
@@ -163,6 +168,20 @@ module Evoruby
       if in_msa.get_number_of_seqs < total_sequences
         error_msg = "hmmscan output contains more protein sequences than fasta sequence file"
         raise IOError, error_msg
+      end
+
+      log
+      log 'Domain architecture overview using default iE-cutoff ' +
+      IE_CUTOFF_FOR_DA_OVERVIEW.to_s + ' and relative length cutoff ' + REL_LEN_CUTOFF_FOR_DA_OVERVIEW.to_s + ':'
+
+      @encountered_domain_architectures = @encountered_domain_architectures.sort_by {|k, v| v}.reverse.to_h
+      counter = 1;
+      @encountered_domain_architectures.each do |k, v|
+        log counter.to_s.rjust(2) + ') ' +  v.to_s.rjust(5) + ': ' + k
+        counter += 1
+        if counter > 80
+          break
+        end
       end
 
       log
@@ -273,6 +292,32 @@ module Evoruby
 
     private
 
+    # domains: Array of HmmscanResult
+    def collect(domains, ie_cutoff, rel_len_cutoff)
+      passed = Array.new
+      domains.each do |domain|
+        length = 1 + domain.env_to - domain.env_from
+        if (domain.i_e_value <= ie_cutoff) && (length >= (rel_len_cutoff * domain.tlen))
+          passed.push domain
+        end
+      end
+      passed.sort! { |a,b| a.ali_from <=> b.ali_from }
+      s = ''
+      passed.each do |domain|
+        if s.length > 0
+          s << DOMAIN_DELIMITER
+        end
+        s << domain.model
+      end
+      if s.length > 0
+        if @encountered_domain_architectures.has_key? s
+          @encountered_domain_architectures[s] = 1 + @encountered_domain_architectures[s]
+        else
+          @encountered_domain_architectures[s] = 1
+        end
+      end
+    end
+
     # domains_in_query_seq: Array of HmmscanResult
     # target_domain_names: Set of String
     # target_domains: Hash String->TargetDomain
@@ -285,6 +330,8 @@ module Evoruby
       out_domain_architecture_msa,
       out_contactenated_domains_msa,
       target_domain_architecture)
+
+      collect(domains_in_query_seq, IE_CUTOFF_FOR_DA_OVERVIEW, REL_LEN_CUTOFF_FOR_DA_OVERVIEW)
 
       domain_names_in_query_seq = Set.new
       domains_in_query_seq.each do |domain|
