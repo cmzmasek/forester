@@ -528,9 +528,9 @@ module Evoruby
           raise IOError, 'domain architecture is ill formatted: ' + x
         end
         target_domain_name = inds[0]
-        ie_cutoff = inds[1].to_f
-        abs_len_cutoff = inds[2].to_i
-        rel_len_cutoff = inds[3].to_f
+        ie_cutoff = Float(inds[1])
+        abs_len_cutoff = Integer(inds[2])
+        rel_len_cutoff = Float(inds[3])
         if target_domain_hash.has_key? target_domain_name
           target_domain_ary.push target_domain_hash[target_domain_name]
         else
