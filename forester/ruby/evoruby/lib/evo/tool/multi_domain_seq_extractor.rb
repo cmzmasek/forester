@@ -13,9 +13,9 @@ module Evoruby
   class MultiDomainSeqExtractor
 
     PRG_NAME       = "mdsx"
-    PRG_VERSION    = "1.000"
+    PRG_VERSION    = "1.001"
     PRG_DESC       = "Extraction of multi domain sequences from hmmscan output"
-    PRG_DATE       = "20170307"
+    PRG_DATE       = "2017/03/08"
     WWW            = "https://sites.google.com/site/cmzmasek/home/software/forester"
 
     HELP_OPTION_1                      = 'help'
@@ -127,13 +127,17 @@ module Evoruby
       puts
       puts "Usage:"
       puts
-      puts "  " + PRG_NAME + ".rb <da> <hmmscan outputfile> [file containing complete sequences in fasta format]"
+      puts "  " + PRG_NAME + ".rb <target dom architecture> <hmmscan outputfile> [file containing complete sequences in fasta format]"
       puts
-      puts "  options: -"
+      puts "Format for target dom architecture:"
+      puts
+      puts "  domainA=iE-cutoff=abs-len-cutoff=rel-len-cutoff--domainB=..."
       puts
       puts "Examples:"
       puts
-      puts "  " + PRG_NAME + ".rb "
+      puts "  " + PRG_NAME + ".rb BH4=1e-6=0=0.5--Bcl-2=1e-6=0=0.5 Bcl2_hmmscan_#{Constants::PFAM_V_FOR_EX}_10"
+      puts
+      puts "  " + PRG_NAME + ".rb BH4=0.1=20=0--Bcl-2=0.1=50=0 Bcl2_hmmscan_#{Constants::PFAM_V_FOR_EX}_10 Bcl2_ni.fasta"
       puts
       puts
     end

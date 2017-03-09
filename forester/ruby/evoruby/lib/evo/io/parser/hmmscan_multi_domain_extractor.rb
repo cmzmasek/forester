@@ -4,7 +4,11 @@
 # Copyright::    Copyright (C) 2017 Christian M. Zmasek
 # License::      GNU Lesser General Public License (LGPL)
 #
-# Last modified: 2017/02/20
+# Last modified: 2017/03/08
+
+####
+# Import: if multiple copies of same domain, thresholds need to be same!
+####
 
 require 'lib/evo/util/constants'
 require 'lib/evo/msa/msa_factory'
@@ -78,28 +82,7 @@ module Evoruby
       hmmscan_parser = HmmscanParser.new( hmmscan_output )
       results = hmmscan_parser.parse
 
-      ####
-      # Import: if multiple copies of same domain, thresholds need to be same!
-
-      #target_domain_ary.push(TargetDomain.new('DNA_pol_B_exo1', 1e-6, -1, 0.6, 0 ))
-      #target_domain_ary.push(TargetDomain.new('DNA_pol_B', 1e-6, -1, 0.6, 1 ))
-
-      #target_domain_ary.push(TargetDomain.new('Hexokinase_1', 1e-6, -1, 0.9, 0 ))
-      #target_domain_ary.push(TargetDomain.new('Hexokinase_2', 1e-6, -1, 0.9, 1 ))
-      # target_domain_ary.push(TargetDomain.new('Hexokinase_2', 0.1, -1, 0.5, 1 ))
-      # target_domain_ary.push(TargetDomain.new('Hexokinase_1', 0.1, -1, 0.5, 1 ))
-
       target_domain_ary = parse_da target_da
-
-      # target_domain_ary.push(TargetDomain.new('BH4', 1, -1, 0.2, 0 ))
-      # target_domain_ary.push(TargetDomain.new('Bcl-2', 1, -1, 0.2, 1 ))
-      # target_domain_ary.push(TargetDomain.new('Bcl-2', 1, -1, 0.2, 2 ))
-      # target_domain_ary.push(TargetDomain.new('Bcl-2_3', 0.01, -1, 0.5, 2 ))
-
-      #  target_domain_ary.push(TargetDomain.new('Nitrate_red_del', 1000, -1, 0.1, 0 ))
-      #  target_domain_ary.push(TargetDomain.new('Nitrate_red_del', 1000, -1, 0.1, 1 ))
-
-      #target_domain_ary.push(TargetDomain.new('Chordopox_A33R', 1000, -1, 0.1 ))
 
       target_domains = Hash.new
 
@@ -179,13 +162,13 @@ module Evoruby
       @encountered_domain_architectures.each do |k, v|
         log counter.to_s.rjust(2) + ') ' +  v.to_s.rjust(5) + ': ' + k
         counter += 1
-        if counter > 80
+        if counter > 40
           break
         end
       end
 
       log
-      log 'Passing domain architectures containing target domain(s):'
+      log 'Passing domain arrangements of target domain(s):'
       @passsing_domain_architectures = @passsing_domain_architectures.sort{|a, b|a<=>b}.to_h
       passing_da_sum = 0
       @passsing_domain_architectures.each do |da, count|
@@ -193,8 +176,8 @@ module Evoruby
         log count.to_s.rjust(4) + ': ' + da
       end
       log
-      log 'Failing domain architectures containing one or more target domain(s):'
-      @failing_domain_architectures = @failing_domain_architectures .sort{|a, b|a<=>b}.to_h
+      log 'Failing domain arrangements of target domain(s):'
+      @failing_domain_architectures = @failing_domain_architectures.sort{|a, b|a<=>b}.to_h
       failing_da_sum = 0
       @failing_domain_architectures .each do |da, count|
         failing_da_sum += count
@@ -223,8 +206,8 @@ module Evoruby
         raise StandardError, error_msg
       end
 
-      unless @failing_proteins_bc_missing_cutoffs == failing_da_sum
-        error_msg = "this should not have happened: failing seqs not equal to failing da sum"
+      unless @failing_proteins_bc_missing_cutoffs >= failing_da_sum
+        error_msg = "this should not have happened: failing seqs larger than failing da sum"
         raise StandardError, error_msg
       end
 
@@ -337,29 +320,30 @@ module Evoruby
       domains_in_query_seq.each do |domain|
         domain_names_in_query_seq.add(domain.model)
       end
-      if target_domain_names.subset?(domain_names_in_query_seq)
 
-        passed_domains = Array.new
-        passed_domains_counts = Hash.new
+      passed_domains = Array.new
+      passed_domains_counts = Hash.new
+
+      if (domain_names_in_query_seq.length > 0) && (target_domain_names.subset?(domain_names_in_query_seq))
 
         domains_in_query_seq.each do |domain|
           if target_domains.has_key?(domain.model)
             target_domain = target_domains[domain.model]
 
-            if (target_domain.i_e_value != nil) && (target_domain.i_e_value >= 0)
+            if target_domain.i_e_value >= 0
               if domain.i_e_value > target_domain.i_e_value
                 addToFailingDomainData(domain)
                 next
               end
             end
-            if (target_domain.abs_len != nil) && (target_domain.abs_len > 0)
+            if target_domain.abs_len > 0
               length = 1 + domain.env_to - domain.env_from
               if length < target_domain.abs_len
                 addToFailingDomainData(domain)
                 next
               end
             end
-            if (target_domain.rel_len != nil) && (target_domain.rel_len > 0)
+            if target_domain.rel_len > 0
               length = 1 + domain.env_to - domain.env_from
               if length < (target_domain.rel_len * domain.tlen)
                 addToFailingDomainData(domain)
@@ -384,9 +368,14 @@ module Evoruby
         return false
       end # target_domain_names.subset?(domain_names_in_query_seq)
 
+      if passed_domains.length < 1
+        @failing_proteins_bc_missing_cutoffs += 1
+        return false
+      end
+
       passed_domains.sort! { |a,b| a.ali_from <=> b.ali_from }
       # Compare architectures
-      if !compareArchitectures(target_domain_architecture, passed_domains)
+      if !compareArchitectures(target_domain_architecture, passed_domains, false)
         @failing_proteins_bc_missing_cutoffs += 1
         return false
       end
@@ -488,10 +477,10 @@ module Evoruby
           @passsing_domain_architectures[domain_architecture] = 1
         end
       else
-        if ( @failing_domain_architectures .key?(domain_architecture))
-          @failing_domain_architectures [domain_architecture] =  @failing_domain_architectures [domain_architecture] + 1
+        if ( @failing_domain_architectures.key?(domain_architecture))
+          @failing_domain_architectures[domain_architecture] =  @failing_domain_architectures[domain_architecture] + 1
         else
-          @failing_domain_architectures [domain_architecture] = 1
+          @failing_domain_architectures[domain_architecture] = 1
         end
       end
       return pass
