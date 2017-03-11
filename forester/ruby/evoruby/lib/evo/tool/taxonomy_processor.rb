@@ -170,6 +170,8 @@ module Evoruby
       Util.print_message( PRG_NAME, "wrote: " + list_file )
       Util.print_message( PRG_NAME, "wrote: " + output )
       Util.print_message( PRG_NAME, "next steps in standard analysis pipeline: hmmscan followed by hsp.rb")
+      Util.print_message( PRG_NAME, "hmmscan example: hmmscan --max --domtblout P53_hmmscan_#{Constants::PFAM_V_FOR_EX}_10 -E 10 Pfam-A.hmm P53_ni.fasta")
+
       Util.print_message( PRG_NAME, "OK" )
     end
 
@@ -209,6 +211,7 @@ module Evoruby
       puts( "           -" + ANNOTATION_OPTION + "=<s>: to add an annotation to all entries" )
       puts()
       puts( "  [next steps in standard analysis pipeline: hmmscan followed by hsp.rb]")
+      puts( "  [hmmscan example: hmmscan --max --domtblout P53_hmmscan_#{Constants::PFAM_V_FOR_EX}_10 -E 10 Pfam-A.hmm P53_ni.fasta]")
       puts()
       puts( "Example:" )
       puts()

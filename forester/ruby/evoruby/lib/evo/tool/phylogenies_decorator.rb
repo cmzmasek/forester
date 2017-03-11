@@ -29,11 +29,11 @@ module Evoruby
     #DECORATOR_OPTIONS_DOMAINS = '-r=1'
     DECORATOR_OPTIONS_DOMAINS = '-p -t'
     IDS_MAPFILE_SUFFIX        = '.nim'
-    DOMAINS_MAPFILE_SUFFIX    = '_hmmscan_10.dff'
+    DOMAINS_MAPFILE_SUFFIX    = '.dff'
     SLEEP_TIME                = 0.05
     REMOVE_NI                 = true
     IDS_ONLY                  = false #TODO this should be a command line option
-    FIXED_NIM_FILE            = 'all.nim' #TODO this should be a command line option
+    FIXED_NIM_FILE            = nil #'all.nim' #TODO this should be a command line option
     TMP_FILE_1                  = '___PD1___'
     TMP_FILE_2                  = '___PD2___'
     LOG_FILE                  = '00_phylogenies_decorator.log'
@@ -165,8 +165,8 @@ module Evoruby
             Util.fatal_error( PRG_NAME, 'could not get id from ' + phylogeny_file.to_s )
           end
           puts
-          Util.print_message( PRG_NAME, "id: " + phylogeny_id )
-          log << "id: " + phylogeny_id + NL
+          Util.print_message( PRG_NAME, "Id: " + phylogeny_id )
+          log << "Id: " + phylogeny_id + NL
 
           ids_mapfile_name = nil
           domains_mapfile_name = nil
@@ -177,28 +177,35 @@ module Evoruby
           else
             ids_mapfile_name = FIXED_NIM_FILE
           end
-          
+
+          Util.print_message( PRG_NAME, "Ids mapfile: " + ids_mapfile_name )
+          log << "Ids mapfile: " + ids_mapfile_name + NL
+
           unless IDS_ONLY
             domains_mapfile_name = get_file( files, phylogeny_id, DOMAINS_MAPFILE_SUFFIX )
             seqs_file_name = get_seq_file( files, phylogeny_id )
+            Util.print_message( PRG_NAME, "Domains file: " + domains_mapfile_name )
+            log << "Domains file: " + domains_mapfile_name + NL
+            Util.print_message( PRG_NAME, "Seq file: " + seqs_file_name )
+            log << "Seq file: " + seqs_file_name + NL
           end
 
           unless IDS_ONLY
             begin
               Util.check_file_for_readability( domains_mapfile_name )
-            rescue ArgumentError
+            rescue IOError
               Util.fatal_error( PRG_NAME, 'failed to read from [#{domains_mapfile_name}]: ' + $! )
             end
             begin
               Util.check_file_for_readability( seqs_file_name  )
-            rescue ArgumentError
+            rescue IOError
               Util.fatal_error( PRG_NAME, 'failed to read from [#{seqs_file_name }]: ' + $! )
             end
           end
 
           begin
             Util.check_file_for_readability( ids_mapfile_name )
-          rescue ArgumentError
+          rescue IOError
             Util.fatal_error( PRG_NAME, 'failed to read from [#{ids_mapfile_name}]: ' + $! )
           end
 
@@ -267,11 +274,7 @@ module Evoruby
     end
 
     def get_id( phylogeny_file_name )
-      if phylogeny_file_name =~ /^(.+?_.+?)_/
-        return $1
-      elsif phylogeny_file_name =~ /^(.+?)__/
-        return $1
-      elsif phylogeny_file_name =~ /^(.+?)_/
+      if phylogeny_file_name =~ /^(.+?)_/
         return $1
       end
       nil

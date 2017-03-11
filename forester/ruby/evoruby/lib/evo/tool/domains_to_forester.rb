@@ -252,7 +252,7 @@ module Evoruby
 
       puts
       Util.print_message( PRG_NAME, "wrote: " + outfile )
-      Util.print_message( PRG_NAME, "next step in standard analysis pipeline: dsx.rb")
+      Util.print_message( PRG_NAME, "next step in standard analysis pipeline: dsx.rb or mdsx.rb")
       Util.print_message( PRG_NAME, 'OK' )
       puts
 
@@ -269,7 +269,7 @@ module Evoruby
       puts( "  options: -" + E_VALUE_THRESHOLD_OPTION  + "=<f>: E-value threshold, default is no threshold" )
       puts( "           -" + OVERWRITE_IF_SAME_FROM_TO_OPTION  + "    : overwrite domain with same start and end with domain with better E-value" )
       puts
-      puts( "  [next step in standard analysis pipeline: dsx.rb]")
+      puts( "  [next step in standard analysis pipeline: dsx.rb or mdsx.rb]")
       puts()
       puts( "Examples:" )
       puts

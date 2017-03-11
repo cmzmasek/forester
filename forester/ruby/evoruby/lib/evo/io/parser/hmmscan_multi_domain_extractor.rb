@@ -190,7 +190,7 @@ module Evoruby
         log d.to_str
       end
       log
-      log'Failing target domain(s):'
+      log 'Failing target domain(s) (in proteins sequences with target domain architecture):'
       @failing_domains_data = @failing_domains_data.sort{|a, b|a<=>b}.to_h
       @failing_domains_data.each do |n, d|
         log d.to_str
@@ -560,13 +560,14 @@ module Evoruby
       target_das = target_da_str.split '--'
       target_das.each do |x|
         inds = x.split '='
-        unless inds.size == 4
+        unless inds.size == 1 || inds.size == 4
           raise IOError, 'domain architecture is ill formatted: ' + x
         end
+
         target_domain_name = inds[0]
-        ie_cutoff = Float(inds[1])
-        abs_len_cutoff = Integer(inds[2])
-        rel_len_cutoff = Float(inds[3])
+        ie_cutoff = inds.size == 4 ? Float(inds[1]) : IE_CUTOFF_FOR_DA_OVERVIEW
+        abs_len_cutoff = inds.size == 4 ? Integer(inds[2]) : 0
+        rel_len_cutoff = inds.size == 4 ? Float(inds[3]) : REL_LEN_CUTOFF_FOR_DA_OVERVIEW
         if target_domain_hash.has_key? target_domain_name
           target_domain_ary.push target_domain_hash[target_domain_name]
         else

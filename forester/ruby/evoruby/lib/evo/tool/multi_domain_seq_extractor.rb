@@ -13,7 +13,7 @@ module Evoruby
   class MultiDomainSeqExtractor
 
     PRG_NAME       = "mdsx"
-    PRG_VERSION    = "1.001"
+    PRG_VERSION    = "1.002"
     PRG_DESC       = "Extraction of multi domain sequences from hmmscan output"
     PRG_DATE       = "2017/03/08"
     WWW            = "https://sites.google.com/site/cmzmasek/home/software/forester"
