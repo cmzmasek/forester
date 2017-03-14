@@ -4,7 +4,7 @@
 # Copyright::    Copyright (C) 2017 Christian M. Zmasek
 # License::      GNU Lesser General Public License (LGPL)
 #
-# Last modified: 2017/02/07
+# Last modified: 2017/03/13
 
 require 'lib/evo/util/constants'
 require 'lib/evo/util/util'
@@ -494,7 +494,7 @@ module Evoruby
       return cols
     end
 
-    # Split an alignment into n alignemnts of equal size, except last one
+    # Split an alignment into n alignmnts of equal size, except last one
     def split( n, verbose = false )
       if ( n < 2 || n > get_number_of_seqs )
         error_msg = "attempt to split into less than two or more than the number of sequences"
@@ -525,6 +525,35 @@ module Evoruby
         msas.push( msa )
       end
       msas
+    end
+
+    def split_by_os(verbose = false)
+      msa_hash = Hash.new()
+      for i in 0 ... get_number_of_seqs()
+        seq = get_sequence(i)
+        name = seq.get_name()
+        # >sp|Q1HVE7|AN_EBVA8 Shutoff alkaline exonuclease OS=Epstein-Barr virus (strain AG876) GN=BGLF5 PE=3 SV=1
+       # if name =~ /OS=(.+?)\s+[A-Z]{2}=/
+        if name =~ /Organism:(.+?)(\|Protein|$)/
+          os = $1
+          unless  msa_hash.has_key?(os)
+            msa_hash[os] = Msa.new
+          end
+          msa_hash[os].add_sequence seq
+        else
+          error_msg = "sequence name \"" + name +"\" is not in the expected format for splitting by OS"
+          raise IOError, error_msg, caller
+        end
+      end
+      msa_hash = msa_hash.sort{|a, b|a<=>b}.to_h
+      if verbose
+        c = 0
+        msa_hash.each do |os, msa|
+          c += 1
+          puts c.to_s + ': ' + os
+        end
+      end
+      msa_hash
     end
 
     private

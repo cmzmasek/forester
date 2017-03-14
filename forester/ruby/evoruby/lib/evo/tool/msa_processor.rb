@@ -53,6 +53,7 @@ module Evoruby
     REMOVE_SEQS_GAP_RATIO_OPTION       = "rsgr"
     REMOVE_SEQS_NON_GAP_LENGTH_OPTION  = "rsl"
     SPLIT                              = "split"
+    SPLIT_BY_OS                        = "split_by_os"
     LOG_SUFFIX                         = "_msa_pro.log"
     HELP_OPTION_1                      = "help"
     HELP_OPTION_2                      = "h"
@@ -84,6 +85,7 @@ module Evoruby
       @keep_seqs        = false
       @trim             = false
       @split            = -1
+      @split_by_os      = false
       @first            = -1
       @last             = -1
     end
@@ -137,6 +139,7 @@ module Evoruby
       allowed_opts.push( REMOVE_SEQS_GAP_RATIO_OPTION )
       allowed_opts.push( REMOVE_SEQS_NON_GAP_LENGTH_OPTION )
       allowed_opts.push( SPLIT )
+      allowed_opts.push( SPLIT_BY_OS )
       allowed_opts.push( REM_RED_OPTION )
       allowed_opts.push( KEEP_MATCHING_SEQUENCES_OPTION )
       allowed_opts.push( REMOVE_MATCHING_SEQUENCES_OPTION )
@@ -263,6 +266,10 @@ module Evoruby
       if ( @rem_red )
         puts( "Remove redundant sequences: true" )
         log << "Remove redundant sequences: true" + ld
+      end
+      if ( @split_by_os )
+        puts( "Split by OS      : true"  )
+        log << "Split            : true" + ld
       end
       if ( @split > 0 )
         puts( "Split            : " + @split.to_s )
@@ -420,7 +427,44 @@ module Evoruby
           msa = sort( msa )
         end
 
-        if ( @split > 0 )
+        if ( @split_by_os )
+          begin
+            msa_hash = msa.split_by_os(true)
+            io = MsaIO.new()
+            w = MsaWriter
+            if ( @pi_output )
+              w = PhylipSequentialWriter.new()
+              w.clean( @clean )
+              w.set_max_name_length( @name_length )
+            elsif( @fasta_output )
+              w = FastaWriter.new()
+              w.set_line_width( @width )
+              if ( @rg )
+                w.remove_gap_chars( true )
+                Util.print_warning_message( PRG_NAME, "removing gap character, the output is likely to become unaligned" )
+                log << "removing gap character, the output is likely to become unaligned" + ld
+              end
+              w.clean( @clean )
+              if ( @name_length_set )
+                w.set_max_name_length( @name_length )
+              end
+            elsif( @nexus_output )
+              w = NexusWriter.new()
+              w.clean( @clean )
+              w.set_max_name_length( @name_length )
+            end
+            msa_hash.each do |os, msa|
+              my_os = os.gsub(' ', '_').gsub('/', '_').gsub('(', '_').gsub(')', '_')
+              io.write_to_file( msa, output + '_' + my_os, w )
+            end
+
+            Util.print_message( PRG_NAME, "wrote " + msa_hash.length.to_s + " files"  )
+            log << "wrote " + msa_hash.length.to_s + " files" + ld
+          rescue Exception => e
+            Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
+          end
+          
+        elsif ( @split > 0 )
           begin
             msas = msa.split( @split, true )
             io = MsaIO.new()
@@ -456,13 +500,12 @@ module Evoruby
           rescue Exception => e
             Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
           end
-
         end
       rescue Exception => e
         Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
       end
 
-      if ( @split <= 0 )
+      if (@split <= 0) && (!@split_by_os)
 
         unless ( @rg )
           if ( msa.is_aligned() )
@@ -681,6 +724,7 @@ module Evoruby
     def set_split( s )
       if ( s > 0 )
         @split            = s
+        @split_by_os      = false
         @clean            = false  # phylip only
         @rgc              = false
         @rgoc             = false
@@ -695,6 +739,24 @@ module Evoruby
         @first            = -1
         @last             = -1
       end
+    end
+
+    def set_split_by_os()
+      @split            = -1
+      @split_by_os      = true
+      @clean            = false  # phylip only
+      @rgc              = false
+      @rgoc             = false
+      @rg               = false  # fasta only
+      @rgr              = -1
+      @rsgr             = -1
+      @rsl              = -1
+      @seqs_name_file   = nil
+      @remove_seqs      = false
+      @keep_seqs        = false
+      @trim             = false
+      @first            = -1
+      @last             = -1
     end
 
     def analyze_command_line( cla )
@@ -817,14 +879,19 @@ module Evoruby
           Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
         end
       end
-      if ( cla.is_option_set?( SPLIT ) )
+      if cla.is_option_set?( SPLIT_BY_OS )
+        begin
+          set_split_by_os()
+        rescue ArgumentError => e
+          Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
+        end
+      elsif ( cla.is_option_set?( SPLIT ) )
         begin
           s = cla.get_option_value_as_int( SPLIT )
           set_split( s )
         rescue ArgumentError => e
           Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
         end
-
       end
       if ( cla.is_option_set?( REMOVE_MATCHING_SEQUENCES_OPTION ) )
         begin
