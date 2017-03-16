@@ -84,7 +84,12 @@ import org.forester.util.TaxonomyUtil;
 public final class AptxUtil {
 
     public static enum GraphicsExportType {
-        BMP( "bmp" ), GIF( "gif" ), JPG( "jpg" ), PDF( "pdf" ), PNG( "png" ), TIFF( "tif" );
+                                           BMP( "bmp" ),
+                                           GIF( "gif" ),
+                                           JPG( "jpg" ),
+                                           PDF( "pdf" ),
+                                           PNG( "png" ),
+                                           TIFF( "tif" );
 
         private final String _suffix;
 
@@ -180,11 +185,27 @@ public final class AptxUtil {
         }
         return false;
     }
-    
+
+    final static public boolean isHasAtLeast50PercentBranchLengthLargerThanZero( final Phylogeny phy ) {
+        final PhylogenyNodeIterator it = phy.iteratorPostorder();
+        int positive = 0;
+        int total = 0;
+        while ( it.hasNext() ) {
+            if ( it.next().getDistanceToParent() > 0.0 ) {
+                ++positive;
+            }
+            ++total;
+        }
+        if ( total == 0 ) {
+            return false;
+        }
+        return (((( double ) positive) / total) >= 0.5 );
+    }
+
     final static public boolean isHasNoBranchLengthSmallerThanZero( final Phylogeny phy ) {
         final PhylogenyNodeIterator it = phy.iteratorPostorder();
         while ( it.hasNext() ) {
-            final PhylogenyNode n = it.next(); 
+            final PhylogenyNode n = it.next();
             if ( n.getDistanceToParent() < 0.0 && !n.isRoot() ) {
                 return false;
             }
@@ -242,40 +263,37 @@ public final class AptxUtil {
         return false;
     }
 
-    final public static void launchWebBrowser( final URI uri,
-                                             final String frame_name ) throws IOException {
-       
-            // This requires Java 1.6:
-            // =======================
-            // boolean no_desktop = false;
-            // try {
-            // if ( Desktop.isDesktopSupported() ) {
-            // System.out.println( "desktop supported" );
-            // final Desktop dt = Desktop.getDesktop();
-            // dt.browse( uri );
-            // }
-            // else {
-            // no_desktop = true;
-            // }
-            // }
-            // catch ( final Exception ex ) {
-            // ex.printStackTrace();
-            // no_desktop = true;
-            // }
-            // catch ( final Error er ) {
-            // er.printStackTrace();
-            // no_desktop = true;
-            // }
-            // if ( no_desktop ) {
-            // System.out.println( "desktop not supported" );
-            try {
-                openUrlInWebBrowser( uri.toString() );
-            }
-            catch ( final Exception e ) {
-                throw new IOException( e );
-            }
-            // }
-        
+    final public static void launchWebBrowser( final URI uri, final String frame_name ) throws IOException {
+        // This requires Java 1.6:
+        // =======================
+        // boolean no_desktop = false;
+        // try {
+        // if ( Desktop.isDesktopSupported() ) {
+        // System.out.println( "desktop supported" );
+        // final Desktop dt = Desktop.getDesktop();
+        // dt.browse( uri );
+        // }
+        // else {
+        // no_desktop = true;
+        // }
+        // }
+        // catch ( final Exception ex ) {
+        // ex.printStackTrace();
+        // no_desktop = true;
+        // }
+        // catch ( final Error er ) {
+        // er.printStackTrace();
+        // no_desktop = true;
+        // }
+        // if ( no_desktop ) {
+        // System.out.println( "desktop not supported" );
+        try {
+            openUrlInWebBrowser( uri.toString() );
+        }
+        catch ( final Exception e ) {
+            throw new IOException( e );
+        }
+        // }
     }
 
     public static Set<Taxonomy> obtainAllDistinctTaxonomies( final PhylogenyNode node ) {
@@ -299,7 +317,7 @@ public final class AptxUtil {
                                                             final boolean internal_numbers_are_confidences,
                                                             final TAXONOMY_EXTRACTION taxonomy_extraction,
                                                             final boolean midpoint_reroot )
-                                                                    throws FileNotFoundException, IOException {
+            throws FileNotFoundException, IOException {
         final PhylogenyParser parser;
         boolean nhx_or_nexus = false;
         if ( url.getHost().toLowerCase().indexOf( "tolweb" ) >= 0 ) {
@@ -350,8 +368,10 @@ public final class AptxUtil {
 
     final public static void showErrorMessage( final Component parent, final String error_msg ) {
         printAppletMessage( AptxConstants.PRG_NAME, error_msg );
-        JOptionPane.showMessageDialog( parent, error_msg, "[" + AptxConstants.PRG_NAME + " " + AptxConstants.VERSION
-                                       + "] Error", JOptionPane.ERROR_MESSAGE );
+        JOptionPane.showMessageDialog( parent,
+                                       error_msg,
+                                       "[" + AptxConstants.PRG_NAME + " " + AptxConstants.VERSION + "] Error",
+                                       JOptionPane.ERROR_MESSAGE );
     }
 
     public static void writePhylogenyToGraphicsFile( final File intree,
@@ -359,7 +379,8 @@ public final class AptxUtil {
                                                      final int width,
                                                      final int height,
                                                      final GraphicsExportType type,
-                                                     final Configuration config ) throws IOException {
+                                                     final Configuration config )
+            throws IOException {
         final PhylogenyParser parser = ParserUtils.createParserDependingOnFileType( intree, true );
         Phylogeny[] phys = null;
         phys = PhylogenyMethods.readPhylogenies( parser, intree );
@@ -371,12 +392,18 @@ public final class AptxUtil {
                                                      final int width,
                                                      final int height,
                                                      final GraphicsExportType type,
-                                                     final Configuration config ) throws IOException {
+                                                     final Configuration config )
+            throws IOException {
         final Phylogeny[] phys = new Phylogeny[ 1 ];
         phys[ 0 ] = phy;
         final MainFrameApplication mf = MainFrameApplication.createInstance( phys, config );
-        AptxUtil.writePhylogenyToGraphicsFileNonInteractive( outfile, width, height, mf.getMainPanel()
-                                                             .getCurrentTreePanel(), mf.getMainPanel().getControlPanel(), type, mf.getOptions() );
+        AptxUtil.writePhylogenyToGraphicsFileNonInteractive( outfile,
+                                                             width,
+                                                             height,
+                                                             mf.getMainPanel().getCurrentTreePanel(),
+                                                             mf.getMainPanel().getControlPanel(),
+                                                             type,
+                                                             mf.getOptions() );
         mf.end();
     }
 
@@ -386,7 +413,8 @@ public final class AptxUtil {
                                                                          final TreePanel tree_panel,
                                                                          final ControlPanel ac,
                                                                          final GraphicsExportType type,
-                                                                         final Options options ) throws IOException {
+                                                                         final Options options )
+            throws IOException {
         tree_panel.calcParametersForPainting( width, height );
         tree_panel.resetPreferredSize();
         tree_panel.repaint();
@@ -429,9 +457,9 @@ public final class AptxUtil {
         return c;
     }
 
-    final private static void openUrlInWebBrowser( final String url ) throws IOException, ClassNotFoundException,
-    SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException,
-    InvocationTargetException, InterruptedException {
+    final private static void openUrlInWebBrowser( final String url )
+            throws IOException, ClassNotFoundException, SecurityException, NoSuchMethodException,
+            IllegalArgumentException, IllegalAccessException, InvocationTargetException, InterruptedException {
         final String os = System.getProperty( "os.name" );
         final Runtime runtime = Runtime.getRuntime();
         if ( os.toLowerCase().startsWith( "win" ) ) {
@@ -465,9 +493,13 @@ public final class AptxUtil {
                                             final Configuration configuration,
                                             final MainPanel main_panel ) {
         if ( phys.length > AptxConstants.MAX_TREES_TO_LOAD ) {
-            JOptionPane.showMessageDialog( main_panel, "Attempt to load " + phys.length
-                                           + " phylogenies,\ngoing to load only the first " + AptxConstants.MAX_TREES_TO_LOAD, AptxConstants.PRG_NAME
-                                           + " more than " + AptxConstants.MAX_TREES_TO_LOAD + " phylogenies", JOptionPane.WARNING_MESSAGE );
+            JOptionPane.showMessageDialog( main_panel,
+                                           "Attempt to load " + phys.length
+                                                   + " phylogenies,\ngoing to load only the first "
+                                                   + AptxConstants.MAX_TREES_TO_LOAD,
+                                           AptxConstants.PRG_NAME + " more than " + AptxConstants.MAX_TREES_TO_LOAD
+                                                   + " phylogenies",
+                                           JOptionPane.WARNING_MESSAGE );
         }
         int i = 1;
         for( final Phylogeny phy : phys ) {
@@ -750,14 +782,14 @@ public final class AptxUtil {
         }
         return str_array;
     }
-    
-    final static String[] getAllPossibleRanks(final Map<String, Integer> present_ranks) {
+
+    final static String[] getAllPossibleRanks( final Map<String, Integer> present_ranks ) {
         final String[] str_array = new String[ TaxonomyUtil.TAXONOMY_RANKS_LIST.size() - 2 ];
         int i = 0;
         for( final String e : TaxonomyUtil.TAXONOMY_RANKS_LIST ) {
             if ( !e.equals( TaxonomyUtil.UNKNOWN ) && !e.equals( TaxonomyUtil.OTHER ) ) {
                 if ( present_ranks != null && present_ranks.containsKey( e ) ) {
-                    str_array[ i++ ] = e + " (" +  present_ranks.get(e) + ")";
+                    str_array[ i++ ] = e + " (" + present_ranks.get( e ) + ")";
                 }
                 else {
                     str_array[ i++ ] = e;
@@ -793,80 +825,76 @@ public final class AptxUtil {
         }
         return false;
     }
-    final static void lookAtRealBranchLengthsForAptxControlSettings( final Phylogeny t,
-                                                                     final ControlPanel cp ) {
+
+    final static void lookAtRealBranchLengthsForAptxControlSettings( final Phylogeny t, final ControlPanel cp ) {
         if ( ( t != null ) && !t.isEmpty() ) {
             final boolean has_bl = AptxUtil.isHasAtLeastOneBranchLengthLargerThanZero( t );
-             
             if ( !has_bl ) {
                 cp.setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.CLADOGRAM );
                 cp.setDrawPhylogramEnabled( false );
             }
             else {
                 final boolean has_all_bl = AptxUtil.isHasNoBranchLengthSmallerThanZero( t );
-                if (has_all_bl) {
+                if ( has_all_bl ) {
                     cp.setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM );
                 }
-               
                 if ( cp.getDisplayAsUnalignedPhylogramRb() != null ) {
                     cp.setDrawPhylogramEnabled( true );
                 }
             }
         }
     }
+
     final static void lookAtSomeTreePropertiesForAptxControlSettings( final Phylogeny t,
-                                                                      final ControlPanel atv_control,
+                                                                      final ControlPanel cp,
                                                                       final Configuration configuration ) {
         if ( ( t != null ) && !t.isEmpty() ) {
             final boolean has_bl = AptxUtil.isHasAtLeastOneBranchLengthLargerThanZero( t );
             if ( !has_bl ) {
-                atv_control.setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.CLADOGRAM );
-                atv_control.setDrawPhylogramEnabled( false );
+                cp.setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.CLADOGRAM );
+                cp.setDrawPhylogramEnabled( false );
             }
             if ( t.getFirstExternalNode().getBranchData().getBranchColor() != null
-                    && atv_control.getUseVisualStylesCb() != null ) {
-                atv_control.getUseVisualStylesCb().setSelected( true );
+                    && cp.getUseVisualStylesCb() != null ) {
+                cp.getUseVisualStylesCb().setSelected( true );
             }
             if ( t.getFirstExternalNode().getBranchData().getBranchWidth() != null
-                    && t.getFirstExternalNode().getBranchData().getBranchWidth().getValue()
-                    != BranchWidth.BRANCH_WIDTH_DEFAULT_VALUE
-                    && atv_control.getUseBranchWidthsCb() != null ) {
-                atv_control.getUseBranchWidthsCb().setSelected( true );
+                    && t.getFirstExternalNode().getBranchData().getBranchWidth()
+                            .getValue() != BranchWidth.BRANCH_WIDTH_DEFAULT_VALUE
+                    && cp.getUseBranchWidthsCb() != null ) {
+                cp.getUseBranchWidthsCb().setSelected( true );
             }
-            
-            
             if ( configuration.doGuessCheckOption( Configuration.display_as_phylogram ) ) {
-                if ( atv_control.getDisplayAsAlignedPhylogramRb() != null ) {
+                if ( cp.getDisplayAsAlignedPhylogramRb() != null ) {
                     if ( has_bl ) {
-                        final boolean has_all_bl = AptxUtil.isHasNoBranchLengthSmallerThanZero( t );
-                        if (has_all_bl) {
-                            atv_control.setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM );
+                        final boolean has_mostly_bl = AptxUtil.isHasAtLeast50PercentBranchLengthLargerThanZero( t );
+                        if ( has_mostly_bl ) {
+                            cp.setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM );
                         }
-                       
-                        atv_control.setDrawPhylogramEnabled( true );
+                        cp.setDrawPhylogramEnabled( true );
                     }
                     else {
-                        atv_control.setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.CLADOGRAM );
+                        cp.setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.CLADOGRAM );
                     }
                 }
             }
             if ( configuration.doGuessCheckOption( Configuration.write_confidence_values ) ) {
-                if ( atv_control.getWriteConfidenceCb() != null ) {
+                if ( cp.getWriteConfidenceCb() != null ) {
                     if ( AptxUtil.isHasAtLeastOneBranchWithSupportValues( t ) ) {
-                        atv_control.setCheckbox( Configuration.write_confidence_values, true );
+                        cp.setCheckbox( Configuration.write_confidence_values, true );
                     }
                     else {
-                        atv_control.setCheckbox( Configuration.write_confidence_values, false );
+                        cp.setCheckbox( Configuration.write_confidence_values, false );
                     }
                 }
             }
             if ( configuration.doGuessCheckOption( Configuration.write_events ) ) {
-                if ( atv_control.getShowEventsCb() != null ) {
+                if ( cp.getShowEventsCb() != null ) {
                     if ( AptxUtil.isHasAtLeastNodeWithEvent( t ) ) {
-                        atv_control.setCheckbox( Configuration.write_events, true );
+                        cp.setCheckbox( Configuration.write_events, true );
                     }
                     else {
-                        atv_control.setCheckbox( Configuration.write_events, false );
+                        cp.setCheckbox( Configuration.write_events, false );
                     }
                 }
             }
@@ -875,7 +903,7 @@ public final class AptxUtil {
 
     final static void openWebsite( final String url ) throws IOException {
         try {
-            AptxUtil.launchWebBrowser( new URI( url ),  AptxConstants.PRG_NAME );
+            AptxUtil.launchWebBrowser( new URI( url ), AptxConstants.PRG_NAME );
         }
         catch ( final Exception e ) {
             throw new IOException( e );
@@ -891,8 +919,9 @@ public final class AptxUtil {
         JOptionPane.showMessageDialog( null,
                                        "Java memory allocation might be too small, try \"-Xmx2048m\" java command line option"
                                                + "\n\nError: " + e.getLocalizedMessage(),
-                                               "Out of Memory Error [" + AptxConstants.PRG_NAME + " " + AptxConstants.VERSION + "]",
-                                               JOptionPane.ERROR_MESSAGE );
+                                       "Out of Memory Error [" + AptxConstants.PRG_NAME + " " + AptxConstants.VERSION
+                                               + "]",
+                                       JOptionPane.ERROR_MESSAGE );
         System.exit( -1 );
     }
 
@@ -920,13 +949,13 @@ public final class AptxUtil {
         for( final StackTraceElement s : e.getStackTrace() ) {
             sb.append( s + "\n" );
         }
-        JOptionPane
-        .showMessageDialog( null,
-                            "An unexpected (possibly severe) error has occured - terminating. \nPlease contact: "
-                                    + AptxConstants.AUTHOR_EMAIL + " \nError: " + e.getLocalizedMessage() + "\n"
-                                    + sb,
-                                    "Unexpected Severe Error [" + AptxConstants.PRG_NAME + " " + AptxConstants.VERSION + "]",
-                                    JOptionPane.ERROR_MESSAGE );
+        JOptionPane.showMessageDialog( null,
+                                       "An unexpected (possibly severe) error has occured - terminating. \nPlease contact: "
+                                               + AptxConstants.AUTHOR_EMAIL + " \nError: " + e.getLocalizedMessage()
+                                               + "\n" + sb,
+                                       "Unexpected Severe Error [" + AptxConstants.PRG_NAME + " "
+                                               + AptxConstants.VERSION + "]",
+                                       JOptionPane.ERROR_MESSAGE );
         System.exit( -1 );
     }
 
@@ -942,8 +971,8 @@ public final class AptxUtil {
                                        "An unexpected exception has occured. \nPlease contact: "
                                                + AptxConstants.AUTHOR_EMAIL + " \nException: " + e.getLocalizedMessage()
                                                + "\n" + sb,
-                                               "Unexpected Exception [" + AptxConstants.PRG_NAME + AptxConstants.VERSION + "]",
-                                               JOptionPane.ERROR_MESSAGE );
+                                       "Unexpected Exception [" + AptxConstants.PRG_NAME + AptxConstants.VERSION + "]",
+                                       JOptionPane.ERROR_MESSAGE );
     }
 
     final static String writePhylogenyToGraphicsByteArrayOutputStream( final ByteArrayOutputStream baos,
@@ -952,8 +981,8 @@ public final class AptxUtil {
                                                                        final TreePanel tree_panel,
                                                                        final ControlPanel ac,
                                                                        final GraphicsExportType type,
-                                                                       final Options options ) throws IOException {
-        
+                                                                       final Options options )
+            throws IOException {
         final RenderingHints rendering_hints = new RenderingHints( RenderingHints.KEY_RENDERING,
                                                                    RenderingHints.VALUE_RENDER_QUALITY );
         rendering_hints.put( RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY );
@@ -970,11 +999,11 @@ public final class AptxUtil {
             return "";
         }
         Rectangle visible = null;
-//        if ( !options.isGraphicsExportUsingActualSize() ) {
-//            width = options.getPrintSizeX();
-//            height = options.getPrintSizeY();
-//        }
-       /* else*/ if ( options.isGraphicsExportVisibleOnly() ) {
+        //        if ( !options.isGraphicsExportUsingActualSize() ) {
+        //            width = options.getPrintSizeX();
+        //            height = options.getPrintSizeY();
+        //        }
+        /* else*/ if ( options.isGraphicsExportVisibleOnly() ) {
             visible = tree_panel.getVisibleRect();
             width = visible.width;
             height = visible.height;
@@ -1010,8 +1039,8 @@ public final class AptxUtil {
                                                       final TreePanel tree_panel,
                                                       final ControlPanel ac,
                                                       final GraphicsExportType type,
-                                                      final Options options ) throws IOException {
-       
+                                                      final Options options )
+            throws IOException {
         final RenderingHints rendering_hints = new RenderingHints( RenderingHints.KEY_RENDERING,
                                                                    RenderingHints.VALUE_RENDER_QUALITY );
         rendering_hints.put( RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY );
@@ -1032,10 +1061,10 @@ public final class AptxUtil {
             throw new IOException( "\"" + file_name + "\" is a directory" );
         }
         Rectangle visible = null;
-//        if ( !options.isGraphicsExportUsingActualSize() ) {
-//            width = options.getPrintSizeX();
-//            height = options.getPrintSizeY();
-//        }
+        //        if ( !options.isGraphicsExportUsingActualSize() ) {
+        //            width = options.getPrintSizeX();
+        //            height = options.getPrintSizeY();
+        //        }
         /*else*/ if ( options.isGraphicsExportVisibleOnly() ) {
             visible = tree_panel.getVisibleRect();
             width = visible.width;
@@ -1100,16 +1129,15 @@ public final class AptxUtil {
         writer.write( null, iio_image, image_write_param );
     }
 
-    final static Map<String, Integer> getRankCounts(final Phylogeny tree) {
+    final static Map<String, Integer> getRankCounts( final Phylogeny tree ) {
         final Map<String, Integer> present_ranks = new HashMap<String, Integer>();
-    
         if ( ( tree != null ) && !tree.isEmpty() ) {
             for( final PhylogenyNodeIterator it = tree.iteratorPostorder(); it.hasNext(); ) {
                 final PhylogenyNode n = it.next();
                 if ( !n.isExternal() && n.getNodeData().isHasTaxonomy()
                         && !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getRank() ) && !n.isRoot() ) {
                     final String rank = n.getNodeData().getTaxonomy().getRank().toLowerCase();
-                    if (present_ranks.containsKey( rank ) ) {
+                    if ( present_ranks.containsKey( rank ) ) {
                         present_ranks.put( rank, present_ranks.get( rank ) + 1 );
                     }
                     else {

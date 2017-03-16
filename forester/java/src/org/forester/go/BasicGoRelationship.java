@@ -55,6 +55,12 @@ public class BasicGoRelationship implements GoRelationship {
         else if ( type.toLowerCase().equals( OCCURS_IN_STR ) ) {
             _type = Type.OCCURS_IN;
         }
+        else if ( type.toLowerCase().equals( HAPPENS_DURING_STR ) ) {
+            _type = Type.HAPPENS_DURING;
+        }
+        else if ( type.toLowerCase().equals(ENDS_DURING_STR ) ) {
+            _type = Type.ENDS_DURING;
+        }
         else {
             throw new IllegalArgumentException( "unknown GO relationship type: " + type );
         }

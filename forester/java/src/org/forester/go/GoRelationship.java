@@ -33,12 +33,14 @@ public interface GoRelationship extends Comparable<GoRelationship> {
     public static final String POSITIVELY_REGULATES_STR = "positively_regulates";
     public static final String HAS_PART_STR             = "has_part";
     public static final String OCCURS_IN_STR            = "occurs_in";
+    public static final String HAPPENS_DURING_STR       = "happens_during";
+    public static final String ENDS_DURING_STR       = "ends_during";
 
     public GoId getGoId();
 
     public Type getType();
 
     public static enum Type {
-        PART_OF, REGULATES, NEGATIVELY_REGULATES, POSITIVELY_REGULATES, HAS_PART, OCCURS_IN;
+        PART_OF, REGULATES, NEGATIVELY_REGULATES, POSITIVELY_REGULATES, HAS_PART, OCCURS_IN, HAPPENS_DURING, ENDS_DURING;
     }
 }

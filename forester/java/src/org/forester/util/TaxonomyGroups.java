@@ -1,11 +1,12 @@
 
 package org.forester.util;
 
-final class TaxonomyGroups {
+public final class TaxonomyGroups {
 
     static final String ALVEOLATA                        = "alveolata";
     static final String AMOEBOZOA                        = "amoebozoa";
     static final String APUSOZOA                         = "apusozoa";
+    static final String VIRUSES                          = "viruses";
     static final String ARCHAEA                          = "archaea";
     static final String BACTERIA                         = "bacteria";
     static final String CHLOROPHYTA                      = "chlorophyta";
@@ -28,4 +29,8 @@ final class TaxonomyGroups {
     static final String RHIZARIA                         = "rhizaria";
     static final String RHODOPHYTA                       = "rhodophyta";
     static final String STRAMENOPILES                    = "stramenopiles";
+    static final String ALPHAHERPESVIRINAE               = "alphaherpesvirinae";
+    static final String BETAHERPESVIRINAE                = "betaherpesvirinae";
+    static final String GAMMAHERPESVIRINAE               = "gammaherpesvirinae";
+    public static final String OTHER                             = "other";
 }

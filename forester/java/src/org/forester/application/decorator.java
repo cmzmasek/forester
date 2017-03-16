@@ -307,7 +307,7 @@ public final class decorator {
                         ForesterUtil.fatalError( decorator.PRG_NAME, "mapping table contains empty key" );
                     }
                     if ( ForesterUtil.isEmpty( e.getValue() ) ) {
-                        ForesterUtil.fatalError( decorator.PRG_NAME, "mapping table contains empty value" );
+                        ForesterUtil.fatalError( decorator.PRG_NAME, "mapping table contains empty value for key \"" + e.getKey() + "\"");
                     }
                     if ( verbose ) {
                         System.out.println( e.getKey() + " => " + e.getValue() );

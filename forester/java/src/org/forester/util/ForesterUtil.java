@@ -865,6 +865,21 @@ public final class ForesterUtil {
             else if ( tax_group.equals( TaxonomyGroups.BACTERIA ) ) {
                 return TaxonomyColors.BACTERIA_COLOR;
             }
+            else if ( tax_group.equals( TaxonomyGroups.VIRUSES ) ) {
+                return TaxonomyColors.VIRUSES_COLOR;
+            }
+            else if ( tax_group.equals( TaxonomyGroups.ALPHAHERPESVIRINAE ) ) {
+                return TaxonomyColors.ALPHAHERPESVIRINAE_COLOR;
+            }
+            else if ( tax_group.equals( TaxonomyGroups.BETAHERPESVIRINAE ) ) {
+                return TaxonomyColors.BETAHERPESVIRINAE_COLOR;
+            }
+            else if ( tax_group.equals( TaxonomyGroups.GAMMAHERPESVIRINAE ) ) {
+                return TaxonomyColors.GAMMAHERPESVIRINAE_COLOR;
+            }
+            else if ( tax_group.equals( TaxonomyGroups.OTHER ) ) {
+                return TaxonomyColors.OTHER_COLOR;
+            }
         }
         return null;
     }
@@ -944,6 +959,21 @@ public final class ForesterUtil {
         }
         else if ( tax.equalsIgnoreCase( TaxonomyGroups.BACTERIA ) ) {
             return TaxonomyGroups.BACTERIA;
+        }
+        else if ( tax.equalsIgnoreCase( TaxonomyGroups.BACTERIA ) ) {
+            return TaxonomyGroups.BACTERIA;
+        }
+        else if ( tax.equalsIgnoreCase( TaxonomyGroups.VIRUSES ) ) {
+            return TaxonomyGroups.VIRUSES;
+        }
+        else if ( tax.equalsIgnoreCase( TaxonomyGroups.ALPHAHERPESVIRINAE ) ) {
+            return TaxonomyGroups.ALPHAHERPESVIRINAE;
+        }
+        else if ( tax.equalsIgnoreCase( TaxonomyGroups.BETAHERPESVIRINAE ) ) {
+            return TaxonomyGroups.BETAHERPESVIRINAE ;
+        }
+        else if ( tax.equalsIgnoreCase( TaxonomyGroups.GAMMAHERPESVIRINAE ) ) {
+            return TaxonomyGroups.GAMMAHERPESVIRINAE;
         }
         return null;
     }

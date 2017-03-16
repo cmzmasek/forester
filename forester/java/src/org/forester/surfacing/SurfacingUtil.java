@@ -96,6 +96,7 @@ import org.forester.util.CommandLineArguments;
 import org.forester.util.DescriptiveStatistics;
 import org.forester.util.ForesterUtil;
 import org.forester.util.TaxonomyColors;
+import org.forester.util.TaxonomyGroups;
 
 public final class SurfacingUtil {
 
@@ -1414,7 +1415,7 @@ public final class SurfacingUtil {
                     n = n.getParent();
                 }
                 if ( ForesterUtil.isEmpty( group ) ) {
-                    throw new IllegalArgumentException( "no group found for taxonomy code \"" + tax_code + "\"" );
+                    group = TaxonomyGroups.OTHER;
                 }
                 _TAXCODE_TAXGROUP_MAP.put( tax_code, group );
             }

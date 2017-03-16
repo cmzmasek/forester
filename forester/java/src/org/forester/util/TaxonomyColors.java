@@ -29,4 +29,9 @@ public final class TaxonomyColors {
     public final static Color EXCAVATA_COLOR                         = new Color( 204, 204, 0 );
     public final static Color ARCHAEA_COLOR                          = new Color( 160, 160, 160 );
     public final static Color BACTERIA_COLOR                         = new Color( 64, 64, 64 );
+    public static final Color VIRUSES_COLOR                          = new Color( 32, 32, 32 );
+    public static final Color OTHER_COLOR                            = new Color( 16, 16, 16 );
+    public static final Color ALPHAHERPESVIRINAE_COLOR               = new Color( 46, 139, 87 );
+    public static final Color BETAHERPESVIRINAE_COLOR                = new Color( 205, 92, 92 );
+    public static final Color GAMMAHERPESVIRINAE_COLOR               = new Color( 72, 61, 139 );
 }
