@@ -26,6 +26,7 @@
 package org.forester.evoinference.matrix.character;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.List;
@@ -313,6 +314,19 @@ public class BasicCharacterStateMatrix<S> implements CharacterStateMatrix<S> {
         }
         setState( _identifier_index_map.get( identifier ), _character_index_map.get( character ), state );
     }
+    
+    
+    public String toString() {
+        StringWriter w = new StringWriter();
+        try {
+            toForester( w );
+        }
+        catch ( IOException e ) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return w.toString();
+    }
 
     private void toForester( final Writer writer ) throws IOException {
         final int longest = getLengthOfLongestState() + 5;
@@ -397,10 +411,7 @@ public class BasicCharacterStateMatrix<S> implements CharacterStateMatrix<S> {
         }
     }
 
-    //TODO
-    //to format for microarray-style clustering
-    // states are ints in this case
-    //TODO
+   
     @Override
     public void toWriter( final Writer writer ) throws IOException {
         toForester( writer );

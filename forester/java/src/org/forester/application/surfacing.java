@@ -71,6 +71,7 @@ import org.forester.surfacing.DomainSimilarityCalculator.Detailedness;
 import org.forester.surfacing.GenomeWideCombinableDomains;
 import org.forester.surfacing.GenomeWideCombinableDomains.GenomeWideCombinableDomainsSortOrder;
 import org.forester.surfacing.MappingResults;
+import org.forester.surfacing.MinimalDomainomeCalculator;
 import org.forester.surfacing.PairwiseDomainSimilarityCalculator;
 import org.forester.surfacing.PairwiseGenomeComparator;
 import org.forester.surfacing.ProteinCountsBasedPairwiseDomainSimilarityCalculator;
@@ -1373,9 +1374,9 @@ public class surfacing {
                 }
             }
         }
-        SortedMap<Species, List<Protein>> protein_lists_per_species = null; //This will only be created if neede.
+        SortedMap<Species, List<Protein>> protein_lists_per_species = null; //This will only be created if needed.
         boolean need_protein_lists_per_species = false;
-        if ( ( plus_minus_analysis_high_copy_base_species.size() > 0 ) || output_protein_lists_for_all_domains ) {
+        if ( ( plus_minus_analysis_high_copy_base_species.size() > 0 ) || output_protein_lists_for_all_domains || true ) { //TODO
             need_protein_lists_per_species = true;
         }
         if ( need_protein_lists_per_species ) {
@@ -1713,6 +1714,10 @@ public class surfacing {
         ForesterUtil.programMessage( PRG_NAME, "Wrote domain promiscuities to: "
                 + per_genome_domain_promiscuity_statistics_file );
         //
+        if (true) { //TODO
+             MinimalDomainomeCalculator.calc( intree_0_orig, protein_lists_per_species );
+        }
+        
         if ( da_analysis ) {
             SurfacingUtil.performDomainArchitectureAnalysis( distinct_domain_architecutures_per_genome,
                                                              distinct_domain_architecuture_counts,
