@@ -71,4 +71,7 @@ public interface Protein {
     public Species getSpecies();
 
     public List<Domain> getDomainsSortedByPosition();
+
+    public String toDomainArchitectureString( final String separator, final double ie_cutoff );
+    
 }

@@ -248,10 +248,7 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
         }
     }
 
-    final public List<PhylogenyNode> getAllDescendants() {
-        return _descendants;
-    }
-
+ 
     /**
      * Returns a List containing references to all external children of this
      * PhylogenyNode.
@@ -641,10 +638,7 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
      * @return true if this PhylogenyNode is external, false otherwise
      */
     final public boolean isExternal() {
-        if ( _descendants == null ) {
-            return true;
-        }
-        return ( getNumberOfDescendants() < 1 );
+        return ( _descendants == null ) || ( _descendants.size() == 0 );
     }
 
     final public boolean isFirstChildNode() {

@@ -1354,13 +1354,6 @@ public final class SurfacingUtil {
             if ( !intree.isRooted() ) {
                 ForesterUtil.fatalError( surfacing.PRG_NAME, "input tree [" + intree_file + "] is not rooted" );
             }
-            if ( intree.getNumberOfExternalNodes() < number_of_genomes ) {
-                ForesterUtil.fatalError( surfacing.PRG_NAME,
-                                         "number of external nodes [" + intree.getNumberOfExternalNodes()
-                                                 + "] of input tree [" + intree_file
-                                                 + "] is smaller than the number of genomes the be analyzed ["
-                                                 + number_of_genomes + "]" );
-            }
             final StringBuilder parent_names = new StringBuilder();
             final int nodes_lacking_name = getNumberOfNodesLackingName( intree, parent_names );
             if ( nodes_lacking_name > 0 ) {
@@ -1600,7 +1593,6 @@ public final class SurfacingUtil {
                 }
             }
         }
-        //
         final List<String> igns = PhylogenyMethods.deleteExternalNodesPositiveSelection( genomes, intree );
         if ( igns.size() > 0 ) {
             System.out.println( "Not using the following " + igns.size() + " nodes:" );
@@ -1609,15 +1601,28 @@ public final class SurfacingUtil {
             }
             System.out.println( "--" );
         }
+        //Test for node names:
+        final SortedSet<String> not_found = new TreeSet<String>();
+        final SortedSet<String> not_unique = new TreeSet<String>();
         for( final String[] input_file_propertie : input_file_properties ) {
-            try {
-                intree.getNode( input_file_propertie[ 1 ] );
+            final String name = input_file_propertie[ 1 ];
+            final List<PhylogenyNode> nodes = intree.getNodes( name );
+            if ( ( nodes == null ) || ( nodes.size() < 1 ) ) {
+                not_found.add( name );
             }
-            catch ( final IllegalArgumentException e ) {
-                ForesterUtil.fatalError( surfacing.PRG_NAME,
-                                         "node named [" + input_file_propertie[ 1 ]
-                                                 + "] not present/not unique in input tree" );
+            if ( nodes.size() > 1 ) {
+                not_unique.add( name );
             }
+        }
+        if ( not_found.size() > 0 ) {
+            ForesterUtil.fatalError( surfacing.PRG_NAME,
+                                     "the following " + not_found.size()
+                                             + " node(s) are not present in the input tree: " + not_found );
+        }
+        if ( not_unique.size() > 0 ) {
+            ForesterUtil.fatalError( surfacing.PRG_NAME,
+                                     "the following " + not_unique.size()
+                                             + " node(s) are not unique in the input tree: " + not_unique );
         }
     }
 

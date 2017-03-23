@@ -73,7 +73,6 @@ import org.forester.phylogeny.data.SequenceRelation.SEQUENCE_RELATION_TYPE;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.util.ForesterUtil;
 
-
 final class ControlPanel extends JPanel implements ActionListener {
 
     enum NodeClickAction {
@@ -101,120 +100,121 @@ final class ControlPanel extends JPanel implements ActionListener {
                           UNCOLLAPSE_ALL,
                           ORDER_SUBTREE;
     }
-    final static Font                         jcb_bold_font             = new Font( Configuration
+    final static Font                            jcb_bold_font             = new Font( Configuration
             .getDefaultFontFamilyName(), Font.BOLD, Configuration.getGuiFontSize() );
-    final static Font                         jcb_font                  = new Font( Configuration
-            .getDefaultFontFamilyName(), Font.PLAIN, Configuration.getGuiFontSize());
-    final static Font                         js_font                   = new Font( Configuration
+    final static Font                            jcb_font                  = new Font( Configuration
             .getDefaultFontFamilyName(), Font.PLAIN, Configuration.getGuiFontSize() );
-    private static final String               RETURN_TO_SUPER_TREE_TEXT = "R";
-    private static final String               SEARCH_TIP_TEXT           = "Enter text to search for. Use ',' for logical OR and '+' for logical AND (not used in this manner for regular expression searches).";
-    private static final long                 serialVersionUID          = -8463483932821545633L;
-    private NodeClickAction                   _action_when_node_clicked;
-    private int                               _add_new_node_item;
-    private Map<Integer, String>              _all_click_to_names;
-    private Map<String, Color>                _annotation_colors;
-    private int                               _blast_item;
-    private JComboBox<String>                 _click_to_combobox;
-    private JLabel                            _click_to_label;
-    private List<String>                      _click_to_names;
-    private int                               _collapse_cb_item;
-    private int                               _uncollapse_all_cb_item;
-    private int                               _order_subtree_cb_item;
-    private JCheckBox                         _color_acc_species;
-    private JCheckBox                         _color_acc_sequence;
-    private JCheckBox                         _color_according_to_annotation;
-    private boolean                           _color_branches;
-    private JCheckBox                         _use_visual_styles_cb;
-    private int                               _color_subtree_cb_item;
-    private int                               _change_node_font_item;
+    final static Font                            js_font                   = new Font( Configuration
+            .getDefaultFontFamilyName(), Font.PLAIN, Configuration.getGuiFontSize() );
+    private static final String                  RETURN_TO_SUPER_TREE_TEXT = "R";
+    private static final String                  SEARCH_TIP_TEXT           = "Enter text to search for. Use ',' for logical OR and '+' for logical AND (not used in this manner for regular expression searches).";
+    private static final long                    serialVersionUID          = -8463483932821545633L;
+    private NodeClickAction                      _action_when_node_clicked;
+    private int                                  _add_new_node_item;
+    private Map<Integer, String>                 _all_click_to_names;
+    private Map<String, Color>                   _annotation_colors;
+    private int                                  _blast_item;
+    private JComboBox<String>                    _click_to_combobox;
+    private JLabel                               _click_to_label;
+    private List<String>                         _click_to_names;
+    private int                                  _collapse_cb_item;
+    private int                                  _uncollapse_all_cb_item;
+    private int                                  _order_subtree_cb_item;
+    private JCheckBox                            _color_acc_species;
+    private JCheckBox                            _color_acc_sequence;
+    private JCheckBox                            _color_according_to_annotation;
+    private boolean                              _color_branches;
+    private JCheckBox                            _use_visual_styles_cb;
+    private int                                  _color_subtree_cb_item;
+    private int                                  _change_node_font_item;
     // The settings from the conf file
-    private final Configuration               _configuration;
-    private int                               _copy_subtree_item;
-    private int                               _cut_subtree_item;
-    private JButton                           _decr_domain_structure_evalue_thr;
-    private int                               _delete_node_or_subtree_item;
-    private JRadioButton                      _display_as_unaligned_phylogram_rb;
-    private JRadioButton                      _display_as_aligned_phylogram_rb;
-    private JRadioButton                      _display_as_cladogram_rb;
-    private ButtonGroup                       _display_as_buttongroup;
+    private final Configuration                  _configuration;
+    private int                                  _copy_subtree_item;
+    private int                                  _cut_subtree_item;
+    private JButton                              _decr_domain_structure_evalue_thr;
+    private int                                  _delete_node_or_subtree_item;
+    private JRadioButton                         _display_as_unaligned_phylogram_rb;
+    private JRadioButton                         _display_as_aligned_phylogram_rb;
+    private JRadioButton                         _display_as_cladogram_rb;
+    private ButtonGroup                          _display_as_buttongroup;
     // Tree checkboxes
-    private JCheckBox                         _display_internal_data;
-    private JLabel                            _domain_display_label;
-    private JTextField                        _domain_structure_evalue_thr_tf;
-    private JTextField                        _depth_collapse_depth_tf;
-    private JTextField                        _rank_collapse_depth_tf;
-    private List<Options.PHYLOGENY_DISPLAY_TYPE>             _tree_display_types;
-    private JCheckBox                         _dynamically_hide_data;
-    private int                               _edit_node_data_item;
-    private int                               _get_ext_desc_data;
-    private JButton                           _incr_domain_structure_evalue_thr;
-    private final MainPanel                   _mainpanel;
-    private JCheckBox                         _node_desc_popup_cb;
-    private int                               _open_pdb_item;
-    private int                               _open_seq_web_item;
-    private int                               _open_tax_web_item;
-    private int                               _color_node_font_item;
-    private JButton                           _order;
-    private int                               _paste_subtree_item;
-    private int                               _reroot_cb_item;
-    private JButton                           _return_to_super_tree;
+    private JCheckBox                            _display_internal_data;
+    private JCheckBox                            _display_external_data;
+    private JLabel                               _domain_display_label;
+    private JTextField                           _domain_structure_evalue_thr_tf;
+    private JTextField                           _depth_collapse_depth_tf;
+    private JTextField                           _rank_collapse_depth_tf;
+    private List<Options.PHYLOGENY_DISPLAY_TYPE> _tree_display_types;
+    private JCheckBox                            _dynamically_hide_data;
+    private int                                  _edit_node_data_item;
+    private int                                  _get_ext_desc_data;
+    private JButton                              _incr_domain_structure_evalue_thr;
+    private final MainPanel                      _mainpanel;
+    private JCheckBox                            _node_desc_popup_cb;
+    private int                                  _open_pdb_item;
+    private int                                  _open_seq_web_item;
+    private int                                  _open_tax_web_item;
+    private int                                  _color_node_font_item;
+    private JButton                              _order;
+    private int                                  _paste_subtree_item;
+    private int                                  _reroot_cb_item;
+    private JButton                              _return_to_super_tree;
     // Search
-    private JLabel                            _search_found_label_0;
-    private JLabel                            _search_found_label_1;
-    private JButton                           _search_reset_button_0;
-    private JButton                           _search_reset_button_1;
-    private JTextField                        _search_tf_0;
-    private JTextField                        _search_tf_1;
-    private int                               _select_nodes_item;
-    private Sequence                          _selected_query_seq;
-    private JCheckBox                         _seq_relation_confidence_switch;
-    private JComboBox<SEQUENCE_RELATION_TYPE> _sequence_relation_type_box;
-    private JCheckBox                         _show_annotation;
-    private JCheckBox                         _show_binary_character_counts;
-    private JCheckBox                         _show_binary_characters;
+    private JLabel                               _search_found_label_0;
+    private JLabel                               _search_found_label_1;
+    private JButton                              _search_reset_button_0;
+    private JButton                              _search_reset_button_1;
+    private JTextField                           _search_tf_0;
+    private JTextField                           _search_tf_1;
+    private int                                  _select_nodes_item;
+    private Sequence                             _selected_query_seq;
+    private JCheckBox                            _seq_relation_confidence_switch;
+    private JComboBox<SEQUENCE_RELATION_TYPE>    _sequence_relation_type_box;
+    private JCheckBox                            _show_annotation;
+    private JCheckBox                            _show_binary_character_counts;
+    private JCheckBox                            _show_binary_characters;
     // Indices for the click-to options in the combo box
-    private int                               _show_data_item;
-    private JCheckBox                         _show_domain_architectures;
-    private JCheckBox                         _show_mol_seqs;
-    private JCheckBox                         _write_branch_length_values;
-    private JCheckBox                         _show_events;
-    private JCheckBox                         _show_gene_names;
-    private JCheckBox                         _show_node_names;
-    private JCheckBox                         _show_properties_cb;
-    private JCheckBox                         _show_seq_names;
-    private JCheckBox                         _show_seq_symbols;
-    private JCheckBox                         _show_sequence_acc;
-    private JComboBox<String>                 _show_sequence_relations;
-    private JCheckBox                         _show_taxo_code;
-    private JCheckBox                         _show_taxo_rank;
-    private JCheckBox                         _show_taxo_common_names;
-    private JCheckBox                         _show_taxo_images_cb;
-    private JCheckBox                         _show_taxo_scientific_names;
-    private JCheckBox                         _show_vector_data_cb;
-    private JButton                           _show_whole;
-    private int                               _sort_descendents_item;
-    private Map<String, Color>                _species_colors;
-    private Map<String, Color>                _sequence_colors;
-    private int                               _subtree_cb_item;
-    private int                               _swap_cb_item;
-    private JButton                           _uncollapse_all;
-    private JCheckBox                         _width_branches;
-    private JCheckBox                         _write_confidence;
-    private JButton                           _zoom_in_domain_structure;
-    private JButton                           _zoom_in_x;
-    private JButton                           _zoom_in_y;
-    private JLabel                            _zoom_label;
-    private JButton                           _zoom_out_domain_structure;
-    private JButton                           _zoom_out_x;
-    private JButton                           _zoom_out_y;
-    private JButton                           _decr_depth_collapse_level;
-    private JButton                           _incr_depth_collapse_level;
-    private JLabel                            _depth_collapse_label;
-    private JButton                           _decr_rank_collapse_level;
-    private JButton                           _incr_rank_collapse_level;
-    private JLabel                            _rank_collapse_label;
-    
+    private int                                  _show_data_item;
+    private JCheckBox                            _show_domain_architectures;
+    private JCheckBox                            _show_mol_seqs;
+    private JCheckBox                            _write_branch_length_values;
+    private JCheckBox                            _show_events;
+    private JCheckBox                            _show_gene_names;
+    private JCheckBox                            _show_node_names;
+    private JCheckBox                            _show_properties_cb;
+    private JCheckBox                            _show_seq_names;
+    private JCheckBox                            _show_seq_symbols;
+    private JCheckBox                            _show_sequence_acc;
+    private JComboBox<String>                    _show_sequence_relations;
+    private JCheckBox                            _show_taxo_code;
+    private JCheckBox                            _show_taxo_rank;
+    private JCheckBox                            _show_taxo_common_names;
+    private JCheckBox                            _show_taxo_images_cb;
+    private JCheckBox                            _show_taxo_scientific_names;
+    private JCheckBox                            _show_vector_data_cb;
+    private JButton                              _show_whole;
+    private int                                  _sort_descendents_item;
+    private Map<String, Color>                   _species_colors;
+    private Map<String, Color>                   _sequence_colors;
+    private int                                  _subtree_cb_item;
+    private int                                  _swap_cb_item;
+    private JButton                              _uncollapse_all;
+    private JCheckBox                            _width_branches;
+    private JCheckBox                            _write_confidence;
+    private JButton                              _zoom_in_domain_structure;
+    private JButton                              _zoom_in_x;
+    private JButton                              _zoom_in_y;
+    private JLabel                               _zoom_label;
+    private JButton                              _zoom_out_domain_structure;
+    private JButton                              _zoom_out_x;
+    private JButton                              _zoom_out_y;
+    private JButton                              _decr_depth_collapse_level;
+    private JButton                              _incr_depth_collapse_level;
+    private JLabel                               _depth_collapse_label;
+    private JButton                              _decr_rank_collapse_level;
+    private JButton                              _incr_rank_collapse_level;
+    private JLabel                               _rank_collapse_label;
+
     ControlPanel( final MainPanel ap, final Configuration configuration ) {
         init();
         _mainpanel = ap;
@@ -637,7 +637,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         return _tree_display_types;
     }
 
-     final private MainFrame getMainFrame() {
+    final private MainFrame getMainFrame() {
         return getMainPanel().getMainFrame();
     }
 
@@ -1013,7 +1013,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     private void setupDisplayCheckboxes() {
-        
         if ( _configuration.doDisplayOption( Configuration.dynamically_hide_data ) ) {
             addCheckbox( Configuration.dynamically_hide_data,
                          _configuration.getDisplayTitle( Configuration.dynamically_hide_data ) );
@@ -1030,6 +1029,12 @@ final class ControlPanel extends JPanel implements ActionListener {
                          _configuration.getDisplayTitle( Configuration.display_internal_data ) );
             setCheckbox( Configuration.display_internal_data,
                          _configuration.doCheckOption( Configuration.display_internal_data ) );
+        }
+        if ( _configuration.doDisplayOption( Configuration.display_external_data ) ) {
+            addCheckbox( Configuration.display_external_data,
+                         _configuration.getDisplayTitle( Configuration.display_external_data ) );
+            setCheckbox( Configuration.display_external_data,
+                         _configuration.doCheckOption( Configuration.display_external_data ) );
         }
         if ( _configuration.doDisplayOption( Configuration.color_according_to_sequence ) ) {
             addCheckbox( Configuration.color_according_to_sequence,
@@ -1312,6 +1317,12 @@ final class ControlPanel extends JPanel implements ActionListener {
                 _display_internal_data = new JCheckBox( title );
                 _display_internal_data.setToolTipText( "To allow or disallow display of internal labels" );
                 addJCheckBox( _display_internal_data, ch_panel );
+                add( ch_panel );
+                break;
+            case Configuration.display_external_data:
+                _display_external_data = new JCheckBox( title );
+                _display_external_data.setToolTipText( "To allow or disallow display of external labels" );
+                addJCheckBox( _display_external_data, ch_panel );
                 add( ch_panel );
                 break;
             case Configuration.color_according_to_species:
@@ -1637,7 +1648,8 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     boolean isDrawPhylogram() {
         final Options.PHYLOGENY_DISPLAY_TYPE t = getTreeDisplayType( getMainPanel().getCurrentTabIndex() );
-        return ((t == Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM) ||( t == Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM));
+        return ( ( t == Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM )
+                || ( t == Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM ) );
     }
 
     boolean isDynamicallyHideData() {
@@ -1678,6 +1690,10 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     boolean isShowInternalData() {
         return ( ( _display_internal_data == null ) || _display_internal_data.isSelected() );
+    }
+
+    boolean isShowExternalData() {
+        return ( ( _display_external_data == null ) || _display_external_data.isSelected() );
     }
 
     boolean isShowNodeNames() {
@@ -1734,11 +1750,11 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     void phylogenyAdded( final Configuration configuration ) {
-        if (configuration.isDrawAsPhylogram()) {
-            getTreeDisplayTypes().add( Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM);
+        if ( configuration.isDrawAsPhylogram() ) {
+            getTreeDisplayTypes().add( Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM );
         }
         else {
-            getTreeDisplayTypes().add( Options.PHYLOGENY_DISPLAY_TYPE.CLADOGRAM);
+            getTreeDisplayTypes().add( Options.PHYLOGENY_DISPLAY_TYPE.CLADOGRAM );
         }
     }
 
@@ -1820,6 +1836,11 @@ final class ControlPanel extends JPanel implements ActionListener {
             case Configuration.display_internal_data:
                 if ( _display_internal_data != null ) {
                     _display_internal_data.setSelected( state );
+                }
+                break;
+            case Configuration.display_external_data:
+                if ( _display_external_data != null ) {
+                    _display_external_data.setSelected( state );
                 }
                 break;
             case Configuration.color_according_to_species:
@@ -2063,30 +2084,27 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     void setTreeDisplayType( final Options.PHYLOGENY_DISPLAY_TYPE t ) {
-        switch (t) {
+        switch ( t ) {
             case UNALIGNED_PHYLOGRAM:
                 getDisplayAsUnalignedPhylogramRb().setSelected( true );
                 break;
             case ALIGNED_PHYLOGRAM:
                 getDisplayAsAlignedPhylogramRb().setSelected( true );
                 break;
-           case CLADOGRAM:
+            case CLADOGRAM:
                 getDisplayAsCladogramRb().setSelected( true );
                 break;
         }
-        setTreeDisplayType(  getMainPanel().getCurrentTabIndex(), t );
+        setTreeDisplayType( getMainPanel().getCurrentTabIndex(), t );
     }
 
     void setDrawPhylogramEnabled( final boolean b ) {
-        if ( getDisplayAsAlignedPhylogramRb() != null &&
-                getDisplayAsUnalignedPhylogramRb() != null &&
-                getDisplayAsCladogramRb() != null
-                ) {
-    
-        getDisplayAsAlignedPhylogramRb().setEnabled( b );
-        getDisplayAsUnalignedPhylogramRb().setEnabled( b );
-        getDisplayAsCladogramRb().setEnabled( b );
-    }
+        if ( getDisplayAsAlignedPhylogramRb() != null && getDisplayAsUnalignedPhylogramRb() != null
+                && getDisplayAsCladogramRb() != null ) {
+            getDisplayAsAlignedPhylogramRb().setEnabled( b );
+            getDisplayAsUnalignedPhylogramRb().setEnabled( b );
+            getDisplayAsCladogramRb().setEnabled( b );
+        }
     }
 
     void setDynamicHidingIsOn( final boolean is_on ) {
@@ -2127,7 +2145,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     void setupControls() {
-       
         setupTreeDisplayTypeOptions();
         setupDisplayCheckboxes();
         /* GUILHEM_BEG */
@@ -2160,19 +2177,18 @@ final class ControlPanel extends JPanel implements ActionListener {
         setupJRadioButton( getDisplayAsUnalignedPhylogramRb() );
         setupJRadioButton( getDisplayAsAlignedPhylogramRb() );
         setupJRadioButton( getDisplayAsCladogramRb() );
-        final JPanel p = new JPanel(new GridLayout( 1, 3, 0, 0 ));
+        final JPanel p = new JPanel( new GridLayout( 1, 3, 0, 0 ) );
         p.setFont( ControlPanel.jcb_font );
         if ( !_configuration.isUseNativeUI() ) {
             p.setBackground( getConfiguration().getGuiBackgroundColor() );
             p.setForeground( getConfiguration().getGuiCheckboxTextColor() );
         }
-        p.add(  _display_as_unaligned_phylogram_rb );
+        p.add( _display_as_unaligned_phylogram_rb );
         p.add( _display_as_aligned_phylogram_rb );
         p.add( _display_as_cladogram_rb );
         add( p );
     }
-    
-    
+
     void setUpControlsForDomainStrucures() {
         _domain_display_label = new JLabel( "Domain Architectures:" );
         add( customizeLabel( _domain_display_label, getConfiguration() ) );
@@ -2586,17 +2602,14 @@ final class ControlPanel extends JPanel implements ActionListener {
             if ( getCurrentTreePanel().isPhyHasBranchLengths()
                     && ( getCurrentTreePanel().getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR ) ) {
                 setDrawPhylogramEnabled( true );
-              
-                setTreeDisplayType( getTreeDisplayType(  getMainPanel().getCurrentTabIndex() ) );
+                setTreeDisplayType( getTreeDisplayType( getMainPanel().getCurrentTabIndex() ) );
             }
             else {
                 setDrawPhylogramEnabled( false );
                 setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.CLADOGRAM );
             }
-           
-                getMainPanel().getMainFrame()
-                        .setSelectedTypeInTypeMenu( getMainPanel().getCurrentTreePanel().getPhylogenyGraphicsType() );
-            
+            getMainPanel().getMainFrame()
+                    .setSelectedTypeInTypeMenu( getMainPanel().getCurrentTreePanel().getPhylogenyGraphicsType() );
             getMainPanel().getCurrentTreePanel().updateSubSuperTreeButton();
             getMainPanel().getCurrentTreePanel().updateButtonToUncollapseAll();
             getMainPanel().getControlPanel().search0();
@@ -2797,8 +2810,8 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     private final boolean isDrawPhylogram( int currentTabIndex ) {
         Options.PHYLOGENY_DISPLAY_TYPE t = getTreeDisplayType( currentTabIndex );
-        return ((t==Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM)|(t==Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM));
-        
+        return ( ( t == Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM )
+                | ( t == Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM ) );
     }
 
     final void zoomOutY( final float factor ) {
@@ -2833,10 +2846,10 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     public Options.PHYLOGENY_DISPLAY_TYPE getTreeDisplayType() {
-        if (_display_as_unaligned_phylogram_rb.isSelected() ) {
+        if ( _display_as_unaligned_phylogram_rb.isSelected() ) {
             return Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM;
         }
-        else if (_display_as_aligned_phylogram_rb.isSelected() ) {
+        else if ( _display_as_aligned_phylogram_rb.isSelected() ) {
             return Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM;
         }
         return Options.PHYLOGENY_DISPLAY_TYPE.CLADOGRAM;

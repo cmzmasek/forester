@@ -50,16 +50,18 @@ public class BasicProtein implements Protein {
     private final List<Domain>       _protein_domains;
     public static Comparator<Domain> DomainMidPositionComparator = new Comparator<Domain>() {
 
-        @Override
-        public int compare( final Domain d1,
-                            final Domain d2 ) {
-            final int m1 = ( d1.getTo() + d1.getFrom() );
-            final int m2 = ( d2.getTo() + d2.getFrom() );
-            return m1 < m2 ? -1 : m1 > m2 ? 1 : d1
-                    .getDomainId()
-                    .compareTo( d2.getDomainId() );
-        }
-    };
+                                                                     @Override
+                                                                     public int compare( final Domain d1,
+                                                                                         final Domain d2 ) {
+                                                                         final int m1 = ( d1.getTo() + d1.getFrom() );
+                                                                         final int m2 = ( d2.getTo() + d2.getFrom() );
+                                                                         return m1 < m2 ? -1
+                                                                                 : m1 > m2 ? 1
+                                                                                         : d1.getDomainId()
+                                                                                                 .compareTo( d2
+                                                                                                         .getDomainId() );
+                                                                     }
+                                                                 };
 
     public BasicProtein( final String id_str, final String species_str, final int length ) {
         if ( length < 0 ) {
@@ -213,19 +215,26 @@ public class BasicProtein implements Protein {
         _name = name;
     }
 
-    public String toDomainArchitectureString( final String separator ) {
+    @Override
+    public final String toDomainArchitectureString( final String separator, final double ie_cutoff ) {
         final StringBuilder sb = new StringBuilder();
         boolean first = true;
         for( final Domain d : getDomainsSortedByPosition() ) {
-            if ( first ) {
-                first = false;
+            if ( ( ie_cutoff <= -1 ) || ( d.getPerDomainEvalue() <= ie_cutoff ) ) {
+                if ( first ) {
+                    first = false;
+                }
+                else {
+                    sb.append( separator );
+                }
+                sb.append( d.getDomainId() );
             }
-            else {
-                sb.append( separator );
-            }
-            sb.append( d.getDomainId() );
         }
         return sb.toString();
+    }
+    
+    public final String toDomainArchitectureString( final String separator ) {
+        return toDomainArchitectureString( separator, -1 );
     }
 
     public String toDomainArchitectureString( final String separator,
@@ -269,7 +278,7 @@ public class BasicProtein implements Protein {
 
     @Override
     public String toString() {
-        return toDomainArchitectureString( "~" );
+        return toDomainArchitectureString( "--", 1 );
     }
 
     private List<String> getProteinDomainIds() {

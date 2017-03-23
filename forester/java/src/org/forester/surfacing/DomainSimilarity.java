@@ -405,11 +405,15 @@ public class DomainSimilarity implements Comparable<DomainSimilarity> {
                                                             final Map<String, Integer> tax_code_to_id_map,
                                                             final Phylogeny phy ) {
         final StringBuffer sb = new StringBuffer();
-        sb.append( "<table>" );
+        if (html) {
+            sb.append( "<table>" );
+        }
         for( final Species species : getSpeciesData().keySet() ) {
             addSpeciesSpecificDomainData( sb, species, html, tax_code_to_id_map, phy );
         }
-        sb.append( "</table>" );
+        if (html) {
+            sb.append( "</table>" );
+        }
         return sb;
     }
 

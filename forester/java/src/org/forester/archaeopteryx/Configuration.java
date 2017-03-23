@@ -135,7 +135,7 @@ public final class Configuration {
         { "Vector Data", "nodisplay", "no" }, { "Taxonomy Images", "display", "no" },
         { "Properties", "display", "no" }, { "Gene Name", "display", "yes" },
         { "Multiple Seq Alignment", "display", "no" }, { "Branch Length Values", "display", "no" }
-        , { "Taxonomy Rank", "display", "no" }};
+        , { "Taxonomy Rank", "display", "no" }, { "Show External Data", "display", "yes" }};
     final static int                        display_as_phylogram                                   = 0;
     final static int                        show_node_names                                        = 1;
     final static int                        show_tax_code                                          = 2;
@@ -166,6 +166,7 @@ public final class Configuration {
     final static int                        show_mol_seqs                                          = 27;
     final static int                        write_branch_length_values                             = 28;
     final static int                        show_tax_rank                                          = 29;
+    final static int                        display_external_data                                  = 30;
     
     static final String                     VALIDATE_AGAINST_PHYLOXML_XSD_SCHEMA                   = "validate_against_phyloxml_xsd_schema";
     private static Hashtable<String, Color> _sequence_colors;
@@ -525,6 +526,10 @@ public final class Configuration {
 
     public void setDisplayInternalData( final boolean b ) {
         display_options[ display_internal_data ][ 2 ] = b ? "yes" : "no";
+    }
+    
+    public void setDisplayExternalData( final boolean b ) {
+        display_options[ display_external_data ][ 2 ] = b ? "yes" : "no";
     }
 
     public void setDisplayMultipleSequenceAlignment( final boolean b ) {
@@ -1433,6 +1438,9 @@ public final class Configuration {
             }
             else if ( key.equals( "display_internal_data" ) ) {
                 key_index = Configuration.display_internal_data;
+            }
+            else if ( key.equals( "display_external_data" ) ) {
+                key_index = Configuration.display_external_data;
             }
             else if ( key.equals( "dynamically_hide_data" ) ) {
                 key_index = Configuration.dynamically_hide_data;

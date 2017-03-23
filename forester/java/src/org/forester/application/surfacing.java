@@ -216,8 +216,8 @@ public class surfacing {
     final static private String                                     INPUT_GENOMES_FILE_OPTION                                                     = "genomes";
     final static private String                                     INPUT_SPECIES_TREE_OPTION                                                     = "species_tree";
     final static private String                                     SEQ_EXTRACT_OPTION                                                            = "prot_extract";
-    final static private String                                     PRG_VERSION                                                                   = "2.404";
-    final static private String                                     PRG_DATE                                                                      = "170315";
+    final static private String                                     PRG_VERSION                                                                   = "2.405";
+    final static private String                                     PRG_DATE                                                                      = "170317";
     final static private String                                     E_MAIL                                                                        = "czmasek@burnham.org";
     final static private String                                     WWW                                                                           = "https://sites.google.com/site/cmzmasek/home/software/forester/surfacing";
     final static private boolean                                    IGNORE_DUFS_DEFAULT                                                           = true;
@@ -271,7 +271,8 @@ public class surfacing {
     public static final String                                      INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_MAPPED_OUTPUT_SUFFIX        = "_indep_dc_gains_fitch_lists_for_go_mapping_MAPPED.txt";
     public static final String                                      INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_MAPPED_OUTPUT_UNIQUE_SUFFIX = "_indep_dc_gains_fitch_lists_for_go_mapping_unique_MAPPED.txt";
     private static final boolean                                    CALC_SIMILARITY_SCORES                                                        = false;
-    @SuppressWarnings("unchecked")
+
+    @SuppressWarnings( "unchecked")
     public static void main( final String args[] ) {
         final long start_time = new Date().getTime();
         // final StringBuffer log = new StringBuffer();
@@ -435,8 +436,9 @@ public class surfacing {
             ignore_species_specific_domains = true;
         }
         if ( !cla.isOptionValueSet( surfacing.INPUT_SPECIES_TREE_OPTION ) ) {
-            ForesterUtil.fatalError( surfacing.PRG_NAME, "no input species tree file given: "
-                    + surfacing.INPUT_SPECIES_TREE_OPTION + "=<file>" );
+            ForesterUtil.fatalError( surfacing.PRG_NAME,
+                                     "no input species tree file given: " + surfacing.INPUT_SPECIES_TREE_OPTION
+                                             + "=<file>" );
         }
         File output_file = null;
         if ( cla.isOptionSet( surfacing.OUTPUT_FILE_OPTION ) ) {
@@ -452,14 +454,15 @@ public class surfacing {
         Map<String, Double> individual_score_cutoffs = null;
         if ( cla.isOptionSet( surfacing.CUTOFF_SCORE_FILE_OPTION ) ) {
             if ( !cla.isOptionValueSet( surfacing.CUTOFF_SCORE_FILE_OPTION ) ) {
-                ForesterUtil.fatalError( surfacing.PRG_NAME, "no value for individual domain score cutoffs file: -"
-                        + surfacing.CUTOFF_SCORE_FILE_OPTION + "=<file>" );
+                ForesterUtil.fatalError( surfacing.PRG_NAME,
+                                         "no value for individual domain score cutoffs file: -"
+                                                 + surfacing.CUTOFF_SCORE_FILE_OPTION + "=<file>" );
             }
             cutoff_scores_file = new File( cla.getOptionValue( surfacing.CUTOFF_SCORE_FILE_OPTION ) );
             final String error = ForesterUtil.isReadableFile( cutoff_scores_file );
             if ( !ForesterUtil.isEmpty( error ) ) {
-                ForesterUtil.fatalError( surfacing.PRG_NAME, "cannot read individual domain score cutoffs file: "
-                        + error );
+                ForesterUtil.fatalError( surfacing.PRG_NAME,
+                                         "cannot read individual domain score cutoffs file: " + error );
             }
             try {
                 final BasicTable<String> scores_table = BasicTableParser.parse( cutoff_scores_file, ' ' );
@@ -479,8 +482,8 @@ public class surfacing {
         File out_dir = null;
         if ( cla.isOptionSet( surfacing.OUTPUT_DIR_OPTION ) ) {
             if ( !cla.isOptionValueSet( surfacing.OUTPUT_DIR_OPTION ) ) {
-                ForesterUtil.fatalError( surfacing.PRG_NAME, "no value for output directory: -"
-                        + surfacing.OUTPUT_DIR_OPTION + "=<dir>" );
+                ForesterUtil.fatalError( surfacing.PRG_NAME,
+                                         "no value for output directory: -" + surfacing.OUTPUT_DIR_OPTION + "=<dir>" );
             }
             out_dir = new File( cla.getOptionValue( surfacing.OUTPUT_DIR_OPTION ) );
             if ( out_dir.exists() && ( out_dir.listFiles().length > 0 ) ) {
@@ -499,50 +502,54 @@ public class surfacing {
         File positive_filter_file = null;
         File negative_filter_file = null;
         File negative_domains_filter_file = null;
-        if ( cla.isOptionSet( surfacing.FILTER_NEGATIVE_OPTION ) && cla.isOptionSet( surfacing.FILTER_POSITIVE_OPTION ) ) {
+        if ( cla.isOptionSet( surfacing.FILTER_NEGATIVE_OPTION )
+                && cla.isOptionSet( surfacing.FILTER_POSITIVE_OPTION ) ) {
             ForesterUtil.fatalError( surfacing.PRG_NAME, "attempt to use both negative and positive protein filter" );
         }
         if ( cla.isOptionSet( surfacing.FILTER_NEGATIVE_DOMAINS_OPTION )
-                && ( cla.isOptionSet( surfacing.FILTER_NEGATIVE_OPTION ) || cla
-                        .isOptionSet( surfacing.FILTER_POSITIVE_OPTION ) ) ) {
+                && ( cla.isOptionSet( surfacing.FILTER_NEGATIVE_OPTION )
+                        || cla.isOptionSet( surfacing.FILTER_POSITIVE_OPTION ) ) ) {
             ForesterUtil
-            .fatalError( surfacing.PRG_NAME,
-                         "attempt to use both negative or positive protein filter together wirh a negative domains filter" );
+                    .fatalError( surfacing.PRG_NAME,
+                                 "attempt to use both negative or positive protein filter together wirh a negative domains filter" );
         }
         if ( cla.isOptionSet( surfacing.FILTER_NEGATIVE_OPTION ) ) {
             if ( !cla.isOptionValueSet( surfacing.FILTER_NEGATIVE_OPTION ) ) {
-                ForesterUtil.fatalError( surfacing.PRG_NAME, "no value for negative filter: -"
-                        + surfacing.FILTER_NEGATIVE_OPTION + "=<file>" );
+                ForesterUtil
+                        .fatalError( surfacing.PRG_NAME,
+                                     "no value for negative filter: -" + surfacing.FILTER_NEGATIVE_OPTION + "=<file>" );
             }
             negative_filter_file = new File( cla.getOptionValue( surfacing.FILTER_NEGATIVE_OPTION ) );
             final String msg = ForesterUtil.isReadableFile( negative_filter_file );
             if ( !ForesterUtil.isEmpty( msg ) ) {
-                ForesterUtil.fatalError( surfacing.PRG_NAME, "can not read from \"" + negative_filter_file + "\": "
-                        + msg );
+                ForesterUtil.fatalError( surfacing.PRG_NAME,
+                                         "can not read from \"" + negative_filter_file + "\": " + msg );
             }
         }
         else if ( cla.isOptionSet( surfacing.FILTER_POSITIVE_OPTION ) ) {
             if ( !cla.isOptionValueSet( surfacing.FILTER_POSITIVE_OPTION ) ) {
-                ForesterUtil.fatalError( surfacing.PRG_NAME, "no value for positive filter: -"
-                        + surfacing.FILTER_POSITIVE_OPTION + "=<file>" );
+                ForesterUtil
+                        .fatalError( surfacing.PRG_NAME,
+                                     "no value for positive filter: -" + surfacing.FILTER_POSITIVE_OPTION + "=<file>" );
             }
             positive_filter_file = new File( cla.getOptionValue( surfacing.FILTER_POSITIVE_OPTION ) );
             final String msg = ForesterUtil.isReadableFile( positive_filter_file );
             if ( !ForesterUtil.isEmpty( msg ) ) {
-                ForesterUtil.fatalError( surfacing.PRG_NAME, "can not read from \"" + positive_filter_file + "\": "
-                        + msg );
+                ForesterUtil.fatalError( surfacing.PRG_NAME,
+                                         "can not read from \"" + positive_filter_file + "\": " + msg );
             }
         }
         else if ( cla.isOptionSet( surfacing.FILTER_NEGATIVE_DOMAINS_OPTION ) ) {
             if ( !cla.isOptionValueSet( surfacing.FILTER_NEGATIVE_DOMAINS_OPTION ) ) {
-                ForesterUtil.fatalError( surfacing.PRG_NAME, "no value for negative domains filter: -"
-                        + surfacing.FILTER_NEGATIVE_DOMAINS_OPTION + "=<file>" );
+                ForesterUtil.fatalError( surfacing.PRG_NAME,
+                                         "no value for negative domains filter: -"
+                                                 + surfacing.FILTER_NEGATIVE_DOMAINS_OPTION + "=<file>" );
             }
             negative_domains_filter_file = new File( cla.getOptionValue( surfacing.FILTER_NEGATIVE_DOMAINS_OPTION ) );
             final String msg = ForesterUtil.isReadableFile( negative_domains_filter_file );
             if ( !ForesterUtil.isEmpty( msg ) ) {
-                ForesterUtil.fatalError( surfacing.PRG_NAME, "can not read from \"" + negative_domains_filter_file
-                                         + "\": " + msg );
+                ForesterUtil.fatalError( surfacing.PRG_NAME,
+                                         "can not read from \"" + negative_domains_filter_file + "\": " + msg );
             }
         }
         final List<String> plus_minus_analysis_high_copy_base_species = new ArrayList<String>();
@@ -557,29 +564,31 @@ public class surfacing {
         File input_genomes_file = null;
         if ( cla.isOptionSet( surfacing.INPUT_GENOMES_FILE_OPTION ) ) {
             if ( !cla.isOptionValueSet( surfacing.INPUT_GENOMES_FILE_OPTION ) ) {
-                ForesterUtil.fatalError( surfacing.PRG_NAME, "no value for input genomes file: -"
-                        + surfacing.INPUT_GENOMES_FILE_OPTION + "=<file>" );
+                ForesterUtil.fatalError( surfacing.PRG_NAME,
+                                         "no value for input genomes file: -" + surfacing.INPUT_GENOMES_FILE_OPTION
+                                                 + "=<file>" );
             }
             input_genomes_file = new File( cla.getOptionValue( surfacing.INPUT_GENOMES_FILE_OPTION ) );
             final String msg = ForesterUtil.isReadableFile( input_genomes_file );
             if ( !ForesterUtil.isEmpty( msg ) ) {
-                ForesterUtil
-                .fatalError( surfacing.PRG_NAME, "can not read from \"" + input_genomes_file + "\": " + msg );
+                ForesterUtil.fatalError( surfacing.PRG_NAME,
+                                         "can not read from \"" + input_genomes_file + "\": " + msg );
             }
         }
         else {
-            ForesterUtil.fatalError( surfacing.PRG_NAME, "no input genomes file given: "
-                    + surfacing.INPUT_GENOMES_FILE_OPTION + "=<file>" );
+            ForesterUtil
+                    .fatalError( surfacing.PRG_NAME,
+                                 "no input genomes file given: " + surfacing.INPUT_GENOMES_FILE_OPTION + "=<file>" );
         }
         DomainSimilarity.DomainSimilarityScoring scoring = SCORING_DEFAULT;
         if ( cla.isOptionSet( surfacing.SCORING_OPTION ) ) {
             if ( !cla.isOptionValueSet( surfacing.SCORING_OPTION ) ) {
-                ForesterUtil.fatalError( surfacing.PRG_NAME,
-                                         "no value for scoring method for domain combinations similarity calculation: -"
-                                                 + surfacing.SCORING_OPTION + "=<"
-                                                 + surfacing.SCORING_DOMAIN_COUNT_BASED + "|"
-                                                 + surfacing.SCORING_PROTEIN_COUNT_BASED + "|"
-                                                 + surfacing.SCORING_COMBINATION_BASED + ">\"" );
+                ForesterUtil
+                        .fatalError( surfacing.PRG_NAME,
+                                     "no value for scoring method for domain combinations similarity calculation: -"
+                                             + surfacing.SCORING_OPTION + "=<" + surfacing.SCORING_DOMAIN_COUNT_BASED
+                                             + "|" + surfacing.SCORING_PROTEIN_COUNT_BASED + "|"
+                                             + surfacing.SCORING_COMBINATION_BASED + ">\"" );
             }
             final String scoring_str = cla.getOptionValue( surfacing.SCORING_OPTION );
             if ( scoring_str.equals( surfacing.SCORING_DOMAIN_COUNT_BASED ) ) {
@@ -592,10 +601,13 @@ public class surfacing {
                 scoring = DomainSimilarity.DomainSimilarityScoring.PROTEINS;
             }
             else {
-                ForesterUtil.fatalError( surfacing.PRG_NAME, "unknown value \"" + scoring_str
-                                         + "\" for scoring method for domain combinations similarity calculation: \"-"
-                                         + surfacing.SCORING_OPTION + "=<" + surfacing.SCORING_DOMAIN_COUNT_BASED + "|"
-                                         + surfacing.SCORING_PROTEIN_COUNT_BASED + "|" + surfacing.SCORING_COMBINATION_BASED + ">\"" );
+                ForesterUtil
+                        .fatalError( surfacing.PRG_NAME,
+                                     "unknown value \"" + scoring_str
+                                             + "\" for scoring method for domain combinations similarity calculation: \"-"
+                                             + surfacing.SCORING_OPTION + "=<" + surfacing.SCORING_DOMAIN_COUNT_BASED
+                                             + "|" + surfacing.SCORING_PROTEIN_COUNT_BASED + "|"
+                                             + surfacing.SCORING_COMBINATION_BASED + ">\"" );
             }
         }
         boolean sort_by_species_count_first = false;
@@ -623,9 +635,10 @@ public class surfacing {
         Detailedness detailedness = DETAILEDNESS_DEFAULT;
         if ( cla.isOptionSet( surfacing.DETAILEDNESS_OPTION ) ) {
             if ( !cla.isOptionValueSet( surfacing.DETAILEDNESS_OPTION ) ) {
-                ForesterUtil.fatalError( surfacing.PRG_NAME, "no value for -" + surfacing.DETAILEDNESS_OPTION + "=<"
-                        + surfacing.DETAILEDNESS_BASIC + "|" + surfacing.DETAILEDNESS_LIST_IDS + "|"
-                        + surfacing.DETAILEDNESS_PUNCTILIOUS + ">\"" );
+                ForesterUtil.fatalError( surfacing.PRG_NAME,
+                                         "no value for -" + surfacing.DETAILEDNESS_OPTION + "=<"
+                                                 + surfacing.DETAILEDNESS_BASIC + "|" + surfacing.DETAILEDNESS_LIST_IDS
+                                                 + "|" + surfacing.DETAILEDNESS_PUNCTILIOUS + ">\"" );
             }
             final String detness = cla.getOptionValue( surfacing.DETAILEDNESS_OPTION ).toLowerCase();
             if ( detness.equals( surfacing.DETAILEDNESS_BASIC ) ) {
@@ -638,9 +651,11 @@ public class surfacing {
                 detailedness = DomainSimilarityCalculator.Detailedness.PUNCTILIOUS;
             }
             else {
-                ForesterUtil.fatalError( surfacing.PRG_NAME, "unknown value \"" + detness + "\" for detailedness: \"-"
-                        + surfacing.DETAILEDNESS_OPTION + "=<" + surfacing.DETAILEDNESS_BASIC + "|"
-                        + surfacing.DETAILEDNESS_LIST_IDS + "|" + surfacing.DETAILEDNESS_PUNCTILIOUS + ">\"" );
+                ForesterUtil.fatalError( surfacing.PRG_NAME,
+                                         "unknown value \"" + detness + "\" for detailedness: \"-"
+                                                 + surfacing.DETAILEDNESS_OPTION + "=<" + surfacing.DETAILEDNESS_BASIC
+                                                 + "|" + surfacing.DETAILEDNESS_LIST_IDS + "|"
+                                                 + surfacing.DETAILEDNESS_PUNCTILIOUS + ">\"" );
             }
         }
         String automated_pairwise_comparison_suffix = null;
@@ -661,10 +676,10 @@ public class surfacing {
         if ( cla.isOptionSet( surfacing.SEQ_EXTRACT_OPTION ) ) {
             if ( !cla.isOptionValueSet( surfacing.SEQ_EXTRACT_OPTION ) ) {
                 ForesterUtil
-                .fatalError( surfacing.PRG_NAME,
-                             "no domain ids given for sequences with given domains to be extracted : -"
-                                     + surfacing.SEQ_EXTRACT_OPTION
-                                     + "=<ordered domain sequences, domain ids separated by '~', sequences separated by '#'>" );
+                        .fatalError( surfacing.PRG_NAME,
+                                     "no domain ids given for sequences with given domains to be extracted : -"
+                                             + surfacing.SEQ_EXTRACT_OPTION
+                                             + "=<ordered domain sequences, domain ids separated by '~', sequences separated by '#'>" );
             }
             query_domain_ids = cla.getOptionValue( surfacing.SEQ_EXTRACT_OPTION );
         }
@@ -672,14 +687,18 @@ public class surfacing {
         DomainSimilarity.DomainSimilaritySortField domain_similarity_sort_field_for_automated_pwc = DOMAIN_SORT_FILD_DEFAULT;
         if ( cla.isOptionSet( surfacing.DOMAIN_SIMILARITY_SORT_OPTION ) ) {
             if ( !cla.isOptionValueSet( surfacing.DOMAIN_SIMILARITY_SORT_OPTION ) ) {
-                ForesterUtil.fatalError( surfacing.PRG_NAME, "no value for domain combinations similarities sorting: -"
-                        + surfacing.DOMAIN_SIMILARITY_SORT_OPTION + "=<" + surfacing.DOMAIN_SIMILARITY_SORT_ALPHA + "|"
-                        + surfacing.DOMAIN_SIMILARITY_SORT_MAX + "|" + surfacing.DOMAIN_SIMILARITY_SORT_MIN + "|"
-                        + surfacing.DOMAIN_SIMILARITY_SORT_MEAN + "|" + surfacing.DOMAIN_SIMILARITY_SORT_DIFF + "|"
-                        + surfacing.DOMAIN_SIMILARITY_SORT_ABS_COUNTS_DIFF + "|"
-                        + surfacing.DOMAIN_SIMILARITY_SORT_COUNTS_DIFF + "|"
-                        + surfacing.DOMAIN_SIMILARITY_SORT_SPECIES_COUNT + "|" + surfacing.DOMAIN_SIMILARITY_SORT_SD
-                        + ">\"" );
+                ForesterUtil.fatalError( surfacing.PRG_NAME,
+                                         "no value for domain combinations similarities sorting: -"
+                                                 + surfacing.DOMAIN_SIMILARITY_SORT_OPTION + "=<"
+                                                 + surfacing.DOMAIN_SIMILARITY_SORT_ALPHA + "|"
+                                                 + surfacing.DOMAIN_SIMILARITY_SORT_MAX + "|"
+                                                 + surfacing.DOMAIN_SIMILARITY_SORT_MIN + "|"
+                                                 + surfacing.DOMAIN_SIMILARITY_SORT_MEAN + "|"
+                                                 + surfacing.DOMAIN_SIMILARITY_SORT_DIFF + "|"
+                                                 + surfacing.DOMAIN_SIMILARITY_SORT_ABS_COUNTS_DIFF + "|"
+                                                 + surfacing.DOMAIN_SIMILARITY_SORT_COUNTS_DIFF + "|"
+                                                 + surfacing.DOMAIN_SIMILARITY_SORT_SPECIES_COUNT + "|"
+                                                 + surfacing.DOMAIN_SIMILARITY_SORT_SD + ">\"" );
             }
             final String sort_str = cla.getOptionValue( surfacing.DOMAIN_SIMILARITY_SORT_OPTION ).toLowerCase();
             if ( sort_str.equals( surfacing.DOMAIN_SIMILARITY_SORT_ALPHA ) ) {
@@ -719,24 +738,30 @@ public class surfacing {
                 domain_similarity_sort_field_for_automated_pwc = DomainSimilarity.DomainSimilaritySortField.MAX_COUNTS_DIFFERENCE;
             }
             else {
-                ForesterUtil.fatalError( surfacing.PRG_NAME, "unknown value \"" + sort_str
-                                         + "\" for domain combinations similarities sorting: \"-"
-                                         + surfacing.DOMAIN_SIMILARITY_SORT_OPTION + "=<" + surfacing.DOMAIN_SIMILARITY_SORT_ALPHA + "|"
-                                         + surfacing.DOMAIN_SIMILARITY_SORT_MAX + "|" + surfacing.DOMAIN_SIMILARITY_SORT_MIN + "|"
-                                         + surfacing.DOMAIN_SIMILARITY_SORT_MEAN + "|" + surfacing.DOMAIN_SIMILARITY_SORT_DIFF + "|"
-                                         + surfacing.DOMAIN_SIMILARITY_SORT_ABS_COUNTS_DIFF + "|"
-                                         + surfacing.DOMAIN_SIMILARITY_SORT_COUNTS_DIFF + "|" + "|"
-                                         + surfacing.DOMAIN_SIMILARITY_SORT_SPECIES_COUNT + "|" + surfacing.DOMAIN_SIMILARITY_SORT_SD
-                                         + ">\"" );
+                ForesterUtil.fatalError( surfacing.PRG_NAME,
+                                         "unknown value \"" + sort_str
+                                                 + "\" for domain combinations similarities sorting: \"-"
+                                                 + surfacing.DOMAIN_SIMILARITY_SORT_OPTION + "=<"
+                                                 + surfacing.DOMAIN_SIMILARITY_SORT_ALPHA + "|"
+                                                 + surfacing.DOMAIN_SIMILARITY_SORT_MAX + "|"
+                                                 + surfacing.DOMAIN_SIMILARITY_SORT_MIN + "|"
+                                                 + surfacing.DOMAIN_SIMILARITY_SORT_MEAN + "|"
+                                                 + surfacing.DOMAIN_SIMILARITY_SORT_DIFF + "|"
+                                                 + surfacing.DOMAIN_SIMILARITY_SORT_ABS_COUNTS_DIFF + "|"
+                                                 + surfacing.DOMAIN_SIMILARITY_SORT_COUNTS_DIFF + "|" + "|"
+                                                 + surfacing.DOMAIN_SIMILARITY_SORT_SPECIES_COUNT + "|"
+                                                 + surfacing.DOMAIN_SIMILARITY_SORT_SD + ">\"" );
             }
         }
         DomainSimilarity.PRINT_OPTION domain_similarity_print_option = DOMAIN_SIMILARITY_PRINT_OPTION_DEFAULT;
         if ( cla.isOptionSet( surfacing.DOMAIN_SIMILARITY_PRINT_OPTION ) ) {
             if ( !cla.isOptionValueSet( surfacing.DOMAIN_SIMILARITY_PRINT_OPTION ) ) {
-                ForesterUtil.fatalError( surfacing.PRG_NAME, "no value for print option: -"
-                        + surfacing.DOMAIN_SIMILARITY_PRINT_OPTION_DETAILED_HTML + "|"
-                        + surfacing.DOMAIN_SIMILARITY_PRINT_OPTION_SIMPLE_HTML + "|"
-                        + surfacing.DOMAIN_SIMILARITY_PRINT_OPTION_SIMPLE_TAB_DELIMITED + ">\"" );
+                ForesterUtil
+                        .fatalError( surfacing.PRG_NAME,
+                                     "no value for print option: -"
+                                             + surfacing.DOMAIN_SIMILARITY_PRINT_OPTION_DETAILED_HTML + "|"
+                                             + surfacing.DOMAIN_SIMILARITY_PRINT_OPTION_SIMPLE_HTML + "|"
+                                             + surfacing.DOMAIN_SIMILARITY_PRINT_OPTION_SIMPLE_TAB_DELIMITED + ">\"" );
             }
             final String sort = cla.getOptionValue( surfacing.DOMAIN_SIMILARITY_PRINT_OPTION ).toLowerCase();
             if ( sort.equals( surfacing.DOMAIN_SIMILARITY_PRINT_OPTION_DETAILED_HTML ) ) {
@@ -749,20 +774,23 @@ public class surfacing {
                 domain_similarity_print_option = DomainSimilarity.PRINT_OPTION.SIMPLE_TAB_DELIMITED;
             }
             else {
-                ForesterUtil.fatalError( surfacing.PRG_NAME, "unknown value \"" + sort + "\" for print option: -"
-                        + surfacing.DOMAIN_SIMILARITY_PRINT_OPTION_DETAILED_HTML + "|"
-                        + surfacing.DOMAIN_SIMILARITY_PRINT_OPTION_SIMPLE_HTML + "|"
-                        + surfacing.DOMAIN_SIMILARITY_PRINT_OPTION_SIMPLE_TAB_DELIMITED + ">\"" );
+                ForesterUtil
+                        .fatalError( surfacing.PRG_NAME,
+                                     "unknown value \"" + sort + "\" for print option: -"
+                                             + surfacing.DOMAIN_SIMILARITY_PRINT_OPTION_DETAILED_HTML + "|"
+                                             + surfacing.DOMAIN_SIMILARITY_PRINT_OPTION_SIMPLE_HTML + "|"
+                                             + surfacing.DOMAIN_SIMILARITY_PRINT_OPTION_SIMPLE_TAB_DELIMITED + ">\"" );
             }
         }
         GenomeWideCombinableDomains.GenomeWideCombinableDomainsSortOrder dc_sort_order = DOMAINS_SORT_ORDER_DEFAULT;
         if ( cla.isOptionSet( surfacing.DOMAIN_COUNT_SORT_OPTION ) ) {
             if ( !cla.isOptionValueSet( surfacing.DOMAIN_COUNT_SORT_OPTION ) ) {
-                ForesterUtil.fatalError( surfacing.PRG_NAME, "no value for sorting of domain counts: -"
-                        + surfacing.DOMAIN_COUNT_SORT_OPTION + "=<" + surfacing.DOMAIN_COUNT_SORT_ALPHA + "|"
-                        + surfacing.DOMAIN_COUNT_SORT_KEY_DOMAIN_COUNT + "|"
-                        + surfacing.DOMAIN_COUNT_SORT_KEY_DOMAIN_PROTEINS_COUNT + "|"
-                        + surfacing.DOMAIN_COUNT_SORT_COMBINATIONS_COUNT + ">\"" );
+                ForesterUtil.fatalError( surfacing.PRG_NAME,
+                                         "no value for sorting of domain counts: -" + surfacing.DOMAIN_COUNT_SORT_OPTION
+                                                 + "=<" + surfacing.DOMAIN_COUNT_SORT_ALPHA + "|"
+                                                 + surfacing.DOMAIN_COUNT_SORT_KEY_DOMAIN_COUNT + "|"
+                                                 + surfacing.DOMAIN_COUNT_SORT_KEY_DOMAIN_PROTEINS_COUNT + "|"
+                                                 + surfacing.DOMAIN_COUNT_SORT_COMBINATIONS_COUNT + ">\"" );
             }
             final String sort = cla.getOptionValue( surfacing.DOMAIN_COUNT_SORT_OPTION ).toLowerCase();
             if ( sort.equals( surfacing.DOMAIN_COUNT_SORT_ALPHA ) ) {
@@ -778,11 +806,13 @@ public class surfacing {
                 dc_sort_order = GenomeWideCombinableDomains.GenomeWideCombinableDomainsSortOrder.COMBINATIONS_COUNT;
             }
             else {
-                ForesterUtil.fatalError( surfacing.PRG_NAME, "unknown value \"" + sort
-                                         + "\" for sorting of domain counts: \"-" + surfacing.DOMAIN_COUNT_SORT_OPTION + "=<"
-                                         + surfacing.DOMAIN_COUNT_SORT_ALPHA + "|" + surfacing.DOMAIN_COUNT_SORT_KEY_DOMAIN_COUNT + "|"
-                                         + surfacing.DOMAIN_COUNT_SORT_KEY_DOMAIN_PROTEINS_COUNT + "|"
-                                         + surfacing.DOMAIN_COUNT_SORT_COMBINATIONS_COUNT + ">\"" );
+                ForesterUtil.fatalError( surfacing.PRG_NAME,
+                                         "unknown value \"" + sort + "\" for sorting of domain counts: \"-"
+                                                 + surfacing.DOMAIN_COUNT_SORT_OPTION + "=<"
+                                                 + surfacing.DOMAIN_COUNT_SORT_ALPHA + "|"
+                                                 + surfacing.DOMAIN_COUNT_SORT_KEY_DOMAIN_COUNT + "|"
+                                                 + surfacing.DOMAIN_COUNT_SORT_KEY_DOMAIN_PROTEINS_COUNT + "|"
+                                                 + surfacing.DOMAIN_COUNT_SORT_COMBINATIONS_COUNT + ">\"" );
             }
         }
         final String[][] input_file_properties = SurfacingUtil.processInputGenomesFile( input_genomes_file );
@@ -791,9 +821,10 @@ public class surfacing {
             ForesterUtil.fatalError( surfacing.PRG_NAME, "cannot analyze less than two files" );
         }
         if ( ( number_of_genomes < 3 ) && perform_pwc ) {
-            ForesterUtil.fatalError( surfacing.PRG_NAME, "cannot use : -"
-                    + surfacing.PAIRWISE_DOMAIN_COMPARISONS_OPTION
-                    + "=<suffix> to turn on pairwise analyses with less than three input files" );
+            ForesterUtil
+                    .fatalError( surfacing.PRG_NAME,
+                                 "cannot use : -" + surfacing.PAIRWISE_DOMAIN_COMPARISONS_OPTION
+                                         + "=<suffix> to turn on pairwise analyses with less than three input files" );
         }
         SurfacingUtil.checkWriteabilityForPairwiseComparisons( domain_similarity_print_option,
                                                                input_file_properties,
@@ -810,8 +841,9 @@ public class surfacing {
         File pfam_to_go_file = new File( "pfam2go.txt" );
         if ( cla.isOptionSet( surfacing.PFAM_TO_GO_FILE_USE_OPTION ) ) {
             if ( !cla.isOptionValueSet( surfacing.PFAM_TO_GO_FILE_USE_OPTION ) ) {
-                ForesterUtil.fatalError( surfacing.PRG_NAME, "no value for Pfam to GO mapping file: -"
-                        + surfacing.PFAM_TO_GO_FILE_USE_OPTION + "=<file>" );
+                ForesterUtil.fatalError( surfacing.PRG_NAME,
+                                         "no value for Pfam to GO mapping file: -"
+                                                 + surfacing.PFAM_TO_GO_FILE_USE_OPTION + "=<file>" );
             }
             pfam_to_go_file = new File( cla.getOptionValue( surfacing.PFAM_TO_GO_FILE_USE_OPTION ) );
         }
@@ -827,7 +859,7 @@ public class surfacing {
             domain_id_to_go_ids_map = SurfacingUtil.createDomainIdToGoIdMap( pfam_to_go_mappings );
             if ( parser.getMappingCount() < domain_id_to_go_ids_map.size() ) {
                 ForesterUtil.unexpectedFatalError( surfacing.PRG_NAME,
-                        "parser.getMappingCount() < domain_id_to_go_ids_map.size()" );
+                                                   "parser.getMappingCount() < domain_id_to_go_ids_map.size()" );
             }
             domain_id_to_go_ids_count = parser.getMappingCount();
         }
@@ -837,8 +869,8 @@ public class surfacing {
         File go_obo_file = new File( "go.obo" );
         if ( cla.isOptionSet( surfacing.GO_OBO_FILE_USE_OPTION ) ) {
             if ( !cla.isOptionValueSet( surfacing.GO_OBO_FILE_USE_OPTION ) ) {
-                ForesterUtil.fatalError( surfacing.PRG_NAME, "no value for GO OBO file: -"
-                        + surfacing.GO_OBO_FILE_USE_OPTION + "=<file>" );
+                ForesterUtil.fatalError( surfacing.PRG_NAME,
+                                         "no value for GO OBO file: -" + surfacing.GO_OBO_FILE_USE_OPTION + "=<file>" );
             }
             go_obo_file = new File( cla.getOptionValue( surfacing.GO_OBO_FILE_USE_OPTION ) );
         }
@@ -865,17 +897,18 @@ public class surfacing {
         GoNameSpace go_namespace_limit = null;
         if ( cla.isOptionSet( surfacing.GO_NAMESPACE_LIMIT_OPTION ) ) {
             if ( ( go_id_to_term_map == null ) || go_id_to_term_map.isEmpty() ) {
-                ForesterUtil.fatalError( surfacing.PRG_NAME, "cannot use GO namespace limit (-"
-                        + surfacing.GO_NAMESPACE_LIMIT_OPTION + "=<namespace>) without Pfam to GO mapping file ("
-                        + surfacing.PFAM_TO_GO_FILE_USE_OPTION + "=<file>) and GO OBO file (-"
-                        + surfacing.GO_OBO_FILE_USE_OPTION + "=<file>)" );
+                ForesterUtil.fatalError( surfacing.PRG_NAME,
+                                         "cannot use GO namespace limit (-" + surfacing.GO_NAMESPACE_LIMIT_OPTION
+                                                 + "=<namespace>) without Pfam to GO mapping file ("
+                                                 + surfacing.PFAM_TO_GO_FILE_USE_OPTION + "=<file>) and GO OBO file (-"
+                                                 + surfacing.GO_OBO_FILE_USE_OPTION + "=<file>)" );
             }
             if ( !cla.isOptionValueSet( surfacing.GO_NAMESPACE_LIMIT_OPTION ) ) {
-                ForesterUtil.fatalError( surfacing.PRG_NAME, "no value for GO namespace limit: \"-"
-                        + surfacing.GO_NAMESPACE_LIMIT_OPTION + "=<"
-                        + surfacing.GO_NAMESPACE_LIMIT_OPTION_MOLECULAR_FUNCTION + "|"
-                        + surfacing.GO_NAMESPACE_LIMIT_OPTION_BIOLOGICAL_PROCESS + "|"
-                        + surfacing.GO_NAMESPACE_LIMIT_OPTION_CELLULAR_COMPONENT + ">\"" );
+                ForesterUtil.fatalError( surfacing.PRG_NAME,
+                                         "no value for GO namespace limit: \"-" + surfacing.GO_NAMESPACE_LIMIT_OPTION
+                                                 + "=<" + surfacing.GO_NAMESPACE_LIMIT_OPTION_MOLECULAR_FUNCTION + "|"
+                                                 + surfacing.GO_NAMESPACE_LIMIT_OPTION_BIOLOGICAL_PROCESS + "|"
+                                                 + surfacing.GO_NAMESPACE_LIMIT_OPTION_CELLULAR_COMPONENT + ">\"" );
             }
             final String go_namespace_limit_str = cla.getOptionValue( surfacing.GO_NAMESPACE_LIMIT_OPTION )
                     .toLowerCase();
@@ -889,11 +922,12 @@ public class surfacing {
                 go_namespace_limit = GoNameSpace.createCellularComponent();
             }
             else {
-                ForesterUtil.fatalError( surfacing.PRG_NAME, "unknown value \"" + go_namespace_limit_str
-                                         + "\" for GO namespace limit: \"-" + surfacing.GO_NAMESPACE_LIMIT_OPTION + "=<"
-                                         + surfacing.GO_NAMESPACE_LIMIT_OPTION_MOLECULAR_FUNCTION + "|"
-                                         + surfacing.GO_NAMESPACE_LIMIT_OPTION_BIOLOGICAL_PROCESS + "|"
-                                         + surfacing.GO_NAMESPACE_LIMIT_OPTION_CELLULAR_COMPONENT + ">\"" );
+                ForesterUtil.fatalError( surfacing.PRG_NAME,
+                                         "unknown value \"" + go_namespace_limit_str + "\" for GO namespace limit: \"-"
+                                                 + surfacing.GO_NAMESPACE_LIMIT_OPTION + "=<"
+                                                 + surfacing.GO_NAMESPACE_LIMIT_OPTION_MOLECULAR_FUNCTION + "|"
+                                                 + surfacing.GO_NAMESPACE_LIMIT_OPTION_BIOLOGICAL_PROCESS + "|"
+                                                 + surfacing.GO_NAMESPACE_LIMIT_OPTION_CELLULAR_COMPONENT + ">\"" );
             }
         }
         if ( ( domain_similarity_sort_field == DomainSimilarity.DomainSimilaritySortField.MAX_COUNTS_DIFFERENCE )
@@ -904,14 +938,16 @@ public class surfacing {
         Phylogeny[] intrees = null;
         if ( cla.isOptionSet( surfacing.INPUT_SPECIES_TREE_OPTION ) ) {
             if ( number_of_genomes < 3 ) {
-                ForesterUtil.fatalError( surfacing.PRG_NAME, "cannot infer gains and losses on input species trees (-"
-                        + surfacing.INPUT_SPECIES_TREE_OPTION + " without pairwise analyses ("
-                        + surfacing.PAIRWISE_DOMAIN_COMPARISONS_OPTION
-                        + "=<suffix for pairwise comparison output files>)" );
+                ForesterUtil.fatalError( surfacing.PRG_NAME,
+                                         "cannot infer gains and losses on input species trees (-"
+                                                 + surfacing.INPUT_SPECIES_TREE_OPTION + " without pairwise analyses ("
+                                                 + surfacing.PAIRWISE_DOMAIN_COMPARISONS_OPTION
+                                                 + "=<suffix for pairwise comparison output files>)" );
             }
             if ( !cla.isOptionValueSet( surfacing.INPUT_SPECIES_TREE_OPTION ) ) {
-                ForesterUtil.fatalError( surfacing.PRG_NAME, "no value for input tree: -"
-                        + surfacing.INPUT_SPECIES_TREE_OPTION + "=<tree file in phyloXML format>" );
+                ForesterUtil.fatalError( surfacing.PRG_NAME,
+                                         "no value for input tree: -" + surfacing.INPUT_SPECIES_TREE_OPTION
+                                                 + "=<tree file in phyloXML format>" );
             }
             final String intrees_str = cla.getOptionValue( surfacing.INPUT_SPECIES_TREE_OPTION );
             if ( intrees_str.indexOf( "#" ) > 0 ) {
@@ -926,15 +962,18 @@ public class surfacing {
                 intree_files = new File[ 1 ];
                 intree_files[ 0 ] = new File( intrees_str );
             }
-            intrees = SurfacingUtil.obtainAndPreProcessIntrees( intree_files, number_of_genomes, input_file_properties );
+            intrees = SurfacingUtil.obtainAndPreProcessIntrees( intree_files,
+                                                                number_of_genomes,
+                                                                input_file_properties );
         }
         final Phylogeny intree_0_orig = SurfacingUtil.obtainFirstIntree( intree_files[ 0 ] );
         long random_number_seed_for_fitch_parsimony = 0l;
         boolean radomize_fitch_parsimony = false;
         if ( cla.isOptionSet( surfacing.RANDOM_SEED_FOR_FITCH_PARSIMONY_OPTION ) ) {
             if ( !cla.isOptionValueSet( surfacing.RANDOM_SEED_FOR_FITCH_PARSIMONY_OPTION ) ) {
-                ForesterUtil.fatalError( surfacing.PRG_NAME, "no value for random number seed: -"
-                        + surfacing.RANDOM_SEED_FOR_FITCH_PARSIMONY_OPTION + "=<seed>" );
+                ForesterUtil.fatalError( surfacing.PRG_NAME,
+                                         "no value for random number seed: -"
+                                                 + surfacing.RANDOM_SEED_FOR_FITCH_PARSIMONY_OPTION + "=<seed>" );
             }
             try {
                 random_number_seed_for_fitch_parsimony = cla
@@ -962,14 +1001,15 @@ public class surfacing {
         Map<String, Set<String>>[] domain_id_to_secondary_features_maps = null;
         File[] secondary_features_map_files = null;
         final File domain_lengths_analysis_outfile = new File( out_dir + ForesterUtil.FILE_SEPARATOR + output_file
-                                                               + DOMAIN_LENGTHS_ANALYSIS_SUFFIX );
+                + DOMAIN_LENGTHS_ANALYSIS_SUFFIX );
         if ( domain_length_analysis ) {
             SurfacingUtil.checkForOutputFileWriteability( domain_lengths_analysis_outfile );
         }
         if ( cla.isOptionSet( surfacing.SECONDARY_FEATURES_PARSIMONY_MAP_FILE ) ) {
             if ( !cla.isOptionValueSet( surfacing.SECONDARY_FEATURES_PARSIMONY_MAP_FILE ) ) {
-                ForesterUtil.fatalError( surfacing.PRG_NAME, "no value for secondary features map file: -"
-                        + surfacing.SECONDARY_FEATURES_PARSIMONY_MAP_FILE + "=<file>" );
+                ForesterUtil.fatalError( surfacing.PRG_NAME,
+                                         "no value for secondary features map file: -"
+                                                 + surfacing.SECONDARY_FEATURES_PARSIMONY_MAP_FILE + "=<file>" );
             }
             final String[] secondary_features_map_files_strs = cla
                     .getOptionValue( surfacing.SECONDARY_FEATURES_PARSIMONY_MAP_FILE ).split( "#" );
@@ -991,19 +1031,21 @@ public class surfacing {
                                              "cannot read secondary features map file: " + e.getMessage() );
                 }
                 catch ( final Exception e ) {
-                    ForesterUtil.fatalError( surfacing.PRG_NAME, "problem with contents of features map file ["
-                            + secondary_features_map_files[ i ] + "]: " + e.getMessage() );
+                    ForesterUtil.fatalError( surfacing.PRG_NAME,
+                                             "problem with contents of features map file ["
+                                                     + secondary_features_map_files[ i ] + "]: " + e.getMessage() );
                 }
                 i++;
             }
         }
         if ( out_dir == null ) {
-            ForesterUtil.fatalError( surfacing.PRG_NAME, "no output directory indicated (-"
-                    + surfacing.OUTPUT_DIR_OPTION + "=<dir>)" );
+            ForesterUtil.fatalError( surfacing.PRG_NAME,
+                                     "no output directory indicated (-" + surfacing.OUTPUT_DIR_OPTION + "=<dir>)" );
         }
         if ( output_file == null ) {
-            ForesterUtil.fatalError( surfacing.PRG_NAME, "no name for (main) output file indicated (-"
-                    + surfacing.OUTPUT_FILE_OPTION + "=<file>)" );
+            ForesterUtil.fatalError( surfacing.PRG_NAME,
+                                     "no name for (main) output file indicated (-" + surfacing.OUTPUT_FILE_OPTION
+                                             + "=<file>)" );
         }
         if ( ( domain_id_to_go_ids_map == null ) || domain_id_to_go_ids_map.isEmpty() ) {
             ForesterUtil.fatalError( surfacing.PRG_NAME,
@@ -1021,21 +1063,21 @@ public class surfacing {
         if ( positive_filter_file != null ) {
             final int filter_size = filter.size();
             System.out.println( "Positive protein filter     : " + positive_filter_file + " [" + filter_size
-                                + " domain ids]" );
+                    + " domain ids]" );
             html_desc.append( "<tr><td>Positive protein filter:</td><td>" + positive_filter_file + " [" + filter_size
-                              + " domain ids]</td></tr>" + nl );
+                    + " domain ids]</td></tr>" + nl );
         }
         if ( negative_filter_file != null ) {
             final int filter_size = filter.size();
             System.out.println( "Negative protein filter     : " + negative_filter_file + " [" + filter_size
-                                + " domain ids]" );
+                    + " domain ids]" );
             html_desc.append( "<tr><td>Negative protein filter:</td><td>" + negative_filter_file + " [" + filter_size
-                              + " domain ids]</td></tr>" + nl );
+                    + " domain ids]</td></tr>" + nl );
         }
         if ( negative_domains_filter_file != null ) {
             final int filter_size = filter.size();
             System.out.println( "Negative domain filter      : " + negative_domains_filter_file + " [" + filter_size
-                                + " domain ids]" );
+                    + " domain ids]" );
             html_desc.append( "<tr><td>Negative domain filter:</td><td>" + negative_domains_filter_file + " ["
                     + filter_size + " domain ids]</td></tr>" + nl );
         }
@@ -1054,7 +1096,7 @@ public class surfacing {
             }
             System.out.println( "Plus-minus analysis         : " + plus1 + "&& " + plus0 + "&& " + minus );
             html_desc.append( "<tr><td>Plus-minus analysis:</td><td>" + plus1 + "&& " + plus0 + "&& " + minus
-                              + "</td></tr>" + nl );
+                    + "</td></tr>" + nl );
         }
         if ( cutoff_scores_file != null ) {
             System.out.println( "Cutoff scores file          : " + cutoff_scores_file );
@@ -1076,27 +1118,28 @@ public class surfacing {
         System.out.println( "Ignore DUFs                 : " + ignore_dufs );
         if ( ignore_virus_like_ids ) {
             System.out.println( "Ignore virus like ids       : " + ignore_virus_like_ids );
-            html_desc.append( "<tr><td>Ignore virus, phage, transposition related ids:</td><td>"
-                    + ignore_virus_like_ids + "</td></tr>" + nl );
+            html_desc.append( "<tr><td>Ignore virus, phage, transposition related ids:</td><td>" + ignore_virus_like_ids
+                    + "</td></tr>" + nl );
         }
         html_desc.append( "<tr><td>Ignore DUFs:</td><td>" + ignore_dufs + "</td></tr>" + nl );
         if ( max_allowed_overlap != surfacing.MAX_ALLOWED_OVERLAP_DEFAULT ) {
             System.out.println( "Max allowed domain overlap  : " + max_allowed_overlap );
-            html_desc.append( "<tr><td>Max allowed domain overlap:</td><td>" + max_allowed_overlap + "</td></tr>" + nl );
+            html_desc
+                    .append( "<tr><td>Max allowed domain overlap:</td><td>" + max_allowed_overlap + "</td></tr>" + nl );
         }
         if ( no_engulfing_overlaps ) {
             System.out.println( "Ignore engulfed domains     : " + no_engulfing_overlaps );
             html_desc.append( "<tr><td>Ignore (lower confidence) engulfed domains:</td><td>" + no_engulfing_overlaps
-                              + "</td></tr>" + nl );
+                    + "</td></tr>" + nl );
         }
         System.out.println( "Ignore singlet domains      : " + ignore_domains_without_combs_in_all_spec );
         html_desc
-        .append( "<tr><td>Ignore singlet domains for domain combination similarity analyses (not for parsimony analyses):</td><td>"
-                + ignore_domains_without_combs_in_all_spec + "</td></tr>" + nl );
+                .append( "<tr><td>Ignore singlet domains for domain combination similarity analyses (not for parsimony analyses):</td><td>"
+                        + ignore_domains_without_combs_in_all_spec + "</td></tr>" + nl );
         System.out.println( "Ignore species specific doms: " + ignore_species_specific_domains );
         html_desc
-        .append( "<tr><td>Ignore species specific domains for domain combination similarity analyses (not for parsimony analyses):</td><td>"
-                + ignore_species_specific_domains + "</td></tr>" + nl );
+                .append( "<tr><td>Ignore species specific domains for domain combination similarity analyses (not for parsimony analyses):</td><td>"
+                        + ignore_species_specific_domains + "</td></tr>" + nl );
         System.out.println( "Ignore combination with self: " + ignore_combination_with_same );
         html_desc.append( "<tr><td>Ignore combination with self for domain combination similarity analyses:</td><td>"
                 + ignore_combination_with_same + "</td></tr>" + nl );
@@ -1116,14 +1159,14 @@ public class surfacing {
         if ( perform_dc_fich ) {
             System.out.println( "Use last in Fitch parsimony : " + use_last_in_fitch_parsimony );
             html_desc.append( "<tr><td>Use last in Fitch parsimony:</td><td>" + use_last_in_fitch_parsimony
-                              + "</td></tr>" + nl );
+                    + "</td></tr>" + nl );
         }
         System.out.println( "Write to Nexus files        : " + write_to_nexus );
         html_desc.append( "<tr><td>Write to Nexus files:</td><td>" + write_to_nexus + "</td></tr>" + nl );
         if ( perform_dc_fich ) {
             System.out.println( "DC regain prot stats        : " + perform_dc_regain_proteins_stats );
-            html_desc.append( "<tr><td>DC regain prot stats:</td><td>" + perform_dc_regain_proteins_stats
-                              + "</td></tr>" + nl );
+            html_desc.append( "<tr><td>DC regain prot stats:</td><td>" + perform_dc_regain_proteins_stats + "</td></tr>"
+                    + nl );
         }
         System.out.println( "DA analysis                 : " + da_analysis );
         html_desc.append( "<tr><td>DA analysis :</td><td>" + da_analysis + "</td></tr>" + nl );
@@ -1151,7 +1194,7 @@ public class surfacing {
         }
         if ( domain_id_to_go_ids_map != null ) {
             System.out.println( "Pfam to GO mappings from    : " + pfam_to_go_file + " [" + domain_id_to_go_ids_count
-                                + " mappings]" );
+                    + " mappings]" );
             html_desc.append( "<tr><td>Pfam to GO mappings from:</td><td>" + pfam_to_go_file + " ["
                     + domain_id_to_go_ids_count + " mappings]" + "</td></tr>" + nl );
         }
@@ -1167,7 +1210,7 @@ public class surfacing {
         if ( perform_pwc ) {
             System.out.println( "Suffix for PWC files        : " + automated_pairwise_comparison_suffix );
             html_desc.append( "<tr><td>Suffix for PWC files</td><td>" + automated_pairwise_comparison_suffix
-                              + "</td></tr>" + nl );
+                    + "</td></tr>" + nl );
         }
         if ( out_dir != null ) {
             System.out.println( "Output directory            : " + out_dir );
@@ -1303,15 +1346,15 @@ public class surfacing {
                     html_desc.append( "counts difference" );
                     break;
                 default:
-                    ForesterUtil
-                    .unexpectedFatalError( surfacing.PRG_NAME, "unknown value for sorting for similarities" );
+                    ForesterUtil.unexpectedFatalError( surfacing.PRG_NAME,
+                                                       "unknown value for sorting for similarities" );
             }
             System.out.println();
             html_desc.append( "</td></tr>" + nl );
             if ( ( intrees != null ) && ( intrees.length > 0 ) ) {
                 for( final File intree_file : intree_files ) {
                     html_desc.append( "<tr><td>Intree for gain/loss parsimony analysis:</td><td>" + intree_file
-                                      + "</td></tr>" + nl );
+                            + "</td></tr>" + nl );
                     System.out.println( "  Intree for gain/loss pars.: " + intree_file );
                 }
             }
@@ -1320,7 +1363,8 @@ public class surfacing {
                         + random_number_seed_for_fitch_parsimony + "</td></tr>" + nl );
                 System.out.println( "    Random number seed      : " + random_number_seed_for_fitch_parsimony );
             }
-            if ( ( domain_id_to_secondary_features_maps != null ) && ( domain_id_to_secondary_features_maps.length > 0 ) ) {
+            if ( ( domain_id_to_secondary_features_maps != null )
+                    && ( domain_id_to_secondary_features_maps.length > 0 ) ) {
                 for( int i = 0; i < secondary_features_map_files.length; i++ ) {
                     html_desc.append( "<tr><td>Secondary features map file:</td><td>"
                             + secondary_features_map_files[ i ] + "</td></tr>" + nl );
@@ -1344,7 +1388,7 @@ public class surfacing {
         } // if ( perform_pwc ) {
         System.out.println();
         html_desc.append( "<tr><td>Command line:</td><td>" + nl + nl + cla.getCommandLineArgsAsString() + nl + nl
-                          + "</td></tr>" + nl );
+                + "</td></tr>" + nl );
         System.out.println( "Command line                : " + cla.getCommandLineArgsAsString() );
         BufferedWriter[] query_domains_writer_ary = null;
         List<String>[] query_domain_ids_array = null;
@@ -1369,14 +1413,16 @@ public class surfacing {
                     query_domains_writer_ary[ i ] = new BufferedWriter( new FileWriter( protein_names_writer_str ) );
                 }
                 catch ( final IOException e ) {
-                    ForesterUtil.fatalError( surfacing.PRG_NAME, "Could not open [" + protein_names_writer_str + "]: "
-                            + e.getLocalizedMessage() );
+                    ForesterUtil.fatalError( surfacing.PRG_NAME,
+                                             "Could not open [" + protein_names_writer_str + "]: "
+                                                     + e.getLocalizedMessage() );
                 }
             }
         }
         SortedMap<Species, List<Protein>> protein_lists_per_species = null; //This will only be created if needed.
         boolean need_protein_lists_per_species = false;
-        if ( ( plus_minus_analysis_high_copy_base_species.size() > 0 ) || output_protein_lists_for_all_domains || true ) { //TODO
+        if ( ( plus_minus_analysis_high_copy_base_species.size() > 0 ) || output_protein_lists_for_all_domains
+                || true ) { //TODO
             need_protein_lists_per_species = true;
         }
         if ( need_protein_lists_per_species ) {
@@ -1392,7 +1438,7 @@ public class surfacing {
             all_bin_domain_combinations_lost_fitch = new ArrayList<BinaryDomainCombination>();
         }
         final File per_genome_domain_promiscuity_statistics_file = new File( out_dir + ForesterUtil.FILE_SEPARATOR
-                                                                             + output_file + D_PROMISCUITY_FILE_SUFFIX );
+                + output_file + D_PROMISCUITY_FILE_SUFFIX );
         BufferedWriter per_genome_domain_promiscuity_statistics_writer = null;
         try {
             per_genome_domain_promiscuity_statistics_writer = new BufferedWriter( new FileWriter( per_genome_domain_promiscuity_statistics_file ) );
@@ -1403,8 +1449,8 @@ public class surfacing {
             per_genome_domain_promiscuity_statistics_writer.write( "Min:\t" );
             per_genome_domain_promiscuity_statistics_writer.write( "Max:\t" );
             per_genome_domain_promiscuity_statistics_writer.write( "N:\t" );
-            per_genome_domain_promiscuity_statistics_writer.write( "Max Promiscuous Domains:"
-                    + ForesterUtil.LINE_SEPARATOR );
+            per_genome_domain_promiscuity_statistics_writer
+                    .write( "Max Promiscuous Domains:" + ForesterUtil.LINE_SEPARATOR );
         }
         catch ( final IOException e2 ) {
             ForesterUtil.fatalError( surfacing.PRG_NAME, e2.getMessage() );
@@ -1435,7 +1481,7 @@ public class surfacing {
         BufferedWriter domains_per_potein_stats_writer = null;
         try {
             domains_per_potein_stats_writer = new BufferedWriter( new FileWriter( out_dir + ForesterUtil.FILE_SEPARATOR
-                                                                                  + output_file + "_domains_per_potein_stats.txt" ) );
+                    + output_file + "_domains_per_potein_stats.txt" ) );
             domains_per_potein_stats_writer.write( "Genome" );
             domains_per_potein_stats_writer.write( "\t" );
             domains_per_potein_stats_writer.write( "Mean" );
@@ -1556,8 +1602,7 @@ public class surfacing {
             System.out.println( "Coverage                                       : "
                     + ForesterUtil.roundToInt( 100.0 * coverage ) + "%" );
             SurfacingUtil.log( "Coverage                                       : "
-                    + ForesterUtil.roundToInt( 100.0 * coverage ) + "%",
-                    log_writer );
+                    + ForesterUtil.roundToInt( 100.0 * coverage ) + "%", log_writer );
             System.out.println( "Domains encountered                            : " + parser.getDomainsEncountered() );
             SurfacingUtil.log( "Domains encountered                            : " + parser.getDomainsEncountered(),
                                log_writer );
@@ -1566,58 +1611,53 @@ public class surfacing {
                                log_writer );
             System.out.println( "Distinct domains stored                        : "
                     + parser.getDomainsStoredSet().size() );
-            SurfacingUtil.log( "Distinct domains stored                        : "
-                    + parser.getDomainsStoredSet().size(), log_writer );
+            SurfacingUtil
+                    .log( "Distinct domains stored                        : " + parser.getDomainsStoredSet().size(),
+                          log_writer );
             System.out.println( "Domains ignored due to individual score cutoffs: "
                     + parser.getDomainsIgnoredDueToIndividualScoreCutoff() );
             SurfacingUtil.log( "Domains ignored due to individual score cutoffs: "
-                    + parser.getDomainsIgnoredDueToIndividualScoreCutoff(),
-                    log_writer );
+                    + parser.getDomainsIgnoredDueToIndividualScoreCutoff(), log_writer );
             System.out.println( "Domains ignored due to FS E-value              : "
                     + parser.getDomainsIgnoredDueToFsEval() );
-            SurfacingUtil.log( "Domains ignored due to FS E-value              : "
-                    + parser.getDomainsIgnoredDueToFsEval(),
-                    log_writer );
+            SurfacingUtil
+                    .log( "Domains ignored due to FS E-value              : " + parser.getDomainsIgnoredDueToFsEval(),
+                          log_writer );
             System.out.println( "Domains ignored due to iE-value                : "
                     + parser.getDomainsIgnoredDueToIEval() );
-            SurfacingUtil.log( "Domains ignored due to iE-value                : "
-                    + parser.getDomainsIgnoredDueToIEval(),
-                    log_writer );
+            SurfacingUtil
+                    .log( "Domains ignored due to iE-value                : " + parser.getDomainsIgnoredDueToIEval(),
+                          log_writer );
             System.out.println( "Domains ignored due to DUF designation         : "
                     + parser.getDomainsIgnoredDueToDuf() );
-            SurfacingUtil
-            .log( "Domains ignored due to DUF designation         : " + parser.getDomainsIgnoredDueToDuf(),
-                  log_writer );
+            SurfacingUtil.log( "Domains ignored due to DUF designation         : " + parser.getDomainsIgnoredDueToDuf(),
+                               log_writer );
             if ( ignore_virus_like_ids ) {
                 System.out.println( "Domains ignored due virus like ids             : "
                         + parser.getDomainsIgnoredDueToVirusLikeIds() );
                 SurfacingUtil.log( "Domains ignored due virus like ids             : "
-                        + parser.getDomainsIgnoredDueToVirusLikeIds(),
-                        log_writer );
+                        + parser.getDomainsIgnoredDueToVirusLikeIds(), log_writer );
             }
             System.out.println( "Domains ignored due negative domain filter     : "
                     + parser.getDomainsIgnoredDueToNegativeDomainFilter() );
             SurfacingUtil.log( "Domains ignored due negative domain filter     : "
-                    + parser.getDomainsIgnoredDueToNegativeDomainFilter(),
-                    log_writer );
+                    + parser.getDomainsIgnoredDueToNegativeDomainFilter(), log_writer );
             System.out.println( "Domains ignored due to overlap                 : "
                     + parser.getDomainsIgnoredDueToOverlap() );
-            SurfacingUtil.log( "Domains ignored due to overlap                 : "
-                    + parser.getDomainsIgnoredDueToOverlap(),
-                    log_writer );
+            SurfacingUtil
+                    .log( "Domains ignored due to overlap                 : " + parser.getDomainsIgnoredDueToOverlap(),
+                          log_writer );
             if ( negative_filter_file != null ) {
                 System.out.println( "Proteins ignored due to negative filter        : "
                         + parser.getProteinsIgnoredDueToFilter() );
                 SurfacingUtil.log( "Proteins ignored due to negative filter        : "
-                        + parser.getProteinsIgnoredDueToFilter(),
-                        log_writer );
+                        + parser.getProteinsIgnoredDueToFilter(), log_writer );
             }
             if ( positive_filter_file != null ) {
                 System.out.println( "Proteins ignored due to positive filter        : "
                         + parser.getProteinsIgnoredDueToFilter() );
                 SurfacingUtil.log( "Proteins ignored due to positive filter        : "
-                        + parser.getProteinsIgnoredDueToFilter(),
-                        log_writer );
+                        + parser.getProteinsIgnoredDueToFilter(), log_writer );
             }
             if ( da_analysis ) {
                 System.out.println( "Distinct domain architectures stored           : " + distinct_das );
@@ -1628,8 +1668,8 @@ public class surfacing {
             try {
                 int count = 0;
                 for( final Protein protein : protein_list ) {
-                    dc_data_writer.write( SurfacingUtil.proteinToDomainCombinations( protein, count + "", "\t" )
-                                          .toString() );
+                    dc_data_writer
+                            .write( SurfacingUtil.proteinToDomainCombinations( protein, count + "", "\t" ).toString() );
                     ++count;
                     for( final Domain d : protein.getProteinDomains() ) {
                         final String d_str = d.getDomainId().toString();
@@ -1655,23 +1695,21 @@ public class surfacing {
                 domain_lengths_table.addLengths( protein_list );
             }
             if ( !da_analysis ) {
-                gwcd_list.add( BasicGenomeWideCombinableDomains
-                               .createInstance( protein_list,
-                                                ignore_combination_with_same,
-                                                new BasicSpecies( input_file_properties[ i ][ 1 ] ),
-                                                domain_id_to_go_ids_map,
-                                                dc_type,
-                                                protein_length_stats_by_dc,
-                                                domain_number_stats_by_dc ) );
+                gwcd_list.add( BasicGenomeWideCombinableDomains.createInstance( protein_list,
+                                                                                ignore_combination_with_same,
+                                                                                new BasicSpecies( input_file_properties[ i ][ 1 ] ),
+                                                                                domain_id_to_go_ids_map,
+                                                                                dc_type,
+                                                                                protein_length_stats_by_dc,
+                                                                                domain_number_stats_by_dc ) );
                 if ( gwcd_list.get( i ).getSize() > 0 ) {
                     if ( output_binary_domain_combinationsfor_counts ) {
-                        SurfacingUtil
-                        .writeDomainCombinationsCountsFile( input_file_properties,
-                                                            out_dir,
-                                                            per_genome_domain_promiscuity_statistics_writer,
-                                                            gwcd_list.get( i ),
-                                                            i,
-                                                            dc_sort_order );
+                        SurfacingUtil.writeDomainCombinationsCountsFile( input_file_properties,
+                                                                         out_dir,
+                                                                         per_genome_domain_promiscuity_statistics_writer,
+                                                                         gwcd_list.get( i ),
+                                                                         i,
+                                                                         dc_sort_order );
                     }
                     if ( output_binary_domain_combinationsfor_graph_analysis ) {
                         SurfacingUtil.writeBinaryDomainCombinationsFileForGraphAnalysis( input_file_properties,
@@ -1711,21 +1749,33 @@ public class surfacing {
             }
             System.gc();
         } // for( int i = 0; i < number_of_genomes; ++i ) {
-        ForesterUtil.programMessage( PRG_NAME, "Wrote domain promiscuities to: "
-                + per_genome_domain_promiscuity_statistics_file );
+        ForesterUtil
+                .programMessage( PRG_NAME,
+                                 "Wrote domain promiscuities to: " + per_genome_domain_promiscuity_statistics_file );
         //
-        if (true) { //TODO
-             MinimalDomainomeCalculator.calc( intree_0_orig, protein_lists_per_species );
+        if ( true ) { //TODO
+            MinimalDomainomeCalculator.calcDomainome( intree_0_orig, protein_lists_per_species, -1 );
         }
-        
+        if ( true ) { //TODO
+            try {
+                MinimalDomainomeCalculator.calcDAome( intree_0_orig,
+                                                      protein_lists_per_species,
+                                                      "---",
+                                                      1000,
+                                                      out_dir.toString() + "/" + output_file );
+            }
+            catch ( IOException e ) {
+                ForesterUtil.fatalError( surfacing.PRG_NAME, e.getLocalizedMessage() );
+            }
+        }
         if ( da_analysis ) {
             SurfacingUtil.performDomainArchitectureAnalysis( distinct_domain_architecutures_per_genome,
                                                              distinct_domain_architecuture_counts,
                                                              10,
                                                              new File( out_dir.toString() + "/" + output_file
-                                                                       + "_DA_counts.txt" ),
-                                                                       new File( out_dir.toString() + "/" + output_file
-                                                                                 + "_unique_DAs.txt" ) );
+                                                                     + "_DA_counts.txt" ),
+                                                             new File( out_dir.toString() + "/" + output_file
+                                                                     + "_unique_DAs.txt" ) );
             distinct_domain_architecutures_per_genome.clear();
             distinct_domain_architecuture_counts.clear();
             System.gc();
@@ -1735,7 +1785,8 @@ public class surfacing {
             domains_per_potein_stats_writer.write( "\t" );
             domains_per_potein_stats_writer.write( all_genomes_domains_per_potein_stats.arithmeticMean() + "" );
             domains_per_potein_stats_writer.write( "\t" );
-            domains_per_potein_stats_writer.write( all_genomes_domains_per_potein_stats.sampleStandardDeviation() + "" );
+            domains_per_potein_stats_writer
+                    .write( all_genomes_domains_per_potein_stats.sampleStandardDeviation() + "" );
             domains_per_potein_stats_writer.write( "\t" );
             if ( all_genomes_domains_per_potein_stats.getN() <= 300 ) {
                 domains_per_potein_stats_writer.write( all_genomes_domains_per_potein_stats.median() + "" );
@@ -1750,29 +1801,43 @@ public class surfacing {
             domains_per_potein_stats_writer.close();
             all_genomes_domains_per_potein_stats = null;
             SurfacingUtil.printOutPercentageOfMultidomainProteins( all_genomes_domains_per_potein_histo, log_writer );
-            ForesterUtil.map2file( new File( out_dir + ForesterUtil.FILE_SEPARATOR + output_file
-                                             + "_all_genomes_domains_per_potein_histo.txt" ), all_genomes_domains_per_potein_histo, "\t", "\n" );
-            ForesterUtil.collection2file( new File( out_dir + ForesterUtil.FILE_SEPARATOR + output_file
-                                                    + "_domains_always_single_.txt" ), domains_which_are_always_single, "\n" );
-            ForesterUtil.collection2file( new File( out_dir + ForesterUtil.FILE_SEPARATOR + output_file
-                                                    + "_domains_single_or_combined.txt" ), domains_which_are_sometimes_single_sometimes_not, "\n" );
-            ForesterUtil.collection2file( new File( out_dir + ForesterUtil.FILE_SEPARATOR + output_file
-                                                    + "_domains_always_combined.txt" ), domains_which_never_single, "\n" );
+            ForesterUtil.map2file(
+                                   new File( out_dir + ForesterUtil.FILE_SEPARATOR + output_file
+                                           + "_all_genomes_domains_per_potein_histo.txt" ),
+                                   all_genomes_domains_per_potein_histo,
+                                   "\t",
+                                   "\n" );
+            ForesterUtil.collection2file(
+                                          new File( out_dir + ForesterUtil.FILE_SEPARATOR + output_file
+                                                  + "_domains_always_single_.txt" ),
+                                          domains_which_are_always_single,
+                                          "\n" );
+            ForesterUtil.collection2file(
+                                          new File( out_dir + ForesterUtil.FILE_SEPARATOR + output_file
+                                                  + "_domains_single_or_combined.txt" ),
+                                          domains_which_are_sometimes_single_sometimes_not,
+                                          "\n" );
+            ForesterUtil.collection2file(
+                                          new File( out_dir + ForesterUtil.FILE_SEPARATOR + output_file
+                                                  + "_domains_always_combined.txt" ),
+                                          domains_which_never_single,
+                                          "\n" );
             ForesterUtil.programMessage( PRG_NAME,
                                          "Average of proteins with a least one domain assigned: "
                                                  + ( 100 * protein_coverage_stats.arithmeticMean() ) + "% (+/-"
                                                  + ( 100 * protein_coverage_stats.sampleStandardDeviation() ) + "%)" );
-            ForesterUtil.programMessage( PRG_NAME, "Range of proteins with a least one domain assigned: "
-                    + ( 100 * protein_coverage_stats.getMin() ) + "%-" + ( 100 * protein_coverage_stats.getMax() )
-                    + "%" );
-            SurfacingUtil.log( "Average of prot with a least one dom assigned  : "
-                    + ( 100 * protein_coverage_stats.arithmeticMean() ) + "% (+/-"
-                    + ( 100 * protein_coverage_stats.sampleStandardDeviation() ) + "%)",
-                    log_writer );
+            ForesterUtil.programMessage( PRG_NAME,
+                                         "Range of proteins with a least one domain assigned: "
+                                                 + ( 100 * protein_coverage_stats.getMin() ) + "%-"
+                                                 + ( 100 * protein_coverage_stats.getMax() ) + "%" );
+            SurfacingUtil.log(
+                               "Average of prot with a least one dom assigned  : "
+                                       + ( 100 * protein_coverage_stats.arithmeticMean() ) + "% (+/-"
+                                       + ( 100 * protein_coverage_stats.sampleStandardDeviation() ) + "%)",
+                               log_writer );
             SurfacingUtil.log( "Range of prot with a least one dom assigned    : "
-                    + ( 100 * protein_coverage_stats.getMin() ) + "%-"
-                    + ( 100 * protein_coverage_stats.getMax() ) + "%",
-                    log_writer );
+                    + ( 100 * protein_coverage_stats.getMin() ) + "%-" + ( 100 * protein_coverage_stats.getMax() )
+                    + "%", log_writer );
             protein_coverage_stats = null;
         }
         catch ( final IOException e2 ) {
@@ -1835,11 +1900,10 @@ public class surfacing {
         if ( domain_id_to_go_ids_map != null ) {
             go_annotation_output = DomainSimilarityCalculator.GoAnnotationOutput.ALL;
         }
-        final SortedSet<DomainSimilarity> similarities = calc
-                .calculateSimilarities( pw_calc,
-                                        gwcd_list,
-                                        ignore_domains_without_combs_in_all_spec,
-                                        ignore_species_specific_domains );
+        final SortedSet<DomainSimilarity> similarities = calc.calculateSimilarities( pw_calc,
+                                                                                     gwcd_list,
+                                                                                     ignore_domains_without_combs_in_all_spec,
+                                                                                     ignore_species_specific_domains );
         SurfacingUtil.decoratePrintableDomainSimilarities( similarities, detailedness );
         final Map<String, Integer> tax_code_to_id_map = SurfacingUtil.createTaxCodeToIdMap( intrees[ 0 ] );
         try {
@@ -1867,13 +1931,13 @@ public class surfacing {
             html_desc.append( "<tr><td>Sum of all distinct binary combinations:</td><td>"
                     + all_bin_domain_combinations_encountered.size() + "</td></tr>" + nl );
             html_desc.append( "<tr><td>Sum of all distinct domains:</td><td>" + all_domains_encountered.size()
-                              + "</td></tr>" + nl );
+                    + "</td></tr>" + nl );
             html_desc.append( "<tr><td>Analysis date/time:</td><td>"
                     + new java.text.SimpleDateFormat( "yyyy.MM.dd HH:mm:ss" ).format( new java.util.Date() )
                     + "</td></tr>" + nl );
             html_desc.append( "</table>" + nl );
             final Writer simple_tab_writer = new BufferedWriter( new FileWriter( out_dir + ForesterUtil.FILE_SEPARATOR
-                                                                                 + my_outfile + ".tsv" ) );
+                    + my_outfile.replaceFirst( ".html", ".tsv" ) ) );
             SurfacingUtil.writeDomainSimilaritiesToFile( html_desc,
                                                          new StringBuilder( number_of_genomes + " genomes" ),
                                                          simple_tab_writer,
@@ -1889,12 +1953,16 @@ public class surfacing {
                                                          intree_0_orig,
                                                          positive_filter_file != null ? filter : null );
             simple_tab_writer.close();
-            ForesterUtil.programMessage( surfacing.PRG_NAME, "Wrote main output (includes domain similarities) to: \""
-                    + ( out_dir == null ? my_outfile : out_dir + ForesterUtil.FILE_SEPARATOR + my_outfile ) + "\"" );
+            ForesterUtil.programMessage( surfacing.PRG_NAME,
+                                         "Wrote main output (includes domain similarities) to: \""
+                                                 + ( out_dir == null ? my_outfile
+                                                         : out_dir + ForesterUtil.FILE_SEPARATOR + my_outfile )
+                                                 + "\"" );
         }
         catch ( final IOException e ) {
-            ForesterUtil.fatalError( surfacing.PRG_NAME, "Failed to write similarites to: \"" + output_file + "\" ["
-                    + e.getMessage() + "]" );
+            ForesterUtil
+                    .fatalError( surfacing.PRG_NAME,
+                                 "Failed to write similarites to: \"" + output_file + "\" [" + e.getMessage() + "]" );
         }
         System.out.println();
         final Species[] species = new Species[ number_of_genomes ];
@@ -1936,24 +2004,32 @@ public class surfacing {
                 matrix_output_file = out_dir + ForesterUtil.FILE_SEPARATOR + matrix_output_file;
                 output_file = new File( out_dir + ForesterUtil.FILE_SEPARATOR + output_file );
             }
-            SurfacingUtil.writeMatrixToFile( new File( matrix_output_file
-                                                       + surfacing.MATRIX_MEAN_SCORE_BASED_GENOME_DISTANCE_SUFFIX ), pwgc.getDomainDistanceScoresMeans() );
-            SurfacingUtil
-            .writeMatrixToFile( new File( matrix_output_file
-                                          + surfacing.MATRIX_SHARED_BIN_COMBINATIONS_BASED_GENOME_DISTANCE_SUFFIX ),
-                                          pwgc.getSharedBinaryCombinationsBasedDistances() );
-            SurfacingUtil.writeMatrixToFile( new File( matrix_output_file
-                                                       + surfacing.MATRIX_SHARED_DOMAINS_BASED_GENOME_DISTANCE_SUFFIX ),
-                                                       pwgc.getSharedDomainsBasedDistances() );
+            SurfacingUtil.writeMatrixToFile(
+                                             new File( matrix_output_file
+                                                     + surfacing.MATRIX_MEAN_SCORE_BASED_GENOME_DISTANCE_SUFFIX ),
+                                             pwgc.getDomainDistanceScoresMeans() );
+            SurfacingUtil.writeMatrixToFile(
+                                             new File( matrix_output_file
+                                                     + surfacing.MATRIX_SHARED_BIN_COMBINATIONS_BASED_GENOME_DISTANCE_SUFFIX ),
+                                             pwgc.getSharedBinaryCombinationsBasedDistances() );
+            SurfacingUtil.writeMatrixToFile(
+                                             new File( matrix_output_file
+                                                     + surfacing.MATRIX_SHARED_DOMAINS_BASED_GENOME_DISTANCE_SUFFIX ),
+                                             pwgc.getSharedDomainsBasedDistances() );
             final Phylogeny nj_gd = SurfacingUtil.createNjTreeBasedOnMatrixToFile( new File( matrix_output_file
-                                                                                             + surfacing.NJ_TREE_MEAN_SCORE_BASED_GENOME_DISTANCE_SUFFIX ), pwgc.getDomainDistanceScoresMeans()
-                                                                                             .get( 0 ) );
-            final Phylogeny nj_bc = SurfacingUtil.createNjTreeBasedOnMatrixToFile( new File( matrix_output_file
-                                                                                             + surfacing.NJ_TREE_SHARED_BIN_COMBINATIONS_BASED_GENOME_DISTANCE_SUFFIX ), pwgc
-                                                                                             .getSharedBinaryCombinationsBasedDistances().get( 0 ) );
-            final Phylogeny nj_d = SurfacingUtil.createNjTreeBasedOnMatrixToFile( new File( matrix_output_file
-                                                                                            + surfacing.NJ_TREE_SHARED_DOMAINS_BASED_GENOME_DISTANCE_SUFFIX ), pwgc
-                                                                                            .getSharedDomainsBasedDistances().get( 0 ) );
+                    + surfacing.NJ_TREE_MEAN_SCORE_BASED_GENOME_DISTANCE_SUFFIX ),
+                                                                                   pwgc.getDomainDistanceScoresMeans()
+                                                                                           .get( 0 ) );
+            final Phylogeny nj_bc = SurfacingUtil.createNjTreeBasedOnMatrixToFile(
+                                                                                   new File( matrix_output_file
+                                                                                           + surfacing.NJ_TREE_SHARED_BIN_COMBINATIONS_BASED_GENOME_DISTANCE_SUFFIX ),
+                                                                                   pwgc.getSharedBinaryCombinationsBasedDistances()
+                                                                                           .get( 0 ) );
+            final Phylogeny nj_d = SurfacingUtil.createNjTreeBasedOnMatrixToFile(
+                                                                                  new File( matrix_output_file
+                                                                                          + surfacing.NJ_TREE_SHARED_DOMAINS_BASED_GENOME_DISTANCE_SUFFIX ),
+                                                                                  pwgc.getSharedDomainsBasedDistances()
+                                                                                          .get( 0 ) );
             inferred_trees = new ArrayList<Phylogeny>();
             inferred_trees.add( nj_gd );
             inferred_trees.add( nj_bc );
@@ -1981,8 +2057,8 @@ public class surfacing {
             for( final Phylogeny intree : intrees ) {
                 final String outfile_name = ForesterUtil.removeSuffix( output_file.toString() ) + s
                         + ForesterUtil.removeSuffix( intree_files[ i ].toString() );
-                final DomainParsimonyCalculator domain_parsimony = DomainParsimonyCalculator.createInstance( intree,
-                                                                                                             gwcd_list );
+                final DomainParsimonyCalculator domain_parsimony = DomainParsimonyCalculator
+                        .createInstance( intree, gwcd_list );
                 SurfacingUtil.executeParsimonyAnalysis( random_number_seed_for_fitch_parsimony,
                                                         radomize_fitch_parsimony,
                                                         outfile_name,
@@ -1994,17 +2070,17 @@ public class surfacing {
                                                         parameters_sb.toString(),
                                                         domain_id_to_secondary_features_maps,
                                                         positive_filter_file == null ? null : filter,
-                                                                output_binary_domain_combinationsfor_graph_analysis,
-                                                                all_bin_domain_combinations_gained_fitch,
-                                                                all_bin_domain_combinations_lost_fitch,
-                                                                dc_type,
-                                                                protein_length_stats_by_dc,
-                                                                domain_number_stats_by_dc,
-                                                                domain_length_stats_by_domain,
-                                                                tax_code_to_id_map,
-                                                                write_to_nexus,
-                                                                use_last_in_fitch_parsimony,
-                                                                perform_dc_fich );
+                                                        output_binary_domain_combinationsfor_graph_analysis,
+                                                        all_bin_domain_combinations_gained_fitch,
+                                                        all_bin_domain_combinations_lost_fitch,
+                                                        dc_type,
+                                                        protein_length_stats_by_dc,
+                                                        domain_number_stats_by_dc,
+                                                        domain_length_stats_by_domain,
+                                                        tax_code_to_id_map,
+                                                        write_to_nexus,
+                                                        use_last_in_fitch_parsimony,
+                                                        perform_dc_fich );
                 // Listing of all domain combinations gained is only done if only one input tree is used.
                 if ( ( domain_id_to_secondary_features_maps != null )
                         && ( domain_id_to_secondary_features_maps.length > 0 ) ) {
@@ -2013,15 +2089,13 @@ public class surfacing {
                         final Map<Species, MappingResults> mapping_results_map = new TreeMap<Species, MappingResults>();
                         final DomainParsimonyCalculator secondary_features_parsimony = DomainParsimonyCalculator
                                 .createInstance( intree, gwcd_list, domain_id_to_secondary_features_map );
-                        SurfacingUtil
-                        .executeParsimonyAnalysisForSecondaryFeatures( outfile_name
-                                                                       + "_"
-                                                                       + secondary_features_map_files[ j++ ],
-                                                                       secondary_features_parsimony,
-                                                                       intree,
-                                                                       parameters_sb.toString(),
-                                                                       mapping_results_map,
-                                                                       use_last_in_fitch_parsimony );
+                        SurfacingUtil.executeParsimonyAnalysisForSecondaryFeatures( outfile_name + "_"
+                                + secondary_features_map_files[ j++ ],
+                                                                                    secondary_features_parsimony,
+                                                                                    intree,
+                                                                                    parameters_sb.toString(),
+                                                                                    mapping_results_map,
+                                                                                    use_last_in_fitch_parsimony );
                         if ( i == 0 ) {
                             System.out.println();
                             System.out.println( "Mapping to secondary features:" );
@@ -2067,13 +2141,13 @@ public class surfacing {
         gwcd_list = null;
         if ( all_bin_domain_combinations_gained_fitch != null ) {
             try {
-                SurfacingUtil
-                .executeFitchGainsAnalysis( new File( output_file
-                                                      + surfacing.OUTPUT_DOMAIN_COMBINATIONS_GAINED_MORE_THAN_ONCE_ANALYSIS_SUFFIX ),
-                                                      all_bin_domain_combinations_gained_fitch,
-                                                      all_domains_encountered.size(),
-                                                      all_bin_domain_combinations_encountered,
-                                                      true );
+                SurfacingUtil.executeFitchGainsAnalysis(
+                                                         new File( output_file
+                                                                 + surfacing.OUTPUT_DOMAIN_COMBINATIONS_GAINED_MORE_THAN_ONCE_ANALYSIS_SUFFIX ),
+                                                         all_bin_domain_combinations_gained_fitch,
+                                                         all_domains_encountered.size(),
+                                                         all_bin_domain_combinations_encountered,
+                                                         true );
             }
             catch ( final IOException e ) {
                 ForesterUtil.fatalError( PRG_NAME, e.getLocalizedMessage() );
@@ -2081,13 +2155,13 @@ public class surfacing {
         }
         if ( all_bin_domain_combinations_lost_fitch != null ) {
             try {
-                SurfacingUtil
-                .executeFitchGainsAnalysis( new File( output_file
-                                                      + surfacing.OUTPUT_DOMAIN_COMBINATIONS_LOST_MORE_THAN_ONCE_ANALYSIS_SUFFIX ),
-                                                      all_bin_domain_combinations_lost_fitch,
-                                                      all_domains_encountered.size(),
-                                                      all_bin_domain_combinations_encountered,
-                                                      false );
+                SurfacingUtil.executeFitchGainsAnalysis(
+                                                         new File( output_file
+                                                                 + surfacing.OUTPUT_DOMAIN_COMBINATIONS_LOST_MORE_THAN_ONCE_ANALYSIS_SUFFIX ),
+                                                         all_bin_domain_combinations_lost_fitch,
+                                                         all_domains_encountered.size(),
+                                                         all_bin_domain_combinations_encountered,
+                                                         false );
             }
             catch ( final IOException e ) {
                 ForesterUtil.fatalError( PRG_NAME, e.getLocalizedMessage() );
@@ -2096,11 +2170,12 @@ public class surfacing {
         final Runtime rt = java.lang.Runtime.getRuntime();
         final long free_memory = rt.freeMemory() / 1000000;
         final long total_memory = rt.totalMemory() / 1000000;
-        ForesterUtil.programMessage( PRG_NAME, "Time for analysis : " + ( new Date().getTime() - analysis_start_time )
-                                     + "ms" );
+        ForesterUtil.programMessage( PRG_NAME,
+                                     "Time for analysis : " + ( new Date().getTime() - analysis_start_time ) + "ms" );
         ForesterUtil.programMessage( PRG_NAME, "Total running time: " + ( new Date().getTime() - start_time ) + "ms " );
-        ForesterUtil.programMessage( PRG_NAME, "Free memory       : " + free_memory + "MB, total memory: "
-                + total_memory + "MB" );
+        ForesterUtil
+                .programMessage( PRG_NAME,
+                                 "Free memory       : " + free_memory + "MB, total memory: " + total_memory + "MB" );
         ForesterUtil.programMessage( PRG_NAME, "If this application is useful to you, please cite:" );
         ForesterUtil.programMessage( PRG_NAME, surfacing.WWW );
         ForesterUtil.programMessage( PRG_NAME, "OK" );
@@ -2112,28 +2187,25 @@ public class surfacing {
         System.out.println( "Usage:" );
         System.out.println();
         System.out.println( "% java -Xms256m -Xmx512m -cp forester.jar org.forester.applications." + surfacing.PRG_NAME
-                            + " [options] <phylogen(y|ies) infile> [external node name 1] [name 2] ... [name n]" );
+                + " [options] <phylogen(y|ies) infile> [external node name 1] [name 2] ... [name n]" );
         System.out.println();
         System.out.println( " Note: This software might need a significant amount of memory (heap space);" );
         System.out
-        .println( "       hence use \"-Xms128m -Xmx512m\" (or more) to prevent a \"java.lang.OutOfMemoryError\"." );
+                .println( "       hence use \"-Xms128m -Xmx512m\" (or more) to prevent a \"java.lang.OutOfMemoryError\"." );
         System.out.println();
         System.out.println( " Options: " );
         System.out.println( surfacing.DETAILEDNESS_OPTION + ": level of detail for similarities output file (default:"
                 + DETAILEDNESS_DEFAULT + ")" );
         System.out.println( surfacing.IGNORE_COMBINATION_WITH_SAME_OPTION
-                            + ": to ignore combinations with self (default: not to ignore)" );
-        System.out
-        .println( surfacing.IGNORE_DOMAINS_WITHOUT_COMBINATIONS_IN_ALL_SPECIES_OPTION
-                  + ": to ignore domains without combinations in any species (for similarity calc purposes, not for parsimony analyses) (default: not to ignore)" );
-        System.out
-        .println( surfacing.IGNORE_DOMAINS_SPECIFIC_TO_ONE_SPECIES_OPTION
-                  + ": to ignore domains specific to one species (for similarity calc purposes, not for parsimony analyses) (default: not to ignore)" );
+                + ": to ignore combinations with self (default: not to ignore)" );
+        System.out.println( surfacing.IGNORE_DOMAINS_WITHOUT_COMBINATIONS_IN_ALL_SPECIES_OPTION
+                + ": to ignore domains without combinations in any species (for similarity calc purposes, not for parsimony analyses) (default: not to ignore)" );
+        System.out.println( surfacing.IGNORE_DOMAINS_SPECIFIC_TO_ONE_SPECIES_OPTION
+                + ": to ignore domains specific to one species (for similarity calc purposes, not for parsimony analyses) (default: not to ignore)" );
         System.out.println( surfacing.NOT_IGNORE_DUFS_OPTION
-                            + ": to _not_ ignore DUFs (domains with unknown function) (default: ignore DUFs)" );
-        System.out
-        .println( surfacing.IGNORE_VIRAL_IDS
-                  + ": to ignore domains with ids containing 'vir', 'retro', 'transpos', 'phage', or starting with 'rv' or 'gag_'" );
+                + ": to _not_ ignore DUFs (domains with unknown function) (default: ignore DUFs)" );
+        System.out.println( surfacing.IGNORE_VIRAL_IDS
+                + ": to ignore domains with ids containing 'vir', 'retro', 'transpos', 'phage', or starting with 'rv' or 'gag_'" );
         System.out.println( surfacing.DOMAIN_SIMILARITY_SORT_OPTION + ": sorting for similarities (default: "
                 + DOMAIN_SORT_FILD_DEFAULT + ")" );
         System.out.println( surfacing.OUTPUT_FILE_OPTION + ": name for (main) output file (mandatory)" );
@@ -2149,45 +2221,42 @@ public class surfacing {
                 + DOMAIN_SIMILARITY_PRINT_OPTION_DEFAULT + ")" );
         System.out.println( surfacing.CUTOFF_SCORE_FILE_OPTION + ": cutoff score file" );
         System.out.println( surfacing.DOMAIN_SIMILARITY_SORT_BY_SPECIES_COUNT_FIRST_OPTION
-                            + ": sort by species count first" );
+                + ": sort by species count first" );
         System.out.println( surfacing.OUTPUT_DIR_OPTION + ": output directory" );
         System.out.println( surfacing.PFAM_TO_GO_FILE_USE_OPTION + ": Pfam to GO mapping file" );
         System.out.println( surfacing.GO_OBO_FILE_USE_OPTION + ": GO terms file (OBO format)" );
         System.out.println( surfacing.GO_NAMESPACE_LIMIT_OPTION + ": limit GO term to one GO namespace" );
         System.out.println( surfacing.PAIRWISE_DOMAIN_COMPARISONS_OPTION
-                            + "[=<suffix for pairwise comparison output files>]: to perform pairwise comparison based analyses" );
+                + "[=<suffix for pairwise comparison output files>]: to perform pairwise comparison based analyses" );
         System.out.println( surfacing.INPUT_SPECIES_TREE_OPTION
-                            + ": species tree, to perform (Dollo, Fitch) parismony analyses" );
-        System.out
-        .println( surfacing.INPUT_SPECIES_TREE_OPTION
-                  + "=<treefiles in phyloXML format, separated by #>: to infer domain/binary domain combination gains/losses on given species trees" );
+                + ": species tree, to perform (Dollo, Fitch) parismony analyses" );
+        System.out.println( surfacing.INPUT_SPECIES_TREE_OPTION
+                + "=<treefiles in phyloXML format, separated by #>: to infer domain/binary domain combination gains/losses on given species trees" );
         System.out.println( surfacing.FILTER_POSITIVE_OPTION
-                            + "=<file>: to filter out proteins not containing at least one domain listed in <file>" );
+                + "=<file>: to filter out proteins not containing at least one domain listed in <file>" );
         System.out.println( surfacing.FILTER_NEGATIVE_OPTION
-                            + "=<file>: to filter out proteins containing at least one domain listed in <file>" );
+                + "=<file>: to filter out proteins containing at least one domain listed in <file>" );
         System.out.println( surfacing.FILTER_NEGATIVE_DOMAINS_OPTION
-                            + "=<file>: to filter out (ignore) domains listed in <file>" );
+                + "=<file>: to filter out (ignore) domains listed in <file>" );
         System.out.println( surfacing.INPUT_GENOMES_FILE_OPTION + "=<file>: to read input files from <file>" );
-        System.out
-        .println( surfacing.RANDOM_SEED_FOR_FITCH_PARSIMONY_OPTION
-                  + "=<seed>: seed for random number generator for Fitch Parsimony analysis (type: long, default: no randomization - given a choice, prefer absence" );
+        System.out.println( surfacing.RANDOM_SEED_FOR_FITCH_PARSIMONY_OPTION
+                + "=<seed>: seed for random number generator for Fitch Parsimony analysis (type: long, default: no randomization - given a choice, prefer absence" );
         System.out.println( surfacing.CONSIDER_DOMAIN_COMBINATION_DIRECTEDNESS
-                            + ": to consider directedness in binary combinations: e.g. A-B != B-A" );
+                + ": to consider directedness in binary combinations: e.g. A-B != B-A" );
         System.out.println( surfacing.CONSIDER_DOMAIN_COMBINATION_DIRECTEDNESS_AND_ADJACENCY
-                            + ": to consider directedness and adjacency in binary combinations" );
-        System.out
-        .println( surfacing.SEQ_EXTRACT_OPTION
-                  + "=<domain ids (Pfam names)>: to extract sequence names of sequences containing matching domains and/or domain-sequences (order N to C) (domain separator: '~', domain sequences speparator: '#', e.g. 'NACHT#BIR~CARD')" );
+                + ": to consider directedness and adjacency in binary combinations" );
+        System.out.println( surfacing.SEQ_EXTRACT_OPTION
+                + "=<domain ids (Pfam names)>: to extract sequence names of sequences containing matching domains and/or domain-sequences (order N to C) (domain separator: '~', domain sequences speparator: '#', e.g. 'NACHT#BIR~CARD')" );
         System.out.println( surfacing.SECONDARY_FEATURES_PARSIMONY_MAP_FILE
-                            + "=<file>: to perfom parsimony analysis on secondary features" );
+                + "=<file>: to perfom parsimony analysis on secondary features" );
         System.out.println( surfacing.PLUS_MINUS_ANALYSIS_OPTION + "=<file>: to presence/absence genome analysis" );
         System.out.println( surfacing.DOMAIN_COMBINITONS_COUNTS_OUTPUT_OPTION
-                            + ": to output binary domain counts (as individual files)" );
+                + ": to output binary domain counts (as individual files)" );
         System.out.println( surfacing.DOMAIN_COMBINITONS_OUTPUT_OPTION_FOR_GRAPH_ANALYSIS
-                            + ": to output binary domain combinations for (downstream) graph analysis" );
+                + ": to output binary domain combinations for (downstream) graph analysis" );
         System.out.println( surfacing.OUTPUT_LIST_OF_ALL_PROTEINS_OPTIONS + ": to output all proteins per domain" );
         System.out.println( surfacing.OUTPUT_LIST_OF_ALL_PROTEINS_PER_DOMAIN_E_VALUE_OPTION
-                            + ": e value max per domain for output of all proteins per domain" );
+                + ": e value max per domain for output of all proteins per domain" );
         System.out.println( surfacing.USE_LAST_IN_FITCH_OPTION + ": to use last in Fitch parsimony" );
         System.out.println( surfacing.WRITE_TO_NEXUS_OPTION + ": to output in Nexus format" );
         System.out.println( PERFORM_DC_FITCH + ": to perform DC Fitch parsimony" );
@@ -2197,10 +2266,10 @@ public class surfacing {
         System.out.println();
         System.out.println();
         System.out
-        .println( "Example 1: surfacing -p2g=pfam2go.txt -obo=go.obo -species_tree=tol_156.xml -no_eo -ie=0.01 -dufs -genomes=genomes_all.txt -pos_filter=tf_1.txt -out_dir=_tf1 -o=tf1" );
+                .println( "Example 1: surfacing -p2g=pfam2go.txt -obo=go.obo -species_tree=tol_156.xml -no_eo -ie=0.01 -dufs -genomes=genomes_all.txt -pos_filter=tf_1.txt -out_dir=_tf1 -o=tf1" );
         System.out.println();
         System.out
-        .println( "Example 2: surfacing -p2g=pfam2go.txt -obo=go.obo -species_tree=tol_156.xml -last -ignore_viral_ids -no_eo -ie=0.1 -dufs -genomes=genomes_all.txt -pos_filter=tf_1.txt -all_prot -all_prot_e=0.1 -out_dir=_tf1_e01_ape01 -o=tf1_e01_ape01" );
+                .println( "Example 2: surfacing -p2g=pfam2go.txt -obo=go.obo -species_tree=tol_156.xml -last -ignore_viral_ids -no_eo -ie=0.1 -dufs -genomes=genomes_all.txt -pos_filter=tf_1.txt -all_prot -all_prot_e=0.1 -out_dir=_tf1_e01_ape01 -o=tf1_e01_ape01" );
         System.out.println();
     }
 }
