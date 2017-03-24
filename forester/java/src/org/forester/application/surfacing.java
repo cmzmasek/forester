@@ -175,6 +175,7 @@ public class surfacing {
     final static private String                                     NOT_IGNORE_DUFS_OPTION                                                        = "dufs";
     final static private String                                     MAX_FS_E_VALUE_OPTION                                                         = "fs_e";
     final static private String                                     MAX_I_E_VALUE_OPTION                                                          = "ie";
+    final static private String                                     MIN_REL_ENV_LENGTH_RATIO_OPTION                                               = "mrel";
     final static private String                                     MAX_ALLOWED_OVERLAP_OPTION                                                    = "mo";
     final static private String                                     NO_ENGULFING_OVERLAP_OPTION                                                   = "no_eo";
     final static private String                                     IGNORE_COMBINATION_WITH_SAME_OPTION                                           = "ignore_self_comb";
@@ -216,8 +217,8 @@ public class surfacing {
     final static private String                                     INPUT_GENOMES_FILE_OPTION                                                     = "genomes";
     final static private String                                     INPUT_SPECIES_TREE_OPTION                                                     = "species_tree";
     final static private String                                     SEQ_EXTRACT_OPTION                                                            = "prot_extract";
-    final static private String                                     PRG_VERSION                                                                   = "2.405";
-    final static private String                                     PRG_DATE                                                                      = "170317";
+    final static private String                                     PRG_VERSION                                                                   = "2.500";
+    final static private String                                     PRG_DATE                                                                      = "170323";
     final static private String                                     E_MAIL                                                                        = "czmasek@burnham.org";
     final static private String                                     WWW                                                                           = "https://sites.google.com/site/cmzmasek/home/software/forester/surfacing";
     final static private boolean                                    IGNORE_DUFS_DEFAULT                                                           = true;
@@ -308,6 +309,7 @@ public class surfacing {
         allowed_options.add( surfacing.NOT_IGNORE_DUFS_OPTION );
         allowed_options.add( surfacing.MAX_FS_E_VALUE_OPTION );
         allowed_options.add( surfacing.MAX_I_E_VALUE_OPTION );
+        allowed_options.add( surfacing.MIN_REL_ENV_LENGTH_RATIO_OPTION );
         allowed_options.add( surfacing.DETAILEDNESS_OPTION );
         allowed_options.add( surfacing.OUTPUT_FILE_OPTION );
         allowed_options.add( surfacing.DOMAIN_SIMILARITY_SORT_OPTION );
@@ -352,6 +354,7 @@ public class surfacing {
         boolean ignore_combination_with_same = surfacing.IGNORE_COMBINATION_WITH_SAME_DEFAULLT;
         double fs_e_value_max = surfacing.MAX_E_VALUE_DEFAULT;
         double ie_value_max = surfacing.MAX_E_VALUE_DEFAULT;
+        double rel_env_length_ratio_cutoff = -1;
         int max_allowed_overlap = surfacing.MAX_ALLOWED_OVERLAP_DEFAULT;
         final String dissallowed_options = cla.validateAllowedOptionsAsString( allowed_options );
         if ( dissallowed_options.length() > 0 ) {
@@ -391,6 +394,14 @@ public class surfacing {
             }
             catch ( final Exception e ) {
                 ForesterUtil.fatalError( surfacing.PRG_NAME, "no acceptable value for E-value maximum" );
+            }
+        }
+        if ( cla.isOptionSet( surfacing.MIN_REL_ENV_LENGTH_RATIO_OPTION ) ) {
+            try {
+                rel_env_length_ratio_cutoff = cla.getOptionValueAsDouble( surfacing.MIN_REL_ENV_LENGTH_RATIO_OPTION );
+            }
+            catch ( final Exception e ) {
+                ForesterUtil.fatalError( surfacing.PRG_NAME, "no acceptable value for min rel env length ratio" );
             }
         }
         if ( cla.isOptionSet( surfacing.MAX_I_E_VALUE_OPTION ) ) {
@@ -1106,6 +1117,11 @@ public class surfacing {
             System.out.println( "iE-value maximum (incl)     : " + ie_value_max );
             html_desc.append( "<tr><td>iE-value maximum (inclusive):</td><td>" + ie_value_max + "</td></tr>" + nl );
         }
+        if ( rel_env_length_ratio_cutoff > 0.0 ) {
+            System.out.println( "Rel env length ratio min    : " + rel_env_length_ratio_cutoff );
+            html_desc.append( "<tr><td>Relative hmm envelope length ratio min (inclusive):</td><td>"
+                    + rel_env_length_ratio_cutoff + "</td></tr>" + nl );
+        }
         if ( fs_e_value_max >= 0.0 ) {
             System.out.println( "FS E-value maximum (incl)   : " + fs_e_value_max );
             html_desc.append( "<tr><td>FS E-value maximum (inclusive):</td><td>" + fs_e_value_max + "</td></tr>" + nl );
@@ -1558,6 +1574,9 @@ public class surfacing {
             if ( ie_value_max >= 0.0 ) {
                 parser.setIEValueMaximum( ie_value_max );
             }
+            if ( rel_env_length_ratio_cutoff > 0.0 ) {
+                parser.setRelEnvLengthRatioCutoff( rel_env_length_ratio_cutoff );
+            }
             parser.setIgnoreDufs( ignore_dufs );
             parser.setIgnoreVirusLikeIds( ignore_virus_like_ids );
             parser.setIgnoreEngulfedDomains( no_engulfing_overlaps );
@@ -1628,6 +1647,10 @@ public class surfacing {
             SurfacingUtil
                     .log( "Domains ignored due to iE-value                : " + parser.getDomainsIgnoredDueToIEval(),
                           log_writer );
+            System.out.println( "Domains ignored due to rel env length ratio    : "
+                    + parser.getDomainsIgnoredDueToRelEnvLengthRatioCutoff() );
+            SurfacingUtil.log( "Domains ignored due to rel env length ratio    : "
+                    + parser.getDomainsIgnoredDueToRelEnvLengthRatioCutoff(), log_writer );
             System.out.println( "Domains ignored due to DUF designation         : "
                     + parser.getDomainsIgnoredDueToDuf() );
             SurfacingUtil.log( "Domains ignored due to DUF designation         : " + parser.getDomainsIgnoredDueToDuf(),
@@ -1754,15 +1777,26 @@ public class surfacing {
                                  "Wrote domain promiscuities to: " + per_genome_domain_promiscuity_statistics_file );
         //
         if ( true ) { //TODO
-            MinimalDomainomeCalculator.calcDomainome( intree_0_orig, protein_lists_per_species, -1 );
+            try {
+                MinimalDomainomeCalculator.calcOme( false,
+                                                    intrees[ 0 ],
+                                                    protein_lists_per_species,
+                                                    "---",
+                                                    1000,
+                                                    out_dir.toString() + "/" + output_file );
+            }
+            catch ( IOException e ) {
+                ForesterUtil.fatalError( surfacing.PRG_NAME, e.getLocalizedMessage() );
+            }
         }
         if ( true ) { //TODO
             try {
-                MinimalDomainomeCalculator.calcDAome( intree_0_orig,
-                                                      protein_lists_per_species,
-                                                      "---",
-                                                      1000,
-                                                      out_dir.toString() + "/" + output_file );
+                MinimalDomainomeCalculator.calcOme( true,
+                                                    intrees[ 0 ],
+                                                    protein_lists_per_species,
+                                                    "---",
+                                                    1000,
+                                                    out_dir.toString() + "/" + output_file );
             }
             catch ( IOException e ) {
                 ForesterUtil.fatalError( surfacing.PRG_NAME, e.getLocalizedMessage() );
@@ -2211,6 +2245,8 @@ public class surfacing {
         System.out.println( surfacing.OUTPUT_FILE_OPTION + ": name for (main) output file (mandatory)" );
         System.out.println( surfacing.MAX_I_E_VALUE_OPTION + ": max (inclusive) iE-value" );
         System.out.println( surfacing.MAX_FS_E_VALUE_OPTION + ": max (inclusive) FS E-value" );
+        System.out.println( surfacing.MIN_REL_ENV_LENGTH_RATIO_OPTION
+                + ": min (inclusive) relative envelope length ratio" );
         System.out.println( surfacing.MAX_ALLOWED_OVERLAP_OPTION + ": maximal allowed domain overlap" );
         System.out.println( surfacing.NO_ENGULFING_OVERLAP_OPTION + ": to ignore engulfed lower confidence domains" );
         System.out.println( surfacing.SPECIES_MATRIX_OPTION + ": species matrix" );

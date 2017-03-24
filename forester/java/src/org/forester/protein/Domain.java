@@ -43,4 +43,10 @@ public interface Domain extends Comparable<Domain> {
     public int getTo();
 
     public short getTotalCount();
+
+    short getHmmLen();
+
+    short getHmmFrom();
+
+    short getHmmTo();
 }

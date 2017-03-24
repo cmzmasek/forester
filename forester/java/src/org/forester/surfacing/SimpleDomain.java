@@ -92,4 +92,19 @@ public class SimpleDomain implements Domain {
     public short getTotalCount() {
         throw new RuntimeException( "method not implemented" );
     }
+
+    @Override
+    public short getHmmLen() {
+        throw new RuntimeException( "method not implemented" );
+    }
+
+    @Override
+    public short getHmmFrom() {
+        throw new RuntimeException( "method not implemented" );
+    }
+
+    @Override
+    public short getHmmTo() {
+        throw new RuntimeException( "method not implemented" );
+    }
 }

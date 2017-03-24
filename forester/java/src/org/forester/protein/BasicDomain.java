@@ -43,6 +43,9 @@ public class BasicDomain implements Domain {
     final private double                    _per_domain_score;
     final private int                       _to;
     final private short                     _total_count;
+    final private short                     _hmm_len;
+    final private short                     _hmm_from;
+    final private short                     _hmm_to;
 
     public BasicDomain( final String id ) {
         if ( ForesterUtil.isEmpty( id ) ) {
@@ -55,6 +58,10 @@ public class BasicDomain implements Domain {
         _total_count = -1;
         _per_domain_evalue = -1;
         _per_domain_score = -1;
+        _hmm_len = -1;
+        _hmm_from= -1;
+        _hmm_to= -1;
+
     }
 
     public BasicDomain( final String id,
@@ -84,6 +91,50 @@ public class BasicDomain implements Domain {
         _total_count = total_count;
         _per_domain_evalue = per_domain_evalue;
         _per_domain_score = per_domain_score;
+        _hmm_len = -1;
+        _hmm_from= -1;
+        _hmm_to= -1;
+    }
+    
+    public BasicDomain( final String id,
+                        final int from,
+                        final int to,
+                        final short number,
+                        final short total_count,
+                        final double per_domain_evalue,
+                        final double per_domain_score,
+                        final short hmm_len,
+                        final short hmm_from,
+                        final short hmm_to) {
+        if ( ( from >= to ) || ( from < 0 ) ) {
+            throw new IllegalArgumentException( "attempt to create protein domain from " + from + " to " + to );
+        }
+        if ( ForesterUtil.isEmpty( id ) ) {
+            throw new IllegalArgumentException( "attempt to create protein domain with null or empty id" );
+        }
+        if ( ( number > total_count ) || ( number < 0 ) ) {
+            throw new IllegalArgumentException( "attempt to create protein domain number " + number + " out of "
+                    + total_count );
+        }
+        if ( per_domain_evalue < 0.0 ) {
+            throw new IllegalArgumentException( "attempt to create protein domain with negative E-value" );
+        }
+        if ( ( hmm_from >= hmm_to ) || (  hmm_from < 0 ) ) {
+            throw new IllegalArgumentException( "attempt to create protein domain matching hmm from " + from + " to " + to );
+        }
+        if ( hmm_len <= 0 ) {
+            throw new IllegalArgumentException( "attempt to create protein domain with zero or negative hmm length" );
+        }
+        _id = obtainIdAsShort( id );
+        _from = from;
+        _to = to;
+        _number = number;
+        _total_count = total_count;
+        _per_domain_evalue = per_domain_evalue;
+        _per_domain_score = per_domain_score;
+        _hmm_len = hmm_len;
+        _hmm_from= hmm_from;
+        _hmm_to= hmm_to;
     }
 
     /**
@@ -166,6 +217,21 @@ public class BasicDomain implements Domain {
     }
 
     @Override
+    public final short getHmmLen() {
+        return _hmm_len;
+    }
+
+    @Override
+    public final short getHmmFrom() {
+        return _hmm_from;
+    }
+
+    @Override
+    public final short getHmmTo() {
+        return _hmm_to;
+    }
+    
+    @Override
     public int hashCode() {
         return getDomainId().hashCode();
     }
@@ -194,4 +260,6 @@ public class BasicDomain implements Domain {
     public final static String obtainIdFromShort( final short id ) {
         return ID_TO_STRING.get( id );
     }
+
+    
 }
