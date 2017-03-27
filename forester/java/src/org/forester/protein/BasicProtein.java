@@ -233,6 +233,8 @@ public class BasicProtein implements Protein {
         return sb.toString();
     }
     
+    
+    
     public final String toDomainArchitectureString( final String separator ) {
         return toDomainArchitectureString( separator, -1 );
     }

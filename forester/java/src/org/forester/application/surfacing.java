@@ -1775,32 +1775,27 @@ public class surfacing {
         ForesterUtil
                 .programMessage( PRG_NAME,
                                  "Wrote domain promiscuities to: " + per_genome_domain_promiscuity_statistics_file );
-        //
-        if ( true ) { //TODO
-            try {
-                MinimalDomainomeCalculator.calcOme( false,
-                                                    intrees[ 0 ],
-                                                    protein_lists_per_species,
-                                                    "---",
-                                                    1000,
-                                                    out_dir.toString() + "/" + output_file );
-            }
-            catch ( IOException e ) {
-                ForesterUtil.fatalError( surfacing.PRG_NAME, e.getLocalizedMessage() );
-            }
+        try {
+            MinimalDomainomeCalculator.calcOme( false,
+                                                intrees[ 0 ],
+                                                protein_lists_per_species,
+                                                "---",
+                                                -1,
+                                                out_dir.toString() + "/" + output_file );
         }
-        if ( true ) { //TODO
-            try {
-                MinimalDomainomeCalculator.calcOme( true,
-                                                    intrees[ 0 ],
-                                                    protein_lists_per_species,
-                                                    "---",
-                                                    1000,
-                                                    out_dir.toString() + "/" + output_file );
-            }
-            catch ( IOException e ) {
-                ForesterUtil.fatalError( surfacing.PRG_NAME, e.getLocalizedMessage() );
-            }
+        catch ( IOException e ) {
+            ForesterUtil.fatalError( surfacing.PRG_NAME, e.getLocalizedMessage() );
+        }
+        try {
+            MinimalDomainomeCalculator.calcOme( true,
+                                                intrees[ 0 ],
+                                                protein_lists_per_species,
+                                                "---",
+                                                -1,
+                                                out_dir.toString() + "/" + output_file );
+        }
+        catch ( IOException e ) {
+            ForesterUtil.fatalError( surfacing.PRG_NAME, e.getLocalizedMessage() );
         }
         if ( da_analysis ) {
             SurfacingUtil.performDomainArchitectureAnalysis( distinct_domain_architecutures_per_genome,
