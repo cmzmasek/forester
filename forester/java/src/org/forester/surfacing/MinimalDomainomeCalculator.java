@@ -30,12 +30,13 @@ import org.forester.util.ForesterUtil;
 
 public final class MinimalDomainomeCalculator {
 
-    static final public void calcOme( final boolean use_domain_architectures,
-                                      final Phylogeny tre,
-                                      final SortedMap<Species, List<Protein>> protein_lists_per_species,
-                                      final String separator,
-                                      final double ie_cutoff,
-                                      final String outfile_base )
+    public final static void calc( final boolean use_domain_architectures,
+                                   final Phylogeny tre,
+                                   final SortedMap<Species, List<Protein>> protein_lists_per_species,
+                                   final String separator,
+                                   final double ie_cutoff,
+                                   final String outfile_base,
+                                   final boolean write_protein_files )
             throws IOException {
         final SortedMap<String, SortedSet<String>> species_to_features_map = new TreeMap<String, SortedSet<String>>();
         if ( protein_lists_per_species == null || tre == null ) {
@@ -192,25 +193,46 @@ public final class MinimalDomainomeCalculator {
         out_table.close();
         ForesterUtil.programMessage( surfacing.PRG_NAME, "Wrote minimal DAome data to           : " + outfile );
         ForesterUtil.programMessage( surfacing.PRG_NAME, "Wrote minimal DAome data to (as table): " + outfile_table );
-        for( String f : all_features ) {
+        if ( write_protein_files ) {
+            final String protdirname;
             final String a;
+            final String b;
             if ( use_domain_architectures ) {
-                a = "DA_";
+                a = "_DA";
+                b = "domain architectures (DAs)";
+                protdirname = "_DAS";
             }
             else {
-                a = "domain_";
+                a = "_domain";
+                b = "domains";
+                protdirname = "_DOMAINS";
             }
-            final File prot_dir = new File( outfile_base + "_prot" );
-            prot_dir.mkdir();
-            final File outt = new File( outfile_base + "_prot/" + a + f + surfacing.SEQ_EXTRACT_SUFFIX );
-            final Writer proteins_file_writer = new BufferedWriter( new FileWriter( outt ) );
-            extractProteinFeatures( use_domain_architectures,
-                                    protein_lists_per_species,
-                                    f,
-                                    proteins_file_writer,
-                                    ie_cutoff,
-                                    separator );
-            proteins_file_writer.close();
+            final File prot_dir = new File( outfile_base + protdirname );
+            final boolean success = prot_dir.mkdir();
+            if ( !success ) {
+                throw new IOException( "failed to create dir " + prot_dir );
+            }
+            int total = 0;
+            final String dir = outfile_base + protdirname + "/";
+            for( final String feat : all_features ) {
+                final File extract_outfile = new File( dir + feat + a + surfacing.SEQ_EXTRACT_SUFFIX );
+                SurfacingUtil.checkForOutputFileWriteability( extract_outfile );
+                final Writer proteins_file_writer = new BufferedWriter( new FileWriter( extract_outfile ) );
+                final int counter = extractProteinFeatures( use_domain_architectures,
+                                                            protein_lists_per_species,
+                                                            feat,
+                                                            proteins_file_writer,
+                                                            ie_cutoff,
+                                                            separator );
+                if ( counter < 1 ) {
+                    ForesterUtil.printWarningMessage( "surfacing", feat + " not present (in " + b + " extraction)" );
+                }
+                total += counter;
+                proteins_file_writer.close();
+            }
+            ForesterUtil.programMessage( "surfacing",
+                                         "Wrote " + total + " individual " + b + " from a total of "
+                                                 + all_features.size() + " into: " + dir );
         }
     }
 
@@ -226,13 +248,14 @@ public final class MinimalDomainomeCalculator {
         return my_first;
     }
 
-    public static void extractProteinFeatures( final boolean use_domain_architectures,
-                                               final SortedMap<Species, List<Protein>> protein_lists_per_species,
-                                               final String domain_id,
-                                               final Writer out,
-                                               final double ie_cutoff,
-                                               final String domain_separator )
+    private final static int extractProteinFeatures( final boolean use_domain_architectures,
+                                                     final SortedMap<Species, List<Protein>> protein_lists_per_species,
+                                                     final String domain_id,
+                                                     final Writer out,
+                                                     final double ie_cutoff,
+                                                     final String domain_separator )
             throws IOException {
+        int counter = 0;
         final String separator_for_output = "\t";
         for( final Species species : protein_lists_per_species.keySet() ) {
             final List<Protein> proteins_per_species = protein_lists_per_species.get( species );
@@ -261,6 +284,7 @@ public final class MinimalDomainomeCalculator {
                         out.write( from + "-" + to );
                         out.write( "/" );
                         out.write( SurfacingConstants.NL );
+                        ++counter;
                     }
                 }
                 else {
@@ -315,11 +339,13 @@ public final class MinimalDomainomeCalculator {
                             out.write( protein.getAccession() );
                         }
                         out.write( SurfacingConstants.NL );
+                        ++counter;
                     }
                 }
             }
         }
         out.flush();
+        return counter;
     }
 
     public static void main( final String[] args ) {

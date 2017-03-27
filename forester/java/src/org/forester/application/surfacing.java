@@ -217,8 +217,8 @@ public class surfacing {
     final static private String                                     INPUT_GENOMES_FILE_OPTION                                                     = "genomes";
     final static private String                                     INPUT_SPECIES_TREE_OPTION                                                     = "species_tree";
     final static private String                                     SEQ_EXTRACT_OPTION                                                            = "prot_extract";
-    final static private String                                     PRG_VERSION                                                                   = "2.500";
-    final static private String                                     PRG_DATE                                                                      = "170323";
+    final static private String                                     PRG_VERSION                                                                   = "2.501";
+    final static private String                                     PRG_DATE                                                                      = "170327";
     final static private String                                     E_MAIL                                                                        = "czmasek@burnham.org";
     final static private String                                     WWW                                                                           = "https://sites.google.com/site/cmzmasek/home/software/forester/surfacing";
     final static private boolean                                    IGNORE_DUFS_DEFAULT                                                           = true;
@@ -272,6 +272,7 @@ public class surfacing {
     public static final String                                      INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_MAPPED_OUTPUT_SUFFIX        = "_indep_dc_gains_fitch_lists_for_go_mapping_MAPPED.txt";
     public static final String                                      INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_MAPPED_OUTPUT_UNIQUE_SUFFIX = "_indep_dc_gains_fitch_lists_for_go_mapping_unique_MAPPED.txt";
     private static final boolean                                    CALC_SIMILARITY_SCORES                                                        = false;
+    private static final String                                     SEPARATOR_FOR_DA                                                              = "--";
 
     @SuppressWarnings( "unchecked")
     public static void main( final String args[] ) {
@@ -1776,23 +1777,25 @@ public class surfacing {
                 .programMessage( PRG_NAME,
                                  "Wrote domain promiscuities to: " + per_genome_domain_promiscuity_statistics_file );
         try {
-            MinimalDomainomeCalculator.calcOme( false,
-                                                intrees[ 0 ],
-                                                protein_lists_per_species,
-                                                "---",
-                                                -1,
-                                                out_dir.toString() + "/" + output_file );
+            MinimalDomainomeCalculator.calc( false,
+                                             intrees[ 0 ],
+                                             protein_lists_per_species,
+                                             SEPARATOR_FOR_DA,
+                                             -1,
+                                             out_dir.toString() + "/" + output_file,
+                                             true );
         }
         catch ( IOException e ) {
             ForesterUtil.fatalError( surfacing.PRG_NAME, e.getLocalizedMessage() );
         }
         try {
-            MinimalDomainomeCalculator.calcOme( true,
-                                                intrees[ 0 ],
-                                                protein_lists_per_species,
-                                                "---",
-                                                -1,
-                                                out_dir.toString() + "/" + output_file );
+            MinimalDomainomeCalculator.calc( true,
+                                             intrees[ 0 ],
+                                             protein_lists_per_species,
+                                             SEPARATOR_FOR_DA,
+                                             -1,
+                                             out_dir.toString() + "/" + output_file,
+                                             true );
         }
         catch ( IOException e ) {
             ForesterUtil.fatalError( surfacing.PRG_NAME, e.getLocalizedMessage() );
@@ -2207,6 +2210,9 @@ public class surfacing {
                                  "Free memory       : " + free_memory + "MB, total memory: " + total_memory + "MB" );
         ForesterUtil.programMessage( PRG_NAME, "If this application is useful to you, please cite:" );
         ForesterUtil.programMessage( PRG_NAME, surfacing.WWW );
+        ForesterUtil
+                .programMessage( PRG_NAME,
+                                 "[next step for phylogenomic analysis pipeline (example, in \"DAS\" dir): % mse.rb .prot . FL_seqs DA_seqs ../../genome_locations.txt]" );
         ForesterUtil.programMessage( PRG_NAME, "OK" );
         System.out.println();
     }
