@@ -533,7 +533,7 @@ module Evoruby
         seq = get_sequence(i)
         name = seq.get_name()
         # >sp|Q1HVE7|AN_EBVA8 Shutoff alkaline exonuclease OS=Epstein-Barr virus (strain AG876) GN=BGLF5 PE=3 SV=1
-       # if name =~ /OS=(.+?)\s+[A-Z]{2}=/
+        # if name =~ /OS=(.+?)\s+[A-Z]{2}=/
         if name =~ /Organism:(.+?)(\|Protein|$)/
           os = $1
           unless  msa_hash.has_key?(os)
@@ -541,16 +541,16 @@ module Evoruby
           end
           msa_hash[os].add_sequence seq
         else
-          error_msg = "sequence name \"" + name +"\" is not in the expected format for splitting by OS"
+          error_msg = "sequence name \"" + name + "\" is not in the expected format for splitting by OS"
           raise IOError, error_msg, caller
         end
       end
       msa_hash = msa_hash.sort{|a, b|a<=>b}.to_h
       if verbose
         c = 0
-        msa_hash.each do |os, msa|
+        msa_hash.each do |o, msa|
           c += 1
-          puts c.to_s + ': ' + os
+          puts c.to_s + ': ' + o
         end
       end
       msa_hash

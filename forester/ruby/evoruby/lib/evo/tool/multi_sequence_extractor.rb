@@ -5,7 +5,6 @@
 # License::    GNU Lesser General Public License (LGPL)
 #
 
-
 require 'lib/evo/util/constants'
 require 'lib/evo/util/util'
 require 'lib/evo/msa/msa'
@@ -16,15 +15,12 @@ require 'lib/evo/io/writer/fasta_writer'
 require 'lib/evo/util/command_line_arguments'
 
 module Evoruby
-
   class MultiSequenceExtractor
 
     PRG_NAME                           = "mse"
     PRG_VERSION                        = "1.04"
-    PRG_DESC                           = "extraction of sequences by name from multiple multi-sequence ('fasta') files"
-    PRG_DATE                           = "140318"
-    COPYRIGHT                          = "2014 Christian M Zmasek"
-    CONTACT                            = "phyloxml@gmail.com"
+    PRG_DESC                           = "processing of \"surfacing\" output: extraction of sequences by name from multiple multi-sequence ('fasta') files"
+    PRG_DATE                           = "170327"
     WWW                                = "https://sites.google.com/site/cmzmasek/home/software/forester"
     HELP_OPTION_1                      = 'help'
     HELP_OPTION_2                      = 'h'
@@ -37,7 +33,6 @@ module Evoruby
     FASTA_WITH_NORMALIZED_IDS_SUFFIX    = ".ni.fasta"
     NORMALIZED_IDS_MAP_SUFFIX           = ".nim"
     PROTEINS_LIST_FILE_SEPARATOR        = "\t"
-
     def initialize()
       @file_to_msa = Hash.new
       @seqs = 0
@@ -46,13 +41,11 @@ module Evoruby
     def run()
 
       Util.print_program_information( PRG_NAME,
-        PRG_VERSION,
-        PRG_DESC ,
-        PRG_DATE,
-        COPYRIGHT,
-        CONTACT,
-        WWW,
-        STDOUT )
+      PRG_VERSION,
+      PRG_DESC ,
+      PRG_DATE,
+      WWW,
+      STDOUT )
 
       ld = Constants::LINE_DELIMITER
 
@@ -63,7 +56,7 @@ module Evoruby
       end
 
       if ( cla.is_option_set?( HELP_OPTION_1 ) ||
-           cla.is_option_set?( HELP_OPTION_2 ) )
+      cla.is_option_set?( HELP_OPTION_2 ) )
         print_help
         exit( 0 )
       end
@@ -80,8 +73,8 @@ module Evoruby
       disallowed = cla.validate_allowed_options_as_str( allowed_opts )
       if ( disallowed.length > 0 )
         Util.fatal_error( PRG_NAME,
-          "unknown option(s): " + disallowed,
-          STDOUT )
+        "unknown option(s): " + disallowed,
+        STDOUT )
       end
 
       seq_names_files_suffix = cla.get_file_name( 0 )
@@ -92,7 +85,7 @@ module Evoruby
 
       begin
         Util.check_file_for_readability( mapping_file )
-      rescue ArgumentError => e
+      rescue IOError => e
         Util.fatal_error( PRG_NAME, "error: " + e.to_s )
       end
 
@@ -175,24 +168,6 @@ module Evoruby
         puts
         puts counter.to_s + "/" + input_files.size.to_s
         read_seq_family_file( input_file,
-          seq_names_files_suffix,
-          input_dir,
-          species_codes_to_paths,
-          log,
-          out_dir,
-          out_dir_doms,
-          mapping_file,
-          extension,
-          extract_linkers )
-      }
-      puts
-      Util.print_message( PRG_NAME, "OK" )
-      puts
-
-    end
-
-
-    def read_seq_family_file( input_file,
         seq_names_files_suffix,
         input_dir,
         species_codes_to_paths,
@@ -202,6 +177,23 @@ module Evoruby
         mapping_file,
         extension,
         extract_linkers )
+      }
+      puts
+      Util.print_message( PRG_NAME, "OK" )
+      puts
+
+    end
+
+    def read_seq_family_file( input_file,
+      seq_names_files_suffix,
+      input_dir,
+      species_codes_to_paths,
+      log,
+      out_dir,
+      out_dir_doms,
+      mapping_file,
+      extension,
+      extract_linkers )
 
       begin
         Util.check_file_for_readability( input_file )
@@ -212,10 +204,10 @@ module Evoruby
       out_file_path_fasta_file                = out_dir + Constants::FILE_SEPARATOR + basename + FASTA_SUFFIX
       out_file_path_normalized_ids_fasta_file = out_dir + Constants::FILE_SEPARATOR + basename + FASTA_WITH_NORMALIZED_IDS_SUFFIX
       out_file_path_ids_map                   = out_dir + Constants::FILE_SEPARATOR + basename + NORMALIZED_IDS_MAP_SUFFIX
-      doms_out_file_path_fasta_file           = out_dir_doms + Constants::FILE_SEPARATOR + basename + "_domains" + FASTA_SUFFIX
+      doms_out_file_path_fasta_file           = out_dir_doms + Constants::FILE_SEPARATOR + basename + FASTA_SUFFIX
       doms_ext_out_file_path_fasta_file           = nil
       if extension > 0
-        doms_ext_out_file_path_fasta_file = out_dir_doms + Constants::FILE_SEPARATOR + basename + "_domains_ext_" + extension.to_s + FASTA_SUFFIX
+        doms_ext_out_file_path_fasta_file = out_dir_doms + Constants::FILE_SEPARATOR + basename + "_ext_" + extension.to_s + FASTA_SUFFIX
       end
       begin
         Util.check_file_for_writability( out_file_path_fasta_file )
@@ -255,9 +247,7 @@ module Evoruby
               Util.fatal_error( PRG_NAME, "unexpected format: " + line )
             end
             species = values[ 0 ]
-            #if species == "BRADI" || species == "ASPNG" || species == "SCLSC" || species == "PTEVA"  || species == "EIMTE"
-            #  next
-            #end
+
             seq_name = values[ 1 ]
             domain_ranges = nil
             if ( values.length > 3 )
@@ -310,7 +300,7 @@ module Evoruby
             end
 
             normalized_id = per_species_counter.to_s( 16 ).upcase +
-             "_" + current_species
+            "_" + current_species
 
             per_species_counter.to_i
 
@@ -335,11 +325,11 @@ module Evoruby
                   from = s[ 0 ].to_i
                   to = s[ 1 ].to_i
                   new_msa_domains.add_sequence( Sequence.new( orig_name +
-                       " [" + from.to_s +
-                       "-" + to.to_s +
-                       "] [" + basename + "] [" +
-                       current_species + "]",
-                      seq.get_sequence_as_string[from..to] ) )
+                  " [" + from.to_s +
+                  "-" + to.to_s +
+                  "] [" + basename + "] [" +
+                  current_species + "]",
+                  seq.get_sequence_as_string[from..to] ) )
                   if extension > 0
                     from_e = from - extension
                     if from_e < 0
@@ -350,13 +340,13 @@ module Evoruby
                       to_e = seq.get_sequence_as_string.length - 1
                     end
                     new_msa_domains_extended.add_sequence( Sequence.new( orig_name +
-                         " [" + from.to_s +
-                         "-" + to.to_s  +
-                         "] [extended by " +
-                         extension.to_s +
-                         "] [" + basename + "] [" +
-                         current_species + "]",
-                        seq.get_sequence_as_string[ from_e..to_e ] ) )
+                    " [" + from.to_s +
+                    "-" + to.to_s  +
+                    "] [extended by " +
+                    extension.to_s +
+                    "] [" + basename + "] [" +
+                    current_species + "]",
+                    seq.get_sequence_as_string[ from_e..to_e ] ) )
                   end # extension > 0
                   if  extract_linkers
                     if first
@@ -452,7 +442,6 @@ module Evoruby
       end
     end
 
-
     def get_linker_sequence( from, to, seq )
       if from < 0
         from = 0
@@ -544,12 +533,13 @@ module Evoruby
       puts( "Usage:" )
       puts()
       puts( "  " + PRG_NAME + ".rb <sequence id ('prot') files suffix> <dir containing sequence id ('prot') files>" +
-         " <output directory for protein sequences> <output directory for domain sequences> <genome locations file>" )
+      " <output directory for protein sequences> <output directory for domain sequences> <genome locations file>" )
       puts()
       puts( "  option: -" + EXT_OPTION  + "=<int>: to extend extracted domains" )
       puts( "          -" + EXTRACT_LINKERS_OPTION  + "      : to extract linkers" )
       puts()
-      puts( "  " + "Example: \"mse.rb .prot . protein_seqs domain_seqs ../genome_locations.txt\"" )
+      puts( "  " + "Examples: mse.rb .prot . protein_seqs domain_seqs ../genome_locations.txt" )
+      puts( "  " + "          mse.rb .prot . FL_seqs DA_seqs ../../genome_locations.txt" )
       puts()
     end
 
