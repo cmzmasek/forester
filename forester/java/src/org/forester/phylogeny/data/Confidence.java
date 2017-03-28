@@ -160,7 +160,7 @@ public class Confidence implements PhylogenyData, Comparable<Confidence> {
 
     @Override
     public void toPhyloXML( final Writer writer, final int level, final String indentation ) throws IOException {
-        if ( getValue() == CONFIDENCE_DEFAULT_VALUE ) {
+        if ( getValue() == CONFIDENCE_DEFAULT_VALUE || getValue() < -1 ) {
             return;
         }
         writer.write( ForesterUtil.LINE_SEPARATOR );
