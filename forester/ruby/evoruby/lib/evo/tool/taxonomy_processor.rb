@@ -19,7 +19,7 @@ module Evoruby
   class TaxonomyProcessor
 
     PRG_NAME       = "tap"
-    PRG_DATE       = "170214"
+    PRG_DATE       = "170327"
     PRG_DESC       = "Replacement of labels in multiple sequence files"
     PRG_VERSION    = "2.004"
     WWW            = "https://sites.google.com/site/cmzmasek/home/software/forester"
@@ -181,10 +181,10 @@ module Evoruby
       new_desc = nil
       desc.gsub!( /\s+/, ' ' )
       if extract_taxonomy
-        if desc =~/\s\[(([A-Z9][A-Z]{2}[A-Z0-9]{2})|RAT|PIG|PEA|CAP)\]/
+        if desc =~/\s\[([A-Z0-9]{3,5})\]/
           new_desc = counter.to_s( 16 ) + "_" + $1
         else
-          Util.fatal_error( PRG_NAME, "could not get taxonomy from: " + desc )
+          Util.fatal_error( PRG_NAME, "could not get taxonomy code from \"" + desc + "\"" )
         end
       else
         new_desc = counter.to_s( 16 )
