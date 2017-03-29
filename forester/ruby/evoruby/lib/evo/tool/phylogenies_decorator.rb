@@ -32,7 +32,6 @@ module Evoruby
     DOMAINS_MAPFILE_SUFFIX    = '.dff'
     SLEEP_TIME                = 0.05
     REMOVE_NI                 = true
-    IDS_ONLY                  = false #TODO this should be a command line option
     FIXED_NIM_FILE            = nil #'all.nim' #TODO this should be a command line option
     TMP_FILE_1                  = '___PD1___'
     TMP_FILE_2                  = '___PD2___'
@@ -48,6 +47,7 @@ module Evoruby
 
     HELP_OPTION_1       = "help"
     HELP_OPTION_2       = "h"
+    NO_DOMAINS_OPTION   = 'nd'
 
     NL = Constants::LINE_DELIMITER
     def run
@@ -59,7 +59,7 @@ module Evoruby
       WWW,
       STDOUT )
 
-      if ( ARGV == nil || ARGV.length > 3 || ARGV.length < 2  )
+      if ( ARGV == nil || ARGV.length < 2  )
         print_help
         exit( -1 )
       end
@@ -90,6 +90,26 @@ module Evoruby
       cla.is_option_set?( HELP_OPTION_2 ) )
         print_help
         exit( 0 )
+      end
+
+      if ( cla.get_number_of_files != 2 )
+        print_help
+        exit( -1 )
+      end
+
+      allowed_opts = Array.new
+      allowed_opts.push(NO_DOMAINS_OPTION)
+
+      disallowed = cla.validate_allowed_options_as_str( allowed_opts )
+      if ( disallowed.length > 0 )
+        Util.fatal_error( PRG_NAME,
+        "unknown option(s): " + disallowed,
+        STDOUT )
+      end
+
+      no_domains = false
+      if cla.is_option_set?(NO_DOMAINS_OPTION)
+        no_domains = true
       end
 
       if File.exist?( LOG_FILE )
@@ -178,48 +198,45 @@ module Evoruby
             ids_mapfile_name = FIXED_NIM_FILE
           end
 
-          Util.print_message( PRG_NAME, "Ids mapfile: " + ids_mapfile_name )
-          log << "Ids mapfile: " + ids_mapfile_name + NL
-
-          unless IDS_ONLY
-            domains_mapfile_name = get_file( files, phylogeny_id, DOMAINS_MAPFILE_SUFFIX )
-            seqs_file_name = get_seq_file( files, phylogeny_id )
-            Util.print_message( PRG_NAME, "Domains file: " + domains_mapfile_name )
-            log << "Domains file: " + domains_mapfile_name + NL
-            Util.print_message( PRG_NAME, "Seq file: " + seqs_file_name )
-            log << "Seq file: " + seqs_file_name + NL
-          end
-
-          unless IDS_ONLY
-            begin
-              Util.check_file_for_readability( domains_mapfile_name )
-            rescue IOError
-              Util.fatal_error( PRG_NAME, 'failed to read from [#{domains_mapfile_name}]: ' + $! )
-            end
-            begin
-              Util.check_file_for_readability( seqs_file_name  )
-            rescue IOError
-              Util.fatal_error( PRG_NAME, 'failed to read from [#{seqs_file_name }]: ' + $! )
-            end
-          end
-
           begin
             Util.check_file_for_readability( ids_mapfile_name )
           rescue IOError
             Util.fatal_error( PRG_NAME, 'failed to read from [#{ids_mapfile_name}]: ' + $! )
           end
+          Util.print_message( PRG_NAME, "Ids mapfile: " + ids_mapfile_name )
+          log << "Ids mapfile: " + ids_mapfile_name + NL
 
-          unless IDS_ONLY
-            cmd = decorator +
-            ' -t -p -f=m ' + phylogeny_file + ' ' +
-            seqs_file_name  + ' ' + TMP_FILE_1
-            puts cmd
+          seqs_file_name = get_seq_file( files, phylogeny_id )
+          begin
+            Util.check_file_for_readability( seqs_file_name  )
+          rescue IOError
+            Util.fatal_error( PRG_NAME, 'failed to read from [#{seqs_file_name }]: ' + $! )
+          end
+          Util.print_message( PRG_NAME, "Seq file: " + seqs_file_name )
+          log << "Seq file: " + seqs_file_name + NL
+
+          unless no_domains
+            domains_mapfile_name = get_file( files, phylogeny_id, DOMAINS_MAPFILE_SUFFIX )
             begin
-              execute_cmd( cmd, log )
-            rescue Error
-              Util.fatal_error( PRG_NAME, 'error: ' + $! )
+              Util.check_file_for_readability( domains_mapfile_name )
+            rescue IOError
+              Util.fatal_error( PRG_NAME, 'failed to read from [#{domains_mapfile_name}]: ' + $! )
             end
+            Util.print_message( PRG_NAME, "Domains file: " + domains_mapfile_name )
+            log << "Domains file: " + domains_mapfile_name + NL
+          end
 
+          cmd = decorator +
+          ' -t -p -f=m ' + phylogeny_file + ' ' +
+          seqs_file_name  + ' ' + TMP_FILE_1
+          puts cmd
+          begin
+            execute_cmd( cmd, log )
+          rescue Error
+            Util.fatal_error( PRG_NAME, 'error: ' + $! )
+          end
+
+          unless no_domains
             cmd = decorator + ' ' + DECORATOR_OPTIONS_DOMAINS + ' ' +
             '-f=d ' + TMP_FILE_1 + ' ' +
             domains_mapfile_name + ' ' + TMP_FILE_2
@@ -231,9 +248,9 @@ module Evoruby
             end
           end
 
-          if IDS_ONLY
+          if no_domains
             cmd = decorator + ' ' +  DECORATOR_OPTIONS_SEQ_NAMES + ' ' +
-            '-f=n ' + phylogeny_file + ' ' +
+            '-f=n ' + TMP_FILE_1 + ' ' +
             ids_mapfile_name + ' ' + outfile
             puts cmd
             begin
@@ -241,6 +258,7 @@ module Evoruby
             rescue Error
               Util.fatal_error( PRG_NAME, 'error: ' + $! )
             end
+            File.delete( TMP_FILE_1 )
           else
             cmd = decorator + ' ' +  DECORATOR_OPTIONS_SEQ_NAMES + ' ' +
             '-f=n ' + TMP_FILE_2 + ' ' +
@@ -274,7 +292,9 @@ module Evoruby
     end
 
     def get_id( phylogeny_file_name )
-      if phylogeny_file_name =~ /^(.+?)_/
+      if phylogeny_file_name =~ /^(.+?_DA)_/
+        return $1
+      elsif phylogeny_file_name =~ /^(.+?)_/
         return $1
       end
       nil
@@ -318,11 +338,18 @@ module Evoruby
     end
 
     def print_help()
-      puts( "Usage:" )
-      puts()
-      puts( "  " + PRG_NAME + ".rb <suffix of intrees to be decorated> <suffix for decorated outtrees> " )
-      puts()
-      puts()
+      puts 'Usage:'
+      puts
+      puts "   " + PRG_NAME + ".rb <suffix of in-trees to be decorated> <suffix for decorated out-trees> "
+      puts
+      puts "   required files (in this dir): " + "name mappings       : .nim"
+      puts "                                 " + "sequences           : _ni.fasta"
+      puts "                                 " + "domain architectures: .dff"
+      puts
+      puts "   options: -" + NO_DOMAINS_OPTION  + ": to not add domain architecture information (.dff file)"
+      puts
+      puts "Example: " + PRG_NAME + ".rb .xml _d.xml"
+      puts
     end
   end # class PhylogenyiesDecorator
 
