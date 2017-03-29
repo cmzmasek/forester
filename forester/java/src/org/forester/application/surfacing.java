@@ -2212,7 +2212,7 @@ public class surfacing {
         ForesterUtil.programMessage( PRG_NAME, surfacing.WWW );
         ForesterUtil
                 .programMessage( PRG_NAME,
-                                 "[next step for phylogenomic analysis pipeline (example, in \"DAS\" dir): % mse.rb .prot . FL_seqs DA_seqs ../../genome_locations.txt]" );
+                                 "[next step for phylogenomic analysis pipeline (example, in \"DAS\" dir): % mse.rb .prot . FL_seqs DA_seqs path/to/genome_locations.txt]" );
         ForesterUtil.programMessage( PRG_NAME, "OK" );
         System.out.println();
     }
@@ -2307,6 +2307,12 @@ public class surfacing {
         System.out.println();
         System.out
                 .println( "Example 2: surfacing -p2g=pfam2go.txt -obo=go.obo -species_tree=tol_156.xml -last -ignore_viral_ids -no_eo -ie=0.1 -dufs -genomes=genomes_all.txt -pos_filter=tf_1.txt -all_prot -all_prot_e=0.1 -out_dir=_tf1_e01_ape01 -o=tf1_e01_ape01" );
+        System.out.println();
+        System.out
+                .println( "Example 3: surfacing -species_tree=master_tree.xml -no_eo -ie=1e-6 -mrel=0.5 -mo=10 -dufs -genomes=genomes.txt -out_dir=a605 -o=a605" );
+        System.out.println();
+        System.out
+        .println("[next step for phylogenomic analysis pipeline (example, in \"DAS\" dir): % mse.rb .prot . FL_seqs DA_seqs path/to/genome_locations.txt]" );
         System.out.println();
     }
 }
