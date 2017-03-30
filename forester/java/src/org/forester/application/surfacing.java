@@ -219,7 +219,7 @@ public class surfacing {
     final static private String                                     SEQ_EXTRACT_OPTION                                                            = "prot_extract";
     final static private String                                     PRG_VERSION                                                                   = "2.501";
     final static private String                                     PRG_DATE                                                                      = "170327";
-    final static private String                                     E_MAIL                                                                        = "czmasek@burnham.org";
+    final static private String                                     E_MAIL                                                                        = "phyloxml@gmail.com";
     final static private String                                     WWW                                                                           = "https://sites.google.com/site/cmzmasek/home/software/forester/surfacing";
     final static private boolean                                    IGNORE_DUFS_DEFAULT                                                           = true;
     final static private boolean                                    IGNORE_COMBINATION_WITH_SAME_DEFAULLT                                         = false;
