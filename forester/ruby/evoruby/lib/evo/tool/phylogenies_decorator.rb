@@ -5,8 +5,6 @@
 # Copyright::    Copyright (C) 2017 Christian M. Zmasek
 # License::      GNU Lesser General Public License (LGPL)
 #
-# Last modified: 2017/02/09
-#
 # decoration of phylogenies with sequence/species names and domain architectures
 #
 # Environment variable FORESTER_HOME needs to point to the appropriate
@@ -20,19 +18,12 @@ require 'date'
 module Evoruby
   class PhylogeniesDecorator
 
-    #DECORATOR_OPTIONS_SEQ_NAMES = '-r=1 -mdn'
-    #DECORATOR_OPTIONS_SEQ_NAMES = '-p -t -sn'
-    #DECORATOR_OPTIONS_SEQ_NAMES = '-p -t -tc -mp -or'
     DECORATOR_OPTIONS_SEQ_NAMES = '-p -t -mp -or'
-    # -mdn is a hidden expert option to rename e.g. "6_ORYLA3" to "6_[3]_ORYLA"
-    #DECORATOR_OPTIONS_SEQ_NAMES = '-sn -r=1'
-    #DECORATOR_OPTIONS_DOMAINS = '-r=1'
     DECORATOR_OPTIONS_DOMAINS = '-p -t'
     IDS_MAPFILE_SUFFIX        = '.nim'
     DOMAINS_MAPFILE_SUFFIX    = '.dff'
-    SLEEP_TIME                = 0.05
+    SLEEP_TIME                = 0.01
     REMOVE_NI                 = true
-    FIXED_NIM_FILE            = nil #'all.nim' #TODO this should be a command line option
     TMP_FILE_1                  = '___PD1___'
     TMP_FILE_2                  = '___PD2___'
     LOG_FILE                  = '00_phylogenies_decorator.log'
@@ -40,14 +31,15 @@ module Evoruby
     JAVA_HOME                 = ENV[Constants::JAVA_HOME_ENV_VARIABLE]
 
     PRG_NAME       = "phylogenies_decorator"
-    PRG_DATE       = "170209"
+    PRG_DATE       = "170329"
     PRG_DESC       = "decoration of phylogenies with sequence/species names and domain architectures"
     PRG_VERSION    = "1.02"
     WWW            = "https://sites.google.com/site/cmzmasek/home/software/forester"
 
-    HELP_OPTION_1       = "help"
-    HELP_OPTION_2       = "h"
-    NO_DOMAINS_OPTION   = 'nd'
+    HELP_OPTION_1                           = "help"
+    HELP_OPTION_2                           = "h"
+    NO_DOMAINS_OPTION                       = 'nd'
+    EXTRACT_BRACKETED_TAXONOMIC_CODE_OPTION = 'tc'
 
     NL = Constants::LINE_DELIMITER
     def run
@@ -99,6 +91,7 @@ module Evoruby
 
       allowed_opts = Array.new
       allowed_opts.push(NO_DOMAINS_OPTION)
+      allowed_opts.push(EXTRACT_BRACKETED_TAXONOMIC_CODE_OPTION)
 
       disallowed = cla.validate_allowed_options_as_str( allowed_opts )
       if ( disallowed.length > 0 )
@@ -110,6 +103,11 @@ module Evoruby
       no_domains = false
       if cla.is_option_set?(NO_DOMAINS_OPTION)
         no_domains = true
+      end
+
+      extr_bracketed_tc = false
+      if cla.is_option_set?(EXTRACT_BRACKETED_TAXONOMIC_CODE_OPTION)
+        extr_bracketed_tc = true
       end
 
       if File.exist?( LOG_FILE )
@@ -125,6 +123,8 @@ module Evoruby
       log << "Program              : " + PRG_NAME + NL
       log << "Version              : " + PRG_VERSION + NL
       log << "Program date         : " + PRG_DATE + NL
+      log << "No domains           : " + no_domains.to_s + NL
+      log << "Extract taxo codes   : " + extr_bracketed_tc.to_s + NL
       log << "Options for seq names: " + DECORATOR_OPTIONS_SEQ_NAMES + NL
       log << "Options for domains  : " + DECORATOR_OPTIONS_DOMAINS + NL
       log << "FORESTER_HOME        : " + FORESTER_HOME + NL
@@ -192,11 +192,7 @@ module Evoruby
           domains_mapfile_name = nil
           seqs_file_name = nil
 
-          if ( FIXED_NIM_FILE == nil )
-            ids_mapfile_name = get_file( files, phylogeny_id, IDS_MAPFILE_SUFFIX )
-          else
-            ids_mapfile_name = FIXED_NIM_FILE
-          end
+          ids_mapfile_name = get_file( files, phylogeny_id, IDS_MAPFILE_SUFFIX )
 
           begin
             Util.check_file_for_readability( ids_mapfile_name )
@@ -248,9 +244,13 @@ module Evoruby
             end
           end
 
+          opts = DECORATOR_OPTIONS_SEQ_NAMES
+          if extr_bracketed_tc
+            opts += ' -tc'
+          end
+
           if no_domains
-            cmd = decorator + ' ' +  DECORATOR_OPTIONS_SEQ_NAMES + ' ' +
-            '-f=n ' + TMP_FILE_1 + ' ' +
+            cmd = decorator + ' ' + opts + ' -f=n ' + TMP_FILE_1 + ' ' +
             ids_mapfile_name + ' ' + outfile
             puts cmd
             begin
@@ -260,8 +260,7 @@ module Evoruby
             end
             File.delete( TMP_FILE_1 )
           else
-            cmd = decorator + ' ' +  DECORATOR_OPTIONS_SEQ_NAMES + ' ' +
-            '-f=n ' + TMP_FILE_2 + ' ' +
+            cmd = decorator + ' ' + opts + ' -f=n ' + TMP_FILE_2 + ' ' +
             ids_mapfile_name + ' ' + outfile
             puts cmd
             begin
@@ -347,6 +346,7 @@ module Evoruby
       puts "                                 " + "domain architectures: .dff"
       puts
       puts "   options: -" + NO_DOMAINS_OPTION  + ": to not add domain architecture information (.dff file)"
+      puts "            -" + EXTRACT_BRACKETED_TAXONOMIC_CODE_OPTION  + ": to extract bracketed taxonomic codes, e.g. [NEMVE]"
       puts
       puts "Example: " + PRG_NAME + ".rb .xml _d.xml"
       puts
