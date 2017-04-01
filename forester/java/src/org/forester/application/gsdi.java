@@ -69,11 +69,12 @@ public final class gsdi {
     final static private String HELP_OPTION_1                          = "help";
     final static private String HELP_OPTION_2                          = "h";
     final static private String SUFFIX_FOR_SPECIES_TREE_USED           = "_species_tree_used.xml";
-    final static private String LOGFILE_SUFFIX                         = "_gsdi_log.txt";
+    final static private String OUTTREE_SUFFIX                         = "_gsdir.xml";
+    final static private String LOGFILE_NAME                           = "00_gsdi_log.txt";
     final static private String REMAPPED_SUFFIX                        = "_gsdi_remapped.txt";
     final static private String PRG_NAME                               = "gsdi";
-    final static private String PRG_VERSION                            = "1.001";
-    final static private String PRG_DATE                               = "170327";
+    final static private String PRG_VERSION                            = "1.100";
+    final static private String PRG_DATE                               = "170331";
     final static private String PRG_DESC                               = "general speciation duplication inference";
     final static private String E_MAIL                                 = "phyloxml@gmail.com";
     final static private String WWW                                    = "https://sites.google.com/site/cmzmasek/home/software/forester";
@@ -99,7 +100,7 @@ public final class gsdi {
                 gsdi.print_help();
                 System.exit( 0 );
             }
-            else if ( ( args.length < 2 ) || ( cla.getNumberOfNames() != 2 && cla.getNumberOfNames() != 3 ) ) {
+            else if ( ( args.length < 2 ) || ( cla.getNumberOfNames() != 3 ) ) {
                 System.out.println();
                 System.out.println( "Wrong number of arguments." );
                 System.out.println();
@@ -160,35 +161,63 @@ public final class gsdi {
         File species_tree_file = null;
         File out_file = null;
         File log_file = null;
+        File out_dir = null;
         try {
             gene_tree_file = cla.getFile( 0 );
             species_tree_file = cla.getFile( 1 );
-            if ( cla.getNumberOfNames() == 3 ) {
+            if ( use_gene_tree_dir ) {
+                out_dir = cla.getFile( 2 );
+                if ( out_dir.exists() ) {
+                    if ( !out_dir.isDirectory() ) {
+                        ForesterUtil
+                                .fatalError( gsdi.PRG_NAME,
+                                             "out-directory [" + out_dir + "] already exists but is not a directory" );
+                    }
+                }
+                else {
+                    final boolean success = out_dir.mkdirs();
+                    if ( !success ) {
+                        ForesterUtil.fatalError( gsdi.PRG_NAME, "could not create out-directory [" + out_dir + "]" );
+                    }
+                }
+            }
+            else {
                 out_file = cla.getFile( 2 );
-                log_file = new File( ForesterUtil.removeSuffix( out_file.toString() ) + LOGFILE_SUFFIX );
             }
         }
         catch ( final IllegalArgumentException e ) {
             ForesterUtil.fatalError( PRG_NAME, "error in command line: " + e.getMessage() );
         }
         if ( use_gene_tree_dir ) {
-            final File dir = new File( gene_tree_file.toString() );
-            final File gene_tree_files[] = dir.listFiles( new FilenameFilter() {
+            final File indir = new File( gene_tree_file.toString() );
+            if ( !indir.exists() ) {
+                ForesterUtil.fatalError( gsdi.PRG_NAME, "in-directory [" + indir + "] does not exist" );
+            }
+            if ( !indir.isDirectory() ) {
+                ForesterUtil.fatalError( gsdi.PRG_NAME, "in-directory [" + indir + "] is not a directory" );
+            }
+            final String species_tree_file_name = species_tree_file.getName();
+            final File gene_tree_files[] = indir.listFiles( new FilenameFilter() {
 
                 @Override
                 public boolean accept( final File dir, final String name ) {
-                    return name.endsWith( gene_tree_suffix );
+                    return (( name.endsWith( gene_tree_suffix) ) && !(name.equals( species_tree_file_name)));
                 }
             } );
-            for( final File file : gene_tree_files ) {
-                System.out.println( file );
+            
+            if ( gene_tree_files.length < 1 ) {
+                ForesterUtil.fatalError( gsdi.PRG_NAME,
+                                         "in-directory [" + indir + "] does not contain any gene tree files with suffix "
+                                                 + gene_tree_suffix );
             }
+          
             execute( base_algorithm,
                      most_parsimonous_duplication_model,
                      allow_stripping_of_gene_tree,
                      transfer_taxonomy,
                      gene_tree_files,
-                     species_tree_file );
+                     species_tree_file,
+                     out_dir );
         }
         else {
             execute( base_algorithm,
@@ -207,21 +236,182 @@ public final class gsdi {
                                  final boolean allow_stripping_of_gene_tree,
                                  final boolean transfer_taxonomy,
                                  final File gene_tree_files[],
-                                 final File species_tree_file )
+                                 final File species_tree_file,
+                                 final File outdir )
             throws IOException {
+        final File log_file = new File( outdir, LOGFILE_NAME );
+        if ( ForesterUtil.isWritableFile( log_file ) != null ) {
+            ForesterUtil.fatalError( gsdi.PRG_NAME, ForesterUtil.isWritableFile( log_file ) );
+        }
+        EasyWriter log_writer = null;
+        try {
+            log_writer = ForesterUtil.createEasyWriter( log_file );
+        }
+        catch ( final IOException e ) {
+            ForesterUtil.fatalError( gsdi.PRG_NAME, "Failed to create [" + log_file + "]: " + e.getMessage() );
+        }
+        log_writer.println( "# " + PRG_NAME );
+        log_writer.println( "# Version\t" + PRG_VERSION );
+        log_writer.println( "# Date\t" + PRG_DATE );
+        log_writer.println( "# Forester version\t" + ForesterConstants.FORESTER_VERSION );
+        log_writer.println( "# Species tree\t" + species_tree_file.getCanonicalPath() );
+        if ( base_algorithm == ALGORITHM.GSDI ) {
+            log_writer.println( "# Algorithm\tGSDI" );
+        }
+        else if ( base_algorithm == ALGORITHM.GSDIR ) {
+            log_writer.println( "# Algorithm\tGSDIR" );
+        }
+        log_writer.println( "# Use most parsimonous duplication model\t" + most_parsimonous_duplication_model );
+        log_writer.println( "# Allow stripping of gene tree nodes\t" + allow_stripping_of_gene_tree );
+        log_writer.println( "# Start time\t" + new SimpleDateFormat( "yyyyMMdd HH:mm:ss" ).format( new Date() ) );
+        int counter = 0;
         for( final File gene_tree_file : gene_tree_files ) {
-            if (gene_tree_file.getName().equals( species_tree_file.getName() )) {
-                continue;
+           
+            String outname = gene_tree_file.getName();
+            if ( outname.indexOf( "." ) > 0 ) {
+                outname = outname.substring( 0, outname.lastIndexOf( "." ) );
             }
+            outname = outname + OUTTREE_SUFFIX;
             execute( base_algorithm,
                      most_parsimonous_duplication_model,
                      allow_stripping_of_gene_tree,
                      transfer_taxonomy,
                      gene_tree_file,
                      species_tree_file,
-                     new File( gene_tree_file + "gsdi" ),
-                     new File( gene_tree_file + "gsdi_log" ) );
+                     new File( outdir, outname ),
+                     log_writer );
+            System.out.print( "\r" + counter++ );
+            
         }
+        System.out.print( "\r" );
+        log_writer.close();
+        System.out.println("Analyzed " + counter + " gene trees");
+        System.out.println();
+        System.out.println( "Wrote log to: " + log_file.getCanonicalPath() );
+        System.out.println();
+    }
+
+    private static void execute( final ALGORITHM base_algorithm,
+                                 final boolean most_parsimonous_duplication_model,
+                                 final boolean allow_stripping_of_gene_tree,
+                                 final boolean transfer_taxonomy,
+                                 final File gene_tree_file,
+                                 final File species_tree_file,
+                                 final File out_file,
+                                 final EasyWriter log_writer )
+            throws IOException {
+        if ( ForesterUtil.isReadableFile( gene_tree_file ) != null ) {
+            ForesterUtil.fatalError( gsdi.PRG_NAME, ForesterUtil.isReadableFile( gene_tree_file ) );
+        }
+        if ( ForesterUtil.isReadableFile( species_tree_file ) != null ) {
+            ForesterUtil.fatalError( gsdi.PRG_NAME, ForesterUtil.isReadableFile( species_tree_file ) );
+        }
+        if ( ForesterUtil.isWritableFile( out_file ) != null ) {
+            ForesterUtil.fatalError( gsdi.PRG_NAME, ForesterUtil.isWritableFile( out_file ) );
+        }
+        Phylogeny species_tree = null;
+        Phylogeny gene_tree = null;
+        try {
+            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+            gene_tree = factory.create( gene_tree_file, PhyloXmlParser.createPhyloXmlParserXsdValidating() )[ 0 ];
+        }
+        catch ( final IOException e ) {
+            fatalError( "error",
+                        "failed to read gene tree from [" + gene_tree_file + "]: " + e.getMessage(),
+                        log_writer );
+        }
+        try {
+            species_tree = SDIutil.parseSpeciesTree( gene_tree,
+                                                     species_tree_file,
+                                                     REPLACE_UNDERSCORES_IN_NH_SPECIES_TREE,
+                                                     true,
+                                                     TAXONOMY_EXTRACTION.NO );
+        }
+        catch ( final PhyloXmlDataFormatException e ) {
+            fatalError( "user error",
+                        "failed to transfer general node name, in [" + species_tree_file + "]: " + e.getMessage(),
+                        log_writer );
+        }
+        catch ( final SDIException e ) {
+            fatalError( "user error", e.getMessage(), log_writer );
+        }
+        catch ( final IOException e ) {
+            fatalError( "error",
+                        "Failed to read species tree from [" + species_tree_file + "]: " + e.getMessage(),
+                        log_writer );
+        }
+        gene_tree.setRooted( true );
+        species_tree.setRooted( true );
+        if ( !gene_tree.isCompletelyBinary() ) {
+            fatalError( "user error", "gene tree [" + gene_tree_file + "] is not completely binary", log_writer );
+        }
+        if ( base_algorithm == ALGORITHM.SDI ) {
+            if ( !species_tree.isCompletelyBinary() ) {
+                fatalError( "user error",
+                            "species tree is not completely binary, use GSDI or GSDIR instead",
+                            log_writer );
+            }
+        }
+        log_writer.print( gene_tree_file.getName() );
+        log_writer.print( "\t" );
+        log_writer.print( ( ForesterUtil.isEmpty( gene_tree.getName() ) ? "" : gene_tree.getName() ) );
+        log_writer.print( "\t" );
+        GSDII gsdii = null;
+        try {
+            log_writer.flush();
+            if ( base_algorithm == ALGORITHM.GSDI ) {
+                gsdii = new GSDI( gene_tree,
+                                  species_tree,
+                                  most_parsimonous_duplication_model,
+                                  allow_stripping_of_gene_tree,
+                                  true,
+                                  transfer_taxonomy );
+            }
+            else if ( base_algorithm == ALGORITHM.GSDIR ) {
+                gsdii = new GSDIR( gene_tree, species_tree, allow_stripping_of_gene_tree, true, transfer_taxonomy );
+            }
+        }
+        catch ( final SDIException e ) {
+            fatalError( "user error", e.getLocalizedMessage(), log_writer );
+        }
+        catch ( final IOException e ) {
+            fatalError( "error", e.toString(), log_writer );
+        }
+        catch ( final OutOfMemoryError e ) {
+            ForesterUtil.outOfMemoryError( e );
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace();
+            fatalError( "unexpected error", e.toString(), log_writer );
+        }
+        try {
+            final PhylogenyWriter writer = new PhylogenyWriter();
+            if ( base_algorithm == ALGORITHM.GSDIR ) {
+                writer.toPhyloXML( out_file, ( ( GSDIR ) gsdii ).getMinDuplicationsSumGeneTree(), 0 );
+            }
+            else {
+                writer.toPhyloXML( out_file, gene_tree, 0 );
+            }
+        }
+        catch ( final IOException e ) {
+            ForesterUtil.fatalError( PRG_NAME,
+                                     "Failed to write to [" + out_file.getCanonicalPath() + "]: " + e.getMessage() );
+        }
+        log_writer.print( gene_tree.getNumberOfExternalNodes() + "\t" );
+        log_writer.print( gsdii.getSpeciationsSum() + "\t" );
+        if ( ( base_algorithm == ALGORITHM.GSDIR ) ) {
+            final GSDIR gsdir = ( GSDIR ) gsdii;
+            log_writer.print( gsdir.getMinDuplicationsSum() + "\t" );
+        }
+        else if ( ( base_algorithm == ALGORITHM.GSDI ) ) {
+            final GSDI gsdi = ( GSDI ) gsdii;
+            log_writer.print( gsdi.getDuplicationsSum() + "\t" );
+            if ( !most_parsimonous_duplication_model ) {
+                log_writer.print( gsdi.getSpeciationOrDuplicationEventsSum() + "\t" );
+            }
+        }
+        log_writer.print( gsdii.getTaxCompBase() + "\t" );
+        log_writer.println();
     }
 
     private static void execute( final ALGORITHM base_algorithm,
@@ -459,7 +649,7 @@ public final class gsdi {
 
     private static void print_help() {
         System.out.println( "Usage: " + PRG_NAME
-                + " [-options] <gene tree in phyloXML format, or directory with gene trees> <species tree> [outfile]" );
+                + " [-options] <gene tree file, or gene trees in-directory> <species tree> <outfile, or out-directory>" );
         System.out.println();
         System.out.println( "Options:" );
         System.out.println( " -" + ALLOW_STRIPPING_OF_GENE_TREE_OPTION
@@ -487,7 +677,7 @@ public final class gsdi {
         System.out.println( "Examples: gsdi -" + ALLOW_STRIPPING_OF_GENE_TREE_OPTION
                 + " gene_tree.xml tree_of_life.xml out.xml" );
         System.out.println( "          gsdi -" + SUFFIX_FOR_DIR_OPTION + " -" + SUFFIX_FOR_DIR_OPTION + "=.xml"
-                + " gene_tree_dir tree_of_life.xml" );
+                + " gene_tree_dir tree_of_life.xml out_dir" );
         System.out.println();
     }
 
