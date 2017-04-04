@@ -720,7 +720,10 @@ public final class gsdi {
         System.out.println();
         System.out.println( "Examples: gsdi -" + ALLOW_STRIPPING_OF_GENE_TREE_OPTION
                 + " gene_tree.xml tree_of_life.xml out.xml" );
-        System.out.println( "          gsdi -" + SUFFIX_FOR_DIR_OPTION + " -" + SUFFIX_FOR_DIR_OPTION + "=.xml"
+        System.out.println( "          gsdi -" + ALLOW_STRIPPING_OF_GENE_TREE_OPTION + " -" + SUFFIX_FOR_DIR_OPTION
+                + "=.xml" + " gene_tree_dir tree_of_life.xml out_dir" );
+        System.out.println( "          gsdi -" + ALLOW_STRIPPING_OF_GENE_TREE_OPTION + " -" + MOST_PARSIMONIOUS_OPTION
+                + " -" + GSDIR_OPTION + " -" + TRANSFER_TAXONOMY_OPTION + " -" + SUFFIX_FOR_DIR_OPTION + "=.xml"
                 + " gene_tree_dir tree_of_life.xml out_dir" );
         System.out.println();
     }
