@@ -216,7 +216,6 @@ public final class RIO {
         if ( _verbose ) {
             System.out.println();
         }
-        final DecimalFormat pf = new java.text.DecimalFormat( "000" );
         int gene_tree_ext_nodes = 0;
         int i = 0;
         int counter = 0;
@@ -231,7 +230,7 @@ public final class RIO {
                     throw new RIOException( "gene tree #" + i + " has only one external node" );
                 }
                 if ( _verbose ) {
-                    ForesterUtil.updateProgress( i, pf );
+                    System.out.print( "\r" + i );
                 }
                 if ( counter == 0 ) {
                     if ( algorithm == ALGORITHM.SDIR ) {
@@ -265,6 +264,9 @@ public final class RIO {
                 ++counter;
             }
             ++i;
+        }
+        if ( _verbose ) {
+            System.out.print( "\rGene trees analyzed                 :\t" + counter  );
         }
         if ( ( first >= 0 ) && ( counter == 0 ) && ( i > 0 ) ) {
             throw new RIOException( "attempt to analyze first gene tree #" + first + " in a set of " + i );
