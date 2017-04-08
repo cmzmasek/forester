@@ -28,9 +28,11 @@
 package org.forester.application;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.forester.datastructures.IntMatrix;
@@ -57,7 +59,7 @@ public class rio {
 
     final static private String PRG_NAME                 = "rio";
     final static private String PRG_VERSION              = "4.000 beta 11";
-    final static private String PRG_DATE                 = "170417";
+    final static private String PRG_DATE                 = "170406";
     final static private String E_MAIL                   = "phyloxml@gmail.com";
     final static private String WWW                      = "https://sites.google.com/site/cmzmasek/home/software/forester";
     final static private String HELP_OPTION_1            = "help";
@@ -110,8 +112,8 @@ public class rio {
         }
         final File gene_trees_file = cla.getFile( 0 );
         final File species_tree_file = cla.getFile( 1 );
-        final File orthology_outtable = cla.getFile( 2 );
-        final File logfile;
+        File orthology_outtable = cla.getFile( 2 );
+        File logfile;
         if ( cla.getNumberOfNames() > 3 ) {
             logfile = cla.getFile( 3 );
             if ( logfile.exists() ) {
@@ -303,6 +305,131 @@ public class rio {
         else {
             algorithm = ALGORITHM.GSDIR;
         }
+        //////////////////////////
+        //////////////////////////
+        final boolean use_gene_trees_dir = true;
+        if ( use_gene_trees_dir ) {
+            final String LOGFILE_SUFFIX = "_RIO_log.tsv";
+            final String STRIPPED_SPECIES_TREE_SUFFIX = "_RIO_sst.xml";
+            final String ORTHO_OUTTABLE_SUFFIX = "_RIO_o_table.tsv";
+            final String OUT_GENE_TREE_SUFFIX = "_RIO_gene_tree.xml";
+            final String gene_trees_suffix = ".mlt";
+            final File indir = new File( "in" );
+            final File outdir = new File( "out" );
+            if ( !indir.exists() ) {
+                ForesterUtil.fatalError( PRG_NAME, "in-directory [" + indir + "] does not exist" );
+            }
+            if ( !indir.isDirectory() ) {
+                ForesterUtil.fatalError( PRG_NAME, "in-directory [" + indir + "] is not a directory" );
+            }
+            if ( outdir.exists() ) {
+                if ( !outdir.isDirectory() ) {
+                    ForesterUtil.fatalError( PRG_NAME,
+                                             "out-directory [" + outdir + "] already exists but is not a directory" );
+                }
+            }
+            else {
+                final boolean success = outdir.mkdirs();
+                if ( !success ) {
+                    ForesterUtil.fatalError( PRG_NAME, "could not create out-directory [" + outdir + "]" );
+                }
+            }
+            final String species_tree_file_name = species_tree_file.getName();
+            final File gene_trees_files[] = indir.listFiles( new FilenameFilter() {
+
+                @Override
+                public boolean accept( final File dir, final String name ) {
+                    return ( ( name.endsWith( gene_trees_suffix ) ) && !( name.equals( species_tree_file_name ) ) );
+                }
+            } );
+            if ( gene_trees_files.length < 1 ) {
+                ForesterUtil.fatalError( PRG_NAME,
+                                         "in-directory [" + indir
+                                                 + "] does not contain any gene tree files with suffix "
+                                                 + gene_trees_suffix );
+            }
+            Arrays.sort( gene_trees_files );
+            System.out.print( "NAME" );
+            System.out.print( '\t' );
+            System.out.print( "EXT NODES" );
+            System.out.print( '\t' );
+            System.out.print( "MEAN DUP" );
+            System.out.print( '\t' );
+            System.out.print( "MEAN DUP SD" );
+            System.out.print( '\t' );
+            System.out.print( "MEDIAN DUP" );
+            System.out.print( '\t' );
+            System.out.print( "MIN DUP" );
+            System.out.print( '\t' );
+            System.out.print( "MAX DUP" );
+            System.out.print( '\t' );
+            System.out.print( "REMOVED EXT NODES" );
+            System.out.print( '\t' );
+            System.out.print( "N" );
+            System.out.println();
+            for( final File gf : gene_trees_files ) {
+                String outname = gf.getName();
+                if ( outname.indexOf( "." ) > 0 ) {
+                    outname = outname.substring( 0, outname.lastIndexOf( "." ) );
+                }
+                try {
+                    x( gf,
+                       species_tree_file,
+                       new File( outdir.getCanonicalFile() + "/" + outname + ORTHO_OUTTABLE_SUFFIX ),
+                       new File( outdir.getCanonicalFile() + "/" + outname + LOGFILE_SUFFIX ),
+                       outgroup,
+                       rerooting,
+                       gt_first,
+                       gt_last,
+                       new File( outdir.getCanonicalFile() + "/" + outname + STRIPPED_SPECIES_TREE_SUFFIX ),
+                       new File( outdir.getCanonicalFile() + "/" + outname + OUT_GENE_TREE_SUFFIX ),
+                       transfer_taxonomy,
+                       algorithm,
+                       true );
+                }
+                catch ( IOException e ) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }
+        else {
+            x( gene_trees_file,
+               species_tree_file,
+               orthology_outtable,
+               logfile,
+               outgroup,
+               rerooting,
+               gt_first,
+               gt_last,
+               return_species_tree,
+               return_gene_tree,
+               transfer_taxonomy,
+               algorithm,
+               false );
+        }
+        ////////////////////
+        ///////////////////
+        if ( !use_gene_trees_dir ) {
+            time = System.currentTimeMillis() - time;
+            System.out.println( "Time                                :\t" + time + "ms" );
+        }
+        System.exit( 0 );
+    }
+
+    private static final void x( final File gene_trees_file,
+                                 final File species_tree_file,
+                                 final File orthology_outtable,
+                                 final File logfile,
+                                 final String outgroup,
+                                 final REROOTING rerooting,
+                                 final int gt_first,
+                                 final int gt_last,
+                                 final File return_species_tree,
+                                 final File return_gene_tree,
+                                 final boolean transfer_taxonomy,
+                                 final ALGORITHM algorithm,
+                                 final boolean use_gene_trees_dir ) {
         try {
             final RIO rio;
             boolean iterating = false;
@@ -346,11 +473,13 @@ public class rio {
                                            gt_first,
                                            gt_last,
                                            logfile != null,
-                                           true,
+                                           !use_gene_trees_dir,
                                            transfer_taxonomy );
             }
-            if ( algorithm == ALGORITHM.GSDIR ) {
-                System.out.println( "Taxonomy linking based on           :\t" + rio.getGSDIRtaxCompBase() );
+            if ( !use_gene_trees_dir ) {
+                if ( algorithm == ALGORITHM.GSDIR ) {
+                    System.out.println( "Taxonomy linking based on           :\t" + rio.getGSDIRtaxCompBase() );
+                }
             }
             final IntMatrix m;
             if ( iterating ) {
@@ -360,7 +489,7 @@ public class rio {
                 m = RIO.calculateOrthologTable( rio.getAnalyzedGeneTrees(), true );
             }
             final BasicDescriptiveStatistics stats = rio.getDuplicationsStatistics();
-            writeTable( orthology_outtable, stats.getN(), m );
+            writeTable( orthology_outtable, stats.getN(), m, !use_gene_trees_dir );
             if ( ( algorithm != ALGORITHM.SDIR ) && ( logfile != null ) ) {
                 writeLogFile( logfile,
                               rio,
@@ -370,17 +499,20 @@ public class rio {
                               PRG_NAME,
                               PRG_VERSION,
                               PRG_DATE,
-                              ForesterUtil.getForesterLibraryInformation() );
+                              ForesterUtil.getForesterLibraryInformation(),
+                              !use_gene_trees_dir );
             }
             if ( return_species_tree != null ) {
-                writeTree( rio.getSpeciesTree(), return_species_tree, "Wrote (stripped) species tree to    :\t" );
+                writeTree( rio.getSpeciesTree(),
+                           return_species_tree,
+                           use_gene_trees_dir ? null : "Wrote (stripped) species tree to    :\t" );
             }
             if ( return_gene_tree != null ) {
                 writeTree( rio.getMinDuplicationsGeneTree(),
                            return_gene_tree,
-                           "Wrote one min duplication gene tree :\t" );
+                           use_gene_trees_dir ? null : "Wrote one min duplication gene tree :\t" );
             }
-            final java.text.DecimalFormat df = new java.text.DecimalFormat( "0.#" );
+            final java.text.DecimalFormat df = new java.text.DecimalFormat( "0.##" );
             final int min = ( int ) stats.getMin();
             final int max = ( int ) stats.getMax();
             final int median = ( int ) stats.median();
@@ -401,25 +533,57 @@ public class rio {
             final double min_count_percentage = ( 100.0 * min_count ) / stats.getN();
             final double max_count_percentage = ( 100.0 * max_count ) / stats.getN();
             final double median_count_percentage = ( 100.0 * median_count ) / stats.getN();
-            System.out.println( "Gene tree internal nodes            :\t" + rio.getIntNodesOfAnalyzedGeneTrees() );
-            System.out.println( "Gene tree external nodes            :\t" + rio.getExtNodesOfAnalyzedGeneTrees() );
-            System.out.println( "Mean number of duplications         :\t" + df.format( stats.arithmeticMean() ) + "\t"
-                    + df.format( ( 100.0 * stats.arithmeticMean() ) / rio.getIntNodesOfAnalyzedGeneTrees() )
-                    + "%\t(sd: " + df.format( stats.sampleStandardDeviation() ) + ")" );
-            if ( stats.getN() > 3 ) {
-                System.out.println( "Median number of duplications       :\t" + df.format( median ) + "\t"
-                        + df.format( ( 100.0 * median ) / rio.getIntNodesOfAnalyzedGeneTrees() ) + "%" );
+            if ( use_gene_trees_dir ) {
+                String name = gene_trees_file.getName();
+                if ( name.indexOf( "." ) > 0 ) {
+                    name = name.substring( 0, name.lastIndexOf( "." ) );
+                }
+                System.out.print( name );
+                System.out.print( '\t' );
+                System.out.print( rio.getExtNodesOfAnalyzedGeneTrees() );
+                System.out.print( '\t' );
+                System.out.print( df.format( stats.arithmeticMean() ) );
+                System.out.print( '\t' );
+                System.out.print( df.format( stats.sampleStandardDeviation() ) );
+                System.out.print( '\t' );
+                if ( stats.getN() > 3 ) {
+                    System.out.print( df.format( median ) );
+                }
+                else {
+                    System.out.print( "" );
+                }
+                System.out.print( '\t' );
+                System.out.print( min );
+                System.out.print( '\t' );
+                System.out.print( max );
+                System.out.print( '\t' );
+                System.out.print( rio.getRemovedGeneTreeNodes().size() );
+                System.out.print( '\t' );
+                System.out.print( stats.getN() );
+                System.out.println();
             }
-            System.out.println( "Minimum duplications                :\t" + min + "\t"
-                    + df.format( ( 100.0 * min ) / rio.getIntNodesOfAnalyzedGeneTrees() ) + "%" );
-            System.out.println( "Maximum duplications                :\t" + ( int ) max + "\t"
-                    + df.format( ( 100.0 * max ) / rio.getIntNodesOfAnalyzedGeneTrees() ) + "%" );
-            System.out.println( "Gene trees with median duplications :\t" + median_count + "\t"
-                    + df.format( median_count_percentage ) + "%" );
-            System.out.println( "Gene trees with minimum duplications:\t" + min_count + "\t"
-                    + df.format( min_count_percentage ) + "%" );
-            System.out.println( "Gene trees with maximum duplications:\t" + max_count + "\t"
-                    + df.format( max_count_percentage ) + "%" );
+            else {
+                System.out.println( "Gene tree internal nodes            :\t" + rio.getIntNodesOfAnalyzedGeneTrees() );
+                System.out.println( "Gene tree external nodes            :\t" + rio.getExtNodesOfAnalyzedGeneTrees() );
+                System.out.println( "Mean number of duplications         :\t" + df.format( stats.arithmeticMean() )
+                        + "\t" + df.format( ( 100.0 * stats.arithmeticMean() ) / rio.getIntNodesOfAnalyzedGeneTrees() )
+                        + "%\t(sd: " + df.format( stats.sampleStandardDeviation() ) + ")" );
+                if ( stats.getN() > 3 ) {
+                    System.out.println( "Median number of duplications       :\t" + df.format( median ) + "\t"
+                            + df.format( ( 100.0 * median ) / rio.getIntNodesOfAnalyzedGeneTrees() ) + "%" );
+                }
+                System.out.println( "Minimum duplications                :\t" + min + "\t"
+                        + df.format( ( 100.0 * min ) / rio.getIntNodesOfAnalyzedGeneTrees() ) + "%" );
+                System.out.println( "Maximum duplications                :\t" + ( int ) max + "\t"
+                        + df.format( ( 100.0 * max ) / rio.getIntNodesOfAnalyzedGeneTrees() ) + "%" );
+                System.out.println( "Gene trees with median duplications :\t" + median_count + "\t"
+                        + df.format( median_count_percentage ) + "%" );
+                System.out.println( "Gene trees with minimum duplications:\t" + min_count + "\t"
+                        + df.format( min_count_percentage ) + "%" );
+                System.out.println( "Gene trees with maximum duplications:\t" + max_count + "\t"
+                        + df.format( max_count_percentage ) + "%" );
+                System.out.println( "Removed ext gene tree nodes:\t" + rio.getRemovedGeneTreeNodes().size() );
+            }
         }
         catch ( final RIOException e ) {
             ForesterUtil.fatalError( e.getLocalizedMessage() );
@@ -439,9 +603,6 @@ public class rio {
         catch ( final Error e ) {
             ForesterUtil.unexpectedFatalError( e );
         }
-        time = System.currentTimeMillis() - time;
-        System.out.println( "Time                                :\t" + time + "ms" );
-        System.exit( 0 );
     }
 
     private final static void printHelp() {
@@ -494,24 +655,30 @@ public class rio {
                                       final String prg_name,
                                       final String prg_v,
                                       final String prg_date,
-                                      final String f )
+                                      final String f,
+                                      final boolean verbose )
             throws IOException {
         final EasyWriter out = ForesterUtil.createEasyWriter( logfile );
-        out.println( prg_name );
-        out.println( "version : " + prg_v );
-        out.println( "date    : " + prg_date );
-        out.println( "based on: " + f );
-        out.println( "----------------------------------" );
-        out.println( "Gene trees                                      : " + gene_trees_file.getCanonicalPath() );
-        out.println( "Species tree                                    : " + species_tree_file.getCanonicalPath() );
-        out.println( "All vs all orthology table                      : " + outtable.getCanonicalPath() );
+        out.println( "# " + prg_name );
+        out.println( "# version : " + prg_v );
+        out.println( "# date    : " + prg_date );
+        out.println( "# based on: " + f );
+        out.println( "# ----------------------------------" );
+        out.println( "Gene trees                          :\t" + gene_trees_file.getCanonicalPath() );
+        out.println( "Species tree                        :\t" + species_tree_file.getCanonicalPath() );
+        out.println( "All vs all orthology table          :\t" + outtable.getCanonicalPath() );
         out.flush();
         out.println( rio.getLog().toString() );
         out.close();
-        System.out.println( "Wrote log to                        :\t" + logfile.getCanonicalPath() );
+        if ( verbose ) {
+            System.out.println( "Wrote log to                        :\t" + logfile.getCanonicalPath() );
+        }
     }
 
-    private static void writeTable( final File table_outfile, final int gene_trees_analyzed, final IntMatrix m )
+    private static void writeTable( final File table_outfile,
+                                    final int gene_trees_analyzed,
+                                    final IntMatrix m,
+                                    final boolean verbose )
             throws IOException {
         final EasyWriter w = ForesterUtil.createEasyWriter( table_outfile );
         final java.text.DecimalFormat df = new java.text.DecimalFormat( "0.####" );
@@ -539,12 +706,16 @@ public class rio {
             w.println();
         }
         w.close();
-        System.out.println( "Wrote table to                      :\t" + table_outfile.getCanonicalPath() );
+        if ( verbose ) {
+            System.out.println( "Wrote table to                      :\t" + table_outfile.getCanonicalPath() );
+        }
     }
 
     private static void writeTree( final Phylogeny p, final File f, final String comment ) throws IOException {
         final PhylogenyWriter writer = new PhylogenyWriter();
         writer.toPhyloXML( f, p, 0 );
-        System.out.println( comment + f.getCanonicalPath() );
+        if ( comment != null ) {
+            System.out.println( comment + f.getCanonicalPath() );
+        }
     }
 }

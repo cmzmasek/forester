@@ -30,7 +30,6 @@ package org.forester.rio;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -369,7 +368,6 @@ public final class RIO {
     }
 
     private final void logRemovedGeneTreeNodes() {
-        log( "Species stripped from gene trees:" );
         final SortedSet<String> rn = new TreeSet<String>();
         for( final PhylogenyNode n : getRemovedGeneTreeNodes() ) {
             final Taxonomy t = n.getNodeData().getTaxonomy();
@@ -388,10 +386,12 @@ public final class RIO {
                 }
             }
         }
+        final StringBuilder sb = new StringBuilder();
         for( final String s : rn ) {
-            log( s );
+            sb.append( '\t' );
+            sb.append( s );
         }
-        log( "" );
+        log( "Species stripped from gene trees    :" + sb);
     }
 
     private final Phylogeny performOrthologInference( final Phylogeny gene_tree,
@@ -476,6 +476,7 @@ public final class RIO {
         }
         if ( ( i == 0 ) || ( dups < _duplications_stats.getMin() ) ) {
             _min_dub_gene_tree = assigned_tree;
+            _min_dub_gene_tree.setRerootable( false );
         }
         _duplications_stats.addValue( dups );
         return assigned_tree;
@@ -488,34 +489,62 @@ public final class RIO {
     }
 
     private final void postLog( final Phylogeny species_tree, final int first, final int last ) {
-        log( "" );
+        final java.text.DecimalFormat df = new java.text.DecimalFormat( "0.##" );
+        final int min = ( int ) getDuplicationsStatistics().getMin();
+        final int max = ( int ) getDuplicationsStatistics().getMax();
+        final int median = ( int ) getDuplicationsStatistics().median();
+        int min_count = 0;
+        int max_count = 0;
+        int median_count = 0;
+        for( double d : getDuplicationsStatistics().getData() ) {
+            if ( ( ( int ) d ) == min ) {
+                ++min_count;
+            }
+            if ( ( ( int ) d ) == max ) {
+                ++max_count;
+            }
+            if ( ( ( int ) d ) == median ) {
+                ++median_count;
+            }
+        }
+        final double min_count_percentage = ( 100.0 * min_count ) / getDuplicationsStatistics().getN();
+        final double max_count_percentage = ( 100.0 * max_count ) / getDuplicationsStatistics().getN();
+        final double median_count_percentage = ( 100.0 * median_count ) / getDuplicationsStatistics().getN();
+        
+       
         if ( ( getRemovedGeneTreeNodes() != null ) && ( getRemovedGeneTreeNodes().size() > 0 ) ) {
             logRemovedGeneTreeNodes();
         }
-        log( "Species tree external nodes (after stripping)   : " + species_tree.getNumberOfExternalNodes() );
-        log( "Species tree polytomies (after stripping)       : "
-                + PhylogenyMethods.countNumberOfPolytomies( species_tree ) );
-        log( "Taxonomy linking based on                       : " + getGSDIRtaxCompBase() );
-        final java.text.DecimalFormat df = new java.text.DecimalFormat( "0.#" );
+       
+        log( "Gene trees analyzed                 :\t" + getDuplicationsStatistics().getN() );
         if ( ( first >= 0 ) && ( last >= 0 ) ) {
-            log( "Gene trees analyzed range                       : " + first + "-" + last );
+            log( "Gene trees analyzed range           :\t" + first + "-" + last );
         }
-        log( "Gene trees analyzed                             : " + _duplications_stats.getN() );
-        log( "Mean number of duplications                     : " + df.format( _duplications_stats.arithmeticMean() )
-             + " (sd: " + df.format( _duplications_stats.sampleStandardDeviation() ) + ")" + " ("
-             + df.format( ( 100.0 * _duplications_stats.arithmeticMean() ) / getIntNodesOfAnalyzedGeneTrees() )
-             + "%)" );
-        if ( _duplications_stats.getN() > 3 ) {
-            log( "Median number of duplications                   : " + df.format( _duplications_stats.median() )
-                 + " (" + df.format( ( 100.0 * _duplications_stats.median() ) / getIntNodesOfAnalyzedGeneTrees() )
-                 + "%)" );
+        log( "Gene tree internal nodes            :\t" + getIntNodesOfAnalyzedGeneTrees() );
+        log( "Gene tree external nodes            :\t" + getExtNodesOfAnalyzedGeneTrees() );
+        log( "Removed ext gene tree nodes         :\t" + getRemovedGeneTreeNodes().size() );
+        log( "Spec tree ext nodes (after strip)   :\t" + species_tree.getNumberOfExternalNodes() );
+        log( "Spec tree polytomies (after strip)  :\t"
+                + PhylogenyMethods.countNumberOfPolytomies( species_tree ) );
+        log( "Taxonomy linking based on           :\t" + getGSDIRtaxCompBase() );
+        log( "Mean number of duplications         :\t" + df.format( getDuplicationsStatistics().arithmeticMean() )
+                + "\t" + df.format( ( 100.0 * getDuplicationsStatistics().arithmeticMean() ) / getIntNodesOfAnalyzedGeneTrees() )
+                + "%\t(sd: " + df.format( getDuplicationsStatistics().sampleStandardDeviation() ) + ")" );
+        if ( getDuplicationsStatistics().getN() > 3 ) {
+            log( "Median number of duplications       :\t" + df.format( median ) + "\t"
+                    + df.format( ( 100.0 * median ) / getIntNodesOfAnalyzedGeneTrees() ) + "%" );
         }
-        log( "Minimum duplications                            : " + ( int ) _duplications_stats.getMin() + " ("
-                + df.format( ( 100.0 * _duplications_stats.getMin() ) / getIntNodesOfAnalyzedGeneTrees() ) + "%)" );
-        log( "Maximum duplications                            : " + ( int ) _duplications_stats.getMax() + " ("
-                + df.format( ( 100.0 * _duplications_stats.getMax() ) / getIntNodesOfAnalyzedGeneTrees() ) + "%)" );
-        log( "Gene tree internal nodes                        : " + getIntNodesOfAnalyzedGeneTrees() );
-        log( "Gene tree external nodes                        : " + getExtNodesOfAnalyzedGeneTrees() );
+        log( "Minimum duplications                :\t" + min + "\t"
+                + df.format( ( 100.0 * min ) / getIntNodesOfAnalyzedGeneTrees() ) + "%" );
+        log( "Maximum duplications                :\t" + ( int ) max + "\t"
+                + df.format( ( 100.0 * max ) / getIntNodesOfAnalyzedGeneTrees() ) + "%" );
+        log( "Gene trees with median duplications :\t" + median_count + "\t"
+                + df.format( median_count_percentage ) + "%" );
+        log( "Gene trees with minimum duplications:\t" + min_count + "\t"
+                + df.format( min_count_percentage ) + "%" );
+        log( "Gene trees with maximum duplications:\t" + max_count + "\t"
+                + df.format( max_count_percentage ) + "%" );
+        
     }
 
     private final void preLog( final int gene_trees,
@@ -523,11 +552,12 @@ public final class RIO {
                                final ALGORITHM algorithm,
                                final String outgroup ) {
         if ( gene_trees > 0 ) {
-            log( "Number of gene trees (total)                    : " + gene_trees );
+            log( "Number of gene trees (total)        :\t" + gene_trees );
         }
-        log( "Algorithm                                       : " + algorithm );
-        log( "Species tree external nodes (prior to stripping): " + species_tree.getNumberOfExternalNodes() );
-        log( "Species tree polytomies (prior to stripping)    : "
+
+        log( "Algorithm                           :\t" + algorithm );
+        log( "Spec tree ext nodes (prior strip)   :\t" + species_tree.getNumberOfExternalNodes() );
+        log( "Spec tree polytomies (prior strip)  :\t"
                 + PhylogenyMethods.countNumberOfPolytomies( species_tree ) );
         String rs = "";
         switch ( _rerooting ) {
@@ -548,7 +578,8 @@ public final class RIO {
                 break;
             }
         }
-        log( "Re-rooting                                      : " + rs );
+        log( "Re-rooting                          :\t" + rs );
+        
     }
 
     public final static IntMatrix calculateOrthologTable( final Phylogeny[] analyzed_gene_trees, final boolean sort )
