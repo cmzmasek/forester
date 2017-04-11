@@ -89,7 +89,8 @@ public final class RIO {
                  int last,
                  final boolean produce_log,
                  final boolean verbose,
-                 final boolean transfer_taxonomy ) throws IOException, SDIException, RIOException {
+                 final boolean transfer_taxonomy )
+            throws IOException, SDIException, RIOException {
         if ( ( last == DEFAULT_RANGE ) && ( first >= 0 ) ) {
             last = END_OF_GT;
         }
@@ -123,7 +124,8 @@ public final class RIO {
                  int last,
                  final boolean produce_log,
                  final boolean verbose,
-                 final boolean transfer_taxonomy ) throws IOException, SDIException, RIOException {
+                 final boolean transfer_taxonomy )
+            throws IOException, SDIException, RIOException {
         if ( ( last == DEFAULT_RANGE ) && ( first >= 0 ) ) {
             last = gene_trees.length - 1;
         }
@@ -204,8 +206,8 @@ public final class RIO {
                                        final String outgroup,
                                        int first,
                                        final int last,
-                                       final boolean transfer_taxonomy ) throws SDIException, RIOException,
-                                       FileNotFoundException, IOException {
+                                       final boolean transfer_taxonomy )
+            throws SDIException, RIOException, FileNotFoundException, IOException {
         if ( !parser.hasNext() ) {
             throw new RIOException( "no gene trees to analyze" );
         }
@@ -265,7 +267,7 @@ public final class RIO {
             ++i;
         }
         if ( _verbose ) {
-            System.out.print( "\rGene trees analyzed                 :\t" + counter  );
+            System.out.print( "\rGene trees analyzed                 :\t" + counter );
         }
         if ( ( first >= 0 ) && ( counter == 0 ) && ( i > 0 ) ) {
             throw new RIOException( "attempt to analyze first gene tree #" + first + " in a set of " + i );
@@ -288,8 +290,8 @@ public final class RIO {
                                        final String outgroup,
                                        final int first,
                                        final int last,
-                                       final boolean transfer_taxonomy ) throws SDIException, RIOException,
-                                       FileNotFoundException, IOException {
+                                       final boolean transfer_taxonomy )
+            throws SDIException, RIOException, FileNotFoundException, IOException {
         if ( algorithm == ALGORITHM.SDIR ) {
             // Removes from species_tree all species not found in gene_tree.
             PhylogenyMethods.taxonomyBasedDeletionOfExternalNodes( gene_trees[ 0 ], species_tree );
@@ -391,7 +393,7 @@ public final class RIO {
             sb.append( '\t' );
             sb.append( s );
         }
-        log( "Species stripped from gene trees    :" + sb);
+        log( "Species stripped from gene trees    :" + sb );
     }
 
     private final Phylogeny performOrthologInference( final Phylogeny gene_tree,
@@ -399,8 +401,8 @@ public final class RIO {
                                                       final ALGORITHM algorithm,
                                                       final String outgroup,
                                                       final int i,
-                                                      final boolean transfer_taxonomy ) throws SDIException,
-                                                      RIOException {
+                                                      final boolean transfer_taxonomy )
+            throws SDIException, RIOException {
         final Phylogeny assigned_tree;
         switch ( algorithm ) {
             case SDIR: {
@@ -408,7 +410,11 @@ public final class RIO {
                 break;
             }
             case GSDIR: {
-                assigned_tree = performOrthologInferenceByGSDI( gene_tree, species_tree, outgroup, i, transfer_taxonomy );
+                assigned_tree = performOrthologInferenceByGSDI( gene_tree,
+                                                                species_tree,
+                                                                outgroup,
+                                                                i,
+                                                                transfer_taxonomy );
                 break;
             }
             default: {
@@ -431,8 +437,8 @@ public final class RIO {
                                                             final Phylogeny species_tree,
                                                             final String outgroup,
                                                             final int i,
-                                                            final boolean transfer_taxonomy ) throws SDIException,
-                                                            RIOException {
+                                                            final boolean transfer_taxonomy )
+            throws SDIException, RIOException {
         final Phylogeny assigned_tree;
         final int dups;
         if ( _rerooting == REROOTING.BY_ALGORITHM ) {
@@ -465,7 +471,7 @@ public final class RIO {
             for( final PhylogenyNode r : _removed_gene_tree_nodes ) {
                 if ( !r.getNodeData().isHasTaxonomy() ) {
                     throw new RIOException( "node with no (appropriate) taxonomic information found in gene tree #" + i
-                                            + ": " + r.toString() );
+                            + ": " + r.toString() );
                 }
             }
             assigned_tree = gene_tree;
@@ -510,12 +516,9 @@ public final class RIO {
         final double min_count_percentage = ( 100.0 * min_count ) / getDuplicationsStatistics().getN();
         final double max_count_percentage = ( 100.0 * max_count ) / getDuplicationsStatistics().getN();
         final double median_count_percentage = ( 100.0 * median_count ) / getDuplicationsStatistics().getN();
-        
-       
         if ( ( getRemovedGeneTreeNodes() != null ) && ( getRemovedGeneTreeNodes().size() > 0 ) ) {
             logRemovedGeneTreeNodes();
         }
-       
         log( "Gene trees analyzed                 :\t" + getDuplicationsStatistics().getN() );
         if ( ( first >= 0 ) && ( last >= 0 ) ) {
             log( "Gene trees analyzed range           :\t" + first + "-" + last );
@@ -524,11 +527,12 @@ public final class RIO {
         log( "Gene tree external nodes            :\t" + getExtNodesOfAnalyzedGeneTrees() );
         log( "Removed ext gene tree nodes         :\t" + getRemovedGeneTreeNodes().size() );
         log( "Spec tree ext nodes (after strip)   :\t" + species_tree.getNumberOfExternalNodes() );
-        log( "Spec tree polytomies (after strip)  :\t"
-                + PhylogenyMethods.countNumberOfPolytomies( species_tree ) );
+        log( "Spec tree polytomies (after strip)  :\t" + PhylogenyMethods.countNumberOfPolytomies( species_tree ) );
         log( "Taxonomy linking based on           :\t" + getGSDIRtaxCompBase() );
         log( "Mean number of duplications         :\t" + df.format( getDuplicationsStatistics().arithmeticMean() )
-                + "\t" + df.format( ( 100.0 * getDuplicationsStatistics().arithmeticMean() ) / getIntNodesOfAnalyzedGeneTrees() )
+                + "\t"
+                + df.format( ( 100.0 * getDuplicationsStatistics().arithmeticMean() )
+                        / getIntNodesOfAnalyzedGeneTrees() )
                 + "%\t(sd: " + df.format( getDuplicationsStatistics().sampleStandardDeviation() ) + ")" );
         if ( getDuplicationsStatistics().getN() > 3 ) {
             log( "Median number of duplications       :\t" + df.format( median ) + "\t"
@@ -538,13 +542,10 @@ public final class RIO {
                 + df.format( ( 100.0 * min ) / getIntNodesOfAnalyzedGeneTrees() ) + "%" );
         log( "Maximum duplications                :\t" + ( int ) max + "\t"
                 + df.format( ( 100.0 * max ) / getIntNodesOfAnalyzedGeneTrees() ) + "%" );
-        log( "Gene trees with median duplications :\t" + median_count + "\t"
-                + df.format( median_count_percentage ) + "%" );
-        log( "Gene trees with minimum duplications:\t" + min_count + "\t"
-                + df.format( min_count_percentage ) + "%" );
-        log( "Gene trees with maximum duplications:\t" + max_count + "\t"
-                + df.format( max_count_percentage ) + "%" );
-        
+        log( "Gene trees with median duplications :\t" + median_count + "\t" + df.format( median_count_percentage )
+                + "%" );
+        log( "Gene trees with minimum duplications:\t" + min_count + "\t" + df.format( min_count_percentage ) + "%" );
+        log( "Gene trees with maximum duplications:\t" + max_count + "\t" + df.format( max_count_percentage ) + "%" );
     }
 
     private final void preLog( final int gene_trees,
@@ -554,11 +555,9 @@ public final class RIO {
         if ( gene_trees > 0 ) {
             log( "Number of gene trees (total)        :\t" + gene_trees );
         }
-
         log( "Algorithm                           :\t" + algorithm );
         log( "Spec tree ext nodes (prior strip)   :\t" + species_tree.getNumberOfExternalNodes() );
-        log( "Spec tree polytomies (prior strip)  :\t"
-                + PhylogenyMethods.countNumberOfPolytomies( species_tree ) );
+        log( "Spec tree polytomies (prior strip)  :\t" + PhylogenyMethods.countNumberOfPolytomies( species_tree ) );
         String rs = "";
         switch ( _rerooting ) {
             case BY_ALGORITHM: {
@@ -579,7 +578,6 @@ public final class RIO {
             }
         }
         log( "Re-rooting                          :\t" + rs );
-        
     }
 
     public final static IntMatrix calculateOrthologTable( final Phylogeny[] analyzed_gene_trees, final boolean sort )
@@ -612,17 +610,14 @@ public final class RIO {
                                              final int last,
                                              final boolean produce_log,
                                              final boolean verbose,
-                                             final boolean transfer_taxonomy ) throws IOException, SDIException,
-                                             RIOException {
+                                             final boolean transfer_taxonomy )
+            throws IOException, SDIException, RIOException {
         final Phylogeny[] gene_trees = parseGeneTrees( gene_trees_file );
         if ( gene_trees.length < 1 ) {
             throw new RIOException( "\"" + gene_trees_file + "\" is devoid of appropriate gene trees" );
         }
-        final Phylogeny species_tree = SDIutil.parseSpeciesTree( gene_trees[ 0 ],
-                                                                 species_tree_file,
-                                                                 false,
-                                                                 true,
-                                                                 TAXONOMY_EXTRACTION.NO );
+        final Phylogeny species_tree = SDIutil
+                .parseSpeciesTree( gene_trees[ 0 ], species_tree_file, false, true, TAXONOMY_EXTRACTION.NO );
         return new RIO( gene_trees,
                         species_tree,
                         algorithm,
@@ -642,8 +637,8 @@ public final class RIO {
                                              final String outgroup,
                                              final boolean produce_log,
                                              final boolean verbose,
-                                             final boolean transfer_taxonomy ) throws IOException, SDIException,
-                                             RIOException {
+                                             final boolean transfer_taxonomy )
+            throws IOException, SDIException, RIOException {
         return new RIO( parseGeneTrees( gene_trees_file ),
                         species_tree,
                         algorithm,
@@ -665,8 +660,8 @@ public final class RIO {
                                              final int last,
                                              final boolean produce_log,
                                              final boolean verbose,
-                                             final boolean transfer_taxonomy ) throws IOException, SDIException,
-                                             RIOException {
+                                             final boolean transfer_taxonomy )
+            throws IOException, SDIException, RIOException {
         return new RIO( parseGeneTrees( gene_trees_file ),
                         species_tree,
                         algorithm,
@@ -688,17 +683,14 @@ public final class RIO {
                                              final int last,
                                              final boolean produce_log,
                                              final boolean verbose,
-                                             final boolean transfer_taxonomy ) throws IOException, SDIException,
-                                             RIOException {
+                                             final boolean transfer_taxonomy )
+            throws IOException, SDIException, RIOException {
         final Phylogeny g0 = p.next();
         if ( ( g0 == null ) || g0.isEmpty() || ( g0.getNumberOfExternalNodes() < 2 ) ) {
             throw new RIOException( "input file does not seem to contain any gene trees" );
         }
-        final Phylogeny species_tree = SDIutil.parseSpeciesTree( g0,
-                                                                 species_tree_file,
-                                                                 false,
-                                                                 true,
-                                                                 TAXONOMY_EXTRACTION.NO );
+        final Phylogeny species_tree = SDIutil
+                .parseSpeciesTree( g0, species_tree_file, false, true, TAXONOMY_EXTRACTION.NO );
         p.reset();
         return new RIO( p,
                         species_tree,
@@ -719,8 +711,8 @@ public final class RIO {
                                              final String outgroup,
                                              final boolean produce_log,
                                              final boolean verbose,
-                                             final boolean transfer_taxonomy ) throws IOException, SDIException,
-                                             RIOException {
+                                             final boolean transfer_taxonomy )
+            throws IOException, SDIException, RIOException {
         return new RIO( p,
                         species_tree,
                         algorithm,
@@ -742,8 +734,8 @@ public final class RIO {
                                              final int last,
                                              final boolean produce_log,
                                              final boolean verbose,
-                                             final boolean transfer_taxonomy ) throws IOException, SDIException,
-                                             RIOException {
+                                             final boolean transfer_taxonomy )
+            throws IOException, SDIException, RIOException {
         return new RIO( p,
                         species_tree,
                         algorithm,
@@ -777,8 +769,8 @@ public final class RIO {
                                              final String outgroup,
                                              final boolean produce_log,
                                              final boolean verbose,
-                                             final boolean transfer_taxonomy ) throws IOException, SDIException,
-                                             RIOException {
+                                             final boolean transfer_taxonomy )
+            throws IOException, SDIException, RIOException {
         return new RIO( gene_trees,
                         species_tree,
                         algorithm,
@@ -800,8 +792,8 @@ public final class RIO {
                                              final int last,
                                              final boolean produce_log,
                                              final boolean verbose,
-                                             final boolean transfer_taxonomy ) throws IOException, SDIException,
-                                             RIOException {
+                                             final boolean transfer_taxonomy )
+            throws IOException, SDIException, RIOException {
         return new RIO( gene_trees,
                         species_tree,
                         algorithm,
@@ -837,7 +829,8 @@ public final class RIO {
                                                   final REROOTING rerooting,
                                                   final String outgroup,
                                                   final int first,
-                                                  final int last ) throws RIOException, IOException {
+                                                  final int last )
+            throws RIOException, IOException {
         final Phylogeny g0 = p.next();
         if ( ( g0 == null ) || g0.isEmpty() ) {
             throw new RIOException( "input file does not seem to contain any gene trees" );
@@ -877,7 +870,8 @@ public final class RIO {
                                                   final REROOTING rerooting,
                                                   final String outgroup,
                                                   final int first,
-                                                  final int last ) throws RIOException {
+                                                  final int last )
+            throws RIOException {
         if ( !species_tree.isRooted() ) {
             throw new RIOException( "species tree is not rooted" );
         }
@@ -911,7 +905,8 @@ public final class RIO {
         if ( n.getNodeData().isHasSequence() && !ForesterUtil.isEmpty( n.getNodeData().getSequence().getName() ) ) {
             label = n.getNodeData().getSequence().getName();
         }
-        else if ( n.getNodeData().isHasSequence() && !ForesterUtil.isEmpty( n.getNodeData().getSequence().getSymbol() ) ) {
+        else if ( n.getNodeData().isHasSequence()
+                && !ForesterUtil.isEmpty( n.getNodeData().getSequence().getSymbol() ) ) {
             label = n.getNodeData().getSequence().getSymbol();
         }
         else if ( n.getNodeData().isHasSequence()
@@ -930,8 +925,8 @@ public final class RIO {
         return label;
     }
 
-    private final static Phylogeny[] parseGeneTrees( final File gene_trees_file ) throws FileNotFoundException,
-    IOException {
+    private final static Phylogeny[] parseGeneTrees( final File gene_trees_file )
+            throws FileNotFoundException, IOException {
         final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
         final PhylogenyParser p = ParserUtils.createParserDependingOnFileType( gene_trees_file, true );
         if ( p instanceof NHXParser ) {
@@ -954,7 +949,7 @@ public final class RIO {
         if ( o > 0 ) {
             if ( verbose ) {
                 System.out.println( "warning: species tree has " + o
-                                    + " internal nodes with only one descendent which are therefore going to be removed" );
+                        + " internal nodes with only one descendent which are therefore going to be removed" );
             }
             PhylogenyMethods.deleteInternalNodesWithOnlyOneDescendent( species_tree );
         }
@@ -986,6 +981,9 @@ public final class RIO {
     }
 
     public enum REROOTING {
-        NONE, BY_ALGORITHM, MIDPOINT, OUTGROUP;
+                           NONE,
+                           BY_ALGORITHM,
+                           MIDPOINT,
+                           OUTGROUP;
     }
 }

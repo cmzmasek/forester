@@ -22,7 +22,6 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 //
-// Contact: phylosoft @ gmail . com
 // WWW: https://sites.google.com/site/cmzmasek/home/software/forester
 
 package org.forester.application;
@@ -57,21 +56,26 @@ import org.forester.util.ForesterUtil;
 
 public class rio {
 
-    final static private String PRG_NAME                 = "rio";
-    final static private String PRG_VERSION              = "4.000 beta 11";
-    final static private String PRG_DATE                 = "170406";
-    final static private String E_MAIL                   = "phyloxml@gmail.com";
-    final static private String WWW                      = "https://sites.google.com/site/cmzmasek/home/software/forester";
-    final static private String HELP_OPTION_1            = "help";
-    final static private String HELP_OPTION_2            = "h";
-    final static private String GT_FIRST                 = "f";
-    final static private String GT_LAST                  = "l";
-    final static private String REROOTING_OPT            = "r";
-    final static private String OUTGROUP                 = "o";
-    final static private String RETURN_SPECIES_TREE      = "s";
-    final static private String RETURN_BEST_GENE_TREE    = "g";
-    final static private String USE_SDIR                 = "b";
-    final static private String TRANSFER_TAXONOMY_OPTION = "t";
+    final static private String PRG_NAME                     = "rio";
+    final static private String PRG_VERSION                  = "4.000 beta 11";
+    final static private String PRG_DATE                     = "170410";
+    final static private String E_MAIL                       = "phyloxml@gmail.com";
+    final static private String WWW                          = "https://sites.google.com/site/cmzmasek/home/software/forester";
+    final static private String HELP_OPTION_1                = "help";
+    final static private String LOGFILE_SUFFIX               = "_RIO_log.tsv";
+    final static private String STRIPPED_SPECIES_TREE_SUFFIX = "_RIO_sst.xml";
+    final static private String ORTHO_OUTTABLE_SUFFIX        = "_RIO_o_table.tsv";
+    final static private String OUT_GENE_TREE_SUFFIX         = "_RIO_gene_tree.xml";
+    final static private String HELP_OPTION_2                = "h";
+    final static private String GT_FIRST                     = "f";
+    final static private String GT_LAST                      = "l";
+    final static private String REROOTING_OPT                = "r";
+    final static private String OUTGROUP                     = "o";
+    final static private String RETURN_SPECIES_TREE          = "s";
+    final static private String RETURN_BEST_GENE_TREE        = "g";
+    final static private String USE_SDIR                     = "b";
+    final static private String TRANSFER_TAXONOMY_OPTION     = "t";
+    final static private String GENE_TREES_SUFFIX_OPTION     = "u";
 
     public static void main( final String[] args ) {
         ForesterUtil.printProgramInformation( PRG_NAME,
@@ -106,22 +110,56 @@ public class rio {
         allowed_options.add( RETURN_SPECIES_TREE );
         allowed_options.add( RETURN_BEST_GENE_TREE );
         allowed_options.add( TRANSFER_TAXONOMY_OPTION );
+        allowed_options.add( GENE_TREES_SUFFIX_OPTION );
         final String dissallowed_options = cla.validateAllowedOptionsAsString( allowed_options );
         if ( dissallowed_options.length() > 0 ) {
             ForesterUtil.fatalError( "unknown option(s): " + dissallowed_options );
         }
         final File gene_trees_file = cla.getFile( 0 );
+        final boolean use_dir;
+        File indir = null;
+        File outdir = null;
+        if ( gene_trees_file.isDirectory() ) {
+            if ( !gene_trees_file.exists() ) {
+                ForesterUtil.fatalError( "gene trees directory \"" + gene_trees_file + "\" does not exist" );
+            }
+            use_dir = true;
+            indir = gene_trees_file;
+        }
+        else {
+            use_dir = false;
+        }
         final File species_tree_file = cla.getFile( 1 );
-        File orthology_outtable = cla.getFile( 2 );
+        File orthology_outtable = null;
+        if ( use_dir ) {
+            outdir = cla.getFile( 2 );
+        }
+        else {
+            orthology_outtable = cla.getFile( 2 );
+        }
         File logfile;
-        if ( cla.getNumberOfNames() > 3 ) {
+        if ( use_dir ) {
+            if ( ( cla.getNumberOfNames() < 4 ) ) {
+                System.out.println();
+                System.out.println( "error: incorrect number of arguments" );
+                System.out.println();
+                printHelp();
+            }
             logfile = cla.getFile( 3 );
             if ( logfile.exists() ) {
                 ForesterUtil.fatalError( "\"" + logfile + "\" already exists" );
             }
         }
         else {
-            logfile = null;
+            if ( cla.getNumberOfNames() > 3 ) {
+                logfile = cla.getFile( 3 );
+                if ( logfile.exists() ) {
+                    ForesterUtil.fatalError( "\"" + logfile + "\" already exists" );
+                }
+            }
+            else {
+                logfile = null;
+            }
         }
         boolean sdir = false;
         if ( cla.isOptionSet( USE_SDIR ) ) {
@@ -135,11 +173,14 @@ public class rio {
         }
         String outgroup = null;
         if ( cla.isOptionSet( OUTGROUP ) ) {
-            if ( !cla.isOptionHasAValue( OUTGROUP ) ) {
-                ForesterUtil.fatalError( "no value for -" + OUTGROUP );
-            }
             if ( sdir ) {
                 ForesterUtil.fatalError( "no outgroup option for SDIR algorithm" );
+            }
+            if ( use_dir ) {
+                ForesterUtil.fatalError( "no outgroup option for operating on gene trees directory" );
+            }
+            if ( !cla.isOptionHasAValue( OUTGROUP ) ) {
+                ForesterUtil.fatalError( "no value for -" + OUTGROUP );
             }
             outgroup = cla.getOptionValueAsCleanString( OUTGROUP );
         }
@@ -159,6 +200,9 @@ public class rio {
                 rerooting = REROOTING.MIDPOINT;
             }
             else if ( rerooting_str.equals( "outgroup" ) ) {
+                if ( use_dir ) {
+                    ForesterUtil.fatalError( "no outgroup option for operating on gene trees directory" );
+                }
                 rerooting = REROOTING.OUTGROUP;
             }
             else {
@@ -214,6 +258,9 @@ public class rio {
         }
         File return_species_tree = null;
         if ( !sdir && cla.isOptionSet( RETURN_SPECIES_TREE ) ) {
+            if ( use_dir ) {
+                ForesterUtil.fatalError( "no return species tree option when operating on gene trees directory" );
+            }
             if ( !cla.isOptionHasAValue( RETURN_SPECIES_TREE ) ) {
                 ForesterUtil.fatalError( "no value for -" + RETURN_SPECIES_TREE );
             }
@@ -225,6 +272,9 @@ public class rio {
         }
         File return_gene_tree = null;
         if ( !sdir && cla.isOptionSet( RETURN_BEST_GENE_TREE ) ) {
+            if ( use_dir ) {
+                ForesterUtil.fatalError( "no best gene tree return option when operating on gene trees directory" );
+            }
             if ( !cla.isOptionHasAValue( RETURN_BEST_GENE_TREE ) ) {
                 ForesterUtil.fatalError( "no value for -" + RETURN_BEST_GENE_TREE );
             }
@@ -236,25 +286,57 @@ public class rio {
         }
         boolean transfer_taxonomy = false;
         if ( !sdir && cla.isOptionSet( TRANSFER_TAXONOMY_OPTION ) ) {
+            if ( use_dir ) {
+                ForesterUtil.fatalError( "no transferring taxonomy option when operating on gene trees directory" );
+            }
             if ( return_gene_tree == null ) {
                 ForesterUtil.fatalError( "no point in transferring taxonomy data without returning best gene tree" );
             }
             transfer_taxonomy = true;
         }
-        ForesterUtil.fatalErrorIfFileNotReadable( gene_trees_file );
+        if ( !use_dir ) {
+            ForesterUtil.fatalErrorIfFileNotReadable( gene_trees_file );
+        }
+        else {
+            transfer_taxonomy = true;
+        }
+        final String gene_trees_suffix;
+        if ( cla.isOptionSet( GENE_TREES_SUFFIX_OPTION ) ) {
+            if ( !use_dir ) {
+                ForesterUtil.fatalError( "no gene tree suffix option when operating on indivual gene trees" );
+            }
+            if ( !cla.isOptionHasAValue( GENE_TREES_SUFFIX_OPTION ) ) {
+                ForesterUtil.fatalError( "no value for -" + GENE_TREES_SUFFIX_OPTION );
+            }
+            gene_trees_suffix = cla.getOptionValueAsCleanString( GENE_TREES_SUFFIX_OPTION );
+        }
+        else {
+            gene_trees_suffix = ".mlt";
+        }
         ForesterUtil.fatalErrorIfFileNotReadable( species_tree_file );
-        if ( orthology_outtable.exists() ) {
+        if ( !use_dir && orthology_outtable.exists() ) {
             ForesterUtil.fatalError( "\"" + orthology_outtable + "\" already exists" );
         }
         long time = 0;
         try {
-            System.out.println( "Gene trees                          :\t" + gene_trees_file.getCanonicalPath() );
+            if ( use_dir ) {
+                System.out.println( "Gene trees in-dir                   :\t" + indir.getCanonicalPath() );
+                System.out.println( "Gene trees suffix                   :\t" + gene_trees_suffix );
+            }
+            else {
+                System.out.println( "Gene trees                          :\t" + gene_trees_file.getCanonicalPath() );
+            }
             System.out.println( "Species tree                        :\t" + species_tree_file.getCanonicalPath() );
         }
         catch ( final IOException e ) {
             ForesterUtil.fatalError( e.getLocalizedMessage() );
         }
-        System.out.println( "All vs all orthology results table  :\t" + orthology_outtable );
+        if ( use_dir ) {
+            System.out.println( "Out-dir                             :\t" + outdir );
+        }
+        else {
+            System.out.println( "All vs all orthology results table  :\t" + orthology_outtable );
+        }
         if ( logfile != null ) {
             System.out.println( "Logfile                             :\t" + logfile );
         }
@@ -305,23 +387,8 @@ public class rio {
         else {
             algorithm = ALGORITHM.GSDIR;
         }
-        //////////////////////////
-        //////////////////////////
-        final boolean use_gene_trees_dir = true;
-        if ( use_gene_trees_dir ) {
-            final String LOGFILE_SUFFIX = "_RIO_log.tsv";
-            final String STRIPPED_SPECIES_TREE_SUFFIX = "_RIO_sst.xml";
-            final String ORTHO_OUTTABLE_SUFFIX = "_RIO_o_table.tsv";
-            final String OUT_GENE_TREE_SUFFIX = "_RIO_gene_tree.xml";
-            final String gene_trees_suffix = ".mlt";
-            final File indir = new File( "in" );
-            final File outdir = new File( "out" );
-            if ( !indir.exists() ) {
-                ForesterUtil.fatalError( PRG_NAME, "in-directory [" + indir + "] does not exist" );
-            }
-            if ( !indir.isDirectory() ) {
-                ForesterUtil.fatalError( PRG_NAME, "in-directory [" + indir + "] is not a directory" );
-            }
+        EasyWriter log = null;
+        if ( use_dir ) {
             if ( outdir.exists() ) {
                 if ( !outdir.isDirectory() ) {
                     ForesterUtil.fatalError( PRG_NAME,
@@ -348,88 +415,180 @@ public class rio {
                                                  + "] does not contain any gene tree files with suffix "
                                                  + gene_trees_suffix );
             }
+            try {
+                log = ForesterUtil.createEasyWriter( logfile );
+            }
+            catch ( final IOException e ) {
+                ForesterUtil.fatalError( PRG_NAME, "could not create [" + logfile + "]" );
+            }
             Arrays.sort( gene_trees_files );
-            System.out.print( "NAME" );
-            System.out.print( '\t' );
-            System.out.print( "EXT NODES" );
-            System.out.print( '\t' );
-            System.out.print( "MEAN DUP" );
-            System.out.print( '\t' );
-            System.out.print( "MEAN DUP SD" );
-            System.out.print( '\t' );
-            System.out.print( "MEDIAN DUP" );
-            System.out.print( '\t' );
-            System.out.print( "MIN DUP" );
-            System.out.print( '\t' );
-            System.out.print( "MAX DUP" );
-            System.out.print( '\t' );
-            System.out.print( "REMOVED EXT NODES" );
-            System.out.print( '\t' );
-            System.out.print( "N" );
-            System.out.println();
+            try {
+                log.print( "# program" );
+                log.print( "\t" );
+                log.print( PRG_NAME );
+                log.println();
+                log.print( "# version" );
+                log.print( "\t" );
+                log.print( PRG_VERSION );
+                log.println();
+                log.print( "# date" );
+                log.print( "\t" );
+                log.print( PRG_DATE );
+                log.println();
+                log.print( "# Algorithm " );
+                log.print( "\t" );
+                log.print( algorithm.toString() );
+                log.println();
+                log.print( "# Gene trees in-dir" );
+                log.print( "\t" );
+                log.print( indir.getCanonicalPath() );
+                log.println();
+                log.print( "# Gene trees suffix" );
+                log.print( "\t" );
+                log.print( gene_trees_suffix );
+                log.println();
+                log.print( "# Species tree" );
+                log.print( "\t" );
+                log.print( species_tree_file.getCanonicalPath() );
+                log.println();
+                log.print( "# Out-dir" );
+                log.print( "\t" );
+                log.print( outdir.getCanonicalPath() );
+                log.println();
+                log.print( "# Logfile" );
+                log.print( "\t" );
+                log.print( logfile.getCanonicalPath() );
+                log.println();
+                if ( gt_first != RIO.DEFAULT_RANGE ) {
+                    log.print( "# First gene tree to analyze" );
+                    log.print( "\t" );
+                    log.print( Integer.toString( gt_first ) );
+                    log.println();
+                }
+                if ( gt_last != RIO.DEFAULT_RANGE ) {
+                    log.print( "# Last gene tree to analyze" );
+                    log.print( "\t" );
+                    log.print( Integer.toString( gt_last ) );
+                    log.println();
+                }
+                log.print( "# Re-rooting" );
+                log.print( "\t" );
+                log.print( rerooting_str );
+                log.println();
+                log.print( "# Non binary species tree" );
+                log.print( "\t" );
+                if ( !sdir ) {
+                    log.print( "allowed" );
+                }
+                else {
+                    log.print( "disallowed" );
+                }
+                log.println();
+                log.println();
+                log.print( "NAME" );
+                log.print( "\t" );
+                log.print( "EXT NODES" );
+                log.print( "\t" );
+                log.print( "MEAN DUP" );
+                log.print( "\t" );
+                log.print( "MEAN DUP SD" );
+                log.print( "\t" );
+                log.print( "MEDIAN DUP" );
+                log.print( "\t" );
+                log.print( "MIN DUP" );
+                log.print( "\t" );
+                log.print( "MAX DUP" );
+                log.print( "\t" );
+                log.print( "REMOVED EXT NODES" );
+                log.print( "\t" );
+                log.print( "N" );
+                log.println();
+            }
+            catch ( IOException e ) {
+                ForesterUtil.fatalError( PRG_NAME, e.getLocalizedMessage() );
+            }
+            int counter = 1;
             for( final File gf : gene_trees_files ) {
                 String outname = gf.getName();
+                System.out
+                        .print( "\r                                                                                            " );
+                System.out.print( "\r" + counter + "/" + gene_trees_files.length + ": " + outname );
+                counter++;
                 if ( outname.indexOf( "." ) > 0 ) {
                     outname = outname.substring( 0, outname.lastIndexOf( "." ) );
                 }
                 try {
-                    x( gf,
-                       species_tree_file,
-                       new File( outdir.getCanonicalFile() + "/" + outname + ORTHO_OUTTABLE_SUFFIX ),
-                       new File( outdir.getCanonicalFile() + "/" + outname + LOGFILE_SUFFIX ),
-                       outgroup,
-                       rerooting,
-                       gt_first,
-                       gt_last,
-                       new File( outdir.getCanonicalFile() + "/" + outname + STRIPPED_SPECIES_TREE_SUFFIX ),
-                       new File( outdir.getCanonicalFile() + "/" + outname + OUT_GENE_TREE_SUFFIX ),
-                       transfer_taxonomy,
-                       algorithm,
-                       true );
+                    executeAnalysis( gf,
+                                     species_tree_file,
+                                     new File( outdir.getCanonicalFile() + "/" + outname + ORTHO_OUTTABLE_SUFFIX ),
+                                     new File( outdir.getCanonicalFile() + "/" + outname + LOGFILE_SUFFIX ),
+                                     outgroup,
+                                     rerooting,
+                                     gt_first,
+                                     gt_last,
+                                     new File( outdir.getCanonicalFile() + "/" + outname
+                                             + STRIPPED_SPECIES_TREE_SUFFIX ),
+                                     new File( outdir.getCanonicalFile() + "/" + outname + OUT_GENE_TREE_SUFFIX ),
+                                     transfer_taxonomy,
+                                     algorithm,
+                                     true,
+                                     log );
                 }
                 catch ( IOException e ) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    ForesterUtil.fatalError( PRG_NAME, e.getLocalizedMessage() );
                 }
             }
+            System.out
+                    .print( "\r                                                                                        " );
+            System.out.println();
         }
         else {
-            x( gene_trees_file,
-               species_tree_file,
-               orthology_outtable,
-               logfile,
-               outgroup,
-               rerooting,
-               gt_first,
-               gt_last,
-               return_species_tree,
-               return_gene_tree,
-               transfer_taxonomy,
-               algorithm,
-               false );
+            executeAnalysis( gene_trees_file,
+                             species_tree_file,
+                             orthology_outtable,
+                             logfile,
+                             outgroup,
+                             rerooting,
+                             gt_first,
+                             gt_last,
+                             return_species_tree,
+                             return_gene_tree,
+                             transfer_taxonomy,
+                             algorithm,
+                             false,
+                             null );
         }
-        ////////////////////
-        ///////////////////
-        if ( !use_gene_trees_dir ) {
+        if ( !use_dir ) {
+            time = System.currentTimeMillis() - time;
+            System.out.println( "Time                                :\t" + time + "ms" );
+        }
+        else {
+            try {
+                log.close();
+            }
+            catch ( IOException e ) {
+                ForesterUtil.fatalError( PRG_NAME, e.getLocalizedMessage() );
+            }
             time = System.currentTimeMillis() - time;
             System.out.println( "Time                                :\t" + time + "ms" );
         }
         System.exit( 0 );
     }
 
-    private static final void x( final File gene_trees_file,
-                                 final File species_tree_file,
-                                 final File orthology_outtable,
-                                 final File logfile,
-                                 final String outgroup,
-                                 final REROOTING rerooting,
-                                 final int gt_first,
-                                 final int gt_last,
-                                 final File return_species_tree,
-                                 final File return_gene_tree,
-                                 final boolean transfer_taxonomy,
-                                 final ALGORITHM algorithm,
-                                 final boolean use_gene_trees_dir ) {
+    private static final void executeAnalysis( final File gene_trees_file,
+                                               final File species_tree_file,
+                                               final File orthology_outtable,
+                                               final File logfile,
+                                               final String outgroup,
+                                               final REROOTING rerooting,
+                                               final int gt_first,
+                                               final int gt_last,
+                                               final File return_species_tree,
+                                               final File return_gene_tree,
+                                               final boolean transfer_taxonomy,
+                                               final ALGORITHM algorithm,
+                                               final boolean use_gene_trees_dir,
+                                               final EasyWriter log ) {
         try {
             final RIO rio;
             boolean iterating = false;
@@ -538,29 +697,29 @@ public class rio {
                 if ( name.indexOf( "." ) > 0 ) {
                     name = name.substring( 0, name.lastIndexOf( "." ) );
                 }
-                System.out.print( name );
-                System.out.print( '\t' );
-                System.out.print( rio.getExtNodesOfAnalyzedGeneTrees() );
-                System.out.print( '\t' );
-                System.out.print( df.format( stats.arithmeticMean() ) );
-                System.out.print( '\t' );
-                System.out.print( df.format( stats.sampleStandardDeviation() ) );
-                System.out.print( '\t' );
+                log.print( name );
+                log.print( "\t" );
+                log.print( Integer.toString( rio.getExtNodesOfAnalyzedGeneTrees() ) );
+                log.print( "\t" );
+                log.print( df.format( stats.arithmeticMean() ) );
+                log.print( "\t" );
+                log.print( df.format( stats.sampleStandardDeviation() ) );
+                log.print( "\t" );
                 if ( stats.getN() > 3 ) {
-                    System.out.print( df.format( median ) );
+                    log.print( df.format( median ) );
                 }
                 else {
-                    System.out.print( "" );
+                    log.print( "" );
                 }
-                System.out.print( '\t' );
-                System.out.print( min );
-                System.out.print( '\t' );
-                System.out.print( max );
-                System.out.print( '\t' );
-                System.out.print( rio.getRemovedGeneTreeNodes().size() );
-                System.out.print( '\t' );
-                System.out.print( stats.getN() );
-                System.out.println();
+                log.print( "\t" );
+                log.print( Integer.toString( min ) );
+                log.print( "\t" );
+                log.print( Integer.toString( max ) );
+                log.print( "\t" );
+                log.print( Integer.toString( rio.getRemovedGeneTreeNodes().size() ) );
+                log.print( "\t" );
+                log.print( Integer.toString( stats.getN() ) );
+                log.println();
             }
             else {
                 System.out.println( "Gene tree internal nodes            :\t" + rio.getIntNodesOfAnalyzedGeneTrees() );
@@ -610,6 +769,9 @@ public class rio {
         System.out.println();
         System.out.println( PRG_NAME
                 + " [options] <gene trees infile> <species tree infile> <all vs all orthology table outfile> [logfile]" );
+        System.out.println();
+        System.out.println( PRG_NAME + " [options] <gene trees indir> <species tree infile> <outdir> <logfile>" );
+        System.out.println();
         System.out.println();
         System.out.println( " Options" );
         System.out.println( "  -" + GT_FIRST + "=<first>     : first gene tree to analyze (0-based index)" );
