@@ -35,6 +35,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -79,6 +80,7 @@ public final class RIO {
     private final REROOTING                  _rerooting;
     private final Phylogeny                  _species_tree;
     private Phylogeny                        _min_dub_gene_tree;
+    private Map<Integer, Phylogeny>          _dup_to_tree_map;
 
     private RIO( final IteratingPhylogenyParser p,
                  final Phylogeny species_tree,
@@ -480,18 +482,47 @@ public final class RIO {
             }
             dups = gsdi.getDuplicationsSum();
         }
+        assigned_tree.setRerootable( false );
+        double new_dist = -1;
         if ( ( i == 0 ) || ( dups < _duplications_stats.getMin() ) ) {
             _min_dub_gene_tree = assigned_tree;
-            _min_dub_gene_tree.setRerootable( false );
+        }
+        else if ( dups == _duplications_stats.getMin() ) {
+            new_dist = PhylogenyMethods.calculateMaxDistanceToRoot( assigned_tree );
+            if ( new_dist < PhylogenyMethods.calculateMaxDistanceToRoot( _min_dub_gene_tree ) ) {
+                _min_dub_gene_tree = assigned_tree;
+            }
+        }
+        if ( _dup_to_tree_map == null ) {
+            _dup_to_tree_map = new HashMap<Integer, Phylogeny>();
+        }
+        if ( !_dup_to_tree_map.containsKey( dups ) ) {
+            _dup_to_tree_map.put( dups, assigned_tree );
+        }
+        else {
+            if ( new_dist == -1 ) {
+                new_dist = PhylogenyMethods.calculateMaxDistanceToRoot( assigned_tree );
+            }
+            if ( new_dist < PhylogenyMethods.calculateMaxDistanceToRoot( _dup_to_tree_map.get( dups ) ) ) {
+                _dup_to_tree_map.put( dups, assigned_tree );
+            }
         }
         _duplications_stats.addValue( dups );
         return assigned_tree;
     }
 
+    final public Map<Integer, Phylogeny> getDuplicationsToTreeMap() {
+        return _dup_to_tree_map;
+    }
+
     private final Phylogeny performOrthologInferenceBySDI( final Phylogeny gene_tree, final Phylogeny species_tree )
             throws SDIException {
         final SDIR sdir = new SDIR();
-        return sdir.infer( gene_tree, species_tree, false, true, true, true, 1 )[ 0 ];
+        final Phylogeny r = sdir.infer( gene_tree, species_tree, false, true, true, true, 1 )[ 0 ];
+        r.setRerootable( false );
+        final int dups = sdir.getMinimalDuplications();
+        _duplications_stats.addValue( dups );
+        return r;
     }
 
     private final void postLog( final Phylogeny species_tree, final int first, final int last ) {

@@ -106,6 +106,6 @@ public final class AptxConstants {
     public final static Color   DOMAIN_LABEL_COLOR_FOR_PDF                                    = new Color( 150,
                                                                                                            150,
                                                                                                            150 );
-    final static short          DEFAULT_NODE_SHAPE_SIZE_DEFAULT                               = 4;
+    final static short          DEFAULT_NODE_SHAPE_SIZE_DEFAULT                               = 7;
     static final int            MAX_LENGTH_FOR_COLLAPSED_NAME = 8;
 }

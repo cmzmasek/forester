@@ -2,10 +2,7 @@
 // FORESTER -- software libraries and applications
 // for evolutionary biology research and applications.
 //
-// Copyright (C) 2008-2009 Christian M. Zmasek
-// Copyright (C) 2008-2009 Burnham Institute for Medical Research
-// Copyright (C) 2000-2001 Washington University School of Medicine
-// and Howard Hughes Medical Institute
+// Copyright (C) 2017 Christian M. Zmasek
 // All rights reserved
 //
 // This library is free software; you can redistribute it and/or
@@ -32,7 +29,10 @@ import java.io.IOException;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.forester.datastructures.IntMatrix;
 import org.forester.io.parsers.IteratingPhylogenyParser;
@@ -56,26 +56,27 @@ import org.forester.util.ForesterUtil;
 
 public class rio {
 
-    final static private String PRG_NAME                     = "rio";
-    final static private String PRG_VERSION                  = "4.000 beta 11";
-    final static private String PRG_DATE                     = "170410";
-    final static private String E_MAIL                       = "phyloxml@gmail.com";
-    final static private String WWW                          = "https://sites.google.com/site/cmzmasek/home/software/forester";
-    final static private String HELP_OPTION_1                = "help";
-    final static private String LOGFILE_SUFFIX               = "_RIO_log.tsv";
-    final static private String STRIPPED_SPECIES_TREE_SUFFIX = "_RIO_sst.xml";
-    final static private String ORTHO_OUTTABLE_SUFFIX        = "_RIO_o_table.tsv";
-    final static private String OUT_GENE_TREE_SUFFIX         = "_RIO_gene_tree.xml";
-    final static private String HELP_OPTION_2                = "h";
-    final static private String GT_FIRST                     = "f";
-    final static private String GT_LAST                      = "l";
-    final static private String REROOTING_OPT                = "r";
-    final static private String OUTGROUP                     = "o";
-    final static private String RETURN_SPECIES_TREE          = "s";
-    final static private String RETURN_BEST_GENE_TREE        = "g";
-    final static private String USE_SDIR                     = "b";
-    final static private String TRANSFER_TAXONOMY_OPTION     = "t";
-    final static private String GENE_TREES_SUFFIX_OPTION     = "u";
+    final static private String PRG_NAME                       = "rio";
+    final static private String PRG_VERSION                    = "5.000";
+    final static private String PRG_DATE                       = "170411";
+    final static private String E_MAIL                         = "phyloxml@gmail.com";
+    final static private String WWW                            = "https://sites.google.com/site/cmzmasek/home/software/forester";
+    final static private String HELP_OPTION_1                  = "help";
+    final static private String LOGFILE_SUFFIX                 = "_RIO_log.tsv";
+    final static private String STRIPPED_SPECIES_TREE_SUFFIX   = "_RIO_sst.xml";
+    final static private String ORTHO_OUTTABLE_SUFFIX          = "_RIO_orthologies.tsv";
+    final static private String OUT_MIN_DUP_GENE_TREE_SUFFIX   = "_RIO_gene_tree_min_dup_";
+    final static private String OUT_MED_DUP_GENE_TREE_SUFFIX   = "_RIO_gene_tree_med_dup_";
+    final static private String ORTHOLOG_GROUPS_SUFFIX         = "_RIO_ortholog_groups.tsv";
+    final static private String HELP_OPTION_2                  = "h";
+    final static private String GT_FIRST                       = "f";
+    final static private String GT_LAST                        = "l";
+    final static private String REROOTING_OPT                  = "r";
+    final static private String OUTGROUP                       = "o";
+    final static private String USE_SDIR                       = "s";
+    final static private String GENE_TREES_SUFFIX_OPTION       = "g";
+    final static private String ORTHOLOG_GROUPS_CUTOFF_OPTION  = "c";
+    final static private double ORTHOLOG_GROUPS_CUTOFF_DEFAULT = 0.5;
 
     public static void main( final String[] args ) {
         ForesterUtil.printProgramInformation( PRG_NAME,
@@ -107,10 +108,8 @@ public class rio {
         allowed_options.add( REROOTING_OPT );
         allowed_options.add( OUTGROUP );
         allowed_options.add( USE_SDIR );
-        allowed_options.add( RETURN_SPECIES_TREE );
-        allowed_options.add( RETURN_BEST_GENE_TREE );
-        allowed_options.add( TRANSFER_TAXONOMY_OPTION );
         allowed_options.add( GENE_TREES_SUFFIX_OPTION );
+        allowed_options.add( ORTHOLOG_GROUPS_CUTOFF_OPTION );
         final String dissallowed_options = cla.validateAllowedOptionsAsString( allowed_options );
         if ( dissallowed_options.length() > 0 ) {
             ForesterUtil.fatalError( "unknown option(s): " + dissallowed_options );
@@ -167,7 +166,7 @@ public class rio {
                 ForesterUtil.fatalError( "no value allowed for -" + USE_SDIR );
             }
             sdir = true;
-            if ( logfile != null ) {
+            if ( !use_dir && logfile != null ) {
                 ForesterUtil.fatalError( "no logfile output for SDIR algorithm" );
             }
         }
@@ -219,11 +218,11 @@ public class rio {
         int gt_first = RIO.DEFAULT_RANGE;
         int gt_last = RIO.DEFAULT_RANGE;
         if ( cla.isOptionSet( GT_FIRST ) ) {
-            if ( !cla.isOptionHasAValue( GT_FIRST ) ) {
-                ForesterUtil.fatalError( "no value for -" + GT_FIRST );
-            }
             if ( sdir ) {
                 ForesterUtil.fatalError( "no gene tree range option for SDIR algorithm" );
+            }
+            if ( !cla.isOptionHasAValue( GT_FIRST ) ) {
+                ForesterUtil.fatalError( "no value for -" + GT_FIRST );
             }
             try {
                 gt_first = cla.getOptionValueAsInt( GT_FIRST );
@@ -236,11 +235,11 @@ public class rio {
             }
         }
         if ( cla.isOptionSet( GT_LAST ) ) {
-            if ( !cla.isOptionHasAValue( GT_LAST ) ) {
-                ForesterUtil.fatalError( "no value for -" + GT_LAST );
-            }
             if ( sdir ) {
                 ForesterUtil.fatalError( "no gene tree range option for SDIR algorithm" );
+            }
+            if ( !cla.isOptionHasAValue( GT_LAST ) ) {
+                ForesterUtil.fatalError( "no value for -" + GT_LAST );
             }
             try {
                 gt_last = cla.getOptionValueAsInt( GT_LAST );
@@ -256,49 +255,29 @@ public class rio {
             ForesterUtil.fatalError( "attempt to set range (0-based) of gene to analyze to: from " + gt_first + " to "
                     + gt_last );
         }
-        File return_species_tree = null;
-        if ( !sdir && cla.isOptionSet( RETURN_SPECIES_TREE ) ) {
-            if ( use_dir ) {
-                ForesterUtil.fatalError( "no return species tree option when operating on gene trees directory" );
+        double ortholog_group_cutoff = ORTHOLOG_GROUPS_CUTOFF_DEFAULT;
+        if ( cla.isOptionSet( ORTHOLOG_GROUPS_CUTOFF_OPTION ) ) {
+            if ( sdir ) {
+                ForesterUtil.fatalError( "ortholog groups cutoff for SDIR algorithm" );
             }
-            if ( !cla.isOptionHasAValue( RETURN_SPECIES_TREE ) ) {
-                ForesterUtil.fatalError( "no value for -" + RETURN_SPECIES_TREE );
+            if ( !cla.isOptionHasAValue( ORTHOLOG_GROUPS_CUTOFF_OPTION ) ) {
+                ForesterUtil.fatalError( "no value for -" + ORTHOLOG_GROUPS_CUTOFF_OPTION );
             }
-            final String s = cla.getOptionValueAsCleanString( RETURN_SPECIES_TREE );
-            return_species_tree = new File( s );
-            if ( return_species_tree.exists() ) {
-                ForesterUtil.fatalError( "\"" + return_species_tree + "\" already exists" );
+            try {
+                ortholog_group_cutoff = cla.getOptionValueAsDouble( ORTHOLOG_GROUPS_CUTOFF_OPTION );
             }
-        }
-        File return_gene_tree = null;
-        if ( !sdir && cla.isOptionSet( RETURN_BEST_GENE_TREE ) ) {
-            if ( use_dir ) {
-                ForesterUtil.fatalError( "no best gene tree return option when operating on gene trees directory" );
+            catch ( final IOException e ) {
+                ForesterUtil.fatalError( "could not parse double for -" + ORTHOLOG_GROUPS_CUTOFF_OPTION + " option" );
             }
-            if ( !cla.isOptionHasAValue( RETURN_BEST_GENE_TREE ) ) {
-                ForesterUtil.fatalError( "no value for -" + RETURN_BEST_GENE_TREE );
+            if ( ortholog_group_cutoff < 0 ) {
+                ForesterUtil.fatalError( "attempt to set ortholog groups cutoff to: " + ortholog_group_cutoff );
             }
-            final String s = cla.getOptionValueAsCleanString( RETURN_BEST_GENE_TREE );
-            return_gene_tree = new File( s );
-            if ( return_gene_tree.exists() ) {
-                ForesterUtil.fatalError( "\"" + return_gene_tree + "\" already exists" );
+            if ( ortholog_group_cutoff > 1 ) {
+                ForesterUtil.fatalError( "attempt to set ortholog groups cutoff to: " + ortholog_group_cutoff );
             }
-        }
-        boolean transfer_taxonomy = false;
-        if ( !sdir && cla.isOptionSet( TRANSFER_TAXONOMY_OPTION ) ) {
-            if ( use_dir ) {
-                ForesterUtil.fatalError( "no transferring taxonomy option when operating on gene trees directory" );
-            }
-            if ( return_gene_tree == null ) {
-                ForesterUtil.fatalError( "no point in transferring taxonomy data without returning best gene tree" );
-            }
-            transfer_taxonomy = true;
         }
         if ( !use_dir ) {
             ForesterUtil.fatalErrorIfFileNotReadable( gene_trees_file );
-        }
-        else {
-            transfer_taxonomy = true;
         }
         final String gene_trees_suffix;
         if ( cla.isOptionSet( GENE_TREES_SUFFIX_OPTION ) ) {
@@ -340,6 +319,7 @@ public class rio {
         if ( logfile != null ) {
             System.out.println( "Logfile                             :\t" + logfile );
         }
+        System.out.println( "Ortholog groups cutoff              :\t" + ortholog_group_cutoff );
         if ( gt_first != RIO.DEFAULT_RANGE ) {
             System.out.println( "First gene tree to analyze          :\t" + gt_first );
         }
@@ -371,13 +351,6 @@ public class rio {
         }
         else {
             System.out.println( "Non binary species tree             :\tdisallowed" );
-        }
-        if ( return_species_tree != null ) {
-            System.out.println( "Write used species tree to          :\t" + return_species_tree );
-        }
-        if ( return_gene_tree != null ) {
-            System.out.println( "Write best gene tree to             :\t" + return_gene_tree );
-            System.out.println( "Transfer taxonomic data             :\t" + transfer_taxonomy );
         }
         time = System.currentTimeMillis();
         final ALGORITHM algorithm;
@@ -459,6 +432,10 @@ public class rio {
                 log.print( "\t" );
                 log.print( logfile.getCanonicalPath() );
                 log.println();
+                log.print( "# Ortholog groups cutoff" );
+                log.print( "\t" );
+                log.print( Double.toString( ortholog_group_cutoff ) );
+                log.println();
                 if ( gt_first != RIO.DEFAULT_RANGE ) {
                     log.print( "# First gene tree to analyze" );
                     log.print( "\t" );
@@ -489,11 +466,23 @@ public class rio {
                 log.print( "\t" );
                 log.print( "EXT NODES" );
                 log.print( "\t" );
+                log.print(  ortholog_group_cutoff + " O GROUPS" );
+                log.print( "\t" );
+                log.print( "0.05 O GROUPS" );
+                log.print( "\t" );
+                log.print( "0.25 O GROUPS" );
+                log.print( "\t" );
+                log.print( "0.5 O GROUPS" );
+                log.print( "\t" );
+                log.print( "0.75 O GROUPS" );
+                log.print( "\t" );
+                log.print( "0.95 O GROUPS" );
+                log.print( "\t" );
+                log.print( "MEDIAN DUP" );
+                log.print( "\t" );
                 log.print( "MEAN DUP" );
                 log.print( "\t" );
                 log.print( "MEAN DUP SD" );
-                log.print( "\t" );
-                log.print( "MEDIAN DUP" );
                 log.print( "\t" );
                 log.print( "MIN DUP" );
                 log.print( "\t" );
@@ -521,6 +510,7 @@ public class rio {
                     executeAnalysis( gf,
                                      species_tree_file,
                                      new File( outdir.getCanonicalFile() + "/" + outname + ORTHO_OUTTABLE_SUFFIX ),
+                                     new File( outdir.getCanonicalFile() + "/" + outname + ORTHOLOG_GROUPS_SUFFIX ),
                                      new File( outdir.getCanonicalFile() + "/" + outname + LOGFILE_SUFFIX ),
                                      outgroup,
                                      rerooting,
@@ -528,11 +518,15 @@ public class rio {
                                      gt_last,
                                      new File( outdir.getCanonicalFile() + "/" + outname
                                              + STRIPPED_SPECIES_TREE_SUFFIX ),
-                                     new File( outdir.getCanonicalFile() + "/" + outname + OUT_GENE_TREE_SUFFIX ),
-                                     transfer_taxonomy,
+                                     new File( outdir.getCanonicalFile() + "/" + outname
+                                             + OUT_MIN_DUP_GENE_TREE_SUFFIX ),
+                                     new File( outdir.getCanonicalFile() + "/" + outname
+                                             + OUT_MED_DUP_GENE_TREE_SUFFIX ),
+                                     true,
                                      algorithm,
                                      true,
-                                     log );
+                                     log,
+                                     ortholog_group_cutoff );
                 }
                 catch ( IOException e ) {
                     ForesterUtil.fatalError( PRG_NAME, e.getLocalizedMessage() );
@@ -543,20 +537,27 @@ public class rio {
             System.out.println();
         }
         else {
+            String outname = orthology_outtable.toString();
+            if ( outname.indexOf( "." ) > 0 ) {
+                outname = outname.substring( 0, outname.lastIndexOf( "." ) );
+            }
             executeAnalysis( gene_trees_file,
                              species_tree_file,
                              orthology_outtable,
+                             new File( outname + ORTHOLOG_GROUPS_SUFFIX ),
                              logfile,
                              outgroup,
                              rerooting,
                              gt_first,
                              gt_last,
-                             return_species_tree,
-                             return_gene_tree,
-                             transfer_taxonomy,
+                             new File( outname + STRIPPED_SPECIES_TREE_SUFFIX ),
+                             new File( outname + OUT_MIN_DUP_GENE_TREE_SUFFIX ),
+                             new File( outname + OUT_MED_DUP_GENE_TREE_SUFFIX ),
+                             algorithm == ALGORITHM.GSDIR,
                              algorithm,
                              false,
-                             null );
+                             null,
+                             ortholog_group_cutoff );
         }
         if ( !use_dir ) {
             time = System.currentTimeMillis() - time;
@@ -578,17 +579,20 @@ public class rio {
     private static final void executeAnalysis( final File gene_trees_file,
                                                final File species_tree_file,
                                                final File orthology_outtable,
+                                               final File orthology_groups_outfile,
                                                final File logfile,
                                                final String outgroup,
                                                final REROOTING rerooting,
                                                final int gt_first,
                                                final int gt_last,
                                                final File return_species_tree,
-                                               final File return_gene_tree,
+                                               final File return_min_dup_gene_tree,
+                                               final File return_median_dup_gene_tree,
                                                final boolean transfer_taxonomy,
                                                final ALGORITHM algorithm,
                                                final boolean use_gene_trees_dir,
-                                               final EasyWriter log ) {
+                                               final EasyWriter log,
+                                               final double ortholog_group_cutoff ) {
         try {
             final RIO rio;
             boolean iterating = false;
@@ -649,6 +653,17 @@ public class rio {
             }
             final BasicDescriptiveStatistics stats = rio.getDuplicationsStatistics();
             writeTable( orthology_outtable, stats.getN(), m, !use_gene_trees_dir );
+            final int ortholog_groups = writeOrtologGroups( orthology_groups_outfile,
+                                                            ortholog_group_cutoff,
+                                                            stats.getN(),
+                                                            m,
+                                                            !use_gene_trees_dir,
+                                                            false );
+            final int ortholog_groups_005 = writeOrtologGroups( null, 0.05, stats.getN(), m, false, true );
+            final int ortholog_groups_025 = writeOrtologGroups( null, 0.25, stats.getN(), m, false, true );
+            final int ortholog_groups_05 = writeOrtologGroups( null, 0.5, stats.getN(), m, false, true );
+            final int ortholog_groups_075 = writeOrtologGroups( null, 0.75, stats.getN(), m, false, true );
+            final int ortholog_groups_095 = writeOrtologGroups( null, 0.95, stats.getN(), m, false, true );
             if ( ( algorithm != ALGORITHM.SDIR ) && ( logfile != null ) ) {
                 writeLogFile( logfile,
                               rio,
@@ -666,10 +681,17 @@ public class rio {
                            return_species_tree,
                            use_gene_trees_dir ? null : "Wrote (stripped) species tree to    :\t" );
             }
-            if ( return_gene_tree != null ) {
+            if ( return_min_dup_gene_tree != null && rio.getMinDuplicationsGeneTree() != null ) {
+                final int min = ( int ) rio.getDuplicationsStatistics().getMin();
                 writeTree( rio.getMinDuplicationsGeneTree(),
-                           return_gene_tree,
+                           new File( return_min_dup_gene_tree.toString() + min + ".xml" ),
                            use_gene_trees_dir ? null : "Wrote one min duplication gene tree :\t" );
+            }
+            if ( return_median_dup_gene_tree != null && rio.getDuplicationsToTreeMap() != null ) {
+                final int med = ( int ) rio.getDuplicationsStatistics().median();
+                writeTree( rio.getDuplicationsToTreeMap().get( med ),
+                           new File( return_median_dup_gene_tree.toString() + med + ".xml" ),
+                           use_gene_trees_dir ? null : "Wrote one med duplication gene tree :\t" );
             }
             final java.text.DecimalFormat df = new java.text.DecimalFormat( "0.##" );
             final int min = ( int ) stats.getMin();
@@ -701,12 +723,31 @@ public class rio {
                 log.print( "\t" );
                 log.print( Integer.toString( rio.getExtNodesOfAnalyzedGeneTrees() ) );
                 log.print( "\t" );
-                log.print( df.format( stats.arithmeticMean() ) );
+                log.print( Integer.toString( ortholog_groups ) );
+                //
                 log.print( "\t" );
-                log.print( df.format( stats.sampleStandardDeviation() ) );
+                log.print( Integer.toString( ortholog_groups_005 ) );
+                log.print( "\t" );
+                log.print( Integer.toString( ortholog_groups_025 ) );
+                log.print( "\t" );
+                log.print( Integer.toString( ortholog_groups_05 ) );
+                log.print( "\t" );
+                log.print( Integer.toString( ortholog_groups_075 ) );
+                log.print( "\t" );
+                log.print( Integer.toString( ortholog_groups_095 ) );
+                //
                 log.print( "\t" );
                 if ( stats.getN() > 3 ) {
                     log.print( df.format( median ) );
+                }
+                else {
+                    log.print( "" );
+                }
+                log.print( "\t" );
+                log.print( df.format( stats.arithmeticMean() ) );
+                log.print( "\t" );
+                if ( stats.getN() > 3 ) {
+                    log.print( df.format( stats.sampleStandardDeviation() ) );
                 }
                 else {
                     log.print( "" );
@@ -741,7 +782,10 @@ public class rio {
                         + df.format( min_count_percentage ) + "%" );
                 System.out.println( "Gene trees with maximum duplications:\t" + max_count + "\t"
                         + df.format( max_count_percentage ) + "%" );
-                System.out.println( "Removed ext gene tree nodes:\t" + rio.getRemovedGeneTreeNodes().size() );
+                if ( algorithm == ALGORITHM.GSDIR ) {
+                    System.out.println( "Removed ext gene tree nodes         :\t"
+                            + rio.getRemovedGeneTreeNodes().size() );
+                }
             }
         }
         catch ( final RIOException e ) {
@@ -776,21 +820,18 @@ public class rio {
         System.out.println( " Options" );
         System.out.println( "  -" + GT_FIRST + "=<first>     : first gene tree to analyze (0-based index)" );
         System.out.println( "  -" + GT_LAST + "=<last>      : last gene tree to analyze (0-based index)" );
+        System.out.println( "  -" + ORTHOLOG_GROUPS_CUTOFF_OPTION
+                + "=<cutoff>    : cutoff value for ortholog groups (default: " + ORTHOLOG_GROUPS_CUTOFF_DEFAULT + ")" );
         System.out.println( "  -" + REROOTING_OPT
                 + "=<re-rooting>: re-rooting method for gene trees, possible values or 'none', 'midpoint'," );
         System.out.println( "                   or 'outgroup' (default: by minizming duplications)" );
         System.out.println( "  -" + OUTGROUP
                 + "=<outgroup>  : for rooting by outgroup, name of outgroup (external gene tree node)" );
-        System.out
-                .println( "  -" + RETURN_SPECIES_TREE + "=<outfile>   : to write the (stripped) species tree to file" );
-        System.out.println( "  -" + RETURN_BEST_GENE_TREE
-                + "=<outfile>   : to write (one) minimal duplication gene tree to file" );
-        System.out.println( "  -" + TRANSFER_TAXONOMY_OPTION
-                + "             : to transfer taxonomic data from species tree to returned minimal duplication gene tree\n"
-                + "                   (if -" + RETURN_BEST_GENE_TREE + " option is used)" );
         System.out.println( "  -" + USE_SDIR
                 + "             : to use SDIR instead of GSDIR (faster, but non-binary species trees are" );
         System.out.println( "                   disallowed, as are most options)" );
+        System.out.println( "  -" + GENE_TREES_SUFFIX_OPTION
+                + "=<suffix>    : suffix for gene trees when operating on gene tree directories (default: .mlt)" );
         System.out.println();
         System.out.println( " Formats" );
         System.out
@@ -802,9 +843,10 @@ public class rio {
         System.out.println( "  in the species tree." );
         System.out.println();
         System.out.println( " Examples" );
+        System.out.println( "  rio -s gene_trees.nh species.xml outtable.tsv" );
         System.out.println( "  rio gene_trees.nh species.xml outtable.tsv log.txt" );
-        System.out
-                .println( "  rio -t -f=10 -l=100 -r=none -g=out_gene_tree.xml -s=stripped_species.xml gene_trees.xml species.xml outtable.tsv log.txt" );
+        System.out.println( "  rio -c=0.9 -f=10 -l=100 -r=none gene_trees.xml species.xml outtable.tsv log.txt" );
+        System.out.println( "  rio -g=.xml gene_trees_dir species.xml out_dir log.tsv" );
         System.out.println();
         System.exit( -1 );
     }
@@ -837,10 +879,10 @@ public class rio {
         }
     }
 
-    private static void writeTable( final File table_outfile,
-                                    final int gene_trees_analyzed,
-                                    final IntMatrix m,
-                                    final boolean verbose )
+    private static final void writeTable( final File table_outfile,
+                                          final int gene_trees_analyzed,
+                                          final IntMatrix m,
+                                          final boolean verbose )
             throws IOException {
         final EasyWriter w = ForesterUtil.createEasyWriter( table_outfile );
         final java.text.DecimalFormat df = new java.text.DecimalFormat( "0.####" );
@@ -871,6 +913,111 @@ public class rio {
         if ( verbose ) {
             System.out.println( "Wrote table to                      :\t" + table_outfile.getCanonicalPath() );
         }
+    }
+
+    private static final int writeOrtologGroups( final File outfile,
+                                                 final double cutoff,
+                                                 final int gene_trees_analyzed,
+                                                 final IntMatrix m,
+                                                 final boolean verbose,
+                                                 final boolean calc_conly )
+            throws IOException {
+        List<SortedSet<String>> groups = new ArrayList<SortedSet<String>>();
+        BasicDescriptiveStatistics stats = new BasicDescriptiveStatistics();
+        int below_075 = 0;
+        int below_05 = 0;
+        int below_025 = 0;
+        for( int x = 1; x < m.size(); ++x ) {
+            final String a = m.getLabel( x );
+            for( int y = 0; y < x; ++y ) {
+                final String b = m.getLabel( y );
+                final double s = ( ( double ) m.get( x, y ) ) / gene_trees_analyzed;
+                stats.addValue( s );
+                if ( s < 0.75 ) {
+                    below_075++;
+                    if ( s < 0.5 ) {
+                        below_05++;
+                        if ( s < 0.25 ) {
+                            below_025++;
+                        }
+                    }
+                }
+                if ( s >= cutoff ) {
+                    boolean found = false;
+                    for( final SortedSet<String> group : groups ) {
+                        if ( group.contains( a ) ) {
+                            group.add( b );
+                            found = true;
+                        }
+                        if ( group.contains( b ) ) {
+                            group.add( a );
+                            found = true;
+                        }
+                    }
+                    if ( !found ) {
+                        final SortedSet<String> new_group = new TreeSet<String>();
+                        new_group.add( a );
+                        new_group.add( b );
+                        groups.add( new_group );
+                    }
+                }
+            }
+        }
+        //Deal with singlets:
+        for( int x = 0; x < m.size(); ++x ) {
+            final String a = m.getLabel( x );
+            boolean found = false;
+            for( final SortedSet<String> group : groups ) {
+                if ( group.contains( a ) ) {
+                    found = true;
+                    break;
+                }
+            }
+            if ( !found ) {
+                final SortedSet<String> new_group = new TreeSet<String>();
+                new_group.add( a );
+                groups.add( new_group );
+            }
+        }
+        if ( calc_conly ) {
+            return groups.size();
+        }
+        final java.text.DecimalFormat df = new java.text.DecimalFormat( "0.####" );
+        df.setDecimalSeparatorAlwaysShown( false );
+        df.setRoundingMode( RoundingMode.HALF_UP );
+        final EasyWriter w = ForesterUtil.createEasyWriter( outfile );
+        int counter = 1;
+        for( final SortedSet<String> group : groups ) {
+            w.print( Integer.toString( counter++ ) );
+            for( final String s : group ) {
+                w.print( "\t" );
+                w.print( s );
+            }
+            w.println();
+        }
+        w.println();
+        w.println( "# Cutoff\t" + df.format( cutoff ) );
+        w.println();
+        w.println( "# Orthology support statistics:" );
+        if ( stats.getN() > 3 ) {
+            w.println( "# Median\t" + df.format( stats.median() ) );
+        }
+        w.println( "# Mean\t" + df.format( stats.arithmeticMean() ) );
+        if ( stats.getN() > 3 ) {
+            w.println( "# SD\t" + df.format( stats.sampleStandardDeviation() ) );
+        }
+        w.println( "# Min\t" + df.format( stats.getMin() ) );
+        w.println( "# Max\t" + df.format( stats.getMax() ) );
+        w.println( "# Total\t" + df.format( stats.getN() ) );
+        w.println( "# Below 0.75\t" + below_075 + "\t" + df.format( ( 100.0 * below_075 / stats.getN() ) ) + "%" );
+        w.println( "# Below 0.5\t" + below_05 + "\t" + df.format( ( 100.0 * below_05 / stats.getN() ) ) + "%" );
+        w.println( "# Below 0.25\t" + below_025 + "\t" + df.format( ( 100.0 * below_025 / stats.getN() ) ) + "%" );
+        w.close();
+        if ( verbose ) {
+            System.out.println( "Number of ortholog groups           :\t" + groups.size() );
+            System.out.println( "Wrote orthologs groups table to     :\t" + outfile.getCanonicalPath() );
+        }
+        return groups.size();
     }
 
     private static void writeTree( final Phylogeny p, final File f, final String comment ) throws IOException {
