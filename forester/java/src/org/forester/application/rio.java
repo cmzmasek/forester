@@ -40,15 +40,16 @@ import org.forester.util.ForesterUtil;
 
 public class rio {
 
-    public final static String PRG_NAME                       = "rio";
-    public final static String PRG_VERSION                    = "5.000";
-    public final static String PRG_DATE                       = "170411";
+    public final static String  PRG_NAME                       = "rio";
+    public final static String  PRG_VERSION                    = "5.000";
+    public final static String  PRG_DATE                       = "170411";
     final static private String E_MAIL                         = "phyloxml@gmail.com";
     final static private String WWW                            = "https://sites.google.com/site/cmzmasek/home/software/forester";
     final static private String HELP_OPTION_1                  = "help";
     final static private String LOGFILE_SUFFIX                 = "_RIO_log.tsv";
     final static private String STRIPPED_SPECIES_TREE_SUFFIX   = "_RIO_sst.xml";
     final static private String ORTHO_OUTTABLE_SUFFIX          = "_RIO_orthologies.tsv";
+    final static private String ORTHO_OUTTABLE_WITH_MAP_SUFFIX = "_RIO_orthologies_ext_map.tsv";
     final static private String OUT_MIN_DUP_GENE_TREE_SUFFIX   = "_RIO_gene_tree_min_dup_";
     final static private String OUT_MED_DUP_GENE_TREE_SUFFIX   = "_RIO_gene_tree_med_dup_";
     final static private String ORTHOLOG_GROUPS_SUFFIX         = "_RIO_ortholog_groups.tsv";
@@ -450,7 +451,7 @@ public class rio {
                 log.print( "\t" );
                 log.print( "EXT NODES" );
                 log.print( "\t" );
-                log.print(  ortholog_group_cutoff + " O GROUPS" );
+                log.print( ortholog_group_cutoff + " O GROUPS" );
                 log.print( "\t" );
                 log.print( "0.05 O GROUPS" );
                 log.print( "\t" );
@@ -491,26 +492,36 @@ public class rio {
                     outname = outname.substring( 0, outname.lastIndexOf( "." ) );
                 }
                 try {
+                    boolean perform_id_mapping = true;
+                    File id_mapping_dir = new File( "mappings" );
+                    String id_mapping_suffix = ".nim";
                     RIOUtil.executeAnalysis( gf,
-                                     species_tree_file,
-                                     new File( outdir.getCanonicalFile() + "/" + outname + ORTHO_OUTTABLE_SUFFIX ),
-                                     new File( outdir.getCanonicalFile() + "/" + outname + ORTHOLOG_GROUPS_SUFFIX ),
-                                     new File( outdir.getCanonicalFile() + "/" + outname + LOGFILE_SUFFIX ),
-                                     outgroup,
-                                     rerooting,
-                                     gt_first,
-                                     gt_last,
-                                     new File( outdir.getCanonicalFile() + "/" + outname
-                                             + STRIPPED_SPECIES_TREE_SUFFIX ),
-                                     new File( outdir.getCanonicalFile() + "/" + outname
-                                             + OUT_MIN_DUP_GENE_TREE_SUFFIX ),
-                                     new File( outdir.getCanonicalFile() + "/" + outname
-                                             + OUT_MED_DUP_GENE_TREE_SUFFIX ),
-                                     true,
-                                     algorithm,
-                                     true,
-                                     log,
-                                     ortholog_group_cutoff );
+                                             species_tree_file,
+                                             new File( outdir.getCanonicalFile() + "/" + outname
+                                                     + ORTHO_OUTTABLE_SUFFIX ),
+                                             new File( outdir.getCanonicalFile() + "/" + outname
+                                                     + ORTHO_OUTTABLE_WITH_MAP_SUFFIX ),
+                                             new File( outdir.getCanonicalFile() + "/" + outname
+                                                     + ORTHOLOG_GROUPS_SUFFIX ),
+                                             new File( outdir.getCanonicalFile() + "/" + outname + LOGFILE_SUFFIX ),
+                                             outgroup,
+                                             rerooting,
+                                             gt_first,
+                                             gt_last,
+                                             new File( outdir.getCanonicalFile() + "/" + outname
+                                                     + STRIPPED_SPECIES_TREE_SUFFIX ),
+                                             new File( outdir.getCanonicalFile() + "/" + outname
+                                                     + OUT_MIN_DUP_GENE_TREE_SUFFIX ),
+                                             new File( outdir.getCanonicalFile() + "/" + outname
+                                                     + OUT_MED_DUP_GENE_TREE_SUFFIX ),
+                                             true,
+                                             algorithm,
+                                             true,
+                                             log,
+                                             ortholog_group_cutoff,
+                                             perform_id_mapping,
+                                             id_mapping_dir,
+                                             id_mapping_suffix );
                 }
                 catch ( IOException e ) {
                     ForesterUtil.fatalError( PRG_NAME, e.getLocalizedMessage() );
@@ -526,22 +537,26 @@ public class rio {
                 outname = outname.substring( 0, outname.lastIndexOf( "." ) );
             }
             RIOUtil.executeAnalysis( gene_trees_file,
-                             species_tree_file,
-                             orthology_outtable,
-                             new File( outname + ORTHOLOG_GROUPS_SUFFIX ),
-                             logfile,
-                             outgroup,
-                             rerooting,
-                             gt_first,
-                             gt_last,
-                             new File( outname + STRIPPED_SPECIES_TREE_SUFFIX ),
-                             new File( outname + OUT_MIN_DUP_GENE_TREE_SUFFIX ),
-                             new File( outname + OUT_MED_DUP_GENE_TREE_SUFFIX ),
-                             algorithm == ALGORITHM.GSDIR,
-                             algorithm,
-                             false,
-                             null,
-                             ortholog_group_cutoff );
+                                     species_tree_file,
+                                     orthology_outtable,
+                                     null,
+                                     new File( outname + ORTHOLOG_GROUPS_SUFFIX ),
+                                     logfile,
+                                     outgroup,
+                                     rerooting,
+                                     gt_first,
+                                     gt_last,
+                                     new File( outname + STRIPPED_SPECIES_TREE_SUFFIX ),
+                                     new File( outname + OUT_MIN_DUP_GENE_TREE_SUFFIX ),
+                                     new File( outname + OUT_MED_DUP_GENE_TREE_SUFFIX ),
+                                     algorithm == ALGORITHM.GSDIR,
+                                     algorithm,
+                                     false,
+                                     null,
+                                     ortholog_group_cutoff,
+                                     false,
+                                     null,
+                                     null );
         }
         if ( !use_dir ) {
             time = System.currentTimeMillis() - time;

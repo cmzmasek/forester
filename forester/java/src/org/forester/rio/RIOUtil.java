@@ -8,6 +8,7 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -21,6 +22,9 @@ import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.io.parsers.util.ParserUtils;
 import org.forester.io.writers.PhylogenyWriter;
 import org.forester.phylogeny.Phylogeny;
+import org.forester.phylogeny.PhylogenyNode;
+import org.forester.phylogeny.data.Sequence;
+import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.rio.RIO.REROOTING;
 import org.forester.sdi.SDIException;
 import org.forester.sdi.SDIutil.ALGORITHM;
@@ -35,6 +39,7 @@ public final class RIOUtil {
     public static final void executeAnalysis( final File gene_trees_file,
                                               final File species_tree_file,
                                               final File orthology_outtable,
+                                              final File orthology_outtable_with_mappings,
                                               final File orthology_groups_outfile,
                                               final File logfile,
                                               final String outgroup,
@@ -48,8 +53,18 @@ public final class RIOUtil {
                                               final ALGORITHM algorithm,
                                               final boolean use_gene_trees_dir,
                                               final EasyWriter log,
-                                              final double ortholog_group_cutoff ) {
+                                              final double ortholog_group_cutoff,
+                                              final boolean perform_id_mapping,
+                                              final File id_mapping_dir,
+                                              final String id_mapping_suffix ) {
         try {
+            final SortedMap<String, String> id_map;
+            if ( perform_id_mapping ) {
+                id_map = obtainMapping( id_mapping_dir, gene_trees_file.getName(), id_mapping_suffix );
+            }
+            else {
+                id_map = null;
+            }
             final RIO rio;
             boolean iterating = false;
             final PhylogenyParser p = ParserUtils.createParserDependingOnFileType( gene_trees_file, true );
@@ -100,8 +115,6 @@ public final class RIOUtil {
                     System.out.println( "Taxonomy linking based on           :\t" + rio.getGSDIRtaxCompBase() );
                 }
             }
-            ///
-            ////
             final IntMatrix m;
             if ( iterating ) {
                 m = rio.getOrthologTable();
@@ -110,18 +123,30 @@ public final class RIOUtil {
                 m = RIO.calculateOrthologTable( rio.getAnalyzedGeneTrees(), true );
             }
             final BasicDescriptiveStatistics stats = rio.getDuplicationsStatistics();
-            writeTable( orthology_outtable, stats.getN(), m, !use_gene_trees_dir );
+            if ( perform_id_mapping ) {
+                writeOrthologyTable( orthology_outtable, stats.getN(), m, !use_gene_trees_dir, id_map, true );
+                writeOrthologyTable( orthology_outtable_with_mappings,
+                                     stats.getN(),
+                                     m,
+                                     !use_gene_trees_dir,
+                                     id_map,
+                                     false );
+            }
+            else {
+                writeOrthologyTable( orthology_outtable, stats.getN(), m, !use_gene_trees_dir, null, false );
+            }
             final int ortholog_groups = writeOrtologGroups( orthology_groups_outfile,
                                                             ortholog_group_cutoff,
                                                             stats.getN(),
                                                             m,
                                                             !use_gene_trees_dir,
-                                                            false );
-            final int ortholog_groups_005 = writeOrtologGroups( null, 0.05, stats.getN(), m, false, true );
-            final int ortholog_groups_025 = writeOrtologGroups( null, 0.25, stats.getN(), m, false, true );
-            final int ortholog_groups_05 = writeOrtologGroups( null, 0.5, stats.getN(), m, false, true );
-            final int ortholog_groups_075 = writeOrtologGroups( null, 0.75, stats.getN(), m, false, true );
-            final int ortholog_groups_095 = writeOrtologGroups( null, 0.95, stats.getN(), m, false, true );
+                                                            false,
+                                                            id_map );
+            final int ortholog_groups_005 = writeOrtologGroups( null, 0.05, stats.getN(), m, false, true, null );
+            final int ortholog_groups_025 = writeOrtologGroups( null, 0.25, stats.getN(), m, false, true, null );
+            final int ortholog_groups_05 = writeOrtologGroups( null, 0.5, stats.getN(), m, false, true, null );
+            final int ortholog_groups_075 = writeOrtologGroups( null, 0.75, stats.getN(), m, false, true, null );
+            final int ortholog_groups_095 = writeOrtologGroups( null, 0.95, stats.getN(), m, false, true, null );
             if ( ( algorithm != ALGORITHM.SDIR ) && ( logfile != null ) ) {
                 writeLogFile( logfile,
                               rio,
@@ -137,19 +162,22 @@ public final class RIOUtil {
             if ( return_species_tree != null ) {
                 writeTree( rio.getSpeciesTree(),
                            return_species_tree,
-                           use_gene_trees_dir ? null : "Wrote (stripped) species tree to    :\t" );
+                           use_gene_trees_dir ? null : "Wrote (stripped) species tree to    :\t",
+                           null );
             }
             if ( return_min_dup_gene_tree != null && rio.getMinDuplicationsGeneTree() != null ) {
                 final int min = ( int ) rio.getDuplicationsStatistics().getMin();
                 writeTree( rio.getMinDuplicationsGeneTree(),
                            new File( return_min_dup_gene_tree.toString() + min + ".xml" ),
-                           use_gene_trees_dir ? null : "Wrote one min duplication gene tree :\t" );
+                           use_gene_trees_dir ? null : "Wrote one min duplication gene tree :\t",
+                           id_map );
             }
             if ( return_median_dup_gene_tree != null && rio.getDuplicationsToTreeMap() != null ) {
                 final int med = ( int ) rio.getDuplicationsStatistics().median();
                 writeTree( rio.getDuplicationsToTreeMap().get( med ),
                            new File( return_median_dup_gene_tree.toString() + med + ".xml" ),
-                           use_gene_trees_dir ? null : "Wrote one med duplication gene tree :\t" );
+                           use_gene_trees_dir ? null : "Wrote one med duplication gene tree :\t",
+                           id_map );
             }
             final java.text.DecimalFormat df = new java.text.DecimalFormat( "0.##" );
             final int min = ( int ) stats.getMin();
@@ -266,10 +294,12 @@ public final class RIOUtil {
         }
     }
 
-    private static final void writeTable( final File table_outfile,
-                                          final int gene_trees_analyzed,
-                                          final IntMatrix m,
-                                          final boolean verbose )
+    private static final void writeOrthologyTable( final File table_outfile,
+                                                   final int gene_trees_analyzed,
+                                                   final IntMatrix m,
+                                                   final boolean verbose,
+                                                   final SortedMap<String, String> id_map,
+                                                   final boolean replace_ids )
             throws IOException {
         final EasyWriter w = ForesterUtil.createEasyWriter( table_outfile );
         final java.text.DecimalFormat df = new java.text.DecimalFormat( "0.####" );
@@ -277,11 +307,25 @@ public final class RIOUtil {
         df.setRoundingMode( RoundingMode.HALF_UP );
         for( int i = 0; i < m.size(); ++i ) {
             w.print( "\t" );
-            w.print( m.getLabel( i ) );
+            if ( replace_ids ) {
+                if ( !id_map.containsKey( m.getLabel( i ) ) ) {
+                    throw new IOException( "no id mapping for \"" + m.getLabel( i ) + "\" (attempting to write ["
+                            + table_outfile + "])" );
+                }
+                w.print( id_map.get( m.getLabel( i ) ) );
+            }
+            else {
+                w.print( m.getLabel( i ) );
+            }
         }
         w.println();
         for( int x = 0; x < m.size(); ++x ) {
-            w.print( m.getLabel( x ) );
+            if ( replace_ids ) {
+                w.print( id_map.get( m.getLabel( x ) ) );
+            }
+            else {
+                w.print( m.getLabel( x ) );
+            }
             for( int y = 0; y < m.size(); ++y ) {
                 w.print( "\t" );
                 if ( x == y ) {
@@ -296,6 +340,17 @@ public final class RIOUtil {
             }
             w.println();
         }
+        if ( !replace_ids && id_map != null && id_map.size() > 0 ) {
+            w.println();
+            id_map.forEach( ( k, v ) -> {
+                try {
+                    w.println( k + "\t" + v );
+                }
+                catch ( final IOException e ) {
+                    //ignore
+                }
+            } );
+        }
         w.close();
         if ( verbose ) {
             System.out.println( "Wrote table to                      :\t" + table_outfile.getCanonicalPath() );
@@ -307,7 +362,8 @@ public final class RIOUtil {
                                                  final int gene_trees_analyzed,
                                                  final IntMatrix m,
                                                  final boolean verbose,
-                                                 final boolean calc_conly )
+                                                 final boolean calc_conly,
+                                                 final SortedMap<String, String> id_map )
             throws IOException {
         List<SortedSet<String>> groups = new ArrayList<SortedSet<String>>();
         BasicDescriptiveStatistics stats = new BasicDescriptiveStatistics();
@@ -378,7 +434,16 @@ public final class RIOUtil {
             w.print( Integer.toString( counter++ ) );
             for( final String s : group ) {
                 w.print( "\t" );
-                w.print( s );
+                if ( id_map != null && id_map.size() > 0 ) {
+                    if ( !id_map.containsKey( s ) ) {
+                        throw new IOException( "no id mapping for \"" + s + "\" (attempting to write [" + outfile
+                                + "])" );
+                    }
+                    w.print( id_map.get( s ) );
+                }
+                else {
+                    w.print( s );
+                }
             }
             w.println();
         }
@@ -407,7 +472,24 @@ public final class RIOUtil {
         return groups.size();
     }
 
-    private static void writeTree( final Phylogeny p, final File f, final String comment ) throws IOException {
+    private static void writeTree( final Phylogeny p,
+                                   final File f,
+                                   final String comment,
+                                   final SortedMap<String, String> id_map )
+            throws IOException {
+        if ( id_map != null && id_map.size() > 0 ) {
+            final PhylogenyNodeIterator it = p.iteratorExternalForward();
+            while ( it.hasNext() ) {
+                final PhylogenyNode n = it.next();
+                if ( !id_map.containsKey( n.getName() ) ) {
+                    throw new IOException( "no id mapping for \"" + n.getName() + "\" (attempting to write [" + f
+                            + "])" );
+                }
+                final Sequence seq = new Sequence();
+                seq.setName( id_map.get( n.getName() ) );
+                n.getNodeData().addSequence( seq );
+            }
+        }
         final PhylogenyWriter writer = new PhylogenyWriter();
         writer.toPhyloXML( f, p, 0 );
         if ( comment != null ) {
@@ -443,7 +525,9 @@ public final class RIOUtil {
         }
     }
 
-    private final static Map<String, String> obtainMapping( final File dir, final String prefix, final String suffix )
+    private final static SortedMap<String, String> obtainMapping( final File dir,
+                                                                  final String prefix,
+                                                                  final String suffix )
             throws IOException {
         if ( !dir.exists() ) {
             throw new IOException( "[" + dir + "] does not exist" );
@@ -458,33 +542,51 @@ public final class RIOUtil {
                 return ( name.endsWith( suffix ) );
             }
         } );
-        String my_suffix = suffix;
+        if ( mapping_files.length == 1 ) {
+            throw new IOException( "no files ending with \"" + suffix + "\" found in [" + dir + "]" );
+        }
+        String my_prefix = ForesterUtil.removeFileExtension( prefix );
         boolean done = false;
+        boolean more_than_one = false;
+        File the_one = null;
         do {
             int matches = 0;
             for( File file : mapping_files ) {
-                if ( file.getName().equals( my_suffix ) ) {
+                if ( file.getName().startsWith( my_prefix ) ) {
                     matches++;
+                    if ( matches > 1 ) {
+                        the_one = null;
+                        break;
+                    }
+                    the_one = file;
                 }
             }
-            if ( matches == 1) {
+            if ( matches > 1 ) {
+                more_than_one = true;
+                done = true;
+            }
+            if ( matches == 1 ) {
                 done = true;
             }
             else {
-                my_suffix = my_suffix.substring( 0, my_suffix.length() - 1);
+                if ( my_prefix.length() <= 1 ) {
+                    throw new IOException( "no file matching \"" + ForesterUtil.removeFileExtension( prefix )
+                            + "\" and ending with \"" + suffix + "\" found in [" + dir + "]" );
+                }
+                my_prefix = my_prefix.substring( 0, my_prefix.length() - 1 );
             }
-        } while (!done );
-        
-        
-        if ( mapping_files.length == 0 ) {
-            throw new IOException( "file with prefix \"" + prefix + "\" and suffix \"" + suffix + "\" not found in ["
-                    + dir + "] " );
+        } while ( !done );
+        if ( more_than_one ) {
+            throw new IOException( "multiple files matching \"" + ForesterUtil.removeFileExtension( prefix )
+                    + "\" and ending with \"" + suffix + "\" found in [" + dir + "]" );
         }
-        if ( mapping_files.length > 1 ) {
-            throw new IOException( "file with prefix \"" + prefix + "\" and suffix \"" + suffix + "\" not unique in ["
-                    + dir + "] " );
+        else if ( the_one != null ) {
         }
-        final BasicTable<String> t = BasicTableParser.parse( mapping_files[ 0 ], '\t' );
+        else {
+            throw new IOException( "no file matching \"" + ForesterUtil.removeFileExtension( prefix )
+                    + "\" and ending with \"" + suffix + "\" found in [" + dir + "]" );
+        }
+        final BasicTable<String> t = BasicTableParser.parse( the_one, '\t' );
         return t.getColumnsAsMap( 0, 1 );
     }
 }

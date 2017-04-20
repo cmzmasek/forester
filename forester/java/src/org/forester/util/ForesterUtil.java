@@ -116,6 +116,13 @@ public final class ForesterUtil {
         }
     }
 
+    final public static String removeFileExtension( final String file_name ) {
+        if ( file_name.indexOf( "." ) > 0 ) {
+            return file_name.substring( 0, file_name.lastIndexOf( "." ) );
+        }
+        return file_name;
+    }
+
     /**
      * This calculates a color. If value is equal to min the returned color is
      * minColor, if value is equal to max the returned color is maxColor,
@@ -220,7 +227,8 @@ public final class ForesterUtil {
     final private static int calculateColorComponent( final double smallercolor_component_x,
                                                       final double largercolor_component_x,
                                                       final double x ) {
-        return ( int ) ( smallercolor_component_x + ( ( x * ( largercolor_component_x - smallercolor_component_x ) ) / 255.0 ) );
+        return ( int ) ( smallercolor_component_x
+                + ( ( x * ( largercolor_component_x - smallercolor_component_x ) ) / 255.0 ) );
     }
 
     /**
@@ -734,7 +742,8 @@ public final class ForesterUtil {
     final public static void map2file( final File file,
                                        final Map<?, ?> data,
                                        final String entry_separator,
-                                       final String data_separator ) throws IOException {
+                                       final String data_separator )
+            throws IOException {
         final Writer writer = new BufferedWriter( new FileWriter( file ) );
         map2writer( writer, data, entry_separator, data_separator );
         writer.close();
@@ -743,7 +752,8 @@ public final class ForesterUtil {
     final public static void map2writer( final Writer writer,
                                          final Map<?, ?> data,
                                          final String entry_separator,
-                                         final String data_separator ) throws IOException {
+                                         final String data_separator )
+            throws IOException {
         boolean first = true;
         for( final Entry<?, ?> entry : data.entrySet() ) {
             if ( !first ) {
@@ -758,7 +768,8 @@ public final class ForesterUtil {
         }
     }
 
-    final public static StringBuffer mapToStringBuffer( final Map<Object, Object> map, final String key_value_separator ) {
+    final public static StringBuffer mapToStringBuffer( final Map<Object, Object> map,
+                                                        final String key_value_separator ) {
         final StringBuffer sb = new StringBuffer();
         for( final Object key : map.keySet() ) {
             sb.append( key.toString() );
@@ -970,7 +981,7 @@ public final class ForesterUtil {
             return TaxonomyGroups.ALPHAHERPESVIRINAE;
         }
         else if ( tax.equalsIgnoreCase( TaxonomyGroups.BETAHERPESVIRINAE ) ) {
-            return TaxonomyGroups.BETAHERPESVIRINAE ;
+            return TaxonomyGroups.BETAHERPESVIRINAE;
         }
         else if ( tax.equalsIgnoreCase( TaxonomyGroups.GAMMAHERPESVIRINAE ) ) {
             return TaxonomyGroups.GAMMAHERPESVIRINAE;
@@ -1004,7 +1015,7 @@ public final class ForesterUtil {
         }
         else {
             throw new IllegalArgumentException( "attempt to parse object of type [" + source.getClass()
-                                                + "] (can only parse objects of type File, InputStream, String, or StringBuffer)" );
+                    + "] (can only parse objects of type File, InputStream, String, or StringBuffer)" );
         }
         return reader;
     }
@@ -1018,11 +1029,17 @@ public final class ForesterUtil {
         System.exit( -1 );
     }
 
-    final public static StringBuffer pad( final double number, final int size, final char pad, final boolean left_pad ) {
+    final public static StringBuffer pad( final double number,
+                                          final int size,
+                                          final char pad,
+                                          final boolean left_pad ) {
         return pad( new StringBuffer( number + "" ), size, pad, left_pad );
     }
 
-    final public static StringBuffer pad( final String string, final int size, final char pad, final boolean left_pad ) {
+    final public static StringBuffer pad( final String string,
+                                          final int size,
+                                          final char pad,
+                                          final boolean left_pad ) {
         return pad( new StringBuffer( string ), size, pad, left_pad );
     }
 
@@ -1076,7 +1093,9 @@ public final class ForesterUtil {
         System.err.println( "[" + prg_name + "] > error: " + message );
     }
 
-    final public static void printProgramInformation( final String prg_name, final String prg_version, final String date ) {
+    final public static void printProgramInformation( final String prg_name,
+                                                      final String prg_version,
+                                                      final String date ) {
         final int l = prg_name.length() + prg_version.length() + date.length() + 4;
         System.out.println();
         System.out.println( prg_name + " " + prg_version + " (" + date + ")" );
@@ -1120,7 +1139,8 @@ public final class ForesterUtil {
         }
         if ( !ForesterUtil.isEmpty( ForesterUtil.JAVA_VERSION ) && !ForesterUtil.isEmpty( ForesterUtil.JAVA_VENDOR ) ) {
             System.out.println();
-            System.out.println( "[running on Java " + ForesterUtil.JAVA_VERSION + " " + ForesterUtil.JAVA_VENDOR + "]" );
+            System.out
+                    .println( "[running on Java " + ForesterUtil.JAVA_VERSION + " " + ForesterUtil.JAVA_VENDOR + "]" );
         }
         System.out.println();
     }
@@ -1170,12 +1190,14 @@ public final class ForesterUtil {
     public static Protein removeOverlappingDomains( final int max_allowed_overlap,
                                                     final boolean remove_engulfed_domains,
                                                     final Protein protein ) {
-        final Protein pruned_protein = new BasicProtein( protein.getProteinId().getId(), protein.getSpecies()
-                                                         .getSpeciesId(), protein.getLength() );
+        final Protein pruned_protein = new BasicProtein( protein.getProteinId().getId(),
+                                                         protein.getSpecies().getSpeciesId(),
+                                                         protein.getLength() );
         final List<Domain> sorted = SurfacingUtil.sortDomainsWithAscendingConfidenceValues( protein );
         final List<Boolean> covered_positions = new ArrayList<Boolean>();
         for( final Domain domain : sorted ) {
-            if ( ( ( max_allowed_overlap < 0 ) || ( ForesterUtil.calculateOverlap( domain, covered_positions ) <= max_allowed_overlap ) )
+            if ( ( ( max_allowed_overlap < 0 )
+                    || ( ForesterUtil.calculateOverlap( domain, covered_positions ) <= max_allowed_overlap ) )
                     && ( !remove_engulfed_domains || !isEngulfed( domain, covered_positions ) ) ) {
                 final int covered_positions_size = covered_positions.size();
                 for( int i = covered_positions_size; i < domain.getFrom(); ++i ) {
@@ -1377,7 +1399,7 @@ public final class ForesterUtil {
     final public static void unexpectedFatalError( final String prg_name, final Exception e ) {
         System.err.println();
         System.err.println( "[" + prg_name
-                            + "] > unexpected error; should not have occured! Please contact program author(s)." );
+                + "] > unexpected error; should not have occured! Please contact program author(s)." );
         e.printStackTrace( System.err );
         System.err.println();
         System.exit( -1 );
@@ -1386,7 +1408,7 @@ public final class ForesterUtil {
     final public static void unexpectedFatalError( final String prg_name, final String message ) {
         System.err.println();
         System.err.println( "[" + prg_name
-                            + "] > unexpected error: should not have occured! Please contact program author(s)." );
+                + "] > unexpected error: should not have occured! Please contact program author(s)." );
         System.err.println( message );
         System.err.println();
         System.exit( -1 );
@@ -1395,7 +1417,7 @@ public final class ForesterUtil {
     final public static void unexpectedFatalError( final String prg_name, final String message, final Exception e ) {
         System.err.println();
         System.err.println( "[" + prg_name
-                            + "] > unexpected error: should not have occured! Please contact program author(s)." );
+                + "] > unexpected error: should not have occured! Please contact program author(s)." );
         System.err.println( message );
         e.printStackTrace( System.err );
         System.err.println();
@@ -1448,9 +1470,7 @@ public final class ForesterUtil {
         return sb.toString();
     }
 
-
-    public final static Phylogeny[] readPhylogeniesFromUrl( final URL url,
-                                                            final PhylogenyParser parser )
+    public final static Phylogeny[] readPhylogeniesFromUrl( final URL url, final PhylogenyParser parser )
             throws NoSuchAlgorithmException, IOException, KeyManagementException {
         if ( url == null ) {
             throw new IllegalArgumentException( "URL to read from must not be null" );
@@ -1459,8 +1479,8 @@ public final class ForesterUtil {
             throw new IllegalArgumentException( "parser to use to read from URL must not be null" );
         }
         final URLConnection con;
-        if ( url.toString().startsWith( "https:" ) ) {    
-             con = TrustManager.makeHttpsURLConnection( url );
+        if ( url.toString().startsWith( "https:" ) ) {
+            con = TrustManager.makeHttpsURLConnection( url );
         }
         else if ( url.toString().startsWith( "http:" ) ) {
             con = url.openConnection();
@@ -1468,12 +1488,12 @@ public final class ForesterUtil {
         else {
             throw new IllegalArgumentException( "Cannot deal with URL: " + url );
         }
-        if ( con == null ) {    
+        if ( con == null ) {
             throw new IOException( "could not create connection from " + url );
         }
         con.setDefaultUseCaches( false );
         final InputStream is = con.getInputStream();
-        if ( is == null ) {    
+        if ( is == null ) {
             throw new IOException( "could not create input stream from " + url );
         }
         final Phylogeny[] trees = ParserBasedPhylogenyFactory.getInstance().create( is, parser );
@@ -1485,7 +1505,7 @@ public final class ForesterUtil {
         }
         return trees;
     }
-    
+
     private ForesterUtil() {
     }
 }

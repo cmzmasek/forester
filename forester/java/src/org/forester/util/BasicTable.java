@@ -28,6 +28,8 @@ package org.forester.util;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 public class BasicTable<E> {
 
@@ -53,8 +55,8 @@ public class BasicTable<E> {
         return result;
     }
 
-    public Map<String, E> getColumnsAsMap( final int key_col, final int value_col ) throws IllegalArgumentException {
-        final Map<String, E> map = new HashMap<String, E>();
+    public SortedMap<String, E> getColumnsAsMap( final int key_col, final int value_col ) throws IllegalArgumentException {
+        final SortedMap<String, E> map = new TreeMap<String, E>();
         for( int row = 0; row < getNumberOfRows(); ++row ) {
             final String key = ( String ) getValue( key_col, row );
             final E value = getValue( value_col, row );
