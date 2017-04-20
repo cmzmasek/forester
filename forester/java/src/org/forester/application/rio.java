@@ -39,6 +39,7 @@ import org.forester.util.EasyWriter;
 import org.forester.util.ForesterUtil;
 
 public class rio {
+    //
 
     public final static String  PRG_NAME                       = "rio";
     public final static String  PRG_VERSION                    = "5.000";
@@ -60,7 +61,11 @@ public class rio {
     final static private String OUTGROUP                       = "o";
     final static private String USE_SDIR                       = "s";
     final static private String GENE_TREES_SUFFIX_OPTION       = "g";
+    final static private String MAPPINGS_DIR_OPTION            = "m";
+    final static private String MAPPINGS_SUFFIX_OPTION         = "ms";
+    final static private String MAPPINGS_SUFFIX_DEFAULT        = ".nim";
     final static private String ORTHOLOG_GROUPS_CUTOFF_OPTION  = "c";
+    final static private String GENE_TREES_SUFFIX_DEFAULT      = ".mlt";
     final static private double ORTHOLOG_GROUPS_CUTOFF_DEFAULT = 0.5;
 
     public static void main( final String[] args ) {
@@ -95,6 +100,8 @@ public class rio {
         allowed_options.add( USE_SDIR );
         allowed_options.add( GENE_TREES_SUFFIX_OPTION );
         allowed_options.add( ORTHOLOG_GROUPS_CUTOFF_OPTION );
+        allowed_options.add( MAPPINGS_DIR_OPTION );
+        allowed_options.add( MAPPINGS_SUFFIX_OPTION );
         final String dissallowed_options = cla.validateAllowedOptionsAsString( allowed_options );
         if ( dissallowed_options.length() > 0 ) {
             ForesterUtil.fatalError( "unknown option(s): " + dissallowed_options );
@@ -106,6 +113,9 @@ public class rio {
         if ( gene_trees_file.isDirectory() ) {
             if ( !gene_trees_file.exists() ) {
                 ForesterUtil.fatalError( "gene trees directory \"" + gene_trees_file + "\" does not exist" );
+            }
+            if ( gene_trees_file.listFiles().length < 1 ) {
+                ForesterUtil.fatalError( "gene trees directory \"" + gene_trees_file + "\" is empty" );
             }
             use_dir = true;
             indir = gene_trees_file;
@@ -275,7 +285,45 @@ public class rio {
             gene_trees_suffix = cla.getOptionValueAsCleanString( GENE_TREES_SUFFIX_OPTION );
         }
         else {
-            gene_trees_suffix = ".mlt";
+            gene_trees_suffix = GENE_TREES_SUFFIX_DEFAULT;
+        }
+        final boolean perform_id_mapping;
+        final File id_mapping_dir;
+        if ( cla.isOptionSet( MAPPINGS_DIR_OPTION ) ) {
+            id_mapping_dir = new File( cla.getOptionValue( MAPPINGS_DIR_OPTION ) );
+            perform_id_mapping = true;
+            if ( !use_dir ) {
+                ForesterUtil.fatalError( "no id mapping when operating on indivual gene trees" );
+            }
+            if ( !id_mapping_dir.exists() ) {
+                ForesterUtil.fatalError( "id mappings directory \"" + id_mapping_dir + "\" does not exist" );
+            }
+            if ( !id_mapping_dir.isDirectory() ) {
+                ForesterUtil.fatalError( "id mappings directory \"" + id_mapping_dir + "\" is not a directory" );
+            }
+            if ( id_mapping_dir.listFiles().length < 1 ) {
+                ForesterUtil.fatalError( "id mappings directory \"" + id_mapping_dir + "\" is empty" );
+            }
+        }
+        else {
+            id_mapping_dir = null;
+            perform_id_mapping = false;
+        }
+        final String id_mapping_suffix;
+        if ( cla.isOptionSet( MAPPINGS_SUFFIX_OPTION ) ) {
+            if ( !use_dir ) {
+                ForesterUtil.fatalError( "no id mapping file suffix option when operating on indivual gene trees" );
+            }
+            if ( !perform_id_mapping ) {
+                ForesterUtil.fatalError( "no id mapping directory given" );
+            }
+            if ( !cla.isOptionHasAValue( MAPPINGS_SUFFIX_OPTION ) ) {
+                ForesterUtil.fatalError( "no value for -" + MAPPINGS_SUFFIX_OPTION );
+            }
+            id_mapping_suffix = cla.getOptionValueAsCleanString( MAPPINGS_SUFFIX_OPTION );
+        }
+        else {
+            id_mapping_suffix = MAPPINGS_SUFFIX_DEFAULT;
         }
         ForesterUtil.fatalErrorIfFileNotReadable( species_tree_file );
         if ( !use_dir && orthology_outtable.exists() ) {
@@ -294,6 +342,10 @@ public class rio {
         }
         catch ( final IOException e ) {
             ForesterUtil.fatalError( e.getLocalizedMessage() );
+        }
+        if ( perform_id_mapping ) {
+            System.out.println( "Id mappings in-dir                  :\t" + id_mapping_dir );
+            System.out.println( "Id mappings suffix                  :\t" + id_mapping_suffix );
         }
         if ( use_dir ) {
             System.out.println( "Out-dir                             :\t" + outdir );
@@ -492,9 +544,6 @@ public class rio {
                     outname = outname.substring( 0, outname.lastIndexOf( "." ) );
                 }
                 try {
-                    boolean perform_id_mapping = true;
-                    File id_mapping_dir = new File( "mappings" );
-                    String id_mapping_suffix = ".nim";
                     RIOUtil.executeAnalysis( gf,
                                              species_tree_file,
                                              new File( outdir.getCanonicalFile() + "/" + outname
@@ -598,7 +647,11 @@ public class rio {
                 + "             : to use SDIR instead of GSDIR (faster, but non-binary species trees are" );
         System.out.println( "                   disallowed, as are most options)" );
         System.out.println( "  -" + GENE_TREES_SUFFIX_OPTION
-                + "=<suffix>    : suffix for gene trees when operating on gene tree directories (default: .mlt)" );
+                + "=<suffix>    : suffix for gene trees when operating on gene tree directories (default: "
+                + GENE_TREES_SUFFIX_DEFAULT + ")" );
+        System.out.println( "  -" + MAPPINGS_DIR_OPTION + "=<dir>       : directory for id mapping files" );
+        System.out.println( "  -" + MAPPINGS_SUFFIX_OPTION + "=<suffix>    : suffix for id mapping files (default: "
+                + MAPPINGS_SUFFIX_DEFAULT + ")" );
         System.out.println();
         System.out.println( " Formats" );
         System.out
@@ -614,6 +667,7 @@ public class rio {
         System.out.println( "  rio gene_trees.nh species.xml outtable.tsv log.txt" );
         System.out.println( "  rio -c=0.9 -f=10 -l=100 -r=none gene_trees.xml species.xml outtable.tsv log.txt" );
         System.out.println( "  rio -g=.xml gene_trees_dir species.xml out_dir log.tsv" );
+        System.out.println( "  rio -g=.xml -m=mappings -ms=.nim gene_trees_dir species.xml out_dir log.tsv" );
         System.out.println();
         System.exit( -1 );
     }
