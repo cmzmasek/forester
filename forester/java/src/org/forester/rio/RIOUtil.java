@@ -2,7 +2,6 @@
 package org.forester.rio;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -12,21 +11,31 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import javax.swing.JOptionPane;
+
+import org.forester.archaeopteryx.AptxUtil;
 import org.forester.datastructures.IntMatrix;
 import org.forester.io.parsers.IteratingPhylogenyParser;
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.nexus.NexusPhylogeniesParser;
 import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
+import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.io.parsers.util.ParserUtils;
 import org.forester.io.writers.PhylogenyWriter;
 import org.forester.phylogeny.Phylogeny;
+import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
+import org.forester.phylogeny.PhylogenyMethods.DESCENDANT_SORT_PRIORITY;
 import org.forester.phylogeny.data.Sequence;
+import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
+import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.rio.RIO.REROOTING;
+import org.forester.sdi.GSDIR;
 import org.forester.sdi.SDIException;
+import org.forester.sdi.SDIutil;
 import org.forester.sdi.SDIutil.ALGORITHM;
 import org.forester.util.BasicDescriptiveStatistics;
 import org.forester.util.BasicTable;
@@ -122,6 +131,53 @@ public final class RIOUtil {
             else {
                 m = RIO.calculateOrthologTable( rio.getAnalyzedGeneTrees(), true );
             }
+            ////////////////////////////////////////////
+            ////////////////////////////////////////////
+            //TODO
+            final boolean perform_gsdir_on_best_tree = true;
+            final File best_trees_dir = new File( "best_trees" );
+            final String best_trees_suffix = ".xml";
+            final GSDIR gsdir_for_best_tree;
+            if ( perform_gsdir_on_best_tree ) {
+                final Phylogeny best_tree = obtainTree( best_trees_dir, gene_trees_file.getName(), best_trees_suffix );
+                final Phylogeny species_tree = SDIutil
+                        .parseSpeciesTree( best_tree, species_tree_file, false, true, TAXONOMY_EXTRACTION.NO );
+                PhylogenyMethods.deleteInternalNodesWithOnlyOneDescendent( species_tree );
+                best_tree.setRooted( true );
+                species_tree.setRooted( true );
+                if ( !best_tree.isCompletelyBinaryAllow3ChildrenAtRoot() ) {
+                    throw new IOException( "gene tree matching to ["
+                            + ForesterUtil.removeFileExtension( gene_trees_file.getName() )
+                            + "] is not completely binary" );
+                }
+                final PhylogenyNodeIterator it = best_tree.iteratorExternalForward();
+                while ( it.hasNext() ) {
+                    final PhylogenyNode n = it.next();
+                    final String name = n.getName().trim();
+                    if ( !ForesterUtil.isEmpty( name ) ) {
+                        try {
+                            ParserUtils.extractTaxonomyDataFromNodeName( n, TAXONOMY_EXTRACTION.AGGRESSIVE );
+                        }
+                        catch ( final PhyloXmlDataFormatException e ) {
+                            // Ignore.
+                        }
+                    }
+                }
+                gsdir_for_best_tree = new GSDIR( best_tree, species_tree, true, true, true );
+                final Phylogeny result_gene_tree = gsdir_for_best_tree.getMinDuplicationsSumGeneTree();
+                System.out.println( gsdir_for_best_tree.getMinDuplicationsSum() );
+                result_gene_tree.setRerootable( false );
+                PhylogenyMethods.orderAppearance( result_gene_tree.getRoot(),
+                                                  true,
+                                                  true,
+                                                  DESCENDANT_SORT_PRIORITY.NODE_NAME );
+                writeTree( result_gene_tree, new File( gene_trees_file.getName() + "____.xml" ), null, id_map );
+            }
+            else {
+                gsdir_for_best_tree = null;
+            }
+            ////////////////////////////////////////////
+            ////////////////////////////////////////////
             final BasicDescriptiveStatistics stats = rio.getDuplicationsStatistics();
             if ( perform_id_mapping ) {
                 writeOrthologyTable( orthology_outtable, stats.getN(), m, !use_gene_trees_dir, id_map, true );
@@ -529,64 +585,15 @@ public final class RIOUtil {
                                                                   final String prefix,
                                                                   final String suffix )
             throws IOException {
-        if ( !dir.exists() ) {
-            throw new IOException( "[" + dir + "] does not exist" );
-        }
-        if ( !dir.isDirectory() ) {
-            throw new IOException( "[" + dir + "] is not a directory" );
-        }
-        final File mapping_files[] = dir.listFiles( new FilenameFilter() {
-
-            @Override
-            public boolean accept( final File dir, final String name ) {
-                return ( name.endsWith( suffix ) );
-            }
-        } );
-        if ( mapping_files.length == 1 ) {
-            throw new IOException( "no files ending with \"" + suffix + "\" found in [" + dir + "]" );
-        }
-        String my_prefix = ForesterUtil.removeFileExtension( prefix );
-        boolean done = false;
-        boolean more_than_one = false;
-        File the_one = null;
-        do {
-            int matches = 0;
-            for( File file : mapping_files ) {
-                if ( file.getName().startsWith( my_prefix ) ) {
-                    matches++;
-                    if ( matches > 1 ) {
-                        the_one = null;
-                        break;
-                    }
-                    the_one = file;
-                }
-            }
-            if ( matches > 1 ) {
-                more_than_one = true;
-                done = true;
-            }
-            if ( matches == 1 ) {
-                done = true;
-            }
-            else {
-                if ( my_prefix.length() <= 1 ) {
-                    throw new IOException( "no file matching \"" + ForesterUtil.removeFileExtension( prefix )
-                            + "\" and ending with \"" + suffix + "\" found in [" + dir + "]" );
-                }
-                my_prefix = my_prefix.substring( 0, my_prefix.length() - 1 );
-            }
-        } while ( !done );
-        if ( more_than_one ) {
-            throw new IOException( "multiple files matching \"" + ForesterUtil.removeFileExtension( prefix )
-                    + "\" and ending with \"" + suffix + "\" found in [" + dir + "]" );
-        }
-        else if ( the_one != null ) {
-        }
-        else {
-            throw new IOException( "no file matching \"" + ForesterUtil.removeFileExtension( prefix )
-                    + "\" and ending with \"" + suffix + "\" found in [" + dir + "]" );
-        }
+        final File the_one = ForesterUtil.getMatchingFile( dir, prefix, suffix );
         final BasicTable<String> t = BasicTableParser.parse( the_one, '\t' );
         return t.getColumnsAsMap( 0, 1 );
+    }
+
+    private final static Phylogeny obtainTree( final File dir, final String prefix, final String suffix )
+            throws IOException {
+        final File the_one = ForesterUtil.getMatchingFile( dir, prefix, suffix );
+        final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+        return factory.create( the_one, PhyloXmlParser.createPhyloXmlParserXsdValidating() )[ 0 ];
     }
 }

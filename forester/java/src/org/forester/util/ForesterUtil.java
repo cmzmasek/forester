@@ -34,6 +34,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -1507,5 +1508,67 @@ public final class ForesterUtil {
     }
 
     private ForesterUtil() {
+    }
+
+    public final static File getMatchingFile( final File dir, final String prefix, final String suffix )
+            throws IOException {
+        if ( !dir.exists() ) {
+            throw new IOException( "[" + dir + "] does not exist" );
+        }
+        if ( !dir.isDirectory() ) {
+            throw new IOException( "[" + dir + "] is not a directory" );
+        }
+        final File mapping_files[] = dir.listFiles( new FilenameFilter() {
+
+            @Override
+            public boolean accept( final File dir, final String name ) {
+                return ( name.endsWith( suffix ) );
+            }
+        } );
+        if ( mapping_files.length == 1 ) {
+            throw new IOException( "no files ending with \"" + suffix + "\" found in [" + dir + "]" );
+        }
+        String my_prefix = removeFileExtension( prefix );
+        boolean done = false;
+        boolean more_than_one = false;
+        File the_one = null;
+        do {
+            int matches = 0;
+            for( File file : mapping_files ) {
+                if ( file.getName().startsWith( my_prefix ) ) {
+                    matches++;
+                    if ( matches > 1 ) {
+                        the_one = null;
+                        break;
+                    }
+                    the_one = file;
+                }
+            }
+            if ( matches > 1 ) {
+                more_than_one = true;
+                done = true;
+            }
+            if ( matches == 1 ) {
+                done = true;
+            }
+            else {
+                if ( my_prefix.length() <= 1 ) {
+                    throw new IOException( "no file matching \"" + removeFileExtension( prefix )
+                            + "\" and ending with \"" + suffix + "\" found in [" + dir + "]" );
+                }
+                my_prefix = my_prefix.substring( 0, my_prefix.length() - 1 );
+            }
+        } while ( !done );
+        if ( more_than_one ) {
+            throw new IOException( "multiple files matching \"" + removeFileExtension( prefix )
+                    + "\" and ending with \"" + suffix + "\" found in [" + dir + "]" );
+        }
+        else if ( the_one != null ) {
+        }
+        else {
+            throw new IOException( "no file matching \"" + removeFileExtension( prefix ) + "\" and ending with \""
+                    + suffix + "\" found in [" + dir + "]" );
+        }
+        return the_one;
     }
 }

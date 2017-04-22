@@ -42,8 +42,8 @@ public class rio {
     //
 
     public final static String  PRG_NAME                       = "rio";
-    public final static String  PRG_VERSION                    = "5.000";
-    public final static String  PRG_DATE                       = "170411";
+    public final static String  PRG_VERSION                    = "5.900";
+    public final static String  PRG_DATE                       = "170420";
     final static private String E_MAIL                         = "phyloxml@gmail.com";
     final static private String WWW                            = "https://sites.google.com/site/cmzmasek/home/software/forester";
     final static private String HELP_OPTION_1                  = "help";
@@ -344,7 +344,12 @@ public class rio {
             ForesterUtil.fatalError( e.getLocalizedMessage() );
         }
         if ( perform_id_mapping ) {
-            System.out.println( "Id mappings in-dir                  :\t" + id_mapping_dir );
+            try {
+                System.out.println( "Id mappings in-dir                  :\t" + id_mapping_dir.getCanonicalPath() );
+            }
+            catch ( IOException e ) {
+                ForesterUtil.fatalError( e.getLocalizedMessage() );
+            }
             System.out.println( "Id mappings suffix                  :\t" + id_mapping_suffix );
         }
         if ( use_dir ) {
@@ -515,6 +520,10 @@ public class rio {
                 log.print( "\t" );
                 log.print( "0.95 O GROUPS" );
                 log.print( "\t" );
+                if ( true ) { //TODO
+                    log.print( "BEST TREE DUP" );
+                    log.print( "\t" );
+                }
                 log.print( "MEDIAN DUP" );
                 log.print( "\t" );
                 log.print( "MEAN DUP" );
@@ -650,7 +659,7 @@ public class rio {
                 + "=<suffix>    : suffix for gene trees when operating on gene tree directories (default: "
                 + GENE_TREES_SUFFIX_DEFAULT + ")" );
         System.out.println( "  -" + MAPPINGS_DIR_OPTION + "=<dir>       : directory for id mapping files" );
-        System.out.println( "  -" + MAPPINGS_SUFFIX_OPTION + "=<suffix>    : suffix for id mapping files (default: "
+        System.out.println( "  -" + MAPPINGS_SUFFIX_OPTION + "=<suffix>   : suffix for id mapping files (default: "
                 + MAPPINGS_SUFFIX_DEFAULT + ")" );
         System.out.println();
         System.out.println( " Formats" );
@@ -667,7 +676,8 @@ public class rio {
         System.out.println( "  rio gene_trees.nh species.xml outtable.tsv log.txt" );
         System.out.println( "  rio -c=0.9 -f=10 -l=100 -r=none gene_trees.xml species.xml outtable.tsv log.txt" );
         System.out.println( "  rio -g=.xml gene_trees_dir species.xml out_dir log.tsv" );
-        System.out.println( "  rio -g=.xml -m=mappings -ms=.nim gene_trees_dir species.xml out_dir log.tsv" );
+        System.out.println( "  rio -g=.mlt -m=id_maps_dir -ms=.nim -c=0.8 gene_trees_dir species.xml out_dir log.tsv" );
+        System.out.println( "  rio -m=id_maps_dir -c=0.8 gene_trees_dir species.xml out_dir log.tsv" );
         System.out.println();
         System.exit( -1 );
     }

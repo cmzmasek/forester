@@ -115,8 +115,8 @@ public class Phylogeny {
         new_node.setParent( sibling_parent );
         sibling.setParent( new_node );
         sibling_parent.setChildNode( sibling_index, new_node );
-        final double new_dist = sibling.getDistanceToParent() == PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT ? PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT
-                : sibling.getDistanceToParent() / 2;
+        final double new_dist = sibling.getDistanceToParent() == PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT
+                ? PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT : sibling.getDistanceToParent() / 2;
         new_node.setDistanceToParent( new_dist );
         sibling.setDistanceToParent( new_dist );
         externalNodesHaveChanged();
@@ -137,12 +137,12 @@ public class Phylogeny {
         else {
             double max = -Double.MAX_VALUE;
             for( int i = 0; i < n.getNumberOfDescendants(); ++i ) {
-                final double l = calculateSubtreeHeight( n.getChildNode( i ),  take_collapse_into_account );
+                final double l = calculateSubtreeHeight( n.getChildNode( i ), take_collapse_into_account );
                 if ( l > max ) {
                     max = l;
                 }
             }
-            return max + ( n.getDistanceToParent() > 0 ? n.getDistanceToParent() : 0);
+            return max + ( n.getDistanceToParent() > 0 ? n.getDistanceToParent() : 0 );
         }
     }
 
@@ -259,13 +259,17 @@ public class Phylogeny {
                 if ( p.getNumberOfDescendants() == 2 ) {
                     final int pi = p.getChildNodeIndex();
                     if ( removed_node.isFirstChildNode() ) {
-                        p.getChildNode( 1 ).setDistanceToParent( PhylogenyMethods.addPhylogenyDistances( p
-                                                                                                         .getDistanceToParent(), p.getChildNode( 1 ).getDistanceToParent() ) );
+                        p.getChildNode( 1 )
+                                .setDistanceToParent( PhylogenyMethods.addPhylogenyDistances( p.getDistanceToParent(),
+                                                                                              p.getChildNode( 1 )
+                                                                                                      .getDistanceToParent() ) );
                         pp.setChildNode( pi, p.getChildNode( 1 ) );
                     }
                     else {
-                        p.getChildNode( 0 ).setDistanceToParent( PhylogenyMethods.addPhylogenyDistances( p
-                                                                                                         .getDistanceToParent(), p.getChildNode( 0 ).getDistanceToParent() ) );
+                        p.getChildNode( 0 )
+                                .setDistanceToParent( PhylogenyMethods.addPhylogenyDistances( p.getDistanceToParent(),
+                                                                                              p.getChildNode( 0 )
+                                                                                                      .getDistanceToParent() ) );
                         pp.setChildNode( pi, p.getChildNode( 0 ) );
                     }
                 }
@@ -320,7 +324,7 @@ public class Phylogeny {
      */
     public List<PhylogenyNode> getExternalNodes() {
         if ( _external_nodes_set == null ) {
-            _external_nodes_set = new ArrayList<PhylogenyNode>();
+            _external_nodes_set = new ArrayList<>();
             for( final PhylogenyNodeIterator it = iteratorPostorder(); it.hasNext(); ) {
                 final PhylogenyNode n = it.next();
                 if ( n.isExternal() ) {
@@ -331,7 +335,6 @@ public class Phylogeny {
         return _external_nodes_set;
     }
 
- 
     /**
      * Returns the first external PhylogenyNode.
      */
@@ -352,7 +355,7 @@ public class Phylogeny {
      *
      * @return the height for rooted, tree-shaped phylogenies
      */
-    public double calculateHeight(final boolean take_collapse_into_account) {
+    public double calculateHeight( final boolean take_collapse_into_account ) {
         if ( isEmpty() ) {
             return 0.0;
         }
@@ -435,7 +438,7 @@ public class Phylogeny {
         if ( isEmpty() ) {
             return null;
         }
-        final List<PhylogenyNode> nodes = new ArrayList<PhylogenyNode>();
+        final List<PhylogenyNode> nodes = new ArrayList<>();
         for( final PhylogenyNodeIterator iter = iteratorPreorder(); iter.hasNext(); ) {
             final PhylogenyNode n = iter.next();
             if ( n.getName().equals( name ) ) {
@@ -449,7 +452,7 @@ public class Phylogeny {
         if ( isEmpty() ) {
             return null;
         }
-        final List<PhylogenyNode> nodes = new ArrayList<PhylogenyNode>();
+        final List<PhylogenyNode> nodes = new ArrayList<>();
         for( final PhylogenyNodeIterator iter = iteratorPreorder(); iter.hasNext(); ) {
             final PhylogenyNode n = iter.next();
             if ( n.getNodeData().isHasSequence() && n.getNodeData().getSequence().getName().equals( seq_name ) ) {
@@ -463,7 +466,7 @@ public class Phylogeny {
         if ( isEmpty() ) {
             return null;
         }
-        final List<PhylogenyNode> nodes = new ArrayList<PhylogenyNode>();
+        final List<PhylogenyNode> nodes = new ArrayList<>();
         for( final PhylogenyNodeIterator iter = iteratorPreorder(); iter.hasNext(); ) {
             final PhylogenyNode n = iter.next();
             if ( n.getNodeData().isHasSequence() && n.getNodeData().getSequence().getSymbol().equals( seq_name ) ) {
@@ -477,7 +480,7 @@ public class Phylogeny {
         if ( isEmpty() ) {
             return null;
         }
-        final List<PhylogenyNode> nodes = new ArrayList<PhylogenyNode>();
+        final List<PhylogenyNode> nodes = new ArrayList<>();
         for( final PhylogenyNodeIterator iter = iteratorPreorder(); iter.hasNext(); ) {
             final PhylogenyNode n = iter.next();
             if ( n.getNodeData().isHasSequence() && n.getNodeData().getSequence().getGeneName().equals( seq_name ) ) {
@@ -491,7 +494,7 @@ public class Phylogeny {
         if ( isEmpty() ) {
             return null;
         }
-        final List<PhylogenyNode> nodes = new ArrayList<PhylogenyNode>();
+        final List<PhylogenyNode> nodes = new ArrayList<>();
         for( final PhylogenyNodeIterator iter = iteratorPreorder(); iter.hasNext(); ) {
             final PhylogenyNode n = iter.next();
             if ( n.getNodeData().isHasTaxonomy()
@@ -516,7 +519,7 @@ public class Phylogeny {
         if ( isEmpty() ) {
             return null;
         }
-        final List<PhylogenyNode> nodes = new ArrayList<PhylogenyNode>();
+        final List<PhylogenyNode> nodes = new ArrayList<>();
         for( final PhylogenyNodeIterator iter = iteratorPreorder(); iter.hasNext(); ) {
             final PhylogenyNode n = iter.next();
             if ( PhylogenyMethods.getSpecies( n ).equals( specname ) ) {
@@ -615,8 +618,8 @@ public class Phylogeny {
     public List<PhylogenyNode> getParalogousNodes( final PhylogenyNode n, final String[] taxonomyCodeRange ) {
         PhylogenyNode node = n;
         PhylogenyNode prev = null;
-        final List<PhylogenyNode> v = new ArrayList<PhylogenyNode>();
-        final Map<PhylogenyNode, List<String>> map = new HashMap<PhylogenyNode, List<String>>();
+        final List<PhylogenyNode> v = new ArrayList<>();
+        final Map<PhylogenyNode, List<String>> map = new HashMap<>();
         getTaxonomyMap( getRoot(), map );
         if ( !node.isExternal() || isEmpty() ) {
             return null;
@@ -633,12 +636,12 @@ public class Phylogeny {
             taxIdList = map.get( node );
             if ( node.isDuplication() && isContains( taxIdList, taxonomyCodeRangeList ) ) {
                 if ( node.getChildNode1() == prev ) {
-                    v.addAll( getNodeByTaxonomyID( searchNodeSpeciesId, node.getChildNode2()
-                                                   .getAllExternalDescendants() ) );
+                    v.addAll( getNodeByTaxonomyID( searchNodeSpeciesId,
+                                                   node.getChildNode2().getAllExternalDescendants() ) );
                 }
                 else {
-                    v.addAll( getNodeByTaxonomyID( searchNodeSpeciesId, node.getChildNode1()
-                                                   .getAllExternalDescendants() ) );
+                    v.addAll( getNodeByTaxonomyID( searchNodeSpeciesId,
+                                                   node.getChildNode1().getAllExternalDescendants() ) );
                 }
             }
         }
@@ -647,7 +650,7 @@ public class Phylogeny {
 
     public Collection<SequenceRelation.SEQUENCE_RELATION_TYPE> getRelevantSequenceRelationTypes() {
         if ( _relevant_sequence_relation_types == null ) {
-            _relevant_sequence_relation_types = new Vector<SEQUENCE_RELATION_TYPE>();
+            _relevant_sequence_relation_types = new Vector<>();
         }
         return _relevant_sequence_relation_types;
     }
@@ -697,6 +700,27 @@ public class Phylogeny {
             final PhylogenyNode node = iter.next();
             if ( node.isInternal() && ( node.getNumberOfDescendants() != 2 ) ) {
                 return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean isCompletelyBinaryAllow3ChildrenAtRoot() {
+        if ( isEmpty() ) {
+            return false;
+        }
+        for( final PhylogenyNodeIterator iter = iteratorPreorder(); iter.hasNext(); ) {
+            final PhylogenyNode node = iter.next();
+            if ( node.isRoot() ) {
+                if ( node.isInternal()
+                        && ( ( node.getNumberOfDescendants() != 2 ) && ( node.getNumberOfDescendants() != 3 ) ) ) {
+                    return false;
+                }
+            }
+            else {
+                if ( node.isInternal() && ( node.getNumberOfDescendants() != 2 ) ) {
+                    return false;
+                }
             }
         }
         return true;
@@ -971,7 +995,7 @@ public class Phylogeny {
                 }
                 else {
                     node.setDistanceToParent( ( c.getDistanceToParent() >= 0.0 ? c.getDistanceToParent() : 0.0 )
-                                              + ( node.getDistanceToParent() >= 0.0 ? node.getDistanceToParent() : 0.0 ) );
+                            + ( node.getDistanceToParent() >= 0.0 ? node.getDistanceToParent() : 0.0 ) );
                 }
                 if ( c.getBranchDataDirectly() != null ) {
                     node.setBranchData( ( BranchData ) c.getBranchDataDirectly().copy() );
@@ -1164,7 +1188,7 @@ public class Phylogeny {
      * @return List node with the same taxonomy identifier
      */
     private List<PhylogenyNode> getNodeByTaxonomyID( final String taxonomyID, final List<PhylogenyNode> nodes ) {
-        final List<PhylogenyNode> retour = new ArrayList<PhylogenyNode>();
+        final List<PhylogenyNode> retour = new ArrayList<>();
         for( final PhylogenyNode node : nodes ) {
             if ( taxonomyID.equals( PhylogenyMethods.getTaxonomyIdentifier( node ) ) ) {
                 retour.add( node );
@@ -1182,7 +1206,7 @@ public class Phylogeny {
      * @return species contains in all leaf under the param node
      */
     private List<String> getSubNodeTaxonomy( final PhylogenyNode node ) {
-        final List<String> taxonomyList = new ArrayList<String>();
+        final List<String> taxonomyList = new ArrayList<>();
         final List<PhylogenyNode> childs = node.getAllExternalDescendants();
         String speciesId = null;
         for( final PhylogenyNode phylogenyNode : childs ) {
