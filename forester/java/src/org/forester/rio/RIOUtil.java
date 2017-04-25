@@ -2,18 +2,15 @@
 package org.forester.rio;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import javax.swing.JOptionPane;
-
-import org.forester.archaeopteryx.AptxUtil;
 import org.forester.datastructures.IntMatrix;
 import org.forester.io.parsers.IteratingPhylogenyParser;
 import org.forester.io.parsers.PhylogenyParser;
@@ -45,6 +42,15 @@ import org.forester.util.ForesterUtil;
 
 public final class RIOUtil {
 
+    public final static String STRIPPED_SPECIES_TREE_SUFFIX   = "_RIO_stripped_species_tree.xml";
+    public final static String ORTHO_OUTTABLE_SUFFIX          = "_RIO_orthologies.tsv";
+    public final static String ORTHO_OUTTABLE_WITH_MAP_SUFFIX = "_RIO_orthologies_ext_map.tsv";
+    public final static String OUT_MIN_DUP_GENE_TREE_SUFFIX   = "_RIO_gene_tree_min_dup_";
+    public final static String OUT_MED_DUP_GENE_TREE_SUFFIX   = "_RIO_gene_tree_med_dup_";
+    public final static String BEST_TREE_SUFFIX               = "_RIO_consensus_gene_tree_dup_";
+    public final static String ORTHOLOG_GROUPS_SUFFIX         = "_RIO_ortholog_groups.tsv";
+    public final static String LOGFILE_SUFFIX                 = "_RIO_log.tsv";
+
     public static final void executeAnalysis( final File gene_trees_file,
                                               final File species_tree_file,
                                               final File orthology_outtable,
@@ -65,7 +71,11 @@ public final class RIOUtil {
                                               final double ortholog_group_cutoff,
                                               final boolean perform_id_mapping,
                                               final File id_mapping_dir,
-                                              final String id_mapping_suffix ) {
+                                              final String id_mapping_suffix,
+                                              final boolean perform_gsdir_on_best_tree,
+                                              final File outdir,
+                                              final File best_trees_indir,
+                                              final String best_trees_suffix ) {
         try {
             final SortedMap<String, String> id_map;
             if ( perform_id_mapping ) {
@@ -131,53 +141,18 @@ public final class RIOUtil {
             else {
                 m = RIO.calculateOrthologTable( rio.getAnalyzedGeneTrees(), true );
             }
-            ////////////////////////////////////////////
-            ////////////////////////////////////////////
-            //TODO
-            final boolean perform_gsdir_on_best_tree = true;
-            final File best_trees_dir = new File( "best_trees" );
-            final String best_trees_suffix = ".xml";
             final GSDIR gsdir_for_best_tree;
             if ( perform_gsdir_on_best_tree ) {
-                final Phylogeny best_tree = obtainTree( best_trees_dir, gene_trees_file.getName(), best_trees_suffix );
-                final Phylogeny species_tree = SDIutil
-                        .parseSpeciesTree( best_tree, species_tree_file, false, true, TAXONOMY_EXTRACTION.NO );
-                PhylogenyMethods.deleteInternalNodesWithOnlyOneDescendent( species_tree );
-                best_tree.setRooted( true );
-                species_tree.setRooted( true );
-                if ( !best_tree.isCompletelyBinaryAllow3ChildrenAtRoot() ) {
-                    throw new IOException( "gene tree matching to ["
-                            + ForesterUtil.removeFileExtension( gene_trees_file.getName() )
-                            + "] is not completely binary" );
-                }
-                final PhylogenyNodeIterator it = best_tree.iteratorExternalForward();
-                while ( it.hasNext() ) {
-                    final PhylogenyNode n = it.next();
-                    final String name = n.getName().trim();
-                    if ( !ForesterUtil.isEmpty( name ) ) {
-                        try {
-                            ParserUtils.extractTaxonomyDataFromNodeName( n, TAXONOMY_EXTRACTION.AGGRESSIVE );
-                        }
-                        catch ( final PhyloXmlDataFormatException e ) {
-                            // Ignore.
-                        }
-                    }
-                }
-                gsdir_for_best_tree = new GSDIR( best_tree, species_tree, true, true, true );
-                final Phylogeny result_gene_tree = gsdir_for_best_tree.getMinDuplicationsSumGeneTree();
-                System.out.println( gsdir_for_best_tree.getMinDuplicationsSum() );
-                result_gene_tree.setRerootable( false );
-                PhylogenyMethods.orderAppearance( result_gene_tree.getRoot(),
-                                                  true,
-                                                  true,
-                                                  DESCENDANT_SORT_PRIORITY.NODE_NAME );
-                writeTree( result_gene_tree, new File( gene_trees_file.getName() + "____.xml" ), null, id_map );
+                gsdir_for_best_tree = analyzeConsensusTree( gene_trees_file,
+                                                            species_tree_file,
+                                                            outdir,
+                                                            best_trees_indir,
+                                                            id_map,
+                                                            best_trees_suffix );
             }
             else {
                 gsdir_for_best_tree = null;
             }
-            ////////////////////////////////////////////
-            ////////////////////////////////////////////
             final BasicDescriptiveStatistics stats = rio.getDuplicationsStatistics();
             if ( perform_id_mapping ) {
                 writeOrthologyTable( orthology_outtable, stats.getN(), m, !use_gene_trees_dir, id_map, true );
@@ -278,6 +253,13 @@ public final class RIOUtil {
                 log.print( "\t" );
                 log.print( Integer.toString( ortholog_groups_095 ) );
                 //
+                if ( true ) {
+                    log.print( "\t" );
+                    log.print( Integer.toString( gsdir_for_best_tree.getMinDuplicationsSum() ) );
+                    log.print( "\t" );
+                    log.print( df.format( median - gsdir_for_best_tree.getMinDuplicationsSum() ) );
+                }
+                //
                 log.print( "\t" );
                 if ( stats.getN() > 3 ) {
                     log.print( df.format( median ) );
@@ -348,6 +330,51 @@ public final class RIOUtil {
         catch ( final Error e ) {
             ForesterUtil.unexpectedFatalError( e );
         }
+    }
+
+    private final static GSDIR analyzeConsensusTree( final File gene_trees_file,
+                                                     final File species_tree_file,
+                                                     final File outdir,
+                                                     final File best_trees_indir,
+                                                     final SortedMap<String, String> id_map,
+                                                     final String best_trees_suffix )
+            throws IOException, FileNotFoundException, PhyloXmlDataFormatException, SDIException {
+        final File the_one = ForesterUtil.getMatchingFile( best_trees_indir,
+                                                           gene_trees_file.getName(),
+                                                           best_trees_suffix );
+        final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+        final Phylogeny best_tree = factory.create( the_one, PhyloXmlParser.createPhyloXmlParserXsdValidating() )[ 0 ];
+        final Phylogeny species_tree = SDIutil
+                .parseSpeciesTree( best_tree, species_tree_file, false, true, TAXONOMY_EXTRACTION.NO );
+        PhylogenyMethods.deleteInternalNodesWithOnlyOneDescendent( species_tree );
+        best_tree.setRooted( true );
+        species_tree.setRooted( true );
+        if ( !best_tree.isCompletelyBinaryAllow3ChildrenAtRoot() ) {
+            throw new IOException( "gene tree matching to ["
+                    + ForesterUtil.removeFileExtension( gene_trees_file.getName() ) + "] is not completely binary" );
+        }
+        final PhylogenyNodeIterator it = best_tree.iteratorExternalForward();
+        while ( it.hasNext() ) {
+            final PhylogenyNode n = it.next();
+            final String name = n.getName().trim();
+            if ( !ForesterUtil.isEmpty( name ) ) {
+                try {
+                    ParserUtils.extractTaxonomyDataFromNodeName( n, TAXONOMY_EXTRACTION.AGGRESSIVE );
+                }
+                catch ( final PhyloXmlDataFormatException e ) {
+                    // Ignore.
+                }
+            }
+        }
+        final GSDIR gsdir_for_best_tree = new GSDIR( best_tree, species_tree, true, true, true );
+        final Phylogeny result_gene_tree = gsdir_for_best_tree.getMinDuplicationsSumGeneTree();
+        result_gene_tree.setRerootable( false );
+        PhylogenyMethods.orderAppearance( result_gene_tree.getRoot(), true, true, DESCENDANT_SORT_PRIORITY.NODE_NAME );
+        final String outname = ForesterUtil.removeFileExtension( the_one.getName() );
+        final File outfile = new File( outdir.getCanonicalFile() + "/" + outname + RIOUtil.BEST_TREE_SUFFIX
+                + gsdir_for_best_tree.getMinDuplicationsSum() + ".xml" );
+        writeTree( result_gene_tree, outfile, null, id_map );
+        return gsdir_for_best_tree;
     }
 
     private static final void writeOrthologyTable( final File table_outfile,
@@ -588,12 +615,5 @@ public final class RIOUtil {
         final File the_one = ForesterUtil.getMatchingFile( dir, prefix, suffix );
         final BasicTable<String> t = BasicTableParser.parse( the_one, '\t' );
         return t.getColumnsAsMap( 0, 1 );
-    }
-
-    private final static Phylogeny obtainTree( final File dir, final String prefix, final String suffix )
-            throws IOException {
-        final File the_one = ForesterUtil.getMatchingFile( dir, prefix, suffix );
-        final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-        return factory.create( the_one, PhyloXmlParser.createPhyloXmlParserXsdValidating() )[ 0 ];
     }
 }

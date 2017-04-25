@@ -47,13 +47,6 @@ public class rio {
     final static private String E_MAIL                         = "phyloxml@gmail.com";
     final static private String WWW                            = "https://sites.google.com/site/cmzmasek/home/software/forester";
     final static private String HELP_OPTION_1                  = "help";
-    final static private String LOGFILE_SUFFIX                 = "_RIO_log.tsv";
-    final static private String STRIPPED_SPECIES_TREE_SUFFIX   = "_RIO_sst.xml";
-    final static private String ORTHO_OUTTABLE_SUFFIX          = "_RIO_orthologies.tsv";
-    final static private String ORTHO_OUTTABLE_WITH_MAP_SUFFIX = "_RIO_orthologies_ext_map.tsv";
-    final static private String OUT_MIN_DUP_GENE_TREE_SUFFIX   = "_RIO_gene_tree_min_dup_";
-    final static private String OUT_MED_DUP_GENE_TREE_SUFFIX   = "_RIO_gene_tree_med_dup_";
-    final static private String ORTHOLOG_GROUPS_SUFFIX         = "_RIO_ortholog_groups.tsv";
     final static private String HELP_OPTION_2                  = "h";
     final static private String GT_FIRST                       = "f";
     final static private String GT_LAST                        = "l";
@@ -63,7 +56,10 @@ public class rio {
     final static private String GENE_TREES_SUFFIX_OPTION       = "g";
     final static private String MAPPINGS_DIR_OPTION            = "m";
     final static private String MAPPINGS_SUFFIX_OPTION         = "ms";
+    final static private String CONSENSUS_TREES_DIR_OPTION     = "co";
+    final static private String CONSENSUS_TREES_SUFFIX_OPTION  = "cos";
     final static private String MAPPINGS_SUFFIX_DEFAULT        = ".nim";
+    final static private String CONSENSUS_TREE_SUFFIX_DEFAULT  = ".xml";
     final static private String ORTHOLOG_GROUPS_CUTOFF_OPTION  = "c";
     final static private String GENE_TREES_SUFFIX_DEFAULT      = ".mlt";
     final static private double ORTHOLOG_GROUPS_CUTOFF_DEFAULT = 0.5;
@@ -102,6 +98,8 @@ public class rio {
         allowed_options.add( ORTHOLOG_GROUPS_CUTOFF_OPTION );
         allowed_options.add( MAPPINGS_DIR_OPTION );
         allowed_options.add( MAPPINGS_SUFFIX_OPTION );
+        allowed_options.add( CONSENSUS_TREES_DIR_OPTION );
+        allowed_options.add( CONSENSUS_TREES_SUFFIX_OPTION );
         final String dissallowed_options = cla.validateAllowedOptionsAsString( allowed_options );
         if ( dissallowed_options.length() > 0 ) {
             ForesterUtil.fatalError( "unknown option(s): " + dissallowed_options );
@@ -325,6 +323,50 @@ public class rio {
         else {
             id_mapping_suffix = MAPPINGS_SUFFIX_DEFAULT;
         }
+        boolean perform_gsdir_on_best_tree;
+        final File best_trees_indir;
+        if ( cla.isOptionSet( CONSENSUS_TREES_DIR_OPTION ) ) {
+            best_trees_indir = new File( cla.getOptionValue( CONSENSUS_TREES_DIR_OPTION ) );
+            perform_gsdir_on_best_tree = true;
+            if ( !use_dir ) {
+                ForesterUtil
+                        .fatalError( "no consensus (\"best\") gene tree GSDIR analysis when operating on individual gene trees" );
+            }
+            if ( !best_trees_indir.exists() ) {
+                ForesterUtil.fatalError( "consensus (\"best\") gene tree directory \"" + best_trees_indir
+                        + "\" does not exist" );
+            }
+            if ( !best_trees_indir.isDirectory() ) {
+                ForesterUtil.fatalError( "consensus (\"best\") gene tree directory \"" + best_trees_indir
+                        + "\" is not a directory" );
+            }
+            if ( best_trees_indir.listFiles().length < 1 ) {
+                ForesterUtil
+                        .fatalError( "consensus (\"best\") gene tree directory \"" + best_trees_indir + "\" is empty" );
+            }
+        }
+        else {
+            best_trees_indir = null;
+            perform_gsdir_on_best_tree = false;
+        }
+        final String best_trees_suffix;
+        if ( cla.isOptionSet( CONSENSUS_TREES_SUFFIX_OPTION ) ) {
+            if ( !use_dir ) {
+                ForesterUtil
+                        .fatalError( "no consensus (\"best\") gene tree suffix option when operating on individual gene trees" );
+            }
+            if ( !perform_gsdir_on_best_tree ) {
+                ForesterUtil.fatalError( "no consensus (\"best\") gene tree directory given" );
+            }
+            if ( !cla.isOptionHasAValue( CONSENSUS_TREES_SUFFIX_OPTION ) ) {
+                ForesterUtil.fatalError( "no value for -" + CONSENSUS_TREES_SUFFIX_OPTION );
+            }
+            best_trees_suffix = cla.getOptionValueAsCleanString( CONSENSUS_TREES_SUFFIX_OPTION );
+        }
+        else {
+            best_trees_suffix = CONSENSUS_TREE_SUFFIX_DEFAULT;
+        }
+        ////////////////////////////////
         ForesterUtil.fatalErrorIfFileNotReadable( species_tree_file );
         if ( !use_dir && orthology_outtable.exists() ) {
             ForesterUtil.fatalError( "\"" + orthology_outtable + "\" already exists" );
@@ -351,6 +393,15 @@ public class rio {
                 ForesterUtil.fatalError( e.getLocalizedMessage() );
             }
             System.out.println( "Id mappings suffix                  :\t" + id_mapping_suffix );
+        }
+        if ( perform_gsdir_on_best_tree ) {
+            try {
+                System.out.println( "Consensus (\"best\") gene tree dir    :\t" + best_trees_indir.getCanonicalPath() );
+            }
+            catch ( IOException e ) {
+                ForesterUtil.fatalError( e.getLocalizedMessage() );
+            }
+            System.out.println( "Consensus (\"best\") gene tree suffix :\t" + best_trees_suffix );
         }
         if ( use_dir ) {
             System.out.println( "Out-dir                             :\t" + outdir );
@@ -520,8 +571,10 @@ public class rio {
                 log.print( "\t" );
                 log.print( "0.95 O GROUPS" );
                 log.print( "\t" );
-                if ( true ) { //TODO
+                if ( perform_gsdir_on_best_tree ) {
                     log.print( "BEST TREE DUP" );
+                    log.print( "\t" );
+                    log.print( "MEDIAN DUP - BEST TREE DUP" );
                     log.print( "\t" );
                 }
                 log.print( "MEDIAN DUP" );
@@ -556,22 +609,23 @@ public class rio {
                     RIOUtil.executeAnalysis( gf,
                                              species_tree_file,
                                              new File( outdir.getCanonicalFile() + "/" + outname
-                                                     + ORTHO_OUTTABLE_SUFFIX ),
+                                                     + RIOUtil.ORTHO_OUTTABLE_SUFFIX ),
                                              new File( outdir.getCanonicalFile() + "/" + outname
-                                                     + ORTHO_OUTTABLE_WITH_MAP_SUFFIX ),
+                                                     + RIOUtil.ORTHO_OUTTABLE_WITH_MAP_SUFFIX ),
                                              new File( outdir.getCanonicalFile() + "/" + outname
-                                                     + ORTHOLOG_GROUPS_SUFFIX ),
-                                             new File( outdir.getCanonicalFile() + "/" + outname + LOGFILE_SUFFIX ),
+                                                     + RIOUtil.ORTHOLOG_GROUPS_SUFFIX ),
+                                             new File( outdir.getCanonicalFile() + "/" + outname
+                                                     + RIOUtil.LOGFILE_SUFFIX ),
                                              outgroup,
                                              rerooting,
                                              gt_first,
                                              gt_last,
                                              new File( outdir.getCanonicalFile() + "/" + outname
-                                                     + STRIPPED_SPECIES_TREE_SUFFIX ),
+                                                     + RIOUtil.STRIPPED_SPECIES_TREE_SUFFIX ),
                                              new File( outdir.getCanonicalFile() + "/" + outname
-                                                     + OUT_MIN_DUP_GENE_TREE_SUFFIX ),
+                                                     + RIOUtil.OUT_MIN_DUP_GENE_TREE_SUFFIX ),
                                              new File( outdir.getCanonicalFile() + "/" + outname
-                                                     + OUT_MED_DUP_GENE_TREE_SUFFIX ),
+                                                     + RIOUtil.OUT_MED_DUP_GENE_TREE_SUFFIX ),
                                              true,
                                              algorithm,
                                              true,
@@ -579,7 +633,11 @@ public class rio {
                                              ortholog_group_cutoff,
                                              perform_id_mapping,
                                              id_mapping_dir,
-                                             id_mapping_suffix );
+                                             id_mapping_suffix,
+                                             perform_gsdir_on_best_tree,
+                                             outdir,
+                                             best_trees_indir,
+                                             best_trees_suffix );
                 }
                 catch ( IOException e ) {
                     ForesterUtil.fatalError( PRG_NAME, e.getLocalizedMessage() );
@@ -590,29 +648,30 @@ public class rio {
             System.out.println();
         }
         else {
-            String outname = orthology_outtable.toString();
-            if ( outname.indexOf( "." ) > 0 ) {
-                outname = outname.substring( 0, outname.lastIndexOf( "." ) );
-            }
+            String outname = ForesterUtil.removeFileExtension( orthology_outtable.toString() );
             RIOUtil.executeAnalysis( gene_trees_file,
                                      species_tree_file,
                                      orthology_outtable,
                                      null,
-                                     new File( outname + ORTHOLOG_GROUPS_SUFFIX ),
+                                     new File( outname + RIOUtil.ORTHOLOG_GROUPS_SUFFIX ),
                                      logfile,
                                      outgroup,
                                      rerooting,
                                      gt_first,
                                      gt_last,
-                                     new File( outname + STRIPPED_SPECIES_TREE_SUFFIX ),
-                                     new File( outname + OUT_MIN_DUP_GENE_TREE_SUFFIX ),
-                                     new File( outname + OUT_MED_DUP_GENE_TREE_SUFFIX ),
+                                     new File( outname + RIOUtil.STRIPPED_SPECIES_TREE_SUFFIX ),
+                                     new File( outname + RIOUtil.OUT_MIN_DUP_GENE_TREE_SUFFIX ),
+                                     new File( outname + RIOUtil.OUT_MED_DUP_GENE_TREE_SUFFIX ),
                                      algorithm == ALGORITHM.GSDIR,
                                      algorithm,
                                      false,
                                      null,
                                      ortholog_group_cutoff,
                                      false,
+                                     null,
+                                     null,
+                                     false,
+                                     null,
                                      null,
                                      null );
         }
@@ -661,6 +720,12 @@ public class rio {
         System.out.println( "  -" + MAPPINGS_DIR_OPTION + "=<dir>       : directory for id mapping files" );
         System.out.println( "  -" + MAPPINGS_SUFFIX_OPTION + "=<suffix>   : suffix for id mapping files (default: "
                 + MAPPINGS_SUFFIX_DEFAULT + ")" );
+        System.out.println( "  -" + CONSENSUS_TREES_DIR_OPTION
+                + "=<dir>      : directory with consenus (\"best\") gene trees to be analyzed with GSDIR" );
+        System.out.println( "  -" + CONSENSUS_TREES_SUFFIX_OPTION
+                + "=<suffix>  : suffix for consenus (\"best\") gene trees (default: " + CONSENSUS_TREE_SUFFIX_DEFAULT
+                + ")" );
+        ///
         System.out.println();
         System.out.println( " Formats" );
         System.out
@@ -678,6 +743,8 @@ public class rio {
         System.out.println( "  rio -g=.xml gene_trees_dir species.xml out_dir log.tsv" );
         System.out.println( "  rio -g=.mlt -m=id_maps_dir -ms=.nim -c=0.8 gene_trees_dir species.xml out_dir log.tsv" );
         System.out.println( "  rio -m=id_maps_dir -c=0.8 gene_trees_dir species.xml out_dir log.tsv" );
+        System.out
+                .println( "  rio -m=id_maps_dir -co=consensus_dir -cos=.xml -c=0.8 gene_trees_dir species.xml out_dir log.tsv" );
         System.out.println();
         System.exit( -1 );
     }
