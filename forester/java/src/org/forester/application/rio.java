@@ -366,7 +366,6 @@ public class rio {
         else {
             best_trees_suffix = CONSENSUS_TREE_SUFFIX_DEFAULT;
         }
-        ////////////////////////////////
         ForesterUtil.fatalErrorIfFileNotReadable( species_tree_file );
         if ( !use_dir && orthology_outtable.exists() ) {
             ForesterUtil.fatalError( "\"" + orthology_outtable + "\" already exists" );
@@ -396,12 +395,12 @@ public class rio {
         }
         if ( perform_gsdir_on_best_tree ) {
             try {
-                System.out.println( "Consensus (\"best\") gene tree dir    :\t" + best_trees_indir.getCanonicalPath() );
+                System.out.println( "Consensus (\"best\") gene trees in-dir:\t" + best_trees_indir.getCanonicalPath() );
             }
             catch ( IOException e ) {
                 ForesterUtil.fatalError( e.getLocalizedMessage() );
             }
-            System.out.println( "Consensus (\"best\") gene tree suffix :\t" + best_trees_suffix );
+            System.out.println( "Consensus (\"best\") gene trees suffix:\t" + best_trees_suffix );
         }
         if ( use_dir ) {
             System.out.println( "Out-dir                             :\t" + outdir );
@@ -517,6 +516,26 @@ public class rio {
                 log.print( "\t" );
                 log.print( species_tree_file.getCanonicalPath() );
                 log.println();
+                if ( perform_id_mapping ) {
+                    log.print( "# Id mappings in-dir" );
+                    log.print( "\t" );
+                    log.print( id_mapping_dir.getCanonicalPath() );
+                    log.println();
+                    log.print( "# Id mappings suffix" );
+                    log.print( "\t" );
+                    log.print( id_mapping_suffix );
+                    log.println();
+                }
+                if ( perform_gsdir_on_best_tree ) {
+                    log.print( "# Consensus (\"best\") gene tree dir" );
+                    log.print( "\t" );
+                    log.print( best_trees_indir.getCanonicalPath() );
+                    log.println();
+                    log.print( "# Consensus (\"best\") gene tree suffix" );
+                    log.print( "\t" );
+                    log.print( best_trees_suffix );
+                    log.println();
+                }
                 log.print( "# Out-dir" );
                 log.print( "\t" );
                 log.print( outdir.getCanonicalPath() );
@@ -725,7 +744,6 @@ public class rio {
         System.out.println( "  -" + CONSENSUS_TREES_SUFFIX_OPTION
                 + "=<suffix>  : suffix for consenus (\"best\") gene trees (default: " + CONSENSUS_TREE_SUFFIX_DEFAULT
                 + ")" );
-        ///
         System.out.println();
         System.out.println( " Formats" );
         System.out
