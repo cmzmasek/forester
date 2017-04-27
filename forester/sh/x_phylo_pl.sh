@@ -7,7 +7,7 @@ do
         then
             name=${BASH_REMATCH[1]}
             echo $name
-            perl /home/zma/git/forester/forester/perl/phylo_pl.pl -B1000Wq@1S9 $i ${name}_mafft_1000_g_05_20_tree
+            perl /home/zma/git/forester/forester/perl/phylo_pl.pl -B1000Wq@1S9X $i ${name}_mafft_1000_g_05_20_tree
             rc=$?
             if [[ $rc != 0 ]]
             then

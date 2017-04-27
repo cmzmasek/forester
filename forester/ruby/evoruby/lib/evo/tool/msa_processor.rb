@@ -453,9 +453,9 @@ module Evoruby
               w.clean( @clean )
               w.set_max_name_length( @name_length )
             end
-            msa_hash.each do |os, msa|
+            msa_hash.each do |os, m|
               my_os = os.gsub(' ', '_').gsub('/', '_').gsub('(', '_').gsub(')', '_')
-              io.write_to_file( msa, output + '_' + my_os, w )
+              io.write_to_file( m, output + '_' + my_os, w )
             end
 
             Util.print_message( PRG_NAME, "wrote " + msa_hash.length.to_s + " files"  )
@@ -463,7 +463,7 @@ module Evoruby
           rescue Exception => e
             Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
           end
-          
+
         elsif ( @split > 0 )
           begin
             msas = msa.split( @split, true )

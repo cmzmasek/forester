@@ -201,29 +201,29 @@ our $FASTME_VERSION            = "2.0";
 
 # BIONJ:
 # -----------------------------------------------------
-our $BIONJ                    = "";
-our $BIONJ_VERSION            = "";
+our $BIONJ                     = "";
+our $BIONJ_VERSION             = "";
 
 # WEIGHBOR:
 # -----------------------------------------------------
-our $WEIGHBOR                 = "";
-our $WEIGHBOR_VERSION         = "";
+our $WEIGHBOR                  = "";
+our $WEIGHBOR_VERSION          = "";
 
 # PHYML:
 # -----------------------------------------------------
-our $PHYML                    = $SOFTWARE_DIR."PHYLO/PhyML/PhyML-3.1/PhyML-3.1/PhyML-3.1_linux64";
-our $PHYML_VERSION            = "3.1";
+our $PHYML                     = $SOFTWARE_DIR."PHYLO/PhyML/PhyML-3.1/PhyML-3.1/PhyML-3.1_linux64";
+our $PHYML_VERSION             = "3.1";
 
 # RAXML:
 # -----------------------------------------------------
-our $RAXML                    = $SOFTWARE_DIR."PHYLO/RAxML/20161215/standard-RAxML-master/raxmlHPC-AVX";
-our $RAXML_VERSION            = "8.2.9";
+our $RAXML                     = $SOFTWARE_DIR."PHYLO/RAxML/20161215/standard-RAxML-master/raxmlHPC-AVX";
+our $RAXML_VERSION             = "8.2.9";
 
 
 # forester.jar. This jar file is currently available at: https://sites.google.com/site/cmzmasek/home/software/forester 
 # --------------------------------------------------------------------------------------------------------------------
 
-our $FORESTER_JAR             = "/home/zma/git/forester/forester/java/forester.jar";
+our $FORESTER_JAR              = "/home/zma/git/forester/forester/java/forester.jar";
 
 
 
@@ -244,7 +244,7 @@ our $FORESTER_JAR             = "/home/zma/git/forester/forester/java/forester.j
 
 # Tool from forester.jar to transfer support values:
 # -------------------------------------------------
-our $SUPPORT_TRANSFER          = $JAVA." -cp $FORESTER_JAR org.forester.application.support_transfer";
+our $SUPPORT_TRANSFER            = $JAVA." -cp $FORESTER_JAR org.forester.application.support_transfer";
 
 
 
@@ -995,8 +995,8 @@ Y
 } ## executeProtpars
 
 
-
-# "Model of substitution" order for DQO TREE-PUZZLE 5.0:
+# "Model of substitution" order for TREE-PUZZLE 5.2:
+# For amino acids:
 # Auto
 # m -> Dayhoff (Dayhoff et al. 1978)
 # m -> JTT (Jones et al. 1992)
@@ -1005,15 +1005,33 @@ Y
 # m -> VT (Mueller-Vingron 2000) 
 # m -> WAG (Whelan-Goldman 2000)
 # m -> Auto
+#
+# For nucleotides:
+# HKY (Hasegawa et al. 1985)
+# m -> TN (Tamura-Nei 1993)
+# m -> GTR (e.g. Lanave et al. 1980)
+# m -> SH (Schoeniger-von Haeseler 1994)
+# m -> HKY (Hasegawa et al. 1985)
+#
 # One argument:
-# matrix option: 0 = JTT; 2 = BLOSUM 62; 3 = mtREV24;
-# 5 = VT; 6 = WAG; 7 = auto; PAM otherwise
-# Last modified: 07/07/01
+# matrix option:
+# 0 = JTT
+# 2 = BLOSUM 62
+# 3 = mtREV24
+# 5 = VT
+# 6 = WAG
+# 7 = auto
+# 9 = HKY [na]
+# 10 = TN [na]
+# 11 = GTR [na]
+# 12 = SH [na]
+#     PAM otherwise
+# Last modified: 17/04/26
 sub setModelForPuzzle {
     my $matrix_option = $_[ 0 ];
     my $matr          = "";
 
-    if ( $matrix_option == 0 ) { # JTT
+    if ( $matrix_option == 0 || $matrix_option == 11 ) { # JTT or GTR
         $matr = "
 m
 m";
@@ -1025,7 +1043,7 @@ m
 m
 m";   
     }
-    elsif ( $matrix_option == 3 ) { # mtREV24
+    elsif ( $matrix_option == 3 || $matrix_option == 12) { # mtREV24 or SH
         $matr = "
 m
 m
@@ -1048,9 +1066,13 @@ m
 m
 m";
     }
-    elsif ( $matrix_option == 7 ) { # auto
+    elsif ( $matrix_option == 7 || $matrix_option == 9 ) { # auto or HKY
         $matr = "";
-    }          
+    } 
+    elsif ( $matrix_option == 10 ) { # TN
+        $matr = "
+m"       
+    }         
     else { # PAM
         $matr = "
 m"       

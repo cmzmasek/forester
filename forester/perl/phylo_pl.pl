@@ -58,7 +58,7 @@ use lib $FindBin::Bin;
 use forester;
 
 my $VERSION                = "1.0.1";
-my $LAST_MODIFIED          = "2017/02/07";
+my $LAST_MODIFIED          = "2017/04/26";
 
 my $RAXML_MODEL_BASE       = "PROTGAMMA";
 my $RAXML_ALGORITHM        = "a";
@@ -70,10 +70,14 @@ my $matrix                 = 5;   # 0 = JTT
                                   # 1 = PAM 
                                   # 2 = BLOSUM 62
                                   # 3 = mtREV24
-                                  # 5 = VT - default 
+                                  # 5 = VT 
                                   # 6 = WAG 
                                   # 7 = auto in puzzle
                                   # 8 = DCMut in PHYML, VT in TREE-PUZZLE
+                                  # 9 = HKY [na]
+                                  # 10 = TN [na]
+                                  # 11 = GTR [na]
+                                  # 12 = SH [na]
 my $rate_heterogeneity     = 0;   # 0 = Uniform rate (default)
                                   # 1 = 8 Gamma distributed rates
                                   # 2 = Two rates (1 invariable + 1 variable)
@@ -250,6 +254,18 @@ if ( $ARGV[ 0 ] =~ /^-.+/ ) {
     }
     if ( $options =~ /D/ ) {
         $matrix = 8;      # DCMut in PHYML and RAXML, VT in PUZZLE
+    }
+    if ( $options =~ /H/ ) {
+        $matrix = 9;      # HKY
+    }
+    if ( $options =~ /T/ ) {
+        $matrix = 10;      # TN
+    }
+    if ( $options =~ /Z/ ) {
+        $matrix = 11;      # GTR 
+    }
+    if ( $options =~ /C/ ) {
+        $matrix = 12;      # SH
     }
     if ( $options =~ /S(\d+)/ ) {
         $seed = $1; 
@@ -558,6 +574,21 @@ elsif ( $matrix == 7 ) {
 elsif ( $matrix == 8 ) {
     $log = $log."DCMut (Kosial and Goldman, 2005) in PHYML and RAxML, VT in TREE-PUZZLE\n";
 }
+
+elsif ( $matrix == 9 ) {
+    $log = $log."HKY (Hasegawa et al. 1985) in TREE-PUZZLE\n";
+}
+elsif ( $matrix == 10 ) {
+    $log = $log."TN (Tamura-Nei 1993) in TREE-PUZZLE\n";
+}
+elsif ( $matrix == 11 ) {
+    $log = $log."GTR (e.g. Lanave et al. 1980)in TREE-PUZZLE\n";
+}
+elsif ( $matrix == 12 ) {
+    $log = $log."SH (Schoeniger-von Haeseler 1994) in TREE-PUZZLE\n";
+}
+
+
 else {
     &dieWithUnexpectedError( "Unknown model: matrix=$matrix" );
 }
@@ -1700,7 +1731,11 @@ https://sites.google.com/site/cmzmasek/home/software/forester
   W  : Use WAG matrix (Whelan-Goldman 2000) in TREE-PUZZLE and/or PHYML, RAXML, default: VT.
   P  : Use PAM matrix (Dayhoff et al. 1978) in TREE-PUZZLE and/or PHYML, RAXML, default: VT.
   D  : Use DCMut matrix (Kosial and Goldman, 2005) in PHYML, RAXML, VT in TREE-PUZZLE.
-  A  : Let TREE-PUZZLE choose which matrix to use, default: VT
+  A  : Let TREE-PUZZLE choose which matrix to use, default: VT.
+  H  : Use HKY (Hasegawa et al. 1985) in TREE-PUZZLE [for nucleic acids]
+  T  : Use TN (Tamura-Nei 1993) in TREE-PUZZLE [for nucleic acids]
+  Z  : Use GTR (e.g. Lanave et al. 1980) in TREE-PUZZLE [for nucleic acids]
+  C  : Use SH (Schoeniger-von Haeseler 1994) in TREE-PUZZLE [for nucleic acids]
   E  : Exact parameter estimates in TREE-PUZZLE, default: Approximate.
        Model of rate heterogeneity in TREE-PUZZLE (default: Uniform rate):
   g  : 8 Gamma distributed rates
