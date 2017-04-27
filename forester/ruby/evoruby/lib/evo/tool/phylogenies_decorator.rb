@@ -14,31 +14,33 @@ require 'lib/evo/util/constants'
 require 'lib/evo/util/util'
 require 'lib/evo/util/command_line_arguments'
 require 'date'
+require 'fileutils'
 
 module Evoruby
   class PhylogeniesDecorator
 
     DECORATOR_OPTIONS_SEQ_NAMES = '-p -t -mp -or'
-    DECORATOR_OPTIONS_DOMAINS = '-p -t'
-    IDS_MAPFILE_SUFFIX        = '.nim'
-    DOMAINS_MAPFILE_SUFFIX    = '.dff'
-    SLEEP_TIME                = 0.01
-    REMOVE_NI                 = true
+    DECORATOR_OPTIONS_DOMAINS   = '-p -t'
+    IDS_MAPFILE_SUFFIX          = '.nim'
+    DOMAINS_MAPFILE_SUFFIX      = '.dff'
+    SLEEP_TIME                  = 0.01
+    REMOVE_NI                   = true
     TMP_FILE_1                  = '___PD1___'
     TMP_FILE_2                  = '___PD2___'
-    LOG_FILE                  = '00_phylogenies_decorator.log'
-    FORESTER_HOME             = ENV[Constants::FORESTER_HOME_ENV_VARIABLE]
-    JAVA_HOME                 = ENV[Constants::JAVA_HOME_ENV_VARIABLE]
+    LOG_FILE                    = '00_phylogenies_decorator.log'
+    FORESTER_HOME               = ENV[Constants::FORESTER_HOME_ENV_VARIABLE]
+    JAVA_HOME                   = ENV[Constants::JAVA_HOME_ENV_VARIABLE]
 
     PRG_NAME       = "phylogenies_decorator"
-    PRG_DATE       = "170329"
+    PRG_DATE       = "170427"
     PRG_DESC       = "decoration of phylogenies with sequence/species names and domain architectures"
-    PRG_VERSION    = "1.02"
+    PRG_VERSION    = "1.03"
     WWW            = "https://sites.google.com/site/cmzmasek/home/software/forester"
 
     HELP_OPTION_1                           = "help"
     HELP_OPTION_2                           = "h"
     NO_DOMAINS_OPTION                       = 'nd'
+    NO_SEQS_OPTION                          = 'ns'
     EXTRACT_BRACKETED_TAXONOMIC_CODE_OPTION = 'tc'
 
     NL = Constants::LINE_DELIMITER
@@ -91,6 +93,7 @@ module Evoruby
 
       allowed_opts = Array.new
       allowed_opts.push(NO_DOMAINS_OPTION)
+      allowed_opts.push(NO_SEQS_OPTION)
       allowed_opts.push(EXTRACT_BRACKETED_TAXONOMIC_CODE_OPTION)
 
       disallowed = cla.validate_allowed_options_as_str( allowed_opts )
@@ -103,6 +106,11 @@ module Evoruby
       no_domains = false
       if cla.is_option_set?(NO_DOMAINS_OPTION)
         no_domains = true
+      end
+
+      no_seqs_files = false
+      if cla.is_option_set?(NO_SEQS_OPTION)
+        no_seqs_files = true
       end
 
       extr_bracketed_tc = false
@@ -202,14 +210,16 @@ module Evoruby
           Util.print_message( PRG_NAME, "Ids mapfile: " + ids_mapfile_name )
           log << "Ids mapfile: " + ids_mapfile_name + NL
 
-          seqs_file_name = get_seq_file( files, phylogeny_id )
-          begin
-            Util.check_file_for_readability( seqs_file_name  )
-          rescue IOError
-            Util.fatal_error( PRG_NAME, 'failed to read from [#{seqs_file_name }]: ' + $! )
+          unless no_seqs_files
+            seqs_file_name = get_seq_file( files, phylogeny_id )
+            begin
+              Util.check_file_for_readability( seqs_file_name  )
+            rescue IOError
+              Util.fatal_error( PRG_NAME, 'failed to read from [#{seqs_file_name }]: ' + $! )
+            end
+            Util.print_message( PRG_NAME, "Seq file: " + seqs_file_name )
+            log << "Seq file: " + seqs_file_name + NL
           end
-          Util.print_message( PRG_NAME, "Seq file: " + seqs_file_name )
-          log << "Seq file: " + seqs_file_name + NL
 
           unless no_domains
             domains_mapfile_name = get_file( files, phylogeny_id, DOMAINS_MAPFILE_SUFFIX )
@@ -222,14 +232,18 @@ module Evoruby
             log << "Domains file: " + domains_mapfile_name + NL
           end
 
-          cmd = decorator +
-          ' -t -p -f=m ' + phylogeny_file + ' ' +
-          seqs_file_name  + ' ' + TMP_FILE_1
-          puts cmd
-          begin
-            execute_cmd( cmd, log )
-          rescue Error
-            Util.fatal_error( PRG_NAME, 'error: ' + $! )
+          if no_seqs_files
+            FileUtils.cp(phylogeny_file, TMP_FILE_1)
+          else
+            cmd = decorator +
+            ' -t -p -f=m ' + phylogeny_file + ' ' +
+            seqs_file_name  + ' ' + TMP_FILE_1
+            puts cmd
+            begin
+              execute_cmd( cmd, log )
+            rescue Error
+              Util.fatal_error( PRG_NAME, 'error: ' + $! )
+            end
           end
 
           unless no_domains
@@ -346,9 +360,11 @@ module Evoruby
       puts "                                 " + "domain architectures: .dff"
       puts
       puts "   options: -" + NO_DOMAINS_OPTION  + ": to not add domain architecture information (.dff file)"
+      puts "            -" + NO_SEQS_OPTION   + ": to not add molecular sequence information (_ni.fasta file)"
       puts "            -" + EXTRACT_BRACKETED_TAXONOMIC_CODE_OPTION  + ": to extract bracketed taxonomic codes, e.g. [NEMVE]"
       puts
-      puts "Example: " + PRG_NAME + ".rb .xml _d.xml"
+      puts "Examples: " + PRG_NAME + ".rb .xml _d.xml"
+      puts "          " + PRG_NAME + ".rb -#{NO_DOMAINS_OPTION} -#{NO_SEQS_OPTION} .xml _d.xml"
       puts
     end
   end # class PhylogenyiesDecorator
