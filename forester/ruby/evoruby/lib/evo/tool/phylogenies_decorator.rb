@@ -386,7 +386,7 @@ module Evoruby
       puts "   options: -" + NO_DOMAINS_OPTION  + ": to not add domain architecture information (.dff file)"
       puts "            -" + NO_SEQS_OPTION   + ": to not add molecular sequence information (_ni.fasta file)"
       puts "            -" + EXTRACT_BRACKETED_TAXONOMIC_CODE_OPTION  + ": to extract bracketed taxonomic codes, e.g. [NEMVE]"
-      puts "            -" + VERBOSE_OPTION  + ": verbose"
+      puts "            -" + VERBOSE_OPTION  + ":  verbose"
       puts
       puts "Examples: " + PRG_NAME + ".rb .xml _d.xml"
       puts "          " + PRG_NAME + ".rb -#{NO_DOMAINS_OPTION} -#{NO_SEQS_OPTION} .xml _d.xml"
