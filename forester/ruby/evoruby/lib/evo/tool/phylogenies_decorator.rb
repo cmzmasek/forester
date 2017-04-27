@@ -34,13 +34,14 @@ module Evoruby
     PRG_NAME       = "phylogenies_decorator"
     PRG_DATE       = "170427"
     PRG_DESC       = "decoration of phylogenies with sequence/species names and domain architectures"
-    PRG_VERSION    = "1.03"
+    PRG_VERSION    = "1.04"
     WWW            = "https://sites.google.com/site/cmzmasek/home/software/forester"
 
     HELP_OPTION_1                           = "help"
     HELP_OPTION_2                           = "h"
     NO_DOMAINS_OPTION                       = 'nd'
     NO_SEQS_OPTION                          = 'ns'
+    VERBOSE_OPTION                          = 'v'
     EXTRACT_BRACKETED_TAXONOMIC_CODE_OPTION = 'tc'
 
     NL = Constants::LINE_DELIMITER
@@ -95,6 +96,7 @@ module Evoruby
       allowed_opts.push(NO_DOMAINS_OPTION)
       allowed_opts.push(NO_SEQS_OPTION)
       allowed_opts.push(EXTRACT_BRACKETED_TAXONOMIC_CODE_OPTION)
+      allowed_opts.push(VERBOSE_OPTION)
 
       disallowed = cla.validate_allowed_options_as_str( allowed_opts )
       if ( disallowed.length > 0 )
@@ -118,6 +120,11 @@ module Evoruby
         extr_bracketed_tc = true
       end
 
+      verbose = false
+      if cla.is_option_set?(VERBOSE_OPTION)
+        verbose = true
+      end
+
       if File.exist?( LOG_FILE )
         Util.fatal_error( PRG_NAME, 'logfile [' + LOG_FILE + '] already exists' )
       end
@@ -131,12 +138,9 @@ module Evoruby
       log << "Program              : " + PRG_NAME + NL
       log << "Version              : " + PRG_VERSION + NL
       log << "Program date         : " + PRG_DATE + NL
-      log << "No domains           : " + no_domains.to_s + NL
-      log << "Extract taxo codes   : " + extr_bracketed_tc.to_s + NL
-      log << "Options for seq names: " + DECORATOR_OPTIONS_SEQ_NAMES + NL
-      log << "Options for domains  : " + DECORATOR_OPTIONS_DOMAINS + NL
-      log << "FORESTER_HOME        : " + FORESTER_HOME + NL
-      log << "JAVA_HOME            : " + JAVA_HOME + NL + NL
+      log << "No domains data      : " + no_domains.to_s + NL
+      log << "No mol seq data      : " + no_seqs_files.to_s + NL
+      log << "Extract tax codes    : " + extr_bracketed_tc.to_s + NL
       log << "Date/time: " + now.to_s + NL
       log << "Directory: " + Dir.getwd  + NL + NL
 
@@ -185,6 +189,9 @@ module Evoruby
             next
           end
 
+          if verbose
+            puts
+          end
           Util.print_message( PRG_NAME, counter.to_s + ': ' + phylogeny_file + ' -> ' +  outfile )
           log << counter.to_s + ': ' + phylogeny_file + ' -> ' +  outfile + NL
 
@@ -192,8 +199,9 @@ module Evoruby
           if  phylogeny_id == nil || phylogeny_id.size < 1
             Util.fatal_error( PRG_NAME, 'could not get id from ' + phylogeny_file.to_s )
           end
-          puts
-          Util.print_message( PRG_NAME, "Id: " + phylogeny_id )
+          if verbose
+            Util.print_message( PRG_NAME, "Id: " + phylogeny_id )
+          end
           log << "Id: " + phylogeny_id + NL
 
           ids_mapfile_name = nil
@@ -207,7 +215,9 @@ module Evoruby
           rescue IOError
             Util.fatal_error( PRG_NAME, 'failed to read from [#{ids_mapfile_name}]: ' + $! )
           end
-          Util.print_message( PRG_NAME, "Ids mapfile: " + ids_mapfile_name )
+          if verbose
+            Util.print_message( PRG_NAME, "Ids mapfile: " + ids_mapfile_name )
+          end
           log << "Ids mapfile: " + ids_mapfile_name + NL
 
           unless no_seqs_files
@@ -217,7 +227,9 @@ module Evoruby
             rescue IOError
               Util.fatal_error( PRG_NAME, 'failed to read from [#{seqs_file_name }]: ' + $! )
             end
-            Util.print_message( PRG_NAME, "Seq file: " + seqs_file_name )
+            if verbose
+              Util.print_message( PRG_NAME, "Seq file: " + seqs_file_name )
+            end
             log << "Seq file: " + seqs_file_name + NL
           end
 
@@ -228,7 +240,9 @@ module Evoruby
             rescue IOError
               Util.fatal_error( PRG_NAME, 'failed to read from [#{domains_mapfile_name}]: ' + $! )
             end
-            Util.print_message( PRG_NAME, "Domains file: " + domains_mapfile_name )
+            if verbose
+              Util.print_message( PRG_NAME, "Domains file: " + domains_mapfile_name )
+            end
             log << "Domains file: " + domains_mapfile_name + NL
           end
 
@@ -238,7 +252,9 @@ module Evoruby
             cmd = decorator +
             ' -t -p -f=m ' + phylogeny_file + ' ' +
             seqs_file_name  + ' ' + TMP_FILE_1
-            puts cmd
+            if verbose
+              puts cmd
+            end
             begin
               execute_cmd( cmd, log )
             rescue Error
@@ -250,7 +266,9 @@ module Evoruby
             cmd = decorator + ' ' + DECORATOR_OPTIONS_DOMAINS + ' ' +
             '-f=d ' + TMP_FILE_1 + ' ' +
             domains_mapfile_name + ' ' + TMP_FILE_2
-            puts cmd
+            if verbose
+              puts cmd
+            end
             begin
               execute_cmd( cmd, log )
             rescue Error
@@ -266,7 +284,9 @@ module Evoruby
           if no_domains
             cmd = decorator + ' ' + opts + ' -f=n ' + TMP_FILE_1 + ' ' +
             ids_mapfile_name + ' ' + outfile
-            puts cmd
+            if verbose
+              puts cmd
+            end
             begin
               execute_cmd( cmd, log )
             rescue Error
@@ -276,7 +296,9 @@ module Evoruby
           else
             cmd = decorator + ' ' + opts + ' -f=n ' + TMP_FILE_2 + ' ' +
             ids_mapfile_name + ' ' + outfile
-            puts cmd
+            if verbose
+              puts cmd
+            end
             begin
               execute_cmd( cmd, log )
             rescue Error
@@ -290,7 +312,9 @@ module Evoruby
       open( LOG_FILE, 'w' ) do | f |
         f.write( log )
       end
-      puts
+      if verbose
+        puts
+      end
       Util.print_message( PRG_NAME, 'OK' )
       puts
     end # def run
@@ -351,7 +375,7 @@ module Evoruby
     end
 
     def print_help()
-      puts 'Usage:'
+      puts "Usage:"
       puts
       puts "   " + PRG_NAME + ".rb <suffix of in-trees to be decorated> <suffix for decorated out-trees> "
       puts
@@ -362,6 +386,7 @@ module Evoruby
       puts "   options: -" + NO_DOMAINS_OPTION  + ": to not add domain architecture information (.dff file)"
       puts "            -" + NO_SEQS_OPTION   + ": to not add molecular sequence information (_ni.fasta file)"
       puts "            -" + EXTRACT_BRACKETED_TAXONOMIC_CODE_OPTION  + ": to extract bracketed taxonomic codes, e.g. [NEMVE]"
+      puts "            -" + VERBOSE_OPTION  + ": verbose"
       puts
       puts "Examples: " + PRG_NAME + ".rb .xml _d.xml"
       puts "          " + PRG_NAME + ".rb -#{NO_DOMAINS_OPTION} -#{NO_SEQS_OPTION} .xml _d.xml"
