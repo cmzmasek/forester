@@ -21,7 +21,6 @@ module Evoruby
 
     DECORATOR_OPTIONS_SEQ_NAMES = '-p -t -mp -or'
     DECORATOR_OPTIONS_DOMAINS   = '-p -t'
-    IDS_MAPFILE_SUFFIX          = '.nim'
     DOMAINS_MAPFILE_SUFFIX      = '.dff'
     SLEEP_TIME                  = 0.01
     REMOVE_NI                   = true
@@ -208,7 +207,7 @@ module Evoruby
           domains_mapfile_name = nil
           seqs_file_name = nil
 
-          ids_mapfile_name = get_file( files, phylogeny_id, IDS_MAPFILE_SUFFIX )
+          ids_mapfile_name = get_file( ".", phylogeny_id, Constants::ID_MAP_FILE_SUFFIX )
 
           begin
             Util.check_file_for_readability( ids_mapfile_name )
@@ -221,7 +220,7 @@ module Evoruby
           log << "Ids mapfile: " + ids_mapfile_name + NL
 
           unless no_seqs_files
-            seqs_file_name = get_seq_file( files, phylogeny_id )
+            seqs_file_name = get_file( ".", phylogeny_id, Constants::ID_NORMALIZED_FASTA_FILE_SUFFIX )
             begin
               Util.check_file_for_readability( seqs_file_name  )
             rescue IOError
@@ -234,7 +233,7 @@ module Evoruby
           end
 
           unless no_domains
-            domains_mapfile_name = get_file( files, phylogeny_id, DOMAINS_MAPFILE_SUFFIX )
+            domains_mapfile_name = get_file( ".", phylogeny_id, Constants::DOMAINS_TO_FORESTER_OUTFILE_SUFFIX  )
             begin
               Util.check_file_for_readability( domains_mapfile_name )
             rescue IOError
@@ -329,25 +328,27 @@ module Evoruby
     end
 
     def get_id( phylogeny_file_name )
-      if phylogeny_file_name =~ /^(.+?_DA)_/
-        return $1
-      elsif phylogeny_file_name =~ /^(.+?)_/
-        return $1
-      end
-      nil
+      return phylogeny_file_name
+      #if phylogeny_file_name =~ /^(.+?_DA)_/
+      #  return $1
+      #elsif phylogeny_file_name =~ /^(.+?)_/
+      #  return $1
+      #end
+      #nil
     end
 
     def get_file( files_in_dir, phylogeny_id, suffix_pattern )
-      matching_files = Util.get_matching_files( files_in_dir, phylogeny_id, suffix_pattern )
-      if matching_files.length < 1
-        Util.fatal_error( PRG_NAME, 'no file matching [' + phylogeny_id +
-        '...' + suffix_pattern + '] present in current directory' )
-      end
-      if matching_files.length > 1
-        Util.fatal_error( PRG_NAME, 'more than one file matching [' +
-        phylogeny_id  + '...' + suffix_pattern + '] present in current directory' )
-      end
-      matching_files[ 0 ]
+      Util.get_matching_file( files_in_dir, phylogeny_id, suffix_pattern )
+      #      matching_files = Util.get_matching_files( files_in_dir, phylogeny_id, suffix_pattern )
+      #      if matching_files.length < 1
+      #        Util.fatal_error( PRG_NAME, 'no file matching [' + phylogeny_id +
+      #        '...' + suffix_pattern + '] present in current directory' )
+      #      end
+      #      if matching_files.length > 1
+      #        Util.fatal_error( PRG_NAME, 'more than one file matching [' +
+      #        phylogeny_id  + '...' + suffix_pattern + '] present in current directory' )
+      #      end
+      #      matching_files[ 0 ]
     end
 
     def get_seq_file( files_in_dir, phylogeny_id )

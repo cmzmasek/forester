@@ -4,7 +4,7 @@
 # Copyright::    Copyright (C) 2017 Christian M. Zmasek
 # License::      GNU Lesser General Public License (LGPL)
 #
-# Last modified: 2017/02/07
+# Last modified: 2017/04/27
 
 require 'lib/evo/util/constants'
 
@@ -20,6 +20,72 @@ module Evoruby
         end
       }
       matching_files
+    end
+
+    def Util.get_matching_file( dir_name, prefix, suffix )
+      unless Dir.exist? dir_name
+        raise IOError, "directory [#{dir_name}] does not exist"
+      end
+
+      all_files = Dir.entries(dir_name)
+
+      if ( all_files.size <= 2 )
+        raise IOError, "directory [#{dir_name}] is empty"
+      end
+      matching_files = Array.new
+      all_files.each { | file |
+        if  (( !File.directory?( file )) && (file.end_with? suffix))
+          matching_files << file
+        end
+      }
+
+      if ( matching_files.size == 0 )
+        raise IOError, "no files ending with \"" + suffix + "\" found in [" + dir_name + "]"
+      end
+      my_prefix = prefix
+      done = false
+      more_than_one = false
+      the_one = nil;
+
+      loop do
+        puts my_prefix #TODO remove me
+        matches = 0
+        matching_files.each { | file |
+          if file.start_with?( my_prefix )
+            matches += 1
+            if matches > 1
+              the_one = nil
+              break
+            end
+            the_one = file
+          end
+        }
+        if matches > 1
+          more_than_one = true
+          done = true
+        end
+        if matches == 1
+          done = true
+        else
+          if my_prefix.length <= 1
+            raise IOError, "no file matching \"" + removeFileExtension( prefix )
+            + "\" and ending with \"" + suffix + "\" found in [" + dir_name + "]"
+          end
+          my_prefix = my_prefix[ 0 ... ( my_prefix.length - 1 ) ]
+
+        end
+        break if done
+      end
+
+      if more_than_one
+        raise IOError, "multiple files matching \"" +  prefix  +
+        "\" and ending with \"" + suffix + "\" found in [" + dir_name + "]"
+      elsif the_one != nil
+      else
+        raise IOError, "no file matching \"" + prefix  + "\" and ending with \"" +
+        suffix + "\" found in [" + dir_name + "]"
+      end
+      the_one
     end
 
     def Util.normalize_seq_name( name, length, exception_if_too_long = false )
