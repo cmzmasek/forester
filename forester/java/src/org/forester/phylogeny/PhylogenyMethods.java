@@ -1543,7 +1543,7 @@ public class PhylogenyMethods {
         return nodes_to_delete;
     }
 
-    final static public void transferInternalNamesToBootstrapSupport( final Phylogeny phy ) {
+    final static public void transferInternalNamesToConfidenceValues( final Phylogeny phy, final String confidence_type ) {
         final PhylogenyNodeIterator it = phy.iteratorPostorder();
         while ( it.hasNext() ) {
             final PhylogenyNode n = it.next();
@@ -1557,7 +1557,7 @@ public class PhylogenyMethods {
                             + e.getLocalizedMessage() );
                 }
                 if ( value >= 0.0 ) {
-                    n.getBranchData().addConfidence( new Confidence( value, "bootstrap" ) );
+                    n.getBranchData().addConfidence( new Confidence( value, confidence_type ) );
                     n.setName( "" );
                 }
             }

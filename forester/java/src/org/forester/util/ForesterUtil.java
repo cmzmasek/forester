@@ -1507,9 +1507,6 @@ public final class ForesterUtil {
         return trees;
     }
 
-    private ForesterUtil() {
-    }
-
     public final static File getMatchingFile( final File dir, final String prefix, final String suffix )
             throws IOException {
         if ( !dir.exists() ) {
@@ -1518,23 +1515,26 @@ public final class ForesterUtil {
         if ( !dir.isDirectory() ) {
             throw new IOException( "[" + dir + "] is not a directory" );
         }
-        final File mapping_files[] = dir.listFiles( new FilenameFilter() {
+        if ( dir.listFiles().length == 0 ) {
+            throw new IOException( "[" + dir + "] is empty" );
+        }
+        final File files[] = dir.listFiles( new FilenameFilter() {
 
             @Override
             public boolean accept( final File dir, final String name ) {
                 return ( name.endsWith( suffix ) );
             }
         } );
-        if ( mapping_files.length == 1 ) {
+        if ( files.length == 0 ) {
             throw new IOException( "no files ending with \"" + suffix + "\" found in [" + dir + "]" );
         }
-        String my_prefix = removeFileExtension( prefix );
+        String my_prefix = prefix;
         boolean done = false;
         boolean more_than_one = false;
         File the_one = null;
         do {
             int matches = 0;
-            for( File file : mapping_files ) {
+            for( File file : files ) {
                 if ( file.getName().startsWith( my_prefix ) ) {
                     matches++;
                     if ( matches > 1 ) {
@@ -1570,5 +1570,8 @@ public final class ForesterUtil {
                     + suffix + "\" found in [" + dir + "]" );
         }
         return the_one;
+    }
+
+    private ForesterUtil() {
     }
 }
