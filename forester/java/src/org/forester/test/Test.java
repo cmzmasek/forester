@@ -551,6 +551,15 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
+        System.out.print( "Phylogeny methods:" );
+        if ( Test.testPhylogenyMethods() ) {
+            System.out.println( "OK." );
+            succeeded++;
+        }
+        else {
+            System.out.println( "failed." );
+            failed++;
+        }
         System.out.print( "Postorder Iterator: " );
         if ( Test.testPostOrderIterator() ) {
             System.out.println( "OK." );
@@ -13437,6 +13446,75 @@ public final class Test {
             if ( !isEqual( t1.getNode( "C" ).getDistanceToParent(), 0.3 ) ) {
                 return false;
             }
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace( System.out );
+            return false;
+        }
+        return true;
+    }
+    
+    private static boolean testPhylogenyMethods() {
+        try {
+            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+            final Phylogeny t0 = factory.create( "((((A,B)ab,C)abc,D)abcd,E)r", new NHXParser() )[ 0 ];
+          
+            if ( PhylogenyMethods.calculateLevel( t0.getNode( "A" ) ) != 0 ) {
+                return false;
+            }
+            if ( PhylogenyMethods.calculateLevel( t0.getNode( "B" ) ) != 0 ) {
+                return false;
+            }
+            if ( PhylogenyMethods.calculateLevel( t0.getNode( "ab" ) ) != 1 ) {
+                return false;
+            }
+            if ( PhylogenyMethods.calculateLevel( t0.getNode( "C" ) ) != 0 ) {
+                return false;
+            }
+            if ( PhylogenyMethods.calculateLevel( t0.getNode( "abc" ) ) != 2 ) {
+                return false;
+            }
+            if ( PhylogenyMethods.calculateLevel( t0.getNode( "D" ) ) != 0 ) {
+                return false;
+            }
+            if ( PhylogenyMethods.calculateLevel( t0.getNode( "abcd" ) ) != 3 ) {
+                return false;
+            }
+            if ( PhylogenyMethods.calculateLevel( t0.getNode( "E" ) ) != 0 ) {
+                return false;
+            }
+            if ( PhylogenyMethods.calculateLevel( t0.getNode( "r" ) ) != 4 ) {
+                return false;
+            }
+            final Phylogeny t1 = factory.create( "((((A,B)ab,C)abc,D)abcd,E,((((((X)1)2)3)4)5)6)r", new NHXParser() )[ 0 ];
+            if ( PhylogenyMethods.calculateLevel( t1.getNode( "r" ) ) != 7 ) {
+                return false;
+            }
+            if ( PhylogenyMethods.calculateLevel( t1.getNode( "X" ) ) != 0 ) {
+                return false;
+            }
+            if ( PhylogenyMethods.calculateLevel( t1.getNode( "6" ) ) != 6 ) {
+                return false;
+            }
+            if ( PhylogenyMethods.calculateLevel( t1.getNode( "5" ) ) != 5 ) {
+                return false;
+            }
+            if ( PhylogenyMethods.calculateLevel( t1.getNode( "4" ) ) != 4 ) {
+                return false;
+            }
+            if ( PhylogenyMethods.calculateLevel( t1.getNode( "3" ) ) != 3 ) {
+                return false;
+            }
+            if ( PhylogenyMethods.calculateLevel( t1.getNode( "2" ) ) != 2 ) {
+                return false;
+            }
+            if ( PhylogenyMethods.calculateLevel( t1.getNode( "1" ) ) != 1 ) {
+                return false;
+            }
+            if ( PhylogenyMethods.calculateLevel( t1.getNode( "abcd" ) ) != 3 ) {
+                return false;
+            }
+            
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );

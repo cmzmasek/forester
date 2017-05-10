@@ -1297,16 +1297,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return _last_drag_point_y;
     }
 
-    final private short getMaxBranchesToLeaf( final PhylogenyNode node ) {
-        if ( !_nodeid_dist_to_leaf.containsKey( node.getId() ) ) {
-            final short m = PhylogenyMethods.calculateMaxBranchesToLeaf( node );
-            _nodeid_dist_to_leaf.put( node.getId(), m );
-            return m;
-        }
-        else {
-            return _nodeid_dist_to_leaf.get( node.getId() );
-        }
-    }
 
     final private double getMaxDistanceToRoot() {
         if ( _max_distance_to_root < 0 ) {

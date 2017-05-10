@@ -151,6 +151,30 @@ public class PhylogenyMethods {
     }
 
     /**
+     * For external nodes the level is 0.
+     * 
+     * @param node
+     * @return
+     */
+    public static int calculateLevel( final PhylogenyNode node ) {
+        if ( node.isExternal() ) {
+            return 0;
+        }
+        int level = 0;
+        for( PhylogenyNode ext : node.getAllExternalDescendants() ) {
+            int counter = 0;
+            while ( ext != node ) {
+                ext = ext.getParent();
+                ++counter;
+            }
+            if ( counter > level ) {
+                level = counter;
+            }
+        }
+        return level;
+    }
+
+    /**
      * Calculates the distance between PhylogenyNodes node1 and node2.
      *
      *
@@ -237,28 +261,7 @@ public class PhylogenyMethods {
         return node1;
     }
 
-    public static short calculateMaxBranchesToLeaf( final PhylogenyNode node ) {
-        if ( node.isExternal() ) {
-            return 0;
-        }
-        short max = 0;
-        for( PhylogenyNode d : node.getAllExternalDescendants() ) {
-            short steps = 0;
-            while ( d != node ) {
-                if ( d.isCollapse() ) {
-                    steps = 0;
-                }
-                else {
-                    steps++;
-                }
-                d = d.getParent();
-            }
-            if ( max < steps ) {
-                max = steps;
-            }
-        }
-        return max;
-    }
+   
 
     public static int calculateMaxDepth( final Phylogeny phy ) {
         int max = 0;
@@ -271,7 +274,7 @@ public class PhylogenyMethods {
         }
         return max;
     }
-    
+
     public static String[] obtainPresentRanksSorted( final Phylogeny phy ) {
         final Set<String> present_ranks = new HashSet<String>();
         for( final PhylogenyNodeIterator iter = phy.iteratorPreorder(); iter.hasNext(); ) {
@@ -284,12 +287,12 @@ public class PhylogenyMethods {
                 }
             }
         }
-        final String ordered_ranks[] = new String[present_ranks.size() + 1];
+        final String ordered_ranks[] = new String[ present_ranks.size() + 1 ];
         int c = 0;
         for( final String rank : TaxonomyUtil.RANKS ) {
-             if ( present_ranks.contains( rank ) ) {
-                 ordered_ranks[ c++ ] = rank;
-             }
+            if ( present_ranks.contains( rank ) ) {
+                ordered_ranks[ c++ ] = rank;
+            }
         }
         ordered_ranks[ c ] = "off";
         return ordered_ranks;
@@ -1543,7 +1546,8 @@ public class PhylogenyMethods {
         return nodes_to_delete;
     }
 
-    final static public void transferInternalNamesToConfidenceValues( final Phylogeny phy, final String confidence_type ) {
+    final static public void transferInternalNamesToConfidenceValues( final Phylogeny phy,
+                                                                      final String confidence_type ) {
         final PhylogenyNodeIterator it = phy.iteratorPostorder();
         while ( it.hasNext() ) {
             final PhylogenyNode n = it.next();
@@ -2058,7 +2062,7 @@ public class PhylogenyMethods {
     }
 
     public final static void collapseToDepth( final Phylogeny phy, final int depth ) {
-         if ( phy.getNumberOfExternalNodes() < 3 ) {
+        if ( phy.getNumberOfExternalNodes() < 3 ) {
             return;
         }
         collapseToDepthHelper( phy.getRoot(), 0, depth );
@@ -2086,8 +2090,6 @@ public class PhylogenyMethods {
         }
     }
 
-   
-    
     public final static void collapseToRank( final Phylogeny phy, final int rank ) {
         if ( phy.getNumberOfExternalNodes() < 3 ) {
             return;
@@ -2112,7 +2114,6 @@ public class PhylogenyMethods {
             else {
                 if ( TaxonomyUtil.RANK_TO_INT.get( current_rank ) >= target_rank ) {
                     n.setCollapse( true );
-                    
                     final PhylogenyNodeIterator it = new PreorderTreeIterator( n );
                     while ( it.hasNext() ) {
                         it.next().setCollapse( true );
@@ -2127,7 +2128,7 @@ public class PhylogenyMethods {
             collapseToRankHelper( desc, target_rank );
         }
     }
-    
+
     public final static PhylogenyNode getFirstExternalNode( final PhylogenyNode node ) {
         PhylogenyNode n = node;
         while ( n.isInternal() ) {
@@ -2135,7 +2136,7 @@ public class PhylogenyMethods {
         }
         return n;
     }
-    
+
     public final static PhylogenyNode getLastExternalNode( final PhylogenyNode node ) {
         PhylogenyNode n = node;
         while ( n.isInternal() ) {
@@ -2153,5 +2154,4 @@ public class PhylogenyMethods {
         }
         return false;
     }
-    
 }
