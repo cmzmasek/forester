@@ -313,42 +313,57 @@ public final class MinimalDomainomeCalculator {
             }
             final List<Set<String>> features_per_genome_list = new ArrayList<Set<String>>();
             boolean first = true;
-            for( final PhylogenyNode external_desc : external_descs ) {
-                final String code = external_desc.getNodeData().getTaxonomy().getTaxonomyCode();
-                if ( node.isInternal() ) {
-                    if ( first ) {
-                        first = false;
-                    }
-                    else {
-                        out.write( ", " );
-                    }
-                    out.write( code );
-                }
-                final List<Protein> proteins_per_species = protein_lists_per_species.get( new BasicSpecies( code ) );
+            if ( level >= 1 ) {
+                ////////////
+                ////////////
                 final int node_level = PhylogenyMethods.calculateLevel( node );
-                final List<Protein> proteins_per_quasi_species = protein_lists_per_species
-                        .get( new BasicSpecies( code ) );
-                if ( proteins_per_species != null ) {
-                    final SortedSet<String> features_per_genome = new TreeSet<String>();
-                    for( final Protein protein : proteins_per_species ) {
-                        if ( use_domain_architectures ) {
-                            final String da = protein.toDomainArchitectureString( separator, ie_cutoff );
-                            features_per_genome.add( da );
+                if ( node_level >= level ) {
+                    final List<PhylogenyNode> given_level_descs = PhylogenyMethods
+                            .getAllDescendantsOfGivenLevel( node, level );
+                    for( final PhylogenyNode given_level_desc : given_level_descs ) {
+                        final String spec_name = given_level_desc.getNodeData().isHasTaxonomy()
+                                ? given_level_desc.getNodeData().getTaxonomy().getScientificName() : given_level_desc.getName();
+                    }
+                }
+                ///////////
+                ///////////
+            }
+            else {
+                for( final PhylogenyNode external_desc : external_descs ) {
+                    final String code = external_desc.getNodeData().getTaxonomy().getTaxonomyCode();
+                    if ( node.isInternal() ) {
+                        if ( first ) {
+                            first = false;
                         }
                         else {
-                            List<Domain> domains = protein.getProteinDomains();
-                            for( final Domain domain : domains ) {
-                                if ( ( ie_cutoff <= -1 ) || ( domain.getPerDomainEvalue() <= ie_cutoff ) ) {
-                                    features_per_genome.add( domain.getDomainId() );
+                            out.write( ", " );
+                        }
+                        out.write( code );
+                    }
+                    final List<Protein> proteins_per_species = protein_lists_per_species
+                            .get( new BasicSpecies( code ) );
+                    if ( proteins_per_species != null ) {
+                        final SortedSet<String> features_per_genome = new TreeSet<String>();
+                        for( final Protein protein : proteins_per_species ) {
+                            if ( use_domain_architectures ) {
+                                final String da = protein.toDomainArchitectureString( separator, ie_cutoff );
+                                features_per_genome.add( da );
+                            }
+                            else {
+                                List<Domain> domains = protein.getProteinDomains();
+                                for( final Domain domain : domains ) {
+                                    if ( ( ie_cutoff <= -1 ) || ( domain.getPerDomainEvalue() <= ie_cutoff ) ) {
+                                        features_per_genome.add( domain.getDomainId() );
+                                    }
                                 }
                             }
                         }
+                        if ( features_per_genome.size() > 0 ) {
+                            features_per_genome_list.add( features_per_genome );
+                        }
                     }
-                    if ( features_per_genome.size() > 0 ) {
-                        features_per_genome_list.add( features_per_genome );
-                    }
-                }
-            } // for( final PhylogenyNode external_desc : external_descs )
+                } // for( final PhylogenyNode external_desc : external_descs )
+            } // else
             if ( features_per_genome_list.size() > 0 ) {
                 SortedSet<String> intersection = calcIntersection( features_per_genome_list );
                 out.write( "\t" + intersection.size() + "\t" );

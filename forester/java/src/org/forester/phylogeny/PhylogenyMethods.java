@@ -261,8 +261,6 @@ public class PhylogenyMethods {
         return node1;
     }
 
-   
-
     public static int calculateMaxDepth( final Phylogeny phy ) {
         int max = 0;
         for( final PhylogenyNodeIterator iter = phy.iteratorExternalForward(); iter.hasNext(); ) {
@@ -541,6 +539,30 @@ public class PhylogenyMethods {
                         continue;
                     }
                     descs.add( current );
+                    encountered.add( current.getId() );
+                }
+            }
+        }
+        return descs;
+    }
+
+    public static List<PhylogenyNode> getAllDescendantsOfGivenLevel( final PhylogenyNode node, final int level ) {
+        final List<PhylogenyNode> descs = new ArrayList<PhylogenyNode>();
+        final Set<Long> encountered = new HashSet<Long>();
+        if ( !node.isExternal() ) {
+            final List<PhylogenyNode> exts = node.getAllExternalDescendants();
+            for( PhylogenyNode current : exts ) {
+                if ( calculateLevel( current ) == level ) {
+                    descs.add( current );
+                }
+                while ( current != node ) {
+                    current = current.getParent();
+                    if ( encountered.contains( current.getId() ) ) {
+                        continue;
+                    }
+                    if ( calculateLevel( current ) == level ) {
+                        descs.add( current );
+                    }
                     encountered.add( current.getId() );
                 }
             }
