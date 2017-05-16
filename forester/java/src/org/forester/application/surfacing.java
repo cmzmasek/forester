@@ -217,8 +217,8 @@ public class surfacing {
     final static private String                                     INPUT_GENOMES_FILE_OPTION                                                     = "genomes";
     final static private String                                     INPUT_SPECIES_TREE_OPTION                                                     = "species_tree";
     final static private String                                     SEQ_EXTRACT_OPTION                                                            = "prot_extract";
-    final static private String                                     PRG_VERSION                                                                   = "2.501";
-    final static private String                                     PRG_DATE                                                                      = "170327";
+    final static private String                                     PRG_VERSION                                                                   = "2.502";
+    final static private String                                     PRG_DATE                                                                      = "170511";
     final static private String                                     E_MAIL                                                                        = "phyloxml@gmail.com";
     final static private String                                     WWW                                                                           = "https://sites.google.com/site/cmzmasek/home/software/forester/surfacing";
     final static private boolean                                    IGNORE_DUFS_DEFAULT                                                           = true;
@@ -1776,9 +1776,11 @@ public class surfacing {
         ForesterUtil
                 .programMessage( PRG_NAME,
                                  "Wrote domain promiscuities to: " + per_genome_domain_promiscuity_statistics_file );
+        final int LEVEL = 2;
         try {
             MinimalDomainomeCalculator.calc( false,
                                              intrees[ 0 ],
+                                             LEVEL,
                                              protein_lists_per_species,
                                              SEPARATOR_FOR_DA,
                                              -1,
@@ -1791,6 +1793,7 @@ public class surfacing {
         try {
             MinimalDomainomeCalculator.calc( true,
                                              intrees[ 0 ],
+                                             LEVEL,
                                              protein_lists_per_species,
                                              SEPARATOR_FOR_DA,
                                              -1,
