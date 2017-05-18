@@ -217,8 +217,8 @@ public class surfacing {
     final static private String                                     INPUT_GENOMES_FILE_OPTION                                                     = "genomes";
     final static private String                                     INPUT_SPECIES_TREE_OPTION                                                     = "species_tree";
     final static private String                                     SEQ_EXTRACT_OPTION                                                            = "prot_extract";
-    final static private String                                     PRG_VERSION                                                                   = "2.502";
-    final static private String                                     PRG_DATE                                                                      = "170511";
+    final static private String                                     PRG_VERSION                                                                   = "2.503";
+    final static private String                                     PRG_DATE                                                                      = "170518";
     final static private String                                     E_MAIL                                                                        = "phyloxml@gmail.com";
     final static private String                                     WWW                                                                           = "https://sites.google.com/site/cmzmasek/home/software/forester/surfacing";
     final static private boolean                                    IGNORE_DUFS_DEFAULT                                                           = true;
@@ -1776,7 +1776,7 @@ public class surfacing {
         ForesterUtil
                 .programMessage( PRG_NAME,
                                  "Wrote domain promiscuities to: " + per_genome_domain_promiscuity_statistics_file );
-        final int LEVEL = 2;
+        final int LEVEL = 0;
         try {
             MinimalDomainomeCalculator.calc( false,
                                              intrees[ 0 ],
@@ -2315,7 +2315,7 @@ public class surfacing {
                 .println( "Example 3: surfacing -species_tree=master_tree.xml -no_eo -ie=1e-6 -mrel=0.5 -mo=10 -dufs -genomes=genomes.txt -out_dir=a605 -o=a605" );
         System.out.println();
         System.out
-        .println("[next step for phylogenomic analysis pipeline (example, in \"DAS\" dir): % mse.rb .prot . FL_seqs DA_seqs path/to/genome_locations.txt]" );
+                .println( "[next step for phylogenomic analysis pipeline (example, in \"DAS\" dir): % mse.rb .prot . FL_seqs DA_seqs path/to/genome_locations.txt]" );
         System.out.println();
     }
 }

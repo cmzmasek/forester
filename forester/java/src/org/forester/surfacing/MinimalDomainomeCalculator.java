@@ -85,7 +85,7 @@ public final class MinimalDomainomeCalculator {
             final String rank = node.getNodeData().isHasTaxonomy() ? node.getNodeData().getTaxonomy().getRank() : "";
             final List<PhylogenyNode> external_descs = node.getAllExternalDescendants();
             if ( ( target_level < 1 ) || ( node_level >= target_level ) ) {
-                out.write( species_name + " " + node_level);
+                out.write( species_name );
                 if ( !ForesterUtil.isEmpty( common ) ) {
                     out.write( "\t" + common );
                 }

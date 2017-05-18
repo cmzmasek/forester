@@ -51,7 +51,7 @@ public final class fasta_split {
 
     final static private String PRG_NAME    = "fasta_split";
     final static private String PRG_VERSION = "1.00";
-    final static private String PRG_DATE    = "150331";
+    final static private String PRG_DATE    = "170516";
 
     public static void main( final String args[] ) {
         ForesterUtil.printProgramInformation( fasta_split.PRG_NAME, fasta_split.PRG_VERSION, fasta_split.PRG_DATE );
@@ -98,9 +98,8 @@ public final class fasta_split {
         }
         System.out.println( "Read " + seqs.size() + " sequences" );
         final Map<String, List<MolecularSequence>> output = new HashMap<String, List<MolecularSequence>>();
-        int cc = 0;
+    
         for( final MolecularSequence seq : seqs ) {
-            ++cc;
             final Matcher m = pa.matcher( seq.getIdentifier() );
             if ( m.find() ) {
                 final String key = m.group( 1 );
@@ -139,7 +138,10 @@ public final class fasta_split {
 
     private static void argumentsError() {
         System.out.println( PRG_NAME + " <pattern> <infile> <outdir>" );
-        System.out.println( "Example: " + PRG_NAME + " \"v-germ=(\\S+)\" tt.fasta outdir" );
+        System.out.println();
+        System.out.println( "Examples: " );
+        System.out.println( "  " + PRG_NAME + " \"v-germ=(\\S+)\" tt.fasta outdir" );
+        System.out.println( "  " + PRG_NAME + " \"(\\S+?)\\|\" seqs.fasta outdir" );
         System.out.println();
         System.exit( -1 );
     }
