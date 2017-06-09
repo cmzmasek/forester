@@ -377,7 +377,7 @@ module Evoruby
         end
 
         if @window
-          msas = msa.sliding_extraction( @step, @size )
+          msas = msa.sliding_extraction( @step, @size, '_Q' )
           begin
             io = MsaIO.new()
             w = MsaWriter
