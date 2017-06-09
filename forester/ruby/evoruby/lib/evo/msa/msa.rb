@@ -423,7 +423,7 @@ module Evoruby
       end
     end
 
-    def extract( first, last, suffix )
+    def extract( first, last, min_non_gap_length, suffix )
       if !is_aligned()
         error_msg = "attempt to extract from unaligned msa"
         raise StandardError, error_msg, caller
@@ -443,17 +443,19 @@ module Evoruby
       msa = Msa.new()
       for i in 0 ... get_number_of_seqs
         subseq = get_sequence( i ).get_subsequence( first, last )
-        if suffix != nil
-          msa.add( subseq.get_name + suffix, subseq.get_sequence_as_string )
-        else
-          msa.add( subseq.get_name, subseq.get_sequence_as_string )
+        unless ( ( subseq.get_length - subseq.get_gap_length ) < min_non_gap_length )
+          if suffix != nil
+            msa.add( subseq.get_name + suffix, subseq.get_sequence_as_string )
+          else
+            msa.add( subseq.get_name, subseq.get_sequence_as_string )
+          end
         end
       end
 
       msa
     end
 
-    def sliding_extraction( step, size, suffix = nil )
+    def sliding_extraction( step, size, min_non_gap_length, suffix = nil )
       counter = 0
       done = false
       msas = Array.new()
@@ -466,7 +468,7 @@ module Evoruby
         end
         unless first >= last
           counter +=1
-          res = extract(first, last, suffix)
+          res = extract(first, last, min_non_gap_length, suffix)
           res.set_name(first.to_s + "-" + last.to_s)
           msas << res
         end
