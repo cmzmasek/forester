@@ -17,6 +17,15 @@ module Evoruby
       @identical_seqs_detected = Array.new
       @name_to_seq_indices = Hash.new
       @namestart_to_seq_indices = Hash.new
+      @name = nil
+    end
+
+    def get_name
+      @name
+    end
+
+    def set_name( name )
+      @name = name
     end
 
     def add_sequence( sequence )
@@ -397,7 +406,7 @@ module Evoruby
       removed
     end
 
-    def trim!( first, last )
+    def trim!( first, last, name_suffix = nil )
       cols = Array.new()
       for i in 0 ... get_length()
         if ( i < first || i > last )
@@ -405,6 +414,58 @@ module Evoruby
         end
       end
       remove_columns!( cols )
+      if name_suffix != nil
+        n = get_number_of_seqs
+        for s in 0 ... n
+          seq = get_sequence( s )
+          seq.set_name( seq.get_name() + name_suffix );
+        end
+      end
+    end
+
+    def extract( first, last )
+      if !is_aligned()
+        error_msg = "attempt to extract from unaligned msa"
+        raise StandardError, error_msg, caller
+      end
+      if first < 0
+        error_msg = "first < 0"
+        raise StandardError, error_msg, caller
+      end
+      if last >= get_length()
+        error_msg = "last > length"
+        raise StandardError, error_msg, caller
+      end
+      if first >= last
+        error_msg = "first >= last"
+        raise StandardError, error_msg, caller
+      end
+      msa = Msa.new()
+      for i in 0 ... get_number_of_seqs
+        msa.add_sequence( get_sequence( i ).get_subsequence( first, last ) )
+      end
+      msa
+    end
+
+    def sliding_extraction( step, size )
+      counter = 0
+      done = false
+      msas = Array.new()
+      while !done
+        first = counter * step
+        last = first + size - 1
+        if last > get_length() - 1
+          last = get_length() - 1
+          done = true
+        end
+        unless first >= last
+          counter +=1
+          res = extract( first, last)
+          res.set_name(first.to_s + "-" + last.to_s)
+          msas << res
+        end
+      end
+      msas
     end
 
     def get_gap_only_columns()

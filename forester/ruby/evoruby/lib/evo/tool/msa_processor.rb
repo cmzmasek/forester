@@ -25,9 +25,9 @@ module Evoruby
   class MsaProcessor
 
     PRG_NAME       = "msa_pro"
-    PRG_DATE       = "170215"
+    PRG_DATE       = "170609"
     PRG_DESC       = "processing of multiple sequence alignments"
-    PRG_VERSION    = "1.08"
+    PRG_VERSION    = "1.09"
     WWW            = "https://sites.google.com/site/cmzmasek/home/software/forester"
 
     NAME_LENGTH_DEFAULT                = 10
@@ -50,6 +50,7 @@ module Evoruby
     REMOVE_MATCHING_SEQUENCES_OPTION   = "mr"
 
     TRIM_OPTION                        = "t"
+    SLIDING_EXTRACTION_OPTION          = "se"
     REMOVE_SEQS_GAP_RATIO_OPTION       = "rsgr"
     REMOVE_SEQS_NON_GAP_LENGTH_OPTION  = "rsl"
     SPLIT                              = "split"
@@ -88,6 +89,9 @@ module Evoruby
       @split_by_os      = false
       @first            = -1
       @last             = -1
+      @window = false
+      @step = -1
+      @size =  -1
     end
 
     def run()
@@ -144,6 +148,7 @@ module Evoruby
       allowed_opts.push( KEEP_MATCHING_SEQUENCES_OPTION )
       allowed_opts.push( REMOVE_MATCHING_SEQUENCES_OPTION )
       allowed_opts.push( DIE_IF_NAME_TOO_LONG )
+      allowed_opts.push( SLIDING_EXTRACTION_OPTION )
 
       disallowed = cla.validate_allowed_options_as_str( allowed_opts )
       if ( disallowed.length > 0 )
@@ -275,6 +280,15 @@ module Evoruby
         puts( "Split            : " + @split.to_s )
         log << "Split            : " + @split.to_s + ld
       end
+      if @window
+        puts( "Sliding window extraction: true"  )
+        log << "Sliding window extraction: true" + ld
+        puts( "Sliding window step      : " + @step.to_s )
+        log << "Sliding window step      : " + @step.to_s + ld
+        puts( "Sliding window size      : " +  @size.to_s )
+        log << "Sliding window size      : " +  @size.to_s + ld
+      end
+
       puts()
 
       f = MsaFactory.new()
@@ -359,8 +373,48 @@ module Evoruby
         end
 
         if ( @trim )
-          msa.trim!( @first, @last )
+          msa.trim!( @first, @last, '_S' )
         end
+
+        if @window
+          msas = msa.sliding_extraction( @step, @size )
+          begin
+            io = MsaIO.new()
+            w = MsaWriter
+            if ( @pi_output )
+              w = PhylipSequentialWriter.new()
+              w.clean( @clean )
+              w.set_max_name_length( @name_length )
+            elsif( @fasta_output )
+              w = FastaWriter.new()
+              w.set_line_width( @width )
+              w.clean( @clean )
+              if ( @name_length_set )
+                w.set_max_name_length( @name_length )
+              end
+            elsif( @nexus_output )
+              w = NexusWriter.new()
+              w.clean( @clean )
+              w.set_max_name_length( @name_length )
+            end
+            i = 0
+            for m in msas
+              i = i + 1
+              name = output + "_" + m.get_name
+              if @fasta_output
+                name += ".fasta"
+              elsif @nexus_output
+                name += ".nex"
+              end
+              io.write_to_file( m, name, w )
+            end
+            Util.print_message( PRG_NAME, "wrote " + msas.length.to_s + " files"  )
+            log << "wrote " + msas.length.to_s + " files" + ld
+          rescue Exception => e
+            Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
+          end
+        end
+
         if( @rgr >= 0 )
           msa.remove_gap_columns_w_gap_ratio!( @rgr )
         elsif ( @rgc )
@@ -505,7 +559,7 @@ module Evoruby
         Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
       end
 
-      if (@split <= 0) && (!@split_by_os)
+      if (@split <= 0) && (!@split_by_os) && (!@window)
 
         unless ( @rg )
           if ( msa.is_aligned() )
@@ -757,6 +811,25 @@ module Evoruby
       @trim             = false
       @first            = -1
       @last             = -1
+      @window           = false
+    end
+
+    def set_window()
+      @split            = -1
+      @split_by_os      = false
+      @rgc              = false
+      @rgoc             = false
+      @rg               = false  # fasta only
+      @rgr              = -1
+      @rsgr             = -1
+      @rsl              = -1
+      @seqs_name_file   = nil
+      @remove_seqs      = false
+      @keep_seqs        = false
+      @trim             = false
+      @first            = -1
+      @last             = -1
+      @window           = true
     end
 
     def analyze_command_line( cla )
@@ -863,6 +936,29 @@ module Evoruby
           Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
         end
       end
+      if ( cla.is_option_set?( SLIDING_EXTRACTION_OPTION ) )
+        begin
+          s = cla.get_option_value( SLIDING_EXTRACTION_OPTION )
+          if ( s =~ /(\d+)\/(\d+)/ )
+            set_window
+            @window = true
+            @step = $1.to_i()
+            @size = $2.to_i()
+          else
+            puts( "illegal argument" )
+            print_help
+            exit( -1 )
+          end
+          if (@step <= 0) || (@size <= 0)
+            puts( "illegal argument" )
+            print_help
+            exit( -1 )
+          end
+        rescue ArgumentError => e
+          Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
+        end
+      end
+
       if ( cla.is_option_set?( REMOVE_SEQS_GAP_RATIO_OPTION ) )
         begin
           f = cla.get_option_value_as_float( REMOVE_SEQS_GAP_RATIO_OPTION )
@@ -921,8 +1017,8 @@ module Evoruby
       puts()
       puts( "  " + PRG_NAME + ".rb [options] <input alignment> <output>" )
       puts()
-      puts( "  options: -" + INPUT_TYPE_OPTION + "=<input type>: f for fasta, p for phylip selex type" )
-      puts( "           -" + OUTPUT_TYPE_OPTION + "=<output type>: f for fasta, n for nexus, p for phylip sequential (default)" )
+      puts( "  options: -" + INPUT_TYPE_OPTION + "=<input type>: f for fasta (default), p for phylip/selex type" )
+      puts( "           -" + OUTPUT_TYPE_OPTION + "=<output type>: f for fasta (default), n for nexus, p for phylip sequential" )
       puts( "           -" + MAXIMAL_NAME_LENGTH_OPTION + "=<n>: n=maximal name length (default for phylip 10, for fasta: unlimited )" )
       puts( "           -" + DIE_IF_NAME_TOO_LONG + ": die if sequence name too long" )
       puts( "           -" + WIDTH_OPTION + "=<n>: n=width (fasta output only, default is 60)" )
@@ -940,6 +1036,7 @@ module Evoruby
       puts( "           -" + KEEP_MATCHING_SEQUENCES_OPTION + "=<s> keep only sequences with names containing s" )
       puts( "           -" + SPLIT + "=<n> split a fasta file into n files of equal number of sequences (expect for " )
       puts( "            last one), cannot be used with other options" )
+      puts( "           -" + SLIDING_EXTRACTION_OPTION + "=<step>/<window size>: sliding window extraction, cannot be used with other options" )
       puts( "           -" + REM_RED_OPTION + ": remove redundant sequences" )
       puts()
     end

@@ -6,10 +6,25 @@
 #
 # Last modified: 2017/04/27
 
+require 'pathname'
 require 'lib/evo/util/constants'
 
 module Evoruby
   class Util
+    def Util.canonical_path( parent, child = nil )
+      if child == nil
+        return  File.expand_path(Pathname.new(parent).cleanpath.to_s).to_s
+      end
+
+      s = nil
+      if parent.end_with?('/')
+        s = parent + child
+      else
+        s = parent + '/' + child
+      end
+      File.expand_path(Pathname.new(s).cleanpath.to_s).to_s
+    end
+
     def Util.get_matching_files( files, prefix_pattern, suffix_pattern )
       matching_files = Array.new
       files.each { | file |
@@ -48,7 +63,7 @@ module Evoruby
       the_one = nil;
 
       loop do
-        puts my_prefix #TODO remove me
+
         matches = 0
         matching_files.each { | file |
           if file.start_with?( my_prefix )
@@ -68,8 +83,7 @@ module Evoruby
           done = true
         else
           if my_prefix.length <= 1
-            raise IOError, "no file matching \"" + removeFileExtension( prefix )
-            + "\" and ending with \"" + suffix + "\" found in [" + dir_name + "]"
+            raise IOError, "no file matching \"" + prefix + "\" and ending with \"" + suffix + "\" found in [" + dir_name + "]"
           end
           my_prefix = my_prefix[ 0 ... ( my_prefix.length - 1 ) ]
 

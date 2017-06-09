@@ -21,7 +21,6 @@ module Evoruby
 
     DECORATOR_OPTIONS_SEQ_NAMES = '-p -t -mp -or'
     DECORATOR_OPTIONS_DOMAINS   = '-p -t'
-    DOMAINS_MAPFILE_SUFFIX      = '.dff'
     SLEEP_TIME                  = 0.01
     REMOVE_NI                   = true
     TMP_FILE_1                  = '___PD1___'
@@ -31,9 +30,9 @@ module Evoruby
     JAVA_HOME                   = ENV[Constants::JAVA_HOME_ENV_VARIABLE]
 
     PRG_NAME       = "phylogenies_decorator"
-    PRG_DATE       = "170427"
+    PRG_DATE       = "170428"
     PRG_DESC       = "decoration of phylogenies with sequence/species names and domain architectures"
-    PRG_VERSION    = "1.04"
+    PRG_VERSION    = "1.05"
     WWW            = "https://sites.google.com/site/cmzmasek/home/software/forester"
 
     HELP_OPTION_1                           = "help"
@@ -86,7 +85,7 @@ module Evoruby
         exit( 0 )
       end
 
-      if ( cla.get_number_of_files != 2 )
+      if ( cla.get_number_of_files != 2 && cla.get_number_of_files != 3 )
         print_help
         exit( -1 )
       end
@@ -124,12 +123,31 @@ module Evoruby
         verbose = true
       end
 
-      if File.exist?( LOG_FILE )
+      if File.exist? LOG_FILE
         Util.fatal_error( PRG_NAME, 'logfile [' + LOG_FILE + '] already exists' )
       end
 
       in_suffix = cla.get_file_name( 0 )
       out_suffix = cla.get_file_name( 1 )
+
+      mapping_files_dir = nil
+
+      if cla.get_number_of_files == 3
+        mapping_files_dir = cla.get_file_name( 2 )
+      else
+        mapping_files_dir = Dir.getwd
+      end
+      unless File.exist? mapping_files_dir
+        Util.fatal_error( PRG_NAME, 'mapping files directory [' + mapping_files_dir + '] does not exist' )
+      end
+      unless File.directory? mapping_files_dir
+        Util.fatal_error( PRG_NAME, '[' + mapping_files_dir + '] is not a directory' )
+      end
+      if Dir.entries(mapping_files_dir).length <= 2
+        Util.fatal_error( PRG_NAME, 'mapping files directory [' + mapping_files_dir + '] is empty' )
+      end
+
+      mapping_files_dir = Util.canonical_path( mapping_files_dir.to_s )
 
       log = String.new
 
@@ -137,17 +155,22 @@ module Evoruby
       log << "Program              : " + PRG_NAME + NL
       log << "Version              : " + PRG_VERSION + NL
       log << "Program date         : " + PRG_DATE + NL
+      log << "Input/Output dir     : " + Dir.getwd + NL
+      log << "Mappings file dir    : " + mapping_files_dir + NL
+      log << "Input suffix         : " + in_suffix + NL
+      log << "Output suffix        : " + out_suffix + NL
       log << "No domains data      : " + no_domains.to_s + NL
       log << "No mol seq data      : " + no_seqs_files.to_s + NL
       log << "Extract tax codes    : " + extr_bracketed_tc.to_s + NL
-      log << "Date/time: " + now.to_s + NL
-      log << "Directory: " + Dir.getwd  + NL + NL
+      log << "Date/time: " + now.to_s + NL + NL
 
-      Util.print_message( PRG_NAME, 'input suffix     : ' + in_suffix )
-      Util.print_message( PRG_NAME, 'output suffix    : ' + out_suffix )
-
-      log << 'input suffix     : ' + in_suffix + NL
-      log << 'output suffix    : ' + out_suffix + NL
+      Util.print_message( PRG_NAME, 'Input/Output dir : ' + Dir.getwd )
+      Util.print_message( PRG_NAME, 'Mappings file dir: ' + mapping_files_dir )
+      Util.print_message( PRG_NAME, 'Input suffix     : ' + in_suffix )
+      Util.print_message( PRG_NAME, 'Output suffix    : ' + out_suffix )
+      Util.print_message( PRG_NAME, 'No domains data  : ' + no_domains.to_s )
+      Util.print_message( PRG_NAME, 'No mol seq data  : ' + no_seqs_files.to_s )
+      Util.print_message( PRG_NAME, 'Extract tax codes: ' + extr_bracketed_tc.to_s )
 
       if ( File.exist?( TMP_FILE_1 ) )
         File.delete( TMP_FILE_1 )
@@ -169,7 +192,7 @@ module Evoruby
           begin
             Util.check_file_for_readability( phylogeny_file )
           rescue ArgumentError
-            Util.fatal_error( PRG_NAME, 'can not read from: ' + phylogeny_file + ': '+ $! )
+            Util.fatal_error( PRG_NAME, 'can not read from: ' + phylogeny_file + ': '+ $!.to_s )
           end
 
           counter += 1
@@ -194,7 +217,7 @@ module Evoruby
           Util.print_message( PRG_NAME, counter.to_s + ': ' + phylogeny_file + ' -> ' +  outfile )
           log << counter.to_s + ': ' + phylogeny_file + ' -> ' +  outfile + NL
 
-          phylogeny_id = get_id( phylogeny_file )
+          phylogeny_id = phylogeny_file
           if  phylogeny_id == nil || phylogeny_id.size < 1
             Util.fatal_error( PRG_NAME, 'could not get id from ' + phylogeny_file.to_s )
           end
@@ -203,75 +226,80 @@ module Evoruby
           end
           log << "Id: " + phylogeny_id + NL
 
-          ids_mapfile_name = nil
-          domains_mapfile_name = nil
-          seqs_file_name = nil
+          ids_mapfile_path = nil
+          domains_mapfile_path = nil
+          seqs_file_path = nil
 
-          ids_mapfile_name = get_file( ".", phylogeny_id, Constants::ID_MAP_FILE_SUFFIX )
+          ids_mapfile_name = get_file( mapping_files_dir, phylogeny_id, Constants::ID_MAP_FILE_SUFFIX )
+          ids_mapfile_path = Util.canonical_path(mapping_files_dir, ids_mapfile_name)
 
           begin
-            Util.check_file_for_readability( ids_mapfile_name )
+            Util.check_file_for_readability( ids_mapfile_path)
           rescue IOError
-            Util.fatal_error( PRG_NAME, 'failed to read from [#{ids_mapfile_name}]: ' + $! )
+            Util.fatal_error( PRG_NAME, "failed to read from [#{ids_mapfile_path}]: " + $!.to_s )
           end
           if verbose
-            Util.print_message( PRG_NAME, "Ids mapfile: " + ids_mapfile_name )
+            Util.print_message( PRG_NAME, "Ids mapfile: " + ids_mapfile_path )
           end
-          log << "Ids mapfile: " + ids_mapfile_name + NL
+          log << "Ids mapfile: " + ids_mapfile_path + NL
 
           unless no_seqs_files
-            seqs_file_name = get_file( ".", phylogeny_id, Constants::ID_NORMALIZED_FASTA_FILE_SUFFIX )
+            seqs_file_name = get_file( mapping_files_dir, phylogeny_id, Constants::ID_NORMALIZED_FASTA_FILE_SUFFIX )
+            seqs_file_path = Util.canonical_path(mapping_files_dir, seqs_file_name)
             begin
-              Util.check_file_for_readability( seqs_file_name  )
+              Util.check_file_for_readability( seqs_file_path  )
             rescue IOError
-              Util.fatal_error( PRG_NAME, 'failed to read from [#{seqs_file_name }]: ' + $! )
+              Util.fatal_error( PRG_NAME, "failed to read from [#{seqs_file_path}]: " + $!.to_s )
             end
             if verbose
-              Util.print_message( PRG_NAME, "Seq file: " + seqs_file_name )
+              Util.print_message( PRG_NAME, "Seq file: " + seqs_file_path )
             end
-            log << "Seq file: " + seqs_file_name + NL
+            log << "Seq file: " + seqs_file_path + NL
           end
 
           unless no_domains
-            domains_mapfile_name = get_file( ".", phylogeny_id, Constants::DOMAINS_TO_FORESTER_OUTFILE_SUFFIX  )
+            domains_mapfile_name = get_file( mapping_files_dir , phylogeny_id, Constants::DOMAINS_TO_FORESTER_OUTFILE_SUFFIX  )
+            domains_mapfile_path = Util.canonical_path(mapping_files_dir, domains_mapfile_name)
             begin
-              Util.check_file_for_readability( domains_mapfile_name )
+              Util.check_file_for_readability( domains_mapfile_path )
             rescue IOError
-              Util.fatal_error( PRG_NAME, 'failed to read from [#{domains_mapfile_name}]: ' + $! )
+              Util.fatal_error( PRG_NAME, "failed to read from [#{domains_mapfile_path}]: " + $!.to_s )
             end
             if verbose
-              Util.print_message( PRG_NAME, "Domains file: " + domains_mapfile_name )
+              Util.print_message( PRG_NAME, "Domains file: " + domains_mapfile_path )
             end
-            log << "Domains file: " + domains_mapfile_name + NL
+            log << "Domains file: " + domains_mapfile_path + NL
           end
+
+          log <<  NL + NL
 
           if no_seqs_files
             FileUtils.cp(phylogeny_file, TMP_FILE_1)
           else
             cmd = decorator +
             ' -t -p -f=m ' + phylogeny_file + ' ' +
-            seqs_file_name  + ' ' + TMP_FILE_1
+            seqs_file_path  + ' ' + TMP_FILE_1
             if verbose
               puts cmd
             end
             begin
               execute_cmd( cmd, log )
-            rescue Error
-              Util.fatal_error( PRG_NAME, 'error: ' + $! )
+            rescue Exception
+              Util.fatal_error( PRG_NAME, 'error: ' + $!.to_s )
             end
           end
 
           unless no_domains
             cmd = decorator + ' ' + DECORATOR_OPTIONS_DOMAINS + ' ' +
             '-f=d ' + TMP_FILE_1 + ' ' +
-            domains_mapfile_name + ' ' + TMP_FILE_2
+            domains_mapfile_path + ' ' + TMP_FILE_2
             if verbose
               puts cmd
             end
             begin
               execute_cmd( cmd, log )
-            rescue Error
-              Util.fatal_error( PRG_NAME, 'error: ' + $! )
+            rescue Exception
+              Util.fatal_error( PRG_NAME, 'error: ' + $!.to_s )
             end
           end
 
@@ -282,26 +310,26 @@ module Evoruby
 
           if no_domains
             cmd = decorator + ' ' + opts + ' -f=n ' + TMP_FILE_1 + ' ' +
-            ids_mapfile_name + ' ' + outfile
+            ids_mapfile_path + ' ' + outfile
             if verbose
               puts cmd
             end
             begin
               execute_cmd( cmd, log )
-            rescue Error
-              Util.fatal_error( PRG_NAME, 'error: ' + $! )
+            rescue Exception
+              Util.fatal_error( PRG_NAME, 'error: ' + $!.to_s )
             end
             File.delete( TMP_FILE_1 )
           else
             cmd = decorator + ' ' + opts + ' -f=n ' + TMP_FILE_2 + ' ' +
-            ids_mapfile_name + ' ' + outfile
+            ids_mapfile_path + ' ' + outfile
             if verbose
               puts cmd
             end
             begin
               execute_cmd( cmd, log )
-            rescue Error
-              Util.fatal_error( PRG_NAME, 'error: ' + $! )
+            rescue Exception
+              Util.fatal_error( PRG_NAME, 'error: ' + $!.to_s )
             end
             File.delete( TMP_FILE_1 )
             File.delete( TMP_FILE_2 )
@@ -324,73 +352,41 @@ module Evoruby
         pipe.close_write
         log << pipe.read + NL + NL
       end
+      if $?.to_i != 0
+        raise StandardError, "failed to execute " + cmd
+      end
       sleep( SLEEP_TIME )
     end
 
-    def get_id( phylogeny_file_name )
-      return phylogeny_file_name
-      #if phylogeny_file_name =~ /^(.+?_DA)_/
-      #  return $1
-      #elsif phylogeny_file_name =~ /^(.+?)_/
-      #  return $1
-      #end
-      #nil
-    end
-
     def get_file( files_in_dir, phylogeny_id, suffix_pattern )
-      Util.get_matching_file( files_in_dir, phylogeny_id, suffix_pattern )
-      #      matching_files = Util.get_matching_files( files_in_dir, phylogeny_id, suffix_pattern )
-      #      if matching_files.length < 1
-      #        Util.fatal_error( PRG_NAME, 'no file matching [' + phylogeny_id +
-      #        '...' + suffix_pattern + '] present in current directory' )
-      #      end
-      #      if matching_files.length > 1
-      #        Util.fatal_error( PRG_NAME, 'more than one file matching [' +
-      #        phylogeny_id  + '...' + suffix_pattern + '] present in current directory' )
-      #      end
-      #      matching_files[ 0 ]
-    end
-
-    def get_seq_file( files_in_dir, phylogeny_id )
-      matching_files = Array.new
-
-      files_in_dir.each { | file |
-
-        if ( !File.directory?( file ) &&
-        file !~ /^\./ &&
-        file !~ /^00/ &&
-        ( file =~ /^#{phylogeny_id}__.+\d$/ || file =~ /^#{phylogeny_id}_.*\.fasta$/ ) )
-          matching_files << file
-        end
-      }
-
-      if matching_files.length < 1
-        Util.fatal_error( PRG_NAME, 'no seq file matching [' +
-        phylogeny_id + '_] present in current directory' )
+      begin
+        Util.get_matching_file( files_in_dir, phylogeny_id, suffix_pattern )
+      rescue Exception
+        Util.fatal_error( PRG_NAME, 'error: ' + $!.to_s )
       end
-      if matching_files.length > 1
-        Util.fatal_error( PRG_NAME, 'more than one seq file matching [' +
-        phylogeny_id + '_] present in current directory' )
-      end
-      matching_files[ 0 ]
     end
 
     def print_help()
       puts "Usage:"
       puts
-      puts "   " + PRG_NAME + ".rb <suffix of in-trees to be decorated> <suffix for decorated out-trees> "
+      puts "   " + PRG_NAME + ".rb [options] <suffix of in-trees to be decorated> <suffix for decorated out-trees> [mapping files directory, default: current dir]"
       puts
-      puts "   required files (in this dir): " + "name mappings       : .nim"
-      puts "                                 " + "sequences           : _ni.fasta"
-      puts "                                 " + "domain architectures: .dff"
+      puts "   " + PRG_NAME + ".rb [options] <input directory> <output directory> <mapping files directory>"
       puts
-      puts "   options: -" + NO_DOMAINS_OPTION  + ": to not add domain architecture information (.dff file)"
-      puts "            -" + NO_SEQS_OPTION   + ": to not add molecular sequence information (_ni.fasta file)"
+      puts "   required file  (in mapping files directory): " + "name mappings       : #{Constants::ID_MAP_FILE_SUFFIX}"
+      puts "   optional files (in mapping files directory): " + "sequences           : #{Constants::ID_NORMALIZED_FASTA_FILE_SUFFIX}"
+      puts "                                                " + "domain architectures: #{Constants::DOMAINS_TO_FORESTER_OUTFILE_SUFFIX}"
+      puts
+      puts "   options: -" + NO_DOMAINS_OPTION  + ": to not add domain architecture information (#{Constants::DOMAINS_TO_FORESTER_OUTFILE_SUFFIX} file)"
+      puts "            -" + NO_SEQS_OPTION   + ": to not add molecular sequence information (#{Constants::ID_NORMALIZED_FASTA_FILE_SUFFIX} file)"
       puts "            -" + EXTRACT_BRACKETED_TAXONOMIC_CODE_OPTION  + ": to extract bracketed taxonomic codes, e.g. [NEMVE]"
-      puts "            -" + VERBOSE_OPTION  + ":  verbose"
+      puts "            -" + VERBOSE_OPTION  + " : verbose"
       puts
       puts "Examples: " + PRG_NAME + ".rb .xml _d.xml"
       puts "          " + PRG_NAME + ".rb -#{NO_DOMAINS_OPTION} -#{NO_SEQS_OPTION} .xml _d.xml"
+      puts "          " + PRG_NAME + ".rb -#{NO_DOMAINS_OPTION} -#{NO_SEQS_OPTION} .xml _d.xml mappings_dir"
+      puts
+      puts "          " + PRG_NAME + ".rb in_trees_dir out_dir mappings_dir"
       puts
     end
   end # class PhylogenyiesDecorator
