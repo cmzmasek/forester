@@ -397,9 +397,7 @@ module Evoruby
               w.clean( @clean )
               w.set_max_name_length( @name_length )
             end
-            i = 0
             for m in msas
-              i = i + 1
               name = output + "_" + m.get_name
               if @fasta_output
                 name += ".fasta"
