@@ -78,6 +78,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -533,20 +534,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     @Override
     final public void paintComponent( final Graphics g ) {
-        // Dimension currentSize = getSize();
-        //  if ( offscreenImage == null || !currentSize.equals( offscreenDimension ) ) {
-        // call the 'java.awt.Component.createImage(...)' method to get an
-        // image
-        //   offscreenImage = createImage( currentSize.width, currentSize.height );
-        //  offscreenGraphics = offscreenImage.getGraphics();
-        //  offscreenDimension = currentSize;
-        // }
-        // super.paintComponent( g ); //why?
-        //final Graphics2D g2d = ( Graphics2D ) offscreenGraphics;
         final Graphics2D g2d = ( Graphics2D ) g;
         g2d.setRenderingHints( _rendering_hints );
         paintPhylogeny( g2d, false, false, 0, 0, 0, 0 );
-        //g.drawImage( offscreenImage, 0, 0, this );
     }
 
     @Override
@@ -1296,7 +1286,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     final private float getLastDragPointY() {
         return _last_drag_point_y;
     }
-
 
     final private double getMaxDistanceToRoot() {
         if ( _max_distance_to_root < 0 ) {
@@ -2394,19 +2383,28 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                            final boolean to_graphics_file,
                                            final boolean to_pdf,
                                            final boolean is_in_found_nodes ) {
+        ////
+        //// TODO
+        ////
         Color c = null;
+        int res[] = null;
+        if ( _found_nodes_0 != null || _found_nodes_1 != null ) {
+            res = calcFoundNodesInSubtree( node );
+        }
         if ( ( to_pdf || to_graphics_file ) && getOptions().isPrintBlackAndWhite() ) {
             c = Color.BLACK;
         }
-        else if ( is_in_found_nodes ) {
-            c = getColorForFoundNode( node );
-        }
-        else if ( getControlPanel().isColorAccordingToSequence() ) {
-            c = getSequenceBasedColor( node );
-        }
-        else if ( getControlPanel().isColorAccordingToTaxonomy() ) {
-            c = getTaxonomyBasedColor( node );
-        }
+        //TODO
+        //FIXME
+        // else if ( is_in_found_nodes ) {
+        //     c = getColorForFoundNode( node );
+        // }
+        // else if ( getControlPanel().isColorAccordingToSequence() ) {
+        //     c = getSequenceBasedColor( node );
+        // }
+        // else if ( getControlPanel().isColorAccordingToTaxonomy() ) {
+        //     c = getTaxonomyBasedColor( node );
+        // }
         else if ( getOptions().isColorLabelsSameAsParentBranch() && getControlPanel().isUseVisualStyles()
                 && ( PhylogenyMethods.getBranchColorValue( node ) != null ) ) {
             c = PhylogenyMethods.getBranchColorValue( node );
@@ -2856,7 +2854,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                             && !ForesterUtil.isEmpty( last.getNodeData().getTaxonomy().getTaxonomyCode() ) ) {
                         addLabelForCollapsed( first.getNodeData().getTaxonomy().getTaxonomyCode(),
                                               last.getNodeData().getTaxonomy().getTaxonomyCode(),
-                                              node.getAllExternalDescendants().size() );
+                                              node.getAllExternalDescendants().size(),
+                                              node );
                     }
                     else if ( getControlPanel().isShowTaxonomyScientificNames() && first.getNodeData().isHasTaxonomy()
                             && last.getNodeData().isHasTaxonomy()
@@ -2864,7 +2863,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                             && !ForesterUtil.isEmpty( last.getNodeData().getTaxonomy().getScientificName() ) ) {
                         addLabelForCollapsed( first.getNodeData().getTaxonomy().getScientificName(),
                                               last.getNodeData().getTaxonomy().getScientificName(),
-                                              node.getAllExternalDescendants().size() );
+                                              node.getAllExternalDescendants().size(),
+                                              node );
                     }
                     else if ( getControlPanel().isShowSeqNames() && first.getNodeData().isHasSequence()
                             && last.getNodeData().isHasSequence()
@@ -2872,13 +2872,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                             && !ForesterUtil.isEmpty( last.getNodeData().getSequence().getName() ) ) {
                         addLabelForCollapsed( first.getNodeData().getSequence().getName(),
                                               last.getNodeData().getSequence().getName(),
-                                              node.getAllExternalDescendants().size() );
+                                              node.getAllExternalDescendants().size(),
+                                              node );
                     }
                     else if ( getControlPanel().isShowNodeNames() && !ForesterUtil.isEmpty( first.getName() )
                             && !ForesterUtil.isEmpty( last.getName() ) ) {
                         addLabelForCollapsed( first.getName(),
                                               last.getName(),
-                                              node.getAllExternalDescendants().size() );
+                                              node.getAllExternalDescendants().size(),
+                                              node );
                     }
                 }
             }
@@ -2887,6 +2889,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 _sb.append( " [" );
                 _sb.append( node.getAllExternalDescendants().size() );
                 _sb.append( "]" );
+                if ( _found_nodes_0 != null || _found_nodes_1 != null ) {
+                    int[] res = calcFoundNodesInSubtree( node );
+                    if ( res[ 0 ] > 0 ) {
+                        _sb.append( " [" );
+                        _sb.append( res[ 0 ] );
+                        _sb.append( "/" );
+                        _sb.append( res[ 1 ] );
+                        _sb.append( "]" );
+                    }
+                }
             }
         }
         else {
@@ -3117,13 +3129,47 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
-    private final void addLabelForCollapsed( final String first, final String last, final int size ) {
+    private final void addLabelForCollapsed( final String first,
+                                             final String last,
+                                             final int size,
+                                             final PhylogenyNode node ) {
         _sb.append( first.length() < AptxConstants.MAX_LENGTH_FOR_COLLAPSED_NAME ? first
                 : first.substring( 0, AptxConstants.MAX_LENGTH_FOR_COLLAPSED_NAME - 1 ) );
         _sb.append( " ... " );
         _sb.append( last.length() < AptxConstants.MAX_LENGTH_FOR_COLLAPSED_NAME ? last
                 : last.substring( 0, AptxConstants.MAX_LENGTH_FOR_COLLAPSED_NAME - 1 ) );
         _sb.append( " (" + size + ")" );
+        if ( _found_nodes_0 != null || _found_nodes_1 != null ) {
+            /////
+            /////
+            int[] res = calcFoundNodesInSubtree( node );
+            if ( res[ 0 ] > 0 ) {
+                _sb.append( " [" );
+                _sb.append( res[ 0 ] );
+                _sb.append( "/" );
+                _sb.append( res[ 1 ] );
+                _sb.append( "]" );
+            }
+        }
+    }
+
+    private final int[] calcFoundNodesInSubtree( final PhylogenyNode node ) {
+        final List<PhylogenyNode> all_descs = PhylogenyMethods.getAllDescendants( node );
+        int res[] = new int[ 2 ];
+        int found = 0;
+        int total = 0;
+        for( final PhylogenyNode desc : all_descs ) {
+            if ( desc.isHasNodeData() ) {
+                if ( ( _found_nodes_0 != null && _found_nodes_0.contains( desc.getId() ) )
+                        || ( _found_nodes_1 != null && _found_nodes_1.contains( desc.getId() ) ) ) {
+                    ++found;
+                }
+                ++total;
+            }
+        }
+        res[ 0 ] = found;
+        res[ 1 ] = total;
+        return res;
     }
 
     private final boolean isAllowAttributedStrings() {
@@ -3503,7 +3549,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         //if ( getControlPanel().isShowMolSequences() && ( node.getNodeData().isHasSequence() )
         //        && ( node.getNodeData().getSequence().isMolecularSequenceAligned() )
         //        && ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getMolecularSequence() ) ) ) {
-        //    paintMolecularSequences( g, node, to_pdf );
+        //   paintMolecularSequences( g, node, to_pdf );
         //}
     }
 

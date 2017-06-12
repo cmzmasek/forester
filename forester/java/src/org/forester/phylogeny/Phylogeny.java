@@ -37,6 +37,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.io.writers.PhylogenyWriter;
@@ -56,6 +58,7 @@ import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.phylogeny.iterators.PostorderTreeIterator;
 import org.forester.phylogeny.iterators.PreorderTreeIterator;
 import org.forester.util.FailedConditionCheckException;
+import org.forester.util.ForesterUtil;
 
 public class Phylogeny {
 
@@ -443,6 +446,23 @@ public class Phylogeny {
             final PhylogenyNode n = iter.next();
             if ( n.getName().equals( name ) ) {
                 nodes.add( n );
+            }
+        }
+        return nodes;
+    }
+
+    public List<PhylogenyNode> getNodes( final Pattern p ) {
+        if ( isEmpty() ) {
+            return null;
+        }
+        final List<PhylogenyNode> nodes = new ArrayList<>();
+        for( final PhylogenyNodeIterator iter = iteratorPreorder(); iter.hasNext(); ) {
+            final PhylogenyNode n = iter.next();
+            if ( n.getName() != null ) {
+                final Matcher m = p.matcher( n.getName() );
+                if ( m.find() ) {
+                    nodes.add( n );
+                }
             }
         }
         return nodes;
