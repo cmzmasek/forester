@@ -39,7 +39,7 @@ public final class AptxConstants {
     final static boolean        __ALLOW_PHYLOGENETIC_INFERENCE                                = true;
     public final static String  PRG_NAME                                                      = "Archaeopteryx";
     final static String         VERSION                                                       = "0.9921 beta";
-    final static String         PRG_DATE                                                      = "170322";
+    final static String         PRG_DATE                                                      = "170712";
     final static String         DEFAULT_CONFIGURATION_FILE_NAME                               = "_aptx_configuration_file";
     final static String[]       DEFAULT_FONT_CHOICES                                          = { 
             "Arial Unicode MS", "Dialog", "SansSerif", "Sans", "Arial", "Helvetica" };
@@ -103,9 +103,9 @@ public final class AptxConstants {
     public final static Color   DOMAIN_BASE_COLOR_FOR_PDF                                     = new Color( 100,
                                                                                                            100,
                                                                                                            100 );
-    public final static Color   DOMAIN_LABEL_COLOR_FOR_PDF                                    = new Color( 150,
-                                                                                                           150,
-                                                                                                           150 );
+    public final static Color   DOMAIN_LABEL_COLOR_FOR_PDF                                    = new Color( 0,
+                                                                                                           0,
+                                                                                                           0 );
     final static short          DEFAULT_NODE_SHAPE_SIZE_DEFAULT                               = 7;
     static final int            MAX_LENGTH_FOR_COLLAPSED_NAME = 8;
 }

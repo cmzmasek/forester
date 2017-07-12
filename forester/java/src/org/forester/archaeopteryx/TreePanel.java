@@ -1425,7 +1425,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 sortDescendants( node );
                 break;
             case GET_EXT_DESC_DATA:
-                showExtDescNodeData( node );
+                showExtDescNodeData( node, '_' );
                 break;
             case UNCOLLAPSE_ALL:
                 uncollapseAll( node );
@@ -2098,7 +2098,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                           final boolean to_pdf,
                                           final boolean to_graphics_file ) {
         g.setFont( getTreeFontSet().getSmallFont() );
-        if ( ( to_pdf || to_graphics_file ) && getOptions().isPrintBlackAndWhite() ) {
+        if ( to_pdf || ( to_graphics_file && getOptions().isPrintBlackAndWhite() ) ) {
             g.setColor( Color.BLACK );
         }
         else {
@@ -2531,7 +2531,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             else if ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.ROUNDED ) {
                 x += ROUNDED_D;
             }
-            if ( ( to_pdf || to_graphics_file ) && getOptions().isPrintBlackAndWhite() ) {
+            if ( to_pdf || ( to_graphics_file && getOptions().isPrintBlackAndWhite() ) ) {
                 g.setColor( Color.BLACK );
             }
             else {
@@ -3491,7 +3491,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     if ( getOptions().isLineUpRendarableNodeData() ) {
                         if ( getOptions().isRightLineUpDomains() ) {
                             rds.render( ( float ) ( ( getMaxDistanceToRoot() * getXcorrectionFactor() )
-                                    + _length_of_longest_text
+                                    + _length_of_longest_text + 50 //TODO why plus 50?
                                     + ( ( _longest_domain - rds.getTotalLength() ) * rds.getRenderingFactorWidth() ) ),
                                         node.getYcoord() - ( h / 2.0f ),
                                         g,
@@ -3500,7 +3500,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         }
                         else {
                             rds.render( ( float ) ( ( getMaxDistanceToRoot() * getXcorrectionFactor() )
-                                    + _length_of_longest_text ), node.getYcoord() - ( h / 2.0f ), g, this, to_pdf );
+                                    + _length_of_longest_text + 50 ),
+                                        node.getYcoord() - ( h / 2.0f ),
+                                        g,
+                                        this,
+                                        to_pdf );
                         }
                     }
                     else {
@@ -4073,7 +4077,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         _urt_factor_ov = urt_factor_ov;
     }
 
-    private void showExtDescNodeData( final PhylogenyNode node ) {
+    private void showExtDescNodeData( final PhylogenyNode node, final char separator ) {
         final List<String> data = new ArrayList<String>();
         final List<PhylogenyNode> nodes = node.getAllExternalDescendants();
         if ( ( getFoundNodes0() != null ) || ( getFoundNodes1() != null ) ) {
@@ -4113,44 +4117,49 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     if ( n.getNodeData().isHasSequence()
                             && !ForesterUtil.isEmpty( n.getNodeData().getSequence().getMolecularSequence() ) ) {
                         final StringBuilder ann = new StringBuilder();
-                        if ( !ForesterUtil.isEmpty( n.getName() ) ) {
+                        if ( getControlPanel().isShowNodeNames() && !ForesterUtil.isEmpty( n.getName() ) ) {
                             ann.append( n.getName() );
-                            ann.append( "|" );
+                            ann.append( separator );
                         }
-                        if ( !ForesterUtil.isEmpty( n.getNodeData().getSequence().getSymbol() ) ) {
-                            ann.append( "SYM=" );
+                        if ( getControlPanel().isShowSeqSymbols()
+                                && !ForesterUtil.isEmpty( n.getNodeData().getSequence().getSymbol() ) ) {
                             ann.append( n.getNodeData().getSequence().getSymbol() );
-                            ann.append( "|" );
+                            ann.append( separator );
                         }
-                        if ( !ForesterUtil.isEmpty( n.getNodeData().getSequence().getName() ) ) {
-                            ann.append( "NAME=" );
+                        if ( getControlPanel().isShowSeqNames()
+                                && !ForesterUtil.isEmpty( n.getNodeData().getSequence().getName() ) ) {
                             ann.append( n.getNodeData().getSequence().getName() );
-                            ann.append( "|" );
+                            ann.append( separator );
                         }
-                        if ( !ForesterUtil.isEmpty( n.getNodeData().getSequence().getGeneName() ) ) {
-                            ann.append( "GN=" );
+                        if ( getControlPanel().isShowGeneNames()
+                                && !ForesterUtil.isEmpty( n.getNodeData().getSequence().getGeneName() ) ) {
                             ann.append( n.getNodeData().getSequence().getGeneName() );
-                            ann.append( "|" );
+                            ann.append( separator );
                         }
-                        if ( n.getNodeData().getSequence().getAccession() != null ) {
-                            ann.append( "ACC=" );
+                        if ( getControlPanel().isShowSequenceAcc()
+                                && n.getNodeData().getSequence().getAccession() != null ) {
                             ann.append( n.getNodeData().getSequence().getAccession().asText() );
-                            ann.append( "|" );
+                            ann.append( separator );
                         }
                         if ( n.getNodeData().isHasTaxonomy() ) {
-                            if ( !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getTaxonomyCode() ) ) {
-                                ann.append( "TAXID=" );
+                            if ( getControlPanel().isShowTaxonomyCode()
+                                    && !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getTaxonomyCode() ) ) {
                                 ann.append( n.getNodeData().getTaxonomy().getTaxonomyCode() );
-                                ann.append( "|" );
+                                ann.append( separator );
                             }
-                            if ( !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getScientificName() ) ) {
-                                ann.append( "SN=" );
+                            if ( getControlPanel().isShowTaxonomyScientificNames()
+                                    && !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getScientificName() ) ) {
                                 ann.append( n.getNodeData().getTaxonomy().getScientificName() );
-                                ann.append( "|" );
+                                ann.append( separator );
+                            }
+                            if ( getControlPanel().isShowTaxonomyCommonNames()
+                                    && !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getCommonName() ) ) {
+                                ann.append( n.getNodeData().getTaxonomy().getCommonName() );
+                                ann.append( separator );
                             }
                         }
                         String ann_str;
-                        if ( ann.charAt( ann.length() - 1 ) == '|' ) {
+                        if ( ann.length() > 0 && ann.charAt( ann.length() - 1 ) == separator ) {
                             ann_str = ann.substring( 0, ann.length() - 1 );
                         }
                         else {
