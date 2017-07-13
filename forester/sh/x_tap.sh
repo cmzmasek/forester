@@ -1,4 +1,4 @@
-re="(.+)\.fasta"
+re="(.+)\.fasta$"
 for i in * 
 do
     if test -f "$i" 

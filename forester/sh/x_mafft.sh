@@ -1,4 +1,5 @@
-re="(.+)_ni\.fasta"
+re="(.+)_ni\.fasta$"
+#re="(.+)\.fasta$"
 cutoff=3
 for i in * 
 do
@@ -12,7 +13,7 @@ do
             echo $count
             if [ $count -gt $cutoff ]
             then
-                /usr/local/bin/mafft --maxiterate 1000 --globalpair $i > ${name}_mafft_1000_g.aln
+                /usr/local/bin/mafft --maxiterate 1000 --localpair $i > ${name}_mafft_1000_l.fasta
                 rc=$?
                 if [[ $rc != 0 ]]
                 then

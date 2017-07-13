@@ -1,4 +1,4 @@
-re="(.+)_mafft_1000_l_05_20"
+re="(.+)_hmmscan$"
 for i in * 
 do
     if test -f "$i" 
@@ -7,7 +7,7 @@ do
         then
             name=${BASH_REMATCH[1]}
             echo $name
-            perl /home/zma/git/forester/forester/perl/phylo_pl.pl -B1000Wq@1S9X $i ${name}_mafft_1000_g_05_20_tree
+            ruby /home/zma/git/forester/forester/ruby/evoruby/exe/dsx.rb -d -e=1e-6 -l=50 ${name} ${name}_hmmscan
             rc=$?
             if [[ $rc != 0 ]]
             then
