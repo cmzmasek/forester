@@ -28,7 +28,7 @@
 // * More tests (including multiple children per node), especially on edge cases
 // * Utilize relevant support values for warnings
 // * Better system for "clade label creation" (e.g. 1.3.4 + 1.3.6 -> 1.3), use
-//   specific separator (eg . | _ )
+// specific separator (eg . | _ )
 
 package org.forester.clade_analysis;
 
@@ -89,22 +89,22 @@ public final class Analysis {
     }
 
     private final static String analyzeSiblings( final PhylogenyNode child, final PhylogenyNode parent ) {
-        final int qnode_p_index = child.getChildNodeIndex();
-        final List<String> qnode_ext_nodes_names_a = new ArrayList<>();
+        final int child_index = child.getChildNodeIndex();
+        final List<String> ext_nodes_names = new ArrayList<>();
         final List<PhylogenyNode> descs = parent.getDescendants();
         for( int i = 0; i < descs.size(); ++i ) {
-            if ( i != qnode_p_index ) {
+            if ( i != child_index ) {
                 final PhylogenyNode d = descs.get( i );
                 for( final PhylogenyNode n : d.getAllExternalDescendants() ) {
                     final String name = n.getName();
                     if ( ForesterUtil.isEmptyTrimmed( name ) ) {
                         throw new IllegalArgumentException( "external node(s) with empty names found" );
                     }
-                    qnode_ext_nodes_names_a.add( name.trim() );
+                    ext_nodes_names.add( name.trim() );
                 }
             }
         }
-        final String greatest_common_prefix_a = ForesterUtil.greatestCommonPrefix( qnode_ext_nodes_names_a );
-        return greatest_common_prefix_a;
+        final String greatest_common_prefix = ForesterUtil.greatestCommonPrefix( ext_nodes_names );
+        return greatest_common_prefix;
     }
 }

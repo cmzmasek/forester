@@ -96,9 +96,9 @@ public final class cladinator {
             final Result res = Analysis.execute( p, query );
             System.out.println();
             System.out.println( "Result:" );
-            System.out.println( "Greatest common prefix a       : " + res.getGreatestCommonPrefix() );
-            System.out.println( "Greatest common prefix a (up)  : " + res.getGreatestCommonPrefixUp() );
-            System.out.println( "Greatest common prefix b (down): " + res.getGreatestCommonPrefixDown() );
+            System.out.println( "Greatest common prefix     : " + res.getGreatestCommonPrefix() );
+            System.out.println( "Greatest common prefix up  : " + res.getGreatestCommonPrefixUp() );
+            System.out.println( "Greatest common prefix down: " + res.getGreatestCommonPrefixDown() );
             final double lec_ratio = ( 100.0 * res.getLeastEncompassingCladeSize() ) / res.getTreeSize();
             System.out.println( "Least Encompassing Clade has " + res.getLeastEncompassingCladeSize()
                     + " external nodes (" + df2.format( lec_ratio ) + "% of a total of " + res.getTreeSize() + ")" );
