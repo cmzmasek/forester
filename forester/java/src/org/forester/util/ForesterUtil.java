@@ -593,6 +593,13 @@ public final class ForesterUtil {
     final public static boolean isEmpty( final String s ) {
         return ( ( s == null ) || ( s.length() < 1 ) );
     }
+    
+    final public static boolean isEmptyTrimmed( final String s ) {
+       if ( s == null ) {
+           return true;
+       }
+       return ( ( s.trim().length() < 1 ) );
+    }
 
     /**
      * Returns true is Domain domain falls in an uninterrupted stretch of
@@ -1570,6 +1577,30 @@ public final class ForesterUtil {
                     + suffix + "\" found in [" + dir + "]" );
         }
         return the_one;
+    }
+
+    public final static String greatestCommonPrefix( final String a, final String b ) {
+        final int min_length = Math.min( a.length(), b.length() );
+        for( int i = 0; i < min_length; ++i ) {
+            if ( a.charAt( i ) != b.charAt( i ) ) {
+                return a.substring( 0, i );
+            }
+        }
+        return a.substring( 0, min_length );
+    }
+
+    public final static String greatestCommonPrefix( final List<String> strings ) {
+        if ( strings == null ) {
+            throw new IllegalArgumentException( "list is null" );
+        }
+        if ( strings.isEmpty() ) {
+            throw new IllegalArgumentException( "list is empty" );
+        }
+        String common = strings.get( 0 );
+        for( int i = 1; i < strings.size(); ++i ) {
+            common = greatestCommonPrefix( common, strings.get( i ) );
+        }
+        return common;
     }
 
     private ForesterUtil() {

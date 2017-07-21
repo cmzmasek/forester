@@ -4121,6 +4121,23 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                             ann.append( n.getName() );
                             ann.append( separator );
                         }
+                        if ( n.getNodeData().isHasTaxonomy() ) {
+                            if ( getControlPanel().isShowTaxonomyCode()
+                                    && !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getTaxonomyCode() ) ) {
+                                ann.append( n.getNodeData().getTaxonomy().getTaxonomyCode() );
+                                ann.append( separator );
+                            }
+                            if ( getControlPanel().isShowTaxonomyScientificNames()
+                                    && !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getScientificName() ) ) {
+                                ann.append( n.getNodeData().getTaxonomy().getScientificName() );
+                                ann.append( separator );
+                            }
+                            if ( getControlPanel().isShowTaxonomyCommonNames()
+                                    && !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getCommonName() ) ) {
+                                ann.append( n.getNodeData().getTaxonomy().getCommonName() );
+                                ann.append( separator );
+                            }
+                        }
                         if ( getControlPanel().isShowSeqSymbols()
                                 && !ForesterUtil.isEmpty( n.getNodeData().getSequence().getSymbol() ) ) {
                             ann.append( n.getNodeData().getSequence().getSymbol() );
@@ -4141,24 +4158,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                             ann.append( n.getNodeData().getSequence().getAccession().asText() );
                             ann.append( separator );
                         }
-                        if ( n.getNodeData().isHasTaxonomy() ) {
-                            if ( getControlPanel().isShowTaxonomyCode()
-                                    && !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getTaxonomyCode() ) ) {
-                                ann.append( n.getNodeData().getTaxonomy().getTaxonomyCode() );
-                                ann.append( separator );
-                            }
-                            if ( getControlPanel().isShowTaxonomyScientificNames()
-                                    && !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getScientificName() ) ) {
-                                ann.append( n.getNodeData().getTaxonomy().getScientificName() );
-                                ann.append( separator );
-                            }
-                            if ( getControlPanel().isShowTaxonomyCommonNames()
-                                    && !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getCommonName() ) ) {
-                                ann.append( n.getNodeData().getTaxonomy().getCommonName() );
-                                ann.append( separator );
-                            }
-                        }
-                        String ann_str;
+                       
+                        final String ann_str;
                         if ( ann.length() > 0 && ann.charAt( ann.length() - 1 ) == separator ) {
                             ann_str = ann.substring( 0, ann.length() - 1 );
                         }

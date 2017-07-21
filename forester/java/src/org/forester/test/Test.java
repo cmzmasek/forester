@@ -218,6 +218,17 @@ public final class Test {
             succeeded++;
         }
         System.out.println( "OK." );
+        
+        System.out.print( "Common prefix: " );
+        if ( !testCommonPrefix() ) {
+            System.out.println( "failed." );
+            failed++;
+        }
+        else {
+            succeeded++;
+        }
+        System.out.println( "OK." );
+        
         System.out.print( "Sequence writer: " );
         if ( testSequenceWriter() ) {
             System.out.println( "OK." );
@@ -1090,6 +1101,7 @@ public final class Test {
         }
     }
 
+   
     private static boolean testEngulfingOverlapRemoval() {
         try {
             final Domain d0 = new BasicDomain( "d0", 0, 8, ( short ) 1, ( short ) 1, 0.1, 1 );
@@ -1852,6 +1864,69 @@ public final class Test {
         return true;
     }
 
+    
+    private static boolean testCommonPrefix() {
+        final List<String> l0 = new ArrayList<String>();
+        l0.add( "abc" );
+        if ( !ForesterUtil.greatestCommonPrefix( l0 ).equals( "abc" ) ) {
+            return false;
+        }
+        
+        final List<String> l1 = new ArrayList<String>();
+        l1.add( "abc" );
+        l1.add( "abX" );
+        if ( !ForesterUtil.greatestCommonPrefix( l1 ).equals( "ab" ) ) {
+            return false;
+        }
+        
+        final List<String> l2 = new ArrayList<String>();
+        l2.add( "abc" );
+        l2.add( "abX" );
+        l2.add( "axy" );
+        if ( !ForesterUtil.greatestCommonPrefix( l2 ).equals( "a" ) ) {
+            return false;
+        }
+        
+        final List<String> l3 = new ArrayList<String>();
+        l3.add( "abXsdfsdfsdfsdfsdfsd" );
+        l3.add( "abXsdfsdfsdfsdfsdfsd" );
+        l3.add( "abc" );
+        l3.add( "abXsdfsdfsdfsdfsdfsd" );
+        l3.add( "ab" );
+        l3.add( "abc" );
+        l3.add( "ab" );
+        if ( !ForesterUtil.greatestCommonPrefix( l3 ).equals( "ab" ) ) {
+            return false;
+        }
+        
+        final List<String> l4 = new ArrayList<String>();
+        l4.add( "abXsdfsdfsdfsdfsdfsd" );
+        l4.add( "abXsdfsdfsdfsdfsdfsd" );
+        l4.add( "abc" );
+        l4.add( "Xsdfsdfsdfsdfsdfsd" );
+        l4.add( "ab" );
+        l4.add( "abc" );
+        if ( !ForesterUtil.greatestCommonPrefix( l4 ).equals( "" ) ) {
+            return false;
+        }
+        
+        final List<String> l5 = new ArrayList<String>();
+        l5.add( "" );
+        if ( !ForesterUtil.greatestCommonPrefix( l5 ).equals( "" ) ) {
+            return false;
+        }
+        
+        final List<String> l6 = new ArrayList<String>();
+        l6.add( "abc" );
+        l6.add( "abX" );
+        l6.add( "" );
+        if ( !ForesterUtil.greatestCommonPrefix( l6 ).equals( "" ) ) {
+            return false;
+        }
+        return true;
+    }
+
+    
     private static boolean testUTF8ParsingFromFile() {
         try {
             final PhyloXmlParser xml_parser = PhyloXmlParser.createPhyloXmlParser();
