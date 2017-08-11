@@ -26,7 +26,10 @@
 package org.forester.application;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.forester.clade_analysis.Analysis;
 import org.forester.clade_analysis.Result;
@@ -41,13 +44,14 @@ import org.forester.util.ForesterUtil;
 public final class cladinator {
 
     final static private String        PRG_NAME      = "cladinator";
-    final static private String        PRG_VERSION   = "0.100";
-    final static private String        PRG_DATE      = "170721";
+    final static private String        PRG_VERSION   = "0.101";
+    final static private String        PRG_DATE      = "170810";
     final static private String        PRG_DESC      = "clades within clades -- analysis of pplacer type outputs";
     final static private String        E_MAIL        = "phyloxml@gmail.com";
     final static private String        WWW           = "https://sites.google.com/site/cmzmasek/home/software/forester";
     final static private String        HELP_OPTION_1 = "help";
     final static private String        HELP_OPTION_2 = "h";
+    final static private String        SEP_OPTION    = "s";
     private final static DecimalFormat df2           = new DecimalFormat( ".##" );
 
     public static void main( final String args[] ) {
@@ -71,51 +75,96 @@ public final class cladinator {
                 print_help();
                 System.exit( 0 );
             }
-            else if ( ( args.length != 2 ) ) {
+            else if ( ( args.length != 2 && args.length != 3 ) ) {
                 System.out.println();
                 System.out.println( "Wrong number of arguments." );
                 System.out.println();
                 print_help();
                 System.exit( -1 );
             }
-            //final List<String> allowed_options = new ArrayList<>();
+            final List<String> allowed_options = new ArrayList<String>();
+            allowed_options.add( SEP_OPTION );
+            final String dissallowed_options = cla.validateAllowedOptionsAsString( allowed_options );
+            if ( dissallowed_options.length() > 0 ) {
+                ForesterUtil.fatalError( PRG_NAME, "unknown option(s): " + dissallowed_options );
+            }
+            final String separator;
+            if ( cla.isOptionSet( SEP_OPTION ) ) {
+                separator = cla.getOptionValue( SEP_OPTION );
+            }
+            else {
+                separator = null;
+            }
             final File intreefile = cla.getFile( 0 );
             final String query = cla.getName( 1 );
             System.out.println( "Input tree: " + intreefile );
-            System.out.println( "Query:      " + query );
+            System.out.println( "Query     : " + query );
+            if ( !ForesterUtil.isEmpty( separator ) ) {
+                System.out.println( "Separator : " + separator );
+            }
+            else {
+                System.out.println( "Separator : none" );
+            }
             Phylogeny p = null;
             try {
                 final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
                 final PhylogenyParser pp = ParserUtils.createParserDependingOnFileType( intreefile, true );
                 p = factory.create( intreefile, pp )[ 0 ];
             }
-            catch ( final Exception e ) {
+            catch ( final IOException e ) {
                 System.out.println( "\nCould not read \"" + intreefile + "\" [" + e.getMessage() + "]\n" );
                 System.exit( -1 );
             }
-            final Result res = Analysis.execute( p, query );
+            final Result res = Analysis.execute( p, query, separator );
             System.out.println();
             System.out.println( "Result:" );
-            System.out.println( "Greatest common prefix     : " + res.getGreatestCommonPrefix() );
-            System.out.println( "Greatest common prefix up  : " + res.getGreatestCommonPrefixUp() );
-            System.out.println( "Greatest common prefix down: " + res.getGreatestCommonPrefixDown() );
+            System.out.println( "Greatest Common Prefix       : " + res.getGreatestCommonPrefix() );
+            System.out.println( "Greatest Common Prefix Up    : " + res.getGreatestCommonPrefixUp() );
+            System.out.println( "Greatest Common Prefix Down  : " + res.getGreatestCommonPrefixDown() );
+            
+            if ( !ForesterUtil.isEmpty( res.getGreatestCommonCladeConfidence() ) ) {
+                System.out.println( "Greatest Common Clade Conf   : " + res.getGreatestCommonCladeConfidence() );
+            }
+            if ( !ForesterUtil.isEmpty( res.getGreatestCommonCladeUpConfidence() ) ) {
+                System.out.println( "Greatest Common Clade Up Conf: " + res.getGreatestCommonCladeUpConfidence() );
+            }
+            if ( !ForesterUtil.isEmpty( res.getGreatestCommonCladeDownConfidence() ) ) {
+                System.out.println( "Greatest Common Clade Down Conf: " + res.getGreatestCommonCladeDownConfidence() );
+            }
+            
+            System.out.println( "Least Encompassing Clade size: " + res.getLeastEncompassingCladeSize()
+                    + " external nodes" );
             final double lec_ratio = ( 100.0 * res.getLeastEncompassingCladeSize() ) / res.getTreeSize();
-            System.out.println( "Least Encompassing Clade has " + res.getLeastEncompassingCladeSize()
-                    + " external nodes (" + df2.format( lec_ratio ) + "% of a total of " + res.getTreeSize() + ")" );
+            System.out.println( "Least Encompassing Clade size: " + df2.format( lec_ratio ) + "%" );
+            System.out.println( "Total tree size              : " + res.getTreeSize() + " external nodes" );
             if ( res.getWarnings().size() > 0 ) {
                 System.out.println( "Warnings:" );
                 for( final String s : res.getWarnings() ) {
                     System.out.println( s );
                 }
             }
+            System.out.println();
+        }
+        catch ( final IllegalArgumentException e ) {
+            ForesterUtil.fatalError( PRG_NAME, e.getMessage() );
         }
         catch ( final Exception e ) {
-            ForesterUtil.fatalError( PRG_NAME, e.getMessage() );
+            e.printStackTrace();
+            ForesterUtil.fatalError( PRG_NAME, "Unexpected errror!" );
         }
     }
 
     private final static void print_help() {
-        System.out.println( "Usage: " + PRG_NAME + " <gene tree file> <query>" );
+        System.out.println( "Usage:" );
+        System.out.println();
+        System.out.println( PRG_NAME + " [options] <gene tree file> <query>" );
+        System.out.println();
+        System.out.println( " options:" );
+        System.out.println( "  -" + SEP_OPTION + "=<separator>: the separator to be used" );
+        System.out.println();
+        System.out.println( "Example:" );
+        System.out.println();
+        System.out.println( " " + PRG_NAME + " -s=. my_tree.xml A.1.1.1" );
         System.out.println();
     }
 }

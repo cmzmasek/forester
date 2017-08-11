@@ -27,8 +27,6 @@
 // * Multiple "hits" with different "M" values
 // * More tests (including multiple children per node), especially on edge cases
 // * Utilize relevant support values for warnings
-// * Better system for "clade label creation" (e.g. 1.3.4 + 1.3.6 -> 1.3), use
-// specific separator (eg . | _ )
 
 package org.forester.clade_analysis;
 
@@ -37,11 +35,12 @@ import java.util.List;
 
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
+import org.forester.phylogeny.data.Confidence;
 import org.forester.util.ForesterUtil;
 
 public final class Analysis {
 
-    public static Result execute( final Phylogeny p, final String query ) {
+    public static Result execute( final Phylogeny p, final String query, final String separator ) {
         final PhylogenyNode qnode = p.getNode( query );
         if ( qnode.isRoot() ) {
             throw new IllegalStateException( "Unexpected error: Query " + query
@@ -51,8 +50,14 @@ public final class Analysis {
             throw new IllegalStateException( "Unexpected error: Parent of query " + query
                     + " is root. This should have never happened" );
         }
-        final PhylogenyNode qnode_p = qnode.getParent();
-        final PhylogenyNode qnode_pp = qnode.getParent().getParent();
+        PhylogenyNode qnode_p = qnode.getParent();
+        PhylogenyNode qnode_pp = qnode.getParent().getParent();
+        while ( qnode_p.getNumberOfDescendants() == 1 ) {
+            qnode_p = qnode_p.getParent();
+        }
+        while ( qnode_pp.getNumberOfDescendants() == 1 ) {
+            qnode_pp = qnode_pp.getParent();
+        }
         final List<PhylogenyNode> qnode_ext_nodes = qnode_pp.getAllExternalDescendants();
         final int lec_ext_nodes = qnode_ext_nodes.size() - 1;
         final int p_ext_nodes = p.getNumberOfExternalNodes() - 1;
@@ -67,7 +72,7 @@ public final class Analysis {
                 qnode_ext_nodes_names.add( name );
             }
         }
-        final String greatest_common_prefix = ForesterUtil.greatestCommonPrefix( qnode_ext_nodes_names );
+        final String greatest_common_prefix = ForesterUtil.greatestCommonPrefix( qnode_ext_nodes_names, separator );
         final Result res = new Result();
         if ( greatest_common_prefix.length() < 1 ) {
             res.addWarning( "No greatest common prefix" );
@@ -81,14 +86,24 @@ public final class Analysis {
         }
         res.setLeastEncompassingCladeSize( lec_ext_nodes );
         res.setTreeSize( p_ext_nodes );
-        final String greatest_common_prefix_a = analyzeSiblings( qnode_p, qnode_pp );
+        if ( qnode_pp.getBranchData().getConfidences() != null
+                && qnode_pp.getBranchData().getConfidences().size() > 0 ) {
+            final Confidence conf = qnode_pp.getBranchData().getConfidence( 0 );
+            if ( conf != null ) {
+                res.setGreatestCommonCladeConfidence( conf.getValue()
+                        + ( ForesterUtil.isEmpty( conf.getType() ) ? "" : " [" + conf.getType() + "]" ) );
+            }
+        }
+        final String greatest_common_prefix_a = analyzeSiblings( qnode_p, qnode_pp, separator );
         res.setGreatestCommonPrefixUp( greatest_common_prefix_a );
-        final String greatest_common_prefix_b = analyzeSiblings( qnode, qnode_p );
+        final String greatest_common_prefix_b = analyzeSiblings( qnode, qnode_p, separator );
         res.setGreatestCommonPrefixDown( greatest_common_prefix_b );
         return res;
     }
 
-    private final static String analyzeSiblings( final PhylogenyNode child, final PhylogenyNode parent ) {
+    private final static String analyzeSiblings( final PhylogenyNode child,
+                                                 final PhylogenyNode parent,
+                                                 final String separator ) {
         final int child_index = child.getChildNodeIndex();
         final List<String> ext_nodes_names = new ArrayList<>();
         final List<PhylogenyNode> descs = parent.getDescendants();
@@ -104,7 +119,7 @@ public final class Analysis {
                 }
             }
         }
-        final String greatest_common_prefix = ForesterUtil.greatestCommonPrefix( ext_nodes_names );
+        final String greatest_common_prefix = ForesterUtil.greatestCommonPrefix( ext_nodes_names, separator );
         return greatest_common_prefix;
     }
 }

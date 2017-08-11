@@ -44,6 +44,7 @@ import org.forester.application.support_transfer;
 import org.forester.archaeopteryx.AptxUtil;
 import org.forester.archaeopteryx.TreePanelUtil;
 import org.forester.archaeopteryx.webservices.WebserviceUtil;
+import org.forester.clade_analysis.CladeAnalysisTest;
 import org.forester.development.DevelopmentTools;
 import org.forester.evoinference.TestPhylogenyReconstruction;
 import org.forester.evoinference.matrix.character.CharacterStateMatrix;
@@ -229,6 +230,17 @@ public final class Test {
         }
         System.out.println( "OK." );
         
+        System.out.print( "Common prefix sep: " );
+        if ( !testCommonPrefixSep() ) {
+            System.out.println( "failed." );
+            failed++;
+        }
+        else {
+            succeeded++;
+        }
+        System.out.println( "OK." );
+        
+       
         System.out.print( "Sequence writer: " );
         if ( testSequenceWriter() ) {
             System.out.println( "OK." );
@@ -780,6 +792,15 @@ public final class Test {
         }
         System.out.print( "RIO: " );
         if ( TestRIO.test() ) {
+            System.out.println( "OK." );
+            succeeded++;
+        }
+        else {
+            System.out.println( "failed." );
+            failed++;
+        }
+        System.out.print( "Clade analyis: " );
+        if ( CladeAnalysisTest.test() ) {
             System.out.println( "OK." );
             succeeded++;
         }
@@ -1921,6 +1942,91 @@ public final class Test {
         l6.add( "abX" );
         l6.add( "" );
         if ( !ForesterUtil.greatestCommonPrefix( l6 ).equals( "" ) ) {
+            return false;
+        }
+        return true;
+    }
+    
+    private static boolean testCommonPrefixSep() {
+        final List<String> l0 = new ArrayList<String>();
+        l0.add( "a.b.c" );
+        if ( !ForesterUtil.greatestCommonPrefix( l0, ".").equals( "a.b.c" ) ) {
+            return false;
+        }
+        
+        final List<String> l1 = new ArrayList<String>();
+        l1.add( "a.b.c" );
+        l1.add( "a.b.X" );
+        if ( !ForesterUtil.greatestCommonPrefix( l1 , ".").equals( "a.b" ) ) {
+            return false;
+        }
+        
+        final List<String> l2 = new ArrayList<String>();
+        l2.add( "a.b.c." );
+        l2.add( "a.b.X." );
+        l2.add( "a.x.y." );
+        if ( !ForesterUtil.greatestCommonPrefix( l2, ".").equals( "a" ) ) {
+            return false;
+        }
+        
+        final List<String> l3 = new ArrayList<String>();
+        l3.add( "a/b/X/s/d/f/s/d/f/s/d/f/s/d/f/s/d/f/s/d/" );
+        l3.add( "a/b/X/s/d/f/s/d/f/s/d/f/s/d/f/s/d/f/s/d" );
+        l3.add( "a/b/c" );
+        l3.add( "a/b/X/s/d/f/s/d/f/s/d/f/s/d/f/s/d/f/s/d/" );
+        l3.add( "a/b/" );
+        l3.add( "a/b/c/" );
+        l3.add( "a/b////////" );
+        if ( !ForesterUtil.greatestCommonPrefix( l3, "/" ).equals( "a/b" ) ) {
+            return false;
+        }
+       
+        final List<String> l4 = new ArrayList<String>();
+        l4.add( "a.b.X.s.d.f.s.d.f.s.d.f.s.d.f.s.d.f.s.d" );
+        l4.add( "a.b.X.s.d.f.s.d.f.s.d.f.s.d.f.s.d.f.s.d" );
+        l4.add( "a.b.c" );
+        l4.add( "X.s.d.f.s.d.f.s.d.f.s.d.f.s.d.f.s.d..." );
+        l4.add( "a.b" );
+        l4.add( "a.b.c" );
+        if ( !ForesterUtil.greatestCommonPrefix( l4, "." ).equals( "" ) ) {
+            return false;
+        }
+      
+        final List<String> l5 = new ArrayList<String>();
+        l5.add( "" );
+        if ( !ForesterUtil.greatestCommonPrefix( l5, "_" ).equals( "" ) ) {
+            return false;
+        }
+        
+        final List<String> l6 = new ArrayList<String>();
+        l6.add( "_" );
+        l6.add( "__" );
+        if ( !ForesterUtil.greatestCommonPrefix( l6, "_" ).equals( "" ) ) {
+            return false;
+        }
+        
+        final List<String> l7 = new ArrayList<String>();
+        l7.add( "a,b,c" );
+        l7.add( "a,b,X" );
+        l7.add( "" );
+        l7.add( ",,,,,,,,,," );
+        if ( !ForesterUtil.greatestCommonPrefix( l7, "," ).equals( "" ) ) {
+            return false;
+        }
+        
+        final List<String> l8 = new ArrayList<String>();
+        l8.add( "123.304.403.04" );
+        l8.add( "123.304.403.04.02" );
+        l8.add( "123.304.403.03.03" );
+        if ( !ForesterUtil.greatestCommonPrefix( l8, "." ).equals( "123.304.403" ) ) {
+            return false;
+        }
+        
+        final List<String> l9 = new ArrayList<String>();
+        l9.add( "123.304.403.04" );
+        l9.add( "123.304.403.04.02" );
+        l9.add( "123.304.402.03.03" );
+        if ( !ForesterUtil.greatestCommonPrefix( l9, "." ).equals( "123.304" ) ) {
             return false;
         }
         return true;

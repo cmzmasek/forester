@@ -593,12 +593,12 @@ public final class ForesterUtil {
     final public static boolean isEmpty( final String s ) {
         return ( ( s == null ) || ( s.length() < 1 ) );
     }
-    
+
     final public static boolean isEmptyTrimmed( final String s ) {
-       if ( s == null ) {
-           return true;
-       }
-       return ( ( s.trim().length() < 1 ) );
+        if ( s == null ) {
+            return true;
+        }
+        return ( ( s.trim().length() < 1 ) );
     }
 
     /**
@@ -1589,16 +1589,70 @@ public final class ForesterUtil {
         return a.substring( 0, min_length );
     }
 
+    public final static String greatestCommonPrefix( final String a, final String b, final String separator ) {
+        if ( ForesterUtil.isEmpty( separator ) ) {
+            throw new IllegalArgumentException( "separator must not be null or empty" );
+        }
+        final String[] as = a.split( Pattern.quote( separator ) );
+        final String[] bs = b.split( Pattern.quote( separator ) );
+        final int min_length = Math.min( as.length, bs.length );
+        for( int i = 0; i < min_length; ++i ) {
+            if ( !( as[ i ].equals( bs[ i ] ) ) ) {
+                StringBuilder sb = new StringBuilder();
+                boolean first = true;
+                for( int j = 0; j < i; ++j ) {
+                    if ( first ) {
+                        first = false;
+                    }
+                    else {
+                        sb.append( separator );
+                    }
+                    sb.append( as[ j ] );
+                }
+                return sb.toString();
+            }
+        }
+        StringBuilder sb = new StringBuilder();
+        boolean first = true;
+        for( int j = 0; j < min_length; ++j ) {
+            if ( first ) {
+                first = false;
+            }
+            else {
+                sb.append( separator );
+            }
+            sb.append( as[ j ] );
+        }
+        return sb.toString();
+    }
+
     public final static String greatestCommonPrefix( final List<String> strings ) {
         if ( strings == null ) {
-            throw new IllegalArgumentException( "list is null" );
+            throw new IllegalArgumentException( "list of strings is null" );
         }
         if ( strings.isEmpty() ) {
-            throw new IllegalArgumentException( "list is empty" );
+            throw new IllegalArgumentException( "list of strings is empty" );
         }
         String common = strings.get( 0 );
         for( int i = 1; i < strings.size(); ++i ) {
             common = greatestCommonPrefix( common, strings.get( i ) );
+        }
+        return common;
+    }
+
+    public final static String greatestCommonPrefix( final List<String> strings, final String separator ) {
+        if ( ForesterUtil.isEmpty( separator ) ) {
+            return greatestCommonPrefix( strings );
+        }
+        if ( strings == null ) {
+            throw new IllegalArgumentException( "list of strings is null" );
+        }
+        if ( strings.isEmpty() ) {
+            throw new IllegalArgumentException( "list of strings is empty" );
+        }
+        String common = strings.get( 0 );
+        for( int i = 1; i < strings.size(); ++i ) {
+            common = greatestCommonPrefix( common, strings.get( i ), separator );
         }
         return common;
     }

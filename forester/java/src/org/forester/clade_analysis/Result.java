@@ -30,12 +30,15 @@ import java.util.List;
 
 public final class Result {
 
-    private String             _greatest_common_prefix      = "";
-    private String             _greatest_common_prefix_up   = "";
-    private String             _greatest_common_prefix_down = "";
-    private final List<String> _warnings                    = new ArrayList<>();
-    private int                _lec_ext_nodes               = 0;
-    private int                _p_ext_nodes                 = 0;
+    private String             _greatest_common_prefix                = "";
+    private String             _greatest_common_prefix_up             = "";
+    private String             _greatest_common_prefix_down           = "";
+    private final List<String> _warnings                              = new ArrayList<>();
+    private int                _lec_ext_nodes                         = 0;
+    private int                _p_ext_nodes                           = 0;
+    private String             _greatest_common_clade_confidence      = "";
+    private String             _greatest_common_clade_confidence_up   = "";
+    private String             _greatest_common_clade_confidence_down = "";
 
     void addWarning( final String warning ) {
         _warnings.add( warning );
@@ -53,6 +56,18 @@ public final class Result {
         _greatest_common_prefix_down = greatest_common_prefix_down;
     }
 
+    void setGreatestCommonCladeConfidence( final String greatest_common_clade_confidence ) {
+        _greatest_common_clade_confidence = greatest_common_clade_confidence;
+    }
+
+    void setGreatestCommonCladeUpConfidence( final String greatest_common_clade_confidence_up ) {
+        _greatest_common_clade_confidence_up = greatest_common_clade_confidence_up;
+    }
+
+    void setGreatestCommonCladeDownConfidence( final String greatest_common_clade_confidence_down ) {
+        _greatest_common_clade_confidence_down = greatest_common_clade_confidence_down;
+    }
+
     public String getGreatestCommonPrefix() {
         return _greatest_common_prefix;
     }
@@ -63,6 +78,18 @@ public final class Result {
 
     public String getGreatestCommonPrefixDown() {
         return _greatest_common_prefix_down;
+    }
+
+    public String getGreatestCommonCladeConfidence() {
+        return _greatest_common_clade_confidence;
+    }
+
+    public String getGreatestCommonCladeUpConfidence() {
+        return _greatest_common_clade_confidence_up;
+    }
+
+    public String getGreatestCommonCladeDownConfidence() {
+        return _greatest_common_clade_confidence_down;
     }
 
     public List<String> getWarnings() {
