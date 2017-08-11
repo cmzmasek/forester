@@ -118,20 +118,31 @@ public final class cladinator {
             final Result res = Analysis.execute( p, query, separator );
             System.out.println();
             System.out.println( "Result:" );
-            System.out.println( "Greatest Common Prefix       : " + res.getGreatestCommonPrefix() );
-            System.out.println( "Greatest Common Prefix Up    : " + res.getGreatestCommonPrefixUp() );
-            System.out.println( "Greatest Common Prefix Down  : " + res.getGreatestCommonPrefixDown() );
-            
-            if ( !ForesterUtil.isEmpty( res.getGreatestCommonCladeConfidence() ) ) {
-                System.out.println( "Greatest Common Clade Conf   : " + res.getGreatestCommonCladeConfidence() );
+            System.out.println( "Query                        : " + query );
+            System.out.print( "Greatest Common Prefix       : " + res.getGreatestCommonPrefix() );
+            if ( !ForesterUtil.isEmpty( res.getGreatestCommonPrefix() )
+                    && !ForesterUtil.isEmpty( res.getGreatestCommonCladeConfidence() ) ) {
+                System.out.println( "\t(" + res.getGreatestCommonCladeConfidence() + ")" );
             }
-            if ( !ForesterUtil.isEmpty( res.getGreatestCommonCladeUpConfidence() ) ) {
-                System.out.println( "Greatest Common Clade Up Conf: " + res.getGreatestCommonCladeUpConfidence() );
+            else {
+                System.out.println();
             }
-            if ( !ForesterUtil.isEmpty( res.getGreatestCommonCladeDownConfidence() ) ) {
-                System.out.println( "Greatest Common Clade Down Conf: " + res.getGreatestCommonCladeDownConfidence() );
+            System.out.print( "Greatest Common Prefix Up    : " + res.getGreatestCommonPrefixUp() );
+            if ( !ForesterUtil.isEmpty( res.getGreatestCommonPrefixUp() )
+                    && !ForesterUtil.isEmpty( res.getGreatestCommonCladeUpConfidence() ) ) {
+                System.out.println( "\t(" + res.getGreatestCommonCladeUpConfidence() + ")" );
             }
-            
+            else {
+                System.out.println();
+            }
+            System.out.print( "Greatest Common Prefix Down  : " + res.getGreatestCommonPrefixDown() );
+            if ( !ForesterUtil.isEmpty( res.getGreatestCommonPrefixDown() )
+                    && !ForesterUtil.isEmpty( res.getGreatestCommonCladeDownConfidence() ) ) {
+                System.out.println( "\t(" + res.getGreatestCommonCladeDownConfidence() + ")" );
+            }
+            else {
+                System.out.println();
+            }
             System.out.println( "Least Encompassing Clade size: " + res.getLeastEncompassingCladeSize()
                     + " external nodes" );
             final double lec_ratio = ( 100.0 * res.getLeastEncompassingCladeSize() ) / res.getTreeSize();

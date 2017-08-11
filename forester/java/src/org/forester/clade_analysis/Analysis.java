@@ -31,6 +31,7 @@
 package org.forester.clade_analysis;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.forester.phylogeny.Phylogeny;
@@ -86,27 +87,34 @@ public final class Analysis {
         }
         res.setLeastEncompassingCladeSize( lec_ext_nodes );
         res.setTreeSize( p_ext_nodes );
-        if ( qnode_pp.getBranchData().getConfidences() != null
-                && qnode_pp.getBranchData().getConfidences().size() > 0 ) {
-            final Confidence conf = qnode_pp.getBranchData().getConfidence( 0 );
-            if ( conf != null ) {
-                res.setGreatestCommonCladeConfidence( conf.getValue()
-                        + ( ForesterUtil.isEmpty( conf.getType() ) ? "" : " [" + conf.getType() + "]" ) );
-            }
+       
+        final String conf = obtainConfidence( qnode_pp );
+        if ( conf != null ) {
+            res.setGreatestCommonCladeConfidence(conf);
         }
-        final String greatest_common_prefix_a = analyzeSiblings( qnode_p, qnode_pp, separator );
-        res.setGreatestCommonPrefixUp( greatest_common_prefix_a );
-        final String greatest_common_prefix_b = analyzeSiblings( qnode, qnode_p, separator );
-        res.setGreatestCommonPrefixDown( greatest_common_prefix_b );
+        
+        final String greatest_common_prefix_up[] = analyzeSiblings( qnode_p, qnode_pp, separator );
+        res.setGreatestCommonPrefixUp( greatest_common_prefix_up[ 0 ] );
+        if ( greatest_common_prefix_up[ 1 ] != null ) {
+            res.setGreatestCommonCladeUpConfidence( greatest_common_prefix_up[ 1 ] );
+        }
+        final String greatest_common_prefix_down[] = analyzeSiblings( qnode, qnode_p, separator );
+        res.setGreatestCommonPrefixDown( greatest_common_prefix_down[ 0 ] );
+        if ( greatest_common_prefix_down[ 1 ] != null ) {
+            res.setGreatestCommonCladeDownConfidence( greatest_common_prefix_down[ 1 ] );
+        }
         return res;
     }
 
-    private final static String analyzeSiblings( final PhylogenyNode child,
-                                                 final PhylogenyNode parent,
-                                                 final String separator ) {
+   
+
+    private final static String[] analyzeSiblings( final PhylogenyNode child,
+                                                   final PhylogenyNode parent,
+                                                   final String separator ) {
         final int child_index = child.getChildNodeIndex();
         final List<String> ext_nodes_names = new ArrayList<>();
         final List<PhylogenyNode> descs = parent.getDescendants();
+        String conf = null;
         for( int i = 0; i < descs.size(); ++i ) {
             if ( i != child_index ) {
                 final PhylogenyNode d = descs.get( i );
@@ -117,9 +125,36 @@ public final class Analysis {
                     }
                     ext_nodes_names.add( name.trim() );
                 }
+                if ( descs.size() == 2 ) {
+                    conf = obtainConfidence( d );
+                }
             }
         }
         final String greatest_common_prefix = ForesterUtil.greatestCommonPrefix( ext_nodes_names, separator );
-        return greatest_common_prefix;
+        return new String[] { greatest_common_prefix, conf };
+    }
+    
+    private final static String obtainConfidence( final PhylogenyNode n ) {
+        if ( n.getBranchData().getConfidences() != null && n.getBranchData().getConfidences().size() > 0 ) {
+            final List<Confidence> confidences = n.getBranchData().getConfidences();
+            boolean not_first = false;
+            Collections.sort( confidences );
+            final StringBuilder sb = new StringBuilder();
+            for( final Confidence confidence : confidences ) {
+                final double value = confidence.getValue();
+                if ( value != Confidence.CONFIDENCE_DEFAULT_VALUE ) {
+                    if ( not_first ) {
+                        sb.append( " / " );
+                    }
+                    else {
+                        not_first = true;
+                    }
+                    sb.append( ( ForesterUtil.isEmpty( confidence.getType() ) ? "confidence: "
+                            : confidence.getType() + ": " ) + value );
+                }
+            }
+            return sb.toString();
+        }
+        return null;
     }
 }
