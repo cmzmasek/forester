@@ -1659,4 +1659,21 @@ public final class ForesterUtil {
 
     private ForesterUtil() {
     }
+
+    public static List<String> spliIntoPrefixes(final String prefix, final String separator ) {
+        final String[] a = prefix.split( Pattern.quote( separator ) );
+        final List<String> l= new ArrayList<String>();
+        for( int i = 0; i < a.length; ++i ) {
+            final StringBuilder sb = new StringBuilder();
+            for( int j = 0; j <= i; ++j ) {
+                sb.append( a[ j ] );
+                if ( j < i ) {
+                    sb.append( separator );
+                }
+            }
+            //System.out.println( sb.toString() );
+            l.add( sb.toString());
+        }
+        return l;
+    }
 }

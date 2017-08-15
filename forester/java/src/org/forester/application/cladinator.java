@@ -121,24 +121,24 @@ public final class cladinator {
             System.out.println( "Query                        : " + query );
             System.out.print( "Greatest Common Prefix       : " + res.getGreatestCommonPrefix() );
             if ( !ForesterUtil.isEmpty( res.getGreatestCommonPrefix() )
-                    && !ForesterUtil.isEmpty( res.getGreatestCommonCladeConfidence() ) ) {
-                System.out.println( "\t(" + res.getGreatestCommonCladeConfidence() + ")" );
+                    && !ForesterUtil.isEmpty( res.getGreatestCommonCladeSubtreeConfidence() ) ) {
+                System.out.println( "\t(" + res.getGreatestCommonCladeSubtreeConfidence() + ")" );
             }
             else {
                 System.out.println();
             }
             System.out.print( "Greatest Common Prefix Up    : " + res.getGreatestCommonPrefixUp() );
             if ( !ForesterUtil.isEmpty( res.getGreatestCommonPrefixUp() )
-                    && !ForesterUtil.isEmpty( res.getGreatestCommonCladeUpConfidence() ) ) {
-                System.out.println( "\t(" + res.getGreatestCommonCladeUpConfidence() + ")" );
+                    && !ForesterUtil.isEmpty( res.getGreatestCommonCladeUpSubtreeConfidence() ) ) {
+                System.out.println( "\t(" + res.getGreatestCommonCladeUpSubtreeConfidence() + ")" );
             }
             else {
                 System.out.println();
             }
             System.out.print( "Greatest Common Prefix Down  : " + res.getGreatestCommonPrefixDown() );
             if ( !ForesterUtil.isEmpty( res.getGreatestCommonPrefixDown() )
-                    && !ForesterUtil.isEmpty( res.getGreatestCommonCladeDownConfidence() ) ) {
-                System.out.println( "\t(" + res.getGreatestCommonCladeDownConfidence() + ")" );
+                    && !ForesterUtil.isEmpty( res.getGreatestCommonCladeDownSubtreeConfidence() ) ) {
+                System.out.println( "\t(" + res.getGreatestCommonCladeDownSubtreeConfidence() + ")" );
             }
             else {
                 System.out.println();

@@ -2,6 +2,7 @@
 package org.forester.clade_analysis;
 
 import java.io.File;
+import java.util.List;
 
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.util.ParserUtils;
@@ -25,6 +26,10 @@ public class CladeAnalysisTest {
             System.out.println( "Clade analysis 2 failed" );
             failed = true;
         }
+        if ( !testCladeAnalysis3() ) {
+            System.out.println( "Clade analysis 3 failed" );
+            failed = true;
+        }
         if ( !failed ) {
             System.out.println( "OK" );
         }
@@ -35,6 +40,9 @@ public class CladeAnalysisTest {
             return false;
         }
         if ( !testCladeAnalysis2() ) {
+            return false;
+        }
+        if ( !testCladeAnalysis3() ) {
             return false;
         }
         return true;
@@ -575,6 +583,62 @@ public class CladeAnalysisTest {
             if ( res.getWarnings().size() != 2 ) {
                 return false;
             }
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace( System.out );
+            return false;
+        }
+        return true;
+    }
+    
+    private static boolean testCladeAnalysis3() {
+        try {
+          final Result2 res1 = new Result2();
+          res1.addGreatestCommonPrefix( "A.1.1", 0.3 );
+          res1.addGreatestCommonPrefix( "A.1.2", 0.3 );
+          res1.addGreatestCommonPrefix( "A.1.3", 0.3 );
+          res1.addGreatestCommonPrefix( "B.1", 0.1 );
+          
+          List<String> x = ForesterUtil.spliIntoPrefixes( "A.1.2.3.4", "." );
+         // System.out.println( x );
+          x =ForesterUtil.spliIntoPrefixes( "A", "." );
+         // System.out.println( x );
+          
+          
+          res1.analyzeGreatestCommonPrefixes( "." );
+          
+          final Result2 res2 = new Result2();
+          res2.addGreatestCommonPrefix( "A.1.1.1", 0.1 );
+          res2.addGreatestCommonPrefix( "A.1", 0.7 );
+          res2.addGreatestCommonPrefix( "A.1.2", 0.1 );
+          res2.addGreatestCommonPrefix( "B.1", 0.1 );
+          res2.analyzeGreatestCommonPrefixes( "." );
+          
+          final Result2 res3 = new Result2();
+          res3.addGreatestCommonPrefix( "A.1.1.1", 0.7 );
+          res3.addGreatestCommonPrefix( "A.1", 0.1 );
+          res3.addGreatestCommonPrefix( "A.1.2", 0.1 );
+          res3.addGreatestCommonPrefix( "B.1", 0.1 );
+          res3.analyzeGreatestCommonPrefixes( "." );
+          
+          
+          final Result2 res4 = new Result2();
+          res4.addGreatestCommonPrefix( "A.1.1.1.1", 0.35);
+          res4.addGreatestCommonPrefix( "A.1.1.1.2", 0.35 );
+          res4.addGreatestCommonPrefix( "A.1", 0.1 );
+          res4.addGreatestCommonPrefix( "A.1.2", 0.1 );
+          res4.addGreatestCommonPrefix( "B.1", 0.1 );
+          res4.analyzeGreatestCommonPrefixes( "." );
+          
+          final Result2 res5 = new Result2();
+          res5.addGreatestCommonPrefix( "A.1.1.1.1", 0.2);
+          res5.addGreatestCommonPrefix( "C.2.3", 0.2 );
+          res5.addGreatestCommonPrefix( "A.1.5", 0.1 );
+          res5.addGreatestCommonPrefix( "A.3.1.4", 0.2 );
+          res5.addGreatestCommonPrefix( "B.1.1", 0.2 );
+          res5.addGreatestCommonPrefix( "B.1.2", 0.09 );
+          res5.addGreatestCommonPrefix( "D.1.1.1.1", 0.01 );
+          res5.analyzeGreatestCommonPrefixes( "." );
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );

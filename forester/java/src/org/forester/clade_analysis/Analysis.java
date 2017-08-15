@@ -90,18 +90,18 @@ public final class Analysis {
        
         final String conf = obtainConfidence( qnode_pp );
         if ( conf != null ) {
-            res.setGreatestCommonCladeConfidence(conf);
+            res.setGreatestCommonCladeSubtreeConfidence(conf);
         }
         
         final String greatest_common_prefix_up[] = analyzeSiblings( qnode_p, qnode_pp, separator );
         res.setGreatestCommonPrefixUp( greatest_common_prefix_up[ 0 ] );
         if ( greatest_common_prefix_up[ 1 ] != null ) {
-            res.setGreatestCommonCladeUpConfidence( greatest_common_prefix_up[ 1 ] );
+            res.setGreatestCommonCladeUpSubtreeConfidence( greatest_common_prefix_up[ 1 ] );
         }
         final String greatest_common_prefix_down[] = analyzeSiblings( qnode, qnode_p, separator );
         res.setGreatestCommonPrefixDown( greatest_common_prefix_down[ 0 ] );
         if ( greatest_common_prefix_down[ 1 ] != null ) {
-            res.setGreatestCommonCladeDownConfidence( greatest_common_prefix_down[ 1 ] );
+            res.setGreatestCommonCladeDownSubtreeConfidence( greatest_common_prefix_down[ 1 ] );
         }
         return res;
     }
