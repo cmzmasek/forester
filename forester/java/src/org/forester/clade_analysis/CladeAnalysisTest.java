@@ -605,30 +605,29 @@ public class CladeAnalysisTest {
          // System.out.println( x );
           
           
-          res1.analyzeGreatestCommonPrefixes( "." );
+          res1.analyzeGreatestCommonPrefixes( );
           
-          final Result2 res2 = new Result2();
+          final Result2 res2 = new Result2(".");
           res2.addGreatestCommonPrefix( "A.1.1.1", 0.1 );
           res2.addGreatestCommonPrefix( "A.1", 0.7 );
           res2.addGreatestCommonPrefix( "A.1.2", 0.1 );
           res2.addGreatestCommonPrefix( "B.1", 0.1 );
-          res2.analyzeGreatestCommonPrefixes( "." );
+          res2.analyzeGreatestCommonPrefixes(  );
           
-          final Result2 res3 = new Result2();
+          final Result2 res3 = new Result2(".");
           res3.addGreatestCommonPrefix( "A.1.1.1", 0.7 );
           res3.addGreatestCommonPrefix( "A.1", 0.1 );
           res3.addGreatestCommonPrefix( "A.1.2", 0.1 );
           res3.addGreatestCommonPrefix( "B.1", 0.1 );
-          res3.analyzeGreatestCommonPrefixes( "." );
-          
-          
+          res3.analyzeGreatestCommonPrefixes(  );
+                    
           final Result2 res4 = new Result2();
           res4.addGreatestCommonPrefix( "A.1.1.1.1", 0.35);
           res4.addGreatestCommonPrefix( "A.1.1.1.2", 0.35 );
           res4.addGreatestCommonPrefix( "A.1", 0.1 );
           res4.addGreatestCommonPrefix( "A.1.2", 0.1 );
           res4.addGreatestCommonPrefix( "B.1", 0.1 );
-          res4.analyzeGreatestCommonPrefixes( "." );
+          res4.analyzeGreatestCommonPrefixes(  );
           
           final Result2 res5 = new Result2();
           res5.addGreatestCommonPrefix( "A.1.1.1.1", 0.2);
@@ -638,7 +637,40 @@ public class CladeAnalysisTest {
           res5.addGreatestCommonPrefix( "B.1.1", 0.2 );
           res5.addGreatestCommonPrefix( "B.1.2", 0.09 );
           res5.addGreatestCommonPrefix( "D.1.1.1.1", 0.01 );
-          res5.analyzeGreatestCommonPrefixes( "." );
+          res5.analyzeGreatestCommonPrefixes(  );
+          
+          final Result2 res6 = new Result2();
+          res6.addGreatestCommonPrefix( "A.1.1.1", 0.05 );
+          res6.addGreatestCommonPrefix( "A.1.1.1.1", 0.65 );
+          res6.addGreatestCommonPrefix( "A.1", 0.1 );
+          res6.addGreatestCommonPrefix( "A.1.2", 0.1 );
+          res6.addGreatestCommonPrefix( "B.1", 0.1 );
+          res6.analyzeGreatestCommonPrefixes(  );
+          
+          final Result2 res7 = new Result2();
+          res7.addGreatestCommonPrefix( "A.1.1.1", 0.07 );
+          res7.addGreatestCommonPrefix( "A.1.1.1.1", 0.9 );
+          res7.addGreatestCommonPrefix( "A.1", 0.01 );
+          res7.addGreatestCommonPrefix( "A.1.2", 0.01 );
+          res7.addGreatestCommonPrefix( "B.1", 0.01 );
+          res7.analyzeGreatestCommonPrefixes(  );
+          
+          final Result2 res8 = new Result2("_/_");
+          res8.addGreatestCommonPrefix( "AA_/_abc_/_def", 0.07 );
+          res8.addGreatestCommonPrefix( "AA_/_abc_/_sfc", 0.9 );
+          res8.addGreatestCommonPrefix( "AA_/_abc_/_xcd", 0.01 );
+          res8.addGreatestCommonPrefix( "AA_/_abc_/_memr", 0.01 );
+          res8.addGreatestCommonPrefix( "AA_/_abc_/_fkem_/_odem", 0.01 );
+          res8.analyzeGreatestCommonPrefixes(  );
+          
+          final Result2 res9 = new Result2("_/_");
+          res9.addGreatestCommonPrefix( "AA_/_abc_/_def", 0.07 );
+          res9.addGreatestCommonPrefix( "AA_/_abc_/_sfc", 0.6 );
+          res9.addGreatestCommonPrefix( "AA_/_abc_/_xcd", 0.01 );
+          res9.addGreatestCommonPrefix( "AA_/_abc_/_memr", 0.01 );
+          res9.addGreatestCommonPrefix( "AA_/_abc_/_fkem_/_odem", 0.01 );
+          res9.addGreatestCommonPrefix( "BB_/_fke_/_dme_/_nx2", 0.3 );
+          res9.analyzeGreatestCommonPrefixes(  );
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );
