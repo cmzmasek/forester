@@ -49,6 +49,10 @@ public final class Result2 {
     private String             _greatest_common_clade_subtree_confidence      = "";
     private String             _greatest_common_clade_subtree_confidence_up   = "";
     private String             _greatest_common_clade_subtree_confidence_down = "";
+    private List<Prefix>       _all                                           = null;
+    private List<Prefix>       _collapsed                                     = null;
+    private List<Prefix>       _cleaned_spec                                  = null;
+    private boolean            _has_specifics;
 
     public Result2( final String separator ) {
         _separator = separator;
@@ -129,46 +133,36 @@ public final class Result2 {
         return _p_ext_nodes;
     }
 
-    public void analyzeGreatestCommonPrefixes() {
-        analyzeGreatestCommonPrefixes( _greatest_common_prefixes, _separator, 0.3 );
+    public void analyzeGreatestCommonPrefixes( final double cutoff ) {
+        analyzeGreatestCommonPrefixes( _greatest_common_prefixes, _separator, cutoff );
     }
 
-    public final static void analyzeGreatestCommonPrefixes( final List<Prefix> greatest_common_prefixes,
-                                                            final String separator,
-                                                            final double cutoff ) {
+    public void analyzeGreatestCommonPrefixes() {
+        analyzeGreatestCommonPrefixes( _greatest_common_prefixes, _separator, -1 );
+    }
+
+    private final void analyzeGreatestCommonPrefixes( final List<Prefix> greatest_common_prefixes,
+                                                      final String separator,
+                                                      final double cutoff ) {
         final List<Prefix> l = obtainAllPrefixes( greatest_common_prefixes, separator );
         sortPrefixesAccordingToConfidence( l );
-        System.out.println();
-        System.out.println( "All:" );
-        for( final Prefix prefix : l ) {
-            System.out.println( prefix );
-        }
-        final List<Prefix> cleaned = removeLessSpecificPrefixes( l );
-        System.out.println();
-        System.out.println( "Cleaned:" );
-        for( final Prefix prefix : cleaned ) {
-            System.out.println( prefix );
-        }
-        final List<Prefix> collapsed = collapse( cleaned );
-        System.out.println();
-        System.out.println( "Collapsed:" );
-        for( final Prefix prefix : collapsed ) {
-            System.out.println( prefix );
-        }
+        _all = removeLessSpecificPrefixes( l );
+        _collapsed = collapse( _all );
+        _has_specifics = false;
         if ( cutoff >= 0 ) {
-            System.out.println();
-            System.out.println( "Specifics:" );
-            final List<Prefix> cleaned_spec = obtainSpecifics( cutoff, cleaned, collapsed );
-            for( final Prefix prefix : cleaned_spec ) {
-                System.out.println( prefix );
+            _cleaned_spec = obtainSpecifics( cutoff, _all, _collapsed );
+            if ( _cleaned_spec != null && _cleaned_spec.size() > 0 ) {
+                _has_specifics = true;
             }
         }
-        System.out.println( "------" );
+        else {
+            _cleaned_spec = null;
+        }
     }
 
     private final static List<Prefix> obtainSpecifics( final double cutoff,
-                                                 final List<Prefix> cleaned,
-                                                 final List<Prefix> collapsed ) {
+                                                       final List<Prefix> cleaned,
+                                                       final List<Prefix> collapsed ) {
         final List<Prefix> cleaned_spec = new ArrayList<>();
         final Set<String> collapsed_set = new HashSet<>();
         for( final Prefix prefix : collapsed ) {
@@ -177,7 +171,6 @@ public final class Result2 {
         final List<Prefix> spec = new ArrayList<>();
         for( final Prefix prefix : cleaned ) {
             if ( ( prefix.getConfidence() >= cutoff ) && !collapsed_set.contains( prefix.getPrefix() ) ) {
-                //  System.out.println( prefix );
                 spec.add( prefix );
             }
         }
@@ -190,7 +183,6 @@ public final class Result2 {
                 }
             }
             if ( ok ) {
-                //System.out.println(">" + o );
                 cleaned_spec.add( o );
             }
         }
@@ -251,8 +243,6 @@ public final class Result2 {
             public int compare( final Prefix x, final Prefix y ) {
                 final int start_comparison = compare( x.getConfidence(), y.getConfidence() );
                 return start_comparison;
-                //return startComparison != 0 ? startComparison
-                //                            : compare(x.timeEnded, y.timeEnded);
             }
 
             private int compare( final double a, final double b ) {
@@ -270,21 +260,58 @@ public final class Result2 {
                 map.put( p, 0.0 );
             }
         }
-        // System.out.println( map );
         for( final String key : map.keySet() ) {
-            //System.out.println(key);
             for( final Prefix prefix : greatest_common_prefixes ) {
                 if ( prefix.getPrefix().startsWith( key ) ) {
                     map.put( key, map.get( key ) + prefix.getConfidence() );
                 }
             }
         }
-        //System.out.println( map );
         final List<Prefix> l = new ArrayList<>();
         for( final Entry<String, Double> entry : map.entrySet() ) {
-            // System.out.println( entry.getKey() + "->" + entry.getValue() );
             l.add( new Prefix( entry.getKey(), entry.getValue(), separator ) );
         }
         return l;
+    }
+
+    public final String toString() {
+        final StringBuilder sb = new StringBuilder();
+        //TODO add all other stuff
+        sb.append( "Cleaned:" );
+        sb.append( ForesterUtil.LINE_SEPARATOR );
+        for( final Prefix prefix : _all ) {
+            sb.append( prefix );
+            sb.append( ForesterUtil.LINE_SEPARATOR );
+        }
+        sb.append( ForesterUtil.LINE_SEPARATOR );
+        sb.append( "Collapsed:" );
+        sb.append( ForesterUtil.LINE_SEPARATOR );
+        for( final Prefix prefix : _collapsed ) {
+            sb.append( prefix );
+            sb.append( ForesterUtil.LINE_SEPARATOR );
+        }
+        if ( _has_specifics ) {
+            sb.append( ForesterUtil.LINE_SEPARATOR );
+            sb.append( "Specifics:" );
+            sb.append( ForesterUtil.LINE_SEPARATOR );
+            for( final Prefix prefix : _cleaned_spec ) {
+                sb.append( prefix );
+                sb.append( ForesterUtil.LINE_SEPARATOR );
+            }
+            sb.append( ForesterUtil.LINE_SEPARATOR );
+            sb.append( "Collapsed with specifics:" );
+            sb.append( ForesterUtil.LINE_SEPARATOR );
+            for( final Prefix prefix : _collapsed ) {
+                sb.append( prefix );
+                sb.append( ForesterUtil.LINE_SEPARATOR );
+                for( final Prefix spec : _cleaned_spec ) {
+                    if ( spec.getPrefix().startsWith( prefix.getPrefix() ) ) {
+                        sb.append( "    " + spec );
+                        sb.append( ForesterUtil.LINE_SEPARATOR );
+                    }
+                }
+            }
+        }
+        return sb.toString();
     }
 }
