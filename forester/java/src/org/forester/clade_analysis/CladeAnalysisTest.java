@@ -593,6 +593,7 @@ public class CladeAnalysisTest {
     
     private static boolean testCladeAnalysis3() {
         try {
+            /*
           final Result2 res1 = new Result2();
           res1.addGreatestCommonPrefix( "A.1.1", 0.3 );
           res1.addGreatestCommonPrefix( "A.1.2", 0.3 );
@@ -613,14 +614,25 @@ public class CladeAnalysisTest {
           res2.addGreatestCommonPrefix( "A.1.2", 0.1 );
           res2.addGreatestCommonPrefix( "B.1", 0.1 );
           res2.analyzeGreatestCommonPrefixes(  );
-          
+          */
           final Result2 res3 = new Result2(".");
-          res3.addGreatestCommonPrefix( "A.1.1.1", 0.7 );
+          res3.addGreatestCommonPrefix( "A.1.1.1", 0.1 );
+          res3.addGreatestCommonPrefix( "A.1.1.1.1", 0.6 );
           res3.addGreatestCommonPrefix( "A.1", 0.1 );
           res3.addGreatestCommonPrefix( "A.1.2", 0.1 );
           res3.addGreatestCommonPrefix( "B.1", 0.1 );
           res3.analyzeGreatestCommonPrefixes(  );
-                    
+          
+          final Result2 res33 = new Result2(".");
+          res33.addGreatestCommonPrefix( "A.1.1.1", 0.1 );
+          res33.addGreatestCommonPrefix( "A.1.1.1.1", 0.3 );
+          res33.addGreatestCommonPrefix( "A.1", 0.1 );
+          res33.addGreatestCommonPrefix( "A.1.2", 0.1 );
+          res33.addGreatestCommonPrefix( "B.1", 0.1 );
+          res33.addGreatestCommonPrefix( "B.1.1.1", 0.3 );
+          res33.analyzeGreatestCommonPrefixes(  );
+          
+                    /*
           final Result2 res4 = new Result2();
           res4.addGreatestCommonPrefix( "A.1.1.1.1", 0.35);
           res4.addGreatestCommonPrefix( "A.1.1.1.2", 0.35 );
@@ -670,7 +682,7 @@ public class CladeAnalysisTest {
           res9.addGreatestCommonPrefix( "AA_/_abc_/_memr", 0.01 );
           res9.addGreatestCommonPrefix( "AA_/_abc_/_fkem_/_odem", 0.01 );
           res9.addGreatestCommonPrefix( "BB_/_fke_/_dme_/_nx2", 0.3 );
-          res9.analyzeGreatestCommonPrefixes(  );
+          res9.analyzeGreatestCommonPrefixes(  );*/
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );
