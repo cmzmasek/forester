@@ -81,7 +81,7 @@ public final class Analysis2 {
         }
         else {
           //  res.setGreatestCommonPrefix( greatest_common_prefix );
-            res.addGreatestCommonPrefix( prefix, confidence, separator );
+           // res.addGreatestCommonPrefix( prefix, confidence, separator ); //TODO
         }
         if ( qnode_pp.isRoot() ) {
             res.addWarning( "Least Encompassing Clade is entire tree" );
