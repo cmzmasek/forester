@@ -62,6 +62,23 @@ public final class Result2 {
         _separator = ".";//TODO make const somewhere
     }
 
+    public List<Prefix> getAllMultiHitPrefixes() {
+        return _all;
+    }
+    
+    public List<Prefix> getCollapsedMultiHitPrefixes() {
+        return _collapsed;
+    }
+    
+    public List<Prefix> getSpecificMultiHitPrefixes() {
+        return _cleaned_spec;
+    }
+    
+    public boolean isHasSpecificMultiHitsPrefixes() {
+        return _has_specifics;
+    }
+    
+    
     void addWarning( final String warning ) {
         _warnings.add( warning );
     }
@@ -201,7 +218,7 @@ public final class Result2 {
                 confidence_sum += prefix.getConfidence();
             }
         }
-        if ( !ForesterUtil.isEqual( confidence_sum, 1.0 ) ) {
+        if ( !ForesterUtil.isEqual( confidence_sum, 1.0, 1E-5 ) ) {
             throw new IllegalArgumentException( "Confidences add up to " + confidence_sum + " instead of 1.0" );
         }
         return collapsed;

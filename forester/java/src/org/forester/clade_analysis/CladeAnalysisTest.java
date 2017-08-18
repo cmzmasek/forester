@@ -3,6 +3,7 @@ package org.forester.clade_analysis;
 
 import java.io.File;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.util.ParserUtils;
@@ -30,6 +31,10 @@ public class CladeAnalysisTest {
             System.out.println( "Clade analysis 3 failed" );
             failed = true;
         }
+        if ( !testCladeAnalysis4() ) {
+            System.out.println( "Clade analysis 3 failed" );
+            failed = true;
+        }
         if ( !failed ) {
             System.out.println( "OK" );
         }
@@ -43,6 +48,9 @@ public class CladeAnalysisTest {
             return false;
         }
         if ( !testCladeAnalysis3() ) {
+            return false;
+        }
+        if ( !testCladeAnalysis4() ) {
             return false;
         }
         return true;
@@ -704,6 +712,48 @@ public class CladeAnalysisTest {
             System.out.print( res9.toString());
             System.out.println( "------------------------- ");
             System.out.println();
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace( System.out );
+            return false;
+        }
+        return true;
+    }
+    
+    private static boolean testCladeAnalysis4() {
+        try {
+            final File intreefile1 = new File( PATH_TO_TEST_DATA + "pplacer_2.tre" );
+            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+            final PhylogenyParser pp = ParserUtils.createParserDependingOnFileType( intreefile1, true );
+            final Phylogeny p1 = factory.create( intreefile1, pp )[ 0 ];
+            Pattern query = Pattern.compile(".+#\\d+_M=(.+)");
+            Result2 res = Analysis2.execute( p1, query, "." );
+            
+            res.analyzeGreatestCommonPrefixes( 0.3 );
+            System.out.print( res.toString());
+            System.out.println( "------------------------- ");
+            System.out.println();
+            
+           // Result res = Analysis.execute( p1, "A.1.1.1", "." );
+           /* if ( !res.getGreatestCommonPrefix().equals( "A.1" ) ) {
+                return false;
+            }
+            if ( !res.getGreatestCommonPrefixDown().equals( "A.1.1" ) ) {
+                return false;
+            }
+            if ( !res.getGreatestCommonPrefixUp().equals( "A.1.2.1" ) ) {
+                return false;
+            }
+            if ( res.getLeastEncompassingCladeSize() != 4 ) {
+                return false;
+            }
+            if ( res.getTreeSize() != 25 ) {
+                return false;
+            }
+            if ( res.getWarnings().size() != 0 ) {
+                return false;
+            }*/
+          
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );

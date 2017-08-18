@@ -621,6 +621,10 @@ public final class ForesterUtil {
     final public static boolean isEqual( final double a, final double b ) {
         return ( ( Math.abs( a - b ) ) < ZERO_DIFF );
     }
+    
+    final public static boolean isEqual( final double a, final double b, final double tolerance ) {
+        return ( ( Math.abs( a - b ) ) < tolerance );
+    }
 
     final public static boolean isEven( final int n ) {
         return ( n % 2 ) == 0;

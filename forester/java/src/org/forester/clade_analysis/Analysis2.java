@@ -33,6 +33,8 @@ package org.forester.clade_analysis;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
@@ -41,29 +43,62 @@ import org.forester.util.ForesterUtil;
 
 public final class Analysis2 {
 
-    public static Result2 execute( final Phylogeny p, final String query, final String separator ) {
-        final PhylogenyNode qnode = p.getNode( query );
-        if ( qnode.isRoot() ) {
-            throw new IllegalStateException( "Unexpected error: Query " + query
-                    + " is root. This should have never happened" );
+    public static Result2 execute( final Phylogeny p, final Pattern query, final String separator ) {
+        final List<PhylogenyNode> qnodes = p.getNodes( query );
+        final Result2 res = new Result2();
+        for( int i = 0; i < qnodes.size(); ++i ) {
+            final PhylogenyNode qnode = qnodes.get( i );
+            System.out.println( ">>" + qnode.getName() );
+            if ( qnode.isRoot() ) {
+                throw new IllegalArgumentException( "Query " + query + " is root." );
+            }
+            if ( qnode.getParent().isRoot() ) {
+                throw new IllegalArgumentException( "Parent of query " + query + " is root." );
+            }
+            PhylogenyNode qnode_p = qnode.getParent();
+            PhylogenyNode qnode_pp = qnode.getParent().getParent();
+            //This is to deal with internal nodes with 1 descendant.
+            while ( qnode_p.getNumberOfDescendants() == 1 ) {
+                qnode_p = qnode_p.getParent();
+            }
+            while ( qnode_pp.getNumberOfDescendants() == 1 ) {
+                qnode_pp = qnode_pp.getParent();
+            }
+            // final List<PhylogenyNode> qnode_ext_nodes = new ArrayList<PhylogenyNode>();
+            final List<String> qnode_ext_nodes_names = new ArrayList<>();
+            for( final PhylogenyNode qnode_ext_node : qnode_pp.getAllExternalDescendants() ) {
+                final String name = qnode_ext_node.getName();
+                if ( ForesterUtil.isEmptyTrimmed( name ) ) {
+                    throw new IllegalArgumentException( "external node(s) with empty names found" );
+                }
+                final Matcher m = query.matcher( name );
+                if ( !m.find() ) {
+                    qnode_ext_nodes_names.add( name );
+                }
+            }
+            final int lec_ext_nodes = qnode_ext_nodes_names.size();
+            final int p_ext_nodes = p.getNumberOfExternalNodes() - 1;
+            final String greatest_common_prefix = ForesterUtil.greatestCommonPrefix( qnode_ext_nodes_names, separator );
+            System.out.println( greatest_common_prefix );
+            Matcher matcher = query.matcher( qnode.getName() );
+            String conf_str = null;
+            if ( matcher.find() ) {
+                conf_str = matcher.group( 1 );
+            }
+            else {
+                throw new IllegalStateException( "pattern did not match -- this should have never happened!" );
+            }
+            res.setLeastEncompassingCladeSize( lec_ext_nodes );
+            res.setTreeSize( p_ext_nodes );
+            final double conf = Double.parseDouble( conf_str );
+            if ( !ForesterUtil.isEmpty( greatest_common_prefix ) ) {
+                res.addGreatestCommonPrefix( greatest_common_prefix, conf );
+            }
+            else {
+                res.addGreatestCommonPrefix( "?", conf );
+            }
         }
-        if ( qnode.getParent().isRoot() ) {
-            throw new IllegalStateException( "Unexpected error: Parent of query " + query
-                    + " is root. This should have never happened" );
-        }
-        PhylogenyNode qnode_p = qnode.getParent();
-        PhylogenyNode qnode_pp = qnode.getParent().getParent();
-        while ( qnode_p.getNumberOfDescendants() == 1 ) {
-            qnode_p = qnode_p.getParent();
-        }
-        while ( qnode_pp.getNumberOfDescendants() == 1 ) {
-            qnode_pp = qnode_pp.getParent();
-        }
-        final List<PhylogenyNode> qnode_ext_nodes = qnode_pp.getAllExternalDescendants();
-        final int lec_ext_nodes = qnode_ext_nodes.size() - 1;
-        final int p_ext_nodes = p.getNumberOfExternalNodes() - 1;
-        final List<String> qnode_ext_nodes_names = new ArrayList<>();
-        for( final PhylogenyNode qnode_ext_node : qnode_ext_nodes ) {
+        /* for( final PhylogenyNode qnode_ext_node : qnode_ext_nodes ) {
             String name = qnode_ext_node.getName();
             if ( ForesterUtil.isEmptyTrimmed( name ) ) {
                 throw new IllegalArgumentException( "external node(s) with empty names found" );
@@ -72,29 +107,23 @@ public final class Analysis2 {
             if ( !name.equals( query ) ) {
                 qnode_ext_nodes_names.add( name );
             }
-        }
-        final String greatest_common_prefix = ForesterUtil.greatestCommonPrefix( qnode_ext_nodes_names, separator );
-        final Result2 res = new Result2();
-        if ( greatest_common_prefix.length() < 1 ) {
-            res.addWarning( "No greatest common prefix" );
-            //res.setGreatestCommonPrefix( "" );
-        }
-        else {
-          //  res.setGreatestCommonPrefix( greatest_common_prefix );
-           // res.addGreatestCommonPrefix( prefix, confidence, separator ); //TODO
-        }
-        if ( qnode_pp.isRoot() ) {
-            res.addWarning( "Least Encompassing Clade is entire tree" );
-        }
-        res.setLeastEncompassingCladeSize( lec_ext_nodes );
-        res.setTreeSize( p_ext_nodes );
-       
-        final String conf = obtainConfidence( qnode_pp );
+        }*/
+        //   if ( greatest_common_prefix.length() < 1 ) {
+        //       res.addWarning( "No greatest common prefix" );
+        //res.setGreatestCommonPrefix( "" );
+        //  }
+        // else {
+        //    //  res.setGreatestCommonPrefix( greatest_common_prefix );
+        // res.addGreatestCommonPrefix( prefix, confidence, separator ); //TODO
+        //   }
+        // if ( qnode_pp.isRoot() ) {
+        //     res.addWarning( "Least Encompassing Clade is entire tree" );
+        // }
+        /*    final String conf = obtainConfidence( qnode_pp );
         if ( conf != null ) {
             res.setGreatestCommonCladeSubtreeConfidence(conf);
-        }
-        
-        final String greatest_common_prefix_up[] = analyzeSiblings( qnode_p, qnode_pp, separator );
+        }*/
+        /*  final String greatest_common_prefix_up[] = analyzeSiblings( qnode_p, qnode_pp, separator );
         res.setGreatestCommonPrefixUp( greatest_common_prefix_up[ 0 ] );
         if ( greatest_common_prefix_up[ 1 ] != null ) {
             res.setGreatestCommonCladeUpSubtreeConfidence( greatest_common_prefix_up[ 1 ] );
@@ -103,11 +132,9 @@ public final class Analysis2 {
         res.setGreatestCommonPrefixDown( greatest_common_prefix_down[ 0 ] );
         if ( greatest_common_prefix_down[ 1 ] != null ) {
             res.setGreatestCommonCladeDownSubtreeConfidence( greatest_common_prefix_down[ 1 ] );
-        }
+        }*/
         return res;
     }
-
-   
 
     private final static String[] analyzeSiblings( final PhylogenyNode child,
                                                    final PhylogenyNode parent,
@@ -134,7 +161,7 @@ public final class Analysis2 {
         final String greatest_common_prefix = ForesterUtil.greatestCommonPrefix( ext_nodes_names, separator );
         return new String[] { greatest_common_prefix, conf };
     }
-    
+
     private final static String obtainConfidence( final PhylogenyNode n ) {
         if ( n.getBranchData().getConfidences() != null && n.getBranchData().getConfidences().size() > 0 ) {
             final List<Confidence> confidences = n.getBranchData().getConfidences();
