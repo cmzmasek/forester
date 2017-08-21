@@ -32,7 +32,15 @@ public class CladeAnalysisTest {
             failed = true;
         }
         if ( !testCladeAnalysis4() ) {
-            System.out.println( "Clade analysis 3 failed" );
+            System.out.println( "Clade analysis 4 failed" );
+            failed = true;
+        }
+        if ( !testCladeAnalysis5() ) {
+            System.out.println( "Clade analysis 5 failed" );
+            failed = true;
+        }
+        if ( !testCladeAnalysis6() ) {
+            System.out.println( "Clade analysis 6 failed" );
             failed = true;
         }
         if ( !failed ) {
@@ -51,6 +59,12 @@ public class CladeAnalysisTest {
             return false;
         }
         if ( !testCladeAnalysis4() ) {
+            return false;
+        }
+        if ( !testCladeAnalysis5() ) {
+            return false;
+        }
+        if ( !testCladeAnalysis6() ) {
             return false;
         }
         return true;
@@ -730,6 +744,90 @@ public class CladeAnalysisTest {
             Result2 res = Analysis2.execute( p1, query, "." );
             
             res.analyzeGreatestCommonPrefixes( 0.3 );
+            System.out.print( res.toString());
+            System.out.println( "------------------------- ");
+            System.out.println();
+            
+           // Result res = Analysis.execute( p1, "A.1.1.1", "." );
+           /* if ( !res.getGreatestCommonPrefix().equals( "A.1" ) ) {
+                return false;
+            }
+            if ( !res.getGreatestCommonPrefixDown().equals( "A.1.1" ) ) {
+                return false;
+            }
+            if ( !res.getGreatestCommonPrefixUp().equals( "A.1.2.1" ) ) {
+                return false;
+            }
+            if ( res.getLeastEncompassingCladeSize() != 4 ) {
+                return false;
+            }
+            if ( res.getTreeSize() != 25 ) {
+                return false;
+            }
+            if ( res.getWarnings().size() != 0 ) {
+                return false;
+            }*/
+          
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace( System.out );
+            return false;
+        }
+        return true;
+    }
+    
+    private static boolean testCladeAnalysis5() {
+        try {
+            final File intreefile1 = new File( PATH_TO_TEST_DATA + "clade_analysis_test_3.xml" );
+            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+            final PhylogenyParser pp = ParserUtils.createParserDependingOnFileType( intreefile1, true );
+            final Phylogeny p1 = factory.create( intreefile1, pp )[ 0 ];
+            Pattern query = Pattern.compile(".+#\\d+_M=(.+)");
+            Result2 res = Analysis2.execute( p1, query, "." );
+            
+            res.analyzeGreatestCommonPrefixes( 0.3 );
+            System.out.print( res.toString());
+            System.out.println( "------------------------- ");
+            System.out.println();
+            
+           // Result res = Analysis.execute( p1, "A.1.1.1", "." );
+           /* if ( !res.getGreatestCommonPrefix().equals( "A.1" ) ) {
+                return false;
+            }
+            if ( !res.getGreatestCommonPrefixDown().equals( "A.1.1" ) ) {
+                return false;
+            }
+            if ( !res.getGreatestCommonPrefixUp().equals( "A.1.2.1" ) ) {
+                return false;
+            }
+            if ( res.getLeastEncompassingCladeSize() != 4 ) {
+                return false;
+            }
+            if ( res.getTreeSize() != 25 ) {
+                return false;
+            }
+            if ( res.getWarnings().size() != 0 ) {
+                return false;
+            }*/
+          
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace( System.out );
+            return false;
+        }
+        return true;
+    }
+    
+    private static boolean testCladeAnalysis6() {
+        try {
+            final File intreefile1 = new File( PATH_TO_TEST_DATA + "clade_analysis_test_4.xml" );
+            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+            final PhylogenyParser pp = ParserUtils.createParserDependingOnFileType( intreefile1, true );
+            final Phylogeny p1 = factory.create( intreefile1, pp )[ 0 ];
+            Pattern query = Pattern.compile(".+#\\d+_M=(.+)");
+            Result2 res = Analysis2.execute( p1, query, "." );
+            
+            res.analyzeGreatestCommonPrefixes( 0.45 );
             System.out.print( res.toString());
             System.out.println( "------------------------- ");
             System.out.println();

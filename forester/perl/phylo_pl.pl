@@ -762,13 +762,13 @@ if ( $use_raxml == 1 ) {
     }
     
     # NOTE. RaxML does its own bootstrapping.
-    &executeRaxml( "align", $RAXML_MODEL_BASE.$invar.$model."F", $bootstraps, $seed, "xxx", $RAXML_ALGORITHM );
+    &executeRaxml( "align", $RAXML_MODEL_BASE.$invar.$model."X", $bootstraps, $seed, "xxx", $RAXML_ALGORITHM );
     print( "\n========== RAxML end =========\n\n" );
     
     &rm( "RAxML_log.xxx" );
     &rm( "RAxML_parsimonyTree.xxx" );
     &mv( "RAxML_info.xxx", $outfile."_raxml_info" );
-    if ( $bootstraps > 1 ) {
+   # if ( $bootstraps > 1 ) {
         &rm( "RAxML_bestTree.xxx" );
         &mv( "RAxML_bipartitions.xxx", $CONSENSUS_RAXML );
         &append( "RAxML_bootstrap.xxx", $OUTTREES_ALL );
@@ -779,10 +779,10 @@ if ( $use_raxml == 1 ) {
             &rm( "RAxML_bootstrap.xxx" );
         }
         $all_count++;
-    }
-    else {
-        &mv( "RAxML_result.xxx", $OUTTREE_RAXML );
-    }
+  #  }
+  #  else {
+  #      &mv( "RAxML_result.xxx", $OUTTREE_RAXML );
+  #  }
 }
 
 
@@ -1226,7 +1226,8 @@ else {
         &to_phyloxml( $OUTTREE_WEIGHBOR, $weighbor_outtree, 0, 1 );
     }
     if ( $use_raxml == 1 ) {
-        &to_phyloxml( $OUTTREE_RAXML, $raxml_outtree, 0, 1 );
+      #  &to_phyloxml( $OUTTREE_RAXML, $raxml_outtree, 0, 1 );
+           &to_phyloxml( $CONSENSUS_RAXML, $raxml_outtree, 1, 1 );
     }
     if ( $use_phyml == 1 ) {
         &to_phyloxml( $OUTTREE_PHYML, $phyml_outtree, 0, 1 );
@@ -1324,7 +1325,7 @@ chdir( $current_dir )
 rmdir( $temp_dir )
 || print "\n\n$0: Warning: Could not remove <<$temp_dir>>: $!\n\n";
 
-print "\n\n\n$0 successfully comleted.\n\n";
+print "\n\n\n$0 successfully completed.\n\n";
 
 exit( 0 ); 
     
@@ -1350,8 +1351,10 @@ sub executeRaxml {
     my $outfile_suffix = $_[ 4 ];
     my $algo           = $_[ 5 ];
     
+    $replicates = 100;
+    
     &testForTextFilePresence( $msa );
-    my $command = "$RAXML -m $model -s $msa -n $outfile_suffix";
+    my $command = "$RAXML -p 27 -m $model -s $msa -n $outfile_suffix";
       
     if ( $replicates > 1 ) {
         $command = $command . " -x $seed -N $replicates";
@@ -1444,7 +1447,7 @@ sub dieIfFileExists {
 sub dieIfFileNotExists {
     my $file = $_[ 0 ]; 
     unless ( ( -s $file ) && ( -f $file ) ) {
-        die( "\n\n$0: \"$file\" does not exist or is empty" );
+       die( "\n\n$0: \"$file\" does not exist or is empty" );
     }
 } 
 

@@ -258,8 +258,7 @@ public final class Result2 {
 
             @Override
             public int compare( final Prefix x, final Prefix y ) {
-                final int start_comparison = compare( x.getConfidence(), y.getConfidence() );
-                return start_comparison;
+                return compare( x.getConfidence(), y.getConfidence() );
             }
 
             private int compare( final double a, final double b ) {

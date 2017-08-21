@@ -1,1 +1,12 @@
-/bin/
+.metadata
+bin/
+tmp/
+java/classes/
+*.class
+*.tmp
+*.bak
+*.swp
+local.properties
+.project
+
+

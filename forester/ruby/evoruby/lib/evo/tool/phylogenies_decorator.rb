@@ -22,7 +22,7 @@ module Evoruby
     DECORATOR_OPTIONS_SEQ_NAMES = '-p -t -mp -or'
     DECORATOR_OPTIONS_DOMAINS   = '-p -t'
     SLEEP_TIME                  = 0.01
-    REMOVE_NI                   = true
+    REMOVE_NI                   = false
     TMP_FILE_1                  = '___PD1___'
     TMP_FILE_2                  = '___PD2___'
     LOG_FILE                    = '00_phylogenies_decorator.log'

@@ -184,9 +184,12 @@ module Evoruby
           original_sequences_file = cla.get_file_name( 1 )
         else
           hmmscan_index = domains_list_file.index(Constants::HMMSCAN)
+          puts domains_list_file
           if ( hmmscan_index != nil )
             prefix = domains_list_file[0 .. hmmscan_index-1 ]
+            puts prefix
             suffix = Constants::ID_NORMALIZED_FASTA_FILE_SUFFIX
+            puts suffix
             files = Dir.entries( "." )
             matching_files = Util.get_matching_files( files, prefix, suffix)
             if matching_files.length < 1

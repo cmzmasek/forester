@@ -14,7 +14,7 @@ module Evoruby
     ID_NORMALIZED_FASTA_FILE_SUFFIX          = "_ni.fasta"
     ID_MAP_FILE_SUFFIX                       = ".nim"
     DOMAIN_TABLE_SUFFIX                      = "_domain_table"
-    HMMSCAN                                  = "_hmmscan_"
+    HMMSCAN                                  = "_hmmscan"
     DOMAINS_TO_FORESTER_OUTFILE_SUFFIX       = ".dff"
     DOMAINS_TO_FORESTER_EVALUE_CUTOFF_SUFFIX = "_dtfE"
     
