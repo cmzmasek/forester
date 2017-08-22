@@ -76,10 +76,10 @@ public final class Analysis2 {
                     qnode_ext_nodes_names.add( name );
                 }
             }
-            final int lec_ext_nodes = qnode_ext_nodes_names.size();
-            final int p_ext_nodes = p.getNumberOfExternalNodes() - 1;
+            //final int lec_ext_nodes = qnode_ext_nodes_names.size();
+            //final int p_ext_nodes = p.getNumberOfExternalNodes() - 1;
             final String greatest_common_prefix = ForesterUtil.greatestCommonPrefix( qnode_ext_nodes_names, separator );
-            System.out.println( greatest_common_prefix );
+            //  System.out.println( greatest_common_prefix );
             Matcher matcher = query.matcher( qnode.getName() );
             String conf_str = null;
             if ( matcher.find() ) {
@@ -88,8 +88,6 @@ public final class Analysis2 {
             else {
                 throw new IllegalStateException( "pattern did not match -- this should have never happened!" );
             }
-            res.setLeastEncompassingCladeSize( lec_ext_nodes );
-            res.setTreeSize( p_ext_nodes );
             final double conf = Double.parseDouble( conf_str );
             if ( !ForesterUtil.isEmpty( greatest_common_prefix ) ) {
                 res.addGreatestCommonPrefix( greatest_common_prefix, conf );
@@ -97,6 +95,35 @@ public final class Analysis2 {
             else {
                 res.addGreatestCommonPrefix( "?", conf );
             }
+            //final String greatest_common_prefix_up[] = analyzeSiblings( qnode_p, qnode_pp, separator, query, res );
+            final String greatest_common_prefix_up = analyzeSiblings( qnode_p, qnode_pp, separator, query );
+            System.out.println( "greatest_common_prefix_up=" + greatest_common_prefix_up + " " + conf);
+            if ( !ForesterUtil.isEmpty( greatest_common_prefix_up) ) {
+                res.addGreatestCommonPrefixUp( greatest_common_prefix_up, conf );
+            }
+            else {
+                res.addGreatestCommonPrefixUp( "?", conf );
+            }
+           // res.addGreatestCommonPrefixUp( greatest_common_prefix_up, conf );
+            //res.addGreatestCommonPrefixUp( greatest_common_prefix_up[ 0 ], 0.1 );
+            // res.setGreatestCommonPrefixUp( greatest_common_prefix_up[ 0 ] );
+            //if ( greatest_common_prefix_up[ 1 ] != null ) {
+            //     res.setGreatestCommonCladeUpSubtreeConfidence( greatest_common_prefix_up[ 1 ] );
+            // }
+            // final String greatest_common_prefix_down[] = analyzeSiblings( qnode, qnode_p, separator,query, res );
+            final String greatest_common_prefix_down =  analyzeSiblings( qnode, qnode_p, separator, query );
+            System.out.println( "greatest_common_prefix_down=" + greatest_common_prefix_down+ " " + conf);
+            if ( !ForesterUtil.isEmpty( greatest_common_prefix_down) ) {
+                res.addGreatestCommonPrefixDown( greatest_common_prefix_down, conf );
+            }
+            else {
+                res.addGreatestCommonPrefixDown( "?", conf );
+            }
+            //res.addGreatestCommonPrefixDown( greatest_common_prefix_down, conf );
+            // res.setGreatestCommonPrefixDown( greatest_common_prefix_down[ 0 ] );
+            // if ( greatest_common_prefix_down[ 1 ] != null ) {
+            //     res.setGreatestCommonCladeDownSubtreeConfidence( greatest_common_prefix_down[ 1 ] );
+            // }
         }
         /* for( final PhylogenyNode qnode_ext_node : qnode_ext_nodes ) {
             String name = qnode_ext_node.getName();
@@ -136,13 +163,16 @@ public final class Analysis2 {
         return res;
     }
 
-    private final static String[] analyzeSiblings( final PhylogenyNode child,
-                                                   final PhylogenyNode parent,
-                                                   final String separator ) {
+    private final static void analyzeSiblingsOLD( final PhylogenyNode child,
+                                                  final PhylogenyNode parent,
+                                                  final String separator,
+                                                  final Pattern query,
+                                                  Result2 res,
+                                                  double conf2 ) {
         final int child_index = child.getChildNodeIndex();
         final List<String> ext_nodes_names = new ArrayList<>();
         final List<PhylogenyNode> descs = parent.getDescendants();
-        String conf = null;
+        // String conf = null;
         for( int i = 0; i < descs.size(); ++i ) {
             if ( i != child_index ) {
                 final PhylogenyNode d = descs.get( i );
@@ -153,13 +183,76 @@ public final class Analysis2 {
                     }
                     ext_nodes_names.add( name.trim() );
                 }
-                if ( descs.size() == 2 ) {
-                    conf = obtainConfidence( d );
-                }
+                // if ( descs.size() == 2 ) {
+                //     conf = obtainConfidence( d );
+                // }
             }
         }
+        ////////////////////////////////////////////////////////////
+        /*  Matcher matcher = query.matcher( child.getName() );
+          String conf_str = null;
+          if ( matcher.find() ) {
+        conf_str = matcher.group( 1 );
+          }
+          else {
+        throw new IllegalStateException(  "pattern did not match for \"" + child.getName()  + "\" -- this should have never happened!" );
+          }*/
+        ////////////////////////////////////////////////////////////
         final String greatest_common_prefix = ForesterUtil.greatestCommonPrefix( ext_nodes_names, separator );
-        return new String[] { greatest_common_prefix, conf };
+        //final double conf = Double.parseDouble( conf_str );
+        if ( !ForesterUtil.isEmpty( greatest_common_prefix ) ) {
+            res.addGreatestCommonPrefix( greatest_common_prefix, conf2 );
+        }
+        else {
+            res.addGreatestCommonPrefix( "?", conf2 );
+        }
+    }
+
+    private final static String analyzeSiblings( final PhylogenyNode child,
+                                               final PhylogenyNode parent,
+                                               final String separator,
+                                               final Pattern query) {
+        final int child_index = child.getChildNodeIndex();
+        final List<String> ext_nodes_names = new ArrayList<>();
+        final List<PhylogenyNode> descs = parent.getDescendants();
+        // String conf = null;
+        for( int i = 0; i < descs.size(); ++i ) {
+            if ( i != child_index ) {
+                final PhylogenyNode d = descs.get( i );
+                for( final PhylogenyNode n : d.getAllExternalDescendants() ) {
+                    final String name = n.getName();
+                    if ( ForesterUtil.isEmptyTrimmed( name ) ) {
+                        throw new IllegalArgumentException( "external node(s) with empty names found" );
+                    }
+                    
+                    ////
+                   
+                    final Matcher m = query.matcher( name );
+                    if ( !m.find() ) {
+                        ext_nodes_names.add( name );
+                    }
+                    
+                    ////
+                    
+                }
+                // if ( descs.size() == 2 ) {
+                //     conf = obtainConfidence( d );
+                // }
+            }
+        }
+        ////////////////////////////////////////////////////////////
+        /*  Matcher matcher = query.matcher( child.getName() );
+        String conf_str = null;
+        if ( matcher.find() ) {
+            conf_str = matcher.group( 1 );
+        }
+        else {
+            throw new IllegalStateException(  "pattern did not match for \"" + child.getName()  + "\" -- this should have never happened!" );
+        }*/
+        ////////////////////////////////////////////////////////////
+        final String greatest_common_prefix = ForesterUtil.greatestCommonPrefix( ext_nodes_names, separator );
+        //final double conf = Double.parseDouble( conf_str );
+        return greatest_common_prefix;
     }
 
     private final static String obtainConfidence( final PhylogenyNode n ) {

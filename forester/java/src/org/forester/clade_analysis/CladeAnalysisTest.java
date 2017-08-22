@@ -19,7 +19,7 @@ public class CladeAnalysisTest {
 
     public static void main( final String[] args ) {
         boolean failed = false;
-        if ( !testCladeAnalysis1() ) {
+       /* if ( !testCladeAnalysis1() ) {
             System.out.println( "Clade analysis 1 failed" );
             failed = true;
         }
@@ -34,15 +34,15 @@ public class CladeAnalysisTest {
         if ( !testCladeAnalysis4() ) {
             System.out.println( "Clade analysis 4 failed" );
             failed = true;
-        }
+        */
         if ( !testCladeAnalysis5() ) {
             System.out.println( "Clade analysis 5 failed" );
             failed = true;
         }
-        if ( !testCladeAnalysis6() ) {
+       /* if ( !testCladeAnalysis6() ) {
             System.out.println( "Clade analysis 6 failed" );
             failed = true;
-        }
+        }*/
         if ( !failed ) {
             System.out.println( "OK" );
         }
@@ -620,7 +620,9 @@ public class CladeAnalysisTest {
             res1.addGreatestCommonPrefix( "A.1.2", 0.3 );
             res1.addGreatestCommonPrefix( "A.1.3", 0.3 );
             res1.addGreatestCommonPrefix( "B.1", 0.1 );
-            res1.analyzeGreatestCommonPrefixes( 0.3 );
+            res1.analyzeGreatestCommonPrefixes( 0.5 );
+            //res1.analyzeGreatestCommonPrefixesDown(0.5);
+            //res1.analyzeGreatestCommonPrefixesUp(0.5);
             System.out.print( res1.toString());
             System.out.println( "------------------------- ");
             System.out.println();

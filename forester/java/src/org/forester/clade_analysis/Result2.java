@@ -40,19 +40,25 @@ import org.forester.util.ForesterUtil;
 public final class Result2 {
 
     private final String       _separator;
-    private final List<Prefix> _greatest_common_prefixes                      = new ArrayList<>();
-    private String             _greatest_common_prefix_up                     = "";
-    private String             _greatest_common_prefix_down                   = "";
+    private final List<Prefix> _greatest_common_prefixes                      = new ArrayList<Prefix>();
+    private List<Prefix>       _greatest_common_prefixes_up                   = new ArrayList<Prefix>();
+    private List<Prefix>       _greatest_common_prefixes_down                 = new ArrayList<Prefix>();
     private final List<String> _warnings                                      = new ArrayList<>();
-    private int                _lec_ext_nodes                                 = 0;
-    private int                _p_ext_nodes                                   = 0;
     private String             _greatest_common_clade_subtree_confidence      = "";
     private String             _greatest_common_clade_subtree_confidence_up   = "";
     private String             _greatest_common_clade_subtree_confidence_down = "";
     private List<Prefix>       _all                                           = null;
     private List<Prefix>       _collapsed                                     = null;
     private List<Prefix>       _cleaned_spec                                  = null;
-    private boolean            _has_specifics;
+    private boolean            _has_specifics                                 = false;
+    private List<Prefix>       _all_up                                        = null;
+    private List<Prefix>       _collapsed_up                                  = null;
+    private List<Prefix>       _cleaned_spec_up                               = null;
+    private boolean            _has_specifics_up                              = false;
+    private List<Prefix>       _all_down                                      = null;
+    private List<Prefix>       _collapsed_down                                = null;
+    private List<Prefix>       _cleaned_spec_down                             = null;
+    private boolean            _has_specifics_down                            = false;
 
     public Result2( final String separator ) {
         _separator = separator;
@@ -62,23 +68,54 @@ public final class Result2 {
         _separator = ".";//TODO make const somewhere
     }
 
+    public List<Prefix> getAllMultiHitPrefixesUp() {
+        return _all_up;
+    }
+
+    public List<Prefix> getCollapsedMultiHitPrefixesUp() {
+        return _collapsed_up;
+    }
+
+    public List<Prefix> getSpecificMultiHitPrefixesUp() {
+        return _cleaned_spec_up;
+    }
+
+    public boolean isHasSpecificMultiHitsPrefixesUp() {
+        return _has_specifics_up;
+    }
+
+    public List<Prefix> getAllMultiHitPrefixesDown() {
+        return _all_down;
+    }
+
+    public List<Prefix> getCollapsedMultiHitPrefixesDown() {
+        return _collapsed_down;
+    }
+
+    public List<Prefix> getSpecificMultiHitPrefixesDown() {
+        return _cleaned_spec_down;
+    }
+
+    public boolean isHasSpecificMultiHitsPrefixesDown() {
+        return _has_specifics_down;
+    }
+
     public List<Prefix> getAllMultiHitPrefixes() {
         return _all;
     }
-    
+
     public List<Prefix> getCollapsedMultiHitPrefixes() {
         return _collapsed;
     }
-    
+
     public List<Prefix> getSpecificMultiHitPrefixes() {
         return _cleaned_spec;
     }
-    
+
     public boolean isHasSpecificMultiHitsPrefixes() {
         return _has_specifics;
     }
-    
-    
+
     void addWarning( final String warning ) {
         _warnings.add( warning );
     }
@@ -87,12 +124,12 @@ public final class Result2 {
         _greatest_common_prefixes.add( new Prefix( prefix, confidence, _separator ) );
     }
 
-    void setGreatestCommonPrefixUp( final String greatest_common_prefix_up ) {
-        _greatest_common_prefix_up = greatest_common_prefix_up;
+    void addGreatestCommonPrefixUp( final String prefix_up, final double confidence ) {
+        _greatest_common_prefixes_up.add( new Prefix( prefix_up, confidence, _separator ) );
     }
 
-    void setGreatestCommonPrefixDown( final String greatest_common_prefix_down ) {
-        _greatest_common_prefix_down = greatest_common_prefix_down;
+    void addGreatestCommonPrefixDown( final String prefix_down, final double confidence ) {
+        _greatest_common_prefixes_down.add( new Prefix( prefix_down, confidence, _separator ) );
     }
 
     void setGreatestCommonCladeSubtreeConfidence( final String greatest_common_clade_confidence ) {
@@ -105,17 +142,6 @@ public final class Result2 {
 
     void setGreatestCommonCladeDownSubtreeConfidence( final String greatest_common_clade_confidence_down ) {
         _greatest_common_clade_subtree_confidence_down = greatest_common_clade_confidence_down;
-    }
-
-    //  public String getGreatestCommonPrefix() {
-    //      return _greatest_common_prefix;
-    //  }
-    public String getGreatestCommonPrefixUp() {
-        return _greatest_common_prefix_up;
-    }
-
-    public String getGreatestCommonPrefixDown() {
-        return _greatest_common_prefix_down;
     }
 
     public String getGreatestCommonCladeSubtreeConfidence() {
@@ -134,28 +160,30 @@ public final class Result2 {
         return _warnings;
     }
 
-    void setLeastEncompassingCladeSize( final int lec_ext_nodes ) {
-        _lec_ext_nodes = lec_ext_nodes;
-    }
-
-    void setTreeSize( final int p_ext_nodes ) {
-        _p_ext_nodes = p_ext_nodes;
-    }
-
-    public int getLeastEncompassingCladeSize() {
-        return _lec_ext_nodes;
-    }
-
-    public int getTreeSize() {
-        return _p_ext_nodes;
-    }
-
-    public void analyzeGreatestCommonPrefixes( final double cutoff ) {
-        analyzeGreatestCommonPrefixes( _greatest_common_prefixes, _separator, cutoff );
+    public void analyzeGreatestCommonPrefixes( final double cutoff_for_specifics ) {
+        analyzeGreatestCommonPrefixes( _greatest_common_prefixes, _separator, cutoff_for_specifics );
+        analyzeGreatestCommonPrefixesUp( _greatest_common_prefixes_up, _separator, cutoff_for_specifics );
+        analyzeGreatestCommonPrefixesDown( _greatest_common_prefixes_down, _separator, cutoff_for_specifics );
     }
 
     public void analyzeGreatestCommonPrefixes() {
         analyzeGreatestCommonPrefixes( _greatest_common_prefixes, _separator, -1 );
+    }
+
+    private void analyzeGreatestCommonPrefixesUp( final double cutoff_for_specifics ) {
+        analyzeGreatestCommonPrefixesUp( _greatest_common_prefixes_up, _separator, cutoff_for_specifics );
+    }
+
+    private void analyzeGreatestCommonPrefixesUp() {
+        analyzeGreatestCommonPrefixesUp( _greatest_common_prefixes_up, _separator, -1 );
+    }
+
+    private void analyzeGreatestCommonPrefixesDown( final double cutoff_for_specifics ) {
+        analyzeGreatestCommonPrefixesDown( _greatest_common_prefixes_down, _separator, cutoff_for_specifics );
+    }
+
+    private void analyzeGreatestCommonPrefixesDown() {
+        analyzeGreatestCommonPrefixesDown( _greatest_common_prefixes_down, _separator, -1 );
     }
 
     private final void analyzeGreatestCommonPrefixes( final List<Prefix> greatest_common_prefixes,
@@ -174,6 +202,44 @@ public final class Result2 {
         }
         else {
             _cleaned_spec = null;
+        }
+    }
+
+    private final void analyzeGreatestCommonPrefixesUp( final List<Prefix> greatest_common_prefixes_up,
+                                                        final String separator,
+                                                        final double cutoff ) {
+        final List<Prefix> l = obtainAllPrefixes( greatest_common_prefixes_up, separator );
+        sortPrefixesAccordingToConfidence( l );
+        _all_up = removeLessSpecificPrefixes( l );
+        _collapsed_up = collapse( _all_up );
+        _has_specifics_up = false;
+        if ( cutoff >= 0 ) {
+            _cleaned_spec_up = obtainSpecifics( cutoff, _all_up, _collapsed_up );
+            if ( _cleaned_spec_up != null && _cleaned_spec_up.size() > 0 ) {
+                _has_specifics_up = true;
+            }
+        }
+        else {
+            _cleaned_spec_up = null;
+        }
+    }
+
+    private final void analyzeGreatestCommonPrefixesDown( final List<Prefix> greatest_common_prefixes_down,
+                                                          final String separator,
+                                                          final double cutoff ) {
+        final List<Prefix> l = obtainAllPrefixes( greatest_common_prefixes_down, separator );
+        sortPrefixesAccordingToConfidence( l );
+        _all_down = removeLessSpecificPrefixes( l );
+        _collapsed_down = collapse( _all_down );
+        _has_specifics_down = false;
+        if ( cutoff >= 0 ) {
+            _cleaned_spec_down = obtainSpecifics( cutoff, _all_down, _collapsed_down );
+            if ( _cleaned_spec_down != null && _cleaned_spec_down.size() > 0 ) {
+                _has_specifics_down = true;
+            }
+        }
+        else {
+            _cleaned_spec_down = null;
         }
     }
 
@@ -219,7 +285,7 @@ public final class Result2 {
             }
         }
         if ( !ForesterUtil.isEqual( confidence_sum, 1.0, 1E-5 ) ) {
-            throw new IllegalArgumentException( "Confidences add up to " + confidence_sum + " instead of 1.0" );
+           // throw new IllegalArgumentException( "Confidences add up to " + confidence_sum + " instead of 1.0" );
         }
         return collapsed;
     }
@@ -253,7 +319,7 @@ public final class Result2 {
         return cleaned;
     }
 
-    private static void sortPrefixesAccordingToConfidence( final List<Prefix> l ) {
+    private final static void sortPrefixesAccordingToConfidence( final List<Prefix> l ) {
         Collections.sort( l, new Comparator<Prefix>() {
 
             @Override
@@ -315,7 +381,7 @@ public final class Result2 {
                 sb.append( ForesterUtil.LINE_SEPARATOR );
             }
             sb.append( ForesterUtil.LINE_SEPARATOR );
-            sb.append( "Collapsed with specifics:" );
+            sb.append( "Collapsed With Specifics:" );
             sb.append( ForesterUtil.LINE_SEPARATOR );
             for( final Prefix prefix : _collapsed ) {
                 sb.append( prefix );
@@ -328,6 +394,85 @@ public final class Result2 {
                 }
             }
         }
+        //////
+        if ( _all_down != null ) {
+            sb.append( ForesterUtil.LINE_SEPARATOR );
+            sb.append( "Cleaned Down:" );
+            sb.append( ForesterUtil.LINE_SEPARATOR );
+            for( final Prefix prefix : _all_down ) {
+                sb.append( prefix );
+                sb.append( ForesterUtil.LINE_SEPARATOR );
+            }
+            sb.append( ForesterUtil.LINE_SEPARATOR );
+            sb.append( "Collapsed Down:" );
+            sb.append( ForesterUtil.LINE_SEPARATOR );
+            for( final Prefix prefix : _collapsed_down ) {
+                sb.append( prefix );
+                sb.append( ForesterUtil.LINE_SEPARATOR );
+            }
+            if ( _has_specifics_down ) {
+                sb.append( ForesterUtil.LINE_SEPARATOR );
+                sb.append( "Specifics Down:" );
+                sb.append( ForesterUtil.LINE_SEPARATOR );
+                for( final Prefix prefix : _cleaned_spec_down ) {
+                    sb.append( prefix );
+                    sb.append( ForesterUtil.LINE_SEPARATOR );
+                }
+                sb.append( ForesterUtil.LINE_SEPARATOR );
+                sb.append( "Collapsed With Specifics Down:" );
+                sb.append( ForesterUtil.LINE_SEPARATOR );
+                for( final Prefix prefix : _collapsed_down ) {
+                    sb.append( prefix );
+                    sb.append( ForesterUtil.LINE_SEPARATOR );
+                    for( final Prefix spec : _cleaned_spec_down ) {
+                        if ( spec.getPrefix().startsWith( prefix.getPrefix() ) ) {
+                            sb.append( "    " + spec );
+                            sb.append( ForesterUtil.LINE_SEPARATOR );
+                        }
+                    }
+                }
+            }
+        }
+        //////
+        if ( _all_up != null ) {
+            sb.append( ForesterUtil.LINE_SEPARATOR );
+            sb.append( "Cleaned Up:" );
+            sb.append( ForesterUtil.LINE_SEPARATOR );
+            for( final Prefix prefix : _all_up ) {
+                sb.append( prefix );
+                sb.append( ForesterUtil.LINE_SEPARATOR );
+            }
+            sb.append( ForesterUtil.LINE_SEPARATOR );
+            sb.append( "Collapsed Up:" );
+            sb.append( ForesterUtil.LINE_SEPARATOR );
+            for( final Prefix prefix : _collapsed_up ) {
+                sb.append( prefix );
+                sb.append( ForesterUtil.LINE_SEPARATOR );
+            }
+            if ( _has_specifics ) {
+                sb.append( ForesterUtil.LINE_SEPARATOR );
+                sb.append( "Specifics Up:" );
+                sb.append( ForesterUtil.LINE_SEPARATOR );
+                for( final Prefix prefix : _cleaned_spec_up ) {
+                    sb.append( prefix );
+                    sb.append( ForesterUtil.LINE_SEPARATOR );
+                }
+                sb.append( ForesterUtil.LINE_SEPARATOR );
+                sb.append( "Collapsed With Specifics Up:" );
+                sb.append( ForesterUtil.LINE_SEPARATOR );
+                for( final Prefix prefix : _collapsed_up ) {
+                    sb.append( prefix );
+                    sb.append( ForesterUtil.LINE_SEPARATOR );
+                    for( final Prefix spec : _cleaned_spec_up ) {
+                        if ( spec.getPrefix().startsWith( prefix.getPrefix() ) ) {
+                            sb.append( "    " + spec );
+                            sb.append( ForesterUtil.LINE_SEPARATOR );
+                        }
+                    }
+                }
+            }
+        }
+        /////
         return sb.toString();
     }
 }
