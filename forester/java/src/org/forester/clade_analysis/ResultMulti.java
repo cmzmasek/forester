@@ -117,13 +117,13 @@ public final class ResultMulti {
     @Override
     public final String toString() {
         final StringBuilder sb = new StringBuilder();
-        sb.append( "Cleaned:" );
-        sb.append( ForesterUtil.LINE_SEPARATOR );
-        for( final Prefix prefix : _all ) {
-            sb.append( prefix );
-            sb.append( ForesterUtil.LINE_SEPARATOR );
-        }
-        sb.append( ForesterUtil.LINE_SEPARATOR );
+      //  sb.append( "Cleaned:" );
+      //  sb.append( ForesterUtil.LINE_SEPARATOR );
+      //  for( final Prefix prefix : _all ) {
+       //     sb.append( prefix );
+       //     sb.append( ForesterUtil.LINE_SEPARATOR );
+       // }
+       // sb.append( ForesterUtil.LINE_SEPARATOR );
         sb.append( "Collapsed:" );
         sb.append( ForesterUtil.LINE_SEPARATOR );
         for( final Prefix prefix : _collapsed ) {
@@ -154,20 +154,20 @@ public final class ResultMulti {
         }
         if ( !ForesterUtil.isEmpty( _all_down ) ) {
             sb.append( ForesterUtil.LINE_SEPARATOR );
-            sb.append( "Cleaned Down:" );
-            sb.append( ForesterUtil.LINE_SEPARATOR );
-            for( final Prefix prefix : _all_down ) {
-                sb.append( prefix );
-                sb.append( ForesterUtil.LINE_SEPARATOR );
-            }
-            sb.append( ForesterUtil.LINE_SEPARATOR );
+        //    sb.append( "Cleaned Down:" );
+        //    sb.append( ForesterUtil.LINE_SEPARATOR );
+        //    for( final Prefix prefix : _all_down ) {
+        //        sb.append( prefix );
+        //        sb.append( ForesterUtil.LINE_SEPARATOR );
+         //   }
+           // sb.append( ForesterUtil.LINE_SEPARATOR );
             sb.append( "Collapsed Down:" );
             sb.append( ForesterUtil.LINE_SEPARATOR );
             for( final Prefix prefix : _collapsed_down ) {
                 sb.append( prefix );
                 sb.append( ForesterUtil.LINE_SEPARATOR );
             }
-            if ( _has_specifics_down ) {
+          /*  if ( _has_specifics_down ) {
                 sb.append( ForesterUtil.LINE_SEPARATOR );
                 sb.append( "Specifics Down:" );
                 sb.append( ForesterUtil.LINE_SEPARATOR );
@@ -188,24 +188,24 @@ public final class ResultMulti {
                         }
                     }
                 }
-            }
+            }*/
         }
         if ( !ForesterUtil.isEmpty( _all_up ) ) {
             sb.append( ForesterUtil.LINE_SEPARATOR );
-            sb.append( "Cleaned Up:" );
-            sb.append( ForesterUtil.LINE_SEPARATOR );
-            for( final Prefix prefix : _all_up ) {
-                sb.append( prefix );
-                sb.append( ForesterUtil.LINE_SEPARATOR );
-            }
-            sb.append( ForesterUtil.LINE_SEPARATOR );
+        //    sb.append( "Cleaned Up:" );
+        //    sb.append( ForesterUtil.LINE_SEPARATOR );
+        //    for( final Prefix prefix : _all_up ) {
+        //        sb.append( prefix );
+         //       sb.append( ForesterUtil.LINE_SEPARATOR );
+         //   }
+         //   sb.append( ForesterUtil.LINE_SEPARATOR );
             sb.append( "Collapsed Up:" );
             sb.append( ForesterUtil.LINE_SEPARATOR );
             for( final Prefix prefix : _collapsed_up ) {
                 sb.append( prefix );
                 sb.append( ForesterUtil.LINE_SEPARATOR );
             }
-            if ( _has_specifics ) {
+          /*  if ( _has_specifics ) {
                 sb.append( ForesterUtil.LINE_SEPARATOR );
                 sb.append( "Specifics Up:" );
                 sb.append( ForesterUtil.LINE_SEPARATOR );
@@ -226,7 +226,7 @@ public final class ResultMulti {
                         }
                     }
                 }
-            }
+            }*/
         }
         return sb.toString();
     }

@@ -73,7 +73,7 @@ public final class AnalysisMulti {
         final ResultMulti res = new ResultMulti();
         for( int i = 0; i < qnodes.size(); ++i ) {
             final PhylogenyNode qnode = qnodes.get( i );
-            System.out.println( ">>" + qnode.getName() );
+            //System.out.println( ">>" + qnode.getName() );
             if ( qnode.isRoot() ) {
                 throw new IllegalArgumentException( "Query " + query + " is root." );
             }
@@ -119,7 +119,7 @@ public final class AnalysisMulti {
             }
             //final String greatest_common_prefix_up[] = analyzeSiblings( qnode_p, qnode_pp, separator, query, res );
             final String greatest_common_prefix_up = analyzeSiblings( qnode_p, qnode_pp, separator, query );
-            System.out.println( "greatest_common_prefix_up=" + greatest_common_prefix_up + " " + conf );
+            //System.out.println( "greatest_common_prefix_up=" + greatest_common_prefix_up + " " + conf );
             if ( !ForesterUtil.isEmpty( greatest_common_prefix_up ) ) {
                 res.addGreatestCommonPrefixUp( greatest_common_prefix_up, conf );
             }
@@ -127,7 +127,7 @@ public final class AnalysisMulti {
                 res.addGreatestCommonPrefixUp( UNKNOWN, conf );
             }
             final String greatest_common_prefix_down = analyzeSiblings( qnode, qnode_p, separator, query );
-            System.out.println( "greatest_common_prefix_down=" + greatest_common_prefix_down + " " + conf );
+           // System.out.println( "greatest_common_prefix_down=" + greatest_common_prefix_down + " " + conf );
             if ( !ForesterUtil.isEmpty( greatest_common_prefix_down ) ) {
                 res.addGreatestCommonPrefixDown( greatest_common_prefix_down, conf );
             }
