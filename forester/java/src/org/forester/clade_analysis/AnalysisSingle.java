@@ -39,9 +39,9 @@ import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Confidence;
 import org.forester.util.ForesterUtil;
 
-public final class Analysis {
+public final class AnalysisSingle {
 
-    public static Result execute( final Phylogeny p, final String query, final String separator ) {
+    public static ResultSingle execute( final Phylogeny p, final String query, final String separator ) {
         final PhylogenyNode qnode = p.getNode( query );
         if ( qnode.isRoot() ) {
             throw new IllegalStateException( "Unexpected error: Query " + query
@@ -74,7 +74,7 @@ public final class Analysis {
             }
         }
         final String greatest_common_prefix = ForesterUtil.greatestCommonPrefix( qnode_ext_nodes_names, separator );
-        final Result res = new Result();
+        final ResultSingle res = new ResultSingle();
         if ( greatest_common_prefix.length() < 1 ) {
             res.addWarning( "No greatest common prefix" );
             res.setGreatestCommonPrefix( "" );

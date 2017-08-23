@@ -31,8 +31,8 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.forester.clade_analysis.Analysis;
-import org.forester.clade_analysis.Result;
+import org.forester.clade_analysis.AnalysisSingle;
+import org.forester.clade_analysis.ResultSingle;
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.util.ParserUtils;
 import org.forester.phylogeny.Phylogeny;
@@ -115,7 +115,7 @@ public final class cladinator {
                 System.out.println( "\nCould not read \"" + intreefile + "\" [" + e.getMessage() + "]\n" );
                 System.exit( -1 );
             }
-            final Result res = Analysis.execute( p, query, separator );
+            final ResultSingle res = AnalysisSingle.execute( p, query, separator );
             System.out.println();
             System.out.println( "Result:" );
             System.out.println( "Query                        : " + query );

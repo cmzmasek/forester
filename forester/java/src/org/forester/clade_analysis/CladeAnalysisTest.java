@@ -2,8 +2,6 @@
 package org.forester.clade_analysis;
 
 import java.io.File;
-import java.util.List;
-import java.util.regex.Pattern;
 
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.util.ParserUtils;
@@ -19,7 +17,7 @@ public class CladeAnalysisTest {
 
     public static void main( final String[] args ) {
         boolean failed = false;
-       /* if ( !testCladeAnalysis1() ) {
+        if ( !testCladeAnalysis1() ) {
             System.out.println( "Clade analysis 1 failed" );
             failed = true;
         }
@@ -34,17 +32,20 @@ public class CladeAnalysisTest {
         if ( !testCladeAnalysis4() ) {
             System.out.println( "Clade analysis 4 failed" );
             failed = true;
-        */
+        }
         if ( !testCladeAnalysis5() ) {
             System.out.println( "Clade analysis 5 failed" );
             failed = true;
         }
-       /* if ( !testCladeAnalysis6() ) {
+        if ( !testCladeAnalysis6() ) {
             System.out.println( "Clade analysis 6 failed" );
             failed = true;
-        }*/
+        }
         if ( !failed ) {
             System.out.println( "OK" );
+        }
+        else {
+            System.out.println( "NOT OK" );
         }
     }
 
@@ -76,7 +77,7 @@ public class CladeAnalysisTest {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
             final PhylogenyParser pp = ParserUtils.createParserDependingOnFileType( intreefile1, true );
             final Phylogeny p1 = factory.create( intreefile1, pp )[ 0 ];
-            Result res = Analysis.execute( p1, "A.1.1.1", "." );
+            ResultSingle res = AnalysisSingle.execute( p1, "A.1.1.1", "." );
             if ( !res.getGreatestCommonPrefix().equals( "A.1" ) ) {
                 return false;
             }
@@ -95,7 +96,7 @@ public class CladeAnalysisTest {
             if ( res.getWarnings().size() != 0 ) {
                 return false;
             }
-            res = Analysis.execute( p1, "A.1.1.2", "." );
+            res = AnalysisSingle.execute( p1, "A.1.1.2", "." );
             if ( !res.getGreatestCommonPrefix().equals( "A.1" ) ) {
                 return false;
             }
@@ -114,7 +115,7 @@ public class CladeAnalysisTest {
             if ( res.getWarnings().size() != 0 ) {
                 return false;
             }
-            res = Analysis.execute( p1, "A.1.1.3", "." );
+            res = AnalysisSingle.execute( p1, "A.1.1.3", "." );
             if ( !res.getGreatestCommonPrefix().equals( "A.1" ) ) {
                 return false;
             }
@@ -133,7 +134,7 @@ public class CladeAnalysisTest {
             if ( res.getWarnings().size() != 0 ) {
                 return false;
             }
-            res = Analysis.execute( p1, "A.1.1.4", "." );
+            res = AnalysisSingle.execute( p1, "A.1.1.4", "." );
             if ( !res.getGreatestCommonPrefix().equals( "A.1.1" ) ) {
                 return false;
             }
@@ -152,7 +153,7 @@ public class CladeAnalysisTest {
             if ( res.getWarnings().size() != 0 ) {
                 return false;
             }
-            res = Analysis.execute( p1, "A.1.2.1", "." );
+            res = AnalysisSingle.execute( p1, "A.1.2.1", "." );
             if ( !res.getGreatestCommonPrefix().equals( "A" ) ) {
                 return false;
             }
@@ -171,7 +172,7 @@ public class CladeAnalysisTest {
             if ( res.getWarnings().size() != 0 ) {
                 return false;
             }
-            res = Analysis.execute( p1, "A.2.1.1", "." );
+            res = AnalysisSingle.execute( p1, "A.2.1.1", "." );
             if ( !res.getGreatestCommonPrefix().equals( "A" ) ) {
                 return false;
             }
@@ -190,7 +191,7 @@ public class CladeAnalysisTest {
             if ( res.getWarnings().size() != 0 ) {
                 return false;
             }
-            res = Analysis.execute( p1, "A.2.1.2", "." );
+            res = AnalysisSingle.execute( p1, "A.2.1.2", "." );
             if ( !res.getGreatestCommonPrefix().equals( "A" ) ) {
                 return false;
             }
@@ -209,7 +210,7 @@ public class CladeAnalysisTest {
             if ( res.getWarnings().size() != 0 ) {
                 return false;
             }
-            res = Analysis.execute( p1, "A.3.1.1", "." );
+            res = AnalysisSingle.execute( p1, "A.3.1.1", "." );
             if ( !res.getGreatestCommonPrefix().equals( "A.3" ) ) {
                 return false;
             }
@@ -228,7 +229,7 @@ public class CladeAnalysisTest {
             if ( res.getWarnings().size() != 0 ) {
                 return false;
             }
-            res = Analysis.execute( p1, "A.3.1.2", "." );
+            res = AnalysisSingle.execute( p1, "A.3.1.2", "." );
             if ( !res.getGreatestCommonPrefix().equals( "A.3" ) ) {
                 return false;
             }
@@ -247,7 +248,7 @@ public class CladeAnalysisTest {
             if ( res.getWarnings().size() != 0 ) {
                 return false;
             }
-            res = Analysis.execute( p1, "A.3.2.1", "." );
+            res = AnalysisSingle.execute( p1, "A.3.2.1", "." );
             if ( !res.getGreatestCommonPrefix().equals( "A.3" ) ) {
                 return false;
             }
@@ -266,7 +267,7 @@ public class CladeAnalysisTest {
             if ( res.getWarnings().size() != 0 ) {
                 return false;
             }
-            res = Analysis.execute( p1, "A.3.3.1", "." );
+            res = AnalysisSingle.execute( p1, "A.3.3.1", "." );
             if ( !res.getGreatestCommonPrefix().equals( "A" ) ) {
                 return false;
             }
@@ -285,7 +286,7 @@ public class CladeAnalysisTest {
             if ( res.getWarnings().size() != 0 ) {
                 return false;
             }
-            res = Analysis.execute( p1, "A.4.1.1", "." );
+            res = AnalysisSingle.execute( p1, "A.4.1.1", "." );
             if ( !res.getGreatestCommonPrefix().equals( "A.4.1" ) ) {
                 return false;
             }
@@ -304,7 +305,7 @@ public class CladeAnalysisTest {
             if ( res.getWarnings().size() != 0 ) {
                 return false;
             }
-            res = Analysis.execute( p1, "A.4.1.1.a", "." );
+            res = AnalysisSingle.execute( p1, "A.4.1.1.a", "." );
             if ( !res.getGreatestCommonPrefix().equals( "A.4.1" ) ) {
                 return false;
             }
@@ -323,9 +324,9 @@ public class CladeAnalysisTest {
             if ( res.getWarnings().size() != 0 ) {
                 return false;
             }
-            res = Analysis.execute( p1, "A.4.1.2", "." );
-            res = Analysis.execute( p1, "A.4.1.2.a", "." );
-            res = Analysis.execute( p1, "A.5.1.1", "." );
+            res = AnalysisSingle.execute( p1, "A.4.1.2", "." );
+            res = AnalysisSingle.execute( p1, "A.4.1.2.a", "." );
+            res = AnalysisSingle.execute( p1, "A.5.1.1", "." );
             if ( !res.getGreatestCommonPrefix().equals( "A" ) ) {
                 return false;
             }
@@ -344,7 +345,7 @@ public class CladeAnalysisTest {
             if ( res.getWarnings().size() != 0 ) {
                 return false;
             }
-            res = Analysis.execute( p1, "A.5.1.2", "." );
+            res = AnalysisSingle.execute( p1, "A.5.1.2", "." );
             if ( !res.getGreatestCommonPrefix().equals( "A" ) ) {
                 return false;
             }
@@ -363,7 +364,7 @@ public class CladeAnalysisTest {
             if ( res.getWarnings().size() != 0 ) {
                 return false;
             }
-            res = Analysis.execute( p1, "A.6.3.12", "." );
+            res = AnalysisSingle.execute( p1, "A.6.3.12", "." );
             if ( !res.getGreatestCommonPrefix().equals( "A" ) ) {
                 return false;
             }
@@ -382,7 +383,7 @@ public class CladeAnalysisTest {
             if ( res.getWarnings().size() != 0 ) {
                 return false;
             }
-            res = Analysis.execute( p1, "B.1.1.1", "." );
+            res = AnalysisSingle.execute( p1, "B.1.1.1", "." );
             if ( !res.getGreatestCommonPrefix().equals( "" ) ) {
                 return false;
             }
@@ -401,7 +402,7 @@ public class CladeAnalysisTest {
             if ( res.getWarnings().size() != 2 ) {
                 return false;
             }
-            res = Analysis.execute( p1, "B.1.234.3", "." );
+            res = AnalysisSingle.execute( p1, "B.1.234.3", "." );
             if ( !res.getGreatestCommonPrefix().equals( "" ) ) {
                 return false;
             }
@@ -420,7 +421,7 @@ public class CladeAnalysisTest {
             if ( res.getWarnings().size() != 2 ) {
                 return false;
             }
-            res = Analysis.execute( p1, "C.1.1.1", "." );
+            res = AnalysisSingle.execute( p1, "C.1.1.1", "." );
             if ( !res.getGreatestCommonPrefix().equals( "C.1" ) ) {
                 return false;
             }
@@ -439,7 +440,7 @@ public class CladeAnalysisTest {
             if ( res.getWarnings().size() != 0 ) {
                 return false;
             }
-            res = Analysis.execute( p1, "C.1.1.2", "." );
+            res = AnalysisSingle.execute( p1, "C.1.1.2", "." );
             if ( !res.getGreatestCommonPrefix().equals( "C.1" ) ) {
                 return false;
             }
@@ -458,7 +459,7 @@ public class CladeAnalysisTest {
             if ( res.getWarnings().size() != 0 ) {
                 return false;
             }
-            res = Analysis.execute( p1, "C.1.2.1", "." );
+            res = AnalysisSingle.execute( p1, "C.1.2.1", "." );
             if ( !res.getGreatestCommonPrefix().equals( "C" ) ) {
                 return false;
             }
@@ -477,7 +478,7 @@ public class CladeAnalysisTest {
             if ( res.getWarnings().size() != 0 ) {
                 return false;
             }
-            res = Analysis.execute( p1, "C.2.1", "." );
+            res = AnalysisSingle.execute( p1, "C.2.1", "." );
             if ( !res.getGreatestCommonPrefix().equals( "C" ) ) {
                 return false;
             }
@@ -496,7 +497,7 @@ public class CladeAnalysisTest {
             if ( res.getWarnings().size() != 0 ) {
                 return false;
             }
-            res = Analysis.execute( p1, "C.3", "." );
+            res = AnalysisSingle.execute( p1, "C.3", "." );
             if ( !res.getGreatestCommonPrefix().equals( "" ) ) {
                 return false;
             }
@@ -515,7 +516,7 @@ public class CladeAnalysisTest {
             if ( res.getWarnings().size() != 1 ) {
                 return false;
             }
-            res = Analysis.execute( p1, "QE.1.1.1.2.1", "." );
+            res = AnalysisSingle.execute( p1, "QE.1.1.1.2.1", "." );
             if ( !res.getGreatestCommonPrefix().equals( "" ) ) {
                 return false;
             }
@@ -548,7 +549,7 @@ public class CladeAnalysisTest {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
             final PhylogenyParser pp = ParserUtils.createParserDependingOnFileType( intreefile1, true );
             final Phylogeny p1 = factory.create( intreefile1, pp )[ 0 ];
-            Result res = Analysis.execute( p1, "6_DQ278891", null );
+            ResultSingle res = AnalysisSingle.execute( p1, "6_DQ278891", null );
             if ( !res.getGreatestCommonPrefix().equals( "6_" ) ) {
                 return false;
             }
@@ -567,7 +568,7 @@ public class CladeAnalysisTest {
             if ( res.getWarnings().size() != 0 ) {
                 return false;
             }
-            res = Analysis.execute( p1, "6xa_EU408330", null );
+            res = AnalysisSingle.execute( p1, "6xa_EU408330", null );
             if ( !res.getGreatestCommonPrefix().equals( "6xa_EU40833" ) ) {
                 return false;
             }
@@ -586,7 +587,7 @@ public class CladeAnalysisTest {
             if ( res.getWarnings().size() != 0 ) {
                 return false;
             }
-            res = Analysis.execute( p1, "7a_EF108306", null );
+            res = AnalysisSingle.execute( p1, "7a_EF108306", null );
             if ( !res.getGreatestCommonPrefix().equals( "" ) ) {
                 return false;
             }
@@ -615,63 +616,56 @@ public class CladeAnalysisTest {
 
     private static boolean testCladeAnalysis3() {
         try {
-            final Result2 res1 = new Result2();
+            final ResultMulti res1 = new ResultMulti();
             res1.addGreatestCommonPrefix( "A.1.1", 0.3 );
             res1.addGreatestCommonPrefix( "A.1.2", 0.3 );
             res1.addGreatestCommonPrefix( "A.1.3", 0.3 );
             res1.addGreatestCommonPrefix( "B.1", 0.1 );
-            res1.analyzeGreatestCommonPrefixes( 0.5 );
-            //res1.analyzeGreatestCommonPrefixesDown(0.5);
-            //res1.analyzeGreatestCommonPrefixesUp(0.5);
-            System.out.print( res1.toString());
-            System.out.println( "------------------------- ");
+            res1.analyze( 0.5 );
+            System.out.print( res1.toString() );
+            System.out.println( "------------------------- " );
             System.out.println();
-            
-            final Result2 res2 = new Result2( "." );
+            final ResultMulti res2 = new ResultMulti( "." );
             res2.addGreatestCommonPrefix( "A.1.1.1", 0.1 );
             res2.addGreatestCommonPrefix( "A.1", 0.7 );
             res2.addGreatestCommonPrefix( "A.1.2", 0.1 );
             res2.addGreatestCommonPrefix( "B.1", 0.1 );
-            res2.analyzeGreatestCommonPrefixes( 0.3 );
-            System.out.print( res2.toString());
-            System.out.println( "------------------------- ");
+            res2.analyze( 0.3 );
+            System.out.print( res2.toString() );
+            System.out.println( "------------------------- " );
             System.out.println();
-           
-            final Result2 res3 = new Result2( "." );
+            final ResultMulti res3 = new ResultMulti( "." );
             res3.addGreatestCommonPrefix( "A.1.1.1", 0.1 );
             res3.addGreatestCommonPrefix( "A.1.1.1.1", 0.6 );
             res3.addGreatestCommonPrefix( "A.1", 0.1 );
             res3.addGreatestCommonPrefix( "A.1.2", 0.1 );
             res3.addGreatestCommonPrefix( "B.1", 0.1 );
-            res3.analyzeGreatestCommonPrefixes( 0.3 );
-            System.out.print( res3.toString());
-            System.out.println( "------------------------- ");
+            res3.analyze( 0.3 );
+            System.out.print( res3.toString() );
+            System.out.println( "------------------------- " );
             System.out.println();
-            
-            final Result2 res33 = new Result2( "." );
+            final ResultMulti res33 = new ResultMulti( "." );
             res33.addGreatestCommonPrefix( "A.1.1.1", 0.1 );
             res33.addGreatestCommonPrefix( "A.1.1.1.1", 0.3 );
             res33.addGreatestCommonPrefix( "A.1", 0.1 );
             res33.addGreatestCommonPrefix( "A.1.2", 0.1 );
             res33.addGreatestCommonPrefix( "B.1", 0.1 );
             res33.addGreatestCommonPrefix( "B.1.1.1", 0.3 );
-            res33.analyzeGreatestCommonPrefixes( 0.3 );
-            System.out.print( res33.toString());
-            System.out.println( "------------------------- ");
+            res33.analyze( 0.3 );
+            System.out.print( res33.toString() );
+            System.out.println( "------------------------- " );
             System.out.println();
-            
-            final Result2 res4 = new Result2();
+            final ResultMulti res4 = new ResultMulti();
             res4.addGreatestCommonPrefix( "A.1.1.1.1", 0.35 );
             res4.addGreatestCommonPrefix( "A.1.1.1.2", 0.35 );
             res4.addGreatestCommonPrefix( "A.1", 0.1 );
             res4.addGreatestCommonPrefix( "A.1.2", 0.1 );
             res4.addGreatestCommonPrefix( "B.1", 0.1 );
-            res4.analyzeGreatestCommonPrefixes( 0.3 );
-            System.out.print( res4.toString());
-            System.out.println( "------------------------- ");
+            res4.analyze( 0.3 );
+            System.out.print( res4.toString() );
+            System.out.println( "------------------------- " );
             System.out.println();
-            
-            final Result2 res5 = new Result2();
+            final ResultMulti res5 = new ResultMulti();
             res5.addGreatestCommonPrefix( "A.1.1.1.1", 0.2 );
             res5.addGreatestCommonPrefix( "C.2.3", 0.2 );
             res5.addGreatestCommonPrefix( "A.1.5", 0.1 );
@@ -679,54 +673,50 @@ public class CladeAnalysisTest {
             res5.addGreatestCommonPrefix( "B.1.1", 0.2 );
             res5.addGreatestCommonPrefix( "B.1.2", 0.09 );
             res5.addGreatestCommonPrefix( "D.1.1.1.1", 0.01 );
-            res5.analyzeGreatestCommonPrefixes( 0.3 );
-            System.out.print( res5.toString());
-            System.out.println( "------------------------- ");
+            res5.analyze( 0.3 );
+            System.out.print( res5.toString() );
+            System.out.println( "------------------------- " );
             System.out.println();
-           
-            final Result2 res6 = new Result2();
+            final ResultMulti res6 = new ResultMulti();
             res6.addGreatestCommonPrefix( "A.1.1.1", 0.05 );
             res6.addGreatestCommonPrefix( "A.1.1.1.1", 0.65 );
             res6.addGreatestCommonPrefix( "A.1", 0.1 );
             res6.addGreatestCommonPrefix( "A.1.2", 0.1 );
             res6.addGreatestCommonPrefix( "B.1", 0.1 );
-            res6.analyzeGreatestCommonPrefixes( 0.3 );
-            System.out.print( res6.toString());
-            System.out.println( "------------------------- ");
+            res6.analyze( 0.3 );
+            System.out.print( res6.toString() );
+            System.out.println( "------------------------- " );
             System.out.println();
-           
-            final Result2 res7 = new Result2();
+            final ResultMulti res7 = new ResultMulti();
             res7.addGreatestCommonPrefix( "A.1.1.1", 0.07 );
             res7.addGreatestCommonPrefix( "A.1.1.1.1", 0.9 );
             res7.addGreatestCommonPrefix( "A.1", 0.01 );
             res7.addGreatestCommonPrefix( "A.1.2", 0.01 );
             res7.addGreatestCommonPrefix( "B.1", 0.01 );
-            res7.analyzeGreatestCommonPrefixes( 0.3 );
-            System.out.print( res7.toString());
-            System.out.println( "------------------------- ");
+            res7.analyze( 0.3 );
+            System.out.print( res7.toString() );
+            System.out.println( "------------------------- " );
             System.out.println();
-            
-            final Result2 res8 = new Result2( "_/_" );
+            final ResultMulti res8 = new ResultMulti( "_/_" );
             res8.addGreatestCommonPrefix( "AA_/_abc_/_def", 0.07 );
             res8.addGreatestCommonPrefix( "AA_/_abc_/_sfc", 0.9 );
             res8.addGreatestCommonPrefix( "AA_/_abc_/_xcd", 0.01 );
             res8.addGreatestCommonPrefix( "AA_/_abc_/_memr", 0.01 );
             res8.addGreatestCommonPrefix( "AA_/_abc_/_fkem_/_odem", 0.01 );
-            res8.analyzeGreatestCommonPrefixes( 0.3 );
-            System.out.print( res8.toString());
-            System.out.println( "------------------------- ");
+            res8.analyze( 0.3 );
+            System.out.print( res8.toString() );
+            System.out.println( "------------------------- " );
             System.out.println();
-           
-            final Result2 res9 = new Result2( "_/_" );
+            final ResultMulti res9 = new ResultMulti( "_/_" );
             res9.addGreatestCommonPrefix( "AA_/_abc_/_def", 0.07 );
             res9.addGreatestCommonPrefix( "AA_/_abc_/_sfc", 0.6 );
             res9.addGreatestCommonPrefix( "AA_/_abc_/_xcd", 0.01 );
             res9.addGreatestCommonPrefix( "AA_/_abc_/_memr", 0.01 );
             res9.addGreatestCommonPrefix( "AA_/_abc_/_fkem_/_odem", 0.01 );
             res9.addGreatestCommonPrefix( "BB_/_fke_/_dme_/_nx2", 0.3 );
-            res9.analyzeGreatestCommonPrefixes( 0.3 );
-            System.out.print( res9.toString());
-            System.out.println( "------------------------- ");
+            res9.analyze( 0.3 );
+            System.out.print( res9.toString() );
+            System.out.println( "------------------------- " );
             System.out.println();
         }
         catch ( final Exception e ) {
@@ -735,41 +725,18 @@ public class CladeAnalysisTest {
         }
         return true;
     }
-    
+
     private static boolean testCladeAnalysis4() {
         try {
             final File intreefile1 = new File( PATH_TO_TEST_DATA + "pplacer_2.tre" );
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
             final PhylogenyParser pp = ParserUtils.createParserDependingOnFileType( intreefile1, true );
             final Phylogeny p1 = factory.create( intreefile1, pp )[ 0 ];
-            Pattern query = Pattern.compile(".+#\\d+_M=(.+)");
-            Result2 res = Analysis2.execute( p1, query, "." );
-            
-            res.analyzeGreatestCommonPrefixes( 0.3 );
-            System.out.print( res.toString());
-            System.out.println( "------------------------- ");
+            ResultMulti res2 = AnalysisMulti.execute( p1 );
+            res2.analyze( 0.3 );
+            System.out.print( res2.toString() );
+            System.out.println( "------------------------- " );
             System.out.println();
-            
-           // Result res = Analysis.execute( p1, "A.1.1.1", "." );
-           /* if ( !res.getGreatestCommonPrefix().equals( "A.1" ) ) {
-                return false;
-            }
-            if ( !res.getGreatestCommonPrefixDown().equals( "A.1.1" ) ) {
-                return false;
-            }
-            if ( !res.getGreatestCommonPrefixUp().equals( "A.1.2.1" ) ) {
-                return false;
-            }
-            if ( res.getLeastEncompassingCladeSize() != 4 ) {
-                return false;
-            }
-            if ( res.getTreeSize() != 25 ) {
-                return false;
-            }
-            if ( res.getWarnings().size() != 0 ) {
-                return false;
-            }*/
-          
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );
@@ -777,41 +744,18 @@ public class CladeAnalysisTest {
         }
         return true;
     }
-    
+
     private static boolean testCladeAnalysis5() {
         try {
             final File intreefile1 = new File( PATH_TO_TEST_DATA + "clade_analysis_test_3.xml" );
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
             final PhylogenyParser pp = ParserUtils.createParserDependingOnFileType( intreefile1, true );
             final Phylogeny p1 = factory.create( intreefile1, pp )[ 0 ];
-            Pattern query = Pattern.compile(".+#\\d+_M=(.+)");
-            Result2 res = Analysis2.execute( p1, query, "." );
-            
-            res.analyzeGreatestCommonPrefixes( 0.3 );
-            System.out.print( res.toString());
-            System.out.println( "------------------------- ");
+            ResultMulti res = AnalysisMulti.execute( p1 );
+            res.analyze( 0.3 );
+            System.out.print( res.toString() );
+            System.out.println( "------------------------- " );
             System.out.println();
-            
-           // Result res = Analysis.execute( p1, "A.1.1.1", "." );
-           /* if ( !res.getGreatestCommonPrefix().equals( "A.1" ) ) {
-                return false;
-            }
-            if ( !res.getGreatestCommonPrefixDown().equals( "A.1.1" ) ) {
-                return false;
-            }
-            if ( !res.getGreatestCommonPrefixUp().equals( "A.1.2.1" ) ) {
-                return false;
-            }
-            if ( res.getLeastEncompassingCladeSize() != 4 ) {
-                return false;
-            }
-            if ( res.getTreeSize() != 25 ) {
-                return false;
-            }
-            if ( res.getWarnings().size() != 0 ) {
-                return false;
-            }*/
-          
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );
@@ -819,41 +763,17 @@ public class CladeAnalysisTest {
         }
         return true;
     }
-    
+
     private static boolean testCladeAnalysis6() {
         try {
             final File intreefile1 = new File( PATH_TO_TEST_DATA + "clade_analysis_test_4.xml" );
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
             final PhylogenyParser pp = ParserUtils.createParserDependingOnFileType( intreefile1, true );
             final Phylogeny p1 = factory.create( intreefile1, pp )[ 0 ];
-            Pattern query = Pattern.compile(".+#\\d+_M=(.+)");
-            Result2 res = Analysis2.execute( p1, query, "." );
-            
-            res.analyzeGreatestCommonPrefixes( 0.45 );
-            System.out.print( res.toString());
-            System.out.println( "------------------------- ");
+            ResultMulti res = AnalysisMulti.execute( p1, 0.45 );
+            System.out.print( res.toString() );
+            System.out.println( "------------------------- " );
             System.out.println();
-            
-           // Result res = Analysis.execute( p1, "A.1.1.1", "." );
-           /* if ( !res.getGreatestCommonPrefix().equals( "A.1" ) ) {
-                return false;
-            }
-            if ( !res.getGreatestCommonPrefixDown().equals( "A.1.1" ) ) {
-                return false;
-            }
-            if ( !res.getGreatestCommonPrefixUp().equals( "A.1.2.1" ) ) {
-                return false;
-            }
-            if ( res.getLeastEncompassingCladeSize() != 4 ) {
-                return false;
-            }
-            if ( res.getTreeSize() != 25 ) {
-                return false;
-            }
-            if ( res.getWarnings().size() != 0 ) {
-                return false;
-            }*/
-          
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );
