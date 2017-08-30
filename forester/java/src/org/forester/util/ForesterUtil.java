@@ -722,6 +722,10 @@ public final class ForesterUtil {
         }
         return null;
     }
+    
+    final public static String isWritableFile( final String s ) {
+        return isWritableFile( new File( s ) );
+    }
 
     /**
      * Helper for method "stringToColor".

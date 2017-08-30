@@ -4,7 +4,7 @@ package org.forester.clade_analysis;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 
-final class Prefix {
+public final class Prefix {
 
     private final static DecimalFormat df = new DecimalFormat( "0.0#####" );
     private final String               _prefix;
@@ -12,7 +12,7 @@ final class Prefix {
     private final String               _separator;
     private final String               _first;
 
-    Prefix( final String prefix, final String confidence, final String separator ) {
+    public Prefix( final String prefix, final String confidence, final String separator ) {
         _prefix = prefix;
         _confidence = new BigDecimal( confidence );
         _separator = separator;
@@ -24,7 +24,7 @@ final class Prefix {
         }
     }
 
-    Prefix( final String prefix, final double confidence, final String separator ) {
+    public Prefix( final String prefix, final double confidence, final String separator ) {
         _prefix = prefix;
         _confidence = new BigDecimal( confidence );
         _separator = separator;
@@ -36,15 +36,15 @@ final class Prefix {
         }
     }
 
-    String getPrefix() {
+    public  String getPrefix() {
         return _prefix;
     }
 
-    String getPrefixFirstElement() {
+    public  String getPrefixFirstElement() {
         return _first;
     }
 
-    double getConfidence() {
+    public double getConfidence() {
         return _confidence.doubleValue();
     }
 

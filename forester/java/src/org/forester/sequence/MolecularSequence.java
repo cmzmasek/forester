@@ -54,6 +54,6 @@ public interface MolecularSequence {
     public abstract TYPE getType();
 
     public enum TYPE {
-        RNA, DNA, AA;
+        RNA, DNA, AA, GENERAL;
     }
 }

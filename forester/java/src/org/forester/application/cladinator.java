@@ -30,12 +30,11 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.forester.clade_analysis.AnalysisMulti;
-import org.forester.clade_analysis.AnalysisSingle;
 import org.forester.clade_analysis.Prefix;
 import org.forester.clade_analysis.ResultMulti;
-import org.forester.clade_analysis.ResultSingle;
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.util.ParserUtils;
 import org.forester.phylogeny.Phylogeny;
@@ -78,14 +77,14 @@ public final class cladinator {
                 print_help();
                 System.exit( 0 );
             }
-            else if ( ( args.length != 2 && args.length != 3 ) ) {
+            else if ( ( ( args.length != 2 ) && ( args.length != 3 ) ) ) {
                 System.out.println();
                 System.out.println( "Wrong number of arguments." );
                 System.out.println();
                 print_help();
                 System.exit( -1 );
             }
-            final List<String> allowed_options = new ArrayList<String>();
+            final List<String> allowed_options = new ArrayList<>();
             allowed_options.add( SEP_OPTION );
             final String dissallowed_options = cla.validateAllowedOptionsAsString( allowed_options );
             if ( dissallowed_options.length() > 0 ) {
@@ -118,104 +117,44 @@ public final class cladinator {
                 System.out.println( "\nCould not read \"" + intreefile + "\" [" + e.getMessage() + "]\n" );
                 System.exit( -1 );
             }
-          
-            final ResultMulti res = AnalysisMulti.execute( p, query, separator, 0.5 );
-            
+            final Pattern pattern = Pattern.compile( query );
+            final ResultMulti res = AnalysisMulti.execute( p, pattern, separator, 0.5 );
             System.out.println();
             System.out.println( "Result:" );
             System.out.println( "Query                        : " + query );
-            
             ///////////////////
-            
-         
-         
             System.out.println( "Collapsed:" );
-          
-              for( final Prefix prefix : res.getCollapsedMultiHitPrefixes() ) {
-                  System.out.println( prefix );
-              }
-              if ( _has_specifics ) {
-                 
-                  System.out.println( "Specifics:" );
-                 
-                  for( final Prefix prefix : _cleaned_spec ) {
-                      System.out.println( prefix );
-                     
-                  }
-                  
-                  System.out.println( "Collapsed With Specifics:" );
-                 
-                  for( final Prefix prefix : _collapsed ) {
-                      System.out.println( prefix );
-                      
-                      for( final Prefix spec : _cleaned_spec ) {
-                          if ( spec.getPrefix().startsWith( prefix.getPrefix() ) ) {
-                              System.out.println( "    " + spec );
-                             
-                          }
-                      }
-                  }
-              }
-              if ( !ForesterUtil.isEmpty( _all_down ) ) {
-                  
-                  System.out.println( "Collapsed Down:" );
-                  
-                  for( final Prefix prefix : _collapsed_down ) {
-                      System.out.println( prefix );
-                      
-                  }
-              
-              }
-              if ( !ForesterUtil.isEmpty( _all_up ) ) {
-                  
-           
-                  System.out.println( "Collapsed Up:" );
-                 
-                  for( final Prefix prefix : _collapsed_up ) {
-                      System.out.println( prefix );
-                     
-                  }
-             
-              }
-            
-            ///////////////////
-            
-            
-            System.out.print( "Greatest Common Prefix       : " + res.getGreatestCommonPrefix() );
-            if ( !ForesterUtil.isEmpty( res.getGreatestCommonPrefix() )
-                    && !ForesterUtil.isEmpty( res.getGreatestCommonCladeSubtreeConfidence() ) ) {
-                System.out.println( "\t(" + res.getGreatestCommonCladeSubtreeConfidence() + ")" );
+            for( final Prefix prefix : res.getCollapsedMultiHitPrefixes() ) {
+                System.out.println( prefix );
             }
-            else {
-                System.out.println();
-            }
-            System.out.print( "Greatest Common Prefix Up    : " + res.getGreatestCommonPrefixUp() );
-            if ( !ForesterUtil.isEmpty( res.getGreatestCommonPrefixUp() )
-                    && !ForesterUtil.isEmpty( res.getGreatestCommonCladeUpSubtreeConfidence() ) ) {
-                System.out.println( "\t(" + res.getGreatestCommonCladeUpSubtreeConfidence() + ")" );
-            }
-            else {
-                System.out.println();
-            }
-            System.out.print( "Greatest Common Prefix Down  : " + res.getGreatestCommonPrefixDown() );
-            if ( !ForesterUtil.isEmpty( res.getGreatestCommonPrefixDown() )
-                    && !ForesterUtil.isEmpty( res.getGreatestCommonCladeDownSubtreeConfidence() ) ) {
-                System.out.println( "\t(" + res.getGreatestCommonCladeDownSubtreeConfidence() + ")" );
-            }
-            else {
-                System.out.println();
-            }
-            System.out.println( "Least Encompassing Clade size: " + res.getLeastEncompassingCladeSize()
-                    + " external nodes" );
-            final double lec_ratio = ( 100.0 * res.getLeastEncompassingCladeSize() ) / res.getTreeSize();
-            System.out.println( "Least Encompassing Clade size: " + df2.format( lec_ratio ) + "%" );
-            System.out.println( "Total tree size              : " + res.getTreeSize() + " external nodes" );
-            if ( res.getWarnings().size() > 0 ) {
-                System.out.println( "Warnings:" );
-                for( final String s : res.getWarnings() ) {
-                    System.out.println( s );
+            if ( res.isHasSpecificMultiHitsPrefixes() ) {
+                System.out.println( "Specifics:" );
+                for( final Prefix prefix : res.getSpecificMultiHitPrefixes() ) {
+                    System.out.println( prefix );
+                }
+                System.out.println( "Collapsed With Specifics:" );
+                for( final Prefix prefix : res.getCollapsedMultiHitPrefixes() ) {
+                    System.out.println( prefix );
+                    for( final Prefix spec : res.getSpecificMultiHitPrefixes() ) {
+                        if ( spec.getPrefix().startsWith( prefix.getPrefix() ) ) {
+                            System.out.println( "    " + spec );
+                        }
+                    }
                 }
             }
+            if ( !ForesterUtil.isEmpty( res.getAllMultiHitPrefixesDown() ) ) {
+                System.out.println( "Collapsed Down:" );
+                for( final Prefix prefix : res.getCollapsedMultiHitPrefixesDown() ) {
+                    System.out.println( prefix );
+                }
+            }
+            if ( !ForesterUtil.isEmpty( res.getAllMultiHitPrefixesUp() ) ) {
+                System.out.println( "Collapsed Up:" );
+                for( final Prefix prefix : res.getAllMultiHitPrefixesUp() ) {
+                    System.out.println( prefix );
+                }
+            }
+            ///////////////////
             System.out.println();
         }
         catch ( final IllegalArgumentException e ) {

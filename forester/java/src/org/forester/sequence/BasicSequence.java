@@ -171,6 +171,12 @@ public class BasicSequence implements MolecularSequence {
                                   .replaceAll( re, Character.toString( repl ) ), type );
     }
     
+    public static MolecularSequence createGeneralSequence( final String identifier, final String mol_sequence ) {
+        check( identifier, mol_sequence );
+        return new BasicSequence( identifier, mol_sequence.toUpperCase().replaceAll( "\\.", GAP_STR 
+                                  ), TYPE.GENERAL );
+    }
+    
     public static MolecularSequence createAaSequence( final String identifier, final String mol_sequence ) {
         check( identifier, mol_sequence );
         return new BasicSequence( identifier, mol_sequence.toUpperCase().replaceAll( "\\.", GAP_STR )
