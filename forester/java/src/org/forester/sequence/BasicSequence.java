@@ -147,6 +147,30 @@ public class BasicSequence implements MolecularSequence {
         return new BasicSequence( new String( seq.getIdentifier() ), s, seq.getType() );
     }
 
+    public static MolecularSequence createSequence( final String identifier, final String mol_sequence ) {
+        check( identifier, mol_sequence );
+        final TYPE type = ForesterUtil.guessMolecularSequenceType( mol_sequence );
+        final String re;
+        final char repl;
+        if ( type == TYPE.AA ) {
+            re = AA_REGEXP;
+            repl = UNSPECIFIED_AA;
+        }
+        else if ( type == TYPE.DNA ) {
+            re = DNA_REGEXP;
+            repl = UNSPECIFIED_NUC;
+        }
+        else if ( type == TYPE.RNA ) {
+            re = RNA_REGEXP;
+            repl = UNSPECIFIED_NUC;
+        }
+        else {
+            throw new IllegalArgumentException( "could not determine sequence type for: " + mol_sequence);
+        }
+        return new BasicSequence( identifier, mol_sequence.toUpperCase().replaceAll( "\\.", GAP_STR )
+                                  .replaceAll( re, Character.toString( repl ) ), type );
+    }
+    
     public static MolecularSequence createAaSequence( final String identifier, final String mol_sequence ) {
         check( identifier, mol_sequence );
         return new BasicSequence( identifier, mol_sequence.toUpperCase().replaceAll( "\\.", GAP_STR )

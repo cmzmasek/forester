@@ -68,7 +68,12 @@ public final class GeneralMsaParser {
                 .matcher( line ).lookingAt() );
     }
 
-    static public Msa parse( final InputStream is ) throws IOException {
+    static final public Msa parseMsa( final InputStream is ) throws IOException {
+        final Msa msa = BasicMsa.createInstance( parseSeqs( is ));
+        return msa;
+    }
+    
+    static final public List<MolecularSequence> parseSeqs( final InputStream is ) throws IOException {
         int block = -1;
         int current_seq_index_per_block = -1;
         String current_name = null;
@@ -145,7 +150,7 @@ public final class GeneralMsaParser {
                                 name = names_in_order.get( current_seq_index_per_block );
                             }
                             catch ( final IndexOutOfBoundsException e ) {
-                                throw new MsaFormatException( "illegalmsa format (line: " + line_counter + "):\n\""
+                                throw new MsaFormatException( "illegal msa format (line: " + line_counter + "):\n\""
                                         + trim( line ) + "\"" );
                             }
                             if ( temp_msa.containsKey( name ) ) {
@@ -173,8 +178,8 @@ public final class GeneralMsaParser {
             seqs.add( BasicSequence.createAaSequence( names_in_order.get( i ), temp_msa.get( names_in_order.get( i ) )
                                                       .toString() ) );
         }
-        final Msa msa = BasicMsa.createInstance( seqs );
-        return msa;
+      
+        return seqs;
     }
 
     private static String trim( final String line ) {

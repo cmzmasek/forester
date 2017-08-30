@@ -621,7 +621,7 @@ public final class ForesterUtil {
     final public static boolean isEqual( final double a, final double b ) {
         return ( ( Math.abs( a - b ) ) < ZERO_DIFF );
     }
-    
+
     final public static boolean isEqual( final double a, final double b, final double tolerance ) {
         return ( ( Math.abs( a - b ) ) < tolerance );
     }
@@ -1664,9 +1664,9 @@ public final class ForesterUtil {
     private ForesterUtil() {
     }
 
-    public static List<String> spliIntoPrefixes(final String prefix, final String separator ) {
+    public static List<String> spliIntoPrefixes( final String prefix, final String separator ) {
         final String[] a = prefix.split( Pattern.quote( separator ) );
-        final List<String> l= new ArrayList<String>();
+        final List<String> l = new ArrayList<String>();
         for( int i = 0; i < a.length; ++i ) {
             final StringBuilder sb = new StringBuilder();
             for( int j = 0; j <= i; ++j ) {
@@ -1675,9 +1675,15 @@ public final class ForesterUtil {
                     sb.append( separator );
                 }
             }
-          //  System.out.println( sb.toString() );
-            l.add( sb.toString());
+            //  System.out.println( sb.toString() );
+            l.add( sb.toString() );
         }
         return l;
+    }
+
+    //
+    public static boolean isLooksLikeFasta( final File file ) throws IOException {
+        final String first_line = ForesterUtil.getFirstLine( file ).trim().toLowerCase();
+        return ( ( !isEmptyTrimmed( first_line ) && first_line.trim().startsWith( ">" ) ) );
     }
 }

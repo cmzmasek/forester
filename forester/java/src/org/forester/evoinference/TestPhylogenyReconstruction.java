@@ -437,7 +437,7 @@ public class TestPhylogenyReconstruction {
 
     private static boolean testDistanceCalculationMethods( final File test_dir ) {
         try {
-            final Msa msa0 = GeneralMsaParser.parse( new FileInputStream( test_dir + ForesterUtil.FILE_SEPARATOR
+            final Msa msa0 = GeneralMsaParser.parseMsa( new FileInputStream( test_dir + ForesterUtil.FILE_SEPARATOR
                     + "bcl.aln" ) );
             final BasicSymmetricalDistanceMatrix pwd0 = PairwiseDistanceCalculator.calcKimuraDistances( msa0 );
             if ( pwd0.getSize() != 120 ) {

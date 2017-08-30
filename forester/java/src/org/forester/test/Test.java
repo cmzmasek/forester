@@ -5627,13 +5627,13 @@ public final class Test {
     private static boolean testGeneralMsaParser() {
         try {
             final String msa_str_0 = "seq1 abcd\n\nseq2 efgh\n";
-            final Msa msa_0 = GeneralMsaParser.parse( new ByteArrayInputStream( msa_str_0.getBytes() ) );
+            final Msa msa_0 = GeneralMsaParser.parseMsa( new ByteArrayInputStream( msa_str_0.getBytes() ) );
             final String msa_str_1 = "seq1 abc\nseq2 ghi\nseq1 def\nseq2 jkm\n";
-            final Msa msa_1 = GeneralMsaParser.parse( new ByteArrayInputStream( msa_str_1.getBytes() ) );
+            final Msa msa_1 = GeneralMsaParser.parseMsa( new ByteArrayInputStream( msa_str_1.getBytes() ) );
             final String msa_str_2 = "seq1 abc\nseq2 ghi\n\ndef\njkm\n";
-            final Msa msa_2 = GeneralMsaParser.parse( new ByteArrayInputStream( msa_str_2.getBytes() ) );
+            final Msa msa_2 = GeneralMsaParser.parseMsa( new ByteArrayInputStream( msa_str_2.getBytes() ) );
             final String msa_str_3 = "seq1 abc\n def\nseq2 ghi\n jkm\n";
-            final Msa msa_3 = GeneralMsaParser.parse( new ByteArrayInputStream( msa_str_3.getBytes() ) );
+            final Msa msa_3 = GeneralMsaParser.parseMsa( new ByteArrayInputStream( msa_str_3.getBytes() ) );
             if ( !msa_1.getSequenceAsString( 0 ).toString().equalsIgnoreCase( "abcdef" ) ) {
                 return false;
             }
@@ -5670,7 +5670,7 @@ public final class Test {
             if ( !msa_3.getIdentifier( 1 ).toString().equals( "seq2" ) ) {
                 return false;
             }
-            final Msa msa_4 = GeneralMsaParser.parse( new FileInputStream( PATH_TO_TEST_DATA + "msa_1.txt" ) );
+            final Msa msa_4 = GeneralMsaParser.parseMsa( new FileInputStream( PATH_TO_TEST_DATA + "msa_1.txt" ) );
             if ( !msa_4.getSequenceAsString( 0 ).toString().equalsIgnoreCase( "abcdefeeeeeeeexx" ) ) {
                 return false;
             }
@@ -5680,7 +5680,7 @@ public final class Test {
             if ( !msa_4.getSequenceAsString( 2 ).toString().equalsIgnoreCase( "klmnxphhhhhhhhzz" ) ) {
                 return false;
             }
-            final Msa msa_5 = GeneralMsaParser.parse( new FileInputStream( PATH_TO_TEST_DATA + "msa_2.txt" ) );
+            final Msa msa_5 = GeneralMsaParser.parseMsa( new FileInputStream( PATH_TO_TEST_DATA + "msa_2.txt" ) );
             if ( !msa_5.getSequenceAsString( 0 ).toString().equalsIgnoreCase( "abcdefxx" ) ) {
                 return false;
             }
@@ -5690,7 +5690,7 @@ public final class Test {
             if ( !msa_5.getSequenceAsString( 2 ).toString().equalsIgnoreCase( "klmnxpzz" ) ) {
                 return false;
             }
-            final Msa msa_6 = GeneralMsaParser.parse( new FileInputStream( PATH_TO_TEST_DATA + "msa_3.txt" ) );
+            final Msa msa_6 = GeneralMsaParser.parseMsa( new FileInputStream( PATH_TO_TEST_DATA + "msa_3.txt" ) );
             if ( !msa_6.getSequenceAsString( 0 ).toString().equalsIgnoreCase( "abcdefeeeeeeeexx" ) ) {
                 return false;
             }

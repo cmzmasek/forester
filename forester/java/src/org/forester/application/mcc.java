@@ -83,7 +83,7 @@ public class mcc {
                 msa = FastaParser.parseMsa( is );
             }
             else {
-                msa = GeneralMsaParser.parse( is );
+                msa = GeneralMsaParser.parseMsa( is );
             }
             if ( cla.isOptionSet( FROM_OPTION ) ) {
                 singleCalc( in, from, to, msa );

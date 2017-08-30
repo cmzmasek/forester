@@ -142,7 +142,7 @@ public class msa_compactor {
                 msa = DeleteableMsa.createInstance( FastaParser.parseMsa( is ) );
             }
             else {
-                msa = DeleteableMsa.createInstance( GeneralMsaParser.parse( is ) );
+                msa = DeleteableMsa.createInstance( GeneralMsaParser.parseMsa( is ) );
             }
             final DescriptiveStatistics initial_msa_stats = MsaMethods.calculateEffectiveLengthStatistics( msa );
             if (cla.isOptionSet( INFO_ONLY_OPTION ) ) {

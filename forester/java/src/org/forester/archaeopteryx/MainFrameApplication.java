@@ -515,7 +515,7 @@ public final class MainFrameApplication extends MainFrame {
                     msa = FastaParser.parseMsa( is );
                 }
                 else {
-                    msa = GeneralMsaParser.parse( is );
+                    msa = GeneralMsaParser.parseMsa( is );
                 }
             }
             catch ( final MsaFormatException e ) {

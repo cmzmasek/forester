@@ -31,7 +31,10 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.forester.clade_analysis.AnalysisMulti;
 import org.forester.clade_analysis.AnalysisSingle;
+import org.forester.clade_analysis.Prefix;
+import org.forester.clade_analysis.ResultMulti;
 import org.forester.clade_analysis.ResultSingle;
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.util.ParserUtils;
@@ -44,15 +47,15 @@ import org.forester.util.ForesterUtil;
 public final class cladinator {
 
     final static private String        PRG_NAME      = "cladinator";
-    final static private String        PRG_VERSION   = "0.101";
-    final static private String        PRG_DATE      = "170810";
+    final static private String        PRG_VERSION   = "0.100";
+    final static private String        PRG_DATE      = "170823";
     final static private String        PRG_DESC      = "clades within clades -- analysis of pplacer type outputs";
     final static private String        E_MAIL        = "phyloxml@gmail.com";
     final static private String        WWW           = "https://sites.google.com/site/cmzmasek/home/software/forester";
     final static private String        HELP_OPTION_1 = "help";
     final static private String        HELP_OPTION_2 = "h";
     final static private String        SEP_OPTION    = "s";
-    private final static DecimalFormat df2           = new DecimalFormat( ".##" );
+    private final static DecimalFormat df2           = new DecimalFormat( "0.0#" );
 
     public static void main( final String args[] ) {
         try {
@@ -115,10 +118,69 @@ public final class cladinator {
                 System.out.println( "\nCould not read \"" + intreefile + "\" [" + e.getMessage() + "]\n" );
                 System.exit( -1 );
             }
-            final ResultSingle res = AnalysisSingle.execute( p, query, separator );
+          
+            final ResultMulti res = AnalysisMulti.execute( p, query, separator, 0.5 );
+            
             System.out.println();
             System.out.println( "Result:" );
             System.out.println( "Query                        : " + query );
+            
+            ///////////////////
+            
+         
+         
+            System.out.println( "Collapsed:" );
+          
+              for( final Prefix prefix : res.getCollapsedMultiHitPrefixes() ) {
+                  System.out.println( prefix );
+              }
+              if ( _has_specifics ) {
+                 
+                  System.out.println( "Specifics:" );
+                 
+                  for( final Prefix prefix : _cleaned_spec ) {
+                      System.out.println( prefix );
+                     
+                  }
+                  
+                  System.out.println( "Collapsed With Specifics:" );
+                 
+                  for( final Prefix prefix : _collapsed ) {
+                      System.out.println( prefix );
+                      
+                      for( final Prefix spec : _cleaned_spec ) {
+                          if ( spec.getPrefix().startsWith( prefix.getPrefix() ) ) {
+                              System.out.println( "    " + spec );
+                             
+                          }
+                      }
+                  }
+              }
+              if ( !ForesterUtil.isEmpty( _all_down ) ) {
+                  
+                  System.out.println( "Collapsed Down:" );
+                  
+                  for( final Prefix prefix : _collapsed_down ) {
+                      System.out.println( prefix );
+                      
+                  }
+              
+              }
+              if ( !ForesterUtil.isEmpty( _all_up ) ) {
+                  
+           
+                  System.out.println( "Collapsed Up:" );
+                 
+                  for( final Prefix prefix : _collapsed_up ) {
+                      System.out.println( prefix );
+                     
+                  }
+             
+              }
+            
+            ///////////////////
+            
+            
             System.out.print( "Greatest Common Prefix       : " + res.getGreatestCommonPrefix() );
             if ( !ForesterUtil.isEmpty( res.getGreatestCommonPrefix() )
                     && !ForesterUtil.isEmpty( res.getGreatestCommonCladeSubtreeConfidence() ) ) {

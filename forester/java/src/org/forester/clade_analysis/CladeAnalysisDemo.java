@@ -106,7 +106,7 @@ public class CladeAnalysisDemo {
             final Phylogeny p1 = factory.create( in, pp )[ 0 ];
             ResultMulti res = AnalysisMulti.execute( p1, 0.5 );
             
-            System.out.println( "DEMO 1:" );
+            System.out.println( "DEMO 2:" );
             System.out.println( "+++++++" );
             System.out.print( res.toString() );
             System.out.println( "------------------------- " );
