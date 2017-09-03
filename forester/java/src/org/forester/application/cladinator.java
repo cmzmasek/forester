@@ -31,6 +31,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import org.forester.clade_analysis.AnalysisMulti;
 import org.forester.clade_analysis.Prefix;
@@ -41,20 +42,26 @@ import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.util.CommandLineArguments;
+import org.forester.util.EasyWriter;
 import org.forester.util.ForesterUtil;
 
 public final class cladinator {
 
-    final static private String        PRG_NAME      = "cladinator";
-    final static private String        PRG_VERSION   = "0.100";
-    final static private String        PRG_DATE      = "170823";
-    final static private String        PRG_DESC      = "clades within clades -- analysis of pplacer type outputs";
-    final static private String        E_MAIL        = "phyloxml@gmail.com";
-    final static private String        WWW           = "https://sites.google.com/site/cmzmasek/home/software/forester";
-    final static private String        HELP_OPTION_1 = "help";
-    final static private String        HELP_OPTION_2 = "h";
-    final static private String        SEP_OPTION    = "s";
-    private final static DecimalFormat df2           = new DecimalFormat( "0.0#" );
+    final static private String        PRG_NAME                 = "cladinator";
+    final static private String        PRG_VERSION              = "1.00";
+    final static private String        PRG_DATE                 = "170902";
+    final static private String        PRG_DESC                 = "clades within clades of annotated labels -- analysis of pplacer-type outputs";
+    final static private String        E_MAIL                   = "phyloxml@gmail.com";
+    final static private String        WWW                      = "https://sites.google.com/site/cmzmasek/home/software/forester";
+    final static private String        HELP_OPTION_1            = "help";
+    final static private String        HELP_OPTION_2            = "h";
+    final static private String        SEP_OPTION               = "s";
+    final static private String        QUERY_PATTERN_OPTION     = "q";
+    final static private String        SPECIFICS_CUTOFF_OPTION  = "c";
+    final static private double        SPECIFICS_CUTOFF_DEFAULT = 0.8;
+    final static private String        SEP_DEFAULT              = ".";
+    final static private Pattern       QUERY_PATTERN_DEFAULT    = AnalysisMulti.DEFAULT_QUERY_PATTERN_FOR_PPLACER_TYPE;
+    private final static DecimalFormat df                       = new DecimalFormat( "0.0#######" );
 
     public static void main( final String args[] ) {
         try {
@@ -77,35 +84,77 @@ public final class cladinator {
                 print_help();
                 System.exit( 0 );
             }
-            else if ( ( ( args.length != 2 ) && ( args.length != 3 ) ) ) {
-                System.out.println();
-                System.out.println( "Wrong number of arguments." );
-                System.out.println();
+            if ( ( cla.getNumberOfNames() != 1 ) && ( cla.getNumberOfNames() != 2 ) ) {
                 print_help();
                 System.exit( -1 );
             }
             final List<String> allowed_options = new ArrayList<>();
             allowed_options.add( SEP_OPTION );
+            allowed_options.add( QUERY_PATTERN_OPTION );
+            allowed_options.add( SPECIFICS_CUTOFF_OPTION );
             final String dissallowed_options = cla.validateAllowedOptionsAsString( allowed_options );
             if ( dissallowed_options.length() > 0 ) {
                 ForesterUtil.fatalError( PRG_NAME, "unknown option(s): " + dissallowed_options );
             }
-            final String separator;
+            double cutoff_specifics = SPECIFICS_CUTOFF_DEFAULT;
+            if ( cla.isOptionSet( SPECIFICS_CUTOFF_OPTION ) ) {
+                if ( cla.isOptionValueSet( SPECIFICS_CUTOFF_OPTION ) ) {
+                    cutoff_specifics = cla.getOptionValueAsDouble( SPECIFICS_CUTOFF_OPTION );
+                    if ( cutoff_specifics < 0 ) {
+                        ForesterUtil.fatalError( PRG_NAME, "cutoff cannot be negative" );
+                    }
+                }
+                else {
+                    ForesterUtil.fatalError( PRG_NAME, "no value for cutoff for specifics" );
+                }
+            }
+            String separator = SEP_DEFAULT;
             if ( cla.isOptionSet( SEP_OPTION ) ) {
-                separator = cla.getOptionValue( SEP_OPTION );
+                if ( cla.isOptionValueSet( SEP_OPTION ) ) {
+                    separator = cla.getOptionValue( SEP_OPTION );
+                }
+                else {
+                    ForesterUtil.fatalError( PRG_NAME, "no value for separator option" );
+                }
             }
-            else {
-                separator = null;
+            Pattern compiled_query_str = null;
+            if ( cla.isOptionSet( QUERY_PATTERN_OPTION ) ) {
+                if ( cla.isOptionValueSet( QUERY_PATTERN_OPTION ) ) {
+                    final String query_str = cla.getOptionValue( QUERY_PATTERN_OPTION );
+                    try {
+                        compiled_query_str = Pattern.compile( query_str );
+                    }
+                    catch ( final PatternSyntaxException e ) {
+                        ForesterUtil.fatalError( PRG_NAME, "error in regular expression: " + e.getMessage() );
+                    }
+                }
+                else {
+                    ForesterUtil.fatalError( PRG_NAME, "no value for query pattern option" );
+                }
             }
+            final Pattern pattern = ( compiled_query_str != null ) ? compiled_query_str : QUERY_PATTERN_DEFAULT;
             final File intreefile = cla.getFile( 0 );
-            final String query = cla.getName( 1 );
-            System.out.println( "Input tree: " + intreefile );
-            System.out.println( "Query     : " + query );
-            if ( !ForesterUtil.isEmpty( separator ) ) {
-                System.out.println( "Separator : " + separator );
+            final String error_intreefile = ForesterUtil.isReadableFile( intreefile );
+            if ( !ForesterUtil.isEmpty( error_intreefile ) ) {
+                ForesterUtil.fatalError( PRG_NAME, error_intreefile );
+            }
+            final File outtablefile;
+            if ( cla.getNumberOfNames() > 1 ) {
+                outtablefile = cla.getFile( 1 );
+                final String error_outtablefile = ForesterUtil.isWritableFile( outtablefile );
+                if ( !ForesterUtil.isEmpty( error_outtablefile ) ) {
+                    ForesterUtil.fatalError( PRG_NAME, error_outtablefile );
+                }
             }
             else {
-                System.out.println( "Separator : none" );
+                outtablefile = null;
+            }
+            System.out.println( "Input tree                 : " + intreefile );
+            System.out.println( "Specific-hit support cutoff: " + cutoff_specifics );
+            System.out.println( "Annotation-separator       : " + separator );
+            System.out.println( "Query pattern              : " + pattern );
+            if ( outtablefile != null ) {
+                System.out.println( "Output table               : " + outtablefile );
             }
             Phylogeny p = null;
             try {
@@ -114,25 +163,48 @@ public final class cladinator {
                 p = factory.create( intreefile, pp )[ 0 ];
             }
             catch ( final IOException e ) {
-                System.out.println( "\nCould not read \"" + intreefile + "\" [" + e.getMessage() + "]\n" );
+                ForesterUtil.fatalError( PRG_NAME, "Could not read \"" + intreefile + "\" [" + e.getMessage() + "]" );
                 System.exit( -1 );
             }
-            final Pattern pattern = Pattern.compile( query );
-            final ResultMulti res = AnalysisMulti.execute( p, pattern, separator, 0.5 );
-            System.out.println();
-            System.out.println( "Result:" );
-            System.out.println( "Query                        : " + query );
-            ///////////////////
-            System.out.println( "Collapsed:" );
+            System.out.println( "Ext. nodes in input tree   : " + p.getNumberOfExternalNodes() );
+            final ResultMulti res = AnalysisMulti.execute( p, pattern, separator, cutoff_specifics );
+            printResult( res );
+            if ( outtablefile != null ) {
+                writeResultToTable( res, outtablefile );
+            }
+        }
+        catch ( final IllegalArgumentException e ) {
+            ForesterUtil.fatalError( PRG_NAME, e.getMessage() );
+        }
+        catch ( final IOException e ) {
+            ForesterUtil.fatalError( PRG_NAME, e.getMessage() );
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace();
+            ForesterUtil.fatalError( PRG_NAME, "Unexpected errror!" );
+        }
+    }
+
+    private final static void printResult( final ResultMulti res ) {
+        System.out.println();
+        System.out.println( "Result:" );
+        System.out.println();
+        if ( ( res.getAllMultiHitPrefixes() == null ) | ( res.getAllMultiHitPrefixes().size() < 1 ) ) {
+            System.out.println( "No match to query pattern!" );
+        }
+        else {
+            System.out.println( "Matching Clade(s):" );
             for( final Prefix prefix : res.getCollapsedMultiHitPrefixes() ) {
                 System.out.println( prefix );
             }
             if ( res.isHasSpecificMultiHitsPrefixes() ) {
-                System.out.println( "Specifics:" );
+                System.out.println();
+                System.out.println( "Specific-hit(s):" );
                 for( final Prefix prefix : res.getSpecificMultiHitPrefixes() ) {
                     System.out.println( prefix );
                 }
-                System.out.println( "Collapsed With Specifics:" );
+                System.out.println();
+                System.out.println( "Matching Clade(s) with Specific-hit(s):" );
                 for( final Prefix prefix : res.getCollapsedMultiHitPrefixes() ) {
                     System.out.println( prefix );
                     for( final Prefix spec : res.getSpecificMultiHitPrefixes() ) {
@@ -143,40 +215,90 @@ public final class cladinator {
                 }
             }
             if ( !ForesterUtil.isEmpty( res.getAllMultiHitPrefixesDown() ) ) {
-                System.out.println( "Collapsed Down:" );
+                System.out.println();
+                System.out.println( "Matching Down-tree Bracketing Clade(s):" );
                 for( final Prefix prefix : res.getCollapsedMultiHitPrefixesDown() ) {
                     System.out.println( prefix );
                 }
             }
             if ( !ForesterUtil.isEmpty( res.getAllMultiHitPrefixesUp() ) ) {
-                System.out.println( "Collapsed Up:" );
-                for( final Prefix prefix : res.getAllMultiHitPrefixesUp() ) {
+                System.out.println();
+                System.out.println( "Matching Up-tree Bracketing Clade(s):" );
+                for( final Prefix prefix : res.getCollapsedMultiHitPrefixesUp() ) {
                     System.out.println( prefix );
                 }
             }
-            ///////////////////
-            System.out.println();
         }
-        catch ( final IllegalArgumentException e ) {
-            ForesterUtil.fatalError( PRG_NAME, e.getMessage() );
+        System.out.println();
+    }
+
+    private final static void writeResultToTable( final ResultMulti res, final File outtablefile ) throws IOException {
+        final EasyWriter w = ForesterUtil.createEasyWriter( outtablefile );
+        if ( ( res.getAllMultiHitPrefixes() == null ) | ( res.getAllMultiHitPrefixes().size() < 1 ) ) {
+            w.println( "No match to query pattern!" );
         }
-        catch ( final Exception e ) {
-            e.printStackTrace();
-            ForesterUtil.fatalError( PRG_NAME, "Unexpected errror!" );
+        else {
+            for( final Prefix prefix : res.getCollapsedMultiHitPrefixes() ) {
+                w.print( "Matching Clades" );
+                w.print( "\t" );
+                w.print( prefix.getPrefix() );
+                w.print( "\t" );
+                w.print( df.format( prefix.getConfidence() ) );
+                w.println();
+            }
+            if ( res.isHasSpecificMultiHitsPrefixes() ) {
+                for( final Prefix prefix : res.getSpecificMultiHitPrefixes() ) {
+                    w.print( "Specific-hits" );
+                    w.print( "\t" );
+                    w.print( prefix.getPrefix() );
+                    w.print( "\t" );
+                    w.print( df.format( prefix.getConfidence() ) );
+                    w.println();
+                }
+            }
+            if ( !ForesterUtil.isEmpty( res.getAllMultiHitPrefixesDown() ) ) {
+                for( final Prefix prefix : res.getCollapsedMultiHitPrefixesDown() ) {
+                    w.print( "Matching Down-tree Bracketing Clades" );
+                    w.print( "\t" );
+                    w.print( prefix.getPrefix() );
+                    w.print( "\t" );
+                    w.print( df.format( prefix.getConfidence() ) );
+                    w.println();
+                }
+            }
+            if ( !ForesterUtil.isEmpty( res.getAllMultiHitPrefixesUp() ) ) {
+                for( final Prefix prefix : res.getCollapsedMultiHitPrefixesUp() ) {
+                    w.print( "Matching Up-tree Bracketing Clades" );
+                    w.print( "\t" );
+                    w.print( prefix.getPrefix() );
+                    w.print( "\t" );
+                    w.print( df.format( prefix.getConfidence() ) );
+                    w.println();
+                }
+            }
         }
+        w.flush();
+        w.close();
     }
 
     private final static void print_help() {
         System.out.println( "Usage:" );
         System.out.println();
-        System.out.println( PRG_NAME + " [options] <gene tree file> <query>" );
+        System.out.println( PRG_NAME + " [options] <input tree file> [output table file]" );
         System.out.println();
         System.out.println( " options:" );
-        System.out.println( "  -" + SEP_OPTION + "=<separator>: the separator to be used" );
+        System.out.println( "  -" + SPECIFICS_CUTOFF_OPTION
+                + "=<double>: the cutoff for \"specific-hit\" support values (default: " + SPECIFICS_CUTOFF_DEFAULT
+                + ")" );
+        System.out.println( "  -" + SEP_OPTION + "=<separator>: the annotation-separator to be used (default: "
+                + SEP_DEFAULT + ")" );
+        System.out.println( "  -" + QUERY_PATTERN_OPTION
+                + "=<query pattern>: the regular expression for the query (default: \"" + QUERY_PATTERN_DEFAULT
+                + "\" for pplacer output)" );
         System.out.println();
         System.out.println( "Example:" );
         System.out.println();
-        System.out.println( " " + PRG_NAME + " -s=. my_tree.xml A.1.1.1" );
+        System.out.println( " " + PRG_NAME + " -c=0.5 -s=. my_tree.nh result.tsv" );
         System.out.println();
     }
 }

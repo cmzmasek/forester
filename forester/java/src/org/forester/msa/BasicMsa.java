@@ -143,7 +143,7 @@ public class BasicMsa implements Msa {
         }
         if ( _identifiers_set.contains( id ) ) {
             throw new IllegalArgumentException( "illegal attempt to create msa with non-unique identifiers [" + id
-                                                + "]" );
+                    + "]" );
         }
         _identifiers_set.add( id );
         _identifiers[ row ] = id;
@@ -200,13 +200,32 @@ public class BasicMsa implements Msa {
 
     private void writeToNexus( final Writer w ) throws IOException {
         final int max = determineMaxIdLength() + 1;
+        TYPE t = null;
+        for( int row = 0; row < getNumberOfSequences(); ++row ) {
+            t = ForesterUtil.guessMolecularSequenceType( getSequence( row ).getMolecularSequenceAsString() );
+            if ( t != null ) {
+                break;
+            }
+        }
+        String type_str = "Protein";
+        if ( t != null ) {
+            if ( t == TYPE.DNA ) {
+                type_str = "DNA";
+            }
+            else if ( t == TYPE.RNA ) {
+                type_str = "RNA";
+            }
+            else if ( t == TYPE.GENERAL ) {
+                type_str = "Standard";
+            }
+        }
         w.write( "Begin Data;" );
         w.write( ForesterUtil.LINE_SEPARATOR );
         w.write( "   Dimensions NTax=" + getNumberOfSequences() );
         w.write( " NChar=" + getLength() );
         w.write( ";" );
         w.write( ForesterUtil.LINE_SEPARATOR );
-        w.write( "   Format DataType=Protein Interleave=No gap=-;" );
+        w.write( "   Format DataType=" + type_str + " Interleave=No gap=-;" );
         w.write( ForesterUtil.LINE_SEPARATOR );
         w.write( "   Matrix" );
         w.write( ForesterUtil.LINE_SEPARATOR );

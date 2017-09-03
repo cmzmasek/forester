@@ -23,16 +23,16 @@ import org.forester.util.CommandLineArguments;
 import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
 
-public class serin {
+public class rid {
 
-    final static private String PRG_NAME               = "serin";
-    final static private String PRG_DATE               = "170830";
+    final static private String PRG_NAME               = "rid";
+    final static private String PRG_DATE               = "170902";
     final static private String PRG_DESC               = "sequence file reformatting and identifier normalization";
     final static private String PRG_VERSION            = "1.00";
     final static private String WWW                    = "https://sites.google.com/site/cmzmasek/home/software/forester";
     final static private String E_MAIL                 = "phyloxml@gmail.com";
     final static private String OUTPUT_FORMAT_OPTION   = "o";
-    final static private String ID_NORM_OPTION         = "i";
+    final static private String ID_NORM_OPTION         = "s";
     final static private String HELP_OPTION_1          = "help";
     final static private String HELP_OPTION_2          = "h";
     private static final String OUTPUT_FORMAT_FASTA    = "f";
@@ -138,8 +138,11 @@ public class serin {
                         output_format = MSA_FORMAT.NEXUS;
                     }
                     else {
-                        ForesterUtil.fatalError( PRG_NAME, "unknown format option: " + output_format_str );
+                        ForesterUtil.fatalError( PRG_NAME, "unknown output format option: " + output_format_str );
                     }
+                }
+                else {
+                    ForesterUtil.fatalError( PRG_NAME, "no value for output format option"  );
                 }
             }
             final boolean normalize_identifiers;
@@ -252,7 +255,7 @@ public class serin {
                 System.out.println( "Sequence lenght min   : " + ( int ) stats.getMin() );
                 System.out.println( "Sequence lenght max   : " + ( int ) stats.getMax() );
                 if ( input_seqs.size() > 2 ) {
-                    System.out.println( "Sequence lenght median: " + ( int ) stats.median() );
+                    System.out.println( "Sequence length median: " + ( int ) stats.median() );
                 }
                 if ( ( output_format == MSA_FORMAT.NEXUS ) || ( output_format == MSA_FORMAT.PHYLIP ) ) {
                     ForesterUtil.fatalError( PRG_NAME,
@@ -283,10 +286,10 @@ public class serin {
                                                                                   seq.getMolecularSequenceAsString() );
                 output_seqs.add( ns );
             }
+            System.out.println();
             if ( normalize_identifiers ) {
                 output_map_writer.flush();
                 output_map_writer.close();
-                System.out.println();
                 System.out.println( "Wrote                 : " + output_map_file );
             }
             final BufferedWriter seq_writer = ForesterUtil.createBufferedWriter( outfile_seqs_file );
@@ -333,11 +336,11 @@ public class serin {
                 + OUTPUT_FORMAT_FASTA + " for Fasta (default), " + OUTPUT_FORMAT_PHYLIP_L + " or "
                 + OUTPUT_FORMAT_PHYLIP + " for Phylip, " + OUTPUT_FORMAT_NEXUS_L + " or " + OUTPUT_FORMAT_NEXUS
                 + " for Nexus" );
-        System.out.println( "  -" + ID_NORM_OPTION + ": to replace sequence names with short(er) identifiers" );
+        System.out.println( "  -" + ID_NORM_OPTION + "         : to replace sequence names with short(er) identifiers" );
         System.out.println();
         System.out.println( "Example:" );
         System.out.println();
-        System.out.println( " " + PRG_NAME + " -i -o=p my_seqs.fasta" );
+        System.out.println( " " + PRG_NAME + " -s -o=p my_seqs.fasta" );
         System.out.println();
     }
 }

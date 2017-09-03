@@ -542,15 +542,16 @@ public final class ForesterUtil {
     }
 
     final public static MolecularSequence.TYPE guessMolecularSequenceType( final String mol_seq ) {
-        if ( mol_seq.contains( "L" ) || mol_seq.contains( "I" ) || mol_seq.contains( "E" ) || mol_seq.contains( "H" )
-                || mol_seq.contains( "D" ) || mol_seq.contains( "Q" ) ) {
+        final String s = mol_seq.toUpperCase();
+        if ( s.contains( "L" ) || s.contains( "I" ) || s.contains( "E" ) || s.contains( "H" )
+                || s.contains( "D" ) || s.contains( "Q" ) ) {
             return TYPE.AA;
         }
         else {
-            if ( mol_seq.contains( "T" ) ) {
+            if ( s.contains( "T" ) ) {
                 return TYPE.DNA;
             }
-            else if ( mol_seq.contains( "U" ) ) {
+            else if ( s.contains( "U" ) ) {
                 return TYPE.RNA;
             }
         }

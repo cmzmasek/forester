@@ -40,9 +40,9 @@ import org.forester.util.ForesterUtil;
 public final class ResultMulti {
 
     private final String       _separator;
-    private final List<Prefix> _greatest_common_prefixes      = new ArrayList<Prefix>();
-    private final List<Prefix> _greatest_common_prefixes_up   = new ArrayList<Prefix>();
-    private final List<Prefix> _greatest_common_prefixes_down = new ArrayList<Prefix>();
+    private final List<Prefix> _greatest_common_prefixes      = new ArrayList<>();
+    private final List<Prefix> _greatest_common_prefixes_up   = new ArrayList<>();
+    private final List<Prefix> _greatest_common_prefixes_down = new ArrayList<>();
     private List<Prefix>       _all                           = null;
     private List<Prefix>       _collapsed                     = null;
     private List<Prefix>       _cleaned_spec                  = null;
@@ -117,14 +117,7 @@ public final class ResultMulti {
     @Override
     public final String toString() {
         final StringBuilder sb = new StringBuilder();
-      //  sb.append( "Cleaned:" );
-      //  sb.append( ForesterUtil.LINE_SEPARATOR );
-      //  for( final Prefix prefix : _all ) {
-       //     sb.append( prefix );
-       //     sb.append( ForesterUtil.LINE_SEPARATOR );
-       // }
-       // sb.append( ForesterUtil.LINE_SEPARATOR );
-        sb.append( "Collapsed:" );
+        sb.append( "Matching Clade(s):" );
         sb.append( ForesterUtil.LINE_SEPARATOR );
         for( final Prefix prefix : _collapsed ) {
             sb.append( prefix );
@@ -132,14 +125,14 @@ public final class ResultMulti {
         }
         if ( _has_specifics ) {
             sb.append( ForesterUtil.LINE_SEPARATOR );
-            sb.append( "Specifics:" );
+            sb.append( "Specific-hit(s):" );
             sb.append( ForesterUtil.LINE_SEPARATOR );
             for( final Prefix prefix : _cleaned_spec ) {
                 sb.append( prefix );
                 sb.append( ForesterUtil.LINE_SEPARATOR );
             }
             sb.append( ForesterUtil.LINE_SEPARATOR );
-            sb.append( "Collapsed With Specifics:" );
+            sb.append( "Matching Clade(s) with Specific-hit(s):" );
             sb.append( ForesterUtil.LINE_SEPARATOR );
             for( final Prefix prefix : _collapsed ) {
                 sb.append( prefix );
@@ -154,79 +147,21 @@ public final class ResultMulti {
         }
         if ( !ForesterUtil.isEmpty( _all_down ) ) {
             sb.append( ForesterUtil.LINE_SEPARATOR );
-        //    sb.append( "Cleaned Down:" );
-        //    sb.append( ForesterUtil.LINE_SEPARATOR );
-        //    for( final Prefix prefix : _all_down ) {
-        //        sb.append( prefix );
-        //        sb.append( ForesterUtil.LINE_SEPARATOR );
-         //   }
-           // sb.append( ForesterUtil.LINE_SEPARATOR );
-            sb.append( "Collapsed Down:" );
+            sb.append( "Matching Down-tree Bracketing Clade(s):" );
             sb.append( ForesterUtil.LINE_SEPARATOR );
             for( final Prefix prefix : _collapsed_down ) {
                 sb.append( prefix );
                 sb.append( ForesterUtil.LINE_SEPARATOR );
             }
-          /*  if ( _has_specifics_down ) {
-                sb.append( ForesterUtil.LINE_SEPARATOR );
-                sb.append( "Specifics Down:" );
-                sb.append( ForesterUtil.LINE_SEPARATOR );
-                for( final Prefix prefix : _cleaned_spec_down ) {
-                    sb.append( prefix );
-                    sb.append( ForesterUtil.LINE_SEPARATOR );
-                }
-                sb.append( ForesterUtil.LINE_SEPARATOR );
-                sb.append( "Collapsed With Specifics Down:" );
-                sb.append( ForesterUtil.LINE_SEPARATOR );
-                for( final Prefix prefix : _collapsed_down ) {
-                    sb.append( prefix );
-                    sb.append( ForesterUtil.LINE_SEPARATOR );
-                    for( final Prefix spec : _cleaned_spec_down ) {
-                        if ( spec.getPrefix().startsWith( prefix.getPrefix() ) ) {
-                            sb.append( "    " + spec );
-                            sb.append( ForesterUtil.LINE_SEPARATOR );
-                        }
-                    }
-                }
-            }*/
         }
         if ( !ForesterUtil.isEmpty( _all_up ) ) {
             sb.append( ForesterUtil.LINE_SEPARATOR );
-        //    sb.append( "Cleaned Up:" );
-        //    sb.append( ForesterUtil.LINE_SEPARATOR );
-        //    for( final Prefix prefix : _all_up ) {
-        //        sb.append( prefix );
-         //       sb.append( ForesterUtil.LINE_SEPARATOR );
-         //   }
-         //   sb.append( ForesterUtil.LINE_SEPARATOR );
-            sb.append( "Collapsed Up:" );
+            sb.append( "Matching Up-tree Bracketing Clade(s):" );
             sb.append( ForesterUtil.LINE_SEPARATOR );
             for( final Prefix prefix : _collapsed_up ) {
                 sb.append( prefix );
                 sb.append( ForesterUtil.LINE_SEPARATOR );
             }
-          /*  if ( _has_specifics ) {
-                sb.append( ForesterUtil.LINE_SEPARATOR );
-                sb.append( "Specifics Up:" );
-                sb.append( ForesterUtil.LINE_SEPARATOR );
-                for( final Prefix prefix : _cleaned_spec_up ) {
-                    sb.append( prefix );
-                    sb.append( ForesterUtil.LINE_SEPARATOR );
-                }
-                sb.append( ForesterUtil.LINE_SEPARATOR );
-                sb.append( "Collapsed With Specifics Up:" );
-                sb.append( ForesterUtil.LINE_SEPARATOR );
-                for( final Prefix prefix : _collapsed_up ) {
-                    sb.append( prefix );
-                    sb.append( ForesterUtil.LINE_SEPARATOR );
-                    for( final Prefix spec : _cleaned_spec_up ) {
-                        if ( spec.getPrefix().startsWith( prefix.getPrefix() ) ) {
-                            sb.append( "    " + spec );
-                            sb.append( ForesterUtil.LINE_SEPARATOR );
-                        }
-                    }
-                }
-            }*/
         }
         return sb.toString();
     }
@@ -251,17 +186,17 @@ public final class ResultMulti {
     }
 
     private final void reset() {
-        _all = new ArrayList<Prefix>();
-        _collapsed = new ArrayList<Prefix>();
-        _cleaned_spec = new ArrayList<Prefix>();
+        _all = new ArrayList<>();
+        _collapsed = new ArrayList<>();
+        _cleaned_spec = new ArrayList<>();
         _has_specifics = false;
-        _all_up = new ArrayList<Prefix>();
-        _collapsed_up = new ArrayList<Prefix>();
-        _cleaned_spec_up = new ArrayList<Prefix>();
+        _all_up = new ArrayList<>();
+        _collapsed_up = new ArrayList<>();
+        _cleaned_spec_up = new ArrayList<>();
         _has_specifics_up = false;
-        _all_down = new ArrayList<Prefix>();
-        _collapsed_down = new ArrayList<Prefix>();
-        _cleaned_spec_down = new ArrayList<Prefix>();
+        _all_down = new ArrayList<>();
+        _collapsed_down = new ArrayList<>();
+        _cleaned_spec_down = new ArrayList<>();
         _has_specifics_down = false;
     }
 
