@@ -30,6 +30,8 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.SortedMap;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -39,8 +41,12 @@ import org.forester.clade_analysis.ResultMulti;
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.util.ParserUtils;
 import org.forester.phylogeny.Phylogeny;
+import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
+import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
+import org.forester.util.BasicTable;
+import org.forester.util.BasicTableParser;
 import org.forester.util.CommandLineArguments;
 import org.forester.util.EasyWriter;
 import org.forester.util.ForesterUtil;
@@ -48,8 +54,8 @@ import org.forester.util.ForesterUtil;
 public final class cladinator {
 
     final static private String        PRG_NAME                 = "cladinator";
-    final static private String        PRG_VERSION              = "1.00";
-    final static private String        PRG_DATE                 = "170902";
+    final static private String        PRG_VERSION              = "1.01";
+    final static private String        PRG_DATE                 = "170906";
     final static private String        PRG_DESC                 = "clades within clades of annotated labels -- analysis of pplacer-type outputs";
     final static private String        E_MAIL                   = "phyloxml@gmail.com";
     final static private String        WWW                      = "https://sites.google.com/site/cmzmasek/home/software/forester";
@@ -58,6 +64,7 @@ public final class cladinator {
     final static private String        SEP_OPTION               = "s";
     final static private String        QUERY_PATTERN_OPTION     = "q";
     final static private String        SPECIFICS_CUTOFF_OPTION  = "c";
+    final static private String        MAPPING_FILE_OPTION      = "m";
     final static private double        SPECIFICS_CUTOFF_DEFAULT = 0.8;
     final static private String        SEP_DEFAULT              = ".";
     final static private Pattern       QUERY_PATTERN_DEFAULT    = AnalysisMulti.DEFAULT_QUERY_PATTERN_FOR_PPLACER_TYPE;
@@ -92,6 +99,7 @@ public final class cladinator {
             allowed_options.add( SEP_OPTION );
             allowed_options.add( QUERY_PATTERN_OPTION );
             allowed_options.add( SPECIFICS_CUTOFF_OPTION );
+            allowed_options.add( MAPPING_FILE_OPTION );
             final String dissallowed_options = cla.validateAllowedOptionsAsString( allowed_options );
             if ( dissallowed_options.length() > 0 ) {
                 ForesterUtil.fatalError( PRG_NAME, "unknown option(s): " + dissallowed_options );
@@ -132,6 +140,20 @@ public final class cladinator {
                     ForesterUtil.fatalError( PRG_NAME, "no value for query pattern option" );
                 }
             }
+            File mapping_file = null;
+            if ( cla.isOptionSet( MAPPING_FILE_OPTION ) ) {
+                if ( cla.isOptionValueSet( MAPPING_FILE_OPTION ) ) {
+                    final String mapping_file_str = cla.getOptionValue( MAPPING_FILE_OPTION );
+                    final String error = ForesterUtil.isReadableFile( mapping_file_str );
+                    if ( !ForesterUtil.isEmpty( error ) ) {
+                        ForesterUtil.fatalError( PRG_NAME, error );
+                    }
+                    mapping_file = new File( mapping_file_str );
+                }
+                else {
+                    ForesterUtil.fatalError( PRG_NAME, "no value for mapping file" );
+                }
+            }
             final Pattern pattern = ( compiled_query_str != null ) ? compiled_query_str : QUERY_PATTERN_DEFAULT;
             final File intreefile = cla.getFile( 0 );
             final String error_intreefile = ForesterUtil.isReadableFile( intreefile );
@@ -149,8 +171,27 @@ public final class cladinator {
             else {
                 outtablefile = null;
             }
+            final BasicTable<String> t;
+            final SortedMap<String, String> map;
+            if ( mapping_file != null ) {
+                t = BasicTableParser.parse( mapping_file, '\t' );
+                if ( t.getNumberOfColumns() != 2 ) {
+                    ForesterUtil.fatalError( PRG_NAME,
+                                             "mapping file needs to have 2 tab-separated columns, not "
+                                                     + t.getNumberOfColumns() );
+                }
+                map = t.getColumnsAsMap( 0, 1 );
+            }
+            else {
+                t = null;
+                map = null;
+            }
             System.out.println( "Input tree                 : " + intreefile );
             System.out.println( "Specific-hit support cutoff: " + cutoff_specifics );
+            if ( mapping_file != null ) {
+                System.out.println( "Mapping file               : " + mapping_file + " (" + t.getNumberOfRows()
+                        + " rows)" );
+            }
             System.out.println( "Annotation-separator       : " + separator );
             System.out.println( "Query pattern              : " + pattern );
             if ( outtablefile != null ) {
@@ -167,6 +208,9 @@ public final class cladinator {
                 System.exit( -1 );
             }
             System.out.println( "Ext. nodes in input tree   : " + p.getNumberOfExternalNodes() );
+            if ( map != null ) {
+                performMapping( pattern, map, p );
+            }
             final ResultMulti res = AnalysisMulti.execute( p, pattern, separator, cutoff_specifics );
             printResult( res );
             if ( outtablefile != null ) {
@@ -182,6 +226,26 @@ public final class cladinator {
         catch ( final Exception e ) {
             e.printStackTrace();
             ForesterUtil.fatalError( PRG_NAME, "Unexpected errror!" );
+        }
+    }
+
+    private final static void performMapping( final Pattern pattern,
+                                              final SortedMap<String, String> map,
+                                              Phylogeny p ) {
+        final PhylogenyNodeIterator it = p.iteratorExternalForward();
+        while ( it.hasNext() ) {
+            final PhylogenyNode node = it.next();
+            final String name = node.getName();
+            if ( ForesterUtil.isEmpty( name ) ) {
+                ForesterUtil.fatalError( PRG_NAME, "external node with empty name found" );
+            }
+            final Matcher m = pattern.matcher( name );
+            if ( !m.find() ) {
+                if ( !map.containsKey( name ) ) {
+                    ForesterUtil.fatalError( PRG_NAME, "no mapping for \"" + name + "\" found" );
+                }
+                node.setName( map.get( name ) );
+            }
         }
     }
 
@@ -292,13 +356,17 @@ public final class cladinator {
                 + ")" );
         System.out.println( "  -" + SEP_OPTION + "=<separator>: the annotation-separator to be used (default: "
                 + SEP_DEFAULT + ")" );
+        System.out.println( "  -" + MAPPING_FILE_OPTION
+                + "=<mapping table>: to map node names to appropriate annotations (tab-separated, two columns) (default: no mapping)" );
         System.out.println( "  -" + QUERY_PATTERN_OPTION
                 + "=<query pattern>: the regular expression for the query (default: \"" + QUERY_PATTERN_DEFAULT
                 + "\" for pplacer output)" );
         System.out.println();
-        System.out.println( "Example:" );
+        System.out.println( "Examples:" );
         System.out.println();
+        System.out.println( " " + PRG_NAME + " my_tree.nh result.tsv" );
         System.out.println( " " + PRG_NAME + " -c=0.5 -s=. my_tree.nh result.tsv" );
+        System.out.println( " " + PRG_NAME + " -c=0.9 -s=_ -m=map.tsv my_tree.nh result.tsv" );
         System.out.println();
     }
 }
