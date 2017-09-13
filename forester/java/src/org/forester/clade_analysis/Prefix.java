@@ -6,7 +6,7 @@ import java.text.DecimalFormat;
 
 public final class Prefix {
 
-    private final static DecimalFormat df = new DecimalFormat( "0.0#####" );
+    private final static DecimalFormat df = new DecimalFormat( "0.0###" );
     private final String               _prefix;
     private final BigDecimal           _confidence;
     private final String               _separator;

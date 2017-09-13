@@ -56,6 +56,7 @@ public final class ResultMulti {
     private List<Prefix>       _collapsed_down                = null;
     private List<Prefix>       _cleaned_spec_down             = null;
     private boolean            _has_specifics_down            = false;
+    private String             _query_name_prefix             = "";
 
     ResultMulti( final String separator ) {
         _separator = separator;
@@ -115,9 +116,16 @@ public final class ResultMulti {
         return _has_specifics;
     }
 
+    public String getQueryNamePrefix() {
+        return _query_name_prefix;
+    }
+
     @Override
     public final String toString() {
         final StringBuilder sb = new StringBuilder();
+        sb.append( "Query: " );
+        sb.append( getQueryNamePrefix() );
+        sb.append( ForesterUtil.LINE_SEPARATOR );
         sb.append( "Matching Clade(s):" );
         sb.append( ForesterUtil.LINE_SEPARATOR );
         for( final Prefix prefix : _collapsed ) {
@@ -177,6 +185,13 @@ public final class ResultMulti {
 
     void addGreatestCommonPrefixDown( final String prefix_down, final double confidence ) {
         _greatest_common_prefixes_down.add( new Prefix( prefix_down, confidence, _separator ) );
+    }
+
+    void setQueryNamePrefix( final String query_name_prefix ) {
+        if ( !ForesterUtil.isEmpty( _query_name_prefix ) ) {
+            throw new IllegalStateException( "illegal attempt to change the query name prefix" );
+        }
+        _query_name_prefix = query_name_prefix;
     }
 
     final void analyze( final double cutoff_for_specifics ) throws UserException {

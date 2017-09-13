@@ -49,7 +49,7 @@ public final class AnalysisMulti {
     private final static String UNKNOWN                                = "?";
     public final static double  DEFAULT_CUTOFF_FOR_SPECIFICS           = 0.5;
     public final static String  DEFAULT_SEPARATOR                      = ".";
-    public final static Pattern DEFAULT_QUERY_PATTERN_FOR_PPLACER_TYPE = Pattern.compile( ".+#\\d+_M=(.+)" );
+    public final static Pattern DEFAULT_QUERY_PATTERN_FOR_PPLACER_TYPE = Pattern.compile( "_#\\d+_M=(.+)" );
 
     public static ResultMulti execute( final Phylogeny p ) throws UserException {
         return execute( p, DEFAULT_QUERY_PATTERN_FOR_PPLACER_TYPE, DEFAULT_SEPARATOR, DEFAULT_CUTOFF_FOR_SPECIFICS );
@@ -75,7 +75,26 @@ public final class AnalysisMulti {
             throws UserException {
         cleanUpExternalNames( p, separator );
         final List<PhylogenyNode> qnodes = p.getNodes( query );
+        String query_name_prefix = null;
+        for( final PhylogenyNode n : qnodes ) {
+            final String name = n.getName();
+            final Matcher matcher = query.matcher( name );
+            if ( matcher.find() ) {
+                final String prefix = name.substring( 0, matcher.start() );
+                if ( ForesterUtil.isEmpty( prefix ) ) {
+                    throw new UserException( "query nodes with empty label prefix found: \"" + prefix + "\"" );
+                }
+                if ( query_name_prefix == null ) {
+                    query_name_prefix = prefix;
+                }
+                else if ( !query_name_prefix.equals( prefix ) ) {
+                    throw new UserException( "query nodes with different label prefixes found: \"" + query_name_prefix
+                            + "\" and \"" + prefix + "\"" );
+                }
+            }
+        }
         final ResultMulti res = new ResultMulti();
+        res.setQueryNamePrefix( query_name_prefix );
         for( int i = 0; i < qnodes.size(); ++i ) {
             final PhylogenyNode qnode = qnodes.get( i );
             if ( qnode.isRoot() ) {
