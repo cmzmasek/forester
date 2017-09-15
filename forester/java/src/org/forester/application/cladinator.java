@@ -282,6 +282,9 @@ public final class cladinator {
             final EasyWriter outtable_writer;
             if ( outtablefile != null ) {
                 outtable_writer = ForesterUtil.createEasyWriter( outtablefile );
+                outtable_writer.print( "#" + PRG_NAME + " " + PRG_VERSION + " " + PRG_DATE );
+                outtable_writer.print( " Input tree: " + intreefile );
+                outtable_writer.println( " Specific-hit support cutoff: " + cutoff_specifics );
             }
             else {
                 outtable_writer = null;
@@ -464,7 +467,7 @@ public final class cladinator {
         System.out.println();
         System.out.println( " options:" );
         System.out.println( "  -" + SPECIFICS_CUTOFF_OPTION
-                + "=<double>        : the cutoff for \"specific-hit\" support values (default: "
+                + "=<double>        : the minimal confidence value for \"specific-hits\" to be reported (default: "
                 + SPECIFICS_CUTOFF_DEFAULT + ")" );
         System.out.println( "  -" + SEP_OPTION + "=<separator>     : the annotation-separator to be used (default: "
                 + SEP_DEFAULT + ")" );
@@ -484,12 +487,12 @@ public final class cladinator {
         System.out.println();
         System.out.println( "Examples:" );
         System.out.println();
-        System.out.println( " " + PRG_NAME + " my_tree.nh result.tsv" );
-        System.out.println( " " + PRG_NAME + " -c=0.5 -s=. my_tree.nh result.tsv" );
-        System.out.println( " " + PRG_NAME + " -c=0.9 -s=_ -m=map.tsv my_tree.nh result.tsv" );
-        System.out.println( " " + PRG_NAME + " -x -xs=& -xk my_tree.nh result.tsv" );
-        System.out.println( " " + PRG_NAME + " -x -xs=\"|\" my_tree.nh result.tsv" );
-        System.out.println( " " + PRG_NAME + " -x -xk -m=map.tsv pplacer_out_trees.sing.tre result.tsv" );
+        System.out.println( " " + PRG_NAME + " pp_out_tree.sing.tre result.tsv" );
+        System.out.println( " " + PRG_NAME + " -c=0.5 -s=. pp_out_tree.sing.tre result.tsv" );
+        System.out.println( " " + PRG_NAME + " -c=0.9 -s=_ -m=map.tsv pp_out_trees.sing.tre result.tsv" );
+        System.out.println( " " + PRG_NAME + " -x -xs=& -xk pp_out_trees.sing.tre result.tsv" );
+        System.out.println( " " + PRG_NAME + " -x -xs=\"|\" pp_out_trees.sing.tre result.tsv" );
+        System.out.println( " " + PRG_NAME + " -x -xk -m=map.tsv pp_out_trees.sing.tre result.tsv" );
         System.out.println();
     }
 }
