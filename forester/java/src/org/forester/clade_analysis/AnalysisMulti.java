@@ -31,7 +31,6 @@
 package org.forester.clade_analysis;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.regex.Matcher;
@@ -39,7 +38,6 @@ import java.util.regex.Pattern;
 
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
-import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.util.ForesterUtil;
 import org.forester.util.UserException;
@@ -73,28 +71,15 @@ public final class AnalysisMulti {
                                        final String separator,
                                        final double cutoff_for_specifics )
             throws UserException {
+        if ( ForesterUtil.isEmpty( separator ) ) {
+            throw new IllegalArgumentException( "separator must not be null or empty" );
+        }
         cleanUpExternalNames( p, separator );
         final List<PhylogenyNode> qnodes = p.getNodes( query );
-        String query_name_prefix = null;
-        for( final PhylogenyNode n : qnodes ) {
-            final String name = n.getName();
-            final Matcher matcher = query.matcher( name );
-            if ( matcher.find() ) {
-                final String prefix = name.substring( 0, matcher.start() );
-                if ( ForesterUtil.isEmpty( prefix ) ) {
-                    throw new UserException( "query nodes with empty label prefix found: \"" + prefix + "\"" );
-                }
-                if ( query_name_prefix == null ) {
-                    query_name_prefix = prefix;
-                }
-                else if ( !query_name_prefix.equals( prefix ) ) {
-                    throw new UserException( "query nodes with different label prefixes found: \"" + query_name_prefix
-                            + "\" and \"" + prefix + "\"" );
-                }
-            }
-        }
         final ResultMulti res = new ResultMulti();
-        res.setQueryNamePrefix( query_name_prefix );
+        res.setQueryNamePrefix( obtainQueryPrefix( query, qnodes ) );
+        res.setTotalNumberOfMatches( qnodes.size() );
+        res.setReferenceTreeNumberOfExternalNodes( p.getNumberOfExternalNodes() - qnodes.size() );
         for( int i = 0; i < qnodes.size(); ++i ) {
             final PhylogenyNode qnode = qnodes.get( i );
             if ( qnode.isRoot() ) {
@@ -127,7 +112,7 @@ public final class AnalysisMulti {
                 conf_str = matcher.group( 1 );
             }
             else {
-                throw new IllegalStateException( "pattern did not match -- this should have never happened!" );
+                throw new IllegalStateException( "query pattern does not match [this should have never happened!]" );
             }
             final double conf = Double.parseDouble( conf_str );
             if ( !ForesterUtil.isEmpty( greatest_common_prefix ) ) {
@@ -153,6 +138,29 @@ public final class AnalysisMulti {
         }
         res.analyze( cutoff_for_specifics );
         return res;
+    }
+
+    private final static String obtainQueryPrefix( final Pattern query, final List<PhylogenyNode> qnodes )
+            throws UserException {
+        String query_name_prefix = null;
+        for( final PhylogenyNode n : qnodes ) {
+            final String name = n.getName();
+            final Matcher matcher = query.matcher( name );
+            if ( matcher.find() ) {
+                final String prefix = name.substring( 0, matcher.start() );
+                if ( ForesterUtil.isEmpty( prefix ) ) {
+                    throw new UserException( "query nodes with empty label prefix found: \"" + prefix + "\"" );
+                }
+                if ( query_name_prefix == null ) {
+                    query_name_prefix = prefix;
+                }
+                else if ( !query_name_prefix.equals( prefix ) ) {
+                    throw new UserException( "query nodes with different label prefixes found: \"" + query_name_prefix
+                            + "\" and \"" + prefix + "\"" );
+                }
+            }
+        }
+        return query_name_prefix;
     }
 
     private final static void cleanUpExternalNames( final Phylogeny p, final String separator ) throws UserException {
@@ -210,30 +218,6 @@ public final class AnalysisMulti {
         }
         final String greatest_common_prefix = ForesterUtil.greatestCommonPrefix( ext_nodes_names, separator );
         return greatest_common_prefix;
-    }
-
-    private final static String obtainConfidence( final PhylogenyNode n ) {
-        if ( ( n.getBranchData().getConfidences() != null ) && ( n.getBranchData().getConfidences().size() > 0 ) ) {
-            final List<Confidence> confidences = n.getBranchData().getConfidences();
-            boolean not_first = false;
-            Collections.sort( confidences );
-            final StringBuilder sb = new StringBuilder();
-            for( final Confidence confidence : confidences ) {
-                final double value = confidence.getValue();
-                if ( value != Confidence.CONFIDENCE_DEFAULT_VALUE ) {
-                    if ( not_first ) {
-                        sb.append( " / " );
-                    }
-                    else {
-                        not_first = true;
-                    }
-                    sb.append( ( ForesterUtil.isEmpty( confidence.getType() ) ? "confidence: "
-                            : confidence.getType() + ": " ) + value );
-                }
-            }
-            return sb.toString();
-        }
-        return null;
     }
 
     public final static void performMapping( final Pattern pattern,

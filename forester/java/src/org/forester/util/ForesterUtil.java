@@ -407,7 +407,7 @@ public final class ForesterUtil {
     }
 
     public static String[][] file22dArray( final File file ) throws IOException {
-        final List<String> list = new ArrayList<String>();
+        final List<String> list = new ArrayList<>();
         final BufferedReader in = new BufferedReader( new FileReader( file ) );
         String str;
         while ( ( str = in.readLine() ) != null ) {
@@ -445,7 +445,7 @@ public final class ForesterUtil {
     }
 
     final public static List<String> file2list( final File file ) throws IOException {
-        final List<String> list = new ArrayList<String>();
+        final List<String> list = new ArrayList<>();
         final BufferedReader in = new BufferedReader( new FileReader( file ) );
         String str;
         while ( ( str = in.readLine() ) != null ) {
@@ -461,7 +461,7 @@ public final class ForesterUtil {
     }
 
     final public static SortedSet<String> file2set( final File file ) throws IOException {
-        final SortedSet<String> set = new TreeSet<String>();
+        final SortedSet<String> set = new TreeSet<>();
         final BufferedReader in = new BufferedReader( new FileReader( file ) );
         String str;
         while ( ( str = in.readLine() ) != null ) {
@@ -543,8 +543,8 @@ public final class ForesterUtil {
 
     final public static MolecularSequence.TYPE guessMolecularSequenceType( final String mol_seq ) {
         final String s = mol_seq.toUpperCase();
-        if ( s.contains( "L" ) || s.contains( "I" ) || s.contains( "E" ) || s.contains( "H" )
-                || s.contains( "D" ) || s.contains( "Q" ) ) {
+        if ( s.contains( "L" ) || s.contains( "I" ) || s.contains( "E" ) || s.contains( "H" ) || s.contains( "D" )
+                || s.contains( "Q" ) ) {
             return TYPE.AA;
         }
         else {
@@ -723,7 +723,7 @@ public final class ForesterUtil {
         }
         return null;
     }
-    
+
     final public static String isWritableFile( final String s ) {
         return isWritableFile( new File( s ) );
     }
@@ -744,7 +744,7 @@ public final class ForesterUtil {
     }
 
     final public static SortedMap<Object, Integer> listToSortedCountsMap( final List<?> list ) {
-        final SortedMap<Object, Integer> map = new TreeMap<Object, Integer>();
+        final SortedMap<Object, Integer> map = new TreeMap<>();
         for( final Object key : list ) {
             if ( !map.containsKey( key ) ) {
                 map.put( key, 1 );
@@ -1176,7 +1176,7 @@ public final class ForesterUtil {
         //urlc.setRequestProperty( "User-Agent", "" );
         final BufferedReader in = new BufferedReader( new InputStreamReader( urlc.getInputStream() ) );
         String line;
-        final List<String> result = new ArrayList<String>();
+        final List<String> result = new ArrayList<>();
         while ( ( line = in.readLine() ) != null ) {
             result.add( line );
         }
@@ -1211,7 +1211,7 @@ public final class ForesterUtil {
                                                          protein.getSpecies().getSpeciesId(),
                                                          protein.getLength() );
         final List<Domain> sorted = SurfacingUtil.sortDomainsWithAscendingConfidenceValues( protein );
-        final List<Boolean> covered_positions = new ArrayList<Boolean>();
+        final List<Boolean> covered_positions = new ArrayList<>();
         for( final Domain domain : sorted ) {
             if ( ( ( max_allowed_overlap < 0 )
                     || ( ForesterUtil.calculateOverlap( domain, covered_positions ) <= max_allowed_overlap ) )
@@ -1518,7 +1518,7 @@ public final class ForesterUtil {
             is.close();
         }
         catch ( final Exception e ) {
-            // ignore  
+            // ignore
         }
         return trees;
     }
@@ -1550,7 +1550,7 @@ public final class ForesterUtil {
         File the_one = null;
         do {
             int matches = 0;
-            for( File file : files ) {
+            for( final File file : files ) {
                 if ( file.getName().startsWith( my_prefix ) ) {
                     matches++;
                     if ( matches > 1 ) {
@@ -1598,6 +1598,24 @@ public final class ForesterUtil {
         return a.substring( 0, min_length );
     }
 
+    public final static boolean isContainsPrefix( final String word, final String prefix, final String separator ) {
+        if ( ForesterUtil.isEmpty( separator ) ) {
+            throw new IllegalArgumentException( "separator must not be null or empty" );
+        }
+        final String[] word_ary = word.split( Pattern.quote( separator ) );
+        final String[] prefix_ary = prefix.split( Pattern.quote( separator ) );
+        if ( word_ary.length < prefix_ary.length ) {
+            return false;
+        }
+        final int prefix_ary_length = prefix_ary.length;
+        for( int i = 0; i < prefix_ary_length; ++i ) {
+            if ( !( word_ary[ i ].equals( prefix_ary[ i ] ) ) ) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public final static String greatestCommonPrefix( final String a, final String b, final String separator ) {
         if ( ForesterUtil.isEmpty( separator ) ) {
             throw new IllegalArgumentException( "separator must not be null or empty" );
@@ -1607,7 +1625,7 @@ public final class ForesterUtil {
         final int min_length = Math.min( as.length, bs.length );
         for( int i = 0; i < min_length; ++i ) {
             if ( !( as[ i ].equals( bs[ i ] ) ) ) {
-                StringBuilder sb = new StringBuilder();
+                final StringBuilder sb = new StringBuilder();
                 boolean first = true;
                 for( int j = 0; j < i; ++j ) {
                     if ( first ) {
@@ -1621,7 +1639,7 @@ public final class ForesterUtil {
                 return sb.toString();
             }
         }
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         boolean first = true;
         for( int j = 0; j < min_length; ++j ) {
             if ( first ) {
@@ -1666,12 +1684,9 @@ public final class ForesterUtil {
         return common;
     }
 
-    private ForesterUtil() {
-    }
-
     public static List<String> spliIntoPrefixes( final String prefix, final String separator ) {
         final String[] a = prefix.split( Pattern.quote( separator ) );
-        final List<String> l = new ArrayList<String>();
+        final List<String> l = new ArrayList<>();
         for( int i = 0; i < a.length; ++i ) {
             final StringBuilder sb = new StringBuilder();
             for( int j = 0; j <= i; ++j ) {
@@ -1680,15 +1695,16 @@ public final class ForesterUtil {
                     sb.append( separator );
                 }
             }
-            //  System.out.println( sb.toString() );
             l.add( sb.toString() );
         }
         return l;
     }
 
-    //
     public static boolean isLooksLikeFasta( final File file ) throws IOException {
         final String first_line = ForesterUtil.getFirstLine( file ).trim().toLowerCase();
         return ( ( !isEmptyTrimmed( first_line ) && first_line.trim().startsWith( ">" ) ) );
+    }
+
+    private ForesterUtil() {
     }
 }

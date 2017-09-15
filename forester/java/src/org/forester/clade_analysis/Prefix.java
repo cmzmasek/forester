@@ -36,11 +36,11 @@ public final class Prefix {
         }
     }
 
-    public  String getPrefix() {
+    public String getPrefix() {
         return _prefix;
     }
 
-    public  String getPrefixFirstElement() {
+    public String getPrefixFirstElement() {
         return _first;
     }
 

@@ -732,7 +732,7 @@ public class CladeAnalysisTest {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
             final PhylogenyParser pp = ParserUtils.createParserDependingOnFileType( intreefile1, true );
             final Phylogeny p1 = factory.create( intreefile1, pp )[ 0 ];
-            ResultMulti res2 = AnalysisMulti.execute( p1 );
+            final ResultMulti res2 = AnalysisMulti.execute( p1 );
             res2.analyze( 0.3 );
             System.out.print( res2.toString() );
             System.out.println( "------------------------- " );
@@ -751,7 +751,7 @@ public class CladeAnalysisTest {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
             final PhylogenyParser pp = ParserUtils.createParserDependingOnFileType( intreefile1, true );
             final Phylogeny p1 = factory.create( intreefile1, pp )[ 0 ];
-            ResultMulti res = AnalysisMulti.execute( p1 );
+            final ResultMulti res = AnalysisMulti.execute( p1 );
             res.analyze( 0.3 );
             System.out.print( res.toString() );
             System.out.println( "------------------------- " );
@@ -770,7 +770,7 @@ public class CladeAnalysisTest {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
             final PhylogenyParser pp = ParserUtils.createParserDependingOnFileType( intreefile1, true );
             final Phylogeny p1 = factory.create( intreefile1, pp )[ 0 ];
-            ResultMulti res = AnalysisMulti.execute( p1, 0.45 );
+            final ResultMulti res = AnalysisMulti.execute( p1, 0.45 );
             System.out.print( res.toString() );
             System.out.println( "------------------------- " );
             System.out.println();

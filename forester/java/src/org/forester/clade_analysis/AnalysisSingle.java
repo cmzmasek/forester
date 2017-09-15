@@ -87,12 +87,10 @@ public final class AnalysisSingle {
         }
         res.setLeastEncompassingCladeSize( lec_ext_nodes );
         res.setTreeSize( p_ext_nodes );
-       
         final String conf = obtainConfidence( qnode_pp );
         if ( conf != null ) {
-            res.setGreatestCommonCladeSubtreeConfidence(conf);
+            res.setGreatestCommonCladeSubtreeConfidence( conf );
         }
-        
         final String greatest_common_prefix_up[] = analyzeSiblings( qnode_p, qnode_pp, separator );
         res.setGreatestCommonPrefixUp( greatest_common_prefix_up[ 0 ] );
         if ( greatest_common_prefix_up[ 1 ] != null ) {
@@ -105,8 +103,6 @@ public final class AnalysisSingle {
         }
         return res;
     }
-
-   
 
     private final static String[] analyzeSiblings( final PhylogenyNode child,
                                                    final PhylogenyNode parent,
@@ -133,9 +129,9 @@ public final class AnalysisSingle {
         final String greatest_common_prefix = ForesterUtil.greatestCommonPrefix( ext_nodes_names, separator );
         return new String[] { greatest_common_prefix, conf };
     }
-    
+
     private final static String obtainConfidence( final PhylogenyNode n ) {
-        if ( n.getBranchData().getConfidences() != null && n.getBranchData().getConfidences().size() > 0 ) {
+        if ( ( n.getBranchData().getConfidences() != null ) && ( n.getBranchData().getConfidences().size() > 0 ) ) {
             final List<Confidence> confidences = n.getBranchData().getConfidences();
             boolean not_first = false;
             Collections.sort( confidences );

@@ -40,25 +40,31 @@ import org.forester.util.UserException;
 
 public final class ResultMulti {
 
-    private final String       _separator;
-    private final List<Prefix> _greatest_common_prefixes      = new ArrayList<>();
-    private final List<Prefix> _greatest_common_prefixes_up   = new ArrayList<>();
-    private final List<Prefix> _greatest_common_prefixes_down = new ArrayList<>();
-    private List<Prefix>       _all                           = null;
-    private List<Prefix>       _collapsed                     = null;
-    private List<Prefix>       _cleaned_spec                  = null;
-    private boolean            _has_specifics                 = false;
-    private List<Prefix>       _all_up                        = null;
-    private List<Prefix>       _collapsed_up                  = null;
-    private List<Prefix>       _cleaned_spec_up               = null;
-    private boolean            _has_specifics_up              = false;
-    private List<Prefix>       _all_down                      = null;
-    private List<Prefix>       _collapsed_down                = null;
-    private List<Prefix>       _cleaned_spec_down             = null;
-    private boolean            _has_specifics_down            = false;
-    private String             _query_name_prefix             = "";
+    private final static double MIN_DIFF                       = 1E-5;
+    private final String        _separator;
+    private final List<Prefix>  _greatest_common_prefixes      = new ArrayList<>();
+    private final List<Prefix>  _greatest_common_prefixes_up   = new ArrayList<>();
+    private final List<Prefix>  _greatest_common_prefixes_down = new ArrayList<>();
+    private List<Prefix>        _all                           = null;
+    private List<Prefix>        _collapsed                     = null;
+    private List<Prefix>        _cleaned_spec                  = null;
+    private boolean             _has_specifics                 = false;
+    private List<Prefix>        _all_up                        = null;
+    private List<Prefix>        _collapsed_up                  = null;
+    private List<Prefix>        _cleaned_spec_up               = null;
+    private boolean             _has_specifics_up              = false;
+    private List<Prefix>        _all_down                      = null;
+    private List<Prefix>        _collapsed_down                = null;
+    private List<Prefix>        _cleaned_spec_down             = null;
+    private boolean             _has_specifics_down            = false;
+    private int                 _matches                       = 0;
+    private int                 _ref_tree_ext_nodes            = 0;
+    private String              _query_name_prefix             = "";
 
     ResultMulti( final String separator ) {
+        if ( ForesterUtil.isEmpty( separator ) ) {
+            throw new IllegalArgumentException( "separator must not be null or empty" );
+        }
         _separator = separator;
         reset();
     }
@@ -120,6 +126,14 @@ public final class ResultMulti {
         return _query_name_prefix;
     }
 
+    public int getNumberOfMatches() {
+        return _matches;
+    }
+
+    public int getReferenceTreeNumberOfExternalNodes() {
+        return _ref_tree_ext_nodes;
+    }
+
     @Override
     public final String toString() {
         final StringBuilder sb = new StringBuilder();
@@ -172,6 +186,9 @@ public final class ResultMulti {
                 sb.append( ForesterUtil.LINE_SEPARATOR );
             }
         }
+        sb.append( ForesterUtil.LINE_SEPARATOR );
+        sb.append( "Total Number of Matches: " + getNumberOfMatches() + "/" + getReferenceTreeNumberOfExternalNodes() );
+        sb.append( ForesterUtil.LINE_SEPARATOR );
         return sb.toString();
     }
 
@@ -192,6 +209,20 @@ public final class ResultMulti {
             throw new IllegalStateException( "illegal attempt to change the query name prefix" );
         }
         _query_name_prefix = query_name_prefix;
+    }
+
+    void setTotalNumberOfMatches( final int matches ) {
+        if ( _matches > 0 ) {
+            throw new IllegalStateException( "illegal attempt to change the number of matches" );
+        }
+        _matches = matches;
+    }
+
+    public void setReferenceTreeNumberOfExternalNodes( final int ext_nodes ) {
+        if ( _ref_tree_ext_nodes > 0 ) {
+            throw new IllegalStateException( "illegal attempt to change the number of external nodes" );
+        }
+        _ref_tree_ext_nodes = ext_nodes;
     }
 
     final void analyze( final double cutoff_for_specifics ) throws UserException {
@@ -223,11 +254,11 @@ public final class ResultMulti {
         final List<Prefix> l = obtainAllPrefixes( greatest_common_prefixes, separator );
         if ( !ForesterUtil.isEmpty( l ) ) {
             sortPrefixesAccordingToConfidence( l );
-            _all = removeLessSpecificPrefixes( l );
+            _all = removeLessSpecificPrefixes( l, separator );
             _collapsed = collapse( _all );
             _has_specifics = false;
             if ( cutoff >= 0 ) {
-                _cleaned_spec = obtainSpecifics( cutoff, _all, _collapsed );
+                _cleaned_spec = obtainSpecifics( cutoff, _all, _collapsed, separator );
                 if ( !ForesterUtil.isEmpty( _cleaned_spec ) ) {
                     _has_specifics = true;
                 }
@@ -242,11 +273,11 @@ public final class ResultMulti {
         final List<Prefix> l = obtainAllPrefixes( greatest_common_prefixes_up, separator );
         if ( !ForesterUtil.isEmpty( l ) ) {
             sortPrefixesAccordingToConfidence( l );
-            _all_up = removeLessSpecificPrefixes( l );
+            _all_up = removeLessSpecificPrefixes( l, separator );
             _collapsed_up = collapse( _all_up );
             _has_specifics_up = false;
             if ( cutoff >= 0 ) {
-                _cleaned_spec_up = obtainSpecifics( cutoff, _all_up, _collapsed_up );
+                _cleaned_spec_up = obtainSpecifics( cutoff, _all_up, _collapsed_up, separator );
                 if ( !ForesterUtil.isEmpty( _cleaned_spec_up ) ) {
                     _has_specifics_up = true;
                 }
@@ -261,11 +292,11 @@ public final class ResultMulti {
         final List<Prefix> l = obtainAllPrefixes( greatest_common_prefixes_down, separator );
         if ( !ForesterUtil.isEmpty( l ) ) {
             sortPrefixesAccordingToConfidence( l );
-            _all_down = removeLessSpecificPrefixes( l );
+            _all_down = removeLessSpecificPrefixes( l, separator );
             _collapsed_down = collapse( _all_down );
             _has_specifics_down = false;
             if ( cutoff >= 0 ) {
-                _cleaned_spec_down = obtainSpecifics( cutoff, _all_down, _collapsed_down );
+                _cleaned_spec_down = obtainSpecifics( cutoff, _all_down, _collapsed_down, separator );
                 if ( !ForesterUtil.isEmpty( _cleaned_spec_down ) ) {
                     _has_specifics_down = true;
                 }
@@ -275,7 +306,8 @@ public final class ResultMulti {
 
     final static List<Prefix> obtainSpecifics( final double cutoff,
                                                final List<Prefix> cleaned,
-                                               final List<Prefix> collapsed ) {
+                                               final List<Prefix> collapsed,
+                                               final String separator ) {
         final List<Prefix> cleaned_spec = new ArrayList<>();
         final Set<String> collapsed_set = new HashSet<>();
         for( final Prefix prefix : collapsed ) {
@@ -290,10 +322,15 @@ public final class ResultMulti {
         for( final Prefix o : spec ) {
             boolean ok = true;
             for( final Prefix i : spec ) {
-                if ( ( !o.getPrefix().equals( i.getPrefix() ) ) && ( i.getPrefix().startsWith( o.getPrefix() ) ) ) {
+                if ( ( !o.getPrefix().equals( i.getPrefix() ) )
+                        && ( ForesterUtil.isContainsPrefix( i.getPrefix(), o.getPrefix(), separator ) ) ) {
                     ok = false;
                     break;
                 }
+                /* if ( ( !o.getPrefix().equals( i.getPrefix() ) ) && ( i.getPrefix().startsWith( o.getPrefix() ) ) ) {
+                    ok = false;
+                    break;
+                }*/
             }
             if ( ok ) {
                 cleaned_spec.add( o );
@@ -314,7 +351,7 @@ public final class ResultMulti {
                 confidence_sum += prefix.getConfidence();
             }
         }
-        if ( !ForesterUtil.isEqual( confidence_sum, 1.0, 1E-5 ) ) {
+        if ( !ForesterUtil.isEqual( confidence_sum, 1.0, MIN_DIFF ) ) {
             throw new UserException( "confidences add up to " + confidence_sum + " instead of 1.0" );
         }
         return collapsed;
@@ -330,12 +367,19 @@ public final class ResultMulti {
      * I.e. it removes less specific prefixes.
      *
      */
-    private final static List<Prefix> removeLessSpecificPrefixes( final List<Prefix> l ) {
+    private final static List<Prefix> removeLessSpecificPrefixes( final List<Prefix> l, final String separator ) {
         final List<Prefix> cleaned = new ArrayList<>();
         for( final Prefix o : l ) {
             boolean ok = true;
             for( final Prefix i : l ) {
-                if ( ( !o.getPrefix().equals( i.getPrefix() ) ) && ( i.getPrefix().startsWith( o.getPrefix() ) )
+                /*if ( ( !o.getPrefix().equals( i.getPrefix() ) ) && ( i.getPrefix().startsWith( o.getPrefix() ) )
+                        && ForesterUtil.isEqual( i.getConfidence(),
+                                                 o.getConfidence() ) ) {
+                    ok = false;
+                    break;
+                }*/
+                if ( ( !o.getPrefix().equals( i.getPrefix() ) )
+                        && ( ForesterUtil.isContainsPrefix( i.getPrefix(), o.getPrefix(), separator ) )
                         && ForesterUtil.isEqual( i.getConfidence(),
                                                  o.getConfidence() ) ) {
                     ok = false;
@@ -374,7 +418,7 @@ public final class ResultMulti {
         }
         for( final String key : map.keySet() ) {
             for( final Prefix prefix : greatest_common_prefixes ) {
-                if ( prefix.getPrefix().startsWith( key ) ) {
+                if ( ForesterUtil.isContainsPrefix( prefix.getPrefix(), key, separator ) ) {
                     map.put( key, map.get( key ) + prefix.getConfidence() );
                 }
             }

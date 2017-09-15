@@ -52,8 +52,8 @@ import org.forester.util.UserException;
 public final class cladinator {
 
     final static private String        PRG_NAME                             = "cladinator";
-    final static private String        PRG_VERSION                          = "1.03";
-    final static private String        PRG_DATE                             = "170913";
+    final static private String        PRG_VERSION                          = "1.04";
+    final static private String        PRG_DATE                             = "170915";
     final static private String        PRG_DESC                             = "clades within clades of annotated labels -- analysis of pplacer-type outputs";
     final static private String        E_MAIL                               = "phyloxml@gmail.com";
     final static private String        WWW                                  = "https://sites.google.com/site/cmzmasek/home/software/forester";
@@ -66,6 +66,7 @@ public final class cladinator {
     final static private String        EXTRA_PROCESSING_OPTION1             = "x";
     final static private String        EXTRA_PROCESSING1_SEP_OPTION         = "xs";
     final static private String        EXTRA_PROCESSING1_KEEP_EXTRA_OPTION  = "xk";
+    final static private String        QUIET_OPTION                         = "Q";
     final static private String        VERBOSE_OPTION                       = "v";
     final static private double        SPECIFICS_CUTOFF_DEFAULT             = 0.8;
     final static private String        SEP_DEFAULT                          = ".";
@@ -108,6 +109,7 @@ public final class cladinator {
             allowed_options.add( EXTRA_PROCESSING1_SEP_OPTION );
             allowed_options.add( EXTRA_PROCESSING1_KEEP_EXTRA_OPTION );
             allowed_options.add( VERBOSE_OPTION );
+            allowed_options.add( QUIET_OPTION );
             final String dissallowed_options = cla.validateAllowedOptionsAsString( allowed_options );
             if ( dissallowed_options.length() > 0 ) {
                 ForesterUtil.fatalError( PRG_NAME, "unknown option(s): " + dissallowed_options );
@@ -235,6 +237,13 @@ public final class cladinator {
             else {
                 verbose = false;
             }
+            final boolean quit;
+            if ( cla.isOptionSet( QUIET_OPTION ) ) {
+                quit = true;
+            }
+            else {
+                quit = false;
+            }
             System.out.println( "Input tree                 : " + intreefile );
             System.out.println( "Specific-hit support cutoff: " + cutoff_specifics );
             if ( mapping_file != null ) {
@@ -265,10 +274,10 @@ public final class cladinator {
             }
             System.out.println( "Number of input trees      : " + phys.length );
             if ( phys.length == 1 ) {
-                System.out.println( "Ext. nodes in input tree 1 : " + phys[ 0 ].getNumberOfExternalNodes() );
+                System.out.println( "Ext. nodes in input tree   : " + phys[ 0 ].getNumberOfExternalNodes() );
             }
             else {
-                System.out.println( "Ext. nodes in input tree   : " + phys[ 0 ].getNumberOfExternalNodes() );
+                System.out.println( "Ext. nodes in input tree 1 : " + phys[ 0 ].getNumberOfExternalNodes() );
             }
             final EasyWriter outtable_writer;
             if ( outtablefile != null ) {
@@ -277,6 +286,7 @@ public final class cladinator {
             else {
                 outtable_writer = null;
             }
+            int counter = 0;
             for( final Phylogeny phy : phys ) {
                 if ( map != null ) {
                     AnalysisMulti.performMapping( pattern, map, phy, verbose );
@@ -290,11 +300,19 @@ public final class cladinator {
                                                            verbose );
                 }
                 final ResultMulti res = AnalysisMulti.execute( phy, pattern, separator, cutoff_specifics );
-                printResult( res );
+                if ( !quit ) {
+                    if ( phys.length == 1 ) {
+                        printResult( res, -1 );
+                    }
+                    else {
+                        printResult( res, counter );
+                    }
+                }
                 if ( outtable_writer != null ) {
                     writeResultToTable( res, outtable_writer );
                     outtable_writer.flush();
                 }
+                ++counter;
             }
             if ( outtable_writer != null ) {
                 outtable_writer.flush();
@@ -313,10 +331,14 @@ public final class cladinator {
         }
     }
 
-    private final static void printResult( final ResultMulti res ) {
+    private final static void printResult( final ResultMulti res, final int counter ) {
         System.out.println();
-        System.out.println( "Result for " + res.getQueryNamePrefix() );
-        System.out.println();
+        if ( counter == -1 ) {
+            System.out.println( "Result for " + res.getQueryNamePrefix() );
+        }
+        else {
+            System.out.println( "Result for " + res.getQueryNamePrefix() + " [tree " + counter + "]" );
+        }
         if ( ( res.getAllMultiHitPrefixes() == null ) | ( res.getAllMultiHitPrefixes().size() < 1 ) ) {
             System.out.println( " No match to query pattern!" );
         }
@@ -356,6 +378,9 @@ public final class cladinator {
                     System.out.println( " " + prefix );
                 }
             }
+            System.out.println();
+            System.out.println( " Total Number of Matches: " + res.getNumberOfMatches() + "/"
+                    + res.getReferenceTreeNumberOfExternalNodes() );
         }
         System.out.println();
     }
@@ -375,6 +400,10 @@ public final class cladinator {
                 w.print( prefix.getPrefix() );
                 w.print( "\t" );
                 w.print( df.format( prefix.getConfidence() ) );
+                w.print( "\t" );
+                w.print( String.valueOf( res.getNumberOfMatches() ) );
+                w.print( "\t" );
+                w.print( String.valueOf( res.getReferenceTreeNumberOfExternalNodes() ) );
                 w.println();
             }
             if ( res.isHasSpecificMultiHitsPrefixes() ) {
@@ -386,6 +415,10 @@ public final class cladinator {
                     w.print( prefix.getPrefix() );
                     w.print( "\t" );
                     w.print( df.format( prefix.getConfidence() ) );
+                    w.print( "\t" );
+                    w.print( String.valueOf( res.getNumberOfMatches() ) );
+                    w.print( "\t" );
+                    w.print( String.valueOf( res.getReferenceTreeNumberOfExternalNodes() ) );
                     w.println();
                 }
             }
@@ -398,6 +431,10 @@ public final class cladinator {
                     w.print( prefix.getPrefix() );
                     w.print( "\t" );
                     w.print( df.format( prefix.getConfidence() ) );
+                    w.print( "\t" );
+                    w.print( String.valueOf( res.getNumberOfMatches() ) );
+                    w.print( "\t" );
+                    w.print( String.valueOf( res.getReferenceTreeNumberOfExternalNodes() ) );
                     w.println();
                 }
             }
@@ -410,6 +447,10 @@ public final class cladinator {
                     w.print( prefix.getPrefix() );
                     w.print( "\t" );
                     w.print( df.format( prefix.getConfidence() ) );
+                    w.print( "\t" );
+                    w.print( String.valueOf( res.getNumberOfMatches() ) );
+                    w.print( "\t" );
+                    w.print( String.valueOf( res.getReferenceTreeNumberOfExternalNodes() ) );
                     w.println();
                 }
             }
