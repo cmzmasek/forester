@@ -277,7 +277,7 @@ public final class AnalysisMulti {
                 if ( last_index >= 0 ) {
                     final String annotation = name.substring( last_index + 1 ).trim();
                     if ( ForesterUtil.isEmptyTrimmed( annotation ) ) {
-                        throw new UserException( "illegal format:" + name );
+                        throw new UserException( "illegal format: " + name );
                     }
                     if ( keep ) {
                         final String extra = name.substring( 0, last_index ).trim();
@@ -294,6 +294,54 @@ public final class AnalysisMulti {
                     if ( verbose ) {
                         System.out.println( name + " -> " + node.getName() );
                     }
+                }
+            }
+        }
+        if ( verbose ) {
+            System.out.println();
+        }
+    }
+  
+    public final static void performSpecialProcessing1( final Pattern pattern,
+                                                        final Phylogeny p,
+                                                        final String annotation_sep,
+                                                        final Pattern special_pattern,
+                                                        final boolean verbose )
+            throws UserException {
+        if ( verbose ) {
+            System.out.println();
+            System.out.println( "Special annotation processing:" );
+        }
+        final PhylogenyNodeIterator it = p.iteratorExternalForward();
+        while ( it.hasNext() ) {
+            final PhylogenyNode node = it.next();
+            final String name = node.getName().trim();
+            if ( ForesterUtil.isEmpty( name ) ) {
+                throw new UserException( "external node with empty name found" );
+            }
+            final Matcher m = pattern.matcher( name );
+            if ( !m.find() ) {
+                final Matcher special_m = special_pattern.matcher( name );
+                if ( special_m.matches() ) {
+                    final int c = special_m.groupCount();
+                    if ( c < 2 ) {
+                        throw new UserException( "illegal special pattern: " + special_pattern );
+                    }
+                    final StringBuilder sb = new StringBuilder();
+                    for( int i = 1; i < c; ++i ) {
+                        if ( c > 1 ) {
+                            sb.append( annotation_sep );
+                        }
+                        sb.append( special_m.group( i ) );
+                    }
+                    node.setName( sb.toString() );
+                    if ( verbose ) {
+                        System.out.println( name + " -> " + node.getName() );
+                    }
+                }
+                else {
+                    throw new UserException( "illegal format for special processing: " + name + " (expected pattern: "
+                            + special_pattern + ")" );
                 }
             }
         }

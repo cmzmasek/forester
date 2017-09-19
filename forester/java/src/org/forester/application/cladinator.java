@@ -52,8 +52,8 @@ import org.forester.util.UserException;
 public final class cladinator {
 
     final static private String        PRG_NAME                             = "cladinator";
-    final static private String        PRG_VERSION                          = "1.04";
-    final static private String        PRG_DATE                             = "170915";
+    final static private String        PRG_VERSION                          = "1.05";
+    final static private String        PRG_DATE                             = "170919";
     final static private String        PRG_DESC                             = "clades within clades of annotated labels -- analysis of pplacer-type outputs";
     final static private String        E_MAIL                               = "phyloxml@gmail.com";
     final static private String        WWW                                  = "https://sites.google.com/site/cmzmasek/home/software/forester";
@@ -67,6 +67,7 @@ public final class cladinator {
     final static private String        EXTRA_PROCESSING1_SEP_OPTION         = "xs";
     final static private String        EXTRA_PROCESSING1_KEEP_EXTRA_OPTION  = "xk";
     final static private String        QUIET_OPTION                         = "Q";
+    final static private String        SPECIAL_PROCESSING_OPTION            = "S";
     final static private String        VERBOSE_OPTION                       = "v";
     final static private double        SPECIFICS_CUTOFF_DEFAULT             = 0.8;
     final static private String        SEP_DEFAULT                          = ".";
@@ -108,6 +109,7 @@ public final class cladinator {
             allowed_options.add( EXTRA_PROCESSING_OPTION1 );
             allowed_options.add( EXTRA_PROCESSING1_SEP_OPTION );
             allowed_options.add( EXTRA_PROCESSING1_KEEP_EXTRA_OPTION );
+            allowed_options.add( SPECIAL_PROCESSING_OPTION );
             allowed_options.add( VERBOSE_OPTION );
             allowed_options.add( QUIET_OPTION );
             final String dissallowed_options = cla.validateAllowedOptionsAsString( allowed_options );
@@ -135,15 +137,16 @@ public final class cladinator {
                     ForesterUtil.fatalError( PRG_NAME, "no value for separator option" );
                 }
             }
-            Pattern compiled_query_str = null;
+            Pattern compiled_query = null;
             if ( cla.isOptionSet( QUERY_PATTERN_OPTION ) ) {
                 if ( cla.isOptionValueSet( QUERY_PATTERN_OPTION ) ) {
                     final String query_str = cla.getOptionValue( QUERY_PATTERN_OPTION );
                     try {
-                        compiled_query_str = Pattern.compile( query_str );
+                        compiled_query = Pattern.compile( query_str );
                     }
                     catch ( final PatternSyntaxException e ) {
-                        ForesterUtil.fatalError( PRG_NAME, "error in regular expression: " + e.getMessage() );
+                        ForesterUtil.fatalError( PRG_NAME,
+                                                 "error in regular expression: " + query_str + ": " + e.getMessage() );
                     }
                 }
                 else {
@@ -164,7 +167,7 @@ public final class cladinator {
                     ForesterUtil.fatalError( PRG_NAME, "no value for mapping file" );
                 }
             }
-            final Pattern pattern = ( compiled_query_str != null ) ? compiled_query_str : QUERY_PATTERN_DEFAULT;
+            final Pattern pattern = ( compiled_query != null ) ? compiled_query : QUERY_PATTERN_DEFAULT;
             final File intreefile = cla.getFile( 0 );
             final String error_intreefile = ForesterUtil.isReadableFile( intreefile );
             if ( !ForesterUtil.isEmpty( error_intreefile ) ) {
@@ -230,6 +233,31 @@ public final class cladinator {
                 }
                 extra_processing1_keep = true;
             }
+            
+            Pattern special_pattern = null;
+            boolean special_processing = false;
+            if ( cla.isOptionSet( SPECIAL_PROCESSING_OPTION ) ) {
+                if ( extra_processing1 == true ) {
+                    ForesterUtil
+                            .fatalError( PRG_NAME,
+                                         "extra processing cannot be used together with special processing pattern" );
+                }
+                if ( cla.isOptionValueSet( SPECIAL_PROCESSING_OPTION ) ) {
+                    final String str = cla.getOptionValue( SPECIAL_PROCESSING_OPTION );
+                    try {
+                        special_pattern = Pattern.compile( str );
+                    }
+                    catch ( final PatternSyntaxException e ) {
+                        ForesterUtil
+                                .fatalError( PRG_NAME,
+                                             "error in special processing pattern: " + str + ": " + e.getMessage() );
+                    }
+                    special_processing = true;
+                }
+                else {
+                    ForesterUtil.fatalError( PRG_NAME, "no value for special processing pattern" );
+                }
+            }
             final boolean verbose;
             if ( cla.isOptionSet( VERBOSE_OPTION ) ) {
                 verbose = true;
@@ -252,10 +280,14 @@ public final class cladinator {
             }
             System.out.println( "Annotation-separator       : " + separator );
             System.out.println( "Query pattern              : " + pattern );
-            System.out.println( "Extra processing           : " + extra_processing1 );
             if ( extra_processing1 ) {
+                System.out.println( "Extra processing           : " + extra_processing1 );
                 System.out.println( "Extra processing separator : " + extra_processing1_sep );
                 System.out.println( "Keep extra annotations     : " + extra_processing1_keep );
+            }
+            if ( special_processing ) {
+                System.out.println( "Special processing         : " + special_processing );
+                System.out.println( "Special processing pattern : " + special_pattern );
             }
             if ( outtablefile != null ) {
                 System.out.println( "Output table               : " + outtablefile );
@@ -301,6 +333,9 @@ public final class cladinator {
                                                            extra_processing1_keep,
                                                            separator,
                                                            verbose );
+                }
+                else if ( special_processing ) {
+                    AnalysisMulti.performSpecialProcessing1( pattern, phy, separator, special_pattern, verbose );
                 }
                 final ResultMulti res = AnalysisMulti.execute( phy, pattern, separator, cutoff_specifics );
                 if ( !quit ) {
@@ -480,7 +515,10 @@ public final class cladinator {
                 + "\")" );
         System.out.println( "  -" + EXTRA_PROCESSING1_KEEP_EXTRA_OPTION
                 + "                : to keep extra annotations (e.g. \"Q16611|A.1.1\" becomes \"A.1.1.Q16611\")" );
+        System.out.println( "  -" + SPECIAL_PROCESSING_OPTION
+                + "=<pattern>       : special processing with pattern (e.g. \"(\\d+)([a-z]+)_(.+)\" for \"6q_EF42\" to \"6.q.EF42\")" );
         System.out.println( "  -" + VERBOSE_OPTION + "                 : verbose" );
+        System.out.println( "  -" + QUIET_OPTION + "                 : quiet" );
         System.out.println( "  --" + QUERY_PATTERN_OPTION
                 + "=<query pattern>: the regular expression for the query (default: \"" + QUERY_PATTERN_DEFAULT
                 + "\" for pplacer output)" );
