@@ -53,7 +53,7 @@ public final class cladinator {
 
     final static private String        PRG_NAME                             = "cladinator";
     final static private String        PRG_VERSION                          = "1.05";
-    final static private String        PRG_DATE                             = "170919";
+    final static private String        PRG_DATE                             = "170920";
     final static private String        PRG_DESC                             = "clades within clades of annotated labels -- analysis of pplacer-type outputs";
     final static private String        E_MAIL                               = "phyloxml@gmail.com";
     final static private String        WWW                                  = "https://sites.google.com/site/cmzmasek/home/software/forester";
@@ -233,7 +233,6 @@ public final class cladinator {
                 }
                 extra_processing1_keep = true;
             }
-            
             Pattern special_pattern = null;
             boolean special_processing = false;
             if ( cla.isOptionSet( SPECIAL_PROCESSING_OPTION ) ) {
@@ -516,11 +515,11 @@ public final class cladinator {
         System.out.println( "  -" + EXTRA_PROCESSING1_KEEP_EXTRA_OPTION
                 + "                : to keep extra annotations (e.g. \"Q16611|A.1.1\" becomes \"A.1.1.Q16611\")" );
         System.out.println( "  -" + SPECIAL_PROCESSING_OPTION
-                + "=<pattern>       : special processing with pattern (e.g. \"(\\d+)([a-z]+)_(.+)\" for \"6q_EF42\" to \"6.q.EF42\")" );
+                + "=<pattern>       : special processing with pattern (e.g. \"(\\d+)([a-z]+)_.+\" for changing \"6q_EF42\" to \"6.q\")" );
         System.out.println( "  -" + VERBOSE_OPTION + "                 : verbose" );
-        System.out.println( "  -" + QUIET_OPTION + "                 : quiet" );
+        System.out.println( "  -" + QUIET_OPTION + "                 : quiet (for when used in a pipeline)" );
         System.out.println( "  --" + QUERY_PATTERN_OPTION
-                + "=<query pattern>: the regular expression for the query (default: \"" + QUERY_PATTERN_DEFAULT
+                + "=<pattern>      : the regular expression pattern for the query (default: \"" + QUERY_PATTERN_DEFAULT
                 + "\" for pplacer output)" );
         System.out.println();
         System.out.println( "Examples:" );
@@ -531,6 +530,7 @@ public final class cladinator {
         System.out.println( " " + PRG_NAME + " -x -xs=& -xk pp_out_trees.sing.tre result.tsv" );
         System.out.println( " " + PRG_NAME + " -x -xs=\"|\" pp_out_trees.sing.tre result.tsv" );
         System.out.println( " " + PRG_NAME + " -x -xk -m=map.tsv pp_out_trees.sing.tre result.tsv" );
+        System.out.println( " " + PRG_NAME + " -m=map.tsv -S='(\\d+)([a-z?]*)_.+' pp_out_trees.sing.tre result.tsv" );
         System.out.println();
     }
 }

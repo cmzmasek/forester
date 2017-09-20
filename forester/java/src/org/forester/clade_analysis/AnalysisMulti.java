@@ -252,7 +252,7 @@ public final class AnalysisMulti {
         }
     }
 
-    public final static void performExtraProcessing1( final Pattern pattern,
+    public final static void performExtraProcessing1( final Pattern query_pattern,
                                                       final Phylogeny p,
                                                       final String extra_sep,
                                                       final boolean keep,
@@ -270,14 +270,13 @@ public final class AnalysisMulti {
             if ( ForesterUtil.isEmpty( name ) ) {
                 throw new UserException( "external node with empty name found" );
             }
-            final Matcher m = pattern.matcher( name );
-            if ( !m.find() ) {
+            if ( !query_pattern.matcher( name ).find() ) {
                 final StringBuilder sb = new StringBuilder();
                 final int last_index = name.lastIndexOf( extra_sep );
                 if ( last_index >= 0 ) {
                     final String annotation = name.substring( last_index + 1 ).trim();
                     if ( ForesterUtil.isEmptyTrimmed( annotation ) ) {
-                        throw new UserException( "illegal format: " + name );
+                        throw new UserException( "llegally formatted annotation: " + name );
                     }
                     if ( keep ) {
                         final String extra = name.substring( 0, last_index ).trim();
@@ -301,8 +300,8 @@ public final class AnalysisMulti {
             System.out.println();
         }
     }
-  
-    public final static void performSpecialProcessing1( final Pattern pattern,
+
+    public final static void performSpecialProcessing1( final Pattern query_pattern,
                                                         final Phylogeny p,
                                                         final String annotation_sep,
                                                         final Pattern special_pattern,
@@ -319,20 +318,23 @@ public final class AnalysisMulti {
             if ( ForesterUtil.isEmpty( name ) ) {
                 throw new UserException( "external node with empty name found" );
             }
-            final Matcher m = pattern.matcher( name );
-            if ( !m.find() ) {
+            if ( !query_pattern.matcher( name ).find() ) {
                 final Matcher special_m = special_pattern.matcher( name );
                 if ( special_m.matches() ) {
                     final int c = special_m.groupCount();
-                    if ( c < 2 ) {
-                        throw new UserException( "illegal special pattern: " + special_pattern );
+                    if ( c < 1 ) {
+                        throw new UserException( "illegal special pattern: " + special_pattern
+                                + " (need at least one capturing group)" );
                     }
                     final StringBuilder sb = new StringBuilder();
-                    for( int i = 1; i < c; ++i ) {
-                        if ( c > 1 ) {
-                            sb.append( annotation_sep );
+                    for( int i = 1; i <= c; ++i ) {
+                        final String g = special_m.group( i );
+                        if ( !ForesterUtil.isEmpty( g ) ) {
+                            if ( i > 1 ) {
+                                sb.append( annotation_sep );
+                            }
+                            sb.append( special_m.group( i ) );
                         }
-                        sb.append( special_m.group( i ) );
                     }
                     node.setName( sb.toString() );
                     if ( verbose ) {
@@ -340,8 +342,8 @@ public final class AnalysisMulti {
                     }
                 }
                 else {
-                    throw new UserException( "illegal format for special processing: " + name + " (expected pattern: "
-                            + special_pattern + ")" );
+                    throw new UserException( "illegally formatted annotation for special processing: " + name
+                            + " (expected pattern: " + special_pattern + ")" );
                 }
             }
         }
