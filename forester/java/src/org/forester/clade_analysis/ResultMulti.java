@@ -42,9 +42,9 @@ public final class ResultMulti {
 
     private final static double MIN_DIFF                       = 1E-5;
     private final String        _separator;
-    private final List<Prefix>  _greatest_common_prefixes      = new ArrayList<>();
-    private final List<Prefix>  _greatest_common_prefixes_up   = new ArrayList<>();
-    private final List<Prefix>  _greatest_common_prefixes_down = new ArrayList<>();
+    private final List<Prefix>  _greatest_common_prefixes      = new ArrayList<Prefix>();
+    private final List<Prefix>  _greatest_common_prefixes_up   = new ArrayList<Prefix>();
+    private final List<Prefix>  _greatest_common_prefixes_down = new ArrayList<Prefix>();
     private List<Prefix>        _all                           = null;
     private List<Prefix>        _collapsed                     = null;
     private List<Prefix>        _cleaned_spec                  = null;
@@ -233,17 +233,17 @@ public final class ResultMulti {
     }
 
     private final void reset() {
-        _all = new ArrayList<>();
-        _collapsed = new ArrayList<>();
-        _cleaned_spec = new ArrayList<>();
+        _all = new ArrayList<Prefix>();
+        _collapsed = new ArrayList<Prefix>();
+        _cleaned_spec = new ArrayList<Prefix>();
         _has_specifics = false;
-        _all_up = new ArrayList<>();
-        _collapsed_up = new ArrayList<>();
-        _cleaned_spec_up = new ArrayList<>();
+        _all_up = new ArrayList<Prefix>();
+        _collapsed_up = new ArrayList<Prefix>();
+        _cleaned_spec_up = new ArrayList<Prefix>();
         _has_specifics_up = false;
-        _all_down = new ArrayList<>();
-        _collapsed_down = new ArrayList<>();
-        _cleaned_spec_down = new ArrayList<>();
+        _all_down = new ArrayList<Prefix>();
+        _collapsed_down = new ArrayList<Prefix>();
+        _cleaned_spec_down = new ArrayList<Prefix>();
         _has_specifics_down = false;
     }
 
@@ -308,12 +308,12 @@ public final class ResultMulti {
                                                final List<Prefix> cleaned,
                                                final List<Prefix> collapsed,
                                                final String separator ) {
-        final List<Prefix> cleaned_spec = new ArrayList<>();
-        final Set<String> collapsed_set = new HashSet<>();
+        final List<Prefix> cleaned_spec = new ArrayList<Prefix>();
+        final Set<String> collapsed_set = new HashSet<String>();
         for( final Prefix prefix : collapsed ) {
             collapsed_set.add( prefix.getPrefix() );
         }
-        final List<Prefix> spec = new ArrayList<>();
+        final List<Prefix> spec = new ArrayList<Prefix>();
         for( final Prefix prefix : cleaned ) {
             if ( ( prefix.getConfidence() >= cutoff ) && !collapsed_set.contains( prefix.getPrefix() ) ) {
                 spec.add( prefix );
@@ -340,8 +340,8 @@ public final class ResultMulti {
     }
 
     private final static List<Prefix> collapse( final List<Prefix> cleaned ) throws UserException {
-        final List<Prefix> collapsed = new ArrayList<>();
-        final Set<String> firsts = new HashSet<>();
+        final List<Prefix> collapsed = new ArrayList<Prefix>();
+        final Set<String> firsts = new HashSet<String>();
         double confidence_sum = 0;
         for( final Prefix prefix : cleaned ) {
             final String f = prefix.getPrefixFirstElement();
@@ -368,7 +368,7 @@ public final class ResultMulti {
      *
      */
     private final static List<Prefix> removeLessSpecificPrefixes( final List<Prefix> l, final String separator ) {
-        final List<Prefix> cleaned = new ArrayList<>();
+        final List<Prefix> cleaned = new ArrayList<Prefix>();
         for( final Prefix o : l ) {
             boolean ok = true;
             for( final Prefix i : l ) {
@@ -409,7 +409,7 @@ public final class ResultMulti {
 
     private final static List<Prefix> obtainAllPrefixes( final List<Prefix> greatest_common_prefixes,
                                                          final String separator ) {
-        final SortedMap<String, Double> map = new TreeMap<>();
+        final SortedMap<String, Double> map = new TreeMap<String, Double>();
         for( final Prefix prefix : greatest_common_prefixes ) {
             final List<String> prefixes = ForesterUtil.spliIntoPrefixes( prefix.getPrefix(), separator );
             for( final String p : prefixes ) {
@@ -423,7 +423,7 @@ public final class ResultMulti {
                 }
             }
         }
-        final List<Prefix> l = new ArrayList<>();
+        final List<Prefix> l = new ArrayList<Prefix>();
         for( final Entry<String, Double> entry : map.entrySet() ) {
             l.add( new Prefix( entry.getKey(), entry.getValue(), separator ) );
         }

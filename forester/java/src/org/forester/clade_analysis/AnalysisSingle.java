@@ -62,7 +62,7 @@ public final class AnalysisSingle {
         final List<PhylogenyNode> qnode_ext_nodes = qnode_pp.getAllExternalDescendants();
         final int lec_ext_nodes = qnode_ext_nodes.size() - 1;
         final int p_ext_nodes = p.getNumberOfExternalNodes() - 1;
-        final List<String> qnode_ext_nodes_names = new ArrayList<>();
+        final List<String> qnode_ext_nodes_names = new ArrayList<String>();
         for( final PhylogenyNode qnode_ext_node : qnode_ext_nodes ) {
             String name = qnode_ext_node.getName();
             if ( ForesterUtil.isEmptyTrimmed( name ) ) {
@@ -108,7 +108,7 @@ public final class AnalysisSingle {
                                                    final PhylogenyNode parent,
                                                    final String separator ) {
         final int child_index = child.getChildNodeIndex();
-        final List<String> ext_nodes_names = new ArrayList<>();
+        final List<String> ext_nodes_names = new ArrayList<String>();
         final List<PhylogenyNode> descs = parent.getDescendants();
         String conf = null;
         for( int i = 0; i < descs.size(); ++i ) {

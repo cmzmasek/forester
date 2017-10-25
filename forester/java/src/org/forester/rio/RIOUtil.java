@@ -6,7 +6,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -425,6 +428,14 @@ public final class RIOUtil {
         }
         if ( !replace_ids && id_map != null && id_map.size() > 0 ) {
             w.println();
+            
+            final Iterator<?> it = id_map.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry<String, String> pair = ( Entry<String, String> ) it.next();
+                w.println( pair.getKey()  + "\t" + pair.getValue() );
+            } //TODO
+            
+            /*
             id_map.forEach( ( k, v ) -> {
                 try {
                     w.println( k + "\t" + v );
@@ -432,7 +443,7 @@ public final class RIOUtil {
                 catch ( final IOException e ) {
                     //ignore
                 }
-            } );
+            } );*/
         }
         w.close();
         if ( verbose ) {

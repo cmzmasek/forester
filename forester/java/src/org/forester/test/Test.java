@@ -1136,7 +1136,7 @@ public final class Test {
             final Domain d4 = new BasicDomain( "d4", 7, 9, ( short ) 1, ( short ) 1, 0.1, 1 );
             final Domain d5 = new BasicDomain( "d4", 0, 9, ( short ) 1, ( short ) 1, 0.1, 1 );
             final Domain d6 = new BasicDomain( "d4", 4, 5, ( short ) 1, ( short ) 1, 0.1, 1 );
-            final List<Boolean> covered = new ArrayList<>();
+            final List<Boolean> covered = new ArrayList<Boolean>();
             covered.add( true ); // 0
             covered.add( false ); // 1
             covered.add( true ); // 2
@@ -1368,7 +1368,7 @@ public final class Test {
             final Domain d2 = new BasicDomain( "d2", ( short ) 0, ( short ) 20, ( short ) 1, ( short ) 1, 0.1, 1 );
             final Domain d3 = new BasicDomain( "d3", ( short ) 9, ( short ) 10, ( short ) 1, ( short ) 1, 0.1, 1 );
             final Domain d4 = new BasicDomain( "d4", ( short ) 7, ( short ) 8, ( short ) 1, ( short ) 1, 0.1, 1 );
-            final List<Boolean> covered = new ArrayList<>();
+            final List<Boolean> covered = new ArrayList<Boolean>();
             covered.add( true ); // 0
             covered.add( false ); // 1
             covered.add( true ); // 2
@@ -1890,25 +1890,25 @@ public final class Test {
     }
 
     private static boolean testCommonPrefix() {
-        final List<String> l0 = new ArrayList<>();
+        final List<String> l0 = new ArrayList<String>();
         l0.add( "abc" );
         if ( !ForesterUtil.greatestCommonPrefix( l0 ).equals( "abc" ) ) {
             return false;
         }
-        final List<String> l1 = new ArrayList<>();
+        final List<String> l1 = new ArrayList<String>();
         l1.add( "abc" );
         l1.add( "abX" );
         if ( !ForesterUtil.greatestCommonPrefix( l1 ).equals( "ab" ) ) {
             return false;
         }
-        final List<String> l2 = new ArrayList<>();
+        final List<String> l2 = new ArrayList<String>();
         l2.add( "abc" );
         l2.add( "abX" );
         l2.add( "axy" );
         if ( !ForesterUtil.greatestCommonPrefix( l2 ).equals( "a" ) ) {
             return false;
         }
-        final List<String> l3 = new ArrayList<>();
+        final List<String> l3 = new ArrayList<String>();
         l3.add( "abXsdfsdfsdfsdfsdfsd" );
         l3.add( "abXsdfsdfsdfsdfsdfsd" );
         l3.add( "abc" );
@@ -1919,7 +1919,7 @@ public final class Test {
         if ( !ForesterUtil.greatestCommonPrefix( l3 ).equals( "ab" ) ) {
             return false;
         }
-        final List<String> l4 = new ArrayList<>();
+        final List<String> l4 = new ArrayList<String>();
         l4.add( "abXsdfsdfsdfsdfsdfsd" );
         l4.add( "abXsdfsdfsdfsdfsdfsd" );
         l4.add( "abc" );
@@ -1929,12 +1929,12 @@ public final class Test {
         if ( !ForesterUtil.greatestCommonPrefix( l4 ).equals( "" ) ) {
             return false;
         }
-        final List<String> l5 = new ArrayList<>();
+        final List<String> l5 = new ArrayList<String>();
         l5.add( "" );
         if ( !ForesterUtil.greatestCommonPrefix( l5 ).equals( "" ) ) {
             return false;
         }
-        final List<String> l6 = new ArrayList<>();
+        final List<String> l6 = new ArrayList<String>();
         l6.add( "abc" );
         l6.add( "abX" );
         l6.add( "" );
@@ -1945,25 +1945,25 @@ public final class Test {
     }
 
     private static boolean testCommonPrefixSep() {
-        final List<String> l0 = new ArrayList<>();
+        final List<String> l0 = new ArrayList<String>();
         l0.add( "a.b.c" );
         if ( !ForesterUtil.greatestCommonPrefix( l0, "." ).equals( "a.b.c" ) ) {
             return false;
         }
-        final List<String> l1 = new ArrayList<>();
+        final List<String> l1 = new ArrayList<String>();
         l1.add( "a.b.c" );
         l1.add( "a.b.X" );
         if ( !ForesterUtil.greatestCommonPrefix( l1, "." ).equals( "a.b" ) ) {
             return false;
         }
-        final List<String> l2 = new ArrayList<>();
+        final List<String> l2 = new ArrayList<String>();
         l2.add( "a.b.c." );
         l2.add( "a.b.X." );
         l2.add( "a.x.y." );
         if ( !ForesterUtil.greatestCommonPrefix( l2, "." ).equals( "a" ) ) {
             return false;
         }
-        final List<String> l3 = new ArrayList<>();
+        final List<String> l3 = new ArrayList<String>();
         l3.add( "a/b/X/s/d/f/s/d/f/s/d/f/s/d/f/s/d/f/s/d/" );
         l3.add( "a/b/X/s/d/f/s/d/f/s/d/f/s/d/f/s/d/f/s/d" );
         l3.add( "a/b/c" );
@@ -1974,7 +1974,7 @@ public final class Test {
         if ( !ForesterUtil.greatestCommonPrefix( l3, "/" ).equals( "a/b" ) ) {
             return false;
         }
-        final List<String> l4 = new ArrayList<>();
+        final List<String> l4 = new ArrayList<String>();
         l4.add( "a.b.X.s.d.f.s.d.f.s.d.f.s.d.f.s.d.f.s.d" );
         l4.add( "a.b.X.s.d.f.s.d.f.s.d.f.s.d.f.s.d.f.s.d" );
         l4.add( "a.b.c" );
@@ -1984,18 +1984,18 @@ public final class Test {
         if ( !ForesterUtil.greatestCommonPrefix( l4, "." ).equals( "" ) ) {
             return false;
         }
-        final List<String> l5 = new ArrayList<>();
+        final List<String> l5 = new ArrayList<String>();
         l5.add( "" );
         if ( !ForesterUtil.greatestCommonPrefix( l5, "_" ).equals( "" ) ) {
             return false;
         }
-        final List<String> l6 = new ArrayList<>();
+        final List<String> l6 = new ArrayList<String>();
         l6.add( "_" );
         l6.add( "__" );
         if ( !ForesterUtil.greatestCommonPrefix( l6, "_" ).equals( "" ) ) {
             return false;
         }
-        final List<String> l7 = new ArrayList<>();
+        final List<String> l7 = new ArrayList<String>();
         l7.add( "a,b,c" );
         l7.add( "a,b,X" );
         l7.add( "" );
@@ -2003,21 +2003,21 @@ public final class Test {
         if ( !ForesterUtil.greatestCommonPrefix( l7, "," ).equals( "" ) ) {
             return false;
         }
-        final List<String> l8 = new ArrayList<>();
+        final List<String> l8 = new ArrayList<String>();
         l8.add( "123.304.403.04" );
         l8.add( "123.304.403.04.02" );
         l8.add( "123.304.403.03.03" );
         if ( !ForesterUtil.greatestCommonPrefix( l8, "." ).equals( "123.304.403" ) ) {
             return false;
         }
-        final List<String> l9 = new ArrayList<>();
+        final List<String> l9 = new ArrayList<String>();
         l9.add( "123.304.403.04" );
         l9.add( "123.304.403.04.02" );
         l9.add( "123.304.402.03.03" );
         if ( !ForesterUtil.greatestCommonPrefix( l9, "." ).equals( "123.304" ) ) {
             return false;
         }
-        final List<String> l10 = new ArrayList<>();
+        final List<String> l10 = new ArrayList<String>();
         l10.add( "abcde" );
         l10.add( "adc" );
         if ( !ForesterUtil.greatestCommonPrefix( l10, "." ).equals( "" ) ) {
@@ -3206,7 +3206,7 @@ public final class Test {
             p.addProteinDomain( A20 );
             p.addProteinDomain( B25 );
             p.addProteinDomain( D80 );
-            List<String> domains_ids = new ArrayList<>();
+            List<String> domains_ids = new ArrayList<String>();
             domains_ids.add( "A" );
             domains_ids.add( "B" );
             domains_ids.add( "C" );
@@ -3223,7 +3223,7 @@ public final class Test {
             if ( p.contains( domains_ids, true ) ) {
                 return false;
             }
-            domains_ids = new ArrayList<>();
+            domains_ids = new ArrayList<String>();
             domains_ids.add( "A" );
             domains_ids.add( "C" );
             domains_ids.add( "D" );
@@ -3233,7 +3233,7 @@ public final class Test {
             if ( !p.contains( domains_ids, true ) ) {
                 return false;
             }
-            domains_ids = new ArrayList<>();
+            domains_ids = new ArrayList<String>();
             domains_ids.add( "A" );
             domains_ids.add( "D" );
             domains_ids.add( "C" );
@@ -3243,7 +3243,7 @@ public final class Test {
             if ( p.contains( domains_ids, true ) ) {
                 return false;
             }
-            domains_ids = new ArrayList<>();
+            domains_ids = new ArrayList<String>();
             domains_ids.add( "A" );
             domains_ids.add( "A" );
             domains_ids.add( "B" );
@@ -3253,7 +3253,7 @@ public final class Test {
             if ( !p.contains( domains_ids, true ) ) {
                 return false;
             }
-            domains_ids = new ArrayList<>();
+            domains_ids = new ArrayList<String>();
             domains_ids.add( "A" );
             domains_ids.add( "A" );
             domains_ids.add( "A" );
@@ -3265,7 +3265,7 @@ public final class Test {
             if ( !p.contains( domains_ids, true ) ) {
                 return false;
             }
-            domains_ids = new ArrayList<>();
+            domains_ids = new ArrayList<String>();
             domains_ids.add( "A" );
             domains_ids.add( "A" );
             domains_ids.add( "B" );
@@ -3294,7 +3294,7 @@ public final class Test {
 
     private static boolean testBasicTable() {
         try {
-            final BasicTable<String> t0 = new BasicTable<>();
+            final BasicTable<String> t0 = new BasicTable<String>();
             if ( t0.getNumberOfColumns() != 0 ) {
                 return false;
             }
@@ -3993,7 +3993,7 @@ public final class Test {
             final ProteinDomain d2 = new ProteinDomain( "domain2", 50, 60 );
             final ProteinDomain d3 = new ProteinDomain( "domain3", 70, 80 );
             final ProteinDomain d4 = new ProteinDomain( "domain4", 90, 100 );
-            final ArrayList<PhylogenyData> domains0 = new ArrayList<>();
+            final ArrayList<PhylogenyData> domains0 = new ArrayList<PhylogenyData>();
             domains0.add( d2 );
             domains0.add( d0 );
             domains0.add( d3 );
@@ -4012,7 +4012,7 @@ public final class Test {
             if ( ds1.getNumberOfDomains() != 4 ) {
                 return false;
             }
-            final ArrayList<PhylogenyData> domains1 = new ArrayList<>();
+            final ArrayList<PhylogenyData> domains1 = new ArrayList<PhylogenyData>();
             domains1.add( d1 );
             domains1.add( d2 );
             domains1.add( d4 );
@@ -5749,7 +5749,7 @@ public final class Test {
 
     private static boolean testGeneralTable() {
         try {
-            final GeneralTable<Integer, String> t0 = new GeneralTable<>();
+            final GeneralTable<Integer, String> t0 = new GeneralTable<Integer, String>();
             t0.setValue( 3, 2, "23" );
             t0.setValue( 10, 1, "error" );
             t0.setValue( 10, 1, "110" );
@@ -5785,7 +5785,7 @@ public final class Test {
             if ( !t0.getValueAsString( 22349, 3434344 ).equals( "" ) ) {
                 return false;
             }
-            final GeneralTable<String, String> t1 = new GeneralTable<>();
+            final GeneralTable<String, String> t1 = new GeneralTable<String, String>();
             t1.setValue( "3", "2", "23" );
             t1.setValue( "10", "1", "error" );
             t1.setValue( "10", "1", "110" );
@@ -6796,7 +6796,7 @@ public final class Test {
 
     private static boolean testMafft( final String path ) {
         try {
-            final List<String> opts = new ArrayList<>();
+            final List<String> opts = new ArrayList<String>();
             opts.add( "--maxiterate" );
             opts.add( "1000" );
             opts.add( "--localpair" );
@@ -6892,7 +6892,7 @@ public final class Test {
             final MolecularSequence s1 = BasicSequence.createAaSequence( "b", "ABBXEFGHIJJBB" );
             final MolecularSequence s2 = BasicSequence.createAaSequence( "c", "AXCXEFGHIJJ--" );
             final MolecularSequence s3 = BasicSequence.createAaSequence( "d", "AXDDEFGHIJ---" );
-            final List<MolecularSequence> l = new ArrayList<>();
+            final List<MolecularSequence> l = new ArrayList<MolecularSequence>();
             l.add( s0 );
             l.add( s1 );
             l.add( s2 );
@@ -6933,7 +6933,7 @@ public final class Test {
             final MolecularSequence s1 = BasicSequence.createAaSequence( "b", "AAAIACC" );
             final MolecularSequence s2 = BasicSequence.createAaSequence( "c", "AAIIIIF" );
             final MolecularSequence s3 = BasicSequence.createAaSequence( "d", "AIIIVVW" );
-            final List<MolecularSequence> l = new ArrayList<>();
+            final List<MolecularSequence> l = new ArrayList<MolecularSequence>();
             l.add( s0 );
             l.add( s1 );
             l.add( s2 );
@@ -6956,7 +6956,7 @@ public final class Test {
             //            System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 6, msa, 4 ) );
             //            System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 6, msa, 5 ) );
             //            System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 6, msa, 6 ) );
-            final List<MolecularSequence> l2 = new ArrayList<>();
+            final List<MolecularSequence> l2 = new ArrayList<MolecularSequence>();
             l2.add( BasicSequence.createAaSequence( "1", "AAAAAAA" ) );
             l2.add( BasicSequence.createAaSequence( "2", "AAAIACC" ) );
             l2.add( BasicSequence.createAaSequence( "3", "AAIIIIF" ) );
@@ -7000,7 +7000,7 @@ public final class Test {
             final MolecularSequence s3 = BasicSequence.createAaSequence( "d", "DAAA" );
             final MolecularSequence s4 = BasicSequence.createAaSequence( "e", "EAAA" );
             final MolecularSequence s5 = BasicSequence.createAaSequence( "f", "FAAA" );
-            final List<MolecularSequence> l0 = new ArrayList<>();
+            final List<MolecularSequence> l0 = new ArrayList<MolecularSequence>();
             l0.add( s0 );
             l0.add( s1 );
             l0.add( s2 );
@@ -7048,7 +7048,7 @@ public final class Test {
             final MolecularSequence s_3 = BasicSequence.createAaSequence( "d", "--D--AA-C-------" );
             final MolecularSequence s_4 = BasicSequence.createAaSequence( "e", "--E--AA-C-------" );
             final MolecularSequence s_5 = BasicSequence.createAaSequence( "f", "--F--AB-CD--Y---" );
-            final List<MolecularSequence> l1 = new ArrayList<>();
+            final List<MolecularSequence> l1 = new ArrayList<MolecularSequence>();
             l1.add( s_0 );
             l1.add( s_1 );
             l1.add( s_2 );
@@ -7088,7 +7088,7 @@ public final class Test {
             final MolecularSequence s__3 = BasicSequence.createAaSequence( "d", "DDDD---" );
             final MolecularSequence s__4 = BasicSequence.createAaSequence( "e", "EEEEE--" );
             final MolecularSequence s__5 = BasicSequence.createAaSequence( "f", "FFFFFF-" );
-            final List<MolecularSequence> l2 = new ArrayList<>();
+            final List<MolecularSequence> l2 = new ArrayList<MolecularSequence>();
             l2.add( s__0 );
             l2.add( s__1 );
             l2.add( s__2 );
@@ -7154,7 +7154,7 @@ public final class Test {
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
             PhylogenyNode n;
-            List<PhylogenyNode> ext = new ArrayList<>();
+            List<PhylogenyNode> ext = new ArrayList<PhylogenyNode>();
             final StringBuffer sb0 = new StringBuffer( "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h))fgh)cdefgh)abcdefgh" );
             final Phylogeny t0 = factory.create( sb0.toString(), new NHXParser() )[ 0 ];
             t0.getNode( "cd" ).setCollapse( true );
@@ -7189,7 +7189,7 @@ public final class Test {
             t1.getNode( "cd" ).setCollapse( true );
             t1.getNode( "cde" ).setCollapse( true );
             n = t1.getNode( "ab" );
-            ext = new ArrayList<>();
+            ext = new ArrayList<PhylogenyNode>();
             while ( n != null ) {
                 ext.add( n );
                 n = n.getNextExternalNodeWhileTakingIntoAccountCollapsedNodes();
@@ -7220,7 +7220,7 @@ public final class Test {
             t2.getNode( "e" ).setCollapse( true );
             t2.getNode( "gh" ).setCollapse( true );
             n = t2.getNode( "ab" );
-            ext = new ArrayList<>();
+            ext = new ArrayList<PhylogenyNode>();
             while ( n != null ) {
                 ext.add( n );
                 n = n.getNextExternalNodeWhileTakingIntoAccountCollapsedNodes();
@@ -7249,7 +7249,7 @@ public final class Test {
             t3.getNode( "gh" ).setCollapse( true );
             t3.getNode( "fgh" ).setCollapse( true );
             n = t3.getNode( "ab" );
-            ext = new ArrayList<>();
+            ext = new ArrayList<PhylogenyNode>();
             while ( n != null ) {
                 ext.add( n );
                 n = n.getNextExternalNodeWhileTakingIntoAccountCollapsedNodes();
@@ -12565,7 +12565,7 @@ public final class Test {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
             final Phylogeny p0 = factory.create( "(((A,B,C),D),(E,(F,G)))R", new NHXParser() )[ 0 ];
             //Archaeopteryx.createApplication( p0 );
-            final Set<PhylogenyNode> ex = new HashSet<>();
+            final Set<PhylogenyNode> ex = new HashSet<PhylogenyNode>();
             ex.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             ex.add( PhylogenyNode.createInstanceFromNhxString( "B" ) );
             ex.add( PhylogenyNode.createInstanceFromNhxString( "C" ) );
@@ -12578,13 +12578,13 @@ public final class Test {
             final TreeSplitMatrix s0 = new TreeSplitMatrix( p0, false, ex );
             // System.out.println( s0.toString() );
             //
-            Set<PhylogenyNode> query_nodes = new HashSet<>();
+            Set<PhylogenyNode> query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "B" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "B" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "C" ) );
@@ -12596,7 +12596,7 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "B" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "C" ) );
@@ -12604,7 +12604,7 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "D" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
@@ -12613,7 +12613,7 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "B" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "C" ) );
@@ -12622,20 +12622,20 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "G" ) );
             if ( !s0.match( query_nodes ) ) {
                 return false;
             }
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "G" ) );
             if ( !s0.match( query_nodes ) ) {
                 return false;
             }
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "D" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "C" ) );
@@ -12644,14 +12644,14 @@ public final class Test {
             if ( !s0.match( query_nodes ) ) {
                 return false;
             }
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "G" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
             if ( !s0.match( query_nodes ) ) {
                 return false;
             }
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "G" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
@@ -12659,13 +12659,13 @@ public final class Test {
             if ( !s0.match( query_nodes ) ) {
                 return false;
             }
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "B" ) );
@@ -12673,7 +12673,7 @@ public final class Test {
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "G" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
@@ -12682,71 +12682,71 @@ public final class Test {
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "B" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "D" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "D" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "B" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "C" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "G" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "G" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "B" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "D" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "D" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "D" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
@@ -12754,72 +12754,8 @@ public final class Test {
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            /////////
-            //            query_nodes = new HashSet<PhylogenyNode>();
-            //            query_nodes.add( new PhylogenyNode( "X" ) );
-            //            query_nodes.add( new PhylogenyNode( "Y" ) );
-            //            query_nodes.add( new PhylogenyNode( "A" ) );
-            //            query_nodes.add( new PhylogenyNode( "B" ) );
-            //            query_nodes.add( new PhylogenyNode( "C" ) );
-            //            query_nodes.add( new PhylogenyNode( "D" ) );
-            //            query_nodes.add( new PhylogenyNode( "E" ) );
-            //            query_nodes.add( new PhylogenyNode( "F" ) );
-            //            query_nodes.add( new PhylogenyNode( "G" ) );
-            //            if ( !s0.match( query_nodes ) ) {
-            //                return false;
-            //            }
-            //            query_nodes = new HashSet<PhylogenyNode>();
-            //            query_nodes.add( new PhylogenyNode( "X" ) );
-            //            query_nodes.add( new PhylogenyNode( "Y" ) );
-            //            query_nodes.add( new PhylogenyNode( "A" ) );
-            //            query_nodes.add( new PhylogenyNode( "B" ) );
-            //            query_nodes.add( new PhylogenyNode( "C" ) );
-            //            if ( !s0.match( query_nodes ) ) {
-            //                return false;
-            //            }
-            //            //
-            //            query_nodes = new HashSet<PhylogenyNode>();
-            //            query_nodes.add( new PhylogenyNode( "X" ) );
-            //            query_nodes.add( new PhylogenyNode( "Y" ) );
-            //            query_nodes.add( new PhylogenyNode( "D" ) );
-            //            query_nodes.add( new PhylogenyNode( "E" ) );
-            //            query_nodes.add( new PhylogenyNode( "F" ) );
-            //            query_nodes.add( new PhylogenyNode( "G" ) );
-            //            if ( !s0.match( query_nodes ) ) {
-            //                return false;
-            //            }
-            //            //
-            //            query_nodes = new HashSet<PhylogenyNode>();
-            //            query_nodes.add( new PhylogenyNode( "X" ) );
-            //            query_nodes.add( new PhylogenyNode( "Y" ) );
-            //            query_nodes.add( new PhylogenyNode( "A" ) );
-            //            query_nodes.add( new PhylogenyNode( "B" ) );
-            //            query_nodes.add( new PhylogenyNode( "C" ) );
-            //            query_nodes.add( new PhylogenyNode( "D" ) );
-            //            if ( !s0.match( query_nodes ) ) {
-            //                return false;
-            //            }
-            //            //
-            //            query_nodes = new HashSet<PhylogenyNode>();
-            //            query_nodes.add( new PhylogenyNode( "X" ) );
-            //            query_nodes.add( new PhylogenyNode( "Y" ) );
-            //            query_nodes.add( new PhylogenyNode( "E" ) );
-            //            query_nodes.add( new PhylogenyNode( "F" ) );
-            //            query_nodes.add( new PhylogenyNode( "G" ) );
-            //            if ( !s0.match( query_nodes ) ) {
-            //                return false;
-            //            }
-            //            //
-            //            query_nodes = new HashSet<PhylogenyNode>();
-            //            query_nodes.add( new PhylogenyNode( "X" ) );
-            //            query_nodes.add( new PhylogenyNode( "Y" ) );
-            //            query_nodes.add( new PhylogenyNode( "F" ) );
-            //            query_nodes.add( new PhylogenyNode( "G" ) );
-            //            if ( !s0.match( query_nodes ) ) {
-            //                return false;
-            //            }
-            //
-            query_nodes = new HashSet<>();
+           
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "X" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "Y" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
@@ -12828,7 +12764,7 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "X" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "Y" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
@@ -12836,9 +12772,8 @@ public final class Test {
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            ///////////////////////////
-            //
-            query_nodes = new HashSet<>();
+      
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "X" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "Y" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
@@ -12847,7 +12782,7 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "X" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "Y" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
@@ -12856,7 +12791,7 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "X" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "Y" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
@@ -12865,7 +12800,7 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "X" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "Y" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
@@ -12874,7 +12809,7 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "X" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "Y" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
@@ -12883,7 +12818,7 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "Y" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "G" ) );
@@ -12891,7 +12826,7 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "X" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "Y" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
@@ -12901,7 +12836,7 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "X" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "Y" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
@@ -12911,7 +12846,7 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "X" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "Y" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
@@ -12921,7 +12856,7 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "X" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "Y" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
@@ -12943,7 +12878,7 @@ public final class Test {
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
             final Phylogeny p0 = factory.create( "(((A,B,C),D),(E,(F,G)))R", new NHXParser() )[ 0 ];
-            final Set<PhylogenyNode> ex = new HashSet<>();
+            final Set<PhylogenyNode> ex = new HashSet<PhylogenyNode>();
             ex.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             ex.add( PhylogenyNode.createInstanceFromNhxString( "B" ) );
             ex.add( PhylogenyNode.createInstanceFromNhxString( "C" ) );
@@ -12952,13 +12887,13 @@ public final class Test {
             ex.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
             ex.add( PhylogenyNode.createInstanceFromNhxString( "G" ) );
             final TreeSplitMatrix s0 = new TreeSplitMatrix( p0, true, ex );
-            Set<PhylogenyNode> query_nodes = new HashSet<>();
+            Set<PhylogenyNode> query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "B" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "B" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "C" ) );
@@ -12970,7 +12905,7 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "B" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "C" ) );
@@ -12978,7 +12913,7 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "D" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
@@ -12987,7 +12922,7 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "B" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "C" ) );
@@ -12996,7 +12931,7 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "G" ) );
@@ -13004,14 +12939,14 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "G" ) );
             if ( !s0.match( query_nodes ) ) {
                 return false;
             }
             //
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "D" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "C" ) );
@@ -13020,16 +12955,14 @@ public final class Test {
             if ( !s0.match( query_nodes ) ) {
                 return false;
             }
-            //
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "G" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
             if ( !s0.match( query_nodes ) ) {
                 return false;
             }
-            //
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "G" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
@@ -13038,14 +12971,14 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
             //
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "B" ) );
@@ -13054,7 +12987,7 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "G" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
@@ -13064,7 +12997,7 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "B" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "D" ) );
@@ -13072,49 +13005,49 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "D" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
             //
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "B" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
             //
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "C" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
             //
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
             //
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
             //
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "G" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
             //
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "G" ) );
@@ -13122,7 +13055,7 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "B" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "D" ) );
@@ -13130,7 +13063,7 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "D" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
@@ -13138,7 +13071,7 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<>();
+            query_nodes = new HashSet<PhylogenyNode>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "D" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );

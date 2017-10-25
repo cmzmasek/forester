@@ -407,7 +407,7 @@ public final class ForesterUtil {
     }
 
     public static String[][] file22dArray( final File file ) throws IOException {
-        final List<String> list = new ArrayList<>();
+        final List<String> list = new ArrayList<String>();
         final BufferedReader in = new BufferedReader( new FileReader( file ) );
         String str;
         while ( ( str = in.readLine() ) != null ) {
@@ -445,7 +445,7 @@ public final class ForesterUtil {
     }
 
     final public static List<String> file2list( final File file ) throws IOException {
-        final List<String> list = new ArrayList<>();
+        final List<String> list = new ArrayList<String>();
         final BufferedReader in = new BufferedReader( new FileReader( file ) );
         String str;
         while ( ( str = in.readLine() ) != null ) {
@@ -461,7 +461,7 @@ public final class ForesterUtil {
     }
 
     final public static SortedSet<String> file2set( final File file ) throws IOException {
-        final SortedSet<String> set = new TreeSet<>();
+        final SortedSet<String> set = new TreeSet<String>();
         final BufferedReader in = new BufferedReader( new FileReader( file ) );
         String str;
         while ( ( str = in.readLine() ) != null ) {
@@ -744,7 +744,7 @@ public final class ForesterUtil {
     }
 
     final public static SortedMap<Object, Integer> listToSortedCountsMap( final List<?> list ) {
-        final SortedMap<Object, Integer> map = new TreeMap<>();
+        final SortedMap<Object, Integer> map = new TreeMap<Object, Integer>();
         for( final Object key : list ) {
             if ( !map.containsKey( key ) ) {
                 map.put( key, 1 );
@@ -1176,7 +1176,7 @@ public final class ForesterUtil {
         //urlc.setRequestProperty( "User-Agent", "" );
         final BufferedReader in = new BufferedReader( new InputStreamReader( urlc.getInputStream() ) );
         String line;
-        final List<String> result = new ArrayList<>();
+        final List<String> result = new ArrayList<String>();
         while ( ( line = in.readLine() ) != null ) {
             result.add( line );
         }
@@ -1211,7 +1211,7 @@ public final class ForesterUtil {
                                                          protein.getSpecies().getSpeciesId(),
                                                          protein.getLength() );
         final List<Domain> sorted = SurfacingUtil.sortDomainsWithAscendingConfidenceValues( protein );
-        final List<Boolean> covered_positions = new ArrayList<>();
+        final List<Boolean> covered_positions = new ArrayList<Boolean>();
         for( final Domain domain : sorted ) {
             if ( ( ( max_allowed_overlap < 0 )
                     || ( ForesterUtil.calculateOverlap( domain, covered_positions ) <= max_allowed_overlap ) )
@@ -1686,7 +1686,7 @@ public final class ForesterUtil {
 
     public static List<String> spliIntoPrefixes( final String prefix, final String separator ) {
         final String[] a = prefix.split( Pattern.quote( separator ) );
-        final List<String> l = new ArrayList<>();
+        final List<String> l = new ArrayList<String>();
         for( int i = 0; i < a.length; ++i ) {
             final StringBuilder sb = new StringBuilder();
             for( int j = 0; j <= i; ++j ) {

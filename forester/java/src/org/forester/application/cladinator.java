@@ -101,7 +101,7 @@ public final class cladinator {
                 print_help();
                 System.exit( -1 );
             }
-            final List<String> allowed_options = new ArrayList<>();
+            final List<String> allowed_options = new ArrayList<String>();
             allowed_options.add( SEP_OPTION );
             allowed_options.add( QUERY_PATTERN_OPTION );
             allowed_options.add( SPECIFICS_CUTOFF_OPTION );

@@ -35,7 +35,7 @@ public final class ResultSingle {
     private String             _greatest_common_prefix                        = "";
     private String             _greatest_common_prefix_up                     = "";
     private String             _greatest_common_prefix_down                   = "";
-    private final List<String> _warnings                                      = new ArrayList<>();
+    private final List<String> _warnings                                      = new ArrayList<String>();
     private int                _lec_ext_nodes                                 = 0;
     private int                _p_ext_nodes                                   = 0;
     private String             _greatest_common_clade_subtree_confidence      = "";

@@ -19,7 +19,7 @@ public class pplacer_summary {
     public static void main( final String args[] ) {
         final File indir = new File( "." );
         final File[] list_of_files = indir.listFiles();
-        final List<File> infiles = new ArrayList<>();
+        final List<File> infiles = new ArrayList<File>();
         for( final File file : list_of_files ) {
             if ( file.isFile() && file.canRead() && file.toString().endsWith( ".sing.tre" ) ) {
                 infiles.add( file );

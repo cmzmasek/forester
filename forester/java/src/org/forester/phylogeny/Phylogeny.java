@@ -327,7 +327,7 @@ public class Phylogeny {
      */
     public List<PhylogenyNode> getExternalNodes() {
         if ( _external_nodes_set == null ) {
-            _external_nodes_set = new ArrayList<>();
+            _external_nodes_set = new ArrayList<PhylogenyNode>();
             for( final PhylogenyNodeIterator it = iteratorPostorder(); it.hasNext(); ) {
                 final PhylogenyNode n = it.next();
                 if ( n.isExternal() ) {
@@ -441,7 +441,7 @@ public class Phylogeny {
         if ( isEmpty() ) {
             return null;
         }
-        final List<PhylogenyNode> nodes = new ArrayList<>();
+        final List<PhylogenyNode> nodes = new ArrayList<PhylogenyNode>();
         for( final PhylogenyNodeIterator iter = iteratorPreorder(); iter.hasNext(); ) {
             final PhylogenyNode n = iter.next();
             if ( n.getName().equals( name ) ) {
@@ -455,7 +455,7 @@ public class Phylogeny {
         if ( isEmpty() ) {
             return null;
         }
-        final List<PhylogenyNode> nodes = new ArrayList<>();
+        final List<PhylogenyNode> nodes = new ArrayList<PhylogenyNode>();
         for( final PhylogenyNodeIterator iter = iteratorPreorder(); iter.hasNext(); ) {
             final PhylogenyNode n = iter.next();
             if ( n.getName() != null ) {
@@ -472,7 +472,7 @@ public class Phylogeny {
         if ( isEmpty() ) {
             return null;
         }
-        final List<PhylogenyNode> nodes = new ArrayList<>();
+        final List<PhylogenyNode> nodes = new ArrayList<PhylogenyNode>();
         for( final PhylogenyNodeIterator iter = iteratorPreorder(); iter.hasNext(); ) {
             final PhylogenyNode n = iter.next();
             if ( n.getNodeData().isHasSequence() && n.getNodeData().getSequence().getName().equals( seq_name ) ) {
@@ -486,7 +486,7 @@ public class Phylogeny {
         if ( isEmpty() ) {
             return null;
         }
-        final List<PhylogenyNode> nodes = new ArrayList<>();
+        final List<PhylogenyNode> nodes = new ArrayList<PhylogenyNode>();
         for( final PhylogenyNodeIterator iter = iteratorPreorder(); iter.hasNext(); ) {
             final PhylogenyNode n = iter.next();
             if ( n.getNodeData().isHasSequence() && n.getNodeData().getSequence().getSymbol().equals( seq_name ) ) {
@@ -500,7 +500,7 @@ public class Phylogeny {
         if ( isEmpty() ) {
             return null;
         }
-        final List<PhylogenyNode> nodes = new ArrayList<>();
+        final List<PhylogenyNode> nodes = new ArrayList<PhylogenyNode>();
         for( final PhylogenyNodeIterator iter = iteratorPreorder(); iter.hasNext(); ) {
             final PhylogenyNode n = iter.next();
             if ( n.getNodeData().isHasSequence() && n.getNodeData().getSequence().getGeneName().equals( seq_name ) ) {
@@ -514,7 +514,7 @@ public class Phylogeny {
         if ( isEmpty() ) {
             return null;
         }
-        final List<PhylogenyNode> nodes = new ArrayList<>();
+        final List<PhylogenyNode> nodes = new ArrayList<PhylogenyNode>();
         for( final PhylogenyNodeIterator iter = iteratorPreorder(); iter.hasNext(); ) {
             final PhylogenyNode n = iter.next();
             if ( n.getNodeData().isHasTaxonomy()
@@ -539,7 +539,7 @@ public class Phylogeny {
         if ( isEmpty() ) {
             return null;
         }
-        final List<PhylogenyNode> nodes = new ArrayList<>();
+        final List<PhylogenyNode> nodes = new ArrayList<PhylogenyNode>();
         for( final PhylogenyNodeIterator iter = iteratorPreorder(); iter.hasNext(); ) {
             final PhylogenyNode n = iter.next();
             if ( PhylogenyMethods.getSpecies( n ).equals( specname ) ) {
@@ -638,8 +638,8 @@ public class Phylogeny {
     public List<PhylogenyNode> getParalogousNodes( final PhylogenyNode n, final String[] taxonomyCodeRange ) {
         PhylogenyNode node = n;
         PhylogenyNode prev = null;
-        final List<PhylogenyNode> v = new ArrayList<>();
-        final Map<PhylogenyNode, List<String>> map = new HashMap<>();
+        final List<PhylogenyNode> v = new ArrayList<PhylogenyNode>();
+        final Map<PhylogenyNode, List<String>> map = new HashMap<PhylogenyNode, List<String>>();
         getTaxonomyMap( getRoot(), map );
         if ( !node.isExternal() || isEmpty() ) {
             return null;
@@ -670,7 +670,7 @@ public class Phylogeny {
 
     public Collection<SequenceRelation.SEQUENCE_RELATION_TYPE> getRelevantSequenceRelationTypes() {
         if ( _relevant_sequence_relation_types == null ) {
-            _relevant_sequence_relation_types = new Vector<>();
+            _relevant_sequence_relation_types = new Vector<SequenceRelation.SEQUENCE_RELATION_TYPE>();
         }
         return _relevant_sequence_relation_types;
     }
@@ -1208,7 +1208,7 @@ public class Phylogeny {
      * @return List node with the same taxonomy identifier
      */
     private List<PhylogenyNode> getNodeByTaxonomyID( final String taxonomyID, final List<PhylogenyNode> nodes ) {
-        final List<PhylogenyNode> retour = new ArrayList<>();
+        final List<PhylogenyNode> retour = new ArrayList<PhylogenyNode>();
         for( final PhylogenyNode node : nodes ) {
             if ( taxonomyID.equals( PhylogenyMethods.getTaxonomyIdentifier( node ) ) ) {
                 retour.add( node );
@@ -1226,7 +1226,7 @@ public class Phylogeny {
      * @return species contains in all leaf under the param node
      */
     private List<String> getSubNodeTaxonomy( final PhylogenyNode node ) {
-        final List<String> taxonomyList = new ArrayList<>();
+        final List<String> taxonomyList = new ArrayList<String>();
         final List<PhylogenyNode> childs = node.getAllExternalDescendants();
         String speciesId = null;
         for( final PhylogenyNode phylogenyNode : childs ) {

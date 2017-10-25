@@ -94,7 +94,7 @@ public final class fasta_split {
             ForesterUtil.fatalError( PRG_NAME, infile + " appears empty" );
         }
         System.out.println( "Read " + seqs.size() + " sequences" );
-        final Map<String, List<MolecularSequence>> output = new HashMap<>();
+        final Map<String, List<MolecularSequence>> output = new HashMap<String, List<MolecularSequence>>();
         for( final MolecularSequence seq : seqs ) {
             final Matcher m = pa.matcher( seq.getIdentifier() );
             if ( m.find() ) {

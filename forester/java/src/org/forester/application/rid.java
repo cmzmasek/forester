@@ -108,7 +108,7 @@ public class rid {
                 print_help();
                 System.exit( -1 );
             }
-            final List<String> allowed_options = new ArrayList<>();
+            final List<String> allowed_options = new ArrayList<String>();
             allowed_options.add( OUTPUT_FORMAT_OPTION );
             allowed_options.add( ID_NORM_OPTION );
             final String dissallowed_options = cla.validateAllowedOptionsAsString( allowed_options );
@@ -265,7 +265,7 @@ public class rid {
             else {
                 System.out.println( "Alignment length      : " + ( int ) stats.getMax() );
             }
-            final List<MolecularSequence> output_seqs = new ArrayList<>();
+            final List<MolecularSequence> output_seqs = new ArrayList<MolecularSequence>();
             int counter = 0;
             final BufferedWriter output_map_writer;
             if ( normalize_identifiers ) {

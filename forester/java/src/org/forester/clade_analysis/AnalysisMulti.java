@@ -97,7 +97,7 @@ public final class AnalysisMulti {
             while ( qnode_pp.getNumberOfDescendants() == 1 ) {
                 qnode_pp = qnode_pp.getParent();
             }
-            final List<String> qnode_ext_nodes_names = new ArrayList<>();
+            final List<String> qnode_ext_nodes_names = new ArrayList<String>();
             for( final PhylogenyNode qnode_ext_node : qnode_pp.getAllExternalDescendants() ) {
                 final String name = qnode_ext_node.getName();
                 final Matcher m = query.matcher( name );
@@ -202,7 +202,7 @@ public final class AnalysisMulti {
                                                  final String separator,
                                                  final Pattern query ) {
         final int child_index = child.getChildNodeIndex();
-        final List<String> ext_nodes_names = new ArrayList<>();
+        final List<String> ext_nodes_names = new ArrayList<String>();
         final List<PhylogenyNode> descs = parent.getDescendants();
         for( int i = 0; i < descs.size(); ++i ) {
             if ( i != child_index ) {
