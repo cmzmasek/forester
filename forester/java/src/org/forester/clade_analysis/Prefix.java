@@ -3,6 +3,7 @@ package org.forester.clade_analysis;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
+import java.util.regex.Pattern;
 
 public final class Prefix {
 
@@ -39,6 +40,10 @@ public final class Prefix {
     public String getPrefix() {
         return _prefix;
     }
+    
+    public String getPrefixRemovSeparator() {
+        return _prefix.replaceAll( Pattern.quote( _separator ), "" );
+    }
 
     public String getPrefixFirstElement() {
         return _first;
@@ -51,5 +56,9 @@ public final class Prefix {
     @Override
     public String toString() {
         return getPrefix() + ": " + df.format( getConfidence() );
+    }
+    
+    public String toStringRemovSeparator() {
+        return getPrefixRemovSeparator() + ": " + df.format( getConfidence() );
     }
 }

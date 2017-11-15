@@ -52,8 +52,8 @@ import org.forester.util.UserException;
 public final class cladinator {
 
     final static private String        PRG_NAME                             = "cladinator";
-    final static private String        PRG_VERSION                          = "1.05";
-    final static private String        PRG_DATE                             = "170920";
+    final static private String        PRG_VERSION                          = "1.06";
+    final static private String        PRG_DATE                             = "171115";
     final static private String        PRG_DESC                             = "clades within clades of annotated labels -- analysis of pplacer-type outputs";
     final static private String        E_MAIL                               = "phyloxml@gmail.com";
     final static private String        WWW                                  = "https://sites.google.com/site/cmzmasek/home/software/forester";
@@ -69,6 +69,7 @@ public final class cladinator {
     final static private String        QUIET_OPTION                         = "Q";
     final static private String        SPECIAL_PROCESSING_OPTION            = "S";
     final static private String        VERBOSE_OPTION                       = "v";
+    final static private String        REMOVE_ANNOT_SEP_OPTION              = "rs";
     final static private double        SPECIFICS_CUTOFF_DEFAULT             = 0.8;
     final static private String        SEP_DEFAULT                          = ".";
     final static private Pattern       QUERY_PATTERN_DEFAULT                = AnalysisMulti.DEFAULT_QUERY_PATTERN_FOR_PPLACER_TYPE;
@@ -112,6 +113,7 @@ public final class cladinator {
             allowed_options.add( SPECIAL_PROCESSING_OPTION );
             allowed_options.add( VERBOSE_OPTION );
             allowed_options.add( QUIET_OPTION );
+            allowed_options.add( REMOVE_ANNOT_SEP_OPTION );
             final String dissallowed_options = cla.validateAllowedOptionsAsString( allowed_options );
             if ( dissallowed_options.length() > 0 ) {
                 ForesterUtil.fatalError( PRG_NAME, "unknown option(s): " + dissallowed_options );
@@ -257,6 +259,13 @@ public final class cladinator {
                     ForesterUtil.fatalError( PRG_NAME, "no value for special processing pattern" );
                 }
             }
+            final boolean remove_annotation_sep;
+            if ( cla.isOptionSet( REMOVE_ANNOT_SEP_OPTION ) ) {
+                remove_annotation_sep = true;
+            }
+            else {
+                remove_annotation_sep = false;
+            }
             final boolean verbose;
             if ( cla.isOptionSet( VERBOSE_OPTION ) ) {
                 verbose = true;
@@ -278,6 +287,9 @@ public final class cladinator {
                         + " rows)" );
             }
             System.out.println( "Annotation-separator       : " + separator );
+            if ( remove_annotation_sep ) {
+                System.out.println( "Remove anno.-sep. in output: " + remove_annotation_sep );
+            }
             System.out.println( "Query pattern              : " + pattern );
             if ( extra_processing1 ) {
                 System.out.println( "Extra processing           : " + extra_processing1 );
@@ -339,14 +351,14 @@ public final class cladinator {
                 final ResultMulti res = AnalysisMulti.execute( phy, pattern, separator, cutoff_specifics );
                 if ( !quit ) {
                     if ( phys.length == 1 ) {
-                        printResult( res, -1 );
+                        printResult( res, -1, remove_annotation_sep );
                     }
                     else {
-                        printResult( res, counter );
+                        printResult( res, counter, remove_annotation_sep );
                     }
                 }
                 if ( outtable_writer != null ) {
-                    writeResultToTable( res, outtable_writer );
+                    writeResultToTable( res, outtable_writer, remove_annotation_sep );
                     outtable_writer.flush();
                 }
                 ++counter;
@@ -368,7 +380,9 @@ public final class cladinator {
         }
     }
 
-    private final static void printResult( final ResultMulti res, final int counter ) {
+    private final static void printResult( final ResultMulti res,
+                                           final int counter,
+                                           final boolean remove_annotation_sep ) {
         System.out.println();
         if ( counter == -1 ) {
             System.out.println( "Result for " + res.getQueryNamePrefix() );
@@ -382,21 +396,41 @@ public final class cladinator {
         else {
             System.out.println( " Matching Clade(s):" );
             for( final Prefix prefix : res.getCollapsedMultiHitPrefixes() ) {
-                System.out.println( " " + prefix );
+                if ( remove_annotation_sep ) {
+                    System.out.println( " " + prefix.toStringRemovSeparator() );
+                }
+                else {
+                    System.out.println( " " + prefix );
+                }
             }
             if ( res.isHasSpecificMultiHitsPrefixes() ) {
                 System.out.println();
                 System.out.println( " Specific-hit(s):" );
                 for( final Prefix prefix : res.getSpecificMultiHitPrefixes() ) {
-                    System.out.println( " " + prefix );
+                    if ( remove_annotation_sep ) {
+                        System.out.println( " " + prefix.toStringRemovSeparator() );
+                    }
+                    else {
+                        System.out.println( " " + prefix );
+                    }
                 }
                 System.out.println();
                 System.out.println( " Matching Clade(s) with Specific-hit(s):" );
                 for( final Prefix prefix : res.getCollapsedMultiHitPrefixes() ) {
-                    System.out.println( " " + prefix );
+                    if ( remove_annotation_sep ) {
+                        System.out.println( " " + prefix.toStringRemovSeparator() );
+                    }
+                    else {
+                        System.out.println( " " + prefix );
+                    }
                     for( final Prefix spec : res.getSpecificMultiHitPrefixes() ) {
                         if ( spec.getPrefix().startsWith( prefix.getPrefix() ) ) {
-                            System.out.println( "     " + spec );
+                            if ( remove_annotation_sep ) {
+                                System.out.println( "     " + spec.toStringRemovSeparator() );
+                            }
+                            else {
+                                System.out.println( "     " + spec );
+                            }
                         }
                     }
                 }
@@ -405,14 +439,24 @@ public final class cladinator {
                 System.out.println();
                 System.out.println( " Matching Down-tree Bracketing Clade(s):" );
                 for( final Prefix prefix : res.getCollapsedMultiHitPrefixesDown() ) {
-                    System.out.println( " " + prefix );
+                    if ( remove_annotation_sep ) {
+                        System.out.println( " " + prefix.toStringRemovSeparator() );
+                    }
+                    else {
+                        System.out.println( " " + prefix );
+                    }
                 }
             }
             if ( !ForesterUtil.isEmpty( res.getAllMultiHitPrefixesUp() ) ) {
                 System.out.println();
                 System.out.println( " Matching Up-tree Bracketing Clade(s):" );
                 for( final Prefix prefix : res.getCollapsedMultiHitPrefixesUp() ) {
-                    System.out.println( " " + prefix );
+                    if ( remove_annotation_sep ) {
+                        System.out.println( " " + prefix.toStringRemovSeparator() );
+                    }
+                    else {
+                        System.out.println( " " + prefix );
+                    }
                 }
             }
             System.out.println();
@@ -422,7 +466,10 @@ public final class cladinator {
         System.out.println();
     }
 
-    private final static void writeResultToTable( final ResultMulti res, final EasyWriter w ) throws IOException {
+    private final static void writeResultToTable( final ResultMulti res,
+                                                  final EasyWriter w,
+                                                  final boolean remove_annotation_sep )
+            throws IOException {
         if ( ( res.getAllMultiHitPrefixes() == null ) | ( res.getAllMultiHitPrefixes().size() < 1 ) ) {
             w.print( res.getQueryNamePrefix() );
             w.print( "\t" );
@@ -434,7 +481,12 @@ public final class cladinator {
                 w.print( "\t" );
                 w.print( "Matching Clades" );
                 w.print( "\t" );
-                w.print( prefix.getPrefix() );
+                if ( remove_annotation_sep ) {
+                    w.print( prefix.getPrefixRemovSeparator() );
+                }
+                else {
+                    w.print( prefix.getPrefix() );
+                }
                 w.print( "\t" );
                 w.print( df.format( prefix.getConfidence() ) );
                 w.print( "\t" );
@@ -449,7 +501,12 @@ public final class cladinator {
                     w.print( "\t" );
                     w.print( "Specific-hits" );
                     w.print( "\t" );
-                    w.print( prefix.getPrefix() );
+                    if ( remove_annotation_sep ) {
+                        w.print( prefix.getPrefixRemovSeparator() );
+                    }
+                    else {
+                        w.print( prefix.getPrefix() );
+                    }
                     w.print( "\t" );
                     w.print( df.format( prefix.getConfidence() ) );
                     w.print( "\t" );
@@ -465,7 +522,12 @@ public final class cladinator {
                     w.print( "\t" );
                     w.print( "Matching Down-tree Bracketing Clades" );
                     w.print( "\t" );
-                    w.print( prefix.getPrefix() );
+                    if ( remove_annotation_sep ) {
+                        w.print( prefix.getPrefixRemovSeparator() );
+                    }
+                    else {
+                        w.print( prefix.getPrefix() );
+                    }
                     w.print( "\t" );
                     w.print( df.format( prefix.getConfidence() ) );
                     w.print( "\t" );
@@ -481,7 +543,12 @@ public final class cladinator {
                     w.print( "\t" );
                     w.print( "Matching Up-tree Bracketing Clades" );
                     w.print( "\t" );
-                    w.print( prefix.getPrefix() );
+                    if ( remove_annotation_sep ) {
+                        w.print( prefix.getPrefixRemovSeparator() );
+                    }
+                    else {
+                        w.print( prefix.getPrefix() );
+                    }
                     w.print( "\t" );
                     w.print( df.format( prefix.getConfidence() ) );
                     w.print( "\t" );
@@ -516,6 +583,8 @@ public final class cladinator {
                 + "                : to keep extra annotations (e.g. \"Q16611|A.1.1\" becomes \"A.1.1.Q16611\")" );
         System.out.println( "  -" + SPECIAL_PROCESSING_OPTION
                 + "=<pattern>       : special processing with pattern (e.g. \"(\\d+)([a-z]+)_.+\" for changing \"6q_EF42\" to \"6.q\")" );
+        System.out.println( "  -" + REMOVE_ANNOT_SEP_OPTION
+                + "                : to remove the annotation-separator in the output" );
         System.out.println( "  -" + VERBOSE_OPTION + "                 : verbose" );
         System.out.println( "  -" + QUIET_OPTION + "                 : quiet (for when used in a pipeline)" );
         System.out.println( "  --" + QUERY_PATTERN_OPTION
