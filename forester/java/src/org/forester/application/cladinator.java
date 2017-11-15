@@ -52,8 +52,8 @@ import org.forester.util.UserException;
 public final class cladinator {
 
     final static private String        PRG_NAME                             = "cladinator";
-    final static private String        PRG_VERSION                          = "1.06";
-    final static private String        PRG_DATE                             = "171115";
+    final static private String        PRG_VERSION                          = "1.07";
+    final static private String        PRG_DATE                             = "1711xx";
     final static private String        PRG_DESC                             = "clades within clades of annotated labels -- analysis of pplacer-type outputs";
     final static private String        E_MAIL                               = "phyloxml@gmail.com";
     final static private String        WWW                                  = "https://sites.google.com/site/cmzmasek/home/software/forester";
@@ -70,7 +70,7 @@ public final class cladinator {
     final static private String        SPECIAL_PROCESSING_OPTION            = "S";
     final static private String        VERBOSE_OPTION                       = "v";
     final static private String        REMOVE_ANNOT_SEP_OPTION              = "rs";
-    final static private double        SPECIFICS_CUTOFF_DEFAULT             = 0.8;
+    final static private double        SPECIFICS_CUTOFF_DEFAULT             = 0.7;
     final static private String        SEP_DEFAULT                          = ".";
     final static private Pattern       QUERY_PATTERN_DEFAULT                = AnalysisMulti.DEFAULT_QUERY_PATTERN_FOR_PPLACER_TYPE;
     final static private String        EXTRA_PROCESSING1_SEP_DEFAULT        = "|";
@@ -570,8 +570,8 @@ public final class cladinator {
         System.out.println( "  -" + SPECIFICS_CUTOFF_OPTION
                 + "=<double>        : the minimal confidence value for \"specific-hits\" to be reported (default: "
                 + SPECIFICS_CUTOFF_DEFAULT + ")" );
-        System.out.println( "  -" + SEP_OPTION + "=<separator>     : the annotation-separator to be used (default: "
-                + SEP_DEFAULT + ")" );
+        System.out.println( "  -" + SEP_OPTION + "=<separator>     : the annotation-separator to be used (default: \""
+                + SEP_DEFAULT + "\")" );
         System.out.println( "  -" + MAPPING_FILE_OPTION
                 + "=<mapping table> : to map node names to appropriate annotations (tab-separated, two columns) (default: no mapping)" );
         System.out.println( "  -" + EXTRA_PROCESSING_OPTION1
@@ -584,12 +584,14 @@ public final class cladinator {
         System.out.println( "  -" + SPECIAL_PROCESSING_OPTION
                 + "=<pattern>       : special processing with pattern (e.g. \"(\\d+)([a-z]+)_.+\" for changing \"6q_EF42\" to \"6.q\")" );
         System.out.println( "  -" + REMOVE_ANNOT_SEP_OPTION
-                + "                : to remove the annotation-separator in the output" );
+                + "                : to remove the annotation-separator in the output (e.g. the \"" + SEP_DEFAULT
+                + "\")" );
         System.out.println( "  -" + VERBOSE_OPTION + "                 : verbose" );
-        System.out.println( "  -" + QUIET_OPTION + "                 : quiet (for when used in a pipeline)" );
+        System.out.println( "  -" + QUIET_OPTION
+                + "                 : quiet (no output to console, for when used in a pipeline)" );
         System.out.println( "  --" + QUERY_PATTERN_OPTION
-                + "=<pattern>      : the regular expression pattern for the query (default: \"" + QUERY_PATTERN_DEFAULT
-                + "\" for pplacer output)" );
+                + "=<pattern>      : expert option: the regular expression pattern for the query (default: \""
+                + QUERY_PATTERN_DEFAULT + "\" for pplacer output)" );
         System.out.println();
         System.out.println( "Examples:" );
         System.out.println();
