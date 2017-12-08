@@ -343,17 +343,6 @@ public final class GSDI implements GSDII {
                 }
             }
         }
-        else if ( ForesterUtil.isEmpty( g.getName() ) && !ForesterUtil.isEmpty( s.getName() ) ) {
-            g.setName( s.getName() );
-            if ( g.isInternal() ) {
-                if ( g.getChildNode1().isInternal() && ( g.getChildNode1().getName() == s.getName() ) ) {
-                    g.getChildNode1().setName( "" );
-                }
-                if ( g.getChildNode2().isInternal() && ( g.getChildNode2().getName() == s.getName() ) ) {
-                    g.getChildNode2().setName( "" );
-                }
-            }
-        }
     }
 
     private final static void addScientificNamesMappedToReducedSpecificity( final String s1,
