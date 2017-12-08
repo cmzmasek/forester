@@ -432,7 +432,6 @@ public final class MainFrameApplication extends MainFrame {
                 }
                 collapseBelowThreshold();
             }
-           
             else if ( o == _collapse_below_branch_length ) {
                 if ( isSubtreeDisplayed() ) {
                     return;
@@ -760,17 +759,16 @@ public final class MainFrameApplication extends MainFrame {
                         l.add( d );
                     }
                     if ( !l.isEmpty() ) {
-                       
                         node.getNodeData().setVector( l );
                     }
                 }
             }
             if ( not_found > 0 ) {
-                JOptionPane
-                        .showMessageDialog( this,
-                                            "Could not fine expression values for " + not_found + " external node(s)",
-                                            "Warning",
-                                            JOptionPane.WARNING_MESSAGE );
+                JOptionPane.showMessageDialog( this,
+                                               "Could not fine expression values for " + not_found
+                                                       + " external node(s)",
+                                               "Warning",
+                                               JOptionPane.WARNING_MESSAGE );
             }
             getCurrentTreePanel().setStatisticsForExpressionValues( stats );
         }
@@ -1044,13 +1042,14 @@ public final class MainFrameApplication extends MainFrame {
         if ( getCurrentTreePanel() != null ) {
             final Phylogeny phy = getCurrentTreePanel().getPhylogeny();
             if ( ( phy != null ) && !phy.isEmpty() ) {
-                final String s = ( String ) JOptionPane.showInputDialog( this,
-                                                                         "Please enter the minimum branch length value\n",
-                                                                         "Minimal Branch Length Value",
-                                                                         JOptionPane.QUESTION_MESSAGE,
-                                                                         null,
-                                                                         null,
-                                                                         getMinNotCollapseBlValue() );
+                final String s = ( String ) JOptionPane
+                        .showInputDialog( this,
+                                          "Please enter the minimum branch length value\n",
+                                          "Minimal Branch Length Value",
+                                          JOptionPane.QUESTION_MESSAGE,
+                                          null,
+                                          null,
+                                          getMinNotCollapseBlValue() );
                 if ( !ForesterUtil.isEmpty( s ) ) {
                     boolean success = true;
                     double m = 0.0;
@@ -1280,12 +1279,13 @@ public final class MainFrameApplication extends MainFrame {
                                                            : JOptionPane.INFORMATION_MESSAGE );
                 }
                 else {
-                    JOptionPane.showMessageDialog( this,
-                                                   "Could not extract any taxonomic data.\nMaybe node names are empty\n"
-                                                           + "or not in the forms \"XYZ_CAEEL\", \"XYZ_6239\", or \"XYZ_Caenorhabditis_elegans\"\n"
-                                                           + "or nodes already have taxonomic data?\n",
-                                                   "No Taxonomic Data Extracted",
-                                                   JOptionPane.ERROR_MESSAGE );
+                    JOptionPane
+                            .showMessageDialog( this,
+                                                "Could not extract any taxonomic data.\nMaybe node names are empty\n"
+                                                        + "or not in the forms \"XYZ_CAEEL\", \"XYZ_6239\", or \"XYZ_Caenorhabditis_elegans\"\n"
+                                                        + "or nodes already have taxonomic data?\n",
+                                                "No Taxonomic Data Extracted",
+                                                JOptionPane.ERROR_MESSAGE );
                 }
             }
         }
@@ -1320,9 +1320,8 @@ public final class MainFrameApplication extends MainFrame {
         if ( getCurrentTreePanel() != null ) {
             final Phylogeny phy = getCurrentTreePanel().getPhylogeny();
             if ( ( phy != null ) && !phy.isEmpty() ) {
-                PhylogenyMethods.transferNodeNameToField( phy,
-                                                          PhylogenyMethods.PhylogenyNodeField.SEQUENCE_NAME,
-                                                          false );
+                PhylogenyMethods
+                        .transferNodeNameToField( phy, PhylogenyMethods.PhylogenyNodeField.SEQUENCE_NAME, false );
             }
         }
     }
@@ -1349,9 +1348,7 @@ public final class MainFrameApplication extends MainFrame {
         _mainpanel.getControlPanel().showWhole();
         _mainpanel.getCurrentTreePanel().setPhylogenyGraphicsType( PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
         _mainpanel.getOptions().setPhylogenyGraphicsType( PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
-       
         getMainPanel().getMainFrame().setSelectedTypeInTypeMenu( PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
-       
         activateSaveAllIfNeeded();
         System.gc();
     }
@@ -1544,12 +1541,13 @@ public final class MainFrameApplication extends MainFrame {
                                                        getMainPanel() );
                         _mainpanel.getControlPanel().showWhole();
                         if ( nhx_or_nexus && one_desc ) {
-                            JOptionPane.showMessageDialog( this,
-                                                           "One or more trees contain (a) node(s) with one descendant, "
-                                                                   + ForesterUtil.LINE_SEPARATOR
-                                                                   + "possibly indicating illegal parentheses within node names.",
-                                                           "Warning: Possible Error in New Hampshire Formatted Data",
-                                                           JOptionPane.WARNING_MESSAGE );
+                            JOptionPane
+                                    .showMessageDialog( this,
+                                                        "One or more trees contain (a) node(s) with one descendant, "
+                                                                + ForesterUtil.LINE_SEPARATOR
+                                                                + "possibly indicating illegal parentheses within node names.",
+                                                        "Warning: Possible Error in New Hampshire Formatted Data",
+                                                        JOptionPane.WARNING_MESSAGE );
                         }
                     }
                 }
@@ -1570,38 +1568,13 @@ public final class MainFrameApplication extends MainFrame {
         final int result = _open_filechooser_for_species_tree.showOpenDialog( _contentpane );
         final File file = _open_filechooser_for_species_tree.getSelectedFile();
         if ( ( file != null ) && ( result == JFileChooser.APPROVE_OPTION ) ) {
-            if ( _open_filechooser_for_species_tree.getFileFilter() == MainFrame.xmlfilter ) {
-                try {
-                    final Phylogeny[] trees = PhylogenyMethods
-                            .readPhylogenies( PhyloXmlParser.createPhyloXmlParserXsdValidating(), file );
-                    t = trees[ 0 ];
-                }
-                catch ( final Exception e ) {
-                    exception = true;
-                    exceptionOccuredDuringOpenFile( e );
-                }
+            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+            try {
+                t = factory.create( file, ParserUtils.createParserDependingOnFileType( file, true ) )[ 0 ];
             }
-            else if ( _open_filechooser_for_species_tree.getFileFilter() == MainFrame.tolfilter ) {
-                try {
-                    final Phylogeny[] trees = PhylogenyMethods.readPhylogenies( new TolParser(), file );
-                    t = trees[ 0 ];
-                }
-                catch ( final Exception e ) {
-                    exception = true;
-                    exceptionOccuredDuringOpenFile( e );
-                }
-            }
-            // "*.*":
-            else {
-                try {
-                    final Phylogeny[] trees = PhylogenyMethods
-                            .readPhylogenies( PhyloXmlParser.createPhyloXmlParserXsdValidating(), file );
-                    t = trees[ 0 ];
-                }
-                catch ( final Exception e ) {
-                    exception = true;
-                    exceptionOccuredDuringOpenFile( e );
-                }
+            catch ( final Exception e ) {
+                exception = true;
+                exceptionOccuredDuringOpenFile( e );
             }
             if ( !exception && ( t != null ) && !t.isRooted() ) {
                 exception = true;
@@ -1618,10 +1591,11 @@ public final class MainFrameApplication extends MainFrame {
                     if ( !node.getNodeData().isHasTaxonomy() ) {
                         exception = true;
                         t = null;
-                        JOptionPane.showMessageDialog( this,
-                                                       "Species tree contains external node(s) without taxonomy information",
-                                                       "Species tree not loaded",
-                                                       JOptionPane.ERROR_MESSAGE );
+                        JOptionPane
+                                .showMessageDialog( this,
+                                                    "Species tree contains external node(s) without taxonomy information",
+                                                    "Species tree not loaded",
+                                                    JOptionPane.ERROR_MESSAGE );
                         break;
                     }
                     else {
@@ -1810,7 +1784,7 @@ public final class MainFrameApplication extends MainFrame {
         _options_jmenu.add( _non_lined_up_cladograms_rbmi = new JRadioButtonMenuItem( NON_LINED_UP_CLADOGRAMS_LABEL ) );
         _radio_group_1 = new ButtonGroup();
         _radio_group_1.add( _ext_node_dependent_cladogram_rbmi );
-         _radio_group_1.add( _non_lined_up_cladograms_rbmi );
+        _radio_group_1.add( _non_lined_up_cladograms_rbmi );
         _options_jmenu.add( _show_overview_cbmi = new JCheckBoxMenuItem( SHOW_OVERVIEW_LABEL ) );
         _options_jmenu.add( _show_scale_cbmi = new JCheckBoxMenuItem( DISPLAY_SCALE_LABEL ) );
         _options_jmenu
@@ -1819,21 +1793,12 @@ public final class MainFrameApplication extends MainFrame {
                 .add( _show_default_node_shapes_external_cbmi = new JCheckBoxMenuItem( DISPLAY_NODE_BOXES_LABEL_EXT ) );
         _options_jmenu
                 .add( _show_default_node_shapes_for_marked_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_NODE_BOXES_LABEL_MARKED ) );
-      
         _options_jmenu
-        .add( _collapsed_with_average_height_cbmi = new JCheckBoxMenuItem( "Proportional Height of Collapsed Subtrees" ) );
-
-        
+                .add( _collapsed_with_average_height_cbmi = new JCheckBoxMenuItem( "Proportional Height of Collapsed Subtrees" ) );
         _options_jmenu
-        .add( _show_abbreviated_labels_for_collapsed_nodes_cbmi = new JCheckBoxMenuItem( "Add Abbreviated Labels to Collapsed Subtrees" ) );
-
-     
-        
+                .add( _show_abbreviated_labels_for_collapsed_nodes_cbmi = new JCheckBoxMenuItem( "Add Abbreviated Labels to Collapsed Subtrees" ) );
         _options_jmenu
                 .add( _line_up_renderable_data_cbmi = new JCheckBoxMenuItem( MainFrame.LINE_UP_RENDERABLE_DATA ) );
-        
-       
-        
         if ( getConfiguration().doDisplayOption( Configuration.show_domain_architectures ) ) {
             _options_jmenu
                     .add( _right_line_up_domains_cbmi = new JCheckBoxMenuItem( MainFrame.RIGHT_LINE_UP_DOMAINS ) );
@@ -1937,8 +1902,8 @@ public final class MainFrameApplication extends MainFrame {
         customizeCheckBoxMenuItem( _search_case_senstive_cbmi, getOptions().isSearchCaseSensitive() );
         customizeCheckBoxMenuItem( _show_scale_cbmi, getOptions().isShowScale() );
         customizeCheckBoxMenuItem( _collapsed_with_average_height_cbmi, getOptions().isCollapsedWithAverageHeigh() );
-        customizeCheckBoxMenuItem( _show_abbreviated_labels_for_collapsed_nodes_cbmi, getOptions().isShowAbbreviatedLabelsForCollapsedNodes() );
-        
+        customizeCheckBoxMenuItem( _show_abbreviated_labels_for_collapsed_nodes_cbmi,
+                                   getOptions().isShowAbbreviatedLabelsForCollapsedNodes() );
         customizeRadioButtonMenuItem( _non_lined_up_cladograms_rbmi,
                                       getOptions().getCladogramType() == CLADOGRAM_TYPE.NON_LINED_UP );
         customizeRadioButtonMenuItem( _ext_node_dependent_cladogram_rbmi,
@@ -2035,7 +2000,8 @@ public final class MainFrameApplication extends MainFrame {
         _tools_menu.addSeparator();
         _tools_menu.add( _collapse_species_specific_subtrees = new JMenuItem( "Collapse Single Taxonomy-Subtrees" ) );
         customizeJMenuItem( _collapse_species_specific_subtrees );
-        _collapse_species_specific_subtrees.setToolTipText( "To (reversibly) collapse subtrees associated with only one taxonomy (such as species specific subtrees)" );
+        _collapse_species_specific_subtrees
+                .setToolTipText( "To (reversibly) collapse subtrees associated with only one taxonomy (such as species specific subtrees)" );
         _tools_menu
                 .add( _collapse_below_threshold = new JMenuItem( "Collapse Branches with Confidence Below Threshold into Multifurcations" ) );
         customizeJMenuItem( _collapse_below_threshold );
@@ -2114,11 +2080,10 @@ public final class MainFrameApplication extends MainFrame {
         URL url = null;
         Phylogeny[] phys = null;
         final String message = "Please enter a complete URL, for example \"http://purl.org/phylo/treebase/phylows/study/TB2:S15480?format=nexus\"";
-        final String url_string = JOptionPane
-                .showInputDialog( this,
-                                  message,
-                                  "Use URL/webservice to obtain a phylogeny",
-                                  JOptionPane.QUESTION_MESSAGE );
+        final String url_string = JOptionPane.showInputDialog( this,
+                                                               message,
+                                                               "Use URL/webservice to obtain a phylogeny",
+                                                               JOptionPane.QUESTION_MESSAGE );
         boolean nhx_or_nexus = false;
         if ( ( url_string != null ) && ( url_string.length() > 0 ) ) {
             try {
@@ -2229,12 +2194,13 @@ public final class MainFrameApplication extends MainFrame {
 
     static void warnIfNotPhyloXmlValidation( final Configuration c ) {
         if ( !c.isValidatePhyloXmlAgainstSchema() ) {
-            JOptionPane.showMessageDialog( null,
-                                           ForesterUtil.wordWrap(
-                                                                  "phyloXML XSD-based validation is turned off [enable with line 'validate_against_phyloxml_xsd_schem: true' in configuration file]",
-                                                                  80 ),
-                                           "Warning",
-                                           JOptionPane.WARNING_MESSAGE );
+            JOptionPane
+                    .showMessageDialog( null,
+                                        ForesterUtil
+                                                .wordWrap( "phyloXML XSD-based validation is turned off [enable with line 'validate_against_phyloxml_xsd_schem: true' in configuration file]",
+                                                           80 ),
+                                        "Warning",
+                                        JOptionPane.WARNING_MESSAGE );
         }
     }
 } // MainFrameApplication.
