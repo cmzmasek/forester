@@ -36,7 +36,7 @@ import java.util.TreeSet;
 import org.forester.util.ForesterUtil;
 import org.forester.util.SequenceAccessionTools;
 
-class PrintableSpeciesSpecificDcData implements SpeciesSpecificDcData {
+class PrintableSpeciesSpecificDcData  {
 
     final SortedMap<String, Integer> _combinable_domain_id_to_count_map;
     final SortedSet<String>          _key_domain_proteins;
@@ -44,13 +44,13 @@ class PrintableSpeciesSpecificDcData implements SpeciesSpecificDcData {
     final private int                _key_domain_domains_count;
 
     public PrintableSpeciesSpecificDcData( final int key_domain_domains_count, final int combinable_domains ) {
-        _key_domain_proteins = new TreeSet<String>();
+        _key_domain_proteins = new TreeSet<>();
         _key_domain_domains_count = key_domain_domains_count;
         _combinable_domains_count = combinable_domains;
-        _combinable_domain_id_to_count_map = new TreeMap<String, Integer>();
+        _combinable_domain_id_to_count_map = new TreeMap<>();
     }
 
-    @Override
+  
     public void addKeyDomainProtein( final String protein ) {
         if ( ForesterUtil.isEmpty( protein ) ) {
             throw new IllegalArgumentException( "attempt to add null or empty protein" );
@@ -61,7 +61,7 @@ class PrintableSpeciesSpecificDcData implements SpeciesSpecificDcData {
         getKeyDomainProteins().add( protein );
     }
 
-    @Override
+ 
     public void addProteinsExhibitingCombinationCount( final String domain_id, final int count ) {
         if ( getCombinableDomainIdToCountsMap().containsKey( domain_id ) ) {
             throw new IllegalArgumentException( "Domain with id " + domain_id + " already exists" );
@@ -69,17 +69,17 @@ class PrintableSpeciesSpecificDcData implements SpeciesSpecificDcData {
         getCombinableDomainIdToCountsMap().put( domain_id, count );
     }
 
-    @Override
+ 
     public SortedMap<String, Integer> getCombinableDomainIdToCountsMap() {
         return _combinable_domain_id_to_count_map;
     }
 
-    @Override
+   
     public SortedSet<String> getKeyDomainProteins() {
         return _key_domain_proteins;
     }
 
-    @Override
+    
     public int getNumberOfProteinsExhibitingCombinationWith( final String domain_id ) {
         if ( !getCombinableDomainIdToCountsMap().containsKey( domain_id ) ) {
             throw new IllegalArgumentException( "Domain with id " + domain_id + " not found" );
@@ -87,14 +87,15 @@ class PrintableSpeciesSpecificDcData implements SpeciesSpecificDcData {
         return getCombinableDomainIdToCountsMap().get( domain_id );
     }
 
-    @Override
+    
     public String toString() {
         return toStringBuffer( DomainSimilarityCalculator.Detailedness.LIST_COMBINING_DOMAIN_FOR_EACH_SPECIES, false )
                 .toString();
     }
 
-    @Override
-    public StringBuffer toStringBuffer( final DomainSimilarityCalculator.Detailedness detailedness, final boolean html ) {
+   
+    public StringBuffer toStringBuffer( final DomainSimilarityCalculator.Detailedness detailedness,
+                                        final boolean html ) {
         final StringBuffer sb = new StringBuffer();
         if ( detailedness == DomainSimilarityCalculator.Detailedness.PUNCTILIOUS ) {
             if ( html ) {
@@ -118,7 +119,7 @@ class PrintableSpeciesSpecificDcData implements SpeciesSpecificDcData {
                 sb.append( "\t" );
             }
             sb.append( getCombinableDomainsCount() );
-            if ( html /*&& !getCombinableDomainIdToCountsMap().isEmpty()*/) {
+            if ( html /*&& !getCombinableDomainIdToCountsMap().isEmpty()*/ ) {
                 // sb.append( ":" );
                 sb.append( "</td><td>" );
             }
@@ -129,7 +130,7 @@ class PrintableSpeciesSpecificDcData implements SpeciesSpecificDcData {
                 sb.append( " " );
                 if ( html ) {
                     sb.append( "<a href=\"" + SurfacingConstants.PFAM_FAMILY_ID_LINK + domain_id + "\">" + domain_id
-                               + "</a>" );
+                            + "</a>" );
                 }
                 else {
                     sb.append( domain_id );
@@ -156,6 +157,22 @@ class PrintableSpeciesSpecificDcData implements SpeciesSpecificDcData {
         }
         return sb;
     }
+    
+    public StringBuffer getSeqIdsTabSeparated() {
+        final StringBuffer sb = new StringBuffer();
+        boolean first = true;
+        for( final String p : getKeyDomainProteins() ) {
+            final String id = obtainSeqId( p );
+            if ( first ) {
+                first = false;
+            }
+            else {
+                sb.append( "\t" );
+            }
+            sb.append( id );
+        }
+        return sb;
+    }
 
     private int getCombinableDomainsCount() {
         return _combinable_domains_count;
@@ -169,26 +186,52 @@ class PrintableSpeciesSpecificDcData implements SpeciesSpecificDcData {
         return _key_domain_proteins.size();
     }
 
+    private static String obtainSeqId( final String p ) {
+        final String up_id = SequenceAccessionTools.parseUniProtAccessorFromString( p );
+        if ( !ForesterUtil.isEmpty( up_id ) ) {
+            return up_id;
+        }
+        else {
+            final String gb_id = SequenceAccessionTools.parseGenbankProteinAccessorFromString( p );
+            if ( !ForesterUtil.isEmpty( gb_id ) ) {
+                return gb_id;
+            }
+            else {
+                final String gi = SequenceAccessionTools.parseGInumberFromString( p );
+                if ( !ForesterUtil.isEmpty( gi ) ) {
+                    return gi;
+                }
+                else {
+                    return p;
+                }
+            }
+        }
+    }
+
     private static String obtainSeqLink( final String p ) {
         String link;
         final String up_id = SequenceAccessionTools.parseUniProtAccessorFromString( p );
         if ( !ForesterUtil.isEmpty( up_id ) ) {
+           
             link = "<a class=\"pl\" href=\"" + ForesterUtil.UNIPROT_KB + up_id + "\" target=\"_up_window\">" + up_id
                     + "</a>";
         }
         else {
             final String gb_id = SequenceAccessionTools.parseGenbankProteinAccessorFromString( p );
             if ( !ForesterUtil.isEmpty( gb_id ) ) {
+              
                 link = "<a class=\"pl\" href=\"" + ForesterUtil.NCBI_PROTEIN + gb_id + "\" target=\"_up_window\">"
                         + gb_id + "</a>";
             }
             else {
                 final String gi = SequenceAccessionTools.parseGInumberFromString( p );
                 if ( !ForesterUtil.isEmpty( gi ) ) {
+                   
                     link = "<a class=\"pl\" href=\"" + ForesterUtil.NCBI_GI + gi + "\" target=\"_up_window\">gi|" + gi
                             + "</a>";
                 }
                 else {
+                   
                     link = "<a class=\"ps\" href=\"" + "http://www.google.com/search?q=" + p
                             + "\" target=\"_g_window\">" + p + "</a>";
                 }

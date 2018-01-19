@@ -33,14 +33,6 @@ public class CladeAnalysisTest {
             System.out.println( "Clade analysis 4 failed" );
             failed = true;
         }
-        if ( !testCladeAnalysis5() ) {
-            System.out.println( "Clade analysis 5 failed" );
-            failed = true;
-        }
-        if ( !testCladeAnalysis6() ) {
-            System.out.println( "Clade analysis 6 failed" );
-            failed = true;
-        }
         if ( !failed ) {
             System.out.println( "OK" );
         }
@@ -60,12 +52,6 @@ public class CladeAnalysisTest {
             return false;
         }
         if ( !testCladeAnalysis4() ) {
-            return false;
-        }
-        if ( !testCladeAnalysis5() ) {
-            return false;
-        }
-        if ( !testCladeAnalysis6() ) {
             return false;
         }
         return true;
@@ -745,40 +731,5 @@ public class CladeAnalysisTest {
         return true;
     }
 
-    private static boolean testCladeAnalysis5() {
-        try {
-            final File intreefile1 = new File( PATH_TO_TEST_DATA + "clade_analysis_test_3.xml" );
-            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            final PhylogenyParser pp = ParserUtils.createParserDependingOnFileType( intreefile1, true );
-            final Phylogeny p1 = factory.create( intreefile1, pp )[ 0 ];
-            final ResultMulti res = AnalysisMulti.execute( p1 );
-            res.analyze( 0.3 );
-            System.out.print( res.toString() );
-            System.out.println( "------------------------- " );
-            System.out.println();
-        }
-        catch ( final Exception e ) {
-            e.printStackTrace( System.out );
-            return false;
-        }
-        return true;
-    }
-
-    private static boolean testCladeAnalysis6() {
-        try {
-            final File intreefile1 = new File( PATH_TO_TEST_DATA + "clade_analysis_test_4.xml" );
-            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            final PhylogenyParser pp = ParserUtils.createParserDependingOnFileType( intreefile1, true );
-            final Phylogeny p1 = factory.create( intreefile1, pp )[ 0 ];
-            final ResultMulti res = AnalysisMulti.execute( p1, 0.45 );
-            System.out.print( res.toString() );
-            System.out.println( "------------------------- " );
-            System.out.println();
-        }
-        catch ( final Exception e ) {
-            e.printStackTrace( System.out );
-            return false;
-        }
-        return true;
-    }
+  
 }

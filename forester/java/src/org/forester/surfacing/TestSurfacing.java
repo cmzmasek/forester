@@ -556,7 +556,7 @@ public class TestSurfacing {
             if ( !sa3.getDomainId().equals( "A" ) ) {
                 return false;
             }
-            final SpeciesSpecificDcData ssdsd = sa3.getSpeciesData().get( new BasicSpecies( "ciona" ) );
+            final PrintableSpeciesSpecificDcData ssdsd = sa3.getSpeciesData().get( new BasicSpecies( "ciona" ) );
             if ( ssdsd.getCombinableDomainIdToCountsMap().size() != 4 ) {
                 return false;
             }
@@ -600,7 +600,7 @@ public class TestSurfacing {
             if ( !sa4.getDomainId().equals( "A" ) ) {
                 return false;
             }
-            final SpeciesSpecificDcData ssdsd4 = sa4.getSpeciesData().get( new BasicSpecies( "ciona" ) );
+            final PrintableSpeciesSpecificDcData ssdsd4 = sa4.getSpeciesData().get( new BasicSpecies( "ciona" ) );
             if ( ssdsd4.getCombinableDomainIdToCountsMap().size() != 5 ) {
                 return false;
             }
@@ -708,7 +708,7 @@ public class TestSurfacing {
             if ( !sa5_d.getSpecies().last().equals( new BasicSpecies( "rabbit" ) ) ) {
                 return false;
             }
-            final SpeciesSpecificDcData ssdsd5 = sa5_d.getSpeciesData().get( new BasicSpecies( "ciona" ) );
+            final PrintableSpeciesSpecificDcData ssdsd5 = sa5_d.getSpeciesData().get( new BasicSpecies( "ciona" ) );
             if ( ssdsd5.getCombinableDomainIdToCountsMap().size() != 4 ) {
                 return false;
             }
@@ -843,7 +843,7 @@ public class TestSurfacing {
             if ( !sa6_d.getSpecies().last().equals( new BasicSpecies( "rabbit" ) ) ) {
                 return false;
             }
-            final SpeciesSpecificDcData ssdsd6 = sa6_d.getSpeciesData().get( new BasicSpecies( "ciona" ) );
+            final PrintableSpeciesSpecificDcData ssdsd6 = sa6_d.getSpeciesData().get( new BasicSpecies( "ciona" ) );
             if ( ssdsd6.getCombinableDomainIdToCountsMap().size() != 5 ) {
                 return false;
             }

@@ -206,6 +206,7 @@ public class PairwiseGenomeComparator {
                                                                      null,
                                                                      writer,
                                                                      null,
+                                                                     null,
                                                                      similarities,
                                                                      true,
                                                                      null,

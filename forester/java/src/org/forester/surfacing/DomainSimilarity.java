@@ -46,22 +46,22 @@ import org.forester.util.ForesterUtil;
 
 public class DomainSimilarity implements Comparable<DomainSimilarity> {
 
-    final public static String                              SPECIES_SEPARATOR          = "  ";
-    final private static int                                EQUAL                      = 0;
-    final private static String                             NO_SPECIES                 = "     ";
-    private static final boolean                            OUTPUT_TAXCODES_PER_DOMAIN = false;
-    final private CombinableDomains                         _combinable_domains;
-    private DomainSimilarityCalculator.Detailedness         _detailedness;
-    final private double                                    _max;
-    private final int                                       _max_difference;
-    private final int                                       _max_difference_in_counts;
-    final private double                                    _mean;
-    final private double                                    _min;
-    final private int                                       _n;
-    final private double                                    _sd;
-    final private SortedMap<Species, SpeciesSpecificDcData> _species_data;
-    private List<Species>                                   _species_order;
-    private final boolean                                   _treat_as_binary_comparison;
+    final public static String                                       SPECIES_SEPARATOR          = "  ";
+    final private static int                                         EQUAL                      = 0;
+    final private static String                                      NO_SPECIES                 = "     ";
+    private static final boolean                                     OUTPUT_TAXCODES_PER_DOMAIN = false;
+    final private CombinableDomains                                  _combinable_domains;
+    private DomainSimilarityCalculator.Detailedness                  _detailedness;
+    final private double                                             _max;
+    private final int                                                _max_difference;
+    private final int                                                _max_difference_in_counts;
+    final private double                                             _mean;
+    final private double                                             _min;
+    final private int                                                _n;
+    final private double                                             _sd;
+    final private SortedMap<Species, PrintableSpeciesSpecificDcData> _species_data;
+    private List<Species>                                            _species_order;
+    private final boolean                                            _treat_as_binary_comparison;
 
     public DomainSimilarity( final CombinableDomains combinable_domains,
                              final double min,
@@ -72,7 +72,7 @@ public class DomainSimilarity implements Comparable<DomainSimilarity> {
                              final int n,
                              final int max_difference_in_counts,
                              final int max_difference,
-                             final SortedMap<Species, SpeciesSpecificDcData> species_data,
+                             final SortedMap<Species, PrintableSpeciesSpecificDcData> species_data,
                              final boolean sort_by_species_count_first,
                              final boolean treat_as_binary_comparison ) {
         if ( combinable_domains == null ) {
@@ -110,7 +110,7 @@ public class DomainSimilarity implements Comparable<DomainSimilarity> {
         final int s = species_data.size();
         if ( ( ( s * s ) - s ) != ( getN() * 2 ) ) {
             throw new IllegalArgumentException( "illegal species count and n: species count:" + s + ", n:" + _n
-                                                + " for domain " + combinable_domains.getKeyDomain() );
+                    + " for domain " + combinable_domains.getKeyDomain() );
         }
         if ( s > 2 ) {
             if ( getMaximalDifferenceInCounts() < 0 ) {
@@ -125,7 +125,7 @@ public class DomainSimilarity implements Comparable<DomainSimilarity> {
     public DomainSimilarity( final CombinableDomains combinable_domains,
                              final int max_difference_in_counts,
                              final int max_difference,
-                             final SortedMap<Species, SpeciesSpecificDcData> species_data,
+                             final SortedMap<Species, PrintableSpeciesSpecificDcData> species_data,
                              final boolean sort_by_species_count_first,
                              final boolean treat_as_binary_comparison ) {
         if ( combinable_domains == null ) {
@@ -175,7 +175,7 @@ public class DomainSimilarity implements Comparable<DomainSimilarity> {
     }
 
     public SortedSet<String> getCombinableDomainIds( final Species species_of_combinable_domain ) {
-        final SortedSet<String> sorted_ids = new TreeSet<String>();
+        final SortedSet<String> sorted_ids = new TreeSet<>();
         if ( getSpeciesData().containsKey( species_of_combinable_domain ) ) {
             for( final String id : getSpeciesData().get( species_of_combinable_domain )
                     .getCombinableDomainIdToCountsMap().keySet() ) {
@@ -236,7 +236,7 @@ public class DomainSimilarity implements Comparable<DomainSimilarity> {
     }
 
     public SortedSet<Species> getSpecies() {
-        final SortedSet<Species> species = new TreeSet<Species>();
+        final SortedSet<Species> species = new TreeSet<>();
         for( final Species s : getSpeciesData().keySet() ) {
             species.add( s );
         }
@@ -254,7 +254,7 @@ public class DomainSimilarity implements Comparable<DomainSimilarity> {
      *
      * @return SortedMap<String, SpeciesSpecificDomainSimilariyData>
      */
-    public SortedMap<Species, SpeciesSpecificDcData> getSpeciesData() {
+    public SortedMap<Species, PrintableSpeciesSpecificDcData> getSpeciesData() {
         return _species_data;
     }
 
@@ -286,6 +286,25 @@ public class DomainSimilarity implements Comparable<DomainSimilarity> {
         }
     }
 
+    public StringBuffer getSpeciesAndSeqIdsAsStringBuffer( final String domain_id ) {
+        final StringBuffer sb = new StringBuffer();
+        boolean first = true;
+        for( final Species species : getSpeciesData().keySet() ) {
+            sb.append( domain_id );
+            sb.append( "\t" );
+            sb.append( species.getSpeciesId() );
+            sb.append( "\t" );
+            sb.append( getSpeciesData().get( species ).getSeqIdsTabSeparated() );
+            if ( first ) {
+                first = false;
+            }
+            else {
+                sb.append( SurfacingConstants.NL);
+            }
+        }
+        return sb;
+    }
+
     private void addSpeciesSpecificDomainData( final StringBuffer sb,
                                                final Species species,
                                                final boolean html,
@@ -310,7 +329,6 @@ public class DomainSimilarity implements Comparable<DomainSimilarity> {
             sb.append( getSpeciesData().get( species ).toStringBuffer( getDetaildness(), html ) );
         }
         if ( html ) {
-            //sb.append( "<br>" );
             sb.append( "</tr>" );
         }
         else {
@@ -367,7 +385,7 @@ public class DomainSimilarity implements Comparable<DomainSimilarity> {
     }
 
     private StringBuffer getDomainDataInAlphabeticalOrder() {
-        final SortedMap<String, SortedSet<String>> m = new TreeMap<String, SortedSet<String>>();
+        final SortedMap<String, SortedSet<String>> m = new TreeMap<>();
         final StringBuffer sb = new StringBuffer();
         for( final Species species : getSpeciesData().keySet() ) {
             for( final String combable_dom : getCombinableDomainIds( species ) ) {
@@ -378,7 +396,8 @@ public class DomainSimilarity implements Comparable<DomainSimilarity> {
             }
         }
         for( final Map.Entry<String, SortedSet<String>> e : m.entrySet() ) {
-            sb.append( "<a href=\"" + SurfacingConstants.PFAM_FAMILY_ID_LINK + e.getKey() + "\">" + e.getKey() + "</a>" );
+            sb.append( "<a href=\"" + SurfacingConstants.PFAM_FAMILY_ID_LINK + e.getKey() + "\">" + e.getKey()
+                    + "</a>" );
             sb.append( " " );
             sb.append( "<span style=\"font-size:7px\">" );
             for( final String tax : e.getValue() ) {
@@ -405,13 +424,13 @@ public class DomainSimilarity implements Comparable<DomainSimilarity> {
                                                             final Map<String, Integer> tax_code_to_id_map,
                                                             final Phylogeny phy ) {
         final StringBuffer sb = new StringBuffer();
-        if (html) {
+        if ( html ) {
             sb.append( "<table>" );
         }
         for( final Species species : getSpeciesData().keySet() ) {
             addSpeciesSpecificDomainData( sb, species, html, tax_code_to_id_map, phy );
         }
-        if (html) {
+        if ( html ) {
             sb.append( "</table>" );
         }
         return sb;
@@ -434,7 +453,7 @@ public class DomainSimilarity implements Comparable<DomainSimilarity> {
     }
 
     private StringBuffer getTaxonomyGroupDistribution( final Phylogeny tol ) {
-        final SortedMap<String, Set<String>> domain_to_species_set_map = new TreeMap<String, Set<String>>();
+        final SortedMap<String, Set<String>> domain_to_species_set_map = new TreeMap<>();
         for( final Species species : getSpeciesData().keySet() ) {
             for( final String combable_dom : getCombinableDomainIds( species ) ) {
                 if ( !domain_to_species_set_map.containsKey( combable_dom ) ) {
@@ -446,7 +465,7 @@ public class DomainSimilarity implements Comparable<DomainSimilarity> {
         final StringBuffer sb = new StringBuffer();
         sb.append( "<table>" );
         for( final Map.Entry<String, Set<String>> domain_to_species_set : domain_to_species_set_map.entrySet() ) {
-            final Map<String, Integer> counts = new HashMap<String, Integer>();
+            final Map<String, Integer> counts = new HashMap<>();
             for( final String tax_code : domain_to_species_set.getValue() ) {
                 final String group = SurfacingUtil.obtainTaxonomyGroup( tax_code, tol );
                 if ( !ForesterUtil.isEmpty( group ) ) {
@@ -461,7 +480,7 @@ public class DomainSimilarity implements Comparable<DomainSimilarity> {
                     return null;
                 }
             }
-            final SortedMap<Integer, SortedSet<String>> counts_to_groups = new TreeMap<Integer, SortedSet<String>>( new Comparator<Integer>() {
+            final SortedMap<Integer, SortedSet<String>> counts_to_groups = new TreeMap<>( new Comparator<Integer>() {
 
                 @Override
                 public int compare( final Integer first, final Integer second ) {
@@ -500,10 +519,8 @@ public class DomainSimilarity implements Comparable<DomainSimilarity> {
                     if ( color == null ) {
                         throw new IllegalArgumentException( "no color found for taxonomy group\"" + group + "\"" );
                     }
-                    final String hex = String.format( "#%02x%02x%02x",
-                                                      color.getRed(),
-                                                      color.getGreen(),
-                                                      color.getBlue() );
+                    final String hex = String
+                            .format( "#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue() );
                     sb.append( "<span style=\"color:" );
                     sb.append( hex );
                     sb.append( "\">" );
@@ -542,7 +559,7 @@ public class DomainSimilarity implements Comparable<DomainSimilarity> {
         sb.append( "</td>" );
         sb.append( "<td>" );
         sb.append( "<a href=\"" + SurfacingConstants.GOOGLE_SCHOLAR_SEARCH + getDomainId()
-                   + "\" target=\"gs_window\">gs</a>" );
+                + "\" target=\"gs_window\">gs</a>" );
         sb.append( "</td>" );
         if ( getMaximalSimilarityScore() > 0 ) {
             sb.append( "<td>" );
@@ -615,15 +632,26 @@ public class DomainSimilarity implements Comparable<DomainSimilarity> {
     }
 
     static public enum DomainSimilarityScoring {
-        COMBINATIONS, DOMAINS, PROTEINS;
+                                                COMBINATIONS,
+                                                DOMAINS,
+                                                PROTEINS;
     }
 
     public static enum DomainSimilaritySortField {
-        ABS_MAX_COUNTS_DIFFERENCE, DOMAIN_ID, MAX, MAX_COUNTS_DIFFERENCE, MAX_DIFFERENCE, MEAN, MIN, SD, SPECIES_COUNT,
+                                                  ABS_MAX_COUNTS_DIFFERENCE,
+                                                  DOMAIN_ID,
+                                                  MAX,
+                                                  MAX_COUNTS_DIFFERENCE,
+                                                  MAX_DIFFERENCE,
+                                                  MEAN,
+                                                  MIN,
+                                                  SD,
+                                                  SPECIES_COUNT,
     }
 
     public static enum PRINT_OPTION {
-        HTML, SIMPLE_TAB_DELIMITED;
+                                     HTML,
+                                     SIMPLE_TAB_DELIMITED;
     }
 
     class ValueComparator implements Comparator<String> {
