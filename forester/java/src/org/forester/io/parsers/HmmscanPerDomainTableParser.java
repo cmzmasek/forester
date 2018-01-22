@@ -426,7 +426,7 @@ public final class HmmscanPerDomainTableParser {
                         throw new IOException( "more than one protein named [" + query + "]" );
                     }
                 }
-                final String fail_query = prev_query; //TODO
+                final String fail_query = prev_query;
                 prev_query = query;
                 prev_qlen = qlen;
                 prev_queries.add( query );
@@ -434,7 +434,7 @@ public final class HmmscanPerDomainTableParser {
                     addProtein( proteins, current_protein );
                 }
                 else  {
-                    System.out.println(fail_query ); //TODO
+                    System.out.println("No domains in: " + fail_query ); //TODO
                 }
                 if ( getReturnType() == ReturnType.UNORDERED_PROTEIN_DOMAIN_COLLECTION_PER_PROTEIN ) {
                     current_protein = new BasicProtein( query, getSpecies(), qlen );

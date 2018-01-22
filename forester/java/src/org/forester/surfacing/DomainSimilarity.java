@@ -299,7 +299,7 @@ public class DomainSimilarity implements Comparable<DomainSimilarity> {
                 first = false;
             }
             else {
-                sb.append( SurfacingConstants.NL);
+                sb.append( SurfacingConstants.NL );
             }
         }
         return sb;

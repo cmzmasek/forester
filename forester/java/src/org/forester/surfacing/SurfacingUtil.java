@@ -217,8 +217,7 @@ public final class SurfacingUtil {
     }
 
     public static Map<String, List<GoId>> createDomainIdToGoIdMap( final List<PfamToGoMapping> pfam_to_go_mappings ) {
-        final Map<String, List<GoId>> domain_id_to_go_ids_map = new HashMap<>( pfam_to_go_mappings
-                .size() );
+        final Map<String, List<GoId>> domain_id_to_go_ids_map = new HashMap<>( pfam_to_go_mappings.size() );
         for( final PfamToGoMapping pfam_to_go : pfam_to_go_mappings ) {
             if ( !domain_id_to_go_ids_map.containsKey( pfam_to_go.getKey() ) ) {
                 domain_id_to_go_ids_map.put( pfam_to_go.getKey(), new ArrayList<GoId>() );
@@ -2460,9 +2459,10 @@ public final class SurfacingUtil {
         }
         //
         for( final DomainSimilarity similarity : similarities ) {
-            if (domain_species_seqid_map_writer != null ) {
-            domain_species_seqid_map_writer.write( similarity.getSpeciesAndSeqIdsAsStringBuffer( similarity.getDomainId() ).toString()  );
-            //domain_species_seqid_map_writer.write( SurfacingConstants.NL );
+            if ( domain_species_seqid_map_writer != null ) {
+                domain_species_seqid_map_writer
+                        .write( similarity.getSpeciesAndSeqIdsAsStringBuffer( similarity.getDomainId() ).toString() );
+                //domain_species_seqid_map_writer.write( SurfacingConstants.NL );
             }
             if ( ( species_order != null ) && !species_order.isEmpty() ) {
                 ( similarity ).setSpeciesOrder( species_order );

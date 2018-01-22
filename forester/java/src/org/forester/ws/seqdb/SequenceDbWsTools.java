@@ -72,7 +72,7 @@ public final class SequenceDbWsTools {
             throws IOException {
         final List<UniProtTaxonomy> taxonomies = getTaxonomiesFromCommonName( cn, max_taxonomies_return );
         if ( ( taxonomies != null ) && ( taxonomies.size() > 0 ) ) {
-            final List<UniProtTaxonomy> filtered_taxonomies = new ArrayList<UniProtTaxonomy>();
+            final List<UniProtTaxonomy> filtered_taxonomies = new ArrayList<>();
             for( final UniProtTaxonomy taxonomy : taxonomies ) {
                 if ( taxonomy.getCommonName().equalsIgnoreCase( cn ) ) {
                     filtered_taxonomies.add( taxonomy );
@@ -103,7 +103,7 @@ public final class SequenceDbWsTools {
             throws IOException {
         final List<UniProtTaxonomy> taxonomies = getTaxonomiesFromScientificName( sn, max_taxonomies_return );
         if ( ( taxonomies != null ) && ( taxonomies.size() > 0 ) ) {
-            final List<UniProtTaxonomy> filtered_taxonomies = new ArrayList<UniProtTaxonomy>();
+            final List<UniProtTaxonomy> filtered_taxonomies = new ArrayList<>();
             for( final UniProtTaxonomy taxonomy : taxonomies ) {
                 if ( taxonomy.getScientificName().equalsIgnoreCase( sn ) ) {
                     filtered_taxonomies.add( taxonomy );
@@ -178,7 +178,8 @@ public final class SequenceDbWsTools {
     public final static void obtainSeqInformation( final boolean allow_to_set_taxonomic_data,
                                                    final int lines_to_return,
                                                    final SortedSet<String> not_found,
-                                                   final PhylogenyNode node ) throws IOException {
+                                                   final PhylogenyNode node )
+            throws IOException {
         final Accession acc = obtainSeqAccession( node );
         if ( !isAccessionAcceptable( acc ) ) {
             if ( node.isExternal() || !node.isEmpty() ) {
@@ -192,15 +193,17 @@ public final class SequenceDbWsTools {
 
     public final static void obtainSeqInformation( final boolean allow_to_set_taxonomic_data,
                                                    final SortedSet<String> not_found,
-                                                   final PhylogenyNode node ) throws IOException {
+                                                   final PhylogenyNode node )
+            throws IOException {
         obtainSeqInformation( allow_to_set_taxonomic_data, DEFAULT_LINES_TO_RETURN, not_found, node );
     }
 
     public final static SortedSet<String> obtainSeqInformation( final Phylogeny phy,
                                                                 final boolean ext_nodes_only,
                                                                 final boolean allow_to_set_taxonomic_data,
-                                                                final int lines_to_return ) throws IOException {
-        final SortedSet<String> not_found = new TreeSet<String>();
+                                                                final int lines_to_return )
+            throws IOException {
+        final SortedSet<String> not_found = new TreeSet<>();
         for( final PhylogenyNodeIterator iter = phy.iteratorPostorder(); iter.hasNext(); ) {
             final PhylogenyNode node = iter.next();
             if ( node.isExternal() || !ext_nodes_only ) {
@@ -239,7 +242,7 @@ public final class SequenceDbWsTools {
         final URLConnection urlc = url.openConnection();
         final BufferedReader in = new BufferedReader( new InputStreamReader( urlc.getInputStream() ) );
         String line;
-        final List<String> result = new ArrayList<String>();
+        final List<String> result = new ArrayList<>();
         while ( ( line = in.readLine() ) != null ) {
             if ( DEBUG ) {
                 System.out.println( line );
@@ -316,7 +319,8 @@ public final class SequenceDbWsTools {
                                              final int lines_to_return,
                                              final SortedSet<String> not_found,
                                              final PhylogenyNode node,
-                                             final Accession acc ) throws IOException {
+                                             final Accession acc )
+            throws IOException {
         SequenceDatabaseEntry db_entry = null;
         final String query = acc.getValue();
         if ( acc.getSource().equals( Source.UNIPROT.toString() ) ) {
@@ -476,23 +480,25 @@ public final class SequenceDbWsTools {
 
     private static List<String> getTaxonomyStringFromScientificName( final String sn, final int max_lines_to_return )
             throws IOException {
-        return queryUniprot( "taxonomy/?query=scientific%3a%22" + encode( sn ) + "%22&format=tab", max_lines_to_return );
+        return queryUniprot( "taxonomy/?query=scientific%3a%22" + encode( sn ) + "%22&format=tab",
+                             max_lines_to_return );
     }
 
     private static List<String> getTaxonomyStringFromTaxonomyCode( final String code, final int max_lines_to_return )
             throws IOException {
-        return queryUniprot( "taxonomy/?query=mnemonic%3a%22" + encode( code ) + "%22&format=tab", max_lines_to_return );
+        return queryUniprot( "taxonomy/?query=mnemonic%3a%22" + encode( code ) + "%22&format=tab",
+                             max_lines_to_return );
     }
 
     private final static boolean isAccessionAcceptable( final Accession acc ) {
-        return ( !( ( acc == null ) || ForesterUtil.isEmpty( acc.getSource() ) || ForesterUtil.isEmpty( acc.getValue() ) || ( ( acc
-                .getSource().equals( Source.UNIPROT.toString() ) )
-                && ( acc.getSource().toString().equals( Source.EMBL.toString() ) ) && ( acc.getSource().toString()
-                .equals( Source.REFSEQ.toString() ) ) ) ) );
+        return ( !( ( acc == null ) || ForesterUtil.isEmpty( acc.getSource() ) || ForesterUtil.isEmpty( acc.getValue() )
+                || ( ( acc.getSource().equals( Source.UNIPROT.toString() ) )
+                        && ( acc.getSource().toString().equals( Source.EMBL.toString() ) )
+                        && ( acc.getSource().toString().equals( Source.REFSEQ.toString() ) ) ) ) );
     }
 
     private static List<UniProtTaxonomy> parseUniProtTaxonomy( final List<String> result ) throws IOException {
-        final List<UniProtTaxonomy> taxonomies = new ArrayList<UniProtTaxonomy>();
+        final List<UniProtTaxonomy> taxonomies = new ArrayList<>();
         for( final String line : result ) {
             if ( ForesterUtil.isEmpty( line ) ) {
                 // Ignore empty lines.

@@ -38,33 +38,31 @@ import org.forester.phylogeny.data.Sequence;
 
 public final class SequenceAccessionTools {
 
-    //The format for GenBank Accession numbers are:
-    //Nucleotide: 1 letter + 5 numerals OR 2 letters + 6 numerals
-    //Protein:    3 letters + 5 numerals
-    //http://www.ncbi.nlm.nih.gov/Sequin/acc.html
+    // The format for GenBank Accession numbers are:
+    // Nucleotide: 1 letter + 5 numerals OR 2 letters + 6 numerals
+    // Protein: 3 letters + 5 numerals
+    // http://www.ncbi.nlm.nih.gov/Sequin/acc.html
     public final static Pattern  GENBANK_NUC_PATTERN_1       = Pattern
-                                                                     .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]\\d{5}(?:\\.\\d+)?)(?:[^a-zA-Z0-9]|\\Z)" );
+            .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]\\d{5}(?:\\.\\d+)?)(?:[^a-zA-Z0-9]|\\Z)" );
     public final static Pattern  GENBANK_NUC_PATTERN_2       = Pattern
-                                                                     .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]{2}\\d{6}(?:\\.\\d+)?)(?:[^a-zA-Z0-9]|\\Z)" );
+            .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]{2}\\d{6}(?:\\.\\d+)?)(?:[^a-zA-Z0-9]|\\Z)" );
     public final static Pattern  GENBANK_PROT_PATTERN        = Pattern
-                                                                     .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]{3}\\d{5}(?:\\.\\d+)?)(?:[^a-zA-Z0-9]|\\Z)" );
+            .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]{3}\\d{5}(?:\\.\\d+)?)(?:[^a-zA-Z0-9]|\\Z)" );
     public final static Pattern  GI_PATTERN                  = Pattern
-                                                                     .compile( "(?:\\b|_)(?:GI|gi)[|_=:](\\d+)(?:\\b|_)" );
+            .compile( "(?:\\b|_)(?:GI|gi)[|_=:](\\d+)(?:\\b|_)" );
     public final static String   UNIPROT_KB_BASE_PATTERN_STR = "((?:[OPQ][0-9][A-Z0-9]{3}[0-9])|(?:[A-NR-Z][0-9]([A-Z][A-Z0-9]{2}[0-9]){1,2}))";
-    public final static Pattern  UNIPROT_KB_PATTERN_0        = Pattern.compile( "(?:\\b|_)"
-                                                                     + UNIPROT_KB_BASE_PATTERN_STR + "(?:\\b|_)" );
-    public final static Pattern  UNIPROT_KB_PATTERN_1        = Pattern.compile( "(?:\\b|_)(?:sp|tr)[\\.|\\-_=/\\\\]"
-                                                                     + UNIPROT_KB_BASE_PATTERN_STR + "(?:\\b|_)" );
-    public final static Pattern  UNIPROT_KB_PATTERN_2        = Pattern
-                                                                     .compile( "(?:\\b|_)(?:[A-Z0-9]{2,5}|"
-                                                                             + UNIPROT_KB_BASE_PATTERN_STR
-                                                                             + ")_(([A-Z9][A-Z]{2}[A-Z0-9]{2})|RAT|PIG|PEA)(?:\\b|_)" );
+    public final static Pattern  UNIPROT_KB_PATTERN_0        = Pattern
+            .compile( "(?:\\b|_)" + UNIPROT_KB_BASE_PATTERN_STR + "(?:\\b|_)" );
+    public final static Pattern  UNIPROT_KB_PATTERN_1        = Pattern
+            .compile( "(?:\\b|_)(?:sp|tr)[\\.|\\-_=/\\\\]" + UNIPROT_KB_BASE_PATTERN_STR + "(?:\\b|_)" );
+    public final static Pattern  UNIPROT_KB_PATTERN_2        = Pattern.compile( "(?:\\b|_)(?:[A-Z0-9]{2,5}|"
+            + UNIPROT_KB_BASE_PATTERN_STR + ")_(([A-Z9][A-Z]{2}[A-Z0-9]{2})|RAT|PIG|PEA)(?:\\b|_)" );
     public final static Pattern  ENSEMBL_PATTERN             = Pattern.compile( "(?:\\b|_)(ENS[A-Z]*[0-9]+)(?:\\b|_)" );
     // RefSeq accession numbers can be distinguished from GenBank accessions
     // by their distinct prefix format of 2 characters followed by an
     // underscore character ('_'). For example, a RefSeq protein accession is NP_015325.
     private final static Pattern REFSEQ_PATTERN              = Pattern
-                                                                     .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]{2}_\\d{6,})(?:[^a-zA-Z0-9]|\\Z)" );
+            .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]{2}_\\d{6,}(\\.\\d)?)(?:[^a-zA-Z0-9]|\\Z)" );
 
     private SequenceAccessionTools() {
         // Hiding the constructor.
@@ -108,8 +106,8 @@ public final class SequenceAccessionTools {
                 && !ForesterUtil.isEmpty( n.getNodeData().getSequence().getAccession().getValue() ) ) {
             final String source = n.getNodeData().getSequence().getAccession().getSource().toLowerCase();
             final String value = n.getNodeData().getSequence().getAccession().getValue();
-            if ( ( source.startsWith( "uniprot" ) || source.equals( "swissprot" ) || source.equals( "trembl" ) || source
-                    .equals( "sp" ) ) ) {
+            if ( ( source.startsWith( "uniprot" ) || source.equals( "swissprot" ) || source.equals( "trembl" )
+                    || source.equals( "sp" ) ) ) {
                 return new Accession( value, Source.UNIPROT );
             }
             else if ( source.equals( "embl" ) || source.equals( "ebi" ) ) {

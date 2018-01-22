@@ -1136,7 +1136,7 @@ public final class Test {
             final Domain d4 = new BasicDomain( "d4", 7, 9, ( short ) 1, ( short ) 1, 0.1, 1 );
             final Domain d5 = new BasicDomain( "d4", 0, 9, ( short ) 1, ( short ) 1, 0.1, 1 );
             final Domain d6 = new BasicDomain( "d4", 4, 5, ( short ) 1, ( short ) 1, 0.1, 1 );
-            final List<Boolean> covered = new ArrayList<Boolean>();
+            final List<Boolean> covered = new ArrayList<>();
             covered.add( true ); // 0
             covered.add( false ); // 1
             covered.add( true ); // 2
@@ -1255,8 +1255,9 @@ public final class Test {
                 System.out.println( phys2[ 1 ].toNewHampshire() );
                 return false;
             }
-            final Phylogeny phys3[] = AptxUtil.readPhylogeniesFromUrl( new URL( "http://swisstree.vital-it.ch:80/"
-                    + "SwissTree/ST001/consensus_tree.nhx" ),
+            final Phylogeny phys3[] = AptxUtil.readPhylogeniesFromUrl(
+                                                                       new URL( "http://swisstree.vital-it.ch:80/"
+                                                                               + "SwissTree/ST001/consensus_tree.nhx" ),
                                                                        false,
                                                                        false,
                                                                        false,
@@ -1270,8 +1271,9 @@ public final class Test {
                 System.out.println( phys3[ 0 ].toNewHampshire() );
                 return false;
             }
-            final Phylogeny phys4[] = AptxUtil.readPhylogeniesFromUrl( new URL( "http://swisstree.vital-it.ch:80/"
-                    + "SwissTree/ST001/consensus_tree.nhx" ),
+            final Phylogeny phys4[] = AptxUtil.readPhylogeniesFromUrl(
+                                                                       new URL( "http://swisstree.vital-it.ch:80/"
+                                                                               + "SwissTree/ST001/consensus_tree.nhx" ),
                                                                        false,
                                                                        false,
                                                                        false,
@@ -1368,7 +1370,7 @@ public final class Test {
             final Domain d2 = new BasicDomain( "d2", ( short ) 0, ( short ) 20, ( short ) 1, ( short ) 1, 0.1, 1 );
             final Domain d3 = new BasicDomain( "d3", ( short ) 9, ( short ) 10, ( short ) 1, ( short ) 1, 0.1, 1 );
             final Domain d4 = new BasicDomain( "d4", ( short ) 7, ( short ) 8, ( short ) 1, ( short ) 1, 0.1, 1 );
-            final List<Boolean> covered = new ArrayList<Boolean>();
+            final List<Boolean> covered = new ArrayList<>();
             covered.add( true ); // 0
             covered.add( false ); // 1
             covered.add( true ); // 2
@@ -1646,73 +1648,63 @@ public final class Test {
             if ( ( phys3 == null ) || ( phys3.length != 2 ) ) {
                 return false;
             }
-            final Phylogeny[] phys4 = ForesterUtil.readPhylogeniesFromUrl(
-                                                                           new URL( WebserviceUtil.TREEBASE_PHYLOWS_STUDY_URL_BASE
-                                                                                   + "14525?format=nexus" ),
-                                                                           new NexusPhylogeniesParser() );
+            final Phylogeny[] phys4 = ForesterUtil
+                    .readPhylogeniesFromUrl( new URL( WebserviceUtil.TREEBASE_PHYLOWS_STUDY_URL_BASE
+                            + "14525?format=nexus" ), new NexusPhylogeniesParser() );
             if ( ( phys4 == null ) || ( phys4.length != 1 ) ) {
                 return false;
             }
-            final Phylogeny[] phys5 = ForesterUtil.readPhylogeniesFromUrl(
-                                                                           new URL( WebserviceUtil.TREEBASE_PHYLOWS_STUDY_URL_BASE
-                                                                                   + "15632?format=nexus" ),
-                                                                           new NexusPhylogeniesParser() );
+            final Phylogeny[] phys5 = ForesterUtil
+                    .readPhylogeniesFromUrl( new URL( WebserviceUtil.TREEBASE_PHYLOWS_STUDY_URL_BASE
+                            + "15632?format=nexus" ), new NexusPhylogeniesParser() );
             if ( ( phys5 == null ) || ( phys5.length != 1 ) ) {
                 return false;
             }
-            final Phylogeny[] phys6 = ForesterUtil.readPhylogeniesFromUrl(
-                                                                           new URL( WebserviceUtil.TREEBASE_PHYLOWS_STUDY_URL_BASE
-                                                                                   + "10190?format=nexus" ),
-                                                                           new NexusPhylogeniesParser() );
+            final Phylogeny[] phys6 = ForesterUtil
+                    .readPhylogeniesFromUrl( new URL( WebserviceUtil.TREEBASE_PHYLOWS_STUDY_URL_BASE
+                            + "10190?format=nexus" ), new NexusPhylogeniesParser() );
             if ( ( phys6 == null ) || ( phys6.length != 1 ) ) {
                 return false;
             }
-            final Phylogeny[] phys7 = ForesterUtil.readPhylogeniesFromUrl(
-                                                                           new URL( WebserviceUtil.TREEBASE_PHYLOWS_STUDY_URL_BASE
-                                                                                   + "13246?format=nexus" ),
-                                                                           new NexusPhylogeniesParser() );
+            final Phylogeny[] phys7 = ForesterUtil
+                    .readPhylogeniesFromUrl( new URL( WebserviceUtil.TREEBASE_PHYLOWS_STUDY_URL_BASE
+                            + "13246?format=nexus" ), new NexusPhylogeniesParser() );
             if ( ( phys7 == null ) || ( phys7.length != 2 ) ) {
                 return false;
             }
-            final Phylogeny[] phys8 = ForesterUtil.readPhylogeniesFromUrl(
-                                                                           new URL( WebserviceUtil.TREEBASE_PHYLOWS_STUDY_URL_BASE
-                                                                                   + "11662?format=nexus" ),
-                                                                           new NexusPhylogeniesParser() );
+            final Phylogeny[] phys8 = ForesterUtil
+                    .readPhylogeniesFromUrl( new URL( WebserviceUtil.TREEBASE_PHYLOWS_STUDY_URL_BASE
+                            + "11662?format=nexus" ), new NexusPhylogeniesParser() );
             if ( ( phys8 == null ) || ( phys8.length != 2 ) ) {
                 return false;
             }
-            final Phylogeny[] phys9 = ForesterUtil.readPhylogeniesFromUrl(
-                                                                           new URL( WebserviceUtil.TREEBASE_PHYLOWS_STUDY_URL_BASE
-                                                                                   + "562?format=nexus" ),
-                                                                           new NexusPhylogeniesParser() );
+            final Phylogeny[] phys9 = ForesterUtil
+                    .readPhylogeniesFromUrl( new URL( WebserviceUtil.TREEBASE_PHYLOWS_STUDY_URL_BASE
+                            + "562?format=nexus" ), new NexusPhylogeniesParser() );
             if ( ( phys9 == null ) || ( phys9.length != 4 ) ) {
                 return false;
             }
-            final Phylogeny[] phys16424 = ForesterUtil.readPhylogeniesFromUrl(
-                                                                               new URL( WebserviceUtil.TREEBASE_PHYLOWS_STUDY_URL_BASE
-                                                                                       + "16424?format=nexus" ),
-                                                                               new NexusPhylogeniesParser() );
+            final Phylogeny[] phys16424 = ForesterUtil
+                    .readPhylogeniesFromUrl( new URL( WebserviceUtil.TREEBASE_PHYLOWS_STUDY_URL_BASE
+                            + "16424?format=nexus" ), new NexusPhylogeniesParser() );
             if ( ( phys16424 == null ) || ( phys16424.length != 1 ) ) {
                 return false;
             }
-            final Phylogeny[] phys17878 = ForesterUtil.readPhylogeniesFromUrl(
-                                                                               new URL( WebserviceUtil.TREEBASE_PHYLOWS_STUDY_URL_BASE
-                                                                                       + "17878?format=nexus" ),
-                                                                               new NexusPhylogeniesParser() );
+            final Phylogeny[] phys17878 = ForesterUtil
+                    .readPhylogeniesFromUrl( new URL( WebserviceUtil.TREEBASE_PHYLOWS_STUDY_URL_BASE
+                            + "17878?format=nexus" ), new NexusPhylogeniesParser() );
             if ( ( phys17878 == null ) || ( phys17878.length != 17 ) ) {
                 return false;
             }
-            final Phylogeny[] phys18804 = ForesterUtil.readPhylogeniesFromUrl(
-                                                                               new URL( WebserviceUtil.TREEBASE_PHYLOWS_STUDY_URL_BASE
-                                                                                       + "18804?format=nexus" ),
-                                                                               new NexusPhylogeniesParser() );
+            final Phylogeny[] phys18804 = ForesterUtil
+                    .readPhylogeniesFromUrl( new URL( WebserviceUtil.TREEBASE_PHYLOWS_STUDY_URL_BASE
+                            + "18804?format=nexus" ), new NexusPhylogeniesParser() );
             if ( ( phys18804 == null ) || ( phys18804.length != 2 ) ) {
                 return false;
             }
-            final Phylogeny[] phys346 = ForesterUtil.readPhylogeniesFromUrl(
-                                                                             new URL( WebserviceUtil.TREEBASE_PHYLOWS_STUDY_URL_BASE
-                                                                                     + "346?format=nexus" ),
-                                                                             new NexusPhylogeniesParser() );
+            final Phylogeny[] phys346 = ForesterUtil
+                    .readPhylogeniesFromUrl( new URL( WebserviceUtil.TREEBASE_PHYLOWS_STUDY_URL_BASE
+                            + "346?format=nexus" ), new NexusPhylogeniesParser() );
             if ( ( phys346 == null ) || ( phys346.length != 1 ) ) {
                 return false;
             }
@@ -1890,25 +1882,25 @@ public final class Test {
     }
 
     private static boolean testCommonPrefix() {
-        final List<String> l0 = new ArrayList<String>();
+        final List<String> l0 = new ArrayList<>();
         l0.add( "abc" );
         if ( !ForesterUtil.greatestCommonPrefix( l0 ).equals( "abc" ) ) {
             return false;
         }
-        final List<String> l1 = new ArrayList<String>();
+        final List<String> l1 = new ArrayList<>();
         l1.add( "abc" );
         l1.add( "abX" );
         if ( !ForesterUtil.greatestCommonPrefix( l1 ).equals( "ab" ) ) {
             return false;
         }
-        final List<String> l2 = new ArrayList<String>();
+        final List<String> l2 = new ArrayList<>();
         l2.add( "abc" );
         l2.add( "abX" );
         l2.add( "axy" );
         if ( !ForesterUtil.greatestCommonPrefix( l2 ).equals( "a" ) ) {
             return false;
         }
-        final List<String> l3 = new ArrayList<String>();
+        final List<String> l3 = new ArrayList<>();
         l3.add( "abXsdfsdfsdfsdfsdfsd" );
         l3.add( "abXsdfsdfsdfsdfsdfsd" );
         l3.add( "abc" );
@@ -1919,7 +1911,7 @@ public final class Test {
         if ( !ForesterUtil.greatestCommonPrefix( l3 ).equals( "ab" ) ) {
             return false;
         }
-        final List<String> l4 = new ArrayList<String>();
+        final List<String> l4 = new ArrayList<>();
         l4.add( "abXsdfsdfsdfsdfsdfsd" );
         l4.add( "abXsdfsdfsdfsdfsdfsd" );
         l4.add( "abc" );
@@ -1929,12 +1921,12 @@ public final class Test {
         if ( !ForesterUtil.greatestCommonPrefix( l4 ).equals( "" ) ) {
             return false;
         }
-        final List<String> l5 = new ArrayList<String>();
+        final List<String> l5 = new ArrayList<>();
         l5.add( "" );
         if ( !ForesterUtil.greatestCommonPrefix( l5 ).equals( "" ) ) {
             return false;
         }
-        final List<String> l6 = new ArrayList<String>();
+        final List<String> l6 = new ArrayList<>();
         l6.add( "abc" );
         l6.add( "abX" );
         l6.add( "" );
@@ -1945,25 +1937,25 @@ public final class Test {
     }
 
     private static boolean testCommonPrefixSep() {
-        final List<String> l0 = new ArrayList<String>();
+        final List<String> l0 = new ArrayList<>();
         l0.add( "a.b.c" );
         if ( !ForesterUtil.greatestCommonPrefix( l0, "." ).equals( "a.b.c" ) ) {
             return false;
         }
-        final List<String> l1 = new ArrayList<String>();
+        final List<String> l1 = new ArrayList<>();
         l1.add( "a.b.c" );
         l1.add( "a.b.X" );
         if ( !ForesterUtil.greatestCommonPrefix( l1, "." ).equals( "a.b" ) ) {
             return false;
         }
-        final List<String> l2 = new ArrayList<String>();
+        final List<String> l2 = new ArrayList<>();
         l2.add( "a.b.c." );
         l2.add( "a.b.X." );
         l2.add( "a.x.y." );
         if ( !ForesterUtil.greatestCommonPrefix( l2, "." ).equals( "a" ) ) {
             return false;
         }
-        final List<String> l3 = new ArrayList<String>();
+        final List<String> l3 = new ArrayList<>();
         l3.add( "a/b/X/s/d/f/s/d/f/s/d/f/s/d/f/s/d/f/s/d/" );
         l3.add( "a/b/X/s/d/f/s/d/f/s/d/f/s/d/f/s/d/f/s/d" );
         l3.add( "a/b/c" );
@@ -1974,7 +1966,7 @@ public final class Test {
         if ( !ForesterUtil.greatestCommonPrefix( l3, "/" ).equals( "a/b" ) ) {
             return false;
         }
-        final List<String> l4 = new ArrayList<String>();
+        final List<String> l4 = new ArrayList<>();
         l4.add( "a.b.X.s.d.f.s.d.f.s.d.f.s.d.f.s.d.f.s.d" );
         l4.add( "a.b.X.s.d.f.s.d.f.s.d.f.s.d.f.s.d.f.s.d" );
         l4.add( "a.b.c" );
@@ -1984,18 +1976,18 @@ public final class Test {
         if ( !ForesterUtil.greatestCommonPrefix( l4, "." ).equals( "" ) ) {
             return false;
         }
-        final List<String> l5 = new ArrayList<String>();
+        final List<String> l5 = new ArrayList<>();
         l5.add( "" );
         if ( !ForesterUtil.greatestCommonPrefix( l5, "_" ).equals( "" ) ) {
             return false;
         }
-        final List<String> l6 = new ArrayList<String>();
+        final List<String> l6 = new ArrayList<>();
         l6.add( "_" );
         l6.add( "__" );
         if ( !ForesterUtil.greatestCommonPrefix( l6, "_" ).equals( "" ) ) {
             return false;
         }
-        final List<String> l7 = new ArrayList<String>();
+        final List<String> l7 = new ArrayList<>();
         l7.add( "a,b,c" );
         l7.add( "a,b,X" );
         l7.add( "" );
@@ -2003,21 +1995,21 @@ public final class Test {
         if ( !ForesterUtil.greatestCommonPrefix( l7, "," ).equals( "" ) ) {
             return false;
         }
-        final List<String> l8 = new ArrayList<String>();
+        final List<String> l8 = new ArrayList<>();
         l8.add( "123.304.403.04" );
         l8.add( "123.304.403.04.02" );
         l8.add( "123.304.403.03.03" );
         if ( !ForesterUtil.greatestCommonPrefix( l8, "." ).equals( "123.304.403" ) ) {
             return false;
         }
-        final List<String> l9 = new ArrayList<String>();
+        final List<String> l9 = new ArrayList<>();
         l9.add( "123.304.403.04" );
         l9.add( "123.304.403.04.02" );
         l9.add( "123.304.402.03.03" );
         if ( !ForesterUtil.greatestCommonPrefix( l9, "." ).equals( "123.304" ) ) {
             return false;
         }
-        final List<String> l10 = new ArrayList<String>();
+        final List<String> l10 = new ArrayList<>();
         l10.add( "abcde" );
         l10.add( "adc" );
         if ( !ForesterUtil.greatestCommonPrefix( l10, "." ).equals( "" ) ) {
@@ -3206,7 +3198,7 @@ public final class Test {
             p.addProteinDomain( A20 );
             p.addProteinDomain( B25 );
             p.addProteinDomain( D80 );
-            List<String> domains_ids = new ArrayList<String>();
+            List<String> domains_ids = new ArrayList<>();
             domains_ids.add( "A" );
             domains_ids.add( "B" );
             domains_ids.add( "C" );
@@ -3223,7 +3215,7 @@ public final class Test {
             if ( p.contains( domains_ids, true ) ) {
                 return false;
             }
-            domains_ids = new ArrayList<String>();
+            domains_ids = new ArrayList<>();
             domains_ids.add( "A" );
             domains_ids.add( "C" );
             domains_ids.add( "D" );
@@ -3233,7 +3225,7 @@ public final class Test {
             if ( !p.contains( domains_ids, true ) ) {
                 return false;
             }
-            domains_ids = new ArrayList<String>();
+            domains_ids = new ArrayList<>();
             domains_ids.add( "A" );
             domains_ids.add( "D" );
             domains_ids.add( "C" );
@@ -3243,7 +3235,7 @@ public final class Test {
             if ( p.contains( domains_ids, true ) ) {
                 return false;
             }
-            domains_ids = new ArrayList<String>();
+            domains_ids = new ArrayList<>();
             domains_ids.add( "A" );
             domains_ids.add( "A" );
             domains_ids.add( "B" );
@@ -3253,7 +3245,7 @@ public final class Test {
             if ( !p.contains( domains_ids, true ) ) {
                 return false;
             }
-            domains_ids = new ArrayList<String>();
+            domains_ids = new ArrayList<>();
             domains_ids.add( "A" );
             domains_ids.add( "A" );
             domains_ids.add( "A" );
@@ -3265,7 +3257,7 @@ public final class Test {
             if ( !p.contains( domains_ids, true ) ) {
                 return false;
             }
-            domains_ids = new ArrayList<String>();
+            domains_ids = new ArrayList<>();
             domains_ids.add( "A" );
             domains_ids.add( "A" );
             domains_ids.add( "B" );
@@ -3294,7 +3286,7 @@ public final class Test {
 
     private static boolean testBasicTable() {
         try {
-            final BasicTable<String> t0 = new BasicTable<String>();
+            final BasicTable<String> t0 = new BasicTable<>();
             if ( t0.getNumberOfColumns() != 0 ) {
                 return false;
             }
@@ -3415,12 +3407,8 @@ public final class Test {
             source2.append( "40;41;42;43" + l );
             source2.append( "  comment: 1 1 1 1 1 " + l );
             source2.append( ";;;50  ;   52; 53;;54   " + l );
-            final List<BasicTable<String>> tl = BasicTableParser.parse( source2.toString(),
-                                                                        ';',
-                                                                        false,
-                                                                        false,
-                                                                        "comment:",
-                                                                        false );
+            final List<BasicTable<String>> tl = BasicTableParser
+                    .parse( source2.toString(), ';', false, false, "comment:", false );
             if ( tl.size() != 2 ) {
                 return false;
             }
@@ -3676,9 +3664,9 @@ public final class Test {
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
             final Phylogeny t0 = factory.create( "((((A,B)ab,C)abc,D)abcd,E)abcde", new NHXParser() )[ 0 ];
-            final Phylogeny[] ev0 = factory.create(
-                                                    "((((A,B),C),D),E);((((A,B),C),D),E);((((A,B),C),D),E);((((A,B),C),D),E);",
-                                                    new NHXParser() );
+            final Phylogeny[] ev0 = factory
+                    .create( "((((A,B),C),D),E);((((A,B),C),D),E);((((A,B),C),D),E);((((A,B),C),D),E);",
+                             new NHXParser() );
             ConfidenceAssessor.evaluate( "bootstrap", ev0, t0, false, 1, 0, 2 );
             if ( !isEqual( t0.getNode( "ab" ).getBranchData().getConfidence( 0 ).getValue(), 3 ) ) {
                 return false;
@@ -3687,9 +3675,9 @@ public final class Test {
                 return false;
             }
             final Phylogeny t1 = factory.create( "((((A,B)ab[&&NHX:B=50],C)abc,D)abcd,E)abcde", new NHXParser() )[ 0 ];
-            final Phylogeny[] ev1 = factory.create(
-                                                    "((((A,B),C),D),E);((A,B),((E,D),C));(((A,B),C),(E,D));(A,(((E,D),C),B));(B,(A,((E,D),C)));(C,((E,D),(A,B)));(D,(E,((A,B),C)));",
-                                                    new NHXParser() );
+            final Phylogeny[] ev1 = factory
+                    .create( "((((A,B),C),D),E);((A,B),((E,D),C));(((A,B),C),(E,D));(A,(((E,D),C),B));(B,(A,((E,D),C)));(C,((E,D),(A,B)));(D,(E,((A,B),C)));",
+                             new NHXParser() );
             ConfidenceAssessor.evaluate( "bootstrap", ev1, t1, false, 1 );
             if ( !isEqual( t1.getNode( "ab" ).getBranchData().getConfidence( 1 ).getValue(), 7 ) ) {
                 return false;
@@ -3698,9 +3686,9 @@ public final class Test {
                 return false;
             }
             final Phylogeny t_b = factory.create( "((((A,C)ac,D)acd,E)acde,B)abcde", new NHXParser() )[ 0 ];
-            final Phylogeny[] ev_b = factory.create(
-                                                     "((A,C),X);((A,X),C);(A,C);((((A,B),C),D),E);((A,B),((E,D),C));(((A,B),C),(E,D));(A,(((E,D),C),B));(B,(A,((E,D),C)));(C,((E,D),(A,B)));(D,(E,((A,B),C)));((((A,C)ac,D)acd,E)acde,B)abcd",
-                                                     new NHXParser() );
+            final Phylogeny[] ev_b = factory
+                    .create( "((A,C),X);((A,X),C);(A,C);((((A,B),C),D),E);((A,B),((E,D),C));(((A,B),C),(E,D));(A,(((E,D),C),B));(B,(A,((E,D),C)));(C,((E,D),(A,B)));(D,(E,((A,B),C)));((((A,C)ac,D)acd,E)acde,B)abcd",
+                             new NHXParser() );
             ConfidenceAssessor.evaluate( "bootstrap", ev_b, t_b, false, 1 );
             if ( !isEqual( t_b.getNode( "ac" ).getBranchData().getConfidence( 0 ).getValue(), 4 ) ) {
                 return false;
@@ -3710,9 +3698,9 @@ public final class Test {
             }
             //
             final Phylogeny t1x = factory.create( "((((A,B)ab,C)abc,D)abcd,E)abcde", new NHXParser() )[ 0 ];
-            final Phylogeny[] ev1x = factory.create(
-                                                     "((((A,B),C),D),E);((A,B),((E,D),C));(((A,B),C),(E,D));(A,(((E,D),C),B));(B,(A,((E,D),C)));(C,((E,D),(A,B)));(D,(E,((A,B),C)));",
-                                                     new NHXParser() );
+            final Phylogeny[] ev1x = factory
+                    .create( "((((A,B),C),D),E);((A,B),((E,D),C));(((A,B),C),(E,D));(A,(((E,D),C),B));(B,(A,((E,D),C)));(C,((E,D),(A,B)));(D,(E,((A,B),C)));",
+                             new NHXParser() );
             ConfidenceAssessor.evaluate( "bootstrap", ev1x, t1x, true, 1 );
             if ( !isEqual( t1x.getNode( "ab" ).getBranchData().getConfidence( 0 ).getValue(), 7 ) ) {
                 return false;
@@ -3721,9 +3709,9 @@ public final class Test {
                 return false;
             }
             final Phylogeny t_bx = factory.create( "((((A,C)ac,D)acd,E)acde,B)abcde", new NHXParser() )[ 0 ];
-            final Phylogeny[] ev_bx = factory.create(
-                                                      "((((A,B),C),D),E);((A,B),((E,D),C));(((A,B),C),(E,D));(A,(((E,D),C),B));(B,(A,((E,D),C)));(C,((E,D),(A,B)));(D,(E,((A,B),C)));((((A,C)ac,D)acd,E)acde,B)abcd",
-                                                      new NHXParser() );
+            final Phylogeny[] ev_bx = factory
+                    .create( "((((A,B),C),D),E);((A,B),((E,D),C));(((A,B),C),(E,D));(A,(((E,D),C),B));(B,(A,((E,D),C)));(C,((E,D),(A,B)));(D,(E,((A,B),C)));((((A,C)ac,D)acd,E)acde,B)abcd",
+                             new NHXParser() );
             ConfidenceAssessor.evaluate( "bootstrap", ev_bx, t_bx, true, 1 );
             if ( !isEqual( t_bx.getNode( "ac" ).getBranchData().getConfidence( 0 ).getValue(), 1 ) ) {
                 return false;
@@ -3731,12 +3719,12 @@ public final class Test {
             if ( !isEqual( t_bx.getNode( "acd" ).getBranchData().getConfidence( 0 ).getValue(), 1 ) ) {
                 return false;
             }
-            final Phylogeny[] t2 = factory.create(
-                                                   "((((a,b),c),d),e);(((a,b),c),(d,e));(((((a,b),c),d),e),f);((((a,b),c),(d,e)),f);(((a,b),c),d,e);((a,b,c),d,e);",
-                                                   new NHXParser() );
-            final Phylogeny[] ev2 = factory.create(
-                                                    "((((a,b),c),d),e);((((a,b),c),d),e);((((a,b),e),d),c);((((a,b),e),d),c);(((a,b),(c,d)),e);((a,b),x);((a,b),(x,y));(a,b);(a,e);(a,b,c);",
-                                                    new NHXParser() );
+            final Phylogeny[] t2 = factory
+                    .create( "((((a,b),c),d),e);(((a,b),c),(d,e));(((((a,b),c),d),e),f);((((a,b),c),(d,e)),f);(((a,b),c),d,e);((a,b,c),d,e);",
+                             new NHXParser() );
+            final Phylogeny[] ev2 = factory
+                    .create( "((((a,b),c),d),e);((((a,b),c),d),e);((((a,b),e),d),c);((((a,b),e),d),c);(((a,b),(c,d)),e);((a,b),x);((a,b),(x,y));(a,b);(a,e);(a,b,c);",
+                             new NHXParser() );
             for( final Phylogeny target : t2 ) {
                 ConfidenceAssessor.evaluate( "bootstrap", ev2, target, false, 1 );
             }
@@ -3993,7 +3981,7 @@ public final class Test {
             final ProteinDomain d2 = new ProteinDomain( "domain2", 50, 60 );
             final ProteinDomain d3 = new ProteinDomain( "domain3", 70, 80 );
             final ProteinDomain d4 = new ProteinDomain( "domain4", 90, 100 );
-            final ArrayList<PhylogenyData> domains0 = new ArrayList<PhylogenyData>();
+            final ArrayList<PhylogenyData> domains0 = new ArrayList<>();
             domains0.add( d2 );
             domains0.add( d0 );
             domains0.add( d3 );
@@ -4012,7 +4000,7 @@ public final class Test {
             if ( ds1.getNumberOfDomains() != 4 ) {
                 return false;
             }
-            final ArrayList<PhylogenyData> domains1 = new ArrayList<PhylogenyData>();
+            final ArrayList<PhylogenyData> domains1 = new ArrayList<>();
             domains1.add( d1 );
             domains1.add( d2 );
             domains1.add( d4 );
@@ -5749,7 +5737,7 @@ public final class Test {
 
     private static boolean testGeneralTable() {
         try {
-            final GeneralTable<Integer, String> t0 = new GeneralTable<Integer, String>();
+            final GeneralTable<Integer, String> t0 = new GeneralTable<>();
             t0.setValue( 3, 2, "23" );
             t0.setValue( 10, 1, "error" );
             t0.setValue( 10, 1, "110" );
@@ -5785,7 +5773,7 @@ public final class Test {
             if ( !t0.getValueAsString( 22349, 3434344 ).equals( "" ) ) {
                 return false;
             }
-            final GeneralTable<String, String> t1 = new GeneralTable<String, String>();
+            final GeneralTable<String, String> t1 = new GeneralTable<>();
             t1.setValue( "3", "2", "23" );
             t1.setValue( "10", "1", "error" );
             t1.setValue( "10", "1", "110" );
@@ -6104,9 +6092,9 @@ public final class Test {
             if ( !rt.getName().equals( "r" ) ) {
                 return false;
             }
-            final Phylogeny p3 = factory.create(
-                                                 "((((a,(b,c)bc)abc,(d,e)de)abcde,f)abcdef,(((g,h)gh,(i,j)ij)ghij,k)ghijk,l)",
-                                                 new NHXParser() )[ 0 ];
+            final Phylogeny p3 = factory
+                    .create( "((((a,(b,c)bc)abc,(d,e)de)abcde,f)abcdef,(((g,h)gh,(i,j)ij)ghij,k)ghijk,l)",
+                             new NHXParser() )[ 0 ];
             final PhylogenyNode bc_3 = PhylogenyMethods.calculateLCA( p3.getNode( "b" ), p3.getNode( "c" ) );
             if ( !bc_3.getName().equals( "bc" ) ) {
                 return false;
@@ -6390,9 +6378,9 @@ public final class Test {
             if ( !rt.getName().equals( "r" ) ) {
                 return false;
             }
-            final Phylogeny p3 = factory.create(
-                                                 "((((a,(b,c)bc)abc,(d,e)de)abcde,f)abcdef,(((g,h)gh,(i,j)ij)ghij,k)ghijk,l)",
-                                                 new NHXParser() )[ 0 ];
+            final Phylogeny p3 = factory
+                    .create( "((((a,(b,c)bc)abc,(d,e)de)abcde,f)abcdef,(((g,h)gh,(i,j)ij)ghij,k)ghijk,l)",
+                             new NHXParser() )[ 0 ];
             PhylogenyMethods.preOrderReId( p3 );
             final PhylogenyNode bc_3 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p3.getNode( "b" ),
                                                                                              p3.getNode( "c" ) );
@@ -6796,7 +6784,7 @@ public final class Test {
 
     private static boolean testMafft( final String path ) {
         try {
-            final List<String> opts = new ArrayList<String>();
+            final List<String> opts = new ArrayList<>();
             opts.add( "--maxiterate" );
             opts.add( "1000" );
             opts.add( "--localpair" );
@@ -6892,7 +6880,7 @@ public final class Test {
             final MolecularSequence s1 = BasicSequence.createAaSequence( "b", "ABBXEFGHIJJBB" );
             final MolecularSequence s2 = BasicSequence.createAaSequence( "c", "AXCXEFGHIJJ--" );
             final MolecularSequence s3 = BasicSequence.createAaSequence( "d", "AXDDEFGHIJ---" );
-            final List<MolecularSequence> l = new ArrayList<MolecularSequence>();
+            final List<MolecularSequence> l = new ArrayList<>();
             l.add( s0 );
             l.add( s1 );
             l.add( s2 );
@@ -6933,7 +6921,7 @@ public final class Test {
             final MolecularSequence s1 = BasicSequence.createAaSequence( "b", "AAAIACC" );
             final MolecularSequence s2 = BasicSequence.createAaSequence( "c", "AAIIIIF" );
             final MolecularSequence s3 = BasicSequence.createAaSequence( "d", "AIIIVVW" );
-            final List<MolecularSequence> l = new ArrayList<MolecularSequence>();
+            final List<MolecularSequence> l = new ArrayList<>();
             l.add( s0 );
             l.add( s1 );
             l.add( s2 );
@@ -6956,7 +6944,7 @@ public final class Test {
             //            System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 6, msa, 4 ) );
             //            System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 6, msa, 5 ) );
             //            System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 6, msa, 6 ) );
-            final List<MolecularSequence> l2 = new ArrayList<MolecularSequence>();
+            final List<MolecularSequence> l2 = new ArrayList<>();
             l2.add( BasicSequence.createAaSequence( "1", "AAAAAAA" ) );
             l2.add( BasicSequence.createAaSequence( "2", "AAAIACC" ) );
             l2.add( BasicSequence.createAaSequence( "3", "AAIIIIF" ) );
@@ -7000,7 +6988,7 @@ public final class Test {
             final MolecularSequence s3 = BasicSequence.createAaSequence( "d", "DAAA" );
             final MolecularSequence s4 = BasicSequence.createAaSequence( "e", "EAAA" );
             final MolecularSequence s5 = BasicSequence.createAaSequence( "f", "FAAA" );
-            final List<MolecularSequence> l0 = new ArrayList<MolecularSequence>();
+            final List<MolecularSequence> l0 = new ArrayList<>();
             l0.add( s0 );
             l0.add( s1 );
             l0.add( s2 );
@@ -7048,7 +7036,7 @@ public final class Test {
             final MolecularSequence s_3 = BasicSequence.createAaSequence( "d", "--D--AA-C-------" );
             final MolecularSequence s_4 = BasicSequence.createAaSequence( "e", "--E--AA-C-------" );
             final MolecularSequence s_5 = BasicSequence.createAaSequence( "f", "--F--AB-CD--Y---" );
-            final List<MolecularSequence> l1 = new ArrayList<MolecularSequence>();
+            final List<MolecularSequence> l1 = new ArrayList<>();
             l1.add( s_0 );
             l1.add( s_1 );
             l1.add( s_2 );
@@ -7088,7 +7076,7 @@ public final class Test {
             final MolecularSequence s__3 = BasicSequence.createAaSequence( "d", "DDDD---" );
             final MolecularSequence s__4 = BasicSequence.createAaSequence( "e", "EEEEE--" );
             final MolecularSequence s__5 = BasicSequence.createAaSequence( "f", "FFFFFF-" );
-            final List<MolecularSequence> l2 = new ArrayList<MolecularSequence>();
+            final List<MolecularSequence> l2 = new ArrayList<>();
             l2.add( s__0 );
             l2.add( s__1 );
             l2.add( s__2 );
@@ -7154,7 +7142,7 @@ public final class Test {
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
             PhylogenyNode n;
-            List<PhylogenyNode> ext = new ArrayList<PhylogenyNode>();
+            List<PhylogenyNode> ext = new ArrayList<>();
             final StringBuffer sb0 = new StringBuffer( "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h))fgh)cdefgh)abcdefgh" );
             final Phylogeny t0 = factory.create( sb0.toString(), new NHXParser() )[ 0 ];
             t0.getNode( "cd" ).setCollapse( true );
@@ -7189,7 +7177,7 @@ public final class Test {
             t1.getNode( "cd" ).setCollapse( true );
             t1.getNode( "cde" ).setCollapse( true );
             n = t1.getNode( "ab" );
-            ext = new ArrayList<PhylogenyNode>();
+            ext = new ArrayList<>();
             while ( n != null ) {
                 ext.add( n );
                 n = n.getNextExternalNodeWhileTakingIntoAccountCollapsedNodes();
@@ -7220,7 +7208,7 @@ public final class Test {
             t2.getNode( "e" ).setCollapse( true );
             t2.getNode( "gh" ).setCollapse( true );
             n = t2.getNode( "ab" );
-            ext = new ArrayList<PhylogenyNode>();
+            ext = new ArrayList<>();
             while ( n != null ) {
                 ext.add( n );
                 n = n.getNextExternalNodeWhileTakingIntoAccountCollapsedNodes();
@@ -7249,7 +7237,7 @@ public final class Test {
             t3.getNode( "gh" ).setCollapse( true );
             t3.getNode( "fgh" ).setCollapse( true );
             n = t3.getNode( "ab" );
-            ext = new ArrayList<PhylogenyNode>();
+            ext = new ArrayList<>();
             while ( n != null ) {
                 ext.add( n );
                 n = n.getNextExternalNodeWhileTakingIntoAccountCollapsedNodes();
@@ -8852,9 +8840,9 @@ public final class Test {
             if ( !uc0.getRoot().getChildNode( 1 ).getName().equals( "B B" ) ) {
                 return false;
             }
-            final Phylogeny p1b = factory.create(
-                                                  "   \n  \t  \b   \r \f   ; (  \n  \t  \b   \r \f; A ;  \n  \t  \b   \r \f,  \n  \t  \b   \r \f; B ;   \n  \t  \b   \r \f 1  \n  \t  \b   \r \f ;  \n  \t  \b   \r \f );;;;; \n  \t  \b   \r \f;;;  \n  \t  \b   \r \f ",
-                                                  new NHXParser() )[ 0 ];
+            final Phylogeny p1b = factory
+                    .create( "   \n  \t  \b   \r \f   ; (  \n  \t  \b   \r \f; A ;  \n  \t  \b   \r \f,  \n  \t  \b   \r \f; B ;   \n  \t  \b   \r \f 1  \n  \t  \b   \r \f ;  \n  \t  \b   \r \f );;;;; \n  \t  \b   \r \f;;;  \n  \t  \b   \r \f ",
+                             new NHXParser() )[ 0 ];
             if ( !p1b.toNewHampshireX().equals( "(';A;',';B;1;')" ) ) {
                 return false;
             }
@@ -9304,17 +9292,17 @@ public final class Test {
                 return false;
             }
             final String the_one = "((((((a,b)ab:3.0[2],c):12.0[100],(d,e)de)abcde:13.0[2],f):14.0[0]):0.0[0]):0.0[0];";
-            final Phylogeny p79 = factory.create(
-                                                  "((((((a,b)ab[2]:3,c)[100]:12,(d,e)de)abcde:13[2],f):14[0]):0[0])[0]:0;",
-                                                  new NHXParser() )[ 0 ];
+            final Phylogeny p79 = factory
+                    .create( "((((((a,b)ab[2]:3,c)[100]:12,(d,e)de)abcde:13[2],f):14[0]):0[0])[0]:0;",
+                             new NHXParser() )[ 0 ];
             final String str79 = p79.toNewHampshire( NH_CONVERSION_SUPPORT_VALUE_STYLE.IN_SQUARE_BRACKETS );
             if ( !str79.equals( the_one ) ) {
                 System.out.println( str79 );
                 return false;
             }
-            final Phylogeny p80 = factory.create(
-                                                  "((((((a[a)],b[12])ab[2]:3,c)[+100]:12,(d,e)de[12d,)])ab[]c[]de:13[2],f):14[0]):0[0])[0]:0;",
-                                                  new NHXParser() )[ 0 ];
+            final Phylogeny p80 = factory
+                    .create( "((((((a[a)],b[12])ab[2]:3,c)[+100]:12,(d,e)de[12d,)])ab[]c[]de:13[2],f):14[0]):0[0])[0]:0;",
+                             new NHXParser() )[ 0 ];
             final String str80 = p80.toNewHampshire( NH_CONVERSION_SUPPORT_VALUE_STYLE.IN_SQUARE_BRACKETS );
             if ( !str80.equals( the_one ) ) {
                 System.out.println( str80 );
@@ -10408,21 +10396,21 @@ public final class Test {
             if ( !p2b[ 0 ].toNewHampshireX().equals( "(((((((A:0.2):0.2):0.3):0.4):0.5):0.6):0.7):0.8" ) ) {
                 return false;
             }
-            final Phylogeny[] p3 = factory.create(
-                                                   "[  comment&&NHX,())))](((((((A:0.2[&&NHX:S=qwerty]):0.2[&&NHX:S=uiop]):0.3[&&NHX:S=asdf]):0.4[&&NHX:S=zxc]):0.5[&&NHX:S=a]):0.6[&&NHX:S=asd]):0.7[&&NHX:S=za]):0.8[&&NHX:S=zaq]",
-                                                   new NHXParser() );
+            final Phylogeny[] p3 = factory
+                    .create( "[  comment&&NHX,())))](((((((A:0.2[&&NHX:S=qwerty]):0.2[&&NHX:S=uiop]):0.3[&&NHX:S=asdf]):0.4[&&NHX:S=zxc]):0.5[&&NHX:S=a]):0.6[&&NHX:S=asd]):0.7[&&NHX:S=za]):0.8[&&NHX:S=zaq]",
+                             new NHXParser() );
             if ( !p3[ 0 ].toNewHampshireX().equals( p2_S ) ) {
                 return false;
             }
-            final Phylogeny[] p4 = factory.create(
-                                                   "(((((((A:0.2[&&NHX:S=qwerty]):0.2[&&NHX:S=uiop]):0.3[&&NHX:S=asdf]):0.4[&&NHX:S=zxc]):0.5[&&NHX:S=a]):0.6[&&NHX:S=asd]):0.7[&&NHX:S=za]):0.8[&&NHX:S=zaq][comment(]",
-                                                   new NHXParser() );
+            final Phylogeny[] p4 = factory
+                    .create( "(((((((A:0.2[&&NHX:S=qwerty]):0.2[&&NHX:S=uiop]):0.3[&&NHX:S=asdf]):0.4[&&NHX:S=zxc]):0.5[&&NHX:S=a]):0.6[&&NHX:S=asd]):0.7[&&NHX:S=za]):0.8[&&NHX:S=zaq][comment(]",
+                             new NHXParser() );
             if ( !p4[ 0 ].toNewHampshireX().equals( p2_S ) ) {
                 return false;
             }
-            final Phylogeny[] p5 = factory.create(
-                                                   "[]  (  [][ ][   ]  ([((( &&NHXcomment only![[[[[[]([]((((A:0.2[&&NHX:S=q[comment )))]werty][,,,,))]):0.2[&&NHX:S=uiop]):0.3[&&NHX:S=a[comment,,))]sdf])[comment(((]:0.4[&&NHX:S=zxc][comment(((][comment(((]):0.5[&&NHX:S=a]):0.6[&&NHX:S=a[comment(((]sd]):0.7[&&NHX:S=za]):0.8[&&NHX:S=zaq][comment(((]",
-                                                   new NHXParser() );
+            final Phylogeny[] p5 = factory
+                    .create( "[]  (  [][ ][   ]  ([((( &&NHXcomment only![[[[[[]([]((((A:0.2[&&NHX:S=q[comment )))]werty][,,,,))]):0.2[&&NHX:S=uiop]):0.3[&&NHX:S=a[comment,,))]sdf])[comment(((]:0.4[&&NHX:S=zxc][comment(((][comment(((]):0.5[&&NHX:S=a]):0.6[&&NHX:S=a[comment(((]sd]):0.7[&&NHX:S=za]):0.8[&&NHX:S=zaq][comment(((]",
+                             new NHXParser() );
             if ( !p5[ 0 ].toNewHampshireX().equals( p2_S ) ) {
                 return false;
             }
@@ -10448,15 +10436,15 @@ public final class Test {
             if ( !p9.toNewHampshireX().equals( "((A:0.2,B:0.3):0.5[&&NHX:B=91],C:0.1)root:0.1[&&NHX:B=100]" ) ) {
                 return false;
             }
-            final Phylogeny p10 = factory.create(
-                                                  " [79]   ( (A [co mment] :0 .2[comment],B:0.3[com])[com ment]: 0. 5 \t[ 9 1 ][ comment],C: 0.1)[comment]root:0.1[100] [comment]",
-                                                  new NHXParser() )[ 0 ];
+            final Phylogeny p10 = factory
+                    .create( " [79]   ( (A [co mment] :0 .2[comment],B:0.3[com])[com ment]: 0. 5 \t[ 9 1 ][ comment],C: 0.1)[comment]root:0.1[100] [comment]",
+                             new NHXParser() )[ 0 ];
             if ( !p10.toNewHampshireX().equals( "((A:0.2,B:0.3):0.5[&&NHX:B=91],C:0.1)root:0.1[&&NHX:B=100]" ) ) {
                 return false;
             }
-            final Phylogeny p11 = factory.create(
-                                                  " [79]   ( ('A: \" ' [co mment] :0 .2[comment],B:0.3[com])[com ment]: 0. 5 \t[ 9 1 ][ comment],C: 0.1)[comment]root:0.1[100] [comment]",
-                                                  new NHXParser() )[ 0 ];
+            final Phylogeny p11 = factory
+                    .create( " [79]   ( ('A: \" ' [co mment] :0 .2[comment],B:0.3[com])[com ment]: 0. 5 \t[ 9 1 ][ comment],C: 0.1)[comment]root:0.1[100] [comment]",
+                             new NHXParser() )[ 0 ];
             if ( !p11.toNewHampshireX().equals( "(('A: \"':0.2,B:0.3):0.5[&&NHX:B=91],C:0.1)root:0.1[&&NHX:B=100]" ) ) {
                 return false;
             }
@@ -10587,9 +10575,9 @@ public final class Test {
             if ( !p4.toNewHampshire().equals( "('A)','B(),; x');" ) ) {
                 return false;
             }
-            final Phylogeny p10 = factory.create(
-                                                  " [79]   ( (\"A \n\tB \" [co mment] :0 .2[comment],'B':0.3[com])[com ment]: 0. 5 \t[ 9 1 ][ comment],'C (or D?\\//;,))': 0.1)[comment]'\nroot is here (cool,  was! ) ':0.1[100] [comment]",
-                                                  new NHXParser() )[ 0 ];
+            final Phylogeny p10 = factory
+                    .create( " [79]   ( (\"A \n\tB \" [co mment] :0 .2[comment],'B':0.3[com])[com ment]: 0. 5 \t[ 9 1 ][ comment],'C (or D?\\//;,))': 0.1)[comment]'\nroot is here (cool,  was! ) ':0.1[100] [comment]",
+                             new NHXParser() )[ 0 ];
             final String p10_clean_str = "(('A B':0.2,B:0.3):0.5[&&NHX:B=91],'C (or D?\\//;,))':0.1)'root is here (cool, was! )':0.1[&&NHX:B=100]";
             if ( !p10.toNewHampshireX().equals( p10_clean_str ) ) {
                 return false;
@@ -10598,9 +10586,9 @@ public final class Test {
             if ( !p11.toNewHampshireX().equals( p10_clean_str ) ) {
                 return false;
             }
-            final Phylogeny p12 = factory.create(
-                                                  " [79]   ( (\"A \n\tB \" [[][] :0 .2[comment][\t&\t&\n N\tH\tX:S=mo\tnkey !],'\tB\t\b\t\n\f\rB B ':0.0\b3[])\t[com ment]: 0. 5 \t[ 9 1 ][ \ncomment],'C\t (or D?\\//;,))': 0.\b1)[comment]'\nroot \tis here (cool, \b\t\n\f\r was! ) ':0.1[100] [comment]",
-                                                  new NHXParser() )[ 0 ];
+            final Phylogeny p12 = factory
+                    .create( " [79]   ( (\"A \n\tB \" [[][] :0 .2[comment][\t&\t&\n N\tH\tX:S=mo\tnkey !],'\tB\t\b\t\n\f\rB B ':0.0\b3[])\t[com ment]: 0. 5 \t[ 9 1 ][ \ncomment],'C\t (or D?\\//;,))': 0.\b1)[comment]'\nroot \tis here (cool, \b\t\n\f\r was! ) ':0.1[100] [comment]",
+                             new NHXParser() )[ 0 ];
             final String p12_clean_str = "(('A B':0.2[&&NHX:S=monkey!],'BB B':0.03):0.5[&&NHX:B=91],'C (or D?\\//;,))':0.1)'root is here (cool, was! )':0.1[&&NHX:B=100]";
             if ( !p12.toNewHampshireX().equals( p12_clean_str ) ) {
                 return false;
@@ -11526,12 +11514,12 @@ public final class Test {
             if ( !gene1.getRoot().isDuplication() ) {
                 return false;
             }
-            final Phylogeny species2 = factory.create(
-                                                       "(((([&&NHX:S=A],[&&NHX:S=B]),[&&NHX:S=C]),[&&NHX:S=D]),([&&NHX:S=E],[&&NHX:S=F]))",
-                                                       new NHXParser() )[ 0 ];
-            final Phylogeny gene2 = factory.create(
-                                                    "(((([&&NHX:S=A],[&&NHX:S=B])ab,[&&NHX:S=C])abc,[&&NHX:S=D])abcd,([&&NHX:S=E],[&&NHX:S=F])ef)r",
-                                                    new NHXParser() )[ 0 ];
+            final Phylogeny species2 = factory
+                    .create( "(((([&&NHX:S=A],[&&NHX:S=B]),[&&NHX:S=C]),[&&NHX:S=D]),([&&NHX:S=E],[&&NHX:S=F]))",
+                             new NHXParser() )[ 0 ];
+            final Phylogeny gene2 = factory
+                    .create( "(((([&&NHX:S=A],[&&NHX:S=B])ab,[&&NHX:S=C])abc,[&&NHX:S=D])abcd,([&&NHX:S=E],[&&NHX:S=F])ef)r",
+                             new NHXParser() )[ 0 ];
             species2.setRooted( true );
             gene2.setRooted( true );
             final SDI sdi2 = new SDI( gene2, species2 );
@@ -11556,12 +11544,12 @@ public final class Test {
             if ( !gene2.getNode( "r" ).isHasAssignedEvent() ) {
                 return false;
             }
-            final Phylogeny species3 = factory.create(
-                                                       "(((([&&NHX:S=A],[&&NHX:S=B]),[&&NHX:S=C]),[&&NHX:S=D]),([&&NHX:S=E],[&&NHX:S=F]))",
-                                                       new NHXParser() )[ 0 ];
-            final Phylogeny gene3 = factory.create(
-                                                    "(((([&&NHX:S=A],[&&NHX:S=A])aa,[&&NHX:S=C])abc,[&&NHX:S=D])abcd,([&&NHX:S=E],[&&NHX:S=F])ef)r",
-                                                    new NHXParser() )[ 0 ];
+            final Phylogeny species3 = factory
+                    .create( "(((([&&NHX:S=A],[&&NHX:S=B]),[&&NHX:S=C]),[&&NHX:S=D]),([&&NHX:S=E],[&&NHX:S=F]))",
+                             new NHXParser() )[ 0 ];
+            final Phylogeny gene3 = factory
+                    .create( "(((([&&NHX:S=A],[&&NHX:S=A])aa,[&&NHX:S=C])abc,[&&NHX:S=D])abcd,([&&NHX:S=E],[&&NHX:S=F])ef)r",
+                             new NHXParser() )[ 0 ];
             species3.setRooted( true );
             gene3.setRooted( true );
             final SDI sdi3 = new SDI( gene3, species3 );
@@ -11574,12 +11562,12 @@ public final class Test {
             if ( !gene3.getNode( "aa" ).isHasAssignedEvent() ) {
                 return false;
             }
-            final Phylogeny species4 = factory.create(
-                                                       "(((([&&NHX:S=A],[&&NHX:S=B]),[&&NHX:S=C]),[&&NHX:S=D]),([&&NHX:S=E],[&&NHX:S=F]))",
-                                                       new NHXParser() )[ 0 ];
-            final Phylogeny gene4 = factory.create(
-                                                    "(((([&&NHX:S=A],[&&NHX:S=C])ac,[&&NHX:S=B])abc,[&&NHX:S=D])abcd,([&&NHX:S=E],[&&NHX:S=F])ef)r",
-                                                    new NHXParser() )[ 0 ];
+            final Phylogeny species4 = factory
+                    .create( "(((([&&NHX:S=A],[&&NHX:S=B]),[&&NHX:S=C]),[&&NHX:S=D]),([&&NHX:S=E],[&&NHX:S=F]))",
+                             new NHXParser() )[ 0 ];
+            final Phylogeny gene4 = factory
+                    .create( "(((([&&NHX:S=A],[&&NHX:S=C])ac,[&&NHX:S=B])abc,[&&NHX:S=D])abcd,([&&NHX:S=E],[&&NHX:S=F])ef)r",
+                             new NHXParser() )[ 0 ];
             species4.setRooted( true );
             gene4.setRooted( true );
             final SDI sdi4 = new SDI( gene4, species4 );
@@ -11601,12 +11589,12 @@ public final class Test {
             if ( gene4.getNumberOfExternalNodes() != 6 ) {
                 return false;
             }
-            final Phylogeny species5 = factory.create(
-                                                       "(((([&&NHX:S=A],[&&NHX:S=B]),[&&NHX:S=C]),[&&NHX:S=D]),([&&NHX:S=E],[&&NHX:S=F]))",
-                                                       new NHXParser() )[ 0 ];
-            final Phylogeny gene5 = factory.create(
-                                                    "(((([&&NHX:S=A],[&&NHX:S=D])ad,[&&NHX:S=C])adc,[&&NHX:S=B])abcd,([&&NHX:S=E],[&&NHX:S=F])ef)r",
-                                                    new NHXParser() )[ 0 ];
+            final Phylogeny species5 = factory
+                    .create( "(((([&&NHX:S=A],[&&NHX:S=B]),[&&NHX:S=C]),[&&NHX:S=D]),([&&NHX:S=E],[&&NHX:S=F]))",
+                             new NHXParser() )[ 0 ];
+            final Phylogeny gene5 = factory
+                    .create( "(((([&&NHX:S=A],[&&NHX:S=D])ad,[&&NHX:S=C])adc,[&&NHX:S=B])abcd,([&&NHX:S=E],[&&NHX:S=F])ef)r",
+                             new NHXParser() )[ 0 ];
             species5.setRooted( true );
             gene5.setRooted( true );
             final SDI sdi5 = new SDI( gene5, species5 );
@@ -11631,15 +11619,15 @@ public final class Test {
             // Trees from Louxin Zhang 1997 "On a Mirkin-Muchnik-Smith
             // Conjecture for Comparing Molecular Phylogenies"
             // J. of Comput Bio. Vol. 4, No 2, pp.177-187
-            final Phylogeny species6 = factory.create(
-                                                       "(((1:[&&NHX:S=1],5:[&&NHX:S=5])1-5,((4:[&&NHX:S=4],6:[&&NHX:S=6])4-6,2:[&&NHX:S=2])4-6-2)1-5-4-6-2,"
-                                                               + "((9:[&&NHX:S=9],3:[&&NHX:S=3])9-3,(8:[&&NHX:S=8],7:[&&NHX:S=7])8-7)9-3-8-7)",
-                                                       new NHXParser() )[ 0 ];
-            final Phylogeny gene6 = factory.create(
-                                                    "(((1:0.1[&&NHX:S=1],2:0.1[&&NHX:S=2])1-2:0.1,3:0.1[&&NHX:S=3])1-2-3:0.1,"
-                                                            + "((4:0.1[&&NHX:S=4],(5:0.1[&&NHX:S=5],6:0.1[&&NHX:S=6])5-6:0.1)4-5-6:0.1,"
-                                                            + "(7:0.1[&&NHX:S=7],(8:0.1[&&NHX:S=8],9:0.1[&&NHX:S=9])8-9:0.1)7-8-9:0.1)4-5-6-7-8-9:0.1)r;",
-                                                    new NHXParser() )[ 0 ];
+            final Phylogeny species6 = factory
+                    .create( "(((1:[&&NHX:S=1],5:[&&NHX:S=5])1-5,((4:[&&NHX:S=4],6:[&&NHX:S=6])4-6,2:[&&NHX:S=2])4-6-2)1-5-4-6-2,"
+                            + "((9:[&&NHX:S=9],3:[&&NHX:S=3])9-3,(8:[&&NHX:S=8],7:[&&NHX:S=7])8-7)9-3-8-7)",
+                             new NHXParser() )[ 0 ];
+            final Phylogeny gene6 = factory
+                    .create( "(((1:0.1[&&NHX:S=1],2:0.1[&&NHX:S=2])1-2:0.1,3:0.1[&&NHX:S=3])1-2-3:0.1,"
+                            + "((4:0.1[&&NHX:S=4],(5:0.1[&&NHX:S=5],6:0.1[&&NHX:S=6])5-6:0.1)4-5-6:0.1,"
+                            + "(7:0.1[&&NHX:S=7],(8:0.1[&&NHX:S=8],9:0.1[&&NHX:S=9])8-9:0.1)7-8-9:0.1)4-5-6-7-8-9:0.1)r;",
+                             new NHXParser() )[ 0 ];
             species6.setRooted( true );
             gene6.setRooted( true );
             final SDI sdi6 = new SDI( gene6, species6 );
@@ -11927,12 +11915,12 @@ public final class Test {
             if ( iter2.hasNext() ) {
                 return false;
             }
-            final Phylogeny species0 = factory.create(
-                                                       "(((([&&NHX:S=A],[&&NHX:S=B]),[&&NHX:S=C]),[&&NHX:S=D]),([&&NHX:S=E],[&&NHX:S=F]))",
-                                                       new NHXParser() )[ 0 ];
-            final Phylogeny gene1 = factory.create(
-                                                    "(((((A:0.6[&&NHX:S=A],B:0.1[&&NHX:S=B])ab:0.1,C:0.1[&&NHX:S=C])abc:0.3,D:1.0[&&NHX:S=D])abcd:0.2,E:0.1[&&NHX:S=E])abcde:0.2,F:0.2[&&NHX:S=F])",
-                                                    new NHXParser() )[ 0 ];
+            final Phylogeny species0 = factory
+                    .create( "(((([&&NHX:S=A],[&&NHX:S=B]),[&&NHX:S=C]),[&&NHX:S=D]),([&&NHX:S=E],[&&NHX:S=F]))",
+                             new NHXParser() )[ 0 ];
+            final Phylogeny gene1 = factory
+                    .create( "(((((A:0.6[&&NHX:S=A],B:0.1[&&NHX:S=B])ab:0.1,C:0.1[&&NHX:S=C])abc:0.3,D:1.0[&&NHX:S=D])abcd:0.2,E:0.1[&&NHX:S=E])abcde:0.2,F:0.2[&&NHX:S=F])",
+                             new NHXParser() )[ 0 ];
             species0.setRooted( true );
             gene1.setRooted( true );
             final SDIR sdi_unrooted = new SDIR();
@@ -11952,9 +11940,9 @@ public final class Test {
             if ( sdi_unrooted.getMinimalMappingCost() != Integer.MAX_VALUE ) {
                 return false;
             }
-            final Phylogeny gene2 = factory.create(
-                                                    "(((((A:2.6[&&NHX:S=A],B:0.1[&&NHX:S=B])ab:0.1,C:0.1[&&NHX:S=C])abc:0.3,D:1.0[&&NHX:S=D])abcd:0.2,E:0.1[&&NHX:S=E])abcde:0.2,F:0.2[&&NHX:S=F])",
-                                                    new NHXParser() )[ 0 ];
+            final Phylogeny gene2 = factory
+                    .create( "(((((A:2.6[&&NHX:S=A],B:0.1[&&NHX:S=B])ab:0.1,C:0.1[&&NHX:S=C])abc:0.3,D:1.0[&&NHX:S=D])abcd:0.2,E:0.1[&&NHX:S=E])abcde:0.2,F:0.2[&&NHX:S=F])",
+                             new NHXParser() )[ 0 ];
             gene2.setRooted( true );
             sdi_unrooted.infer( gene2, species0, false, false, true, true, 10 );
             if ( sdi_unrooted.getCount() != 1 ) {
@@ -11972,17 +11960,16 @@ public final class Test {
             if ( sdi_unrooted.getMinimalMappingCost() != Integer.MAX_VALUE ) {
                 return false;
             }
-            final Phylogeny species6 = factory.create(
-                                                       "(((1:[&&NHX:S=1],5:[&&NHX:S=5])1-5,((4:[&&NHX:S=4],6:[&&NHX:S=6])4-6,2:[&&NHX:S=2])4-6-2)1-5-4-6-2,"
-                                                               + "((9:[&&NHX:S=9],3:[&&NHX:S=3])9-3,(8:[&&NHX:S=8],7:[&&NHX:S=7])8-7)9-3-8-7)",
-                                                       new NHXParser() )[ 0 ];
-            final Phylogeny gene6 = factory.create(
-                                                    "((5:0.1[&&NHX:S=5],6:0.1[&&NHX:S=6])5-6:0.05[&&NHX:S=6],(4:0.1[&&NHX:S=4],"
-                                                            + "(((1:0.1[&&NHX:S=1],2:0.1[&&NHX:S=2])1-2:0.1[&&NHX:S=2],3:0.25[&&NHX:S=3])1-2-3:0.2[&&NHX:S=2],"
-                                                            + "(7:0.1[&&NHX:S=7],(8:0.1[&&NHX:S=8],"
-                                                            + "9:0.1[&&NHX:S=9])8-9:0.1[&&NHX:S=9])7-8-9:0.1[&&NHX:S=8])"
-                                                            + "4-5-6-7-8-9:0.1[&&NHX:S=5])4-5-6:0.05[&&NHX:S=5])",
-                                                    new NHXParser() )[ 0 ];
+            final Phylogeny species6 = factory
+                    .create( "(((1:[&&NHX:S=1],5:[&&NHX:S=5])1-5,((4:[&&NHX:S=4],6:[&&NHX:S=6])4-6,2:[&&NHX:S=2])4-6-2)1-5-4-6-2,"
+                            + "((9:[&&NHX:S=9],3:[&&NHX:S=3])9-3,(8:[&&NHX:S=8],7:[&&NHX:S=7])8-7)9-3-8-7)",
+                             new NHXParser() )[ 0 ];
+            final Phylogeny gene6 = factory
+                    .create( "((5:0.1[&&NHX:S=5],6:0.1[&&NHX:S=6])5-6:0.05[&&NHX:S=6],(4:0.1[&&NHX:S=4],"
+                            + "(((1:0.1[&&NHX:S=1],2:0.1[&&NHX:S=2])1-2:0.1[&&NHX:S=2],3:0.25[&&NHX:S=3])1-2-3:0.2[&&NHX:S=2],"
+                            + "(7:0.1[&&NHX:S=7],(8:0.1[&&NHX:S=8],"
+                            + "9:0.1[&&NHX:S=9])8-9:0.1[&&NHX:S=9])7-8-9:0.1[&&NHX:S=8])"
+                            + "4-5-6-7-8-9:0.1[&&NHX:S=5])4-5-6:0.05[&&NHX:S=5])", new NHXParser() )[ 0 ];
             species6.setRooted( true );
             gene6.setRooted( true );
             Phylogeny[] p6 = sdi_unrooted.infer( gene6, species6, false, true, true, true, 10 );
@@ -12026,17 +12013,16 @@ public final class Test {
                 return false;
             }
             p6 = null;
-            final Phylogeny species7 = factory.create(
-                                                       "(((1:[&&NHX:S=1],5:[&&NHX:S=5])1-5,((4:[&&NHX:S=4],6:[&&NHX:S=6])4-6,2:[&&NHX:S=2])4-6-2)1-5-4-6-2,"
-                                                               + "((9:[&&NHX:S=9],3:[&&NHX:S=3])9-3,(8:[&&NHX:S=8],7:[&&NHX:S=7])8-7)9-3-8-7)",
-                                                       new NHXParser() )[ 0 ];
-            final Phylogeny gene7 = factory.create(
-                                                    "((5:0.1[&&NHX:S=5],6:0.1[&&NHX:S=6])5-6:0.05[&&NHX:S=6],(4:0.1[&&NHX:S=4],"
-                                                            + "(((1:0.1[&&NHX:S=1],2:0.1[&&NHX:S=2])1-2:0.1[&&NHX:S=2],3:0.25[&&NHX:S=3])1-2-3:0.2[&&NHX:S=2],"
-                                                            + "(7:0.1[&&NHX:S=7],(8:0.1[&&NHX:S=8],"
-                                                            + "9:0.1[&&NHX:S=9])8-9:0.1[&&NHX:S=9])7-8-9:0.1[&&NHX:S=8])"
-                                                            + "4-5-6-7-8-9:0.1[&&NHX:S=5])4-5-6:0.05[&&NHX:S=5])",
-                                                    new NHXParser() )[ 0 ];
+            final Phylogeny species7 = factory
+                    .create( "(((1:[&&NHX:S=1],5:[&&NHX:S=5])1-5,((4:[&&NHX:S=4],6:[&&NHX:S=6])4-6,2:[&&NHX:S=2])4-6-2)1-5-4-6-2,"
+                            + "((9:[&&NHX:S=9],3:[&&NHX:S=3])9-3,(8:[&&NHX:S=8],7:[&&NHX:S=7])8-7)9-3-8-7)",
+                             new NHXParser() )[ 0 ];
+            final Phylogeny gene7 = factory
+                    .create( "((5:0.1[&&NHX:S=5],6:0.1[&&NHX:S=6])5-6:0.05[&&NHX:S=6],(4:0.1[&&NHX:S=4],"
+                            + "(((1:0.1[&&NHX:S=1],2:0.1[&&NHX:S=2])1-2:0.1[&&NHX:S=2],3:0.25[&&NHX:S=3])1-2-3:0.2[&&NHX:S=2],"
+                            + "(7:0.1[&&NHX:S=7],(8:0.1[&&NHX:S=8],"
+                            + "9:0.1[&&NHX:S=9])8-9:0.1[&&NHX:S=9])7-8-9:0.1[&&NHX:S=8])"
+                            + "4-5-6-7-8-9:0.1[&&NHX:S=5])4-5-6:0.05[&&NHX:S=5])", new NHXParser() )[ 0 ];
             species7.setRooted( true );
             gene7.setRooted( true );
             Phylogeny[] p7 = sdi_unrooted.infer( gene7, species7, true, true, true, true, 10 );
@@ -12080,17 +12066,16 @@ public final class Test {
                 return false;
             }
             p7 = null;
-            final Phylogeny species8 = factory.create(
-                                                       "(((1:[&&NHX:S=1],5:[&&NHX:S=5])1-5,((4:[&&NHX:S=4],6:[&&NHX:S=6])4-6,2:[&&NHX:S=2])4-6-2)1-5-4-6-2,"
-                                                               + "((9:[&&NHX:S=9],3:[&&NHX:S=3])9-3,(8:[&&NHX:S=8],7:[&&NHX:S=7])8-7)9-3-8-7)",
-                                                       new NHXParser() )[ 0 ];
-            final Phylogeny gene8 = factory.create(
-                                                    "((5:0.1[&&NHX:S=5],6:0.1[&&NHX:S=6])5-6:0.05[&&NHX:S=6],(4:0.1[&&NHX:S=4],"
-                                                            + "(((1:0.1[&&NHX:S=1],2:0.1[&&NHX:S=2])1-2:0.1[&&NHX:S=2],3:0.25[&&NHX:S=3])1-2-3:0.2[&&NHX:S=2],"
-                                                            + "(7:0.1[&&NHX:S=7],(8:0.1[&&NHX:S=8],"
-                                                            + "9:0.1[&&NHX:S=9])8-9:0.1[&&NHX:S=9])7-8-9:0.1[&&NHX:S=8])"
-                                                            + "4-5-6-7-8-9:0.1[&&NHX:S=5])4-5-6:0.05[&&NHX:S=5])",
-                                                    new NHXParser() )[ 0 ];
+            final Phylogeny species8 = factory
+                    .create( "(((1:[&&NHX:S=1],5:[&&NHX:S=5])1-5,((4:[&&NHX:S=4],6:[&&NHX:S=6])4-6,2:[&&NHX:S=2])4-6-2)1-5-4-6-2,"
+                            + "((9:[&&NHX:S=9],3:[&&NHX:S=3])9-3,(8:[&&NHX:S=8],7:[&&NHX:S=7])8-7)9-3-8-7)",
+                             new NHXParser() )[ 0 ];
+            final Phylogeny gene8 = factory
+                    .create( "((5:0.1[&&NHX:S=5],6:0.1[&&NHX:S=6])5-6:0.05[&&NHX:S=6],(4:0.1[&&NHX:S=4],"
+                            + "(((1:0.1[&&NHX:S=1],2:0.1[&&NHX:S=2])1-2:0.1[&&NHX:S=2],3:0.25[&&NHX:S=3])1-2-3:0.2[&&NHX:S=2],"
+                            + "(7:0.1[&&NHX:S=7],(8:0.1[&&NHX:S=8],"
+                            + "9:0.1[&&NHX:S=9])8-9:0.1[&&NHX:S=9])7-8-9:0.1[&&NHX:S=8])"
+                            + "4-5-6-7-8-9:0.1[&&NHX:S=5])4-5-6:0.05[&&NHX:S=5])", new NHXParser() )[ 0 ];
             species8.setRooted( true );
             gene8.setRooted( true );
             Phylogeny[] p8 = sdi_unrooted.infer( gene8, species8, false, false, true, true, 10 );
@@ -12160,7 +12145,7 @@ public final class Test {
             n.setName( "NP_001025424.1" );
             acc = SequenceDbWsTools.obtainSeqAccession( n );
             if ( ( acc == null ) || !acc.getSource().equals( Source.REFSEQ.toString() )
-                    || !acc.getValue().equals( "NP_001025424" ) ) {
+                    || !acc.getValue().equals( "NP_001025424.1" ) ) {
                 return false;
             }
             n.setName( "NM_001030253" );
@@ -12387,8 +12372,8 @@ public final class Test {
             if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getSource() )
                     || !id.getValue().equals( "CAA73223" ) || !id.getSource().equals( "ncbi" ) ) {
                 if ( id != null ) {
-                    System.out.println( "value   =" + id.getValue() );
-                    System.out.println( "provider=" + id.getSource() );
+                    System.out.println( "value   = " + id.getValue() );
+                    System.out.println( "provider= " + id.getSource() );
                 }
                 return false;
             }
@@ -12396,8 +12381,8 @@ public final class Test {
             if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getSource() )
                     || !id.getValue().equals( "XP_002434188" ) || !id.getSource().equals( "refseq" ) ) {
                 if ( id != null ) {
-                    System.out.println( "value   =" + id.getValue() );
-                    System.out.println( "provider=" + id.getSource() );
+                    System.out.println( "value   = " + id.getValue() );
+                    System.out.println( "provider= " + id.getSource() );
                 }
                 return false;
             }
@@ -12456,6 +12441,26 @@ public final class Test {
             if ( id != null ) {
                 System.out.println( "value   =" + id.getValue() );
                 System.out.println( "provider=" + id.getSource() );
+                return false;
+            }
+            id = SequenceAccessionTools
+                    .parseAccessorFromString( "Human_herpesvirus_8|GK18|NA|NA|ORF74|YP_001129433.1" );
+            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getSource() )
+                    || !id.getValue().equals( "YP_001129433.1" ) || !id.getSource().equals( "refseq" ) ) {
+                if ( id != null ) {
+                    System.out.println( "value   =" + id.getValue() );
+                    System.out.println( "provider=" + id.getSource() );
+                }
+                return false;
+            }
+            id = SequenceAccessionTools
+                    .parseAccessorFromString( "Human_herpesvirus_8|GK18|NA|NA|ORF74|YP_001129433|asx" );
+            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getSource() )
+                    || !id.getValue().equals( "YP_001129433" ) || !id.getSource().equals( "refseq" ) ) {
+                if ( id != null ) {
+                    System.out.println( "value   =" + id.getValue() );
+                    System.out.println( "provider=" + id.getSource() );
+                }
                 return false;
             }
         }
@@ -12565,7 +12570,7 @@ public final class Test {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
             final Phylogeny p0 = factory.create( "(((A,B,C),D),(E,(F,G)))R", new NHXParser() )[ 0 ];
             //Archaeopteryx.createApplication( p0 );
-            final Set<PhylogenyNode> ex = new HashSet<PhylogenyNode>();
+            final Set<PhylogenyNode> ex = new HashSet<>();
             ex.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             ex.add( PhylogenyNode.createInstanceFromNhxString( "B" ) );
             ex.add( PhylogenyNode.createInstanceFromNhxString( "C" ) );
@@ -12578,13 +12583,13 @@ public final class Test {
             final TreeSplitMatrix s0 = new TreeSplitMatrix( p0, false, ex );
             // System.out.println( s0.toString() );
             //
-            Set<PhylogenyNode> query_nodes = new HashSet<PhylogenyNode>();
+            Set<PhylogenyNode> query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "B" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "B" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "C" ) );
@@ -12596,7 +12601,7 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "B" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "C" ) );
@@ -12604,7 +12609,7 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "D" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
@@ -12613,7 +12618,7 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "B" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "C" ) );
@@ -12622,20 +12627,20 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "G" ) );
             if ( !s0.match( query_nodes ) ) {
                 return false;
             }
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "G" ) );
             if ( !s0.match( query_nodes ) ) {
                 return false;
             }
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "D" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "C" ) );
@@ -12644,14 +12649,14 @@ public final class Test {
             if ( !s0.match( query_nodes ) ) {
                 return false;
             }
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "G" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
             if ( !s0.match( query_nodes ) ) {
                 return false;
             }
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "G" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
@@ -12659,13 +12664,13 @@ public final class Test {
             if ( !s0.match( query_nodes ) ) {
                 return false;
             }
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "B" ) );
@@ -12673,7 +12678,7 @@ public final class Test {
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "G" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
@@ -12682,71 +12687,71 @@ public final class Test {
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "B" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "D" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "D" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "B" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "C" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "G" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "G" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "B" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "D" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "D" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "D" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
@@ -12754,8 +12759,7 @@ public final class Test {
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-           
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "X" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "Y" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
@@ -12764,7 +12768,7 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "X" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "Y" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
@@ -12772,8 +12776,7 @@ public final class Test {
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-      
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "X" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "Y" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
@@ -12782,7 +12785,7 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "X" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "Y" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
@@ -12791,7 +12794,7 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "X" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "Y" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
@@ -12800,7 +12803,7 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "X" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "Y" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
@@ -12809,7 +12812,7 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "X" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "Y" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
@@ -12818,7 +12821,7 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "Y" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "G" ) );
@@ -12826,7 +12829,7 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "X" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "Y" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
@@ -12836,7 +12839,7 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "X" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "Y" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
@@ -12846,7 +12849,7 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "X" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "Y" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
@@ -12856,7 +12859,7 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "X" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "Y" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
@@ -12878,7 +12881,7 @@ public final class Test {
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
             final Phylogeny p0 = factory.create( "(((A,B,C),D),(E,(F,G)))R", new NHXParser() )[ 0 ];
-            final Set<PhylogenyNode> ex = new HashSet<PhylogenyNode>();
+            final Set<PhylogenyNode> ex = new HashSet<>();
             ex.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             ex.add( PhylogenyNode.createInstanceFromNhxString( "B" ) );
             ex.add( PhylogenyNode.createInstanceFromNhxString( "C" ) );
@@ -12887,13 +12890,13 @@ public final class Test {
             ex.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
             ex.add( PhylogenyNode.createInstanceFromNhxString( "G" ) );
             final TreeSplitMatrix s0 = new TreeSplitMatrix( p0, true, ex );
-            Set<PhylogenyNode> query_nodes = new HashSet<PhylogenyNode>();
+            Set<PhylogenyNode> query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "B" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "B" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "C" ) );
@@ -12905,7 +12908,7 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "B" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "C" ) );
@@ -12913,7 +12916,7 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "D" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
@@ -12922,7 +12925,7 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "B" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "C" ) );
@@ -12931,7 +12934,7 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "G" ) );
@@ -12939,14 +12942,14 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "G" ) );
             if ( !s0.match( query_nodes ) ) {
                 return false;
             }
             //
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "D" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "C" ) );
@@ -12955,14 +12958,14 @@ public final class Test {
             if ( !s0.match( query_nodes ) ) {
                 return false;
             }
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "G" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
             if ( !s0.match( query_nodes ) ) {
                 return false;
             }
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "G" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
@@ -12971,33 +12974,33 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
             //
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "B" ) );
-            query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "C" ) );
-            if ( s0.match( query_nodes ) ) {
-                return false;
-            }
-            //
-            query_nodes = new HashSet<PhylogenyNode>();
-            query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
-            query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "G" ) );
-            query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
-            query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "D" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "C" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
             //
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
+            query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
+            query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "G" ) );
+            query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
+            query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "D" ) );
+            query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "C" ) );
+            if ( s0.match( query_nodes ) ) {
+                return false;
+            }
+            //
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "B" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "D" ) );
@@ -13005,49 +13008,49 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "D" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
             //
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "B" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
             //
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "C" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
             //
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
             //
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
             //
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "G" ) );
             if ( s0.match( query_nodes ) ) {
                 return false;
             }
             //
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "F" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "G" ) );
@@ -13055,7 +13058,7 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "B" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "D" ) );
@@ -13063,7 +13066,7 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "D" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
@@ -13071,7 +13074,7 @@ public final class Test {
                 return false;
             }
             //
-            query_nodes = new HashSet<PhylogenyNode>();
+            query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "E" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "D" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
@@ -13292,9 +13295,9 @@ public final class Test {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
             final Phylogeny p1 = factory.create( "(((A,B)ab:97,C)abc:57,((D,E)de:10,(F,G)fg:50,(H,I)hi:64)defghi)",
                                                  new NHXParser() )[ 0 ];
-            final Phylogeny p2 = factory.create(
-                                                 "(((A:0.1,B:0.3)ab:0.4,C)abc:0.5,((D,E)de,(F,G)fg,(H,I)hi:0.59)defghi)",
-                                                 new NHXParser() )[ 0 ];
+            final Phylogeny p2 = factory
+                    .create( "(((A:0.1,B:0.3)ab:0.4,C)abc:0.5,((D,E)de,(F,G)fg,(H,I)hi:0.59)defghi)",
+                             new NHXParser() )[ 0 ];
             if ( PhylogenyMethods.getConfidenceValue( p2.getNode( "ab" ) ) >= 0.0 ) {
                 return false;
             }
