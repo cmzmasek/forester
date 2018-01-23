@@ -273,6 +273,9 @@ public class surfacing {
     public static final String                                      INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_MAPPED_OUTPUT_UNIQUE_SUFFIX = "_indep_dc_gains_fitch_lists_for_go_mapping_unique_MAPPED.txt";
     private static final boolean                                    CALC_SIMILARITY_SCORES                                                        = false;
     private static final String                                     SEPARATOR_FOR_DA                                                              = "--";
+    private static final String                                     DOMAIN_SPECIES_IDS_MAP_NAME                                                   = "_DOMAIN_SPECIES_IDS_MAP.txt";
+    public static final boolean                                     WRITE_DA_SPECIES_IDS_MAP                                                      = true;
+    public static final String                                      DA_SPECIES_IDS_MAP_NAME                                                       = "_DA_SPECIES_IDS_MAP.txt";
 
     @SuppressWarnings( "unchecked")
     public static void main( final String args[] ) {
@@ -1993,8 +1996,8 @@ public class surfacing {
             html_desc.append( "</table>" + nl );
             final Writer simple_tab_writer = new BufferedWriter( new FileWriter( out_dir + ForesterUtil.FILE_SEPARATOR
                     + my_outfile.replaceFirst( ".html", ".tsv" ) ) );
-            final String domain_species_seqid_map_writer_name = my_outfile
-                    .replaceFirst( ".html", "_domain_species_seqid_map.tsv" );
+            final String domain_species_seqid_map_writer_name = my_outfile.replaceFirst( ".html",
+                                                                                         DOMAIN_SPECIES_IDS_MAP_NAME );
             final Writer domain_species_seqid_map_writer = new BufferedWriter( new FileWriter( out_dir
                     + ForesterUtil.FILE_SEPARATOR + domain_species_seqid_map_writer_name ) );
             SurfacingUtil.writeDomainSimilaritiesToFile( html_desc,
@@ -2013,7 +2016,11 @@ public class surfacing {
                                                          intree_0_orig,
                                                          positive_filter_file != null ? filter : null );
             simple_tab_writer.close();
+            domain_species_seqid_map_writer.flush();
             domain_species_seqid_map_writer.close();
+            ForesterUtil.programMessage( surfacing.PRG_NAME,
+                                         "Wrote domain-species-ids map to       : "
+                                                 + domain_species_seqid_map_writer_name );
             ForesterUtil.programMessage( surfacing.PRG_NAME,
                                          "Wrote main output (includes domain similarities) to: \""
                                                  + ( out_dir == null ? my_outfile

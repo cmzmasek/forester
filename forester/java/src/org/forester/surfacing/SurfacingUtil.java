@@ -2462,7 +2462,7 @@ public final class SurfacingUtil {
             if ( domain_species_seqid_map_writer != null ) {
                 domain_species_seqid_map_writer
                         .write( similarity.getSpeciesAndSeqIdsAsStringBuffer( similarity.getDomainId() ).toString() );
-                //domain_species_seqid_map_writer.write( SurfacingConstants.NL );
+                domain_species_seqid_map_writer.write( SurfacingConstants.NL );
             }
             if ( ( species_order != null ) && !species_order.isEmpty() ) {
                 ( similarity ).setSpeciesOrder( species_order );

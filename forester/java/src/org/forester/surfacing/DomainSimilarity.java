@@ -288,19 +288,13 @@ public class DomainSimilarity implements Comparable<DomainSimilarity> {
 
     public StringBuffer getSpeciesAndSeqIdsAsStringBuffer( final String domain_id ) {
         final StringBuffer sb = new StringBuffer();
-        boolean first = true;
         for( final Species species : getSpeciesData().keySet() ) {
             sb.append( domain_id );
             sb.append( "\t" );
             sb.append( species.getSpeciesId() );
             sb.append( "\t" );
             sb.append( getSpeciesData().get( species ).getSeqIdsTabSeparated() );
-            if ( first ) {
-                first = false;
-            }
-            else {
-                sb.append( SurfacingConstants.NL );
-            }
+            sb.append(SurfacingConstants.NL );
         }
         return sb;
     }

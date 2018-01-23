@@ -12463,6 +12463,18 @@ public final class Test {
                 }
                 return false;
             }
+            
+            id = SequenceAccessionTools
+                    .parseAccessorFromString( "Human_herpesvirus_8|KSHV_BAC36|NA|ORF21|core_gene_UL23_family_protein|ADQ57902.1" );
+            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getSource() )
+                    || !id.getValue().equals( "ADQ57902.1" ) || !id.getSource().equals( "ncbi" ) ) {
+                if ( id != null ) {
+                    System.out.println( "value   =" + id.getValue() );
+                    System.out.println( "provider=" + id.getSource() );
+                }
+                return false;
+            }
+            
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );

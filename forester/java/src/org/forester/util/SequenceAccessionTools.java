@@ -221,11 +221,8 @@ public final class SequenceAccessionTools {
 
     public final static Accession parseAccessorFromString( final String s ) {
         if ( !ForesterUtil.isEmpty( s ) ) {
-            String v = parseUniProtAccessorFromString( s );
-            if ( !ForesterUtil.isEmpty( v ) ) {
-                return new Accession( v, Source.UNIPROT );
-            }
-            v = parseGenbankAccessorFromString( s );
+           
+            String v = parseGenbankAccessorFromString( s );
             if ( !ForesterUtil.isEmpty( v ) ) {
                 return new Accession( v, Source.NCBI );
             }
@@ -240,6 +237,10 @@ public final class SequenceAccessionTools {
             v = parseEnsemlAccessorFromString( s );
             if ( !ForesterUtil.isEmpty( v ) ) {
                 return new Accession( v, Source.ENSEMBL );
+            }
+            v = parseUniProtAccessorFromString( s );
+            if ( !ForesterUtil.isEmpty( v ) ) {
+                return new Accession( v, Source.UNIPROT );
             }
         }
         return null;

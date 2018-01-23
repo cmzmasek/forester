@@ -122,14 +122,14 @@ public class PairwiseGenomeComparator {
                 if ( ( list_of_genome_wide_combinable_domains.get( i ).getSize() < 1 )
                         || ( list_of_genome_wide_combinable_domains.get( j ).getSize() < 1 ) ) {
                     domain_distance_scores_means
-                    .setValue( i, j, DomainArchitectureBasedGenomeSimilarityCalculator.MAX_SIMILARITY_SCORE );
+                            .setValue( i, j, DomainArchitectureBasedGenomeSimilarityCalculator.MAX_SIMILARITY_SCORE );
                     shared_domains_based_distances
-                    .setValue( i, j, DomainArchitectureBasedGenomeSimilarityCalculator.MAX_SIMILARITY_SCORE );
+                            .setValue( i, j, DomainArchitectureBasedGenomeSimilarityCalculator.MAX_SIMILARITY_SCORE );
                     shared_binary_combinations_based_distances
-                    .setValue( i, j, DomainArchitectureBasedGenomeSimilarityCalculator.MAX_SIMILARITY_SCORE );
+                            .setValue( i, j, DomainArchitectureBasedGenomeSimilarityCalculator.MAX_SIMILARITY_SCORE );
                     continue;
                 }
-                final List<GenomeWideCombinableDomains> genome_pair = new ArrayList<GenomeWideCombinableDomains>( 2 );
+                final List<GenomeWideCombinableDomains> genome_pair = new ArrayList<>( 2 );
                 genome_pair.add( list_of_genome_wide_combinable_domains.get( i ) );
                 genome_pair.add( list_of_genome_wide_combinable_domains.get( j ) );
                 DomainSimilarityCalculator.GoAnnotationOutput go_annotation_output = DomainSimilarityCalculator.GoAnnotationOutput.NONE;
@@ -151,9 +151,7 @@ public class PairwiseGenomeComparator {
                         .calculateDescriptiveStatisticsForMeanValues( similarities );
                 final String species_j = species[ j ].getSpeciesId();
                 final DomainArchitectureBasedGenomeSimilarityCalculator genome_similarity_calculator = new DomainArchitectureBasedGenomeSimilarityCalculator( list_of_genome_wide_combinable_domains
-                                                                                                                                                              .get( i ),
-                                                                                                                                                              list_of_genome_wide_combinable_domains
-                                                                                                                                                              .get( j ) );
+                        .get( i ), list_of_genome_wide_combinable_domains.get( j ) );
                 genome_similarity_calculator.setAllowDomainsToBeIgnored( false );
                 double dissimilarity_score_mean;
                 if ( stats.getN() < 1 ) {
@@ -163,15 +161,14 @@ public class PairwiseGenomeComparator {
                 else {
                     dissimilarity_score_mean = 1.0 - stats.arithmeticMean();
                 }
-                final double shared_domains_based_genome_distance = 1.0 - genome_similarity_calculator
-                        .calculateSharedDomainsBasedGenomeSimilarityScore();
+                final double shared_domains_based_genome_distance = 1.0
+                        - genome_similarity_calculator.calculateSharedDomainsBasedGenomeSimilarityScore();
                 final double shared_binary_combinations_based_genome_distance = 1.0 - genome_similarity_calculator
                         .calculateSharedBinaryDomainCombinationBasedGenomeSimilarityScore();
                 domain_distance_scores_means.setValue( i, j, dissimilarity_score_mean );
                 shared_domains_based_distances.setValue( i, j, shared_domains_based_genome_distance );
-                shared_binary_combinations_based_distances.setValue( i,
-                                                                     j,
-                                                                     shared_binary_combinations_based_genome_distance );
+                shared_binary_combinations_based_distances
+                        .setValue( i, j, shared_binary_combinations_based_genome_distance );
                 if ( verbose ) {
                     System.out.print( species_i + "-" );
                     System.out.print( species_j + ": " );
@@ -199,7 +196,8 @@ public class PairwiseGenomeComparator {
                 }
                 if ( write_pairwise_comparisons ) {
                     try {
-                        final Writer writer = new BufferedWriter( new FileWriter( out_dir == null ? pairwise_similarities_output_file_str
+                        final Writer writer = new BufferedWriter( new FileWriter( out_dir == null
+                                ? pairwise_similarities_output_file_str
                                 : out_dir + ForesterUtil.FILE_SEPARATOR + pairwise_similarities_output_file_str ) );
                         SurfacingUtil.writeDomainSimilaritiesToFile( html_desc,
                                                                      new StringBuilder( species_i + "-" + species_j ),
@@ -218,8 +216,10 @@ public class PairwiseGenomeComparator {
                                                                      null );
                     }
                     catch ( final IOException e ) {
-                        ForesterUtil.fatalError( command_line_prg_name, "Failed to write similarites to: \""
-                                + pairwise_similarities_output_file_str + "\" [" + e.getMessage() + "]" );
+                        ForesterUtil.fatalError( command_line_prg_name,
+                                                 "Failed to write similarites to: \""
+                                                         + pairwise_similarities_output_file_str + "\" ["
+                                                         + e.getMessage() + "]" );
                     }
                 }
             }
@@ -272,19 +272,23 @@ public class PairwiseGenomeComparator {
                 shared_domains_based_distances.setIdentifier( i, species_i );
                 shared_binary_combinations_based_distances.setIdentifier( i, species_i );
                 for( int j = 0; j < i; ++j ) {
-                    final List<GenomeWideCombinableDomains> genome_pair = new ArrayList<GenomeWideCombinableDomains>( 2 );
+                    final List<GenomeWideCombinableDomains> genome_pair = new ArrayList<>( 2 );
                     genome_pair.add( list_of_genome_wide_combinable_domains.get( i ) );
                     genome_pair.add( list_of_genome_wide_combinable_domains.get( j ) );
                     final DomainArchitectureBasedGenomeSimilarityCalculator genome_simiarity_calculator = new DomainArchitectureBasedGenomeSimilarityCalculator( list_of_genome_wide_combinable_domains
-                                                                                                                                                                 .get( i ),
-                                                                                                                                                                 list_of_genome_wide_combinable_domains
-                                                                                                                                                                 .get( j ) );
+                            .get( i ), list_of_genome_wide_combinable_domains.get( j ) );
                     genome_simiarity_calculator.setAllowDomainsToBeIgnored( true );
                     genome_simiarity_calculator.setDomainIdsToIgnore( domain_ids_to_ignore );
-                    shared_domains_based_distances.setValue( i, j, 1.0 - genome_simiarity_calculator
-                                                             .calculateSharedDomainsBasedGenomeSimilarityScore() );
-                    shared_binary_combinations_based_distances.setValue( i, j, 1.0 - genome_simiarity_calculator
-                                                                         .calculateSharedBinaryDomainCombinationBasedGenomeSimilarityScore() );
+                    shared_domains_based_distances
+                            .setValue( i,
+                                       j,
+                                       1.0 - genome_simiarity_calculator
+                                               .calculateSharedDomainsBasedGenomeSimilarityScore() );
+                    shared_binary_combinations_based_distances
+                            .setValue( i,
+                                       j,
+                                       1.0 - genome_simiarity_calculator
+                                               .calculateSharedBinaryDomainCombinationBasedGenomeSimilarityScore() );
                 }
             }
             getSharedDomainsBasedDistances().add( shared_domains_based_distances );
@@ -296,14 +300,14 @@ public class PairwiseGenomeComparator {
     }
 
     private void init() {
-        _domain_distance_scores_means = new ArrayList<DistanceMatrix>();
-        _shared_domains_based_distances = new ArrayList<DistanceMatrix>();
-        _shared_binary_combinations_based_distances = new ArrayList<DistanceMatrix>();
+        _domain_distance_scores_means = new ArrayList<>();
+        _shared_domains_based_distances = new ArrayList<>();
+        _shared_binary_combinations_based_distances = new ArrayList<>();
     }
 
     static private String[] getAllUniqueDomainIdAsArray( final List<GenomeWideCombinableDomains> list_of_genome_wide_combinable_domains ) {
         String[] all_domain_ids_array;
-        final SortedSet<String> all_domain_ids = new TreeSet<String>();
+        final SortedSet<String> all_domain_ids = new TreeSet<>();
         for( final GenomeWideCombinableDomains genome_wide_combinable_domains : list_of_genome_wide_combinable_domains ) {
             final SortedSet<String> all_domains = genome_wide_combinable_domains.getAllDomainIds();
             for( final String domain : all_domains ) {
@@ -322,7 +326,7 @@ public class PairwiseGenomeComparator {
                                                             final double jacknife_ratio,
                                                             final Random generator ) {
         final int size = all_domain_ids_array.length;
-        final SortedSet<String> random_domain_ids = new TreeSet<String>();
+        final SortedSet<String> random_domain_ids = new TreeSet<>();
         final int number_of_ids_pick = ForesterUtil.roundToInt( jacknife_ratio * size );
         while ( random_domain_ids.size() < number_of_ids_pick ) {
             final int r = generator.nextInt( size );

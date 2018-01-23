@@ -9,7 +9,9 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
@@ -28,6 +30,7 @@ import org.forester.species.BasicSpecies;
 import org.forester.species.Species;
 import org.forester.surfacing.SurfacingUtil.DomainComparator;
 import org.forester.util.ForesterUtil;
+import org.forester.util.SequenceAccessionTools;
 
 public final class MinimalDomainomeCalculator {
 
@@ -40,8 +43,8 @@ public final class MinimalDomainomeCalculator {
                                    final String outfile_base,
                                    final boolean write_protein_files )
             throws IOException {
-        final SortedMap<String, SortedSet<String>> species_to_features_map = new TreeMap<String, SortedSet<String>>();
-        if ( protein_lists_per_species == null || tre == null ) {
+        final SortedMap<String, SortedSet<String>> species_to_features_map = new TreeMap<>();
+        if ( ( protein_lists_per_species == null ) || ( tre == null ) ) {
             throw new IllegalArgumentException( "argument is null" );
         }
         if ( protein_lists_per_species.size() < 2 ) {
@@ -62,22 +65,18 @@ public final class MinimalDomainomeCalculator {
         final BufferedWriter out_table = new BufferedWriter( new FileWriter( outfile_table ) );
         out.write( "SPECIES\tCOMMON NAME\tCODE\tRANK\t#EXT NODES\tEXT NODE CODES\t#" + x + "\t" + x + "" );
         out.write( ForesterUtil.LINE_SEPARATOR );
-        ///////////
-        //////////
         SortedMap<String, List<Protein>> protein_lists_per_quasi_species = null;
         if ( target_level >= 1 ) {
             protein_lists_per_quasi_species = makeProteinListsPerQuasiSpecies( tre,
                                                                                target_level,
                                                                                protein_lists_per_species );
-           
         }
-        /////////
-        ///////////
         for( final PhylogenyNodeIterator iter = tre.iteratorPostorder(); iter.hasNext(); ) {
             final PhylogenyNode node = iter.next();
             final int node_level = PhylogenyMethods.calculateLevel( node );
             final String species_name = node.getNodeData().isHasTaxonomy()
-                    ? node.getNodeData().getTaxonomy().getScientificName() : node.getName();
+                    ? node.getNodeData().getTaxonomy().getScientificName()
+                    : node.getName();
             final String common = node.getNodeData().isHasTaxonomy() ? node.getNodeData().getTaxonomy().getCommonName()
                     : "";
             final String tcode = node.getNodeData().isHasTaxonomy() ? node.getNodeData().getTaxonomy().getTaxonomyCode()
@@ -111,11 +110,9 @@ public final class MinimalDomainomeCalculator {
                     out.write( "\t\t" );
                 }
             }
-            final List<Set<String>> features_per_genome_list = new ArrayList<Set<String>>();
+            final List<Set<String>> features_per_genome_list = new ArrayList<>();
             boolean first = true;
             if ( target_level >= 1 ) {
-                ////////////
-                ////////////
                 if ( node_level >= target_level ) {
                     final List<PhylogenyNode> given_level_descs = PhylogenyMethods
                             .getAllDescendantsOfGivenLevel( node, target_level );
@@ -134,14 +131,14 @@ public final class MinimalDomainomeCalculator {
                         }
                         final List<Protein> proteins_per_species = protein_lists_per_quasi_species.get( spec_name );
                         if ( proteins_per_species != null ) {
-                            final SortedSet<String> features_per_genome = new TreeSet<String>();
+                            final SortedSet<String> features_per_genome = new TreeSet<>();
                             for( final Protein protein : proteins_per_species ) {
                                 if ( use_domain_architectures ) {
                                     final String da = protein.toDomainArchitectureString( separator, ie_cutoff );
                                     features_per_genome.add( da );
                                 }
                                 else {
-                                    List<Domain> domains = protein.getProteinDomains();
+                                    final List<Domain> domains = protein.getProteinDomains();
                                     for( final Domain domain : domains ) {
                                         if ( ( ie_cutoff <= -1 ) || ( domain.getPerDomainEvalue() <= ie_cutoff ) ) {
                                             features_per_genome.add( domain.getDomainId() );
@@ -149,7 +146,8 @@ public final class MinimalDomainomeCalculator {
                                     }
                                 }
                             }
-                            System.out.println( ">>>>>>>>>>>>>> features_per_genome.size()=" + features_per_genome.size() );
+                            System.out.println( ">>>>>>>>>>>>>> features_per_genome.size()="
+                                    + features_per_genome.size() );
                             if ( features_per_genome.size() > 0 ) {
                                 features_per_genome_list.add( features_per_genome );
                             }
@@ -164,8 +162,6 @@ public final class MinimalDomainomeCalculator {
                         }
                     }
                 }
-                ///////////
-                ///////////
             }
             else {
                 for( final PhylogenyNode external_desc : external_descs ) {
@@ -182,14 +178,14 @@ public final class MinimalDomainomeCalculator {
                     final List<Protein> proteins_per_species = protein_lists_per_species
                             .get( new BasicSpecies( code ) );
                     if ( proteins_per_species != null ) {
-                        final SortedSet<String> features_per_genome = new TreeSet<String>();
+                        final SortedSet<String> features_per_genome = new TreeSet<>();
                         for( final Protein protein : proteins_per_species ) {
                             if ( use_domain_architectures ) {
                                 final String da = protein.toDomainArchitectureString( separator, ie_cutoff );
                                 features_per_genome.add( da );
                             }
                             else {
-                                List<Domain> domains = protein.getProteinDomains();
+                                final List<Domain> domains = protein.getProteinDomains();
                                 for( final Domain domain : domains ) {
                                     if ( ( ie_cutoff <= -1 ) || ( domain.getPerDomainEvalue() <= ie_cutoff ) ) {
                                         features_per_genome.add( domain.getDomainId() );
@@ -204,7 +200,7 @@ public final class MinimalDomainomeCalculator {
                 } // for( final PhylogenyNode external_desc : external_descs )
             } // else
             if ( features_per_genome_list.size() > 0 ) {
-                SortedSet<String> intersection = calcIntersection( features_per_genome_list );
+                final SortedSet<String> intersection = calcIntersection( features_per_genome_list );
                 out.write( "\t" + intersection.size() + "\t" );
                 first = true;
                 for( final String s : intersection ) {
@@ -220,8 +216,8 @@ public final class MinimalDomainomeCalculator {
                 species_to_features_map.put( species_name, intersection );
             }
         }
-        final SortedSet<String> all_species_names = new TreeSet<String>();
-        final SortedSet<String> all_features = new TreeSet<String>();
+        final SortedSet<String> all_species_names = new TreeSet<>();
+        final SortedSet<String> all_features = new TreeSet<>();
         for( final Entry<String, SortedSet<String>> e : species_to_features_map.entrySet() ) {
             all_species_names.add( e.getKey() );
             for( final String f : e.getValue() ) {
@@ -287,6 +283,7 @@ public final class MinimalDomainomeCalculator {
             }
             int total = 0;
             final String dir = outfile_base + protdirname + "/";
+            final SortedMap<String, SortedMap<String, SortedSet<String>>> da_species_ids_map = new TreeMap<>();
             for( final String feat : all_features ) {
                 final File extract_outfile = new File( dir + feat + a + surfacing.SEQ_EXTRACT_SUFFIX );
                 SurfacingUtil.checkForOutputFileWriteability( extract_outfile );
@@ -297,22 +294,82 @@ public final class MinimalDomainomeCalculator {
                                                             proteins_file_writer,
                                                             ie_cutoff,
                                                             separator );
+                if ( use_domain_architectures && surfacing.WRITE_DA_SPECIES_IDS_MAP ) {
+                    final SortedMap<String, SortedSet<String>> species_ids_map = collectSpeciesAndIdsPerDA( protein_lists_per_species,
+                                                                                                            feat,
+                                                                                                            null,
+                                                                                                            ie_cutoff,
+                                                                                                            separator );
+                    if ( !da_species_ids_map.containsKey( feat ) ) {
+                        da_species_ids_map.put( feat, species_ids_map );
+                    }
+                    else {
+                        throw new IllegalArgumentException( "DA " + feat + " is not unique" );
+                    }
+                }
                 if ( counter < 1 ) {
                     ForesterUtil.printWarningMessage( "surfacing", feat + " not present (in " + b + " extraction)" );
                 }
                 total += counter;
                 proteins_file_writer.close();
             }
-            ForesterUtil.programMessage( "surfacing",
+            if ( use_domain_architectures && surfacing.WRITE_DA_SPECIES_IDS_MAP ) {
+                final File da_species_ids_map_outfile = new File( outfile_base + surfacing.DA_SPECIES_IDS_MAP_NAME );
+                final BufferedWriter writer = new BufferedWriter( new FileWriter( da_species_ids_map_outfile ) );
+                printSpeciesAndIdsPerDAs( da_species_ids_map, writer, "\t", "," );
+                writer.flush();
+                writer.close();
+                ForesterUtil.programMessage( surfacing.PRG_NAME,
+                                             "Wrote DA-species-ids map to           : " + da_species_ids_map_outfile );
+            }
+            ForesterUtil.programMessage( surfacing.PRG_NAME,
                                          "Wrote " + total + " individual " + b + " from a total of "
                                                  + all_features.size() + " into: " + dir );
         }
     }
 
+    private final static void printSpeciesAndIdsPerDAs( final SortedMap<String, SortedMap<String, SortedSet<String>>> da_species_ids_map,
+                                                        final Writer writer,
+                                                        final String separator,
+                                                        final String ids_separator )
+            throws IOException {
+        final Iterator<Entry<String, SortedMap<String, SortedSet<String>>>> it = da_species_ids_map.entrySet()
+                .iterator();
+        while ( it.hasNext() ) {
+            final Map.Entry<String, SortedMap<String, SortedSet<String>>> e = it.next();
+            final String da = e.getKey();
+            final SortedMap<String, SortedSet<String>> species_ids_map = e.getValue();
+            final Iterator<Entry<String, SortedSet<String>>> it2 = species_ids_map.entrySet().iterator();
+            while ( it2.hasNext() ) {
+                final Map.Entry<String, SortedSet<String>> e2 = it2.next();
+                final String species = e2.getKey();
+                final SortedSet<String> ids = e2.getValue();
+                if ( ids.size() > 0 ) {
+                    writer.write( da );
+                    writer.write( separator );
+                    writer.write( species );
+                    writer.write( separator );
+                    boolean first = true;
+                    for( final String id : ids ) {
+                        if ( first ) {
+                            first = false;
+                        }
+                        else {
+                            writer.write( ids_separator );
+                        }
+                        writer.write( id );
+                    }
+                    writer.write( SurfacingConstants.NL );
+                }
+            }
+        }
+        writer.flush();
+    }
+
     private final static SortedMap<String, List<Protein>> makeProteinListsPerQuasiSpecies( final Phylogeny tre,
                                                                                            final int level,
                                                                                            final SortedMap<Species, List<Protein>> protein_lists_per_species ) {
-        final SortedMap<String, List<Protein>> protein_lists_per_quasi_species = new TreeMap<String, List<Protein>>();
+        final SortedMap<String, List<Protein>> protein_lists_per_quasi_species = new TreeMap<>();
         System.out.println( "---------------------------------" );
         System.out.println( "level=" + level );
         for( final PhylogenyNodeIterator iter = tre.iteratorPostorder(); iter.hasNext(); ) {
@@ -321,30 +378,30 @@ public final class MinimalDomainomeCalculator {
             if ( node_level == level ) {
                 System.out.println( "level=" + level );
                 final List<PhylogenyNode> external_descs = node.getAllExternalDescendants();
-                final List<Protein> protein_list_per_quasi_species = new ArrayList<Protein>();
+                final List<Protein> protein_list_per_quasi_species = new ArrayList<>();
                 for( final PhylogenyNode external_desc : external_descs ) {
                     final String code = external_desc.getNodeData().getTaxonomy().getTaxonomyCode();
                     final List<Protein> proteins_per_species = protein_lists_per_species
                             .get( new BasicSpecies( code ) );
                     //System.out.println( code );
-                    for( Protein protein : proteins_per_species ) {
+                    for( final Protein protein : proteins_per_species ) {
                         protein_list_per_quasi_species.add( protein );
                     }
                 }
                 final String species_name = node.getNodeData().isHasTaxonomy()
-                        ? node.getNodeData().getTaxonomy().getScientificName() : node.getName();
+                        ? node.getNodeData().getTaxonomy().getScientificName()
+                        : node.getName();
                 System.out.println( "species_name=" + species_name );
                 protein_lists_per_quasi_species.put( species_name, protein_list_per_quasi_species );
                 System.out.println( ">>>>" + protein_list_per_quasi_species.size() );
             }
         }
-      
         return protein_lists_per_quasi_species;
     }
 
     private final static SortedSet<String> calcIntersection( final List<Set<String>> features_per_genome_list ) {
         final Set<String> first = features_per_genome_list.get( 0 );
-        final SortedSet<String> my_first = new TreeSet<String>();
+        final SortedSet<String> my_first = new TreeSet<>();
         for( final String s : first ) {
             my_first.add( s );
         }
@@ -410,7 +467,7 @@ public final class MinimalDomainomeCalculator {
                         }
                         out.write( "/" );
                         out.write( separator_for_output );
-                        final List<Domain> domain_list = new ArrayList<Domain>();
+                        final List<Domain> domain_list = new ArrayList<>();
                         for( final Domain domain : protein.getProteinDomains() ) {
                             if ( ( ie_cutoff < 0 ) || ( domain.getPerDomainEvalue() <= ie_cutoff ) ) {
                                 domain_list.add( domain );
@@ -454,11 +511,42 @@ public final class MinimalDomainomeCalculator {
         return counter;
     }
 
+    private final static SortedMap<String, SortedSet<String>> collectSpeciesAndIdsPerDA( final SortedMap<Species, List<Protein>> protein_lists_per_species,
+                                                                                         final String domain_id,
+                                                                                         final Writer out,
+                                                                                         final double ie_cutoff,
+                                                                                         final String domain_separator ) {
+        final SortedMap<String, SortedSet<String>> species_ids_map = new TreeMap<>();
+        for( final Species species : protein_lists_per_species.keySet() ) {
+            if ( !species_ids_map.containsKey( species.toString() ) ) {
+                species_ids_map.put( species.toString(), new TreeSet<String>() );
+            }
+            else {
+                throw new IllegalArgumentException( "species " + species + " is not unique" );
+            }
+            final List<Protein> proteins_per_species = protein_lists_per_species.get( species );
+            for( final Protein protein : proteins_per_species ) {
+                if ( domain_id.equals( protein.toDomainArchitectureString( domain_separator, ie_cutoff ) ) ) {
+                    final SortedSet<String> ids = species_ids_map.get( species.toString() );
+                    final String id = SequenceAccessionTools.parseAccessorFromString( protein.getProteinId().getId() )
+                            .getValue();
+                    if ( !ids.contains( species.toString() ) ) {
+                        ids.add( id );
+                    }
+                    else {
+                        throw new IllegalArgumentException( "sequence id " + id + " is not unique in " + species );
+                    }
+                }
+            }
+        }
+        return species_ids_map;
+    }
+
     public static void main( final String[] args ) {
-        Set<String> a = new HashSet<String>();
-        Set<String> b = new HashSet<String>();
-        Set<String> c = new HashSet<String>();
-        Set<String> d = new HashSet<String>();
+        final Set<String> a = new HashSet<>();
+        final Set<String> b = new HashSet<>();
+        final Set<String> c = new HashSet<>();
+        final Set<String> d = new HashSet<>();
         a.add( "x" );
         a.add( "b" );
         a.add( "c" );
@@ -473,12 +561,12 @@ public final class MinimalDomainomeCalculator {
         d.add( "a" );
         d.add( "c" );
         d.add( "d" );
-        List<Set<String>> domains_per_genome_list = new ArrayList<Set<String>>();
+        final List<Set<String>> domains_per_genome_list = new ArrayList<>();
         domains_per_genome_list.add( a );
         domains_per_genome_list.add( b );
         domains_per_genome_list.add( c );
         domains_per_genome_list.add( d );
-        Set<String> x = calcIntersection( domains_per_genome_list );
+        final Set<String> x = calcIntersection( domains_per_genome_list );
         System.out.println( x );
     }
 }
