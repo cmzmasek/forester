@@ -429,28 +429,28 @@ public final class HmmPfamOutputParser {
                 double e_value = -1;
                 double score = -1;
                 try {
-                    from = Integer.valueOf( from_str ).intValue();
+                    from = Integer.parseInt( from_str );
                 }
                 catch ( final NumberFormatException e ) {
                     throw new IOException( "could not parse seq-f from \"" + line + "\" [line " + line_number
                                            + "] in [" + getInputFile().getCanonicalPath() + "]" );
                 }
                 try {
-                    to = Integer.valueOf( to_str ).intValue();
+                    to = Integer.parseInt( to_str );
                 }
                 catch ( final NumberFormatException e ) {
                     throw new IOException( "could not parse seq-t from \"" + line + "\" [line " + line_number
                                            + "] in [" + getInputFile().getCanonicalPath() + "]" );
                 }
                 try {
-                    score = Double.valueOf( score_str ).doubleValue();
+                    score = Double.parseDouble( score_str );
                 }
                 catch ( final NumberFormatException e ) {
                     throw new IOException( "could not parse score from \"" + line + "\" [line " + line_number
                                            + "] in [" + getInputFile().getCanonicalPath() + "]" );
                 }
                 try {
-                    e_value = Double.valueOf( e_value_str ).doubleValue();
+                    e_value = Double.parseDouble( e_value_str );
                 }
                 catch ( final NumberFormatException e ) {
                     throw new IOException( "could not parse E-value from \"" + line + "\" [line " + line_number
@@ -482,14 +482,14 @@ public final class HmmPfamOutputParser {
                 int number = -1;
                 int total = -1;
                 try {
-                    number = Integer.valueOf( ( number_str ) ).intValue();
+                    number = Integer.parseInt( ( number_str ) );
                 }
                 catch ( final NumberFormatException e ) {
                     throw new IOException( "could not parse domain number from \"" + line + "\" [line " + line_number
                                            + "] in [" + getInputFile().getCanonicalPath() + "]" );
                 }
                 try {
-                    total = Integer.valueOf( ( total_str ) ).intValue();
+                    total = Integer.parseInt( ( total_str ) );
                 }
                 catch ( final NumberFormatException e ) {
                     throw new IOException( "could not parse domain count from \"" + line + "\" [line " + line_number

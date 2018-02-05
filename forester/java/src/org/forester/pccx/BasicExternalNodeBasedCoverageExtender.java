@@ -106,7 +106,7 @@ public class BasicExternalNodeBasedCoverageExtender implements CoverageExtender 
         BranchCountingBasedScoringMethod scoring_method;
         try {
             scoring_method = ( BranchCountingBasedScoringMethod ) ( Class.forName( my_options.getScoringMethod() ) )
-                    .newInstance();
+                    .getDeclaredConstructor().newInstance();
         }
         catch ( final Exception e ) {
             throw new IllegalArgumentException( "could not create scoring method class \""

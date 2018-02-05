@@ -544,7 +544,7 @@ public final class HmmscanPerDomainTableParser {
     private int parseInt( final String double_str, final int line_number, final String label ) throws IOException {
         int i = -1;
         try {
-            i = Integer.valueOf( double_str ).intValue();
+            i = Integer.parseInt( double_str );
         }
         catch ( final NumberFormatException e ) {
             throw new IOException( "could not parse \"" + label + "\" from \"" + double_str + "\" [line " + line_number

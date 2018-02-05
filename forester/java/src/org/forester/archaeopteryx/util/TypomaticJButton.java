@@ -89,7 +89,7 @@ public final class TypomaticJButton extends JButton implements ActionListener, M
     final public void mouseEntered( final MouseEvent e ) {
         if ( ( e.getSource() == this ) && isEnabled() && isRepeatEnabled() ) {
             if ( pressed && !timer.isRunning() ) {
-                modifiers = e.getModifiers();
+                modifiers = e.getModifiersEx();
                 timer.setInitialDelay( delay );
                 timer.start();
             }
@@ -110,7 +110,7 @@ public final class TypomaticJButton extends JButton implements ActionListener, M
         if ( ( e.getSource() == this ) && isEnabled() && isRepeatEnabled() ) {
             pressed = true;
             if ( !timer.isRunning() ) {
-                modifiers = e.getModifiers();
+                modifiers = e.getModifiersEx();
                 timer.setInitialDelay( initial_delay );
                 timer.start();
             }

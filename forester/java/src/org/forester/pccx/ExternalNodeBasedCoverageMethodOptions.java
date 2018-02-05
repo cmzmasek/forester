@@ -47,7 +47,7 @@ public class ExternalNodeBasedCoverageMethodOptions implements CoverageCalculati
         sb.append( "scoring method: " );
         BranchCountingBasedScoringMethod scoring_method;
         try {
-            scoring_method = ( BranchCountingBasedScoringMethod ) ( Class.forName( getScoringMethod() ) ).newInstance();
+            scoring_method = ( BranchCountingBasedScoringMethod ) ( Class.forName( getScoringMethod() ) ).getDeclaredConstructor().newInstance();
         }
         catch ( final Exception e ) {
             sb.append( "?" );

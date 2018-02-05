@@ -81,7 +81,7 @@ public final class support_transfer {
             System.exit( -1 );
         }
         if ( args.length == 4 ) {
-            index_of_tree_w_bl = ( Integer.valueOf( args[ 3 ] ) ).intValue();
+            index_of_tree_w_bl = ( Integer.parseInt( args[ 3 ] ) );
         }
         try {
             infile_bl = new File( args[ 0 ] );

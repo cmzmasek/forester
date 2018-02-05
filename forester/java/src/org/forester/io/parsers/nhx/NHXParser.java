@@ -713,7 +713,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
 
     private final static double doubleValue( final String str, final boolean allow_errors ) throws NHXFormatException {
         try {
-            return Double.valueOf( str ).doubleValue();
+            return Double.parseDouble( str );
         }
         catch ( final NumberFormatException ex ) {
             if ( !allow_errors ) {

@@ -94,6 +94,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTextArea;
 import javax.swing.Popup;
 import javax.swing.PopupFactory;
+import javax.swing.SwingUtilities;
 
 import org.forester.archaeopteryx.Configuration.EXT_NODE_DATA_RETURN_ON;
 import org.forester.archaeopteryx.ControlPanel.NodeClickAction;
@@ -5358,22 +5359,29 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 }
                 _highlight_node = node;
                 // Check if shift key is down
-                if ( ( e.getModifiers() & InputEvent.SHIFT_MASK ) != 0 ) {
+                if ( ( e.getModifiersEx() & MouseEvent.SHIFT_DOWN_MASK ) != 0 ) {
                     // Yes, so add to _found_nodes
                     if ( getFoundNodes0() == null ) {
                         setFoundNodes0( new HashSet<Long>() );
                     }
-                    getFoundNodes0().add( node.getId() );
-                    // Check if control key is down
+                    if ( getFoundNodes0().contains( node.getId()  )) {
+                        getFoundNodes0().remove( node.getId() );
+                    }
+                    else {
+                        getFoundNodes0().add( node.getId() );
+                    }
+                  
                 }
-                else if ( ( e.getModifiers() & InputEvent.CTRL_MASK ) != 0 ) {
+                else if ( ( e.getModifiersEx() & MouseEvent.CTRL_DOWN_MASK ) != 0 ) {
+                    // Check if control key is down
                     // Yes, so pop-up menu
                     displayNodePopupMenu( node, e.getX(), e.getY() );
-                    // Handle unadorned click
+                   
                 }
                 else {
+                    // Handle unadorned click
                     // Check for right mouse button
-                    if ( e.getModifiers() == 4 ) {
+                    if ( SwingUtilities.isRightMouseButton(e)  ) {
                         displayNodePopupMenu( node, e.getX(), e.getY() );
                     }
                     else {
