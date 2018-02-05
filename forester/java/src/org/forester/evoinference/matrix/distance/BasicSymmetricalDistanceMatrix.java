@@ -103,7 +103,7 @@ public final class BasicSymmetricalDistanceMatrix implements DistanceMatrix {
         final StringTokenizer tk = new StringTokenizer( s );
         int i = 0;
         while ( tk.hasMoreElements() ) {
-            setValue( i, row, new Double( tk.nextToken() ).doubleValue() );
+            setValue( i, row, Double.valueOf( tk.nextToken() ));
             i++;
         }
     }

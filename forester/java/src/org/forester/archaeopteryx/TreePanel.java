@@ -3097,12 +3097,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                        final Graphics2D g,
                                        final boolean pdf ) {
         if ( ( ( x1 + dist_left ) < ( x2 - dist_right ) ) ) {
-            final Stroke strok = g.getStroke();
+            final Stroke stroke = g.getStroke();
             Color col = null;
-            if ( strok == STROKE_005 ) {
+            if ( stroke == STROKE_005 ) {
                 g.setStroke( STROKE_001_DASHED );
             }
-            else if ( strok == STROKE_01 ) {
+            else if ( stroke == STROKE_01 ) {
                 g.setStroke( STROKE_005_DASHED );
             }
             else {
@@ -3113,14 +3113,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 g.setColor( lighter( col ) );
             }
             drawLine( x1 + dist_left, y, x2 - dist_right, y, g );
-            g.setStroke( strok );
+            g.setStroke( stroke );
             if ( pdf ) {
                 g.setColor( col );
             }
         }
     }
 
-    public static Color lighter( final Color color ) {
+    private static Color lighter( final Color color ) {
         if ( ( color.getRed() == 0 ) && ( color.getGreen() == 0 ) && ( color.getBlue() == 0 ) ) {
             return new Color( 200, 200, 200 );
         }

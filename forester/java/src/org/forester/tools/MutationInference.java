@@ -75,6 +75,7 @@ public final class MutationInference {
             final MolecularSequence seq = msa.getSequence( name );
             if ( seq != null ) {
                 final Sequence s = new Sequence();
+                s.setMolecularSequenceAligned( true );
                 s.setMolecularSequence( seq.getMolecularSequenceAsString() );
                 n.getNodeData().setSequence( s );
             }

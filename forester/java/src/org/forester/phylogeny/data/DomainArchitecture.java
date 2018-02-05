@@ -66,20 +66,21 @@ public class DomainArchitecture implements PhylogenyData {
         try {
             final StringTokenizer st = new StringTokenizer( da_str, DomainArchitecture.NHX_SEPARATOR );
             final String length_str = ( String ) st.nextElement();
-            total_length = new Integer( length_str ).intValue();
+            total_length = Integer.parseInt( length_str );
             while ( st.hasMoreElements() ) {
                 final String from_str = ( String ) st.nextElement();
                 final String to_str = ( String ) st.nextElement();
                 final String support_str = ( String ) st.nextElement();
                 final String name = ( String ) st.nextElement();
-                to = new Integer( to_str ).intValue();
-                final int from = new Integer( from_str ).intValue();
-                final double support = new Double( support_str ).doubleValue();
+                to = Integer.parseInt( to_str );
+                final int from = Integer.parseInt( from_str );
+                final double support = Double.parseDouble( support_str );
                 final ProteinDomain pd = new ProteinDomain( name, from, to, support );
                 addDomain( pd );
             }
         }
         catch ( final Exception e ) {
+            e.printStackTrace();
             throw new IllegalArgumentException( "malformed format for domain structure \"" + da_str + "\": "
                     + e.getMessage() );
         }

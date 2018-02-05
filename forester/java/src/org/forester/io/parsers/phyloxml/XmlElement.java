@@ -127,7 +127,7 @@ public class XmlElement {
     public boolean getValueAsBoolean() throws PhylogenyParserException {
         boolean b = false;
         try {
-            b = ( new Boolean( getValueAsString() ) ).booleanValue();
+            b = ( Boolean.valueOf( getValueAsString() ) ).booleanValue();
         }
         catch ( final NumberFormatException ex ) {
             throw new PhylogenyParserException( "attempt to parse [" + getValueAsString() + "] into boolean, in "

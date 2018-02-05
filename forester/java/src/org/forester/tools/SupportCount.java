@@ -129,7 +129,7 @@ public final class SupportCount {
                         else {
                             ++d;
                         }
-                        support_values.put( node, new Double( d ) );
+                        support_values.put( node, Double.valueOf( d ) );
                     }
                     continue E;
                 }
@@ -246,7 +246,7 @@ public final class SupportCount {
             final PhylogenyNode n = it.next();
             final List<PhylogenyNode> l = n.getAllExternalDescendants();
             final ArrayList<String> c = new ArrayList<String>();
-            phylogeny_external_names_per_node.put( new Long( n.getId() ), c );
+            phylogeny_external_names_per_node.put( Long.valueOf( n.getId() ), c );
             for( final PhylogenyNode phylogenyNode : l ) {
                 c.add( phylogenyNode.getName() );
             }

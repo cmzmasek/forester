@@ -1792,8 +1792,8 @@ public final class SurfacingUtil {
                                          "species/genome names in 'plus minus' file must begin with '*' (high copy target genome), '+' (high copy base genomes), '-' (low copy genomes), '$D=<integer>' minimal Difference (default is 1), '$F=<double>' factor (default is 1.0), double), or '#' (ignore) suffix, encountered: \""
                                                  + species + "\"" );
                 }
-                numbers.add( new Integer( min_diff + "" ) );
-                numbers.add( new Double( factor + "" ) );
+                numbers.add( Integer.valueOf( min_diff + "" ) );
+                numbers.add( Double.valueOf( factor + "" ) );
             }
         }
         else {

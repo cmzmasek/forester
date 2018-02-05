@@ -54,7 +54,7 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
     public void addValue( final double d ) {
         _recalc_sigma = true;
         _sum += d;
-        _data.add( new Double( d ) );
+        _data.add( Double.valueOf( d ) );
         if ( d < _min ) {
             _min = d;
         }

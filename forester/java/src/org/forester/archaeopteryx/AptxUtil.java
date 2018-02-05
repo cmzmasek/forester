@@ -1061,11 +1061,7 @@ public final class AptxUtil {
             throw new IOException( "\"" + file_name + "\" is a directory" );
         }
         Rectangle visible = null;
-        //        if ( !options.isGraphicsExportUsingActualSize() ) {
-        //            width = options.getPrintSizeX();
-        //            height = options.getPrintSizeY();
-        //        }
-        /*else*/ if ( options.isGraphicsExportVisibleOnly() ) {
+       if ( options.isGraphicsExportVisibleOnly() ) {
             visible = tree_panel.getVisibleRect();
             width = visible.width;
             height = visible.height;
@@ -1101,32 +1097,7 @@ public final class AptxUtil {
     }
 
     final static void writeToTiff( final File file, final BufferedImage image ) throws IOException {
-        // See: http://log.robmeek.com/2005/08/write-tiff-in-java.html
-        ImageWriter writer = null;
-        ImageOutputStream ios = null;
-        // Find an appropriate writer:
-        final Iterator<ImageWriter> it = ImageIO.getImageWritersByFormatName( "TIF" );
-        if ( it.hasNext() ) {
-            writer = it.next();
-        }
-        else {
-            throw new IOException( "failed to get TIFF image writer" );
-        }
-        // Setup writer:
-        ios = ImageIO.createImageOutputStream( file );
-        writer.setOutput( ios );
-        final ImageWriteParam image_write_param = new ImageWriteParam( Locale.getDefault() );
-        image_write_param.setCompressionMode( ImageWriteParam.MODE_EXPLICIT );
-        // see writeParam.getCompressionTypes() for available compression type
-        // strings.
-        image_write_param.setCompressionType( "PackBits" );
-        final String t[] = image_write_param.getCompressionTypes();
-        for( final String string : t ) {
-            System.out.println( string );
-        }
-        // Convert to an IIOImage:
-        final IIOImage iio_image = new IIOImage( image, null, null );
-        writer.write( null, iio_image, image_write_param );
+        ImageIO.write(image, "TIFF", file);
     }
 
     final static Map<String, Integer> getRankCounts( final Phylogeny tree ) {

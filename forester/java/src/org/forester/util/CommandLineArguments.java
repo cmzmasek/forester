@@ -119,7 +119,7 @@ public final class CommandLineArguments {
     public double getOptionValueAsDouble( final String option_name ) throws IOException {
         double d = -Double.MAX_VALUE;
         try {
-            d = new Double( getOptionValue( option_name ) ).doubleValue();
+            d = Double.valueOf( getOptionValue( option_name ) ).doubleValue();
         }
         catch ( final NumberFormatException e ) {
             throw new IOException( "value for option \"" + option_name + "\" is expected to be of type double" );
@@ -130,7 +130,7 @@ public final class CommandLineArguments {
     public int getOptionValueAsInt( final String option_name ) throws IOException {
         int i = Integer.MIN_VALUE;
         try {
-            i = new Integer( getOptionValue( option_name ) ).intValue();
+            i = Integer.valueOf( getOptionValue( option_name ) ).intValue();
         }
         catch ( final NumberFormatException e ) {
             throw new IOException( "value for option \"" + option_name + "\" is expected to be of type integer" );
@@ -141,7 +141,7 @@ public final class CommandLineArguments {
     public long getOptionValueAsLong( final String option_name ) throws IOException {
         long l = Long.MIN_VALUE;
         try {
-            l = new Long( getOptionValue( option_name ) ).longValue();
+            l = Long.valueOf( getOptionValue( option_name ) ).longValue();
         }
         catch ( final NumberFormatException e ) {
             throw new IOException( "value for option \"" + option_name + "\" is expected to be of type long" );

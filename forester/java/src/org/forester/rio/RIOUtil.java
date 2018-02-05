@@ -429,7 +429,7 @@ public final class RIOUtil {
         if ( !replace_ids && id_map != null && id_map.size() > 0 ) {
             w.println();
             
-            final Iterator<?> it = id_map.entrySet().iterator();
+            final Iterator<Map.Entry<String, String>> it = id_map.entrySet().iterator();
             while (it.hasNext()) {
                 Map.Entry<String, String> pair = ( Entry<String, String> ) it.next();
                 w.println( pair.getKey()  + "\t" + pair.getValue() );

@@ -576,7 +576,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     private void addClickToOption( final int which, final String title ) {
         _click_to_combobox.addItem( title );
         _click_to_names.add( title );
-        _all_click_to_names.put( new Integer( which ), title );
+        _all_click_to_names.put( Integer.valueOf( which ), title );
         if ( !_configuration.isUseNativeUI() ) {
             _click_to_combobox.setBackground( getConfiguration().getGuiButtonBackgroundColor() );
             _click_to_combobox.setForeground( getConfiguration().getGuiButtonTextColor() );

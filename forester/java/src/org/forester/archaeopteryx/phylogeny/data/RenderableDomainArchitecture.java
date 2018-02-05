@@ -173,7 +173,7 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
 
     @Override
     public Object getParameter() {
-        return new Integer( _e_value_threshold_exp );
+        return Integer.valueOf( _e_value_threshold_exp );
     }
 
     public float getRenderingFactorWidth() {

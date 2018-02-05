@@ -41,6 +41,7 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.Writer;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.KeyManagementException;
@@ -1269,7 +1270,7 @@ public final class ForesterUtil {
 
     final public static double round( final double value, final int decimal_place ) {
         BigDecimal bd = new BigDecimal( value );
-        bd = bd.setScale( decimal_place, BigDecimal.ROUND_HALF_UP );
+        bd = bd.setScale( decimal_place, RoundingMode.HALF_UP );
         return bd.doubleValue();
     }
 

@@ -70,7 +70,7 @@ public class goac {
                 table.setValue( go, "{SD}", stats.sampleStandardDeviation() );
             }
             else {
-                table.setValue( go, "{SD}", new Double( 0 ) );
+                table.setValue( go, "{SD}", Double.valueOf( 0 ) );
             }
             table.setValue( go, "{MIN}", stats.getMin() );
             table.setValue( go, "{MAX}", stats.getMax() );
