@@ -663,7 +663,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                                                         final Graphics g,
                                                                         final boolean to_pdf,
                                                                         final boolean to_graphics_file ) {
-        final NodeClickAction action = _control_panel.getActionWhenNodeClicked();
+       final NodeClickAction action = _control_panel.getActionWhenNodeClicked();
         if ( ( to_pdf || to_graphics_file ) && getOptions().isPrintBlackAndWhite() ) {
             g.setColor( Color.BLACK );
         }
