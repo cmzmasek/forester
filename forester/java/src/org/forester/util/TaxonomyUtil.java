@@ -68,6 +68,9 @@ public final class TaxonomyUtil {
         put( "BALMU", "deuterostomia" );
         put( "TURTR", "deuterostomia" );
         put( "PIG", "deuterostomia" );
+        put( "CRIGR", "deuterostomia" );
+        put( "CANLF", "deuterostomia" );
+        put( "MUSPF", "deuterostomia" );
         put( "LAMPA", "deuterostomia" );
         put( "HORSE", "deuterostomia" );
         put( "MYOLU", "deuterostomia" );
@@ -132,6 +135,7 @@ public final class TaxonomyUtil {
         put( "AEDAE", "protostomia" );
         put( "ANOGA", "protostomia" );
         put( "CULPI", "protostomia" );
+        put( "CULQU", "protostomia" );
         put( "BOMMO", "protostomia" );
         put( "DANPL", "protostomia" );
         put( "ATTCE", "protostomia" );
@@ -186,7 +190,6 @@ public final class TaxonomyUtil {
         put( "MNELE", "ctenophora" );
         put( "AMPQE", "porifera" );
         put( "MONBE", "choanoflagellida" );
-        put( "SALS5", "choanoflagellida" ); //TODO remove me
         put( "SALR5", "choanoflagellida" );
         put( "AMOPA", "ichthyophonida & filasterea" );
         put( "SARXX", "ichthyophonida & filasterea" );
