@@ -176,6 +176,12 @@ public class FastaParser {
             ary[ 1 ] = seq;
             temp_msa.add( ary );
         }
+        else if ( name == null || name.length() < 1) {
+            System.out.println( "WARNING: sequence with empty name -- ignored" );
+        }
+        else if ( seq == null || seq.length() < 1 ) {
+            System.out.println( "WARNING: empty sequence -- ignored" );
+        }
     }
 
     private static String trim( final String line ) {

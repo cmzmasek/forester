@@ -3665,7 +3665,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ( ( getControlPanel().getTreeDisplayType() == Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM )
                 && node.isExternal() ) {
             start_x = ( float ) ( ( getMaxDistanceToRoot() * getXcorrectionFactor() )
-                    + ( getOptions().getDefaultNodeShapeSize() / 2 ) + x_shift + ( 1 * TreePanel.MOVE ) + getXdistance()
+                    + ( getOptions().getDefaultNodeShapeSize() / 2 ) + x_shift + TreePanel.MOVE + getXdistance()
                     + 3 );
         }
         float start_y;

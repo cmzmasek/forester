@@ -49,7 +49,6 @@ import org.forester.phylogeny.data.Identifier;
 import org.forester.phylogeny.data.PhylogenyDataUtil;
 import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.SequenceRelation;
-import org.forester.phylogeny.data.SequenceRelation.SEQUENCE_RELATION_TYPE;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.phylogeny.iterators.ExternalForwardIterator;
@@ -58,7 +57,6 @@ import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.phylogeny.iterators.PostorderTreeIterator;
 import org.forester.phylogeny.iterators.PreorderTreeIterator;
 import org.forester.util.FailedConditionCheckException;
-import org.forester.util.ForesterUtil;
 
 public class Phylogeny {
 
@@ -519,6 +517,21 @@ public class Phylogeny {
             final PhylogenyNode n = iter.next();
             if ( n.getNodeData().isHasTaxonomy()
                     && n.getNodeData().getTaxonomy().getTaxonomyCode().equals( taxonomy_code ) ) {
+                nodes.add( n );
+            }
+        }
+        return nodes;
+    }
+    
+    public List<PhylogenyNode> getNodesViaScientificName( final String scientific_name ) {
+        if ( isEmpty() ) {
+            return null;
+        }
+        final List<PhylogenyNode> nodes = new ArrayList<PhylogenyNode>();
+        for( final PhylogenyNodeIterator iter = iteratorPreorder(); iter.hasNext(); ) {
+            final PhylogenyNode n = iter.next();
+            if ( n.getNodeData().isHasTaxonomy()
+                    && n.getNodeData().getTaxonomy().getScientificName().equals( scientific_name ) ) {
                 nodes.add( n );
             }
         }
