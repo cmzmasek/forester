@@ -34,4 +34,14 @@ public final class TaxonomyColors {
     public static final Color ALPHAHERPESVIRINAE_COLOR               = new Color( 46, 139, 87 );
     public static final Color BETAHERPESVIRINAE_COLOR                = new Color( 205, 92, 92 );
     public static final Color GAMMAHERPESVIRINAE_COLOR               = new Color( 72, 61, 139 );
+    public static final Color TOROVIRINAE_COLOR                      = new Color( 46, 139, 87 );
+    public static final Color CORONAVIRINAE_COLOR                    = new Color( 205, 92, 92 );
+    public static final Color ENTOMOPOXVIRINAE_COLOR                 = new Color( 72, 61, 139 );
+    public static final Color CHORDOPOXVIRINAE_COLOR                 = new Color( 46, 139, 87 );
+    public static final Color ALPHACORONAVIRUS_COLOR                 = new Color( 255, 0, 0 );
+    public static final Color BETACORONAVIRUS_COLOR                  = new Color( 0, 255, 0 );
+    public static final Color GAMMACORONAVIRUS_COLOR                 = new Color( 0, 0, 255 );
+    public static final Color DELTACORONAVIRUS_COLOR                 = new Color( 0, 255, 255 );
+    public static final Color TOROVIRUS_COLOR                        = new Color( 160, 160, 160 );
+    public static final Color BAFINIVIRUS_COLOR                      = new Color( 80, 80, 80 );
 }

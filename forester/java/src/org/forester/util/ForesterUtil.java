@@ -91,15 +91,15 @@ public final class ForesterUtil {
     public final static String       JAVA_VENDOR                      = System.getProperty( "java.vendor" );
     public final static String       JAVA_VERSION                     = System.getProperty( "java.version" );
     public final static String       LINE_SEPARATOR                   = System.getProperty( "line.separator" );
-    public static final String       NCBI_GI                          = "http://www.ncbi.nlm.nih.gov/protein/gi:";
-    public static final String       NCBI_NUCCORE                     = "http://www.ncbi.nlm.nih.gov/nuccore/";
-    public static final String       NCBI_PROTEIN                     = "http://www.ncbi.nlm.nih.gov/protein/";
+    public static final String       NCBI_GI                          = "https://www.ncbi.nlm.nih.gov/protein/gi:";
+    public static final String       NCBI_NUCCORE                     = "https://www.ncbi.nlm.nih.gov/nuccore/";
+    public static final String       NCBI_PROTEIN                     = "https://www.ncbi.nlm.nih.gov/protein/";
     public static final BigDecimal   NULL_BD                          = new BigDecimal( 0 );
     public final static String       OS_ARCH                          = System.getProperty( "os.arch" );
     public final static String       OS_NAME                          = System.getProperty( "os.name" );
     public final static String       OS_VERSION                       = System.getProperty( "os.version" );
     public static final String       PDB                              = "http://www.pdb.org/pdb/explore/explore.do?pdbId=";
-    public final static String       UNIPROT_KB                       = "http://www.uniprot.org/uniprot/";
+    public final static String       UNIPROT_KB                       = "https://www.uniprot.org/uniprot/";
     public final static double       ZERO_DIFF                        = 1.0E-12;
     private static final Pattern     PARANTHESESABLE_NH_CHARS_PATTERN = Pattern.compile( "[(),;\\s:\\[\\]]" );
     static {
@@ -906,6 +906,33 @@ public final class ForesterUtil {
             else if ( tax_group.equals( TaxonomyGroups.GAMMAHERPESVIRINAE ) ) {
                 return TaxonomyColors.GAMMAHERPESVIRINAE_COLOR;
             }
+            else if ( tax_group.equals( TaxonomyGroups.ENTOMOPOXVIRINAE ) ) {
+                return TaxonomyColors.ENTOMOPOXVIRINAE_COLOR;
+            }
+            else if ( tax_group.equals( TaxonomyGroups.CHORDOPOXVIRINAE ) ) {
+                return TaxonomyColors.CHORDOPOXVIRINAE_COLOR;
+            }
+            
+            else if ( tax_group.equals( TaxonomyGroups.ALPHACORONAVIRUS ) ) {
+                return TaxonomyColors.ALPHACORONAVIRUS_COLOR;
+            }
+            else if ( tax_group.equals( TaxonomyGroups.BETACORONAVIRUS ) ) {
+                return TaxonomyColors.BETACORONAVIRUS_COLOR;
+            }
+            else if ( tax_group.equals( TaxonomyGroups.GAMMACORONAVIRUS ) ) {
+                return TaxonomyColors.GAMMACORONAVIRUS_COLOR;
+            }
+            else if ( tax_group.equals( TaxonomyGroups.DELTACORONAVIRUS ) ) {
+                return TaxonomyColors.DELTACORONAVIRUS_COLOR;
+            }
+            else if ( tax_group.equals( TaxonomyGroups.TOROVIRUS ) ) {
+                return TaxonomyColors.TOROVIRUS_COLOR;
+            }
+            else if ( tax_group.equals( TaxonomyGroups.BAFINIVIRUS ) ) {
+                return TaxonomyColors.BAFINIVIRUS_COLOR;
+            }
+            
+            
             else if ( tax_group.equals( TaxonomyGroups.OTHER ) ) {
                 return TaxonomyColors.OTHER_COLOR;
             }
@@ -1004,6 +1031,32 @@ public final class ForesterUtil {
         else if ( tax.equalsIgnoreCase( TaxonomyGroups.GAMMAHERPESVIRINAE ) ) {
             return TaxonomyGroups.GAMMAHERPESVIRINAE;
         }
+        else if ( tax.equalsIgnoreCase( TaxonomyGroups.CHORDOPOXVIRINAE ) ) {
+            return TaxonomyGroups.CHORDOPOXVIRINAE;
+        }
+        else if ( tax.equalsIgnoreCase( TaxonomyGroups.ENTOMOPOXVIRINAE ) ) {
+            return TaxonomyGroups.ENTOMOPOXVIRINAE;
+        }
+        
+        else if ( tax.equalsIgnoreCase( TaxonomyGroups.ALPHACORONAVIRUS ) ) {
+            return TaxonomyGroups.ALPHACORONAVIRUS;
+        }
+        else if ( tax.equalsIgnoreCase( TaxonomyGroups.BETACORONAVIRUS ) ) {
+            return TaxonomyGroups.BETACORONAVIRUS;
+        }
+        else if ( tax.equalsIgnoreCase( TaxonomyGroups.DELTACORONAVIRUS ) ) {
+            return TaxonomyGroups.DELTACORONAVIRUS;
+        }
+        else if ( tax.equalsIgnoreCase( TaxonomyGroups.GAMMACORONAVIRUS ) ) {
+            return TaxonomyGroups.GAMMACORONAVIRUS;
+        }
+        else if ( tax.equalsIgnoreCase( TaxonomyGroups.TOROVIRUS ) ) {
+            return TaxonomyGroups.TOROVIRUS;
+        }
+        else if ( tax.equalsIgnoreCase( TaxonomyGroups.BAFINIVIRUS ) ) {
+            return TaxonomyGroups.BAFINIVIRUS;
+        }
+        
         return null;
     }
 

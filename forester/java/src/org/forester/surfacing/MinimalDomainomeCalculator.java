@@ -23,6 +23,7 @@ import org.forester.application.surfacing;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
+import org.forester.phylogeny.data.Accession;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.protein.Domain;
 import org.forester.protein.Protein;
@@ -528,8 +529,14 @@ public final class MinimalDomainomeCalculator {
             for( final Protein protein : proteins_per_species ) {
                 if ( domain_id.equals( protein.toDomainArchitectureString( domain_separator, ie_cutoff ) ) ) {
                     final SortedSet<String> ids = species_ids_map.get( species.toString() );
-                    final String id = SequenceAccessionTools.parseAccessorFromString( protein.getProteinId().getId() )
-                            .getValue();
+                    String id = "";
+                    final Accession acc = SequenceAccessionTools.parseAccessorFromString( protein.getProteinId().getId() );
+                    if ( acc == null ) {
+                        id = protein.getProteinId().getId();
+                    }
+                    else {
+                        id = acc.getValue();
+                    }
                     if ( !ids.contains( species.toString() ) ) {
                         ids.add( id );
                     }

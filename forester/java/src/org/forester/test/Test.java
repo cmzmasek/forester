@@ -12475,6 +12475,28 @@ public final class Test {
                 return false;
             }
             
+            
+            id = SequenceAccessionTools
+                    .parseAccessorFromString( "Cowpox_virus|NP_619995.1|Brighton_Red|NA|Unknown|CPXV215_CDS|CPXV215_Protein" );
+            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getSource() )
+                    || !id.getValue().equals( "NP_619995.1" ) || !id.getSource().equals( "refseq" ) ) {
+                if ( id != null ) {
+                    System.out.println( "value   =" + id.getValue() );
+                    System.out.println( "provider=" + id.getSource() );
+                }
+                return false;
+            }
+            id = SequenceAccessionTools
+            .parseAccessorFromString( "Myxoma_virus|NP_051873.1|Lausanne|NA|Unknown|m006R|M6" );
+    if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getSource() )
+            || !id.getValue().equals( "NP_051873.1" ) || !id.getSource().equals( "refseq" ) ) {
+        if ( id != null ) {
+            System.out.println( "value   =" + id.getValue() );
+            System.out.println( "provider=" + id.getSource() );
+        }
+        return false;
+    }
+            
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );

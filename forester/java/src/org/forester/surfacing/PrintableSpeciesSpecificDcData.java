@@ -33,6 +33,8 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import org.forester.phylogeny.data.Accession;
+import org.forester.phylogeny.data.Accession.Source;
 import org.forester.util.ForesterUtil;
 import org.forester.util.SequenceAccessionTools;
 
@@ -181,34 +183,34 @@ class PrintableSpeciesSpecificDcData {
     }
 
     private static String obtainSeqId( final String p ) {
-        return SequenceAccessionTools.parseAccessorFromString( p ).getValue();
+        String id = "";
+        final Accession acc = SequenceAccessionTools.parseAccessorFromString( p );
+        if ( acc == null ) {
+            id = p;
+        }
+        else {
+            id = acc.getValue();
+        }
+        return id;
     }
 
     private static String obtainSeqLink( final String p ) {
-        String link;
-        final String up_id = SequenceAccessionTools.parseUniProtAccessorFromString( p );
-        if ( !ForesterUtil.isEmpty( up_id ) ) {
-            link = "<a class=\"pl\" href=\"" + ForesterUtil.UNIPROT_KB + up_id + "\" target=\"_up_window\">" + up_id
-                    + "</a>";
-        }
-        else {
-            final String gb_id = SequenceAccessionTools.parseGenbankProteinAccessorFromString( p );
-            if ( !ForesterUtil.isEmpty( gb_id ) ) {
-                link = "<a class=\"pl\" href=\"" + ForesterUtil.NCBI_PROTEIN + gb_id + "\" target=\"_up_window\">"
-                        + gb_id + "</a>";
+        final Accession acc = SequenceAccessionTools.parseAccessorFromString( p );
+        if ( acc != null ) {
+            if ( acc.getSource().equals( Source.UNIPROT.toString() ) ) {
+                return "<a class=\"pl\" href=\"" + ForesterUtil.UNIPROT_KB + acc.getValue()
+                        + "\" target=\"_up_window\">" + acc.getValue() + "</a>";
             }
-            else {
-                final String gi = SequenceAccessionTools.parseGInumberFromString( p );
-                if ( !ForesterUtil.isEmpty( gi ) ) {
-                    link = "<a class=\"pl\" href=\"" + ForesterUtil.NCBI_GI + gi + "\" target=\"_up_window\">gi|" + gi
-                            + "</a>";
-                }
-                else {
-                    link = "<a class=\"ps\" href=\"" + "http://www.google.com/search?q=" + p
-                            + "\" target=\"_g_window\">" + p + "</a>";
-                }
+            else if ( acc.getSource().equals( Source.NCBI.toString() ) ) {
+                return "<a class=\"pl\" href=\"" + ForesterUtil.NCBI_PROTEIN + acc.getValue()
+                        + "\" target=\"_up_window\">" + acc.getValue() + "</a>";
+            }
+            else if ( acc.getSource().equals( Source.REFSEQ.toString() ) ) {
+                return "<a class=\"pl\" href=\"" + ForesterUtil.NCBI_NUCCORE + acc.getValue()
+                        + "\" target=\"_up_window\">" + acc.getValue() + "</a>";
             }
         }
-        return link;
+        return "<a class=\"ps\" href=\"" + "http://www.google.com/search?q=" + p + "\" target=\"_g_window\">" + p
+                + "</a>";
     }
 }

@@ -32,5 +32,14 @@ public final class TaxonomyGroups {
     static final String ALPHAHERPESVIRINAE               = "alphaherpesvirinae";
     static final String BETAHERPESVIRINAE                = "betaherpesvirinae";
     static final String GAMMAHERPESVIRINAE               = "gammaherpesvirinae";
-    public static final String OTHER                             = "other";
+    static final String CHORDOPOXVIRINAE                 = "chordopoxvirinae";
+    static final String ENTOMOPOXVIRINAE                 = "entomopoxvirinae";
+    static final String ALPHACORONAVIRUS                    = "alphacoronavirus";
+    static final String BETACORONAVIRUS                    = "betacoronavirus";
+    static final String GAMMACORONAVIRUS                    = "gammacoronavirus";
+    static final String DELTACORONAVIRUS                    = "deltacoronavirus";
+    static final String TOROVIRUS                    = "torovirus";
+    static final String BAFINIVIRUS                    = "bafinivirus";
+    
+    public static final String OTHER                     = "other";
 }
