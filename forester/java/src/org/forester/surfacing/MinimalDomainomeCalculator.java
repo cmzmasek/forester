@@ -317,7 +317,7 @@ public final class MinimalDomainomeCalculator {
             if ( use_domain_architectures && surfacing.WRITE_DA_SPECIES_IDS_MAP ) {
                 final File da_species_ids_map_outfile = new File( outfile_base + surfacing.DA_SPECIES_IDS_MAP_NAME );
                 final BufferedWriter writer = new BufferedWriter( new FileWriter( da_species_ids_map_outfile ) );
-                printSpeciesAndIdsPerDAs( da_species_ids_map, writer, "\t", "," );
+                printSpeciesAndIdsPerDAs( da_species_ids_map, tre, writer, "\t", "," );
                 writer.flush();
                 writer.close();
                 ForesterUtil.programMessage( surfacing.PRG_NAME,
@@ -330,6 +330,7 @@ public final class MinimalDomainomeCalculator {
     }
 
     private final static void printSpeciesAndIdsPerDAs( final SortedMap<String, SortedMap<String, SortedSet<String>>> da_species_ids_map,
+                                                        final Phylogeny species_tree,
                                                         final Writer writer,
                                                         final String separator,
                                                         final String ids_separator )
@@ -340,13 +341,80 @@ public final class MinimalDomainomeCalculator {
             final Map.Entry<String, SortedMap<String, SortedSet<String>>> e = it.next();
             final String da = e.getKey();
             final SortedMap<String, SortedSet<String>> species_ids_map = e.getValue();
+            // Get all species:
+            final List<String> all_species = new ArrayList<>();
+            final Iterator<Entry<String, SortedSet<String>>> it_for_all_species = species_ids_map.entrySet().iterator();
+            while ( it_for_all_species.hasNext() ) {
+                final Map.Entry<String, SortedSet<String>> e3 = it_for_all_species.next();
+                final SortedSet<String> ids = e3.getValue();
+                if ( ids.size() > 0 ) {
+                    final String taxonomy_code = e3.getKey();
+                    all_species.add( taxonomy_code );
+                }
+            }
+            // ==============
             final Iterator<Entry<String, SortedSet<String>>> it2 = species_ids_map.entrySet().iterator();
             while ( it2.hasNext() ) {
                 final Map.Entry<String, SortedSet<String>> e2 = it2.next();
                 final String species = e2.getKey();
                 final SortedSet<String> ids = e2.getValue();
                 if ( ids.size() > 0 ) {
+                    ////
+                    final List<PhylogenyNode> all_nodes = new ArrayList<>();
+                    for( final String taxonomy_code : all_species ) {
+                        final PhylogenyNode node = species_tree.getNodeViaTaxonomyCode( taxonomy_code );
+                        all_nodes.add( node );
+                    }
+                    PhylogenyNode lca = null;
+                    for( final PhylogenyNode node : all_nodes ) {
+                        final PhylogenyNode l = PhylogenyMethods.calculateLCA( all_nodes.get( 0 ), node );
+                        if ( ( lca == null ) || ( l.calculateDepth() < lca.calculateDepth() ) ) {
+                            lca = l;
+                        }
+                    }
+                    ////
                     writer.write( da );
+                    writer.write( separator );
+                    final boolean all;
+                    if ( lca.getAllExternalDescendants().size() == all_species.size() ) {
+                        all = true;
+                    }
+                    else if ( lca.getAllExternalDescendants().size() > all_species.size() ) {
+                        all = false;
+                    }
+                    else {
+                        throw new IllegalStateException( "this should never have happened" );
+                    }
+                    String taxonomic_suffix = null;
+                    if ( lca.isExternal() ) {
+                        taxonomic_suffix = "species_specific";
+                    }
+                    else {
+                        if ( lca.isHasNodeData() && lca.getNodeData().isHasTaxonomy() ) {
+                            if ( !ForesterUtil.isEmpty( lca.getNodeData().getTaxonomy().getSynonyms() ) && !ForesterUtil
+                                    .isEmptyTrimmed( lca.getNodeData().getTaxonomy().getSynonyms().get( 0 ) ) ) {
+                                taxonomic_suffix = lca.getNodeData().getTaxonomy().getSynonyms().get( 0 );
+                            }
+                            else if ( !ForesterUtil
+                                    .isEmptyTrimmed( lca.getNodeData().getTaxonomy().getScientificName() ) ) {
+                                taxonomic_suffix = lca.getNodeData().getTaxonomy().getScientificName();
+                            }
+                        }
+                        if ( ForesterUtil.isEmptyTrimmed( taxonomic_suffix )
+                                && !ForesterUtil.isEmptyTrimmed( lca.getName() ) ) {
+                            taxonomic_suffix = lca.getName();
+                        }
+                        if ( ForesterUtil.isEmptyTrimmed( taxonomic_suffix ) ) {
+                            throw new IllegalArgumentException( "found LCA in species tree without (1) taxonomy synonym (preferred), (2) taxonomy scientific name, and (3) node name" );
+                        }
+                        if ( all ) {
+                            taxonomic_suffix = taxonomic_suffix.toUpperCase();
+                        }
+                        else {
+                            taxonomic_suffix = taxonomic_suffix.toLowerCase();
+                        }
+                    }
+                    writer.write( taxonomic_suffix );
                     writer.write( separator );
                     writer.write( species );
                     writer.write( separator );
@@ -530,7 +598,8 @@ public final class MinimalDomainomeCalculator {
                 if ( domain_id.equals( protein.toDomainArchitectureString( domain_separator, ie_cutoff ) ) ) {
                     final SortedSet<String> ids = species_ids_map.get( species.toString() );
                     String id = "";
-                    final Accession acc = SequenceAccessionTools.parseAccessorFromString( protein.getProteinId().getId() );
+                    final Accession acc = SequenceAccessionTools
+                            .parseAccessorFromString( protein.getProteinId().getId() );
                     if ( acc == null ) {
                         id = protein.getProteinId().getId();
                     }
