@@ -12,6 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -36,6 +37,15 @@ public final class UniprotRetrieve {
      * See: https://www.uniprot.org/help/api_idmapping
      *
      */
+    
+    public final SortedMap<String, UniprotData> retrieve( final Set<String> queries ) throws IOException {
+        final List<String> queries_list = new ArrayList<>();
+        for( final String q : queries ) {
+            queries_list.add(q );            
+        }
+        return retrieve( queries_list );
+    }
+    
     public final SortedMap<String, UniprotData> retrieve( final List<String> queries ) throws IOException {
         final List<String> ncbi_queries = new ArrayList<>();
         final List<String> refseq_queries = new ArrayList<>();
@@ -52,7 +62,7 @@ public final class UniprotRetrieve {
                     throw new IOException( "WARNING: query \"" + query + "\" is ensembl" );
                 }
                 else if ( acc.getSource().equals( "uniprot" ) ) {
-                    throw new IOException( "WARNING: query \"" + query + "\" is uniprot" );
+                    System.out.println( "WARNING: query \"" + query + "\" is uniprot" );
                 }
                 else {
                     throw new IOException( "WARNING: ignoring query \"" + query + "\"" );
@@ -99,8 +109,8 @@ public final class UniprotRetrieve {
         while ( true ) {
             resource_url = new URL( url_str );
             conn = ( HttpURLConnection ) resource_url.openConnection();
-            conn.setConnectTimeout( 15000 );
-            conn.setReadTimeout( 15000 );
+            conn.setConnectTimeout( 50000 );
+            conn.setReadTimeout(    50000 );
             conn.setInstanceFollowRedirects( false ); // make the logic below easier to detect redirections
             conn.setRequestProperty( "User-Agent", "Mozilla/5.0..." );
             switch ( conn.getResponseCode() ) {

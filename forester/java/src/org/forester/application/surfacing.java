@@ -276,7 +276,9 @@ public class surfacing {
     private static final String                                     DOMAIN_SPECIES_IDS_MAP_NAME                                                   = "_DOMAIN_SPECIES_IDS_MAP.txt";
     public static final boolean                                     WRITE_DA_SPECIES_IDS_MAP                                                      = true;
     public static final String                                      DA_SPECIES_IDS_MAP_NAME                                                       = "_DA_SPECIES_IDS_MAP.txt";
-
+    public static final String                                      DA_NAME_MAP_NAME                                                              = "_DA_NAME_MAP.txt";
+    
+    
     @SuppressWarnings( "unchecked")
     public static void main( final String args[] ) {
         final long start_time = new Date().getTime();
