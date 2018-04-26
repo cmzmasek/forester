@@ -21,7 +21,6 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.forester.application.surfacing;
 import org.forester.phylogeny.Phylogeny;
@@ -34,6 +33,8 @@ import org.forester.protein.Protein;
 import org.forester.species.BasicSpecies;
 import org.forester.species.Species;
 import org.forester.surfacing.SurfacingUtil.DomainComparator;
+import org.forester.util.BasicTable;
+import org.forester.util.BasicTableParser;
 import org.forester.util.ForesterUtil;
 import org.forester.util.SequenceAccessionTools;
 import org.forester.ws.seqdb.UniprotData;
@@ -48,7 +49,9 @@ public final class MinimalDomainomeCalculator {
                                    final String separator,
                                    final double ie_cutoff,
                                    final String outfile_base,
-                                   final boolean write_protein_files )
+                                   final boolean write_protein_files,
+                                   final boolean write_da_ids_names_maps,
+                                   final File input_da_name_file )
             throws IOException {
         final SortedMap<String, SortedSet<String>> species_to_features_map = new TreeMap<>();
         if ( ( protein_lists_per_species == null ) || ( tre == null ) ) {
@@ -301,7 +304,7 @@ public final class MinimalDomainomeCalculator {
                                                             proteins_file_writer,
                                                             ie_cutoff,
                                                             separator );
-                if ( use_domain_architectures && surfacing.WRITE_DA_SPECIES_IDS_MAP ) {
+                if ( use_domain_architectures && write_da_ids_names_maps ) {
                     final SortedMap<String, SortedSet<String>> species_ids_map = collectSpeciesAndIdsPerDA( protein_lists_per_species,
                                                                                                             feat,
                                                                                                             null,
@@ -320,14 +323,20 @@ public final class MinimalDomainomeCalculator {
                 total += counter;
                 proteins_file_writer.close();
             }
-            if ( use_domain_architectures && surfacing.WRITE_DA_SPECIES_IDS_MAP ) {
+            if ( use_domain_architectures && write_da_ids_names_maps ) {
                 final File da_species_ids_map_outfile = new File( outfile_base + surfacing.DA_SPECIES_IDS_MAP_NAME );
                 final File da_name_outfile = new File( outfile_base + surfacing.DA_NAME_MAP_NAME );
-                String input_da_name_file_name = "";
-                final File input_da_name_file = new File( input_da_name_file_name );
-                final BufferedWriter writer                = new BufferedWriter( new FileWriter( da_species_ids_map_outfile ) );
+                final BufferedWriter writer = new BufferedWriter( new FileWriter( da_species_ids_map_outfile ) );
                 final BufferedWriter output_da_name_writer = new BufferedWriter( new FileWriter( da_name_outfile ) );
-                printSpeciesAndIdsPerDAs( da_species_ids_map, tre, writer, "\t", ",", true, input_da_name_file, output_da_name_writer );
+                outputSpeciesAndIdsPerDAs( da_species_ids_map,
+                                           tre,
+                                           writer,
+                                           "\t",
+                                           ",",
+                                           true,
+                                           input_da_name_file,
+                                           output_da_name_writer,
+                                           1);
                 writer.flush();
                 writer.close();
                 ForesterUtil.programMessage( surfacing.PRG_NAME,
@@ -339,15 +348,24 @@ public final class MinimalDomainomeCalculator {
         }
     }
 
-    private final static void printSpeciesAndIdsPerDAs( final SortedMap<String, SortedMap<String, SortedSet<String>>> da_species_ids_map,
-                                                        final Phylogeny species_tree,
-                                                        final Writer writer,
-                                                        final String separator,
-                                                        final String ids_separator,
-                                                        final boolean obtain_names_from_db,
-                                                        final File input_da_name_file,
-                                                        final Writer output_da_name_writer)
+    private final static void outputSpeciesAndIdsPerDAs( final SortedMap<String, SortedMap<String, SortedSet<String>>> da_species_ids_map,
+                                                         final Phylogeny species_tree,
+                                                         final Writer writer,
+                                                         final String separator,
+                                                         final String ids_separator,
+                                                         final boolean obtain_names_from_db,
+                                                         final File input_da_name_file,
+                                                         final Writer output_da_name_writer,
+                                                         final int verbosity )
             throws IOException {
+        final SortedMap<String, String> input_da_name_map;
+        if ( input_da_name_file != null ) {
+            final BasicTable<String> input_da_name_table = BasicTableParser.parse( input_da_name_file, '\t' );
+            input_da_name_map = input_da_name_table.getColumnsAsMap( 0, 1 );
+        }
+        else {
+            input_da_name_map = null;
+        }
         final Iterator<Entry<String, SortedMap<String, SortedSet<String>>>> it = da_species_ids_map.entrySet()
                 .iterator();
         while ( it.hasNext() ) {
@@ -357,10 +375,20 @@ public final class MinimalDomainomeCalculator {
             // Get all species:
             final List<String> all_species = new ArrayList<>();
             final Iterator<Entry<String, SortedSet<String>>> it_for_all_species = species_ids_map.entrySet().iterator();
-            
-            final String name = obtainName( da, species_ids_map );
-            
-            
+            String name = null;
+            if ( verbosity > 0 ) {
+                System.out.println();
+                System.out.println( "DA " + da + ":" );
+            }
+            if ( ( input_da_name_map != null ) && input_da_name_map.containsKey( da ) ) {
+                name = input_da_name_map.get( da );
+                if ( verbosity > 0 ) {
+                    System.out.println( "  [from file] " + name );
+                }
+            }
+            if ( ( ForesterUtil.isEmptyTrimmed( name ) || name.equals( "-" ) ) && obtain_names_from_db ) {
+                name = obtainName( da, species_ids_map, verbosity );
+            }
             while ( it_for_all_species.hasNext() ) {
                 final Map.Entry<String, SortedSet<String>> e3 = it_for_all_species.next();
                 final SortedSet<String> ids = e3.getValue();
@@ -371,6 +399,16 @@ public final class MinimalDomainomeCalculator {
             }
             // ==============
             final Iterator<Entry<String, SortedSet<String>>> it2 = species_ids_map.entrySet().iterator();
+            output_da_name_writer.write( da );
+            output_da_name_writer.write( "\t" );
+            if ( !ForesterUtil.isEmpty( name ) ) {
+                output_da_name_writer.write( name );
+            }
+            else {
+                output_da_name_writer.write( "-" );
+            }
+            output_da_name_writer.write( SurfacingConstants.NL );
+            output_da_name_writer.flush();
             while ( it2.hasNext() ) {
                 final Map.Entry<String, SortedSet<String>> e2 = it2.next();
                 final String species = e2.getKey();
@@ -431,17 +469,17 @@ public final class MinimalDomainomeCalculator {
                             taxonomic_suffix = taxonomic_suffix.toLowerCase();
                         }
                     }
-                    output_da_name_writer.write( da );
-                    output_da_name_writer.write( "\t"  );
-                    if ( !ForesterUtil.isEmpty( name )) {
+                    // output_da_name_writer.write( da );
+                    //  output_da_name_writer.write( "\t"  );
+                    if ( !ForesterUtil.isEmpty( name ) ) {
                         writer.write( name );
-                        output_da_name_writer.write( name );
+                        // output_da_name_writer.write( name );
                     }
                     else {
-                        writer.write( "--" );
-                        output_da_name_writer.write( "--" );
+                        writer.write( "-" );
+                        //output_da_name_writer.write( "-" );
                     }
-                    output_da_name_writer.write( SurfacingConstants.NL );
+                    // output_da_name_writer.write( SurfacingConstants.NL );
                     writer.write( "_" );
                     writer.write( taxonomic_suffix );
                     writer.write( separator );
@@ -456,32 +494,29 @@ public final class MinimalDomainomeCalculator {
                             writer.write( ids_separator );
                         }
                         writer.write( id );
-                        
                     }
                     writer.write( SurfacingConstants.NL );
-                    writer.flush();
-                    output_da_name_writer.flush();
                 }
+                writer.flush();
             }
-            
         }
         writer.flush();
         output_da_name_writer.flush();
     }
 
-    private static String obtainName( final String da, final SortedMap<String, SortedSet<String>> species_ids_map )
+    private static String obtainName( final String da,
+                                      final SortedMap<String, SortedSet<String>> species_ids_map,
+                                      final int verbosity )
             throws IOException {
-      
-        List<String> ids_per_da = new ArrayList<>();
+        final List<String> ids_per_da = new ArrayList<>();
         final Iterator<Entry<String, SortedSet<String>>> it3 = species_ids_map.entrySet().iterator();
         while ( it3.hasNext() ) {
             final Map.Entry<String, SortedSet<String>> e3 = it3.next();
-            
             final SortedSet<String> ids = e3.getValue();
             if ( ids.size() > 0 ) {
                 int counter = 0;
-                for( String id : ids ) {
-                    ids_per_da.add(id);
+                for( final String id : ids ) {
+                    ids_per_da.add( id );
                     //if ( ++counter > 60 ) {
                     if ( ++counter > 20 ) {
                         break;
@@ -489,16 +524,13 @@ public final class MinimalDomainomeCalculator {
                 }
             }
         }
-        System.out.println();
-        System.out.println("DA " + da + ":");
-        final String name = accessUniprot( ids_per_da, 1 );
+        final String name = accessUniprot( ids_per_da, verbosity );
         return name;
     }
 
     private static String accessUniprot( final List<String> ids, final int verbosity ) throws IOException {
-       
-        final UniprotRetrieve ret = new UniprotRetrieve(false);
-        final SortedMap<String, UniprotData> m = ret.retrieve(  ids );
+        final UniprotRetrieve ret = new UniprotRetrieve( false );
+        final SortedMap<String, UniprotData> m = ret.retrieve( ids );
         final Iterator<Entry<String, UniprotData>> it = m.entrySet().iterator();
         final List<String> names = new ArrayList<>();
         while ( it.hasNext() ) {
@@ -506,7 +538,7 @@ public final class MinimalDomainomeCalculator {
             if ( verbosity > 1 ) {
                 System.out.println( "    " + pair.getKey() + " => " + pair.getValue().getProteinNames() );
             }
-            String name =  pair.getValue().getProteinNames();
+            String name = pair.getValue().getProteinNames();
             final int index = name.indexOf( " (" );
             if ( index > 0 ) {
                 name = name.substring( 0, index );
@@ -516,22 +548,18 @@ public final class MinimalDomainomeCalculator {
                 names.add( name );
             }
         }
-        
         final Optional<Entry<String, Long>> opt = names.stream()
-        .collect(Collectors.groupingBy(s -> s, Collectors.counting()))
-        .entrySet()
-        .stream()
-        .max(Comparator.comparing(Entry::getValue));
-        if ( opt.isPresent()) {
+                .collect( Collectors.groupingBy( s -> s, Collectors.counting() ) ).entrySet().stream()
+                .max( Comparator.comparing( Entry::getValue ) );
+        if ( opt.isPresent() ) {
             if ( verbosity > 0 ) {
-                System.out.println("  [" + opt.get().getValue() + "/" + names.size() + "] " + opt.get().getKey() );
+                System.out.println( "  [" + opt.get().getValue() + "/" + names.size() + "] " + opt.get().getKey() );
             }
-            
             return opt.get().getKey();
         }
         else {
             if ( verbosity > 0 ) {
-                System.out.println("  n/a" );
+                System.out.println( "  n/a" );
             }
         }
         return null;

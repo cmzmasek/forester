@@ -274,11 +274,11 @@ public class surfacing {
     private static final boolean                                    CALC_SIMILARITY_SCORES                                                        = false;
     private static final String                                     SEPARATOR_FOR_DA                                                              = "--";
     private static final String                                     DOMAIN_SPECIES_IDS_MAP_NAME                                                   = "_DOMAIN_SPECIES_IDS_MAP.txt";
-    public static final boolean                                     WRITE_DA_SPECIES_IDS_MAP                                                      = true;
     public static final String                                      DA_SPECIES_IDS_MAP_NAME                                                       = "_DA_SPECIES_IDS_MAP.txt";
     public static final String                                      DA_NAME_MAP_NAME                                                              = "_DA_NAME_MAP.txt";
-    
-    
+    private static final String                                     WRITE_DA_IDS_NAMES_MAPS_OPTION                                                = "write_DA_maps";
+    private static final String                                     INPUT_DA_NAME_FILE_OPTION                                                     = "input_DA_name_map";
+
     @SuppressWarnings( "unchecked")
     public static void main( final String args[] ) {
         final long start_time = new Date().getTime();
@@ -356,6 +356,8 @@ public class surfacing {
         allowed_options.add( USE_LAST_IN_FITCH_OPTION );
         allowed_options.add( PERFORM_DC_FITCH );
         allowed_options.add( PERFORM_DOMAIN_LENGTH_ANALYSIS_OPTION );
+        allowed_options.add( WRITE_DA_IDS_NAMES_MAPS_OPTION );
+        allowed_options.add( INPUT_DA_NAME_FILE_OPTION );
         boolean ignore_dufs = surfacing.IGNORE_DUFS_DEFAULT;
         boolean ignore_combination_with_same = surfacing.IGNORE_COMBINATION_WITH_SAME_DEFAULLT;
         double fs_e_value_max = surfacing.MAX_E_VALUE_DEFAULT;
@@ -1012,6 +1014,28 @@ public class surfacing {
             }
             else if ( negative_domains_filter_file != null ) {
                 SurfacingUtil.processFilter( negative_domains_filter_file, filter );
+            }
+        }
+        final boolean write_da_ids_names_maps;
+        if ( cla.isOptionSet( surfacing.WRITE_DA_IDS_NAMES_MAPS_OPTION ) ) {
+            write_da_ids_names_maps = true;
+        }
+        else {
+            write_da_ids_names_maps = false;
+        }
+        File input_da_name_file = null;
+        if ( write_da_ids_names_maps ) {
+            if ( cla.isOptionSet( surfacing.INPUT_DA_NAME_FILE_OPTION ) ) {
+                if ( !cla.isOptionValueSet( surfacing.INPUT_DA_NAME_FILE_OPTION ) ) {
+                    ForesterUtil.fatalError( surfacing.PRG_NAME,
+                                             "no value for GO OBO file: -" + surfacing.INPUT_DA_NAME_FILE_OPTION
+                                                     + "=<file>" );
+                }
+                input_da_name_file = new File( cla.getOptionValue( surfacing.INPUT_DA_NAME_FILE_OPTION ) );
+                final String error4 = ForesterUtil.isReadableFile( input_da_name_file );
+                if ( !ForesterUtil.isEmpty( error4 ) ) {
+                    ForesterUtil.fatalError( surfacing.PRG_NAME, "cannot read: " + input_da_name_file );
+                }
             }
         }
         Map<String, Set<String>>[] domain_id_to_secondary_features_maps = null;
@@ -1807,7 +1831,9 @@ public class surfacing {
                                              SEPARATOR_FOR_DA,
                                              -1,
                                              out_dir.toString() + "/" + output_file,
-                                             true );
+                                             true,
+                                             false,
+                                             null );
         }
         catch ( final IOException e ) {
             ForesterUtil.fatalError( surfacing.PRG_NAME, e.getLocalizedMessage() );
@@ -1820,7 +1846,9 @@ public class surfacing {
                                              SEPARATOR_FOR_DA,
                                              -1,
                                              out_dir.toString() + "/" + output_file,
-                                             true );
+                                             true,
+                                             write_da_ids_names_maps,
+                                             input_da_name_file );
         }
         catch ( final IOException e ) {
             ForesterUtil.fatalError( surfacing.PRG_NAME, e.getLocalizedMessage() );
@@ -2333,6 +2361,8 @@ public class surfacing {
         System.out.println( PERFORM_DC_REGAIN_PROTEINS_STATS_OPTION + ": to perform DC regain protein statistics" );
         System.out.println( DA_ANALYSIS_OPTION + ": to perform DA analysis" );
         System.out.println( PERFORM_DOMAIN_LENGTH_ANALYSIS_OPTION + ": to perform domain length analysis" );
+        System.out.println( WRITE_DA_IDS_NAMES_MAPS_OPTION + ": to write DA name IDs mapping files" );
+        System.out.println( INPUT_DA_NAME_FILE_OPTION + "=<file>: file to read DA name mappings from" );
         System.out.println();
         System.out.println();
         System.out
