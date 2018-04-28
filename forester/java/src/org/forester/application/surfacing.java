@@ -217,8 +217,8 @@ public class surfacing {
     final static private String                                     INPUT_GENOMES_FILE_OPTION                                                     = "genomes";
     final static private String                                     INPUT_SPECIES_TREE_OPTION                                                     = "species_tree";
     final static private String                                     SEQ_EXTRACT_OPTION                                                            = "prot_extract";
-    final static private String                                     PRG_VERSION                                                                   = "2.504";
-    final static private String                                     PRG_DATE                                                                      = "180118";
+    final static private String                                     PRG_VERSION                                                                   = "2.600";
+    final static private String                                     PRG_DATE                                                                      = "180427";
     final static private String                                     E_MAIL                                                                        = "phyloxml@gmail.com";
     final static private String                                     WWW                                                                           = "https://sites.google.com/site/cmzmasek/home/software/forester/surfacing";
     final static private boolean                                    IGNORE_DUFS_DEFAULT                                                           = true;
@@ -278,6 +278,7 @@ public class surfacing {
     public static final String                                      DA_NAME_MAP_NAME                                                              = "_DA_NAME_MAP.txt";
     private static final String                                     WRITE_DA_IDS_NAMES_MAPS_OPTION                                                = "write_DA_maps";
     private static final String                                     INPUT_DA_NAME_FILE_OPTION                                                     = "input_DA_name_map";
+    private static final String                                     OBTAIN_NAMES_FOR_DAS_FROM_DB_OPTION                                           = "obtain_DA_names_from_db";
 
     @SuppressWarnings( "unchecked")
     public static void main( final String args[] ) {
@@ -358,6 +359,7 @@ public class surfacing {
         allowed_options.add( PERFORM_DOMAIN_LENGTH_ANALYSIS_OPTION );
         allowed_options.add( WRITE_DA_IDS_NAMES_MAPS_OPTION );
         allowed_options.add( INPUT_DA_NAME_FILE_OPTION );
+        allowed_options.add( OBTAIN_NAMES_FOR_DAS_FROM_DB_OPTION );
         boolean ignore_dufs = surfacing.IGNORE_DUFS_DEFAULT;
         boolean ignore_combination_with_same = surfacing.IGNORE_COMBINATION_WITH_SAME_DEFAULLT;
         double fs_e_value_max = surfacing.MAX_E_VALUE_DEFAULT;
@@ -1016,6 +1018,13 @@ public class surfacing {
                 SurfacingUtil.processFilter( negative_domains_filter_file, filter );
             }
         }
+        final boolean obtain_names_for_das_from_db;
+        if ( cla.isOptionSet( surfacing.OBTAIN_NAMES_FOR_DAS_FROM_DB_OPTION ) ) {
+            obtain_names_for_das_from_db = true;
+        }
+        else {
+            obtain_names_for_das_from_db = false;
+        }
         final boolean write_da_ids_names_maps;
         if ( cla.isOptionSet( surfacing.WRITE_DA_IDS_NAMES_MAPS_OPTION ) ) {
             write_da_ids_names_maps = true;
@@ -1036,6 +1045,10 @@ public class surfacing {
                 if ( !ForesterUtil.isEmpty( error4 ) ) {
                     ForesterUtil.fatalError( surfacing.PRG_NAME, "cannot read: " + input_da_name_file );
                 }
+            }
+            if ( ( input_da_name_file == null ) && !obtain_names_for_das_from_db ) {
+                ForesterUtil.fatalError( surfacing.PRG_NAME,
+                                         "need to obtain names for DAs either from file and/or database" );
             }
         }
         Map<String, Set<String>>[] domain_id_to_secondary_features_maps = null;
@@ -1833,6 +1846,7 @@ public class surfacing {
                                              out_dir.toString() + "/" + output_file,
                                              true,
                                              false,
+                                             false,
                                              null );
         }
         catch ( final IOException e ) {
@@ -1847,6 +1861,7 @@ public class surfacing {
                                              -1,
                                              out_dir.toString() + "/" + output_file,
                                              true,
+                                             obtain_names_for_das_from_db,
                                              write_da_ids_names_maps,
                                              input_da_name_file );
         }
@@ -2361,8 +2376,10 @@ public class surfacing {
         System.out.println( PERFORM_DC_REGAIN_PROTEINS_STATS_OPTION + ": to perform DC regain protein statistics" );
         System.out.println( DA_ANALYSIS_OPTION + ": to perform DA analysis" );
         System.out.println( PERFORM_DOMAIN_LENGTH_ANALYSIS_OPTION + ": to perform domain length analysis" );
-        System.out.println( WRITE_DA_IDS_NAMES_MAPS_OPTION + ": to write DA name IDs mapping files" );
-        System.out.println( INPUT_DA_NAME_FILE_OPTION + "=<file>: file to read DA name mappings from" );
+        System.out.println( WRITE_DA_IDS_NAMES_MAPS_OPTION + ": to write DA-name-seq IDs mapping files" );
+        System.out.println( INPUT_DA_NAME_FILE_OPTION + "=<file>: file to obtain DA names from" );
+        System.out.println( OBTAIN_NAMES_FOR_DAS_FROM_DB_OPTION
+                + ": to obtain DA names from online database (UniProtKB)" );
         System.out.println();
         System.out.println();
         System.out
@@ -2373,6 +2390,8 @@ public class surfacing {
         System.out.println();
         System.out
                 .println( "Example 3: surfacing -species_tree=master_tree.xml -no_eo -ie=1e-6 -mrel=0.5 -mo=10 -dufs -genomes=genomes.txt -out_dir=a605 -o=a605" );
+        System.out.println();
+        System.out.println( "Example 4: surfacing " );
         System.out.println();
         System.out
                 .println( "[next step for phylogenomic analysis pipeline (example, in \"DAS\" dir): % mse.rb .prot . FL_seqs DA_seqs path/to/genome_locations.txt]" );

@@ -37,15 +37,14 @@ public final class UniprotRetrieve {
      * See: https://www.uniprot.org/help/api_idmapping
      *
      */
-    
     public final SortedMap<String, UniprotData> retrieve( final Set<String> queries ) throws IOException {
         final List<String> queries_list = new ArrayList<>();
         for( final String q : queries ) {
-            queries_list.add(q );            
+            queries_list.add( q );
         }
         return retrieve( queries_list );
     }
-    
+
     public final SortedMap<String, UniprotData> retrieve( final List<String> queries ) throws IOException {
         final List<String> ncbi_queries = new ArrayList<>();
         final List<String> refseq_queries = new ArrayList<>();
@@ -69,7 +68,7 @@ public final class UniprotRetrieve {
                 }
             }
             else {
-                if (_verbose) {
+                if ( _verbose ) {
                     System.out.println( "WARNING: ignoring query \"" + query + "\"" );
                 }
             }
@@ -110,7 +109,7 @@ public final class UniprotRetrieve {
             resource_url = new URL( url_str );
             conn = ( HttpURLConnection ) resource_url.openConnection();
             conn.setConnectTimeout( 50000 );
-            conn.setReadTimeout(    50000 );
+            conn.setReadTimeout( 50000 );
             conn.setInstanceFollowRedirects( false ); // make the logic below easier to detect redirections
             conn.setRequestProperty( "User-Agent", "Mozilla/5.0..." );
             switch ( conn.getResponseCode() ) {
@@ -157,7 +156,6 @@ public final class UniprotRetrieve {
         queries.add( "ACN89728.1" );
         queries.add( "YP_001718613.1" );
         queries.add( "AIV41800.1" );
-        
         final UniprotRetrieve ret = new UniprotRetrieve( true );
         final SortedMap<String, UniprotData> m = ret.retrieve( queries );
         final Iterator<Entry<String, UniprotData>> it = m.entrySet().iterator();
