@@ -18,17 +18,15 @@ module Evoruby
   class MultiSequenceExtractor
 
     PRG_NAME                           = "mse"
-    PRG_VERSION                        = "1.04"
+    PRG_VERSION                        = "1.05"
     PRG_DESC                           = "processing of \"surfacing\" output: extraction of sequences by name from multiple multi-sequence ('fasta') files"
-    PRG_DATE                           = "170327"
+    PRG_DATE                           = "180403"
     WWW                                = "https://sites.google.com/site/cmzmasek/home/software/forester"
     HELP_OPTION_1                      = 'help'
     HELP_OPTION_2                      = 'h'
 
     EXT_OPTION                          = 'e'
-    EXTRACT_LINKERS_OPTION              = 'l'
     LOG_SUFFIX                          = ".mse_log"
-    LINKERS_SUFFIX                      = ".linkers"
     FASTA_SUFFIX                        = ".fasta"
     FASTA_WITH_NORMALIZED_IDS_SUFFIX    = ".ni.fasta"
     NORMALIZED_IDS_MAP_SUFFIX           = ".nim"
@@ -68,7 +66,6 @@ module Evoruby
 
       allowed_opts = Array.new
       allowed_opts.push(EXT_OPTION)
-      allowed_opts.push(EXTRACT_LINKERS_OPTION)
 
       disallowed = cla.validate_allowed_options_as_str( allowed_opts )
       if ( disallowed.length > 0 )
@@ -95,11 +92,6 @@ module Evoruby
         if extension < 0
           extension = 0
         end
-      end
-
-      extract_linkers = false
-      if cla.is_option_set?(EXTRACT_LINKERS_OPTION)
-        extract_linkers = true
       end
 
       unless File.exist?( out_dir )
@@ -149,10 +141,6 @@ module Evoruby
         puts( "Extension                  : " + extension.to_s )
         log << "Extension                  : " + extension.to_s + ld
       end
-      if extract_linkers
-        puts( "Extract linkers            : true" )
-        log << "Extract linkers            : true" + ld
-      end
       log << "Date                       : " + Time.now.to_s + ld
       puts
 
@@ -175,8 +163,7 @@ module Evoruby
         out_dir,
         out_dir_doms,
         mapping_file,
-        extension,
-        extract_linkers )
+        extension )
       }
       puts
       Util.print_message( PRG_NAME, "OK" )
@@ -192,8 +179,7 @@ module Evoruby
       out_dir,
       out_dir_doms,
       mapping_file,
-      extension,
-      extract_linkers )
+      extension )
 
       begin
         Util.check_file_for_readability( input_file )
@@ -232,7 +218,6 @@ module Evoruby
       new_msa_domains = Msa.new
       new_msa_domains_extended = Msa.new
       per_species_counter = 0
-      linkers = ""
 
       puts basename
 
@@ -348,30 +333,10 @@ module Evoruby
                     current_species + "]",
                     seq.get_sequence_as_string[ from_e..to_e ] ) )
                   end # extension > 0
-                  if  extract_linkers
-                    if first
-                      first = false
-                      f = 0
-                      t = from - 1
-                      if extension > 0
-                        f = from - extension
-                      end
-                      mod_line = line + "\t[" + get_linker_sequence( f, t, seq ) + "|"
-                    else
-                      mod_line += get_linker_sequence( prev_to + 1, from - 1, seq ) + "|"
-                    end
-                    prev_to = to
-                  end
+                  
                 end # range != nil && range.length > 0
               }
-              if extract_linkers && prev_to > 0
-                f = prev_to + 1
-                t = seq.get_sequence_as_string.length - 1
-                if extension > 0
-                  t = prev_to + extension
-                end
-                mod_line += get_linker_sequence( f, t, seq ) + "]"
-              end
+              
             end
 
             new_msa_normalized_ids.add_sequence( Sequence.new( normalized_id, seq.get_sequence_as_string ) )
@@ -429,30 +394,6 @@ module Evoruby
         f.close
       rescue Exception => e
         Util.fatal_error( PRG_NAME, "error: " + e.to_s )
-      end
-
-      if extract_linkers && linkers != nil
-        begin
-          f = File.open( out_dir + Constants::FILE_SEPARATOR + basename +  LINKERS_SUFFIX , 'a' )
-          f.print( linkers )
-          f.close
-        rescue Exception => e
-          Util.fatal_error( PRG_NAME, "error: " + e.to_s )
-        end
-      end
-    end
-
-    def get_linker_sequence( from, to, seq )
-      if from < 0
-        from = 0
-      end
-      if to > seq.get_sequence_as_string.length - 1
-        to = seq.get_sequence_as_string.length - 1
-      end
-      if from > to
-        return ""
-      else
-        return from.to_s + "-" + to.to_s + ":" + seq.get_sequence_as_string[ from..to ]
       end
     end
 
@@ -536,7 +477,6 @@ module Evoruby
       " <output directory for protein sequences> <output directory for domain sequences> <genome locations file>" )
       puts()
       puts( "  option: -" + EXT_OPTION  + "=<int>: to extend extracted domains" )
-      puts( "          -" + EXTRACT_LINKERS_OPTION  + "      : to extract linkers" )
       puts()
       puts( "  " + "Examples: mse.rb .prot . protein_seqs domain_seqs ../genome_locations.txt" )
       puts( "  " + "          mse.rb .prot . FL_seqs DA_seqs ../../genome_locations.txt" )
