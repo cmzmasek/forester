@@ -171,7 +171,7 @@ our $SOFTWARE_DIR              = "/home/zma/SOFTWARE/";
 
 # Java virtual machine:
 # ---------------------
-our $JAVA                      = "java";
+our $JAVA                      = "/home/zma/SOFTWARE/JAVA/jdk-9.0.4/bin/java";
 
 
 # Where all the temporary files can be created:
