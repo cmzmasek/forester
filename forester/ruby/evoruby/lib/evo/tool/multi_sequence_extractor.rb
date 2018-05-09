@@ -1,7 +1,8 @@
 #
 # = lib/evo/apps/multi_sequence_extractor.rb - MultiSequenceExtractor class
 #
-# Copyright::  Copyright (C) 2014 Christian M. Zmasek
+# Copyright (C) 2018 Christian M. Zmasek
+# Copyright (C) 2018 J. Craig Venter Institute
 # License::    GNU Lesser General Public License (LGPL)
 #
 

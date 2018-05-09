@@ -2,8 +2,9 @@
 #
 # = lib/evo/apps/phylogenies_decorator
 #
-# Copyright::    Copyright (C) 2017 Christian M. Zmasek
-# License::      GNU Lesser General Public License (LGPL)
+# Copyright (C) 2018 Christian M. Zmasek
+# Copyright (C) 2018 J. Craig Venter Institute
+# License::    GNU Lesser General Public License (LGPL)
 #
 # decoration of phylogenies with sequence/species names and domain architectures
 #

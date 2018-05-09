@@ -1,6 +1,10 @@
 # x_phylo
 # -------
 
+# Copyright (C) 2018 Christian M. Zmasek
+# Copyright (C) 2018 J. Craig Venter Institute
+# All rights reserved
+
 # Version: 1.00
 # Last modified: 180504
 
