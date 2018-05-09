@@ -117,24 +117,7 @@ public class TreePanelUtil {
         return uris;
     }
 
-    /**
-     * Returns the set of distinct taxonomies of
-     * all external nodes of node.
-     * If at least one the external nodes has no taxonomy,
-     * null is returned.
-     *
-     */
-    public static Set<Taxonomy> obtainDistinctTaxonomies( final PhylogenyNode node ) {
-        final List<PhylogenyNode> descs = node.getAllExternalDescendants();
-        final Set<Taxonomy> tax_set = new HashSet<Taxonomy>();
-        for( final PhylogenyNode n : descs ) {
-            if ( !n.getNodeData().isHasTaxonomy() || n.getNodeData().getTaxonomy().isEmpty() ) {
-                return null;
-            }
-            tax_set.add( n.getNodeData().getTaxonomy() );
-        }
-        return tax_set;
-    }
+   
 
     public final static void showExtDescNodeDataUserSelectedHelper( final ControlPanel cp,
                                                                     final PhylogenyNode node,
@@ -211,7 +194,7 @@ public class TreePanelUtil {
         for( final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
             if ( !n.isExternal() && !n.isCollapse() && ( n.getNumberOfDescendants() > 1 ) ) {
-                final Set<Taxonomy> taxs = TreePanelUtil.obtainDistinctTaxonomies( n );
+                final Set<Taxonomy> taxs = PhylogenyMethods.obtainDistinctTaxonomies( n );
                 if ( ( taxs != null ) && ( taxs.size() == 1 ) ) {
                     TreePanelUtil.collapseSubtree( n, true );
                     if ( !n.getNodeData().isHasTaxonomy() ) {

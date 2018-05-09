@@ -63,6 +63,8 @@ public final class SequenceAccessionTools {
     // underscore character ('_'). For example, a RefSeq protein accession is NP_015325.
     private final static Pattern REFSEQ_PATTERN              = Pattern
             .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]{2}_\\d{6,}(\\.\\d)?)(?:[^a-zA-Z0-9]|\\Z)" );
+    private final static Pattern VIPR_PATTERN              = Pattern
+            .compile( "\\|(VIPR_.+?)\\|" );
 
     private SequenceAccessionTools() {
         // Hiding the constructor.
@@ -242,6 +244,13 @@ public final class SequenceAccessionTools {
             if ( !ForesterUtil.isEmpty( v ) ) {
                 return new Accession( v, Source.UNIPROT );
             }
+            v =  parseViprFromString( s );
+            if ( !ForesterUtil.isEmpty( v ) ) {
+                return new Accession( v, "ViPR" );
+            }
+            
+            
+           
         }
         return null;
     }
@@ -297,6 +306,14 @@ public final class SequenceAccessionTools {
     public final static String parseRefSeqAccessorFromString( final String s ) {
         final Matcher m = REFSEQ_PATTERN.matcher( s );
         if ( m.lookingAt() ) {
+            return m.group( 1 );
+        }
+        return null;
+    }
+    
+    public final static String parseViprFromString( final String s ) {
+        final Matcher m = VIPR_PATTERN.matcher( s );
+        if ( m.find() ) {
             return m.group( 1 );
         }
         return null;

@@ -47,6 +47,7 @@ import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
+import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.sdi.GSDI;
 import org.forester.sdi.GSDII;
 import org.forester.sdi.GSDIR;
@@ -60,26 +61,27 @@ import org.forester.util.ForesterUtil;
 
 public final class gsdi {
 
-    final static public boolean REPLACE_UNDERSCORES_IN_NH_SPECIES_TREE = true;
-    final static private String ALLOW_STRIPPING_OF_GENE_TREE_OPTION    = "g";
-    final static private String GSDIR_OPTION                           = "r";
-    final static private String MOST_PARSIMONIOUS_OPTION               = "m";
-    final static private String SUFFIX_FOR_DIR_OPTION                  = "s";
-    final static private String GUESS_FORMAT_OF_SPECIES_TREE           = "q";
-    final static private String TRANSFER_TAXONOMY_OPTION               = "t";
-    final static private String HELP_OPTION_1                          = "help";
-    final static private String HELP_OPTION_2                          = "h";
-    final static private String SUFFIX_FOR_SPECIES_TREE_USED           = "_species_tree_used.xml";
-    final static private String OUTTREE_SUFFIX                         = "_gsdir.xml";
-    final static private String LOGFILE_NAME                           = "00_gsdi_log.tsv";
-    final static private String LOGFILE_SUFFIX                         = "_gsdi_log.txt";
-    final static private String REMAPPED_SUFFIX                        = "_gsdi_remapped.txt";
-    final static private String PRG_NAME                               = "gsdi";
-    final static private String PRG_VERSION                            = "1.100";
-    final static private String PRG_DATE                               = "170403";
-    final static private String PRG_DESC                               = "general speciation duplication inference";
-    final static private String E_MAIL                                 = "phyloxml@gmail.com";
-    final static private String WWW                                    = "https://sites.google.com/site/cmzmasek/home/software/forester";
+    final static public boolean REPLACE_UNDERSCORES_IN_NH_SPECIES_TREE         = true;
+    final static private String ALLOW_STRIPPING_OF_GENE_TREE_OPTION            = "g";
+    final static private String GSDIR_OPTION                                   = "r";
+    final static private String MOST_PARSIMONIOUS_OPTION                       = "m";
+    final static private String SUFFIX_FOR_DIR_OPTION                          = "s";
+    final static private String GUESS_FORMAT_OF_SPECIES_TREE                   = "q";
+    final static private String TRANSFER_TAXONOMY_OPTION                       = "t";
+    final static private String REMOVE_DUPLICATE_EXTERNAL_SPECIES_NODES_OPTION = "R";
+    final static private String HELP_OPTION_1                                  = "help";
+    final static private String HELP_OPTION_2                                  = "h";
+    final static private String SUFFIX_FOR_SPECIES_TREE_USED                   = "_species_tree_used.xml";
+    final static private String OUTTREE_SUFFIX                                 = "_gsdir.xml";
+    final static private String LOGFILE_NAME                                   = "00_gsdi_log.tsv";
+    final static private String LOGFILE_SUFFIX                                 = "_gsdi_log.txt";
+    final static private String REMAPPED_SUFFIX                                = "_gsdi_remapped.txt";
+    final static private String PRG_NAME                                       = "gsdi";
+    final static private String PRG_VERSION                                    = "1.102";
+    final static private String PRG_DATE                                       = "180508";
+    final static private String PRG_DESC                                       = "general speciation duplication inference";
+    final static private String E_MAIL                                         = "phyloxml@gmail.com";
+    final static private String WWW                                            = "https://sites.google.com/site/cmzmasek/home/software/forester";
 
     public static void main( final String args[] ) {
         try {
@@ -109,13 +111,14 @@ public final class gsdi {
                 gsdi.print_help();
                 System.exit( -1 );
             }
-            final List<String> allowed_options = new ArrayList<String>();
+            final List<String> allowed_options = new ArrayList<>();
             allowed_options.add( GSDIR_OPTION );
             allowed_options.add( GUESS_FORMAT_OF_SPECIES_TREE );
             allowed_options.add( MOST_PARSIMONIOUS_OPTION );
             allowed_options.add( ALLOW_STRIPPING_OF_GENE_TREE_OPTION );
             allowed_options.add( TRANSFER_TAXONOMY_OPTION );
             allowed_options.add( SUFFIX_FOR_DIR_OPTION );
+            allowed_options.add( REMOVE_DUPLICATE_EXTERNAL_SPECIES_NODES_OPTION );
             final String dissallowed_options = cla.validateAllowedOptionsAsString( allowed_options );
             if ( dissallowed_options.length() > 0 ) {
                 ForesterUtil.fatalError( PRG_NAME, "unknown option(s): " + dissallowed_options );
@@ -136,7 +139,10 @@ public final class gsdi {
         }
         if ( cla.isOptionSet( MOST_PARSIMONIOUS_OPTION ) ) {
             if ( base_algorithm == ALGORITHM.SDI ) {
-                ForesterUtil.fatalError( PRG_NAME, "Cannot use most parsimonious duplication mode with SDI" );
+                ForesterUtil.fatalError( PRG_NAME, "Cannot use most parsimonious duplication option with SDI" );
+            }
+            if ( base_algorithm == ALGORITHM.GSDIR ) {
+                ForesterUtil.fatalError( PRG_NAME, "Cannot use most parsimonious duplication option with GSDIR" );
             }
             most_parsimonous_duplication_model = true;
         }
@@ -158,6 +164,15 @@ public final class gsdi {
         }
         else {
             gene_tree_suffix = null;
+        }
+        boolean remove_duplicate_external_species_nodes = false;
+        if ( cla.isOptionSet( REMOVE_DUPLICATE_EXTERNAL_SPECIES_NODES_OPTION ) ) {
+            if ( base_algorithm != ALGORITHM.GSDIR ) {
+                ForesterUtil
+                        .fatalError( PRG_NAME,
+                                     "Can use option to randomly remove external nodes from same species from gene trees only with GSDIR" );
+            }
+            remove_duplicate_external_species_nodes = true;
         }
         File gene_tree_file = null;
         File species_tree_file = null;
@@ -219,7 +234,8 @@ public final class gsdi {
                         transfer_taxonomy,
                         gene_tree_files,
                         species_tree_file,
-                        out_dir );
+                        out_dir,
+                        remove_duplicate_external_species_nodes );
         }
         else {
             execute( base_algorithm,
@@ -239,7 +255,8 @@ public final class gsdi {
                                           final boolean transfer_taxonomy,
                                           final File gene_tree_files[],
                                           final File species_tree_file,
-                                          final File outdir )
+                                          final File outdir,
+                                          final boolean remove_duplicate_external_species_nodes )
             throws IOException {
         final File log_file = new File( outdir, LOGFILE_NAME );
         if ( ForesterUtil.isWritableFile( log_file ) != null ) {
@@ -259,11 +276,13 @@ public final class gsdi {
         log_writer.println( "# Species tree\t" + species_tree_file.getCanonicalPath() );
         if ( base_algorithm == ALGORITHM.GSDI ) {
             log_writer.println( "# Algorithm\tGSDI" );
+            log_writer.println( "# Use most parsimonous duplication model\t" + most_parsimonous_duplication_model );
         }
         else if ( base_algorithm == ALGORITHM.GSDIR ) {
             log_writer.println( "# Algorithm\tGSDIR" );
+            log_writer.println( "# Randomly remove external nodes from same species from species trees\t"
+                    + remove_duplicate_external_species_nodes );
         }
-        log_writer.println( "# Use most parsimonous duplication model\t" + most_parsimonous_duplication_model );
         log_writer.println( "# Allow stripping of gene tree nodes\t" + allow_stripping_of_gene_tree );
         log_writer.println( "# Start time\t" + new SimpleDateFormat( "yyyyMMdd HH:mm:ss" ).format( new Date() ) );
         log_writer.println();
@@ -272,7 +291,10 @@ public final class gsdi {
         log_writer.print( "Ext. nodes\t" );
         log_writer.print( "Speciations\t" );
         log_writer.print( "Duplications\t" );
-        if ( !most_parsimonous_duplication_model ) {
+        if ( ( base_algorithm == ALGORITHM.GSDIR ) && !remove_duplicate_external_species_nodes ) {
+            log_writer.print( "Non Spec-spec. Dup\t" );
+        }
+        if ( !most_parsimonous_duplication_model && ( base_algorithm == ALGORITHM.GSDI ) ) {
             log_writer.print( "Spec. or Dup.\t" );
         }
         if ( allow_stripping_of_gene_tree ) {
@@ -295,7 +317,8 @@ public final class gsdi {
                                             gene_tree_file,
                                             species_tree_file,
                                             new File( outdir, outname ),
-                                            log_writer );
+                                            log_writer,
+                                            remove_duplicate_external_species_nodes );
             log_writer.flush();
             System.out.print( "\r" + counter );
         }
@@ -314,7 +337,8 @@ public final class gsdi {
                                                   final File gene_tree_file,
                                                   final File species_tree_file,
                                                   final File out_file,
-                                                  final EasyWriter log_writer )
+                                                  final EasyWriter log_writer,
+                                                  final boolean remove_duplicate_external_species_nodes )
             throws IOException {
         if ( ForesterUtil.isReadableFile( gene_tree_file ) != null ) {
             ForesterUtil.fatalError( gsdi.PRG_NAME, ForesterUtil.isReadableFile( gene_tree_file ) );
@@ -336,9 +360,12 @@ public final class gsdi {
                         log_writer );
         }
         int counter = 0;
-        final List<Phylogeny> out_trees = new ArrayList<Phylogeny>();
+        final List<Phylogeny> out_trees = new ArrayList<>();
         for( final Phylogeny gene_tree : gene_trees ) {
-            if ( !gene_tree.isEmpty() && gene_tree.getNumberOfExternalNodes() > 1 ) {
+            if ( remove_duplicate_external_species_nodes ) {
+                PhylogenyMethods.removeDuplicateExternalSpeciesNodes( gene_tree );
+            }
+            if ( !gene_tree.isEmpty() && ( gene_tree.getNumberOfExternalNodes() > 1 ) ) {
                 Phylogeny species_tree = null;
                 try {
                     species_tree = SDIutil.parseSpeciesTree( gene_tree,
@@ -363,11 +390,6 @@ public final class gsdi {
                 }
                 gene_tree.setRooted( true );
                 species_tree.setRooted( true );
-                if ( !gene_tree.isCompletelyBinary() ) {
-                    fatalError( "user error",
-                                "gene tree [" + gene_tree_file + "] is not completely binary",
-                                log_writer );
-                }
                 if ( base_algorithm == ALGORITHM.SDI ) {
                     if ( !species_tree.isCompletelyBinary() ) {
                         fatalError( "user error",
@@ -383,6 +405,10 @@ public final class gsdi {
                             : ( ":" + Integer.toString( counter ) ) ) );
                 }
                 log_writer.print( "\t" );
+                if ( !gene_tree.isCompletelyBinary() ) {
+                    log_writer.write( "not completely binary\n" );
+                    continue;
+                }
                 GSDII gsdii = null;
                 try {
                     if ( base_algorithm == ALGORITHM.GSDI ) {
@@ -411,12 +437,15 @@ public final class gsdi {
                     e.printStackTrace();
                     fatalError( "unexpected error", e.toString(), log_writer );
                 }
+                final int non_species_specific_dups;
                 if ( base_algorithm == ALGORITHM.GSDIR ) {
                     final Phylogeny gt = ( ( GSDIR ) gsdii ).getMinDuplicationsSumGeneTree();
+                    non_species_specific_dups = calcNonSpeciesSpecificDups( gt );
                     gt.setRerootable( false );
                     out_trees.add( gt );
                 }
                 else {
+                    non_species_specific_dups = -1;
                     gene_tree.setRerootable( false );
                     out_trees.add( gene_tree );
                 }
@@ -425,6 +454,11 @@ public final class gsdi {
                 if ( ( base_algorithm == ALGORITHM.GSDIR ) ) {
                     final GSDIR gsdir = ( GSDIR ) gsdii;
                     log_writer.print( gsdir.getMinDuplicationsSum() + "\t" );
+                    if ( non_species_specific_dups > gsdir.getMinDuplicationsSum() ) {
+                        ForesterUtil.fatalError( PRG_NAME,
+                                                 "non_species_specific_dups > dups [" + gene_tree_file + "]" );
+                    }
+                    log_writer.print( non_species_specific_dups + "\t" );
                 }
                 else if ( ( base_algorithm == ALGORITHM.GSDI ) ) {
                     final GSDI gsdi = ( GSDI ) gsdii;
@@ -453,6 +487,18 @@ public final class gsdi {
             }
         }
         return counter;
+    }
+
+    private final static int calcNonSpeciesSpecificDups( final Phylogeny gene_tree ) {
+        int count = 0;
+        for( final PhylogenyNodeIterator it = gene_tree.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if ( !n.isExternal() && n.isDuplication()
+                    && !PhylogenyMethods.isAllExternalDescedantsFromSameSpecies( n ) ) {
+                count++;
+            }
+        }
+        return count;
     }
 
     private final static void execute( final ALGORITHM base_algorithm,
@@ -559,9 +605,15 @@ public final class gsdi {
                 System.out.println( "Algorithm                                : GSDIR" );
                 log_writer.println( "Algorithm                                : GSDIR" );
             }
-            System.out.println( "Use most parsimonous duplication model   : " + most_parsimonous_duplication_model );
+            if ( base_algorithm == ALGORITHM.GSDI ) {
+                System.out
+                        .println( "Use most parsimonous duplication model   : " + most_parsimonous_duplication_model );
+            }
             System.out.println( "Allow stripping of gene tree nodes       : " + allow_stripping_of_gene_tree );
-            log_writer.println( "Use most parsimonous duplication model   : " + most_parsimonous_duplication_model );
+            if ( base_algorithm == ALGORITHM.GSDI ) {
+                log_writer
+                        .println( "Use most parsimonous duplication model   : " + most_parsimonous_duplication_model );
+            }
             log_writer.println( "Allow stripping of gene tree nodes       : " + allow_stripping_of_gene_tree );
             log_writer.flush();
             if ( base_algorithm == ALGORITHM.GSDI ) {
@@ -710,6 +762,8 @@ public final class gsdi {
                 + "         : to transfer taxonomic data from species tree to gene tree" );
         System.out.println( " -" + SUFFIX_FOR_DIR_OPTION
                 + "=<suffix>: suffix for gene trees for analyzing entire directory of trees" );
+        System.out.println( " -" + REMOVE_DUPLICATE_EXTERNAL_SPECIES_NODES_OPTION
+                + "         : to randomly remove external nodes from gene trees from same species (only with GSDIR)" );
         System.out.println();
         System.out.println();
         System.out.println( "Gene tree(s):" );
@@ -730,7 +784,7 @@ public final class gsdi {
 
     private final static void printMappedNodesToLog( final EasyWriter log_writer, final GSDII gsdi )
             throws IOException {
-        final SortedSet<String> ss = new TreeSet<String>();
+        final SortedSet<String> ss = new TreeSet<>();
         for( final PhylogenyNode n : gsdi.getMappedExternalSpeciesTreeNodes() ) {
             ss.add( n.toString() );
         }
@@ -742,7 +796,7 @@ public final class gsdi {
 
     private final static void printStrippedGeneTreeNodesToLog( final EasyWriter log_writer, final GSDII gsdi )
             throws IOException {
-        final SortedMap<String, Integer> sm = new TreeMap<String, Integer>();
+        final SortedMap<String, Integer> sm = new TreeMap<>();
         for( final PhylogenyNode n : gsdi.getStrippedExternalGeneTreeNodes() ) {
             final String s = n.toString();
             if ( sm.containsKey( s ) ) {

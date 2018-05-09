@@ -123,7 +123,7 @@ public class PhylogenyMethods {
     }
 
     public static List<DescriptiveStatistics> calculateConfidenceStatistics( final Phylogeny phy ) {
-        final List<DescriptiveStatistics> stats = new ArrayList<DescriptiveStatistics>();
+        final List<DescriptiveStatistics> stats = new ArrayList<>();
         for( final PhylogenyNodeIterator iter = phy.iteratorPreorder(); iter.hasNext(); ) {
             final PhylogenyNode n = iter.next();
             if ( !n.isExternal() && !n.isRoot() ) {
@@ -152,7 +152,7 @@ public class PhylogenyMethods {
 
     /**
      * For external nodes the level is 0.
-     * 
+     *
      * @param node
      * @return
      */
@@ -274,7 +274,7 @@ public class PhylogenyMethods {
     }
 
     public static String[] obtainPresentRanksSorted( final Phylogeny phy ) {
-        final Set<String> present_ranks = new HashSet<String>();
+        final Set<String> present_ranks = new HashSet<>();
         for( final PhylogenyNodeIterator iter = phy.iteratorPreorder(); iter.hasNext(); ) {
             final PhylogenyNode node = iter.next();
             if ( !node.isExternal() && !node.isRoot() && ( node.getNodeData().getTaxonomy() != null )
@@ -364,7 +364,7 @@ public class PhylogenyMethods {
 
     public final static void collapseSubtreeStructure( final PhylogenyNode n ) {
         final List<PhylogenyNode> eds = n.getAllExternalDescendants();
-        final List<Double> d = new ArrayList<Double>();
+        final List<Double> d = new ArrayList<>();
         for( final PhylogenyNode ed : eds ) {
             d.add( calculateDistanceToAncestor( n, ed ) );
         }
@@ -397,7 +397,7 @@ public class PhylogenyMethods {
     }
 
     public static final HashMap<String, PhylogenyNode> createNameToExtNodeMap( final Phylogeny phy ) {
-        final HashMap<String, PhylogenyNode> nodes = new HashMap<String, PhylogenyNode>();
+        final HashMap<String, PhylogenyNode> nodes = new HashMap<>();
         final List<PhylogenyNode> ext = phy.getExternalNodes();
         for( final PhylogenyNode n : ext ) {
             nodes.put( n.getName(), n );
@@ -447,7 +447,7 @@ public class PhylogenyMethods {
             }
         }
         PhylogenyMethods.deleteExternalNodesNegativeSelection( to_delete, p );
-        final List<String> deleted = new ArrayList<String>();
+        final List<String> deleted = new ArrayList<>();
         for( final String n : to_delete ) {
             if ( !ForesterUtil.isEmpty( n ) ) {
                 deleted.add( n );
@@ -458,7 +458,7 @@ public class PhylogenyMethods {
 
     public static void deleteExternalNodesPositiveSelectionT( final List<Taxonomy> species_to_keep,
                                                               final Phylogeny phy ) {
-        final Set<Long> to_delete = new HashSet<Long>();
+        final Set<Long> to_delete = new HashSet<>();
         for( final PhylogenyNodeIterator it = phy.iteratorExternalForward(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
             if ( n.getNodeData().isHasTaxonomy() ) {
@@ -474,7 +474,7 @@ public class PhylogenyMethods {
     }
 
     final public static void deleteInternalNodesWithOnlyOneDescendent( final Phylogeny phy ) {
-        final ArrayList<PhylogenyNode> to_delete = new ArrayList<PhylogenyNode>();
+        final ArrayList<PhylogenyNode> to_delete = new ArrayList<>();
         for( final PhylogenyNodeIterator iter = phy.iteratorPostorder(); iter.hasNext(); ) {
             final PhylogenyNode n = iter.next();
             if ( ( !n.isExternal() ) && ( n.getNumberOfDescendants() == 1 ) ) {
@@ -492,7 +492,7 @@ public class PhylogenyMethods {
         if ( n.isInternal() ) {
             throw new IllegalArgumentException( "node is not external" );
         }
-        final ArrayList<PhylogenyNode> to_delete = new ArrayList<PhylogenyNode>();
+        final ArrayList<PhylogenyNode> to_delete = new ArrayList<>();
         for( final PhylogenyNodeIterator it = phy.iteratorExternalForward(); it.hasNext(); ) {
             final PhylogenyNode i = it.next();
             if ( !PhylogenyMethods.getEventAtLCA( n, i ).isSpeciation() ) {
@@ -511,7 +511,7 @@ public class PhylogenyMethods {
         if ( min_distance_to_root <= 0 ) {
             throw new IllegalArgumentException( "attempt to use min distance to root of: " + min_distance_to_root );
         }
-        final List<List<PhylogenyNode>> l = new ArrayList<List<PhylogenyNode>>();
+        final List<List<PhylogenyNode>> l = new ArrayList<>();
         setAllIndicatorsToZero( phy );
         for( final PhylogenyNodeIterator it = phy.iteratorExternalForward(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
@@ -527,8 +527,8 @@ public class PhylogenyMethods {
     }
 
     public static List<PhylogenyNode> getAllDescendants( final PhylogenyNode node ) {
-        final List<PhylogenyNode> descs = new ArrayList<PhylogenyNode>();
-        final Set<Long> encountered = new HashSet<Long>();
+        final List<PhylogenyNode> descs = new ArrayList<>();
+        final Set<Long> encountered = new HashSet<>();
         if ( !node.isExternal() ) {
             final List<PhylogenyNode> exts = node.getAllExternalDescendants();
             for( PhylogenyNode current : exts ) {
@@ -547,8 +547,8 @@ public class PhylogenyMethods {
     }
 
     public static List<PhylogenyNode> getAllDescendantsOfGivenLevel( final PhylogenyNode node, final int level ) {
-        final List<PhylogenyNode> descs = new ArrayList<PhylogenyNode>();
-        final Set<Long> encountered = new HashSet<Long>();
+        final List<PhylogenyNode> descs = new ArrayList<>();
+        final Set<Long> encountered = new HashSet<>();
         if ( !node.isExternal() ) {
             final List<PhylogenyNode> exts = node.getAllExternalDescendants();
             for( PhylogenyNode current : exts ) {
@@ -833,7 +833,7 @@ public class PhylogenyMethods {
     }
 
     public static List<PhylogenyNode> obtainAllNodesAsList( final Phylogeny phy ) {
-        final List<PhylogenyNode> nodes = new ArrayList<PhylogenyNode>();
+        final List<PhylogenyNode> nodes = new ArrayList<>();
         if ( phy.isEmpty() ) {
             return nodes;
         }
@@ -852,7 +852,7 @@ public class PhylogenyMethods {
      */
     public static Map<Taxonomy, Integer> obtainDistinctTaxonomyCounts( final PhylogenyNode node ) {
         final List<PhylogenyNode> descs = node.getAllExternalDescendants();
-        final Map<Taxonomy, Integer> tax_map = new HashMap<Taxonomy, Integer>();
+        final Map<Taxonomy, Integer> tax_map = new HashMap<>();
         for( final PhylogenyNode n : descs ) {
             if ( !n.getNodeData().isHasTaxonomy() || n.getNodeData().getTaxonomy().isEmpty() ) {
                 return null;
@@ -978,7 +978,7 @@ public class PhylogenyMethods {
 
     public final static Phylogeny[] readPhylogenies( final PhylogenyParser parser, final List<File> files )
             throws IOException {
-        final List<Phylogeny> tree_list = new ArrayList<Phylogeny>();
+        final List<Phylogeny> tree_list = new ArrayList<>();
         for( final File file : files ) {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
             final Phylogeny[] trees = factory.create( file, parser );
@@ -1064,7 +1064,7 @@ public class PhylogenyMethods {
                                          final boolean regex,
                                          final boolean search_domains,
                                          final double domains_confidence_threshold ) {
-        final List<Long> nodes = new ArrayList<Long>();
+        final List<Long> nodes = new ArrayList<>();
         if ( phy.isEmpty() || ( query == null ) ) {
             return nodes;
         }
@@ -1087,36 +1087,23 @@ public class PhylogenyMethods {
                 match = true;
             }
             else if ( ( ( ndf == null ) || ( ndf == NDF.TaxonomyCode ) ) && node.getNodeData().isHasTaxonomy()
-                    && match( node.getNodeData().getTaxonomy().getTaxonomyCode(),
-                              my_query,
-                              case_sensitive,
-                              partial,
-                              regex ) ) {
+                    && match( node.getNodeData().getTaxonomy()
+                            .getTaxonomyCode(), my_query, case_sensitive, partial, regex ) ) {
                 match = true;
             }
             else if ( ( ( ndf == null ) || ( ndf == NDF.TaxonomyCommonName ) ) && node.getNodeData().isHasTaxonomy()
-                    && match( node.getNodeData().getTaxonomy().getCommonName(),
-                              my_query,
-                              case_sensitive,
-                              partial,
-                              regex ) ) {
+                    && match( node.getNodeData().getTaxonomy()
+                            .getCommonName(), my_query, case_sensitive, partial, regex ) ) {
                 match = true;
             }
             else if ( ( ( ndf == null ) || ( ndf == NDF.TaxonomyScientificName ) ) && node.getNodeData().isHasTaxonomy()
-                    && match( node.getNodeData().getTaxonomy().getScientificName(),
-                              my_query,
-                              case_sensitive,
-                              partial,
-                              regex ) ) {
+                    && match( node.getNodeData().getTaxonomy()
+                            .getScientificName(), my_query, case_sensitive, partial, regex ) ) {
                 match = true;
             }
             else if ( ( ( ndf == null ) || ( ndf == NDF.TaxonomyIdentifier ) ) && node.getNodeData().isHasTaxonomy()
-                    && ( node.getNodeData().getTaxonomy().getIdentifier() != null )
-                    && match( node.getNodeData().getTaxonomy().getIdentifier().getValue(),
-                              my_query,
-                              case_sensitive,
-                              partial,
-                              regex ) ) {
+                    && ( node.getNodeData().getTaxonomy().getIdentifier() != null ) && match( node.getNodeData()
+                            .getTaxonomy().getIdentifier().getValue(), my_query, case_sensitive, partial, regex ) ) {
                 match = true;
             }
             else if ( ( ( ndf == null ) || ( ndf == NDF.TaxonomySynonym ) ) && node.getNodeData().isHasTaxonomy()
@@ -1134,28 +1121,18 @@ public class PhylogenyMethods {
                 match = true;
             }
             if ( !match && ( ( ndf == null ) || ( ndf == NDF.GeneName ) ) && node.getNodeData().isHasSequence()
-                    && match( node.getNodeData().getSequence().getGeneName(),
-                              my_query,
-                              case_sensitive,
-                              partial,
-                              regex ) ) {
+                    && match( node.getNodeData().getSequence()
+                            .getGeneName(), my_query, case_sensitive, partial, regex ) ) {
                 match = true;
             }
             if ( !match && ( ( ndf == null ) || ( ndf == NDF.SequenceSymbol ) ) && node.getNodeData().isHasSequence()
-                    && match( node.getNodeData().getSequence().getSymbol(),
-                              my_query,
-                              case_sensitive,
-                              partial,
-                              regex ) ) {
+                    && match( node.getNodeData().getSequence()
+                            .getSymbol(), my_query, case_sensitive, partial, regex ) ) {
                 match = true;
             }
             if ( !match && ( ( ndf == null ) || ( ndf == NDF.SequenceAccession ) ) && node.getNodeData().isHasSequence()
-                    && ( node.getNodeData().getSequence().getAccession() != null )
-                    && match( node.getNodeData().getSequence().getAccession().getValue(),
-                              my_query,
-                              case_sensitive,
-                              partial,
-                              regex ) ) {
+                    && ( node.getNodeData().getSequence().getAccession() != null ) && match( node.getNodeData()
+                            .getSequence().getAccession().getValue(), my_query, case_sensitive, partial, regex ) ) {
                 match = true;
             }
             if ( !match && ( ( ( ndf == null ) && search_domains ) || ( ndf == NDF.Domain ) )
@@ -1217,12 +1194,8 @@ public class PhylogenyMethods {
                     }
                 }
             }
-            if ( !match && ( ndf == NDF.MolecularSequence ) && node.getNodeData().isHasSequence()
-                    && match( node.getNodeData().getSequence().getMolecularSequence(),
-                              my_query,
-                              case_sensitive,
-                              true,
-                              regex ) ) {
+            if ( !match && ( ndf == NDF.MolecularSequence ) && node.getNodeData().isHasSequence() && match( node
+                    .getNodeData().getSequence().getMolecularSequence(), my_query, case_sensitive, true, regex ) ) {
                 match = true;
             }
             if ( match ) {
@@ -1238,7 +1211,7 @@ public class PhylogenyMethods {
                                                    final boolean partial,
                                                    final boolean search_domains,
                                                    final double domains_confidence_threshold ) {
-        final List<Long> nodes = new ArrayList<Long>();
+        final List<Long> nodes = new ArrayList<>();
         if ( phy.isEmpty() || ( queries == null ) || ( queries.length < 1 ) ) {
             return nodes;
         }
@@ -1266,37 +1239,23 @@ public class PhylogenyMethods {
                     match = true;
                 }
                 else if ( ( ( ndf == null ) || ( ndf == NDF.TaxonomyCode ) ) && node.getNodeData().isHasTaxonomy()
-                        && match( node.getNodeData().getTaxonomy().getTaxonomyCode(),
-                                  query,
-                                  case_sensitive,
-                                  partial,
-                                  false ) ) {
+                        && match( node.getNodeData().getTaxonomy()
+                                .getTaxonomyCode(), query, case_sensitive, partial, false ) ) {
                     match = true;
                 }
                 else if ( ( ( ndf == null ) || ( ndf == NDF.TaxonomyCommonName ) ) && node.getNodeData().isHasTaxonomy()
-                        && match( node.getNodeData().getTaxonomy().getCommonName(),
-                                  query,
-                                  case_sensitive,
-                                  partial,
-                                  false ) ) {
+                        && match( node.getNodeData().getTaxonomy()
+                                .getCommonName(), query, case_sensitive, partial, false ) ) {
                     match = true;
                 }
                 else if ( ( ( ndf == null ) || ( ndf == NDF.TaxonomyScientificName ) )
-                        && node.getNodeData().isHasTaxonomy()
-                        && match( node.getNodeData().getTaxonomy().getScientificName(),
-                                  query,
-                                  case_sensitive,
-                                  partial,
-                                  false ) ) {
+                        && node.getNodeData().isHasTaxonomy() && match( node.getNodeData().getTaxonomy()
+                                .getScientificName(), query, case_sensitive, partial, false ) ) {
                     match = true;
                 }
                 else if ( ( ( ndf == null ) || ( ndf == NDF.TaxonomyIdentifier ) ) && node.getNodeData().isHasTaxonomy()
-                        && ( node.getNodeData().getTaxonomy().getIdentifier() != null )
-                        && match( node.getNodeData().getTaxonomy().getIdentifier().getValue(),
-                                  query,
-                                  case_sensitive,
-                                  partial,
-                                  false ) ) {
+                        && ( node.getNodeData().getTaxonomy().getIdentifier() != null ) && match( node.getNodeData()
+                                .getTaxonomy().getIdentifier().getValue(), query, case_sensitive, partial, false ) ) {
                     match = true;
                 }
                 else if ( ( ( ndf == null ) || ( ndf == NDF.TaxonomySynonym ) ) && node.getNodeData().isHasTaxonomy()
@@ -1310,37 +1269,24 @@ public class PhylogenyMethods {
                     }
                 }
                 if ( !match && ( ( ndf == null ) || ( ndf == NDF.SequenceName ) ) && node.getNodeData().isHasSequence()
-                        && match( node.getNodeData().getSequence().getName(),
-                                  query,
-                                  case_sensitive,
-                                  partial,
-                                  false ) ) {
+                        && match( node.getNodeData().getSequence()
+                                .getName(), query, case_sensitive, partial, false ) ) {
                     match = true;
                 }
                 if ( !match && ( ( ndf == null ) || ( ndf == NDF.GeneName ) ) && node.getNodeData().isHasSequence()
-                        && match( node.getNodeData().getSequence().getGeneName(),
-                                  query,
-                                  case_sensitive,
-                                  partial,
-                                  false ) ) {
+                        && match( node.getNodeData().getSequence()
+                                .getGeneName(), query, case_sensitive, partial, false ) ) {
                     match = true;
                 }
                 if ( !match && ( ( ndf == null ) || ( ndf == NDF.SequenceSymbol ) )
-                        && node.getNodeData().isHasSequence() && match( node.getNodeData().getSequence().getSymbol(),
-                                                                        query,
-                                                                        case_sensitive,
-                                                                        partial,
-                                                                        false ) ) {
+                        && node.getNodeData().isHasSequence() && match( node.getNodeData().getSequence()
+                                .getSymbol(), query, case_sensitive, partial, false ) ) {
                     match = true;
                 }
                 if ( !match && ( ( ndf == null ) || ( ndf == NDF.SequenceAccession ) )
                         && node.getNodeData().isHasSequence()
-                        && ( node.getNodeData().getSequence().getAccession() != null )
-                        && match( node.getNodeData().getSequence().getAccession().getValue(),
-                                  query,
-                                  case_sensitive,
-                                  partial,
-                                  false ) ) {
+                        && ( node.getNodeData().getSequence().getAccession() != null ) && match( node.getNodeData()
+                                .getSequence().getAccession().getValue(), query, case_sensitive, partial, false ) ) {
                     match = true;
                 }
                 if ( !match && ( ( ( ndf == null ) && search_domains ) || ( ndf == NDF.Domain ) )
@@ -1402,12 +1348,8 @@ public class PhylogenyMethods {
                         }
                     }
                 }
-                if ( !match && ( ndf == NDF.MolecularSequence ) && node.getNodeData().isHasSequence()
-                        && match( node.getNodeData().getSequence().getMolecularSequence(),
-                                  query,
-                                  case_sensitive,
-                                  true,
-                                  false ) ) {
+                if ( !match && ( ndf == NDF.MolecularSequence ) && node.getNodeData().isHasSequence() && match( node
+                        .getNodeData().getSequence().getMolecularSequence(), query, case_sensitive, true, false ) ) {
                     match = true;
                 }
                 if ( !match ) {
@@ -1530,7 +1472,7 @@ public class PhylogenyMethods {
      */
     public static List<PhylogenyNode> taxonomyBasedDeletionOfExternalNodes( final Phylogeny reference,
                                                                             final Phylogeny to_be_stripped ) {
-        final Set<String> ref_ext_taxo = new HashSet<String>();
+        final Set<String> ref_ext_taxo = new HashSet<>();
         for( final PhylogenyNodeIterator it = reference.iteratorExternalForward(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
             if ( !n.getNodeData().isHasTaxonomy() ) {
@@ -1547,7 +1489,7 @@ public class PhylogenyMethods {
                 ref_ext_taxo.add( n.getNodeData().getTaxonomy().getIdentifier().getValuePlusProvider() );
             }
         }
-        final ArrayList<PhylogenyNode> nodes_to_delete = new ArrayList<PhylogenyNode>();
+        final ArrayList<PhylogenyNode> nodes_to_delete = new ArrayList<>();
         for( final PhylogenyNodeIterator it = to_be_stripped.iteratorExternalForward(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
             if ( !n.getNodeData().isHasTaxonomy() ) {
@@ -1816,7 +1758,7 @@ public class PhylogenyMethods {
 
     private final static List<PhylogenyNode> divideIntoSubTreesHelper( final PhylogenyNode node,
                                                                        final double min_distance_to_root ) {
-        final List<PhylogenyNode> l = new ArrayList<PhylogenyNode>();
+        final List<PhylogenyNode> l = new ArrayList<>();
         final PhylogenyNode r = moveTowardsRoot( node, min_distance_to_root );
         for( final PhylogenyNode ext : r.getAllExternalDescendants() ) {
             if ( ext.getIndicator() != 0 ) {
@@ -2069,7 +2011,7 @@ public class PhylogenyMethods {
     }
 
     public final static Map<Long, Integer> calculateDepths( final Phylogeny phy ) {
-        final Map<Long, Integer> depths = new HashMap<Long, Integer>();
+        final Map<Long, Integer> depths = new HashMap<>();
         calculateDepthsHelper( phy.getRoot(), 0, depths );
         return depths;
     }
@@ -2116,7 +2058,7 @@ public class PhylogenyMethods {
         if ( phy.getNumberOfExternalNodes() < 3 ) {
             return;
         }
-        if ( rank < 0 || rank >= TaxonomyUtil.RANKS.length ) {
+        if ( ( rank < 0 ) || ( rank >= TaxonomyUtil.RANKS.length ) ) {
             throw new IllegalArgumentException( "Rank " + rank + " is out of range" );
         }
         collapseToRankHelper( phy.getRoot(), rank );
@@ -2175,5 +2117,53 @@ public class PhylogenyMethods {
             }
         }
         return false;
+    }
+
+    public final static boolean isAllExternalDescedantsFromSameSpecies( final PhylogenyNode node ) {
+        if ( !node.isExternal() && ( node.getNumberOfDescendants() > 1 ) ) {
+            final Set<Taxonomy> taxs = obtainDistinctTaxonomies( node );
+            if ( ( taxs != null ) && ( taxs.size() == 1 ) ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns the set of distinct taxonomies of
+     * all external nodes of node.
+     * If at least one the external nodes has no taxonomy,
+     * null is returned.
+     *
+     */
+    public final static Set<Taxonomy> obtainDistinctTaxonomies( final PhylogenyNode node ) {
+        final List<PhylogenyNode> descs = node.getAllExternalDescendants();
+        final Set<Taxonomy> tax_set = new HashSet<>();
+        for( final PhylogenyNode n : descs ) {
+            if ( !n.getNodeData().isHasTaxonomy() || n.getNodeData().getTaxonomy().isEmpty() ) {
+                return null;
+            }
+            tax_set.add( n.getNodeData().getTaxonomy() );
+        }
+        return tax_set;
+    }
+
+    public final static void removeDuplicateExternalSpeciesNodes( final Phylogeny phy ) {
+        final Set<Taxonomy> tax_set = new HashSet<>();
+        final List<PhylogenyNode> to_remove = new ArrayList<>();
+        for( final PhylogenyNodeIterator iter = phy.iteratorExternalForward(); iter.hasNext(); ) {
+            final PhylogenyNode n = iter.next();
+            if ( n.getNodeData().isHasTaxonomy() && !n.getNodeData().getTaxonomy().isEmpty() ) {
+                if ( tax_set.contains( n.getNodeData().getTaxonomy() ) ) {
+                    to_remove.add( n );
+                }
+                else {
+                    tax_set.add( n.getNodeData().getTaxonomy() );
+                }
+            }
+        }
+        for( final PhylogenyNode n : to_remove ) {
+            phy.deleteSubtree( n, true );
+        }
     }
 }

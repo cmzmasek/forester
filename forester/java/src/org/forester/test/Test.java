@@ -12463,7 +12463,6 @@ public final class Test {
                 }
                 return false;
             }
-            
             id = SequenceAccessionTools
                     .parseAccessorFromString( "Human_herpesvirus_8|KSHV_BAC36|NA|ORF21|core_gene_UL23_family_protein|ADQ57902.1" );
             if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getSource() )
@@ -12474,8 +12473,6 @@ public final class Test {
                 }
                 return false;
             }
-            
-            
             id = SequenceAccessionTools
                     .parseAccessorFromString( "Cowpox_virus|NP_619995.1|Brighton_Red|NA|Unknown|CPXV215_CDS|CPXV215_Protein" );
             if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getSource() )
@@ -12487,15 +12484,27 @@ public final class Test {
                 return false;
             }
             id = SequenceAccessionTools
-            .parseAccessorFromString( "Myxoma_virus|NP_051873.1|Lausanne|NA|Unknown|m006R|M6" );
-    if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getSource() )
-            || !id.getValue().equals( "NP_051873.1" ) || !id.getSource().equals( "refseq" ) ) {
-        if ( id != null ) {
-            System.out.println( "value   =" + id.getValue() );
-            System.out.println( "provider=" + id.getSource() );
-        }
-        return false;
-    }
+                    .parseAccessorFromString( "Myxoma_virus|NP_051873.1|Lausanne|NA|Unknown|m006R|M6" );
+            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getSource() )
+                    || !id.getValue().equals( "NP_051873.1" ) || !id.getSource().equals( "refseq" ) ) {
+                if ( id != null ) {
+                    System.out.println( "value   =" + id.getValue() );
+                    System.out.println( "provider=" + id.getSource() );
+                }
+                return false;
+            }
+            
+            id = SequenceAccessionTools
+                    .parseAccessorFromString( "Rhinolophus_bat_coronavirus_HKU2|VIPR_P_148283140_15203_16990.1|HKU2/GD/430/2006|NA|Unknown|nsp13|nsp13" );
+            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getSource() )
+                    || !id.getValue().equals( "VIPR_P_148283140_15203_16990.1" ) || !id.getSource().equals( "ViPR" ) ) {
+                if ( id != null ) {
+                    System.out.println( "value   =" + id.getValue() );
+                    System.out.println( "provider=" + id.getSource() );
+                    
+                }
+                return false;
+            }
             
         }
         catch ( final Exception e ) {

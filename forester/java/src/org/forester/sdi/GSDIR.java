@@ -53,18 +53,17 @@ public class GSDIR implements GSDII {
                   final Phylogeny species_tree,
                   final boolean strip_gene_tree,
                   final boolean strip_species_tree,
-                  final boolean transfer_taxonomy ) throws SDIException {
-        final NodesLinkingResult nodes_linking_result = GSDI.linkNodesOfG( gene_tree,
-                                                                           species_tree,
-                                                                           strip_gene_tree,
-                                                                           strip_species_tree );
+                  final boolean transfer_taxonomy )
+            throws SDIException {
+        final NodesLinkingResult nodes_linking_result = GSDI
+                .linkNodesOfG( gene_tree, species_tree, strip_gene_tree, strip_species_tree );
         _stripped_gene_tree_nodes = nodes_linking_result.getStrippedGeneTreeNodes();
         _stripped_species_tree_nodes = nodes_linking_result.getStrippedSpeciesTreeNodes();
         _mapped_species_tree_nodes = nodes_linking_result.getMappedSpeciesTreeNodes();
         _scientific_names_mapped_to_reduced_specificity = nodes_linking_result
                 .getScientificNamesMappedToReducedSpecificity();
         _tax_comp_base = nodes_linking_result.getTaxCompBase();
-        final List<PhylogenyBranch> gene_tree_branches_post_order = new ArrayList<PhylogenyBranch>();
+        final List<PhylogenyBranch> gene_tree_branches_post_order = new ArrayList<>();
         for( final PhylogenyNodeIterator it = gene_tree.iteratorPostorder(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
             if ( !n.isRoot() && !( n.getParent().isRoot() && ( gene_tree.getRoot().getNumberOfDescendants() == 2 ) ) ) {
@@ -72,8 +71,8 @@ public class GSDIR implements GSDII {
             }
         }
         if ( gene_tree.getRoot().getNumberOfDescendants() == 2 ) {
-            gene_tree_branches_post_order.add( new PhylogenyBranch( gene_tree.getRoot().getChildNode1(), gene_tree
-                                                                    .getRoot().getChildNode2() ) );
+            gene_tree_branches_post_order.add( new PhylogenyBranch( gene_tree.getRoot().getChildNode1(),
+                                                                    gene_tree.getRoot().getChildNode2() ) );
         }
         int min_duplications_sum = Integer.MAX_VALUE;
         int speciations_sum = 0;
@@ -81,9 +80,8 @@ public class GSDIR implements GSDII {
         for( final PhylogenyBranch branch : gene_tree_branches_post_order ) {
             reRoot( branch, gene_tree );
             PhylogenyMethods.preOrderReId( species_tree );
-            final GSDIsummaryResult gsdi_result = GSDI.geneTreePostOrderTraversal( gene_tree,
-                                                                                   true,
-                                                                                   min_duplications_sum );
+            final GSDIsummaryResult gsdi_result = GSDI
+                    .geneTreePostOrderTraversal( gene_tree, true, min_duplications_sum );
             if ( gsdi_result == null ) {
                 continue;
             }
@@ -96,7 +94,7 @@ public class GSDIR implements GSDII {
                 }
             }
             else if ( gsdi_result.getDuplicationsSum() == min_duplications_sum ) {
-                final List<Phylogeny> l = new ArrayList<Phylogeny>();
+                final List<Phylogeny> l = new ArrayList<>();
                 l.add( _min_duplications_sum_gene_tree );
                 l.add( gene_tree );
                 final int index = getIndexesOfShortestTree( l ).get( 0 );
@@ -156,7 +154,7 @@ public class GSDIR implements GSDII {
     }
 
     public final static List<Integer> getIndexesOfShortestTree( final List<Phylogeny> assigned_trees ) {
-        final List<Integer> shortests = new ArrayList<Integer>();
+        final List<Integer> shortests = new ArrayList<>();
         boolean depth = true;
         double x = Double.MAX_VALUE;
         for( int i = 0; i < assigned_trees.size(); ++i ) {

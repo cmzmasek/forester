@@ -294,7 +294,7 @@ public class DomainSimilarity implements Comparable<DomainSimilarity> {
             sb.append( species.getSpeciesId() );
             sb.append( "\t" );
             sb.append( getSpeciesData().get( species ).getSeqIdsTabSeparated() );
-            sb.append(SurfacingConstants.NL );
+            sb.append( SurfacingConstants.NL );
         }
         return sb;
     }
@@ -596,11 +596,11 @@ public class DomainSimilarity implements Comparable<DomainSimilarity> {
         }
         if ( ( getSpeciesCustomOrder() == null ) || getSpeciesCustomOrder().isEmpty() ) {
             sb.append( "<td>" );
-            sb.append( "getSpeciesDataInAlphabeticalOrder" +getSpeciesDataInAlphabeticalOrder( true, tax_code_to_id_map, phy )+ "<<<<"  );
+            sb.append( getSpeciesDataInAlphabeticalOrder( true, tax_code_to_id_map, phy ) );
             if ( output_tax_codes_per_domain ) {
-                sb.append(   getDomainDataInAlphabeticalOrder()  );
+                sb.append( getDomainDataInAlphabeticalOrder() );
             }
-            sb.append( getTaxonomyGroupDistribution( phy ));
+            sb.append( getTaxonomyGroupDistribution( phy ) );
             sb.append( "</td>" );
         }
         else {
