@@ -4,6 +4,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="java/resources/commons-codec-1.5.jar"/>
 	<classpathentry kind="lib" path="java/resources/openchart.jar"/>
-	<classpathentry kind="lib" path="/home/zma/git/forester/forester/java/resources/itextpdf-5.5.9.jar"/>
+	<classpathentry kind="lib" path="java/resources/itextpdf-5.5.13.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

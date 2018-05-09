@@ -385,8 +385,8 @@ module Evoruby
       puts "Examples: " + PRG_NAME + ".rb .xml _d.xml"
       puts "          " + PRG_NAME + ".rb -#{NO_DOMAINS_OPTION} -#{NO_SEQS_OPTION} .xml _d.xml"
       puts "          " + PRG_NAME + ".rb -#{NO_DOMAINS_OPTION} -#{NO_SEQS_OPTION} .xml _d.xml mappings_dir"
-      puts
-      puts "          " + PRG_NAME + ".rb in_trees_dir out_dir mappings_dir"
+      # puts
+      # puts "          " + PRG_NAME + ".rb in_trees_dir out_dir mappings_dir"
       puts
     end
   end # class PhylogenyiesDecorator

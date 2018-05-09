@@ -10,8 +10,8 @@
 # OPTIONS
 # -------
 
-#MAFFT_OPTIONS="--maxiterate 1000 --localpair"
-MAFFT_OPTIONS="--auto"
+MAFFT_OPTIONS="--maxiterate 1000 --localpair"
+#MAFFT_OPTIONS="--auto"
 MSA_PRO_OPTIONS="-rr=0.5 -rsl=20"
 PHYLO_PL_OPTIONS="-B100Wq@1S9X"
 
@@ -176,4 +176,12 @@ mv $outdir/msas/*_tree_puzzle_outfile $outdir/phylo_aux/
 mv $outdir/msas/*_tree_*.mlt $outdir/phylo_mlt/
 
 
+# cd $outdir/phylo_trees/
+# phylogenies_decorator -nd -ns  -tc .xml _d.xml ../maps/
+# cd ..
+# mkdir phylo_trees_decorated
+# mv phylo_trees/00_phylogenies_decorator.log phylo_trees_decorated
+# mv phylo_trees/*_d.xml phylo_trees_decorated
+# gsdi -g -r -t -s=.xml phylo_trees_decorated/ ../../Coronaviridae_Taxonomy2.xml phylo_trees_gsdi
+# gsdi -g -r -R -t -s=.xml phylo_trees_decorated/ ../../Coronaviridae_Taxonomy2.xml phylo_trees_gsdi_R
 
