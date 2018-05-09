@@ -3,8 +3,8 @@
 // FORESTER -- software libraries and applications
 // for evolutionary biology research and applications.
 //
-// Copyright (C) 2008-2009 Christian M. Zmasek
-// Copyright (C) 2008-2009 Burnham Institute for Medical Research
+// Copyright (C) 2018 Christian M. Zmasek
+// Copyright (C) 2018 J. Craig Venter Institute
 // All rights reserved
 //
 // This library is free software; you can redistribute it and/or
