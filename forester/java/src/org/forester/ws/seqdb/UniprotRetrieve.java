@@ -17,10 +17,12 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.forester.phylogeny.data.Accession;
+import org.forester.util.ForesterUtil;
 import org.forester.util.SequenceAccessionTools;
 
 public final class UniprotRetrieve {
 
+    
     private final boolean        _verbose;
     private final static String  BASE_URL = "http://www.uniprot.org/uploadlists/";
     private final static boolean DEBUG    = false;
@@ -58,18 +60,21 @@ public final class UniprotRetrieve {
                     refseq_queries.add( query );
                 }
                 else if ( acc.getSource().equals( "ensembl" ) ) {
-                    throw new IOException( "WARNING: query \"" + query + "\" is ensembl" );
+                    System.out.println( "NOTE: query \"" + query + "\" is Ensembl -- ignored" );
                 }
                 else if ( acc.getSource().equals( "uniprot" ) ) {
-                    System.out.println( "WARNING: query \"" + query + "\" is uniprot" );
+                    System.out.println( "NOTE: query \"" + query + "\" is UniProt -- ignored" );
+                }
+                else if ( acc.getSource().equals( SequenceAccessionTools.VIPR_SOURCE ) ) {
+                    System.out.println( "NOTE: query \"" + query + "\" is ViPR -- ignored" );
                 }
                 else {
-                    throw new IOException( "WARNING: ignoring query \"" + query + "\"" );
+                    System.out.println( "NOTE: query \"" + query + "\" is of unknown source -- ignored" );
                 }
             }
             else {
                 if ( _verbose ) {
-                    System.out.println( "WARNING: ignoring query \"" + query + "\"" );
+                    System.out.println( "NOTE: query \"" + query + "\" is of unknown source -- ignored" );
                 }
             }
         }
@@ -79,11 +84,14 @@ public final class UniprotRetrieve {
         return m;
     }
 
-    private final SortedMap<String, UniprotData> runQuery( final String from,
-                                                           final String to,
-                                                           final List<String> queries,
-                                                           final SortedMap<String, UniprotData> m )
+    private final void runQuery( final String from,
+                                 final String to,
+                                 final List<String> queries,
+                                 final SortedMap<String, UniprotData> m )
             throws IOException {
+        if ( ForesterUtil.isEmpty( queries )) {
+            return;
+        }
         final StringBuilder intitial_url_str = new StringBuilder( BASE_URL + "?from=" + from + "&to=" + to
                 + "&format=tab&query=" );
         boolean first = true;
@@ -141,7 +149,6 @@ public final class UniprotRetrieve {
             }
         }
         in.close();
-        return m;
     }
 
     public static void main( final String[] args ) throws Exception {

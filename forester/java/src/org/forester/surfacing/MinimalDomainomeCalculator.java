@@ -14,6 +14,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
@@ -45,6 +47,9 @@ public final class MinimalDomainomeCalculator {
     private static final int    MAX_IDS_TO_SEARCH_PER_SPECIES = 10;
     private static final int    VERBOSITY                     = 1;
     private static final String NA_SYMBOL                     = "-";
+    private static final Pattern MULTIPLE_NAME_PATTERN = Pattern.compile("(.+)\\s\\[(\\d+)\\]");
+    private static final Pattern ORF_NAME_PATTERN = Pattern.compile("orf\\s*(.+)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern ORF_PROTEIN_NAME_PATTERN = Pattern.compile("orf\\s*(.+)\\s+protein", Pattern.CASE_INSENSITIVE);
 
     public final static void calc( final boolean use_domain_architectures,
                                    final Phylogeny tre,
@@ -364,7 +369,7 @@ public final class MinimalDomainomeCalculator {
                                                          final int verbosity )
             throws IOException {
         final SortedMap<String, String> input_da_name_map;
-        final Set<String> all_names = new HashSet<>();
+        final Set<String> all_names_lc = new HashSet<>();
         if ( input_da_name_file != null ) {
             final BasicTable<String> input_da_name_table = BasicTableParser.parse( input_da_name_file, '\t' );
             input_da_name_map = input_da_name_table.getColumnsAsMap( 0, 1 );
@@ -406,15 +411,35 @@ public final class MinimalDomainomeCalculator {
                 }
             }
             if ( !ForesterUtil.isEmpty( name ) && !name.equals( NA_SYMBOL ) ) {
-                if ( all_names.contains( name ) ) {
-                    while ( all_names.contains( name ) ) {
-                        name = name + "'";
+                // Deal with ORF names:
+               final Matcher matcher_orf_p = ORF_PROTEIN_NAME_PATTERN.matcher(name); 
+               final Matcher matcher_orf = ORF_NAME_PATTERN.matcher(name); 
+               if (matcher_orf_p.matches()) {
+                    name = "ORF " + matcher_orf_p.group( 1 ) + " protein";
+               }
+               else if (matcher_orf.matches()) {
+                   name = "ORF " + matcher_orf.group( 1 ) + " protein";
+               }
+             
+                
+                String name_lc = name.toLowerCase();
+                if ( all_names_lc.contains( name_lc ) ) {
+                    while ( all_names_lc.contains( name_lc ) ) {
+                        final Matcher matcher = MULTIPLE_NAME_PATTERN.matcher(name); 
+                        if (matcher.matches()) {
+                            final int d = 1 + Integer.parseInt( matcher.group( 2 ) );
+                            name = matcher.group( 1 ) + " [" + d + "]";
+                        }
+                        else {
+                            name = name + " [2]";
+                        }
+                        name_lc = name.toLowerCase();
                     }
                     if ( verbosity > 0 ) {
                         System.out.println( "   -> " + name );
                     }
                 }
-                all_names.add( name );
+                all_names_lc.add( name_lc );
             }
             while ( it_for_all_species.hasNext() ) {
                 final Map.Entry<String, SortedSet<String>> e3 = it_for_all_species.next();

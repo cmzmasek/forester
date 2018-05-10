@@ -39,6 +39,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.forester.application.support_transfer;
 import org.forester.archaeopteryx.AptxUtil;
@@ -148,6 +150,8 @@ public final class Test {
     }
 
     public static void main( final String[] args ) {
+        
+        
         System.out.println( "[Java version: " + ForesterUtil.JAVA_VERSION + " " + ForesterUtil.JAVA_VENDOR + "]" );
         System.out.println( "[OS: " + ForesterUtil.OS_NAME + " " + ForesterUtil.OS_ARCH + " " + ForesterUtil.OS_VERSION
                 + "]" );
@@ -12497,7 +12501,7 @@ public final class Test {
             id = SequenceAccessionTools
                     .parseAccessorFromString( "Rhinolophus_bat_coronavirus_HKU2|VIPR_P_148283140_15203_16990.1|HKU2/GD/430/2006|NA|Unknown|nsp13|nsp13" );
             if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getSource() )
-                    || !id.getValue().equals( "VIPR_P_148283140_15203_16990.1" ) || !id.getSource().equals( "ViPR" ) ) {
+                    || !id.getValue().equals( "VIPR_P_148283140_15203_16990.1" ) || !id.getSource().equals( SequenceAccessionTools.VIPR_SOURCE  ) ) {
                 if ( id != null ) {
                     System.out.println( "value   =" + id.getValue() );
                     System.out.println( "provider=" + id.getSource() );

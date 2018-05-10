@@ -65,6 +65,8 @@ public final class SequenceAccessionTools {
             .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]{2}_\\d{6,}(\\.\\d)?)(?:[^a-zA-Z0-9]|\\Z)" );
     private final static Pattern VIPR_PATTERN              = Pattern
             .compile( "\\|(VIPR_.+?)\\|" );
+    
+    public final static String VIPR_SOURCE = "ViPR";
 
     private SequenceAccessionTools() {
         // Hiding the constructor.
@@ -246,7 +248,7 @@ public final class SequenceAccessionTools {
             }
             v =  parseViprFromString( s );
             if ( !ForesterUtil.isEmpty( v ) ) {
-                return new Accession( v, "ViPR" );
+                return new Accession( v, SequenceAccessionTools.VIPR_SOURCE  );
             }
             
             
