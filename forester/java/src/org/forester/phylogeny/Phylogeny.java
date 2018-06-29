@@ -127,6 +127,8 @@ public class Phylogeny {
      * This calculates the height of the subtree emanating at n for rooted,
      * tree-shaped phylogenies
      *
+     * Note. 06/29/2018 changed from recursive to iterative (stock overflow on very large trees) 
+     *
      * @param n
      *            the root-node of a subtree
      * @return the height of the subtree emanating at n
@@ -136,14 +138,23 @@ public class Phylogeny {
             return n.getDistanceToParent() > 0 ? n.getDistanceToParent() : 0;
         }
         else {
-            double max = -Double.MAX_VALUE;
-            for( int i = 0; i < n.getNumberOfDescendants(); ++i ) {
-                final double l = calculateSubtreeHeight( n.getChildNode( i ), take_collapse_into_account );
-                if ( l > max ) {
-                    max = l;
+            double max = 0;
+            final List<PhylogenyNode> descs = n.getAllExternalDescendants();
+            for( PhylogenyNode desc : descs ) {
+                double h = 0;
+                while( desc != n ) {
+                    if ( take_collapse_into_account && desc.isCollapse() ) {
+                        h = 0;
+                    }
+                    h += ( desc.getDistanceToParent() > 0 ? desc.getDistanceToParent() : 0 );
+                    desc = desc.getParent();
+                }
+                h += ( desc.getDistanceToParent() > 0 ? desc.getDistanceToParent() : 0 );
+                if ( h > max ) {
+                    max = h;
                 }
             }
-            return max + ( n.getDistanceToParent() > 0 ? n.getDistanceToParent() : 0 );
+            return max;
         }
     }
 

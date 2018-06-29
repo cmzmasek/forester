@@ -55,13 +55,14 @@ import org.forester.util.SequenceAccessionTools;
 
 public final class SequenceDbWsTools {
 
-    public final static String   BASE_UNIPROT_URL           = "http://www.uniprot.org/";
+    public final static String   BASE_UNIPROT_URL           = "https://www.uniprot.org/";
     public final static int      DEFAULT_LINES_TO_RETURN    = 4000;
     public final static String   EMBL_DBS_REFSEQ_N          = "refseqn";
     public final static String   EMBL_DBS_REFSEQ_P          = "refseqp";
-    public final static String   EMBL_GENBANK               = "http://www.ebi.ac.uk/Tools/dbfetch/dbfetch?db=GENBANK&style=raw&id=";
-    public final static String   EMBL_REFSEQ                = "http://www.ebi.ac.uk/Tools/dbfetch/dbfetch?db=REFSEQ&style=raw&id=";
-    public final static String   EMBL_EMBL                  = "http://www.ebi.ac.uk/Tools/dbfetch/dbfetch?db=EMBL&style=raw&id=";
+    public final static String   EMBL_GENBANK               = "https://www.ebi.ac.uk/Tools/dbfetch/dbfetch?db=GENBANK&style=raw&id=";
+    public final static String   EMBL_REFSEQN                = "https://www.ebi.ac.uk/Tools/dbfetch/dbfetch?db=refseqn&style=raw&id=";
+    
+    public final static String   EMBL_EMBL                  = "https://www.ebi.ac.uk/Tools/dbfetch/dbfetch?db=EMBL&style=raw&id=";
     private final static boolean DEBUG                      = false;
     private final static String  URL_ENC                    = "UTF-8";
     private final static int     SLEEP                      = 200;
@@ -265,16 +266,14 @@ public final class SequenceDbWsTools {
 
     public static List<String> queryEmblDb( final Accession acc, final int max_lines_to_return ) throws IOException {
         final StringBuilder url_sb = new StringBuilder();
-        //  url_sb.append( BASE_EMBL_DB_URL );
         if ( DEBUG ) {
             System.out.println( "source: " + acc.getSource() );
         }
         if ( acc.getSource().equals( Source.NCBI.toString() ) ) {
             url_sb.append( EMBL_GENBANK );
-            //url_sb.append( '/' );
         }
         else if ( acc.getSource().equals( Source.REFSEQ.toString() ) ) {
-            url_sb.append( EMBL_REFSEQ );
+            url_sb.append( EMBL_REFSEQN );
         }
         else if ( acc.getSource().equals( Source.EMBL.toString() ) ) {
             url_sb.append( EMBL_EMBL );
@@ -288,7 +287,7 @@ public final class SequenceDbWsTools {
     public static List<String> queryEmblDbForRefSeqEntry( final Accession id, final int max_lines_to_return )
             throws IOException {
         final StringBuilder url_sb = new StringBuilder();
-        url_sb.append( EMBL_REFSEQ );
+        url_sb.append( EMBL_REFSEQN );
         return queryDb( id.getValue(), max_lines_to_return, url_sb.toString() );
     }
 

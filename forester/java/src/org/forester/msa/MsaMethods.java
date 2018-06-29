@@ -210,9 +210,7 @@ public final class MsaMethods {
         if ( dist.size() == 1 ) {
             return 0;
         }
-        //        if ( dist.size() == n ) {
-        //            return 0;
-        //        }
+      
         for( final int na : dist.values() ) {
             final double pa = na / n;
             s += pa * Math.log( pa );

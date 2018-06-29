@@ -8,21 +8,13 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
 
 import org.forester.application.surfacing;
 import org.forester.phylogeny.Phylogeny;
@@ -35,21 +27,10 @@ import org.forester.protein.Protein;
 import org.forester.species.BasicSpecies;
 import org.forester.species.Species;
 import org.forester.surfacing.SurfacingUtil.DomainComparator;
-import org.forester.util.BasicTable;
-import org.forester.util.BasicTableParser;
 import org.forester.util.ForesterUtil;
 import org.forester.util.SequenceAccessionTools;
-import org.forester.ws.seqdb.UniprotData;
-import org.forester.ws.seqdb.UniprotRetrieve;
 
 public final class MinimalDomainomeCalculator {
-
-    private static final int    MAX_IDS_TO_SEARCH_PER_SPECIES = 10;
-    private static final int    VERBOSITY                     = 1;
-    private static final String NA_SYMBOL                     = "-";
-    private static final Pattern MULTIPLE_NAME_PATTERN = Pattern.compile("(.+)\\s\\[(\\d+)\\]");
-    private static final Pattern ORF_NAME_PATTERN = Pattern.compile("orf\\s*(.+)", Pattern.CASE_INSENSITIVE);
-    private static final Pattern ORF_PROTEIN_NAME_PATTERN = Pattern.compile("orf\\s*(.+)\\s+protein", Pattern.CASE_INSENSITIVE);
 
     public final static void calc( final boolean use_domain_architectures,
                                    final Phylogeny tre,
@@ -338,15 +319,14 @@ public final class MinimalDomainomeCalculator {
                 final File da_name_outfile = new File( outfile_base + surfacing.DA_NAME_MAP_NAME );
                 final BufferedWriter writer = new BufferedWriter( new FileWriter( da_species_ids_map_outfile ) );
                 final BufferedWriter output_da_name_writer = new BufferedWriter( new FileWriter( da_name_outfile ) );
-                outputSpeciesAndIdsPerDAs( da_species_ids_map,
-                                           tre,
-                                           writer,
-                                           "\t",
-                                           ",",
-                                           obtain_names_from_db,
-                                           input_da_name_file,
-                                           output_da_name_writer,
-                                           VERBOSITY );
+                DaioMethods.outputSpeciesAndIdsPerDAs( da_species_ids_map,
+                                                       tre,
+                                                       writer,
+                                                       "\t",
+                                                       ",",
+                                                       obtain_names_from_db,
+                                                       input_da_name_file,
+                                                       output_da_name_writer );
                 writer.flush();
                 writer.close();
                 ForesterUtil.programMessage( surfacing.PRG_NAME,
@@ -356,265 +336,6 @@ public final class MinimalDomainomeCalculator {
                                          "Wrote " + total + " individual " + b + " from a total of "
                                                  + all_features.size() + " into: " + dir );
         }
-    }
-
-    private final static void outputSpeciesAndIdsPerDAs( final SortedMap<String, SortedMap<String, SortedSet<String>>> da_species_ids_map,
-                                                         final Phylogeny species_tree,
-                                                         final Writer writer,
-                                                         final String separator,
-                                                         final String ids_separator,
-                                                         final boolean obtain_names_from_db,
-                                                         final File input_da_name_file,
-                                                         final Writer output_da_name_writer,
-                                                         final int verbosity )
-            throws IOException {
-        final SortedMap<String, String> input_da_name_map;
-        final Set<String> all_names_lc = new HashSet<>();
-        if ( input_da_name_file != null ) {
-            final BasicTable<String> input_da_name_table = BasicTableParser.parse( input_da_name_file, '\t' );
-            input_da_name_map = input_da_name_table.getColumnsAsMap( 0, 1 );
-        }
-        else {
-            input_da_name_map = null;
-        }
-        final Iterator<Entry<String, SortedMap<String, SortedSet<String>>>> it = da_species_ids_map.entrySet()
-                .iterator();
-        while ( it.hasNext() ) {
-            final Map.Entry<String, SortedMap<String, SortedSet<String>>> e = it.next();
-            final String da = e.getKey();
-            final SortedMap<String, SortedSet<String>> species_ids_map = e.getValue();
-            // Get all species:
-            final List<String> all_species = new ArrayList<>();
-            final Iterator<Entry<String, SortedSet<String>>> it_for_all_species = species_ids_map.entrySet().iterator();
-            String name = null;
-            String count = "";
-            String out_of = "";
-            if ( verbosity > 0 ) {
-                System.out.println();
-                System.out.println( "DA " + da + ":" );
-            }
-            if ( ( input_da_name_map != null ) && input_da_name_map.containsKey( da ) ) {
-                name = input_da_name_map.get( da );
-                if ( verbosity > 0 ) {
-                    System.out.println( "  [from file] " + name );
-                }
-            }
-            if ( ( ForesterUtil.isEmptyTrimmed( name ) || name.equals( NA_SYMBOL ) ) && obtain_names_from_db ) {
-                final String[] res = obtainName( da, species_ids_map, verbosity, MAX_IDS_TO_SEARCH_PER_SPECIES );
-                if ( res != null ) {
-                    name = res[ 0 ];
-                    count = res[ 1 ];
-                    out_of = res[ 2 ];
-                }
-                else {
-                    name = null;
-                }
-            }
-            if ( !ForesterUtil.isEmpty( name ) && !name.equals( NA_SYMBOL ) ) {
-                // Deal with ORF names:
-               final Matcher matcher_orf_p = ORF_PROTEIN_NAME_PATTERN.matcher(name); 
-               final Matcher matcher_orf = ORF_NAME_PATTERN.matcher(name); 
-               if (matcher_orf_p.matches()) {
-                    name = "ORF " + matcher_orf_p.group( 1 ) + " protein";
-               }
-               else if (matcher_orf.matches()) {
-                   name = "ORF " + matcher_orf.group( 1 ) + " protein";
-               }
-             
-                
-                String name_lc = name.toLowerCase();
-                if ( all_names_lc.contains( name_lc ) ) {
-                    while ( all_names_lc.contains( name_lc ) ) {
-                        final Matcher matcher = MULTIPLE_NAME_PATTERN.matcher(name); 
-                        if (matcher.matches()) {
-                            final int d = 1 + Integer.parseInt( matcher.group( 2 ) );
-                            name = matcher.group( 1 ) + " [" + d + "]";
-                        }
-                        else {
-                            name = name + " [2]";
-                        }
-                        name_lc = name.toLowerCase();
-                    }
-                    if ( verbosity > 0 ) {
-                        System.out.println( "   -> " + name );
-                    }
-                }
-                all_names_lc.add( name_lc );
-            }
-            while ( it_for_all_species.hasNext() ) {
-                final Map.Entry<String, SortedSet<String>> e3 = it_for_all_species.next();
-                final SortedSet<String> ids = e3.getValue();
-                if ( ids.size() > 0 ) {
-                    final String taxonomy_code = e3.getKey();
-                    all_species.add( taxonomy_code );
-                }
-            }
-            final Iterator<Entry<String, SortedSet<String>>> it2 = species_ids_map.entrySet().iterator();
-            output_da_name_writer.write( da );
-            output_da_name_writer.write( "\t" );
-            if ( !ForesterUtil.isEmpty( name ) ) {
-                output_da_name_writer.write( name );
-                output_da_name_writer.write( "\t" );
-                output_da_name_writer.write( count );
-                output_da_name_writer.write( "\t" );
-                output_da_name_writer.write( out_of );
-            }
-            else {
-                output_da_name_writer.write( NA_SYMBOL );
-                output_da_name_writer.write( "\t" );
-                output_da_name_writer.write( "0" );
-                output_da_name_writer.write( "\t" );
-                output_da_name_writer.write( "0" );
-            }
-            output_da_name_writer.write( SurfacingConstants.NL );
-            output_da_name_writer.flush();
-            while ( it2.hasNext() ) {
-                final Map.Entry<String, SortedSet<String>> e2 = it2.next();
-                final String species = e2.getKey();
-                final SortedSet<String> ids = e2.getValue();
-                if ( ids.size() > 0 ) {
-                    final List<PhylogenyNode> all_nodes = new ArrayList<>();
-                    for( final String taxonomy_code : all_species ) {
-                        final PhylogenyNode node = species_tree.getNodeViaTaxonomyCode( taxonomy_code );
-                        all_nodes.add( node );
-                    }
-                    PhylogenyNode lca = null;
-                    for( final PhylogenyNode node : all_nodes ) {
-                        final PhylogenyNode l = PhylogenyMethods.calculateLCA( all_nodes.get( 0 ), node );
-                        if ( ( lca == null ) || ( l.calculateDepth() < lca.calculateDepth() ) ) {
-                            lca = l;
-                        }
-                    }
-                    writer.write( da );
-                    writer.write( separator );
-                    final boolean all;
-                    if ( lca.getAllExternalDescendants().size() == all_species.size() ) {
-                        all = true;
-                    }
-                    else if ( lca.getAllExternalDescendants().size() > all_species.size() ) {
-                        all = false;
-                    }
-                    else {
-                        throw new IllegalStateException( "this should never have happened" );
-                    }
-                    String taxonomic_suffix = null;
-                    if ( lca.isExternal() ) {
-                        taxonomic_suffix = "species_specific";
-                    }
-                    else {
-                        if ( lca.isHasNodeData() && lca.getNodeData().isHasTaxonomy() ) {
-                            if ( !ForesterUtil.isEmpty( lca.getNodeData().getTaxonomy().getSynonyms() ) && !ForesterUtil
-                                    .isEmptyTrimmed( lca.getNodeData().getTaxonomy().getSynonyms().get( 0 ) ) ) {
-                                taxonomic_suffix = lca.getNodeData().getTaxonomy().getSynonyms().get( 0 );
-                            }
-                            else if ( !ForesterUtil
-                                    .isEmptyTrimmed( lca.getNodeData().getTaxonomy().getScientificName() ) ) {
-                                taxonomic_suffix = lca.getNodeData().getTaxonomy().getScientificName();
-                            }
-                        }
-                        if ( ForesterUtil.isEmptyTrimmed( taxonomic_suffix )
-                                && !ForesterUtil.isEmptyTrimmed( lca.getName() ) ) {
-                            taxonomic_suffix = lca.getName();
-                        }
-                        if ( ForesterUtil.isEmptyTrimmed( taxonomic_suffix ) ) {
-                            throw new IllegalArgumentException( "found LCA in species tree without (1) taxonomy synonym (preferred), (2) taxonomy scientific name, and (3) node name" );
-                        }
-                        if ( all ) {
-                            taxonomic_suffix = taxonomic_suffix.toUpperCase();
-                        }
-                        else {
-                            taxonomic_suffix = taxonomic_suffix.toLowerCase();
-                        }
-                    }
-                    if ( !ForesterUtil.isEmpty( name ) ) {
-                        writer.write( name );
-                    }
-                    else {
-                        writer.write( NA_SYMBOL );
-                    }
-                    writer.write( "_" );
-                    writer.write( taxonomic_suffix );
-                    writer.write( separator );
-                    writer.write( species );
-                    writer.write( separator );
-                    boolean first = true;
-                    for( final String id : ids ) {
-                        if ( first ) {
-                            first = false;
-                        }
-                        else {
-                            writer.write( ids_separator );
-                        }
-                        writer.write( id );
-                    }
-                    writer.write( SurfacingConstants.NL );
-                }
-                writer.flush();
-            }
-        }
-        writer.flush();
-        output_da_name_writer.flush();
-    }
-
-    private static String[] obtainName( final String da,
-                                        final SortedMap<String, SortedSet<String>> species_ids_map,
-                                        final int verbosity,
-                                        final int max_ids_to_search_per_species )
-            throws IOException {
-        final List<String> ids_per_da = new ArrayList<>();
-        final Iterator<Entry<String, SortedSet<String>>> it = species_ids_map.entrySet().iterator();
-        while ( it.hasNext() ) {
-            final Map.Entry<String, SortedSet<String>> e = it.next();
-            final SortedSet<String> ids = e.getValue();
-            if ( ids.size() > 0 ) {
-                int counter = 0;
-                for( final String id : ids ) {
-                    ids_per_da.add( id );
-                    if ( ++counter > max_ids_to_search_per_species ) {
-                        break;
-                    }
-                }
-            }
-        }
-        return accessUniprot( ids_per_da, verbosity );
-    }
-
-    private static String[] accessUniprot( final List<String> ids, final int verbosity ) throws IOException {
-        final UniprotRetrieve ret = new UniprotRetrieve( false );
-        final SortedMap<String, UniprotData> m = ret.retrieve( ids );
-        final Iterator<Entry<String, UniprotData>> it = m.entrySet().iterator();
-        final List<String> names = new ArrayList<>();
-        while ( it.hasNext() ) {
-            final Map.Entry<String, UniprotData> pair = it.next();
-            if ( verbosity > 1 ) {
-                System.out.println( "    " + pair.getKey() + " => " + pair.getValue().getProteinNames() );
-            }
-            String name = pair.getValue().getProteinNames();
-            final int index = name.indexOf( " (" );
-            if ( index > 0 ) {
-                name = name.substring( 0, index );
-            }
-            final String name_lc = name.toLowerCase();
-            if ( !name_lc.startsWith( "uncharacterized" ) ) {
-                names.add( name );
-            }
-        }
-        final Optional<Entry<String, Long>> opt = names.stream()
-                .collect( Collectors.groupingBy( s -> s, Collectors.counting() ) ).entrySet().stream()
-                .max( Comparator.comparing( Entry::getValue ) );
-        if ( opt.isPresent() ) {
-            if ( verbosity > 0 ) {
-                System.out.println( "  [" + opt.get().getValue() + "/" + names.size() + "] " + opt.get().getKey() );
-            }
-            return new String[] { opt.get().getKey(), String.valueOf( opt.get().getValue() ),
-                    String.valueOf( names.size() ) };
-        }
-        else {
-            if ( verbosity > 0 ) {
-                System.out.println( "  n/a" );
-            }
-        }
-        return null;
     }
 
     private final static SortedMap<String, List<Protein>> makeProteinListsPerQuasiSpecies( final Phylogeny tre,
@@ -800,7 +521,9 @@ public final class MinimalDomainomeCalculator {
         return species_ids_map;
     }
 
-    public static void main( final String[] args ) {
+    //TODO make into test
+   
+    /*public static void main( final String[] args ) {
         final Set<String> a = new HashSet<>();
         final Set<String> b = new HashSet<>();
         final Set<String> c = new HashSet<>();
@@ -826,5 +549,5 @@ public final class MinimalDomainomeCalculator {
         domains_per_genome_list.add( d );
         final Set<String> x = calcIntersection( domains_per_genome_list );
         System.out.println( x );
-    }
+    }*/
 }

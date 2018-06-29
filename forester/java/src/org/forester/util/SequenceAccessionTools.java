@@ -23,7 +23,6 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 //
-// Contact: phylosoft @ gmail . com
 // WWW: https://sites.google.com/site/cmzmasek/home/software/forester
 
 package org.forester.util;

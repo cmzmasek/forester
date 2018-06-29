@@ -63,18 +63,7 @@ public final class WebserviceUtil {
     
     public static List<PhylogeniesWebserviceClient> createDefaultClients() {
         final List<PhylogeniesWebserviceClient> clients = new ArrayList<PhylogeniesWebserviceClient>();
-        clients.add( new BasicPhylogeniesWebserviceClient( TREE_BASE_NAME,
-                                                           "Read Tree(s) from TreeBASE Study...",
-                                                           "Use TreeBASE to obtain evolutionary tree(s) from a study",
-                                                           "Please enter a TreeBASE study (\"S\") identifier (without the \"S\")\n(Examples: 13246, 11662, 562, 16424, 17878, 10190, 14909, 14525, 15613, 15632)",
-                                                           WsPhylogenyFormat.TREEBASE_STUDY,
-                                                           null,
-                                                           TREEBASE_PHYLOWS_STUDY_URL_BASE
-                                                           + PhylogeniesWebserviceClient.QUERY_PLACEHOLDER
-                                                           + "?format=nexus",
-                                                           true,
-                                                           "https://treebase.org",
-                                                           TREE_BASE_INST ) );
+       
         clients.add( new BasicPhylogeniesWebserviceClient( TREE_BASE_NAME,
                                                            "Read Tree from TreeBASE...",
                                                            "Use TreeBASE to obtain a evolutionary tree",

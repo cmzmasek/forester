@@ -39,8 +39,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.forester.application.support_transfer;
 import org.forester.archaeopteryx.AptxUtil;
@@ -132,26 +130,25 @@ import org.forester.ws.seqdb.UniProtTaxonomy;
 @SuppressWarnings( "unused")
 public final class Test {
 
-    private final static String  PATH_TO_RESOURCES         = System.getProperty( "user.dir" )
+    private final static String  PATH_TO_RESOURCES                = System.getProperty( "user.dir" )
             + ForesterUtil.getFileSeparator() + "resources" + ForesterUtil.getFileSeparator();
-    private final static String  PATH_TO_TEST_DATA         = System.getProperty( "user.dir" )
+    private final static String  PATH_TO_TEST_DATA                = System.getProperty( "user.dir" )
             + ForesterUtil.getFileSeparator() + "test_data" + ForesterUtil.getFileSeparator();
-    private final static boolean PERFORM_DB_TESTS          = false;
-    private static final boolean PERFORM_WEB_TREE_ACCESS   = false;
-    private static final String  PHYLOXML_LOCAL_XSD        = PATH_TO_RESOURCES + "phyloxml_schema/"
+    private final static boolean PERFORM_DB_TESTS                 = true;
+    private static final boolean PERFORM_WEB_TREE_ACCESS          = true;
+    private static final boolean PERFORM_WEB_TREE_ACCESS_TREEBASE = false;
+    private static final String  PHYLOXML_LOCAL_XSD               = PATH_TO_RESOURCES + "phyloxml_schema/"
             + ForesterConstants.PHYLO_XML_VERSION + "/" + ForesterConstants.PHYLO_XML_XSD;
-    private static final String  PHYLOXML_REMOTE_XSD       = ForesterConstants.PHYLO_XML_LOCATION + "/"
+    private static final String  PHYLOXML_REMOTE_XSD              = ForesterConstants.PHYLO_XML_LOCATION + "/"
             + ForesterConstants.PHYLO_XML_VERSION + "/" + ForesterConstants.PHYLO_XML_XSD;
-    private final static boolean USE_LOCAL_PHYLOXML_SCHEMA = true;
-    private final static double  ZERO_DIFF                 = 1.0E-9;
+    private final static boolean USE_LOCAL_PHYLOXML_SCHEMA        = true;
+    private final static double  ZERO_DIFF                        = 1.0E-9;
 
     private static boolean isEqual( final double a, final double b ) {
         return ( ( Math.abs( a - b ) ) < Test.ZERO_DIFF );
     }
 
     public static void main( final String[] args ) {
-        
-        
         System.out.println( "[Java version: " + ForesterUtil.JAVA_VERSION + " " + ForesterUtil.JAVA_VENDOR + "]" );
         System.out.println( "[OS: " + ForesterUtil.OS_NAME + " " + ForesterUtil.OS_ARCH + " " + ForesterUtil.OS_VERSION
                 + "]" );
@@ -1049,15 +1046,6 @@ public final class Test {
             }
         }
         if ( PERFORM_WEB_TREE_ACCESS ) {
-            System.out.print( "TreeBase acccess: " );
-            if ( Test.testTreeBaseReading() ) {
-                System.out.println( "OK." );
-                succeeded++;
-            }
-            else {
-                System.out.println( "failed." );
-                failed++;
-            }
             System.out.print( "ToL access: " );
             if ( Test.testToLReading() ) {
                 System.out.println( "OK." );
@@ -1111,6 +1099,17 @@ public final class Test {
             else {
                 System.out.println( "failed." );
                 failed++;
+            }
+            if ( PERFORM_WEB_TREE_ACCESS_TREEBASE ) {
+                System.out.print( "TreeBase acccess: " );
+                if ( Test.testTreeBaseReading() ) {
+                    System.out.println( "OK." );
+                    succeeded++;
+                }
+                else {
+                    System.out.println( "failed." );
+                    failed++;
+                }
             }
         }
         System.out.println();
@@ -1232,7 +1231,7 @@ public final class Test {
 
     private static final boolean testNHXparsingFromURL2() {
         try {
-            final String s = "https://sites.google.com/site/cmzmasek/home/software/archaeopteryx/examples/simple/simple_1.nh";
+            final String s = "http://phyloxml.org/test/simple_1.nh";
             final Phylogeny phys[] = AptxUtil
                     .readPhylogeniesFromUrl( new URL( s ), false, false, false, TAXONOMY_EXTRACTION.NO, false );
             if ( ( phys == null ) || ( phys.length != 5 ) ) {
@@ -1259,14 +1258,13 @@ public final class Test {
                 System.out.println( phys2[ 1 ].toNewHampshire() );
                 return false;
             }
-            final Phylogeny phys3[] = AptxUtil.readPhylogeniesFromUrl(
-                                                                       new URL( "http://swisstree.vital-it.ch:80/"
-                                                                               + "SwissTree/ST001/consensus_tree.nhx" ),
-                                                                       false,
-                                                                       false,
-                                                                       false,
-                                                                       TAXONOMY_EXTRACTION.NO,
-                                                                       false );
+            final Phylogeny phys3[] = AptxUtil
+                    .readPhylogeniesFromUrl( new URL( "https://swisstree.vital-it.ch/SwissTree/ST001/consensus_tree.nhx" ),
+                                             false,
+                                             false,
+                                             false,
+                                             TAXONOMY_EXTRACTION.NO,
+                                             false );
             if ( ( phys3 == null ) || ( phys3.length != 1 ) ) {
                 return false;
             }
@@ -1275,14 +1273,13 @@ public final class Test {
                 System.out.println( phys3[ 0 ].toNewHampshire() );
                 return false;
             }
-            final Phylogeny phys4[] = AptxUtil.readPhylogeniesFromUrl(
-                                                                       new URL( "http://swisstree.vital-it.ch:80/"
-                                                                               + "SwissTree/ST001/consensus_tree.nhx" ),
-                                                                       false,
-                                                                       false,
-                                                                       false,
-                                                                       TAXONOMY_EXTRACTION.NO,
-                                                                       false );
+            final Phylogeny phys4[] = AptxUtil
+                    .readPhylogeniesFromUrl( new URL( "https://swisstree.vital-it.ch/SwissTree/ST001/consensus_tree.nhx" ),
+                                             false,
+                                             false,
+                                             false,
+                                             TAXONOMY_EXTRACTION.NO,
+                                             false );
             if ( ( phys4 == null ) || ( phys4.length != 1 ) ) {
                 return false;
             }
@@ -1301,7 +1298,7 @@ public final class Test {
 
     private static final boolean testNHXparsingFromURL() {
         try {
-            final String s = "https://sites.google.com/site/cmzmasek/home/software/archaeopteryx/examples/simple/simple_1.nh";
+            final String s = "http://phyloxml.org/test/simple_1.nh";
             final URL u = new URL( s );
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
             final Phylogeny[] phys = factory.create( u, new NHXParser() );
@@ -1551,7 +1548,7 @@ public final class Test {
 
     private static final boolean testPhyloXMLparsingFromURL() {
         try {
-            final String s = "https://sites.google.com/site/cmzmasek/home/software/archaeopteryx/examples/archaeopteryx_a/apaf_bcl2.xml";
+            final String s = "http://phyloxml.org/test/a.xml";
             final URL u = new URL( s );
             final Phylogeny[] phys = ForesterUtil.readPhylogeniesFromUrl( u, PhyloXmlParser.createPhyloXmlParser() );
             if ( ( phys == null ) || ( phys.length != 2 ) ) {
@@ -1586,7 +1583,6 @@ public final class Test {
             if ( phys[ 0 ].getNumberOfExternalNodes() < 5 ) {
                 return false;
             }
-            //
             final URL u2 = new URL( WebserviceUtil.TOL_URL_BASE + "17706" );
             final Phylogeny[] phys2 = ForesterUtil.readPhylogeniesFromUrl( u2, new TolParser() );
             if ( ( phys2 == null ) || ( phys2.length != 1 ) ) {
@@ -2187,7 +2183,6 @@ public final class Test {
                 System.out.println( n3 );
                 return false;
             }
-            //
             if ( !xml_n[ 4 ].equals( n4 ) ) {
                 System.out.println( xml_n[ 4 ] );
                 System.out.println( n4 );
@@ -2203,7 +2198,6 @@ public final class Test {
                 System.out.println( n4 );
                 return false;
             }
-            //
             if ( !xml_n[ 5 ].equals( n5 ) ) {
                 System.out.println( xml_n[ 5 ] );
                 System.out.println( n5 );
@@ -2219,7 +2213,6 @@ public final class Test {
                 System.out.println( n5 );
                 return false;
             }
-            //
             if ( !xml_n[ 6 ].equals( n6 ) ) {
                 System.out.println( xml_n[ 6 ] );
                 System.out.println( n6 );
@@ -2235,7 +2228,6 @@ public final class Test {
                 System.out.println( n6 );
                 return false;
             }
-            //
             if ( !xml_n[ 7 ].equals( n7 ) ) {
                 System.out.println( xml_n[ 7 ] );
                 System.out.println( n7 );
@@ -3048,7 +3040,6 @@ public final class Test {
             if ( !p0.toDomainArchitectureString( "~", 3, "=" ).equals( "a~b~c~d~e~x~y" ) ) {
                 return false;
             }
-            //
             final BasicProtein aa0 = new BasicProtein( "aa", "owl", 0 );
             final Domain a1 = new BasicDomain( "a", 1, 10, ( short ) 1, ( short ) 5, 0.1, -12 );
             aa0.addProteinDomain( a1 );
@@ -3058,7 +3049,6 @@ public final class Test {
             if ( !aa0.toDomainArchitectureString( "~", 3, "" ).equals( "a" ) ) {
                 return false;
             }
-            //
             final BasicProtein aa1 = new BasicProtein( "aa", "owl", 0 );
             final Domain a11 = new BasicDomain( "a", 1, 10, ( short ) 1, ( short ) 5, 0.1, -12 );
             final Domain a12 = new BasicDomain( "a", 2, 20, ( short ) 1, ( short ) 5, 0.1, -12 );
@@ -3119,7 +3109,6 @@ public final class Test {
             if ( !aa1.toDomainArchitectureString( "~", 5, "" ).equals( "c~a~a~a~a~b" ) ) {
                 return false;
             }
-            //
             final BasicProtein p00 = new BasicProtein( "p0", "owl", 0 );
             final Domain a0 = new BasicDomain( "a", 1, 10, ( short ) 1, ( short ) 5, 0.1, -12 );
             final Domain b0 = new BasicDomain( "b", 11, 20, ( short ) 1, ( short ) 5, 0.1, -12 );
@@ -3590,6 +3579,7 @@ public final class Test {
                 return false;
             }
             if ( t2.calculateHeight( false ) != 8.5 ) {
+                System.out.println( t2.calculateHeight( false ) );
                 return false;
             }
             if ( !t2.isCompletelyBinary() ) {
@@ -5540,7 +5530,6 @@ public final class Test {
             if ( !SequenceAccessionTools.obtainUniProtAccessorFromDataFields( n ).equals( "B3RJ64" ) ) {
                 return false;
             }
-            //
             n = new PhylogenyNode();
             n.setName( "ACP19736" );
             if ( !SequenceAccessionTools.obtainGenbankAccessorFromDataFields( n ).equals( "ACP19736" ) ) {
@@ -6178,7 +6167,6 @@ public final class Test {
     private static boolean testGetLCA2() {
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            // final Phylogeny p_a = factory.create( "(a)", new NHXParser() )[ 0 ];
             final Phylogeny p_a = NHXParser.parse( "(a)" )[ 0 ];
             PhylogenyMethods.preOrderReId( p_a );
             final PhylogenyNode p_a_1 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p_a.getNode( "a" ),
@@ -6931,23 +6919,33 @@ public final class Test {
             l.add( s2 );
             l.add( s3 );
             final Msa msa = BasicMsa.createInstance( l );
-            //TODO need to DO the tests!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            //FIXME
-            //            System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 20, msa, 0 ) );
-            //            System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 20, msa, 1 ) );
-            //            System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 20, msa, 2 ) );
-            //            System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 20, msa, 3 ) );
-            //            System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 20, msa, 4 ) );
-            //            System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 20, msa, 5 ) );
-            //            System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 20, msa, 6 ) );
-            //            System.out.println();
-            //            System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 6, msa, 0 ) );
-            //            System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 6, msa, 1 ) );
-            //            System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 6, msa, 2 ) );
-            //            System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 6, msa, 3 ) );
-            //            System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 6, msa, 4 ) );
-            //            System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 6, msa, 5 ) );
-            //            System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 6, msa, 6 ) );
+            if ( !isEqual( MsaMethods.calcNormalizedShannonsEntropy( 20, msa, 0 ), 0.0 ) ) {
+                return false;
+            }
+            if ( !isEqual( MsaMethods.calcNormalizedShannonsEntropy( 20, msa, 1 ), 0.4056390622295664 ) ) {
+                return false;
+            }
+            if ( !isEqual( MsaMethods.calcNormalizedShannonsEntropy( 20, msa, 2 ), 0.5 ) ) {
+                return false;
+            }
+            if ( !isEqual( MsaMethods.calcNormalizedShannonsEntropy( 20, msa, 3 ), 0.4056390622295664 ) ) {
+                return false;
+            }
+            if ( !isEqual( MsaMethods.calcNormalizedShannonsEntropy( 20, msa, 4 ), 0.75 ) ) {
+                return false;
+            }
+            if ( !isEqual( MsaMethods.calcNormalizedShannonsEntropy( 20, msa, 5 ), 1.0 ) ) {
+                return false;
+            }
+            if ( !isEqual( MsaMethods.calcNormalizedShannonsEntropy( 20, msa, 6 ), 1.0 ) ) {
+                return false;
+            }
+            if ( !isEqual( MsaMethods.calcNormalizedShannonsEntropy( 6, msa, 0 ), 0.0 ) ) {
+                return false;
+            }
+            if ( !isEqual( MsaMethods.calcNormalizedShannonsEntropy( 6, msa, 6 ), 0.5 ) ) {
+                return false;
+            }
             final List<MolecularSequence> l2 = new ArrayList<>();
             l2.add( BasicSequence.createAaSequence( "1", "AAAAAAA" ) );
             l2.add( BasicSequence.createAaSequence( "2", "AAAIACC" ) );
@@ -6972,10 +6970,15 @@ public final class Test {
             l2.add( BasicSequence.createAaSequence( "21", "AAIIIIF" ) );
             l2.add( BasicSequence.createAaSequence( "22", "AIIIVVW" ) );
             final Msa msa2 = BasicMsa.createInstance( l2 );
-            //            System.out.println();
-            //            System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 20, msa2, 0 ) );
-            //            System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 20, msa2, 1 ) );
-            //            System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 20, msa2, 2 ) );
+            if ( !isEqual( MsaMethods.calcNormalizedShannonsEntropy( 20, msa2, 0 ), 0.0 ) ) {
+                return false;
+            }
+            if ( !isEqual( MsaMethods.calcNormalizedShannonsEntropy( 20, msa2, 1 ), 0.19559578920862816 ) ) {
+                return false;
+            }
+            if ( !isEqual( MsaMethods.calcNormalizedShannonsEntropy( 20, msa2, 2 ), 0.22999693415835576 ) ) {
+                return false;
+            }
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );
@@ -7634,7 +7637,6 @@ public final class Test {
             if ( !ext.get( 5 ).getName().equals( "fgh" ) ) {
                 return false;
             }
-            //
             //
             final StringBuffer sb16 = new StringBuffer( "((a,b,0)ab,(((c,d)cd,e)cde,x,(f,(g,h,1,2)gh,0)fgh)cdefgh)abcdefgh" );
             final Phylogeny t16 = factory.create( sb16.toString(), new NHXParser() )[ 0 ];
@@ -12275,7 +12277,8 @@ public final class Test {
             final PhylogenyNode n2 = new PhylogenyNode( "NM_001030253" );
             SequenceDbWsTools.obtainSeqInformation( n2 );
             if ( !n2.getNodeData().getSequence().getName()
-                    .equals( "Danio rerio B-cell CLL/lymphoma 2a (bcl2a), mRNA" ) ) {
+                    .equals( "Danio rerio BCL2, apoptosis regulator a (bcl2a), mRNA" ) ) {
+                System.out.println( n2.getNodeData().getSequence().getName() );
                 return false;
             }
             if ( !n2.getNodeData().getTaxonomy().getScientificName().equals( "Danio rerio" ) ) {
@@ -12497,19 +12500,17 @@ public final class Test {
                 }
                 return false;
             }
-            
             id = SequenceAccessionTools
                     .parseAccessorFromString( "Rhinolophus_bat_coronavirus_HKU2|VIPR_P_148283140_15203_16990.1|HKU2/GD/430/2006|NA|Unknown|nsp13|nsp13" );
             if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getSource() )
-                    || !id.getValue().equals( "VIPR_P_148283140_15203_16990.1" ) || !id.getSource().equals( SequenceAccessionTools.VIPR_SOURCE  ) ) {
+                    || !id.getValue().equals( "VIPR_P_148283140_15203_16990.1" )
+                    || !id.getSource().equals( SequenceAccessionTools.VIPR_SOURCE ) ) {
                 if ( id != null ) {
                     System.out.println( "value   =" + id.getValue() );
                     System.out.println( "provider=" + id.getSource() );
-                    
                 }
                 return false;
             }
-            
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );
@@ -12616,7 +12617,6 @@ public final class Test {
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
             final Phylogeny p0 = factory.create( "(((A,B,C),D),(E,(F,G)))R", new NHXParser() )[ 0 ];
-            //Archaeopteryx.createApplication( p0 );
             final Set<PhylogenyNode> ex = new HashSet<>();
             ex.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             ex.add( PhylogenyNode.createInstanceFromNhxString( "B" ) );
@@ -12628,8 +12628,6 @@ public final class Test {
             ex.add( PhylogenyNode.createInstanceFromNhxString( "X" ) );
             ex.add( PhylogenyNode.createInstanceFromNhxString( "Y" ) );
             final TreeSplitMatrix s0 = new TreeSplitMatrix( p0, false, ex );
-            // System.out.println( s0.toString() );
-            //
             Set<PhylogenyNode> query_nodes = new HashSet<>();
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "A" ) );
             query_nodes.add( PhylogenyNode.createInstanceFromNhxString( "B" ) );
