@@ -103,7 +103,7 @@ public final class SurfacingUtil {
     public final static Pattern              PATTERN_SP_STYLE_TAXONOMY        = Pattern.compile( "^[A-Z0-9]{3,5}$" );
     private final static Map<String, String> _TAXCODE_HEXCOLORSTRING_MAP      = new HashMap<>();
     private final static Map<String, String> _TAXCODE_TAXGROUP_MAP            = new HashMap<>();
-    private static final Comparator<Domain>  ASCENDING_CONFIDENCE_VALUE_ORDER = new Comparator<>() {
+    private static final Comparator<Domain>  ASCENDING_CONFIDENCE_VALUE_ORDER = new Comparator<Domain>() {
 
                                                                                   @Override
                                                                                   public int compare( final Domain d1,
