@@ -188,7 +188,7 @@ public final class DaioMethods {
             String out_of = "";
             if ( VERBOSITY > 0 ) {
                 System.out.println();
-                System.out.println( "DA " + da + ":" );
+                System.out.println( "DA: " + da + ":" );
             }
             if ( ( input_da_name_map != null ) && input_da_name_map.containsKey( da ) ) {
                 name = input_da_name_map.get( da );
