@@ -141,7 +141,7 @@ public final class UniprotRetrieve {
                 System.out.println( line );
             }
             if ( !line.startsWith( "yourlist" ) ) {
-                final UniprotData d = new UniprotData( line );
+                final UniprotData d = new UniprotData( line, conn.getURL().toString() );
                 m.put( d.getId(), d );
                 if ( _verbose ) {
                     System.out.println( ( counter++ ) + ": " + d.getId() + " -> " + d.getEntryName() );

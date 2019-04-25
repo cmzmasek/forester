@@ -53,7 +53,7 @@ public class BasicMsa implements Msa {
         }
         _data = new char[ rows ][ columns ];
         _identifiers = new String[ rows ];
-        _identifiers_set = new HashSet<String>();
+        _identifiers_set = new HashSet<>();
         _type = type;
     }
 
@@ -66,7 +66,7 @@ public class BasicMsa implements Msa {
 
     @Override
     public List<MolecularSequence> asSequenceList() {
-        final List<MolecularSequence> seqs = new ArrayList<MolecularSequence>();
+        final List<MolecularSequence> seqs = new ArrayList<>();
         for( int i = 0; i < getNumberOfSequences(); ++i ) {
             seqs.add( getSequence( i ) );
         }
@@ -75,7 +75,7 @@ public class BasicMsa implements Msa {
 
     @Override
     public List<Character> getColumnAt( final int col ) {
-        final List<Character> column = new ArrayList<Character>();
+        final List<Character> column = new ArrayList<>();
         for( int row = 0; row < getNumberOfSequences(); ++row ) {
             column.add( getResidueAt( row, col ) );
         }

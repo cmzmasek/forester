@@ -82,9 +82,9 @@ public class msa_compactor {
     final static private String       DO_NOT_NORMALIZE_FOR_EFF_LENGTH_OPTION = "nn";
     final static private String       PRG_NAME                               = "msa_compactor";
     final static private String       PRG_DESC                               = "multiple sequence aligment compactor";
-    final static private String       PRG_VERSION                            = "0.3";
-    final static private String       PRG_DATE                               = "140508";
-    final static private String       E_MAIL                                 = "czmasek@sanfordburham.org";
+    final static private String       PRG_VERSION                            = "0.9";
+    final static private String       PRG_DATE                               = "181008";
+    final static private String       E_MAIL                                 = "phyloxml@gmail.com";
     final static private String       WWW                                    = "https://sites.google.com/site/cmzmasek/home/software/forester";
 
     public static void main( final String args[] ) {

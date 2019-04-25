@@ -14,25 +14,27 @@ public final class UniprotData {
     final String _organism;
     final int    _length;
 
-    public UniprotData( final String line ) throws IOException {
+    public UniprotData( final String line, final String src ) throws IOException {
         final String[] split_line = line.split( "\t" );
-        if ( split_line.length != 9 ) {
-            throw new IOException( "line has illegal format: " + line );
+        if ( split_line.length != 8 ) {
+            throw new IOException( "source: [" + src + "]: line has illegal format: \"" + line + "\" (expected 8 elements, got " +  split_line.length + ")" );
         }
         _id = split_line[ 0 ];
-        _entry = split_line[ 2 ];
-        _entry_name = split_line[ 3 ];
-        _status = split_line[ 4 ];
-        _protein_names = split_line[ 5 ];
-        _gene_names = split_line[ 6 ];
-        _organism = split_line[ 7 ];
+        _entry = split_line[ 1 ];
+        _entry_name = split_line[ 2 ];
+        _status = split_line[ 3 ];
+        _protein_names = split_line[ 4 ];
+        _gene_names = split_line[ 5 ];
+        _organism = split_line[ 6 ];
         try {
-            _length = Integer.parseInt( split_line[ 8 ] );
+            _length = Integer.parseInt( split_line[ 7 ] );
         }
         catch ( final NumberFormatException e ) {
-            throw new IOException( "could not parse length from " + split_line[ 8 ] );
+            throw new IOException( "source: [" + src + "]: could not parse length from " + split_line[ 8 ] );
         }
     }
+    
+    
 
     public String getId() {
         return _id;

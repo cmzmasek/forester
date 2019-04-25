@@ -47,13 +47,13 @@ import org.forester.util.ForesterUtil;
 public final class fasta_split {
 
     final static private String PRG_NAME    = "fasta_split";
-    final static private String PRG_VERSION = "1.01";
-    final static private String PRG_DATE    = "170718";
+    final static private String PRG_VERSION = "1.02";
+    final static private String PRG_DATE    = "211218";
 
     public static void main( final String args[] ) {
         ForesterUtil.printProgramInformation( fasta_split.PRG_NAME, fasta_split.PRG_VERSION, fasta_split.PRG_DATE );
         System.out.println();
-        if ( ( args.length != 3 ) ) {
+        if ( ( args.length != 3 && args.length != 4 ) ) {
             fasta_split.argumentsError();
         }
         CommandLineArguments cla = null;

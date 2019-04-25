@@ -173,6 +173,9 @@ public final class DaioMethods {
         }
         final Iterator<Entry<String, SortedMap<String, SortedSet<String>>>> it = da_species_ids_map.entrySet()
                 .iterator();
+        if (obtain_names_from_db) {
+            System.out.println( "[surfacing] > Obtaining names for domain architecures (DA) from Uniprot (slow step)..." );
+        }
         while ( it.hasNext() ) {
             final Map.Entry<String, SortedMap<String, SortedSet<String>>> e = it.next();
             final String da = e.getKey();
