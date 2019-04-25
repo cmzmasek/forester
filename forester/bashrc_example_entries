@@ -1,0 +1,45 @@
+# Example entries for FORESTER library (replace all "/path/to/" placeholders):
+
+export FORESTER_HOME=/path/to/forester/forester
+export FORESTER=/path/to/forester/forester
+
+export RUBY=ruby
+
+# Ruby programs:
+alias msa_pro='$RUBY $FORESTER/ruby/evoruby/exe/msa_pro.rb'
+alias tap='$RUBY $FORESTER/ruby/evoruby/exe/tap.rb'
+alias dsx='$RUBY $FORESTER/ruby/evoruby/exe/dsx.rb'
+alias mdsx='$RUBY $FORESTER/ruby/evoruby/exe/mdsx.rb'
+alias d2f='$RUBY $FORESTER/ruby/evoruby/exe/d2f.rb'
+alias hsp='$RUBY $FORESTER/ruby/evoruby/exe/hsp.rb'
+alias mse='$RUBY $FORESTER/ruby/evoruby/exe/mse.rb'
+alias fastx='$RUBY $FORESTER/ruby/evoruby/exe/fastx.rb'
+alias phylogeny_factory='$RUBY $FORESTER/ruby/evoruby/exe/phylogeny_factory.rb'
+alias phylogenies_decorator='$RUBY $FORESTER/ruby/evoruby/exe/phylogenies_decorator.rb'
+alias run_phylo_pipeline='$RUBY $FORESTER/ruby/evoruby/exe/run_phylo_pipeline.rb'
+alias run_phylo_pipeline_x='$RUBY $FORESTER/ruby/evoruby/exe/run_phylo_pipeline_x.rb'
+alias replace_id='$RUBY $FORESTER/ruby/scripts/replace_id.rb'
+alias hsa='$RUBY $FORESTER/ruby/evoruby/exe/hsa.rb'
+
+# Perl programs:
+alias phylo_pl='$FORESTER/perl/phylo_pl.pl'
+
+# Java programs:
+alias decorator='java  -Xms256m -Xmx2048m -cp $FORESTER/java/forester.jar org.forester.application.decorator'
+alias gsdi='java  -Xms256m -Xmx2048m -cp $FORESTER/java/forester.jar org.forester.application.gsdi'
+alias rio='java  -Xms256m -Xmx2048m -cp $FORESTER/java/forester.jar org.forester.application.rio'
+alias phyloxml_converter='java  -Xms256m -Xmx2048m -cp $FORESTER/java/forester.jar org.forester.application.phyloxml_converter'
+alias confadd='java -Xms256m -Xmx2048m -cp $FORESTER/java/forester.jar org.forester.application.confadd'
+alias msa_compactor='java -Xms256m -Xmx2048m -cp $FORESTER/java/forester.jar org.forester.application.msa_compactor'
+alias surfacing='java -Xmx40968m -cp $FORESTER/java/forester.jar org.forester.application.surfacing'
+alias fasta_split='java -Xms256m -Xmx2048m -cp $FORESTER/java/forester.jar org.forester.application.fasta_split'
+alias pplacer_summary='java -Xms256m -Xmx2048m -cp $FORESTER/java/forester.jar org.forester.application.pplacer_summary'
+alias rename='java -Xms256m -Xmx2048m -cp $FORESTER/java/forester.jar org.forester.application.rename'
+alias rename_fasta='java -Xms256m -Xmx2048m -cp $FORESTER/java/forester.jar org.forester.application.rename_fasta'
+alias cladinator='java -Xms256m -Xmx2048m -cp $FORESTER/java/forester.jar org.forester.application.cladinator'
+alias rid='java -Xms256m -Xmx2048m -cp $FORESTER/java/forester.jar org.forester.application.rid'
+alias m_label='java -Xms256m -Xmx2048m -cp $FORESTER/java/forester.jar org.forester.application.m_label'
+alias table2tree='java -Xms256m -Xmx2048m -cp $FORESTER/java/forester.jar org.forester.application.table2tree'
+alias aptx='java -Xmx2048m -cp $FORESTER/java/forester.jar org.forester.archaeopteryx.Archaeopteryx -c /path/to/_aptx_configuration_file_0'
+
+
