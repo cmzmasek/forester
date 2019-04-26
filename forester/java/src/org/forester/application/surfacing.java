@@ -217,7 +217,7 @@ public class surfacing {
     final static private String                                     INPUT_GENOMES_FILE_OPTION                                                     = "genomes";
     final static private String                                     INPUT_SPECIES_TREE_OPTION                                                     = "species_tree";
     final static private String                                     SEQ_EXTRACT_OPTION                                                            = "prot_extract";
-    final static private String                                     PRG_VERSION                                                                   = "2.604";
+    final static private String                                     PRG_VERSION                                                                   = "2.605";
     final static private String                                     PRG_DATE                                                                      = "190425";
     final static private String                                     E_MAIL                                                                        = "phyloxml@gmail.com";
     final static private String                                     WWW                                                                           = "https://sites.google.com/site/cmzmasek/home/software/forester/surfacing";
