@@ -116,10 +116,11 @@ public final class UniprotRetrieve {
         while ( true ) {
             resource_url = new URL( url_str );
             conn = ( HttpURLConnection ) resource_url.openConnection();
-            conn.setConnectTimeout( 50000 );
-            conn.setReadTimeout( 50000 );
+            conn.setConnectTimeout( 500000 );
+            conn.setReadTimeout( 500000 );
             conn.setInstanceFollowRedirects( false ); // make the logic below easier to detect redirections
             conn.setRequestProperty( "User-Agent", "Mozilla/5.0..." );
+            
             switch ( conn.getResponseCode() ) {
                 case HttpURLConnection.HTTP_MOVED_PERM:
                 case HttpURLConnection.HTTP_MOVED_TEMP:
