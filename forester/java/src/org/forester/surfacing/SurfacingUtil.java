@@ -385,6 +385,9 @@ public final class SurfacingUtil {
                 final String c = t.getTaxonomyCode();
                 if ( !ForesterUtil.isEmpty( c ) ) {
                     if ( n.getNodeData().getTaxonomy() == null ) {
+                        ForesterUtil.fatalError( surfacing.PRG_NAME, "no taxonomy for node " + n );
+                    }
+                    if ( n.getNodeData().getTaxonomy().getIdentifier() == null ) {
                         ForesterUtil.fatalError( surfacing.PRG_NAME, "no taxonomy id for node " + n );
                     }
                     final String id = n.getNodeData().getTaxonomy().getIdentifier().getValue();
