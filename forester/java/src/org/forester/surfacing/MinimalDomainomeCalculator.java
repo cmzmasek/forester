@@ -32,6 +32,8 @@ import org.forester.util.SequenceAccessionTools;
 
 public final class MinimalDomainomeCalculator {
 
+    final static private int MAX_FILENAME_LEGHTH = 200;
+
     public final static void calc( final boolean use_domain_architectures,
                                    final Phylogeny tre,
                                    final int target_level,
@@ -286,7 +288,17 @@ public final class MinimalDomainomeCalculator {
             final String dir = outfile_base + protdirname + "/";
             final SortedMap<String, SortedMap<String, SortedSet<String>>> da_species_ids_map = new TreeMap<>();
             for( final String feat : all_features ) {
-                final File extract_outfile = new File( dir + feat + a + surfacing.SEQ_EXTRACT_SUFFIX );
+                String feat_for_fn = feat;
+                if ( feat_for_fn.length() > MAX_FILENAME_LEGHTH ) {
+                    feat_for_fn = feat_for_fn.substring( 0, MAX_FILENAME_LEGHTH );
+                }
+                File extract_outfile = new File( dir + feat_for_fn + a + surfacing.SEQ_EXTRACT_SUFFIX );
+                
+                int suffix = 0;
+                while( extract_outfile.exists() ) {
+                    extract_outfile = new File( dir + feat_for_fn + a + suffix + surfacing.SEQ_EXTRACT_SUFFIX ); 
+                    ++suffix;
+                }
                 SurfacingUtil.checkForOutputFileWriteability( extract_outfile );
                 final Writer proteins_file_writer = new BufferedWriter( new FileWriter( extract_outfile ) );
                 final int counter = extractProteinFeatures( use_domain_architectures,
@@ -312,6 +324,7 @@ public final class MinimalDomainomeCalculator {
                     ForesterUtil.printWarningMessage( "surfacing", feat + " not present (in " + b + " extraction)" );
                 }
                 total += counter;
+                System.out.println( "Wrote:" + extract_outfile );
                 proteins_file_writer.close();
             }
             if ( use_domain_architectures && write_da_ids_names_maps ) {
@@ -520,9 +533,7 @@ public final class MinimalDomainomeCalculator {
         }
         return species_ids_map;
     }
-
     //TODO make into test
-   
     /*public static void main( final String[] args ) {
         final Set<String> a = new HashSet<>();
         final Set<String> b = new HashSet<>();
