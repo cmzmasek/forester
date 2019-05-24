@@ -217,8 +217,8 @@ public class surfacing {
     final static private String                                     INPUT_GENOMES_FILE_OPTION                                                     = "genomes";
     final static private String                                     INPUT_SPECIES_TREE_OPTION                                                     = "species_tree";
     final static private String                                     SEQ_EXTRACT_OPTION                                                            = "prot_extract";
-    final static private String                                     PRG_VERSION                                                                   = "2.607";
-    final static private String                                     PRG_DATE                                                                      = "190509";
+    final static private String                                     PRG_VERSION                                                                   = "2.608";
+    final static private String                                     PRG_DATE                                                                      = "190524";
     final static private String                                     E_MAIL                                                                        = "phyloxml@gmail.com";
     final static private String                                     WWW                                                                           = "https://sites.google.com/site/cmzmasek/home/software/forester/surfacing";
     final static private boolean                                    IGNORE_DUFS_DEFAULT                                                           = true;
@@ -2298,7 +2298,7 @@ public class surfacing {
         System.out.println( "Usage:" );
         System.out.println();
         System.out.println( "% java -Xms256m -Xmx512m -cp forester.jar org.forester.applications." + surfacing.PRG_NAME
-                + " [options] <phylogen(y|ies) infile> [external node name 1] [name 2] ... [name n]" );
+                + " [options] <phylogen(y|ies) infile>" );
         System.out.println();
         System.out.println( " Note: This software might need a significant amount of memory (heap space);" );
         System.out
