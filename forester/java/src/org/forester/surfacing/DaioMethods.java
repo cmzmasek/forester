@@ -129,9 +129,9 @@ public final class DaioMethods {
     }
 
     public final static String[] obtainName( final String da,
-                                      final SortedMap<String, SortedSet<String>> species_ids_map,
-                                      final int max_ids_to_search_per_species,
-                                      final int verbosity )
+                                             final SortedMap<String, SortedSet<String>> species_ids_map,
+                                             final int max_ids_to_search_per_species,
+                                             final int verbosity )
             throws IOException {
         final List<String> ids_per_da = new ArrayList<>();
         final Iterator<Entry<String, SortedSet<String>>> it = species_ids_map.entrySet().iterator();
@@ -151,16 +151,14 @@ public final class DaioMethods {
         return accessUniprot( ids_per_da, verbosity );
     }
 
-   
-
     public final static void outputSpeciesAndIdsPerDAs( final SortedMap<String, SortedMap<String, SortedSet<String>>> da_species_ids_map,
-                                                 final Phylogeny species_tree,
-                                                 final Writer writer,
-                                                 final String separator,
-                                                 final String ids_separator,
-                                                 final boolean obtain_names_from_db,
-                                                 final File input_da_name_file,
-                                                 final Writer output_da_name_writer )
+                                                        final Phylogeny species_tree,
+                                                        final Writer writer,
+                                                        final String separator,
+                                                        final String ids_separator,
+                                                        final boolean obtain_names_from_db,
+                                                        final File input_da_name_file,
+                                                        final Writer output_da_name_writer )
             throws IOException {
         final SortedMap<String, String> input_da_name_map;
         final Set<String> all_names_lc = new HashSet<>();
@@ -173,10 +171,14 @@ public final class DaioMethods {
         }
         final Iterator<Entry<String, SortedMap<String, SortedSet<String>>>> it = da_species_ids_map.entrySet()
                 .iterator();
-        if (obtain_names_from_db) {
-            System.out.println( "[surfacing] > Obtaining names for domain architecures (DA) from Uniprot (slow step)..." );
+        if ( obtain_names_from_db ) {
+            System.out
+                    .println( "[surfacing] > Obtaining names for domain architecures (DA) from Uniprot (slow step)..." );
         }
+        int counter = 0;
+        final int total = da_species_ids_map.entrySet().size();
         while ( it.hasNext() ) {
+            ++counter;
             final Map.Entry<String, SortedMap<String, SortedSet<String>>> e = it.next();
             final String da = e.getKey();
             final SortedMap<String, SortedSet<String>> species_ids_map = e.getValue();
@@ -188,7 +190,7 @@ public final class DaioMethods {
             String out_of = "";
             if ( VERBOSITY > 0 ) {
                 System.out.println();
-                System.out.println( "DA: " + da + ":" );
+                System.out.println( "[" + counter + "/" + total + "] DA: " + da + ":" );
             }
             if ( ( input_da_name_map != null ) && input_da_name_map.containsKey( da ) ) {
                 name = input_da_name_map.get( da );
@@ -292,7 +294,7 @@ public final class DaioMethods {
         writer.flush();
         output_da_name_writer.flush();
     }
-    
+
     private static String[] accessUniprot( final List<String> ids, final int verbosity ) throws IOException {
         final UniprotRetrieve ret = new UniprotRetrieve( false );
         final SortedMap<String, UniprotData> m = ret.retrieve( ids );

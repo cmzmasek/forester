@@ -20,9 +20,14 @@ import org.forester.phylogeny.data.Accession;
 import org.forester.util.ForesterUtil;
 import org.forester.util.SequenceAccessionTools;
 
+/**
+ *
+ * https://www.uniprot.org/help/api_queries
+ * https://www.uniprot.org/help/api_idmapping
+ *
+ */
 public final class UniprotRetrieve {
 
-    
     private final boolean        _verbose;
     private final static String  BASE_URL = "http://www.uniprot.org/uploadlists/";
     private final static boolean DEBUG    = false;
@@ -89,11 +94,12 @@ public final class UniprotRetrieve {
                                  final List<String> queries,
                                  final SortedMap<String, UniprotData> m )
             throws IOException {
-        if ( ForesterUtil.isEmpty( queries )) {
+        final boolean from_fasta = true;
+        if ( ForesterUtil.isEmpty( queries ) ) {
             return;
         }
         final StringBuilder intitial_url_str = new StringBuilder( BASE_URL + "?from=" + from + "&to=" + to
-                + "&format=tab&query=" );
+                + "&format=fasta&query=" );
         boolean first = true;
         for( final String query : queries ) {
             if ( first ) {
@@ -120,7 +126,6 @@ public final class UniprotRetrieve {
             conn.setReadTimeout( 500000 );
             conn.setInstanceFollowRedirects( false ); // make the logic below easier to detect redirections
             conn.setRequestProperty( "User-Agent", "Mozilla/5.0..." );
-            
             switch ( conn.getResponseCode() ) {
                 case HttpURLConnection.HTTP_MOVED_PERM:
                 case HttpURLConnection.HTTP_MOVED_TEMP:
@@ -142,10 +147,12 @@ public final class UniprotRetrieve {
                 System.out.println( line );
             }
             if ( !line.startsWith( "yourlist" ) ) {
-                final UniprotData d = new UniprotData( line, conn.getURL().toString() );
-                m.put( d.getId(), d );
-                if ( _verbose ) {
-                    System.out.println( ( counter++ ) + ": " + d.getId() + " -> " + d.getEntryName() );
+                if ( !from_fasta || line.startsWith( ">" ) ) {
+                    final UniprotData d = new UniprotData( line, conn.getURL().toString(), from_fasta );
+                    m.put( d.getId(), d );
+                    if ( _verbose ) {
+                        System.out.println( ( counter++ ) + ": " + d.getId() + " -> " + d.getProteinNames() );
+                    }
                 }
             }
         }

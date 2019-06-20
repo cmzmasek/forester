@@ -1567,6 +1567,10 @@ public final class SurfacingUtil {
 
     public static void preparePhylogenyForParsimonyAnalyses( final Phylogeny intree,
                                                              final String[][] input_file_properties ) {
+        if ( intree.isEmpty() ) {
+        ForesterUtil.fatalError( surfacing.PRG_NAME,
+                                 "species tree is empty" );
+        }
         final String[] genomes = new String[ input_file_properties.length ];
         for( int i = 0; i < input_file_properties.length; ++i ) {
             if ( intree.getNodes( input_file_properties[ i ][ 1 ] ).size() > 1 ) {
