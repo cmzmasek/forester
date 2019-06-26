@@ -1,14 +1,14 @@
 # x_phylo
 # -------
 
-# Copyright (C) 2018 Christian M. Zmasek
-# Copyright (C) 2018 J. Craig Venter Institute
+# Copyright (C) 2019 Christian M. Zmasek
+# Copyright (C) 2019 J. Craig Venter Institute
 # All rights reserved
 
-# Version: 1.00
-# Last modified: 180504
+# Version: 1.10
+# Last modified: 190626
 
-# Usage: x_phylo.sh <indir> <outdir>
+# Usage: x_phylo.sh <indir> <species_tree> <outdir>
 
 
 # OPTIONS
@@ -16,7 +16,7 @@
 
 MAFFT_OPTIONS="--maxiterate 1000 --localpair"
 #MAFFT_OPTIONS="--auto"
-MSA_PRO_OPTIONS="-rr=0.5 -rsl=20"
+MSA_PRO_OPTIONS="-rr=0.5 -rsl=40"
 PHYLO_PL_OPTIONS="-B100Wq@1S9X"
 
 
@@ -27,20 +27,23 @@ TAP="/home/zma/git/forester/forester/ruby/evoruby/exe/tap.rb"
 MSA_PRO="/home/zma/git/forester/forester/ruby/evoruby/exe/msa_pro.rb"
 MAFFT="/usr/local/bin/mafft"
 PHYLO_PL="/home/zma/git/forester/forester/perl/phylo_pl.pl"
-
+PHYLOGENIES_DECORATOR="/home/zma/git/forester/forester/ruby/evoruby/exe/phylogenies_decorator.rb"
+GSDI="/usr/bin/java -Xms256m -Xmx2048m -cp /home/zma/git/forester/forester/java/forester.jar org.forester.application.gsdi"
 
 # PRE
 # ---
 
-if [[ $# -ne 2 ]] ; then
-    echo "Usage: x_phylo.sh <indir> <outdir>"
+if [[ $# -ne 3 ]] ; then
+    echo "Usage: x_phylo.sh <indir>  <species_tree><outdir>"
     exit 0
 fi
 
 indir=$1
-outdir=$2
+species_tree=$(realpath $2)
+outdir=$3
 
 echo "Input directory  : " $indir
+echo "Species tree     : " $species_tree
 echo "Output directory : " $outdir
 echo "MAFFT options    : " $MAFFT_OPTIONS
 echo "MSA PRO options  : " $MSA_PRO_OPTIONS
@@ -179,13 +182,21 @@ mv $outdir/msas/*_tree.log $outdir/phylo_logs/
 mv $outdir/msas/*_tree_puzzle_outfile $outdir/phylo_aux/
 mv $outdir/msas/*_tree_*.mlt $outdir/phylo_mlt/
 
+cd $outdir/phylo_trees/
 
-# cd $outdir/phylo_trees/
-# phylogenies_decorator -nd -ns  -tc .xml _d.xml ../maps/
-# cd ..
-# mkdir phylo_trees_decorated
-# mv phylo_trees/00_phylogenies_decorator.log phylo_trees_decorated
-# mv phylo_trees/*_d.xml phylo_trees_decorated
-# gsdi -g -r -t -s=.xml phylo_trees_decorated/ ../../Coronaviridae_Taxonomy2.xml phylo_trees_gsdi
-# gsdi -g -r -R -t -s=.xml phylo_trees_decorated/ ../../Coronaviridae_Taxonomy2.xml phylo_trees_gsdi_R
+echo "Executing: $PHYLOGENIES_DECORATOR -nd -ns  -tc .xml _d.xml ../maps/:"
+ruby $PHYLOGENIES_DECORATOR -nd -ns  -tc .xml _d.xml ../maps/
+
+cd ..
+
+mkdir phylo_trees_decorated
+mv phylo_trees/00_phylogenies_decorator.log phylo_trees_decorated
+mv phylo_trees/*_d.xml phylo_trees_decorated
+
+echo "Executing: $GSDI -g -r -t -s=.xml phylo_trees_decorated/ $species_tree phylo_trees_gsdi:"
+$GSDI -g -r -t -s=.xml phylo_trees_decorated/ $species_tree phylo_trees_gsdi
+
+echo "Executing: $GSDI -g -r -R -t -s=.xml phylo_trees_decorated/ $species_tree phylo_trees_gsdi_R:"
+$GSDI -g -r -R -t -s=.xml phylo_trees_decorated/ $species_tree phylo_trees_gsdi_R
+
 
