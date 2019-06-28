@@ -293,10 +293,9 @@ public final class MinimalDomainomeCalculator {
                     feat_for_fn = feat_for_fn.substring( 0, MAX_FILENAME_LEGHTH );
                 }
                 File extract_outfile = new File( dir + feat_for_fn + a + surfacing.SEQ_EXTRACT_SUFFIX );
-                
                 int suffix = 0;
-                while( extract_outfile.exists() ) {
-                    extract_outfile = new File( dir + feat_for_fn + a + suffix + surfacing.SEQ_EXTRACT_SUFFIX ); 
+                while ( extract_outfile.exists() ) {
+                    extract_outfile = new File( dir + feat_for_fn + a + suffix + surfacing.SEQ_EXTRACT_SUFFIX );
                     ++suffix;
                 }
                 SurfacingUtil.checkForOutputFileWriteability( extract_outfile );
@@ -330,18 +329,23 @@ public final class MinimalDomainomeCalculator {
             if ( use_domain_architectures && write_da_ids_names_maps ) {
                 final File da_species_ids_map_outfile = new File( outfile_base + surfacing.DA_SPECIES_IDS_MAP_NAME );
                 final File da_name_outfile = new File( outfile_base + surfacing.DA_NAME_MAP_NAME );
-                final BufferedWriter writer = new BufferedWriter( new FileWriter( da_species_ids_map_outfile ) );
+                final File suffix_da_name_outfile = new File( outfile_base + surfacing.SUFFIX_DA_NAME_NAME );
+                final BufferedWriter da_species_ids_map_writer = new BufferedWriter( new FileWriter( da_species_ids_map_outfile ) );
                 final BufferedWriter output_da_name_writer = new BufferedWriter( new FileWriter( da_name_outfile ) );
+                final BufferedWriter suffix_da_name_writer = new BufferedWriter( new FileWriter( suffix_da_name_outfile ) );
                 DaioMethods.outputSpeciesAndIdsPerDAs( da_species_ids_map,
                                                        tre,
-                                                       writer,
+                                                       da_species_ids_map_writer,
                                                        "\t",
                                                        ",",
                                                        obtain_names_from_db,
                                                        input_da_name_file,
-                                                       output_da_name_writer );
-                writer.flush();
-                writer.close();
+                                                       output_da_name_writer,
+                                                       suffix_da_name_writer );
+                da_species_ids_map_writer.flush();
+                da_species_ids_map_writer.close();
+                suffix_da_name_writer.flush();
+                suffix_da_name_writer.close();
                 ForesterUtil.programMessage( surfacing.PRG_NAME,
                                              "Wrote DA-species-ids map to           : " + da_species_ids_map_outfile );
             }

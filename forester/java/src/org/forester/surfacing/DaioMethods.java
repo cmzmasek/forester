@@ -34,6 +34,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -158,7 +159,8 @@ public final class DaioMethods {
                                                         final String ids_separator,
                                                         final boolean obtain_names_from_db,
                                                         final File input_da_name_file,
-                                                        final Writer output_da_name_writer )
+                                                        final Writer output_da_name_writer,
+                                                        final Writer suffix_da_name_writer )
             throws IOException {
         final SortedMap<String, String> input_da_name_map;
         final Set<String> all_names_lc = new HashSet<>();
@@ -177,6 +179,7 @@ public final class DaioMethods {
         }
         int counter = 0;
         final int total = da_species_ids_map.entrySet().size();
+        final SortedSet<String> suffix_da_name_set = new TreeSet<>();
         while ( it.hasNext() ) {
             ++counter;
             final Map.Entry<String, SortedMap<String, SortedSet<String>>> e = it.next();
@@ -263,6 +266,20 @@ public final class DaioMethods {
                 final SortedSet<String> ids = e2.getValue();
                 if ( ids.size() > 0 ) {
                     final String taxonomic_suffix = inferTaxonomicInformation( species_tree, all_species );
+                    //
+                    final StringBuilder suffix_da_name = new StringBuilder();
+                    suffix_da_name.append( taxonomic_suffix );
+                    suffix_da_name.append( separator );
+                    suffix_da_name.append( da );
+                    suffix_da_name.append( separator );
+                    if ( !ForesterUtil.isEmpty( name ) ) {
+                        suffix_da_name.append( name );
+                    }
+                    else {
+                        suffix_da_name.append( NA_SYMBOL );
+                    }
+                    suffix_da_name_set.add( suffix_da_name.toString() );
+                    //
                     writer.write( da );
                     writer.write( separator );
                     if ( !ForesterUtil.isEmpty( name ) ) {
@@ -293,6 +310,11 @@ public final class DaioMethods {
         }
         writer.flush();
         output_da_name_writer.flush();
+        final Iterator<String> it3 = suffix_da_name_set.iterator();
+        while ( it3.hasNext() ) {
+            suffix_da_name_writer.append( it3.next() );
+            suffix_da_name_writer.append( SurfacingConstants.NL );
+        }
     }
 
     private static String[] accessUniprot( final List<String> ids, final int verbosity ) throws IOException {

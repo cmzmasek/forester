@@ -217,8 +217,8 @@ public class surfacing {
     final static private String                                     INPUT_GENOMES_FILE_OPTION                                                     = "genomes";
     final static private String                                     INPUT_SPECIES_TREE_OPTION                                                     = "species_tree";
     final static private String                                     SEQ_EXTRACT_OPTION                                                            = "prot_extract";
-    final static private String                                     PRG_VERSION                                                                   = "2.610";
-    final static private String                                     PRG_DATE                                                                      = "190620";
+    final static private String                                     PRG_VERSION                                                                   = "2.620";
+    final static private String                                     PRG_DATE                                                                      = "190627";
     final static private String                                     E_MAIL                                                                        = "phyloxml@gmail.com";
     final static private String                                     WWW                                                                           = "https://sites.google.com/site/cmzmasek/home/software/forester/surfacing";
     final static private boolean                                    IGNORE_DUFS_DEFAULT                                                           = true;
@@ -275,6 +275,7 @@ public class surfacing {
     private static final String                                     SEPARATOR_FOR_DA                                                              = "--";
     private static final String                                     DOMAIN_SPECIES_IDS_MAP_NAME                                                   = "_DOMAIN_SPECIES_IDS_MAP.txt";
     public static final String                                      DA_SPECIES_IDS_MAP_NAME                                                       = "_DA_SPECIES_IDS_MAP.txt";
+    public static final String                                      SUFFIX_DA_NAME_NAME                                                           = "_SUFFIX_DA_NAME_MAP.txt";
     public static final String                                      DA_NAME_MAP_NAME                                                              = "_DA_NAME_MAP.txt";
     private static final String                                     WRITE_DA_IDS_NAMES_MAPS_OPTION                                                = "write_DA_maps";
     private static final String                                     INPUT_DA_NAME_FILE_OPTION                                                     = "input_DA_name_map";
