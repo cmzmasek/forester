@@ -28,6 +28,8 @@ with open(infile, 'r') as in_table, open(outfile, 'w') as out_table:
       
         if len(accessors) > 0:
             for acc in accessors:
+                if acc[-1:] == '_':
+                    acc = acc[:-1]
                 new_acc_na_da_str =  acc + '\t' + name + '\t' + da
                 if acc in acc_to_da:
                     print('multiple: ' + acc_to_acc_name_da[ acc ])
@@ -51,3 +53,5 @@ with open(infile, 'r') as in_table, open(outfile, 'w') as out_table:
         out_table.write(f'{acc_to_acc_name_da[acc]}\n')
 out_table.close()
 print('wrote: ' + outfile )
+
+

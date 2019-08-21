@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -506,6 +507,16 @@ public final class MinimalDomainomeCalculator {
                                                                                          final double ie_cutoff,
                                                                                          final String domain_separator ) {
         final SortedMap<String, SortedSet<String>> species_ids_map = new TreeMap<>();
+        final Set<String> all_accs = new HashSet<>();
+        int multiple_acc_counter = 0;
+        int uniprot_acc_counter = 0;
+        int vipr_acc_counter = 0;
+        int ref_seq_acc_counter = 0;
+        int gi_acc_counter = 0;
+        int ensembl_acc_counter = 0;
+        int embl_counter = 0;
+        int genbank_acc_counter = 0;
+        int other_acc_counter = 0;
         for( final Species species : protein_lists_per_species.keySet() ) {
             if ( !species_ids_map.containsKey( species.toString() ) ) {
                 species_ids_map.put( species.toString(), new TreeSet<String>() );
@@ -519,22 +530,59 @@ public final class MinimalDomainomeCalculator {
                     final SortedSet<String> ids = species_ids_map.get( species.toString() );
                     String id = "";
                     final Accession acc = SequenceAccessionTools
-                            .parseAccessorFromString( protein.getProteinId().getId() );
+                            .parseAccessorFromStringUniProtPriority( protein.getProteinId().getId() );
+                    if ( !( acc.getSource().equals( Accession.Source.UNIPROT.toString() )
+                            || acc.getSource().equals( SequenceAccessionTools.VIPR_SOURCE.toString() ) ) ) {
+                        continue;
+                    }
                     if ( acc == null ) {
                         id = protein.getProteinId().getId();
+                        other_acc_counter++;
                     }
                     else {
+                        if ( acc.getSource().equals( Accession.Source.UNIPROT.toString() ) ) {
+                            uniprot_acc_counter++;
+                        }
+                        if ( acc.getSource().equals( Accession.Source.NCBI.toString() ) ) {
+                            genbank_acc_counter++;
+                        }
+                        if ( acc.getSource().equals( Accession.Source.REFSEQ.toString() ) ) {
+                            ref_seq_acc_counter++;
+                        }
+                        if ( acc.getSource().equals( Accession.Source.GI.toString() ) ) {
+                            gi_acc_counter++;
+                        }
+                        if ( acc.getSource().equals( Accession.Source.EMBL.toString() ) ) {
+                            embl_counter++;
+                        }
+                        if ( acc.getSource().equals( Accession.Source.ENSEMBL.toString() ) ) {
+                            ensembl_acc_counter++;
+                        }
+                        if ( acc.getSource().equals( SequenceAccessionTools.VIPR_SOURCE.toString() ) ) {
+                            vipr_acc_counter++;
+                        }
                         id = acc.getValue();
                     }
-                    if ( !ids.contains( species.toString() ) ) {
-                        ids.add( id );
+                    ids.add( id );
+                    if ( all_accs.contains( id ) ) {
+                        //  System.out.println( "acc " + id + " is not unique, from "
+                        //         + protein.getProteinId().getId() );
+                        multiple_acc_counter++;
                     }
-                    else {
-                        throw new IllegalArgumentException( "sequence id " + id + " is not unique in " + species );
-                    }
+                    all_accs.add( id );
                 }
             }
         }
+        System.out.println( "uniprot : " + uniprot_acc_counter );
+        System.out.println( "vipr    : " + vipr_acc_counter );
+        System.out.println( "ref seq : " + ref_seq_acc_counter );
+        System.out.println( "gi acc  : " + gi_acc_counter );
+        System.out.println( "ensembl : " + ensembl_acc_counter );
+        System.out.println( "embl    : " + embl_counter );
+        System.out.println( "genbank : " + genbank_acc_counter );
+        System.out.println( "other   : " + other_acc_counter );
+        System.out.println( "multiple: " + multiple_acc_counter );
+        System.out.println();
         return species_ids_map;
     }
     //TODO make into test

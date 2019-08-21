@@ -249,13 +249,41 @@ public final class SequenceAccessionTools {
             if ( !ForesterUtil.isEmpty( v ) ) {
                 return new Accession( v, SequenceAccessionTools.VIPR_SOURCE  );
             }
-            
-            
-           
         }
         return null;
     }
 
+    
+    public final static Accession parseAccessorFromStringUniProtPriority( final String s ) {
+        if ( !ForesterUtil.isEmpty( s ) ) {
+           
+            String v = parseUniProtAccessorFromString( s );
+            if ( !ForesterUtil.isEmpty( v ) ) {
+                return new Accession( v, Source.UNIPROT );
+            }
+            v =  parseViprFromString( s );
+            if ( !ForesterUtil.isEmpty( v ) ) {
+                return new Accession( v, SequenceAccessionTools.VIPR_SOURCE  );
+            }
+            v = parseRefSeqAccessorFromString( s );
+            if ( !ForesterUtil.isEmpty( v ) ) {
+                return new Accession( v, Source.REFSEQ );
+            }
+            v = parseGInumberFromString( s );
+            if ( !ForesterUtil.isEmpty( v ) ) {
+                return new Accession( v, Source.GI );
+            }
+            v = parseEnsemlAccessorFromString( s );
+            if ( !ForesterUtil.isEmpty( v ) ) {
+                return new Accession( v, Source.ENSEMBL );
+            }
+            v = parseGenbankAccessorFromString( s );
+            if ( !ForesterUtil.isEmpty( v ) ) {
+                return new Accession( v, Source.NCBI );
+            }
+        }
+        return null;
+    }
     public final static String parseGenbankAccessorFromString( final String s ) {
         Matcher m = GENBANK_NUC_PATTERN_1.matcher( s );
         if ( m.lookingAt() ) {

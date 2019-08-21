@@ -50,6 +50,7 @@ import org.forester.ws.seqdb.UniprotRetrieve;
 
 public final class DaioMethods {
 
+    private final static boolean WRITE_RATIO                   = false;
     private final static int     VERBOSITY                     = 1;
     private final static int     MAX_IDS_TO_SEARCH_PER_SPECIES = 10;
     private final static String  NA_SYMBOL                     = "-";
@@ -59,7 +60,8 @@ public final class DaioMethods {
     private final static Pattern ORF_PROTEIN_NAME_PATTERN      = Pattern.compile( "orf\\s*(.+)\\s+protein",
                                                                                   Pattern.CASE_INSENSITIVE );
 
-    public final static String inferTaxonomicInformation( final Phylogeny species_tree, final List<String> all_species )
+    public final static String[] inferTaxonomicInformationAndRatio( final Phylogeny species_tree,
+                                                                    final List<String> all_species )
             throws IOException {
         final List<PhylogenyNode> all_nodes = new ArrayList<>();
         for( final String taxonomy_code : all_species ) {
@@ -83,6 +85,14 @@ public final class DaioMethods {
         else {
             throw new IllegalStateException( "this should never have happened" );
         }
+        /////////////////////////////
+        final StringBuilder ratio = new StringBuilder();
+        ratio.append( "[" );
+        ratio.append( all_species.size() );
+        ratio.append( "/" );
+        ratio.append( lca.getAllExternalDescendants().size() );
+        ratio.append( "]" );
+        /////////////////////////////
         String taxonomic_string = null;
         if ( lca.isExternal() ) {
             taxonomic_string = "species_specific";
@@ -110,7 +120,7 @@ public final class DaioMethods {
                 taxonomic_string = taxonomic_string.toLowerCase();
             }
         }
-        return taxonomic_string;
+        return new String[] { taxonomic_string, ratio.toString() };
     }
 
     /**
@@ -265,10 +275,14 @@ public final class DaioMethods {
                 final String species = e2.getKey();
                 final SortedSet<String> ids = e2.getValue();
                 if ( ids.size() > 0 ) {
-                    final String taxonomic_suffix = inferTaxonomicInformation( species_tree, all_species );
-                    //
+                    final String[] taxonomic_suffix_ratio = inferTaxonomicInformationAndRatio( species_tree,
+                                                                                               all_species );
+                    final String taxonomic_suffix = taxonomic_suffix_ratio[ 0 ];
+                    final String ratio = taxonomic_suffix_ratio[ 1 ];
                     final StringBuilder suffix_da_name = new StringBuilder();
                     suffix_da_name.append( taxonomic_suffix );
+                    suffix_da_name.append( separator );
+                    suffix_da_name.append( ratio );
                     suffix_da_name.append( separator );
                     suffix_da_name.append( da );
                     suffix_da_name.append( separator );
@@ -276,7 +290,8 @@ public final class DaioMethods {
                         suffix_da_name.append( name );
                     }
                     else {
-                        suffix_da_name.append( NA_SYMBOL );
+                        //suffix_da_name.append( NA_SYMBOL );
+                        suffix_da_name.append( da );
                     }
                     suffix_da_name_set.add( suffix_da_name.toString() );
                     //
@@ -286,10 +301,15 @@ public final class DaioMethods {
                         writer.write( name );
                     }
                     else {
-                        writer.write( NA_SYMBOL );
+                        // writer.write( NA_SYMBOL );
+                        writer.write( da );
                     }
                     writer.write( "_" );
                     writer.write( taxonomic_suffix );
+                    if ( WRITE_RATIO ) {
+                        writer.write( separator );
+                        writer.write( ratio );
+                    }
                     writer.write( separator );
                     writer.write( species );
                     writer.write( separator );
