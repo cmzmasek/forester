@@ -3,8 +3,7 @@
 # FORESTER -- software libraries and applications
 # for evolutionary biology research and applications.
 #
-# Copyright (C) 2018 Christian M. Zmasek
-# Copyright (C) 2018 J. Craig Venter Institute
+# Copyright (C) 2020 Christian M. Zmasek
 # All rights reserved
 # 
 # This library is free software; you can redistribute it and/or
@@ -20,9 +19,6 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
-#
-# Contact: cmzmasek at yahoo dot com
-#     WWW: https://sites.google.com/site/cmzmasek/home/software/forester
 #
 #
 #
@@ -43,13 +39,11 @@
 # 2. phylip NJ
 # 3. phylip fitch FM
 # 4. phylip fitch ME
-# 5. BIONJ
-# 6. Weighbor
-# 7. Raxml
-# 8. phyml
-# 9. phylip proml
-# 10. phylip protpars
-# 11. all
+# 5. Raxml
+# 6. phyml
+# 7. phylip proml
+# 8. phylip protpars
+# 9. all
 #==========================
 
 use strict;
@@ -59,9 +53,10 @@ use lib $FindBin::Bin;
 use forester;
 
 my $VERSION                = "1.0.1";
-my $LAST_MODIFIED          = "2017/04/26";
+my $LAST_MODIFIED          = "2020/01/23";
 
-my $RAXML_MODEL_BASE       = "PROTGAMMA";
+my $RAXML_MODEL_BASE_PROT  = "PROTGAMMA";
+my $RAXML_MODEL_BASE_NUC   = "GTRGAMMA";
 my $RAXML_ALGORITHM        = "a";
 
 my $TEMP_DIR_DEFAULT       = "/tmp/phylo_pl_"; # Where all the infiles, outfiles, etc will be created.
@@ -95,8 +90,6 @@ my $use_fastme             = 0;   # 0: no; 1: yes
 my $use_phylip_nj          = 0;   # 0: no; 1: yes
 my $use_phylip_fitch_fm    = 0;   # 0: no; 1: yes
 my $use_phylip_fitch_me    = 0;   # 0: no; 1: yes
-my $use_bionj              = 0;   # 0: no; 1: yes
-my $use_weighbor           = 0;   # 0: no; 1: yes
 my $use_raxml              = 0;   # 0: no; 1: yes
 my $use_phyml              = 0;   # 0: no; 1: yes
 my $use_proml              = 0;   # 0: no; 1: yes
@@ -199,12 +192,6 @@ if ( $ARGV[ 0 ] =~ /^-.+/ ) {
     if ( $options =~ /e/ ) {
         $use_phylip_fitch_me = 1; 
     }
-    if ( $options =~ /b/ ) {
-        $use_bionj = 1; 
-    }
-    if ( $options =~ /w/ ) {
-        $use_weighbor = 1;
-    }   
     if ( $options =~ /x/ ) {
         $use_raxml = 1;
     }    
@@ -303,8 +290,6 @@ if ( $use_fastme    != 1 &&
      $use_phylip_nj != 1 &&
      $use_phylip_fitch_fm != 1 &&
      $use_phylip_fitch_me != 1 &&
-     $use_bionj != 1 &&         
-     $use_weighbor != 1 &&
      $use_raxml != 1 &&
      $use_phyml != 1 &&
      $use_proml != 1 &&         
@@ -314,9 +299,7 @@ if ( $use_fastme    != 1 &&
      $use_phylip_nj = 1;
      $use_phylip_fitch_fm = 1;
      $use_phylip_fitch_me = 1;
-     $use_bionj = 1;    
-     $use_raxml = 1;     
-     $use_weighbor = 1;
+     $use_raxml = 1;
      $use_phyml = 1;
      $use_proml = 1;         
      $use_protpars = 1; 
@@ -326,9 +309,7 @@ if ( $use_fastme    != 1 &&
 if ( $use_fastme    == 1 ||
      $use_phylip_nj == 1 ||
      $use_phylip_fitch_fm == 1 ||
-     $use_phylip_fitch_me == 1 ||
-     $use_bionj == 1          ||
-     $use_weighbor == 1 ) { 
+     $use_phylip_fitch_me == 1 ) { 
     $use_pwd_based_methods = 1;
 }
 else {
@@ -383,8 +364,6 @@ my $fastme_outtree    = $outfile."_fme.xml";
 my $phylip_nj_outtree = $outfile."_pnj.xml";
 my $phylip_fm_outtree = $outfile."_pfm.xml";
 my $phylip_me_outtree = $outfile."_pme.xml";
-my $bionj_outtree     = $outfile."_bionj.xml";
-my $weighbor_outtree  = $outfile."_weigh.xml";
 my $raxml_outtree     = $outfile."_raxml.xml";
 my $phyml_outtree     = $outfile."_phyml.xml";
 my $proml_outtree     = $outfile."_proml.xml";
@@ -395,8 +374,6 @@ my $multitreefile_fastme    = $outfile."_fme".$MULTIPLE_TREES_FILE_SUFFIX;
 my $multitreefile_phylip_nj = $outfile."_pnj".$MULTIPLE_TREES_FILE_SUFFIX;
 my $multitreefile_phylip_fm = $outfile."_pfm".$MULTIPLE_TREES_FILE_SUFFIX;
 my $multitreefile_phylip_me = $outfile."_pme".$MULTIPLE_TREES_FILE_SUFFIX;
-my $multitreefile_bionj     = $outfile."_bionj".$MULTIPLE_TREES_FILE_SUFFIX;
-my $multitreefile_weighbor  = $outfile."_weigh".$MULTIPLE_TREES_FILE_SUFFIX;
 my $multitreefile_raxml     = $outfile."_raxml".$MULTIPLE_TREES_FILE_SUFFIX;
 my $multitreefile_phyml     = $outfile."_phyml".$MULTIPLE_TREES_FILE_SUFFIX;
 my $multitreefile_proml     = $outfile."_proml".$MULTIPLE_TREES_FILE_SUFFIX;
@@ -424,18 +401,6 @@ if( $use_phylip_fitch_me == 1 ) {
     &dieIfFileExists( $phylip_me_outtree );
     if ( $keep_multiple_trees == 1 && $bootstraps > 1 ) {
         &dieIfFileExists( $multitreefile_phylip_me );
-    }
-}
-if( $use_bionj == 1 ) {
-    &dieIfFileExists( $bionj_outtree );
-    if ( $keep_multiple_trees == 1 && $bootstraps > 1 ) {
-        &dieIfFileExists( $multitreefile_bionj );
-    }
-}
-if( $use_weighbor == 1 ) {
-    &dieIfFileExists( $weighbor_outtree );
-    if ( $keep_multiple_trees == 1 && $bootstraps > 1 ) {
-        &dieIfFileExists( $multitreefile_weighbor );
     }
 }
 if( $use_raxml == 1 ) {
@@ -477,10 +442,8 @@ if ( $infile ne "" ) {
 # Prints out the options:
 # -----------------------
 
-
 $log = "\n$0 logfile:\n";
 $log = $log."Version: $VERSION\n\n";
-
 
 
 if ( $infile ne ""  ) {
@@ -513,14 +476,8 @@ if ( $use_phylip_fitch_fm == 1 ) {
 if ( $use_phylip_fitch_me == 1 ) {
     $log = $log."Program to calculate tree           : PHYLIP FITCH Minimal Evolution (version: $PHYLIP_VERSION)\n";
 }
-if ( $use_bionj == 1 ) {
-    $log = $log."Program to calculate tree           : BIONJ (version: $BIONJ_VERSION)\n";
-}
-if ( $use_weighbor == 1 ) {
-    $log = $log."Program to calculate tree           : Weighbor [no invariable sites, b=14] (version: $WEIGHBOR_VERSION)\n";
-}
 if ( $use_raxml == 1 ) {
-    $log = $log."Program to calculate tree           : RAxML [$RAXML_MODEL_BASE] (uses its own bootstraps, if bootstrapped: -f $RAXML_ALGORITHM) (version: $RAXML_VERSION)\n";
+    $log = $log."Program to calculate tree           : RAxML (uses its own bootstraps, if bootstrapped: -f $RAXML_ALGORITHM) (version: $RAXML_VERSION)\n";
 }
 if ( $use_phyml == 1 ) {
     $log = $log."Program to calculate tree           : PHYML (MLE for gamma distr param and proportion of inv sites) (version: $PHYML_VERSION)\n";
@@ -575,18 +532,17 @@ elsif ( $matrix == 7 ) {
 elsif ( $matrix == 8 ) {
     $log = $log."DCMut (Kosial and Goldman, 2005) in PHYML and RAxML, VT in TREE-PUZZLE\n";
 }
-
 elsif ( $matrix == 9 ) {
-    $log = $log."HKY (Hasegawa et al. 1985) in TREE-PUZZLE\n";
+    $log = $log."HKY (Hasegawa et al. 1985) in TREE-PUZZLE and PHYML, GTR in RAxML\n";
 }
 elsif ( $matrix == 10 ) {
-    $log = $log."TN (Tamura-Nei 1993) in TREE-PUZZLE\n";
+    $log = $log."TN (Tamura-Nei 1993) in TREE-PUZZLE and PHYML, GTR in RAxML\n";
 }
 elsif ( $matrix == 11 ) {
-    $log = $log."GTR (e.g. Lanave et al. 1980)in TREE-PUZZLE\n";
+    $log = $log."GTR (e.g. Lanave et al. 1980)in TREE-PUZZLE and RAxML and PHYML\n";
 }
 elsif ( $matrix == 12 ) {
-    $log = $log."SH (Schoeniger-von Haeseler 1994) in TREE-PUZZLE\n";
+    $log = $log."SH (Schoeniger-von Haeseler 1994) in TREE-PUZZLE, GTR in RAxML and PHYML\n";
 }
 
 
@@ -719,7 +675,6 @@ my $OUTTREES_ALL = "outtrees_all";
 my $all_count = 0;
 
 if ( $use_raxml == 1 ) {
-   
     my $model = "---";
     if ( $matrix == 0 ) { 
         $model = "JTT";
@@ -745,10 +700,12 @@ if ( $use_raxml == 1 ) {
     elsif ( $matrix == 8 ) {
         $model = "DCMUT";
     }
+    elsif ( $matrix == 9 || $matrix == 10 || $matrix == 11 || $matrix == 12 ) {
+        $model = "-nuc-";
+    }
     else {
         &dieWithUnexpectedError( "Unknown model: matrix=$matrix" );
     }
-
     print( "\n========== RAxML begin =========\n\n" );    
     # Six arguments:
     # 1. DNA or Amino-Acids sequence filename (PHYLIP format)
@@ -761,29 +718,31 @@ if ( $use_raxml == 1 ) {
     if ( $estimate_invar_sites == 1 ) {
         $invar = "I";
     }
-    
+
     # NOTE. RaxML does its own bootstrapping.
-    &executeRaxml( "align", $RAXML_MODEL_BASE.$invar.$model."X", $bootstraps, $seed, "xxx", $RAXML_ALGORITHM );
+    if ( $matrix == 9 || $matrix == 10 || $matrix == 11 || $matrix == 12 ) {
+        &executeRaxml( "align", $RAXML_MODEL_BASE_NUC.$invar."X", $bootstraps, $seed, "xxx", $RAXML_ALGORITHM );
+    }
+    else {
+        &executeRaxml( "align", $RAXML_MODEL_BASE_PROT.$invar.$model."X", $bootstraps, $seed, "xxx", $RAXML_ALGORITHM );
+    }
     print( "\n========== RAxML end =========\n\n" );
     
     &rm( "RAxML_log.xxx" );
     &rm( "RAxML_parsimonyTree.xxx" );
+    &rm( $outfile."_raxml_info" );
     &mv( "RAxML_info.xxx", $outfile."_raxml_info" );
-   # if ( $bootstraps > 1 ) {
-        &rm( "RAxML_bestTree.xxx" );
-        &mv( "RAxML_bipartitions.xxx", $CONSENSUS_RAXML );
-        &append( "RAxML_bootstrap.xxx", $OUTTREES_ALL );
-        if ( $keep_multiple_trees == 1 ) {
-            &mv( "RAxML_bootstrap.xxx", $multitreefile_raxml );
-        }
-        else {
-            &rm( "RAxML_bootstrap.xxx" );
-        }
-        $all_count++;
-  #  }
-  #  else {
-  #      &mv( "RAxML_result.xxx", $OUTTREE_RAXML );
-  #  }
+    &rm( "RAxML_bestTree.xxx" );
+    &mv( "RAxML_bipartitions.xxx", $CONSENSUS_RAXML );
+    &append( "RAxML_bootstrap.xxx", $OUTTREES_ALL );
+    if ( $keep_multiple_trees == 1 ) {
+        &mv( "RAxML_bootstrap.xxx", $multitreefile_raxml );
+    }
+    else {
+        &rm( "RAxML_bootstrap.xxx" );
+    }
+    $all_count++;
+  
 }
 
 
@@ -813,6 +772,18 @@ if ( $use_phyml == 1 ) {
     }
     elsif ( $matrix == 8 ) {
         $model = "DCMut";
+    }
+    elsif ( $matrix == 9 ) {
+        $model = "HKY85";
+    }
+    elsif ( $matrix == 10 ) {
+        $model = "TN93";
+    }
+    elsif ( $matrix == 11 ) {
+        $model = "GTR";
+    }
+    elsif ( $matrix == 12 ) {
+        $model = "GTR";
     }
     else {
         &dieWithUnexpectedError( "Unknown model: matrix=$matrix" );
@@ -911,15 +882,12 @@ my $OUTTREE_FASTME    = "outtree_fastme";
 my $OUTTREE_PHYLIP_NJ = "outtree_phylip_nj";
 my $OUTTREE_PHYLIP_FM = "outtree_phylip_fm";
 my $OUTTREE_PHYLIP_ME = "outtree_phylip_me";
-my $OUTTREE_BIONJ     = "outtree_bionj";
-my $OUTTREE_WEIGHBOR  = "outtree_weighbor";
+
 
 my $CONSENSUS_FASTME    = "consensus_fastme";
 my $CONSENSUS_PHYLIP_NJ = "consensus_phylip_nj";
 my $CONSENSUS_PHYLIP_FM = "consensus_phylip_fm";
 my $CONSENSUS_PHYLIP_ME = "consensus_phylip_me";
-my $CONSENSUS_BIONJ     = "consensus_bionj";
-my $CONSENSUS_WEIGHBOR  = "consensus_weighbor";
 my $CONSENSUS_ALL       = "consensus_all";
 
 
@@ -967,24 +935,7 @@ if (  $use_phylip_fitch_me ) {
         $all_count++;
     } 
 }
-if ( $use_bionj ) {
-    print( "\n========== BIONJ begin =========\n\n" );
-    &executeBionj( $pwdfile, $OUTTREE_BIONJ );
-    print( "\n========== BIONJ end =========\n\n" );
-    if ( $bootstraps > 1 ) {
-        &append( $OUTTREE_BIONJ, $OUTTREES_ALL );
-        $all_count++;
-    }    
-}
-if ( $use_weighbor ) {
-    print( "\n========== WEIGHBOR begin =========\n\n" );
-    &executeWeighbor( $number_of_aa, 14, $pwdfile, $OUTTREE_WEIGHBOR );
-    print( "\n========== WEIGHBOR  end =========\n\n" );
-    if ( $bootstraps > 1 ) {
-        &append( $OUTTREE_WEIGHBOR, $OUTTREES_ALL );
-        $all_count++;
-    }
-}
+
 
 
 
@@ -1001,12 +952,6 @@ if ( $bootstraps > 1 ) {
     }
     if ( $use_phylip_fitch_me == 1 ) {
         &consense( $OUTTREE_PHYLIP_ME, $CONSENSUS_PHYLIP_ME );
-    }
-    if ( $use_bionj == 1 ) {
-        &consense( $OUTTREE_BIONJ, $CONSENSUS_BIONJ );
-    }   
-    if ( $use_weighbor == 1 ) {
-        &consense( $OUTTREE_WEIGHBOR, $CONSENSUS_WEIGHBOR );
     }
     if ( $use_phyml == 1 ) {
         &consense( $OUTTREE_PHYML, $CONSENSUS_PHYML );
@@ -1040,12 +985,6 @@ if ( $bootstraps > 1 ) {
     }
     if ( $use_phylip_fitch_me == 1 ) {
         &append( $CONSENSUS_PHYLIP_ME, $INTREE_FOR_PUZZLE );
-    }
-    if ( $use_bionj == 1 ) {
-        &append( $CONSENSUS_BIONJ, $INTREE_FOR_PUZZLE );
-    }
-    if ( $use_weighbor == 1 ) {
-        &append( $CONSENSUS_WEIGHBOR, $INTREE_FOR_PUZZLE );
     }
     if ( $use_raxml == 1 ) {
         # Needed, because TREE-PUZZLE adds internal labels for all subsequent trees
@@ -1107,14 +1046,6 @@ if ( $bootstraps > 1 ) {
         &executeSupportTransfer( $OUTTREE_PUZZLE, $CONSENSUS_PHYLIP_ME, $phylip_me_outtree, $counter++ );
         &rm( $CONSENSUS_PHYLIP_ME );
     }
-    if ( $use_bionj == 1 ) {
-        &executeSupportTransfer( $OUTTREE_PUZZLE, $CONSENSUS_BIONJ, $bionj_outtree, $counter++ );
-        &rm( $CONSENSUS_BIONJ );
-    }
-    if ( $use_weighbor == 1 ) {
-        &executeSupportTransfer( $OUTTREE_PUZZLE, $CONSENSUS_WEIGHBOR, $weighbor_outtree, $counter++ );
-        &rm( $CONSENSUS_WEIGHBOR );
-    }
     if ( $use_raxml == 1 ) {
         &to_phyloxml( $CONSENSUS_RAXML, $raxml_outtree, 1, 1 );
         $counter++;
@@ -1153,12 +1084,6 @@ if ( $bootstraps > 1 ) {
         if ( $use_phylip_fitch_me == 1 ) {
             &mv( $OUTTREE_PHYLIP_ME, $multitreefile_phylip_me );
         }
-        if ( $use_bionj == 1 ) {
-            &mv( $OUTTREE_BIONJ, $multitreefile_bionj );
-        }
-        if ( $use_weighbor == 1 ) {
-            &mv( $OUTTREE_WEIGHBOR, $multitreefile_weighbor );
-        }
         if ( $use_phyml == 1 ) {
             &mv( $OUTTREE_PHYML, $multitreefile_phyml );
         }
@@ -1182,12 +1107,6 @@ if ( $bootstraps > 1 ) {
         }
         if ( $use_phylip_fitch_me == 1 ) {
             &rm( $OUTTREE_PHYLIP_ME );
-        }
-        if ( $use_bionj == 1 ) {
-            &rm( $OUTTREE_BIONJ );
-        }
-        if ( $use_weighbor == 1 ) {
-            &rm( $OUTTREE_WEIGHBOR );
         }
         if ( $use_phyml == 1 ) {
             &rm( $OUTTREE_PHYML );
@@ -1219,12 +1138,6 @@ else {
     }
     if ( $use_phylip_fitch_me == 1 ) {
         &to_phyloxml( $OUTTREE_PHYLIP_ME, $phylip_me_outtree, 0, 1 );
-    }
-    if ( $use_bionj == 1 ) {
-        &to_phyloxml( $OUTTREE_BIONJ, $bionj_outtree, 0, 1 );
-    }
-    if ( $use_weighbor == 1 ) {
-        &to_phyloxml( $OUTTREE_WEIGHBOR, $weighbor_outtree, 0, 1 );
     }
     if ( $use_raxml == 1 ) {
       #  &to_phyloxml( $OUTTREE_RAXML, $raxml_outtree, 0, 1 );
@@ -1287,12 +1200,6 @@ if ( $bootstraps > 1 ) {
     }
     if ( $use_phylip_fitch_me == 1 ) {
         $phylos[ $ounter++ ] = $phylip_me_outtree;
-    }
-    if ( $use_bionj == 1 ) {
-        $phylos[ $ounter++ ] = $bionj_outtree;
-    }
-    if ( $use_weighbor == 1 ) {
-        $phylos[ $ounter++ ] = $weighbor_outtree;
     }
     if ( $use_raxml == 1 ) {
         $phylos[ $ounter++ ] = $raxml_outtree;
@@ -1751,8 +1658,6 @@ https://sites.google.com/site/cmzmasek/home/software/forester
   n  : Use PHYLIP Neighbor (NJ).                    
   f  : Use PHYLIP Fitch.
   e  : Use PHYLIP Minimal Evolution.
-  b  : Use BIONJ.
-  w  : Use Weighbor.
   x  : Use RAxML.
   y  : Use PHYML. 
   o  : Use PHYLIP proml. 
