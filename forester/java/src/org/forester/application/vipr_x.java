@@ -28,6 +28,7 @@ public class vipr_x {
     private static final String  VIPR_HOST    = "vipr:Host";
     private static final String  VIPR_COUNTRY = "vipr:Country";
     private static final String  VIPR_YEAR    = "vipr:Year";
+    private static final String  VIPR_REGION  = "vipr:Region";
     private final static String  PRG_NAME     = "vipr_x";
     //  VP1|VP1_protein|KP322752|US/CA/14_6089|2014_08|Human|USA|NA|Enterovirus_D68
     // 1. gene symbol
@@ -114,9 +115,65 @@ public class vipr_x {
                         // ignore
                     }
                     ext_node.getNodeData().addSequence( seq );
+                    String region = "";
+                    final String c = country.toLowerCase();
+                    if ( c.equals( "canada" ) || c.equals( "usa" ) || c.equals( "mexico" ) ) {
+                        region = "North America";
+                    }
+                    else if ( c.equals( "denmark" ) || c.equals( "finland" ) || c.equals( "france" )
+                            || c.equals( "germany" ) || c.equals( "italy" ) || c.equals( "netherlands" )
+                            || c.equals( "norway" ) || c.equals( "spain" ) || c.equals( "united_kingdom" ) ) {
+                        region = "Western Europe";
+                    }
+                    else if ( c.equals( "japan" ) || c.equals( "taiwan" ) || c.equals( "hong_kong" )
+                            || c.equals( "china" ) ) {
+                        region = "East Asia";
+                    }
+                    else if ( c.equals( "india" ) ) {
+                        region = "South Asia";
+                    }
+                    else if ( c.equals( "malaysia" ) || c.equals( "philippines" ) || c.equals( "viet_nam" ) ) {
+                        region = "Southeast Asia";
+                    }
+                    else if ( c.equals( "gambia" ) || c.equals( "kenya" ) || c.equals( "senegal" )
+                            || c.equals( "south_africa" ) || c.equals( "tanzania" ) ) {
+                        region = "Africa";
+                    }
+                    else if ( c.equals( "australia" ) || c.equals( "new_zealand" ) ) {
+                        region = "Oceania";
+                    }
+                    else if ( c.equals( "na" ) ) {
+                        region = "";
+                    }
+                    else {
+                        System.out.println( "ERROR: unkknown country \"" + c + "\"" );
+                        System.exit( -1 );
+                    }
+                    if ( !ForesterUtil.isEmpty( region ) ) {
+                        custom_data.addProperty( new Property( VIPR_REGION, region, "", XSD_STRING, AppliesTo.NODE ) );
+                    }
+                    if ( gb_accession.equalsIgnoreCase( "KP126912" ) || gb_accession.equalsIgnoreCase( "KP100796" )
+                            || gb_accession.equalsIgnoreCase( "KP744827" )
+                            || gb_accession.equalsIgnoreCase( "KP126911" )
+                            || gb_accession.equalsIgnoreCase( "KP100794" )
+                            || gb_accession.equalsIgnoreCase( "KP100792" )
+                            || gb_accession.equalsIgnoreCase( "KP126910" )
+                            || gb_accession.equalsIgnoreCase( "KP100793" )
+                            || gb_accession.equalsIgnoreCase( "KP322752" )
+                            || gb_accession.equalsIgnoreCase( "KY358059" )
+                            || gb_accession.equalsIgnoreCase( "KX685078" )
+                            || gb_accession.equalsIgnoreCase( "KX675263" )
+                            || gb_accession.equalsIgnoreCase( "KX675261" )
+                            || gb_accession.equalsIgnoreCase( "KX675262" ) ) {
+                        custom_data.addProperty( new Property( "vipr:AFM_from_Lit",
+                                                               "true",
+                                                               "",
+                                                               XSD_STRING,
+                                                               AppliesTo.NODE ) );
+                    }
                 }
                 else {
-                    System.out.println( "WARNING: name \"" + name + "\" could not be matched" );
+                    System.out.println( "ERROR: name \"" + name + "\" could not be matched" );
                     System.exit( -1 );
                 }
             }
