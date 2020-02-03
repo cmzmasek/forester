@@ -2,26 +2,110 @@
 package org.forester.application;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class reform_for_bats {
+import org.forester.util.ForesterUtil;
 
+public class reform_mb_for_bats {
+
+    private final static String  PRG_NAME     = "reform_mb_for_bats";
     private final static Pattern VIPR_PATTERN = Pattern
             .compile( "(.*?)\\|(.*?)\\|(.*?)\\|(.*?)\\|(.*?)\\|(.*?)\\|(.*?)\\|(.*?)\\|(.*?)" );
 
     public static void main( final String args[] ) throws FileNotFoundException, IOException {
-        if ( args.length != 2 ) {
-            System.out.println( "\nWrong number of arguments, expected: infile map\n" );
+        if ( args.length != 4 ) {
+            System.out
+                    .println( "\nWrong number of arguments, expected: infile (=mr bayes run.t outfile) map outfile first_tree\n" );
             System.exit( -1 );
         }
+        final File infile = new File( args[ 0 ] );
         final File mapfile = new File( args[ 1 ] );
+        final File outfile = new File( args[ 2 ] );
+        
+        final int first_tree = Integer.parseInt( args[ 3 ] );
+        
+        if ( !infile.exists() ) {
+            ForesterUtil.fatalError( PRG_NAME, "[" + infile + "] does not exist" );
+        }
+        if ( !mapfile.exists() ) {
+            ForesterUtil.fatalError( PRG_NAME, "[" + mapfile + "] does not exist" );
+        }
+        if ( outfile.exists() ) {
+            ForesterUtil.fatalError( PRG_NAME, "[" + outfile + "] already exists" );
+        }
+        final BufferedWriter writer = new BufferedWriter( new OutputStreamWriter( new FileOutputStream( outfile ),
+                                                                                  "utf-8" ) );
+        final SortedMap<String, String> id_to_name_map = x( mapfile );
+        final BufferedReader br = new BufferedReader( new FileReader( infile ) );
+        String line;
+        boolean saw_translate = false;
+        boolean saw_tree = false;
+        int tree_counter = 0;
+        while ( ( line = br.readLine() ) != null ) {
+            line = line.trim();
+            if ( line.startsWith( "#NEXUS" ) ) {
+                writer.write( line );
+                writer.write( "\n" );
+            }
+            else if ( line.startsWith( "[ID:" ) ) {
+                writer.write( "\n" );
+            }
+            else if ( line.startsWith( "[Param:" ) ) {
+                // ignore
+            }
+            else if ( line.startsWith( "begin trees" ) ) {
+                // ignore
+            }
+            else if ( line.equals( "translate" ) ) {
+                saw_translate = true;
+                writer.write( "begin states;" );
+                writer.write( "\n" );
+            }
+            else if ( line.startsWith( "tree" ) ) {
+                if ( !saw_tree ) {
+                    saw_tree = true;
+                    writer.write( "End;" );
+                    writer.write( "\n" );
+                    writer.write( "\n" );
+                    writer.write( "begin trees;" );
+                    writer.write( "\n" );
+                }
+                ++tree_counter;
+                if ( tree_counter >= first_tree ) {
+                    line = line.replaceFirst( "\\[&U\\]", "[&R]" );
+                    writer.write( line );
+                    writer.write( "\n" );
+                }
+            }
+            else if ( saw_translate && !saw_tree ) {
+                final String[] s = line.split( "\\s+" );
+                final String key = s[ 0 ];
+                final String value = s[ 1 ].substring( 0, s[ 1 ].length() - 1 );
+                final String new_value = id_to_name_map.get( value );
+                writer.write( key + " " + new_value );
+                writer.write( "\n" );
+            }
+            else if ( line.startsWith( "end" ) && saw_tree ) {
+                writer.write( "End;" );
+                writer.write( "\n" );
+            }
+        }
+        br.close();
+        writer.flush();
+        writer.close();
+    }
+
+    private static SortedMap<String, String> x( final File mapfile ) throws FileNotFoundException, IOException {
         final BufferedReader br = new BufferedReader( new FileReader( mapfile ) );
         String line;
         final SortedMap<String, String> id_to_name_map = new TreeMap<>();
@@ -29,44 +113,19 @@ public class reform_for_bats {
             final String[] s = line.split( "\\s+" );
             final String key = s[ 0 ];
             final String value = s[ 1 ];
-            //
             String new_value = "N";
             final Matcher m = VIPR_PATTERN.matcher( value );
             if ( m.matches() ) {
                 final String gb_accession = m.group( 3 );
-                System.out.println( "gb accession: " + gb_accession );
                 if ( addSpecialData1( gb_accession ) || addSpecialData12( gb_accession )
                         || addSpecialData2( gb_accession ) ) {
                     new_value = "P";
                 }
             }
-            //
             id_to_name_map.put( key, new_value );
         }
         br.close();
-        final File infile = new File( args[ 0 ] );
-        final BufferedReader br2 = new BufferedReader( new FileReader( infile ) );
-        String line2;
-        boolean saw_translate = false;
-        boolean saw_tree = false;
-        while ( ( line2 = br2.readLine() ) != null ) {
-            line2 = line2.trim();
-            if ( line2.equals( "translate" ) ) {
-                saw_translate = true;
-            }
-            else if ( line2.startsWith( "tree" ) ) {
-                saw_tree = true;
-            }
-            else if ( saw_translate && !saw_tree ) {
-                final String[] s = line2.split( "\\s+" );
-                final String key = s[ 0 ];
-                final String value = s[ 1 ].substring( 0, s[ 1 ].length() - 1 );
-                final String new_value = id_to_name_map.get( value );
-                // System.out.println( key + "->" + value + "->" + new_value );
-                System.out.println( key + " " + new_value );
-            }
-        }
-        br2.close();
+        return id_to_name_map;
     }
 
     private static boolean addSpecialData1( final String gb_accession ) {
