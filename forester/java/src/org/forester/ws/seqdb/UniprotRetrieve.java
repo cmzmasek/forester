@@ -12,7 +12,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -44,19 +43,12 @@ public final class UniprotRetrieve {
      * See: https://www.uniprot.org/help/api_idmapping
      *
      */
-    public final SortedMap<String, UniprotData> retrieve( final Set<String> queries ) throws IOException {
-        final List<String> queries_list = new ArrayList<>();
-        for( final String q : queries ) {
-            queries_list.add( q );
-        }
-        return retrieve( queries_list );
-    }
-
     public final SortedMap<String, UniprotData> retrieve( final List<String> queries ) throws IOException {
         final List<String> ncbi_queries = new ArrayList<>();
         final List<String> refseq_queries = new ArrayList<>();
         for( final String query : queries ) {
-            final Accession acc = SequenceAccessionTools.parseAccessorFromString( query );
+            final Accession acc = SequenceAccessionTools.parseAccessorFromString_GenbankProteinPriority( query );
+            
             if ( acc != null ) {
                 if ( acc.getSource().equals( "ncbi" ) ) {
                     ncbi_queries.add( query );

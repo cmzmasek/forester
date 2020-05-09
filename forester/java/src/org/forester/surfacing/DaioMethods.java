@@ -51,8 +51,8 @@ import org.forester.ws.seqdb.UniprotRetrieve;
 public final class DaioMethods {
 
     private final static boolean WRITE_RATIO                   = false;
-    private final static int     VERBOSITY                     = 1;
-    private final static int     MAX_IDS_TO_SEARCH_PER_SPECIES = 10;
+    private final static int     VERBOSITY                     = 2;
+    private final static int     MAX_IDS_TO_SEARCH_PER_SPECIES = 100;
     private final static String  NA_SYMBOL                     = "-";
     private final static Pattern MULTIPLE_NAME_PATTERN         = Pattern.compile( "(.+)\\s\\[(\\d+)\\]" );
     private final static Pattern ORF_NAME_PATTERN              = Pattern.compile( "orf\\s*(.+)",
@@ -139,7 +139,7 @@ public final class DaioMethods {
         return name;
     }
 
-    public final static String[] obtainName( final String da,
+    public final static uniprotNameResult obtainName( final String da,
                                              final SortedMap<String, SortedSet<String>> species_ids_map,
                                              final int max_ids_to_search_per_species,
                                              final int verbosity )
@@ -159,7 +159,8 @@ public final class DaioMethods {
                 }
             }
         }
-        return accessUniprot( ids_per_da, verbosity );
+        
+        return accessUniprotToObtainName( ids_per_da, verbosity );
     }
 
     public final static void outputSpeciesAndIdsPerDAs( final SortedMap<String, SortedMap<String, SortedSet<String>>> da_species_ids_map,
@@ -201,6 +202,7 @@ public final class DaioMethods {
             String name = null;
             String count = "";
             String out_of = "";
+            SortedSet<String> all_names =null;
             if ( VERBOSITY > 0 ) {
                 System.out.println();
                 System.out.println( "[" + counter + "/" + total + "] DA: " + da + ":" );
@@ -212,11 +214,12 @@ public final class DaioMethods {
                 }
             }
             if ( ( ForesterUtil.isEmptyTrimmed( name ) || name.equals( NA_SYMBOL ) ) && obtain_names_from_db ) {
-                final String[] res = obtainName( da, species_ids_map, MAX_IDS_TO_SEARCH_PER_SPECIES, VERBOSITY );
+                final uniprotNameResult res = obtainName( da, species_ids_map, MAX_IDS_TO_SEARCH_PER_SPECIES, VERBOSITY );
                 if ( res != null ) {
-                    name = res[ 0 ];
-                    count = res[ 1 ];
-                    out_of = res[ 2 ];
+                    name = res.getName();
+                    count = String.valueOf( res.getCount());
+                    out_of = String.valueOf(res.getOutOf());
+                    all_names = res.getAllNames();
                 }
                 else {
                     name = null;
@@ -260,6 +263,8 @@ public final class DaioMethods {
                 output_da_name_writer.write( count );
                 output_da_name_writer.write( "\t" );
                 output_da_name_writer.write( out_of );
+                output_da_name_writer.write( "\t" );
+                output_da_name_writer.write( all_names.toString() );
             }
             else {
                 output_da_name_writer.write( NA_SYMBOL );
@@ -267,6 +272,8 @@ public final class DaioMethods {
                 output_da_name_writer.write( "0" );
                 output_da_name_writer.write( "\t" );
                 output_da_name_writer.write( "0" );
+                output_da_name_writer.write( "\t" );
+                output_da_name_writer.write( "-" );
             }
             output_da_name_writer.write( SurfacingConstants.NL );
             output_da_name_writer.flush();
@@ -337,16 +344,18 @@ public final class DaioMethods {
         }
     }
 
-    private static String[] accessUniprot( final List<String> ids, final int verbosity ) throws IOException {
+    private static uniprotNameResult accessUniprotToObtainName( final List<String> ids, final int verbosity ) throws IOException {
         final UniprotRetrieve ret = new UniprotRetrieve( false );
         final SortedMap<String, UniprotData> m = ret.retrieve( ids );
-        final Iterator<Entry<String, UniprotData>> it = m.entrySet().iterator();
         final List<String> names = new ArrayList<>();
+        final Iterator<Entry<String, UniprotData>> it = m.entrySet().iterator();
+        final SortedSet<String> all_names = new TreeSet<String>();
         while ( it.hasNext() ) {
             final Map.Entry<String, UniprotData> pair = it.next();
             if ( verbosity > 1 ) {
                 System.out.println( "    " + pair.getKey() + " => " + pair.getValue().getProteinNames() );
             }
+            all_names.add( pair.getValue().getProteinNames() );
             String name = pair.getValue().getProteinNames();
             final int index = name.indexOf( " (" );
             if ( index > 0 ) {
@@ -364,8 +373,8 @@ public final class DaioMethods {
             if ( verbosity > 0 ) {
                 System.out.println( "  [" + opt.get().getValue() + "/" + names.size() + "] " + opt.get().getKey() );
             }
-            return new String[] { opt.get().getKey(), String.valueOf( opt.get().getValue() ),
-                    String.valueOf( names.size() ) };
+            
+            return new uniprotNameResult( opt.get().getKey(), opt.get().getValue(), names.size(), all_names );
         }
         else {
             if ( verbosity > 0 ) {

@@ -42,4 +42,5 @@ public class SurfacingConstants {
     static final boolean       PRINT_MORE_DOM_SIMILARITY_INFO = false;
     static final boolean       SECONDARY_FEATURES_ARE_SCOP    = true;
     static final String        SECONDARY_FEATURES_SCOP_LINK   = "http://scop.mrc-lmb.cam.ac.uk/scop/search.cgi?key=";
+    static final boolean UNIPROT_PRIORITY_FOR_ACCESSOR_PARSING = false;
 }

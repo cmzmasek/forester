@@ -34,7 +34,7 @@ import org.forester.util.SequenceAccessionTools;
 public final class MinimalDomainomeCalculator {
 
     final static private int MAX_FILENAME_LEGHTH = 200;
-
+    
     public final static void calc( final boolean use_domain_architectures,
                                    final Phylogeny tre,
                                    final int target_level,
@@ -525,16 +525,36 @@ public final class MinimalDomainomeCalculator {
                 throw new IllegalArgumentException( "species " + species + " is not unique" );
             }
             final List<Protein> proteins_per_species = protein_lists_per_species.get( species );
+            boolean fi = true;
             for( final Protein protein : proteins_per_species ) {
+                if (fi) {
+               // System.out.println( protein.getProteinId().getId() );
+                }
+                else {
+                    fi=false; //TODO remove?
+                }
                 if ( domain_id.equals( protein.toDomainArchitectureString( domain_separator, ie_cutoff ) ) ) {
                     final SortedSet<String> ids = species_ids_map.get( species.toString() );
                     String id = "";
-                    final Accession acc = SequenceAccessionTools
-                            .parseAccessorFromStringUniProtPriority( protein.getProteinId().getId() );
-                    if ( !( acc.getSource().equals( Accession.Source.UNIPROT.toString() )
-                            || acc.getSource().equals( SequenceAccessionTools.VIPR_SOURCE.toString() ) ) ) {
-                        continue;
+                    Accession acc;
+                  
+                    if (SurfacingConstants.UNIPROT_PRIORITY_FOR_ACCESSOR_PARSING) {
+                        acc = SequenceAccessionTools
+                                .parseAccessorFromString_UniProtPriority( protein.getProteinId().getId() );
                     }
+                    else {
+                        acc = SequenceAccessionTools
+                                .parseAccessorFromString_GenbankProteinPriority( protein.getProteinId().getId() );
+                    }
+                    
+                    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    // What is/was the reason for this: 
+                    //if ( !( acc.getSource().equals( Accession.Source.UNIPROT.toString() )
+                    //        || acc.getSource().equals( SequenceAccessionTools.VIPR_SOURCE.toString() ) ) ) {
+                    //    continue; 
+                    //}
+                    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                  
                     if ( acc == null ) {
                         id = protein.getProteinId().getId();
                         other_acc_counter++;

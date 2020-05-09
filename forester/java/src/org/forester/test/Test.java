@@ -134,8 +134,8 @@ public final class Test {
             + ForesterUtil.getFileSeparator() + "resources" + ForesterUtil.getFileSeparator();
     private final static String  PATH_TO_TEST_DATA                = System.getProperty( "user.dir" )
             + ForesterUtil.getFileSeparator() + "test_data" + ForesterUtil.getFileSeparator();
-    private final static boolean PERFORM_DB_TESTS                 = true;
-    private static final boolean PERFORM_WEB_TREE_ACCESS          = true;
+    private final static boolean PERFORM_DB_TESTS                 = false;
+    private static final boolean PERFORM_WEB_TREE_ACCESS          = false;
     private static final boolean PERFORM_WEB_TREE_ACCESS_TREEBASE = false;
     private static final String  PHYLOXML_LOCAL_XSD               = PATH_TO_RESOURCES + "phyloxml_schema/"
             + ForesterConstants.PHYLO_XML_VERSION + "/" + ForesterConstants.PHYLO_XML_XSD;
@@ -5639,6 +5639,17 @@ public final class Test {
             return false;
         }
         if ( SequenceAccessionTools.parseGenbankAccessorFromString( "ABCD12345" ) != null ) {
+            return false;
+        }
+        
+        final String s = "Alphacoronavirus_2|ADI80513.1|D9J1Z4|HM245925|WD1127|1998_01_01|Weasel|USA|NA|spike_protein";
+        final Accession acc = SequenceAccessionTools.parseAccessorFromString_GenbankProteinPriority( s );
+        if ( !acc.getValue().equals( "ADI80513.1" ) ) {
+            return false;
+        }
+        final String s2 = " Severe_acute_respiratory_syndrome_related_coronavirus|NA|MT325582|QIZ15801.1|SARS_CoV_2/human/USA/MA_0020/2020|2020_03_05|Human|USA|S|surface_glycoprotein";
+        final Accession acc2 = SequenceAccessionTools.parseAccessorFromString_GenbankProteinPriority( s2 );
+        if ( !acc2.getValue().equals( "QIZ15801.1" ) ) {
             return false;
         }
         return true;

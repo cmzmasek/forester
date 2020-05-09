@@ -47,6 +47,8 @@ public final class SequenceAccessionTools {
             .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]{2}\\d{6}(?:\\.\\d+)?)(?:[^a-zA-Z0-9]|\\Z)" );
     public final static Pattern  GENBANK_PROT_PATTERN        = Pattern
             .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]{3}\\d{5}(?:\\.\\d+)?)(?:[^a-zA-Z0-9]|\\Z)" );
+    public final static Pattern  GENBANK_PROT_PATTERN_2        = Pattern
+            .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]{3}\\d{5}(?:\\.\\d+))(?:[^a-zA-Z0-9]|\\Z)" );
     public final static Pattern  GI_PATTERN                  = Pattern
             .compile( "(?:\\b|_)(?:GI|gi)[|_=:](\\d+)(?:\\b|_)" );
     public final static String   UNIPROT_KB_BASE_PATTERN_STR = "((?:[OPQ][0-9][A-Z0-9]{3}[0-9])|(?:[A-NR-Z][0-9]([A-Z][A-Z0-9]{2}[0-9]){1,2}))";
@@ -254,7 +256,43 @@ public final class SequenceAccessionTools {
     }
 
     
-    public final static Accession parseAccessorFromStringUniProtPriority( final String s ) {
+    public final static Accession parseAccessorFromString_GenbankProteinPriority( final String s ) {
+        if ( !ForesterUtil.isEmpty( s ) ) {
+           
+            String v = parseGenbankProteinAccessorFromString( s );
+            if ( !ForesterUtil.isEmpty( v ) ) {
+                return new Accession( v, Source.NCBI );
+            }
+            v = parseRefSeqAccessorFromString( s );
+            if ( !ForesterUtil.isEmpty( v ) ) {
+                return new Accession( v, Source.REFSEQ );
+            }
+            v = parseGInumberFromString( s );
+            if ( !ForesterUtil.isEmpty( v ) ) {
+                return new Accession( v, Source.GI );
+            }
+            v = parseEnsemlAccessorFromString( s );
+            if ( !ForesterUtil.isEmpty( v ) ) {
+                return new Accession( v, Source.ENSEMBL );
+            }
+            v = parseUniProtAccessorFromString( s );
+            if ( !ForesterUtil.isEmpty( v ) ) {
+                return new Accession( v, Source.UNIPROT );
+            }
+            v = parseGenbankAccessorFromString( s );
+            if ( !ForesterUtil.isEmpty( v ) ) {
+                return new Accession( v, Source.NCBI );
+            }
+            v =  parseViprFromString( s );
+            if ( !ForesterUtil.isEmpty( v ) ) {
+                return new Accession( v, SequenceAccessionTools.VIPR_SOURCE  );
+            }
+        }
+        return null;
+    }
+
+    
+    public final static Accession parseAccessorFromString_UniProtPriority( final String s ) {
         if ( !ForesterUtil.isEmpty( s ) ) {
            
             String v = parseUniProtAccessorFromString( s );
@@ -285,17 +323,22 @@ public final class SequenceAccessionTools {
         return null;
     }
     public final static String parseGenbankAccessorFromString( final String s ) {
-        Matcher m = GENBANK_NUC_PATTERN_1.matcher( s );
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // 2020-05-08:
+        // Changed order: before it was GENBANK_NUC_PATTERN_1 first, and GENBANK_PROT_PATTERN last.
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        
+        Matcher m = GENBANK_PROT_PATTERN.matcher( s );
         if ( m.lookingAt() ) {
             return m.group( 1 );
         }
         else {
-            m = GENBANK_NUC_PATTERN_2.matcher( s );
+            m = GENBANK_NUC_PATTERN_1.matcher( s );
             if ( m.lookingAt() ) {
                 return m.group( 1 );
             }
             else {
-                m = GENBANK_PROT_PATTERN.matcher( s );
+                m = GENBANK_NUC_PATTERN_2.matcher( s );
                 if ( m.lookingAt() ) {
                     return m.group( 1 );
                 }
@@ -305,7 +348,8 @@ public final class SequenceAccessionTools {
             }
         }
     }
-
+    
+ 
     public final static String parseGenbankProteinAccessorFromString( final String s ) {
         final Matcher m = GENBANK_PROT_PATTERN.matcher( s );
         if ( m.lookingAt() ) {
@@ -363,4 +407,7 @@ public final class SequenceAccessionTools {
         }
         return null;
     }
+    
+    
+    
 }
