@@ -26,7 +26,7 @@
 
 package org.forester.surfacing;
 
-public class MappingResults {
+final class MappingResults {
 
     private String _description;
     private int    _sum_of_failures;

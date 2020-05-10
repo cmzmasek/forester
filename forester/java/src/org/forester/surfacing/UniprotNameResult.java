@@ -3,14 +3,13 @@ package org.forester.surfacing;
 
 import java.util.SortedSet;
 
-final class uniprotNameResult {
+final class UniprotNameResult {
 
     final String            _name;
     final Long              _count;
     final int               _out_of;
     final SortedSet<String> _all_names;
-    
-    public uniprotNameResult( final String name,
+    public UniprotNameResult( final String name,
                               final Long count,
                               final int out_of,
                               final SortedSet<String> all_names ) {

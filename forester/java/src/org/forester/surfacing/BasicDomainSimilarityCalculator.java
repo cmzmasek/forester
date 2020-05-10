@@ -40,7 +40,7 @@ import org.forester.util.BasicDescriptiveStatistics;
 import org.forester.util.DescriptiveStatistics;
 import org.forester.util.ForesterUtil;
 
-public class BasicDomainSimilarityCalculator implements DomainSimilarityCalculator {
+final class BasicDomainSimilarityCalculator implements DomainSimilarityCalculator {
 
     final DomainSimilarity.DomainSimilaritySortField _sort;
     private final boolean                            _calc_similarity_score;

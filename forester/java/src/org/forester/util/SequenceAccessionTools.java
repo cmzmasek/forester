@@ -47,7 +47,7 @@ public final class SequenceAccessionTools {
             .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]{2}\\d{6}(?:\\.\\d+)?)(?:[^a-zA-Z0-9]|\\Z)" );
     public final static Pattern  GENBANK_PROT_PATTERN        = Pattern
             .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]{3}\\d{5}(?:\\.\\d+)?)(?:[^a-zA-Z0-9]|\\Z)" );
-    public final static Pattern  GENBANK_PROT_PATTERN_2        = Pattern
+    public final static Pattern  GENBANK_PROT_PATTERN_2      = Pattern
             .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]{3}\\d{5}(?:\\.\\d+))(?:[^a-zA-Z0-9]|\\Z)" );
     public final static Pattern  GI_PATTERN                  = Pattern
             .compile( "(?:\\b|_)(?:GI|gi)[|_=:](\\d+)(?:\\b|_)" );
@@ -64,11 +64,8 @@ public final class SequenceAccessionTools {
     // underscore character ('_'). For example, a RefSeq protein accession is NP_015325.
     private final static Pattern REFSEQ_PATTERN              = Pattern
             .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]{2}_\\d{6,}(\\.\\d)?)(?:[^a-zA-Z0-9]|\\Z)" );
-    private final static Pattern VIPR_PATTERN              = Pattern
-            .compile( "\\|(VIPR_.+?)\\|" );
-    
-    public final static String VIPR_SOURCE = "ViPR";
-
+    private final static Pattern VIPR_PATTERN                = Pattern.compile( "\\|(VIPR_.+?)\\|" );
+    public final static String   VIPR_SOURCE                 = "ViPR";
     private SequenceAccessionTools() {
         // Hiding the constructor.
     }
@@ -226,7 +223,6 @@ public final class SequenceAccessionTools {
 
     public final static Accession parseAccessorFromString( final String s ) {
         if ( !ForesterUtil.isEmpty( s ) ) {
-           
             String v = parseGenbankAccessorFromString( s );
             if ( !ForesterUtil.isEmpty( v ) ) {
                 return new Accession( v, Source.NCBI );
@@ -247,18 +243,16 @@ public final class SequenceAccessionTools {
             if ( !ForesterUtil.isEmpty( v ) ) {
                 return new Accession( v, Source.UNIPROT );
             }
-            v =  parseViprFromString( s );
+            v = parseViprFromString( s );
             if ( !ForesterUtil.isEmpty( v ) ) {
-                return new Accession( v, SequenceAccessionTools.VIPR_SOURCE  );
+                return new Accession( v, SequenceAccessionTools.VIPR_SOURCE );
             }
         }
         return null;
     }
 
-    
     public final static Accession parseAccessorFromString_GenbankProteinPriority( final String s ) {
         if ( !ForesterUtil.isEmpty( s ) ) {
-           
             String v = parseGenbankProteinAccessorFromString( s );
             if ( !ForesterUtil.isEmpty( v ) ) {
                 return new Accession( v, Source.NCBI );
@@ -283,25 +277,23 @@ public final class SequenceAccessionTools {
             if ( !ForesterUtil.isEmpty( v ) ) {
                 return new Accession( v, Source.NCBI );
             }
-            v =  parseViprFromString( s );
+            v = parseViprFromString( s );
             if ( !ForesterUtil.isEmpty( v ) ) {
-                return new Accession( v, SequenceAccessionTools.VIPR_SOURCE  );
+                return new Accession( v, SequenceAccessionTools.VIPR_SOURCE );
             }
         }
         return null;
     }
 
-    
     public final static Accession parseAccessorFromString_UniProtPriority( final String s ) {
         if ( !ForesterUtil.isEmpty( s ) ) {
-           
             String v = parseUniProtAccessorFromString( s );
             if ( !ForesterUtil.isEmpty( v ) ) {
                 return new Accession( v, Source.UNIPROT );
             }
-            v =  parseViprFromString( s );
+            v = parseViprFromString( s );
             if ( !ForesterUtil.isEmpty( v ) ) {
-                return new Accession( v, SequenceAccessionTools.VIPR_SOURCE  );
+                return new Accession( v, SequenceAccessionTools.VIPR_SOURCE );
             }
             v = parseRefSeqAccessorFromString( s );
             if ( !ForesterUtil.isEmpty( v ) ) {
@@ -322,12 +314,12 @@ public final class SequenceAccessionTools {
         }
         return null;
     }
+
     public final static String parseGenbankAccessorFromString( final String s ) {
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         // 2020-05-08:
         // Changed order: before it was GENBANK_NUC_PATTERN_1 first, and GENBANK_PROT_PATTERN last.
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        
         Matcher m = GENBANK_PROT_PATTERN.matcher( s );
         if ( m.lookingAt() ) {
             return m.group( 1 );
@@ -348,8 +340,7 @@ public final class SequenceAccessionTools {
             }
         }
     }
-    
- 
+
     public final static String parseGenbankProteinAccessorFromString( final String s ) {
         final Matcher m = GENBANK_PROT_PATTERN.matcher( s );
         if ( m.lookingAt() ) {
@@ -383,7 +374,7 @@ public final class SequenceAccessionTools {
         }
         return null;
     }
-    
+
     public final static String parseViprFromString( final String s ) {
         final Matcher m = VIPR_PATTERN.matcher( s );
         if ( m.find() ) {
@@ -407,7 +398,4 @@ public final class SequenceAccessionTools {
         }
         return null;
     }
-    
-    
-    
 }

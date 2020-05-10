@@ -27,7 +27,7 @@
 
 package org.forester.surfacing;
 
-public interface PairwiseDomainSimilarityCalculator {
+interface PairwiseDomainSimilarityCalculator {
 
     public PairwiseDomainSimilarity calculateSimilarity( final CombinableDomains domains_1,
                                                          final CombinableDomains domains_2 );

@@ -17,7 +17,6 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.forester.application.surfacing;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
@@ -31,10 +30,9 @@ import org.forester.surfacing.SurfacingUtil.DomainComparator;
 import org.forester.util.ForesterUtil;
 import org.forester.util.SequenceAccessionTools;
 
-public final class MinimalDomainomeCalculator {
+final class MinimalDomainomeCalculator {
 
     final static private int MAX_FILENAME_LEGHTH = 200;
-    
     public final static void calc( final boolean use_domain_architectures,
                                    final Phylogeny tre,
                                    final int target_level,
@@ -264,8 +262,10 @@ public final class MinimalDomainomeCalculator {
         out.close();
         out_table.flush();
         out_table.close();
-        ForesterUtil.programMessage( surfacing.PRG_NAME, "Wrote minimal DAome data to           : " + outfile );
-        ForesterUtil.programMessage( surfacing.PRG_NAME, "Wrote minimal DAome data to (as table): " + outfile_table );
+        ForesterUtil.programMessage( SurfacingConstants.PRG_NAME,
+                                     "Wrote minimal DAome data to           : " + outfile );
+        ForesterUtil.programMessage( SurfacingConstants.PRG_NAME,
+                                     "Wrote minimal DAome data to (as table): " + outfile_table );
         if ( write_protein_files ) {
             final String protdirname;
             final String a;
@@ -293,10 +293,11 @@ public final class MinimalDomainomeCalculator {
                 if ( feat_for_fn.length() > MAX_FILENAME_LEGHTH ) {
                     feat_for_fn = feat_for_fn.substring( 0, MAX_FILENAME_LEGHTH );
                 }
-                File extract_outfile = new File( dir + feat_for_fn + a + surfacing.SEQ_EXTRACT_SUFFIX );
+                File extract_outfile = new File( dir + feat_for_fn + a + SurfacingConstants.SEQ_EXTRACT_SUFFIX );
                 int suffix = 0;
                 while ( extract_outfile.exists() ) {
-                    extract_outfile = new File( dir + feat_for_fn + a + suffix + surfacing.SEQ_EXTRACT_SUFFIX );
+                    extract_outfile = new File( dir + feat_for_fn + a + suffix
+                            + SurfacingConstants.SEQ_EXTRACT_SUFFIX );
                     ++suffix;
                 }
                 SurfacingUtil.checkForOutputFileWriteability( extract_outfile );
@@ -328,9 +329,10 @@ public final class MinimalDomainomeCalculator {
                 proteins_file_writer.close();
             }
             if ( use_domain_architectures && write_da_ids_names_maps ) {
-                final File da_species_ids_map_outfile = new File( outfile_base + surfacing.DA_SPECIES_IDS_MAP_NAME );
-                final File da_name_outfile = new File( outfile_base + surfacing.DA_NAME_MAP_NAME );
-                final File suffix_da_name_outfile = new File( outfile_base + surfacing.SUFFIX_DA_NAME_NAME );
+                final File da_species_ids_map_outfile = new File( outfile_base
+                        + SurfacingConstants.DA_SPECIES_IDS_MAP_NAME );
+                final File da_name_outfile = new File( outfile_base + SurfacingConstants.DA_NAME_MAP_NAME );
+                final File suffix_da_name_outfile = new File( outfile_base + SurfacingConstants.SUFFIX_DA_NAME_NAME );
                 final BufferedWriter da_species_ids_map_writer = new BufferedWriter( new FileWriter( da_species_ids_map_outfile ) );
                 final BufferedWriter output_da_name_writer = new BufferedWriter( new FileWriter( da_name_outfile ) );
                 final BufferedWriter suffix_da_name_writer = new BufferedWriter( new FileWriter( suffix_da_name_outfile ) );
@@ -347,10 +349,10 @@ public final class MinimalDomainomeCalculator {
                 da_species_ids_map_writer.close();
                 suffix_da_name_writer.flush();
                 suffix_da_name_writer.close();
-                ForesterUtil.programMessage( surfacing.PRG_NAME,
+                ForesterUtil.programMessage( SurfacingConstants.PRG_NAME,
                                              "Wrote DA-species-ids map to           : " + da_species_ids_map_outfile );
             }
-            ForesterUtil.programMessage( surfacing.PRG_NAME,
+            ForesterUtil.programMessage( SurfacingConstants.PRG_NAME,
                                          "Wrote " + total + " individual " + b + " from a total of "
                                                  + all_features.size() + " into: " + dir );
         }
@@ -525,20 +527,14 @@ public final class MinimalDomainomeCalculator {
                 throw new IllegalArgumentException( "species " + species + " is not unique" );
             }
             final List<Protein> proteins_per_species = protein_lists_per_species.get( species );
-            boolean fi = true;
+           
             for( final Protein protein : proteins_per_species ) {
-                if (fi) {
-               // System.out.println( protein.getProteinId().getId() );
-                }
-                else {
-                    fi=false; //TODO remove?
-                }
+              
                 if ( domain_id.equals( protein.toDomainArchitectureString( domain_separator, ie_cutoff ) ) ) {
                     final SortedSet<String> ids = species_ids_map.get( species.toString() );
                     String id = "";
                     Accession acc;
-                  
-                    if (SurfacingConstants.UNIPROT_PRIORITY_FOR_ACCESSOR_PARSING) {
+                    if ( GlobalOptions.isUniprotPriorityForAccessorParsing() ) {
                         acc = SequenceAccessionTools
                                 .parseAccessorFromString_UniProtPriority( protein.getProteinId().getId() );
                     }
@@ -546,15 +542,13 @@ public final class MinimalDomainomeCalculator {
                         acc = SequenceAccessionTools
                                 .parseAccessorFromString_GenbankProteinPriority( protein.getProteinId().getId() );
                     }
-                    
                     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                    // What is/was the reason for this: 
+                    // What is/was the reason for this:
                     //if ( !( acc.getSource().equals( Accession.Source.UNIPROT.toString() )
                     //        || acc.getSource().equals( SequenceAccessionTools.VIPR_SOURCE.toString() ) ) ) {
-                    //    continue; 
+                    //    continue;
                     //}
                     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                  
                     if ( acc == null ) {
                         id = protein.getProteinId().getId();
                         other_acc_counter++;
@@ -593,16 +587,18 @@ public final class MinimalDomainomeCalculator {
                 }
             }
         }
-        System.out.println( "uniprot : " + uniprot_acc_counter );
-        System.out.println( "vipr    : " + vipr_acc_counter );
-        System.out.println( "ref seq : " + ref_seq_acc_counter );
-        System.out.println( "gi acc  : " + gi_acc_counter );
-        System.out.println( "ensembl : " + ensembl_acc_counter );
-        System.out.println( "embl    : " + embl_counter );
-        System.out.println( "genbank : " + genbank_acc_counter );
-        System.out.println( "other   : " + other_acc_counter );
-        System.out.println( "multiple: " + multiple_acc_counter );
-        System.out.println();
+        if ( GlobalOptions.getVerbosity() > 1 ) {
+            System.out.println( "uniprot : " + uniprot_acc_counter );
+            System.out.println( "vipr    : " + vipr_acc_counter );
+            System.out.println( "ref seq : " + ref_seq_acc_counter );
+            System.out.println( "gi acc  : " + gi_acc_counter );
+            System.out.println( "ensembl : " + ensembl_acc_counter );
+            System.out.println( "embl    : " + embl_counter );
+            System.out.println( "genbank : " + genbank_acc_counter );
+            System.out.println( "other   : " + other_acc_counter );
+            System.out.println( "multiple: " + multiple_acc_counter );
+            System.out.println();
+        }
         return species_ids_map;
     }
     //TODO make into test

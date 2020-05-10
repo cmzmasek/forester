@@ -35,10 +35,11 @@ import java.util.TreeSet;
 
 import org.forester.phylogeny.data.Accession;
 import org.forester.phylogeny.data.Accession.Source;
+import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
 import org.forester.util.SequenceAccessionTools;
 
-class PrintableSpeciesSpecificDcData {
+final class PrintableSpeciesSpecificDcData {
 
     final SortedMap<String, Integer> _combinable_domain_id_to_count_map;
     final SortedSet<String>          _key_domain_proteins;
@@ -125,7 +126,7 @@ class PrintableSpeciesSpecificDcData {
             for( final String domain_id : ids ) {
                 sb.append( " " );
                 if ( html ) {
-                    sb.append( "<a href=\"" + SurfacingConstants.PFAM_FAMILY_ID_LINK + domain_id + "\">" + domain_id
+                    sb.append( "<a href=\"" + ForesterConstants.PFAM_FAMILY_ID_LINK + domain_id + "\">" + domain_id
                             + "</a>" );
                 }
                 else {

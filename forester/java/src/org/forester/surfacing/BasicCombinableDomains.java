@@ -38,7 +38,7 @@ import org.forester.protein.BinaryDomainCombination;
 import org.forester.species.Species;
 import org.forester.util.ForesterUtil;
 
-public class BasicCombinableDomains implements CombinableDomains {
+class BasicCombinableDomains implements CombinableDomains {
 
     final private TreeMap<String, Integer> _combining_domains;
     final private String                   _key_domain;

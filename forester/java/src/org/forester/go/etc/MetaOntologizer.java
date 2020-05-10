@@ -53,8 +53,7 @@ import org.forester.go.OBOparser;
 import org.forester.go.PfamToGoMapping;
 import org.forester.species.BasicSpecies;
 import org.forester.species.Species;
-import org.forester.surfacing.SurfacingConstants;
-import org.forester.surfacing.SurfacingUtil;
+import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
 
 public class MetaOntologizer {
@@ -99,7 +98,7 @@ public class MetaOntologizer {
                     }
                     super_ids.add( go_id );
                     if ( super_ids.contains( query_go_id ) ) {
-                        sb.append( "[<a href=\"" + SurfacingConstants.PFAM_FAMILY_ID_LINK + domain_id + "\">"
+                        sb.append( "[<a href=\"" + ForesterConstants.PFAM_FAMILY_ID_LINK + domain_id + "\">"
                                 + domain_id + "</a>] " );
                         found_domain_ids.add( domain_id );
                         continue D;
@@ -403,7 +402,7 @@ public class MetaOntologizer {
         if ( domains != null ) {
             for( final String domain : domains ) {
                 if ( !domain_ids_with_go_annot.contains( domain ) ) {
-                    writer.write( "[<a class=\"new_type\" href=\"" + SurfacingConstants.PFAM_FAMILY_ID_LINK + domain
+                    writer.write( "[<a class=\"new_type\" href=\"" + ForesterConstants.PFAM_FAMILY_ID_LINK + domain
                                   + "\">" + domain + "</a>] " );
                 }
             }
@@ -518,12 +517,36 @@ public class MetaOntologizer {
         writer.write( "<tr>" );
         writer.write( "<td><h3>" );
         writer.write( species );
-        SurfacingUtil.writeTaxonomyLinks( writer, species, null );
+        writeTaxonomyLinks( writer, species, null );
         writer.write( "</h3></td>" );
         writer.write( "</tr>" );
         writer.write( ForesterUtil.LINE_SEPARATOR );
     }
 
+    
+    private static void writeTaxonomyLinks( final Writer writer,
+                                           final String species,
+                                           final Map<String, Integer> tax_code_to_id_map )
+            throws IOException {
+        if ( ( species.length() > 1 ) && ( species.indexOf( '_' ) < 1 ) ) {
+            writer.write( " [" );
+            if ( ( tax_code_to_id_map != null ) && tax_code_to_id_map.containsKey( species ) ) {
+                writer.write( "<a href=\"" + ForesterConstants.UNIPROT_TAXONOMY_ID_LINK
+                        + tax_code_to_id_map.get( species ) + "\" target=\"taxonomy_window\">uniprot</a>" );
+            }
+            else {
+                writer.write( "<a href=\"" + ForesterConstants.EOL_LINK + species
+                        + "\" target=\"taxonomy_window\">eol</a>" );
+                writer.write( "|" );
+                writer.write( "<a href=\"" + ForesterConstants.GOOGLE_SCHOLAR_SEARCH + species
+                        + "\" target=\"taxonomy_window\">scholar</a>" );
+                writer.write( "|" );
+                writer.write( "<a href=\"" + ForesterConstants.GOOGLE_WEB_SEARCH_LINK + species
+                        + "\" target=\"taxonomy_window\">google</a>" );
+            }
+            writer.write( "]" );
+        }
+    }
     private static void writeLabelsToTabWriter( final Writer writer ) throws IOException {
         writer.write( "#species" );
         writer.write( "\t" );
@@ -572,7 +595,7 @@ public class MetaOntologizer {
         writer.write( go_term.getName() );
         writer.write( "</font>" );
         writer.write( "</td><td>" );
-        writer.write( "<a href=\"" + SurfacingConstants.GO_LINK + ontologizer_result.getGoId().getId()
+        writer.write( "<a href=\"" + ForesterConstants.GO_LINK + ontologizer_result.getGoId().getId()
                       + "\" target=\"amigo_window\">" + ontologizer_result.getGoId().getId() + "</a>" );
         writer.write( "</td><td>" );
         writer.write( "<font color=\"#" + ForesterUtil.colorToHex( p_adj_color ) + "\">" );

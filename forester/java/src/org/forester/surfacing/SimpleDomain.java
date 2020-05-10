@@ -34,7 +34,7 @@ import org.forester.util.ForesterUtil;
  * A limited implementation of Domain. Its intended use is for when only a
  * domain identifier is needed. Note intended for general use.
  */
-public class SimpleDomain implements Domain {
+final class SimpleDomain implements Domain {
 
     final private short _id;
 

@@ -39,7 +39,7 @@ import org.forester.util.BasicDescriptiveStatistics;
 import org.forester.util.DescriptiveStatistics;
 import org.forester.util.ForesterUtil;
 
-public class DomainLengthsTable {
+final class DomainLengthsTable {
 
     private final static DecimalFormat     DF = new DecimalFormat( "#.0" );
     final SortedMap<String, DomainLengths> _domain_lengths;

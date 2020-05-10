@@ -24,7 +24,7 @@ import org.forester.util.BasicDescriptiveStatistics;
 import org.forester.util.DescriptiveStatistics;
 import org.forester.util.ForesterUtil;
 
-public class BasicGenomeWideCombinableDomains implements GenomeWideCombinableDomains {
+final class BasicGenomeWideCombinableDomains implements GenomeWideCombinableDomains {
 
     private static final Comparator<CombinableDomains> DESCENDING_COMBINATIONS_COUNT_ORDER        = new Comparator<CombinableDomains>() {
 

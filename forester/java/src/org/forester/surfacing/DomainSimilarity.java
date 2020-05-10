@@ -42,9 +42,10 @@ import java.util.TreeSet;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.species.Species;
 import org.forester.surfacing.DomainSimilarityCalculator.Detailedness;
+import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
 
-public class DomainSimilarity implements Comparable<DomainSimilarity> {
+final class DomainSimilarity implements Comparable<DomainSimilarity> {
 
     final public static String                                       SPECIES_SEPARATOR          = "  ";
     final private static int                                         EQUAL                      = 0;
@@ -343,7 +344,7 @@ public class DomainSimilarity implements Comparable<DomainSimilarity> {
                 && ( ( tax_code_to_id_map != null ) && tax_code_to_id_map.containsKey( tax_code ) ) ) {
             if ( !ForesterUtil.isEmpty( hex ) ) {
                 sb.append( "<a href=\"" );
-                sb.append( SurfacingConstants.UNIPROT_TAXONOMY_ID_LINK );
+                sb.append( ForesterConstants.UNIPROT_TAXONOMY_ID_LINK );
                 sb.append( tax_code_to_id_map.get( tax_code ) );
                 sb.append( "\" target=\"tw\"><span style=\"color:" );
                 sb.append( hex );
@@ -353,7 +354,7 @@ public class DomainSimilarity implements Comparable<DomainSimilarity> {
             }
             else {
                 sb.append( "<a href=\"" );
-                sb.append( SurfacingConstants.UNIPROT_TAXONOMY_ID_LINK );
+                sb.append( ForesterConstants.UNIPROT_TAXONOMY_ID_LINK );
                 sb.append( tax_code_to_id_map.get( tax_code ) );
                 sb.append( "\" target=\"tw\">" );
                 sb.append( tax_code );
@@ -390,7 +391,7 @@ public class DomainSimilarity implements Comparable<DomainSimilarity> {
             }
         }
         for( final Map.Entry<String, SortedSet<String>> e : m.entrySet() ) {
-            sb.append( "<a href=\"" + SurfacingConstants.PFAM_FAMILY_ID_LINK + e.getKey() + "\">" + e.getKey()
+            sb.append( "<a href=\"" + ForesterConstants.PFAM_FAMILY_ID_LINK + e.getKey() + "\">" + e.getKey()
                     + "</a>" );
             sb.append( " " );
             sb.append( "<span style=\"font-size:7px\">" );
@@ -490,7 +491,7 @@ public class DomainSimilarity implements Comparable<DomainSimilarity> {
             }
             sb.append( "<tr>" );
             sb.append( "<td>" );
-            sb.append( "<a href=\"" + SurfacingConstants.PFAM_FAMILY_ID_LINK + domain_to_species_set.getKey() + "\">"
+            sb.append( "<a href=\"" + ForesterConstants.PFAM_FAMILY_ID_LINK + domain_to_species_set.getKey() + "\">"
                     + domain_to_species_set.getKey() + "</a>" );
             sb.append( " " );
             sb.append( "</td>" );
@@ -546,13 +547,13 @@ public class DomainSimilarity implements Comparable<DomainSimilarity> {
         sb.append( "<tr>" );
         sb.append( "<td>" );
         sb.append( "<b>" );
-        sb.append( "<a href=\"" + SurfacingConstants.PFAM_FAMILY_ID_LINK + getDomainId() + "\" target=\"pfam_window\">"
+        sb.append( "<a href=\"" + ForesterConstants.PFAM_FAMILY_ID_LINK + getDomainId() + "\" target=\"pfam_window\">"
                 + getDomainId() + "</a>" );
         sb.append( "</b>" );
         sb.append( "<a name=\"" + getDomainId() + "\">" );
         sb.append( "</td>" );
         sb.append( "<td>" );
-        sb.append( "<a href=\"" + SurfacingConstants.GOOGLE_SCHOLAR_SEARCH + getDomainId()
+        sb.append( "<a href=\"" + ForesterConstants.GOOGLE_SCHOLAR_SEARCH + getDomainId()
                 + "\" target=\"gs_window\">gs</a>" );
         sb.append( "</td>" );
         if ( getMaximalSimilarityScore() > 0 ) {

@@ -30,7 +30,7 @@ package org.forester.surfacing;
 import java.util.List;
 import java.util.SortedSet;
 
-public interface DomainSimilarityCalculator {
+interface DomainSimilarityCalculator {
 
     public SortedSet<DomainSimilarity> calculateSimilarities( final PairwiseDomainSimilarityCalculator pairwise_calculator,
                                                               final List<GenomeWideCombinableDomains> cdc_list,

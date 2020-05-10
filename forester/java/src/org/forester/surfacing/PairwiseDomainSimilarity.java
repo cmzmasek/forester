@@ -26,7 +26,7 @@
 
 package org.forester.surfacing;
 
-public interface PairwiseDomainSimilarity {
+interface PairwiseDomainSimilarity {
 
     /**
      * This should return the -- not normalized, not absolute -- difference in

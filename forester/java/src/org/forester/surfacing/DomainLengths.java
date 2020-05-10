@@ -35,7 +35,7 @@ import org.forester.species.Species;
 import org.forester.util.BasicDescriptiveStatistics;
 import org.forester.util.DescriptiveStatistics;
 
-public class DomainLengths {
+final class DomainLengths {
 
     final String                                    _domain_id;
     final SortedMap<Species, DescriptiveStatistics> _length_statistics;

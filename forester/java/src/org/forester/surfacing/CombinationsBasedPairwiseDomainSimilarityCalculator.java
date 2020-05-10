@@ -29,7 +29,7 @@ package org.forester.surfacing;
 
 import java.util.List;
 
-public class CombinationsBasedPairwiseDomainSimilarityCalculator implements PairwiseDomainSimilarityCalculator {
+final class CombinationsBasedPairwiseDomainSimilarityCalculator implements PairwiseDomainSimilarityCalculator {
 
     @Override
     public PairwiseDomainSimilarity calculateSimilarity( final CombinableDomains domains_1,

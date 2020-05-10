@@ -33,7 +33,7 @@ import org.forester.protein.BasicDomain;
 import org.forester.protein.BinaryDomainCombination;
 import org.forester.util.ForesterUtil;
 
-public class BasicBinaryDomainCombination implements BinaryDomainCombination {
+class BasicBinaryDomainCombination implements BinaryDomainCombination {
 
     final static boolean                                            VERBOSE = false;
     final private static Map<Integer, BasicBinaryDomainCombination> DC_POOL = new HashMap<Integer, BasicBinaryDomainCombination>();

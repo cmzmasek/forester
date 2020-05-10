@@ -27,7 +27,7 @@
 
 package org.forester.surfacing;
 
-public class CountsBasedPairwiseDomainSimilarity implements PairwiseDomainSimilarity {
+final class CountsBasedPairwiseDomainSimilarity implements PairwiseDomainSimilarity {
 
     private final short _copy_number_difference;
     private final short _counts_sum;

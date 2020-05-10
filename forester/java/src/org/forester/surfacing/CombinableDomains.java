@@ -33,7 +33,7 @@ import java.util.SortedMap;
 import org.forester.protein.BinaryDomainCombination;
 import org.forester.species.Species;
 
-public interface CombinableDomains {
+interface CombinableDomains {
 
     /**
      * To add a new combinable domain.

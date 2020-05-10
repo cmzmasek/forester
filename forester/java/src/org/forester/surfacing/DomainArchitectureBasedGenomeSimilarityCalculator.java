@@ -31,7 +31,7 @@ import java.util.Set;
 
 import org.forester.protein.BinaryDomainCombination;
 
-public class DomainArchitectureBasedGenomeSimilarityCalculator {
+final class DomainArchitectureBasedGenomeSimilarityCalculator {
 
     public static final double                MAX_SIMILARITY_SCORE = 1.0;
     public static final double                MIN_SIMILARITY_SCORE = 0.0;

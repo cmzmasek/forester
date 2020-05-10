@@ -32,7 +32,7 @@ import java.util.List;
 import org.forester.protein.BinaryDomainCombination;
 import org.forester.species.Species;
 
-public class DirectedCombinableDomains extends BasicCombinableDomains {
+final class DirectedCombinableDomains extends BasicCombinableDomains {
 
     public DirectedCombinableDomains( final String n_terminal_key_domain, final Species species ) {
         super( n_terminal_key_domain, species );

@@ -42,7 +42,6 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.forester.application.surfacing;
 import org.forester.go.GoId;
 import org.forester.go.GoTerm;
 import org.forester.protein.BinaryDomainCombination;
@@ -50,13 +49,14 @@ import org.forester.protein.Protein;
 import org.forester.species.Species;
 import org.forester.util.BasicDescriptiveStatistics;
 import org.forester.util.DescriptiveStatistics;
+import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
 
 /*
  * Poorly designed static class which essential has one method:
  * calculateCopyNumberDifferences.
  */
-public final class DomainCountsDifferenceUtil {
+final class DomainCountsDifferenceUtil {
 
     private static final COPY_CALCULATION_MODE COPY_CALC_MODE_FOR_HIGH_COPY_BASE_SPECIES   = COPY_CALCULATION_MODE.MIN;
     private static final COPY_CALCULATION_MODE COPY_CALC_MODE_FOR_HIGH_COPY_TARGET_SPECIES = COPY_CALCULATION_MODE.MIN;
@@ -555,8 +555,8 @@ public final class DomainCountsDifferenceUtil {
                         ++not_total_absense_counter;
                     }
                     ++counter;
-                    html_writer.write( "<tr><td><a href=\"" + SurfacingConstants.PFAM_FAMILY_ID_LINK + bdc.getId0()
-                                       + "\">" + bdc.getId0() + "</a> = <a href=\"" + SurfacingConstants.PFAM_FAMILY_ID_LINK
+                    html_writer.write( "<tr><td><a href=\"" + ForesterConstants.PFAM_FAMILY_ID_LINK + bdc.getId0()
+                                       + "\">" + bdc.getId0() + "</a> = <a href=\"" + ForesterConstants.PFAM_FAMILY_ID_LINK
                                        + bdc.getId1() + "\">" + bdc.getId1() + "</a>" );
                     html_writer.write( "</td><td>" );
                     html_writer.write( "<table>" );
@@ -686,7 +686,7 @@ public final class DomainCountsDifferenceUtil {
                     }
                     plain_writer.write( domain_id );
                     plain_writer.write( SurfacingConstants.NL );
-                    html_writer.write( "<tr><td><a href=\"" + SurfacingConstants.PFAM_FAMILY_ID_LINK + domain_id
+                    html_writer.write( "<tr><td><a href=\"" + ForesterConstants.PFAM_FAMILY_ID_LINK + domain_id
                                        + "\">" + domain_id + "</a></td><td>" );
                     html_writer.write( addGoInformation( domain_id, domain_id_to_go_ids_map, go_id_to_term_map )
                                        .toString() );
@@ -820,7 +820,7 @@ public final class DomainCountsDifferenceUtil {
                                            domain_id,
                                            proteins_file_writer,
                                            "\t",
-                                           surfacing.LIMIT_SPEC_FOR_PROT_EX,
+                                           SurfacingConstants.LIMIT_SPEC_FOR_PROT_EX,
                                            -1 );
         proteins_file_writer.close();
         System.out.println( "Wrote proteins list to \"" + my_proteins_file + "\"" );

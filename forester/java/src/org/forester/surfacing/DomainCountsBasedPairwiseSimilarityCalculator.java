@@ -27,7 +27,7 @@
 
 package org.forester.surfacing;
 
-public class DomainCountsBasedPairwiseSimilarityCalculator implements PairwiseDomainSimilarityCalculator {
+final class DomainCountsBasedPairwiseSimilarityCalculator implements PairwiseDomainSimilarityCalculator {
 
     @Override
     public PairwiseDomainSimilarity calculateSimilarity( final CombinableDomains domains_1,

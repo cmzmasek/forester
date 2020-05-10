@@ -17,7 +17,6 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.forester.application.surfacing;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
@@ -28,7 +27,7 @@ import org.forester.species.Species;
 import org.forester.surfacing.SurfacingUtil.DomainComparator;
 import org.forester.util.ForesterUtil;
 
-public final class MinimalDomainomeCalculatorOLD {
+final class MinimalDomainomeCalculatorOLD {
 
     public final static void calc( final boolean use_domain_architectures,
                                    final Phylogeny tre,
@@ -191,8 +190,8 @@ public final class MinimalDomainomeCalculatorOLD {
         out.close();
         out_table.flush();
         out_table.close();
-        ForesterUtil.programMessage( surfacing.PRG_NAME, "Wrote minimal DAome data to           : " + outfile );
-        ForesterUtil.programMessage( surfacing.PRG_NAME, "Wrote minimal DAome data to (as table): " + outfile_table );
+        ForesterUtil.programMessage( SurfacingConstants.PRG_NAME, "Wrote minimal DAome data to           : " + outfile );
+        ForesterUtil.programMessage( SurfacingConstants.PRG_NAME, "Wrote minimal DAome data to (as table): " + outfile_table );
         if ( write_protein_files ) {
             final String protdirname;
             final String a;
@@ -215,7 +214,7 @@ public final class MinimalDomainomeCalculatorOLD {
             int total = 0;
             final String dir = outfile_base + protdirname + "/";
             for( final String feat : all_features ) {
-                final File extract_outfile = new File( dir + feat + a + surfacing.SEQ_EXTRACT_SUFFIX );
+                final File extract_outfile = new File( dir + feat + a + SurfacingConstants.SEQ_EXTRACT_SUFFIX );
                 SurfacingUtil.checkForOutputFileWriteability( extract_outfile );
                 final Writer proteins_file_writer = new BufferedWriter( new FileWriter( extract_outfile ) );
                 final int counter = extractProteinFeatures( use_domain_architectures,

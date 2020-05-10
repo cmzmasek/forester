@@ -54,6 +54,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -79,7 +81,6 @@ import org.forester.protein.Domain;
 import org.forester.protein.Protein;
 import org.forester.sequence.MolecularSequence;
 import org.forester.sequence.MolecularSequence.TYPE;
-import org.forester.surfacing.SurfacingUtil;
 
 public final class ForesterUtil {
 
@@ -102,6 +103,25 @@ public final class ForesterUtil {
     public final static String       UNIPROT_KB                       = "https://www.uniprot.org/uniprot/";
     public final static double       ZERO_DIFF                        = 1.0E-12;
     private static final Pattern     PARANTHESESABLE_NH_CHARS_PATTERN = Pattern.compile( "[(),;\\s:\\[\\]]" );
+    private static final Comparator<Domain>  ASCENDING_CONFIDENCE_VALUE_ORDER = new Comparator<Domain>() {
+
+        @Override
+        public int compare( final Domain d1,
+                            final Domain d2 ) {
+            if ( d1.getPerDomainEvalue() < d2
+                    .getPerDomainEvalue() ) {
+                return -1;
+            }
+            else if ( d1
+                    .getPerDomainEvalue() > d2
+                            .getPerDomainEvalue() ) {
+                return 1;
+            }
+            else {
+                return d1.compareTo( d2 );
+            }
+        }
+    };
     static {
         final DecimalFormatSymbols dfs = new DecimalFormatSymbols();
         dfs.setDecimalSeparator( '.' );
@@ -1264,7 +1284,7 @@ public final class ForesterUtil {
         final Protein pruned_protein = new BasicProtein( protein.getProteinId().getId(),
                                                          protein.getSpecies().getSpeciesId(),
                                                          protein.getLength() );
-        final List<Domain> sorted = SurfacingUtil.sortDomainsWithAscendingConfidenceValues( protein );
+        final List<Domain> sorted = ForesterUtil.sortDomainsWithAscendingConfidenceValues( protein );
         final List<Boolean> covered_positions = new ArrayList<Boolean>();
         for( final Domain domain : sorted ) {
             if ( ( ( max_allowed_overlap < 0 )
@@ -1759,6 +1779,16 @@ public final class ForesterUtil {
         return ( ( !isEmptyTrimmed( first_line ) && first_line.trim().startsWith( ">" ) ) );
     }
 
+   
     private ForesterUtil() {
+    }
+
+    public static List<Domain> sortDomainsWithAscendingConfidenceValues( final Protein protein ) {
+        final List<Domain> domains = new ArrayList<>();
+        for( final Domain d : protein.getProteinDomains() ) {
+            domains.add( d );
+        }
+        Collections.sort( domains, ASCENDING_CONFIDENCE_VALUE_ORDER );
+        return domains;
     }
 }

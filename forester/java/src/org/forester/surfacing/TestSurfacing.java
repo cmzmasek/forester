@@ -4065,7 +4065,7 @@ public class TestSurfacing {
             protein.addProteinDomain( H7 );
             protein.addProteinDomain( H7 );
             protein.addProteinDomain( H8 );
-            final List<Domain> sorted = SurfacingUtil.sortDomainsWithAscendingConfidenceValues( protein );
+            final List<Domain> sorted = ForesterUtil.sortDomainsWithAscendingConfidenceValues( protein );
             if ( sorted.size() != 17 ) {
                 return false;
             }

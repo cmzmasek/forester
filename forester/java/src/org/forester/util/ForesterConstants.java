@@ -44,6 +44,10 @@ public final class ForesterConstants {
     public final static String  ID_MAP_FILE_SUFFIX               = ".nim";
     public final static String  UTF_8                            = "UTF-8";
     public final static String  ISO_8859_1                       = "ISO-8859-1";
+    public final static String GO_LINK                        = "http://amigo.geneontology.org/cgi-bin/amigo/go.cgi?view=details&search_constraint=terms&query=";
+    public final static String PFAM_FAMILY_ID_LINK            = "http://pfam.xfam.org/family/";
+
+    
     public final static String  PHYLO_XML_REFERENCE              = "Han MV and Zmasek CM (2009): \"phyloXML: XML for evolutionary biology and comparative genomics\", BMC Bioinformatics 10:356";
     public final static boolean RELEASE                          = false;
 
@@ -53,4 +57,9 @@ public final class ForesterConstants {
                                          NEXUS,
                                          PHYLOXML
     }
+
+    public static final String UNIPROT_TAXONOMY_ID_LINK       = "http://www.uniprot.org/taxonomy/";
+    public static final String EOL_LINK                       = "http://www.eol.org/search?q=";
+    public static final String GOOGLE_SCHOLAR_SEARCH          = "http://scholar.google.com/scholar?q=";
+    public static final String GOOGLE_WEB_SEARCH_LINK         = "http://www.google.com/search?q=";
 }

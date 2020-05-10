@@ -49,7 +49,7 @@ import org.forester.surfacing.DomainSimilarityCalculator.Detailedness;
 import org.forester.util.DescriptiveStatistics;
 import org.forester.util.ForesterUtil;
 
-public class PairwiseGenomeComparator {
+final class PairwiseGenomeComparator {
 
     private List<DistanceMatrix> _domain_distance_scores_means;
     private List<DistanceMatrix> _shared_binary_combinations_based_distances;

@@ -32,7 +32,7 @@ import java.util.Map;
 import org.forester.protein.BasicDomain;
 import org.forester.protein.BinaryDomainCombination;
 
-public class DirectedBinaryDomainCombination extends BasicBinaryDomainCombination {
+final class DirectedBinaryDomainCombination extends BasicBinaryDomainCombination {
 
     final private static Map<Integer, DirectedBinaryDomainCombination> DDC_POOL = new HashMap<Integer, DirectedBinaryDomainCombination>();
 

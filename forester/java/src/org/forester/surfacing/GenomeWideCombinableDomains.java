@@ -35,7 +35,7 @@ import org.forester.protein.BinaryDomainCombination.DomainCombinationType;
 import org.forester.species.Species;
 import org.forester.util.DescriptiveStatistics;
 
-public interface GenomeWideCombinableDomains {
+interface GenomeWideCombinableDomains {
 
     public boolean contains( String key_id );
 

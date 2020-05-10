@@ -36,7 +36,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.forester.application.surfacing;
 import org.forester.evoinference.matrix.character.BasicCharacterStateMatrix;
 import org.forester.evoinference.matrix.character.CharacterStateMatrix;
 import org.forester.evoinference.matrix.character.CharacterStateMatrix.BinaryStates;
@@ -52,7 +51,7 @@ import org.forester.protein.BinaryDomainCombination.DomainCombinationType;
 import org.forester.species.Species;
 import org.forester.util.ForesterUtil;
 
-public final class DomainParsimonyCalculator {
+final class DomainParsimonyCalculator {
 
     private static final String                     TYPE_FORBINARY_CHARACTERS = "parsimony inferred";
     private CharacterStateMatrix<BinaryStates>      _binary_internal_states_matrix;
@@ -688,10 +687,10 @@ public final class DomainParsimonyCalculator {
             ++identifier_index;
         }
         if ( !no_mappings.isEmpty() ) {
-            ForesterUtil.programMessage( surfacing.PRG_NAME, "No mappings for the following (" + no_mappings.size()
+            ForesterUtil.programMessage( SurfacingConstants.PRG_NAME, "No mappings for the following (" + no_mappings.size()
                                          + "):" );
             for( final String id : no_mappings ) {
-                ForesterUtil.programMessage( surfacing.PRG_NAME, id );
+                ForesterUtil.programMessage( SurfacingConstants.PRG_NAME, id );
             }
         }
         final int number_of_characters = all_binary_combinations_mapped.size();
