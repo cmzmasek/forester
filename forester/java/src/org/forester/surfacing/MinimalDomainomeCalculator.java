@@ -325,7 +325,7 @@ final class MinimalDomainomeCalculator {
                     ForesterUtil.printWarningMessage( "surfacing", feat + " not present (in " + b + " extraction)" );
                 }
                 total += counter;
-                System.out.println( "Wrote:" + extract_outfile );
+             
                 proteins_file_writer.close();
             }
             if ( use_domain_architectures && write_da_ids_names_maps ) {
@@ -527,9 +527,7 @@ final class MinimalDomainomeCalculator {
                 throw new IllegalArgumentException( "species " + species + " is not unique" );
             }
             final List<Protein> proteins_per_species = protein_lists_per_species.get( species );
-           
             for( final Protein protein : proteins_per_species ) {
-              
                 if ( domain_id.equals( protein.toDomainArchitectureString( domain_separator, ie_cutoff ) ) ) {
                     final SortedSet<String> ids = species_ids_map.get( species.toString() );
                     String id = "";
@@ -587,7 +585,8 @@ final class MinimalDomainomeCalculator {
                 }
             }
         }
-        if ( GlobalOptions.getVerbosity() > 1 ) {
+        if ( GlobalOptions.getVerbosity() > 2 ) {
+            System.out.println( "DA      : " + domain_id );
             System.out.println( "uniprot : " + uniprot_acc_counter );
             System.out.println( "vipr    : " + vipr_acc_counter );
             System.out.println( "ref seq : " + ref_seq_acc_counter );

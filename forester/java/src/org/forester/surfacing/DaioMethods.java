@@ -351,7 +351,7 @@ final class DaioMethods {
         final SortedSet<String> all_names = new TreeSet<>();
         while ( it.hasNext() ) {
             final Map.Entry<String, UniprotData> pair = it.next();
-            if ( verbosity > 1 ) {
+            if ( verbosity > 2 ) {
                 System.out.println( "    " + pair.getKey() + " => " + pair.getValue().getProteinNames() );
             }
             all_names.add( pair.getValue().getProteinNames() );

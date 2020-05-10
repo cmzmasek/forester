@@ -32,8 +32,8 @@ import org.forester.util.ForesterUtil;
 final class SurfacingConstants {
 
     static final String  PRG_NAME                                                                      = "surfacing";
-    static final String  PRG_VERSION                                                                   = "2.700";
-    static final String  PRG_DATE                                                                      = "200509";
+    static final String  PRG_VERSION                                                                   = "2.701";
+    static final String  PRG_DATE                                                                      = "200510";
     static final String  E_MAIL                                                                        = "phyloxml@gmail.com";
     static final String  WWW                                                                           = "https://sites.google.com/site/cmzmasek/home/software/forester/surfacing";
     static final String  AMIGO_LINK                                                                    = "http://amigo.geneontology.org/cgi-bin/amigo/go.cgi?view=details&search_constraint=terms&query=";

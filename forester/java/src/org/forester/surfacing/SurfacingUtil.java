@@ -1603,12 +1603,14 @@ final class SurfacingUtil {
             }
         }
         final List<String> igns = PhylogenyMethods.deleteExternalNodesPositiveSelection( genomes, intree );
-        if ( igns.size() > 0 ) {
-            System.out.println( "Not using the following " + igns.size() + " nodes:" );
-            for( int i = 0; i < igns.size(); ++i ) {
-                System.out.println( " " + i + ": " + igns.get( i ) );
+        if ( GlobalOptions.getVerbosity() > 0 ) {
+            if ( igns.size() > 0 ) {
+                System.out.println( "Not using the following " + igns.size() + " nodes:" );
+                for( int i = 0; i < igns.size(); ++i ) {
+                    System.out.println( "    " + i + ": " + igns.get( i ) );
+                }
+                System.out.println();
             }
-            System.out.println( "--" );
         }
         //Test for node names:
         final SortedSet<String> not_found = new TreeSet<>();

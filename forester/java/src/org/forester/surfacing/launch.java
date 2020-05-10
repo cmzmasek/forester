@@ -176,7 +176,7 @@ public final class launch {
     private static final String                                     INPUT_DA_NAME_FILE_OPTION                                          = "input_DA_name_map";
     private static final String                                     OBTAIN_NAMES_FOR_DAS_FROM_DB_OPTION                                = "obtain_DA_names_from_db";
     private static final String                                     VERBOSITY_OPTION                                                   = "verbosity";
-    private static final int                                        VERBOSITY_DEFAULT                                                  = 0;
+    private static final int                                        VERBOSITY_DEFAULT                                                  = 1;
     private static final String                                     OBTAIN_NAMES_FOR_DAS_FROM_DB_MAX_IDS_TO_SEARCH_PER_SPECIES_OPTION  = "max_ids_to_search_per_species";
     private static final int                                        OBTAIN_NAMES_FOR_DAS_FROM_DB_MAX_IDS_TO_SEARCH_PER_SPECIES_DEFAULT = 20;
     private static final String                                     UNIPROT_PRIORITY_FOR_ACCESSOR_PARSING_OPTION                       = "uniprot_priority";
@@ -1146,6 +1146,9 @@ public final class launch {
         System.out.println( "Ignore combination with self: " + ignore_combination_with_same );
         html_desc.append( "<tr><td>Ignore combination with self for domain combination similarity analyses:</td><td>"
                 + ignore_combination_with_same + "</td></tr>" + nl );
+        System.out.println( "Ignore virus-like domains   : " + ignore_virus_like_ids );
+        html_desc.append( "<tr><td>Ignore virus-like domains:</td><td>"
+                + ignore_virus_like_ids + "</td></tr>" + nl );
         System.out.println( "Consider directedness       : "
                 + ( dc_type != BinaryDomainCombination.DomainCombinationType.BASIC ) );
         html_desc.append( "<tr><td>Consider directedness of binary domain combinations:</td><td>"
@@ -1401,7 +1404,7 @@ public final class launch {
                     + GlobalOptions.getObtainNamesForDasFromDbMaxIdsToSearchPerSpecies() + "</td></tr>" + nl );
             System.out
                     .println( "UniProt priority            : " + GlobalOptions.isUniprotPriorityForAccessorParsing() );
-            html_desc.append( "<tr><td>\"UniProt priority:</td><td>"
+            html_desc.append( "<tr><td>UniProt priority:</td><td>"
                     + GlobalOptions.isUniprotPriorityForAccessorParsing() + "</td></tr>" + nl );
         }
         System.out.println( "Verbosity                   : " + GlobalOptions.getVerbosity() );
@@ -1582,6 +1585,9 @@ public final class launch {
             if ( rel_env_length_ratio_cutoff > 0.0 ) {
                 parser.setRelEnvLengthRatioCutoff( rel_env_length_ratio_cutoff );
             }
+            
+            parser.setVerbose( GlobalOptions.getVerbosity() > 0 );
+            
             parser.setIgnoreDufs( ignore_dufs );
             parser.setIgnoreVirusLikeIds( ignore_virus_like_ids );
             parser.setIgnoreEngulfedDomains( no_engulfing_overlaps );
@@ -1603,10 +1609,12 @@ public final class launch {
                 ForesterUtil.unexpectedFatalError( SurfacingConstants.PRG_NAME, e.getMessage(), e );
             }
             if ( GlobalOptions.getVerbosity() > 0 ) {
-                System.out.println( "Domains ignored due to negative domain filter: " );
+                System.out.println( "Domains ignored due to negative domain filter  : " );
                 ForesterUtil.printCountingMap( parser.getDomainsIgnoredDueToNegativeDomainFilterCountsMap() );
-                System.out.println( "Domains ignored due to virus like id: " );
-                ForesterUtil.printCountingMap( parser.getDomainsIgnoredDueToVirusLikeIdCountsMap() );
+                if ( ignore_virus_like_ids ) {
+                    System.out.println( "Domains ignored due to virus like id           : " );
+                    ForesterUtil.printCountingMap( parser.getDomainsIgnoredDueToVirusLikeIdCountsMap() );
+                }
             }
             final double coverage = ( double ) protein_list.size() / parser.getProteinsEncountered();
             protein_coverage_stats.addValue( coverage );
@@ -1946,7 +1954,7 @@ public final class launch {
                                                                                      sort_by_species_count_first,
                                                                                      number_of_genomes == 2,
                                                                                      CALC_SIMILARITY_SCORES,
-                                                                                     true );
+                                                                                     GlobalOptions.getVerbosity() > 0 );
         switch ( scoring ) {
             case COMBINATIONS:
                 pw_calc = new CombinationsBasedPairwiseDomainSimilarityCalculator();
@@ -2064,7 +2072,7 @@ public final class launch {
                                              gwcd_list,
                                              pw_calc,
                                              automated_pairwise_comparison_suffix,
-                                             true,
+                                             GlobalOptions.getVerbosity()> 0,
                                              SurfacingConstants.PAIRWISE_DOMAIN_COMPARISONS_PREFIX,
                                              SurfacingConstants.PRG_NAME,
                                              out_dir,

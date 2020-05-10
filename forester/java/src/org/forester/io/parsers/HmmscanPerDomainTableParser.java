@@ -72,7 +72,7 @@ public final class HmmscanPerDomainTableParser {
     private double                        _rel_env_length_ratio_cutoff;
     private Map<String, Double>           _individual_score_cutoffs;
     private boolean                       _ignore_dufs;
-    private boolean                       _ignore_virus_like_ids;
+    private boolean                       _ignore_virus_like_ids = false;
     private int                           _max_allowed_overlap;
     private boolean                       _ignore_engulfed_domains;
     private ReturnType                    _return_type;
@@ -95,7 +95,7 @@ public final class HmmscanPerDomainTableParser {
     private Map<String, Integer>          _domains_ignored_due_to_virus_like_id_counts_map;
     private final INDIVIDUAL_SCORE_CUTOFF _ind_cutoff;
     private final boolean                 _allow_proteins_with_same_name;
-
+    private boolean                       _verbose                    = false;
     public HmmscanPerDomainTableParser( final File input_file,
                                         final String species,
                                         final INDIVIDUAL_SCORE_CUTOFF individual_cutoff_applies_to ) {
@@ -167,16 +167,15 @@ public final class HmmscanPerDomainTableParser {
         if ( ( getMaxAllowedOverlap() != HmmscanPerDomainTableParser.MAX_ALLOWED_OVERLAP_DEFAULT )
                 || isIgnoreEngulfedDomains() ) {
             final int domains_count = current_protein.getNumberOfProteinDomains();
-            current_protein = ForesterUtil.removeOverlappingDomains( getMaxAllowedOverlap(),
-                                                                     isIgnoreEngulfedDomains(),
-                                                                     current_protein );
+            current_protein = ForesterUtil
+                    .removeOverlappingDomains( getMaxAllowedOverlap(), isIgnoreEngulfedDomains(), current_protein );
             final int domains_removed = domains_count - current_protein.getNumberOfProteinDomains();
             _domains_stored -= domains_removed;
             _domains_ignored_due_to_overlap += domains_removed;
         }
         if ( ( getFilterType() == FilterType.POSITIVE_PROTEIN )
                 || ( getFilterType() == FilterType.NEGATIVE_PROTEIN ) ) {
-            final Set<String> domain_ids_in_protein = new HashSet<String>();
+            final Set<String> domain_ids_in_protein = new HashSet<>();
             for( final Domain d : current_protein.getProteinDomains() ) {
                 domain_ids_in_protein.add( d.getDomainId() );
             }
@@ -214,12 +213,10 @@ public final class HmmscanPerDomainTableParser {
     public int getDomainsIgnoredDueToIEval() {
         return _domains_ignored_due_to_i_e_value;
     }
-    
+
     public int getDomainsIgnoredDueToRelEnvLengthRatioCutoff() {
         return _domains_ignored_due_to_rel_env_length_ratio_cutoff;
     }
-    
-    
 
     public int getDomainsIgnoredDueToFsEval() {
         return _domains_ignored_due_to_fs_e_value;
@@ -264,7 +261,7 @@ public final class HmmscanPerDomainTableParser {
     private double getIEValueMaximum() {
         return _i_e_value_maximum;
     }
-    
+
     private double getRelEnvLengthRatioCutoff() {
         return _rel_env_length_ratio_cutoff;
     }
@@ -368,14 +365,14 @@ public final class HmmscanPerDomainTableParser {
             throw new RuntimeException( "attempt to use individual cuttoffs with having set them" );
         }
         intitCounts();
-        final Set<String> prev_queries = new HashSet<String>();
+        final Set<String> prev_queries = new HashSet<>();
         final String error = ForesterUtil.isReadableFile( getInputFile() );
         if ( !ForesterUtil.isEmpty( error ) ) {
             throw new IOException( error );
         }
         final BufferedReader br = new BufferedReader( new FileReader( getInputFile() ) );
         String line;
-        final List<Protein> proteins = new ArrayList<Protein>();
+        final List<Protein> proteins = new ArrayList<>();
         Protein current_protein = null;
         int line_number = 0;
         final long start_time = new Date().getTime();
@@ -433,8 +430,8 @@ public final class HmmscanPerDomainTableParser {
                 if ( ( current_protein != null ) && ( current_protein.getProteinDomains().size() > 0 ) ) {
                     addProtein( proteins, current_protein );
                 }
-                else  {
-                    System.out.println("No domains in: " + fail_query ); //TODO
+                else if ( isVerbose() && !ForesterUtil.isEmpty( fail_query ) ) {
+                    System.out.println( "Hmmscan parser: No domains in: " + fail_query );
                 }
                 if ( getReturnType() == ReturnType.UNORDERED_PROTEIN_DOMAIN_COLLECTION_PER_PROTEIN ) {
                     current_protein = new BasicProtein( query, getSpecies(), qlen );
@@ -464,7 +461,7 @@ public final class HmmscanPerDomainTableParser {
                 }
             }
             final String uc_id = target_id.toUpperCase();
-            final int env_length = 1 + env_to - env_from;
+            final int env_length = ( 1 + env_to ) - env_from;
             if ( failed_cutoff ) {
                 ++_domains_ignored_due_to_individual_score_cutoff;
             }
@@ -481,7 +478,7 @@ public final class HmmscanPerDomainTableParser {
             }
             //
             else if ( ( getRelEnvLengthRatioCutoff() > 0.0 )
-                    && (  env_length < ( getRelEnvLengthRatioCutoff() * tlen)   ) ) {
+                    && ( env_length < ( getRelEnvLengthRatioCutoff() * tlen ) ) ) {
                 ++_domains_ignored_due_to_rel_env_length_ratio_cutoff;
             }
             //
@@ -568,13 +565,11 @@ public final class HmmscanPerDomainTableParser {
     private void setDomainsIgnoredDueToIEval( final int domains_ignored_due_to_i_e_value ) {
         _domains_ignored_due_to_i_e_value = domains_ignored_due_to_i_e_value;
     }
-    
+
     private void setDomainsIgnoredDueToRelEnvLengthRatioCutoff( final int domains_ignored_due_to_rel_env_length_ratio_cutoff ) {
         _domains_ignored_due_to_rel_env_length_ratio_cutoff = domains_ignored_due_to_rel_env_length_ratio_cutoff;
     }
 
-    
-    
     private void setDomainsIgnoredDueToIndividualScoreCutoff( final int domains_ignored_due_to_individual_score_cutoff ) {
         _domains_ignored_due_to_individual_score_cutoff = domains_ignored_due_to_individual_score_cutoff;
     }
@@ -620,7 +615,7 @@ public final class HmmscanPerDomainTableParser {
         }
         _i_e_value_maximum = i_e_value_maximum;
     }
-    
+
     public void setRelEnvLengthRatioCutoff( final double rel_env_length_ratio_cutoff ) {
         if ( rel_env_length_ratio_cutoff <= 0.0 ) {
             throw new IllegalArgumentException( "attempt to set rel env length ratio cutoff to zero or a negative value" );
@@ -684,6 +679,13 @@ public final class HmmscanPerDomainTableParser {
         _time = time;
     }
 
+    public boolean isVerbose() {
+        return _verbose;
+    }
+
+    public void setVerbose( final boolean verbose ) {
+        _verbose = verbose;
+    }
     public static enum FilterType {
                                    NONE,
                                    POSITIVE_PROTEIN,

@@ -140,7 +140,7 @@ final class PairwiseGenomeComparator {
                                                                                              sort_by_species_count_first,
                                                                                              true,
                                                                                              calc_similarity_scores,
-                                                                                             true );
+                                                                                             GlobalOptions.getVerbosity() > 0 );
                 final SortedSet<DomainSimilarity> similarities = calc
                         .calculateSimilarities( pw_calc,
                                                 genome_pair,
