@@ -212,7 +212,7 @@ $PATH_TO_FORESTER = &addSlashAtEndIfNotPresent( $PATH_TO_FORESTER );
 our $BOOTSTRAPS         = 100;
 our $MIN_NUMBER_OF_AA   = 20;  # After removal of gaps, if less, gaps are not removed.
 our $LENGTH_OF_NAME     = 10;
-
+my  $FASTME_T_OPTION    = "-T 12";
 
 
 
@@ -258,7 +258,7 @@ Y
 # 1. pairwise distance file
 # 2. number of bootstraps
 # 3. output name
-# Last modified: 2020/05/17
+# Last modified: 2020/05/19
 sub executeFastme {
     my $inpwd  = $_[ 0 ];
     my $bs     = $_[ 1 ];
@@ -267,10 +267,10 @@ sub executeFastme {
     &testForTextFilePresence( $inpwd );
     my $command = "";
     if ( $bs > 1 ) {
-        $command = "$FASTME -i $inpwd -n $bs -";
+        $command = "$FASTME -n -s -i $inpwd -D $bs -o $output $FASTME_T_OPTION -v 2";
     }
     else {
-        $command = "$FASTME -i $inpwd -o $output";
+        $command = "$FASTME -n -s -i $inpwd -o $output $FASTME_T_OPTION -v 2";
     }    
     print $command;
     

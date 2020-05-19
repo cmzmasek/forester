@@ -60,6 +60,7 @@ my $RAXML_MODEL_BASE_NUC   = "GTRGAMMA";
 my $RAXML_ALGORITHM        = "a";
 my $RAXML_T_OPTION         = "-T 12";
 
+
 my $TEMP_DIR_DEFAULT       = "/tmp/phylo_pl_"; # Where all the infiles, outfiles, etc will be created.
    
 my $bootstraps             = 100; # 0,1: do not bootstrap. Default: 100
@@ -348,6 +349,7 @@ $distancefile     = $outfile.$SUFFIX_PWD_NOT_BOOTS;
 
 
 my $fastme_outtree    = $outfile."_fme.xml";
+my $fastme_stats      = $outfile."_fme_stats.txt";
 my $phylip_nj_outtree = $outfile."_pnj.xml";
 my $phylip_fm_outtree = $outfile."_pfm.xml";
 my $phylip_me_outtree = $outfile."_pme.xml";
@@ -692,13 +694,6 @@ if ( $use_raxml == 1 ) {
         &dieWithUnexpectedError( "Unknown model: matrix=$matrix" );
     }
     print( "\n========== RAxML begin =========\n\n" );    
-    # Six arguments:
-    # 1. DNA or Amino-Acids sequence filename (PHYLIP format)
-    # 2. Model, eg. PROTGAMMAIVT
-    # 3. Replicates (bootstrap)
-    # 4. Seed for bootstrap
-    # 5. Output suffix
-    # 6. Algorithm (only for bootstrap, default otherwise)
     my $invar = "";
     if ( $estimate_invar_sites == 1 ) {
         $invar = "I";
@@ -717,16 +712,20 @@ if ( $use_raxml == 1 ) {
     &rm( "RAxML_parsimonyTree.phylopl" );
     &rm( $outfile."_raxml_info" );
     &mv( "RAxML_info.phylopl", $outfile."_raxml_info" );
-    &rm( "RAxML_bestTree.phylopl" );
-    &mv( "RAxML_bipartitions.phylopl", $CONSENSUS_RAXML );
-    &rm( "RAxML_bipartitionsBranchLabels.phylopl" );
-    &append( "RAxML_bootstrap.phylopl", $OUTTREES_ALL );
-    if ( $keep_multiple_trees == 1 ) {
-        &mv( "RAxML_bootstrap.phylopl", $multitreefile_raxml );
+   
+    if ($bootstraps > 1 ) {
+        &rm( "RAxML_bestTree.phylopl" );
+        &mv( "RAxML_bipartitions.phylopl", $CONSENSUS_RAXML );
+        &rm( "RAxML_bipartitionsBranchLabels.phylopl" );
+        &append( "RAxML_bootstrap.phylopl", $OUTTREES_ALL );
+        if ( $keep_multiple_trees == 1 ) {
+            &mv( "RAxML_bootstrap.phylopl", $multitreefile_raxml );
+        }
+        else {
+            &rm( "RAxML_bootstrap.phylopl" );
+        }
     }
-    else {
-        &rm( "RAxML_bootstrap.phylopl" );
-    }
+  
     $all_count++;
   
 }
@@ -890,7 +889,12 @@ if ( $use_fastme == 1 ) {
     print( "\n========== FASTME begin =========\n\n" );
     &executeFastme( $pwdfile, $bootstraps, "output.tre" );
     print( "\n========== FASTME end ===========\n\n" );
-    &rm( "output.d" );
+    if ( $bootstraps > 1 ) {
+        &mv( "seqboot_outfile.dist_fastme_stat.txt", $fastme_stats );
+    }
+    else {
+        &mv( "infile.dist_fastme_stat.txt", $fastme_stats );
+    }
     &mv( "output.tre", $OUTTREE_FASTME );
     if ( $bootstraps > 1 ) {
         &append( $OUTTREE_FASTME, $OUTTREES_ALL ); 
@@ -1255,17 +1259,13 @@ sub executeRaxml {
     my $outfile_suffix = $_[ 4 ];
     my $algo           = $_[ 5 ];
     my $T_option       = $_[ 6 ];
-    
-    $replicates = 100;
-    
+      
     &testForTextFilePresence( $msa );
     my $command = "$RAXML -p 27 -m $model -s $msa -n $outfile_suffix $T_option";
       
     if ( $replicates > 1 ) {
         $command = $command . " -x $seed -N $replicates";
-        if ( $algo ) {
-            $command = $command . " -f $algo";
-        }
+        $command = $command . " -f $algo";
     }
       
     print( "\n$command\n");  

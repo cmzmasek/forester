@@ -111,7 +111,12 @@ public final class support_statistics {
             sb.append( dss[ i ].getN() + "\t" );
             if ( dss_comp != null ) {
                 final double z_score = dss_comp.sampleStandardUnit( dss[ i ].arithmeticMean() );
-                sb.append( ForesterUtil.round( z_score, support_statistics.PLACES ) + "\t" );
+                try {
+                    sb.append( ForesterUtil.round( z_score, support_statistics.PLACES ) + "\t" );
+                }
+                catch (NumberFormatException e) {
+                    sb.append( "-\t" );
+                }
             }
             sb.append( ForesterUtil.getLineSeparator() );
         }
