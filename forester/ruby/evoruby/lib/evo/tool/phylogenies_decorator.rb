@@ -19,7 +19,8 @@ require 'fileutils'
 
 module Evoruby
   class PhylogeniesDecorator
-
+  
+    JAVA                        = '/usr/bin/java'
     DECORATOR_OPTIONS_SEQ_NAMES = '-p -t -mp -or'
     DECORATOR_OPTIONS_DOMAINS   = '-p -t'
     SLEEP_TIME                  = 0.01
@@ -28,7 +29,7 @@ module Evoruby
     TMP_FILE_2                  = '___PD2___'
     LOG_FILE                    = '00_phylogenies_decorator.log'
     FORESTER_HOME               = ENV[Constants::FORESTER_HOME_ENV_VARIABLE]
-    JAVA_HOME                   = ENV[Constants::JAVA_HOME_ENV_VARIABLE]
+   
 
     PRG_NAME       = "phylogenies_decorator"
     PRG_DATE       = "170428"
@@ -61,18 +62,15 @@ module Evoruby
       if FORESTER_HOME == nil || FORESTER_HOME.length < 1
         Util.fatal_error( PRG_NAME, "apparently environment variable #{Constants::FORESTER_HOME_ENV_VARIABLE} has not been set" )
       end
-      if JAVA_HOME == nil ||  JAVA_HOME.length < 1
-        Util.fatal_error( PRG_NAME, "apparently environment variable #{Constants::JAVA_HOME_ENV_VARIABLE} has not been set" )
-      end
-
+      
       if !File.exist?( FORESTER_HOME )
         Util.fatal_error( PRG_NAME, '[' + FORESTER_HOME + '] does not exist' )
       end
-      if !File.exist?( JAVA_HOME )
-        Util.fatal_error( PRG_NAME, '[' + JAVA_HOME + '] does not exist' )
+      if !File.exist?( JAVA )
+        Util.fatal_error( PRG_NAME, '[' + JAVA + '] does not exist' )
       end
 
-      decorator = JAVA_HOME + '/bin/java -cp ' + FORESTER_HOME + '/java/forester.jar org.forester.application.decorator'
+      decorator = JAVA + ' -cp ' + FORESTER_HOME + '/java/forester.jar org.forester.application.decorator'
 
       begin
         cla = CommandLineArguments.new( ARGV )

@@ -2,6 +2,7 @@
 
 export FORESTER_HOME=/path/to/forester/forester
 export FORESTER=/path/to/forester/forester
+export RUBYLIB=/path/to/forester/forester/ruby/evoruby
 
 export RUBY=ruby
 
@@ -31,7 +32,7 @@ alias rio='java  -Xms256m -Xmx2048m -cp $FORESTER/java/forester.jar org.forester
 alias phyloxml_converter='java  -Xms256m -Xmx2048m -cp $FORESTER/java/forester.jar org.forester.application.phyloxml_converter'
 alias confadd='java -Xms256m -Xmx2048m -cp $FORESTER/java/forester.jar org.forester.application.confadd'
 alias msa_compactor='java -Xms256m -Xmx2048m -cp $FORESTER/java/forester.jar org.forester.application.msa_compactor'
-alias surfacing='java -Xmx40968m -cp $FORESTER/java/forester.jar org.forester.application.surfacing'
+alias surfacing='java -Xmx40968m -cp $FORESTER/java/forester.jar org.forester.surfacing.launch'
 alias fasta_split='java -Xms256m -Xmx2048m -cp $FORESTER/java/forester.jar org.forester.application.fasta_split'
 alias pplacer_summary='java -Xms256m -Xmx2048m -cp $FORESTER/java/forester.jar org.forester.application.pplacer_summary'
 alias rename='java -Xms256m -Xmx2048m -cp $FORESTER/java/forester.jar org.forester.application.rename'

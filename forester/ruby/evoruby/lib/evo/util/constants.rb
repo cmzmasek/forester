@@ -21,7 +21,6 @@ module Evoruby
     PFAM_V_FOR_EX                             = "300" # Pfam version for examples
 
     FORESTER_HOME_ENV_VARIABLE = 'FORESTER_HOME'
-    JAVA_HOME_ENV_VARIABLE     = 'JAVA_HOME'
 
     EVORUBY         = 'evoruby'
 

@@ -262,7 +262,12 @@ final class DaioMethods {
                 output_da_name_writer.write( "\t" );
                 output_da_name_writer.write( out_of );
                 output_da_name_writer.write( "\t" );
-                output_da_name_writer.write( all_names.toString() );
+                if ( all_names != null ) {
+                    output_da_name_writer.write( all_names.toString() );
+                }
+                else {
+                    output_da_name_writer.write("-");
+                }
             }
             else {
                 output_da_name_writer.write( NA_SYMBOL );

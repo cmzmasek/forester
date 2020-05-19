@@ -109,12 +109,12 @@ our @EXPORT = qw( executeConsense
 # Software directory:
 # ---------------------
 
-our $SOFTWARE_DIR              = "/home/zma/SOFTWARE/";
+our $SOFTWARE_DIR              = "/home/lambda/SOFT/";
 
 
 # Java virtual machine:
 # ---------------------
-our $JAVA                      = "/home/zma/SOFTWARE/JAVA/jdk-9.0.4/bin/java";
+our $JAVA                      = "/usr/bin/java";
 
 
 # Where all the temporary files can be created:
@@ -124,39 +124,39 @@ our $TEMP_DIR_DEFAULT          = "/tmp/";
 
 # Programs from Joe Felsenstein's PHYLIP package:
 # -----------------------------------------------
-our $SEQBOOT                   = $SOFTWARE_DIR."PHYLO/Phylip/Phylip3.695/phylip-3.696/exe/seqboot";
-our $NEIGHBOR                  = $SOFTWARE_DIR."PHYLO/Phylip/Phylip3.695/phylip-3.696/exe/neighbor";
-our $PROTPARS                  = $SOFTWARE_DIR."PHYLO/Phylip/Phylip3.695/phylip-3.696/exe/protpars";
-our $PROML                     = $SOFTWARE_DIR."PHYLO/Phylip/Phylip3.695/phylip-3.696/exe/proml";
-our $FITCH                     = $SOFTWARE_DIR."PHYLO/Phylip/Phylip3.695/phylip-3.696/exe/fitch";
-our $CONSENSE                  = $SOFTWARE_DIR."PHYLO/Phylip/Phylip3.695/phylip-3.696/exe/consense";
-our $PHYLIP_VERSION            = "3.695";
+our $SEQBOOT                   = $SOFTWARE_DIR."phylip-3.697/exe/seqboot";
+our $NEIGHBOR                  = $SOFTWARE_DIR."phylip-3.697/exe/neighbor";
+our $PROTPARS                  = $SOFTWARE_DIR."phylip-3.697/exe/protpars";
+our $PROML                     = $SOFTWARE_DIR."phylip-3.697/exe/proml";
+our $FITCH                     = $SOFTWARE_DIR."phylip-3.697/exe/fitch";
+our $CONSENSE                  = $SOFTWARE_DIR."phylip-3.697/exe/consense";
+our $PHYLIP_VERSION            = "3.697";
 
 # TREE-PUZZLE:
 # ------------
-our $PUZZLE                    = $SOFTWARE_DIR."PHYLO/TREE-PUZZLE/tree-puzzle-5.2/src/puzzle";
+our $PUZZLE                    = $SOFTWARE_DIR."tree-puzzle-5.2/src/puzzle";
 our $PUZZLE_VERSION            = "5.2";
 
 # FASTME:
 # -----------------------------------------------------
-our $FASTME                    = $SOFTWARE_DIR."PHYLO/FastME/fastme2.0/fastme";
-our $FASTME_VERSION            = "2.0";
+our $FASTME                    = $SOFTWARE_DIR."fastme-2.1.5/src/fastme";
+our $FASTME_VERSION            = "2.1.5";
 
 # PHYML:
 # -----------------------------------------------------
-our $PHYML                     = $SOFTWARE_DIR."PHYLO/PhyML/PhyML-3.1/PhyML-3.1/PhyML-3.1_linux64";
-our $PHYML_VERSION             = "3.1";
+our $PHYML                     = $SOFTWARE_DIR."PhyML-3.1/PhyML-3.1_linux64";
+our $PHYML_VERSION             = "3.1 20120412";
 
 # RAXML:
 # -----------------------------------------------------
-our $RAXML                     = $SOFTWARE_DIR."PHYLO/RAxML/20161215/standard-RAxML-master/raxmlHPC-AVX";
-our $RAXML_VERSION             = "8.2.9";
+our $RAXML                     = $SOFTWARE_DIR."standard-RAxML-master/raxmlHPC-PTHREADS";
+our $RAXML_VERSION             = "8.2.12";
 
 
-# forester.jar. This jar file is currently available at: https://sites.google.com/site/cmzmasek/home/software/forester 
+# forester.jar. 
 # --------------------------------------------------------------------------------------------------------------------
 
-our $FORESTER_JAR              = "/home/zma/git/forester/forester/java/forester.jar";
+our $FORESTER_JAR              = "/home/lambda/git/forester/forester/java/forester.jar";
 
 
 
@@ -257,20 +257,20 @@ Y
 # Three arguments:
 # 1. pairwise distance file
 # 2. number of bootstraps
-# 3. initial tree: BME, GME or NJ
-# Last modified: 2008/12/31
+# 3. output name
+# Last modified: 2020/05/17
 sub executeFastme {
-    my $inpwd    = $_[ 0 ];
-    my $bs       = $_[ 1 ];
-    my $init_opt = $_[ 2 ];
+    my $inpwd  = $_[ 0 ];
+    my $bs     = $_[ 1 ];
+    my $output = $_[ 2 ];
       
     &testForTextFilePresence( $inpwd );
     my $command = "";
     if ( $bs > 1 ) {
-        $command = "$FASTME -b $init_opt -i $inpwd -n $bs -s b";
+        $command = "$FASTME -i $inpwd -n $bs -";
     }
     else {
-        $command = "$FASTME -b $init_opt -i $inpwd -s b";
+        $command = "$FASTME -i $inpwd -o $output";
     }    
     print $command;
     
@@ -386,55 +386,43 @@ Y
   
 } ## executeFitch
 
-
-
-# Six arguments:
-# 1. DNA or Amino-Acids sequence filename (PHYLIP format)
-# 2. number of data sets to analyse (ex:3)
-# 3. Model: JTT | MtREV | Dayhoff | WAG | VT | DCMut | Blosum62 (Amino-Acids)
-# 4. number of relative substitution rate categories (ex:4), positive integer
-# 5. starting tree filename (Newick format), your tree filename | BIONJ for a distance-based tree
-# 6. 1 to estimate proportion of invariable sites, otherwise, fixed proportion "0.0" is used 
 # PHYML produces several results files :
 # <sequence file name>_phyml_lk.txt : likelihood value(s)
 # <sequence file name>_phyml_tree.txt : inferred tree(s)
-# <sequence file name>_phyml_stat.txt : detailed execution stats 
+# <sequence file name>_phyml_stats.txt : detailed execution stats 
+#	-i (or --input) seq_file_name
+#	-d (or --datatype) data_type, 'nt' for nucleotide (default), 'aa' for amino-acid sequences
+#	-n (or --multiple) nb_data_sets
+#   -m (or --model)
+#       Nucleotide-based models : HKY85 (default) | JC69 | K80 | F81 | F84 | TN93 | GTR |model
+#       Amino-acid based models : LG (default) | WAG | JTT | MtREV | Dayhoff | DCMut | RtREV | CpREV | VT
+#		 Blosum62 | MtMam | MtArt | HIVw | HIVb 
+#   -v (or --pinv) prop_invar 	Can be a fixed value in the [0,1] range or e to get the maximum likelihood estimate.
+#   -c (or --nclasses) nb_subst_cat
+#   -o params
+#		This option focuses on specific parameter optimisation.
+#		params=tlr : tree topology (t), branch length (l) and rate parameters (r) are optimised.
+#		params=tl  : tree topology and branch length are optimised.
+#		params=lr  : branch length and rate parameters are optimised.
+#		params=l   : branch length are optimised.
+#		params=r   : rate parameters are optimised.
+#		params=n   : no parameter is optimised.
+# VERSION 20120412
 sub executePhyml {
-    my $sequences = $_[ 0 ]; 
-    my $data_sets = $_[ 1 ]; 
-    my $model     = $_[ 2 ]; 
-    my $nb_categ  = $_[ 3 ];  
-    my $tree      = $_[ 4 ];
-    my $estimate_invar_sites = $_[ 5 ];
+    my $input        = $_[ 0 ]; 
+    my $datatype     = $_[ 1 ];
+    my $nb_data_sets = $_[ 2 ]; 
+    my $model        = $_[ 3 ]; 
+    my $pinv         = $_[ 4 ];
+    my $nclasses     = $_[ 5 ];  
+    my $params       = $_[ 6 ];
     
-    if ( $data_sets < 1 ) {
-        $data_sets = 1
+    if ( $nb_data_sets < 1 ) {
+        $nb_data_sets = 1
     }
-    
-    my $invar          = "0.0";   # proportion of invariable sites,
-                                  # a fixed value (ex:0.0) | e to get the maximum likelihood estimate
-    if ( $estimate_invar_sites == 1 ) {
-        $invar = "e";
-    }
-    
-    my $data_type      = "1";     # 0 = DNA | 1 = Amino-Acids
-    my $format         = "i";     # i = interleaved sequence format | s = sequential
-    my $bootstrap_sets = "0";     # number of bootstrap data sets to generate (ex:2)
-                                  # only works with one data set to analyse
-  
-    my $alpha          = "e";     # gamma distribution parameter,
-                                  # a fixed value (ex:1.0) | e to get the maximum likelihood estimate
-   
-    my $opt_topology   = "y";     # optimise tree topology ? y | n
-    my $opt_lengths    = "y";     # optimise branch lengths and rate parameters ? y | n
-      
-    if ( $data_sets > 1 ) {
-        # No need to calc branch lengths for bootstrapped analysis
-        $opt_lengths = "n";
-    } 
-      
-    &testForTextFilePresence( $sequences );
-    my $command = "$PHYML $sequences $data_type $format $data_sets $bootstrap_sets $model $invar $nb_categ $alpha $tree $opt_topology $opt_lengths";
+         
+    &testForTextFilePresence( $input );
+    my $command = "$PHYML -i $input -d $datatype -n $nb_data_sets -m $model -v $pinv -c $nclasses  -o $params";
       
     print( "\n$command\n");  
       

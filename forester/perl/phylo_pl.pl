@@ -52,12 +52,13 @@ use FindBin;
 use lib $FindBin::Bin;
 use forester;
 
-my $VERSION                = "1.0.1";
-my $LAST_MODIFIED          = "2020/01/23";
+my $VERSION                = "1.0.2";
+my $LAST_MODIFIED          = "2020/05/18";
 
 my $RAXML_MODEL_BASE_PROT  = "PROTGAMMA";
 my $RAXML_MODEL_BASE_NUC   = "GTRGAMMA";
 my $RAXML_ALGORITHM        = "a";
+my $RAXML_T_OPTION         = "-T 12";
 
 my $TEMP_DIR_DEFAULT       = "/tmp/phylo_pl_"; # Where all the infiles, outfiles, etc will be created.
    
@@ -169,22 +170,8 @@ if ( $ARGV[ 0 ] =~ /^-.+/ ) {
     if ( $options =~ /n/ ) {
         $use_phylip_nj = 1; 
     }
-    if ( $options =~ /q@(\d)/ ) {
+    if ( $options =~ /q/ ) {
         $use_fastme = 1;
-        my $opt = $1;
-        if ( $opt == 1 ) {
-            $fastme_init_tree_opt = "GME";
-        }
-        elsif ( $opt == 2 ) {
-            $fastme_init_tree_opt = "BME";
-        }
-        elsif ( $opt == 3 ) {
-            $fastme_init_tree_opt = "NJ";
-        }
-        else {
-            &printUsage();
-            exit ( -1 );
-        }
     }
     if ( $options =~ /f/ ) {
         $use_phylip_fitch_fm = 1; 
@@ -464,8 +451,6 @@ if ( $use_pwd_based_methods == 1 ) {
 
 if ( $use_fastme == 1 ) {
     $log = $log."Program to calculate tree           : FastME (version: $FASTME_VERSION)\n";   
-    $log = $log."Method for intial tree in FastME    : $fastme_init_tree_opt\n";
-    $log = $log."Tree swapping (NNI) in FastME       : balanced (default)\n";
 }
 if ( $use_phylip_nj == 1 ) {
     $log = $log."Program to calculate tree           : PHYLIP NEIGHBOR NJ (version: $PHYLIP_VERSION)\n";
@@ -721,25 +706,26 @@ if ( $use_raxml == 1 ) {
 
     # NOTE. RaxML does its own bootstrapping.
     if ( $matrix == 9 || $matrix == 10 || $matrix == 11 || $matrix == 12 ) {
-        &executeRaxml( "align", $RAXML_MODEL_BASE_NUC.$invar."X", $bootstraps, $seed, "xxx", $RAXML_ALGORITHM );
+        &executeRaxml( "align", $RAXML_MODEL_BASE_NUC.$invar."X", $bootstraps, $seed, "phylopl", $RAXML_ALGORITHM, $RAXML_T_OPTION );
     }
     else {
-        &executeRaxml( "align", $RAXML_MODEL_BASE_PROT.$invar.$model."X", $bootstraps, $seed, "xxx", $RAXML_ALGORITHM );
+        &executeRaxml( "align", $RAXML_MODEL_BASE_PROT.$invar.$model."X", $bootstraps, $seed, "phylopl", $RAXML_ALGORITHM, $RAXML_T_OPTION  );
     }
     print( "\n========== RAxML end =========\n\n" );
     
-    &rm( "RAxML_log.xxx" );
-    &rm( "RAxML_parsimonyTree.xxx" );
+    &rm( "RAxML_log.phylopl" );
+    &rm( "RAxML_parsimonyTree.phylopl" );
     &rm( $outfile."_raxml_info" );
-    &mv( "RAxML_info.xxx", $outfile."_raxml_info" );
-    &rm( "RAxML_bestTree.xxx" );
-    &mv( "RAxML_bipartitions.xxx", $CONSENSUS_RAXML );
-    &append( "RAxML_bootstrap.xxx", $OUTTREES_ALL );
+    &mv( "RAxML_info.phylopl", $outfile."_raxml_info" );
+    &rm( "RAxML_bestTree.phylopl" );
+    &mv( "RAxML_bipartitions.phylopl", $CONSENSUS_RAXML );
+    &rm( "RAxML_bipartitionsBranchLabels.phylopl" );
+    &append( "RAxML_bootstrap.phylopl", $OUTTREES_ALL );
     if ( $keep_multiple_trees == 1 ) {
-        &mv( "RAxML_bootstrap.xxx", $multitreefile_raxml );
+        &mv( "RAxML_bootstrap.phylopl", $multitreefile_raxml );
     }
     else {
-        &rm( "RAxML_bootstrap.xxx" );
+        &rm( "RAxML_bootstrap.phylopl" );
     }
     $all_count++;
   
@@ -789,6 +775,19 @@ if ( $use_phyml == 1 ) {
         &dieWithUnexpectedError( "Unknown model: matrix=$matrix" );
     }
 
+    my $datatype = '---';
+    if ($matrix <= 8) {
+        $datatype = 'aa';
+    }
+    else {
+        $datatype = 'nt';
+    }
+    
+    my $pinv = '0';
+    if ($estimate_invar_sites == 1) {
+        $pinv = 'e';
+    }
+
     my $input = "";
     if ( $bootstraps > 1 ) {
         $input = $SEQBOOT_OUTFILE;
@@ -796,19 +795,15 @@ if ( $use_phyml == 1 ) {
     else {
         $input = "align";
     } 
+    my $params = 'tlr';
+     if ( $bootstraps > 1 ) {
+        $params = 'lr';
+    }
+     
     print( "\n========== PHYML begin =========\n\n" );    
-    # Six arguments:
-    # 1. DNA or Amino-Acids sequence filename (PHYLIP format)
-    # 2. number of data sets to analyse (ex:3)
-    # 3. Model: JTT | MtREV | Dayhoff | WAG | VT | DCMut | Blosum62 (Amino-Acids)
-    # 4. number of relative substitution rate categories (ex:4), positive integer
-    # 5. starting tree filename (Newick format), your tree filename | BIONJ for a distance-based tree
-    # 6. 1 to estimate proportion of invariable sites, otherwise, fixed proportion "0.0" is used
-    # PHYML produces several results files :
-    # <sequence file name>_phyml_lk.txt : likelihood value(s)
-    # <sequence file name>_phyml_tree.txt : inferred tree(s)
-    # <sequence file name>_phyml_stat.txt : detailed execution stats 
-    &executePhyml( $input, $bootstraps, $model, $phyml_rel_substitution_rate_cat, "BIONJ", $estimate_invar_sites );
+   
+    &executePhyml( $input, $datatype, $bootstraps, $model, $pinv, $phyml_rel_substitution_rate_cat, $params );
+   
     print( "\n========== PHYML end =========\n\n" );
     
     &rm( $input."_phyml_lk.txt" );
@@ -816,7 +811,7 @@ if ( $use_phyml == 1 ) {
     if ( -e $outfile."_phyml_stat" ) {
         &rm( $outfile."_phyml_stat" ); 
     }    
-    &mv( $input."_phyml_stat.txt", $outfile."_phyml_stat" );
+    &mv( $input."_phyml_stats.txt", $outfile."_phyml_stat" );
     if ( $bootstraps > 1 ) {
         &append( $OUTTREE_PHYML, $OUTTREES_ALL );
         $all_count++;
@@ -893,7 +888,7 @@ my $CONSENSUS_ALL       = "consensus_all";
 
 if ( $use_fastme == 1 ) {
     print( "\n========== FASTME begin =========\n\n" );
-    &executeFastme( $pwdfile, $bootstraps, $fastme_init_tree_opt );
+    &executeFastme( $pwdfile, $bootstraps, "output.tre" );
     print( "\n========== FASTME end ===========\n\n" );
     &rm( "output.d" );
     &mv( "output.tre", $OUTTREE_FASTME );
@@ -1250,6 +1245,7 @@ exit( 0 );
 # 4. Seed for bootstrap
 # 5. Output suffix
 # 6. Algorithm (only for bootstrap, default otherwise)
+# 7. PTHREADS VERSION ONLY! Specify the number of threads you want to run (i.e. "-T 12")
 # NOTE. RaxML does its own bootstrapping.
 sub executeRaxml {
     my $msa            = $_[ 0 ]; 
@@ -1258,11 +1254,12 @@ sub executeRaxml {
     my $seed           = $_[ 3 ];  
     my $outfile_suffix = $_[ 4 ];
     my $algo           = $_[ 5 ];
+    my $T_option       = $_[ 6 ];
     
     $replicates = 100;
     
     &testForTextFilePresence( $msa );
-    my $command = "$RAXML -p 27 -m $model -s $msa -n $outfile_suffix";
+    my $command = "$RAXML -p 27 -m $model -s $msa -n $outfile_suffix $T_option";
       
     if ( $replicates > 1 ) {
         $command = $command . " -x $seed -N $replicates";
@@ -1652,9 +1649,7 @@ https://sites.google.com/site/cmzmasek/home/software/forester
   g  : 8 Gamma distributed rates
   t  : Two rates (1 invariable + 1 variable)
   m  : Mixed (1 invariable + 8 Gamma rates)
-  q\@x: Use FastME, x: 1: GME
-                      2: BME
-                      3: NJ
+  q  : Use FastME
   n  : Use PHYLIP Neighbor (NJ).                    
   f  : Use PHYLIP Fitch.
   e  : Use PHYLIP Minimal Evolution.
