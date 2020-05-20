@@ -262,15 +262,50 @@ Y
 sub executeFastme {
     my $inpwd  = $_[ 0 ];
     my $bs     = $_[ 1 ];
-    my $output = $_[ 2 ];
-      
+    my $output = $_[ 2 ];  
     &testForTextFilePresence( $inpwd );
+    #########
+    my $inpwd_reformated = $inpwd."_";
+    open(FH, '<', $inpwd) or die $!;
+    open(W, '>', $inpwd_reformated ) or die $!;
+    my $prev = '';
+    while(<FH>) {
+        my $line = $_;
+        chomp($line);
+        if ( $line =~ /^\s+\d+\s*$/ ) {
+            if ( length( $prev) > 0 ) {
+                print W $prev;
+                print W "\n";
+                $prev = '';
+            }
+            print W $line;
+            print W ( "\n" );
+       }
+       elsif ( $line =~ /^\S+/ ) {
+           if ( length( $prev) > 0 ) {
+               print W $prev;
+               print W "\n";
+           }
+           $prev = $line;
+       }
+       elsif ( $line =~ /^\s+(.+)/ ) {
+           $prev = $prev."  ".$1;
+       }
+    }
+    if ( length( $prev) > 0 ) {
+        print W $prev;
+        print W "\n";
+    }
+    close(FH);
+    close(W);
+    ########
+    
     my $command = "";
     if ( $bs > 1 ) {
-        $command = "$FASTME -n -s -i $inpwd -D $bs -o $output $FASTME_T_OPTION -v 2";
+        $command = "$FASTME -n -s -i $inpwd_reformated -D $bs -o $output $FASTME_T_OPTION -v 2";
     }
     else {
-        $command = "$FASTME -n -s -i $inpwd -o $output $FASTME_T_OPTION -v 2";
+        $command = "$FASTME -n -s -i $inpwd_reformated -o $output $FASTME_T_OPTION -v 2";
     }    
     print $command;
     

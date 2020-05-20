@@ -890,11 +890,12 @@ if ( $use_fastme == 1 ) {
     &executeFastme( $pwdfile, $bootstraps, "output.tre" );
     print( "\n========== FASTME end ===========\n\n" );
     if ( $bootstraps > 1 ) {
-        &mv( "seqboot_outfile.dist_fastme_stat.txt", $fastme_stats );
+        &mv( "seqboot_outfile.dist__fastme_stat.txt", $fastme_stats );
     }
     else {
-        &mv( "infile.dist_fastme_stat.txt", $fastme_stats );
+        &mv( "infile.dist__fastme_stat.txt", $fastme_stats );
     }
+    &rm( "seqboot_outfile.dist_" );
     &mv( "output.tre", $OUTTREE_FASTME );
     if ( $bootstraps > 1 ) {
         &append( $OUTTREE_FASTME, $OUTTREES_ALL ); 
