@@ -250,10 +250,6 @@ Y
 
 
 
-
-
-
-
 # Three arguments:
 # 1. pairwise distance file
 # 2. number of bootstraps
@@ -540,7 +536,7 @@ Y
 # 2 = BLOSUM 62
 # 3 = mtREV24
 # 5 = VT
-# 6 = WAG
+# 6, 13 = WAG
 # 7 = auto
 # 9 = HKY [na]
 # 10 = TN [na]
@@ -578,7 +574,7 @@ m
 m
 m";
     }
-    elsif ( $matrix_option == 6 ) { # WAG
+    elsif ( $matrix_option == 6 || $matrix_option == 13 ) { # WAG
         $matr = "
 m
 m

@@ -1039,6 +1039,7 @@ public class PhylogenyMethods {
                              Annotation( "AN" ),
                              CrossRef( "XR" ),
                              BinaryCharacter( "BC" ),
+                             TaxonomicLineage( "LN" ),
                              MolecularSequence( "MS" );
 
         private final String _text;
@@ -1111,6 +1112,16 @@ public class PhylogenyMethods {
                 final List<String> syns = node.getNodeData().getTaxonomy().getSynonyms();
                 I: for( final String syn : syns ) {
                     if ( match( syn, my_query, case_sensitive, partial, regex ) ) {
+                        match = true;
+                        break I;
+                    }
+                }
+            }
+            else if ( ( ( ndf == null ) || ( ndf == NDF.TaxonomicLineage ) ) && node.getNodeData().isHasTaxonomy()
+                    && node.getNodeData().getTaxonomy().getLineage() != null  && node.getNodeData().getTaxonomy().getLineage().size() > 0 ) {
+                final List<String> lins = node.getNodeData().getTaxonomy().getLineage();
+                I: for( final String lin : lins ) {
+                    if ( match( lin, my_query, case_sensitive, partial, regex ) ) {
                         match = true;
                         break I;
                     }
@@ -1263,6 +1274,16 @@ public class PhylogenyMethods {
                     final List<String> syns = node.getNodeData().getTaxonomy().getSynonyms();
                     I: for( final String syn : syns ) {
                         if ( match( syn, query, case_sensitive, partial, false ) ) {
+                            match = true;
+                            break I;
+                        }
+                    }
+                }
+                else if ( ( ( ndf == null ) || ( ndf == NDF.TaxonomicLineage ) ) && node.getNodeData().isHasTaxonomy()
+                        && node.getNodeData().getTaxonomy().getLineage() != null  && node.getNodeData().getTaxonomy().getLineage().size() > 0 ) {
+                    final List<String> lins = node.getNodeData().getTaxonomy().getLineage();
+                    I: for( final String lin : lins ) {
+                        if ( match( lin, query, case_sensitive, partial, false ) ) {
                             match = true;
                             break I;
                         }

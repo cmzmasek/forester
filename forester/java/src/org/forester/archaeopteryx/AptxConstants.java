@@ -38,8 +38,8 @@ public final class AptxConstants {
 
     final static boolean        __ALLOW_PHYLOGENETIC_INFERENCE                                = true;
     public final static String  PRG_NAME                                                      = "Archaeopteryx";
-    final static String         VERSION                                                       = "0.9928 beta";
-    final static String         PRG_DATE                                                      = "180705";
+    final static String         VERSION                                                       = "0.9929 beta";
+    final static String         PRG_DATE                                                      = "200520";
     final static String         DEFAULT_CONFIGURATION_FILE_NAME                               = "_aptx_configuration_file";
     final static String[]       DEFAULT_FONT_CHOICES                                          = { 
             "Arial Unicode MS", "Dialog", "SansSerif", "Sans", "Arial", "Helvetica" };

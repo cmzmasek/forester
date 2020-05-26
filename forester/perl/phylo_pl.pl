@@ -52,13 +52,13 @@ use FindBin;
 use lib $FindBin::Bin;
 use forester;
 
-my $VERSION                = "1.0.2";
-my $LAST_MODIFIED          = "2020/05/18";
+my $VERSION                = "1.0.3";
+my $LAST_MODIFIED          = "2020/05/23";
 
-my $RAXML_MODEL_BASE_PROT  = "PROTGAMMA";
-my $RAXML_MODEL_BASE_NUC   = "GTRGAMMA";
+my $RAXML_MODEL_BASE_PROT  = "PROTCAT";
+my $RAXML_MODEL_BASE_NUC   = "GTRCAT";
 my $RAXML_ALGORITHM        = "a";
-my $RAXML_T_OPTION         = "-T 12";
+my $RAXML_T_OPTION         = "-T 4";
 
 
 my $TEMP_DIR_DEFAULT       = "/tmp/phylo_pl_"; # Where all the infiles, outfiles, etc will be created.
@@ -76,6 +76,7 @@ my $matrix                 = 5;   # 0 = JTT
                                   # 10 = TN [na]
                                   # 11 = GTR [na]
                                   # 12 = SH [na]
+                                  # 13 = LG
 my $rate_heterogeneity     = 0;   # 0 = Uniform rate (default)
                                   # 1 = 8 Gamma distributed rates
                                   # 2 = Two rates (1 invariable + 1 variable)
@@ -216,7 +217,7 @@ if ( $ARGV[ 0 ] =~ /^-.+/ ) {
     if ( $options =~ /P/ ) {
         $matrix = 1;      # PAM
     }
-    if ( $options =~ /L/ ) {
+    if ( $options =~ /O/ ) {
         $matrix = 2;      # Blosum 62
     }
     if ( $options =~ /M/ ) {
@@ -242,6 +243,9 @@ if ( $ARGV[ 0 ] =~ /^-.+/ ) {
     }
     if ( $options =~ /C/ ) {
         $matrix = 12;      # SH
+    }
+    if ( $options =~ /L/ ) {
+        $matrix = 13;      # LG
     }
     if ( $options =~ /S(\d+)/ ) {
         $seed = $1; 
@@ -517,7 +521,7 @@ elsif ( $matrix == 7 ) {
     $log = $log."auto in TREE-PUZZLE\n";
 }
 elsif ( $matrix == 8 ) {
-    $log = $log."DCMut (Kosial and Goldman, 2005) in PHYML and RAxML, VT in TREE-PUZZLE\n";
+    $log = $log."DCMut (Kosial and Goldman, 2005) in PHYML and RAxML; VT in TREE-PUZZLE\n";
 }
 elsif ( $matrix == 9 ) {
     $log = $log."HKY (Hasegawa et al. 1985) in TREE-PUZZLE and PHYML, GTR in RAxML\n";
@@ -531,8 +535,9 @@ elsif ( $matrix == 11 ) {
 elsif ( $matrix == 12 ) {
     $log = $log."SH (Schoeniger-von Haeseler 1994) in TREE-PUZZLE, GTR in RAxML and PHYML\n";
 }
-
-
+elsif ( $matrix == 13 ) {
+    $log = $log."LG model (Le and Gascuel, 2008) in PHYML and RAxML; WAG in TREE-PUZZLE\n";
+}
 else {
     &dieWithUnexpectedError( "Unknown model: matrix=$matrix" );
 }
@@ -687,6 +692,9 @@ if ( $use_raxml == 1 ) {
     elsif ( $matrix == 8 ) {
         $model = "DCMUT";
     }
+    elsif ( $matrix == 13 ) {
+        $model = "LG";
+    }
     elsif ( $matrix == 9 || $matrix == 10 || $matrix == 11 || $matrix == 12 ) {
         $model = "-nuc-";
     }
@@ -770,12 +778,15 @@ if ( $use_phyml == 1 ) {
     elsif ( $matrix == 12 ) {
         $model = "GTR";
     }
+    elsif ( $matrix == 13 ) {
+        $model = "LG";
+    }
     else {
         &dieWithUnexpectedError( "Unknown model: matrix=$matrix" );
     }
 
     my $datatype = '---';
-    if ($matrix <= 8) {
+    if ($matrix <= 8 || $matrix == 13) {
         $datatype = 'aa';
     }
     else {
@@ -1634,13 +1645,14 @@ https://sites.google.com/site/cmzmasek/home/software/forester
  
   Bx : Number of bootstraps. B0: do not bootstrap. Default is 100 bootstrapps.
        The number of bootstrapps should be divisible by 10.
-  J  : Use JTT matrix (Jones et al. 1992) in TREE-PUZZLE and/or PHYML, RAXML, default: VT (Mueller-Vingron 2000).
-  L  : Use BLOSUM 62 matrix (Henikoff-Henikoff 92) in TREE-PUZZLE and/or PHYML, RAXML, default: VT.
-  M  : Use mtREV24 matrix (Adachi-Hasegawa 1996) in TREE-PUZZLE and/or PHYML, default: VT.
-  W  : Use WAG matrix (Whelan-Goldman 2000) in TREE-PUZZLE and/or PHYML, RAXML, default: VT.
-  P  : Use PAM matrix (Dayhoff et al. 1978) in TREE-PUZZLE and/or PHYML, RAXML, default: VT.
-  D  : Use DCMut matrix (Kosial and Goldman, 2005) in PHYML, RAXML, VT in TREE-PUZZLE.
-  A  : Let TREE-PUZZLE choose which matrix to use, default: VT.
+  J  : Use JTT model (Jones et al. 1992) in TREE-PUZZLE and/or PHYML, RAXML, default: VT (Mueller-Vingron 2000).
+  O  : Use BLOSUM 62 model (Henikoff-Henikoff 92) in TREE-PUZZLE and/or PHYML, RAXML, default: VT.
+  M  : Use mtREV24 model (Adachi-Hasegawa 1996) in TREE-PUZZLE and/or PHYML, default: VT.
+  W  : Use WAG model (Whelan-Goldman 2000) in TREE-PUZZLE and/or PHYML, RAXML, default: VT.
+  P  : Use PAM model (Dayhoff et al. 1978) in TREE-PUZZLE and/or PHYML, RAXML, default: VT.
+  L  : Use LG model (Le and Gascuel, 2008) in PHYML, RAXML; WAG in TREE-PUZZLE.
+  D  : Use DCMut model (Kosial and Goldman, 2005) in PHYML, RAXML; VT in TREE-PUZZLE.
+  A  : Let TREE-PUZZLE choose which model to use, default: VT.
   H  : Use HKY (Hasegawa et al. 1985) in TREE-PUZZLE [for nucleic acids]
   T  : Use TN (Tamura-Nei 1993) in TREE-PUZZLE [for nucleic acids]
   Z  : Use GTR (e.g. Lanave et al. 1980) in TREE-PUZZLE [for nucleic acids]

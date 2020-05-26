@@ -3581,16 +3581,18 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final private void paintPhylogenyLite( final Graphics2D g ) {
-        _phylogeny.getRoot().setXSecondary( ( float ) ( getVisibleRect().x + getOvXPosition()
-                + ( MOVE / ( getVisibleRect().width / getOvRectangle().getWidth() ) ) ) );
-        _phylogeny.getRoot().setYSecondary( ( getVisibleRect().y + getOvYStart() ) );
-        final Stroke s = g.getStroke();
-        g.setStroke( STROKE_05 );
-        for( final PhylogenyNode element : _nodes_in_preorder ) {
-            paintNodeLite( g, element );
+        if ( _nodes_in_preorder != null ) {
+            _phylogeny.getRoot().setXSecondary( ( float ) ( getVisibleRect().x + getOvXPosition()
+                    + ( MOVE / ( getVisibleRect().width / getOvRectangle().getWidth() ) ) ) );
+            _phylogeny.getRoot().setYSecondary( ( getVisibleRect().y + getOvYStart() ) );
+            final Stroke s = g.getStroke();
+            g.setStroke( STROKE_05 );
+            for( final PhylogenyNode element : _nodes_in_preorder ) {
+                paintNodeLite( g, element );
+            }
+            g.setStroke( s );
+            paintOvRectangle( g );
         }
-        g.setStroke( s );
-        paintOvRectangle( g );
     }
 
     /**
