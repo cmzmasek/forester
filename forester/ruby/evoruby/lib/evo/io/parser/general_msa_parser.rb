@@ -62,7 +62,7 @@ module Evoruby
             elsif ( line =~ /^(\S+)\s*$/ )
               seq = $1
               if block == 0
-                error_msg = "First block cannot contain unnamed sequences"
+                error_msg = "First block cannot contain unnamed sequences: "  + line
                 raise IOError, error_msg
               else
                 msa.get_sequence( current_seq_index_per_block ).append!( seq )

@@ -1,10 +1,9 @@
 #
 # = lib/evo/apps/msa_processor.rb - MsaProcessor class
 #
-# Copyright::  Copyright (C) 2006-2007 Christian M. Zmasek
+# Copyright::  Copyright (C) 2020 Christian M. Zmasek
 # License::    GNU Lesser General Public License (LGPL)
 #
-# $Id: msa_processor.rb,v 1.33 2010/12/13 19:00:10 cmzmasek Exp $
 #
 
 require 'date'
@@ -25,7 +24,7 @@ module Evoruby
   class MsaProcessor
 
     PRG_NAME       = "msa_pro"
-    PRG_DATE       = "170609"
+    PRG_DATE       = "121520"
     PRG_DESC       = "processing of multiple sequence alignments"
     PRG_VERSION    = "1.09"
     WWW            = "https://sites.google.com/site/cmzmasek/home/software/forester"
@@ -45,6 +44,7 @@ module Evoruby
     REMOVE_ALL_GAP_CHARACTERS_OPTION   = "rg"
     REMOVE_ALL_SEQUENCES_LISTED_OPTION = "r"
     KEEP_ONLY_SEQUENCES_LISTED_OPTION  = "k"
+    KEEP_ONLY_FIRST_N_SEQS_OPTION      = "fs"
 
     KEEP_MATCHING_SEQUENCES_OPTION     = "mk"
     REMOVE_MATCHING_SEQUENCES_OPTION   = "mr"
@@ -89,6 +89,7 @@ module Evoruby
       @split_by_os      = false
       @first            = -1
       @last             = -1
+      @first_n_seqs     = -1
       @window = false
       @step = -1
       @size =  -1
@@ -149,6 +150,7 @@ module Evoruby
       allowed_opts.push( REMOVE_MATCHING_SEQUENCES_OPTION )
       allowed_opts.push( DIE_IF_NAME_TOO_LONG )
       allowed_opts.push( SLIDING_EXTRACTION_OPTION )
+      allowed_opts.push( KEEP_ONLY_FIRST_N_SEQS_OPTION )
 
       disallowed = cla.validate_allowed_options_as_str( allowed_opts )
       if ( disallowed.length > 0 )
@@ -268,6 +270,10 @@ module Evoruby
         puts( "Keep only columns from: "+ @first.to_s + " to " + @last.to_s )
         log << "Keep only columns from: "+ @first.to_s + " to " + @last.to_s + ld
       end
+      if( @first_n_seqs >= 0 )
+        puts( "Keep first n seqs: " +  @first_n_seqs.to_s )
+        log << "Keep first n seqs: " +  @first_n_seqs.to_s + ld
+      end
       if ( @rem_red )
         puts( "Remove redundant sequences: true" )
         log << "Remove redundant sequences: true" + ld
@@ -370,7 +376,22 @@ module Evoruby
             Util.print_message( PRG_NAME, "Removed " + r.to_s + " sequences" )
             log << "removed " + r.to_s + " sequences" + ld
           end
+        elsif ( @first_n_seqs > 0 )
+          msa_new = Msa.new()
+          k = 0
+          for j in 0 ... msa.get_number_of_seqs()
+            if ( j < @first_n_seqs )
+              msa_new.add_sequence( msa.get_sequence( j ) )
+              k += 1
+            else
+              break
+            end
+          end
+          msa = msa_new
+          Util.print_message( PRG_NAME, "Kept    " + k.to_s + " sequences" )
+          log << "Kept    " + k.to_s + " sequences" + ld
         end
+   
 
         if ( @trim )
           msa.trim!( @first, @last, '_S' )
@@ -505,9 +526,9 @@ module Evoruby
               w.clean( @clean )
               w.set_max_name_length( @name_length )
             end
-            msa_hash.each do |os, m|
+            msa_hash.each do |os, mm|
               my_os = os.gsub(' ', '_').gsub('/', '_').gsub('(', '_').gsub(')', '_')
-              io.write_to_file( m, output + '_' + my_os, w )
+              io.write_to_file( mm, output + '_' + my_os, w )
             end
 
             Util.print_message( PRG_NAME, "wrote " + msa_hash.length.to_s + " files"  )
@@ -790,6 +811,7 @@ module Evoruby
         @trim             = false
         @first            = -1
         @last             = -1
+        @first_n_seqs     = -1
       end
     end
 
@@ -810,6 +832,27 @@ module Evoruby
       @first            = -1
       @last             = -1
       @window           = false
+      @first_n_seqs     = -1
+    end
+    
+    def set_keep_first_n( f )
+      @split            = -1
+      @split_by_os      = false
+      @clean            = false  # phylip only
+      @rgc              = false
+      @rgoc             = false
+      @rg               = false  # fasta only
+      @rgr              = -1
+      @rsgr             = -1
+      @rsl              = -1
+      @seqs_name_file   = nil
+      @remove_seqs      = false
+      @keep_seqs        = false
+      @trim             = false
+      @first            = -1
+      @last             = -1
+      @window           = false
+      @first_n_seqs     = f
     end
 
     def set_window()
@@ -828,6 +871,7 @@ module Evoruby
       @first            = -1
       @last             = -1
       @window           = true
+      @first_n_seqs     = -1
     end
 
     def analyze_command_line( cla )
@@ -1006,6 +1050,18 @@ module Evoruby
       if ( cla.is_option_set?( DIE_IF_NAME_TOO_LONG ) )
         @die_if_name_too_long = true
       end
+      
+      if ( cla.is_option_set?( KEEP_ONLY_FIRST_N_SEQS_OPTION ) )
+        begin
+          f = cla.get_option_value_as_int( KEEP_ONLY_FIRST_N_SEQS_OPTION )
+          set_keep_first_n( f )
+        rescue ArgumentError => e
+          Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
+        end
+      end
+      if ( cla.is_option_set?( DIE_IF_NAME_TOO_LONG ) )
+        @die_if_name_too_long = true
+      end
 
     end
 
@@ -1035,6 +1091,7 @@ module Evoruby
       puts( "           -" + SPLIT + "=<n> split a fasta file into n files of equal number of sequences (expect for " )
       puts( "            last one), cannot be used with other options" )
       puts( "           -" + SLIDING_EXTRACTION_OPTION + "=<step>/<window size>: sliding window extraction, cannot be used with other options" )
+      puts( "           -" + KEEP_ONLY_FIRST_N_SEQS_OPTION + "=<n>: to only keep first n sequences, cannot be used with other options" )
       puts( "           -" + REM_RED_OPTION + ": remove redundant sequences" )
       puts()
     end
