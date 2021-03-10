@@ -1061,7 +1061,7 @@ public final class AptxUtil {
             throw new IOException( "\"" + file_name + "\" is a directory" );
         }
         Rectangle visible = null;
-       if ( options.isGraphicsExportVisibleOnly() ) {
+        if ( options.isGraphicsExportVisibleOnly() ) {
             visible = tree_panel.getVisibleRect();
             width = visible.width;
             height = visible.height;

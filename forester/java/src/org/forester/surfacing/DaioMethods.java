@@ -170,6 +170,7 @@ final class DaioMethods {
             throws IOException {
         final SortedMap<String, String> input_da_name_map;
         final Set<String> all_names_lc = new HashSet<>();
+        final SortedSet<String> not_in_file = new TreeSet<>();
         if ( input_da_name_file != null ) {
             final BasicTable<String> input_da_name_table = BasicTableParser.parse( input_da_name_file, '\t' );
             input_da_name_map = input_da_name_table.getColumnsAsMap( 0, 1 );
@@ -202,10 +203,15 @@ final class DaioMethods {
                 System.out.println();
                 System.out.println( "[" + counter + "/" + total + "] DA: " + da + ":" );
             }
-            if ( ( input_da_name_map != null ) && input_da_name_map.containsKey( da ) ) {
-                name = input_da_name_map.get( da );
-                if ( GlobalOptions.getVerbosity() > 0 ) {
-                    System.out.println( "  [from file] " + name );
+            if ( input_da_name_map != null )  {
+                if ( input_da_name_map.containsKey( da ) ) {
+                    name = input_da_name_map.get( da );
+                    if ( GlobalOptions.getVerbosity() > 0 ) {
+                        System.out.println( "  [from file] " + name );
+                    }
+                }
+                else {
+                    not_in_file.add( da );
                 }
             }
             if ( ( ForesterUtil.isEmptyTrimmed( name ) || name.equals( NA_SYMBOL ) ) && obtain_names_from_db ) {
@@ -344,6 +350,19 @@ final class DaioMethods {
         while ( it3.hasNext() ) {
             suffix_da_name_writer.append( it3.next() );
             suffix_da_name_writer.append( SurfacingConstants.NL );
+        }
+        
+        if (GlobalOptions.getVerbosity() > 0 ) {
+            if ( input_da_name_map != null )  {
+                System.out.println();
+                System.out.println();
+                System.out.println( "DAs not found in file:" );
+                int c = 1;
+                for( final Iterator<String> iterator = not_in_file.iterator(); iterator.hasNext(); ) {
+                    System.out.println( (c++) + ": " +  iterator.next() );
+                }
+                System.out.println();
+            }
         }
     }
 

@@ -2716,10 +2716,13 @@ final class ControlPanel extends JPanel implements ActionListener {
             else {
                 final String ranks[] = PhylogenyMethods
                         .obtainPresentRanksSorted( getMainPanel().getCurrentTreePanel().getPhylogeny() );
-                final int rr = Integer.parseInt( r );
-                _rank_collapse_depth_tf.setText( ranks[ rr ] );
+                int rr = Integer.parseInt( r );
+                if ( rr >= ranks.length ) { // Hackish "fix" for the problem below.
+                    rr = ranks.length -1;
+                }
+                _rank_collapse_depth_tf.setText( ranks[ rr ] ); //TODO FIXME exception.
                 _rank_collapse_depth_tf.setToolTipText( ( rr + 1 ) + "/" + ( ranks.length - 1 ) + ": "
-                        + ranks[ Integer.parseInt( r ) ] );
+                        + ranks[ rr ] );
             }
         }
     }

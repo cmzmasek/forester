@@ -24,6 +24,7 @@ import org.forester.util.ForesterUtil;
 
 public class vipr_x {
 
+    private static int           OPERATION         = 2;
     private static final String  XSD_STRING        = "xsd:string";
     private static final String  VIPR_HOST         = "vipr:Host";
     private static final String  VIPR_COUNTRY      = "vipr:Country";
@@ -40,11 +41,24 @@ public class vipr_x {
     // 7. Country
     // 8. Subtype
     // 9. Virus Type
-    private final static Pattern VIPR_PATTERN      = Pattern
+    private final static Pattern VIPR_PATTERN_1    = Pattern
             .compile( "(.*?)\\|(.*?)\\|(.*?)\\|(.*?)\\|(.*?)\\|(.*?)\\|(.*?)\\|(.*?)\\|(.*?)" );
+    // MT451688|SARS_CoV_2/human/AUS/VIC1004/2020|2020_03_31|Human|Australia|NA|Severe_acute_respiratory_syndrome_related_coronavirus
+    // 1. GB accession
+    // 2. strain name
+    // 3. Host
+    // 4. Country short
+    // 5. ?
+    // 6. Year
+    // 7. Date
+    // 8. Host
+    // 9. Country
+    // 10. ?
+    // 11. Name
+    private final static Pattern VIPR_PATTERN_2    = Pattern
+            .compile( "(.*?)\\|(.*?)/(.*?)/(.*?)/(.*?)/(.*?)\\|(.*?)\\|(.*?)\\|(.*?)\\|(.*?)\\|(.*?)" );
     private final static Pattern YEAR_PATTERN      = Pattern.compile( "(\\d{4}).*" );
     private final static boolean MODIFY_NODE_NAMES = true;
-
     public static void main( final String args[] ) {
         if ( args.length != 2 ) {
             System.out.println( "\nWrong number of arguments, expected: intree outtree\n" );
@@ -72,64 +86,127 @@ public class vipr_x {
         for( final PhylogenyNode ext_node : ext_nodes ) {
             final String name = ext_node.getName();
             if ( !ForesterUtil.isEmpty( name ) ) {
-                final Matcher m = VIPR_PATTERN.matcher( name );
-                if ( m.matches() ) {
-                    final String gene_symbol = m.group( 1 );
-                    final String gene_product_name = m.group( 2 );
-                    final String gb_accession = m.group( 3 );
-                    final String strain_name = m.group( 4 );
-                    final String date = m.group( 5 );
-                    final String host = m.group( 6 );
-                    final String country = m.group( 7 );
-                    final String subtype = m.group( 8 );
-                    final String virus_type = m.group( 9 );
-                    String year = "";
-                    final Matcher ym = YEAR_PATTERN.matcher( date );
-                    if ( ym.matches() ) {
-                        year = ym.group( 1 );
-                    }
-                    System.out.println( name );
-                    System.out.println( "gene symbol      : " + gene_symbol );
-                    System.out.println( "gene product name: " + gene_product_name );
-                    System.out.println( "gb accession     : " + gb_accession );
-                    System.out.println( "strain name      : " + strain_name );
-                    System.out.println( "date             : " + date );
-                    System.out.println( "year             : " + year );
-                    System.out.println( "host             : " + host );
-                    System.out.println( "country          : " + country );
-                    System.out.println( "subtype          : " + subtype );
-                    System.out.println( "virus type       : " + virus_type );
-                    System.out.println();
-                    final PropertiesList custom_data = new PropertiesList();
-                    if ( !ForesterUtil.isEmpty( year ) ) {
-                        custom_data.addProperty( new Property( VIPR_YEAR, year, "", XSD_STRING, AppliesTo.NODE ) );
-                    }
-                    custom_data.addProperty( new Property( VIPR_COUNTRY, country, "", XSD_STRING, AppliesTo.NODE ) );
-                    custom_data.addProperty( new Property( VIPR_HOST, host, "", XSD_STRING, AppliesTo.NODE ) );
-                    ext_node.getNodeData().setProperties( custom_data );
-                    Sequence seq = null;
-                    if ( ext_node.isHasNodeData() && ext_node.getNodeData().isHasSequence() ) {
-                        seq = ext_node.getNodeData().getSequence();
+                if ( OPERATION == 1 ) {
+                    final Matcher m = VIPR_PATTERN_1.matcher( name );
+                    if ( m.matches() ) {
+                        final String gene_symbol = m.group( 1 );
+                        final String gene_product_name = m.group( 2 );
+                        final String gb_accession = m.group( 3 );
+                        final String strain_name = m.group( 4 );
+                        final String date = m.group( 5 );
+                        final String host = m.group( 6 );
+                        final String country = m.group( 7 );
+                        final String subtype = m.group( 8 );
+                        final String virus_type = m.group( 9 );
+                        String year = "";
+                        final Matcher ym = YEAR_PATTERN.matcher( date );
+                        if ( ym.matches() ) {
+                            year = ym.group( 1 );
+                        }
+                        System.out.println( name );
+                        System.out.println( "gene symbol      : " + gene_symbol );
+                        System.out.println( "gene product name: " + gene_product_name );
+                        System.out.println( "gb accession     : " + gb_accession );
+                        System.out.println( "strain name      : " + strain_name );
+                        System.out.println( "date             : " + date );
+                        System.out.println( "year             : " + year );
+                        System.out.println( "host             : " + host );
+                        System.out.println( "country          : " + country );
+                        System.out.println( "subtype          : " + subtype );
+                        System.out.println( "virus type       : " + virus_type );
+                        System.out.println();
+                        final PropertiesList custom_data = new PropertiesList();
+                        if ( !ForesterUtil.isEmpty( year ) ) {
+                            custom_data.addProperty( new Property( VIPR_YEAR, year, "", XSD_STRING, AppliesTo.NODE ) );
+                        }
+                        custom_data
+                                .addProperty( new Property( VIPR_COUNTRY, country, "", XSD_STRING, AppliesTo.NODE ) );
+                        custom_data.addProperty( new Property( VIPR_HOST, host, "", XSD_STRING, AppliesTo.NODE ) );
+                        ext_node.getNodeData().setProperties( custom_data );
+                        Sequence seq = null;
+                        if ( ext_node.isHasNodeData() && ext_node.getNodeData().isHasSequence() ) {
+                            seq = ext_node.getNodeData().getSequence();
+                        }
+                        else {
+                            seq = new Sequence();
+                        }
+                        seq.setAccession( new Accession( gb_accession, Accession.Source.NCBI ) );
+                        try {
+                            seq.setSymbol( gene_symbol );
+                        }
+                        catch ( final PhyloXmlDataFormatException e ) {
+                            // ignore
+                        }
+                        ext_node.getNodeData().addSequence( seq );
+                        addRegion( country, custom_data );
+                        addSpecialData1( gb_accession, custom_data, ext_node );
+                        addSpecialData12( gb_accession, custom_data, ext_node );
+                        addSpecialData2( gb_accession, custom_data, ext_node );
                     }
                     else {
-                        seq = new Sequence();
+                        System.out.println( "ERROR: name \"" + name + "\" could not be matched" );
+                        System.exit( -1 );
                     }
-                    seq.setAccession( new Accession( gb_accession, Accession.Source.NCBI ) );
-                    try {
-                        seq.setSymbol( gene_symbol );
-                    }
-                    catch ( final PhyloXmlDataFormatException e ) {
-                        // ignore
-                    }
-                    ext_node.getNodeData().addSequence( seq );
-                    addRegion( country, custom_data );
-                    addSpecialData1( gb_accession, custom_data, ext_node );
-                    addSpecialData12( gb_accession, custom_data, ext_node );
-                    addSpecialData2( gb_accession, custom_data, ext_node );
                 }
-                else {
-                    System.out.println( "ERROR: name \"" + name + "\" could not be matched" );
-                    System.exit( -1 );
+                else if ( OPERATION == 2 ) {
+                    /////////////////
+                    final Matcher m = VIPR_PATTERN_2.matcher( name );
+                    if ( m.matches() ) {
+                        // 1. GB accession
+                        // 2. strain name
+                        // 3. Host
+                        // 4. Country short
+                        // 5. ?
+                        // 6. Year
+                        // 7. Date
+                        // 8. Host
+                        // 9. Country
+                        // 10. ?
+                        // 11. Name 
+                        final String gb_accession = m.group( 1 );
+                        final String strain_name = m.group( 2 );
+                        final String date = m.group( 7 );
+                        final String host = m.group( 8 );
+                        final String country = m.group( 9 );
+                        String year = "";
+                        final Matcher ym = YEAR_PATTERN.matcher( date );
+                        if ( ym.matches() ) {
+                            year = ym.group( 1 );
+                        }
+                        System.out.println( name );
+                        System.out.println( "gb accession     : " + gb_accession );
+                        System.out.println( "strain name      : " + strain_name );
+                        System.out.println( "date             : " + date );
+                        System.out.println( "year             : " + year );
+                        System.out.println( "host             : " + host );
+                        System.out.println( "country          : " + country );
+                        System.out.println();
+                        PropertiesList custom_data = ext_node.getNodeData().getProperties();
+                        if ( custom_data == null ) {
+                            custom_data = new PropertiesList();
+                        }
+                        if ( !ForesterUtil.isEmpty( year ) ) {
+                            custom_data.addProperty( new Property( VIPR_YEAR, year, "", XSD_STRING, AppliesTo.NODE ) );
+                        }
+                        custom_data
+                                .addProperty( new Property( VIPR_COUNTRY, country, "", XSD_STRING, AppliesTo.NODE ) );
+                        custom_data.addProperty( new Property( VIPR_HOST, host, "", XSD_STRING, AppliesTo.NODE ) );
+                        ext_node.getNodeData().setProperties( custom_data );
+                        Sequence seq = null;
+                        if ( ext_node.isHasNodeData() && ext_node.getNodeData().isHasSequence() ) {
+                            seq = ext_node.getNodeData().getSequence();
+                        }
+                        else {
+                            seq = new Sequence();
+                        }
+                        seq.setAccession( new Accession( gb_accession, Accession.Source.NCBI ) );
+                        ext_node.getNodeData().addSequence( seq );
+                        addRegion( country, custom_data );
+                    }
+                    else {
+                        System.out.println( "WARNING: name \"" + name + "\" could not be matched" );
+                    }
+                    ////////////////
                 }
             }
         }
@@ -151,15 +228,21 @@ public class vipr_x {
         if ( c.equals( "canada" ) || c.equals( "usa" ) || c.equals( "mexico" ) ) {
             region = "North America";
         }
+        else if ( c.equals( "chile" ) || c.equals( "brazil" ) ) {
+            region = "North America";
+        }
         else if ( c.equals( "denmark" ) || c.equals( "finland" ) || c.equals( "france" ) || c.equals( "germany" )
                 || c.equals( "italy" ) || c.equals( "netherlands" ) || c.equals( "norway" ) || c.equals( "spain" )
-                || c.equals( "united_kingdom" ) ) {
+                || c.equals( "united_kingdom" ) || c.equals( "malta" ) ) {
             region = "Western Europe";
         }
         else if ( c.equals( "japan" ) || c.equals( "taiwan" ) || c.equals( "hong_kong" ) || c.equals( "china" ) ) {
             region = "East Asia";
         }
-        else if ( c.equals( "india" ) ) {
+        else if ( c.equals( "iraq" ) || c.equals( "turkey" ) || c.equals( "egypt" ) ) {
+            region = "West Asia";
+        }
+        else if ( c.equals( "india" ) || ( c.equals( "pakistan" ) | c.equals( "bangladesh" ) ) ) {
             region = "South Asia";
         }
         else if ( c.equals( "malaysia" ) || c.equals( "philippines" ) || c.equals( "viet_nam" ) ) {

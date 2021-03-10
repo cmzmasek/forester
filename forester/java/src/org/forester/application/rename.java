@@ -32,16 +32,17 @@ public class rename {
         for( final PhylogenyNodeIterator iter = p.iteratorPreorder(); iter.hasNext(); ) {
             final PhylogenyNode node = iter.next();
             final String node_name = node.getName();
-            if ( !ForesterUtil.isEmpty( node_name ) ) {
+            if ( node.isExternal() && !ForesterUtil.isEmpty( node_name ) ) {
                 final int i = node_name.lastIndexOf( '_' );
                 if ( i > 0 ) {
-                    node.setName( node_name.substring( i + 1 )  );
+                    node.setName( node_name.substring( i + 1 ) );
                 }
             }
         }
         try {
             final PhylogenyWriter w = new PhylogenyWriter();
             w.toNewHampshire( p, true, outfile );
+            // w.toPhyloXML( p, 0, outfile );
         }
         catch ( final IOException e ) {
             System.out.println( "\nFailure to write output [" + e.getMessage() + "]\n" );
