@@ -22,7 +22,7 @@ import org.forester.util.ForesterUtil;
 public class pango_select {
 
     private final static String PRG_NAME             = "pango_select";
-    private final static int    MAX_SEQS_PER_LINEAGE = 4;
+    private final static int    MAX_SEQS_PER_LINEAGE = 3;
     public static void main( final String args[] ) {
         if ( args.length != 3 ) {
             System.out.println( "\nWrong number of arguments, expected: lineage_file fasta_seqs_file outfile\n" );

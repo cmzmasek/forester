@@ -44,19 +44,13 @@ public class vipr_x {
     private final static Pattern VIPR_PATTERN_1    = Pattern
             .compile( "(.*?)\\|(.*?)\\|(.*?)\\|(.*?)\\|(.*?)\\|(.*?)\\|(.*?)\\|(.*?)\\|(.*?)" );
     // MT451688|SARS_CoV_2/human/AUS/VIC1004/2020|2020_03_31|Human|Australia|NA|Severe_acute_respiratory_syndrome_related_coronavirus
+    // MW514307|SARS_CoV_2/human/RUS/Dubrovka/2020|2020_06_04|Human|Russia
     // 1. GB accession
     // 2. strain name
-    // 3. Host
-    // 4. Country short
-    // 5. ?
-    // 6. Year
-    // 7. Date
-    // 8. Host
-    // 9. Country
-    // 10. ?
-    // 11. Name
-    private final static Pattern VIPR_PATTERN_2    = Pattern
-            .compile( "(.*?)\\|(.*?)/(.*?)/(.*?)/(.*?)/(.*?)\\|(.*?)\\|(.*?)\\|(.*?)\\|(.*?)\\|(.*?)" );
+    // 3. Date
+    // 4. Host
+    // 5. Country
+    private final static Pattern VIPR_PATTERN_2    = Pattern.compile( "(.*?)\\|(.*?)\\|(.*?)\\|(.*?)\\|(.*?)" );
     private final static Pattern YEAR_PATTERN      = Pattern.compile( "(\\d{4}).*" );
     private final static boolean MODIFY_NODE_NAMES = true;
     public static void main( final String args[] ) {
@@ -152,22 +146,11 @@ public class vipr_x {
                     /////////////////
                     final Matcher m = VIPR_PATTERN_2.matcher( name );
                     if ( m.matches() ) {
-                        // 1. GB accession
-                        // 2. strain name
-                        // 3. Host
-                        // 4. Country short
-                        // 5. ?
-                        // 6. Year
-                        // 7. Date
-                        // 8. Host
-                        // 9. Country
-                        // 10. ?
-                        // 11. Name 
                         final String gb_accession = m.group( 1 );
                         final String strain_name = m.group( 2 );
-                        final String date = m.group( 7 );
-                        final String host = m.group( 8 );
-                        final String country = m.group( 9 );
+                        final String date = m.group( 3 );
+                        final String host = m.group( 4 );
+                        final String country = m.group( 5 );
                         String year = "";
                         final Matcher ym = YEAR_PATTERN.matcher( date );
                         if ( ym.matches() ) {
@@ -228,32 +211,53 @@ public class vipr_x {
         if ( c.equals( "canada" ) || c.equals( "usa" ) || c.equals( "mexico" ) ) {
             region = "North America";
         }
-        else if ( c.equals( "chile" ) || c.equals( "brazil" ) ) {
-            region = "North America";
+        else if ( c.equals( "peru" ) || c.equals( "ecuador" ) || c.equals( "colombia" ) || c.equals( "chile" )
+                || c.equals( "brazil" ) || c.equals( "argentina" ) ) {
+            region = "South America";
         }
         else if ( c.equals( "denmark" ) || c.equals( "finland" ) || c.equals( "france" ) || c.equals( "germany" )
-                || c.equals( "italy" ) || c.equals( "netherlands" ) || c.equals( "norway" ) || c.equals( "spain" )
-                || c.equals( "united_kingdom" ) || c.equals( "malta" ) ) {
+                || c.equals( "netherlands" ) || c.equals( "norway" ) || c.equals( "united_kingdom" ) ) {
             region = "Western Europe";
         }
-        else if ( c.equals( "japan" ) || c.equals( "taiwan" ) || c.equals( "hong_kong" ) || c.equals( "china" ) ) {
+        else if ( c.equals( "serbia" ) || c.equals( "greece" ) || c.equals( "malta" ) || c.equals( "italy" )
+                || c.equals( "spain" ) ) {
+            region = "Southern Europe";
+        }
+        else if ( c.equals( "poland" ) ) {
+            region = "Central Europe";
+        }
+        else if ( c.equals( "russia" ) ) {
+            region = "Eastern Europe";
+        }
+        else if ( c.equals( "japan" ) || c.equals( "taiwan" ) || c.equals( "hong_kong" ) || c.equals( "south_korea" )
+                || c.equals( "china" ) ) {
             region = "East Asia";
         }
-        else if ( c.equals( "iraq" ) || c.equals( "turkey" ) || c.equals( "egypt" ) ) {
+        else if ( c.equals( "kazakhstan" ) ) {
+            region = "Central Asia";
+        }
+        else if ( c.equals( "jordan" ) || c.equals( "bahrain" ) || c.equals( "iraq" ) || c.equals( "saudi_arabia" )
+                || c.equals( "turkey" ) || c.equals( "egypt" ) || c.equals( "israel" ) ) {
             region = "West Asia";
         }
         else if ( c.equals( "india" ) || ( c.equals( "pakistan" ) | c.equals( "bangladesh" ) ) ) {
             region = "South Asia";
         }
-        else if ( c.equals( "malaysia" ) || c.equals( "philippines" ) || c.equals( "viet_nam" ) ) {
+        else if ( c.equals( "cambodia" ) || c.equals( "thailand" ) || c.equals( "malaysia" )
+                || c.equals( "philippines" ) || c.equals( "viet_nam" ) ) {
             region = "Southeast Asia";
         }
-        else if ( c.equals( "gambia" ) || c.equals( "kenya" ) || c.equals( "senegal" ) || c.equals( "south_africa" )
-                || c.equals( "tanzania" ) ) {
+        else if ( c.equals( "morocco" ) || c.equals( "gambia" ) || c.equals( "kenya" ) || c.equals( "senegal" )
+                || c.equals( "south_africa" ) || c.equals( "tanzania" ) || c.equals( "ghana" ) || c.equals( "benin" )
+                || c.equals( "tunisia" ) ) {
             region = "Africa";
         }
         else if ( c.equals( "australia" ) || c.equals( "new_zealand" ) ) {
             region = "Oceania";
+        }
+        else if ( c.equals( "dominican_republic" ) || c.equals( "puerto_rico" ) || c.equals( "jamaica" )
+                || c.equals( "belize" ) ) {
+            region = "Caribbean";
         }
         else if ( c.equals( "na" ) ) {
             region = "";

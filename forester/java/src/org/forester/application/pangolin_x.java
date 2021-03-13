@@ -11,24 +11,24 @@ import org.forester.io.parsers.util.ParserUtils;
 import org.forester.io.writers.PhylogenyWriter;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
-import org.forester.phylogeny.data.Annotation;
 import org.forester.phylogeny.data.PropertiesList;
 import org.forester.phylogeny.data.Property;
 import org.forester.phylogeny.data.Property.AppliesTo;
-import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
-import org.forester.sequence.BasicSequence;
 import org.forester.util.BasicTable;
 import org.forester.util.BasicTableParser;
 import org.forester.util.ForesterUtil;
 
 public class pangolin_x {
 
-    private static final String XSD_STRING          = "xsd:string";
-    private static final String VIPR_PANGOLIN_CLADE = "vipr:PANGO_Lineage";
-    private final static String PRG_NAME            = "pangolin_x";
+    private static final String XSD_STRING            = "xsd:string";
+    private static final String VIPR_PANGOLIN_CLADE   = "vipr:PANGO_Lineage";
+    private static final String VIPR_PANGOLIN_CLADE_0 = "vipr:PANGO_Lineage_L0";
+    private static final String VIPR_PANGOLIN_CLADE_1 = "vipr:PANGO_Lineage_L1";
+    private static final String VIPR_PANGOLIN_CLADE_2 = "vipr:PANGO_Lineage_L2";
+    private final static String PRG_NAME              = "pangolin_x";
     public static void main( final String args[] ) {
         if ( args.length != 3 ) {
             System.out.println( "\nWrong number of arguments, expected: lineage_file intree outtree\n" );
@@ -72,6 +72,16 @@ public class pangolin_x {
                     final String clade = id_to_clade.get( name );
                     if ( !ForesterUtil.isEmpty( clade ) ) {
                         PropertiesList custom_data = ext_node.getNodeData().getProperties();
+                        final String clade_split[] = clade.split( "\\." );
+                        final String clade_0 = clade_split.length > 0 ? clade_split[ 0 ] : null;
+                        String clade_1 = null;
+                        String clade_2 = null;
+                        if ( clade_split.length > 1 ) {
+                            clade_1 = clade_0 + "." + clade_split[ 1 ];
+                        }
+                        if ( clade_split.length > 2 ) {
+                            clade_2 = clade_1 + "." + clade_split[ 2 ];
+                        }
                         if ( custom_data == null ) {
                             custom_data = new PropertiesList();
                         }
@@ -80,14 +90,49 @@ public class pangolin_x {
                                                                "",
                                                                XSD_STRING,
                                                                AppliesTo.NODE ) );
-                        ext_node.getNodeData()
-                                .addSequence( new Sequence( BasicSequence.createDnaSequence( "id", "?" ) ) );
-                        ext_node.getNodeData().getSequence().addAnnotation( new Annotation( "clade", clade ) );
+                        if ( !ForesterUtil.isEmpty( clade_0 ) ) {
+                            custom_data.addProperty( new Property( VIPR_PANGOLIN_CLADE_0,
+                                                                   clade_0,
+                                                                   "",
+                                                                   XSD_STRING,
+                                                                   AppliesTo.NODE ) );
+                        }
+                        if ( !ForesterUtil.isEmpty( clade_1 ) ) {
+                            custom_data.addProperty( new Property( VIPR_PANGOLIN_CLADE_1,
+                                                                   clade_1,
+                                                                   "",
+                                                                   XSD_STRING,
+                                                                   AppliesTo.NODE ) );
+                        }
+                        if ( !ForesterUtil.isEmpty( clade_2 ) ) {
+                            custom_data.addProperty( new Property( VIPR_PANGOLIN_CLADE_2,
+                                                                   clade_2,
+                                                                   "",
+                                                                   XSD_STRING,
+                                                                   AppliesTo.NODE ) );
+                        }
                         ext_node.getNodeData().setProperties( custom_data );
                     }
                 }
             }
         }
+        addInternalCladeInformation( p, VIPR_PANGOLIN_CLADE );
+        addInternalCladeInformation( p, VIPR_PANGOLIN_CLADE_0 );
+        addInternalCladeInformation( p, VIPR_PANGOLIN_CLADE_1 );
+        addInternalCladeInformation( p, VIPR_PANGOLIN_CLADE_2 );
+        try {
+            final PhylogenyWriter writer = new PhylogenyWriter();
+            writer.toPhyloXML( p, 0, outfile );
+        }
+        catch ( final IOException e ) {
+            ForesterUtil.fatalError( PRG_NAME, "failed to write to [" + outfile + "]: " + e.getMessage() );
+        }
+        System.out.println( "[" + PRG_NAME + "] wrote: [" + outfile + "]" );
+        System.out.println( "[" + PRG_NAME + "] OK" );
+        System.out.println();
+    }
+
+    private static void addInternalCladeInformation( final Phylogeny p, final String property ) {
         for( final PhylogenyNodeIterator it = p.iteratorPostorder(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
             if ( n.isInternal() ) {
@@ -98,7 +143,7 @@ public class pangolin_x {
                     if ( child.isFirstChildNode() ) {
                         final PropertiesList custom_data = child.getNodeData().getProperties();
                         if ( custom_data != null ) {
-                            final List<Property> clades = custom_data.getProperties( VIPR_PANGOLIN_CLADE );
+                            final List<Property> clades = custom_data.getProperties( property );
                             if ( ( clades != null ) && ( clades.size() == 1 ) ) {
                                 clade = clades.get( 0 ).getValue();
                             }
@@ -113,7 +158,7 @@ public class pangolin_x {
                     else if ( !ForesterUtil.isEmpty( clade ) ) {
                         final PropertiesList custom_data = child.getNodeData().getProperties();
                         if ( custom_data != null ) {
-                            final List<Property> clades = custom_data.getProperties( VIPR_PANGOLIN_CLADE );
+                            final List<Property> clades = custom_data.getProperties( property );
                             if ( ( clades != null ) && ( clades.size() == 1 ) ) {
                                 final String my_clade = clades.get( 0 ).getValue();
                                 if ( ForesterUtil.isEmpty( my_clade ) || !clade.equals( my_clade ) ) {
@@ -135,27 +180,11 @@ public class pangolin_x {
                         if ( custom_data == null ) {
                             custom_data = new PropertiesList();
                         }
-                        custom_data.addProperty( new Property( VIPR_PANGOLIN_CLADE,
-                                                               clade,
-                                                               "",
-                                                               XSD_STRING,
-                                                               AppliesTo.NODE ) );
-                        n.getNodeData().addSequence( new Sequence( BasicSequence.createDnaSequence( "id", "?" ) ) );
-                        n.getNodeData().getSequence().addAnnotation( new Annotation( "clade", clade ) );
+                        custom_data.addProperty( new Property( property, clade, "", XSD_STRING, AppliesTo.NODE ) );
                         n.getNodeData().setProperties( custom_data );
                     }
                 }
             }
         }
-        try {
-            final PhylogenyWriter writer = new PhylogenyWriter();
-            writer.toPhyloXML( p, 0, outfile );
-        }
-        catch ( final IOException e ) {
-            ForesterUtil.fatalError( PRG_NAME, "failed to write to [" + outfile + "]: " + e.getMessage() );
-        }
-        System.out.println( "[" + PRG_NAME + "] wrote: [" + outfile + "]" );
-        System.out.println( "[" + PRG_NAME + "] OK" );
-        System.out.println();
     }
 }
