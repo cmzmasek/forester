@@ -27,7 +27,6 @@ public class pangolin_x {
     private static final String VIPR_PANGOLIN_CLADE   = "vipr:PANGO_Lineage";
     private static final String VIPR_PANGOLIN_CLADE_0 = "vipr:PANGO_Lineage_L0";
     private static final String VIPR_PANGOLIN_CLADE_1 = "vipr:PANGO_Lineage_L1";
-    private static final String VIPR_PANGOLIN_CLADE_2 = "vipr:PANGO_Lineage_L2";
     private final static String PRG_NAME              = "pangolin_x";
     public static void main( final String args[] ) {
         if ( args.length != 3 ) {
@@ -75,12 +74,8 @@ public class pangolin_x {
                         final String clade_split[] = clade.split( "\\." );
                         final String clade_0 = clade_split.length > 0 ? clade_split[ 0 ] : null;
                         String clade_1 = null;
-                        String clade_2 = null;
                         if ( clade_split.length > 1 ) {
                             clade_1 = clade_0 + "." + clade_split[ 1 ];
-                        }
-                        if ( clade_split.length > 2 ) {
-                            clade_2 = clade_1 + "." + clade_split[ 2 ];
                         }
                         if ( custom_data == null ) {
                             custom_data = new PropertiesList();
@@ -104,13 +99,6 @@ public class pangolin_x {
                                                                    XSD_STRING,
                                                                    AppliesTo.NODE ) );
                         }
-                        if ( !ForesterUtil.isEmpty( clade_2 ) ) {
-                            custom_data.addProperty( new Property( VIPR_PANGOLIN_CLADE_2,
-                                                                   clade_2,
-                                                                   "",
-                                                                   XSD_STRING,
-                                                                   AppliesTo.NODE ) );
-                        }
                         ext_node.getNodeData().setProperties( custom_data );
                     }
                 }
@@ -119,7 +107,6 @@ public class pangolin_x {
         addInternalCladeInformation( p, VIPR_PANGOLIN_CLADE );
         addInternalCladeInformation( p, VIPR_PANGOLIN_CLADE_0 );
         addInternalCladeInformation( p, VIPR_PANGOLIN_CLADE_1 );
-        addInternalCladeInformation( p, VIPR_PANGOLIN_CLADE_2 );
         try {
             final PhylogenyWriter writer = new PhylogenyWriter();
             writer.toPhyloXML( p, 0, outfile );

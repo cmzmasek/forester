@@ -45,12 +45,12 @@ public class vipr_x {
             .compile( "(.*?)\\|(.*?)\\|(.*?)\\|(.*?)\\|(.*?)\\|(.*?)\\|(.*?)\\|(.*?)\\|(.*?)" );
     // MT451688|SARS_CoV_2/human/AUS/VIC1004/2020|2020_03_31|Human|Australia|NA|Severe_acute_respiratory_syndrome_related_coronavirus
     // MW514307|SARS_CoV_2/human/RUS/Dubrovka/2020|2020_06_04|Human|Russia
-    // 1. GB accession
-    // 2. strain name
+    // 1. strain name
+    // 2. GB accession
     // 3. Date
     // 4. Host
     // 5. Country
-    private final static Pattern VIPR_PATTERN_2    = Pattern.compile( "(.*?)\\|(.*?)\\|(.*?)\\|(.*?)\\|(.*?)" );
+    private final static Pattern VIPR_PATTERN_2    = Pattern.compile( "(.*?)\\|(.*?)\\|(.*?)\\|(.*?)\\|(.*?)\\|.+" );
     private final static Pattern YEAR_PATTERN      = Pattern.compile( "(\\d{4}).*" );
     private final static boolean MODIFY_NODE_NAMES = true;
     public static void main( final String args[] ) {
@@ -146,8 +146,8 @@ public class vipr_x {
                     /////////////////
                     final Matcher m = VIPR_PATTERN_2.matcher( name );
                     if ( m.matches() ) {
-                        final String gb_accession = m.group( 1 );
-                        final String strain_name = m.group( 2 );
+                        final String gb_accession = m.group( 2 );
+                        final String strain_name = m.group( 1 );
                         final String date = m.group( 3 );
                         final String host = m.group( 4 );
                         final String country = m.group( 5 );
@@ -212,11 +212,12 @@ public class vipr_x {
             region = "North America";
         }
         else if ( c.equals( "peru" ) || c.equals( "ecuador" ) || c.equals( "colombia" ) || c.equals( "chile" )
-                || c.equals( "brazil" ) || c.equals( "argentina" ) ) {
+                || c.equals( "brazil" ) || c.equals( "argentina" ) || c.equals( "guatemala" ) || c.equals( "uruguay" ) ) {
             region = "South America";
         }
         else if ( c.equals( "denmark" ) || c.equals( "finland" ) || c.equals( "france" ) || c.equals( "germany" )
-                || c.equals( "netherlands" ) || c.equals( "norway" ) || c.equals( "united_kingdom" ) ) {
+                || c.equals( "netherlands" ) || c.equals( "norway" ) || c.equals( "united_kingdom" ) || c.equals( "switzerland" )
+                || c.equals( "austria" ) || c.equals( "estonia" ) ) {
             region = "Western Europe";
         }
         else if ( c.equals( "serbia" ) || c.equals( "greece" ) || c.equals( "malta" ) || c.equals( "italy" )
@@ -226,7 +227,7 @@ public class vipr_x {
         else if ( c.equals( "poland" ) ) {
             region = "Central Europe";
         }
-        else if ( c.equals( "russia" ) ) {
+        else if ( c.equals( "russia" ) || c.equals( "belarus" ) ) {
             region = "Eastern Europe";
         }
         else if ( c.equals( "japan" ) || c.equals( "taiwan" ) || c.equals( "hong_kong" ) || c.equals( "south_korea" )
@@ -237,19 +238,19 @@ public class vipr_x {
             region = "Central Asia";
         }
         else if ( c.equals( "jordan" ) || c.equals( "bahrain" ) || c.equals( "iraq" ) || c.equals( "saudi_arabia" )
-                || c.equals( "turkey" ) || c.equals( "egypt" ) || c.equals( "israel" ) ) {
+                || c.equals( "turkey" ) || c.equals( "egypt" ) || c.equals( "israel" ) || c.equals( "west_bank" ) ) {
             region = "West Asia";
         }
         else if ( c.equals( "india" ) || ( c.equals( "pakistan" ) | c.equals( "bangladesh" ) ) ) {
             region = "South Asia";
         }
         else if ( c.equals( "cambodia" ) || c.equals( "thailand" ) || c.equals( "malaysia" )
-                || c.equals( "philippines" ) || c.equals( "viet_nam" ) ) {
+                || c.equals( "philippines" ) || c.equals( "viet_nam" ) || c.equals( "myanmar" ) ) {
             region = "Southeast Asia";
         }
         else if ( c.equals( "morocco" ) || c.equals( "gambia" ) || c.equals( "kenya" ) || c.equals( "senegal" )
                 || c.equals( "south_africa" ) || c.equals( "tanzania" ) || c.equals( "ghana" ) || c.equals( "benin" )
-                || c.equals( "tunisia" ) ) {
+                || c.equals( "tunisia" )  || c.equals( "nigeria" ) ) {
             region = "Africa";
         }
         else if ( c.equals( "australia" ) || c.equals( "new_zealand" ) ) {

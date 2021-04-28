@@ -44,7 +44,7 @@ public class voc_prep {
                 // MT412292|SARS_CoV_2/human/USA/WA_UW_6170/2020|2020_04_01|Human|USA|NA|Severe_acute_respiratory_syndrome_related_coronavirus
                 final String[] x = node_name.split( "\\|" );
                 if ( x.length > 1 ) {
-                    final String new_node_name = x[ 1 ];
+                    final String new_node_name = x[ 0 ];
                     System.out.println( node_name + " -> " + new_node_name );
                     node.setName( new_node_name );
                 }
