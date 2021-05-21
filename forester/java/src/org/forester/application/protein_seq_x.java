@@ -26,7 +26,8 @@ import org.forester.util.ForesterUtil;
 
 public class protein_seq_x {
 
-    private final static String PRG_NAME = "protein_seq_x";
+    private final static String PRG_NAME   = "protein_seq_x";
+    private final static int    MAX_LENGTH = 1273;
     public static void main( final String[] args ) {
         if ( args.length != 3 ) {
             System.out.println( PRG_NAME + ": Wrong number of arguments.\n" );
@@ -91,6 +92,9 @@ public class protein_seq_x {
                             if ( acc.equals( genome_acc ) ) {
                                 out_seqs.add( BasicSequence.createAaSequence( genome_acc,
                                                                               seq.getMolecularSequenceAsString() ) );
+                                if ( seq.getLength() > MAX_LENGTH ) {
+                                    System.out.println( genome_acc + ": " + seq.getLength() );
+                                }
                                 stats.addValue( seq.getLength() );
                                 found = true;
                                 continue;
