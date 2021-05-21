@@ -118,10 +118,10 @@ public class protein_seq_x {
             ForesterUtil.fatalError( PRG_NAME, "Error writing to " + seqs_outfile + ": " + e.getLocalizedMessage() );
         }
         System.out.println( "Wrote sequences to     : " + seqs_outfile );
-        System.out.println( "Number of sequences    : " + out_seqs.size() + "\n" );
+        System.out.println( "Number of sequences    : " + out_seqs.size() );
         System.out.println( "Minimum sequence length: " + stats.getMin() );
         System.out.println( "Maximum sequence length: " + stats.getMax() );
         System.out.println( "Mean sequence length   : " + stats.arithmeticMean() );
-        System.out.println( "Median sequence length : " + stats.median() );
+        System.out.println( "Median sequence length : " + stats.median() + "\n" );
     }
 }
