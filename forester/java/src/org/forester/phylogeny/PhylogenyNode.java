@@ -34,10 +34,12 @@ import org.forester.io.parsers.nhx.NHXFormatException;
 import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.parsers.phyloxml.PhyloXmlUtil;
+import org.forester.phylogeny.data.Accession;
 import org.forester.phylogeny.data.BranchData;
 import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.data.NodeData;
 import org.forester.phylogeny.data.PhylogenyDataUtil;
+import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.iterators.PreorderTreeIterator;
 import org.forester.util.ForesterUtil;
 
@@ -903,7 +905,18 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
     // Writing of Nodes to Strings
     // ---------------------------------------------------------
     final public String toNewHampshire( final boolean write_distance_to_parent,
-                                        final NH_CONVERSION_SUPPORT_VALUE_STYLE svs ) {
+                                        final NH_CONVERSION_SUPPORT_VALUE_STYLE svs
+                                        ) {
+        return toNewHampshire(  write_distance_to_parent,
+                                svs,
+                                true );
+        
+    }
+    
+    
+    final public String toNewHampshire( final boolean write_distance_to_parent,
+                                        final NH_CONVERSION_SUPPORT_VALUE_STYLE svs,
+                                        final boolean forse_seq_ids) {
         String data = "";
         if ( ( svs == NH_CONVERSION_SUPPORT_VALUE_STYLE.AS_INTERNAL_NODE_NAMES ) && !isExternal() ) {
             if ( getBranchData().isHasConfidences()
@@ -911,6 +924,11 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
                 data = Confidence.FORMATTER.format( ForesterUtil
                                                     .round( getBranchData().getConfidence( 0 ).getValue(),
                                                             PhyloXmlUtil.ROUNDING_DIGITS_FOR_PHYLOXML_DOUBLE_OUTPUT ) );
+            }
+        }
+        else if (forse_seq_ids && getNodeData().isHasSequence() &&  getNodeData().getSequence().getAccession() != null) {
+            if ( getNodeData().isHasSequence() &&  getNodeData().getSequence().getAccession() != null)  {
+                data = getNodeData().getSequence().getAccession().getValue();
             }
         }
         else if ( !ForesterUtil.isEmpty( getName() ) ) {

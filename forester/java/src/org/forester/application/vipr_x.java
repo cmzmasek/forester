@@ -221,7 +221,7 @@ public class vipr_x {
             region = "Western Europe";
         }
         else if ( c.equals( "serbia" ) || c.equals( "greece" ) || c.equals( "malta" ) || c.equals( "italy" )
-                || c.equals( "spain" ) ) {
+                || c.equals( "spain" )  || c.equals( "portugal" ) ) {
             region = "Southern Europe";
         }
         else if ( c.equals( "poland" ) ) {
@@ -234,7 +234,7 @@ public class vipr_x {
                 || c.equals( "china" ) ) {
             region = "East Asia";
         }
-        else if ( c.equals( "kazakhstan" ) ) {
+        else if ( c.equals( "kazakhstan" ) || c.equals( "uzbekistan" ) ) {
             region = "Central Asia";
         }
         else if ( c.equals( "jordan" ) || c.equals( "bahrain" ) || c.equals( "iraq" ) || c.equals( "saudi_arabia" )
