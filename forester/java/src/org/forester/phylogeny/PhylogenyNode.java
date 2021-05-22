@@ -1045,6 +1045,9 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
             sb.append( getId() );
             sb.append( "]" );
         }
+        if ( isRoot() ) {
+            sb.append( " [root]" );
+        }  
         return sb.toString().trim();
     }
 

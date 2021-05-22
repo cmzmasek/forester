@@ -52,7 +52,6 @@ public final class ancestor_seq_x {
         if ( !ForesterUtil.isEmpty( error2 ) ) {
             ForesterUtil.fatalError( PRG_NAME, error2 );
         }
-       
         Phylogeny p = null;
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
@@ -106,9 +105,9 @@ public final class ancestor_seq_x {
     }
 
     private static void readAncestralSeqsFile( final File mega_most_prob_seqs,
-                                              final Phylogeny p,
-                                              final SortedMap<String, IdSeq> map,
-                                              final SortedMap<String, PhylogenyNode> number_to_node_map ) {
+                                               final Phylogeny p,
+                                               final SortedMap<String, IdSeq> map,
+                                               final SortedMap<String, PhylogenyNode> number_to_node_map ) {
         BufferedReader reader;
         try {
             reader = new BufferedReader( new FileReader( mega_most_prob_seqs ) );
