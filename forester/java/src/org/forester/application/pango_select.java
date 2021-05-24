@@ -22,8 +22,11 @@ import org.forester.util.ForesterUtil;
 public class pango_select {
 
     private final static String PRG_NAME             = "pango_select";
+    private static final String PRG_DATE             = "2021-05-24";
+    private static final String PRG_VERSION          = "1.0.0";
     private final static int    MAX_SEQS_PER_LINEAGE = 3;
     public static void main( final String args[] ) {
+        ForesterUtil.printProgramInformation( PRG_NAME, PRG_VERSION, PRG_DATE );
         if ( args.length != 3 ) {
             System.out.println( "\nWrong number of arguments, expected: lineage_file fasta_seqs_file outfile\n" );
             System.exit( -1 );

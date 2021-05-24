@@ -28,7 +28,10 @@ public class pangolin_x {
     private static final String VIPR_PANGOLIN_CLADE_0 = "vipr:PANGO_Lineage_L0";
     private static final String VIPR_PANGOLIN_CLADE_1 = "vipr:PANGO_Lineage_L1";
     private final static String PRG_NAME              = "pangolin_x";
+    private static final String PRG_DATE              = "2021-05-24";
+    private static final String PRG_VERSION           = "1.0.0";
     public static void main( final String args[] ) {
+        ForesterUtil.printProgramInformation( PRG_NAME, PRG_VERSION, PRG_DATE );
         if ( args.length != 3 ) {
             System.out.println( "\nWrong number of arguments, expected: lineage_file intree outtree\n" );
             System.exit( -1 );

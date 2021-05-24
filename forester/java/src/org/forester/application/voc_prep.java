@@ -24,7 +24,11 @@ public class voc_prep {
     private static final Pattern YEAR_MONTH_PATTERN = Pattern.compile( "\\W(\\d{4})_(\\d{1,2})_\\d{1,2}\\W" );
     private static final String  XSD_STRING         = "xsd:string";
     private static final String  VIPR_YEAR_MONTH    = "vipr:Year_Month";
+    private final static String  PRG_NAME           = "voc_prep";
+    private static final String  PRG_DATE           = "2021-05-24";
+    private static final String  PRG_VERSION        = "1.0.0";
     public static void main( final String args[] ) {
+        ForesterUtil.printProgramInformation( PRG_NAME, PRG_VERSION, PRG_DATE );
         final File infile = new File( args[ 0 ] );
         final File outfile = new File( args[ 1 ] );
         Phylogeny p = null;

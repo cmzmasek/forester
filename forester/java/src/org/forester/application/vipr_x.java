@@ -31,6 +31,8 @@ public class vipr_x {
     private static final String  VIPR_YEAR         = "vipr:Year";
     private static final String  VIPR_REGION       = "vipr:Region";
     private final static String  PRG_NAME          = "vipr_x";
+    private static final String  PRG_DATE          = "2021-05-24";
+    private static final String  PRG_VERSION       = "1.0.0";
     //  VP1|VP1_protein|KP322752|US/CA/14_6089|2014_08|Human|USA|NA|Enterovirus_D68
     // 1. gene symbol
     // 2. gene product name
@@ -54,6 +56,7 @@ public class vipr_x {
     private final static Pattern YEAR_PATTERN      = Pattern.compile( "(\\d{4}).*" );
     private final static boolean MODIFY_NODE_NAMES = true;
     public static void main( final String args[] ) {
+        ForesterUtil.printProgramInformation( PRG_NAME, PRG_VERSION, PRG_DATE );
         if ( args.length != 2 ) {
             System.out.println( "\nWrong number of arguments, expected: intree outtree\n" );
             System.exit( -1 );
@@ -212,16 +215,17 @@ public class vipr_x {
             region = "North America";
         }
         else if ( c.equals( "peru" ) || c.equals( "ecuador" ) || c.equals( "colombia" ) || c.equals( "chile" )
-                || c.equals( "brazil" ) || c.equals( "argentina" ) || c.equals( "guatemala" ) || c.equals( "uruguay" ) ) {
+                || c.equals( "brazil" ) || c.equals( "argentina" ) || c.equals( "guatemala" )
+                || c.equals( "uruguay" ) ) {
             region = "South America";
         }
         else if ( c.equals( "denmark" ) || c.equals( "finland" ) || c.equals( "france" ) || c.equals( "germany" )
-                || c.equals( "netherlands" ) || c.equals( "norway" ) || c.equals( "united_kingdom" ) || c.equals( "switzerland" )
-                || c.equals( "austria" ) || c.equals( "estonia" ) ) {
+                || c.equals( "netherlands" ) || c.equals( "norway" ) || c.equals( "united_kingdom" )
+                || c.equals( "switzerland" ) || c.equals( "austria" ) || c.equals( "estonia" ) ) {
             region = "Western Europe";
         }
         else if ( c.equals( "serbia" ) || c.equals( "greece" ) || c.equals( "malta" ) || c.equals( "italy" )
-                || c.equals( "spain" )  || c.equals( "portugal" ) ) {
+                || c.equals( "spain" ) || c.equals( "portugal" ) ) {
             region = "Southern Europe";
         }
         else if ( c.equals( "poland" ) ) {
@@ -250,7 +254,7 @@ public class vipr_x {
         }
         else if ( c.equals( "morocco" ) || c.equals( "gambia" ) || c.equals( "kenya" ) || c.equals( "senegal" )
                 || c.equals( "south_africa" ) || c.equals( "tanzania" ) || c.equals( "ghana" ) || c.equals( "benin" )
-                || c.equals( "tunisia" )  || c.equals( "nigeria" ) ) {
+                || c.equals( "tunisia" ) || c.equals( "nigeria" ) ) {
             region = "Africa";
         }
         else if ( c.equals( "australia" ) || c.equals( "new_zealand" ) ) {

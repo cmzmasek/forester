@@ -716,6 +716,11 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
         return true;
     }
 
+    public final boolean isHasMolecularSequence() {
+        return isHasNodeData() && ( getNodeData().getSequence() != null )
+                && !ForesterUtil.isEmpty( getNodeData().getSequence().getMolecularSequence() );
+    }
+    
     /**
      * Checks whether this PhylogenyNode is a root.
      *

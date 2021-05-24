@@ -22,53 +22,46 @@ import org.forester.util.ForesterUtil;
 
 public class mutation_annotator {
 
-    private static final String PRG_NAME   = "mutation_annotator";
-    private static final String XSD_STRING = "xsd:string";
-    //TODO add option to delete seqs afterwards...
+    private static final String PRG_DATE    = "2021-05-24";
+    private static final String PRG_VERSION = "1.0.0";
+    private static final String PRG_NAME    = "mutation_annotator";
+    private static final String XSD_STRING  = "xsd:string";
     public static void main( final String args[] ) {
-        if ( ( args.length != 4 ) && ( args.length != 6 ) ) {
+        ForesterUtil.printProgramInformation( PRG_NAME, PRG_VERSION, PRG_DATE );
+        if ( ( args.length != 5 ) && ( args.length != 7 ) ) {
             System.out.println( PRG_NAME + ": Wrong number of arguments.\n" );
             System.out.println( "Usage: " + PRG_NAME
-                    + " <in-tree> <out-tree> <prefix> <property reference> [name of node with reference seq] [property reference for mutations vs reference seq]\n" );
-            System.out
-                    .println( "Examples : " + PRG_NAME + " tree_with_anc_seqs.xml outtree.xml S aptx:branch_event\n" );
-            System.out.println( "         : " + PRG_NAME
-                    + " tree_with_anc_seqs.xml outtree.xml S aptx:branch_event whu1 vipr:blah\n" );
+                    + " <in-tree> <out-tree with seqs removed> <out-tree with seqs retained> <prefix> <property reference> [name of node with reference seq] [property reference for mutations vs reference seq]\n" );
+            System.out.println( "Examples : " + PRG_NAME
+                    + " tree_with_anc_seqs.xml outtree.xml outtree_keep_seqs.xml S aptx:branch_event\n" );
+            System.out.println( "           " + PRG_NAME
+                    + " tree_with_anc_seqs.xml outtree.xml outtree_keep_seqs.xml S aptx:branch_event 2019_nCoV_WHU01 vipr:Mutation\n" );
             System.exit( -1 );
         }
-        final File infile = new File( args[ 0 ] );
-        final File outfile = new File( args[ 1 ] );
-        final String prefix = args[ 2 ];
-        final String property_ref = args[ 3 ];
+        final File intree = new File( args[ 0 ] );
+        final File outtree_rem_seqs = new File( args[ 1 ] );
+        final File outtree_keep_seqs = new File( args[ 2 ] );
+        final String prefix = args[ 3 ];
+        final String property_ref = args[ 4 ];
         String reference_seqe_node_name = null;
         String mut_vs_reference_seq_property_ref = null;
-        if ( args.length == 6 ) {
-            reference_seqe_node_name = args[ 4 ];
-            mut_vs_reference_seq_property_ref = args[ 5 ];
+        if ( args.length == 7 ) {
+            reference_seqe_node_name = args[ 5 ];
+            mut_vs_reference_seq_property_ref = args[ 6 ];
         }
-        checkForOutputFileWriteability( outfile );
+        checkForOutputFileWriteability( outtree_rem_seqs );
+        checkForOutputFileWriteability( outtree_keep_seqs );
         Phylogeny p = null;
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            final PhylogenyParser pp = ParserUtils.createParserDependingOnFileType( infile, true );
-            p = factory.create( infile, pp )[ 0 ];
+            final PhylogenyParser pp = ParserUtils.createParserDependingOnFileType( intree, true );
+            p = factory.create( intree, pp )[ 0 ];
         }
         catch ( final Exception e ) {
-            ForesterUtil.fatalError( PRG_NAME, "Could not read \"" + infile + "\" [" + e.getMessage() + "]" );
+            ForesterUtil.fatalError( PRG_NAME, "Could not read \"" + intree + "\" [" + e.getMessage() + "]" );
         }
-        for( final PhylogenyNodeIterator iter = p.iteratorPreorder(); iter.hasNext(); ) {
-            final PhylogenyNode node = iter.next();
-            if ( node.isHasNodeData() && ( node.getNodeData().getSequence() != null )
-                    && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getMolecularSequence() ) ) {
-            }
-            else {
-                System.out.println( "no sequence for: " + node );
-                if ( node.isInternal()) {
-                    System.out.println( "    child 1: " + node.getChildNode1() );
-                    System.out.println( "    child 2: " + node.getChildNode2() );
-                }
-            }
-        }
+        System.out.println();
+        printNodesWithoutSequences( p );
         int total_nodes = 0;
         int updated_nodes = 0;
         int total_mutations = 0;
@@ -152,12 +145,26 @@ public class mutation_annotator {
         p.setRooted( true );
         try {
             final PhylogenyWriter writer = new PhylogenyWriter();
-            writer.toPhyloXML( p, 0, outfile );
+            writer.toPhyloXML( p, 0, outtree_keep_seqs );
         }
         catch ( final IOException e ) {
-            ForesterUtil.fatalError( PRG_NAME, "failed to write to [" + outfile + "]: " + e.getLocalizedMessage() );
+            ForesterUtil.fatalError( PRG_NAME,
+                                     "failed to write to [" + outtree_keep_seqs + "]: " + e.getLocalizedMessage() );
         }
-        System.out.println( "Wrote outtree to: " + outfile );
+        for( final PhylogenyNodeIterator iter = p.iteratorPreorder(); iter.hasNext(); ) {
+            final PhylogenyNode node = iter.next();
+            node.getNodeData().setSequence( null );
+        }
+        try {
+            final PhylogenyWriter writer = new PhylogenyWriter();
+            writer.toPhyloXML( p, 0, outtree_rem_seqs );
+        }
+        catch ( final IOException e ) {
+            ForesterUtil.fatalError( PRG_NAME,
+                                     "failed to write to [" + outtree_rem_seqs + "]: " + e.getLocalizedMessage() );
+        }
+        System.out.println( "Wrote outtree to            : " + outtree_rem_seqs );
+        System.out.println( "Wrote outtree to            : " + outtree_keep_seqs );
         System.out.println( "Total nodes (excluding root): " + total_nodes );
         System.out.println( "Branches with sequences     : " + branches_with_seqs );
         System.out.println( "Branches without sequences  : " + branches_without_seqs );
@@ -168,6 +175,33 @@ public class mutation_annotator {
         System.out.println( "Maximum mutations per branch: " + stats.getMax() );
         System.out.println( "Mean mutations per branch   : " + stats.arithmeticMean() );
         System.out.println( "Median mutations per branch : " + stats.median() );
+    }
+
+    private static void printNodesWithoutSequences( final Phylogeny p ) {
+        for( final PhylogenyNodeIterator iter = p.iteratorPreorder(); iter.hasNext(); ) {
+            final PhylogenyNode node = iter.next();
+            if ( !node.isHasMolecularSequence() ) {
+                if ( node.isInternal() ) {
+                    System.out.println( "no sequence for internal node: " + node );
+                    if ( node.getChildNode1().isExternal() ) {
+                        System.out.println( "    external child 1: " + node.getChildNode1() );
+                    }
+                    else {
+                        System.out.println( "    intrenal child 1: " + node.getChildNode1() );
+                    }
+                    if ( node.getChildNode2().isExternal() ) {
+                        System.out.println( "    external child 2: " + node.getChildNode2() );
+                    }
+                    else {
+                        System.out.println( "    internal child 2: " + node.getChildNode2() );
+                    }
+                }
+                else {
+                    System.out.println( "no sequence for external node: " + node );
+                }
+                System.out.println();
+            }
+        }
     }
 
     private static void externalMutations( final String prefix,
@@ -183,8 +217,7 @@ public class mutation_annotator {
             ForesterUtil.fatalError( PRG_NAME, e.getLocalizedMessage() );
         }
         String ref_seq = null;
-        if ( ref_seq_node.isHasNodeData() && ( ref_seq_node.getNodeData().getSequence() != null )
-                && !ForesterUtil.isEmpty( ref_seq_node.getNodeData().getSequence().getMolecularSequence() ) ) {
+        if ( ref_seq_node.isHasMolecularSequence() ) {
             ref_seq = ref_seq_node.getNodeData().getSequence().getMolecularSequence().trim().toUpperCase();
         }
         else {
@@ -194,8 +227,7 @@ public class mutation_annotator {
         for( final PhylogenyNodeIterator iter = p.iteratorPostorder(); iter.hasNext(); ) {
             final PhylogenyNode node = iter.next();
             if ( node.isExternal() ) {
-                if ( node.isHasNodeData() && ( node.getNodeData().getSequence() != null )
-                        && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getMolecularSequence() ) ) {
+                if ( node.isHasMolecularSequence() ) {
                     final String seq = node.getNodeData().getSequence().getMolecularSequence().trim().toUpperCase();
                     if ( seq.length() != ref_seq_length ) {
                         ForesterUtil.fatalError( PRG_NAME,

@@ -26,11 +26,14 @@ import org.forester.util.ForesterUtil;
 
 public final class ancestor_seq_x {
 
-    private final static String  PRG_NAME = "ancestor_seq_x";
-    private static final Pattern P1       = Pattern.compile( "(\\d+)\\.\\s+?(.+?):(.+)" );
-    private static final Pattern P2       = Pattern.compile( "\\(\\s*(\\d+)\\s*\\.\\s*(\\d+)\\s*\\)" );
-    private static final String  SEQ_NAME = "S";
+    private final static String  PRG_NAME    = "ancestor_seq_x";
+    private static final String  PRG_DATE    = "2021-05-24";
+    private static final String  PRG_VERSION = "1.0.0";
+    private static final Pattern P1          = Pattern.compile( "(\\d+)\\.\\s+?(.+?):(.+)" );
+    private static final Pattern P2          = Pattern.compile( "\\(\\s*(\\d+)\\s*\\.\\s*(\\d+)\\s*\\)" );
+    private static final String  SEQ_NAME    = "S";
     public static void main( final String[] args ) {
+        ForesterUtil.printProgramInformation( PRG_NAME, PRG_VERSION, PRG_DATE );
         if ( args.length != 3 ) {
             System.out.println( PRG_NAME + ": Wrong number of arguments.\n" );
             System.out.println( "Usage: " + PRG_NAME + " <in-tree> <most probable sequence file> <out-tree>\n" );
