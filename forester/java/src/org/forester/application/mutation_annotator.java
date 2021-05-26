@@ -107,6 +107,7 @@ public class mutation_annotator {
                             PropertiesList custom_data = node.getNodeData().getProperties();
                             if ( custom_data == null ) {
                                 custom_data = new PropertiesList();
+                                node.getNodeData().setProperties( custom_data );
                             }
                             custom_data.addProperty( new Property( property_ref,
                                                                    mutation,
@@ -137,6 +138,14 @@ public class mutation_annotator {
             System.out.println( entry.getKey() + "\t" + entry.getValue() );
         } );
         System.out.println();
+        System.out.println();
+        System.out.println( "INFERRED MUTATIONS ON BRANCHES, CONVERGENT/PARALLEL ONLY:" );
+        branch_mutations.entrySet().forEach( entry -> {
+            if ( entry.getValue() > 1 ) {
+                System.out.println( entry.getKey() + "\t" + entry.getValue() );
+            }
+        } );
+        System.out.println();
         if ( !ForesterUtil.isEmpty( reference_seqe_node_name )
                 && !ForesterUtil.isEmpty( mut_vs_reference_seq_property_ref ) ) {
             externalMutations( prefix, reference_seqe_node_name, mut_vs_reference_seq_property_ref, p );
@@ -151,10 +160,7 @@ public class mutation_annotator {
             ForesterUtil.fatalError( PRG_NAME,
                                      "failed to write to [" + outtree_keep_seqs + "]: " + e.getLocalizedMessage() );
         }
-        for( final PhylogenyNodeIterator iter = p.iteratorPreorder(); iter.hasNext(); ) {
-            final PhylogenyNode node = iter.next();
-            node.getNodeData().setSequence( null );
-        }
+        removeMolecularSequences( p );
         try {
             final PhylogenyWriter writer = new PhylogenyWriter();
             writer.toPhyloXML( p, 0, outtree_rem_seqs );
@@ -175,6 +181,16 @@ public class mutation_annotator {
         System.out.println( "Maximum mutations per branch: " + stats.getMax() );
         System.out.println( "Mean mutations per branch   : " + stats.arithmeticMean() );
         System.out.println( "Median mutations per branch : " + stats.median() );
+    }
+
+    private static void removeMolecularSequences( final Phylogeny p ) {
+        for( final PhylogenyNodeIterator iter = p.iteratorPreorder(); iter.hasNext(); ) {
+            final PhylogenyNode node = iter.next();
+            if ( node.getNodeData().getSequence() != null ) {
+                node.getNodeData().getSequence().setMolecularSequenceAligned( false );
+                node.getNodeData().getSequence().setMolecularSequence( null );
+            }
+        }
     }
 
     private static void printNodesWithoutSequences( final Phylogeny p ) {
@@ -243,6 +259,7 @@ public class mutation_annotator {
                             PropertiesList custom_data = node.getNodeData().getProperties();
                             if ( custom_data == null ) {
                                 custom_data = new PropertiesList();
+                                node.getNodeData().setProperties( custom_data );
                             }
                             custom_data.addProperty( new Property( mut_vs_reference_seq_property_ref,
                                                                    mutation,
