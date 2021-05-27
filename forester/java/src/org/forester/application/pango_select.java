@@ -50,15 +50,15 @@ public class pango_select {
         catch ( final Exception e ) {
             ForesterUtil.fatalError( PRG_NAME, "failed to read [" + lineage_file + "] [" + e.getMessage() + "]" );
         }
-        final SortedSet<String> all_lineages = new TreeSet<>();
+        final SortedSet<String> all_lineages_sorted = new TreeSet<>();
         for( int i = 0; i < lineage_table.getNumberOfRows(); ++i ) {
             final String lineage = lineage_table.getValue( 1, i );
             if ( !lineage.equalsIgnoreCase( "lineage" ) ) {
-                all_lineages.add( lineage );
+                all_lineages_sorted.add( lineage );
             }
         }
-        System.out.println( "All lineages: " + all_lineages.size() );
-        System.out.println( "All lineages: " + all_lineages );
+        System.out.println( "All lineages: " + all_lineages_sorted.size() );
+        System.out.println( "All lineages: " + all_lineages_sorted );
         List<MolecularSequence> seqs = null;
         try {
             seqs = FastaParser.parse( new FileInputStream( infile ) );
@@ -72,7 +72,7 @@ public class pango_select {
             id_to_seq.put( seq.getIdentifier(), seq );
         }
         final List<MolecularSequence> out_seqs = new ArrayList<>();
-        for( final String lineage : all_lineages ) {
+        for( final String lineage : all_lineages_sorted ) {
             int counter = 0;
             for( int i = 0; i < lineage_table.getNumberOfRows(); ++i ) {
                 final String lineage_from_table = lineage_table.getValue( 1, i );
