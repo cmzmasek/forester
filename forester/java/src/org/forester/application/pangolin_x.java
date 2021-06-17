@@ -10,6 +10,8 @@ import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.util.ParserUtils;
 import org.forester.io.writers.PhylogenyWriter;
 import org.forester.phylogeny.Phylogeny;
+import org.forester.phylogeny.PhylogenyMethods;
+import org.forester.phylogeny.PhylogenyMethods.DESCENDANT_SORT_PRIORITY;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.PropertiesList;
 import org.forester.phylogeny.data.Property;
@@ -28,8 +30,8 @@ public class pangolin_x {
     private static final String VIPR_PANGOLIN_CLADE_0 = "vipr:PANGO_Lineage_L0";
     private static final String VIPR_PANGOLIN_CLADE_1 = "vipr:PANGO_Lineage_L1";
     private final static String PRG_NAME              = "pangolin_x";
-    private static final String PRG_DATE              = "2021-05-24";
-    private static final String PRG_VERSION           = "1.0.0";
+    private static final String PRG_DATE              = "2021-05-26";
+    private static final String PRG_VERSION           = "1.0.1";
     public static void main( final String args[] ) {
         ForesterUtil.printProgramInformation( PRG_NAME, PRG_VERSION, PRG_DATE );
         if ( args.length != 3 ) {
@@ -58,6 +60,11 @@ public class pangolin_x {
             System.out.println( "\nCould not read \"" + infile + "\" [" + e.getMessage() + "]\n" );
             System.exit( -1 );
         }
+        //PhylogenyMethods.midpointRoot( p );
+        p.reRoot( p.getNode( "10" ) );
+        p.setRooted( true );
+        PhylogenyMethods.orderAppearanceX( p.getRoot(), true, DESCENDANT_SORT_PRIORITY.NODE_NAME );
+        p.setRerootable( false );
         BasicTable<String> mapping_table = null;
         try {
             mapping_table = BasicTableParser.parse( lineage_file, ',', false, false );

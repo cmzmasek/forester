@@ -27,8 +27,8 @@ import org.forester.util.ForesterUtil;
 public class protein_seq_x {
 
     private final static String PRG_NAME    = "protein_seq_x";
-    private static final String PRG_DATE    = "2021-05-24";
-    private static final String PRG_VERSION = "1.0.0";
+    private static final String PRG_DATE    = "2021-05-28";
+    private static final String PRG_VERSION = "1.0.1";
     private final static int    MAX_LENGTH  = 1273;
     public static void main( final String[] args ) {
         ForesterUtil.printProgramInformation( PRG_NAME, PRG_VERSION, PRG_DATE );
@@ -93,12 +93,14 @@ public class protein_seq_x {
                             }
                             final String genome_acc = s[ 1 ];
                             if ( acc.equals( genome_acc ) ) {
-                                out_seqs.add( BasicSequence.createAaSequence( genome_acc,
-                                                                              seq.getMolecularSequenceAsString() ) );
-                                if ( seq.getLength() > MAX_LENGTH ) {
-                                    System.out.println( genome_acc + ": " + seq.getLength() );
+                                if ( seq.getLength() <= MAX_LENGTH ) {
+                                    out_seqs.add( BasicSequence
+                                            .createAaSequence( genome_acc, seq.getMolecularSequenceAsString() ) );
+                                    stats.addValue( seq.getLength() );
                                 }
-                                stats.addValue( seq.getLength() );
+                                else {
+                                    System.out.println( "    too long: " + genome_acc + ": " + seq.getLength() );
+                                }
                                 found = true;
                                 continue;
                             }

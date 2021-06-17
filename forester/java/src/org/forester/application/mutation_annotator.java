@@ -22,13 +22,13 @@ import org.forester.util.ForesterUtil;
 
 public class mutation_annotator {
 
-    private static final String PRG_DATE    = "2021-05-24";
-    private static final String PRG_VERSION = "1.0.0";
+    private static final String PRG_DATE    = "2021-05-27";
+    private static final String PRG_VERSION = "1.0.1";
     private static final String PRG_NAME    = "mutation_annotator";
     private static final String XSD_STRING  = "xsd:string";
     public static void main( final String args[] ) {
         ForesterUtil.printProgramInformation( PRG_NAME, PRG_VERSION, PRG_DATE );
-        if ( ( args.length != 5 ) && ( args.length != 7 ) ) {
+        if ( ( args.length != 5 ) && ( args.length != 6 ) && ( args.length != 7 ) ) {
             System.out.println( PRG_NAME + ": Wrong number of arguments.\n" );
             System.out.println( "Usage: " + PRG_NAME
                     + " <in-tree> <out-tree with seqs removed> <out-tree with seqs retained> <prefix> <property reference> [name of node with reference seq] [property reference for mutations vs reference seq]\n" );
@@ -45,6 +45,9 @@ public class mutation_annotator {
         final String property_ref = args[ 4 ];
         String reference_seqe_node_name = null;
         String mut_vs_reference_seq_property_ref = null;
+        if ( args.length == 6 ) {
+            mut_vs_reference_seq_property_ref = args[ 5 ];
+        }
         if ( args.length == 7 ) {
             reference_seqe_node_name = args[ 5 ];
             mut_vs_reference_seq_property_ref = args[ 6 ];
@@ -150,6 +153,10 @@ public class mutation_annotator {
                 && !ForesterUtil.isEmpty( mut_vs_reference_seq_property_ref ) ) {
             externalMutations( prefix, reference_seqe_node_name, mut_vs_reference_seq_property_ref, p );
         }
+        else if ( ForesterUtil.isEmpty( reference_seqe_node_name )
+                && !ForesterUtil.isEmpty( mut_vs_reference_seq_property_ref ) ) {
+            externalMutations( prefix, null, mut_vs_reference_seq_property_ref, p );
+        }
         p.setRerootable( false );
         p.setRooted( true );
         try {
@@ -186,9 +193,16 @@ public class mutation_annotator {
     private static void removeMolecularSequences( final Phylogeny p ) {
         for( final PhylogenyNodeIterator iter = p.iteratorPreorder(); iter.hasNext(); ) {
             final PhylogenyNode node = iter.next();
-            if ( node.getNodeData().getSequence() != null ) {
-                node.getNodeData().getSequence().setMolecularSequenceAligned( false );
-                node.getNodeData().getSequence().setMolecularSequence( null );
+            if ( node.isExternal() ) {
+                if ( node.getNodeData().getSequence() != null ) {
+                    node.getNodeData().getSequence().setMolecularSequence( null );
+                    node.getNodeData().getSequence().setMolecularSequenceAligned( false );
+                    node.getNodeData().getSequence().setGeneName( null );
+                    node.getNodeData().getSequence().setName( null );
+                }
+            }
+            else {
+                node.getNodeData().setSequence( null );
             }
         }
     }
@@ -225,19 +239,24 @@ public class mutation_annotator {
                                            final String mut_vs_reference_seq_property_ref,
                                            final Phylogeny p ) {
         final SortedMap<String, Integer> external_mutations = new TreeMap<>();
-        PhylogenyNode ref_seq_node = null;
-        try {
-            ref_seq_node = p.getNode( reference_seqe_node_name );
-        }
-        catch ( final IllegalArgumentException e ) {
-            ForesterUtil.fatalError( PRG_NAME, e.getLocalizedMessage() );
-        }
         String ref_seq = null;
-        if ( ref_seq_node.isHasMolecularSequence() ) {
-            ref_seq = ref_seq_node.getNodeData().getSequence().getMolecularSequence().trim().toUpperCase();
+        if ( reference_seqe_node_name != null ) {
+            PhylogenyNode ref_seq_node = null;
+            try {
+                ref_seq_node = p.getNode( reference_seqe_node_name );
+            }
+            catch ( final IllegalArgumentException e ) {
+                ForesterUtil.fatalError( PRG_NAME, e.getLocalizedMessage() );
+            }
+            if ( ref_seq_node.isHasMolecularSequence() ) {
+                ref_seq = ref_seq_node.getNodeData().getSequence().getMolecularSequence().trim().toUpperCase();
+            }
+            else {
+                ForesterUtil.fatalError( PRG_NAME, "node sequence associated with node: " + reference_seqe_node_name );
+            }
         }
         else {
-            ForesterUtil.fatalError( PRG_NAME, "node sequence associated with node: " + reference_seqe_node_name );
+            ref_seq = getReferenceSequence();
         }
         final int ref_seq_length = ref_seq.length();
         for( final PhylogenyNodeIterator iter = p.iteratorPostorder(); iter.hasNext(); ) {
@@ -290,5 +309,24 @@ public class mutation_annotator {
         if ( !ForesterUtil.isEmpty( error ) ) {
             ForesterUtil.fatalError( PRG_NAME, error );
         }
+    }
+
+    private static String getReferenceSequence() {
+        return "MFVFLVLLPLVSSQCVNLTTRTQLPPAYTNSFTRGVYYPDKVFRSSVLHSTQDLFLPFFSNVTWFHAIHVSGTNGTKRFD"
+                + "NPVLPFNDGVYFASTEKSNIIRGWIFGTTLDSKTQSLLIVNNATNVVIKVCEFQFCNDPFLGVYYHKNNKSWMESEFRVY"
+                + "SSANNCTFEYVSQPFLMDLEGKQGNFKNLREFVFKNIDGYFKIYSKHTPINLVRDLPQGFSALEPLVDLPIGINITRFQT"
+                + "LLALHRSYLTPGDSSSGWTAGAAAYYVGYLQPRTFLLKYNENGTITDAVDCALDPLSETKCTLKSFTVEKGIYQTSNFRV"
+                + "QPTESIVRFPNITNLCPFGEVFNATRFASVYAWNRKRISNCVADYSVLYNSASFSTFKCYGVSPTKLNDLCFTNVYADSF"
+                + "VIRGDEVRQIAPGQTGKIADYNYKLPDDFTGCVIAWNSNNLDSKVGGNYNYLYRLFRKSNLKPFERDISTEIYQAGSTPC"
+                + "NGVEGFNCYFPLQSYGFQPTNGVGYQPYRVVVLSFELLHAPATVCGPKKSTNLVKNKCVNFNFNGLTGTGVLTESNKKFL"
+                + "PFQQFGRDIADTTDAVRDPQTLEILDITPCSFGGVSVITPGTNTSNQVAVLYQDVNCTEVPVAIHADQLTPTWRVYSTGS"
+                + "NVFQTRAGCLIGAEHVNNSYECDIPIGAGICASYQTQTNSPRRARSVASQSIIAYTMSLGAENSVAYSNNSIAIPTNFTI"
+                + "SVTTEILPVSMTKTSVDCTMYICGDSTECSNLLLQYGSFCTQLNRALTGIAVEQDKNTQEVFAQVKQIYKTPPIKDFGGF"
+                + "NFSQILPDPSKPSKRSFIEDLLFNKVTLADAGFIKQYGDCLGDIAARDLICAQKFNGLTVLPPLLTDEMIAQYTSALLAG"
+                + "TITSGWTFGAGAALQIPFAMQMAYRFNGIGVTQNVLYENQKLIANQFNSAIGKIQDSLSSTASALGKLQDVVNQNAQALN"
+                + "TLVKQLSSNFGAISSVLNDILSRLDKVEAEVQIDRLITGRLQSLQTYVTQQLIRAAEIRASANLAATKMSECVLGQSKRV"
+                + "DFCGKGYHLMSFPQSAPHGVVFLHVTYVPAQEKNFTTAPAICHDGKAHFPREGVFVSNGTHWFVTQRNFYEPQIITTDNT"
+                + "FVSGNCDVVIGIVNNTVYDPLQPELDSFKEELDKYFKNHTSPDVDLGDISGINASVVNIQKEIDRLNEVAKNLNESLIDL"
+                + "QELGKYEQYIKWPWYIWLGFIAGLIAIVMVTIMLCCMTSCCSCLKGCCSCGSCCKFDEDDSEPVLKGVKLHYT";
     }
 }
