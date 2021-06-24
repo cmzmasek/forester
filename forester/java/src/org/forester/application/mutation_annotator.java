@@ -142,12 +142,41 @@ public class mutation_annotator {
         } );
         System.out.println();
         System.out.println();
+        System.out.println();
+        System.out.println();
         System.out.println( "INFERRED MUTATIONS ON BRANCHES, CONVERGENT/PARALLEL ONLY:" );
         branch_mutations.entrySet().forEach( entry -> {
             if ( entry.getValue() > 1 ) {
                 System.out.println( entry.getKey() + "\t" + entry.getValue() );
             }
         } );
+        System.out.println();
+        System.out.println();
+        branch_mutations.entrySet().forEach( entry -> {
+            if ( entry.getValue() > 1 ) {
+                System.out.print( "'" + entry.getKey() + "', " );
+            }
+        } );
+        
+        System.out.println();
+        System.out.println();
+        System.out.println();
+        System.out.println();
+        System.out.println( "INFERRED MUTATIONS ON BRANCHES, NON-PARALLEL ONLY:" );
+        branch_mutations.entrySet().forEach( entry -> {
+            if ( entry.getValue() == 1 ) {
+                System.out.println( entry.getKey() + "\t" + entry.getValue() );
+            }
+        } );
+        System.out.println();
+        System.out.println();
+        branch_mutations.entrySet().forEach( entry -> {
+            if ( entry.getValue() == 1 ) {
+                System.out.print( "'" + entry.getKey() + "', " );
+            }
+        } );
+        
+        System.out.println();
         System.out.println();
         if ( !ForesterUtil.isEmpty( reference_seqe_node_name )
                 && !ForesterUtil.isEmpty( mut_vs_reference_seq_property_ref ) ) {

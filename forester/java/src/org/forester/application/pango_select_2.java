@@ -26,11 +26,12 @@ import org.forester.util.ForesterUtil;
 
 public class pango_select_2 {
 
-    private final static String PRG_NAME             = "pango_select";
-    private static final String PRG_DATE             = "2021-06-17";
-    private static final String PRG_VERSION          = "0.0.1";
-    private final static int    MAX_SEQS_PER_LINEAGE = 50;
-    private final static String PATH_TO_MAFFT        = "/usr/local/bin/mafft";
+    private final static String PRG_NAME                     = "pango_select_2";
+    private static final String PRG_DATE                     = "2021-06-21";
+    private static final String PRG_VERSION                  = "1.0.0";
+    private final static int    MAX_SEQS_PER_LINEAGE         = 500;
+    private final static int    MAX_SEQS_PER_LINEAGE_SPECIAL = 1000;
+    private final static String PATH_TO_MAFFT                = "/usr/local/bin/mafft";
     public static void main( final String args[] ) {
         ForesterUtil.printProgramInformation( PRG_NAME, PRG_VERSION, PRG_DATE );
         if ( args.length != 3 ) {
@@ -40,6 +41,7 @@ public class pango_select_2 {
         final File lineage_file = new File( args[ 0 ] );
         final File infile = new File( args[ 1 ] );
         final File outfile = new File( args[ 2 ] );
+        final SortedSet<String> too_many = new TreeSet<>();
         if ( !lineage_file.exists() ) {
             ForesterUtil.fatalError( PRG_NAME, "[" + lineage_file + "] does not exist" );
         }
@@ -82,10 +84,16 @@ public class pango_select_2 {
             int counter = 0;
             for( int i = 0; i < lineage_table.getNumberOfRows(); ++i ) {
                 final String lineage_from_table = lineage_table.getValue( 1, i );
-                if ( ( counter < MAX_SEQS_PER_LINEAGE ) && lineage_from_table.equals( lineage ) ) {
-                    System.out.println( lineage );
-                    ++counter;
-                    seqs_per_lineage.add( id_to_seq.get( lineage_table.getValue( 0, i ) ) );
+                if ( lineage_from_table.equals( lineage ) ) {
+                    if ( ( lineage_from_table.equals( "B.1.1.7" ) && ( counter < MAX_SEQS_PER_LINEAGE_SPECIAL ) )
+                            || ( counter < MAX_SEQS_PER_LINEAGE ) ) {
+                        System.out.println( lineage );
+                        ++counter;
+                        seqs_per_lineage.add( id_to_seq.get( lineage_table.getValue( 0, i ) ) );
+                    }
+                    else {
+                        too_many.add( lineage );
+                    }
                 }
             }
             if ( seqs_per_lineage.size() > 3 ) {
@@ -93,7 +101,9 @@ public class pango_select_2 {
             }
             else {
                 for( final MolecularSequence seq : seqs_per_lineage ) {
-                    out_seqs.add( seq );
+                    if ( seq != null ) {
+                        out_seqs.add( seq );
+                    }
                 }
             }
         }
@@ -104,6 +114,13 @@ public class pango_select_2 {
             e.printStackTrace();
             System.exit( -1 );
         }
+        System.out.println();
+        System.out.println( "Lineages with more than " + MAX_SEQS_PER_LINEAGE + " sequences (" + too_many.size()
+                + "): " );
+        for( final String lin : too_many ) {
+            System.out.println( lin );
+        }
+        System.out.println();
         System.out.println( "[" + PRG_NAME + "] wrote: [" + outfile + "] with " + out_seqs.size() + " sequences" );
         System.out.println( "[" + PRG_NAME + "] OK" );
         System.out.println();
@@ -116,6 +133,7 @@ public class pango_select_2 {
         try {
             final MsaInferrer mafft = Mafft.createInstance( path_to_mafft );
             final List<String> opts = new ArrayList<>();
+            //opts.add( "--retree 1" );
             try {
                 msa = mafft.infer( seqs_per_lineage, opts );
             }

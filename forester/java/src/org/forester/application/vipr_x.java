@@ -216,7 +216,7 @@ public class vipr_x {
         }
         else if ( c.equals( "peru" ) || c.equals( "ecuador" ) || c.equals( "colombia" ) || c.equals( "chile" )
                 || c.equals( "brazil" ) || c.equals( "argentina" ) || c.equals( "guatemala" )
-                || c.equals( "uruguay" ) ) {
+                || c.equals( "uruguay" ) || c.equals( "venezuela" )) {
             region = "South America";
         }
         else if ( c.equals( "denmark" ) || c.equals( "finland" ) || c.equals( "france" ) || c.equals( "germany" )
@@ -242,19 +242,19 @@ public class vipr_x {
             region = "Central Asia";
         }
         else if ( c.equals( "jordan" ) || c.equals( "bahrain" ) || c.equals( "iraq" ) || c.equals( "saudi_arabia" )
-                || c.equals( "turkey" ) || c.equals( "egypt" ) || c.equals( "israel" ) || c.equals( "west_bank" ) ) {
+                || c.equals( "turkey" ) || c.equals( "egypt" ) || c.equals( "israel" ) || c.equals( "west_bank" ) || c.equals( "iran" )  ) {
             region = "West Asia";
         }
         else if ( c.equals( "india" ) || ( c.equals( "pakistan" ) | c.equals( "bangladesh" ) ) ) {
             region = "South Asia";
         }
         else if ( c.equals( "cambodia" ) || c.equals( "thailand" ) || c.equals( "malaysia" )
-                || c.equals( "philippines" ) || c.equals( "viet_nam" ) || c.equals( "myanmar" ) ) {
+                || c.equals( "philippines" ) || c.equals( "viet_nam" ) || c.equals( "myanmar" ) || c.equals( "timor_leste" ) ) {
             region = "Southeast Asia";
         }
         else if ( c.equals( "morocco" ) || c.equals( "gambia" ) || c.equals( "kenya" ) || c.equals( "senegal" )
                 || c.equals( "south_africa" ) || c.equals( "tanzania" ) || c.equals( "ghana" ) || c.equals( "benin" )
-                || c.equals( "tunisia" ) || c.equals( "nigeria" ) ) {
+                || c.equals( "tunisia" ) || c.equals( "nigeria" ) || c.equals( "libya" ) ) {
             region = "Africa";
         }
         else if ( c.equals( "australia" ) || c.equals( "new_zealand" ) ) {

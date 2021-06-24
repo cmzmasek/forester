@@ -40,7 +40,7 @@ public class SystemCommandExecutor {
     private final List<String>    _command_information;
     private ThreadedStreamHandler _input_stream_handler;
     private ThreadedStreamHandler _error_stream_handler;
-    private final static boolean  DEBUG = false;
+    private final static boolean  DEBUG = true;
 
     /**
      * Pass in the system command you want to run as a List of Strings, as shown here:
@@ -96,7 +96,7 @@ public class SystemCommandExecutor {
     public int executeCommand() throws IOException, InterruptedException {
         int exit_value = -99;
         try {
-            final ProcessBuilder pb = new ProcessBuilder( _command_information );
+            final ProcessBuilder pb = new ProcessBuilder( _command_information);
             if ( DEBUG ) {
                 System.out.println( "command_information=" + _command_information );
             }
