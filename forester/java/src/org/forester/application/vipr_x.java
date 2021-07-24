@@ -238,14 +238,14 @@ public class vipr_x {
                 || c.equals( "china" ) ) {
             region = "East Asia";
         }
-        else if ( c.equals( "kazakhstan" ) || c.equals( "uzbekistan" ) ) {
+        else if ( c.equals( "kazakhstan" ) || c.equals( "uzbekistan" ) || c.equals( "armenia" ) ) {
             region = "Central Asia";
         }
         else if ( c.equals( "jordan" ) || c.equals( "bahrain" ) || c.equals( "iraq" ) || c.equals( "saudi_arabia" )
                 || c.equals( "turkey" ) || c.equals( "egypt" ) || c.equals( "israel" ) || c.equals( "west_bank" ) || c.equals( "iran" )  ) {
             region = "West Asia";
         }
-        else if ( c.equals( "india" ) || ( c.equals( "pakistan" ) | c.equals( "bangladesh" ) ) ) {
+        else if ( c.equals( "india" ) || ( c.equals( "pakistan" ) | c.equals( "bangladesh" ) || c.equals( "sri_lanka" ) ) ) {
             region = "South Asia";
         }
         else if ( c.equals( "cambodia" ) || c.equals( "thailand" ) || c.equals( "malaysia" )

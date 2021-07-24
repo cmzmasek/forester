@@ -60,7 +60,7 @@ public class pangolin_x {
             System.out.println( "\nCould not read \"" + infile + "\" [" + e.getMessage() + "]\n" );
             System.exit( -1 );
         }
-        //PhylogenyMethods.midpointRoot( p );
+       // PhylogenyMethods.midpointRoot( p );
         p.reRoot( p.getNode( "X_0" ) );
         p.setRooted( true );
         PhylogenyMethods.orderAppearanceX( p.getRoot(), true, DESCENDANT_SORT_PRIORITY.NODE_NAME );
