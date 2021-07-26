@@ -27,10 +27,10 @@ import org.forester.util.ForesterUtil;
 public class pango_select_2 {
 
     private final static String PRG_NAME                     = "pango_select_2";
-    private static final String PRG_DATE                     = "2021-06-21";
-    private static final String PRG_VERSION                  = "1.0.0";
-    private final static int    MAX_SEQS_PER_LINEAGE         = 500;
-    private final static int    MAX_SEQS_PER_LINEAGE_SPECIAL = 1000;
+    private static final String PRG_DATE                     = "2021-06-26";
+    private static final String PRG_VERSION                  = "2.0.0";
+    private final static int    MAX_SEQS_PER_LINEAGE         = 1000;
+    private final static int    MAX_SEQS_PER_LINEAGE_SPECIAL = 1500;
     private final static String PATH_TO_MAFFT                = "/usr/local/bin/mafft";
     public static void main( final String args[] ) {
         ForesterUtil.printProgramInformation( PRG_NAME, PRG_VERSION, PRG_DATE );
@@ -38,6 +38,8 @@ public class pango_select_2 {
             System.out.println( "\nWrong number of arguments, expected: lineage_file fasta_seqs_file outfile\n" );
             System.exit( -1 );
         }
+        System.out.println( "MAX_SEQS_PER_LINEAGE        : " + MAX_SEQS_PER_LINEAGE );
+        System.out.println( "MAX_SEQS_PER_LINEAGE_SPECIAL: " + MAX_SEQS_PER_LINEAGE_SPECIAL );
         final File lineage_file = new File( args[ 0 ] );
         final File infile = new File( args[ 1 ] );
         final File outfile = new File( args[ 2 ] );
@@ -79,16 +81,19 @@ public class pango_select_2 {
             id_to_seq.put( seq.getIdentifier(), seq );
         }
         final List<MolecularSequence> out_seqs = new ArrayList<>();
+        final SortedSet<String> one_seqs_set = new TreeSet<>();
+        final SortedSet<String> no_seqs_set = new TreeSet<>();
         for( final String lineage : all_lineages_sorted ) {
             final List<MolecularSequence> seqs_per_lineage = new ArrayList<>();
             int counter = 0;
+            System.out.println();
+            System.out.print( lineage + ": " );
             for( int i = 0; i < lineage_table.getNumberOfRows(); ++i ) {
                 final String lineage_from_table = lineage_table.getValue( 1, i );
                 if ( lineage_from_table.equals( lineage ) ) {
                     if ( ( lineage_from_table.equals( "B.1.1.7" ) && ( counter < MAX_SEQS_PER_LINEAGE_SPECIAL ) )
                             || ( counter < MAX_SEQS_PER_LINEAGE ) ) {
                         if ( id_to_seq.containsKey( lineage_table.getValue( 0, i ) ) ) {
-                            System.out.println( lineage );
                             ++counter;
                             seqs_per_lineage.add( id_to_seq.get( lineage_table.getValue( 0, i ) ) );
                         }
@@ -98,6 +103,8 @@ public class pango_select_2 {
                     }
                 }
             }
+            System.out.println( counter );
+            System.out.println( "seqs per lineage: " + seqs_per_lineage.size() );
             if ( seqs_per_lineage.size() > 4 ) {
                 calcDistances_1_2_d( PATH_TO_MAFFT, out_seqs, seqs_per_lineage );
             }
@@ -108,6 +115,12 @@ public class pango_select_2 {
                     }
                 }
             }
+            if ( seqs_per_lineage.size() == 1 ) {
+                one_seqs_set.add( lineage );
+            }
+            else if ( seqs_per_lineage.size() == 0 ) {
+                no_seqs_set.add( lineage );
+            }
         }
         try {
             SequenceWriter.writeSeqs( out_seqs, outfile, SEQ_FORMAT.FASTA, 80 );
@@ -116,6 +129,12 @@ public class pango_select_2 {
             e.printStackTrace();
             System.exit( -1 );
         }
+        System.out.println();
+        System.out.println( "Lineages with only one sequence: " );
+        System.out.println( one_seqs_set );
+        System.out.println();
+        System.out.println( "Lineages with no sequence: " );
+        System.out.println( no_seqs_set );
         System.out.println();
         System.out.println( "Lineages with more than " + MAX_SEQS_PER_LINEAGE + " sequences (" + too_many.size()
                 + "): " );
@@ -167,16 +186,22 @@ public class pango_select_2 {
         for( int row = 0; row < m.getSize(); ++row ) {
             if ( m.getIdentifier( row ).equals( max_1_id ) ) {
                 for( int col = 0; col < m.getSize(); ++col ) {
-                    if ( m.getValue( col, row ) > max_d_d && !m.getIdentifier( col ).equals( min_1_id ) && !m.getIdentifier( col ).equals( min_2_id )) {
+                    if ( ( m.getValue( col, row ) > max_d_d ) && !m.getIdentifier( col ).equals( min_1_id )
+                            && !m.getIdentifier( col ).equals( min_2_id ) ) {
                         max_d_d = m.getValue( col, row );
                         max_d_id = m.getIdentifier( col );
                     }
                 }
             }
         }
+        System.out.println( " min 1 id: " + min_1_id );
+        System.out.println( " min 2 id: " + min_2_id );
+        System.out.println( " max 1 id: " + max_1_id );
+        System.out.println( " max d id: " + max_d_id );
         for( final MolecularSequence seq : seqs_per_lineage ) {
             if ( seq.getIdentifier().equals( min_1_id ) || seq.getIdentifier().equals( min_2_id )
                     || seq.getIdentifier().equals( max_1_id ) || seq.getIdentifier().equals( max_d_id ) ) {
+                System.out.println( "     adding seq: " + seq.getIdentifier() );
                 out_seqs.add( seq );
             }
         }
