@@ -12,7 +12,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.biojava.thirdparty</groupId>
 	<artifactId>forester</artifactId>
-	<version>1.038</version>
+	<version>1.039-SNAPSHOT</version>
 	<name>Forester</name>
 	<description>
 		Applications and software libraries for evolutionary biology and comparative genomics research
@@ -37,6 +37,14 @@
 		</developer>
 	</developers>
 
+	<!-- The jboss repository is needed to get the openchart dependency below -->
+	<repositories>
+		<repository>
+			<id>jboss-third-party</id>
+			<name>Jboss third party repo</name>
+			<url>https://repository.jboss.org/nexus/content/repositories/thirdparty-releases/</url>
+		</repository>
+	</repositories>
 
 	<dependencies>
 
@@ -55,16 +63,13 @@
 			<scope>provided</scope>
 		</dependency>
 
-		<!-- Openchart is not available in maven central. The only way we can provide 
-			it is by pointing to the jar within the distribution. That's not ideal and 
-			maven warns about it. -->
+		<!-- This comes from the jboss repo, see above -->
 		<dependency>
-			<artifactId>openchart</artifactId>
 			<groupId>openchart</groupId>
-			<version>1.0</version>
-			<scope>system</scope>
-			<systemPath>${basedir}/src/main/resources/openchart.jar</systemPath>
+			<artifactId>openchart</artifactId>
+			<version>1.4.2</version>
 		</dependency>
+
 
 
 	</dependencies>
