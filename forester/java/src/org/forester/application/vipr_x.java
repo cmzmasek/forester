@@ -31,7 +31,7 @@ public class vipr_x {
     private static final String  VIPR_YEAR         = "vipr:Year";
     private static final String  VIPR_REGION       = "vipr:Region";
     private final static String  PRG_NAME          = "vipr_x";
-    private static final String  PRG_DATE          = "2021-05-24";
+    private static final String  PRG_DATE          = "2021-08-27";
     private static final String  PRG_VERSION       = "1.0.0";
     //  VP1|VP1_protein|KP322752|US/CA/14_6089|2014_08|Human|USA|NA|Enterovirus_D68
     // 1. gene symbol
@@ -221,7 +221,7 @@ public class vipr_x {
         }
         else if ( c.equals( "denmark" ) || c.equals( "finland" ) || c.equals( "france" ) || c.equals( "germany" )
                 || c.equals( "netherlands" ) || c.equals( "norway" ) || c.equals( "united_kingdom" )
-                || c.equals( "switzerland" ) || c.equals( "austria" ) || c.equals( "estonia" ) ) {
+                || c.equals( "switzerland" ) || c.equals( "austria" ) || c.equals( "estonia" ) || c.equals( "sweden" ) ) {
             region = "Western Europe";
         }
         else if ( c.equals( "serbia" ) || c.equals( "greece" ) || c.equals( "malta" ) || c.equals( "italy" )

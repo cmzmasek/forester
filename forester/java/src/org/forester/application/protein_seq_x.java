@@ -27,8 +27,8 @@ import org.forester.util.ForesterUtil;
 public class protein_seq_x {
 
     private final static String PRG_NAME    = "protein_seq_x";
-    private static final String PRG_DATE    = "2021-05-28";
-    private static final String PRG_VERSION = "1.0.1";
+    private static final String PRG_DATE    = "2021-08-27";
+    private static final String PRG_VERSION = "1.0.2";
     private final static int    MAX_LENGTH  = 1273;
     public static void main( final String[] args ) {
         ForesterUtil.printProgramInformation( PRG_NAME, PRG_VERSION, PRG_DATE );
@@ -105,15 +105,15 @@ public class protein_seq_x {
                                 continue;
                             }
                         }
-                        if ( !found ) {
-                            ForesterUtil.fatalError( PRG_NAME,
-                                                     "no sequence found for node: " + node.getName() + ": " + acc );
-                        }
+                        //if ( !found ) {
+                        //    ForesterUtil.fatalError( PRG_NAME,
+                        //                             "no sequence found for node: " + node.getName() + ": " + acc );
+                        //}
                     }
                 }
-                else {
-                    ForesterUtil.fatalError( PRG_NAME, "external node without sequence accession found" );
-                }
+               // else {
+               //     ForesterUtil.fatalError( PRG_NAME, "external node without sequence accession found" );
+               // }
             }
         }
         try {
