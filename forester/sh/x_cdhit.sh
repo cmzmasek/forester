@@ -1,5 +1,5 @@
 CD_HIT="/home/zma/SOFTWARE/CDHIT/cdhit-4.6.6/cd-hit"
-CUTOFF=0.95
+CUTOFF=0.98
 
 indir=$1
 outdir=$2
