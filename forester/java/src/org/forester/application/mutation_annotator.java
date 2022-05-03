@@ -22,7 +22,7 @@ import org.forester.util.ForesterUtil;
 
 public class mutation_annotator {
 
-    private static final String PRG_DATE    = "2021-05-27";
+    private static final String PRG_DATE    = "2021-11-29";
     private static final String PRG_VERSION = "1.0.1";
     private static final String PRG_NAME    = "mutation_annotator";
     private static final String XSD_STRING  = "xsd:string";
@@ -91,14 +91,18 @@ public class mutation_annotator {
                         seq_length = parent_seq.length();
                     }
                     if ( child_seq.length() != seq_length ) {
+                        final String acc = node.getNodeData().getSequence().getAccession().toString();
                         ForesterUtil.fatalError( PRG_NAME,
                                                  "node with unequal sequence length found: length found is "
-                                                         + child_seq.length() + " expected " + seq_length );
+                                                         + child_seq.length() + " expected " + seq_length + ": "
+                                                         + acc );
                     }
                     if ( parent_seq.length() != seq_length ) {
+                        final String acc = parent.getNodeData().getSequence().getAccession().toString();
                         ForesterUtil.fatalError( PRG_NAME,
                                                  "node with unequal sequence length found: length found is "
-                                                         + parent_seq.length() + " expected " + seq_length );
+                                                         + parent_seq.length() + " expected " + seq_length + ": "
+                                                         + acc );
                     }
                     int mutations = 0;
                     for( int x = 0; x < seq_length; ++x ) {
@@ -157,7 +161,6 @@ public class mutation_annotator {
                 System.out.print( "'" + entry.getKey() + "', " );
             }
         } );
-        
         System.out.println();
         System.out.println();
         System.out.println();
@@ -175,7 +178,6 @@ public class mutation_annotator {
                 System.out.print( "'" + entry.getKey() + "', " );
             }
         } );
-        
         System.out.println();
         System.out.println();
         if ( !ForesterUtil.isEmpty( reference_seqe_node_name )

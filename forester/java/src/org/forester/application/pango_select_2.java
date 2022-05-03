@@ -93,6 +93,7 @@ public class pango_select_2 {
                 if ( lineage_from_table.equals( lineage ) ) {
                     if ( ( lineage_from_table.equals( "B.1.1.7" ) && ( counter < MAX_SEQS_PER_LINEAGE_SPECIAL ) )
                          ||   ( lineage_from_table.equals( "B.1.617.2" ) && ( counter < MAX_SEQS_PER_LINEAGE_SPECIAL ) )
+                         ||   ( lineage_from_table.equals( "AY.4" ) && ( counter < MAX_SEQS_PER_LINEAGE_SPECIAL ) )
                             || ( counter < MAX_SEQS_PER_LINEAGE ) ) {
                         if ( id_to_seq.containsKey( lineage_table.getValue( 0, i ) ) ) {
                             ++counter;

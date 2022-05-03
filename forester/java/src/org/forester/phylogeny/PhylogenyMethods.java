@@ -57,6 +57,8 @@ import org.forester.phylogeny.data.DomainArchitecture;
 import org.forester.phylogeny.data.Event;
 import org.forester.phylogeny.data.Identifier;
 import org.forester.phylogeny.data.PhylogenyDataUtil;
+import org.forester.phylogeny.data.PropertiesList;
+import org.forester.phylogeny.data.Property;
 import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
@@ -71,7 +73,6 @@ import org.forester.util.TaxonomyUtil;
 public class PhylogenyMethods {
 
     private static boolean _order_changed;
-
     private PhylogenyMethods() {
         // Hidden constructor.
     }
@@ -1023,8 +1024,8 @@ public class PhylogenyMethods {
             phylogeny.externalNodesHaveChanged();
         }
     }
-
     private static enum NDF {
+
                              NodeName( "NN" ),
                              TaxonomyCode( "TC" ),
                              TaxonomyCommonName( "TN" ),
@@ -1041,9 +1042,7 @@ public class PhylogenyMethods {
                              BinaryCharacter( "BC" ),
                              TaxonomicLineage( "LN" ),
                              MolecularSequence( "MS" );
-
         private final String _text;
-
         NDF( final String text ) {
             _text = text;
         }
@@ -1057,7 +1056,6 @@ public class PhylogenyMethods {
             return null;
         }
     }
-
     public static List<Long> searchData( final String query,
                                          final Phylogeny phy,
                                          final boolean case_sensitive,
@@ -1118,7 +1116,8 @@ public class PhylogenyMethods {
                 }
             }
             else if ( ( ( ndf == null ) || ( ndf == NDF.TaxonomicLineage ) ) && node.getNodeData().isHasTaxonomy()
-                    && node.getNodeData().getTaxonomy().getLineage() != null  && node.getNodeData().getTaxonomy().getLineage().size() > 0 ) {
+                    && ( node.getNodeData().getTaxonomy().getLineage() != null )
+                    && ( node.getNodeData().getTaxonomy().getLineage().size() > 0 ) ) {
                 final List<String> lins = node.getNodeData().getTaxonomy().getLineage();
                 I: for( final String lin : lins ) {
                     if ( match( lin, my_query, case_sensitive, partial, regex ) ) {
@@ -1280,7 +1279,8 @@ public class PhylogenyMethods {
                     }
                 }
                 else if ( ( ( ndf == null ) || ( ndf == NDF.TaxonomicLineage ) ) && node.getNodeData().isHasTaxonomy()
-                        && node.getNodeData().getTaxonomy().getLineage() != null  && node.getNodeData().getTaxonomy().getLineage().size() > 0 ) {
+                        && ( node.getNodeData().getTaxonomy().getLineage() != null )
+                        && ( node.getNodeData().getTaxonomy().getLineage().size() > 0 ) ) {
                     final List<String> lins = node.getNodeData().getTaxonomy().getLineage();
                     I: for( final String lin : lins ) {
                         if ( match( lin, query, case_sensitive, partial, false ) ) {
@@ -1851,7 +1851,7 @@ public class PhylogenyMethods {
         else {
             Pattern p = null;
             try {
-                p = Pattern.compile( "(\\b|_)" + Pattern.quote( my_query ) + "(\\b|_)" );
+                p = Pattern.compile( "(^|\\s)" + Pattern.quote( my_query ) + "($|\\s)" );
             }
             catch ( final PatternSyntaxException e ) {
                 return false;
@@ -1874,7 +1874,6 @@ public class PhylogenyMethods {
         }
         return prev;
     }
-
     public static enum DESCENDANT_SORT_PRIORITY {
                                                  NODE_NAME,
                                                  SEQUENCE,
@@ -1892,7 +1891,6 @@ public class PhylogenyMethods {
                                            TAXONOMY_ID_UNIPROT_2,
                                            TAXONOMY_SCIENTIFIC_NAME;
     }
-
     public static void addMolecularSeqsToTree( final Phylogeny phy, final Msa msa ) {
         for( int s = 0; s < msa.getNumberOfSequences(); ++s ) {
             final org.forester.sequence.MolecularSequence seq = msa.getSequence( s );
@@ -1910,7 +1908,6 @@ public class PhylogenyMethods {
             node.getNodeData().addSequence( new_seq );
         }
     }
-
     final private static class PhylogenyNodeSortTaxonomyPriority implements Comparator<PhylogenyNode> {
 
         @Override
@@ -2030,7 +2027,6 @@ public class PhylogenyMethods {
             return 0;
         }
     }
-
     public final static Map<Long, Integer> calculateDepths( final Phylogeny phy ) {
         final Map<Long, Integer> depths = new HashMap<>();
         calculateDepthsHelper( phy.getRoot(), 0, depths );
@@ -2186,5 +2182,18 @@ public class PhylogenyMethods {
         for( final PhylogenyNode n : to_remove ) {
             phy.deleteSubtree( n, true );
         }
+    }
+
+    public final static List<String> getNodePropertyValues( final PhylogenyNode node, final String ref ) {
+        final List<String> r = new ArrayList<>();
+        if ( node.isHasNodeData() && ( node.getNodeData().getProperties() != null )
+                && ( node.getNodeData().getProperties().size() > 0 ) ) {
+            final PropertiesList p = node.getNodeData().getProperties();
+            final List<Property> x = p.getProperties( ref );
+            for( final Property element : x ) {
+                r.add( element.getValue() );
+            }
+        }
+        return r;
     }
 }

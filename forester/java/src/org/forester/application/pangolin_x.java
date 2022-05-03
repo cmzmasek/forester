@@ -4,7 +4,9 @@ package org.forester.application;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.util.ParserUtils;
@@ -30,7 +32,7 @@ public class pangolin_x {
     private static final String VIPR_PANGOLIN_CLADE_0 = "vipr:PANGO_Lineage_L0";
     private static final String VIPR_PANGOLIN_CLADE_1 = "vipr:PANGO_Lineage_L1";
     private final static String PRG_NAME              = "pangolin_x";
-    private static final String PRG_DATE              = "2021-05-26";
+    private static final String PRG_DATE              = "2022-04-07";
     private static final String PRG_VERSION           = "1.0.1";
     public static void main( final String args[] ) {
         ForesterUtil.printProgramInformation( PRG_NAME, PRG_VERSION, PRG_DATE );
@@ -60,7 +62,7 @@ public class pangolin_x {
             System.out.println( "\nCould not read \"" + infile + "\" [" + e.getMessage() + "]\n" );
             System.exit( -1 );
         }
-       // PhylogenyMethods.midpointRoot( p );
+        // PhylogenyMethods.midpointRoot( p );
         p.reRoot( p.getNode( "X_0" ) );
         p.setRooted( true );
         PhylogenyMethods.orderAppearanceX( p.getRoot(), true, DESCENDANT_SORT_PRIORITY.NODE_NAME );
@@ -182,6 +184,59 @@ public class pangolin_x {
                     }
                 }
             }
+        }
+        if ( property == VIPR_PANGOLIN_CLADE ) {
+            final SortedMap<String, Integer> counts = new TreeMap<>();
+            for( final PhylogenyNodeIterator it = p.iteratorPostorder(); it.hasNext(); ) {
+                final PhylogenyNode n = it.next();
+                if (  n.getParent() != null  ) {
+                    String parent_clade = "";
+                    final PropertiesList custom_data_p = n.getParent().getNodeData().getProperties();
+                    if ( custom_data_p != null ) {
+                        final List<Property> clades = custom_data_p.getProperties( property );
+                        if ( ( clades != null ) && ( clades.size() == 1 ) ) {
+                            parent_clade = clades.get( 0 ).getValue();
+                        }
+                    }
+                    final PropertiesList custom_data = n.getNodeData().getProperties();
+                    if ( custom_data != null ) {
+                        final List<Property> clades = custom_data.getProperties( property );
+                        if ( ( clades != null ) && ( clades.size() == 1 ) ) {
+                            final String my_clade = clades.get( 0 ).getValue();
+                            if ( !parent_clade.equals( my_clade ) ) {
+                                if ( counts.containsKey( my_clade ) ) {
+                                    counts.put( my_clade, counts.get( my_clade ) + 1 );
+                                }
+                                else {
+                                    counts.put( my_clade, 1 );
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            int count_monop = 0;
+            int count_polyp = 0;
+            int count_total = 0;
+            System.out.println();
+            System.out.println();
+            for( final Map.Entry<String, Integer> entry : counts.entrySet() ) {
+                ++count_total;
+                final String key = entry.getKey();
+                final Integer value = entry.getValue();
+                if ( value > 1 ) {
+                    ++count_polyp;
+                    System.out.println( key + "\t" + value );
+                }
+                else {
+                    ++count_monop;
+                }
+            }
+            System.out.println();
+            System.out.println( "Mono :\t" + count_monop );
+            System.out.println( "Poly :\t" + count_polyp );
+            System.out.println( "Total:\t" + count_total );
+            System.out.println();
         }
     }
 }

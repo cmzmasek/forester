@@ -27,9 +27,9 @@ import org.forester.util.ForesterUtil;
 public final class ancestor_seq_x {
 
     private final static String  PRG_NAME    = "ancestor_seq_x";
-    private static final String  PRG_DATE    = "2021-06-02";
-    private static final String  PRG_VERSION = "1.0.1";
-    private static final Pattern P1          = Pattern.compile( "(\\d+)\\.\\s+?(.+?):(.+)" );
+    private static final String  PRG_DATE    = "2021-11-29";
+    private static final String  PRG_VERSION = "1.0.2";
+    private static final Pattern P1          = Pattern.compile( "(\\d+)\\.\\s+(.+?):\\s*(.+)" );
     private static final Pattern P2          = Pattern.compile( "\\(\\s*(\\d+)\\s*\\.\\s*(\\d+)\\s*\\)" );
     private static final String  SEQ_NAME    = "S";
     public static void main( final String[] args ) {
@@ -142,9 +142,13 @@ public final class ancestor_seq_x {
                             final PhylogenyNode node_1 = number_to_node_map.get( number_1 );
                             final PhylogenyNode node_2 = number_to_node_map.get( number_2 );
                             if ( node_1 == null ) {
+                                System.out.println( number_to_node_map );
+                                System.out.println( line );
                                 ForesterUtil.fatalError( PRG_NAME, "no node for " + number_1 + " found in map" );
                             }
                             if ( node_2 == null ) {
+                                System.out.println( number_to_node_map );
+                                System.out.println( line );
                                 ForesterUtil.fatalError( PRG_NAME, "no node for " + number_2 + " found in map" );
                             }
                             final PhylogenyNode lca = PhylogenyMethods.calculateLCA( node_1, node_2 );

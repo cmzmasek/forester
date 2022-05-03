@@ -63,7 +63,7 @@ public class voc_prep {
                         System.out.println( "Error: Illegal month: " + month );
                         System.exit( -1 );
                     }
-                    if ( ( year < 1000 ) || ( year > 2021 ) ) {
+                    if ( ( year < 1000 ) || ( year > 2022 ) ) {
                         System.out.println( "Error: Illegal year: " + year );
                         System.exit( -1 );
                     }

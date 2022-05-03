@@ -221,7 +221,7 @@ public class vipr_x {
         }
         else if ( c.equals( "denmark" ) || c.equals( "finland" ) || c.equals( "france" ) || c.equals( "germany" )
                 || c.equals( "netherlands" ) || c.equals( "norway" ) || c.equals( "united_kingdom" )
-                || c.equals( "switzerland" ) || c.equals( "austria" ) || c.equals( "estonia" ) || c.equals( "sweden" ) ) {
+                || c.equals( "switzerland" ) || c.equals( "austria" ) || c.equals( "estonia" ) || c.equals( "sweden" ) || c.equals( "belgium" ) ) {
             region = "Western Europe";
         }
         else if ( c.equals( "serbia" ) || c.equals( "greece" ) || c.equals( "malta" ) || c.equals( "italy" )
@@ -254,7 +254,8 @@ public class vipr_x {
         }
         else if ( c.equals( "morocco" ) || c.equals( "gambia" ) || c.equals( "kenya" ) || c.equals( "senegal" )
                 || c.equals( "south_africa" ) || c.equals( "tanzania" ) || c.equals( "ghana" ) || c.equals( "benin" )
-                || c.equals( "tunisia" ) || c.equals( "nigeria" ) || c.equals( "libya" ) ) {
+                || c.equals( "tunisia" ) || c.equals( "nigeria" ) || c.equals( "libya" ) || c.equals( "djibouti" ) || c.equals( "sierra_leone" )
+                || c.equals( "guinea" ) || c.equals( "botswana" ) || c.equals( "ethiopia" )|| c.equals( "malawi" ) || c.equals( "mali" )) {
             region = "Africa";
         }
         else if ( c.equals( "australia" ) || c.equals( "new_zealand" ) ) {
