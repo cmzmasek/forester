@@ -52,8 +52,8 @@ import org.forester.util.UserException;
 public final class cladinator {
 
     final static private String        PRG_NAME                             = "cladinator";
-    final static private String        PRG_VERSION                          = "1.07";
-    final static private String        PRG_DATE                             = "1711xx";
+    final static private String        PRG_VERSION                          = "1.0.8";
+    final static private String        PRG_DATE                             = "20220519";
     final static private String        PRG_DESC                             = "clades within clades of annotated labels -- analysis of pplacer-type outputs";
     final static private String        E_MAIL                               = "phyloxml@gmail.com";
     final static private String        WWW                                  = "https://sites.google.com/site/cmzmasek/home/software/forester";
@@ -466,6 +466,10 @@ public final class cladinator {
         System.out.println();
     }
 
+    
+  
+
+    
     private final static void writeResultToTable( final ResultMulti res,
                                                   final EasyWriter w,
                                                   final boolean remove_annotation_sep )

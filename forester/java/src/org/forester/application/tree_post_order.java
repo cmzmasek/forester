@@ -26,11 +26,11 @@ import org.forester.util.ForesterUtil;
 
 public class tree_post_order {
 
-    private static final String  PRG_DATE     = "2022-04-14";
+    private static final String  PRG_DATE     = "2022-06-02";
     private static final String  PRG_VERSION  = "0.0.1";
     private static final String  PRG_NAME     = "tree_post_order";
     private static final Pattern annotation_p = Pattern.compile( "_\\{(.+)\\}" );
-    private static final String  split_p      = "\\.";
+    //private static final Pattern annotation_p = Pattern.compile( "(.+?)\\|.+" );
     private static final String  XSD_STRING   = "xsd:string";
     private static final String  REF          = "subspecies:clade";
     public static void main( final String args[] ) {
@@ -83,7 +83,15 @@ public class tree_post_order {
                         annotation = m.group( 1 );
                     }
                     else {
-                        ForesterUtil.fatalError( PRG_NAME, "No annotation found in " + name );
+                        //
+                        if ( name.length() < 14 ) {
+                            annotation = name;
+                        }
+                        else {
+                            ForesterUtil.fatalError( PRG_NAME, "No annotation found in " + name );
+                        }
+                        //
+                        //ForesterUtil.fatalError( PRG_NAME, "No annotation found in " + name );
                     }
                     final Property prop = new Property( REF, annotation, "", XSD_STRING, Property.AppliesTo.NODE );
                     PropertiesList custom_data = node.getNodeData().getProperties();
@@ -110,7 +118,7 @@ public class tree_post_order {
                         ForesterUtil.fatalError( PRG_NAME, "No annotation found in node " + node.getId() );
                     }
                 }
-             //   final String x = ForesterUtil.greatestCommonPrefix( annotatons, "." );
+                //   final String x = ForesterUtil.greatestCommonPrefix( annotatons, "." );
                 final String x = ForesterUtil.greatestCommonPrefix( annotatons );
                 final Property prop = new Property( REF, x, "", XSD_STRING, Property.AppliesTo.NODE );
                 PropertiesList custom_data = node.getNodeData().getProperties();

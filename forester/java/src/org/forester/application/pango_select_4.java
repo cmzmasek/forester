@@ -22,7 +22,7 @@ import org.forester.util.ForesterUtil;
 public class pango_select_4 {
 
     private final static String PRG_NAME    = "pango_select_4";
-    private static final String PRG_DATE    = "2022-04-27";
+    private static final String PRG_DATE    = "2022-05-10";
     private static final String PRG_VERSION = "1.0.0";
     public static void main( final String args[] ) {
         ForesterUtil.printProgramInformation( PRG_NAME, PRG_VERSION, PRG_DATE );
@@ -48,8 +48,10 @@ public class pango_select_4 {
                 final File seqs_per_lineage_file = f.getAbsoluteFile();
                 final String name = seqs_per_lineage_file.getName();
                 final String afa = name.substring( 0, name.length() - 6 ) + ".afa";
-                System.out.println( "afa: " + afa );
-                calcDistances_1_2_d( new File( seqs_per_lineage_file.getAbsolutePath() + afa ),
+                System.out.println( "fasta: " + seqs_per_lineage_file );
+                System.out.println( "afa  : " + afa );
+                System.out.println();
+                calcDistances_1_2_d( new File( seqs_per_lineage_file.getParent() + "/" + afa ),
                                      seqs_per_lineage_file,
                                      out_seqs );
             }
@@ -61,6 +63,7 @@ public class pango_select_4 {
             e.printStackTrace();
             System.exit( -1 );
         }
+        System.out.println();
         System.out.println();
         System.out.println( "[" + PRG_NAME + "] wrote: [" + outfile + "] with " + out_seqs.size() + " sequences" );
         System.out.println( "[" + PRG_NAME + "] OK" );
