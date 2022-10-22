@@ -64,7 +64,6 @@ public final class PhylogenyDecorator {
     final private static String TP_TAXONOMY_ID_PROVIDER = "TAXONOMY_ID_PROVIDER";
     final private static String TP_TAXONOMY_SN          = "TAXONOMY_SN";
     final private static String TP_TAXONOMY_SYN         = "TAXONOMY_SYN";
-
     private PhylogenyDecorator() {
         // Not needed.
     }
@@ -158,7 +157,8 @@ public final class PhylogenyDecorator {
                                    final boolean picky,
                                    final boolean cut_name_after_space,
                                    final boolean trim_after_tilde,
-                                   final boolean verbose )
+                                   final boolean verbose,
+                                   final boolean special )
             throws IllegalArgumentException, NHXFormatException, PhyloXmlDataFormatException {
         return PhylogenyDecorator.decorate( phylogeny,
                                             map,
@@ -169,7 +169,8 @@ public final class PhylogenyDecorator {
                                             null,
                                             cut_name_after_space,
                                             trim_after_tilde,
-                                            verbose );
+                                            verbose,
+                                            special );
     }
 
     /**
@@ -196,7 +197,8 @@ public final class PhylogenyDecorator {
                                    final Map<String, String> intermediate_map,
                                    final boolean cut_name_after_space,
                                    final boolean trim_after_tilde,
-                                   final boolean verbose )
+                                   final boolean verbose,
+                                   final boolean special )
             throws IllegalArgumentException, PhyloXmlDataFormatException {
         if ( extract_bracketed_scientific_name && ( field == FIELD.TAXONOMY_SCIENTIFIC_NAME ) ) {
             throw new IllegalArgumentException( "attempt to extract bracketed scientific name together with data field pointing to scientific name" );
@@ -343,7 +345,12 @@ public final class PhylogenyDecorator {
                                 if ( verbose ) {
                                     System.out.println( new_value );
                                 }
-                                node.setName( new_value );
+                                if ( special ) {
+                                    node.setName( orig_name + "_{" + new_value + "}" );
+                                }
+                                else {
+                                    node.setName( new_value );
+                                }
                                 break;
                             default:
                                 throw new RuntimeException( "unknown field \"" + field + "\"" );
@@ -364,11 +371,11 @@ public final class PhylogenyDecorator {
 
     public static Map<String, Map<String, String>> parseMappingTable( final File mapping_table_file )
             throws IOException {
-        final Map<String, Map<String, String>> map = new HashMap<String, Map<String, String>>();
+        final Map<String, Map<String, String>> map = new HashMap<>();
         BasicTable<String> mapping_table = null;
         mapping_table = BasicTableParser.parse( mapping_table_file, '\t', false, false );
         for( int row = 0; row < mapping_table.getNumberOfRows(); ++row ) {
-            final Map<String, String> row_map = new HashMap<String, String>();
+            final Map<String, String> row_map = new HashMap<>();
             String name = null;
             for( int col = 0; col < mapping_table.getNumberOfColumns(); ++col ) {
                 final String table_cell = mapping_table.getValue( col, row );
@@ -457,7 +464,6 @@ public final class PhylogenyDecorator {
         }
         return new_name;
     }
-
     public static enum FIELD {
                               DOMAIN_STRUCTURE,
                               MOL_SEQ,

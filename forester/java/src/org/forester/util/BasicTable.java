@@ -69,6 +69,21 @@ public class BasicTable<E> {
         }
         return map;
     }
+    
+    public SortedMap<String, E> getColumnsAsMapAllowDulicateKeys( final int key_col, final int value_col ) throws IllegalArgumentException {
+        final SortedMap<String, E> map = new TreeMap<String, E>();
+        for( int row = 0; row < getNumberOfRows(); ++row ) {
+            final String key = ( String ) getValue( key_col, row );
+            final E value = getValue( value_col, row );
+            if ( ( key != null ) && ( value != null ) ) {
+                //if ( map.containsKey( key ) && !(map.get( key ).equals( value ) )) {
+                //    throw new IllegalArgumentException( "key [" + key + "] maps to different values: " + map.get( key ) + " != " + value );
+                //} //TODO put me back
+                map.put( key, value );
+            }
+        }
+        return map;
+    }
 
     public Map<String, Double> getColumnsAsMapDouble( final int key_col, final int value_col )
             throws IllegalArgumentException, IOException {
