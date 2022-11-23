@@ -253,6 +253,30 @@ public final class MsaMethods {
         return ( double ) majority_count / msa.getNumberOfSequences();
     }
 
+    public static Character calculateMajorityConsensusCharacterPerColumn( final Msa msa, final int column ) {
+        final SortedMap<Character, Integer> dist = calculateResidueDestributionPerColumnAllowGaps( msa, column );
+       
+        int majority_count = 0;
+        char majority_char = '-';
+        final Iterator<Map.Entry<Character, Integer>> it = dist.entrySet().iterator();
+        while ( it.hasNext() ) {
+            final Map.Entry<Character, Integer> pair = it.next();
+            if ( pair.getValue() > majority_count ) {
+                majority_count = pair.getValue();
+                majority_char = pair.getKey();
+            }
+        }
+        return majority_char;
+    }
+    
+    public static String calculateMajorityConsensusSequence( final Msa msa ) {
+        StringBuilder sb = new StringBuilder();
+        for( int c = 0; c < msa.getLength(); ++c ) {
+            sb.append( String.valueOf(calculateMajorityConsensusCharacterPerColumn(  msa, c )) );
+        }
+        return sb.toString();
+    }
+    
     public static SortedMap<Character, Integer> calculateResidueDestributionPerColumn( final Msa msa, final int column ) {
         final SortedMap<Character, Integer> map = new TreeMap<Character, Integer>();
         for( final Character r : msa.getColumnAt( column ) ) {
@@ -264,6 +288,21 @@ public final class MsaMethods {
                     map.put( r, map.get( r ) + 1 );
                 }
             }
+        }
+        return map;
+    }
+    
+    public static SortedMap<Character, Integer> calculateResidueDestributionPerColumnAllowGaps( final Msa msa, final int column ) {
+        final SortedMap<Character, Integer> map = new TreeMap<Character, Integer>();
+        for( final Character r : msa.getColumnAt( column ) ) {
+           
+                if ( !map.containsKey( r ) ) {
+                    map.put( r, 1 );
+                }
+                else {
+                    map.put( r, map.get( r ) + 1 );
+                }
+            
         }
         return map;
     }
