@@ -49,9 +49,10 @@ import org.forester.sequence.MolecularSequence;
 public final class msa_consensus {
 
     public static void main( final String args[] ) {
+        final boolean special = true;
         try {
             final File infile = new File( args[ 0 ] );
-            final File outfile = new File( args[ 1 ] );
+            File outfile = new File( args[ 1 ] );
             final String name = args[ 2 ];
             DeleteableMsa msa = null;
             final FileInputStream is = new FileInputStream( infile );
@@ -64,6 +65,13 @@ public final class msa_consensus {
             final String cons = MsaMethods.calculateMajorityConsensusSequence( msa );
             final List<MolecularSequence> seqs = new ArrayList<>();
             seqs.add( BasicSequence.createGeneralSequence( name, cons ) );
+            if ( special ) {
+                final boolean all_identical = MsaMethods.isAllSequencesIdentical( msa );
+                if ( !all_identical ) {
+                    final String out = outfile.toString();
+                    outfile = new File( out.substring( 0, out.length() - 6 ) + "_TO_BLAST.fasta" );
+                }
+            }
             SequenceWriter.writeSeqs( seqs, outfile, SEQ_FORMAT.FASTA, 80 );
         }
         catch ( final FileNotFoundException e ) {
