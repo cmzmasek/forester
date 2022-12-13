@@ -39,6 +39,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.forester.io.parsers.FastaParser;
 import org.forester.io.parsers.GeneralMsaParser;
@@ -47,8 +49,10 @@ import org.forester.util.ForesterUtil;
 
 public final class epi_t {
 
-    private final static boolean HEATMAP = false;
-    private final static boolean TEST_1  = false;
+    private final static Pattern GAP_C_TERM_ONLY = Pattern.compile( "[^\\-]+\\-+" );
+    private final static Pattern GAP_N_TERM_ONLY = Pattern.compile( "\\-+[^\\-]+" );
+    private final static boolean HEATMAP         = false;
+    private final static boolean TEST_1          = false;
     public static void main( final String args[] ) {
         // System.out.println( x("a", "abc", 0) );
         // System.out.println( x("b", "abc", 0) );
@@ -218,10 +222,88 @@ public final class epi_t {
                         //final String current_seq_name = msa.getIdentifier( row );
                         //System.out.print( current_seq_name );
                         //System.out.print( "\t" );
-                        final String positional_homolog = current_seq_str.substring( first, last + 1 );
+                        String positional_homolog = current_seq_str.substring( first, last + 1 );
+                        if ( positional_homolog.indexOf( '-' ) > -1 ) {
+                            final Matcher ma_n = GAP_N_TERM_ONLY.matcher( positional_homolog );
+                            final Matcher ma_c = GAP_C_TERM_ONLY.matcher( positional_homolog );
+                            // System.out.println( "\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" );
+                            // System.out.println( ">>>>>> " + positional_homolog );
+                            if ( ma_n.matches() ) {
+                                // System.out.println( "N-TERM GAP" );
+                                String new_positional_homolog = positional_homolog.replace( "-", "" );
+                                int e = 1;
+                                final int orig_length = positional_homolog.length();
+                                while ( ( ( new_positional_homolog.indexOf( '-' ) > -1 )
+                                        || ( new_positional_homolog.length() < orig_length ) )
+                                        && ( ( first - e ) > 0 ) ) {
+                                    new_positional_homolog = current_seq_str.substring( first - e++, last + 1 );
+                                    new_positional_homolog = new_positional_homolog.replace( "-", "" );
+                                }
+                                // System.out.println( "--> " + new_positional_homolog );
+                                positional_homolog = new_positional_homolog;
+                            }
+                            else if ( ma_c.matches() ) {
+                                //  System.out.println( "C-TERM GAP" );
+                                String new_positional_homolog = positional_homolog.replace( "-", "" );
+                                int e = 1;
+                                final int orig_length = positional_homolog.length();
+                                while ( ( ( new_positional_homolog.indexOf( '-' ) > -1 )
+                                        || ( new_positional_homolog.length() < orig_length ) )
+                                        && ( ( last + 1 + e ) < ( current_seq_str.length() - 0 ) ) ) {
+                                    new_positional_homolog = current_seq_str.substring( first, last + 1 + e++ );
+                                    new_positional_homolog = new_positional_homolog.replace( "-", "" );
+                                }
+                                // System.out.println( "--> " + new_positional_homolog );
+                                positional_homolog = new_positional_homolog;
+                            }
+                            else {
+                                //System.out.println( "GAPS EVERYWHERE!!!" );
+                                boolean done_n = false;
+                                boolean done_c = false;
+                                String new_positional_homolog = positional_homolog.replace( "-", "" );
+                                int e_n = 0;
+                                int e_c = 0;
+                                final int orig_length = positional_homolog.length();
+                                while ( !done_n || !done_c ) {
+                                    if ( ( new_positional_homolog.indexOf( '-' ) < 0 )
+                                            && ( new_positional_homolog.length() >= orig_length ) ) {
+                                        break;
+                                    }
+                                    if ( ( first - e_n ) > 0 ) {
+                                        e_n++;
+                                        new_positional_homolog = current_seq_str.substring( first - e_n,
+                                                                                            last + 1 + e_c );
+                                        new_positional_homolog = new_positional_homolog.replace( "-", "" );
+                                    }
+                                    else {
+                                        done_n = true;
+                                    }
+                                    if ( ( new_positional_homolog.indexOf( '-' ) < 0 )
+                                            && ( new_positional_homolog.length() >= orig_length ) ) {
+                                        break;
+                                    }
+                                    if ( ( last + 1 + e_c ) < ( current_seq_str.length() - 0 ) ) {
+                                        e_c++;
+                                        new_positional_homolog = current_seq_str.substring( first - e_n,
+                                                                                            last + 1 + e_c );
+                                        new_positional_homolog = new_positional_homolog.replace( "-", "" );
+                                    }
+                                    else {
+                                        done_c = true;
+                                    }
+                                }
+                                // System.out.println( "--> " + new_positional_homolog );
+                                positional_homolog = new_positional_homolog;
+                            }
+                            // System.out.println( "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" );
+                        }
                         if ( !HEATMAP ) {
                             System.out.print( positional_homolog );
                             System.out.print( "\t" );
+                        }
+                        if ( peptide_seq.length() != positional_homolog.length() ) {
+                            // System.out.println( "      !! WARNING " + peptide_seq + " != " + positional_homolog );
+                            // System.out.println( "                 " + taxonomy.get( p ) );
                         }
                         final double diss = calcDissimilarity( peptide_seq, positional_homolog );
                         System.out.print( ForesterUtil.round( diss, 4 ) );
@@ -264,16 +346,24 @@ public final class epi_t {
     }
 
     final static double calcDissimilarity( final String s1, final String s2 ) {
-        final int l = s1.length();
-        if ( l != s2.length() ) {
-            throw new IllegalArgumentException( "Unequal lenght: " + s1 + ", " + s2 );
+        final int l1 = s1.length();
+        final int l2 = s2.length();
+        int shorter = 0;
+        int longer = 0;
+        if ( l1 > l2 ) {
+            longer = l1;
+            shorter = l2;
+        }
+        else {
+            longer = l2;
+            shorter = l1;
         }
         int d = 0;
-        for( int i = 0; i < l; ++i ) {
+        for( int i = 0; i < shorter; ++i ) {
             if ( s1.charAt( i ) != s2.charAt( i ) ) {
                 ++d;
             }
         }
-        return ( ( double ) d ) / l;
+        return ( ( double ) d ) / longer;
     }
 }
