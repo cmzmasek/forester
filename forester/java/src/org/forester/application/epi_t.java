@@ -49,10 +49,11 @@ import org.forester.util.ForesterUtil;
 
 public final class epi_t {
 
-    private final static Pattern GAP_C_TERM_ONLY = Pattern.compile( "[^\\-]+\\-+" );
-    private final static Pattern GAP_N_TERM_ONLY = Pattern.compile( "\\-+[^\\-]+" );
-    private final static boolean HEATMAP         = false;
-    private final static boolean TEST_1          = false;
+    private final static Pattern GAP_C_TERM_ONLY           = Pattern.compile( "[^\\-]+\\-+" );
+    private final static Pattern GAP_N_TERM_ONLY           = Pattern.compile( "\\-+[^\\-]+" );
+    private final static boolean KEEP_COMPLETE_GAP_MATCHES = true;
+    private final static boolean HEATMAP                   = false;
+    private final static boolean TEST_1                    = false;
     public static void main( final String args[] ) {
         // System.out.println( x("a", "abc", 0) );
         // System.out.println( x("b", "abc", 0) );
@@ -72,7 +73,7 @@ public final class epi_t {
         try {
             final File msa_file = new File( args[ 0 ] );
             final File peptide_seqs_file = new File( args[ 1 ] );
-            final File outfile = new File( args[ 2 ] );
+            // final File outfile = new File( args[ 2 ] );
             DeleteableMsa msa = null;
             final FileInputStream is = new FileInputStream( msa_file );
             if ( FastaParser.isLikelyFasta( msa_file ) ) {
@@ -85,9 +86,15 @@ public final class epi_t {
             final List<String> peptide_seqs = new ArrayList<>();
             final List<String> peptide_ids = new ArrayList<>();
             final List<String> taxonomy = new ArrayList<>();
-            final List<String> cd = new ArrayList<>();
+            final List<String> pop = new ArrayList<>();
+            final List<String> source = new ArrayList<>();
             final List<String> megapool = new ArrayList<>();
             final List<String> start = new ArrayList<>();
+            final List<String> end = new ArrayList<>();
+            
+            final List<String> epitope_names = new ArrayList<>();
+            final List<String> epitope_accs = new ArrayList<>();
+            
             final List<String> num_times_tested = new ArrayList<>();
             final List<String> num_times_positive = new ArrayList<>();
             final List<String> total_magnitude = new ArrayList<>();
@@ -95,12 +102,26 @@ public final class epi_t {
             final BufferedReader reader = new BufferedReader( new FileReader( peptide_seqs_file ) );
             String line = reader.readLine();
             while ( line != null ) {
-                line = line.trim();
+                
                 if ( line.length() > 0 ) {
+                    
+                    
+                    if ( line.startsWith("\t") ) {
+                        line = "NA" + line;
+                    }
+                    if ( line.endsWith("\t") ) {
+                        line = line + " ";
+                    }
                     final String[] s = line.split( "\t" );
+                  
                     taxonomy.add( s[ 0 ] );
-                    cd.add( s[ 1 ] );
-                    peptide_seqs.add( s[ 2 ] );
+                    source.add( s[ 1 ] );
+                    pop.add( s[ 2 ] );
+                    peptide_seqs.add( s[ 3 ] );
+                    start.add( s[ 4 ] );
+                    end.add( s[ 5 ] );
+                    epitope_names.add( s[ 6] );
+                    epitope_accs.add( s[ 7 ] );
                     //megapool.add( s[ 1 ] );
                     //start.add( s[ 2 ] );
                     // peptide_seqs.add( s[ 3 ] );
@@ -115,9 +136,19 @@ public final class epi_t {
             reader.close();
             System.out.print( "TAXO" );
             System.out.print( "\t" );
-            System.out.print( "CD" );
+            System.out.print( "SOURCE" );
             System.out.print( "\t" );
-            System.out.print( "SEQ" );
+            System.out.print( "POP" );
+            System.out.print( "\t" );
+            System.out.print( "EPITOPE" );
+            System.out.print( "\t" );
+            System.out.print( "START" );
+            System.out.print( "\t" );
+            System.out.print( "END" );
+            System.out.print( "\t" );
+            System.out.print( "NAME" );
+            System.out.print( "\t" );
+            System.out.print( "ACC" );
             System.out.print( "\t" );
             //
             //            System.out.print( "#CD4+" );
@@ -193,10 +224,23 @@ public final class epi_t {
                 if ( found ) {
                     System.out.print( taxonomy.get( p ) );
                     System.out.print( "\t" );
-                    System.out.print( cd.get( p ) );
+                    System.out.print( source.get( p ) );
+                    System.out.print( "\t" );
+                    System.out.print( pop.get( p ) );
                     System.out.print( "\t" );
                     System.out.print( peptide_seq );
                     System.out.print( "\t" );
+                    System.out.print( start.get( p ) );
+                    System.out.print( "\t" );
+                    System.out.print( end.get( p ) );
+                    System.out.print( "\t" );
+                    System.out.print( epitope_names.get( p ) );
+                    System.out.print( "\t" );
+                    System.out.print( epitope_accs.get( p ) );
+                    System.out.print( "\t" );
+                    
+                    
+                    
                     //                    System.out.print( megapool.get( p ) );
                     //                    System.out.print( "\t" );
                     //                    System.out.print( start.get( p ) );
@@ -223,16 +267,17 @@ public final class epi_t {
                         //System.out.print( current_seq_name );
                         //System.out.print( "\t" );
                         String positional_homolog = current_seq_str.substring( first, last + 1 );
+                        String orig_positional_homolog = positional_homolog;
                         if ( positional_homolog.indexOf( '-' ) > -1 ) {
                             final Matcher ma_n = GAP_N_TERM_ONLY.matcher( positional_homolog );
                             final Matcher ma_c = GAP_C_TERM_ONLY.matcher( positional_homolog );
+                            final int orig_length = positional_homolog.length();
                             // System.out.println( "\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" );
                             // System.out.println( ">>>>>> " + positional_homolog );
                             if ( ma_n.matches() ) {
                                 // System.out.println( "N-TERM GAP" );
                                 String new_positional_homolog = positional_homolog.replace( "-", "" );
                                 int e = 1;
-                                final int orig_length = positional_homolog.length();
                                 while ( ( ( new_positional_homolog.indexOf( '-' ) > -1 )
                                         || ( new_positional_homolog.length() < orig_length ) )
                                         && ( ( first - e ) > 0 ) ) {
@@ -246,7 +291,6 @@ public final class epi_t {
                                 //  System.out.println( "C-TERM GAP" );
                                 String new_positional_homolog = positional_homolog.replace( "-", "" );
                                 int e = 1;
-                                final int orig_length = positional_homolog.length();
                                 while ( ( ( new_positional_homolog.indexOf( '-' ) > -1 )
                                         || ( new_positional_homolog.length() < orig_length ) )
                                         && ( ( last + 1 + e ) < ( current_seq_str.length() - 0 ) ) ) {
@@ -256,14 +300,14 @@ public final class epi_t {
                                 // System.out.println( "--> " + new_positional_homolog );
                                 positional_homolog = new_positional_homolog;
                             }
-                            else {
+                            if ( ( !KEEP_COMPLETE_GAP_MATCHES && ( !ma_c.matches() && !ma_c.matches() ) )
+                                    || ( positional_homolog.length() < orig_length ) ) {
                                 //System.out.println( "GAPS EVERYWHERE!!!" );
                                 boolean done_n = false;
                                 boolean done_c = false;
                                 String new_positional_homolog = positional_homolog.replace( "-", "" );
                                 int e_n = 0;
                                 int e_c = 0;
-                                final int orig_length = positional_homolog.length();
                                 while ( !done_n || !done_c ) {
                                     if ( ( new_positional_homolog.indexOf( '-' ) < 0 )
                                             && ( new_positional_homolog.length() >= orig_length ) ) {
@@ -301,11 +345,8 @@ public final class epi_t {
                             System.out.print( positional_homolog );
                             System.out.print( "\t" );
                         }
-                        if ( peptide_seq.length() != positional_homolog.length() ) {
-                            // System.out.println( "      !! WARNING " + peptide_seq + " != " + positional_homolog );
-                            // System.out.println( "                 " + taxonomy.get( p ) );
-                        }
-                        final double diss = calcDissimilarity( peptide_seq, positional_homolog );
+                       
+                        final double diss = calcDissimilarity( peptide_seq, orig_positional_homolog );
                         System.out.print( ForesterUtil.round( diss, 4 ) );
                         System.out.print( "\t" );
                     }
@@ -346,24 +387,16 @@ public final class epi_t {
     }
 
     final static double calcDissimilarity( final String s1, final String s2 ) {
-        final int l1 = s1.length();
-        final int l2 = s2.length();
-        int shorter = 0;
-        int longer = 0;
-        if ( l1 > l2 ) {
-            longer = l1;
-            shorter = l2;
-        }
-        else {
-            longer = l2;
-            shorter = l1;
+        final int l = s1.length();
+        if ( l != s2.length() ) {
+            throw new IllegalArgumentException( "Unequal length: " + s1 + ", " + s2 );
         }
         int d = 0;
-        for( int i = 0; i < shorter; ++i ) {
+        for( int i = 0; i < l; ++i ) {
             if ( s1.charAt( i ) != s2.charAt( i ) ) {
                 ++d;
             }
         }
-        return ( ( double ) d ) / longer;
+        return ( ( double ) d ) / l;
     }
 }
