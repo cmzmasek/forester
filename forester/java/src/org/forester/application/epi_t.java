@@ -51,8 +51,9 @@ public final class epi_t {
 
     private final static Pattern GAP_C_TERM_ONLY           = Pattern.compile( "[^\\-]+\\-+" );
     private final static Pattern GAP_N_TERM_ONLY           = Pattern.compile( "\\-+[^\\-]+" );
+    private final static Pattern GAP_ONLY                  = Pattern.compile( "\\-+" );
     private final static boolean KEEP_COMPLETE_GAP_MATCHES = true;
-    private final static boolean HEATMAP                   = false;
+    private final static boolean MAT_PEPT_INF              = true;
     private final static boolean TEST_1                    = false;
     public static void main( final String args[] ) {
         // System.out.println( x("a", "abc", 0) );
@@ -71,9 +72,21 @@ public final class epi_t {
         // System.out.println( x("ef__i", "abcdefghijklmnopqrstuvw", 2) );
         // System.out.println( x("_f__i", "abcdefghijklmnopqrstuvw", 3) );
         try {
-            final File msa_file = new File( args[ 0 ] );
-            final File peptide_seqs_file = new File( args[ 1 ] );
-            // final File outfile = new File( args[ 2 ] );
+            final String o1 = args[ 0 ];
+            boolean heatmap = false;
+            if ( o1.equals( "h" ) ) {
+                heatmap = true;
+            }
+            else if ( o1.equals( "s" ) ) {
+                heatmap = false;
+            }
+            else {
+                System.err.println( "use 'h' for heatmap or 's' for sequences" );
+                System.exit( -1 );
+            }
+            final File msa_file = new File( args[ 1 ] );
+            final File peptide_seqs_file = new File( args[ 2 ] );
+            // final File outfile = new File( args[ 3 ] );
             DeleteableMsa msa = null;
             final FileInputStream is = new FileInputStream( msa_file );
             if ( FastaParser.isLikelyFasta( msa_file ) ) {
@@ -91,10 +104,8 @@ public final class epi_t {
             final List<String> megapool = new ArrayList<>();
             final List<String> start = new ArrayList<>();
             final List<String> end = new ArrayList<>();
-            
             final List<String> epitope_names = new ArrayList<>();
             final List<String> epitope_accs = new ArrayList<>();
-            
             final List<String> num_times_tested = new ArrayList<>();
             final List<String> num_times_positive = new ArrayList<>();
             final List<String> total_magnitude = new ArrayList<>();
@@ -102,25 +113,21 @@ public final class epi_t {
             final BufferedReader reader = new BufferedReader( new FileReader( peptide_seqs_file ) );
             String line = reader.readLine();
             while ( line != null ) {
-                
                 if ( line.length() > 0 ) {
-                    
-                    
-                    if ( line.startsWith("\t") ) {
+                    if ( line.startsWith( "\t" ) ) {
                         line = "NA" + line;
                     }
-                    if ( line.endsWith("\t") ) {
+                    if ( line.endsWith( "\t" ) ) {
                         line = line + " ";
                     }
                     final String[] s = line.split( "\t" );
-                  
                     taxonomy.add( s[ 0 ] );
                     source.add( s[ 1 ] );
                     pop.add( s[ 2 ] );
                     peptide_seqs.add( s[ 3 ] );
                     start.add( s[ 4 ] );
                     end.add( s[ 5 ] );
-                    epitope_names.add( s[ 6] );
+                    epitope_names.add( s[ 6 ] );
                     epitope_accs.add( s[ 7 ] );
                     //megapool.add( s[ 1 ] );
                     //start.add( s[ 2 ] );
@@ -146,6 +153,10 @@ public final class epi_t {
             System.out.print( "\t" );
             System.out.print( "END" );
             System.out.print( "\t" );
+            if ( MAT_PEPT_INF ) {
+                System.out.print( "NAME INFERRED" );
+                System.out.print( "\t" );
+            }
             System.out.print( "NAME" );
             System.out.print( "\t" );
             System.out.print( "ACC" );
@@ -177,7 +188,7 @@ public final class epi_t {
                 final String current_seq_name = msa.getIdentifier( row );
                 System.out.print( current_seq_name );
                 System.out.print( "\t" );
-                if ( !HEATMAP ) {
+                if ( !heatmap ) {
                     System.out.print( "" );
                     System.out.print( "\t" );
                 }
@@ -188,6 +199,7 @@ public final class epi_t {
                 boolean found = false;
                 int first = -1;
                 int last = -1;
+                String inferred_name = "na";
                 for( int row = 0; row < msa.getNumberOfSequences(); ++row ) {
                     final String current_seq_str = msa.getSequenceAsString( row ).toString();
                     final int i = current_seq_str.indexOf( peptide_seq );
@@ -195,6 +207,9 @@ public final class epi_t {
                         first = i;
                         last = ( first + peptide_seq.length() ) - 1;
                         found = true;
+                        if ( MAT_PEPT_INF ) {
+                            inferred_name = inferNSPname( peptide_seq, i );
+                        }
                         break;
                     }
                 }
@@ -211,6 +226,9 @@ public final class epi_t {
                                 }
                                 first = ( int ) match_result.get( 1 );
                                 last = ( int ) match_result.get( 2 ) - 1;
+                                if ( MAT_PEPT_INF ) {
+                                    inferred_name = inferNSPname( peptide_seq, first );
+                                }
                                 break T;
                             }
                         }
@@ -234,13 +252,14 @@ public final class epi_t {
                     System.out.print( "\t" );
                     System.out.print( end.get( p ) );
                     System.out.print( "\t" );
+                    if ( MAT_PEPT_INF ) {
+                        System.out.print( inferred_name );
+                        System.out.print( "\t" );
+                    }
                     System.out.print( epitope_names.get( p ) );
                     System.out.print( "\t" );
                     System.out.print( epitope_accs.get( p ) );
                     System.out.print( "\t" );
-                    
-                    
-                    
                     //                    System.out.print( megapool.get( p ) );
                     //                    System.out.print( "\t" );
                     //                    System.out.print( start.get( p ) );
@@ -267,10 +286,11 @@ public final class epi_t {
                         //System.out.print( current_seq_name );
                         //System.out.print( "\t" );
                         String positional_homolog = current_seq_str.substring( first, last + 1 );
-                        String orig_positional_homolog = positional_homolog;
+                        final String orig_positional_homolog = positional_homolog;
                         if ( positional_homolog.indexOf( '-' ) > -1 ) {
                             final Matcher ma_n = GAP_N_TERM_ONLY.matcher( positional_homolog );
                             final Matcher ma_c = GAP_C_TERM_ONLY.matcher( positional_homolog );
+                            final Matcher ma_go = GAP_ONLY.matcher( positional_homolog );
                             final int orig_length = positional_homolog.length();
                             // System.out.println( "\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" );
                             // System.out.println( ">>>>>> " + positional_homolog );
@@ -300,7 +320,8 @@ public final class epi_t {
                                 // System.out.println( "--> " + new_positional_homolog );
                                 positional_homolog = new_positional_homolog;
                             }
-                            if ( ( !KEEP_COMPLETE_GAP_MATCHES && ( !ma_c.matches() && !ma_c.matches() ) )
+                            if ( ( !( KEEP_COMPLETE_GAP_MATCHES && ma_go.matches() )
+                                    && ( !ma_c.matches() && !ma_c.matches() ) )
                                     || ( positional_homolog.length() < orig_length ) ) {
                                 //System.out.println( "GAPS EVERYWHERE!!!" );
                                 boolean done_n = false;
@@ -341,13 +362,12 @@ public final class epi_t {
                             }
                             // System.out.println( "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" );
                         }
-                        if ( !HEATMAP ) {
+                        if ( !heatmap ) {
                             System.out.print( positional_homolog );
                             System.out.print( "\t" );
                         }
-                       
-                        final double diss = calcDissimilarity( peptide_seq, orig_positional_homolog );
-                        System.out.print( ForesterUtil.round( diss, 4 ) );
+                        System.out.print( ForesterUtil.round( calcSimilarity( peptide_seq, orig_positional_homolog ),
+                                                              4 ) );
                         System.out.print( "\t" );
                     }
                     System.out.println();
@@ -361,6 +381,64 @@ public final class epi_t {
         catch ( final IOException e ) {
             e.printStackTrace();
         }
+    }
+
+    private static String inferNSPname( final String peptide_seq, final int i ) {
+        String inferred_name = "na";
+        int ii = i + 1;
+        final int offset = peptide_seq.length() / 2;
+        if ( ii > offset ) {
+            ii -= offset;
+        }
+        if ( ( ii >= 1 ) && ( ii <= 269 ) ) {
+            inferred_name = "NSP1 (Host translation inhibitor)";
+        }
+        else if ( ( ii >= 270 ) && ( ii <= 1022 ) ) {
+            inferred_name = "NSP2";
+        }
+        else if ( ( ii >= 1023 ) && ( ii <= 3651 ) ) {
+            inferred_name = "NSP3 (Papain-like protease)";
+        }
+        else if ( ( ii >= 3652 ) && ( ii <= 4164 ) ) {
+            inferred_name = "NSP4";
+        }
+        else if ( ( ii >= 4165 ) && ( ii <= 4492 ) ) {
+            inferred_name = "NSP5 (3C-like proteinase)";
+        }
+        else if ( ( ii >= 4493 ) && ( ii <= 4795 ) ) {
+            inferred_name = "NSP6";
+        }
+        else if ( ( ii >= 4796 ) && ( ii <= 4884 ) ) {
+            inferred_name = "NSP7";
+        }
+        else if ( ( ii >= 4885 ) && ( ii <= 5085 ) ) {
+            inferred_name = "NSP8";
+        }
+        else if ( ( ii >= 5086 ) && ( ii <= 5198 ) ) {
+            inferred_name = "NSP9 (RNA-capping enzyme subunit)";
+        }
+        else if ( ( ii >= 5199 ) && ( ii <= 5338 ) ) {
+            inferred_name = "NSP10";
+        }
+        else if ( ( ii >= 5339 ) && ( ii <= 5370 ) ) {
+            inferred_name = "NSP11";
+        }
+        else if ( ( ii >= 5371 ) && ( ii <= 6275 ) ) {
+            inferred_name = "NSP12 (RNA-directed RNA polymerase)";
+        }
+        else if ( ( ii >= 6276 ) && ( ii <= 6882 ) ) {
+            inferred_name = "NSP13 (Helicase)";
+        }
+        else if ( ( ii >= 6883 ) && ( ii <= 7416 ) ) {
+            inferred_name = "NSP14 (Guanine-N7 methyltransferase)";
+        }
+        else if ( ( ii >= 7417 ) && ( ii <= 7810 ) ) {
+            inferred_name = "NSP15 (Uridylate-specific endoribonuclease)";
+        }
+        else if ( ii >= 7811 ) {
+            inferred_name = "NSP16 (2'-O-methyltransferase)";
+        }
+        return inferred_name;
     }
 
     private final static List<Object> match( final String query, final String target, final int tolerance ) {
@@ -386,17 +464,17 @@ public final class epi_t {
         return null;
     }
 
-    final static double calcDissimilarity( final String s1, final String s2 ) {
+    final static double calcSimilarity( final String s1, final String s2 ) {
         final int l = s1.length();
         if ( l != s2.length() ) {
             throw new IllegalArgumentException( "Unequal length: " + s1 + ", " + s2 );
         }
-        int d = 0;
+        int s = 0;
         for( int i = 0; i < l; ++i ) {
-            if ( s1.charAt( i ) != s2.charAt( i ) ) {
-                ++d;
+            if ( s1.charAt( i ) == s2.charAt( i ) ) {
+                ++s;
             }
         }
-        return ( ( double ) d ) / l;
+        return ( ( double ) s ) / l;
     }
 }
