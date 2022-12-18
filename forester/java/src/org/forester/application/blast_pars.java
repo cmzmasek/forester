@@ -38,13 +38,26 @@ import java.io.IOException;
 
 public final class blast_pars {
 
+    private final static String VERSION = "1.0.0";
     public static void main( final String args[] ) {
         try {
-            final File infile = new File( args[ 0 ] );
+            File infile = null;
+            String annot = "";
+            if ( args.length == 1 ) {
+                infile = new File( args[ 0 ] );
+            }
+            else if ( args.length == 2 ) {
+                annot = args[ 0 ];
+                infile = new File( args[ 1 ] );
+            }
+            else {
+                System.err.println( "Usage: blast_pars [annotation tag] <infile>" );
+                System.exit( -1 );
+            }
             String desc = "";
             String acc = "";
             boolean saw_description = false;
-            boolean saw_query = false;
+            boolean saw_Sbjct = false;
             try (BufferedReader br = new BufferedReader( new FileReader( infile ) )) {
                 String line;
                 while ( ( line = br.readLine() ) != null ) {
@@ -52,7 +65,7 @@ public final class blast_pars {
                     if ( line.length() > 0 ) {
                         if ( line.startsWith( "Description" ) ) {
                             saw_description = true;
-                            saw_query = false;
+                            saw_Sbjct = false;
                             desc = "";
                             acc = "";
                         }
@@ -60,17 +73,22 @@ public final class blast_pars {
                             final String[] s = line.split( "\\s{2,}" );
                             desc = s[ 0 ];
                             acc = s[ s.length - 1 ];
-                            System.out.println( ">" + desc + "|" + acc );
+                            if ( annot.length() > 0 ) {
+                                System.out.println( ">" + desc + "|" + acc + "|" + annot );
+                            }
+                            else {
+                                System.out.println( ">" + desc + "|" + acc );
+                            }
                         }
-                        else if ( saw_description && ( desc.length() > 0 ) && line.startsWith( "Query" ) ) {
-                            saw_query = true;
+                        else if ( saw_description && ( desc.length() > 0 ) && line.startsWith( "Sbjct" ) ) {
+                            saw_Sbjct = true;
                             final String[] s = line.split( "\\s+" );
                             final String seq = s[ 2 ];
                             System.out.println( seq );
                         }
-                        else if ( saw_query && line.startsWith( ">" ) ) {
+                        else if ( saw_Sbjct && line.startsWith( ">" ) ) {
                             saw_description = false;
-                            saw_query = false;
+                            saw_Sbjct = false;
                         }
                     }
                 }

@@ -141,10 +141,10 @@ public class BasicMsa implements Msa {
         if ( ForesterUtil.isEmpty( id ) ) {
             throw new IllegalArgumentException( "illegal attempt to create msa with empty identifier" );
         }
-        if ( _identifiers_set.contains( id ) ) {
-            throw new IllegalArgumentException( "illegal attempt to create msa with non-unique identifiers [" + id
-                    + "]" );
-        }
+        //if ( _identifiers_set.contains( id ) ) {
+         //   throw new IllegalArgumentException( "illegal attempt to create msa with non-unique identifiers [" + id
+         //           + "]" );
+        //}
         _identifiers_set.add( id );
         _identifiers[ row ] = id;
     }

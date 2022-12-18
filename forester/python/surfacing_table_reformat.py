@@ -1,4 +1,7 @@
 import csv
+import sys
+
+csv.field_size_limit(sys.maxsize)
 
 name_col = 1
 da_col = 0

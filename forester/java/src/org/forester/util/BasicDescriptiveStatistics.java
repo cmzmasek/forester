@@ -40,7 +40,6 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
     private double       _sigma;
     private boolean      _recalc_sigma;
     private String       _desc;
-
     public BasicDescriptiveStatistics() {
         init();
     }
@@ -260,7 +259,7 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
     }
 
     private void init() {
-        _data = new ArrayList<Double>();
+        _data = new ArrayList<>();
         _sum = 0.0;
         _min = Double.MAX_VALUE;
         _max = -Double.MAX_VALUE;
@@ -317,5 +316,22 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
      */
     public static double sampleStandardUnit( final double value, final double mean, final double sd ) {
         return ( value - mean ) / sd;
+    }
+
+    public double interquartileRange() {
+        validate();
+        final double median = 0.0;
+        if ( getN() == 1 ) {
+            return 0;
+        }
+        else {
+            final int i1 = ( int ) ( getN() * 0.25 );
+            final int i3 = ( int ) ( getN() * 0.75 );
+            final double[] data_array = getDataAsDoubleArray();
+            Arrays.sort( data_array );
+            final double q1 = data_array[ i1 ];
+            final double q3 = data_array[ i3 ];
+            return q3 - q1;
+        }
     }
 }
