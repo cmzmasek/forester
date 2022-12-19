@@ -55,11 +55,13 @@ public final class epi_t {
     private final static Pattern GAP_C_TERM_ONLY = Pattern.compile( "[^\\-]+\\-+" );
     private final static Pattern GAP_N_TERM_ONLY = Pattern.compile( "\\-+[^\\-]+" );
     private final static Pattern GAP_ONLY        = Pattern.compile( "\\-+" );
+    private final static String  SARBECO_TAG     = "|Sarbeco";
     private final static boolean TEST_1          = false;
     private final static boolean TEST_2          = false;
     public static void main( final String args[] ) {
-        if ( args.length != 5 ) {
-            System.err.println( "Usage: epi_t <'h' or 's'> <'k' or 'f'> <'i' or 'n'> <ms> <peptides file>" );
+        if ( args.length != 6 ) {
+            System.err.println( "Usage: epi_t <h|s> <k|f> <i|n> <s|n> <msa> <peptides file>" );
+            System.err.println( "Usage: epi_t h f n s B_Membrane_BLAST_results_mafft.fasta Membrane.txt > m_01.tsv" );
             System.exit( -1 );
         }
         try {
@@ -99,9 +101,21 @@ public final class epi_t {
                 System.err.println( "use 'i' to infer mature peptides or 'n' to not infer" );
                 System.exit( -1 );
             }
-            System.out.println( "Version:" + VERSION );
-            final File msa_file = new File( args[ 3 ] );
-            final File peptide_seqs_file = new File( args[ 4 ] );
+            final String o_s = args[ 3 ];
+            boolean separate_sarbeco_vs_non_sarbeco_stats = false;
+            if ( o_s.equals( "s" ) ) {
+                separate_sarbeco_vs_non_sarbeco_stats = true;
+            }
+            else if ( o_s.equals( "n" ) ) {
+                separate_sarbeco_vs_non_sarbeco_stats = false;
+            }
+            else {
+                System.err.println( "use 's' for separate Sarbeco vs non-Sarbeco statistics, 'n' otherwise" );
+                System.exit( -1 );
+            }
+            System.out.println( "Version: " + VERSION );
+            final File msa_file = new File( args[ 4 ] );
+            final File peptide_seqs_file = new File( args[ 5 ] );
             DeleteableMsa msa = null;
             final FileInputStream is = new FileInputStream( msa_file );
             if ( FastaParser.isLikelyFasta( msa_file ) ) {
@@ -120,13 +134,14 @@ public final class epi_t {
             String line = reader.readLine();
             while ( line != null ) {
                 if ( line.length() > 0 ) {
-                    if ( line.startsWith( "\t" ) ) {
-                        line = "NA" + line;
-                    }
                     if ( line.endsWith( "\t" ) ) {
                         line = line + " ";
                     }
                     final String[] s = line.split( "\t" );
+                    if ( s.length < 8 ) {
+                        System.err.println( "error: unexpected format: " + line );
+                        System.exit( -1 );
+                    }
                     taxonomy.add( s[ 0 ] );
                     source.add( s[ 1 ] );
                     pop.add( s[ 2 ] );
@@ -157,19 +172,36 @@ public final class epi_t {
             System.out.print( "\t" );
             System.out.print( "LAST (MSA)" );
             System.out.print( "\t" );
-            System.out.print( "MEDIAN CONS" );
+            System.out.print( "MEDIAN CNSV" );
             System.out.print( "\t" );
-            System.out.print( "IQR" );
+            System.out.print( "IQR CNSV" );
             System.out.print( "\t" );
-            System.out.print( "MIN CONS" );
+            System.out.print( "MIN CNSV" );
             System.out.print( "\t" );
-            System.out.print( "MAX CONS" );
+            System.out.print( "MAX CNSV" );
             System.out.print( "\t" );
+            if ( separate_sarbeco_vs_non_sarbeco_stats ) {
+                System.out.print( "MEDIAN CNSV SARB" );
+                System.out.print( "\t" );
+                System.out.print( "IQR CNSV" );
+                System.out.print( "\t" );
+                System.out.print( "MIN CNSV" );
+                System.out.print( "\t" );
+                System.out.print( "MAX CNSV" );
+                System.out.print( "\t" );
+                System.out.print( "MEDIAN CNSV NON-SARB" );
+                System.out.print( "\t" );
+                System.out.print( "IQR CNSV" );
+                System.out.print( "\t" );
+                System.out.print( "MIN CNSV" );
+                System.out.print( "\t" );
+                System.out.print( "MAX CNSV" );
+                System.out.print( "\t" );
+            }
             System.out.print( "SHANNON ENT" );
             System.out.print( "\t" );
             for( int row = 0; row < msa.getNumberOfSequences(); ++row ) {
-                final String current_seq_name = msa.getIdentifier( row );
-                System.out.print( current_seq_name );
+                System.out.print( msa.getIdentifier( row ) );
                 System.out.print( "\t" );
                 if ( !heatmap ) {
                     System.out.print( "" );
@@ -240,9 +272,12 @@ public final class epi_t {
                     System.out.print( epitope_accs.get( p ) );
                     System.out.print( "\t" );
                     final BasicDescriptiveStatistics stats = new BasicDescriptiveStatistics();
+                    final BasicDescriptiveStatistics stats_non_sarbeco = new BasicDescriptiveStatistics();
+                    final BasicDescriptiveStatistics stats_sarbeco = new BasicDescriptiveStatistics();
                     final StringBuilder data_sb = new StringBuilder();
                     for( int row = 0; row < msa.getNumberOfSequences(); ++row ) {
                         final String current_seq_str = msa.getSequenceAsString( row ).toString();
+                        final String current_seq_name = msa.getIdentifier( row );
                         String positional_homolog = current_seq_str.substring( first, last + 1 );
                         final String orig_positional_homolog = positional_homolog;
                         if ( positional_homolog.indexOf( '-' ) > -1 ) {
@@ -340,6 +375,14 @@ public final class epi_t {
                         }
                         final double sim = calcSimilarity( peptide_seq, orig_positional_homolog );
                         stats.addValue( sim );
+                        if ( separate_sarbeco_vs_non_sarbeco_stats ) {
+                            if ( current_seq_name.indexOf( SARBECO_TAG ) > -1 ) {
+                                stats_sarbeco.addValue( sim );
+                            }
+                            else {
+                                stats_non_sarbeco.addValue( sim );
+                            }
+                        }
                         data_sb.append( ForesterUtil.round( sim, 4 ) );
                         data_sb.append( "\t" );
                     }
@@ -355,6 +398,44 @@ public final class epi_t {
                     System.out.print( "\t" );
                     System.out.print( ForesterUtil.round( stats.getMax(), 4 ) );
                     System.out.print( "\t" );
+                    if ( separate_sarbeco_vs_non_sarbeco_stats ) {
+                        if ( ( stats_sarbeco.getN() > 0 ) && ( stats_non_sarbeco.getN() > 0 ) ) {
+                            System.out.print( ForesterUtil.round( stats_sarbeco.median(), 4 ) );
+                            System.out.print( "\t" );
+                            System.out.print( ForesterUtil.round( stats_sarbeco.interquartileRange(), 4 ) );
+                            System.out.print( "\t" );
+                            System.out.print( ForesterUtil.round( stats_sarbeco.getMin(), 4 ) );
+                            System.out.print( "\t" );
+                            System.out.print( ForesterUtil.round( stats_sarbeco.getMax(), 4 ) );
+                            System.out.print( "\t" );
+                            System.out.print( ForesterUtil.round( stats_non_sarbeco.median(), 4 ) );
+                            System.out.print( "\t" );
+                            System.out.print( ForesterUtil.round( stats_non_sarbeco.interquartileRange(), 4 ) );
+                            System.out.print( "\t" );
+                            System.out.print( ForesterUtil.round( stats_non_sarbeco.getMin(), 4 ) );
+                            System.out.print( "\t" );
+                            System.out.print( ForesterUtil.round( stats_non_sarbeco.getMax(), 4 ) );
+                            System.out.print( "\t" );
+                        }
+                        else {
+                            System.out.print( "" );
+                            System.out.print( "\t" );
+                            System.out.print( "" );
+                            System.out.print( "\t" );
+                            System.out.print( "" );
+                            System.out.print( "\t" );
+                            System.out.print( "" );
+                            System.out.print( "\t" );
+                            System.out.print( "" );
+                            System.out.print( "\t" );
+                            System.out.print( "" );
+                            System.out.print( "\t" );
+                            System.out.print( "" );
+                            System.out.print( "\t" );
+                            System.out.print( "" );
+                            System.out.print( "\t" );
+                        }
+                    }
                     System.out.print( ForesterUtil
                             .round( MsaMethods.calcAvgNormalizedShannonsEntropy( 21, msa, first, last ), 4 ) );
                     System.out.print( "\t" );
@@ -371,7 +452,12 @@ public final class epi_t {
         }
     }
 
-    private static String inferNSPname( final String peptide_seq, final int i ) {
+    /*
+     *
+     * Positions for Polyprotein NSPs for MSA "Beta_PP_02_mafft" 2022/12/17
+     *
+     */
+    private final static String inferNSPname( final String peptide_seq, final int i ) {
         String inferred_name = "na";
         int ii = i + 1;
         final int offset = peptide_seq.length() / 2;
@@ -381,49 +467,49 @@ public final class epi_t {
         if ( ( ii >= 1 ) && ( ii <= 269 ) ) {
             inferred_name = "NSP1 (Host translation inhibitor)";
         }
-        else if ( ( ii >= 270 ) && ( ii <= 1022 ) ) {
+        else if ( ( ii >= 270 ) && ( ii <= 985 ) ) {
             inferred_name = "NSP2";
         }
-        else if ( ( ii >= 1023 ) && ( ii <= 3651 ) ) {
+        else if ( ( ii >= 986 ) && ( ii <= 3625 ) ) {
             inferred_name = "NSP3 (Papain-like protease)";
         }
-        else if ( ( ii >= 3652 ) && ( ii <= 4164 ) ) {
+        else if ( ( ii >= 3626 ) && ( ii <= 4138 ) ) {
             inferred_name = "NSP4";
         }
-        else if ( ( ii >= 4165 ) && ( ii <= 4492 ) ) {
+        else if ( ( ii >= 4139 ) && ( ii <= 4466 ) ) {
             inferred_name = "NSP5 (3C-like proteinase)";
         }
-        else if ( ( ii >= 4493 ) && ( ii <= 4795 ) ) {
+        else if ( ( ii >= 4467 ) && ( ii <= 4769 ) ) {
             inferred_name = "NSP6";
         }
-        else if ( ( ii >= 4796 ) && ( ii <= 4884 ) ) {
+        else if ( ( ii >= 4770 ) && ( ii <= 4858 ) ) {
             inferred_name = "NSP7";
         }
-        else if ( ( ii >= 4885 ) && ( ii <= 5085 ) ) {
+        else if ( ( ii >= 4859 ) && ( ii <= 5059 ) ) {
             inferred_name = "NSP8";
         }
-        else if ( ( ii >= 5086 ) && ( ii <= 5198 ) ) {
+        else if ( ( ii >= 5060 ) && ( ii <= 5172 ) ) {
             inferred_name = "NSP9 (RNA-capping enzyme subunit)";
         }
-        else if ( ( ii >= 5199 ) && ( ii <= 5338 ) ) {
+        else if ( ( ii >= 5173 ) && ( ii <= 5312 ) ) {
             inferred_name = "NSP10";
         }
-        else if ( ( ii >= 5339 ) && ( ii <= 5370 ) ) {
+        else if ( ( ii >= 5313 ) && ( ii <= 5344 ) ) {
             inferred_name = "NSP11";
         }
-        else if ( ( ii >= 5371 ) && ( ii <= 6275 ) ) {
+        else if ( ( ii >= 5345 ) && ( ii <= 6252 ) ) {
             inferred_name = "NSP12 (RNA-directed RNA polymerase)";
         }
-        else if ( ( ii >= 6276 ) && ( ii <= 6882 ) ) {
+        else if ( ( ii >= 6253 ) && ( ii <= 6858 ) ) {
             inferred_name = "NSP13 (Helicase)";
         }
-        else if ( ( ii >= 6883 ) && ( ii <= 7416 ) ) {
+        else if ( ( ii >= 6859 ) && ( ii <= 7390 ) ) {
             inferred_name = "NSP14 (Guanine-N7 methyltransferase)";
         }
-        else if ( ( ii >= 7417 ) && ( ii <= 7810 ) ) {
+        else if ( ( ii >= 7391 ) && ( ii <= 7781 ) ) {
             inferred_name = "NSP15 (Uridylate-specific endoribonuclease)";
         }
-        else if ( ii >= 7811 ) {
+        else if ( ii >= 7782 ) {
             inferred_name = "NSP16 (2'-O-methyltransferase)";
         }
         return inferred_name;

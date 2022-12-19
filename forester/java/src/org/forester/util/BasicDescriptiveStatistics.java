@@ -320,7 +320,6 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
 
     public double interquartileRange() {
         validate();
-        final double median = 0.0;
         if ( getN() == 1 ) {
             return 0;
         }
