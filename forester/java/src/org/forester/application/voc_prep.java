@@ -25,8 +25,8 @@ public class voc_prep {
     private static final String  XSD_STRING         = "xsd:string";
     private static final String  VIPR_YEAR_MONTH    = "vipr:Year_Month";
     private final static String  PRG_NAME           = "voc_prep";
-    private static final String  PRG_DATE           = "2021-05-24";
-    private static final String  PRG_VERSION        = "1.0.0";
+    private static final String  PRG_DATE           = "2023-01-17";
+    private static final String  PRG_VERSION        = "1.0.1";
     public static void main( final String args[] ) {
         ForesterUtil.printProgramInformation( PRG_NAME, PRG_VERSION, PRG_DATE );
         final File infile = new File( args[ 0 ] );
@@ -63,7 +63,7 @@ public class voc_prep {
                         System.out.println( "Error: Illegal month: " + month );
                         System.exit( -1 );
                     }
-                    if ( ( year < 1000 ) || ( year > 2022 ) ) {
+                    if ( ( year < 1000 ) || ( year > 2024 ) ) {
                         System.out.println( "Error: Illegal year: " + year );
                         System.exit( -1 );
                     }

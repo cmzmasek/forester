@@ -49,7 +49,7 @@ import org.forester.sequence.MolecularSequence;
 public final class msa_consensus {
 
     public static void main( final String args[] ) {
-        final boolean special = true;
+        final boolean special = false;
         try {
             final File infile = new File( args[ 0 ] );
             File outfile = new File( args[ 1 ] );

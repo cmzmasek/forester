@@ -50,8 +50,9 @@ import org.forester.util.BasicDescriptiveStatistics;
 import org.forester.util.ForesterUtil;
 
 public final class epi_t {
+    // add to tolerance: Spike: 12, PP: 3, N: 4, ORF7a: 2, ORF8: 3
 
-    private final static String  VERSION         = "1.0.0";
+    private final static String  VERSION         = "1.0.1";
     private final static Pattern GAP_C_TERM_ONLY = Pattern.compile( "[^\\-]+\\-+" );
     private final static Pattern GAP_N_TERM_ONLY = Pattern.compile( "\\-+[^\\-]+" );
     private final static Pattern GAP_ONLY        = Pattern.compile( "\\-+" );
@@ -59,9 +60,9 @@ public final class epi_t {
     private final static boolean TEST_1          = false;
     private final static boolean TEST_2          = false;
     public static void main( final String args[] ) {
-        if ( args.length != 6 ) {
-            System.err.println( "Usage: epi_t <h|s> <k|f> <i|n> <s|n> <msa> <peptides file>" );
-            System.err.println( "Usage: epi_t h f n s B_Membrane_BLAST_results_mafft.fasta Membrane.txt > m_01.tsv" );
+        if ( args.length != 7 ) {
+            System.err.println( "Usage: epi_t <h|s> <k|f> <i|n> <s|n> <add to tolerance> <msa> <peptides file>" );
+            System.err.println( "Usage: epi_t h f n s 4 B_Membrane_BLAST_results_mafft.fasta Membrane.txt > m_01.tsv" );
             System.exit( -1 );
         }
         try {
@@ -113,9 +114,12 @@ public final class epi_t {
                 System.err.println( "use 's' for separate Sarbeco vs non-Sarbeco statistics, 'n' otherwise" );
                 System.exit( -1 );
             }
+            final String add_to_tolerance_str = args[ 4 ];
+            final int add_to_tolerance = Integer.parseInt( add_to_tolerance_str );
             System.out.println( "Version: " + VERSION );
-            final File msa_file = new File( args[ 4 ] );
-            final File peptide_seqs_file = new File( args[ 5 ] );
+            System.out.println( "Add to tolerance: " + add_to_tolerance );
+            final File msa_file = new File( args[ 5 ] );
+            final File peptide_seqs_file = new File( args[ 6 ] );
             DeleteableMsa msa = null;
             final FileInputStream is = new FileInputStream( msa_file );
             if ( FastaParser.isLikelyFasta( msa_file ) ) {
@@ -229,7 +233,7 @@ public final class epi_t {
                     }
                 }
                 if ( !found ) {
-                    final int max_t = ( peptide_seq.length() / 2 ) - 1;
+                    final int max_t = ( peptide_seq.length() / 2 ) + add_to_tolerance;
                     T: for( int t = 0; t < max_t; ++t ) {
                         for( int row = 0; row < msa.getNumberOfSequences(); ++row ) {
                             final String current_seq_str = msa.getSequenceAsString( row ).toString();
@@ -237,7 +241,7 @@ public final class epi_t {
                             if ( match_result != null ) {
                                 found = true;
                                 if ( TEST_1 ) {
-                                    System.out.println( t + ")  " + peptide_seq + " -> " + match_result.get( 0 ) );
+                                    System.err.println( t + ")  " + peptide_seq + " -> " + match_result.get( 0 ) );
                                 }
                                 first = ( int ) match_result.get( 1 );
                                 last = ( int ) match_result.get( 2 ) - 1;
@@ -250,9 +254,7 @@ public final class epi_t {
                     }
                 }
                 if ( !found ) {
-                    if ( TEST_1 ) {
-                        System.out.println( "STILL NOT FOUND: " + peptide_seq );
-                    }
+                    System.err.println( "WARNING: NOT FOUND: " + peptide_seq );
                 }
                 if ( found ) {
                     System.out.print( taxonomy.get( p ) );
@@ -286,13 +288,13 @@ public final class epi_t {
                             final Matcher ma_go = GAP_ONLY.matcher( positional_homolog );
                             final int orig_length = positional_homolog.length();
                             if ( TEST_2 ) {
-                                System.out
+                                System.err
                                         .println( "\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" );
-                                System.out.println( ">>>>>> " + positional_homolog );
+                                System.err.println( ">>>>>> " + positional_homolog );
                             }
                             if ( ma_n.matches() ) {
                                 if ( TEST_2 ) {
-                                    System.out.println( "N-TERM GAP" );
+                                    System.err.println( "N-TERM GAP" );
                                 }
                                 String new_positional_homolog = positional_homolog.replace( "-", "" );
                                 int e = 1;
@@ -303,13 +305,13 @@ public final class epi_t {
                                     new_positional_homolog = new_positional_homolog.replace( "-", "" );
                                 }
                                 if ( TEST_2 ) {
-                                    System.out.println( "--> " + new_positional_homolog );
+                                    System.err.println( "--> " + new_positional_homolog );
                                 }
                                 positional_homolog = new_positional_homolog;
                             }
                             else if ( ma_c.matches() ) {
                                 if ( TEST_2 ) {
-                                    System.out.println( "C-TERM GAP" );
+                                    System.err.println( "C-TERM GAP" );
                                 }
                                 String new_positional_homolog = positional_homolog.replace( "-", "" );
                                 int e = 1;
@@ -320,7 +322,7 @@ public final class epi_t {
                                     new_positional_homolog = new_positional_homolog.replace( "-", "" );
                                 }
                                 if ( TEST_2 ) {
-                                    System.out.println( "--> " + new_positional_homolog );
+                                    System.err.println( "--> " + new_positional_homolog );
                                 }
                                 positional_homolog = new_positional_homolog;
                             }
@@ -361,12 +363,12 @@ public final class epi_t {
                                     }
                                 }
                                 if ( TEST_2 ) {
-                                    System.out.println( "--> " + new_positional_homolog );
+                                    System.err.println( "--> " + new_positional_homolog );
                                 }
                                 positional_homolog = new_positional_homolog;
                             }
                             if ( TEST_2 ) {
-                                System.out.println( "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" );
+                                System.err.println( "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" );
                             }
                         }
                         if ( !heatmap ) {
