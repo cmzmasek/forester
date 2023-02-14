@@ -30,10 +30,11 @@ import org.forester.msa.Msa;
 
 public final class PairwiseDistanceCalculator {
 
-    public static final double DEFAULT_VALUE_FOR_TOO_LARGE_DISTANCE_FOR_KIMURA_FORMULA = 10; // Felsenstein uses -1
+    public static final double DEFAULT_VALUE_FOR_TOO_LARGE_DISTANCE_FOR_KIMURA_FORMULA = 10; // Felsenstein
+                                                                                             // uses
+                                                                                             // -1
     private final Msa          _msa;
     private final double       _value_for_too_large_distance_for_kimura_formula;
-
     private PairwiseDistanceCalculator( final Msa msa, final double value_for_too_large_distance_for_kimura_formula ) {
         _msa = msa;
         _value_for_too_large_distance_for_kimura_formula = value_for_too_large_distance_for_kimura_formula;
@@ -48,6 +49,17 @@ public final class PairwiseDistanceCalculator {
             }
         }
         return ( double ) nd / length;
+    }
+
+    private double calcFractionalSimilarity( final int row_1, final int row_2 ) {
+        final int length = _msa.getLength();
+        int s = 0;
+        for( int col = 0; col < length; ++col ) {
+            if ( _msa.getResidueAt( row_1, col ) == _msa.getResidueAt( row_2, col ) ) {
+                ++s;
+            }
+        }
+        return ( double ) s / length;
     }
 
     /**
@@ -106,6 +118,14 @@ public final class PairwiseDistanceCalculator {
         return d;
     }
 
+    private BasicSymmetricalDistanceMatrix calcFractionalSimilarities() {
+        final int s = _msa.getNumberOfSequences();
+        final BasicSymmetricalDistanceMatrix d = new BasicSymmetricalDistanceMatrix( s );
+        copyIdentifiers( s, d );
+        calcFractionalSimilarities( s, d );
+        return d;
+    }
+
     private void calcKimuraDistances( final int s, final BasicSymmetricalDistanceMatrix d ) {
         for( int i = 1; i < s; i++ ) {
             for( int j = 0; j < i; j++ ) {
@@ -130,6 +150,14 @@ public final class PairwiseDistanceCalculator {
         }
     }
 
+    private void calcFractionalSimilarities( final int s, final BasicSymmetricalDistanceMatrix d ) {
+        for( int i = 0; i < s; i++ ) {
+            for( int j = 0; j <= i; j++ ) {
+                d.setValue( i, j, calcFractionalSimilarity( i, j ) );
+            }
+        }
+    }
+
     @Override
     public Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException();
@@ -143,26 +171,32 @@ public final class PairwiseDistanceCalculator {
 
     public static BasicSymmetricalDistanceMatrix calcFractionalDissimilarities( final Msa msa ) {
         return new PairwiseDistanceCalculator( msa, DEFAULT_VALUE_FOR_TOO_LARGE_DISTANCE_FOR_KIMURA_FORMULA )
-        .calcFractionalDissimilarities();
+                .calcFractionalDissimilarities();
+    }
+
+    public static BasicSymmetricalDistanceMatrix calcFractionalSimilarities( final Msa msa ) {
+        return new PairwiseDistanceCalculator( msa, DEFAULT_VALUE_FOR_TOO_LARGE_DISTANCE_FOR_KIMURA_FORMULA )
+                .calcFractionalSimilarities();
     }
 
     public static BasicSymmetricalDistanceMatrix calcPoissonDistances( final Msa msa ) {
         return new PairwiseDistanceCalculator( msa, DEFAULT_VALUE_FOR_TOO_LARGE_DISTANCE_FOR_KIMURA_FORMULA )
-        .calcPoissonDistances();
+                .calcPoissonDistances();
     }
 
     public static BasicSymmetricalDistanceMatrix calcKimuraDistances( final Msa msa ) {
         return new PairwiseDistanceCalculator( msa, DEFAULT_VALUE_FOR_TOO_LARGE_DISTANCE_FOR_KIMURA_FORMULA )
-        .calcKimuraDistances();
+                .calcKimuraDistances();
     }
 
     public static BasicSymmetricalDistanceMatrix calcKimuraDistances( final Msa msa,
                                                                       final double value_for_too_large_distance_for_kimura_formula ) {
         return new PairwiseDistanceCalculator( msa, value_for_too_large_distance_for_kimura_formula )
-        .calcKimuraDistances();
+                .calcKimuraDistances();
     }
-
     public enum PWD_DISTANCE_METHOD {
-        KIMURA_DISTANCE, POISSON_DISTANCE, FRACTIONAL_DISSIMILARITY;
+                                     KIMURA_DISTANCE,
+                                     POISSON_DISTANCE,
+                                     FRACTIONAL_DISSIMILARITY;
     }
 }
