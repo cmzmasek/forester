@@ -40,7 +40,6 @@ public class BasicPhylogeniesWebserviceClient implements PhylogeniesWebserviceCl
     private final PhylogenyMethods.PhylogenyNodeField _node_field;
     private final Object                              _proc_inst;
     private final String                              _ref;
-
     public BasicPhylogeniesWebserviceClient( final String name,
                                              final String menu_name,
                                              final String desc,

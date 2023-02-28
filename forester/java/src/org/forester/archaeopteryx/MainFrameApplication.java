@@ -113,6 +113,7 @@ public final class MainFrameApplication extends MainFrame {
     private final JFileChooser           _msa_filechooser;
     private final JFileChooser           _seqs_pi_filechooser;
     private final JFileChooser           _open_filechooser_for_species_tree;
+    private final JFileChooser           _annotations_filechooser;
     // Application-only print menu items
     private JMenuItem                    _collapse_below_threshold;
     private JMenuItem                    _collapse_below_branch_length;
@@ -133,7 +134,6 @@ public final class MainFrameApplication extends MainFrame {
     private File                         _seqs_file                      = null;
     JMenuItem                            _read_values_jmi;
     JMenuItem                            _read_seqs_jmi;
-
     private MainFrameApplication( final Phylogeny[] phys, final Configuration config ) {
         _configuration = config;
         if ( _configuration == null ) {
@@ -151,6 +151,7 @@ public final class MainFrameApplication extends MainFrame {
         _seqs_pi_filechooser = null;
         _values_filechooser = null;
         _sequences_filechooser = null;
+        _annotations_filechooser = null;
         _jmenubar = new JMenuBar();
         buildFileMenu();
         buildTypeMenu();
@@ -257,6 +258,9 @@ public final class MainFrameApplication extends MainFrame {
         // Sequences
         _sequences_filechooser = new JFileChooser();
         _sequences_filechooser.setMultiSelectionEnabled( false );
+        // Annotations
+        _annotations_filechooser = new JFileChooser();
+        _annotations_filechooser.setMultiSelectionEnabled( false );
         try {
             final String home_dir = System.getProperty( "user.home" );
             _open_filechooser.setCurrentDirectory( new File( home_dir ) );
@@ -371,6 +375,9 @@ public final class MainFrameApplication extends MainFrame {
             }
             else if ( o == _new_item ) {
                 newTree();
+            }
+            else if ( o == _annotations_item ) {
+                addAnnotations();
             }
             else if ( o == _close_item ) {
                 closeCurrentPane();
@@ -741,7 +748,7 @@ public final class MainFrameApplication extends MainFrame {
                         }
                         continue;
                     }
-                    final List<Double> l = new ArrayList<Double>();
+                    final List<Double> l = new ArrayList<>();
                     for( int col = 1; col < t.getNumberOfColumns(); ++col ) {
                         double d = -100;
                         try {
@@ -972,7 +979,7 @@ public final class MainFrameApplication extends MainFrame {
 
     private void collapseBelowThreshold( final Phylogeny phy ) {
         final PhylogenyNodeIterator it = phy.iteratorPostorder();
-        final List<PhylogenyNode> to_be_removed = new ArrayList<PhylogenyNode>();
+        final List<PhylogenyNode> to_be_removed = new ArrayList<>();
         double min_support = Double.MAX_VALUE;
         boolean conf_present = false;
         while ( it.hasNext() ) {
@@ -1111,7 +1118,7 @@ public final class MainFrameApplication extends MainFrame {
 
     private void collapseBl( final Phylogeny phy ) {
         final PhylogenyNodeIterator it = phy.iteratorPostorder();
-        final List<PhylogenyNode> to_be_removed = new ArrayList<PhylogenyNode>();
+        final List<PhylogenyNode> to_be_removed = new ArrayList<>();
         double min_bl = Double.MAX_VALUE;
         boolean bl_present = false;
         while ( it.hasNext() ) {
@@ -1353,6 +1360,125 @@ public final class MainFrameApplication extends MainFrame {
         System.gc();
     }
 
+    private void addAnnotations() {
+        //TODO
+        if ( ( getCurrentTreePanel() == null ) || ( getCurrentTreePanel().getPhylogeny() == null ) ) {
+            JOptionPane.showMessageDialog( this,
+                                           "Need to load phylogenetic tree first",
+                                           "Can Not Add Annotations",
+                                           JOptionPane.WARNING_MESSAGE );
+            return;
+        }
+        if ( isSubtreeDisplayed() ) {
+            JOptionPane.showMessageDialog( this,
+                                           "Cannot add annotations to sub-tree",
+                                           "Can Not Add Annotations To Sub-Tree",
+                                           JOptionPane.WARNING_MESSAGE );
+            return;
+        }
+        final File my_dir = getCurrentDir();
+        if ( my_dir != null ) {
+            _values_filechooser.setCurrentDirectory( my_dir );
+        }
+        final int result = _values_filechooser.showOpenDialog( _contentpane );
+        final File file = _values_filechooser.getSelectedFile();
+        if ( ( file != null ) && ( file.length() > 0 ) && ( result == JFileChooser.APPROVE_OPTION ) ) {
+            BasicTable<String> t = null;
+            try {
+                t = BasicTableParser.parse( file, '\t' );
+                if ( t.getNumberOfColumns() < 2 ) {
+                    t = BasicTableParser.parse( file, ',' );
+                }
+                if ( t.getNumberOfColumns() < 2 ) {
+                    t = BasicTableParser.parse( file, ' ' );
+                }
+            }
+            catch ( final IOException e ) {
+                JOptionPane.showMessageDialog( this,
+                                               e.getMessage(),
+                                               "Could Not Read Annotation Table",
+                                               JOptionPane.ERROR_MESSAGE );
+                return;
+            }
+            if ( t.getNumberOfColumns() < 2 ) {
+                JOptionPane.showMessageDialog( this,
+                                               "Table contains " + t.getNumberOfColumns() + " column(s)",
+                                               "Problem with Annotation Table",
+                                               JOptionPane.ERROR_MESSAGE );
+                return;
+            }
+            if ( t.getNumberOfRows() < 1 ) {
+                JOptionPane.showMessageDialog( this,
+                                               "Table contains zero rows",
+                                               "Problem with Annotation Table",
+                                               JOptionPane.ERROR_MESSAGE );
+                return;
+            }
+            final Phylogeny phy = getCurrentTreePanel().getPhylogeny();
+            if ( ( t.getNumberOfRows() - 1)  != phy.getNumberOfExternalNodes() ) {
+                JOptionPane.showMessageDialog( this,
+                                               "Annotation table contains " + ( t.getNumberOfRows() - 1 ) 
+                                                       + " data rows, but tree contains " + phy.getNumberOfExternalNodes()
+                                                       + " external nodes",
+                                               "Warning",
+                                               JOptionPane.WARNING_MESSAGE );
+            }
+            final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
+            int not_found = 0;
+            for( final PhylogenyNodeIterator iter = phy.iteratorPreorder(); iter.hasNext(); ) {
+                final PhylogenyNode node = iter.next();
+                final String node_name = node.getName();
+                if ( !ForesterUtil.isEmpty( node_name ) ) {
+                    int row = -1;
+                    try {
+                        row = t.findRow( node_name );
+                    }
+                    catch ( final IllegalArgumentException e ) {
+                        JOptionPane.showMessageDialog( this,
+                                                       e.getMessage(),
+                                                       "Error Mapping Node Identifiers to Expression Value Identifiers",
+                                                       JOptionPane.ERROR_MESSAGE );
+                        return;
+                    }
+                    if ( row < 0 ) {
+                        if ( node.isExternal() ) {
+                            not_found++;
+                        }
+                        continue;
+                    }
+                    final List<Double> l = new ArrayList<>();
+                    for( int col = 1; col < t.getNumberOfColumns(); ++col ) {
+                        double d = -100;
+                        try {
+                            d = Double.parseDouble( t.getValueAsString( col, row ) );
+                        }
+                        catch ( final NumberFormatException e ) {
+                            JOptionPane.showMessageDialog( this,
+                                                           "Could not parse \"" + t.getValueAsString( col, row )
+                                                                   + "\" into a decimal value",
+                                                           "Issue with Expression Value Table",
+                                                           JOptionPane.ERROR_MESSAGE );
+                            return;
+                        }
+                        stats.addValue( d );
+                        l.add( d );
+                    }
+                    if ( !l.isEmpty() ) {
+                        node.getNodeData().setVector( l );
+                    }
+                }
+            }
+            if ( not_found > 0 ) {
+                JOptionPane.showMessageDialog( this,
+                                               "Could not fine expression values for " + not_found
+                                                       + " external node(s)",
+                                               "Warning",
+                                               JOptionPane.WARNING_MESSAGE );
+            }
+            getCurrentTreePanel().setStatisticsForExpressionValues( stats );
+        }
+    }
+
     private void obtainDetailedTaxonomicInformation() {
         if ( getCurrentTreePanel() != null ) {
             final Phylogeny phy = getCurrentTreePanel().getPhylogeny();
@@ -1585,7 +1711,7 @@ public final class MainFrameApplication extends MainFrame {
                                                JOptionPane.ERROR_MESSAGE );
             }
             if ( !exception && ( t != null ) ) {
-                final Set<Taxonomy> tax_set = new HashSet<Taxonomy>();
+                final Set<Taxonomy> tax_set = new HashSet<>();
                 for( final PhylogenyNodeIterator it = t.iteratorExternalForward(); it.hasNext(); ) {
                     final PhylogenyNode node = it.next();
                     if ( !node.getNodeData().isHasTaxonomy() ) {
@@ -1697,6 +1823,11 @@ public final class MainFrameApplication extends MainFrame {
             _file_jmenu.add( _new_item = new JMenuItem( "New" ) );
             _new_item.setToolTipText( "to create a new tree with one node, as source for manual tree construction" );
         }
+        if ( getConfiguration().isEditable() ) {
+            _file_jmenu.addSeparator();
+            _file_jmenu.add( _annotations_item = new JMenuItem( "Add Annotations" ) );
+            _annotations_item.setToolTipText( "to add annnotations from a tab separated file" );
+        }
         _file_jmenu.addSeparator();
         _file_jmenu.add( _save_item = new JMenuItem( "Save Tree As..." ) );
         _file_jmenu.add( _save_all_item = new JMenuItem( "Save All Trees As..." ) );
@@ -1735,6 +1866,9 @@ public final class MainFrameApplication extends MainFrame {
         customizeJMenuItem( _save_item );
         if ( getConfiguration().isEditable() ) {
             customizeJMenuItem( _new_item );
+        }
+        if ( getConfiguration().isEditable() ) {
+            customizeJMenuItem( _annotations_item );
         }
         customizeJMenuItem( _close_item );
         customizeJMenuItem( _save_all_item );

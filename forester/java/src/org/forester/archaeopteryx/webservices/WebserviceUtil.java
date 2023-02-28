@@ -43,9 +43,6 @@ import org.forester.util.SequenceAccessionTools;
 
 public final class WebserviceUtil {
 
-    public static final String PFAM_INST                       = "pfam";
-    public static final String PFAM_NAME                       = "Pfam";
-    public static final String PFAM_SERVER                     = "http://pfam.xfam.org";
     public static final String TOL_NAME                        = "Tree of Life (ToL)";
     public static final String TOL_URL_BASE                    = "http://tolweb.org/onlinecontributors/app?service=external&page=xml/TreeStructureService&node_id=";
     public static final String TOL_WEBSERVER                   = TOL_URL_BASE
@@ -58,12 +55,8 @@ public final class WebserviceUtil {
     public static final String TREE_FAM_URL_BASE               = "http://www.treefam.org/family/TF";
     public static final String TREEBASE_PHYLOWS_STUDY_URL_BASE = "https://treebase.org/treebase-web/phylows/study/TB2:S";
     public static final String TREEBASE_PHYLOWS_TREE_URL_BASE  = "https://treebase.org/treebase-web/phylows/tree/TB2:Tr";
-    
-    
-    
     public static List<PhylogeniesWebserviceClient> createDefaultClients() {
-        final List<PhylogeniesWebserviceClient> clients = new ArrayList<PhylogeniesWebserviceClient>();
-       
+        final List<PhylogeniesWebserviceClient> clients = new ArrayList<>();
         clients.add( new BasicPhylogeniesWebserviceClient( TREE_BASE_NAME,
                                                            "Read Tree from TreeBASE...",
                                                            "Use TreeBASE to obtain a evolutionary tree",
@@ -71,23 +64,11 @@ public final class WebserviceUtil {
                                                            WsPhylogenyFormat.TREEBASE_TREE,
                                                            null,
                                                            TREEBASE_PHYLOWS_TREE_URL_BASE
-                                                           + PhylogeniesWebserviceClient.QUERY_PLACEHOLDER
-                                                           + "?format=nexus",
+                                                                   + PhylogeniesWebserviceClient.QUERY_PLACEHOLDER
+                                                                   + "?format=nexus",
                                                            true,
                                                            "https://treebase.org",
                                                            TREE_BASE_INST ) );
-        clients.add( new BasicPhylogeniesWebserviceClient( PFAM_NAME,
-                                                           "Read Domain Tree from Pfam...",
-                                                           "Use  Pfam to obtain gene trees for seed alignments",
-                                                           "Please enter a Pfam (PF) accession number\n(Examples: 01849 for NAC, 00452 for Bcl-2, 00046 for Homeobox)",
-                                                           WsPhylogenyFormat.PFAM,
-                                                           null,
-                                                           PFAM_SERVER + "/family/PF"
-                                                                   + PhylogeniesWebserviceClient.QUERY_PLACEHOLDER
-                                                                   + "/tree/download",
-                                                                   false,
-                                                                   PFAM_SERVER,
-                                                                   PFAM_INST ) );
         clients.add( new BasicPhylogeniesWebserviceClient( TREE_FAM_NAME,
                                                            "Read Gene Tree from TreeFam...",
                                                            "Use TreeFam to obtain a gene tree",
@@ -95,8 +76,8 @@ public final class WebserviceUtil {
                                                            WsPhylogenyFormat.NHX,
                                                            null,
                                                            TREE_FAM_URL_BASE
-                                                           + PhylogeniesWebserviceClient.QUERY_PLACEHOLDER
-                                                           + "/tree/newick",
+                                                                   + PhylogeniesWebserviceClient.QUERY_PLACEHOLDER
+                                                                   + "/tree/newick",
                                                            true,
                                                            "http://www.treefam.org",
                                                            TREE_FAM_INST ) );
@@ -105,12 +86,12 @@ public final class WebserviceUtil {
                                                            "Use ToL webservice to obtain a evolutionary tree",
                                                            "Please enter a Tree of Life node identifier\n(Examples: "
                                                                    + "14923 for ray-finned fishes, 19386 for Cephalopoda, 2461 for Cnidaria)",
-                                                                   WsPhylogenyFormat.TOL_XML_RESPONSE,
-                                                                   PhylogenyMethods.PhylogenyNodeField.TAXONOMY_SCIENTIFIC_NAME,
-                                                                   WebserviceUtil.TOL_WEBSERVER,
-                                                                   true,
-                                                                   "http://tolweb.org",
-                                                                   null ) );
+                                                           WsPhylogenyFormat.TOL_XML_RESPONSE,
+                                                           PhylogenyMethods.PhylogenyNodeField.TAXONOMY_SCIENTIFIC_NAME,
+                                                           WebserviceUtil.TOL_WEBSERVER,
+                                                           true,
+                                                           "http://tolweb.org",
+                                                           null ) );
         return clients;
     }
 
@@ -118,10 +99,6 @@ public final class WebserviceUtil {
             throws PhyloXmlDataFormatException {
         if ( client.getProcessingInstructions().equals( WebserviceUtil.TREE_FAM_INST ) ) {
             WebserviceUtil.processTreeFamTrees( phylogeny );
-        }
-        else if ( client.getProcessingInstructions().equals( WebserviceUtil.PFAM_INST ) ) {
-            WebserviceUtil.extractSpTremblAccFromNodeName( phylogeny, "sptrembl" );
-            PhylogenyMethods.transferInternalNodeNamesToConfidence( phylogeny, "bootstrap" );
         }
         else if ( client.getProcessingInstructions().equals( WebserviceUtil.TREE_BASE_INST ) ) {
             if ( PhylogenyMethods.isInternalNamesLookLikeConfidences( phylogeny ) ) {
@@ -207,10 +184,9 @@ public final class WebserviceUtil {
                 }
             }
             if ( n.getNodeData().isHasTaxonomy() && ( n.getNodeData().getTaxonomy().getIdentifier() != null ) ) {
-                n.getNodeData()
-                .getTaxonomy()
-                .setIdentifier( new Identifier( n.getNodeData().getTaxonomy().getIdentifier().getValue(),
-                                                "ncbi" ) );
+                n.getNodeData().getTaxonomy()
+                        .setIdentifier( new Identifier( n.getNodeData().getTaxonomy().getIdentifier().getValue(),
+                                                        "ncbi" ) );
             }
         }
     }

@@ -1091,15 +1091,7 @@ public final class Test {
                 System.out.println( "failed." );
                 failed++;
             }
-            System.out.print( "Pfam tree access: " );
-            if ( Test.testPfamTreeReading() ) {
-                System.out.println( "OK." );
-                succeeded++;
-            }
-            else {
-                System.out.println( "failed." );
-                failed++;
-            }
+          
             if ( PERFORM_WEB_TREE_ACCESS_TREEBASE ) {
                 System.out.print( "TreeBase acccess: " );
                 if ( Test.testTreeBaseReading() ) {
@@ -1524,27 +1516,7 @@ public final class Test {
         return true;
     }
 
-    private static final boolean testPfamTreeReading() {
-        try {
-            final URL u = new URL( WebserviceUtil.PFAM_SERVER + "/family/PF" + "01849" + "/tree/download" );
-            final NHXParser parser = new NHXParser();
-            parser.setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT );
-            parser.setReplaceUnderscores( false );
-            parser.setGuessRootedness( true );
-            final Phylogeny[] phys = ForesterUtil.readPhylogeniesFromUrl( u, parser );
-            if ( ( phys == null ) || ( phys.length != 1 ) ) {
-                return false;
-            }
-            if ( phys[ 0 ].getNumberOfExternalNodes() < 10 ) {
-                return false;
-            }
-        }
-        catch ( final Exception e ) {
-            e.printStackTrace();
-            return false;
-        }
-        return true;
-    }
+ 
 
     private static final boolean testPhyloXMLparsingFromURL() {
         try {

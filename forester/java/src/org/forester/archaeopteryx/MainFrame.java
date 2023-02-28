@@ -169,6 +169,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem                        _close_item;
     JMenuItem                        _exit_item;
     JMenuItem                        _new_item;
+    JMenuItem                        _annotations_item;
     JMenuItem                        _print_item;
     JMenuItem                        _write_to_pdf_item;
     JMenuItem                        _write_to_jpg_item;
