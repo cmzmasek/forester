@@ -87,7 +87,9 @@ import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.PhylogenyNode.NH_CONVERSION_SUPPORT_VALUE_STYLE;
 import org.forester.phylogeny.data.Confidence;
+import org.forester.phylogeny.data.NodeData;
 import org.forester.phylogeny.data.PhylogenyDataUtil;
+import org.forester.phylogeny.data.PropertiesList;
 import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
@@ -1361,6 +1363,13 @@ public final class MainFrameApplication extends MainFrame {
     }
 
     private void addAnnotations() {
+        final String KEY_TAXONOMY_SCIENTIFIC_NAME = "TAXONOMY_SCIENTIFIC_NAME";
+        final String KEY_TAXONOMY_COMMON_NAME = "TAXONOMY_COMMON_NAME";
+        final String KEY_TAXONOMY_RANK = "TAXONOMY_RANK";
+        final String KEY_TAXONOMY_AUTHORITY = "TAXONOMY_COMMON_AUTHORITY";
+        final String KEY_TAXONOMY_CODE = "TAXONOMY_CODE";
+        final String KEY_NODE_NAME = "NODE_NAME";
+        final String KEY_PROPERTY = "PROPERTY";
         //TODO
         if ( ( getCurrentTreePanel() == null ) || ( getCurrentTreePanel().getPhylogeny() == null ) ) {
             JOptionPane.showMessageDialog( this,
@@ -1389,9 +1398,6 @@ public final class MainFrameApplication extends MainFrame {
                 if ( t.getNumberOfColumns() < 2 ) {
                     t = BasicTableParser.parse( file, ',' );
                 }
-                if ( t.getNumberOfColumns() < 2 ) {
-                    t = BasicTableParser.parse( file, ' ' );
-                }
             }
             catch ( final IOException e ) {
                 JOptionPane.showMessageDialog( this,
@@ -1415,13 +1421,18 @@ public final class MainFrameApplication extends MainFrame {
                 return;
             }
             final Phylogeny phy = getCurrentTreePanel().getPhylogeny();
-            if ( ( t.getNumberOfRows() - 1)  != phy.getNumberOfExternalNodes() ) {
+            if ( ( t.getNumberOfRows() - 1 ) != phy.getNumberOfExternalNodes() ) {
                 JOptionPane.showMessageDialog( this,
-                                               "Annotation table contains " + ( t.getNumberOfRows() - 1 ) 
-                                                       + " data rows, but tree contains " + phy.getNumberOfExternalNodes()
-                                                       + " external nodes",
+                                               "Annotation table contains " + ( t.getNumberOfRows() - 1 )
+                                                       + " data rows, but tree contains "
+                                                       + phy.getNumberOfExternalNodes() + " external nodes",
                                                "Warning",
                                                JOptionPane.WARNING_MESSAGE );
+            }
+            final String[] table_headers = new String[ t.getNumberOfColumns() ];
+            for( int i = 0; i < t.getNumberOfColumns(); ++i ) {
+                table_headers[ i ] = t.getValue( i, 0 );
+                System.out.println( t.getValue( i, 0 ) );
             }
             final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
             int not_found = 0;
@@ -1436,7 +1447,7 @@ public final class MainFrameApplication extends MainFrame {
                     catch ( final IllegalArgumentException e ) {
                         JOptionPane.showMessageDialog( this,
                                                        e.getMessage(),
-                                                       "Error Mapping Node Identifiers to Expression Value Identifiers",
+                                                       "Error Mapping Node Identifiers to Annotation",
                                                        JOptionPane.ERROR_MESSAGE );
                         return;
                     }
@@ -1446,25 +1457,100 @@ public final class MainFrameApplication extends MainFrame {
                         }
                         continue;
                     }
-                    final List<Double> l = new ArrayList<>();
                     for( int col = 1; col < t.getNumberOfColumns(); ++col ) {
-                        double d = -100;
-                        try {
-                            d = Double.parseDouble( t.getValueAsString( col, row ) );
+                        final String annot = t.getValueAsString( col, row );
+                        final String header = table_headers[ col ].toUpperCase();
+                        if ( header.equals( KEY_NODE_NAME ) ) {
+                            node.setName( annot );
                         }
-                        catch ( final NumberFormatException e ) {
-                            JOptionPane.showMessageDialog( this,
-                                                           "Could not parse \"" + t.getValueAsString( col, row )
-                                                                   + "\" into a decimal value",
-                                                           "Issue with Expression Value Table",
-                                                           JOptionPane.ERROR_MESSAGE );
-                            return;
+                        else if ( header.equals( KEY_PROPERTY ) ) {
+                            final String[] x = annot.split( "::" );
+                            String applies_to = "";
+                            String ref = "";
+                            String value = "";
+                            String data_type = "xsd:string";
+                            String unit = "";
+                            if ( x.length == 3 ) {
+                                applies_to = x[ 0 ];
+                                ref = x[ 1 ];
+                                value = x[ 2 ];
+                            }
+                            if ( x.length == 4 ) {
+                                applies_to = x[ 0 ];
+                                ref = x[ 1 ];
+                                value = x[ 2 ];
+                                data_type = x[ 3 ];
+                            }
+                            if ( x.length == 5 ) {
+                                applies_to = x[ 0 ];
+                                ref = x[ 1 ];
+                                value = x[ 2 ];
+                                data_type = x[ 3 ];
+                                unit = x[ 4 ];
+                            }
+                          
+                            if (applies_to.equalsIgnoreCase("phylogeny")) {
+                                
+                            }
+                            if (applies_to.equalsIgnoreCase("node")){
+                                
+                            }
+                            if (applies_to.equalsIgnoreCase("parent_branch")) {
+                                
+                            }
+                            PropertiesList properties = node.getNodeData().getProperties();
+                            if ( properties == null ) {
+                                properties = new PropertiesList();
+                                node.getNodeData().setProperties( properties );
+                            }
+                            properties
+                                    .addProperty( new org.forester.phylogeny.data.Property( ref,
+                                                                                            value,
+                                                                                            unit,
+                                                                                            data_type,
+                                                                                            org.forester.phylogeny.data.Property.AppliesTo.PARENT_BRANCH ) );
                         }
-                        stats.addValue( d );
-                        l.add( d );
-                    }
-                    if ( !l.isEmpty() ) {
-                        node.getNodeData().setVector( l );
+                        else if ( header.equals( KEY_TAXONOMY_SCIENTIFIC_NAME )
+                                || header.equals( KEY_TAXONOMY_COMMON_NAME ) || header.equals( KEY_TAXONOMY_RANK )
+                                || header.equals( KEY_TAXONOMY_AUTHORITY ) || header.equals( KEY_TAXONOMY_CODE ) ) {
+                            final NodeData data = node.getNodeData();
+                            if ( !data.isHasTaxonomy() ) {
+                                data.addTaxonomy( new Taxonomy() );
+                            }
+                            if ( header.equals( KEY_TAXONOMY_SCIENTIFIC_NAME ) ) {
+                                data.getTaxonomy().setScientificName( annot );
+                            }
+                            if ( header.equals( KEY_TAXONOMY_COMMON_NAME ) ) {
+                                data.getTaxonomy().setCommonName( annot );
+                            }
+                            if ( header.equals( KEY_TAXONOMY_RANK ) ) {
+                                try {
+                                    data.getTaxonomy().setRank( annot );
+                                }
+                                catch ( final PhyloXmlDataFormatException e ) {
+                                    JOptionPane.showMessageDialog( this,
+                                                                   e.getMessage(),
+                                                                   "Format Error",
+                                                                   JOptionPane.ERROR_MESSAGE );
+                                    return;
+                                }
+                            }
+                            if ( header.equals( KEY_TAXONOMY_AUTHORITY ) ) {
+                                data.getTaxonomy().setAuthority( annot );
+                            }
+                            if ( header.equals( KEY_TAXONOMY_CODE ) ) {
+                                try {
+                                    data.getTaxonomy().setTaxonomyCode( annot );
+                                }
+                                catch ( final PhyloXmlDataFormatException e ) {
+                                    JOptionPane.showMessageDialog( this,
+                                                                   e.getMessage(),
+                                                                   "Format Error",
+                                                                   JOptionPane.ERROR_MESSAGE );
+                                    return;
+                                }
+                            }
+                        }
                     }
                 }
             }

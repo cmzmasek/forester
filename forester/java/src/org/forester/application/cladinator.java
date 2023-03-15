@@ -52,8 +52,8 @@ import org.forester.util.UserException;
 public final class cladinator {
 
     final static private String        PRG_NAME                             = "cladinator";
-    final static private String        PRG_VERSION                          = "1.0.8";
-    final static private String        PRG_DATE                             = "20220519";
+    final static private String        PRG_VERSION                          = "1.1.0";
+    final static private String        PRG_DATE                             = "20230315";
     final static private String        PRG_DESC                             = "clades within clades of annotated labels -- analysis of pplacer-type outputs";
     final static private String        E_MAIL                               = "phyloxml@gmail.com";
     final static private String        WWW                                  = "https://sites.google.com/site/cmzmasek/home/software/forester";
@@ -70,13 +70,16 @@ public final class cladinator {
     final static private String        SPECIAL_PROCESSING_OPTION            = "S";
     final static private String        VERBOSE_OPTION                       = "v";
     final static private String        REMOVE_ANNOT_SEP_OPTION              = "rs";
+    final static private String        SIMPLE_OUTPUT_OPTION                 = "sim";
+    final static private String        SIMPLE_OUTPUT_CUTOFF_OPTION          = "simc";
     final static private double        SPECIFICS_CUTOFF_DEFAULT             = 0.7;
     final static private String        SEP_DEFAULT                          = ".";
     final static private Pattern       QUERY_PATTERN_DEFAULT                = AnalysisMulti.DEFAULT_QUERY_PATTERN_FOR_PPLACER_TYPE;
     final static private String        EXTRA_PROCESSING1_SEP_DEFAULT        = "|";
     final static private boolean       EXTRA_PROCESSING1_KEEP_EXTRA_DEFAULT = false;
     private final static DecimalFormat df                                   = new DecimalFormat( "0.0###" );
-
+    final static private boolean       TWO_COLUMNS_IN_SIMPLE_OUTPUT         = true;
+    final static private boolean       ALLOW_TO_SPLIT_QUERY                 = true;
     public static void main( final String args[] ) {
         try {
             ForesterUtil.printProgramInformation( PRG_NAME,
@@ -102,7 +105,7 @@ public final class cladinator {
                 print_help();
                 System.exit( -1 );
             }
-            final List<String> allowed_options = new ArrayList<String>();
+            final List<String> allowed_options = new ArrayList<>();
             allowed_options.add( SEP_OPTION );
             allowed_options.add( QUERY_PATTERN_OPTION );
             allowed_options.add( SPECIFICS_CUTOFF_OPTION );
@@ -114,6 +117,8 @@ public final class cladinator {
             allowed_options.add( VERBOSE_OPTION );
             allowed_options.add( QUIET_OPTION );
             allowed_options.add( REMOVE_ANNOT_SEP_OPTION );
+            allowed_options.add( SIMPLE_OUTPUT_OPTION );
+            allowed_options.add( SIMPLE_OUTPUT_CUTOFF_OPTION );
             final String dissallowed_options = cla.validateAllowedOptionsAsString( allowed_options );
             if ( dissallowed_options.length() > 0 ) {
                 ForesterUtil.fatalError( PRG_NAME, "unknown option(s): " + dissallowed_options );
@@ -186,6 +191,29 @@ public final class cladinator {
             else {
                 outtablefile = null;
             }
+            final boolean simple_output;
+            double simple_output_cutoff = 0.0;
+            if ( cla.isOptionSet( SIMPLE_OUTPUT_OPTION ) ) {
+                simple_output = true;
+            }
+            else {
+                simple_output = false;
+            }
+            if ( cla.isOptionSet( SIMPLE_OUTPUT_CUTOFF_OPTION ) ) {
+                if ( !simple_output ) {
+                    ForesterUtil.fatalError( PRG_NAME,
+                                             "must set simple output option to use cutoff for simple output" );
+                }
+                if ( cla.isOptionValueSet( SIMPLE_OUTPUT_CUTOFF_OPTION ) ) {
+                    simple_output_cutoff = cla.getOptionValueAsDouble( SIMPLE_OUTPUT_CUTOFF_OPTION );
+                    if ( ( simple_output_cutoff < 0 ) || ( simple_output_cutoff > 1 ) ) {
+                        ForesterUtil.fatalError( PRG_NAME, "cutoff must be between 0.0 and 1.0" );
+                    }
+                }
+                else {
+                    ForesterUtil.fatalError( PRG_NAME, "no value for cutoff" );
+                }
+            }
             final BasicTable<String> t;
             final SortedMap<String, String> map;
             if ( mapping_file != null ) {
@@ -238,7 +266,7 @@ public final class cladinator {
             Pattern special_pattern = null;
             boolean special_processing = false;
             if ( cla.isOptionSet( SPECIAL_PROCESSING_OPTION ) ) {
-                if ( extra_processing1 == true ) {
+                if ( extra_processing1 ) {
                     ForesterUtil
                             .fatalError( PRG_NAME,
                                          "extra processing cannot be used together with special processing pattern" );
@@ -303,6 +331,10 @@ public final class cladinator {
             if ( outtablefile != null ) {
                 System.out.println( "Output table               : " + outtablefile );
             }
+            if ( simple_output ) {
+                System.out.println( "Simple output              : true" );
+                System.out.println( "Cutoff for simple output   : " + simple_output_cutoff );
+            }
             Phylogeny phys[] = null;
             try {
                 final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
@@ -325,9 +357,11 @@ public final class cladinator {
             final EasyWriter outtable_writer;
             if ( outtablefile != null ) {
                 outtable_writer = ForesterUtil.createEasyWriter( outtablefile );
-                outtable_writer.print( "#" + PRG_NAME + " " + PRG_VERSION + " " + PRG_DATE );
-                outtable_writer.print( " Input tree: " + intreefile );
-                outtable_writer.println( " Specific-hit support cutoff: " + cutoff_specifics );
+                if ( !TWO_COLUMNS_IN_SIMPLE_OUTPUT ) {
+                    outtable_writer.print( "#" + PRG_NAME + " " + PRG_VERSION + " " + PRG_DATE );
+                    outtable_writer.print( " Input tree: " + intreefile );
+                    outtable_writer.println( " Specific-hit support cutoff: " + cutoff_specifics );
+                }
             }
             else {
                 outtable_writer = null;
@@ -358,7 +392,16 @@ public final class cladinator {
                     }
                 }
                 if ( outtable_writer != null ) {
-                    writeResultToTable( res, outtable_writer, remove_annotation_sep );
+                    if ( simple_output ) {
+                        writeResultToTableSimple( res,
+                                                  outtable_writer,
+                                                  simple_output_cutoff,
+                                                  TWO_COLUMNS_IN_SIMPLE_OUTPUT,
+                                                  ALLOW_TO_SPLIT_QUERY );
+                    }
+                    else {
+                        writeResultToTable( res, outtable_writer, remove_annotation_sep );
+                    }
                     outtable_writer.flush();
                 }
                 ++counter;
@@ -466,10 +509,105 @@ public final class cladinator {
         System.out.println();
     }
 
-    
-  
+    private final static void writeResultToTableSimple( final ResultMulti res,
+                                                        final EasyWriter w,
+                                                        final double cutoff,
+                                                        final boolean two_columns,
+                                                        final boolean split_query )
+            throws IOException {
+        if ( ( res.getAllMultiHitPrefixes() == null ) | ( res.getAllMultiHitPrefixes().size() < 1 ) ) {
+            w.print( res.getQueryNamePrefix() );
+            w.print( "\t" );
+            w.println( "No match to query pattern!" );
+        }
+        else {
+            boolean done = false;
+            for( final Prefix prefix : res.getCollapsedMultiHitPrefixes() ) {
+                if ( ( prefix.getConfidence() >= cutoff ) && !prefix.getPrefix().equals( "?" ) ) {
+                    if ( split_query ) {
+                        final String[] queries = res.getQueryNamePrefix().split( "_" );
+                        for( final String query : queries ) {
+                            w.print( query );
+                            if ( !two_columns ) {
+                                w.print( "\t" );
+                                w.print( "Matching Clades" );
+                            }
+                            w.print( "\t" );
+                            w.print( prefix.getPrefix() );
+                            if ( !two_columns ) {
+                                w.print( "\t" );
+                                w.print( df.format( prefix.getConfidence() ) );
+                            }
+                            w.println();
+                        }
+                    }
+                    else {
+                        w.print( res.getQueryNamePrefix() );
+                        if ( !two_columns ) {
+                            w.print( "\t" );
+                            w.print( "Matching Clades" );
+                        }
+                        w.print( "\t" );
+                        w.print( prefix.getPrefix() );
+                        if ( !two_columns ) {
+                            w.print( "\t" );
+                            w.print( df.format( prefix.getConfidence() ) );
+                        }
+                        w.println();
+                    }
+                    done = true;
+                    break;
+                }
+            }
+            if ( !done ) {
+                if ( !ForesterUtil.isEmpty( res.getAllMultiHitPrefixesUp() ) ) {
+                    for( final Prefix prefix : res.getCollapsedMultiHitPrefixesUp() ) {
+                        if ( ( prefix.getConfidence() >= cutoff ) && !prefix.getPrefix().equals( "?" ) ) {
+                            if ( split_query ) {
+                                final String[] queries = res.getQueryNamePrefix().split( "_" );
+                                for( final String query : queries ) {
+                                    w.print( query );
+                                    if ( !two_columns ) {
+                                        w.print( "\t" );
+                                        w.print( "Matching Up-tree Bracketing Clades" );
+                                    }
+                                    w.print( "\t" );
+                                    w.print( prefix.getPrefix() );
+                                    if ( !two_columns ) {
+                                        w.print( "\t" );
+                                        w.print( df.format( prefix.getConfidence() ) );
+                                    }
+                                    w.println();
+                                }
+                            }
+                            else {
+                                w.print( res.getQueryNamePrefix() );
+                                if ( !two_columns ) {
+                                    w.print( "\t" );
+                                    w.print( "Matching Up-tree Bracketing Clades" );
+                                }
+                                w.print( "\t" );
+                                w.print( prefix.getPrefix() );
+                                if ( !two_columns ) {
+                                    w.print( "\t" );
+                                    w.print( df.format( prefix.getConfidence() ) );
+                                }
+                                w.println();
+                            }
+                            done = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            if ( !done ) {
+                w.print( res.getQueryNamePrefix() );
+                w.print( "\t" );
+                w.println( "?" );
+            }
+        }
+    }
 
-    
     private final static void writeResultToTable( final ResultMulti res,
                                                   final EasyWriter w,
                                                   final boolean remove_annotation_sep )
@@ -596,6 +734,9 @@ public final class cladinator {
         System.out.println( "  --" + QUERY_PATTERN_OPTION
                 + "=<pattern>      : expert option: the regular expression pattern for the query (default: \""
                 + QUERY_PATTERN_DEFAULT + "\" for pplacer output)" );
+        System.out.println( "  -" + SIMPLE_OUTPUT_OPTION + "               : simple output" );
+        System.out.println( "  -" + SIMPLE_OUTPUT_CUTOFF_OPTION
+                + "              : probability cutoff for simple output (0.0-1.0, default 0.0)" );
         System.out.println();
         System.out.println( "Examples:" );
         System.out.println();
