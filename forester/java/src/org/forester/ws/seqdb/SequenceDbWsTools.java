@@ -474,7 +474,7 @@ public final class SequenceDbWsTools {
 
     private static List<String> getTaxonomyStringFromId( final String id, final int max_lines_to_return )
             throws IOException {
-        return queryUniprot( "taxonomy/?query=id%3a%22" + encode( id ) + "%22&format=tab", max_lines_to_return );
+        return queryUniprot( "taxonomy/" + encode( id ) + ".tsv", max_lines_to_return );
     }
 
     private static List<String> getTaxonomyStringFromScientificName( final String sn, final int max_lines_to_return )
@@ -505,9 +505,9 @@ public final class SequenceDbWsTools {
             else if ( line.startsWith( "Taxon" ) ) {
                 final String[] items = line.split( "\t" );
                 if ( !( items[ 1 ].equalsIgnoreCase( "Mnemonic" ) && items[ 2 ].equalsIgnoreCase( "Scientific name" )
-                        && items[ 3 ].equalsIgnoreCase( "Common name" ) && items[ 4 ].equalsIgnoreCase( "Synonym" )
-                        && items[ 5 ].equalsIgnoreCase( "Other Names" ) && items[ 6 ].equalsIgnoreCase( "Reviewed" )
-                        && items[ 7 ].equalsIgnoreCase( "Rank" ) && items[ 8 ].equalsIgnoreCase( "Lineage" ) ) ) {
+                        && items[ 3 ].equalsIgnoreCase( "Common name" ) 
+                        && items[ 4 ].equalsIgnoreCase( "Other Names" ) && items[ 5 ].equalsIgnoreCase( "Reviewed" )
+                        && items[ 6 ].equalsIgnoreCase( "Rank" ) && items[ 7 ].equalsIgnoreCase( "Lineage" ) ) ) {
                     throw new IOException( "Unreconized UniProt Taxonomy format: " + line );
                 }
             }

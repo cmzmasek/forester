@@ -57,7 +57,7 @@ public final class ParserUtils {
 
     final private static String  SN_BN                                = "[A-Z][a-z]{2,30}[_ ][a-z]{3,30}";
     final public static String   TAX_CODE                             = "(?:[A-Z0-9]{3,5})";
-    final public static String   TAX_CODE_LO                          = "(?:[A-Z]{5})|RAT|PIG|PEA";
+    final public static String   TAX_CODE_LO                          = "(?:[A-Z]{3,5})|RAT|PIG|PEA";
     final public static Pattern  TAXOMONY_CODE_PATTERN_A              = Pattern.compile( "(?:\\b|_)(" + TAX_CODE
                                                                                          + ")(?:\\b|_)" );
     final public static Pattern  TAXOMONY_CODE_PATTERN_A_LO           = Pattern.compile( "_(" + TAX_CODE_LO
@@ -332,8 +332,19 @@ public final class ParserUtils {
             return id;
         }
         else {
-            String code = null;
+            String code = null; 
             if ( taxonomy_extraction == TAXONOMY_EXTRACTION.AGGRESSIVE ) {
+                String name = node.getName();
+                if (name.indexOf("OS=") > 0 && name.indexOf("OX=") > 1 ) {
+                    String s = name.substring(name.indexOf("OS=")+ 3, name.indexOf("OX=")  ).trim();
+                        if (s.length() > 3 ) {
+                            if ( !node.getNodeData().isHasTaxonomy() ) {
+                                node.getNodeData().setTaxonomy( new Taxonomy() );
+                            }
+                            node.getNodeData().getTaxonomy().setScientificName( s );
+                            return s;
+                        }
+                }
                 code = extractTaxonomyCodeFromNodeNameLettersOnly( node.getName() );
                 if ( ForesterUtil.isEmpty( code ) ) {
                     final String sn = extractScientificNameFromNodeName( node.getName() );

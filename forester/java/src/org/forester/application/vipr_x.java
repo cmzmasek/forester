@@ -29,6 +29,7 @@ public class vipr_x {
     private static final String  VIPR_HOST         = "vipr:Host";
     private static final String  VIPR_COUNTRY      = "vipr:Country";
     private static final String  VIPR_YEAR         = "vipr:Year";
+    
     private static final String  VIPR_REGION       = "vipr:Region";
     private final static String  PRG_NAME          = "vipr_x";
     private static final String  PRG_DATE          = "2021-08-27";
@@ -53,6 +54,10 @@ public class vipr_x {
     // 4. Host
     // 5. Country
     private final static Pattern VIPR_PATTERN_2    = Pattern.compile( "(.*?)\\|(.*?)\\|(.*?)\\|(.*?)\\|(.*?)\\|.+" );
+    // Severe acute respiratory syndrome coronavirus 2 |OR469709.1|2023-08-13|Homo sapiens|USA|FL-CDC-LC1050185|
+    private final static Pattern NCBI_PATTERN_1    = Pattern
+            .compile( "(Severe\\s+acute\\s+respiratory\\s+syndrome\\s+coronavirus\\s+2\\s*)\\|(.*?)\\|(.*?)\\|(.*?)\\|(.*?)\\|(.*?)\\|" );
+    //                  Severe acute respiratory syndrome coronavirus 2                     |ac     |date   |host   |cou    |FL-CDC-LC1050185|
     private final static Pattern YEAR_PATTERN      = Pattern.compile( "(\\d{4}).*" );
     private final static boolean MODIFY_NODE_NAMES = true;
     public static void main( final String args[] ) {
@@ -146,8 +151,8 @@ public class vipr_x {
                     }
                 }
                 else if ( OPERATION == 2 ) {
-                    /////////////////
                     final Matcher m = VIPR_PATTERN_2.matcher( name );
+                    final Matcher m2 = NCBI_PATTERN_1.matcher( name );
                     if ( m.matches() ) {
                         final String gb_accession = m.group( 2 );
                         final String strain_name = m.group( 1 );
@@ -189,10 +194,52 @@ public class vipr_x {
                         ext_node.getNodeData().addSequence( seq );
                         addRegion( country, custom_data );
                     }
-                    else {
-                        System.out.println( "WARNING: name \"" + name + "\" could not be matched" );
+                    else if ( m2.matches() ) {
+                        final String gb_accession = m2.group( 2 );
+                        final String species = m2.group( 1 );
+                        final String date = m2.group( 3 );
+                        final String host = m2.group( 4 );
+                        final String country = m2.group( 5 );
+                        final String genotype = m2.group( 6 );
+                        String year = "";
+                        final Matcher ym = YEAR_PATTERN.matcher( date );
+                        if ( ym.matches() ) {
+                            year = ym.group( 1 );
+                        }
+                        System.out.println( name );
+                        System.out.println( "gb accession     : " + gb_accession );
+                        System.out.println( "strain name      : " + species );
+                        System.out.println( "date             : " + date );
+                        System.out.println( "year             : " + year );
+                        System.out.println( "host             : " + host );
+                        System.out.println( "country          : " + country );
+                        System.out.println( "genotype         : " + genotype );
+                        System.out.println();
+                        PropertiesList custom_data = ext_node.getNodeData().getProperties();
+                        if ( custom_data == null ) {
+                            custom_data = new PropertiesList();
+                        }
+                        if ( !ForesterUtil.isEmpty( year ) ) {
+                            custom_data.addProperty( new Property( VIPR_YEAR, year, "", XSD_STRING, AppliesTo.NODE ) );
+                        }
+                        custom_data
+                                .addProperty( new Property( VIPR_COUNTRY, country, "", XSD_STRING, AppliesTo.NODE ) );
+                        custom_data.addProperty( new Property( VIPR_HOST, host, "", XSD_STRING, AppliesTo.NODE ) );
+                        ext_node.getNodeData().setProperties( custom_data );
+                        Sequence seq = null;
+                        if ( ext_node.isHasNodeData() && ext_node.getNodeData().isHasSequence() ) {
+                            seq = ext_node.getNodeData().getSequence();
+                        }
+                        else {
+                            seq = new Sequence();
+                        }
+                        seq.setAccession( new Accession( gb_accession, Accession.Source.NCBI ) );
+                        ext_node.getNodeData().addSequence( seq );
+                        addRegion( country, custom_data );
                     }
-                    ////////////////
+                    else {
+                        ForesterUtil.fatalError( PRG_NAME, "name \"" + name + "\" could not be matched" );
+                    }
                 }
             }
         }
@@ -215,13 +262,14 @@ public class vipr_x {
             region = "North America";
         }
         else if ( c.equals( "peru" ) || c.equals( "ecuador" ) || c.equals( "colombia" ) || c.equals( "chile" )
-                || c.equals( "brazil" ) || c.equals( "argentina" ) || c.equals( "guatemala" )
-                || c.equals( "uruguay" ) || c.equals( "venezuela" )) {
+                || c.equals( "brazil" ) || c.equals( "argentina" ) || c.equals( "guatemala" ) || c.equals( "uruguay" )
+                || c.equals( "venezuela" ) ) {
             region = "South America";
         }
         else if ( c.equals( "denmark" ) || c.equals( "finland" ) || c.equals( "france" ) || c.equals( "germany" )
                 || c.equals( "netherlands" ) || c.equals( "norway" ) || c.equals( "united_kingdom" )
-                || c.equals( "switzerland" ) || c.equals( "austria" ) || c.equals( "estonia" ) || c.equals( "sweden" ) || c.equals( "belgium" ) ) {
+                || c.equals( "switzerland" ) || c.equals( "austria" ) || c.equals( "estonia" ) || c.equals( "sweden" )
+                || c.equals( "belgium" ) ) {
             region = "Western Europe";
         }
         else if ( c.equals( "serbia" ) || c.equals( "greece" ) || c.equals( "malta" ) || c.equals( "italy" )
@@ -241,21 +289,25 @@ public class vipr_x {
         else if ( c.equals( "kazakhstan" ) || c.equals( "uzbekistan" ) || c.equals( "armenia" ) ) {
             region = "Central Asia";
         }
-        else if ( c.equals( "jordan" ) || c.equals( "bahrain" ) || c.equals( "iraq" ) || c.equals( "saudi_arabia" )
-                || c.equals( "turkey" ) || c.equals( "egypt" ) || c.equals( "israel" ) || c.equals( "west_bank" ) || c.equals( "iran" )  ) {
+        else if ( c.equals( "kuwait" ) || c.equals( "jordan" ) || c.equals( "bahrain" ) || c.equals( "iraq" )
+                || c.equals( "saudi_arabia" ) || c.equals( "turkey" ) || c.equals( "egypt" ) || c.equals( "israel" )
+                || c.equals( "west_bank" ) || c.equals( "iran" ) ) {
             region = "West Asia";
         }
-        else if ( c.equals( "india" ) || ( c.equals( "pakistan" ) | c.equals( "bangladesh" ) || c.equals( "sri_lanka" ) ) ) {
+        else if ( c.equals( "india" )
+                || ( ( c.equals( "pakistan" ) | c.equals( "bangladesh" ) ) || c.equals( "sri_lanka" ) ) ) {
             region = "South Asia";
         }
-        else if ( c.equals( "cambodia" ) || c.equals( "thailand" ) || c.equals( "malaysia" )
-                || c.equals( "philippines" ) || c.equals( "viet_nam" ) || c.equals( "myanmar" ) || c.equals( "timor_leste" ) ) {
+        else if ( c.equals( "laos" ) || c.equals( "cambodia" ) || c.equals( "thailand" ) || c.equals( "malaysia" )
+                || c.equals( "philippines" ) || ( c.equals( "viet_nam" ) | c.equals( "viet nam" ) )
+                || c.equals( "myanmar" ) || c.equals( "timor_leste" ) ) {
             region = "Southeast Asia";
         }
         else if ( c.equals( "morocco" ) || c.equals( "gambia" ) || c.equals( "kenya" ) || c.equals( "senegal" )
                 || c.equals( "south_africa" ) || c.equals( "tanzania" ) || c.equals( "ghana" ) || c.equals( "benin" )
-                || c.equals( "tunisia" ) || c.equals( "nigeria" ) || c.equals( "libya" ) || c.equals( "djibouti" ) || c.equals( "sierra_leone" )
-                || c.equals( "guinea" ) || c.equals( "botswana" ) || c.equals( "ethiopia" )|| c.equals( "malawi" ) || c.equals( "mali" )) {
+                || c.equals( "tunisia" ) || c.equals( "nigeria" ) || c.equals( "libya" ) || c.equals( "djibouti" )
+                || c.equals( "sierra_leone" ) || c.equals( "guinea" ) || c.equals( "botswana" )
+                || c.equals( "ethiopia" ) || c.equals( "malawi" ) || c.equals( "mali" ) ) {
             region = "Africa";
         }
         else if ( c.equals( "australia" ) || c.equals( "new_zealand" ) ) {

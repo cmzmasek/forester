@@ -63,8 +63,8 @@ public class pangolin_x {
             System.exit( -1 );
         }
         // PhylogenyMethods.midpointRoot( p );
-        p.reRoot( p.getNode( "X_0" ) );
-        p.setRooted( true );
+        //p.reRoot( p.getNode( "X_0" ) );
+        //p.setRooted( true );
         PhylogenyMethods.orderAppearanceX( p.getRoot(), true, DESCENDANT_SORT_PRIORITY.NODE_NAME );
         p.setRerootable( false );
         BasicTable<String> mapping_table = null;

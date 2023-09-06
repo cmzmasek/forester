@@ -560,6 +560,47 @@ public final class cladinator {
                 }
             }
             if ( !done ) {
+                if ( !ForesterUtil.isEmpty( res.getAllMultiHitPrefixesDown() ) ) {
+                    for( final Prefix prefix : res.getCollapsedMultiHitPrefixesDown() ) {
+                        if ( ( prefix.getConfidence() >= cutoff ) && !prefix.getPrefix().equals( "?" ) ) {
+                            if ( split_query ) {
+                                final String[] queries = res.getQueryNamePrefix().split( "_" );
+                                for( final String query : queries ) {
+                                    w.print( query );
+                                    if ( !two_columns ) {
+                                        w.print( "\t" );
+                                        w.print( "Matching Down-tree Bracketing Clades" );
+                                    }
+                                    w.print( "\t" );
+                                    w.print( prefix.getPrefix() + "-like" );
+                                    if ( !two_columns ) {
+                                        w.print( "\t" );
+                                        w.print( df.format( prefix.getConfidence() ) );
+                                    }
+                                    w.println();
+                                }
+                            }
+                            else {
+                                w.print( res.getQueryNamePrefix() );
+                                if ( !two_columns ) {
+                                    w.print( "\t" );
+                                    w.print( "Matching Down-tree Bracketing Clades" );
+                                }
+                                w.print( "\t" );
+                                w.print( prefix.getPrefix() + "-like" );
+                                if ( !two_columns ) {
+                                    w.print( "\t" );
+                                    w.print( df.format( prefix.getConfidence() ) );
+                                }
+                                w.println();
+                            }
+                            done = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            if ( !done ) {
                 if ( !ForesterUtil.isEmpty( res.getAllMultiHitPrefixesUp() ) ) {
                     for( final Prefix prefix : res.getCollapsedMultiHitPrefixesUp() ) {
                         if ( ( prefix.getConfidence() >= cutoff ) && !prefix.getPrefix().equals( "?" ) ) {
@@ -572,7 +613,7 @@ public final class cladinator {
                                         w.print( "Matching Up-tree Bracketing Clades" );
                                     }
                                     w.print( "\t" );
-                                    w.print( prefix.getPrefix() );
+                                    w.print( prefix.getPrefix() + "-like" );
                                     if ( !two_columns ) {
                                         w.print( "\t" );
                                         w.print( df.format( prefix.getConfidence() ) );
@@ -587,7 +628,7 @@ public final class cladinator {
                                     w.print( "Matching Up-tree Bracketing Clades" );
                                 }
                                 w.print( "\t" );
-                                w.print( prefix.getPrefix() );
+                                w.print( prefix.getPrefix() + "-like" );
                                 if ( !two_columns ) {
                                     w.print( "\t" );
                                     w.print( df.format( prefix.getConfidence() ) );
@@ -601,9 +642,19 @@ public final class cladinator {
                 }
             }
             if ( !done ) {
-                w.print( res.getQueryNamePrefix() );
-                w.print( "\t" );
-                w.println( "?" );
+                if ( split_query ) {
+                    final String[] queries = res.getQueryNamePrefix().split( "_" );
+                    for( final String query : queries ) {
+                        w.print( query );
+                        w.print( "\t" );
+                        w.println( "?" );
+                    }
+                }
+                else {
+                    w.print( res.getQueryNamePrefix() );
+                    w.print( "\t" );
+                    w.println( "?" );
+                }
             }
         }
     }

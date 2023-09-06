@@ -56,14 +56,15 @@ public final class msa_entropy {
                 msa = DeleteableMsa.createInstance( GeneralMsaParser.parseMsa( is ) );
             }
             final int k = 21;
-            for( int col = 0; col < msa.getLength(); ++col ) {
-                System.out.println( (col + 1) + "\t" + MsaMethods.calcNormalizedShannonsEntropy( k, msa, col ) );
-            }
-            System.out.println();
-            System.out.println();
+            //for( int col = 0; col < msa.getLength(); ++col ) {
+            //   System.out.println( (col + 1) + "\t" + MsaMethods.calcNormalizedShannonsEntropy( k, msa, col ) );
+            // }
+            // System.out.println();
+            // System.out.println();
             for( int col = 0; col < msa.getLength() - 9; ++col ) {
                 System.out.println( (col + 1) + "\t" + MsaMethods.calcAvgNormalizedShannonsEntropy( k, msa, col, col + 9 ) );
             }
+            //System.out.println( ( MsaMethods.calcAvgNormalizedShannonsEntropy( k, msa, 0, msa.getLength() - 1 ) ) );
         }
         catch ( final FileNotFoundException e ) {
             e.printStackTrace();
