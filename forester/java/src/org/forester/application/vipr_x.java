@@ -32,8 +32,8 @@ public class vipr_x {
     
     private static final String  VIPR_REGION       = "vipr:Region";
     private final static String  PRG_NAME          = "vipr_x";
-    private static final String  PRG_DATE          = "2021-08-27";
-    private static final String  PRG_VERSION       = "1.0.0";
+    private static final String  PRG_DATE          = "2023-09-20";
+    private static final String  PRG_VERSION       = "1.0.1";
     //  VP1|VP1_protein|KP322752|US/CA/14_6089|2014_08|Human|USA|NA|Enterovirus_D68
     // 1. gene symbol
     // 2. gene product name
@@ -157,12 +157,15 @@ public class vipr_x {
                         final String gb_accession = m.group( 2 );
                         final String strain_name = m.group( 1 );
                         final String date = m.group( 3 );
-                        final String host = m.group( 4 );
+                        String host = m.group( 4 );
                         final String country = m.group( 5 );
                         String year = "";
                         final Matcher ym = YEAR_PATTERN.matcher( date );
                         if ( ym.matches() ) {
                             year = ym.group( 1 );
+                        }
+                        if (host.equalsIgnoreCase("Homo sapiens")) {
+                            host = "Human";
                         }
                         System.out.println( name );
                         System.out.println( "gb accession     : " + gb_accession );
@@ -198,13 +201,16 @@ public class vipr_x {
                         final String gb_accession = m2.group( 2 );
                         final String species = m2.group( 1 );
                         final String date = m2.group( 3 );
-                        final String host = m2.group( 4 );
+                        String host = m2.group( 4 );
                         final String country = m2.group( 5 );
                         final String genotype = m2.group( 6 );
                         String year = "";
                         final Matcher ym = YEAR_PATTERN.matcher( date );
                         if ( ym.matches() ) {
                             year = ym.group( 1 );
+                        }
+                        if (host.equalsIgnoreCase("Homo sapiens")) {
+                            host = "Human";
                         }
                         System.out.println( name );
                         System.out.println( "gb accession     : " + gb_accession );

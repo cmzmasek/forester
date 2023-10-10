@@ -1,10 +1,10 @@
 #
 # = lib/evo/util/util.rb - Util class
 #
-# Copyright::    Copyright (C) 2017 Christian M. Zmasek
+# Copyright::    Copyright (C) 2023 Christian M. Zmasek
 # License::      GNU Lesser General Public License (LGPL)
 #
-# Last modified: 2017/04/27
+# Last modified: 2023/10/10
 
 require 'pathname'
 require 'lib/evo/util/constants'
@@ -63,10 +63,10 @@ module Evoruby
       the_one = nil;
 
       loop do
-
+        puts my_prefix
         matches = 0
         matching_files.each { | file |
-          if file.start_with?( my_prefix )
+          if file.start_with?( my_prefix + "." ) # was  if file.start_with?( my_prefix )
             matches += 1
             if matches > 1
               the_one = nil
