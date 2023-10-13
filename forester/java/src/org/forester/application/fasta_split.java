@@ -40,6 +40,7 @@ import java.util.regex.Pattern;
 import org.forester.io.parsers.FastaParser;
 import org.forester.io.writers.SequenceWriter;
 import org.forester.io.writers.SequenceWriter.SEQ_FORMAT;
+import org.forester.sequence.BasicSequence;
 import org.forester.sequence.MolecularSequence;
 import org.forester.util.CommandLineArguments;
 import org.forester.util.ForesterUtil;
@@ -47,10 +48,10 @@ import org.forester.util.ForesterUtil;
 public final class fasta_split {
 
     final static private String PRG_NAME    = "fasta_split";
-    final static private String PRG_VERSION = "1.02";
-    final static private String PRG_DATE    = "211218";
+    final static private String PRG_VERSION = "1.0.3";
+    final static private String PRG_DATE    = "2023-10-04";
 
-    public static void main( final String args[] ) {
+    public static void main( final String[] args) {
         ForesterUtil.printProgramInformation( fasta_split.PRG_NAME, fasta_split.PRG_VERSION, fasta_split.PRG_DATE );
         System.out.println();
         if ( ( args.length != 3 && args.length != 4 ) ) {
@@ -96,18 +97,21 @@ public final class fasta_split {
         System.out.println( "Read " + seqs.size() + " sequences" );
         final Map<String, List<MolecularSequence>> output = new HashMap<String, List<MolecularSequence>>();
         for( final MolecularSequence seq : seqs ) {
-            final Matcher m = pa.matcher( seq.getIdentifier() );
+            final String id = seq.getIdentifier().trim().replaceAll( "\\s*\\|\\s*", "|").replaceAll( "\\s+", "_");
+            ( ( BasicSequence ) seq ).setIdentifier(id);
+            final Matcher m = pa.matcher(seq.getIdentifier() );
             if ( m.find() ) {
-                final String key = m.group( 1 );
+                final String key = m.group( 1 ).toUpperCase();
+                System.out.println( "Extracted: " + key );
                 if ( !output.containsKey( key ) ) {
                     output.put( key, new ArrayList<MolecularSequence>() );
                 }
                 output.get( key ).add( seq );
             }
             else {
-                System.out.println( "warning: " + pattern_str + " not found in sequence \"" + seq.getIdentifier()
+                System.out.println( "Warning: " + pattern_str + " not found in sequence \"" + seq.getIdentifier()
                         + "\"" );
-                final String key = "unknown";
+                final String key = "UNKNOWN";
                 if ( !output.containsKey( key ) ) {
                     output.put( key, new ArrayList<MolecularSequence>() );
                 }
@@ -117,11 +121,15 @@ public final class fasta_split {
         int c = 0;
         int seqs_written = 0;
         for( final Map.Entry<String, List<MolecularSequence>> entry : output.entrySet() ) {
+            if ( entry.getKey() == null) {
+                ForesterUtil.fatalError( PRG_NAME, "regular expression appears faulty");
+            }
             String s = entry.getKey().trim();
+
             s = s.replaceAll( "[\\./\\*\\s]+", "_" );
             s = s.replaceAll( "\\(", "~" );
             s = s.replaceAll( "\\)", "~" );
-            final File of = new File( outdir.getAbsolutePath().toString() + "/" + s + ".fasta" );
+            final File of = new File( outdir.getAbsolutePath() + "/" + s + ".fasta" );
             if ( of.exists() ) {
                 ForesterUtil.fatalError( PRG_NAME, of + " already exists" );
             }
@@ -145,6 +153,7 @@ public final class fasta_split {
         System.out.println( "  " + PRG_NAME + " \"v-germ=(\\S+)\" tt.fasta outdir" );
         System.out.println( "  " + PRG_NAME + " \"(\\S+?)\\|\" seqs.fasta outdir" );
         System.out.println( "  " + PRG_NAME + " \"OS=(.+?)[A-Z]{2}=\" seqs.fasta outdir" );
+        System.out.println( "  " + PRG_NAME + " \"^.*?\\\\|.*?\\\\|.*?\\\\|(.+?)\\\\|\" seqs.fasta outdir" );
         System.out.println();
         System.exit( -1 );
     }
