@@ -212,12 +212,13 @@ public class hmmscan_seq_extract2 {
                     da_with_name=  da_with_name.replace('/', '~').replace(' ', '_').replace('(', '_').replace(')', '_');
                 }
                 else {
-                    da_with_name = "__" + da;
+                    //da_with_name = "__" + da;
+                    da_with_name = da;
                 }
                 String out_name = output_dir + "/" + da_with_name + ".fasta";
-                if ( da.length() > 40 ) {
+                if ( da.length() > 80 ) {
                     ++counter;
-                    out_name = output_dir + "/" + da.substring( 0, 40 ) + "__" + counter + ".fasta";
+                    out_name = output_dir + "/" + da.substring( 0, 80 ) + "__" + counter + ".fasta";
                 }
                 final FileWriter fw = new FileWriter( out_name );
                 final BufferedWriter bw = new BufferedWriter( fw );
@@ -262,7 +263,7 @@ public class hmmscan_seq_extract2 {
         System.out.println( "Usage:" );
         System.out.println();
         System.out.println( PRG_NAME
-                + " [options] <hmmscan output> <maping file (DA SOG-name taxonomy), tab separated> <fasta file (used as input for hmmscan)>" );
+                + " [options] <hmmscan output> <fasta file (used as input for hmmscan)> <maping file (DA SOG-name taxonomy), tab separated>" );
         System.out.println();
         System.out.println( " options:" );
         System.out.println( MAX_I_E_VALUE_OPTION + ": max (inclusive) iE-value" );
