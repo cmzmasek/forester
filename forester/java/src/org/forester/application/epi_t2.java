@@ -45,9 +45,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class epi_t2 {
-    // add to tolerance: Spike: 12, PP: 3, N: 4, ORF7a: 2, ORF8: 3
 
-    private final static String VERSION = "1.0.0";
+    private final static String VERSION = "1.0.1";
     private final static Pattern GAP_C_TERM_ONLY = Pattern.compile("[^\\-]+\\-+");
     private final static Pattern GAP_N_TERM_ONLY = Pattern.compile("\\-+[^\\-]+");
     private final static Pattern GAP_ONLY = Pattern.compile("\\-+");
@@ -57,7 +56,7 @@ public final class epi_t2 {
     public static void main(final String[] args) {
         if (args.length != 5) {
             System.err.println("Usage  : epi_t2 <h|s> <k|f> <add to tolerance> <msa> <peptides file> (h: heatmap, s: sequences, k: keep gaps, f: fill-in gaps)");
-            System.err.println("Example: epi_t2 s f 4 Mammarenavirus_L_protein_all.fasta lassa_all_proteins_L.tsv > Mammarenavirus_L_protein_all_SEQUENCES.tsv");
+            System.err.println("Example: epi_t2 s f 2 Mammarenavirus_L_protein_all_mafft.fasta lassa_all_proteins_L.tsv > Mammarenavirus_L_protein_all_SEQUENCES.tsv");
             System.exit(-1);
         }
         try {
@@ -165,7 +164,6 @@ public final class epi_t2 {
                         first = i;
                         last = (first + peptide_seq.length()) - 1;
                         found = true;
-
                         break;
                     }
                 }
@@ -183,6 +181,11 @@ public final class epi_t2 {
                                 }
                                 first = (int) match_result.get(1);
                                 last = (int) match_result.get(2) - 1;
+
+                                if ( first < peptide_start.get(p) ) {
+                                    System.err.println("WARNING: PROBLEM WITH: " + peptide_seq + " (\"add to tolerance\" likely too high)");
+                                }
+
 
                                 break T;
                             }
@@ -329,54 +332,6 @@ public final class epi_t2 {
         } catch (final IOException e) {
             e.printStackTrace();
         }
-    }
-
-    /*
-     *
-     * Positions for Polyprotein NSPs for MSA "Beta_PP_02_mafft" 2022/12/17
-     *
-     */
-    private static String inferNSPname(final String peptide_seq, final int i) {
-        String inferred_name = "na";
-        int ii = i + 1;
-        final int offset = peptide_seq.length() / 2;
-        if (ii > offset) {
-            ii -= offset;
-        }
-        if ((ii >= 1) && (ii <= 269)) {
-            inferred_name = "NSP1 (Host translation inhibitor)";
-        } else if ((ii >= 270) && (ii <= 985)) {
-            inferred_name = "NSP2";
-        } else if ((ii >= 986) && (ii <= 3625)) {
-            inferred_name = "NSP3 (Papain-like protease)";
-        } else if ((ii >= 3626) && (ii <= 4138)) {
-            inferred_name = "NSP4";
-        } else if ((ii >= 4139) && (ii <= 4466)) {
-            inferred_name = "NSP5 (3C-like proteinase)";
-        } else if ((ii >= 4467) && (ii <= 4769)) {
-            inferred_name = "NSP6";
-        } else if ((ii >= 4770) && (ii <= 4858)) {
-            inferred_name = "NSP7";
-        } else if ((ii >= 4859) && (ii <= 5059)) {
-            inferred_name = "NSP8";
-        } else if ((ii >= 5060) && (ii <= 5172)) {
-            inferred_name = "NSP9 (RNA-capping enzyme subunit)";
-        } else if ((ii >= 5173) && (ii <= 5312)) {
-            inferred_name = "NSP10";
-        } else if ((ii >= 5313) && (ii <= 5344)) {
-            inferred_name = "NSP11";
-        } else if ((ii >= 5345) && (ii <= 6252)) {
-            inferred_name = "NSP12 (RNA-directed RNA polymerase)";
-        } else if ((ii >= 6253) && (ii <= 6858)) {
-            inferred_name = "NSP13 (Helicase)";
-        } else if ((ii >= 6859) && (ii <= 7390)) {
-            inferred_name = "NSP14 (Guanine-N7 methyltransferase)";
-        } else if ((ii >= 7391) && (ii <= 7781)) {
-            inferred_name = "NSP15 (Uridylate-specific endoribonuclease)";
-        } else if (ii >= 7782) {
-            inferred_name = "NSP16 (2'-O-methyltransferase)";
-        }
-        return inferred_name;
     }
 
     private static List<Object> match(final String query, final String target, final int tolerance) {
