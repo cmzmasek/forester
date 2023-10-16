@@ -185,6 +185,9 @@ public final class epi_t2 {
                                 if ( first < peptide_start.get(p) ) {
                                     System.err.println("WARNING: PROBLEM WITH: " + peptide_seq + " (\"add to tolerance\" likely too high)");
                                 }
+                                if ( first > peptide_start.get(p) + 500 ) {
+                                    System.err.println("WARNING: PROBLEM WITH: " + peptide_seq + " (\"add to tolerance\" likely too high)");
+                                }
 
 
                                 break T;
