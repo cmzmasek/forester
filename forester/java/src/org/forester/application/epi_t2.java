@@ -46,7 +46,7 @@ import java.util.regex.Pattern;
 
 public final class epi_t2 {
 
-    private final static String VERSION = "1.0.1";
+    private final static String VERSION = "2.0.0";
     private final static Pattern GAP_C_TERM_ONLY = Pattern.compile("[^\\-]+\\-+");
     private final static Pattern GAP_N_TERM_ONLY = Pattern.compile("\\-+[^\\-]+");
     private final static Pattern GAP_ONLY = Pattern.compile("\\-+");
@@ -342,7 +342,11 @@ public final class epi_t2 {
         for (int target_index = 0; target_index < target_index_max; target_index++) {
             int missed = 0;
             for (int query_index = 0; query_index < query.length(); ++query_index) {
-                final char target_char = target.charAt(target_index + query_index);
+                char target_char = target.charAt(target_index + query_index);
+                while (target_char == '-' && ( target_index + query_index) < target_index_max) {
+                    target_index++;
+                    target_char = target.charAt(target_index + query_index);
+                }
                 final char query_char = query.charAt(query_index);
                 if (target_char != query_char) {
                     missed++;
