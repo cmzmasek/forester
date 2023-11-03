@@ -46,7 +46,7 @@ import java.util.regex.Pattern;
 
 public final class epi_t2 {
 
-    private final static String VERSION = "2.0.0";
+    private final static String VERSION = "3.0.0";
     private final static Pattern GAP_C_TERM_ONLY = Pattern.compile("[^\\-]+\\-+");
     private final static Pattern GAP_N_TERM_ONLY = Pattern.compile("\\-+[^\\-]+");
     private final static Pattern GAP_ONLY = Pattern.compile("\\-+");
@@ -56,7 +56,7 @@ public final class epi_t2 {
     public static void main(final String[] args) {
         if (args.length != 5) {
             System.err.println("Usage  : epi_t2 <h|s> <k|f> <add to tolerance> <msa> <peptides file> (h: heatmap, s: sequences, k: keep gaps, f: fill-in gaps)");
-            System.err.println("Example: epi_t2 s f 2 Mammarenavirus_L_protein_all_mafft.fasta lassa_all_proteins_L.tsv > Mammarenavirus_L_protein_all_SEQUENCES.tsv");
+            System.err.println("Example: epi_t2 s f 0 Mammarenavirus_L_protein_all_mafft.fasta lassa_all_proteins_L.tsv > Mammarenavirus_L_protein_all_SEQUENCES.tsv");
             System.exit(-1);
         }
         try {
@@ -181,24 +181,24 @@ public final class epi_t2 {
                                 }
                                 first = (int) match_result.get(1);
                                 last = (int) match_result.get(2) - 1;
-
-                                if ( first < peptide_start.get(p) ) {
-                                    System.err.println("WARNING: PROBLEM WITH: " + peptide_seq + " (\"add to tolerance\" likely too high)");
-                                }
-                                if ( first > peptide_start.get(p) + 500 ) {
-                                    System.err.println("WARNING: PROBLEM WITH: " + peptide_seq + " (\"add to tolerance\" likely too high)");
-                                }
-
-
                                 break T;
                             }
                         }
                     }
                 }
                 if (!found) {
-                    System.err.println("WARNING: NOT FOUND: " + peptide_seq);
+                    System.err.println("WARNING: NOT FOUND: " + peptide_seq + " (might increase \"add to tolerance\")");
                 }
+
                 if (found) {
+
+                    if (first < peptide_start.get(p) - 1) {
+                        System.err.println("WARNING: PROBLEM WITH: " + peptide_seq + " (\"add to tolerance\" likely too high)");
+                    }
+                    if (first > peptide_start.get(p) + 500) {
+                        System.err.println("WARNING: POSSIBLE PROBLEM WITH: " + peptide_seq + " (\"add to tolerance\" likely too high)");
+                    }
+
                     System.out.print(peptide_start.get(p));
                     System.out.print("\t");
                     System.out.print(peptide_stop.get(p));
@@ -213,6 +213,9 @@ public final class epi_t2 {
                     for (int row = 0; row < msa.getNumberOfSequences(); ++row) {
                         final String current_seq_str = msa.getSequenceAsString(row).toString();
                         String positional_homolog = current_seq_str.substring(first, last + 1);
+                        if (TEST_1) {
+                            System.err.println("   positional homolog: " + positional_homolog);
+                        }
                         final String orig_positional_homolog = positional_homolog;
                         if (positional_homolog.indexOf('-') > -1) {
                             final Matcher ma_n = GAP_N_TERM_ONLY.matcher(positional_homolog);
@@ -228,7 +231,9 @@ public final class epi_t2 {
                                 if (TEST_2) {
                                     System.err.println("N-TERM GAP");
                                 }
-                                String new_positional_homolog = positional_homolog.replace("-", "");
+                                //String new_positional_homolog = positional_homolog.replace("-", "");
+                                String new_positional_homolog = positional_homolog;
+
                                 int e = 1;
                                 while (((new_positional_homolog.indexOf('-') > -1)
                                         || (new_positional_homolog.length() < orig_length))
@@ -244,7 +249,9 @@ public final class epi_t2 {
                                 if (TEST_2) {
                                     System.err.println("C-TERM GAP");
                                 }
-                                String new_positional_homolog = positional_homolog.replace("-", "");
+                                // String new_positional_homolog = positional_homolog.replace("-", "");
+                                String new_positional_homolog = positional_homolog;
+
                                 int e = 1;
                                 while (((new_positional_homolog.indexOf('-') > -1)
                                         || (new_positional_homolog.length() < orig_length))
@@ -339,15 +346,18 @@ public final class epi_t2 {
 
     private static List<Object> match(final String query, final String target, final int tolerance) {
         final int target_index_max = (target.length() - query.length()) + 1;
+
         for (int target_index = 0; target_index < target_index_max; target_index++) {
             int missed = 0;
             for (int query_index = 0; query_index < query.length(); ++query_index) {
                 char target_char = target.charAt(target_index + query_index);
-                while (target_char == '-' && ( target_index + query_index) < target_index_max) {
+                while (target_char == '-' && (target_index + query_index) < target_index_max) {
                     target_index++;
                     target_char = target.charAt(target_index + query_index);
                 }
                 final char query_char = query.charAt(query_index);
+
+
                 if (target_char != query_char) {
                     missed++;
                 }
@@ -359,6 +369,7 @@ public final class epi_t2 {
                 return Arrays.asList(target.substring(target_index, target_index + query.length()),
                         target_index,
                         target_index + query.length());
+
             }
         }
         return null;
