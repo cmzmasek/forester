@@ -1,4 +1,4 @@
-re="(.+)_mafft_1000_l$"
+re="(.+)_mafft_1000_l_05_05$"
 
 PHYLO_PL="/Users/czmasek/IdeaProjects/forester/forester/perl/phylo_pl.pl"
 
@@ -22,7 +22,7 @@ do
         then
             name=${BASH_REMATCH[1]}
             echo $name
-            perl $PHYLO_PL -B100Wq $i ${name}_mafft_1000_l_tree_WAG
+            perl $PHYLO_PL -B100Zqn $i ${name}_mafft_1000_l_05_05_GTR
             rc=$?
             if [[ $rc != 0 ]]
             then

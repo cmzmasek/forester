@@ -22,7 +22,7 @@ do
         then
             name=${BASH_REMATCH[1]}
             echo $name
-            ruby $MSA_PRO -i=f -o=p -d -c $i ${name}_mafft_1000_l
+            ruby $MSA_PRO -i=f -o=p -d -c -rr=0.5 -rsgr=0.5 $i ${name}_mafft_1000_l_05_05
             rc=$?
             if [[ $rc != 0 ]]
             then

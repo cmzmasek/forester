@@ -7,10 +7,6 @@ fi
 
 indir=$1
 
-if [ ! -d "$outdir" ]; then
-    mkdir $outdir
-fi
-
 if [ -z "$(ls -A $indir)" ]; then
     echo "Directory is empty"
     exit 0
