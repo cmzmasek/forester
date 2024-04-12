@@ -601,15 +601,14 @@ unless ( ( -e $temp_dir ) && ( -d $temp_dir ) ) {
 }
 
 
-&cp( $infile, $temp_dir."/INFILE" );
-unless ( chmod ( 0600, $temp_dir."/INFILE" ) ) {
+&cp( $infile, $temp_dir."/INFILE__" );
+unless ( chmod ( 0600, $temp_dir."/INFILE__" ) ) {
     warn "\n\n$0: Could not chmod. $!\n\n";
 }
-$infile = "INFILE";
+$infile = "INFILE__";
 
 chdir ( $temp_dir ) 
 || die "\n\n$0: Could not chdir to <<$temp_dir>>: $!\n\n";
-
 &cp( $infile, "infile" );
 @out = &getNumberOfSeqsAndAas( $infile );
 $number_of_seqs = $out[ 0 ];

@@ -109,7 +109,7 @@ our @EXPORT = qw( executeConsense
 # Software directory:
 # ---------------------
 
-our $SOFTWARE_DIR              = "/home/lambda/SOFT/";
+our $SOFTWARE_DIR              = "/Users/czmasek/SOFT/";
 
 
 # Java virtual machine:
@@ -124,23 +124,23 @@ our $TEMP_DIR_DEFAULT          = "/tmp/";
 
 # Programs from Joe Felsenstein's PHYLIP package:
 # -----------------------------------------------
-our $SEQBOOT                   = $SOFTWARE_DIR."phylip-3.697/exe/seqboot";
-our $NEIGHBOR                  = $SOFTWARE_DIR."phylip-3.697/exe/neighbor";
-our $PROTPARS                  = $SOFTWARE_DIR."phylip-3.697/exe/protpars";
-our $PROML                     = $SOFTWARE_DIR."phylip-3.697/exe/proml";
-our $FITCH                     = $SOFTWARE_DIR."phylip-3.697/exe/fitch";
-our $CONSENSE                  = $SOFTWARE_DIR."phylip-3.697/exe/consense";
+our $SEQBOOT                   = $SOFTWARE_DIR."phylip-3.697/src/seqboot";
+our $NEIGHBOR                  = $SOFTWARE_DIR."phylip-3.697/src/neighbor";
+our $PROTPARS                  = $SOFTWARE_DIR."phylip-3.697/src/protpars";
+our $PROML                     = $SOFTWARE_DIR."phylip-3.697/src/proml";
+our $FITCH                     = $SOFTWARE_DIR."phylip-3.697/src/fitch";
+our $CONSENSE                  = $SOFTWARE_DIR."phylip-3.697/src/consense";
 our $PHYLIP_VERSION            = "3.697";
 
 # TREE-PUZZLE:
 # ------------
-our $PUZZLE                    = $SOFTWARE_DIR."tree-puzzle-5.2/src/puzzle";
-our $PUZZLE_VERSION            = "5.2";
+our $PUZZLE                    = $SOFTWARE_DIR."tree-puzzle-5.3.rc16-macosx/src/puzzle";
+our $PUZZLE_VERSION            = "5.3.rc16";
 
 # FASTME:
 # -----------------------------------------------------
-our $FASTME                    = $SOFTWARE_DIR."fastme-2.1.5/src/fastme";
-our $FASTME_VERSION            = "2.1.5";
+our $FASTME                    = $SOFTWARE_DIR."fastme-2.1.6.4/src/fastme";
+our $FASTME_VERSION            = "2.1.6.4";
 
 # PHYML:
 # -----------------------------------------------------
@@ -156,7 +156,7 @@ our $RAXML_VERSION             = "8.2.12";
 # forester.jar. 
 # --------------------------------------------------------------------------------------------------------------------
 
-our $FORESTER_JAR              = "/home/lambda/git/forester/forester/java/forester.jar";
+our $FORESTER_JAR              = "/Users/czmasek/IdeaProjects/forester/forester/java/forester.jar";
 
 
 
@@ -212,7 +212,7 @@ $PATH_TO_FORESTER = &addSlashAtEndIfNotPresent( $PATH_TO_FORESTER );
 our $BOOTSTRAPS         = 100;
 our $MIN_NUMBER_OF_AA   = 20;  # After removal of gaps, if less, gaps are not removed.
 our $LENGTH_OF_NAME     = 10;
-my  $FASTME_T_OPTION    = "-T 12";
+my  $FASTME_T_OPTION    = "-T 6";
 
 
 
@@ -298,10 +298,10 @@ sub executeFastme {
     
     my $command = "";
     if ( $bs > 1 ) {
-        $command = "$FASTME -n -s -i $inpwd_reformated -D $bs -o $output $FASTME_T_OPTION -v 2";
+        $command = "$FASTME -n -s -i $inpwd_reformated -D $bs -o $output -v 2";
     }
     else {
-        $command = "$FASTME -n -s -i $inpwd_reformated -o $output $FASTME_T_OPTION -v 2";
+        $command = "$FASTME -n -s -i $inpwd_reformated -o $output -v 2";
     }    
     print $command;
     
@@ -693,8 +693,8 @@ sub executePuzzleBootstrapped {
     $l   = `cat $in | wc -l`;
     $slen   = $l / $counter;
 
-    system( "split --suffix-length=4 -$slen $in $in.splt." )
-    && die "\n\n$0: executePuzzleDQObootstrapped: Could not execute \"split --suffix-length=4 -$slen $in $in.splt.\": $!";
+    system( "split -a 4 -$slen $in $in.splt." )
+    && die "\n\n$0: executePuzzleDQObootstrapped: Could not execute \"split -a 4 -$slen $in $in.splt.\": $!";
     
     @a = <$in.splt.*>;
    
@@ -706,15 +706,15 @@ sub executePuzzleBootstrapped {
         $rate = &setRateHeterogeneityOptionForPuzzle( $rate_heterogeneity_option );
     }
     
-    my $k="";
-    if (  $number_of_seqs <= 257 ) {
-        $k = "k";
-    }
+    #my $k="";
+    #if (  $number_of_seqs <= 257 ) {
+    #    $k = "k";
+    #}
 
     foreach $a ( @a ) {
         print "-".$a."\n";        
         system( "$PUZZLE $a << !
-$k
+k
 k
 k$mat$est$rate
 y 
@@ -766,14 +766,14 @@ sub executePuzzle {
         $rate = &setRateHeterogeneityOptionForPuzzle( $rate_heterogeneity_option );
     }
     
-    my $k="";
-    if (  $number_of_seqs <= 257 ) {
-        $k = "k";
-    }
+    #my $k="";
+    #if (  $number_of_seqs <= 257 ) {
+    #    $k = "k";
+    #}
 
 
     system( "$PUZZLE $in << !
-$k
+k
 k
 k$mat$est$rate
 y
