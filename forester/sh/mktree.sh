@@ -85,7 +85,7 @@ cp $workdir/*.xml $workdir/deco/
 cp $workdir/*.nim $workdir/deco/
 cp $workdir/*_ni.fasta $workdir/deco/
 
-current_dir = =$(pwd)
+current_dir=$(pwd)
 cd $workdir/deco/
 echo "        Executing: $DECORATOR -nd -v .xml _d.xml:"
 $DECORATOR -nd -v .xml _d.xml
