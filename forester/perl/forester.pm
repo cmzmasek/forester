@@ -1,7 +1,7 @@
 # FORESTER -- software libraries and applications
 # for evolutionary biology research and applications.
 #
-# Copyright (C) 2020 Christian M. Zmasek
+# Copyright (C) 2024 Christian M. Zmasek
 # All rights reserved
 # 
 # This library is free software; you can redistribute it and/or
@@ -24,16 +24,14 @@ package forester;
 use strict;
 require Exporter;
 
-our $VERSION = 1.000;
+our $VERSION = "1.1.0";
 
 our @ISA    = qw( Exporter );
 
 our @EXPORT = qw( executeConsense
-                  executePhyloPl
                   executeProtpars
                   setModelForPuzzle
                   setRateHeterogeneityOptionForPuzzle
-                  setParameterEstimatesOptionForPuzzle
                   executePuzzleBootstrapped
                   executePuzzle
                   executeFastme
@@ -52,8 +50,6 @@ our @EXPORT = qw( executeConsense
                   $SUFFIX_PWD
                   $MULTIPLE_PWD_FILE_SUFFIX
                   $SUFFIX_PWD_NOT_BOOTS
-                  $MATRIX_FOR_PWD 
-                  $PRIOR_FILE_DIR
                   $FORESTER_JAR
                   $SEQBOOT
                   $NEIGHBOR
@@ -67,19 +63,14 @@ our @EXPORT = qw( executeConsense
                   $FASTME_VERSION
                   $RAXMLNG
                   $RAXMLNG_VERSION
-                  $SFE
                   $SUPPORT_TRANSFER
                   $SUPPORT_STATISTICS
                   $NEWICK_TO_PHYLOXML
-                  $PHYLO_PL
                   $BOOTSTRAPS
-                  $PATH_TO_FORESTER
                   $JAVA
                   $TEMP_DIR_DEFAULT
                   
  );
-
-
 
 
 # =============================================================================
@@ -88,36 +79,18 @@ our @EXPORT = qw( executeConsense
 # THESE VARIABLES ARE ENVIRONMENT DEPENDENT, AND NEED TO BE SET ACCORDINGLY
 # BY THE USER
 # -------------------------------------------------------------------------
-#
-
-# For using just "phylo_pl.pl", only the following variables need to be set 
-# $JAVA
-# $FORESTER_JAR
-# $TEMP_DIR_DEFAULT
-# $SEQBOOT
-# $CONSENSE 
-# $PUZZLE
-# $FASTME
-# $NEIGHBOR
-# $FITCH
-# $PROTPARS
-# $RAXMLNG
 
 # Software directory:
 # ---------------------
-
 our $SOFTWARE_DIR              = "/Users/czmasek/SOFT/";
-
 
 # Java virtual machine:
 # ---------------------
 our $JAVA                      = "/usr/bin/java";
 
-
 # Where all the temporary files can be created:
 # ---------------------------------------------
 our $TEMP_DIR_DEFAULT          = "/tmp/";
-
 
 # Programs from Joe Felsenstein's PHYLIP package:
 # -----------------------------------------------
@@ -144,19 +117,20 @@ our $FASTME_VERSION            = "2.1.6.4";
 our $RAXMLNG_VERSION           = "1.2.0";
 our $RAXMLNG                   = "/Users/czmasek//SOFT/RAXML/raxml-ng";
 
-
-# forester.jar. 
-# --------------------------------------------------------------------------------------------------------------------
-
+# forester.jar.:
+# ----------------------------------------------------------------------------------------------------
 our $FORESTER_JAR              = "/Users/czmasek/IdeaProjects/forester/forester/java/forester.jar";
 
 
-
 # End of variables which need to be set by the user for using "phylo_pl.pl".
+# =============================================================================
+# =============================================================================
 
 
 
 
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# These variables should normally not be changed:
 
 # Tool from forester.jar to transfer support values:
 # -------------------------------------------------
@@ -172,31 +146,6 @@ our $SUPPORT_STATISTICS          = $JAVA." -cp $FORESTER_JAR org.forester.applic
 # Tool from forester.jar to transfer nh to phyloXML:
 # -------------------------------------------------
 our $NEWICK_TO_PHYLOXML          = $JAVA." -cp $FORESTER_JAR org.forester.application.phyloxml_converter";
-
-
-
-# FORESTER itself (currently not needed for "phylo_pl.pl"):
-# ---------------------------------------------------------
-our $PATH_TO_FORESTER          = ""; 
-
-
-
-$PATH_TO_FORESTER = &addSlashAtEndIfNotPresent( $PATH_TO_FORESTER );
-
-
-
-
-#
-# End of variables which need to be set by the user.
-#
-# =============================================================================
-# =============================================================================
-
-
-
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# These variables should normally not be changed:
 
 
 
@@ -217,10 +166,6 @@ our $MULTIPLE_PWD_FILE_SUFFIX    = ".mpwd";
 our $SUFFIX_BOOT_STRP_POS        = ".bsp";
 our $SUFFIX_PWD_NOT_BOOTS        = ".nbd";
 our $SUFFIX_HMM                  = ".hmm";
-
-our $EXPASY_SPROT_SEARCH_DE      = "http://www.expasy.org/cgi-bin/sprot-search-de?";
-our $EXPASY_SPROT_SEARCH_AC      = "http://www.expasy.org/cgi-bin/sprot-search-ac?";
-
 
 
 # One argument: input multiple trees file
@@ -251,7 +196,6 @@ sub executeFastme {
     my $bs     = $_[ 1 ];
     my $output = $_[ 2 ];  
     &testForTextFilePresence( $inpwd );
-    #########
     my $inpwd_reformated = $inpwd."_";
     open(FH, '<', $inpwd) or die $!;
     open(W, '>', $inpwd_reformated ) or die $!;
@@ -526,7 +470,7 @@ m
 m
 m";
     }
-    elsif ( $matrix_option == 7 || $matrix_option == 9 ) { # auto or HKY
+    elsif ( $matrix_option == 9 ) { # HKY
         $matr = "";
     } 
     elsif ( $matrix_option == 10 ) { # TN
@@ -544,9 +488,9 @@ m"
 
 # One argument:
 # Model of rate heterogeneity:
-#    1 for "8 Gamma distributed rates"
+#    1 for "4 Gamma distributed rates"
 #    2 for "Two rates (1 invariable + 1 variable)"
-#    3 for "Mixed (1 invariable + 8 Gamma rates)"
+#    3 for "Mixed (1 invariable + 4 Gamma rates)"
 #    otherwise: Uniform rate
 # Last modified: 09/08/03 
 sub setRateHeterogeneityOptionForPuzzle {
@@ -576,43 +520,17 @@ w";
 } ## setRateHeterogeneityOptionForPuzzle 
 
 
-# One argument:
-# Parameter estimates: 1 for "Exact (slow)"; "Approximate (faster)" otherwise
-# Last modified: 09/08/03 
-sub setParameterEstimatesOptionForPuzzle {
-    my $parameter_estimates_option  = $_[ 0 ];
-    my $opt                         = "";
 
-    if ( $parameter_estimates_option == 1 ) {
-        $opt = "
-e";
-    }
-    else {
-        $opt = "";       
-    }   
-
-    return $opt;
-} ## setParameterEstimatesOptionForPuzzle 
-
-
-
-# three/four/five arguments:
+# three arguments:
 # 1. Name of inputfile
 # 2. matrix option: 0 = JTT; 2 = BLOSUM 62; 3 = mtREV24;
 #    5 = VT; 6 = WAG; 7 = auto; PAM otherwise
 # 3. Number of sequences in alignment
-# 4. Parameter estimates: 1 for "Exact (slow)"; "Approximate (faster)" otherwise
-# 5. Model of rate heterogeneity:
-#    1 for "8 Gamma distributed rates"
-#    2 for "Two rates (1 invariable + 1 variable)"
-#    3 for "Mixed (1 invariable + 8 Gamma rates)"
-#    otherwise: Uniform rate
 sub executePuzzleBootstrapped {
     my $in                         = $_[ 0 ];
     my $matrix_option              = $_[ 1 ];
     my $number_of_seqs             = $_[ 2 ];
-    my $parameter_estimates_option = $_[ 3 ];
-    my $rate_heterogeneity_option  = $_[ 4 ];
+    my $rate_heterogeneity_option  = 0; # 0 for Uniform rate
 
     my $l             = 0;
     my $slen          = 0;
@@ -637,22 +555,15 @@ sub executePuzzleBootstrapped {
     $slen   = $l / $counter;
 
     system( "split -a 4 -$slen $in $in.splt." )
-    && die "\n\n$0: executePuzzleDQObootstrapped: Could not execute \"split -a 4 -$slen $in $in.splt.\": $!";
+    && die "\n\n$0: Could not execute \"split -a 4 -$slen $in $in.splt.\": $!";
     
     @a = <$in.splt.*>;
    
     $mat = setModelForPuzzle( $matrix_option );
-     if ( $parameter_estimates_option ) {
-        $est = &setParameterEstimatesOptionForPuzzle( $parameter_estimates_option );
-    }
+
     if ( $rate_heterogeneity_option ) {
         $rate = &setRateHeterogeneityOptionForPuzzle( $rate_heterogeneity_option );
     }
-    
-    #my $k="";
-    #if (  $number_of_seqs <= 257 ) {
-    #    $k = "k";
-    #}
 
     foreach $a ( @a ) {
         print "-".$a."\n";        
@@ -675,26 +586,16 @@ y
 } ## executePuzzleBootstrapped
 
 
-
-
-
-# three/four/five arguments:
+# three arguments:
 # 1. Name of inputfile
 # 2. Matrix option: 0 = JTT; 2 = BLOSUM 62; 3 = mtREV24;
 #    5 = VT; 6 = WAG; 7 = auto; PAM otherwise
 # 3. Number of sequences in alignment
-# 4. Parameter estimates: 1 for "Exact (slow)"; "Approximate (faster)" otherwise
-# 5. Model of rate heterogeneity:
-#    1 for "8 Gamma distributed rates"
-#    2 for "Two rates (1 invariable + 1 variable)"
-#    3 for "Mixed (1 invariable + 8 Gamma rates)"
-#    otherwise: Uniform rate
 sub executePuzzle {
     my $in                         = $_[ 0 ];
     my $matrix_option              = $_[ 1 ];
     my $number_of_seqs             = $_[ 2 ];
-    my $parameter_estimates_option = $_[ 3 ];
-    my $rate_heterogeneity_option  = $_[ 4 ];
+    my $rate_heterogeneity_option  = 0; # 0 for Uniform rate
     my $mat                        = "";
     my $est                        = "";
     my $rate                       = "";
@@ -702,18 +603,10 @@ sub executePuzzle {
     &testForTextFilePresence( $in );
 
     $mat = &setModelForPuzzle( $matrix_option );
-    if ( $parameter_estimates_option ) {
-        $est = &setParameterEstimatesOptionForPuzzle( $parameter_estimates_option );
-    }
+
     if ( $rate_heterogeneity_option ) {
         $rate = &setRateHeterogeneityOptionForPuzzle( $rate_heterogeneity_option );
     }
-    
-    #my $k="";
-    #if (  $number_of_seqs <= 257 ) {
-    #    $k = "k";
-    #}
-
 
     system( "$PUZZLE $in << !
 k
@@ -726,8 +619,6 @@ y
     return;
 
 } ## executePuzzle
-
-
 
 
 # Last modified: 02/21/03

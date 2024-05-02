@@ -3,7 +3,7 @@
 # FORESTER -- software libraries and applications
 # for evolutionary biology research and applications.
 #
-# Copyright (C) 2020 Christian M. Zmasek
+# Copyright (C) 2024 Christian M. Zmasek
 # All rights reserved
 # 
 # This library is free software; you can redistribute it and/or
@@ -51,13 +51,8 @@ use FindBin;
 use lib $FindBin::Bin;
 use forester;
 
-my $VERSION                = "1.0.3";
-my $LAST_MODIFIED          = "2020/05/23";
-
-my $RAXML_MODEL_BASE_PROT  = "PROTCAT";
-my $RAXML_MODEL_BASE_NUC   = "GTRCAT";
-my $RAXML_ALGORITHM        = "a";
-my $RAXML_T_OPTION         = "-T 4";
+my $VERSION                = "1.1.0";
+my $LAST_MODIFIED          = "2024-05-01";
 
 
 my $TEMP_DIR_DEFAULT       = "/tmp/phylo_pl_"; # Where all the infiles, outfiles, etc will be created.
@@ -68,22 +63,19 @@ my $matrix                 = 5;   # 0 = JTT
                                   # 2 = BLOSUM 62
                                   # 3 = mtREV24
                                   # 5 = VT 
-                                  # 6 = WAG 
-                                  # 7 = auto in puzzle
-                                  # 8 = DCMut in PHYML, VT in TREE-PUZZLE
+                                  # 6 = WAG
                                   # 9 = HKY [na]
                                   # 10 = TN [na]
                                   # 11 = GTR [na]
                                   # 12 = SH [na]
                                   # 13 = LG
 my $rate_heterogeneity     = 0;   # 0 = Uniform rate (default)
-                                  # 1 = 8 Gamma distributed rates
-                                  # 2 = Two rates (1 invariable + 1 variable)
-                                  # 3 = Mixed (1 invariable + 8 Gamma rates)
+                                  # 4 = 4 Gamma distributed rates
+                                  # 2 = 2 Gamma distributed rates
+                                  # 8 = 8 Gamma distributed rates
 my $seed                   = 9;   # Seed for random number generators. Default: 9
 my $keep_multiple_trees    = 0;   # 0: delete multiple tree file
                                   # 1: do not delete multiple tree file
-my $exact_parameter_est    = 0;   # 0: no; 1: yes
 
 my $jumbles                = 2;
 my $use_fastme             = 0;   # 0: no; 1: yes
@@ -95,8 +87,6 @@ my $use_proml              = 0;   # 0: no; 1: yes
 my $use_protpars           = 0;   # 0: no; 1: yes
 my $use_global_rearr       = 0;   # 0: no; 1: yes
 my $estimate_invar_sites   = 0;   # 0: no; 1: yes
-
-my $fastme_init_tree_opt   = "NJ";
 
 my %seqnames       = ();           # number   =>  seqname 
 my %numbers        = ();           # seqname  =>  number
@@ -213,12 +203,6 @@ if ( $ARGV[ 0 ] =~ /^-.+/ ) {
     if ( $options =~ /W/ ) {
         $matrix = 6;      # WAG
     }
-    if ( $options =~ /A/ ) {
-        $matrix = 7;      # auto
-    }
-    if ( $options =~ /D/ ) {
-        $matrix = 8;      # DCMut in RAXML, VT in PUZZLE
-    }
     if ( $options =~ /H/ ) {
         $matrix = 9;      # HKY
     }
@@ -240,17 +224,14 @@ if ( $ARGV[ 0 ] =~ /^-.+/ ) {
     if ( $options =~ /X/ ) {
         $keep_multiple_trees = 1; 
     }
-    if ( $options =~ /E/ ) {
-        $exact_parameter_est = 1;
-    }
     if ( $options =~ /g/ ) {
-        $rate_heterogeneity = 1; 
+        $rate_heterogeneity = 8;
     }
     if ( $options =~ /t/ ) {
         $rate_heterogeneity = 2; 
     }
     if ( $options =~ /m/ ) {
-        $rate_heterogeneity = 3; 
+        $rate_heterogeneity = 4;
     }
 }
 else {
@@ -282,7 +263,6 @@ if ( $use_fastme    != 1 &&
      $use_protpars = 1; 
 }
 
-
 if ( $use_fastme    == 1 ||
      $use_phylip_nj == 1 ||
      $use_phylip_fitch_fm == 1 ||
@@ -300,16 +280,6 @@ if ( $outfile !~ /^\// ) {
     # outfile is not absolute path.
     $outfile = $current_dir."/".$outfile;
 }
-
-
-
-# TREE-PUZZLE sets the option in this way:
-# If two rates or mixed, exact parameter estimates are used.
-if ( $rate_heterogeneity == 2
-||   $rate_heterogeneity == 3 ) {
-    $exact_parameter_est = 1
-}
-
 
 if ( $outfile =~ /\.xml$/i ) {
     $outfile =~ s/\.xml//i;
@@ -490,12 +460,6 @@ elsif ( $matrix == 5 ) {
 elsif ( $matrix == 6 ) {
     $log = $log."WAG (Whelan-Goldman 2000)\n";
 }
-elsif ( $matrix == 7 ) {
-    $log = $log."auto in TREE-PUZZLE\n";
-}
-elsif ( $matrix == 8 ) {
-    $log = $log."DCMut (Kosial and Goldman, 2005) in RAxML; VT in TREE-PUZZLE\n";
-}
 elsif ( $matrix == 9 ) {
     $log = $log."HKY (Hasegawa et al. 1985) in TREE-PUZZLE, GTR in RAxML\n";
 }
@@ -515,25 +479,24 @@ else {
     &dieWithUnexpectedError( "Unknown model: matrix=$matrix" );
 }
 if ( $use_raxml == 1 ) {
-    $log = $log."Model of rate heterogeneity in RAxML: G8\n";
+    $log = $log."Model of rate heterogeneity for RAxML: ";
+    if ( $rate_heterogeneity == 4 ) {
+        $log = $log."4 Gamma distributed rates\n";
+    }
+    elsif ( $rate_heterogeneity == 2 ) {
+        $log = $log."2 Gamma distributed rates\n";
+    }
+    elsif ( $rate_heterogeneity == 8 ) {
+        $log = $log."8 Gamma distributed rates\n";
+    }
+    else {
+        $log = $log."uniform\n";
+    }
 }
-$log = $log."Model of rate heterogeneity (PUZZLE): ";
-if ( $rate_heterogeneity == 1 ) { 
-    $log = $log."8 Gamma distributed rates\n";
-}
-elsif ( $rate_heterogeneity == 2 ) {
-    $log = $log."Two rates (1 invariable + 1 variable)\n";
-}
-elsif ( $rate_heterogeneity == 3 ) {
-    $log = $log."Mixed (1 invariable + 8 Gamma rates)\n";
-}
-else {
-    $log = $log."Uniform rate\n";
-}
+$log = $log."Model of rate heterogeneity (PUZZLE) for branch lengths: ";
+$log = $log."Mixed (1 invariable + 4 Gamma rates)\n";
+
 $log = $log."Seed for random number generators   : $seed\n";
-if ( $exact_parameter_est == 1 ) {
-    $log = $log."Exact parameter estimates in TREE-PUZZLE\n";
-}
 
 $log = $log."Start time/date                     : ".`date`;
 
@@ -598,18 +561,14 @@ if ( $use_pwd_based_methods == 1 ) {
     if ( $bootstraps > 1 ) {
         &executePuzzleBootstrapped( $SEQBOOT_OUTFILE,
                                     $matrix,
-                                    $number_of_seqs,
-                                    $exact_parameter_est,
-                                    $rate_heterogeneity );
+                                    $number_of_seqs );
 
         $pwdfile = $SEQBOOT_OUTFILE.".dist";
     }
     else {
         &executePuzzle( "infile",
                         $matrix,
-                        $number_of_seqs,
-                        $exact_parameter_est,
-                        $rate_heterogeneity );
+                        $number_of_seqs );
         $pwdfile = "infile.dist";
     }
 } 
@@ -652,9 +611,6 @@ if ( $use_raxml == 1 ) {
     elsif ( $matrix == 7 ) {
         $model = "VT";
     }
-    elsif ( $matrix == 8 ) {
-        $model = "DCMUT";
-    }
     elsif ( $matrix == 13 ) {
         $model = "LG";
     }
@@ -675,9 +631,25 @@ if ( $use_raxml == 1 ) {
     }
     print( "\n========== RAxML begin =========\n\n" );    
 
-    # NOTE. RaxML does its own bootstrapping.
-    &executeRaxmlNG( "align", $model."+G8+F", $bootstraps );
+    my $raxml_model = $model;
+    if ($rate_heterogeneity == 0 ) {
+        $raxml_model = $raxml_model . "+F"
+    }
+    elsif ($rate_heterogeneity == 2 ) {
+        $raxml_model = $raxml_model . "+G2+F"
+    }
+    elsif ($rate_heterogeneity == 4 ) {
+        $raxml_model = $raxml_model . "+G4+F"
+    }
+    elsif ($rate_heterogeneity == 8 ) {
+        $raxml_model = $raxml_model . "+G8+F"
+    }
+    else {
+        &dieWithUnexpectedError( "Unknown rate heterogeneity: rate_heterogeneity=$rate_heterogeneity" );
+    }
 
+
+    &executeRaxmlNG( "align", $raxml_model, $bootstraps );
 
     print( "\n========== RAxML end =========\n\n" );
     
@@ -696,27 +668,12 @@ if ( $use_raxml == 1 ) {
     &rm( "align.raxml.log" );
     &rm( "align.raxml.ckp" );
 
- print( "\n========== a=========\n\n" );
-    #&rm( "RAxML_parsimonyTree.phylopl" );
-    #&rm( $outfile."_raxml_info" );
-    #&mv( "RAxML_info.phylopl", $outfile."_raxml_info" );
-
     if ($bootstraps > 1 ) {
-    print( "\n========== b=========\n\n" );
         &mv( "align.raxml.support", $CONSENSUS_RAXML );
-        #&rm( "RAxML_bipartitionsBranchLabels.phylopl" );
         &append( "align.raxml.bootstraps", $OUTTREES_ALL );
-        #if ( $keep_multiple_trees == 1 ) {
-        #    &mv( "RAxML_bootstrap.phylopl", $multitreefile_raxml );
-        #}
-        #else {
-        #    &rm( "RAxML_bootstrap.phylopl" );
-        #}
     }
     &rm( "align.raxml.bootstraps" );
-  
     $all_count++;
-  
 }
 
 if ( $use_proml == 1 ) {
@@ -906,9 +863,7 @@ if ( $bootstraps > 1 ) {
     &rm( "infile" );
     &mv( "align", "infile" ); # align = original alignment in phylip interleaved.
     
-    &executePuzzleToCalculateBranchLenghts( $matrix,
-                                            $exact_parameter_est,
-                                            $rate_heterogeneity );
+    &executePuzzleToCalculateBranchLenghts( $matrix );
 
     my $OUTTREE_PUZZLE = "outtree_puzzle";
  
@@ -1197,8 +1152,6 @@ sub consense {
     
 }    
 
-
-
 # 1. file to be appended
 # 2. file to append to
 sub append {
@@ -1223,8 +1176,6 @@ sub dieIfFileNotExists {
        die( "\n\n$0: \"$file\" does not exist or is empty" );
     }
 } 
-
-
 
 
 # Two arguments:
@@ -1254,26 +1205,16 @@ $s
 }
 
 
-
-# One/two/three argument(s):
+# One argument:
 # Reads in tree from "intree" by default. (Presence of "intree" automatically 
 # switches into "User defined trees" mode.)
 # 1. matrix option: 0 = JTT; 2 = BLOSUM 62; 3 = mtREV24;
-#    5 = VT; 6 = WAG; 7 = auto; PAM otherwise
-# 2. Parameter estimates: 1 for "Exact (slow)"; "Approximate (faster)" otherwise
-# 3. Model of rate heterogeneity:
-#    1 for "8 Gamma distributed rates"
-#    2 for "Two rates (1 invariable + 1 variable)"
-#    3 for "Mixed (1 invariable + 8 Gamma rates)"
-#    otherwise: Uniform rate
-# Last modified: 09/08/03 (added 2nd and 3rd parameter)
+#    5 = VT; 6 = WAG; PAM otherwise
 sub executePuzzleToCalculateBranchLenghts {
     my $matrix_option              = $_[ 0 ];
-    my $parameter_estimates_option = $_[ 1 ];
-    my $rate_heterogeneity_option  = $_[ 2 ];
+    my $rate_heterogeneity_option  = 3; # 3 for "Mixed (1 invariable + 4 Gamma rates)"
     my $i             = 0;
     my $mat           = "";
-    my $est           = "";
     my $rate          = "";
     
     unless ( ( -s "infile" ) && ( -f "infile" ) && ( -T "infile" ) ) {
@@ -1284,13 +1225,14 @@ sub executePuzzleToCalculateBranchLenghts {
     }
 
     $mat = setModelForPuzzle( $matrix_option );
-    if ( $parameter_estimates_option ) {
-        $est = &setParameterEstimatesOptionForPuzzle( $parameter_estimates_option );
-    }
+
     if ( $rate_heterogeneity_option ) {
         $rate = &setRateHeterogeneityOptionForPuzzle( $rate_heterogeneity_option );
     }
-  
+
+    my $est           = "
+e";
+
     
     system( "$PUZZLE << !
 $mat$est$rate
@@ -1388,7 +1330,6 @@ sub getNumberOfSeqsAndAas {
 }
 
 
-
 sub removeSupportValues {
     my $infile  = $_[ 0 ];
     my $outfile = $_[ 1 ];
@@ -1473,18 +1414,14 @@ Y
 sub printUsage {
 
     print <<END;
-Copyright (C) 2017 Christian M Zmasek
+Copyright (C) 2024 Christian M Zmasek
 All rights reserved
 
 Author: Christian M Zmasek
-cmzmasek at yahoo dot com
-https://sites.google.com/site/cmzmasek/home/software/forester
+czmasek at jcvi dot org
 
   Requirements  phylo_pl is part of the FORESTER collection of programs.
   ------------  Many of its global variables are set via forester.pm.
-
-  Note. Use xt.pl (for Pfam alignments) or mt.pl (for other alignments) 
-  to run phylo_pl.pl on whole directories of alignments files. 
 
   Usage
   -----
@@ -1494,30 +1431,26 @@ https://sites.google.com/site/cmzmasek/home/software/forester
       [path/name for temporary directory to be created]
 
      Example:
-     "% phylo_pl.pl -B100q\@1nbS9X IL5.aln IL5_tree"
+     "% phylo_pl.pl -B100qx IL5.aln IL5_tree"
 
   Options
   -------
  
   Bx : Number of bootstraps. B0: do not bootstrap. Default is 100 bootstrapps.
        The number of bootstrapps should be divisible by 10.
-  J  : Use JTT model (Jones et al. 1992) in TREE-PUZZLE and/or PHYML, RAXML, default: VT (Mueller-Vingron 2000).
-  O  : Use BLOSUM 62 model (Henikoff-Henikoff 92) in TREE-PUZZLE and/or PHYML, RAXML, default: VT.
-  M  : Use mtREV24 model (Adachi-Hasegawa 1996) in TREE-PUZZLE and/or PHYML, default: VT.
-  W  : Use WAG model (Whelan-Goldman 2000) in TREE-PUZZLE and/or PHYML, RAXML, default: VT.
-  P  : Use PAM model (Dayhoff et al. 1978) in TREE-PUZZLE and/or PHYML, RAXML, default: VT.
-  L  : Use LG model (Le and Gascuel, 2008) in PHYML, RAXML; WAG in TREE-PUZZLE.
-  D  : Use DCMut model (Kosial and Goldman, 2005) in PHYML, RAXML; VT in TREE-PUZZLE.
-  A  : Let TREE-PUZZLE choose which model to use, default: VT.
+  J  : Use JTT model (Jones et al. 1992) in TREE-PUZZLE, RAXML; default: VT (Mueller-Vingron 2000).
+  O  : Use BLOSUM 62 model (Henikoff-Henikoff 92) in TREE-PUZZLE, RAXML; default: VT.
+  M  : Use mtREV24 model (Adachi-Hasegawa 1996) in TREE-PUZZLE, RAXML; default: VT.
+  W  : Use WAG model (Whelan-Goldman 2000) in TREE-PUZZLE, RAXML; default: VT.
+  P  : Use PAM model (Dayhoff et al. 1978) in TREE-PUZZLE, RAXML; default: VT.
+  L  : Use LG model (Le and Gascuel, 2008) in RAXML; WAG in TREE-PUZZLE.
   H  : Use HKY (Hasegawa et al. 1985) in TREE-PUZZLE [for nucleic acids]
   T  : Use TN (Tamura-Nei 1993) in TREE-PUZZLE [for nucleic acids]
   Z  : Use GTR (e.g. Lanave et al. 1980) in TREE-PUZZLE [for nucleic acids]
   C  : Use SH (Schoeniger-von Haeseler 1994) in TREE-PUZZLE [for nucleic acids]
-  E  : Exact parameter estimates in TREE-PUZZLE, default: Approximate.
-       Model of rate heterogeneity in TREE-PUZZLE (default: Uniform rate):
-  g  : 8 Gamma distributed rates
-  t  : Two rates (1 invariable + 1 variable)
-  m  : Mixed (1 invariable + 8 Gamma rates)
+  t  : 2 Gamma distributed rates in RAxML
+  m  : 4 Gamma distributed rates in RAxML
+  g  : 8 Gamma distributed rates in RAxML
   q  : Use FastME
   n  : Use PHYLIP Neighbor (NJ).                    
   f  : Use PHYLIP Fitch.
@@ -1525,9 +1458,7 @@ https://sites.google.com/site/cmzmasek/home/software/forester
   x  : Use RAxML.
   o  : Use PHYLIP proml. 
   p  : Use PHYLIP protpars.
-  rx : Number of relative substitution rate categories in PHYML (default is 4).
   jx : Number of jumbles (input order randomization) for PHYLIP FM, ME, PROTPARS, and PROML (default is 2) (random seed set with Sx).
-  I  : Estimate proportion of invariable sites in RAXML and/or PHYML (otherwise, proportion "0.0" is used in PHYML)
   G  : to turn on global rearrangements in PHYLIP FM, ME, and PROML
   Sx : Seed for random number generator(s). Must be 4n+1. Default is 9.
   X  : To keep multiple tree file (=trees from bootstrap resampled alignments) and 
