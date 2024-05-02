@@ -35,6 +35,7 @@ our @EXPORT = qw( executeConsense
                   executePuzzleBootstrapped
                   executePuzzle
                   executeFastme
+                  executeIQTree
                   executeNeighbor
                   executeFitch
                   testForTextFilePresence
@@ -63,6 +64,8 @@ our @EXPORT = qw( executeConsense
                   $FASTME_VERSION
                   $RAXMLNG
                   $RAXMLNG_VERSION
+                  $IQTREE
+                  $IQTREE_VERSION
                   $SUPPORT_TRANSFER
                   $SUPPORT_STATISTICS
                   $NEWICK_TO_PHYLOXML
@@ -116,6 +119,12 @@ our $FASTME_VERSION            = "2.1.6.4";
 # -----------------------------------------------------
 our $RAXMLNG_VERSION           = "1.2.0";
 our $RAXMLNG                   = "/Users/czmasek//SOFT/RAXML/raxml-ng";
+
+# IQTREE:
+# -----------------------------------------------------
+our $IQTREE_VERSION           = "2.3.2";
+our $IQTREE                   = "/Users/czmasek/SOFT/iqtree-2.3.2-macOS-arm/bin/iqtree2";
+
 
 # forester.jar.:
 # ----------------------------------------------------------------------------------------------------
@@ -184,6 +193,26 @@ Y
     return;
 }
 
+
+sub executeIQTree {
+    my $msa            = $_[ 0 ];
+    my $model          = $_[ 1 ];
+    my $replicates     = $_[ 2 ];
+
+    &testForTextFilePresence( $msa );
+    my $command = "";
+    if ( $replicates > 1 ) {
+        $command = "$IQTREE -nt AUTO -s $msa -m $model -b $replicates";
+    }
+    else {
+        $command = "$IQTREE -nt AUTO -s $msa -m $model";
+    }
+    print( "\n$command\n");
+
+    system( $command )
+    && &dieWithUnexpectedError( $command );
+
+}
 
 
 # Three arguments:

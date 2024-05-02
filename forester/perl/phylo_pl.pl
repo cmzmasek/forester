@@ -40,9 +40,10 @@
 # 3. phylip fitch FM
 # 4. phylip fitch ME
 # 5. Raxml
-# 6. phylip proml
-# 7. phylip protpars
-# 8. all
+# 6. IQTree
+# 7. phylip proml
+# 8. phylip protpars
+# 9. all
 #==========================
 
 use strict;
@@ -51,8 +52,8 @@ use FindBin;
 use lib $FindBin::Bin;
 use forester;
 
-my $VERSION                = "1.1.0";
-my $LAST_MODIFIED          = "2024-05-01";
+my $VERSION                = "1.2.0";
+my $LAST_MODIFIED          = "2024-05-02";
 
 
 my $TEMP_DIR_DEFAULT       = "/tmp/phylo_pl_"; # Where all the infiles, outfiles, etc will be created.
@@ -83,10 +84,10 @@ my $use_phylip_nj          = 0;   # 0: no; 1: yes
 my $use_phylip_fitch_fm    = 0;   # 0: no; 1: yes
 my $use_phylip_fitch_me    = 0;   # 0: no; 1: yes
 my $use_raxml              = 0;   # 0: no; 1: yes
+my $use_iqtree             = 0;   # 0: no; 1: yes
 my $use_proml              = 0;   # 0: no; 1: yes
 my $use_protpars           = 0;   # 0: no; 1: yes
 my $use_global_rearr       = 0;   # 0: no; 1: yes
-my $estimate_invar_sites   = 0;   # 0: no; 1: yes
 
 my %seqnames       = ();           # number   =>  seqname 
 my %numbers        = ();           # seqname  =>  number
@@ -170,6 +171,9 @@ if ( $ARGV[ 0 ] =~ /^-.+/ ) {
     if ( $options =~ /x/ ) {
         $use_raxml = 1;
     }
+    if ( $options =~ /i/ ) {
+        $use_iqtree = 1;
+    }
     if ( $options =~ /o/ ) {
         $use_proml = 1;
     }
@@ -178,9 +182,6 @@ if ( $ARGV[ 0 ] =~ /^-.+/ ) {
     }
     if ( $options =~ /G/ ) {
         $use_global_rearr = 1;
-    } 
-    if ( $options =~ /I/ ) {
-        $estimate_invar_sites = 1;
     }
     if ( $options =~ /j(\d+)/ ) {
         $jumbles = $1;
@@ -251,6 +252,7 @@ if ( $use_fastme    != 1 &&
      $use_phylip_fitch_fm != 1 &&
      $use_phylip_fitch_me != 1 &&
      $use_raxml != 1 &&
+     $use_iqtree != 1 &&
      $use_proml != 1 &&         
      $use_protpars != 1 ) {
     
@@ -259,6 +261,7 @@ if ( $use_fastme    != 1 &&
      $use_phylip_fitch_fm = 1;
      $use_phylip_fitch_me = 1;
      $use_raxml = 1;
+     $use_iqtree = 1;
      $use_proml = 1;         
      $use_protpars = 1; 
 }
@@ -313,6 +316,8 @@ my $phylip_nj_outtree = $outfile."_pnj.xml";
 my $phylip_fm_outtree = $outfile."_pfm.xml";
 my $phylip_me_outtree = $outfile."_pme.xml";
 my $raxml_outtree     = $outfile."_raxml.xml";
+my $iqtree_outtree    = $outfile."_iqtree.xml";
+my $iqtree_iqtree_file= $outfile."_iqtree.txt";
 my $proml_outtree     = $outfile."_proml.xml";
 my $protpars_outtree  = $outfile."_ppp.xml";
 my $all_outtree       = $outfile."_comb.xml";
@@ -354,6 +359,9 @@ if( $use_raxml == 1 ) {
     if ( $keep_multiple_trees == 1 && $bootstraps > 1 ) {
         &dieIfFileExists( $multitreefile_raxml );
     }
+}
+if( $use_iqtree == 1 ) {
+    &dieIfFileExists( $iqtree_outtree );
 }
 if( $use_proml == 1 ) {
     &dieIfFileExists( $proml_outtree );
@@ -416,6 +424,9 @@ if ( $use_phylip_fitch_me == 1 ) {
 }
 if ( $use_raxml == 1 ) {
     $log = $log."Program to calculate tree           : RAxML-NG (version: $RAXMLNG_VERSION)\n";
+}
+if ( $use_iqtree == 1 ) {
+    $log = $log."Program to calculate tree           : IQTree (version: $IQTREE_VERSION)\n";
 }
 if ( $use_proml == 1 ) {
     $log = $log."Program to calculate tree           : PHYLIP PROML (uses PAM unless JTT selected) (version: $PHYLIP_VERSION)\n";
@@ -577,11 +588,12 @@ if ( $use_pwd_based_methods == 1 ) {
 
 # Methods based on alignment
 # --------------------------
-my $OUTTREE_RAXML    = "outtree_rax";
+my $OUTTREE_IQTREE   = "outtree_iqtree";
 my $OUTTREE_PROML    = "outtree_proml";
 my $OUTTREE_PROTPARS = "outtree_protpars";
 
 my $CONSENSUS_RAXML    = "consensus_raxml";
+my $CONSENSUS_IQTREE   = "consensus_iqtree";
 my $CONSENSUS_PROML    = "consensus_proml";
 my $CONSENSUS_PROTPARS = "consensus_protpars";
 
@@ -648,18 +660,13 @@ if ( $use_raxml == 1 ) {
         &dieWithUnexpectedError( "Unknown rate heterogeneity: rate_heterogeneity=$rate_heterogeneity" );
     }
 
-
     &executeRaxmlNG( "align", $raxml_model, $bootstraps );
 
     print( "\n========== RAxML end =========\n\n" );
     
     &rm( "align.raxml.log" );
-
     &rm( "align.raxml.bestModel" );
     &rm( "align.raxml.mlTrees" );
-    if ( $bootstraps > 1 ) {
-        &rm( "align.raxml.bestTree" );
-    }
     &rm( "align.raxml.bestTreeCollapsed" );
     &rm( "align.raxml.startTree" );
     &rm( "align.raxml.rba" );
@@ -669,12 +676,88 @@ if ( $use_raxml == 1 ) {
     &rm( "align.raxml.ckp" );
 
     if ($bootstraps > 1 ) {
+        &rm( "align.raxml.bestTree" );
         &mv( "align.raxml.support", $CONSENSUS_RAXML );
         &append( "align.raxml.bootstraps", $OUTTREES_ALL );
     }
     &rm( "align.raxml.bootstraps" );
     $all_count++;
-}
+} # if ( $use_raxml == 1 )
+
+if ( $use_iqtree == 1 ) {
+    my $model = "---";
+    if ( $matrix == 0 ) {
+        $model = "JTT";
+    }
+    elsif ( $matrix == 1 ) {
+        $model = "DAYHOFF";
+    }
+    elsif ( $matrix == 2 ) {
+        $model = "BLOSUM62";
+    }
+    elsif ( $matrix == 3 ) {
+        $model = "MTREV";
+    }
+    elsif ( $matrix == 5 ) {
+       $model = "VT";
+    }
+    elsif ( $matrix == 6 ) {
+        $model = "WAG";
+    }
+    elsif ( $matrix == 7 ) {
+        $model = "VT";
+    }
+    elsif ( $matrix == 13 ) {
+        $model = "LG";
+    }
+    elsif ( $matrix == 9 ) {
+        $model = "HKY";
+    }
+    elsif ( $matrix == 10 ) {
+        $model = "TN";
+    }
+    elsif ( $matrix == 11 ) {
+        $model = "GTR";
+    }
+    elsif ( $matrix == 12 ) {
+        $model = "SH";
+    }
+    else {
+        &dieWithUnexpectedError( "Unknown model: matrix=$matrix" );
+    }
+    print( "\n========== IQTREE begin =========\n\n" );
+
+    my $iq_model = $model . "+F+I";
+    if ($rate_heterogeneity == 2 ) {
+        $iq_model = $iq_model . "+G2";
+    }
+    elsif ($rate_heterogeneity == 4 ) {
+        $iq_model = $iq_model . "+G4";
+    }
+    elsif ($rate_heterogeneity == 8 ) {
+        $iq_model = $iq_model . "+G8";
+    }
+    elsif ($rate_heterogeneity != 0 ) {
+        &dieWithUnexpectedError( "Unknown rate heterogeneity: rate_heterogeneity=$rate_heterogeneity" );
+    }
+
+    &executeIQTree( "align", $iq_model, $bootstraps );
+
+    print( "\n========== IQTREE end =========\n\n" );
+    
+    &mv( "align.iqtree", $iqtree_iqtree_file );
+    &rm( "align.log" );
+    &rm( "align.bionj" );
+    &rm( "align.ckp.gz" );
+    &rm( "align.mldist" );
+    if ($bootstraps > 1 ) {
+        &mv( "align.contree", $CONSENSUS_IQTREE );
+        &append( "align.boottrees", $OUTTREES_ALL );
+        &rm( "align.boottrees" );
+        &rm( "align.treefile" );
+    }
+    $all_count++;
+} #if ( $use_iqtree == 1 )
 
 if ( $use_proml == 1 ) {
     my $input = "";
@@ -725,7 +808,6 @@ if ( $use_protpars == 1 ) {
         $all_count++;
     }
 }
-
 
 
 # Methods based on PWD
@@ -822,7 +904,7 @@ if ( $bootstraps > 1 ) {
         &rm( $OUTTREES_ALL );
     }
    
-    my $INTREE_FOR_PUZZLE = "intree"; #why so serious?
+    my $INTREE_FOR_PUZZLE = "intree";
     &rm( $INTREE_FOR_PUZZLE );
     system( "touch", $INTREE_FOR_PUZZLE )
     && die("\n\n$0: could not \"touch $INTREE_FOR_PUZZLE\": $!\n\n");
@@ -845,6 +927,9 @@ if ( $bootstraps > 1 ) {
         removeSupportValues( $CONSENSUS_RAXML, $CONSENSUS_RAXML."_support_removed" );
         &append( $CONSENSUS_RAXML."_support_removed", $INTREE_FOR_PUZZLE );
         &rm( $CONSENSUS_RAXML."_support_removed" );
+    }
+    if ( $use_iqtree == 1 ) {
+        &append( $CONSENSUS_IQTREE, $INTREE_FOR_PUZZLE );
     }
     if ( $use_proml == 1 ) {
         &append( $CONSENSUS_PROML, $INTREE_FOR_PUZZLE );
@@ -896,6 +981,10 @@ if ( $bootstraps > 1 ) {
     }
     if ( $use_raxml == 1 ) {
         &to_phyloxml( $CONSENSUS_RAXML, $raxml_outtree, 1, 1 );
+        $counter++;
+    }
+    if ( $use_iqtree == 1 ) {
+        &to_phyloxml( $CONSENSUS_IQTREE, $iqtree_outtree, 1, 1 );
         $counter++;
     }
     if ( $use_proml == 1 ) {
@@ -981,13 +1070,17 @@ else {
          &to_phyloxml( "align.raxml.bestTree", $raxml_outtree, 1, 1 );
          &rm("align.raxml.bestTree");
     }
+    if ( $use_iqtree == 1 ) {
+        &to_phyloxml( "align.treefile", $iqtree_outtree, 1, 1 );
+        &rm("align.treefile");
+    }
     if ( $use_proml == 1 ) {
         &to_phyloxml( $OUTTREE_PROML, $proml_outtree, 0, 1 );
     }
     if ( $use_protpars == 1 ) {
         &to_phyloxml( $OUTTREE_PROTPARS, $protpars_outtree, 0, 1 );
     }
-} # if ( $bootstraps > 1 )
+} # else if ( $bootstraps > 1 )
 
 &rm( $infile );
 &rm( "infile" );
@@ -1039,6 +1132,9 @@ if ( $bootstraps > 1 ) {
     if ( $use_raxml == 1 ) {
         $phylos[ $ounter++ ] = $raxml_outtree;
     }
+    if ( $use_iqtree == 1 ) {
+        $phylos[ $ounter++ ] = $iqtree_outtree;
+    }
     if ( $use_proml == 1 ) {
         $phylos[ $ounter++ ] = $proml_outtree;
     }
@@ -1074,7 +1170,7 @@ exit( 0 );
 # Methods:
 # --------
 
-# Six arguments:
+# Three arguments:
 # 1. DNA or Amino-Acids sequence filename (PHYLIP format)
 # 2. Model
 # 3. Replicates (bootstrap)
@@ -1085,7 +1181,7 @@ sub executeRaxmlNG {
     my $replicates     = $_[ 2 ];
 
     &testForTextFilePresence( $msa );
-    my $command = "$RAXMLNG --tree rand{10},pars{10} --msa-format PHYLIP --model $model --msa $msa";
+    my $command = "$RAXMLNG --tree rand{20},pars{20} --msa-format PHYLIP --model $model --msa $msa";
 
     if ( $replicates > 1 ) {
         $command = $command . " --all --bs-trees $replicates";
@@ -1456,6 +1552,7 @@ czmasek at jcvi dot org
   f  : Use PHYLIP Fitch.
   e  : Use PHYLIP Minimal Evolution.
   x  : Use RAxML.
+  i  : Use IQTree
   o  : Use PHYLIP proml. 
   p  : Use PHYLIP protpars.
   jx : Number of jumbles (input order randomization) for PHYLIP FM, ME, PROTPARS, and PROML (default is 2) (random seed set with Sx).
