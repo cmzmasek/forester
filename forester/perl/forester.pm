@@ -39,7 +39,6 @@ our @EXPORT = qw( executeConsense
                   executeFastme
                   executeNeighbor
                   executeFitch
-                  executePhyml
                   testForTextFilePresence
                   exitWithWarning
                   dieWithUnexpectedError
@@ -66,10 +65,8 @@ our @EXPORT = qw( executeConsense
                   $PUZZLE_VERSION
                   $FASTME
                   $FASTME_VERSION
-                  $RAXML
-                  $RAXML_VERSION
-                  $PHYML
-                  $PHYML_VERSION
+                  $RAXMLNG
+                  $RAXMLNG_VERSION
                   $SFE
                   $SUPPORT_TRANSFER
                   $SUPPORT_STATISTICS
@@ -103,8 +100,8 @@ our @EXPORT = qw( executeConsense
 # $FASTME
 # $NEIGHBOR
 # $FITCH
-# $PHYML
 # $PROTPARS
+# $RAXMLNG
 
 # Software directory:
 # ---------------------
@@ -142,15 +139,10 @@ our $PUZZLE_VERSION            = "5.3.rc16";
 our $FASTME                    = $SOFTWARE_DIR."fastme-2.1.6.4/src/fastme";
 our $FASTME_VERSION            = "2.1.6.4";
 
-# PHYML:
-# -----------------------------------------------------
-our $PHYML                     = $SOFTWARE_DIR."PhyML-3.1/PhyML-3.1_linux64";
-our $PHYML_VERSION             = "3.1 20120412";
-
 # RAXML:
 # -----------------------------------------------------
-our $RAXML                     = $SOFTWARE_DIR."standard-RAxML-master/raxmlHPC-PTHREADS";
-our $RAXML_VERSION             = "8.2.12";
+our $RAXMLNG_VERSION           = "1.2.0";
+our $RAXMLNG                   = "/Users/czmasek//SOFT/RAXML/raxml-ng";
 
 
 # forester.jar. 
@@ -205,7 +197,6 @@ $PATH_TO_FORESTER = &addSlashAtEndIfNotPresent( $PATH_TO_FORESTER );
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # These variables should normally not be changed:
-#
 
 
 
@@ -416,54 +407,6 @@ Y
     # 3: Do NOT print out tree
   
 } ## executeFitch
-
-# PHYML produces several results files :
-# <sequence file name>_phyml_lk.txt : likelihood value(s)
-# <sequence file name>_phyml_tree.txt : inferred tree(s)
-# <sequence file name>_phyml_stats.txt : detailed execution stats 
-#	-i (or --input) seq_file_name
-#	-d (or --datatype) data_type, 'nt' for nucleotide (default), 'aa' for amino-acid sequences
-#	-n (or --multiple) nb_data_sets
-#   -m (or --model)
-#       Nucleotide-based models : HKY85 (default) | JC69 | K80 | F81 | F84 | TN93 | GTR |model
-#       Amino-acid based models : LG (default) | WAG | JTT | MtREV | Dayhoff | DCMut | RtREV | CpREV | VT
-#		 Blosum62 | MtMam | MtArt | HIVw | HIVb 
-#   -v (or --pinv) prop_invar 	Can be a fixed value in the [0,1] range or e to get the maximum likelihood estimate.
-#   -c (or --nclasses) nb_subst_cat
-#   -o params
-#		This option focuses on specific parameter optimisation.
-#		params=tlr : tree topology (t), branch length (l) and rate parameters (r) are optimised.
-#		params=tl  : tree topology and branch length are optimised.
-#		params=lr  : branch length and rate parameters are optimised.
-#		params=l   : branch length are optimised.
-#		params=r   : rate parameters are optimised.
-#		params=n   : no parameter is optimised.
-# VERSION 20120412
-sub executePhyml {
-    my $input        = $_[ 0 ]; 
-    my $datatype     = $_[ 1 ];
-    my $nb_data_sets = $_[ 2 ]; 
-    my $model        = $_[ 3 ]; 
-    my $pinv         = $_[ 4 ];
-    my $nclasses     = $_[ 5 ];  
-    my $params       = $_[ 6 ];
-    
-    if ( $nb_data_sets < 1 ) {
-        $nb_data_sets = 1
-    }
-         
-    &testForTextFilePresence( $input );
-    my $command = "$PHYML -i $input -d $datatype -n $nb_data_sets -m $model -v $pinv -c $nclasses  -o $params";
-      
-    print( "\n$command\n");  
-      
-    system( $command )
-    && &dieWithUnexpectedError( $command );
-    
-} 
-
-
-
 
 # Four arguments:
 # 1. name of alignment file (in correct format!)

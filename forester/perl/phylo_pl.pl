@@ -40,10 +40,9 @@
 # 3. phylip fitch FM
 # 4. phylip fitch ME
 # 5. Raxml
-# 6. phyml
-# 7. phylip proml
-# 8. phylip protpars
-# 9. all
+# 6. phylip proml
+# 7. phylip protpars
+# 8. all
 #==========================
 
 use strict;
@@ -86,15 +85,12 @@ my $keep_multiple_trees    = 0;   # 0: delete multiple tree file
                                   # 1: do not delete multiple tree file
 my $exact_parameter_est    = 0;   # 0: no; 1: yes
 
-my $phyml_rel_substitution_rate_cat = 4;
-
 my $jumbles                = 2;
 my $use_fastme             = 0;   # 0: no; 1: yes
 my $use_phylip_nj          = 0;   # 0: no; 1: yes
 my $use_phylip_fitch_fm    = 0;   # 0: no; 1: yes
 my $use_phylip_fitch_me    = 0;   # 0: no; 1: yes
 my $use_raxml              = 0;   # 0: no; 1: yes
-my $use_phyml              = 0;   # 0: no; 1: yes
 my $use_proml              = 0;   # 0: no; 1: yes
 my $use_protpars           = 0;   # 0: no; 1: yes
 my $use_global_rearr       = 0;   # 0: no; 1: yes
@@ -183,10 +179,7 @@ if ( $ARGV[ 0 ] =~ /^-.+/ ) {
     }
     if ( $options =~ /x/ ) {
         $use_raxml = 1;
-    }    
-    if ( $options =~ /y/ ) {
-        $use_phyml = 1;
-    }    
+    }
     if ( $options =~ /o/ ) {
         $use_proml = 1;
     }
@@ -203,12 +196,6 @@ if ( $ARGV[ 0 ] =~ /^-.+/ ) {
         $jumbles = $1;
         if ( $jumbles < 1 ) {
             $jumbles = 0;
-        }
-    }
-    if ( $options =~ /r(\d+)/ ) {
-        $phyml_rel_substitution_rate_cat = $1;
-        if ( $phyml_rel_substitution_rate_cat < 1 ) {
-            $phyml_rel_substitution_rate_cat = 1;
         }
     }
     if ( $options =~ /J/ ) {
@@ -230,7 +217,7 @@ if ( $ARGV[ 0 ] =~ /^-.+/ ) {
         $matrix = 7;      # auto
     }
     if ( $options =~ /D/ ) {
-        $matrix = 8;      # DCMut in PHYML and RAXML, VT in PUZZLE
+        $matrix = 8;      # DCMut in RAXML, VT in PUZZLE
     }
     if ( $options =~ /H/ ) {
         $matrix = 9;      # HKY
@@ -283,7 +270,6 @@ if ( $use_fastme    != 1 &&
      $use_phylip_fitch_fm != 1 &&
      $use_phylip_fitch_me != 1 &&
      $use_raxml != 1 &&
-     $use_phyml != 1 &&
      $use_proml != 1 &&         
      $use_protpars != 1 ) {
     
@@ -292,7 +278,6 @@ if ( $use_fastme    != 1 &&
      $use_phylip_fitch_fm = 1;
      $use_phylip_fitch_me = 1;
      $use_raxml = 1;
-     $use_phyml = 1;
      $use_proml = 1;         
      $use_protpars = 1; 
 }
@@ -358,7 +343,6 @@ my $phylip_nj_outtree = $outfile."_pnj.xml";
 my $phylip_fm_outtree = $outfile."_pfm.xml";
 my $phylip_me_outtree = $outfile."_pme.xml";
 my $raxml_outtree     = $outfile."_raxml.xml";
-my $phyml_outtree     = $outfile."_phyml.xml";
 my $proml_outtree     = $outfile."_proml.xml";
 my $protpars_outtree  = $outfile."_ppp.xml";
 my $all_outtree       = $outfile."_comb.xml";
@@ -368,7 +352,6 @@ my $multitreefile_phylip_nj = $outfile."_pnj".$MULTIPLE_TREES_FILE_SUFFIX;
 my $multitreefile_phylip_fm = $outfile."_pfm".$MULTIPLE_TREES_FILE_SUFFIX;
 my $multitreefile_phylip_me = $outfile."_pme".$MULTIPLE_TREES_FILE_SUFFIX;
 my $multitreefile_raxml     = $outfile."_raxml".$MULTIPLE_TREES_FILE_SUFFIX;
-my $multitreefile_phyml     = $outfile."_phyml".$MULTIPLE_TREES_FILE_SUFFIX;
 my $multitreefile_proml     = $outfile."_proml".$MULTIPLE_TREES_FILE_SUFFIX;
 my $multitreefile_protpars  = $outfile."_ppp".$MULTIPLE_TREES_FILE_SUFFIX;
 
@@ -400,12 +383,6 @@ if( $use_raxml == 1 ) {
     &dieIfFileExists( $raxml_outtree );
     if ( $keep_multiple_trees == 1 && $bootstraps > 1 ) {
         &dieIfFileExists( $multitreefile_raxml );
-    }
-}
-if( $use_phyml == 1 ) {
-    &dieIfFileExists( $phyml_outtree );
-    if ( $keep_multiple_trees == 1 && $bootstraps > 1 ) {
-        &dieIfFileExists( $multitreefile_phyml );
     }
 }
 if( $use_proml == 1 ) {
@@ -468,11 +445,7 @@ if ( $use_phylip_fitch_me == 1 ) {
     $log = $log."Program to calculate tree           : PHYLIP FITCH Minimal Evolution (version: $PHYLIP_VERSION)\n";
 }
 if ( $use_raxml == 1 ) {
-    $log = $log."Program to calculate tree           : RAxML (uses its own bootstraps, if bootstrapped: -f $RAXML_ALGORITHM) (version: $RAXML_VERSION)\n";
-}
-if ( $use_phyml == 1 ) {
-    $log = $log."Program to calculate tree           : PHYML (MLE for gamma distr param and proportion of inv sites) (version: $PHYML_VERSION)\n";
-    $log = $log."# of rel subst rate categories      : $phyml_rel_substitution_rate_cat\n";
+    $log = $log."Program to calculate tree           : RAxML-NG (version: $RAXMLNG_VERSION)\n";
 }
 if ( $use_proml == 1 ) {
     $log = $log."Program to calculate tree           : PHYLIP PROML (uses PAM unless JTT selected) (version: $PHYLIP_VERSION)\n";
@@ -521,35 +494,29 @@ elsif ( $matrix == 7 ) {
     $log = $log."auto in TREE-PUZZLE\n";
 }
 elsif ( $matrix == 8 ) {
-    $log = $log."DCMut (Kosial and Goldman, 2005) in PHYML and RAxML; VT in TREE-PUZZLE\n";
+    $log = $log."DCMut (Kosial and Goldman, 2005) in RAxML; VT in TREE-PUZZLE\n";
 }
 elsif ( $matrix == 9 ) {
-    $log = $log."HKY (Hasegawa et al. 1985) in TREE-PUZZLE and PHYML, GTR in RAxML\n";
+    $log = $log."HKY (Hasegawa et al. 1985) in TREE-PUZZLE, GTR in RAxML\n";
 }
 elsif ( $matrix == 10 ) {
-    $log = $log."TN (Tamura-Nei 1993) in TREE-PUZZLE and PHYML, GTR in RAxML\n";
+    $log = $log."TN (Tamura-Nei 1993) in TREE-PUZZLE, GTR in RAxML\n";
 }
 elsif ( $matrix == 11 ) {
-    $log = $log."GTR (e.g. Lanave et al. 1980)in TREE-PUZZLE and RAxML and PHYML\n";
+    $log = $log."GTR (e.g. Lanave et al. 1980)in TREE-PUZZLE and RAxM\n";
 }
 elsif ( $matrix == 12 ) {
-    $log = $log."SH (Schoeniger-von Haeseler 1994) in TREE-PUZZLE, GTR in RAxML and PHYML\n";
+    $log = $log."SH (Schoeniger-von Haeseler 1994) in TREE-PUZZLE, GTR in RAxML\n";
 }
 elsif ( $matrix == 13 ) {
-    $log = $log."LG model (Le and Gascuel, 2008) in PHYML and RAxML; WAG in TREE-PUZZLE\n";
+    $log = $log."LG model (Le and Gascuel, 2008) in RAxML; WAG in TREE-PUZZLE\n";
 }
 else {
     &dieWithUnexpectedError( "Unknown model: matrix=$matrix" );
 }
-if ( $use_raxml == 1 || $use_phyml == 1 ) {
-    if ( $estimate_invar_sites == 1 ) {
-        $log = $log."Estimate proportion of invariable sites in RAXML and/or PHYML: true\n";
-    }
-    else {
-        $log = $log."Estimate proportion of invariable sites in RAXML and/or PHYML: false (proportion \"0.0\" is used in PHYML)\n";
-    }
+if ( $use_raxml == 1 ) {
+    $log = $log."Model of rate heterogeneity in RAxML: G8\n";
 }
-
 $log = $log."Model of rate heterogeneity (PUZZLE): ";
 if ( $rate_heterogeneity == 1 ) { 
     $log = $log."8 Gamma distributed rates\n";
@@ -617,7 +584,6 @@ $number_of_aa   = $out[ 1 ];
 my $SEQBOOT_OUTFILE = "seqboot_outfile"; 
 
 if (  $bootstraps > 1 && ( $use_pwd_based_methods == 1
-                                    || $use_phyml == 1
                                     || $use_proml == 1
                                     || $use_protpars == 1 ) ) {
     &executeSeqboot( $seed, $bootstraps );
@@ -653,12 +619,10 @@ if ( $use_pwd_based_methods == 1 ) {
 # Methods based on alignment
 # --------------------------
 my $OUTTREE_RAXML    = "outtree_rax";
-my $OUTTREE_PHYML    = "outtree_phyml";
 my $OUTTREE_PROML    = "outtree_proml";
 my $OUTTREE_PROTPARS = "outtree_protpars";
 
 my $CONSENSUS_RAXML    = "consensus_raxml";
-my $CONSENSUS_PHYML    = "consensus_phyml";
 my $CONSENSUS_PROML    = "consensus_proml";
 my $CONSENSUS_PROTPARS = "consensus_protpars";
 
@@ -694,138 +658,65 @@ if ( $use_raxml == 1 ) {
     elsif ( $matrix == 13 ) {
         $model = "LG";
     }
-    elsif ( $matrix == 9 || $matrix == 10 || $matrix == 11 || $matrix == 12 ) {
-        $model = "-nuc-";
-    }
-    else {
-        &dieWithUnexpectedError( "Unknown model: matrix=$matrix" );
-    }
-    print( "\n========== RAxML begin =========\n\n" );    
-    my $invar = "";
-    if ( $estimate_invar_sites == 1 ) {
-        $invar = "I";
-    }
-
-    # NOTE. RaxML does its own bootstrapping.
-    if ( $matrix == 9 || $matrix == 10 || $matrix == 11 || $matrix == 12 ) {
-        &executeRaxml( "align", $RAXML_MODEL_BASE_NUC.$invar."X", $bootstraps, $seed, "phylopl", $RAXML_ALGORITHM, $RAXML_T_OPTION );
-    }
-    else {
-        &executeRaxml( "align", $RAXML_MODEL_BASE_PROT.$invar.$model."X", $bootstraps, $seed, "phylopl", $RAXML_ALGORITHM, $RAXML_T_OPTION  );
-    }
-    print( "\n========== RAxML end =========\n\n" );
-    
-    &rm( "RAxML_log.phylopl" );
-    &rm( "RAxML_parsimonyTree.phylopl" );
-    &rm( $outfile."_raxml_info" );
-    &mv( "RAxML_info.phylopl", $outfile."_raxml_info" );
-   
-    if ($bootstraps > 1 ) {
-        &rm( "RAxML_bestTree.phylopl" );
-        &mv( "RAxML_bipartitions.phylopl", $CONSENSUS_RAXML );
-        &rm( "RAxML_bipartitionsBranchLabels.phylopl" );
-        &append( "RAxML_bootstrap.phylopl", $OUTTREES_ALL );
-        if ( $keep_multiple_trees == 1 ) {
-            &mv( "RAxML_bootstrap.phylopl", $multitreefile_raxml );
-        }
-        else {
-            &rm( "RAxML_bootstrap.phylopl" );
-        }
-    }
-  
-    $all_count++;
-  
-}
-
-
-if ( $use_phyml == 1 ) {
-   
-    my $model = "---";
-    if ( $matrix == 0 ) { 
-        $model = "JTT";
-    }
-    elsif ( $matrix == 1 ) {
-        $model = "Dayhoff";
-    }
-    elsif ( $matrix == 2 ) {
-        $model = "Blosum62";
-    }
-    elsif ( $matrix == 3 ) {
-        $model = "MtREV";
-    }
-    elsif ( $matrix == 5 ) {
-        $model = "VT";
-    }
-    elsif ( $matrix == 6 ) {
-        $model = "WAG";
-    }
-    elsif ( $matrix == 7 ) {
-        $model = "VT";
-    }
-    elsif ( $matrix == 8 ) {
-        $model = "DCMut";
-    }
     elsif ( $matrix == 9 ) {
-        $model = "HKY85";
+        $model = "GTR";
     }
     elsif ( $matrix == 10 ) {
-        $model = "TN93";
+        $model = "TN";
     }
     elsif ( $matrix == 11 ) {
         $model = "GTR";
     }
     elsif ( $matrix == 12 ) {
-        $model = "GTR";
-    }
-    elsif ( $matrix == 13 ) {
-        $model = "LG";
+        $model = "SH";
     }
     else {
         &dieWithUnexpectedError( "Unknown model: matrix=$matrix" );
     }
+    print( "\n========== RAxML begin =========\n\n" );    
 
-    my $datatype = '---';
-    if ($matrix <= 8 || $matrix == 13) {
-        $datatype = 'aa';
-    }
-    else {
-        $datatype = 'nt';
-    }
+    # NOTE. RaxML does its own bootstrapping.
+    &executeRaxmlNG( "align", $model."+G8+F", $bootstraps );
+
+
+    print( "\n========== RAxML end =========\n\n" );
     
-    my $pinv = '0';
-    if ($estimate_invar_sites == 1) {
-        $pinv = 'e';
-    }
+    &rm( "align.raxml.log" );
 
-    my $input = "";
+    &rm( "align.raxml.bestModel" );
+    &rm( "align.raxml.mlTrees" );
     if ( $bootstraps > 1 ) {
-        $input = $SEQBOOT_OUTFILE;
+        &rm( "align.raxml.bestTree" );
     }
-    else {
-        $input = "align";
-    } 
-    my $params = 'tlr';
-     if ( $bootstraps > 1 ) {
-        $params = 'lr';
-    }
-     
-    print( "\n========== PHYML begin =========\n\n" );    
-   
-    &executePhyml( $input, $datatype, $bootstraps, $model, $pinv, $phyml_rel_substitution_rate_cat, $params );
-   
-    print( "\n========== PHYML end =========\n\n" );
-    
-    &rm( $input."_phyml_lk.txt" );
-    &mv( $input."_phyml_tree.txt", $OUTTREE_PHYML );
-    if ( -e $outfile."_phyml_stat" ) {
-        &rm( $outfile."_phyml_stat" ); 
-    }    
-    &mv( $input."_phyml_stats.txt", $outfile."_phyml_stat" );
-    if ( $bootstraps > 1 ) {
-        &append( $OUTTREE_PHYML, $OUTTREES_ALL );
-        $all_count++;
-    }
+    &rm( "align.raxml.bestTreeCollapsed" );
+    &rm( "align.raxml.startTree" );
+    &rm( "align.raxml.rba" );
+    &rm( "align.raxml.reduced.phy" );
+    &rm( "align.raxml.*.TMP" );
+    &rm( "align.raxml.log" );
+    &rm( "align.raxml.ckp" );
 
+ print( "\n========== a=========\n\n" );
+    #&rm( "RAxML_parsimonyTree.phylopl" );
+    #&rm( $outfile."_raxml_info" );
+    #&mv( "RAxML_info.phylopl", $outfile."_raxml_info" );
+
+    if ($bootstraps > 1 ) {
+    print( "\n========== b=========\n\n" );
+        &mv( "align.raxml.support", $CONSENSUS_RAXML );
+        #&rm( "RAxML_bipartitionsBranchLabels.phylopl" );
+        &append( "align.raxml.bootstraps", $OUTTREES_ALL );
+        #if ( $keep_multiple_trees == 1 ) {
+        #    &mv( "RAxML_bootstrap.phylopl", $multitreefile_raxml );
+        #}
+        #else {
+        #    &rm( "RAxML_bootstrap.phylopl" );
+        #}
+    }
+    &rm( "align.raxml.bootstraps" );
+  
+    $all_count++;
+  
 }
 
 if ( $use_proml == 1 ) {
@@ -947,8 +838,6 @@ if (  $use_phylip_fitch_me ) {
 }
 
 
-
-
 if ( $bootstraps > 1 ) {
     # Consense:
     if ( $use_fastme == 1 ) {
@@ -963,9 +852,6 @@ if ( $bootstraps > 1 ) {
     if ( $use_phylip_fitch_me == 1 ) {
         &consense( $OUTTREE_PHYLIP_ME, $CONSENSUS_PHYLIP_ME );
     }
-    if ( $use_phyml == 1 ) {
-        &consense( $OUTTREE_PHYML, $CONSENSUS_PHYML );
-    } 
     if ( $use_proml == 1 ) {
         &consense( $OUTTREE_PROML, $CONSENSUS_PROML );
     } 
@@ -1002,9 +888,6 @@ if ( $bootstraps > 1 ) {
         removeSupportValues( $CONSENSUS_RAXML, $CONSENSUS_RAXML."_support_removed" );
         &append( $CONSENSUS_RAXML."_support_removed", $INTREE_FOR_PUZZLE );
         &rm( $CONSENSUS_RAXML."_support_removed" );
-    }
-    if ( $use_phyml == 1 ) {
-        &append( $CONSENSUS_PHYML, $INTREE_FOR_PUZZLE );
     }
     if ( $use_proml == 1 ) {
         &append( $CONSENSUS_PROML, $INTREE_FOR_PUZZLE );
@@ -1060,10 +943,6 @@ if ( $bootstraps > 1 ) {
         &to_phyloxml( $CONSENSUS_RAXML, $raxml_outtree, 1, 1 );
         $counter++;
     }
-    if ( $use_phyml == 1 ) {
-        &executeSupportTransfer( $OUTTREE_PUZZLE, $CONSENSUS_PHYML, $phyml_outtree, $counter++ );
-        &rm( $CONSENSUS_PHYML );
-    }
     if ( $use_proml == 1 ) {
         &executeSupportTransfer( $OUTTREE_PUZZLE, $CONSENSUS_PROML, $proml_outtree, $counter++ );
         &rm( $CONSENSUS_PROML );
@@ -1094,9 +973,6 @@ if ( $bootstraps > 1 ) {
         if ( $use_phylip_fitch_me == 1 ) {
             &mv( $OUTTREE_PHYLIP_ME, $multitreefile_phylip_me );
         }
-        if ( $use_phyml == 1 ) {
-            &mv( $OUTTREE_PHYML, $multitreefile_phyml );
-        }
         if ( $use_proml == 1 ) {
             &mv( $OUTTREE_PROML, $multitreefile_proml );
         }
@@ -1118,9 +994,6 @@ if ( $bootstraps > 1 ) {
         if ( $use_phylip_fitch_me == 1 ) {
             &rm( $OUTTREE_PHYLIP_ME );
         }
-        if ( $use_phyml == 1 ) {
-            &rm( $OUTTREE_PHYML );
-        }
         if ( $use_proml == 1 ) {
             &rm( $OUTTREE_PROML );
         }
@@ -1131,11 +1004,11 @@ if ( $bootstraps > 1 ) {
     }
     if ( $all_count > 1 ) {
         &rm( $OUTTREES_ALL );
-    }    
+    }
 } # if ( $bootstraps > 1 )
 else {
     &rm( "infile.dist" );
-   
+    &rm( "infile.dist_" );
     &rm( "infile.puzzle" );
     if ( $use_fastme == 1 ) {
         &to_phyloxml( $OUTTREE_FASTME, $fastme_outtree, 0, 1 );
@@ -1150,11 +1023,8 @@ else {
         &to_phyloxml( $OUTTREE_PHYLIP_ME, $phylip_me_outtree, 0, 1 );
     }
     if ( $use_raxml == 1 ) {
-      #  &to_phyloxml( $OUTTREE_RAXML, $raxml_outtree, 0, 1 );
-           &to_phyloxml( $CONSENSUS_RAXML, $raxml_outtree, 1, 1 );
-    }
-    if ( $use_phyml == 1 ) {
-        &to_phyloxml( $OUTTREE_PHYML, $phyml_outtree, 0, 1 );
+         &to_phyloxml( "align.raxml.bestTree", $raxml_outtree, 1, 1 );
+         &rm("align.raxml.bestTree");
     }
     if ( $use_proml == 1 ) {
         &to_phyloxml( $OUTTREE_PROML, $proml_outtree, 0, 1 );
@@ -1214,9 +1084,6 @@ if ( $bootstraps > 1 ) {
     if ( $use_raxml == 1 ) {
         $phylos[ $ounter++ ] = $raxml_outtree;
     }
-    if ( $use_phyml == 1 ) {
-        $phylos[ $ounter++ ] = $phyml_outtree;
-    }
     if ( $use_proml == 1 ) {
         $phylos[ $ounter++ ] = $proml_outtree;
     }
@@ -1252,39 +1119,29 @@ exit( 0 );
 # Methods:
 # --------
 
-
 # Six arguments:
 # 1. DNA or Amino-Acids sequence filename (PHYLIP format)
-# 2. Model, eg. PROTGAMMAIVT
+# 2. Model
 # 3. Replicates (bootstrap)
-# 4. Seed for bootstrap
-# 5. Output suffix
-# 6. Algorithm (only for bootstrap, default otherwise)
-# 7. PTHREADS VERSION ONLY! Specify the number of threads you want to run (i.e. "-T 12")
 # NOTE. RaxML does its own bootstrapping.
-sub executeRaxml {
-    my $msa            = $_[ 0 ]; 
-    my $model          = $_[ 1 ]; 
-    my $replicates     = $_[ 2 ]; 
-    my $seed           = $_[ 3 ];  
-    my $outfile_suffix = $_[ 4 ];
-    my $algo           = $_[ 5 ];
-    my $T_option       = $_[ 6 ];
-      
+sub executeRaxmlNG {
+    my $msa            = $_[ 0 ];
+    my $model          = $_[ 1 ];
+    my $replicates     = $_[ 2 ];
+
     &testForTextFilePresence( $msa );
-    my $command = "$RAXML -p 27 -m $model -s $msa -n $outfile_suffix $T_option";
-      
+    my $command = "$RAXMLNG --tree rand{10},pars{10} --msa-format PHYLIP --model $model --msa $msa";
+
     if ( $replicates > 1 ) {
-        $command = $command . " -x $seed -N $replicates";
-        $command = $command . " -f $algo";
+        $command = $command . " --all --bs-trees $replicates";
     }
-      
-    print( "\n$command\n");  
-      
+
+    print( "\n$command\n");
+
     system( $command )
     && &dieWithUnexpectedError( $command );
-    
-} 
+
+}
 
 
 sub to_phyloxml {
@@ -1666,7 +1523,6 @@ https://sites.google.com/site/cmzmasek/home/software/forester
   f  : Use PHYLIP Fitch.
   e  : Use PHYLIP Minimal Evolution.
   x  : Use RAxML.
-  y  : Use PHYML. 
   o  : Use PHYLIP proml. 
   p  : Use PHYLIP protpars.
   rx : Number of relative substitution rate categories in PHYML (default is 4).
