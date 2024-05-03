@@ -627,7 +627,7 @@ if ( $use_raxml == 1 ) {
         $model = "LG";
     }
     elsif ( $matrix == 9 ) {
-        $model = "GTR";
+        $model = "HKY";
     }
     elsif ( $matrix == 10 ) {
         $model = "TN";
