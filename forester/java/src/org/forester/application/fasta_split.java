@@ -48,8 +48,8 @@ import org.forester.util.ForesterUtil;
 public final class fasta_split {
 
     final static private String PRG_NAME    = "fasta_split";
-    final static private String PRG_VERSION = "1.0.3";
-    final static private String PRG_DATE    = "2023-10-04";
+    final static private String PRG_VERSION = "1.1.0";
+    final static private String PRG_DATE    = "2024-05-06";
 
     public static void main( final String[] args) {
         ForesterUtil.printProgramInformation( fasta_split.PRG_NAME, fasta_split.PRG_VERSION, fasta_split.PRG_DATE );
@@ -67,6 +67,15 @@ public final class fasta_split {
         final String pattern_str = cla.getName( 0 );
         final File infile = cla.getFile( 1 );
         final File outdir = cla.getFile( 2 );
+
+        final String out_pattern;
+        if ( args.length == 4 ) {
+            out_pattern = cla.getName( 3 );
+        }
+        else {
+            out_pattern = null;
+        }
+
         Pattern pa = null;
         try {
             pa = Pattern.compile( pattern_str );
@@ -129,7 +138,14 @@ public final class fasta_split {
             s = s.replaceAll( "[\\./\\*\\s]+", "_" );
             s = s.replaceAll( "\\(", "~" );
             s = s.replaceAll( "\\)", "~" );
-            final File of = new File( outdir.getAbsolutePath() + "/" + s + ".fasta" );
+            final File of;
+            if (out_pattern != null) {
+                of = new File( outdir.getAbsolutePath() + "/" + out_pattern + s + ".fasta" );
+            }
+            else {
+                of = new File( outdir.getAbsolutePath() + "/" + s + ".fasta" );
+            }
+
             if ( of.exists() ) {
                 ForesterUtil.fatalError( PRG_NAME, of + " already exists" );
             }
@@ -147,13 +163,16 @@ public final class fasta_split {
     }
 
     private static void argumentsError() {
-        System.out.println( PRG_NAME + " <pattern> <infile> <outdir>" );
+        System.out.println( PRG_NAME + " <pattern> <infile> <outdir> [out base name]" );
         System.out.println();
         System.out.println( "Examples: " );
         System.out.println( "  " + PRG_NAME + " \"v-germ=(\\S+)\" tt.fasta outdir" );
         System.out.println( "  " + PRG_NAME + " \"(\\S+?)\\|\" seqs.fasta outdir" );
         System.out.println( "  " + PRG_NAME + " \"OS=(.+?)[A-Z]{2}=\" seqs.fasta outdir" );
         System.out.println( "  " + PRG_NAME + " \"^.*?\\\\|.*?\\\\|.*?\\\\|(.+?)\\\\|\" seqs.fasta outdir" );
+        System.out.println( "  " + PRG_NAME + " \"segment.(\\d+)\" sequence.fasta outdir A_thick_billed_murre_Greenland_9045-2K_2014_Segment_" );
+
+
         System.out.println();
         System.exit( -1 );
     }
