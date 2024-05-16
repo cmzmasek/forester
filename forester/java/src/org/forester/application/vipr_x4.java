@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 public class vipr_x4 {
 
     private static final boolean VERBOSE = true;
-    private static final boolean DIE_ON_ERROR = false;
+    private static final boolean DIE_ON_ERROR = true;
 
     private static final String UNKNOWN = "unknown";
 
@@ -34,10 +34,10 @@ public class vipr_x4 {
     private static final String SUBTYPE = "vipr:Subtype";
     private static final String REGION = "vipr:Region";
     private static final String STATE = "vipr:State";
-    private static final String GB_ACCESSTION = "vipr:gb_accession";
-    private static final String H5_CLADE = "vipr:h5_clade";
-    private static final String HOST_RANGE = "vipr:Host_Range";
-    private static final String HOST_RANGE_DOMESTIC_WILD = "vipr:Host_Range_Domestic_vs_Wild";
+    private static final String GB_ACCESSTION = "vipr:GB_Accession";
+
+    private static final String HOST_GROUP = "vipr:Host_Group";
+    private static final String HOST_GROUP_DOMESTIC_WILD = "vipr:Host_Group_Domestic_vs_Wild";
     private final static String PRG_NAME = "vipr_x4";
     private static final String PRG_DATE = "2024-05-08";
     private static final String PRG_VERSION = "1.0.1";
@@ -51,7 +51,7 @@ public class vipr_x4 {
     // 6. subtype
     //  (A/Duck/Champasak/261/2022(H5N1))
     private final static Pattern PATTERN_0 = Pattern
-            .compile("\\((.*?)/(.*?)/(.*?)/(.*?)/(.*?)\\((.*?)\\)\\)");
+            .compile("\\((.*?)/([A-za-z-\\s'()]*?)/([A-za-z-\\s]*?)/(.*?)/(\\d{2,4}?)\\s*\\((.*?)\\)\\)");
 
     // 1. type
     // 2. host
@@ -62,7 +62,7 @@ public class vipr_x4 {
 
     //  |A/red-tailed_hawk/California/24-003714-001/2024|H5N1|
     private final static Pattern PATTERN_1 = Pattern
-            .compile("\\|(.*?)/(.*?)/(.*?)/(.*?)/(.*?)\\|(.*?)\\|");
+            .compile("\\|(.*?)/([A-za-z-\\s'()]*?)/([A-za-z-\\s]*?)/(.*?)/(\\d{2,4}?)\\s*\\|(.*?)\\|");
 
 
     // 1. type
@@ -72,12 +72,11 @@ public class vipr_x4 {
     // 5. subtype
     //AF084262.1_Influenza_A_virus_(A/HongKong/483/97(H5N1))_
     private final static Pattern PATTERN_2 = Pattern
-            .compile("\\((.*?)/(.*?)/(.*?)/(.*?)\\((.*?)\\)\\)");
+            .compile("\\((.*?)/(.*?)/(.*?)/(\\d{2,4}?)\\s*\\((.*?)\\)\\)");
 
 
     private final static Pattern PATTERN_GB = Pattern
-            .compile("^\\|?([A-Z][A-Z0-9.]+?)[_\\s|]");
-
+            .compile("^(?:accn)?\\|?([A-Z][A-Z0-9.]+?)[_\\s|]");
 
 
     public static void main(final String args[]) {
@@ -111,7 +110,7 @@ public class vipr_x4 {
                 final Matcher m0 = PATTERN_0.matcher(name);
                 final Matcher m1 = PATTERN_1.matcher(name);
                 final Matcher m2 = PATTERN_2.matcher(name);
-                String type =UNKNOWN;
+                String type = UNKNOWN;
                 String host = UNKNOWN;
                 String location = UNKNOWN;
                 String strain_number = UNKNOWN;
@@ -154,6 +153,7 @@ public class vipr_x4 {
                     // 3. number
                     // 4. year
                     // 5. subtype
+                    host = "human";
                     type = m2.group(1).trim();
                     location = m2.group(2).trim();
                     strain_number = m2.group(3).trim();
@@ -172,9 +172,6 @@ public class vipr_x4 {
                 }
                 if (year.equals("3500/2022")) {
                     year = "2022";
-                }
-                if (location.contentEquals("hongkong")) {
-                    location = "Hong Kong";
                 }
 
                 host = procString(host);
@@ -199,7 +196,7 @@ public class vipr_x4 {
                 }
                 final PropertiesList custom_data = new PropertiesList();
 
-                if (genbank_acc.length() > 5 ) {
+                if (genbank_acc.length() > 5) {
                     custom_data.addProperty(new Property(GB_ACCESSTION, genbank_acc, "", XSD_STRING, AppliesTo.NODE));
                 }
                 custom_data.addProperty(new Property(HOST, host, "", XSD_STRING, AppliesTo.NODE));
@@ -209,16 +206,15 @@ public class vipr_x4 {
                 //custom_data.addProperty(new Property(H5_CLADE, "", "", XSD_STRING, AppliesTo.NODE));
                 custom_data.addProperty(new Property(SUBTYPE, subtype, "", XSD_STRING, AppliesTo.NODE));
                 custom_data.addProperty(new Property(STATE, state, "", XSD_STRING, AppliesTo.NODE));
-                
+
                 ext_node.getNodeData().setProperties(custom_data);
 
                 addRegion(country, custom_data);
-                addHostRange(host, custom_data);
-                addHostRangeWildVsDomestic(host, custom_data);
+                addHostGroup(host, custom_data);
 
                 String new_name = type + "/" + host + "/" + location + "/" + strain_number + "/" + year + "|" + subtype;
 
-                if (genbank_acc.length() > 5 ) {
+                if (genbank_acc.length() > 5) {
                     new_name += "|" + genbank_acc;
                 }
 
@@ -244,57 +240,101 @@ public class vipr_x4 {
         return s;
     }
 
-    private static void addHostRange(final String host, final PropertiesList custom_data) {
-        String hr = "";
+    private static void addHostGroup(final String host, final PropertiesList custom_data) {
+        String hg1 = UNKNOWN;
+        String hg2 = UNKNOWN;
         final String c = host.toLowerCase();
-        if ( c.length() == 0 || c.equalsIgnoreCase(UNKNOWN) || c.equalsIgnoreCase( "na") || c.equals("?")) {
-            hr = UNKNOWN;
-        }
-        else if (c.equals("cattle") || c.equals("cow") || c.equals("bovine") || c.equals("cat") || c.equals("feline") || c.equals("goat")
-                || c.equals("swine") || c.equals("skunk") || c.equals("mountain lion") || c.equals("raccoon")
+        if (c.length() == 0 || c.equalsIgnoreCase(UNKNOWN) || c.equalsIgnoreCase("na") || c.equals("?")) {
+            hg1 = UNKNOWN;
+            hg2 = UNKNOWN;
+        } else if (c.equals("human")
+                || c.equals("homo sapiens")) {
+            hg1 = "Human";
+            hg2 = "Human";
+        } else if (c.equals("cattle")
+                || c.equals("cow")
+                || c.equals("bovine")
+                || c.equals("equine")
+                || c.equals("goat")
+                || c.equals("sheep")
+                || c.equals("swine")
+                || c.equals("cat")
+                || c.equals("feline")
+                || c.equals("dog")
+                || c.equals("canine")
+                || c.equals("mink")
+                || c.equals("ferret")
+                || c.equals("stone marten")) {
+            hg1 = "Non-Human Mammal";
+            hg2 = "Non-Human Mammal (domestic)";
+        } else if (c.equals("skunk")
+                || c.equals("mountain lion")
+                || c.equals("raccoon")
+                || c.equals("pika")
+                || c.equals("plateau pika")
+                || c.equals("harbor seal")
+                || c.equals("south american sea lion")
+                || c.equals("tiger")
+                || c.equals("owston's civet")
+                || c.equals("civet cat")
         ) {
-            hr = "Mammalian";
+            hg1 = "Non-Human Mammal";
+            hg2 = "Non-Human Mammal (wild)";
 
+        } else if (c.equals("chicken")
+                || c.equals("duck")
+                || c.equals("mallard")
+                || c.equals("turkey")
+                || c.equals("goose")
+                || c.equals("mallard duck")
+                || c.equals("ck")
+                || c.equals("dk")
+                || c.equals("muscovy duck")
+                || c.equals("mallard(anas platyrhynchos)")
+                || c.equals("poultry")) {
+            hg1 = "Avian";
+            hg2 = "Avian (domestic)";
+        } else if (c.equals("openbill stork")
+                || c.equals("pigeon")
+                || c.equals("wild duck")
+                || c.equals("peregrine falcon")
+                || c.equals("common buzzard")
+                || c.equals("bald eagle")
+                || c.equals("bar-headed goose")
+                || c.equals("whooper swan")
+                || c.equals("quail")
+                || c.equals("great crested grebe")
+                || c.equals("crow")
+                || c.equals("red-tailed hawk")
+                || c.equals("blue-winged teal")
+                || c.equals("american green-winged teal")
+                || c.equals("cormorant")
+                || c.equals("jungle crow")
+                || c.equals("great black-backed gull")
+                || c.equals("eurasian eagle owl")
+                || c.equals("chukar")
+                || c.equals("ruddy turnstone")
+                || c.equals("teal")
+                || c.equals("pacific black duck")
+                || c.equals("gadwall duck")
+        ) {
+            hg1 = "Avian";
+            hg2 = "Avian (wild)";
+        } else if (c.equals("environment")) {
+            hg1 = "Environment";
+            hg2 = "Environment";
         } else {
-            hr = "Avian";
+            System.out.println("Error: Unknown host \"" + host + "\"");
+            System.exit(-1);
         }
         if (VERBOSE) {
-            System.out.println(host + " -> " + hr);
+            System.out.println(host + " -> " + hg2);
         }
-        if (!ForesterUtil.isEmpty(hr)) {
-            custom_data.addProperty(new Property(HOST_RANGE, hr, "", XSD_STRING, AppliesTo.NODE));
+        if (!ForesterUtil.isEmpty(hg1)) {
+            custom_data.addProperty(new Property(HOST_GROUP, hg1, "", XSD_STRING, AppliesTo.NODE));
         }
-    }
-
-    private static void addHostRangeWildVsDomestic(final String host, final PropertiesList custom_data) {
-        String hr = "";
-        final String c = host.toLowerCase();
-
-
-        if ( c.length() == 0 || c.equalsIgnoreCase(UNKNOWN) || c.equalsIgnoreCase( "na") || c.equals("?")) {
-            hr = UNKNOWN;
-        }
-        else if (c.equals("cattle") || c.equals("cow") || c.equals("bovine") || c.equals("cat") || c.equals("feline") || c.equals("goat")
-                || c.equals("swine") || c.equals("skunk") || c.equals("mountain lion") || c.equals("raccoon")
-        ) {
-            if (c.equals("cattle") || c.equals("cow") || c.equals("bovine") || c.equals("cat") || c.equals("feline") || c.equals("goat")
-                    || c.equals("swine")) {
-                hr = "Mammalian (Domestic)";
-            } else {
-                hr = "Mammalian (Wild)";
-            }
-        } else {
-            if (c.equals("chicken") || c.equals("turkey") ) {
-                hr = "Avian (Domestic)";
-            } else {
-                hr = "Avian (Wild)";
-            }
-        }
-        if (VERBOSE) {
-            System.out.println(host + " -> " + hr);
-        }
-        if (!ForesterUtil.isEmpty(hr)) {
-            custom_data.addProperty(new Property(HOST_RANGE_DOMESTIC_WILD, hr, "", XSD_STRING, AppliesTo.NODE));
+        if (!ForesterUtil.isEmpty(hg2)) {
+            custom_data.addProperty(new Property(HOST_GROUP_DOMESTIC_WILD, hg2, "", XSD_STRING, AppliesTo.NODE));
         }
     }
 
@@ -354,15 +394,78 @@ public class vipr_x4 {
                 || c.equals("wyoming")
         ) {
             return "USA";
-        } else if (c.equals("ontario")) {
+        } else if (c.equals("hokkaido")
+                || c.equals("kyoto")
+                || c.equals("miyagi")
+                || c.equals("tottori")
+                || c.equals("akita")
+                || c.equals("chiba")) {
+            return "Japan";
+        } else if (c.equals("ontario") || c.equals("victoria")) {
             return "Canada";
         } else if (c.equals("greenland")) {
             return "Denmark";
-        }
-        else if (c.equals("nanchang")) {
+        } else if (c.equals("nanchang")
+                || c.equals("guiyang")
+                || c.equals("shantou")
+                || c.equals("jilin")
+                || c.equals("wuhan")
+                || c.equals("xinjiang")
+                || c.equals("hunan")
+                || c.equals("jiangsu")
+                || c.equals("hubei")
+                || c.equals("shandong")
+                || c.equals("yunnan")
+                || c.equals("sichuan")
+                || c.equals("fujian")
+                || c.equals("guangxi")
+                || c.equals("tonghai")
+                || c.equals("qinghai")
+                || c.equals("jiangxi")
+                || c.equals("zhejiang")
+                || c.equals("hebei")
+                || c.equals("huadong")
+                || c.equals("ningxia")
+                || c.equals("anhui")
+                || c.equals("st")
+                || c.equals("sheny")
+                || c.equals("eastern china")
+                || c.equals("beijing")) {
             return "China";
-        }
-        else {
+        } else if (c.equals("champasak") || c.equals("lao")) {
+            return "Laos";
+        } else if (c.equals("tyva") || c.equals("omsk")) {
+            return "Russia";
+        } else if (c.equals("arica y parinacota")) {
+            return "Chile";
+        } else if (c.equals("korea") || c.equals("south korea")) {
+            return "South_Korea";
+        } else if (c.equals("hongkong") || c.equals("hong kong") || c.equals("hk")) {
+            return "Hong_Kong";
+        } else if (c.equals("viet nam")
+                || c.equals("viet_nam")
+                || c.equals("vietnam hau giang")
+        ) {
+            return "Vietnam";
+        } else if (c.equals("sidenreng rappang") || c.equals("sleman") || c.equals("klaten")
+                || c.equals("majalengka")
+                || c.equals("lamongan")
+                || c.equals("westjava")
+                || c.equals("east java")
+                || c.equals("banten")
+                || c.equals("pekalongan")
+                || c.equals("banyuwangi")
+                || c.equals("denpasar")) {
+            return "Indonesia";
+        } else if (c.equals("sagaing") || c.equals("yangon")) {
+            return "Myanmar";
+        } else if (c.equals("west bengal") || c.equals("sikkim")) {
+            return "India";
+        } else if (c.equals("gharbia") || c.equals("giza")) {
+            return "Egypt";
+        } else if (c.equals("england") || c.equals("scotland")) {
+            return "United_Kingdom";
+        } else {
             return country;
         }
     }
@@ -421,11 +524,12 @@ public class vipr_x4 {
                 || c.equals("wisconsin")
                 || c.equals("wyoming")
                 || c.equals("ontario")
+                || c.equals("victoria")
                 || c.equals("greenland")
         ) {
             return country;
         } else {
-            return "na";
+            return "";
         }
     }
 
@@ -440,11 +544,14 @@ public class vipr_x4 {
                 || c.equals("brazil") || c.equals("argentina") || c.equals("guatemala") || c.equals("uruguay")
                 || c.equals("venezuela")) {
             region = "South America";
-        } else if (c.equals("denmark") || c.equals("finland") || c.equals("france") || c.equals("germany")
-                || c.equals("netherlands") || c.equals("norway") || c.equals("united_kingdom")
-                || c.equals("switzerland") || c.equals("austria") || c.equals("estonia") || c.equals("sweden")
-                || c.equals("belgium") || c.equals("scotland")) {
+        } else if (c.equals("france") || c.equals("germany")
+                || c.equals("netherlands") || c.equals("united_kingdom")
+                || c.equals("switzerland") || c.equals("austria") || c.equals("estonia")
+                || c.equals("belgium")) {
             region = "Western Europe";
+        } else if (c.equals("denmark") || c.equals("finland") | c.equals("norway") || c.equals("sweden")
+                || c.equals("iceland")) {
+            region = "Northern Europe";
         } else if (c.equals("serbia") || c.equals("greece") || c.equals("malta") || c.equals("italy")
                 || c.equals("spain") || c.equals("portugal")) {
             region = "Southern Europe";
@@ -452,27 +559,27 @@ public class vipr_x4 {
             region = "Central Europe";
         } else if (c.equals("russia") || c.equals("belarus")) {
             region = "Eastern Europe";
-        } else if (c.equals("japan") || c.equals("taiwan") || c.equals("hong_kong") || c.equals("hongkong") || c.equals("hong kong") || c.equals("south_korea")
-                || c.equals("china") || c.equals("nanchang")) {
+        } else if (c.equals("japan") || c.equals("taiwan") || c.equals("hong_kong") || c.equals("south_korea")
+                || c.equals("tibet") || c.equals("china")) {
             region = "East Asia";
         } else if (c.equals("kazakhstan") || c.equals("uzbekistan") || c.equals("armenia")) {
             region = "Central Asia";
         } else if (c.equals("kuwait") || c.equals("jordan") || c.equals("bahrain") || c.equals("iraq")
                 || c.equals("saudi_arabia") || c.equals("turkey") || c.equals("egypt") || c.equals("israel")
-                || c.equals("west_bank") || c.equals("iran")) {
+                || c.equals("west_bank") || c.equals("iran") || c.equals("lebanon")) {
             region = "West Asia";
         } else if (c.equals("india")
                 || ((c.equals("pakistan") | c.equals("bangladesh")) || c.equals("sri_lanka"))) {
             region = "South Asia";
-        } else if (c.equals("laos") || c.equals("champasak") || c.equals("markeev") || c.equals("cambodia") || c.equals("thailand") || c.equals("malaysia")
-                || c.equals("philippines") || c.equals("viet_nam") || c.equals("viet nam") || c.equals("vietnam")
-                || c.equals("myanmar") || c.equals("timor_leste")) {
+        } else if (c.equals("laos") || c.equals("cambodia") || c.equals("thailand") || c.equals("malaysia")
+                || c.equals("philippines") || c.equals("vietnam")
+                || c.equals("myanmar") || c.equals("timor_leste") || c.equals("indonesia")) {
             region = "Southeast Asia";
         } else if (c.equals("mauritania") || c.equals("morocco") || c.equals("gambia") || c.equals("kenya") || c.equals("senegal")
                 || c.equals("south_africa") || c.equals("tanzania") || c.equals("ghana") || c.equals("benin")
                 || c.equals("tunisia") || c.equals("nigeria") || c.equals("libya") || c.equals("djibouti")
-                || c.equals("sierra_leone") || c.equals("guinea") || c.equals("botswana")
-                || c.equals("ethiopia") || c.equals("malawi") || c.equals("mali")) {
+                || c.equals("sierra_leone") || c.equals("guinea") || c.equals("botswana") || c.equals("lesotho")
+                || c.equals("ethiopia") || c.equals("namibia") || c.equals("malawi") || c.equals("mali") || c.equals("cameroon")) {
             region = "Africa";
         } else if (c.equals("australia") || c.equals("new_zealand")) {
             region = "Oceania";
@@ -482,7 +589,7 @@ public class vipr_x4 {
         } else if (c.equals("na")) {
             region = "";
         } else {
-            System.out.println("ERROR: unknown country \"" + c + "\"");
+            System.out.println("Error: unknown country \"" + c + "\"");
             System.exit(-1);
         }
         if (!ForesterUtil.isEmpty(region)) {
