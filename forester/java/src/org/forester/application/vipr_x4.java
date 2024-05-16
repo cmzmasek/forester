@@ -40,7 +40,6 @@ public class vipr_x4 {
     private final static String PRG_NAME = "vipr_x4";
 
 
-
     // 1. type
     // 2. host
     // 3. country/state
@@ -131,7 +130,7 @@ public class vipr_x4 {
                     location = m0.group(3).trim();
                     strain_number = m0.group(4).trim();
                     year = m0.group(5).trim();
-                    subtype = m0.group(6).trim();
+                    subtype = m0.group(6).trim().toUpperCase();
                 } else if (m1.find()) {
                     // 1. type
                     // 2. host
@@ -144,7 +143,7 @@ public class vipr_x4 {
                     location = m1.group(3).trim();
                     strain_number = m1.group(4).trim();
                     year = m1.group(5).trim();
-                    subtype = m1.group(6).trim();
+                    subtype = m1.group(6).trim().toUpperCase();
                 } else if (m2.find()) {
                     // 1. type
                     // 2. country/state
@@ -156,9 +155,9 @@ public class vipr_x4 {
                     location = m2.group(2).trim();
                     strain_number = m2.group(3).trim();
                     year = m2.group(4).trim();
-                    subtype = m2.group(5).trim();
+                    subtype = m2.group(5).trim().toUpperCase();
                 } else {
-                    System.out.println("----> WARNING name \"" + name + "\" could not be matched");
+                    System.out.println("ERROR: name \"" + name + "\" could not be matched");
                     if (DIE_ON_ERROR) {
                         System.exit(-1);
                     } else {
