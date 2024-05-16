@@ -23,9 +23,9 @@ public class vipr_x4 {
 
     private static final boolean VERBOSE = true;
     private static final boolean DIE_ON_ERROR = true;
-
+    private static final String PRG_DATE = "2024-05-16";
+    private static final String PRG_VERSION = "1.1.0";
     private static final String UNKNOWN = "unknown";
-
     private static final String XSD_STRING = "xsd:string";
     private static final String HOST = "vipr:Host";
     private static final String COUNTRY = "vipr:Country";
@@ -35,12 +35,10 @@ public class vipr_x4 {
     private static final String REGION = "vipr:Region";
     private static final String STATE = "vipr:State";
     private static final String GB_ACCESSTION = "vipr:GB_Accession";
-
     private static final String HOST_GROUP = "vipr:Host_Group";
     private static final String HOST_GROUP_DOMESTIC_WILD = "vipr:Host_Group_Domestic_vs_Wild";
     private final static String PRG_NAME = "vipr_x4";
-    private static final String PRG_DATE = "2024-05-08";
-    private static final String PRG_VERSION = "1.0.1";
+
 
 
     // 1. type
@@ -167,15 +165,12 @@ public class vipr_x4 {
                         continue;
                     }
                 }
-                if (year.equals("97")) {
-                    year = "1997";
-                }
-                if (year.equals("3500/2022")) {
-                    year = "2022";
-                }
 
-                host = procString(host);
-                location = procString(location);
+                host = cleanHost(host);
+
+                host = cleanHostOrLocationString(host);
+                location = cleanHostOrLocationString(location);
+
 
                 final String country = determineCountry(location);
                 final String state = determineState(location);
@@ -194,8 +189,10 @@ public class vipr_x4 {
                     System.out.println("Year    : " + year);
                     System.out.println("Subtype : " + subtype);
                 }
-                final PropertiesList custom_data = new PropertiesList();
 
+                year = checkYear(year);
+
+                final PropertiesList custom_data = new PropertiesList();
                 if (genbank_acc.length() > 5) {
                     custom_data.addProperty(new Property(GB_ACCESSTION, genbank_acc, "", XSD_STRING, AppliesTo.NODE));
                 }
@@ -203,7 +200,6 @@ public class vipr_x4 {
                 custom_data.addProperty(new Property(COUNTRY, country, "", XSD_STRING, AppliesTo.NODE));
                 custom_data.addProperty(new Property(YEAR, year, "", XSD_STRING, AppliesTo.NODE));
                 custom_data.addProperty(new Property(STRAIN, strain_number, "", XSD_STRING, AppliesTo.NODE));
-                //custom_data.addProperty(new Property(H5_CLADE, "", "", XSD_STRING, AppliesTo.NODE));
                 custom_data.addProperty(new Property(SUBTYPE, subtype, "", XSD_STRING, AppliesTo.NODE));
                 custom_data.addProperty(new Property(STATE, state, "", XSD_STRING, AppliesTo.NODE));
 
@@ -234,10 +230,43 @@ public class vipr_x4 {
         System.out.println();
     }
 
-    private static String procString(String s) {
-        s = s.replaceAll("_", " ");
-        s = s.substring(0, 1).toUpperCase() + s.substring(1);
-        return s;
+    private static String cleanHost(final String host) {
+        if (host.equalsIgnoreCase("duck")
+                || host.equalsIgnoreCase("dk")
+                || host.equalsIgnoreCase("mallard(anas platyrhynchos)")
+                || host.equalsIgnoreCase("mallard duck")) {
+            return "Duck";
+        }
+        if (host.equalsIgnoreCase("chicken")
+                || host.equalsIgnoreCase("ck")) {
+            return "Chicken";
+        }
+        if (host.equalsIgnoreCase("civet cat")) {
+            return "Civet";
+        }
+        return host;
+    }
+
+    private static String checkYear(final String year) {
+        int year_int = Integer.parseInt(year);
+
+        if (year_int >= 0) {
+            if (year_int <= 24) {
+                year_int += 2000;
+            } else if (year_int <= 99) {
+                year_int += 1900;
+            }
+        }
+
+        if (year_int < 1800 || year_int > 2024) {
+            System.out.println("Error year \"" + year + "\" is out of range");
+            System.exit(-1);
+        }
+        return Integer.toString(year_int);
+    }
+
+    private static String cleanHostOrLocationString(final String s) {
+        return s.replaceAll("_", " ").substring(0, 1).toUpperCase() + s.substring(1);
     }
 
     private static void addHostGroup(final String host, final PropertiesList custom_data) {
@@ -276,7 +305,7 @@ public class vipr_x4 {
                 || c.equals("south american sea lion")
                 || c.equals("tiger")
                 || c.equals("owston's civet")
-                || c.equals("civet cat")
+                || c.equals("civet")
         ) {
             hg1 = "Non-Human Mammal";
             hg2 = "Non-Human Mammal (wild)";
@@ -286,11 +315,7 @@ public class vipr_x4 {
                 || c.equals("mallard")
                 || c.equals("turkey")
                 || c.equals("goose")
-                || c.equals("mallard duck")
-                || c.equals("ck")
-                || c.equals("dk")
                 || c.equals("muscovy duck")
-                || c.equals("mallard(anas platyrhynchos)")
                 || c.equals("poultry")) {
             hg1 = "Avian";
             hg2 = "Avian (domestic)";
