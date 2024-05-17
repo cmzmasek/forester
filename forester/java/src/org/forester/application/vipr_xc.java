@@ -10,7 +10,6 @@ import org.forester.phylogeny.data.Property;
 import org.forester.phylogeny.data.Property.AppliesTo;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
-import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.util.BasicTable;
 import org.forester.util.BasicTableParser;
 import org.forester.util.ForesterUtil;

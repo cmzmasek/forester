@@ -11,7 +11,6 @@ import org.forester.phylogeny.data.Property;
 import org.forester.phylogeny.data.Property.AppliesTo;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
-import org.forester.rio.RIO;
 import org.forester.util.ForesterUtil;
 import org.forester.util.ViralUtils;
 
@@ -19,7 +18,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class vipr_x4 {
 
