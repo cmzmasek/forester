@@ -23,7 +23,7 @@ import java.util.TreeMap;
 
 public class vipr_xc {
 
-    private static final String PRG_DATE = "2024-05-16";
+    private static final String PRG_DATE = "2024-05-17";
     private static final String PRG_VERSION = "1.0.0";
     private final static String PRG_NAME = "vipr_xc";
     private static final String XSD_STRING = "xsd:string";
