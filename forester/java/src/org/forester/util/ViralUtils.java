@@ -74,6 +74,21 @@ public final class ViralUtils {
         if (host.equalsIgnoreCase("civet cat")) {
             return "Civet";
         }
+        if (host.equalsIgnoreCase("domestic cat")) {
+            return "Cat";
+        }
+        if (host.equalsIgnoreCase("canadian goose")) {
+            return "Canada Goose";
+        }
+        if (host.equalsIgnoreCase("dairy cattle")
+                ||host.equalsIgnoreCase("bovine")
+                ||host.equalsIgnoreCase("cow")) {
+            return "Cattle";
+        }
+        if (host.equalsIgnoreCase("cygnus cygnus")
+                || host.equalsIgnoreCase("common swan")) {
+            return "whooper swan";
+        }
         return host;
     }
 
@@ -166,6 +181,7 @@ public final class ViralUtils {
                 || c.equals("ningxia")
                 || c.equals("anhui")
                 || c.equals("st")
+                || c.equals("karakol lake")
                 || c.equals("sheny")
                 || c.equals("eastern china")
                 || c.equals("beijing")) {
@@ -176,12 +192,11 @@ public final class ViralUtils {
             return "Russia";
         } else if (c.equals("arica y parinacota")) {
             return "Chile";
-        } else if (c.equals("korea") || c.equals("south korea")) {
-            return "South_Korea";
-        } else if (c.equals("hongkong") || c.equals("hong kong") || c.equals("hk")) {
-            return "Hong_Kong";
+        } else if (c.equals("korea") ) {
+            return "South Korea";
+        } else if (c.equals("hongkong") || c.equals("hk")) {
+            return "Hong Kong";
         } else if (c.equals("viet nam")
-                || c.equals("viet_nam")
                 || c.equals("vietnam hau giang")
         ) {
             return "Vietnam";
@@ -203,6 +218,8 @@ public final class ViralUtils {
             return "Egypt";
         } else if (c.equals("england") || c.equals("scotland")) {
             return "United_Kingdom";
+        } else if (c.equals("mangystau")) {
+            return "Kazakhstan";
         } else {
             return country;
         }
@@ -299,31 +316,31 @@ public final class ViralUtils {
             region = "Central Europe";
         } else if (c.equals("russia") || c.equals("belarus")) {
             region = "Eastern Europe";
-        } else if (c.equals("japan") || c.equals("taiwan") || c.equals("hong_kong") || c.equals("south_korea")
+        } else if (c.equals("japan") || c.equals("taiwan") || c.equals("hong kong") || c.equals("south korea")
                 || c.equals("tibet") || c.equals("china")) {
             region = "East Asia";
         } else if (c.equals("kazakhstan") || c.equals("uzbekistan") || c.equals("armenia")) {
             region = "Central Asia";
         } else if (c.equals("kuwait") || c.equals("jordan") || c.equals("bahrain") || c.equals("iraq")
-                || c.equals("saudi_arabia") || c.equals("turkey") || c.equals("egypt") || c.equals("israel")
-                || c.equals("west_bank") || c.equals("iran") || c.equals("lebanon")) {
+                || c.equals("saudi arabia") || c.equals("turkey") || c.equals("egypt") || c.equals("israel")
+                || c.equals("west bank") || c.equals("iran") || c.equals("lebanon")) {
             region = "West Asia";
         } else if (c.equals("india")
-                || ((c.equals("pakistan") | c.equals("bangladesh")) || c.equals("sri_lanka"))) {
+                || ((c.equals("pakistan") | c.equals("bangladesh")) || c.equals("sri lanka"))) {
             region = "South Asia";
         } else if (c.equals("laos") || c.equals("cambodia") || c.equals("thailand") || c.equals("malaysia")
                 || c.equals("philippines") || c.equals("vietnam")
                 || c.equals("myanmar") || c.equals("timor_leste") || c.equals("indonesia")) {
             region = "Southeast Asia";
         } else if (c.equals("mauritania") || c.equals("morocco") || c.equals("gambia") || c.equals("kenya") || c.equals("senegal")
-                || c.equals("south_africa") || c.equals("tanzania") || c.equals("ghana") || c.equals("benin")
+                || c.equals("south africa") || c.equals("tanzania") || c.equals("ghana") || c.equals("benin")
                 || c.equals("tunisia") || c.equals("nigeria") || c.equals("libya") || c.equals("djibouti")
-                || c.equals("sierra_leone") || c.equals("guinea") || c.equals("botswana") || c.equals("lesotho")
+                || c.equals("sierra leone") || c.equals("guinea") || c.equals("botswana") || c.equals("lesotho")
                 || c.equals("ethiopia") || c.equals("namibia") || c.equals("malawi") || c.equals("mali") || c.equals("cameroon")) {
             region = "Africa";
         } else if (c.equals("australia") || c.equals("new_zealand")) {
             region = "Oceania";
-        } else if (c.equals("dominican_republic") || c.equals("puerto_rico") || c.equals("jamaica")
+        } else if (c.equals("dominican republic") || c.equals("puerto rico") || c.equals("jamaica")
                 || c.equals("belize")) {
             region = "Caribbean";
         } else if (c.equals("na")) {
@@ -430,11 +447,25 @@ public final class ViralUtils {
                 || c.equals("jungle crow")
                 || c.equals("great black-backed gull")
                 || c.equals("eurasian eagle owl")
+                || c.equals("great horned owl")
                 || c.equals("chukar")
                 || c.equals("ruddy turnstone")
                 || c.equals("teal")
                 || c.equals("pacific black duck")
                 || c.equals("gadwall duck")
+                || c.equals("grackle")
+                || c.equals("mute swan")
+                || c.equals("canada goose")
+                || c.equals("western gull")
+                || c.equals("snow goose")
+                || c.equals("common raven")
+                || c.equals("harris-hawk")
+                || c.equals("turkey vulture")
+                || c.equals("american crow")
+                || c.equals("redhead duck")
+                || c.equals("american white pelican")
+                || c.equals("wood duck")
+                || c.equals("hooded merganser")
         ) {
             hg1 = "Avian";
             hg2 = "Avian (wild)";

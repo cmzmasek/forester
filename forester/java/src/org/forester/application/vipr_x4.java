@@ -146,6 +146,9 @@ public class vipr_x4 {
                     }
                 }
 
+                host = host.replace( '_' , ' ');
+                location = location.replace( '_' , ' ');
+
                 host = ViralUtils.cleanHost(host);
 
                 host = ViralUtils.cleanHostOrLocationString(host);

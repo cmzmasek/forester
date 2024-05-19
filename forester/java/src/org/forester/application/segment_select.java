@@ -65,7 +65,7 @@ public final class segment_select {
 
     public static void main(final String args[]) {
 
-
+        ForesterUtil.printProgramInformation(PRG_NAME, PRG_VERSION, PRG_DATE);
         if (args.length != 3) {
             System.out.println("\nWrong number of arguments, expected: <fasta file> <intree> <outfile>\n");
             System.exit(-1);
@@ -96,11 +96,6 @@ public final class segment_select {
             System.exit(-1);
         }
         final List<PhylogenyNode> ext_nodes = p.getExternalNodes();
-
-        final ArrayList<String> strain_numbers = new ArrayList<>();
-        final ArrayList<String> hosts = new ArrayList<>();
-        final ArrayList<String> countries = new ArrayList<>();
-        final ArrayList<String> years = new ArrayList<>();
 
         List<MolecularSequence> seqs;
         Map<String, MolecularSequence> outseqs = new HashMap<>();
@@ -206,7 +201,9 @@ public final class segment_select {
         }
 
         System.out.println();
-        System.out.println("[" + PRG_NAME + "] retained " + outseqlist.size() + " sequences");
+        System.out.println("[" + PRG_NAME + "] orig    : " + seqs.size() + " sequences");
+        System.out.println("[" + PRG_NAME + "] guide   : " + ext_nodes.size() + " sequences");
+        System.out.println("[" + PRG_NAME + "] retained: " + outseqlist.size() + " sequences");
         System.out.println("[" + PRG_NAME + "] wrote: [" + outfile + "]");
         System.out.println("[" + PRG_NAME + "] OK");
         System.out.println();
