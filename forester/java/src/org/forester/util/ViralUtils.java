@@ -220,7 +220,11 @@ public final class ViralUtils {
             return "United_Kingdom";
         } else if (c.equals("mangystau")) {
             return "Kazakhstan";
-        } else {
+        }
+        else if (c.equals("united states")) {
+            return "USA";
+        }
+        else {
             return country;
         }
     }
@@ -466,6 +470,7 @@ public final class ViralUtils {
                 || c.equals("american white pelican")
                 || c.equals("wood duck")
                 || c.equals("hooded merganser")
+                || c.equals("blackbird")
         ) {
             hg1 = "Avian";
             hg2 = "Avian (wild)";
