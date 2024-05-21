@@ -19,14 +19,20 @@ import java.io.IOException;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class vipr_xc {
 
-    private static final String PRG_DATE = "2024-05-17";
-    private static final String PRG_VERSION = "1.0.0";
+    private static final String PRG_DATE = "2024-05-21";
+    private static final String PRG_VERSION = "1.0.1";
     private final static String PRG_NAME = "vipr_xc";
     private static final String XSD_STRING = "xsd:string";
     private static final String H5_CLADE = "vipr:H5_clade";
+
+
+    private final static Pattern PATTERN_GB = Pattern
+            .compile("\\|([A-Z][A-Z0-9.]{4,10}?)(_|$)");
 
     public static void main(final String args[]) {
         ForesterUtil.printProgramInformation(PRG_NAME, PRG_VERSION, PRG_DATE);
@@ -66,15 +72,17 @@ public class vipr_xc {
 
         final SortedMap<String, String> isolate_to_clade_map = new TreeMap<String, String>();
         for (int row = 0; row < isolate_to_clade.getNumberOfRows(); ++row) {
-            final String key = isolate_to_clade.getValue(0, row);
+            final String keys = isolate_to_clade.getValue(0, row);
             final String value = isolate_to_clade.getValue(1, row);
-            if ((key != null) && (value != null)) {
-                final String x[] = key.split("\\|");
-                final String key_acc = x[x.length - 1];
-                if (isolate_to_clade_map.containsKey(key_acc)) {
-                    throw new IllegalArgumentException("attempt to use non-unique table value as key [" + key_acc + "]");
+            final Matcher mg = PATTERN_GB.matcher(keys);
+            while(mg.find()) {
+                final String key_acc = mg.group(1);
+                if ((key_acc != null) && (value != null)) {
+                    if (isolate_to_clade_map.containsKey(key_acc)) {
+                        throw new IllegalArgumentException("attempt to use non-unique table value as key [" + key_acc + "]");
+                    }
+                    isolate_to_clade_map.put(key_acc, value);
                 }
-                isolate_to_clade_map.put(key_acc, value);
             }
         }
 
