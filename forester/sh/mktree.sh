@@ -8,7 +8,7 @@ MAFFT="/Users/czmasek/anaconda3/bin/mafft"
 if [ "$#" -ne 5 ]; then
   echo "Usage: mktree.sh <mafft options> <msa_pro options> <phylopl options> <input suffix> <workdir>" >&2
   echo "    Example 1: mktree.sh \"--retree 1\" \"\" \"-B1Wnq\" .fasta msa_dir"
-  echo "    Example 2: mktree.sh \"--maxiterate 1000 --localpair --thread -1\" \"-rr=0.5\" \"-B100Znq\" .fasta msa_dir"
+  echo "    Example 2: mktree.sh \"--maxiterate 1000 --localpair --thread 8\" \"-rr=0.5\" \"-B100Znq\" .fasta msa_dir"
   exit 1
 fi
 
