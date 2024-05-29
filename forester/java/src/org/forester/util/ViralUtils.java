@@ -63,33 +63,30 @@ public final class ViralUtils {
     public static String cleanHost(final String host) {
         if (host.equalsIgnoreCase("duck")
                 || host.equalsIgnoreCase("dk")
-                || host.equalsIgnoreCase("mallard(anas platyrhynchos)")
+                || host.toLowerCase().indexOf("anas platyrhynchos") >= 0
                 || host.equalsIgnoreCase("mallard duck")) {
             return "Duck";
-        }
-        if (host.equalsIgnoreCase("chicken")
+        } else if (host.equalsIgnoreCase("chicken")
                 || host.equalsIgnoreCase("ck")) {
             return "Chicken";
-        }
-        if (host.equalsIgnoreCase("civet cat")) {
+        } else if (host.equalsIgnoreCase("civet cat")) {
             return "Civet";
-        }
-        if (host.equalsIgnoreCase("domestic cat")) {
+        } else if (host.equalsIgnoreCase("domestic cat")) {
             return "Cat";
-        }
-        if (host.equalsIgnoreCase("canadian goose")) {
+        } else if (host.equalsIgnoreCase("canadian goose")) {
             return "Canada Goose";
-        }
-        if (host.equalsIgnoreCase("dairy cattle")
-                ||host.equalsIgnoreCase("bovine")
-                ||host.equalsIgnoreCase("cow")) {
+        } else if (host.equalsIgnoreCase("dairy cattle")
+                || host.equalsIgnoreCase("bovine")
+                || host.equalsIgnoreCase("cow")) {
             return "Cattle";
-        }
-        if (host.equalsIgnoreCase("cygnus cygnus")
+        } else if (host.toLowerCase().indexOf("cygnus cygnus") >= 0
                 || host.equalsIgnoreCase("common swan")) {
-            return "whooper swan";
+            return "Whooper Swan";
+        } else if (host.toLowerCase().indexOf("thalasseus acuflavidus") >= 0 ) {
+            return "Cabots Tern";
+        } else {
+            return host;
         }
-        return host;
     }
 
     public static String determineCountry(final String country) {
@@ -152,6 +149,7 @@ public final class ViralUtils {
                 || c.equals("miyagi")
                 || c.equals("tottori")
                 || c.equals("akita")
+                || c.equals("fukuoka")
                 || c.equals("chiba")) {
             return "Japan";
         } else if (c.equals("ontario") || c.equals("victoria")) {
@@ -186,13 +184,17 @@ public final class ViralUtils {
                 || c.equals("eastern china")
                 || c.equals("beijing")) {
             return "China";
-        } else if (c.equals("champasak") || c.equals("lao")) {
+        } else if (c.equals("champasak")
+                || c.equals("lao")
+                || c.equals("xiangkhouang")
+                || c.equals("luang namtha")) {
             return "Laos";
         } else if (c.equals("tyva") || c.equals("omsk")) {
             return "Russia";
-        } else if (c.equals("arica y parinacota")) {
+        } else if (c.equals("arica y parinacota")
+        || c.equals("maule")) {
             return "Chile";
-        } else if (c.equals("korea") ) {
+        } else if (c.equals("korea")) {
             return "South Korea";
         } else if (c.equals("hongkong") || c.equals("hk")) {
             return "Hong Kong";
@@ -217,14 +219,16 @@ public final class ViralUtils {
         } else if (c.equals("gharbia") || c.equals("giza")) {
             return "Egypt";
         } else if (c.equals("england") || c.equals("scotland")) {
-            return "United_Kingdom";
+            return "United Kingdom";
         } else if (c.equals("mangystau")) {
             return "Kazakhstan";
-        }
-        else if (c.equals("united states")) {
+        } else if (c.equals("united states") || c.equals("us")) {
             return "USA";
-        }
-        else {
+        } else if (c.equals("espiritosanto")) {
+            return "Brazil";
+        } else if (c.equals("veracruz")) {
+            return "Mexico";
+        } else {
             return country;
         }
     }
@@ -471,6 +475,10 @@ public final class ViralUtils {
                 || c.equals("wood duck")
                 || c.equals("hooded merganser")
                 || c.equals("blackbird")
+                || c.equals("cabots tern")
+                || c.equals("aves")
+                || c.equals("pelican")
+                || c.equals("black vulture")
         ) {
             hg1 = "Avian";
             hg2 = "Avian (wild)";
