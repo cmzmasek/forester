@@ -50,15 +50,15 @@ import java.util.regex.Pattern;
 
 public final class segment_select_2 {
 
-    private static final String PRG_DATE = "2024-05-17";
-    private static final String PRG_VERSION = "1.0.0";
+    private static final String PRG_DATE = "2024-05-22";
+    private static final String PRG_VERSION = "1.0.1";
 
     private static final boolean VERBOSE = true;
 
     private final static String PRG_NAME = "segment_select_2";
 
     public final static Pattern PATTERN_0 = Pattern
-            .compile("(\\(A/.+?)_segment_");
+            .compile("(\\(A/.+?)[_\\s]segment[_\\s]");
 
 
     public static void main(final String args[]) {
