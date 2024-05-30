@@ -35,6 +35,7 @@ import org.forester.io.writers.SequenceWriter;
 import org.forester.io.writers.SequenceWriter.SEQ_FORMAT;
 import org.forester.sequence.BasicSequence;
 import org.forester.sequence.MolecularSequence;
+import org.forester.util.ForesterUtil;
 import org.forester.util.ViralUtils;
 
 import java.io.File;
@@ -46,35 +47,56 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class rename_fasta_acc {
-
+    private final static String PRG_NAME = "rename_fasta_acc";
+    private static final String PRG_DATE = "2024-05-30";
+    private static final String PRG_VERSION = "1.0.0";
     public final static Pattern PATTERN_GB = Pattern
             .compile("\\|([A-Z][A-Z0-9.]{5,})");
 
-    public static void main( final String args[] ) {
+    public static void main(final String args[]) {
+        ForesterUtil.printProgramInformation(PRG_NAME, PRG_VERSION, PRG_DATE);
+        if (args.length != 2) {
+            System.out.println("\nWrong number of arguments, expected: <infile> <outfile>\n");
+            System.exit(-1);
+        }
+        final File infile = new File(args[0]);
+        final File outfile = new File(args[1]);
+
+        if (!infile.exists()) {
+            ForesterUtil.fatalError(PRG_NAME, "[" + infile + "] does not exist");
+        }
+        if (outfile.exists()) {
+            ForesterUtil.fatalError(PRG_NAME, "[" + outfile + "] already exists");
+        }
+
+        List<MolecularSequence> seqs = null;
         try {
-            final File infile = new File( args[ 0 ] );
-            final File outfile = new File( args[ 1 ] );
-            List<MolecularSequence> seqs;
-            seqs = FastaParser.parse( new FileInputStream( infile ) );
-            for( MolecularSequence seq : seqs ) {
-                final BasicSequence bseq = ( BasicSequence ) seq;
-                final Matcher mg = PATTERN_GB.matcher(bseq.getIdentifier());
-                if (mg.find()) {
-                    bseq.setIdentifier( mg.group(1).trim() );
-                }
-                else {
-                    System.out.println( bseq.getIdentifier() + " did not match");
-                }
+            seqs = FastaParser.parse(new FileInputStream(infile));
+        } catch (IOException ex) {
+            System.out.println("\nCould not read \"" + infile + "\" [" + ex.getMessage() + "]\n");
+            System.exit(-1);
+        }
+        for (MolecularSequence seq : seqs) {
+            final BasicSequence bseq = (BasicSequence) seq;
+            final Matcher mg = PATTERN_GB.matcher(bseq.getIdentifier());
+            if (mg.find()) {
+                bseq.setIdentifier(mg.group(1).trim());
+            } else {
+                System.out.println(bseq.getIdentifier() + " did not match");
             }
-            SequenceWriter.writeSeqs( seqs, outfile, SEQ_FORMAT.FASTA, 60 );
         }
-        catch ( FileNotFoundException e ) {
-            e.printStackTrace();
+        try {
+            SequenceWriter.writeSeqs(seqs, outfile, SEQ_FORMAT.FASTA, 60);
+        } catch (final IOException e) {
+            ForesterUtil.fatalError(PRG_NAME, "failed to write to [" + outfile + "]: " + e.getMessage());
         }
-        catch ( IOException e ) {
-            e.printStackTrace();
-        }
+
+        System.out.println();
+        System.out.println("[" + PRG_NAME + "] wrote: [" + outfile + "]");
+        System.out.println("[" + PRG_NAME + "] OK");
+        System.out.println();
+
     }
 
-  
+
 }

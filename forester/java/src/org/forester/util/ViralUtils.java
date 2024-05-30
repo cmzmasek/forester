@@ -61,236 +61,235 @@ public final class ViralUtils {
     private static final String UNKNOWN = "unknown";
 
     public static String cleanHost(final String host) {
-        if (host.equalsIgnoreCase("duck")
-                || host.equalsIgnoreCase("dk")
-                || host.toLowerCase().indexOf("anas platyrhynchos") >= 0
-                || host.equalsIgnoreCase("mallard duck")) {
+        final String h = host.toLowerCase();
+        if (h.equals("duck")
+                || h.equals("dk")
+                || h.indexOf("anas platyrhynchos") >= 0
+                || h.equals("mallard duck")) {
             return "Duck";
-        } else if (host.equalsIgnoreCase("chicken")
-                || host.equalsIgnoreCase("ck")) {
+        } else if (h.equals("chicken")
+                || h.equals("ck")) {
             return "Chicken";
-        } else if (host.equalsIgnoreCase("civet cat")) {
+        } else if (h.equals("civet cat")) {
             return "Civet";
-        } else if (host.equalsIgnoreCase("domestic cat")) {
+        } else if (h.equals("domestic cat")) {
             return "Cat";
-        } else if (host.equalsIgnoreCase("canadian goose")) {
-            return "Canada Goose";
-        } else if (host.equalsIgnoreCase("dairy cattle")
-                || host.equalsIgnoreCase("bovine")
-                || host.equalsIgnoreCase("cow")) {
+        } else if (h.equals("canadian goose")) {
+            return "Canada goose";
+        } else if (h.equals("dairy cattle")
+                || h.equals("bovine")
+                || h.equals("cow")) {
             return "Cattle";
-        } else if (host.toLowerCase().indexOf("cygnus cygnus") >= 0
-                || host.equalsIgnoreCase("common swan")) {
-            return "Whooper Swan";
-        } else if (host.toLowerCase().indexOf("thalasseus acuflavidus") >= 0 ) {
-            return "Cabots Tern";
+        } else if (h.indexOf("cygnus cygnus") >= 0
+                || h.equals("common swan")) {
+            return "Whooper swan";
+        } else if (h.indexOf("thalasseus acuflavidus") >= 0) {
+            return "Cabots tern";
         } else {
             return host;
         }
     }
 
-    public static String determineCountry(final String country) {
-
-        final String c = country.toLowerCase();
-        if (c.equals("alabama")
-                || c.equals("alaska")
-                || c.equals("arizona")
-                || c.equals("arkansas")
-                || c.equals("california")
-                || c.equals("colorado")
-                || c.equals("connecticut")
-                || c.equals("delaware")
-                || c.equals("florida")
-                || c.equals("georgia")
-                || c.equals("hawaii")
-                || c.equals("idaho")
-                || c.equals("illinois")
-                || c.equals("indiana")
-                || c.equals("iowa")
-                || c.equals("kansas")
-                || c.equals("kentucky")
-                || c.equals("louisiana")
-                || c.equals("maine")
-                || c.equals("maryland")
-                || c.equals("massachusetts")
-                || c.equals("michigan")
-                || c.equals("minnesota")
-                || c.equals("mississippi")
-                || c.equals("missouri")
-                || c.equals("montana")
-                || c.equals("nebraska")
-                || c.equals("nevada")
-                || c.equals("new hampshire")
-                || c.equals("new jersey")
-                || c.equals("new mexico")
-                || c.equals("new york")
-                || c.equals("north carolina")
-                || c.equals("north dakota")
-                || c.equals("ohio")
-                || c.equals("oklahoma")
-                || c.equals("oregon")
-                || c.equals("pennsylvania")
-                || c.equals("rhode island")
-                || c.equals("south carolina")
-                || c.equals("south dakota")
-                || c.equals("tennessee")
-                || c.equals("texas")
-                || c.equals("utah")
-                || c.equals("vermont")
-                || c.equals("virginia")
-                || c.equals("washington")
-                || c.equals("west virginia")
-                || c.equals("wisconsin")
-                || c.equals("wyoming")
+    public static String determineCountry(final String location) {
+        final String l = location.toLowerCase();
+        if (l.equals("alabama")
+                || l.equals("alaska")
+                || l.equals("arizona")
+                || l.equals("arkansas")
+                || l.equals("california")
+                || l.equals("colorado")
+                || l.equals("connecticut")
+                || l.equals("delaware")
+                || l.equals("florida")
+                || l.equals("georgia")
+                || l.equals("hawaii")
+                || l.equals("idaho")
+                || l.equals("illinois")
+                || l.equals("indiana")
+                || l.equals("iowa")
+                || l.equals("kansas")
+                || l.equals("kentucky")
+                || l.equals("louisiana")
+                || l.equals("maine")
+                || l.equals("maryland")
+                || l.equals("massachusetts")
+                || l.equals("michigan")
+                || l.equals("minnesota")
+                || l.equals("mississippi")
+                || l.equals("missouri")
+                || l.equals("montana")
+                || l.equals("nebraska")
+                || l.equals("nevada")
+                || l.equals("new hampshire")
+                || l.equals("new jersey")
+                || l.equals("new mexico")
+                || l.equals("new york")
+                || l.equals("north carolina")
+                || l.equals("north dakota")
+                || l.equals("ohio")
+                || l.equals("oklahoma")
+                || l.equals("oregon")
+                || l.equals("pennsylvania")
+                || l.equals("rhode island")
+                || l.equals("south carolina")
+                || l.equals("south dakota")
+                || l.equals("tennessee")
+                || l.equals("texas")
+                || l.equals("utah")
+                || l.equals("vermont")
+                || l.equals("virginia")
+                || l.equals("washington")
+                || l.equals("west virginia")
+                || l.equals("wisconsin")
+                || l.equals("wyoming")
         ) {
             return "USA";
-        } else if (c.equals("hokkaido")
-                || c.equals("kyoto")
-                || c.equals("miyagi")
-                || c.equals("tottori")
-                || c.equals("akita")
-                || c.equals("fukuoka")
-                || c.equals("chiba")) {
+        } else if (l.equals("hokkaido")
+                || l.equals("kyoto")
+                || l.equals("miyagi")
+                || l.equals("tottori")
+                || l.equals("akita")
+                || l.equals("fukuoka")
+                || l.equals("chiba")) {
             return "Japan";
-        } else if (c.equals("ontario") || c.equals("victoria")) {
+        } else if (l.equals("ontario") || l.equals("victoria")) {
             return "Canada";
-        } else if (c.equals("greenland")) {
+        } else if (l.equals("greenland")) {
             return "Denmark";
-        } else if (c.equals("nanchang")
-                || c.equals("guiyang")
-                || c.equals("shantou")
-                || c.equals("jilin")
-                || c.equals("wuhan")
-                || c.equals("xinjiang")
-                || c.equals("hunan")
-                || c.equals("jiangsu")
-                || c.equals("hubei")
-                || c.equals("shandong")
-                || c.equals("yunnan")
-                || c.equals("sichuan")
-                || c.equals("fujian")
-                || c.equals("guangxi")
-                || c.equals("tonghai")
-                || c.equals("qinghai")
-                || c.equals("jiangxi")
-                || c.equals("zhejiang")
-                || c.equals("hebei")
-                || c.equals("huadong")
-                || c.equals("ningxia")
-                || c.equals("anhui")
-                || c.equals("st")
-                || c.equals("karakol lake")
-                || c.equals("sheny")
-                || c.equals("eastern china")
-                || c.equals("beijing")) {
+        } else if (l.equals("nanchang")
+                || l.equals("guiyang")
+                || l.equals("shantou")
+                || l.equals("jilin")
+                || l.equals("wuhan")
+                || l.equals("xinjiang")
+                || l.equals("hunan")
+                || l.equals("jiangsu")
+                || l.equals("hubei")
+                || l.equals("shandong")
+                || l.equals("yunnan")
+                || l.equals("sichuan")
+                || l.equals("fujian")
+                || l.equals("guangxi")
+                || l.equals("tonghai")
+                || l.equals("qinghai")
+                || l.equals("jiangxi")
+                || l.equals("zhejiang")
+                || l.equals("hebei")
+                || l.equals("huadong")
+                || l.equals("ningxia")
+                || l.equals("anhui")
+                || l.equals("st")
+                || l.equals("karakol lake")
+                || l.equals("sheny")
+                || l.equals("eastern china")
+                || l.equals("beijing")) {
             return "China";
-        } else if (c.equals("champasak")
-                || c.equals("lao")
-                || c.equals("xiangkhouang")
-                || c.equals("luang namtha")) {
+        } else if (l.equals("champasak")
+                || l.equals("lao")
+                || l.equals("xiangkhouang")
+                || l.equals("luang namtha")) {
             return "Laos";
-        } else if (c.equals("tyva") || c.equals("omsk")) {
+        } else if (l.equals("tyva") || l.equals("omsk")) {
             return "Russia";
-        } else if (c.equals("arica y parinacota")
-        || c.equals("maule")) {
+        } else if (l.equals("arica y parinacota")
+                || l.equals("maule")) {
             return "Chile";
-        } else if (c.equals("korea")) {
+        } else if (l.equals("korea")) {
             return "South Korea";
-        } else if (c.equals("hongkong") || c.equals("hk")) {
+        } else if (l.equals("hongkong") || l.equals("hk")) {
             return "Hong Kong";
-        } else if (c.equals("viet nam")
-                || c.equals("vietnam hau giang")
+        } else if (l.equals("viet nam")
+                || l.equals("vietnam hau giang")
         ) {
             return "Vietnam";
-        } else if (c.equals("sidenreng rappang") || c.equals("sleman") || c.equals("klaten")
-                || c.equals("majalengka")
-                || c.equals("lamongan")
-                || c.equals("westjava")
-                || c.equals("east java")
-                || c.equals("banten")
-                || c.equals("pekalongan")
-                || c.equals("banyuwangi")
-                || c.equals("denpasar")) {
+        } else if (l.equals("sidenreng rappang") || l.equals("sleman") || l.equals("klaten")
+                || l.equals("majalengka")
+                || l.equals("lamongan")
+                || l.equals("westjava")
+                || l.equals("east java")
+                || l.equals("banten")
+                || l.equals("pekalongan")
+                || l.equals("banyuwangi")
+                || l.equals("denpasar")) {
             return "Indonesia";
-        } else if (c.equals("sagaing") || c.equals("yangon")) {
+        } else if (l.equals("sagaing") || l.equals("yangon")) {
             return "Myanmar";
-        } else if (c.equals("west bengal") || c.equals("sikkim")) {
+        } else if (l.equals("west bengal") || l.equals("sikkim")) {
             return "India";
-        } else if (c.equals("gharbia") || c.equals("giza")) {
+        } else if (l.equals("gharbia") || l.equals("giza")) {
             return "Egypt";
-        } else if (c.equals("england") || c.equals("scotland")) {
+        } else if (l.equals("england") || l.equals("scotland")) {
             return "United Kingdom";
-        } else if (c.equals("mangystau")) {
+        } else if (l.equals("mangystau")) {
             return "Kazakhstan";
-        } else if (c.equals("united states") || c.equals("us")) {
+        } else if (l.equals("united states") || l.equals("us")) {
             return "USA";
-        } else if (c.equals("espiritosanto")) {
+        } else if (l.equals("espiritosanto")) {
             return "Brazil";
-        } else if (c.equals("veracruz")) {
+        } else if (l.equals("veracruz")) {
             return "Mexico";
         } else {
-            return country;
+            return location;
         }
     }
 
-    public static String determineState(final String country) {
-
-        final String c = country.toLowerCase();
-        if (c.equals("alabama")
-                || c.equals("alaska")
-                || c.equals("arizona")
-                || c.equals("arkansas")
-                || c.equals("california")
-                || c.equals("colorado")
-                || c.equals("connecticut")
-                || c.equals("delaware")
-                || c.equals("florida")
-                || c.equals("georgia")
-                || c.equals("hawaii")
-                || c.equals("idaho")
-                || c.equals("illinois")
-                || c.equals("indiana")
-                || c.equals("iowa")
-                || c.equals("kansas")
-                || c.equals("kentucky")
-                || c.equals("louisiana")
-                || c.equals("maine")
-                || c.equals("maryland")
-                || c.equals("massachusetts")
-                || c.equals("michigan")
-                || c.equals("minnesota")
-                || c.equals("mississippi")
-                || c.equals("missouri")
-                || c.equals("montana")
-                || c.equals("nebraska")
-                || c.equals("nevada")
-                || c.equals("new hampshire")
-                || c.equals("new jersey")
-                || c.equals("new mexico")
-                || c.equals("new york")
-                || c.equals("north carolina")
-                || c.equals("north dakota")
-                || c.equals("ohio")
-                || c.equals("oklahoma")
-                || c.equals("oregon")
-                || c.equals("pennsylvania")
-                || c.equals("rhode island")
-                || c.equals("south carolina")
-                || c.equals("south dakota")
-                || c.equals("tennessee")
-                || c.equals("texas")
-                || c.equals("utah")
-                || c.equals("vermont")
-                || c.equals("virginia")
-                || c.equals("washington")
-                || c.equals("west virginia")
-                || c.equals("wisconsin")
-                || c.equals("wyoming")
-                || c.equals("ontario")
-                || c.equals("victoria")
-                || c.equals("greenland")
+    public static String determineState(final String location) {
+        final String l = location.toLowerCase();
+        if (l.equals("alabama")
+                || l.equals("alaska")
+                || l.equals("arizona")
+                || l.equals("arkansas")
+                || l.equals("california")
+                || l.equals("colorado")
+                || l.equals("connecticut")
+                || l.equals("delaware")
+                || l.equals("florida")
+                || l.equals("georgia")
+                || l.equals("hawaii")
+                || l.equals("idaho")
+                || l.equals("illinois")
+                || l.equals("indiana")
+                || l.equals("iowa")
+                || l.equals("kansas")
+                || l.equals("kentucky")
+                || l.equals("louisiana")
+                || l.equals("maine")
+                || l.equals("maryland")
+                || l.equals("massachusetts")
+                || l.equals("michigan")
+                || l.equals("minnesota")
+                || l.equals("mississippi")
+                || l.equals("missouri")
+                || l.equals("montana")
+                || l.equals("nebraska")
+                || l.equals("nevada")
+                || l.equals("new hampshire")
+                || l.equals("new jersey")
+                || l.equals("new mexico")
+                || l.equals("new york")
+                || l.equals("north carolina")
+                || l.equals("north dakota")
+                || l.equals("ohio")
+                || l.equals("oklahoma")
+                || l.equals("oregon")
+                || l.equals("pennsylvania")
+                || l.equals("rhode island")
+                || l.equals("south carolina")
+                || l.equals("south dakota")
+                || l.equals("tennessee")
+                || l.equals("texas")
+                || l.equals("utah")
+                || l.equals("vermont")
+                || l.equals("virginia")
+                || l.equals("washington")
+                || l.equals("west virginia")
+                || l.equals("wisconsin")
+                || l.equals("wyoming")
+                || l.equals("ontario")
+                || l.equals("victoria")
+                || l.equals("greenland")
         ) {
-            return country;
+            return location;
         } else {
             return "";
         }
@@ -365,7 +364,6 @@ public final class ViralUtils {
 
     public static String checkYear(final String year) {
         int year_int = Integer.parseInt(year);
-
         if (year_int >= 0) {
             if (year_int <= 24) {
                 year_int += 2000;
@@ -390,99 +388,99 @@ public final class ViralUtils {
                                     final String host_group_dom_vs_wild_ref) {
         String hg1 = UNKNOWN;
         String hg2 = UNKNOWN;
-        final String c = host.toLowerCase();
-        if (c.length() == 0 || c.equalsIgnoreCase(UNKNOWN) || c.equalsIgnoreCase("na") || c.equals("?")) {
+        final String h = host.toLowerCase();
+        if (h.length() == 0 || h.equalsIgnoreCase(UNKNOWN) || h.equalsIgnoreCase("na") || h.equals("?")) {
             hg1 = UNKNOWN;
             hg2 = UNKNOWN;
-        } else if (c.equals("human")
-                || c.equals("homo sapiens")) {
+        } else if (h.equals("human")
+                || h.equals("homo sapiens")) {
             hg1 = "Human";
             hg2 = "Human";
-        } else if (c.equals("cattle")
-                || c.equals("cow")
-                || c.equals("bovine")
-                || c.equals("equine")
-                || c.equals("goat")
-                || c.equals("sheep")
-                || c.equals("swine")
-                || c.equals("cat")
-                || c.equals("feline")
-                || c.equals("dog")
-                || c.equals("canine")
-                || c.equals("mink")
-                || c.equals("ferret")
-                || c.equals("stone marten")) {
+        } else if (h.equals("cattle")
+                || h.equals("cow")
+                || h.equals("bovine")
+                || h.equals("equine")
+                || h.equals("goat")
+                || h.equals("sheep")
+                || h.equals("swine")
+                || h.equals("cat")
+                || h.equals("feline")
+                || h.equals("dog")
+                || h.equals("canine")
+                || h.equals("mink")
+                || h.equals("ferret")
+                || h.equals("stone marten")) {
             hg1 = "Non-Human Mammal";
             hg2 = "Non-Human Mammal (domestic)";
-        } else if (c.equals("skunk")
-                || c.equals("mountain lion")
-                || c.equals("raccoon")
-                || c.equals("pika")
-                || c.equals("plateau pika")
-                || c.equals("harbor seal")
-                || c.equals("south american sea lion")
-                || c.equals("tiger")
-                || c.equals("owston's civet")
-                || c.equals("civet")
+        } else if (h.equals("skunk")
+                || h.equals("mountain lion")
+                || h.equals("raccoon")
+                || h.equals("pika")
+                || h.equals("plateau pika")
+                || h.equals("harbor seal")
+                || h.equals("south american sea lion")
+                || h.equals("tiger")
+                || h.equals("owston's civet")
+                || h.equals("civet")
         ) {
             hg1 = "Non-Human Mammal";
             hg2 = "Non-Human Mammal (wild)";
 
-        } else if (c.equals("chicken")
-                || c.equals("duck")
-                || c.equals("mallard")
-                || c.equals("turkey")
-                || c.equals("goose")
-                || c.equals("muscovy duck")
-                || c.equals("poultry")) {
+        } else if (h.equals("chicken")
+                || h.equals("duck")
+                || h.equals("mallard")
+                || h.equals("turkey")
+                || h.equals("goose")
+                || h.equals("muscovy duck")
+                || h.equals("poultry")) {
             hg1 = "Avian";
             hg2 = "Avian (domestic)";
-        } else if (c.equals("openbill stork")
-                || c.equals("pigeon")
-                || c.equals("wild duck")
-                || c.equals("peregrine falcon")
-                || c.equals("common buzzard")
-                || c.equals("bald eagle")
-                || c.equals("bar-headed goose")
-                || c.equals("whooper swan")
-                || c.equals("quail")
-                || c.equals("great crested grebe")
-                || c.equals("crow")
-                || c.equals("red-tailed hawk")
-                || c.equals("blue-winged teal")
-                || c.equals("american green-winged teal")
-                || c.equals("cormorant")
-                || c.equals("jungle crow")
-                || c.equals("great black-backed gull")
-                || c.equals("eurasian eagle owl")
-                || c.equals("great horned owl")
-                || c.equals("chukar")
-                || c.equals("ruddy turnstone")
-                || c.equals("teal")
-                || c.equals("pacific black duck")
-                || c.equals("gadwall duck")
-                || c.equals("grackle")
-                || c.equals("mute swan")
-                || c.equals("canada goose")
-                || c.equals("western gull")
-                || c.equals("snow goose")
-                || c.equals("common raven")
-                || c.equals("harris-hawk")
-                || c.equals("turkey vulture")
-                || c.equals("american crow")
-                || c.equals("redhead duck")
-                || c.equals("american white pelican")
-                || c.equals("wood duck")
-                || c.equals("hooded merganser")
-                || c.equals("blackbird")
-                || c.equals("cabots tern")
-                || c.equals("aves")
-                || c.equals("pelican")
-                || c.equals("black vulture")
+        } else if (h.equals("openbill stork")
+                || h.equals("pigeon")
+                || h.equals("wild duck")
+                || h.equals("peregrine falcon")
+                || h.equals("common buzzard")
+                || h.equals("bald eagle")
+                || h.equals("bar-headed goose")
+                || h.equals("whooper swan")
+                || h.equals("quail")
+                || h.equals("great crested grebe")
+                || h.equals("crow")
+                || h.equals("red-tailed hawk")
+                || h.equals("blue-winged teal")
+                || h.equals("american green-winged teal")
+                || h.equals("cormorant")
+                || h.equals("jungle crow")
+                || h.equals("great black-backed gull")
+                || h.equals("eurasian eagle owl")
+                || h.equals("great horned owl")
+                || h.equals("chukar")
+                || h.equals("ruddy turnstone")
+                || h.equals("teal")
+                || h.equals("pacific black duck")
+                || h.equals("gadwall duck")
+                || h.equals("grackle")
+                || h.equals("mute swan")
+                || h.equals("canada goose")
+                || h.equals("western gull")
+                || h.equals("snow goose")
+                || h.equals("common raven")
+                || h.equals("harris-hawk")
+                || h.equals("turkey vulture")
+                || h.equals("american crow")
+                || h.equals("redhead duck")
+                || h.equals("american white pelican")
+                || h.equals("wood duck")
+                || h.equals("hooded merganser")
+                || h.equals("blackbird")
+                || h.equals("cabots tern")
+                || h.equals("aves")
+                || h.equals("pelican")
+                || h.equals("black vulture")
         ) {
             hg1 = "Avian";
             hg2 = "Avian (wild)";
-        } else if (c.equals("environment")) {
+        } else if (h.equals("environment")) {
             hg1 = "Environment";
             hg2 = "Environment";
         } else {
