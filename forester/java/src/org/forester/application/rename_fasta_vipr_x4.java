@@ -171,7 +171,7 @@ public final class rename_fasta_vipr_x4 {
             if (genbank_acc.length() > 5) {
                 new_name += "|" + genbank_acc;
             }
-
+            new_name = new_name.replace(' ', '_');
             bseq.setIdentifier(new_name);
 
         }
