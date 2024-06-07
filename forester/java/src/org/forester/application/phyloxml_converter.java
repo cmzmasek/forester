@@ -69,8 +69,8 @@ public class phyloxml_converter {
     final static private String IGNORE_QUOTES                     = "iqs";
     final static private String CONFIDENCE_TYPE                   = "c";
     final static private String PRG_NAME                          = "phyloxml_converter";
-    final static private String PRG_VERSION                       = "1.303";
-    final static private String PRG_DATE                          = "170510";
+    final static private String PRG_VERSION                       = "1.3.1";
+    final static private String PRG_DATE                          = "2024-06-06";
     final static private String E_MAIL                            = "phyloxml@gmail.com";
     final static private String WWW                               = "sites.google.com/site/cmzmasek/home/software/forester/phyloxml-converter";
 
@@ -168,7 +168,7 @@ public class phyloxml_converter {
         if ( cla.isOptionSet( INTERNAL_NAMES_ARE_BOOT_SUPPPORT ) ) {
             int_values_are_boots = true;
         }
-        String conf_type = "unknown";
+        String conf_type = "bootstrap";
         if ( cla.isOptionSet( CONFIDENCE_TYPE ) ) {
             final String str = cla.getOptionValueAsCleanString( CONFIDENCE_TYPE );
             if ( !ForesterUtil.isEmpty( str ) ) {
