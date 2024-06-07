@@ -573,7 +573,7 @@ public final class cladinator2 {
             System.out.println( " Matching Clade(s):" );
             for( final Prefix prefix : res.getCollapsedMultiHitPrefixes() ) {
                 if ( remove_annotation_sep ) {
-                    System.out.println( " " + prefix.toStringRemovSeparator() );
+                    System.out.println( " " + prefix.toStringRemoveSeparator() );
                 }
                 else {
                     System.out.println( " " + prefix );
@@ -584,7 +584,7 @@ public final class cladinator2 {
                 System.out.println( " Specific-hit(s):" );
                 for( final Prefix prefix : res.getSpecificMultiHitPrefixes() ) {
                     if ( remove_annotation_sep ) {
-                        System.out.println( " " + prefix.toStringRemovSeparator() );
+                        System.out.println( " " + prefix.toStringRemoveSeparator() );
                     }
                     else {
                         System.out.println( " " + prefix );
@@ -594,7 +594,7 @@ public final class cladinator2 {
                 System.out.println( " Matching Clade(s) with Specific-hit(s):" );
                 for( final Prefix prefix : res.getCollapsedMultiHitPrefixes() ) {
                     if ( remove_annotation_sep ) {
-                        System.out.println( " " + prefix.toStringRemovSeparator() );
+                        System.out.println( " " + prefix.toStringRemoveSeparator() );
                     }
                     else {
                         System.out.println( " " + prefix );
@@ -602,7 +602,7 @@ public final class cladinator2 {
                     for( final Prefix spec : res.getSpecificMultiHitPrefixes() ) {
                         if ( spec.getPrefix().startsWith( prefix.getPrefix() ) ) {
                             if ( remove_annotation_sep ) {
-                                System.out.println( "     " + spec.toStringRemovSeparator() );
+                                System.out.println( "     " + spec.toStringRemoveSeparator() );
                             }
                             else {
                                 System.out.println( "     " + spec );
@@ -616,7 +616,7 @@ public final class cladinator2 {
                 System.out.println( " Matching Down-tree Bracketing Clade(s):" );
                 for( final Prefix prefix : res.getCollapsedMultiHitPrefixesDown() ) {
                     if ( remove_annotation_sep ) {
-                        System.out.println( " " + prefix.toStringRemovSeparator() );
+                        System.out.println( " " + prefix.toStringRemoveSeparator() );
                     }
                     else {
                         System.out.println( " " + prefix );
@@ -628,7 +628,7 @@ public final class cladinator2 {
                 System.out.println( " Matching Up-tree Bracketing Clade(s):" );
                 for( final Prefix prefix : res.getCollapsedMultiHitPrefixesUp() ) {
                     if ( remove_annotation_sep ) {
-                        System.out.println( " " + prefix.toStringRemovSeparator() );
+                        System.out.println( " " + prefix.toStringRemoveSeparator() );
                     }
                     else {
                         System.out.println( " " + prefix );
@@ -808,7 +808,7 @@ public final class cladinator2 {
                 w.print( "Matching Clades" );
                 w.print( "\t" );
                 if ( remove_annotation_sep ) {
-                    w.print( prefix.getPrefixRemovSeparator() );
+                    w.print( prefix.getPrefixRemoveSeparator() );
                 }
                 else {
                     w.print( prefix.getPrefix() );
@@ -828,7 +828,7 @@ public final class cladinator2 {
                     w.print( "Specific-hits" );
                     w.print( "\t" );
                     if ( remove_annotation_sep ) {
-                        w.print( prefix.getPrefixRemovSeparator() );
+                        w.print( prefix.getPrefixRemoveSeparator() );
                     }
                     else {
                         w.print( prefix.getPrefix() );
@@ -849,7 +849,7 @@ public final class cladinator2 {
                     w.print( "Matching Down-tree Bracketing Clades" );
                     w.print( "\t" );
                     if ( remove_annotation_sep ) {
-                        w.print( prefix.getPrefixRemovSeparator() );
+                        w.print( prefix.getPrefixRemoveSeparator() );
                     }
                     else {
                         w.print( prefix.getPrefix() );
@@ -870,7 +870,7 @@ public final class cladinator2 {
                     w.print( "Matching Up-tree Bracketing Clades" );
                     w.print( "\t" );
                     if ( remove_annotation_sep ) {
-                        w.print( prefix.getPrefixRemovSeparator() );
+                        w.print( prefix.getPrefixRemoveSeparator() );
                     }
                     else {
                         w.print( prefix.getPrefix() );
