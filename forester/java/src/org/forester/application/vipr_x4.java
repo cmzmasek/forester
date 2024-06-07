@@ -5,6 +5,7 @@ import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.util.ParserUtils;
 import org.forester.io.writers.PhylogenyWriter;
 import org.forester.phylogeny.Phylogeny;
+import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.PropertiesList;
 import org.forester.phylogeny.data.Property;
@@ -18,13 +19,14 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class vipr_x4 {
 
     private static final boolean VERBOSE = true;
     private static final boolean DIE_ON_ERROR = true;
-    private static final String PRG_DATE = "2024-05-17";
-    private static final String PRG_VERSION = "1.1.1";
+    private static final String PRG_DATE = "2024-06-07";
+    private static final String PRG_VERSION = "1.2.0";
     private static final String UNKNOWN = "unknown";
     private static final String XSD_STRING = "xsd:string";
     private static final String HOST = "vipr:Host";
@@ -42,12 +44,25 @@ public class vipr_x4 {
 
     public static void main(final String args[]) {
         ForesterUtil.printProgramInformation(PRG_NAME, PRG_VERSION, PRG_DATE);
-        if (args.length != 2) {
-            System.out.println("\nWrong number of arguments, expected: intree outtree\n");
+        if (args.length != 2 && args.length != 4) {
+            System.out.println("\nWrong number of arguments, expected: intree outtree [name] [reroot node query]\n");
+            System.out.println("    Examples: s4.xml seg_4.xml");
+            System.out.println("              s4.xml seg_4.xml \"segment 4 2024-02-05\" \"/2003\"\n");
+
             System.exit(-1);
         }
         final File infile = new File(args[0]);
         final File outfile = new File(args[1]);
+        final String tree_name;
+        final String reroot;
+        if (args.length == 4) {
+            tree_name = args[2].trim();
+            reroot = args[3].trim();
+        } else {
+            tree_name = null;
+            reroot = null;
+        }
+
         if (!infile.exists()) {
             ForesterUtil.fatalError(PRG_NAME, "[" + infile + "] does not exist");
         }
@@ -146,8 +161,8 @@ public class vipr_x4 {
                     }
                 }
 
-                host = host.replace( '_' , ' ');
-                location = location.replace( '_' , ' ');
+                host = host.replace('_', ' ');
+                location = location.replace('_', ' ');
 
                 host = ViralUtils.cleanHost(host);
 
@@ -200,6 +215,16 @@ public class vipr_x4 {
                 ext_node.setName(new_name);
             }
         }
+
+        if (!ForesterUtil.isEmpty(tree_name)) {
+            p.setName(tree_name);
+        }
+        if (!ForesterUtil.isEmpty(reroot)) {
+            reRoot(reroot, p);
+        }
+
+        PhylogenyMethods.orderAppearance(p.getRoot(), true, true, PhylogenyMethods.DESCENDANT_SORT_PRIORITY.NODE_NAME);
+
         try {
             final PhylogenyWriter writer = new PhylogenyWriter();
             writer.toPhyloXML(p, 0, outfile);
@@ -211,6 +236,19 @@ public class vipr_x4 {
         System.out.println("[" + PRG_NAME + "] wrote: [" + outfile + "]");
         System.out.println("[" + PRG_NAME + "] OK");
         System.out.println();
+    }
+
+    private static void reRoot(final String reroot, final Phylogeny p) {
+        final Pattern pt = Pattern.compile(reroot);
+        final List<PhylogenyNode> rnodes = p.getNodes(pt);
+        if (rnodes.size() == 2) {
+            final PhylogenyNode lca = PhylogenyMethods.calculateLCA(rnodes.get(0), rnodes.get(1));
+            p.reRoot(lca);
+        } else if (rnodes.size() == 1) {
+            p.reRoot(rnodes.get(0));
+        } else {
+            ForesterUtil.fatalError(PRG_NAME, "cannot re-root with " + reroot);
+        }
     }
 
 
