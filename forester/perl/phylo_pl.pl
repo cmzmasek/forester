@@ -1181,7 +1181,7 @@ sub executeRaxmlNG {
     my $replicates     = $_[ 2 ];
 
     &testForTextFilePresence( $msa );
-    my $command = "$RAXMLNG --tree rand{20},pars{20} --msa-format PHYLIP --model $model --msa $msa";
+    my $command = "$RAXMLNG --tree rand{10},pars{10} --msa-format PHYLIP --model $model --msa $msa";
 
     if ( $replicates > 1 ) {
         $command = $command . " --all --bs-trees $replicates";
@@ -1308,7 +1308,7 @@ $s
 #    5 = VT; 6 = WAG; PAM otherwise
 sub executePuzzleToCalculateBranchLenghts {
     my $matrix_option              = $_[ 0 ];
-    my $rate_heterogeneity_option  = 3; # 3 for "Mixed (1 invariable + 4 Gamma rates)"
+    my $rate_heterogeneity_option  = 0; # 3 for "Mixed (1 invariable + 4 Gamma rates)"; 0 for uniform
     my $i             = 0;
     my $mat           = "";
     my $rate          = "";
