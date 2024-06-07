@@ -44,25 +44,6 @@ import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 
 public final class support_transfer {
 
-    /**
-     * Transfers branch length values from one Phylogeny to another. It is
-     * mainly a "main method" for method "copyBranchLengthValuesFrom( Phylogeny )"
-     * of org.forester.phylogeny.Phylogeny, to be used in other (Perl) programs.
-     *
-     * @param args[0]
-     *            Filename (String) for Phylogeny which has correct branch
-     *            length values
-     * @param args[1]
-     *            String Filename (String) for Phylogeny to which the branch
-     *            lengths of the first Phylogeny are to be copied, both Trees
-     *            must only differ in their branch length values, i.e. topology
-     *            and sequence names, etc. must be the same
-     * @param args[2]
-     *            String Filename (String) for outputfile
-     * @param args[3]
-     *            String [number of tree with correct bl to use in case treefile contains more than one, default 0]
-
-     */
     public static void main( final String args[] ) {
         Phylogeny phylogeny_w_bl = null; // Has correct branch lengths
         Phylogeny phylogeny_w_support_vals = null; // Has bootsrap in the b.l.
