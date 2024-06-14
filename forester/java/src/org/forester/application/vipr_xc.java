@@ -24,15 +24,14 @@ import java.util.regex.Pattern;
 
 public class vipr_xc {
 
-    private static final String PRG_DATE = "2024-05-21";
-    private static final String PRG_VERSION = "1.0.1";
+    private static final String PRG_DATE = "2024-06-11";
+    private static final String PRG_VERSION = "1.0.2";
     private final static String PRG_NAME = "vipr_xc";
     private static final String XSD_STRING = "xsd:string";
     private static final String H5_CLADE = "vipr:H5_clade";
 
 
-    private final static Pattern PATTERN_GB = Pattern
-            .compile("\\|([A-Z][A-Z0-9.]{4,10}?)(_|$)");
+    private final static Pattern PATTERN_GB = Pattern.compile("\\|([A-Z][A-Z0-9.]{4,10}?)(_|$)");
 
     public static void main(final String args[]) {
         ForesterUtil.printProgramInformation(PRG_NAME, PRG_VERSION, PRG_DATE);
@@ -70,7 +69,7 @@ public class vipr_xc {
         }
 
 
-        final SortedMap<String, String> isolate_to_clade_map = new TreeMap<String, String>();
+        /*final SortedMap<String, String> isolate_to_clade_map = new TreeMap<String, String>();
         for (int row = 0; row < isolate_to_clade.getNumberOfRows(); ++row) {
             final String keys = isolate_to_clade.getValue(0, row);
             final String value = isolate_to_clade.getValue(1, row);
@@ -84,7 +83,7 @@ public class vipr_xc {
                     isolate_to_clade_map.put(key_acc, value);
                 }
             }
-        }
+        }*/
 
         final List<PhylogenyNode> ext_nodes = p.getExternalNodes();
         int ext_nodes_count = 0;
@@ -92,11 +91,32 @@ public class vipr_xc {
         int not_mapped = 0;
         for (final PhylogenyNode ext_node : ext_nodes) {
             ++ext_nodes_count;
-            final String name = ext_node.getName();
+            String name = ext_node.getName();
             final String x[] = name.split("\\|");
             final String name_acc = x[x.length - 1];
             if (!ForesterUtil.isEmpty(name)) {
-                if (isolate_to_clade_map.containsKey(name_acc)) {
+                name = name.replaceAll(" ", "_").replace(",", "").replaceAll("'", "");
+                boolean could_map = false;
+                F:
+                for (int row = 0; row < isolate_to_clade.getNumberOfRows(); ++row) {
+                    final String names = isolate_to_clade.getValue(0, row);
+                    final String clade = isolate_to_clade.getValue(1, row);
+                    if (names.indexOf(name) > -1 && clade.indexOf("cannot") < 0) {
+                        PropertiesList custom_data = ext_node.getNodeData().getProperties();
+                        custom_data.addProperty(new Property(H5_CLADE, clade, "", XSD_STRING, AppliesTo.NODE));
+                        could_map = true;
+                        break F;
+                    }
+                }
+                if (could_map) {
+                    ++mapped;
+                } else {
+                    System.out.println( "Could not map: " + name);
+                    ++not_mapped;
+                }
+
+
+                /*if (isolate_to_clade_map.containsKey(name_acc)) {
                     final String clade = isolate_to_clade_map.get(name_acc);
                     if (clade.length() > 0 && clade.indexOf("cannot") < 0) {
                         PropertiesList custom_data = ext_node.getNodeData().getProperties();
@@ -108,7 +128,7 @@ public class vipr_xc {
                 } else {
                     System.out.println("Error: not found in map: " + name);
                     System.exit(-1);
-                }
+                }*/
             }
         }
 
