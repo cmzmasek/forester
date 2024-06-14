@@ -187,6 +187,4 @@ public final class rename_fasta_vipr_x4 {
         System.out.println();
 
     }
-
-
 }
