@@ -52,8 +52,20 @@ public final class ViralUtils {
             .compile("\\((.*?)/(.*?)/(.*?)/(\\d{2,4}?)\\s*\\((.*?)\\)\\)");
 
 
+    // 1. type
+    // 2. host
+    // 3. country/state
+    // 4. number
+    // 5. year
+    //  [Influenza_A_virus_A/Domestic_Cat/USA/24-009038-001/2024|11320.588919]
+    public final static Pattern PATTERN_3 = Pattern
+            .compile("\\[(.*?)/([A-za-z-\\s'()]*?)/([A-za-z-\\s]*?)/(.*?)/(\\d{2,4}?)\\|");
+
     public final static Pattern PATTERN_GB = Pattern
             .compile("^(?:accn)?\\|?([A-Z][A-Z0-9.]+?)[_\\s|]");
+
+    public final static Pattern PATTERN_BVBRC_ACC = Pattern
+            .compile("\\|([0-9]+\\.[0-9]+)\\]$");
 
 
     private static final String XSD_STRING = "xsd:string";
@@ -74,7 +86,7 @@ public final class ViralUtils {
             return "Civet";
         } else if (h.equals("domestic cat")) {
             return "Cat";
-        } else if (h.equals("canadian goose")) {
+        } else if (h.equals("canadian goose") || h.equals("ganada goose")) {
             return "Canada goose";
         } else if (h.equals("dairy cattle")
                 || h.equals("bovine")
@@ -477,12 +489,23 @@ public final class ViralUtils {
                 || h.equals("aves")
                 || h.equals("pelican")
                 || h.equals("black vulture")
+                || h.equals("sanderling")
+                || h.equals("red tailed hawk")
+                || h.equals("harris hawk")
+                || h.equals("hawk")
+                || h.equals("american wigeon")
+                || h.equals("western sandpiper")
+                || h.equals("common grackle")
+                || h.equals("red fox")
         ) {
             hg1 = "Avian";
             hg2 = "Avian (wild)";
         } else if (h.equals("environment")) {
             hg1 = "Environment";
             hg2 = "Environment";
+        } else if (h.equals("pefa") || h.equals("cago") ) {
+            hg1 = "unknown";
+            hg2 = "unknown";
         } else {
             System.out.println("Error: Unknown host \"" + host + "\"");
             System.exit(-1);
