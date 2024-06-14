@@ -25,8 +25,8 @@ public class vipr_x4 {
 
     private static final boolean VERBOSE = true;
     private static final boolean DIE_ON_ERROR = true;
-    private static final String PRG_DATE = "2024-06-07";
-    private static final String PRG_VERSION = "1.2.0";
+    private static final String PRG_DATE = "2024-06-11";
+    private static final String PRG_VERSION = "1.2.1";
     private static final String UNKNOWN = "unknown";
     private static final String XSD_STRING = "xsd:string";
     private static final String HOST = "vipr:Host";
@@ -86,6 +86,7 @@ public class vipr_x4 {
                 final Matcher m0 = ViralUtils.PATTERN_0.matcher(name);
                 final Matcher m1 = ViralUtils.PATTERN_1.matcher(name);
                 final Matcher m2 = ViralUtils.PATTERN_2.matcher(name);
+                final Matcher m3 = ViralUtils.PATTERN_3.matcher(name);
                 final Matcher m1b = ViralUtils.PATTERN_1b.matcher(name);
                 String type = UNKNOWN;
                 String host = UNKNOWN;
@@ -152,6 +153,19 @@ public class vipr_x4 {
                     strain_number = m2.group(3).trim();
                     year = m2.group(4).trim();
                     subtype = m2.group(5).trim().toUpperCase();
+                } else if (m3.find()) {
+                    // 1. type
+                    // 2. host
+                    // 3. country/state
+                    // 4. number
+                    // 5. year
+                    type = "A";
+                    host = m3.group(2).trim();
+                    location = m3.group(3).trim();
+                    strain_number = m3.group(4).trim();
+                    year = m3.group(5).trim();
+                    subtype = "H5N1";
+
                 } else {
                     System.out.println("ERROR: name \"" + name + "\" could not be matched");
                     if (DIE_ON_ERROR) {
