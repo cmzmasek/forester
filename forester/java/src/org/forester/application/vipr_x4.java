@@ -180,8 +180,8 @@ public class vipr_x4 {
 
                 host = ViralUtils.cleanHost(host);
 
-                host = ViralUtils.cleanHostOrLocationString(host);
-                location = ViralUtils.cleanHostOrLocationString(location);
+                host = ViralUtils.cleanHostString(host);
+                location = ViralUtils.cleanLocationString(location);
 
 
                 final String country = ViralUtils.determineCountry(location);

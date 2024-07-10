@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
 public class vipr_x5 {
 
     private static final boolean VERBOSE = false;
-    private static final boolean DIE_ON_ERROR = true;
+    private static final boolean DIE_ON_ERROR = false;
     private static final String PRG_DATE = "2024-06-14";
     private static final String PRG_VERSION = "1.0.0";
 
@@ -238,8 +238,8 @@ public class vipr_x5 {
 
                 host = ViralUtils.cleanHost(host);
 
-                host = ViralUtils.cleanHostOrLocationString(host);
-                location = ViralUtils.cleanHostOrLocationString(location);
+                host = ViralUtils.cleanHostString(host);
+                location = ViralUtils.cleanLocationString(location);
 
                 final String country = ViralUtils.determineCountry(location);
                 final String state = ViralUtils.determineState(location);
