@@ -4,6 +4,7 @@ MSA_PRO="/usr/bin/ruby /Users/czmasek/IdeaProjects/forester/forester/ruby/evorub
 DECORATOR="/usr/bin/ruby /Users/czmasek/IdeaProjects/forester/forester/ruby/evoruby/exe/phylogenies_decorator.rb"
 PHYLO_PL="perl /Users/czmasek/IdeaProjects/forester/forester/perl/phylo_pl.pl"
 MAFFT="/Users/czmasek/anaconda3/bin/mafft"
+MSA_RENAME="/Users/czmasek/Dropbox/PROG/PYTHON/PYCHARM_PROJECTS/TWO/msa_rename.py"
 
 if [ "$#" -ne 5 ]; then
   echo "Usage: mktree.sh <mafft options> <msa_pro options> <phylopl options> <input suffix> <workdir>" >&2
@@ -41,37 +42,59 @@ input_suffix_re="/(.+)$input_suffix$"
 
 for i in $workdir/*; do
   if test -f "$i"; then
-    if [[ $i =~ $input_suffix_re ]]; then
+    if [[ ! $i =~ "_ni.fasta" && ! $i =~ "_mafft.fasta" && $i =~ $input_suffix_re ]]; then
       name=${BASH_REMATCH[1]}
 
-      echo "    Working on: $name$input_suffix"
+      count=$(grep -c '>' $i)
+      echo "    Count for $name$input_suffix $count"
+      if [ $count -gt 3 ]; then
 
-      echo "        Executing: $TAP $workdir/$name$input_suffix:"
-      $TAP $workdir/$name$input_suffix
-      rc=$?
-      if [[ $rc != 0 ]]; then
-        exit $rc
-      fi
+        echo "    Working on: $name$input_suffix"
 
-      echo "        Executing: $MAFFT $mafft_opts $workdir/${name}_ni.fasta > $workdir/${name}_ni_mafft.fasta:"
-      $MAFFT $mafft_opts $workdir/${name}_ni.fasta >$workdir/${name}_ni_mafft.fasta
-      rc=$?
-      if [[ $rc != 0 ]]; then
-        exit $rc
-      fi
+        if [ ! -f $workdir/${name}_ni.fasta ]; then
+          echo "        Executing: $TAP $workdir/$name$input_suffix:"
+          $TAP $workdir/$name$input_suffix
+          rc=$?
+          if [[ $rc != 0 ]]; then
+            exit $rc
+          fi
+        fi
 
-      echo "        Executing: $MSA_PRO -i=f -o=p -d -c $msapro_opts  $workdir/${name}_ni_mafft.fasta $workdir/${name}_ni_mafft:"
-      $MSA_PRO -i=f -o=p -d -c $msapro_opts $workdir/${name}_ni_mafft.fasta $workdir/${name}_ni_mafft
-      rc=$?
-      if [[ $rc != 0 ]]; then
-        exit $rc
-      fi
+        if [ ! -f $workdir/${name}_ni_mafft.fasta ]; then
+          echo "        Executing: $MAFFT $mafft_opts $workdir/${name}_ni.fasta > $workdir/${name}_ni_mafft.fasta:"
+          $MAFFT $mafft_opts $workdir/${name}_ni.fasta >$workdir/${name}_ni_mafft.fasta
+          rc=$?
+          if [[ $rc != 0 ]]; then
+            exit $rc
+          fi
+        fi
 
-      echo "        Executing: $PHYLO_PL -$phylopl_opts $workdir/${name}_ni_mafft $workdir/${name}_ni_mafft_tree:"
-      $PHYLO_PL -$phylopl_opts $workdir/${name}_ni_mafft $workdir/${name}_ni_mafft_tree
-      rc=$?
-      if [[ $rc != 0 ]]; then
-        exit $rc
+        if [ ! -f $workdir/${name}_mafft.fasta ]; then
+          echo "        Executing: python $MSA_RENAME $workdir/${name}_ni_mafft.fasta $workdir/${name}.nim $workdir/${name}_mafft.fasta:"
+          python $MSA_RENAME $workdir/${name}_ni_mafft.fasta $workdir/${name}.nim $workdir/${name}_mafft.fasta
+          rc=$?
+          if [[ $rc != 0 ]]; then
+            exit $rc
+          fi
+        fi
+
+        if [ ! -f $workdir/${name}_ni_mafft ]; then
+          echo "        Executing: $MSA_PRO -i=f -o=p -d -c $msapro_opts  $workdir/${name}_ni_mafft.fasta $workdir/${name}_ni_mafft:"
+          $MSA_PRO -i=f -o=p -d -c $msapro_opts $workdir/${name}_ni_mafft.fasta $workdir/${name}_ni_mafft
+          rc=$?
+          if [[ $rc != 0 ]]; then
+            exit $rc
+          fi
+        fi
+
+        if [ ! -f $workdir/${name}_ni_mafft_tree.log ]; then
+          echo "        Executing: $PHYLO_PL -$phylopl_opts $workdir/${name}_ni_mafft $workdir/${name}_ni_mafft_tree:"
+          $PHYLO_PL -$phylopl_opts $workdir/${name}_ni_mafft $workdir/${name}_ni_mafft_tree
+          rc=$?
+          if [[ $rc != 0 ]]; then
+            exit $rc
+          fi
+        fi
       fi
     fi
   fi
