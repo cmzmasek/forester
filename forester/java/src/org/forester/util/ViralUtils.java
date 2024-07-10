@@ -4,6 +4,8 @@ import org.forester.phylogeny.data.PropertiesList;
 import org.forester.phylogeny.data.Property;
 
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public final class ViralUtils {
 
@@ -97,6 +99,8 @@ public final class ViralUtils {
             return "Whooper swan";
         } else if (h.indexOf("thalasseus acuflavidus") >= 0) {
             return "Cabots tern";
+        } else if (h.indexOf("sterna hirundo") >= 0) {
+            return "Common tern";
         } else {
             return host;
         }
@@ -236,7 +240,9 @@ public final class ViralUtils {
             return "Kazakhstan";
         } else if (l.equals("united states") || l.equals("us")) {
             return "USA";
-        } else if (l.equals("espiritosanto")) {
+        } else if (l.equals("espiritosanto") || l.equals("itapemirimbr") || l.equals("saofranciscodeitabapoanabr")
+                || l.equals("macaebr") || l.equals("piumabr") || l.equals("riodasostrasbr") || l.equals("cabo friobr")
+                || l.equals("bertiogabr")) {
             return "Brazil";
         } else if (l.equals("veracruz")) {
             return "Mexico";
@@ -301,10 +307,17 @@ public final class ViralUtils {
                 || l.equals("victoria")
                 || l.equals("greenland")
         ) {
-            return location;
+            return toTitleCase(location);
         } else {
             return "";
         }
+    }
+
+    public final static String toTitleCase(String words) {
+        return Stream.of(words.trim().split("\\s"))
+                .filter(word -> word.length() > 0)
+                .map(word -> word.substring(0, 1).toUpperCase() + word.substring(1))
+                .collect(Collectors.joining(" "));
     }
 
 
@@ -391,9 +404,16 @@ public final class ViralUtils {
         return Integer.toString(year_int);
     }
 
-    public static String cleanHostOrLocationString(final String s) {
-        return s.replaceAll("_", " ").substring(0, 1).toUpperCase() + s.substring(1);
+    public static String cleanHostString(final String s) {
+        final String r = s.replaceAll("_", " ");
+        return r.substring(0, 1).toUpperCase() + r.substring(1).toLowerCase();
     }
+
+    public static String cleanLocationString(final String s) {
+        final String r = s.replaceAll("_", " ");
+        return r;
+    }
+
 
     public static void addHostGroup(final String host, final PropertiesList custom_data,
                                     final String host_group_ref,
@@ -434,6 +454,8 @@ public final class ViralUtils {
                 || h.equals("tiger")
                 || h.equals("owston's civet")
                 || h.equals("civet")
+                || h.equals("alpaca")
+                || h.equals("red fox")
         ) {
             hg1 = "Non-Human Mammal";
             hg2 = "Non-Human Mammal (wild)";
@@ -496,14 +518,14 @@ public final class ViralUtils {
                 || h.equals("american wigeon")
                 || h.equals("western sandpiper")
                 || h.equals("common grackle")
-                || h.equals("red fox")
+                || h.equals("common tern")
         ) {
             hg1 = "Avian";
             hg2 = "Avian (wild)";
         } else if (h.equals("environment")) {
             hg1 = "Environment";
             hg2 = "Environment";
-        } else if (h.equals("pefa") || h.equals("cago") ) {
+        } else if (h.equals("pefa") || h.equals("cago")) {
             hg1 = "unknown";
             hg2 = "unknown";
         } else {
