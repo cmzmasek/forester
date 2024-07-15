@@ -1181,7 +1181,7 @@ sub executeRaxmlNG {
     my $replicates     = $_[ 2 ];
 
     &testForTextFilePresence( $msa );
-    my $command = "$RAXMLNG --tree rand{10},pars{10} --msa-format PHYLIP --model $model --msa $msa";
+    my $command = "$RAXMLNG --tree rand{5},pars{5} --msa-format PHYLIP --model $model --msa $msa";
 
     if ( $replicates > 1 ) {
         $command = $command . " --all --bs-trees $replicates";
