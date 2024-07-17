@@ -127,6 +127,9 @@ public final class ViralUtils {
                 || l.equals("kentucky")
                 || l.equals("louisiana")
                 || l.equals("maine")
+                || l.equals("ma")
+                || l.equals("me")
+                || l.equals("va")
                 || l.equals("maryland")
                 || l.equals("massachusetts")
                 || l.equals("michigan")
@@ -137,6 +140,7 @@ public final class ViralUtils {
                 || l.equals("nebraska")
                 || l.equals("nevada")
                 || l.equals("new hampshire")
+                || l.equals("nh")
                 || l.equals("new jersey")
                 || l.equals("new mexico")
                 || l.equals("new york")
@@ -147,6 +151,7 @@ public final class ViralUtils {
                 || l.equals("oregon")
                 || l.equals("pennsylvania")
                 || l.equals("rhode island")
+                || l.equals("ri")
                 || l.equals("south carolina")
                 || l.equals("south dakota")
                 || l.equals("tennessee")
@@ -253,6 +258,19 @@ public final class ViralUtils {
 
     public static String determineState(final String location) {
         final String l = location.toLowerCase();
+        if (l.equals( "nh")) {
+            return "New Hampshire";
+        }
+        if (l.equals( "ma") ) {
+            return "Massachusetts";
+        }
+        if (l.equals( "me") ) {
+            return "Maine";
+        }
+        if (l.equals( "vt") ) {
+            return "Vermont";
+        }
+
         if (l.equals("alabama")
                 || l.equals("alaska")
                 || l.equals("arizona")
@@ -519,6 +537,15 @@ public final class ViralUtils {
                 || h.equals("western sandpiper")
                 || h.equals("common grackle")
                 || h.equals("common tern")
+                || h.equals("common loon")
+                || h.equals("white-winged scoter")
+                || h.equals("common eider")
+                || h.equals("surf scoter")
+                || h.equals("herring gull")
+                || h.equals("scoter")
+                || h.equals("brandt goose")
+                || h.equals("black scoter")
+                || h.equals("lesser scaup")
         ) {
             hg1 = "Avian";
             hg2 = "Avian (wild)";
