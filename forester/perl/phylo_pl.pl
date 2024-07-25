@@ -877,7 +877,13 @@ if (  $use_phylip_fitch_me ) {
 }
 
 
-if ( $bootstraps > 1 ) {
+if ( $bootstraps > 1 && $use_raxml == 1 &&
+  $use_fastme != 1 && $use_phylip_nj != 1 && $use_phylip_fitch_fm != 1 && $use_phylip_fitch_me != 1
+  &&  $use_proml != 1 &&  $use_protpars != 1 && $use_iqtree != 1 ) {
+    &to_phyloxml( $CONSENSUS_RAXML, $raxml_outtree, 1, 1 );
+}
+elsif ( ( $bootstraps > 1 ) && ( $use_fastme == 1 || $use_phylip_nj == 1 || $use_phylip_fitch_fm == 1 || $use_phylip_fitch_me == 1
+  ||  $use_proml == 1 ||  $use_protpars == 1 || $use_iqtree == 1 )  ) {
     # Consense:
     if ( $use_fastme == 1 ) {
         &consense( $OUTTREE_FASTME, $CONSENSUS_FASTME );
