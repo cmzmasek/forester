@@ -52,8 +52,8 @@ use FindBin;
 use lib $FindBin::Bin;
 use forester;
 
-my $VERSION                = "1.2.0";
-my $LAST_MODIFIED          = "2024-05-02";
+my $VERSION                = "1.2.1";
+my $LAST_MODIFIED          = "2024-07-10";
 
 
 my $TEMP_DIR_DEFAULT       = "/tmp/phylo_pl_"; # Where all the infiles, outfiles, etc will be created.
