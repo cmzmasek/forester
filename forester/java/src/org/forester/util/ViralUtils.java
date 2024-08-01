@@ -130,6 +130,14 @@ public final class ViralUtils {
                 || l.equals("ma")
                 || l.equals("me")
                 || l.equals("va")
+                || l.equals("wy")
+                || l.equals("mn")
+                || l.equals("co")
+                || l.equals("ia")
+                || l.equals("id")
+                || l.equals("nm")
+                || l.equals("tx")
+                || l.equals("mi")
                 || l.equals("maryland")
                 || l.equals("massachusetts")
                 || l.equals("michigan")
@@ -270,6 +278,30 @@ public final class ViralUtils {
         if (l.equals( "vt") ) {
             return "Vermont";
         }
+        if (l.equals( "wy") ) {
+            return "Wyoming";
+        }
+        if (l.equals( "mn") ) {
+            return "Minnesota";
+        }
+        if (l.equals( "ia") ) {
+            return "Iowa";
+        }
+        if (l.equals( "co") ) {
+            return "Colorado";
+        }
+        if (l.equals( "id") ) {
+            return "Idaho";
+        }
+        if (l.equals( "mi") ) {
+            return "Michigan";
+        }
+        if (l.equals( "tx") ) {
+            return "Texas";
+        }
+        if (l.equals( "nm") ) {
+            return "New Mexico";
+        }
 
         if (l.equals("alabama")
                 || l.equals("alaska")
@@ -397,7 +429,7 @@ public final class ViralUtils {
             region = "";
         } else {
             System.out.println("Error: unknown country \"" + c + "\"");
-            System.exit(-1);
+           // System.exit(-1);
         }
         if (!ForesterUtil.isEmpty(region)) {
             custom_data.addProperty(new Property(reg_ref, region, "", XSD_STRING, Property.AppliesTo.NODE));
@@ -474,6 +506,7 @@ public final class ViralUtils {
                 || h.equals("civet")
                 || h.equals("alpaca")
                 || h.equals("red fox")
+                || h.equals("house mouse")
         ) {
             hg1 = "Non-Human Mammal";
             hg2 = "Non-Human Mammal (wild)";
@@ -546,6 +579,8 @@ public final class ViralUtils {
                 || h.equals("brandt goose")
                 || h.equals("black scoter")
                 || h.equals("lesser scaup")
+                || h.equals("house sparrow")
+                || h.equals("wild-bird")
         ) {
             hg1 = "Avian";
             hg2 = "Avian (wild)";
@@ -557,7 +592,7 @@ public final class ViralUtils {
             hg2 = "unknown";
         } else {
             System.out.println("Error: Unknown host \"" + host + "\"");
-            System.exit(-1);
+           // System.exit(-1);
         }
 
         if (!ForesterUtil.isEmpty(hg1)) {
