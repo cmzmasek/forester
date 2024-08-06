@@ -428,8 +428,8 @@ public final class ViralUtils {
         } else if (c.equals("na")) {
             region = "";
         } else {
-            System.out.println("Error: unknown country \"" + c + "\"");
-           // System.exit(-1);
+            System.out.println("Warning: unknown country \"" + c + "\"");
+            region = "";
         }
         if (!ForesterUtil.isEmpty(region)) {
             custom_data.addProperty(new Property(reg_ref, region, "", XSD_STRING, Property.AppliesTo.NODE));
@@ -581,18 +581,17 @@ public final class ViralUtils {
                 || h.equals("lesser scaup")
                 || h.equals("house sparrow")
                 || h.equals("wild-bird")
+                || h.equals("western kingbird")
         ) {
             hg1 = "Avian";
             hg2 = "Avian (wild)";
         } else if (h.equals("environment")) {
             hg1 = "Environment";
             hg2 = "Environment";
-        } else if (h.equals("pefa") || h.equals("cago")) {
-            hg1 = "unknown";
-            hg2 = "unknown";
         } else {
-            System.out.println("Error: Unknown host \"" + host + "\"");
-           // System.exit(-1);
+            System.out.println("Warning: Unknown host \"" + host + "\"");
+            hg1 = "";
+            hg2 = "";
         }
 
         if (!ForesterUtil.isEmpty(hg1)) {
