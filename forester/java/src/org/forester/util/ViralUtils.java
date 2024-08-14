@@ -92,6 +92,7 @@ public final class ViralUtils {
             return "Canada goose";
         } else if (h.equals("dairy cattle")
                 || h.equals("bovine")
+                || h.equals("dairy cow")
                 || h.equals("cow")) {
             return "Cattle";
         } else if (h.indexOf("cygnus cygnus") >= 0
@@ -138,6 +139,7 @@ public final class ViralUtils {
                 || l.equals("nm")
                 || l.equals("tx")
                 || l.equals("mi")
+                || l.equals("sd")
                 || l.equals("maryland")
                 || l.equals("massachusetts")
                 || l.equals("michigan")
@@ -301,6 +303,9 @@ public final class ViralUtils {
         }
         if (l.equals( "nm") ) {
             return "New Mexico";
+        }
+        if (l.equals( "sd") ) {
+            return "South Dakota";
         }
 
         if (l.equals("alabama")
@@ -582,6 +587,7 @@ public final class ViralUtils {
                 || h.equals("house sparrow")
                 || h.equals("wild-bird")
                 || h.equals("western kingbird")
+                || h.equals("eurasian collared dove")
         ) {
             hg1 = "Avian";
             hg2 = "Avian (wild)";
