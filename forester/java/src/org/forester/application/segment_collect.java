@@ -53,6 +53,8 @@ public final class segment_collect {
     private static final String PRG_VERSION = "0.0.1";
 
     private final static int NUMBER_OF_SEGMENTS = 8;
+
+    private final static int LOW_Q_THRESHOLD = 1;
     private final static String SEGMENT_OUTFILE_BASE = "sc_segment_";
     private final static String ALL_OUTFILE = "sc_all.fasta";
 
@@ -117,10 +119,18 @@ public final class segment_collect {
         int input_seqs_without_segment = 0;
         int input_seqs_failed_to_match = 0;
         int input_seqs_too_short = 0;
+        int input_seqs_low_qual = 0;
+        int not_eight = 0;
         for (final MolecularSequence seq : in_seqs) {
 
             final BasicSequence bseq = (BasicSequence) seq;
             final String name = bseq.getIdentifier();
+
+            if (getIndCount(bseq) > LOW_Q_THRESHOLD) {
+                ++input_seqs_low_qual;
+                continue;
+            }
+
             String new_name = makeNewName(name);
             if (new_name == null) {
                 ++input_seqs_failed_to_match;
@@ -174,13 +184,15 @@ public final class segment_collect {
                     } else {
                         ++input_seqs_too_short;
                     }
-                } else if (name_lc.indexOf("segment_7") > 0 || name_lc.indexOf("segment 7") > 0 || name_lc.indexOf("001_a_mp_") > 0 || name_lc.indexOf(" mp ") > 0 || name_lc.indexOf("(mp)") > 0) {
+                } else if (name_lc.indexOf("segment_7") > 0 || name_lc.indexOf("segment 7") > 0 || name_lc.indexOf("001_a_mp_") > 0 || name_lc.indexOf(" mp ") > 0 || name_lc.indexOf("(mp)") > 0
+                        || name_lc.indexOf("(m1)") > 0 || name_lc.indexOf("(m2)") > 0 || name_lc.indexOf("m1, m2") > 0) {
                     if (seq.getLength() > 900) {
                         current_seg_list[6] = seq;
                     } else {
                         ++input_seqs_too_short;
                     }
-                } else if (name_lc.indexOf("segment_8") > 0 || name_lc.indexOf("segment 8") > 0 || name_lc.indexOf("001_a_ns_") > 0 || name_lc.indexOf(" ns ") > 0 || name_lc.indexOf("(ns)") > 0) {
+                } else if (name_lc.indexOf("segment_8") > 0 || name_lc.indexOf("segment 8") > 0 || name_lc.indexOf("001_a_ns_") > 0 || name_lc.indexOf(" ns ") > 0
+                        || name_lc.indexOf("(ns)") > 0 || name_lc.indexOf("(nep)") > 0 || name_lc.indexOf("(ns1)") > 0 || name_lc.indexOf("ns1, ns2") > 0) {
                     if (seq.getLength() > 800) {
                         current_seg_list[7] = seq;
                     } else {
@@ -190,6 +202,8 @@ public final class segment_collect {
                     ++input_seqs_without_segment;
                     System.out.println("Warning: could not obtain segment from \"" + name + "\"");
                 }
+            } else {
+                ++not_eight;
             }
 
         }
@@ -277,8 +291,10 @@ public final class segment_collect {
         System.out.println("SD    : " + outfile_all_length_stats.sampleStandardDeviation());
         System.out.println();
         System.out.println("Number of sequences in input  : " + in_seqs.size());
+        System.out.println("   low quality                : " + input_seqs_low_qual);
         System.out.println("   named failed to match      : " + input_seqs_failed_to_match);
         System.out.println("   without segment information: " + input_seqs_without_segment);
+        System.out.println("   not eight segments         : " + not_eight);
         System.out.println("   too short                  : " + input_seqs_too_short);
         System.out.println();
         System.out.println("Number of sequences in output : " + outseqs_all.size());
@@ -286,6 +302,17 @@ public final class segment_collect {
         System.out.println("[" + PRG_NAME + "] OK");
         System.out.println();
 
+    }
+
+    private static int getIndCount(final BasicSequence bseq) {
+        int ind_count = 0;
+        for (int i = 0; i < bseq.getLength(); ++i) {
+            char r = bseq.getResidueAt(i);
+            if (r != 'a' && r != 'c' && r != 'g' && r != 't' && r != 'A' && r != 'C' && r != 'G' && r != 'T') {
+                ++ind_count;
+            }
+        }
+        return ind_count;
     }
 
     private static String makeNewName(final String name) {
