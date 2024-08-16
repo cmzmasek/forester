@@ -258,13 +258,13 @@ public final class segment_collect {
         final Matcher m2 = ViralUtils.PATTERN_2.matcher(name);
         final Matcher m1b = ViralUtils.PATTERN_1b.matcher(name);
         final Matcher m3 = ViralUtils.PATTERN_3.matcher(name);
+
         String type = UNKNOWN;
         String host = UNKNOWN;
         String location = UNKNOWN;
         String strain_number = UNKNOWN;
         String year = UNKNOWN;
         String subtype = UNKNOWN;
-
 
         if (m0.find()) {
             // 1. type
@@ -330,8 +330,6 @@ public final class segment_collect {
             strain_number = m3.group(4).trim();
             year = m3.group(5).trim();
             subtype = "H5N1";
-
-
         } else {
             System.out.println("Warning: name \"" + name + "\" could not be matched");
             return null;
