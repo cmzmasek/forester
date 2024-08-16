@@ -49,12 +49,14 @@ public final class segment_collect {
 
 
     private final static String PRG_NAME = "segment_collect";
-    private static final String PRG_DATE = "2024-08-01";
+    private static final String PRG_DATE = "2024-08-16";
     private static final String PRG_VERSION = "0.0.1";
 
     private final static int NUMBER_OF_SEGMENTS = 8;
     private final static String SEGMENT_OUTFILE_BASE = "sc_segment_";
     private final static String ALL_OUTFILE = "sc_all.fasta";
+
+    private final static String SEP = "/";
 
     private static final String UNKNOWN = "unknown";
 
@@ -114,6 +116,7 @@ public final class segment_collect {
         int c = 0;
         int input_seqs_without_segment = 0;
         int input_seqs_failed_to_match = 0;
+        int input_seqs_too_short = 0;
         for (final MolecularSequence seq : in_seqs) {
 
             final BasicSequence bseq = (BasicSequence) seq;
@@ -136,21 +139,53 @@ public final class segment_collect {
                 }
 
                 if (name_lc.indexOf("segment_1") > 0 || name_lc.indexOf("segment 1") > 0 || name_lc.indexOf("001_a_pb2_") > 0 || name_lc.indexOf(" pb2 ") > 0 || name_lc.indexOf("(pb2)") > 0) {
-                    current_seg_list[0] = seq;
+                    if (seq.getLength() > 1500) {
+                        current_seg_list[0] = seq;
+                    } else {
+                        ++input_seqs_too_short;
+                    }
                 } else if (name_lc.indexOf("segment_2") > 0 || name_lc.indexOf("segment 2") > 0 || name_lc.indexOf("001_a_pb1_") > 0 || name_lc.indexOf(" pb1 ") > 0 || name_lc.indexOf(" pb1,") > 0 || name_lc.indexOf("(pb1)") > 0) {
-                    current_seg_list[1] = seq;
+                    if (seq.getLength() > 1500) {
+                        current_seg_list[1] = seq;
+                    } else {
+                        ++input_seqs_too_short;
+                    }
                 } else if (name_lc.indexOf("segment_3") > 0 || name_lc.indexOf("segment 3") > 0 || name_lc.indexOf("001_a_pa_") > 0 || name_lc.indexOf(" pa ") > 0 || name_lc.indexOf("(pa)") > 0) {
-                    current_seg_list[2] = seq;
+                    if (seq.getLength() > 1500) {
+                        current_seg_list[2] = seq;
+                    } else {
+                        ++input_seqs_too_short;
+                    }
                 } else if (name_lc.indexOf("segment_4") > 0 || name_lc.indexOf("segment 4") > 0 || name_lc.indexOf("001_a_ha_") > 0 || name_lc.indexOf(" ha ") > 0 || name_lc.indexOf("(ha)") > 0) {
-                    current_seg_list[3] = seq;
+                    if (seq.getLength() > 1200) {
+                        current_seg_list[3] = seq;
+                    } else {
+                        ++input_seqs_too_short;
+                    }
                 } else if (name_lc.indexOf("segment_5") > 0 || name_lc.indexOf("segment 5") > 0 || name_lc.indexOf("001_a_np_") > 0 || name_lc.indexOf(" np ") > 0 || name_lc.indexOf("(np)") > 0) {
-                    current_seg_list[4] = seq;
+                    if (seq.getLength() > 1000) {
+                        current_seg_list[4] = seq;
+                    } else {
+                        ++input_seqs_too_short;
+                    }
                 } else if (name_lc.indexOf("segment_6") > 0 || name_lc.indexOf("segment 6") > 0 || name_lc.indexOf("001_a_na_") > 0 || name_lc.indexOf(" na ") > 0 || name_lc.indexOf("(na)") > 0) {
-                    current_seg_list[5] = seq;
+                    if (seq.getLength() > 1000) {
+                        current_seg_list[5] = seq;
+                    } else {
+                        ++input_seqs_too_short;
+                    }
                 } else if (name_lc.indexOf("segment_7") > 0 || name_lc.indexOf("segment 7") > 0 || name_lc.indexOf("001_a_mp_") > 0 || name_lc.indexOf(" mp ") > 0 || name_lc.indexOf("(mp)") > 0) {
-                    current_seg_list[6] = seq;
+                    if (seq.getLength() > 900) {
+                        current_seg_list[6] = seq;
+                    } else {
+                        ++input_seqs_too_short;
+                    }
                 } else if (name_lc.indexOf("segment_8") > 0 || name_lc.indexOf("segment 8") > 0 || name_lc.indexOf("001_a_ns_") > 0 || name_lc.indexOf(" ns ") > 0 || name_lc.indexOf("(ns)") > 0) {
-                    current_seg_list[7] = seq;
+                    if (seq.getLength() > 800) {
+                        current_seg_list[7] = seq;
+                    } else {
+                        ++input_seqs_too_short;
+                    }
                 } else {
                     ++input_seqs_without_segment;
                     System.out.println("Warning: could not obtain segment from \"" + name + "\"");
@@ -244,6 +279,7 @@ public final class segment_collect {
         System.out.println("Number of sequences in input  : " + in_seqs.size());
         System.out.println("   named failed to match      : " + input_seqs_failed_to_match);
         System.out.println("   without segment information: " + input_seqs_without_segment);
+        System.out.println("   too short                  : " + input_seqs_too_short);
         System.out.println();
         System.out.println("Number of sequences in output : " + outseqs_all.size());
 
@@ -343,7 +379,7 @@ public final class segment_collect {
         host = ViralUtils.cleanHostString(host);
         location = ViralUtils.cleanLocationString(location);
 
-        String new_name = type + "__" + host + "__" + location + "__" + strain_number + "__" + year + "__" + subtype;
+        String new_name = type + SEP + host + SEP + location + SEP + strain_number + SEP + year + SEP + subtype;
 
         new_name = new_name.replaceAll("\\s+", "_");
         return new_name;
