@@ -57,8 +57,11 @@ public final class segment_select_2 {
 
     private final static String PRG_NAME = "segment_select_2";
 
-    public final static Pattern PATTERN_0 = Pattern
-            .compile("(\\(A/.+?)[_\\s]segment[_\\s]");
+   // public final static Pattern P0 = Pattern
+        //    .compile("(\\(A/.+?)[_\\s]segment[_\\s]");
+
+    public final static Pattern P0 = Pattern
+            .compile("(\\(A/.+?\\)\\))");
 
 
     public static void main(final String args[]) {
@@ -104,22 +107,23 @@ public final class segment_select_2 {
         }
 
         for (MolecularSequence s_trimmed : seqs_to_be_trimmed) {
-            final Matcher m0 = PATTERN_0.matcher(s_trimmed.getIdentifier());
+            final Matcher m0 = P0.matcher(s_trimmed.getIdentifier());
 
             String virus_id_tr = "";
             if (m0.find()) {
-                virus_id_tr = m0.group(1).trim();
+                virus_id_tr = m0.group(1).trim().toLowerCase().replaceAll( "\\s+", "_");
             } else {
                 System.out.println("Error: MSA name \"" + s_trimmed.getIdentifier() + "\" could not be matched");
-                System.exit(-1);
+                //System.exit(-1);
+                continue;
             }
 
             I: for (MolecularSequence sguide : seqs_guide) {
-                final Matcher m1 = PATTERN_0.matcher(sguide.getIdentifier());
+                final Matcher m1 = P0.matcher(sguide.getIdentifier());
 
                 String virus_id_g = "";
                 if (m1.find()) {
-                    virus_id_g = m1.group(1).trim();
+                    virus_id_g = m1.group(1).trim().toLowerCase().replaceAll( "\\s+", "_");
                 } else {
                     System.out.println("Error: MSA name \"" + sguide.getIdentifier() + "\" could not be matched");
                     System.exit(-1);
