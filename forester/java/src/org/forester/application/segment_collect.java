@@ -113,6 +113,7 @@ public final class segment_collect {
             }
 
         }
+
         final SortedMap<String, MolecularSequence[]> strain_to_segments = new TreeMap();
 
         int c = 0;
@@ -215,6 +216,7 @@ public final class segment_collect {
             outseqs_individual_segments[i] = new ArrayList<>();
         }
 
+        int input_strain_with_less_than_eight_segments = 0;
 
         F:
         for (final Map.Entry<String, MolecularSequence[]> entry : strain_to_segments.entrySet()) {
@@ -223,13 +225,16 @@ public final class segment_collect {
 
             for (int i = 0; i < NUMBER_OF_SEGMENTS; ++i) {
                 if (s[i] == null) {
+                    ++input_strain_with_less_than_eight_segments;
                     continue F;
                 }
             }
 
             final StringBuilder sb = new StringBuilder(0);
             for (int i = 0; i < NUMBER_OF_SEGMENTS; ++i) {
-                outseqs_individual_segments[i].add(new BasicSequence(strain + "__seg_" + (i + 1), s[i].getMolecularSequenceAsString(), MolecularSequence.TYPE.DNA));
+               // outseqs_individual_segments[i].add(new BasicSequence(strain + "_segment_" + (i + 1), s[i].getMolecularSequenceAsString(), MolecularSequence.TYPE.DNA));
+                outseqs_individual_segments[i].add(new BasicSequence("(" +  strain + ")", s[i].getMolecularSequenceAsString(), MolecularSequence.TYPE.DNA));
+
                 sb.append(s[i].getMolecularSequenceAsString());
             }
             final MolecularSequence newseq = new BasicSequence(strain, sb.toString(), MolecularSequence.TYPE.DNA);
@@ -291,11 +296,17 @@ public final class segment_collect {
         System.out.println("SD    : " + outfile_all_length_stats.sampleStandardDeviation());
         System.out.println();
         System.out.println("Number of sequences in input  : " + in_seqs.size());
+        System.out.println("Number of distinct isolates   : " + strain_to_counts.size());
         System.out.println("   low quality                : " + input_seqs_low_qual);
         System.out.println("   named failed to match      : " + input_seqs_failed_to_match);
         System.out.println("   without segment information: " + input_seqs_without_segment);
         System.out.println("   not eight segments         : " + not_eight);
         System.out.println("   too short                  : " + input_seqs_too_short);
+        System.out.println("Distinct isolates after qc    : " + strain_to_segments.size());
+        System.out.println("With missing segment after qc : " + input_strain_with_less_than_eight_segments);
+
+
+
         System.out.println();
         System.out.println("Number of sequences in output : " + outseqs_all.size());
 
@@ -401,12 +412,15 @@ public final class segment_collect {
         host = host.replace('_', ' ');
         location = location.replace('_', ' ');
 
+        host = host.replaceAll("\\s+", " ");
+        location = location.replaceAll("\\s+", " ");
+
         host = ViralUtils.cleanHost(host);
 
         host = ViralUtils.cleanHostString(host);
         location = ViralUtils.cleanLocationString(location);
 
-        String new_name = type + SEP + host + SEP + location + SEP + strain_number + SEP + year + SEP + subtype;
+        String new_name = type + SEP + host + SEP + location + SEP + strain_number + SEP + year  + "(" + subtype + ")";
 
         new_name = new_name.replaceAll("\\s+", "_");
         return new_name;
