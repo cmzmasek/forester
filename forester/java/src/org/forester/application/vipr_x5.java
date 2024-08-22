@@ -29,8 +29,8 @@ public class vipr_x5 {
 
     private static final boolean VERBOSE = false;
     private static final boolean DIE_ON_ERROR = false;
-    private static final String PRG_DATE = "2024-06-14";
-    private static final String PRG_VERSION = "1.0.0";
+    private static final String PRG_DATE = "2024-08-21";
+    private static final String PRG_VERSION = "1.0.1";
 
     private static final int COL_GENOME_ID = 0;
     private static final int COL_STRAIN = 15;
@@ -137,6 +137,7 @@ public class vipr_x5 {
             if (!ForesterUtil.isEmpty(name)) {
                 final Matcher mg = ViralUtils.PATTERN_GB.matcher(name);
                 final Matcher m0 = ViralUtils.PATTERN_0.matcher(name);
+                final Matcher m00 = ViralUtils.PATTERN_00.matcher(name);
                 final Matcher m1 = ViralUtils.PATTERN_1.matcher(name);
                 final Matcher m2 = ViralUtils.PATTERN_2.matcher(name);
                 final Matcher m3 = ViralUtils.PATTERN_3.matcher(name);
@@ -223,7 +224,19 @@ public class vipr_x5 {
                     strain_number = m3.group(4).trim();
                     year = m3.group(5).trim();
                     subtype = "H5N1";
-
+                } else if (m00.find()) {
+                        // 1. type
+                        // 2. host
+                        // 3. country/state
+                        // 4. strain number
+                        // 5. year
+                        // 6. subtype
+                        type = m00.group(1).trim();
+                        host = m00.group(2).trim();
+                        location = m00.group(3).trim();
+                        strain_number = m00.group(4).trim();
+                        year = m00.group(5).trim();
+                        subtype = m00.group(6).trim().toUpperCase();
                 } else {
                     System.out.println("ERROR: name \"" + name + "\" could not be matched");
                     if (DIE_ON_ERROR) {
