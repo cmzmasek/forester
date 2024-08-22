@@ -20,6 +20,10 @@ public final class ViralUtils {
     public final static Pattern PATTERN_0 = Pattern
             .compile("\\((.*?)/([A-za-z-\\s'()]*?)/([A-za-z-\\s]*?)/(.*?)/(\\d{2,4}?)\\s*\\((.*?)\\)\\)");
 
+    //A/Duck/Champasak/261/2022(H5N1)
+    public final static Pattern PATTERN_00 = Pattern
+            .compile("(.*?)/([A-za-z-\\s'()]*?)/([A-za-z-\\s]*?)/(.*?)/(\\d{2,4}?)\\s*\\((.*?)\\)");
+
     // 1. type
     // 2. host
     // 3. country/state
