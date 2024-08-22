@@ -60,8 +60,11 @@ public final class segment_select_2 {
    // public final static Pattern P0 = Pattern
         //    .compile("(\\(A/.+?)[_\\s]segment[_\\s]");
 
+  //  public final static Pattern P0 = Pattern
+  //          .compile("(\\(A/.+?\\)\\))");
+
     public final static Pattern P0 = Pattern
-            .compile("(\\(A/.+?\\)\\))");
+            .compile("(A/.+?\\))");
 
 
     public static void main(final String args[]) {
