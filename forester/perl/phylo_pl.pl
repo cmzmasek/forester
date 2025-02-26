@@ -52,8 +52,8 @@ use FindBin;
 use lib $FindBin::Bin;
 use forester;
 
-my $VERSION                = "1.2.1";
-my $LAST_MODIFIED          = "2024-07-10";
+my $VERSION                = "1.2.2";
+my $LAST_MODIFIED          = "2025-02-26";
 
 
 my $TEMP_DIR_DEFAULT       = "/tmp/phylo_pl_"; # Where all the infiles, outfiles, etc will be created.
@@ -1187,7 +1187,7 @@ sub executeRaxmlNG {
     my $replicates     = $_[ 2 ];
 
     &testForTextFilePresence( $msa );
-    my $command = "$RAXMLNG --tree rand{5},pars{5} --msa-format PHYLIP --model $model --msa $msa";
+    my $command = "$RAXMLNG --tree rand{20},pars{20} --msa-format PHYLIP --model $model --msa $msa";
 
     if ( $replicates > 1 ) {
         $command = $command . " --all --bs-trees $replicates";
