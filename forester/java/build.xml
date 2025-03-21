@@ -1,66 +1,69 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <project name="FORESTER" basedir="." default="all">
 
-	<property name="src.dir" value="src" />
-	<property name="classes.dir" value="classes" />
-	<property name="jars.dir" value="resources" />
-	<property name="itextjar" value="${jars.dir}/itextpdf-5.5.13.jar" />
-	<property name="commonscodecjar" value="${jars.dir}/commons-codec-1.5.jar" />
-	<property name="openchartjar" value="${jars.dir}/openchart.jar" />
-	<property name="forester_jar" value="forester.jar" />
-	<property name="archaeopteryx_applets_jar" value="archaeopteryx_applets.jar" />
+    <property name="src.dir" value="src"/>
+    <property name="classes.dir" value="classes"/>
+    <property name="jars.dir" value="resources"/>
+    <property name="itextjar" value="${jars.dir}/itextpdf-5.5.13.jar"/>
+    <property name="commonscodecjar" value="${jars.dir}/commons-codec-1.5.jar"/>
+    <property name="openchartjar" value="${jars.dir}/openchart.jar"/>
+    <property name="forester_jar" value="forester.jar"/>
+    <property name="archaeopteryx_applets_jar" value="archaeopteryx_applets.jar"/>
 
-	<target name="clean" description="Delete all generated files">
-	    <delete dir="${classes.dir}" failonerror="false" />
-	    <delete file="${forester_jar}" />
-	    <delete file="${archaeopteryx_applets_jar}" />
-	</target>
-
-    <target name="copy_resources" description="Copies resources">
-    <mkdir dir="${classes.dir}/resources" />
-        <copy verbose="true"
-          file="../resources/phyloxml_schema/1.20/phyloxml.xsd"
-          todir="${classes.dir}/resources"/>
+    <target name="clean" description="Delete all generated files">
+        <delete dir="${classes.dir}" failonerror="false"/>
+        <delete file="${forester_jar}"/>
+        <delete file="${archaeopteryx_applets_jar}"/>
     </target>
 
-	<target name="compile" description="Compiles the Task" depends="clean">
-		<mkdir dir="${classes.dir}" />
-		<javac source="1.8" target="1.8" debug="true" debuglevel="lines,source" srcdir="${src.dir}" destdir="${classes.dir}" optimize="on" verbose="false" classpath="${itextjar};${commonscodecjar};${openchartjar}">
-			<compilerarg value="-Xlint:deprecation" />
-			<compilerarg value="-Xlint:unchecked" />
-		</javac> 
-	</target>
+    <target name="copy_resources" description="Copies resources">
+        <mkdir dir="${classes.dir}/resources"/>
+        <copy verbose="true"
+              file="../resources/phyloxml_schema/1.20/phyloxml.xsd"
+              todir="${classes.dir}/resources"/>
+    </target>
 
-	<target name="jar" description="JARs the classes files" depends="compile,copy_resources">
-		<unjar src="${itextjar}" dest="${classes.dir}">
+    <target name="compile" description="Compiles the Task" depends="clean">
+        <mkdir dir="${classes.dir}"/>
+        <javac source="1.8" target="1.8" debug="true" debuglevel="lines,source" srcdir="${src.dir}"
+               destdir="${classes.dir}" optimize="on" verbose="false"
+               classpath="${itextjar};${commonscodecjar};${openchartjar}">
+            <compilerarg value="-Xlint:deprecation"/>
+            <compilerarg value="-Xlint:unchecked"/>
+        </javac>
+    </target>
+
+    <target name="jar" description="JARs the classes files" depends="compile,copy_resources">
+        <unjar src="${itextjar}" dest="${classes.dir}">
             <patternset>
-                <include name="**/*.class" />
-                <include name="**/*.afm" />
-                <include name="**/*.txt" />
-                <exclude name="**/*Test*.class" />
+                <include name="**/*.class"/>
+                <include name="**/*.afm"/>
+                <include name="**/*.txt"/>
+                <exclude name="**/*Test*.class"/>
             </patternset>
         </unjar>
         <unjar src="${commonscodecjar}" dest="${classes.dir}">
             <patternset>
-                <include name="**/*.class" />
-                <exclude name="**/*Test*.class" />
+                <include name="**/*.class"/>
+                <exclude name="**/*Test*.class"/>
             </patternset>
         </unjar>
         <unjar src="${openchartjar}" dest="${classes.dir}">
             <patternset>
-                <include name="**/*.class" />
-                <exclude name="**/*Test*.class" />
+                <include name="**/*.class"/>
+                <exclude name="**/*Test*.class"/>
             </patternset>
         </unjar>
-		<jar level="9" destfile="${forester_jar}" basedir="${classes.dir}" excludes="**/Test.class" duplicate="fail" index="true">
-			<manifest>
-				<attribute name="Main-Class" value="org.forester.archaeopteryx.Archaeopteryx" />
-			</manifest>
-		</jar>
-	</target>
+        <jar level="9" destfile="${forester_jar}" basedir="${classes.dir}" excludes="**/Test.class" duplicate="fail"
+             index="true">
+            <manifest>
+                <attribute name="Main-Class" value="org.forester.archaeopteryx.Archaeopteryx"/>
+            </manifest>
+        </jar>
+    </target>
 
-	<target name="all" description="" depends="jar">
-	</target>
+    <target name="all" description="" depends="jar">
+    </target>
 
 
 </project>
