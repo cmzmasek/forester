@@ -264,7 +264,7 @@ public final class SequenceDbWsTools {
 
     final static String extractFromRemoveLast(final String target, final String a) {
         final int i_a = target.indexOf(a);
-        return target.substring(i_a + a.length() - 1).trim();
+        return target.substring(i_a + a.length(), target.length() - 1).trim();
     }
 
     final static String extractFromTo(final String target, final String a, final String b) {
