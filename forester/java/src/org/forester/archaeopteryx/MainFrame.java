@@ -254,6 +254,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JCheckBoxMenuItem _search_whole_words_only_cbmi;
     JCheckBoxMenuItem _inverse_search_result_cbmi;
     JCheckBoxMenuItem _search_with_regex_cbmi;
+
+    JCheckBoxMenuItem _search_properties_cbmi;
     JCheckBoxMenuItem _color_all_found_nodes_when_coloring_subtree_cbmi;
     // type menu:
     JMenu _type_menu;
@@ -472,6 +474,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             getMainPanel().getControlPanel().search0();
             getMainPanel().getControlPanel().search1();
         } else if (o == _inverse_search_result_cbmi) {
+            updateOptions(getOptions());
+            getMainPanel().getControlPanel().search0();
+            getMainPanel().getControlPanel().search1();
+        } else if (o == _search_properties_cbmi) {
             updateOptions(getOptions());
             getMainPanel().getControlPanel().search0();
             getMainPanel().getControlPanel().search1();
@@ -1789,6 +1795,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         options.setMatchWholeTermsOnly((_search_whole_words_only_cbmi != null)
                 && _search_whole_words_only_cbmi.isSelected());
         options.setSearchWithRegex((_search_with_regex_cbmi != null) && _search_with_regex_cbmi.isSelected());
+        options.setSearchProperties((_search_properties_cbmi != null) && _search_properties_cbmi.isSelected());
         options.setInverseSearchResult((_inverse_search_result_cbmi != null)
                 && _inverse_search_result_cbmi.isSelected());
         if (_graphics_export_visible_only_cbmi != null) {

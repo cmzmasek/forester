@@ -290,77 +290,6 @@ public class TreePanelUtil {
         }
     }
 
-//    final static int collapseByTaxonomicRank( final Phylogeny tree, final String rank, final TreePanel tree_panel ) {
-//        final Set<String> true_lineage_set = new HashSet<String>();
-//        for( final PhylogenyNodeIterator iter = tree.iteratorPreorder(); iter.hasNext(); ) {
-//            iter.next().setCollapse( false );
-//        }
-//        int collapsed = 0;
-//        for( final PhylogenyNodeIterator it = tree.iteratorPostorder(); it.hasNext(); ) {
-//            final PhylogenyNode n = it.next();
-//            if ( !n.isExternal() && n.getNodeData().isHasTaxonomy() && !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getRank() )
-//                    && n.getNodeData().getTaxonomy().getRank().equalsIgnoreCase( rank ) /*&& !n.isRoot()*/ ) {
-//                TreePanelUtil.collapseSubtree( n, true );
-//                ++collapsed;
-//                if ( !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getScientificName() ) ) {
-//                    true_lineage_set.add( n.getNodeData().getTaxonomy().getScientificName() );
-//                }
-//            }
-//        }
-//        for( final PhylogenyNodeIterator it = tree.iteratorPostorder(); it.hasNext(); ) {
-//            final PhylogenyNode node = it.next();
-//            if ( ( !node.isExternal() && !node.isCollapse() ) && node.getNodeData().isHasTaxonomy()
-//                    && !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getLineage() ) /* && !node.isRoot()*/ ) {
-//                boolean success = false;
-//                if ( !true_lineage_set.isEmpty() ) {
-//                    for( final String lin : node.getNodeData().getTaxonomy().getLineage() ) {
-//                        if ( true_lineage_set.contains( lin ) ) {
-//                            TreePanelUtil.collapseSubtree( node, true );
-//                            ++collapsed;
-//                            success = true;
-//                            break;
-//                        }
-//                    }
-//                }
-//                if ( !success ) {
-//                    final Map<String, String> lineage_to_rank_map = MainPanel.getLineageToRankMap();
-//                    for( final String lin : node.getNodeData().getTaxonomy().getLineage() ) {
-//                        final Taxonomy temp_tax = new Taxonomy();
-//                        temp_tax.setScientificName( lin );
-//                        if ( lineage_to_rank_map.containsKey( lin )
-//                                && !ForesterUtil.isEmpty( lineage_to_rank_map.get( lin ) )
-//                                && lineage_to_rank_map.get( lin ).equalsIgnoreCase( rank ) ) {
-//                             TreePanelUtil.collapseSubtree( node, true );
-//                            ++collapsed;
-//                            true_lineage_set.add( lin );
-//                            break;
-//                        }
-//                        else {
-//                            UniProtTaxonomy up = null;
-//                            try {
-//                                up = TaxonomyDataManager.obtainUniProtTaxonomy( temp_tax, null, null );
-//                            }
-//                            catch ( final Exception e ) {
-//                                e.printStackTrace();
-//                            }
-//                            if ( ( up != null ) && !ForesterUtil.isEmpty( up.getRank() ) ) {
-//                                lineage_to_rank_map.put( lin, up.getRank() );
-//                                System.out.println( lin + "->" + up.getRank() );
-//                                if ( up.getRank().equalsIgnoreCase( rank ) ) {
-//                                    TreePanelUtil.collapseSubtree( node, true );
-//                                    ++collapsed;
-//                                    true_lineage_set.add( lin );
-//                                    break;
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//        return collapsed;
-//    }
-
     final static int colorPhylogenyAccordingToRanks( final Phylogeny tree,
                                                      final String rank,
                                                      final TreePanel tree_panel ) {
@@ -485,14 +414,6 @@ public class TreePanelUtil {
             }
         }
         return sb.toString();
-    }
-
-    final static String getPartAfterColon( final String s ) {
-        final int i = s.indexOf( ':' );
-        if ( ( i < 1 ) || ( i == ( s.length() - 1 ) ) ) {
-            return s;
-        }
-        return s.substring( i + 1, s.length() );
     }
 
     final static boolean isHasAssignedEvent( final PhylogenyNode node ) {
