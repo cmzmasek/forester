@@ -421,6 +421,20 @@ public class Phylogeny {
         return nodes.get( 0 );
     }
 
+    public PhylogenyNode getNodePartialMatch( final String name ) {
+        if ( isEmpty() ) {
+            return null;
+        }
+        final List<PhylogenyNode> nodes = getNodesPartialMatch( name );
+        if ( ( nodes == null ) || ( nodes.size() < 1 ) ) {
+            throw new IllegalArgumentException( "node with \"" + name + "\" not found" );
+        }
+        if ( nodes.size() > 1 ) {
+            throw new IllegalArgumentException( "node with \"" + name + "\" not unique" );
+        }
+        return nodes.get( 0 );
+    }
+
     /**
      * This is time-inefficient since it runs a iterator each time it is called.
      *
@@ -454,6 +468,20 @@ public class Phylogeny {
         for( final PhylogenyNodeIterator iter = iteratorPreorder(); iter.hasNext(); ) {
             final PhylogenyNode n = iter.next();
             if ( n.getName().equals( name ) ) {
+                nodes.add( n );
+            }
+        }
+        return nodes;
+    }
+
+    public List<PhylogenyNode> getNodesPartialMatch( final String name ) {
+        if ( isEmpty() ) {
+            return null;
+        }
+        final List<PhylogenyNode> nodes = new ArrayList<PhylogenyNode>();
+        for( final PhylogenyNodeIterator iter = iteratorPreorder(); iter.hasNext(); ) {
+            final PhylogenyNode n = iter.next();
+            if ( n.getName().indexOf(name) > -1 ) {
                 nodes.add( n );
             }
         }

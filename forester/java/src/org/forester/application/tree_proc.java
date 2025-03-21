@@ -68,7 +68,9 @@ public class tree_proc {
         for( final PhylogenyNodeIterator iter = p.iteratorPostorder(); iter.hasNext(); ) {
             final PhylogenyNode node = iter.next();
             if ( node.isExternal() ) {
-                if ( !ForesterUtil.isEmpty( node.getName() ) ) {
+                node.getNodeData().setSequence(null);
+
+                /*if ( !ForesterUtil.isEmpty( node.getName() ) ) {
                     final String name = node.getName();
                     String species = "";
                     final Matcher m = species_p.matcher( name );
@@ -125,7 +127,11 @@ public class tree_proc {
                     }
                     ///////////
                 }
+                */
+
             }
+
+
         }
         try {
             final PhylogenyWriter writer = new PhylogenyWriter();

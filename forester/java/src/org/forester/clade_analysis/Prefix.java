@@ -41,7 +41,7 @@ public final class Prefix {
         return _prefix;
     }
     
-    public String getPrefixRemovSeparator() {
+    public String getPrefixRemoveSeparator() {
         return _prefix.replaceAll( Pattern.quote( _separator ), "" );
     }
 
@@ -58,7 +58,7 @@ public final class Prefix {
         return getPrefix() + ": " + df.format( getConfidence() );
     }
     
-    public String toStringRemovSeparator() {
-        return getPrefixRemovSeparator() + ": " + df.format( getConfidence() );
+    public String toStringRemoveSeparator() {
+        return getPrefixRemoveSeparator() + ": " + df.format( getConfidence() );
     }
 }

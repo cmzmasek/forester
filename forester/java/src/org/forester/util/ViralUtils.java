@@ -74,6 +74,15 @@ public final class ViralUtils {
             .compile("\\|([0-9]+\\.[0-9]+)\\]$");
 
 
+    // 1. type
+    // 2. location
+    // 3. number
+    // 4. year
+    //  |A/British_Columbia/PHL-2032/2024|2024-11-01|2.3.4.4b|PB1|A/British_Columbia/PHL-2032/2024_PB1|2|EPI3650020|A/British_Columbia/PHL-2032/2024|EPI_ISL_19548836
+    public final static Pattern PATTERN_G = Pattern
+            .compile("\\|([A-Z]+)/([A-Za-z_]+)/([A-Za-z_0-9-]+)/(\\d+)");
+
+
     private static final String XSD_STRING = "xsd:string";
 
     private static final String UNKNOWN = "unknown";
@@ -96,6 +105,7 @@ public final class ViralUtils {
             return "Canada goose";
         } else if (h.equals("dairy cattle")
                 || h.equals("bovine")
+                || h.equals("cattle milk product")
                 || h.equals("dairy cow")
                 || h.equals("cow")) {
             return "Cattle";
@@ -106,6 +116,10 @@ public final class ViralUtils {
             return "Cabots tern";
         } else if (h.indexOf("sterna hirundo") >= 0) {
             return "Common tern";
+        } else if (h.equals("pefa")) {
+            return "Peregrine falcon";
+        } else if (h.equals("cygnus olor")) {
+            return "Swan";
         } else {
             return host;
         }
@@ -118,6 +132,7 @@ public final class ViralUtils {
                 || l.equals("arizona")
                 || l.equals("arkansas")
                 || l.equals("california")
+                || l.equals("ca")
                 || l.equals("colorado")
                 || l.equals("connecticut")
                 || l.equals("delaware")
@@ -138,12 +153,32 @@ public final class ViralUtils {
                 || l.equals("wy")
                 || l.equals("mn")
                 || l.equals("co")
+                || l.equals("or")
                 || l.equals("ia")
                 || l.equals("id")
                 || l.equals("nm")
                 || l.equals("tx")
                 || l.equals("mi")
                 || l.equals("sd")
+                || l.equals("ok")
+                || l.equals("wa")
+                || l.equals("pa")
+                || l.equals("fl")
+                || l.equals("mt")
+                || l.equals("hi")
+                || l.equals("ut")
+                || l.equals("in")
+                || l.equals("il")
+                || l.equals("oh")
+                || l.equals("md")
+                || l.equals("sc")
+                || l.equals("mo")
+                || l.equals("az")
+                || l.equals("la")
+                || l.equals("tn")
+                || l.equals("ks")
+                || l.equals("ak")
+                || l.equals("nd")
                 || l.equals("maryland")
                 || l.equals("massachusetts")
                 || l.equals("michigan")
@@ -213,10 +248,10 @@ public final class ViralUtils {
                 || l.equals("huadong")
                 || l.equals("ningxia")
                 || l.equals("anhui")
-                || l.equals("st")
                 || l.equals("karakol lake")
                 || l.equals("sheny")
                 || l.equals("eastern china")
+                || l.equals("chn")
                 || l.equals("beijing")) {
             return "China";
         } else if (l.equals("champasak")
@@ -263,8 +298,16 @@ public final class ViralUtils {
                 || l.equals("macaebr") || l.equals("piumabr") || l.equals("riodasostrasbr") || l.equals("cabo friobr")
                 || l.equals("bertiogabr")) {
             return "Brazil";
+        } else if (l.equals("germany-nw")) {
+            return "Germany";
         } else if (l.equals("veracruz")) {
             return "Mexico";
+        } else if (l.equals("british columbia")) {
+            return "Canada";
+        } else if (l.startsWith("germany")) {
+            return "Germany";
+        } else if (l.equals("seedorf")) {
+            return "Germany";
         } else {
             return location;
         }
@@ -272,43 +315,43 @@ public final class ViralUtils {
 
     public static String determineState(final String location) {
         final String l = location.toLowerCase();
-        if (l.equals( "nh")) {
+        if (l.equals("nh")) {
             return "New Hampshire";
         }
-        if (l.equals( "ma") ) {
+        if (l.equals("ma")) {
             return "Massachusetts";
         }
-        if (l.equals( "me") ) {
+        if (l.equals("me")) {
             return "Maine";
         }
-        if (l.equals( "vt") ) {
+        if (l.equals("vt")) {
             return "Vermont";
         }
-        if (l.equals( "wy") ) {
+        if (l.equals("wy")) {
             return "Wyoming";
         }
-        if (l.equals( "mn") ) {
+        if (l.equals("mn")) {
             return "Minnesota";
         }
-        if (l.equals( "ia") ) {
+        if (l.equals("ia")) {
             return "Iowa";
         }
-        if (l.equals( "co") ) {
+        if (l.equals("co")) {
             return "Colorado";
         }
-        if (l.equals( "id") ) {
+        if (l.equals("id")) {
             return "Idaho";
         }
-        if (l.equals( "mi") ) {
+        if (l.equals("mi")) {
             return "Michigan";
         }
-        if (l.equals( "tx") ) {
+        if (l.equals("tx")) {
             return "Texas";
         }
-        if (l.equals( "nm") ) {
+        if (l.equals("nm")) {
             return "New Mexico";
         }
-        if (l.equals( "sd") ) {
+        if (l.equals("sd")) {
             return "South Dakota";
         }
 
@@ -423,17 +466,25 @@ public final class ViralUtils {
                 || c.equals("philippines") || c.equals("vietnam")
                 || c.equals("myanmar") || c.equals("timor_leste") || c.equals("indonesia")) {
             region = "Southeast Asia";
-        } else if (c.equals("mauritania") || c.equals("morocco") || c.equals("gambia") || c.equals("kenya") || c.equals("senegal")
-                || c.equals("south africa") || c.equals("tanzania") || c.equals("ghana") || c.equals("benin")
-                || c.equals("tunisia") || c.equals("nigeria") || c.equals("libya") || c.equals("djibouti")
-                || c.equals("sierra leone") || c.equals("guinea") || c.equals("botswana") || c.equals("lesotho")
-                || c.equals("ethiopia") || c.equals("namibia") || c.equals("malawi") || c.equals("mali") || c.equals("cameroon")) {
-            region = "Africa";
         } else if (c.equals("australia") || c.equals("new_zealand")) {
             region = "Oceania";
         } else if (c.equals("dominican republic") || c.equals("puerto rico") || c.equals("jamaica")
                 || c.equals("belize")) {
             region = "Caribbean";
+        } else if (c.equals("antarctica")) {
+            region = "Antarctica";
+        } else if (c.equals("morocco") || c.equals("tunisia") || c.equals("libya")) {
+            region = "North Africa";
+        } else if (c.equals("mauritania") || c.equals("gambia") || c.equals("senegal") || c.equals("ghana") || c.equals("benin")
+                || c.equals("liberia") || c.equals("nigeria") || c.equals("niger") || c.equals("togo") || c.equals("sierra leone")
+                || c.equals("guinea") || c.equals("cote d'ivoire") || c.equals("mali")) {
+            region = "West Africa";
+        } else if (c.equals("kenya") || c.equals("tanzania") || c.equals("uganda") || c.equals("rwanda") || c.equals("ethiopia") || c.equals("djibouti")) {
+            region = "East Africa";
+        } else if (c.equals("angola") || c.equals("chad") || c.equals("gabon") || c.equals("central african republic") || c.equals("cameroon") || c.indexOf("congo") >= 0) {
+            region = "Central Africa";
+        } else if (c.equals("south africa") || c.equals("malawi") || c.equals("botswana") || c.equals("lesotho") || c.equals("namibia")) {
+            region = "Southern Africa.";
         } else if (c.equals("na")) {
             region = "";
         } else {
@@ -500,6 +551,7 @@ public final class ViralUtils {
                 || h.equals("canine")
                 || h.equals("mink")
                 || h.equals("ferret")
+                || h.equals("bovine milk")
                 || h.equals("stone marten")) {
             hg1 = "Non-Human Mammal";
             hg2 = "Non-Human Mammal (domestic)";
@@ -515,16 +567,22 @@ public final class ViralUtils {
                 || h.equals("civet")
                 || h.equals("alpaca")
                 || h.equals("red fox")
+                || h.equals("panthera pardus")
+                || h.equals("panthera tigris")
                 || h.equals("house mouse")
+                || h.equals("bobcat")
+                || h.equals("bottlenose dolphin")
+                || h.startsWith("mustela")
+                || h.equals("pig")
         ) {
             hg1 = "Non-Human Mammal";
             hg2 = "Non-Human Mammal (wild)";
 
         } else if (h.equals("chicken")
-                || h.equals("duck")
+                || h.equals("domestic duck")
                 || h.equals("mallard")
                 || h.equals("turkey")
-                || h.equals("goose")
+                || h.equals("domestic goose")
                 || h.equals("muscovy duck")
                 || h.equals("poultry")) {
             hg1 = "Avian";
@@ -590,8 +648,31 @@ public final class ViralUtils {
                 || h.equals("lesser scaup")
                 || h.equals("house sparrow")
                 || h.equals("wild-bird")
+                || h.equals("wild goose")
+                || h.equals("american robin")
                 || h.equals("western kingbird")
                 || h.equals("eurasian collared dove")
+                || h.equals("peregrine falcon")
+                || h.equals("south polar skua")
+                || h.equals("horned grebe")
+                || h.equals("emu")
+                || h.equals("guineafowl")
+                || h.equals("peafowl")
+                || h.equals("seagull")
+                || h.equals("dove")
+                || h.equals("swan")
+                || h.equals("eurasian goshawk")
+                || h.equals("ostrich")
+                || h.equals("pheasant")
+                || h.equals("vulture")
+                || h.equals("rock pigeon")
+                || h.equals("white-winged dove")
+                || h.indexOf("stork") > -1
+                || h.indexOf("duck") > -1
+                || h.indexOf("pelican") > -1
+                || h.indexOf("goose") > -1
+                || h.indexOf("owl") > -1
+                || h.indexOf("hawk") > -1
         ) {
             hg1 = "Avian";
             hg2 = "Avian (wild)";

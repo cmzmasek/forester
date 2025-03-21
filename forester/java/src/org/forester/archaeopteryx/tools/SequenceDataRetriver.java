@@ -100,9 +100,7 @@ public final class SequenceDataRetriver extends RunnableProcess {
             }
             int i = 0;
             for( final String string : not_found ) {
-                if ( i > 19 ) {
-                    break;
-                }
+                System.out.println(string);
                 sb.append( string );
                 sb.append( "\n" );
                 ++i;

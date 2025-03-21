@@ -1,19 +1,21 @@
 
 package org.forester.clade_analysis;
 
-import java.io.File;
-
 import org.forester.io.parsers.PhylogenyParser;
+import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.io.parsers.util.ParserUtils;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.util.ForesterUtil;
 
+import java.io.File;
+import java.util.regex.Pattern;
+
 public class CladeAnalysisTest {
 
     private final static String PATH_TO_TEST_DATA = System.getProperty( "user.dir" ) + ForesterUtil.getFileSeparator()
-            + "test_data" + ForesterUtil.getFileSeparator();
+            + "forester/test_data" + ForesterUtil.getFileSeparator();
 
     public static void main( final String[] args ) {
         boolean failed = false;
@@ -31,6 +33,14 @@ public class CladeAnalysisTest {
         }
         if ( !testCladeAnalysis4() ) {
             System.out.println( "Clade analysis 4 failed" );
+            failed = true;
+        }
+        if ( !testCladeAnalysis5() ) {
+            System.out.println( "Clade analysis 5 failed" );
+            failed = true;
+        }
+        if ( !testCladeAnalysis6() ) {
+            System.out.println( "Clade analysis 6 failed" );
             failed = true;
         }
         if ( !failed ) {
@@ -718,11 +728,53 @@ public class CladeAnalysisTest {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
             final PhylogenyParser pp = ParserUtils.createParserDependingOnFileType( intreefile1, true );
             final Phylogeny p1 = factory.create( intreefile1, pp )[ 0 ];
-            final ResultMulti res2 = AnalysisMulti.execute( p1 );
+            final ResultMulti res2 = AnalysisMulti.execute(p1);
             res2.analyze( 0.3 );
             System.out.print( res2.toString() );
             System.out.println( "------------------------- " );
             System.out.println();
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace( System.out );
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean testCladeAnalysis5() {
+        try {
+            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+            final String t1s = "(((((A.1.1,Q_#1_M=1),A.1.2),(A.2.1,A.2.2)),((A.3.1,A.3.2),(A.4.1,A.4.2))),(((B.1,B.2),B.3),(C.1,C.2)))";
+            final Phylogeny t1 = factory.create( t1s, new NHXParser() )[ 0 ];
+            final ResultMulti res1 = AnalysisMulti.execute( t1,  ".", 0.6 );
+            res1.analyze( 0.3 );
+            System.out.print( res1.toString() );
+            System.out.println( "------------------------- " );
+            System.out.println();
+
+
+
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace( System.out );
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean testCladeAnalysis6() {
+        try {
+            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+            final String t1s = "(((((A.1.1,A.1.2),Q_#0_M=0.5),((A.2.1,A.2.2),Q_#1_M=0.5)),((A.3.1,A.3.2),(A.4.1,A.4.2))),(((B.1,B.2),B.3),(C.1,C.2)))";
+            final Phylogeny t1 = factory.create( t1s, new NHXParser() )[ 0 ];
+            final ResultMulti res1 = AnalysisMulti.execute( t1,  ".", 0.6 );
+            res1.analyze( 0.3 );
+            System.out.print( res1.toString() );
+            System.out.println( "------------------------- " );
+            System.out.println();
+
+
+
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );

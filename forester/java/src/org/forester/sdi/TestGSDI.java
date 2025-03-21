@@ -41,7 +41,7 @@ import org.forester.util.ForesterUtil;
 public final class TestGSDI {
 
     private final static String PATH_TO_TEST_DATA = System.getProperty( "user.dir" ) + ForesterUtil.getFileSeparator()
-            + "test_data" + ForesterUtil.getFileSeparator();
+            + "forester/test_data" + ForesterUtil.getFileSeparator();
 
     public static void main( final String[] args ) {
         if ( !TestGSDI.testGSDI_against_binary_gene_tree() ) {

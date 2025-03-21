@@ -296,7 +296,7 @@ public class vipr_x {
             region = "Central Asia";
         }
         else if ( c.equals( "kuwait" ) || c.equals( "jordan" ) || c.equals( "bahrain" ) || c.equals( "iraq" )
-                || c.equals( "saudi_arabia" ) || c.equals( "turkey" ) || c.equals( "egypt" ) || c.equals( "israel" )
+                || c.equals( "saudi arabia" ) || c.equals( "saudi_arabia" ) || c.equals( "turkey" ) || c.equals( "egypt" ) || c.equals( "israel" )
                 || c.equals( "west_bank" ) || c.equals( "iran" ) ) {
             region = "West Asia";
         }
@@ -327,7 +327,7 @@ public class vipr_x {
             region = "";
         }
         else {
-            System.out.println( "ERROR: unkknown country \"" + c + "\"" );
+            System.out.println( "ERROR: unknown country \"" + c + "\"" );
             System.exit( -1 );
         }
         if ( !ForesterUtil.isEmpty( region ) ) {

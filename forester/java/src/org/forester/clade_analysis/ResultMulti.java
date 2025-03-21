@@ -25,6 +25,7 @@
 
 package org.forester.clade_analysis;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -60,6 +61,7 @@ public final class ResultMulti {
     private int                 _matches                       = 0;
     private int                 _ref_tree_ext_nodes            = 0;
     private String              _query_name_prefix             = "";
+    private final static DecimalFormat df = new DecimalFormat( "0.0###" );
 
     ResultMulti( final String separator ) {
         if ( ForesterUtil.isEmpty( separator ) ) {
@@ -132,6 +134,44 @@ public final class ResultMulti {
 
     public int getReferenceTreeNumberOfExternalNodes() {
         return _ref_tree_ext_nodes;
+    }
+
+
+
+    public final String resultToString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append( "Query: " );
+        sb.append( getQueryNamePrefix() );
+        sb.append( ForesterUtil.LINE_SEPARATOR );
+        sb.append( "Consensus:" );
+        sb.append( ForesterUtil.LINE_SEPARATOR );
+        for( final Prefix prefix : _collapsed ) {
+            sb.append( prefix );
+            sb.append( ForesterUtil.LINE_SEPARATOR );
+        }
+
+        if ( !ForesterUtil.isEmpty( _all_down ) ) {
+            sb.append( ForesterUtil.LINE_SEPARATOR );
+            sb.append( "Matching Down-tree Bracketing Clade(s):" );
+            sb.append( ForesterUtil.LINE_SEPARATOR );
+            for( final Prefix prefix : _collapsed_down ) {
+                sb.append( prefix );
+                sb.append( ForesterUtil.LINE_SEPARATOR );
+            }
+        }
+        if ( !ForesterUtil.isEmpty( _all_up ) ) {
+            sb.append( ForesterUtil.LINE_SEPARATOR );
+            sb.append( "Matching Up-tree Bracketing Clade(s):" );
+            sb.append( ForesterUtil.LINE_SEPARATOR );
+            for( final Prefix prefix : _collapsed_up ) {
+                sb.append( prefix );
+                sb.append( ForesterUtil.LINE_SEPARATOR );
+            }
+        }
+        sb.append( ForesterUtil.LINE_SEPARATOR );
+        sb.append( "Total Number of Matches: " + getNumberOfMatches() + "/" + getReferenceTreeNumberOfExternalNodes() );
+        sb.append( ForesterUtil.LINE_SEPARATOR );
+        return sb.toString();
     }
 
     @Override

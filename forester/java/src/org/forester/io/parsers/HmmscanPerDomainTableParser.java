@@ -431,7 +431,9 @@ public final class HmmscanPerDomainTableParser {
                     addProtein( proteins, current_protein );
                 }
                 else if ( isVerbose() && !ForesterUtil.isEmpty( fail_query ) ) {
+
                     System.out.println( "Hmmscan parser: No domains in: " + fail_query );
+                    System.out.println( current_protein.toString() );
                 }
                 if ( getReturnType() == ReturnType.UNORDERED_PROTEIN_DOMAIN_COLLECTION_PER_PROTEIN ) {
                     current_protein = new BasicProtein( query, getSpecies(), qlen );

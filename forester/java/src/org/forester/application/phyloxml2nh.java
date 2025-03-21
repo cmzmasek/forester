@@ -19,8 +19,8 @@ import org.forester.util.ForesterUtil;
 
 public class phyloxml2nh {
 
-    private static final String PRG_DATE    = "2024-05-28";
-    private static final String PRG_VERSION = "1.0.1";
+    private static final String PRG_DATE    = "2024-11-25";
+    private static final String PRG_VERSION = "1.0.2";
     private static final String PRG_NAME    = "phyloxml2nh";
     public static void main( final String args[] ) {
         if ( ( args.length != 3 && args.length != 2 ) ) {
@@ -73,6 +73,14 @@ public class phyloxml2nh {
             }
             System.out.println("Replaced " + counter + " names");
         }
+
+        for (final PhylogenyNodeIterator iter = p.iteratorPostorder(); iter.hasNext(); ) {
+            final PhylogenyNode node = iter.next();
+            node.setName( node.getName().replaceAll("\\s+", "_"));
+        }
+
+
+
         final PhylogenyWriter writer = new PhylogenyWriter();
         try {
             writer.toNewHampshire( p, true, PhylogenyNode.NH_CONVERSION_SUPPORT_VALUE_STYLE.AS_INTERNAL_NODE_NAMES,outtree );

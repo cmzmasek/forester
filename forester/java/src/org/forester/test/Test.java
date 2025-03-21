@@ -131,9 +131,9 @@ import org.forester.ws.seqdb.UniProtTaxonomy;
 public final class Test {
 
     private final static String  PATH_TO_RESOURCES                = System.getProperty( "user.dir" )
-            + ForesterUtil.getFileSeparator() + "resources" + ForesterUtil.getFileSeparator();
+            + ForesterUtil.getFileSeparator() + "forester/resources" + ForesterUtil.getFileSeparator();
     private final static String  PATH_TO_TEST_DATA                = System.getProperty( "user.dir" )
-            + ForesterUtil.getFileSeparator() + "test_data" + ForesterUtil.getFileSeparator();
+            + ForesterUtil.getFileSeparator() + "forester/test_data" + ForesterUtil.getFileSeparator();
     private final static boolean PERFORM_DB_TESTS                 = false;
     private static final boolean PERFORM_WEB_TREE_ACCESS          = false;
     private static final boolean PERFORM_WEB_TREE_ACCESS_TREEBASE = false;

@@ -114,6 +114,7 @@ public final class segment_select {
             final Matcher m2 = ViralUtils.PATTERN_2.matcher(seq_name);
             final Matcher m1b = ViralUtils.PATTERN_1b.matcher(seq_name);
 
+
             String host = "";
             String location = "";
             String strain_number = "";
@@ -142,6 +143,7 @@ public final class segment_select {
                 location = m2.group(2).trim();
                 strain_number = m2.group(3).trim();
                 year = m2.group(4).trim();
+
 
             } else {
                 System.out.println("Warning: MSA name \"" + seq_name + "\" could not be matched");

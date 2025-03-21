@@ -25,6 +25,7 @@
 
 package org.forester.ws.seqdb;
 
+import java.util.List;
 import java.util.SortedSet;
 
 import org.forester.go.GoTerm;
@@ -61,4 +62,19 @@ public interface SequenceDatabaseEntry {
     public String getChromosome();
 
     public MolecularSequence getMolecularSequence();
+
+    public List<String> getTaxonomicLineage();
+
+    public String getStrain();
+
+    public String getViralHost();
+
+    public String getViralCountry();
+
+    public String getViralIsolate();
+
+    public String getCollectionDate();
+
+    public String getViralIsolationSource();
+
 }

@@ -93,7 +93,8 @@ public class vipr_xc {
             ++ext_nodes_count;
             String name = ext_node.getName();
             final String x[] = name.split("\\|");
-            final String name_acc = x[x.length - 1];
+            //final String name_acc = x[x.length - 1];
+            name = x[0];
             if (!ForesterUtil.isEmpty(name)) {
                 name = name.replaceAll(" ", "_").replace(",", "").replaceAll("'", "");
                 boolean could_map = false;
