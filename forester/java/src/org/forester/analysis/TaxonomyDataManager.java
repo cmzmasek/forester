@@ -57,14 +57,13 @@ import org.forester.ws.seqdb.UniProtTaxonomy;
 public final class TaxonomyDataManager extends RunnableProcess {
 
     enum QUERY_TYPE {
-        CODE, SN, CN, ID, LIN;
+        CODE, SN, ID, LIN;
     }
     private static final int                              MAX_CACHE_SIZE           = 100000;
     private static final int                              MAX_TAXONOMIES_TO_RETURN = 2000;
     private static final HashMap<String, UniProtTaxonomy> _sn_up_cache_map         = new HashMap<String, UniProtTaxonomy>();
     private static final HashMap<String, UniProtTaxonomy> _lineage_up_cache_map    = new HashMap<String, UniProtTaxonomy>();
     private static final HashMap<String, UniProtTaxonomy> _code_up_cache_map       = new HashMap<String, UniProtTaxonomy>();
-    private static final HashMap<String, UniProtTaxonomy> _cn_up_cache_map         = new HashMap<String, UniProtTaxonomy>();
     private static final HashMap<String, UniProtTaxonomy> _id_up_cache_map         = new HashMap<String, UniProtTaxonomy>();
     private final Phylogeny                               _phy;
     private final MainFrameApplication                    _mf;
@@ -99,19 +98,12 @@ public final class TaxonomyDataManager extends RunnableProcess {
         if ( getLineageTaxCacheMap().size() > MAX_CACHE_SIZE ) {
             getLineageTaxCacheMap().clear();
         }
-        if ( getCnTaxCacheMap().size() > MAX_CACHE_SIZE ) {
-            getCnTaxCacheMap().clear();
-        }
         if ( getCodeTaxCacheMap().size() > MAX_CACHE_SIZE ) {
             getCodeTaxCacheMap().clear();
         }
         if ( getIdTaxCacheMap().size() > MAX_CACHE_SIZE ) {
             getIdTaxCacheMap().clear();
         }
-    }
-
-    synchronized final static HashMap<String, UniProtTaxonomy> getCnTaxCacheMap() {
-        return _cn_up_cache_map;
     }
 
     synchronized final static HashMap<String, UniProtTaxonomy> getCodeTaxCacheMap() {
@@ -151,12 +143,8 @@ public final class TaxonomyDataManager extends RunnableProcess {
                 case SN:
                     up_taxonomies = getTaxonomiesFromScientificName( ( String ) query );
                     break;
-                case CN:
-                    up_taxonomies = getTaxonomiesFromCommonName( ( String ) query );
-                    break;
                 case LIN:
                     return obtainUniProtTaxonomyFromLineage( ( List<String> ) query );
-                    
                 default:
                     throw new RuntimeException();
             }
@@ -168,9 +156,6 @@ public final class TaxonomyDataManager extends RunnableProcess {
                 if ( !ForesterUtil.isEmpty( up_tax.getCode() ) ) {
                     TaxonomyDataManager.getCodeTaxCacheMap().put( up_tax.getCode(), up_tax );
                 }
-                if ( !ForesterUtil.isEmpty( up_tax.getCommonName() ) ) {
-                    TaxonomyDataManager.getCnTaxCacheMap().put( up_tax.getCommonName(), up_tax );
-                }
                 if ( !ForesterUtil.isEmpty( up_tax.getId() ) ) {
                     TaxonomyDataManager.getIdTaxCacheMap().put( up_tax.getId(), up_tax );
                 }
@@ -180,10 +165,6 @@ public final class TaxonomyDataManager extends RunnableProcess {
                 return null;
             }
         }
-    }
-
-    private final static List<UniProtTaxonomy> getTaxonomiesFromCommonName( final String query ) throws IOException {
-        return SequenceDbWsTools.getTaxonomiesFromCommonNameStrict( query, MAX_TAXONOMIES_TO_RETURN );
     }
 
     private final static List<UniProtTaxonomy> getTaxonomiesFromId( final String query ) throws IOException {
@@ -202,10 +183,7 @@ public final class TaxonomyDataManager extends RunnableProcess {
     }
 
     private final static List<UniProtTaxonomy> getTaxonomiesFromTaxonomyCode( final String query ) throws IOException {
-        //FIXME fix "SPHAR" issue
-        if ( ( ( query.indexOf( "XX" ) == 3 ) && TaxonomyUtil.isHasTaxIdFromFakeTaxCode( query ) )
-                || query.equals( "SPHAR" ) /* TODO remove me, is same as Sphingomonas aromaticivorans */
-                ) {
+        if ( ( ( query.indexOf( "XX" ) == 3 ) && TaxonomyUtil.isHasTaxIdFromFakeTaxCode( query ) ) ) {
             final int id = TaxonomyUtil.getTaxIdFromFakeTaxCode( query );
             return SequenceDbWsTools.getTaxonomiesFromId( String.valueOf( id ), MAX_TAXONOMIES_TO_RETURN );
         }
@@ -321,11 +299,7 @@ public final class TaxonomyDataManager extends RunnableProcess {
             qt = QUERY_TYPE.CODE;
             return obtainTaxonomy( TaxonomyDataManager.getCodeTaxCacheMap(), query, qt );
         }
-        else {
-            query = tax.getCommonName();
-            qt = QUERY_TYPE.CN;
-            return obtainTaxonomy( TaxonomyDataManager.getCnTaxCacheMap(), query, qt );
-        }
+        return null;
     }
 
     public final static UniProtTaxonomy obtainUniProtTaxonomy( final String simple_name, QUERY_TYPE qt )
@@ -335,7 +309,7 @@ public final class TaxonomyDataManager extends RunnableProcess {
         }
         UniProtTaxonomy ut = null;
         final String code = ParserUtils.extractTaxonomyCodeFromNodeName( simple_name,
-                                                                         NHXParser.TAXONOMY_EXTRACTION.AGGRESSIVE );
+                                                                         NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT );
         if ( !ForesterUtil.isEmpty( code ) ) {
             qt = QUERY_TYPE.CODE;
             ut = obtainTaxonomy( TaxonomyDataManager.getCodeTaxCacheMap(), code, qt );
@@ -350,7 +324,7 @@ public final class TaxonomyDataManager extends RunnableProcess {
         if ( ut == null ) {
             final String id = ParserUtils
                     .extractUniprotTaxonomyIdFromNodeName( simple_name,
-                                                           NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
+                                                           NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT );
             if ( !ForesterUtil.isEmpty( id ) ) {
                 qt = QUERY_TYPE.ID;
                 ut = obtainTaxonomy( TaxonomyDataManager.getIdTaxCacheMap(), id, qt );
@@ -417,10 +391,6 @@ public final class TaxonomyDataManager extends RunnableProcess {
                     TaxonomyDataManager.getCodeTaxCacheMap().put( least_specific_up_tax.getCode(),
                                                                   least_specific_up_tax );
                 }
-                if ( !ForesterUtil.isEmpty( least_specific_up_tax.getCommonName() ) ) {
-                    TaxonomyDataManager.getCnTaxCacheMap().put( least_specific_up_tax.getCommonName(),
-                                                                least_specific_up_tax );
-                }
                 if ( !ForesterUtil.isEmpty( least_specific_up_tax.getId() ) ) {
                     TaxonomyDataManager.getIdTaxCacheMap().put( least_specific_up_tax.getId(), least_specific_up_tax );
                 }
@@ -446,10 +416,6 @@ public final class TaxonomyDataManager extends RunnableProcess {
                 && ForesterUtil.isEmpty( tax.getTaxonomyCode() ) ) {
             tax.setTaxonomyCode( up_tax.getCode() );
         }
-        if ( ( qt != QUERY_TYPE.CN ) && !ForesterUtil.isEmpty( up_tax.getCommonName() )
-                && ForesterUtil.isEmpty( tax.getCommonName() ) ) {
-            tax.setCommonName( up_tax.getCommonName() );
-        }
         if ( !ForesterUtil.isEmpty( up_tax.getSynonym() ) && !tax.getSynonyms().contains( up_tax.getSynonym() ) ) {
             tax.getSynonyms().add( up_tax.getSynonym() );
         }
@@ -468,6 +434,7 @@ public final class TaxonomyDataManager extends RunnableProcess {
         if ( up_tax.getLineage() != null ) {
             tax.setLineage( new ArrayList<String>() );
             for( final String lin : up_tax.getLineage() ) {
+                System.out.println(">>>>>>>>" + lin);
                 if ( !ForesterUtil.isEmpty( lin ) ) {
                     tax.getLineage().add( lin );
                 }

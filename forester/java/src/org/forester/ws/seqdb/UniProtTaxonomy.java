@@ -47,6 +47,8 @@ public final class UniProtTaxonomy {
     public static final String X = "x";
 
     public UniProtTaxonomy(final String line) {
+        //Taxon Id	Mnemonic	Scientific name	Common name	Other Names	Reviewed	Rank	Lineage	Parent	Virus hosts
+        //0         1           2               3           4           5           6       7               8
         final String[] items = line.split("\t");
         if (items.length < 5) {
             throw new IllegalArgumentException("cannot parse uniprot taxonomy from: " + line);
@@ -57,13 +59,13 @@ public final class UniProtTaxonomy {
         _common_name = items[3].trim();
         _synonym = items[4].trim();
         if (items.length > 6) {
-            _rank = items[7].trim();
+            _rank = items[6].trim();
         } else {
             _rank = "";
         }
         String[] lin = null;
         if (items.length > 8) {
-            lin = items[8].split("; ");
+            lin = items[7].split(", ");
         }
         _lineage = new ArrayList<String>();
         if ((lin != null) && (lin.length > 0)) {

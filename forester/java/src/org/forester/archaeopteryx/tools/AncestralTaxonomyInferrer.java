@@ -49,7 +49,7 @@ public class AncestralTaxonomyInferrer extends RunnableProcess {
     }
 
     public static String getBaseUrl() {
-        return SequenceDbWsTools.BASE_UNIPROT_URL;
+        return SequenceDbWsTools.BASE_UNIPROT_REST_URL;
     }
 
     private void inferTaxonomies() {

@@ -51,32 +51,16 @@ import org.forester.util.SequenceAccessionTools;
 
 public final class SequenceDbWsTools {
 
-    public final static String BASE_UNIPROT_URL = "https://www.uniprot.org/";
+    public final static String BASE_UNIPROT_REST_URL = "https://rest.uniprot.org/";
     public final static int DEFAULT_LINES_TO_RETURN = 4000;
-    public final static String EMBL_DBS_REFSEQ_N = "refseqn";
-    public final static String EMBL_DBS_REFSEQ_P = "refseqp";
     public final static String EMBL_GENBANK = "https://www.ebi.ac.uk/Tools/dbfetch/dbfetch?db=GENBANK&style=raw&id=";
     public final static String EMBL_REFSEQN = "https://www.ebi.ac.uk/Tools/dbfetch/dbfetch?db=refseqn&style=raw&id=";
 
     public final static String EMBL_EMBL = "https://www.ebi.ac.uk/Tools/dbfetch/dbfetch?db=EMBL&style=raw&id=";
-    private final static boolean DEBUG = false;
+    private final static boolean DEBUG = true;
     private final static String URL_ENC = "UTF-8";
     private final static int SLEEP = 200;
     private static final boolean ALLOW_TO_OVERWRITE_MOL_SEQ = false;
-
-    public static List<UniProtTaxonomy> getTaxonomiesFromCommonNameStrict(final String cn, final int max_taxonomies_return) throws IOException {
-        final List<UniProtTaxonomy> taxonomies = getTaxonomiesFromCommonName(cn, max_taxonomies_return);
-        if ((taxonomies != null) && (taxonomies.size() > 0)) {
-            final List<UniProtTaxonomy> filtered_taxonomies = new ArrayList<>();
-            for (final UniProtTaxonomy taxonomy : taxonomies) {
-                if (taxonomy.getCommonName().equalsIgnoreCase(cn)) {
-                    filtered_taxonomies.add(taxonomy);
-                }
-            }
-            return filtered_taxonomies;
-        }
-        return null;
-    }
 
     public static List<UniProtTaxonomy> getTaxonomiesFromId(final String id, final int max_taxonomies_return) throws IOException {
         final List<String> result = getTaxonomyStringFromId(id, max_taxonomies_return);
@@ -106,8 +90,7 @@ public final class SequenceDbWsTools {
     }
 
     public static List<UniProtTaxonomy> getTaxonomiesFromTaxonomyCode(final String code, final int max_taxonomies_return) throws IOException {
-        final String my_code = new String(code);
-        final List<String> result = getTaxonomyStringFromTaxonomyCode(my_code, max_taxonomies_return);
+        final List<String> result = getTaxonomyStringFromTaxonomyCode(code, max_taxonomies_return);
         if (result.size() > 0) {
             return parseUniProtTaxonomy(result);
         }
@@ -254,7 +237,7 @@ public final class SequenceDbWsTools {
     }
 
     public static List<String> queryUniprot(final String query, final int max_lines_to_return) throws IOException {
-        return queryDb(query, max_lines_to_return, BASE_UNIPROT_URL);
+        return queryDb(query, max_lines_to_return, BASE_UNIPROT_REST_URL);
     }
 
     final static String extractFrom(final String target, final String a) {
@@ -459,13 +442,7 @@ public final class SequenceDbWsTools {
         return URLEncoder.encode(str.trim(), URL_ENC);
     }
 
-    private static List<UniProtTaxonomy> getTaxonomiesFromCommonName(final String cn, final int max_taxonomies_return) throws IOException {
-        final List<String> result = getTaxonomyStringFromCommonName(cn, max_taxonomies_return);
-        if (result.size() > 0) {
-            return parseUniProtTaxonomy(result);
-        }
-        return null;
-    }
+
 
     private static List<UniProtTaxonomy> getTaxonomiesFromScientificName(final String sn, final int max_taxonomies_return) throws IOException {
         final List<String> result = getTaxonomyStringFromScientificName(sn, max_taxonomies_return);
@@ -475,20 +452,18 @@ public final class SequenceDbWsTools {
         return null;
     }
 
-    private static List<String> getTaxonomyStringFromCommonName(final String cn, final int max_lines_to_return) throws IOException {
-        return queryUniprot("taxonomy/?query=common%3a%22" + encode(cn) + "%22&format=tab", max_lines_to_return);
-    }
+
 
     private static List<String> getTaxonomyStringFromId(final String id, final int max_lines_to_return) throws IOException {
         return queryUniprot("taxonomy/" + encode(id) + ".tsv", max_lines_to_return);
     }
 
     private static List<String> getTaxonomyStringFromScientificName(final String sn, final int max_lines_to_return) throws IOException {
-        return queryUniprot("taxonomy/?query=scientific%3a%22" + encode(sn) + "%22&format=tab", max_lines_to_return);
+        return queryUniprot("taxonomy/search?&format=tsv&size=500&query=" + encode(sn), max_lines_to_return);
     }
 
     private static List<String> getTaxonomyStringFromTaxonomyCode(final String code, final int max_lines_to_return) throws IOException {
-        return queryUniprot("taxonomy/?query=mnemonic%3a%22" + encode(code) + "%22&format=tab", max_lines_to_return);
+        return queryUniprot("taxonomy/search?&format=tsv&size=500&query=" + encode(code), max_lines_to_return);
     }
 
     private final static boolean isAccessionAcceptable(final Accession acc) {

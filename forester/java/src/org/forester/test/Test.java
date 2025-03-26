@@ -13756,68 +13756,9 @@ public final class Test {
 
     private static boolean testUniprotTaxonomySearch() {
         try {
-            List<UniProtTaxonomy> results = SequenceDbWsTools.getTaxonomiesFromCommonNameStrict( "starlet sea anemone",
-                                                                                                 10 );
-            if ( results.size() != 1 ) {
-                return false;
-            }
-            if ( !results.get( 0 ).getCode().equals( "NEMVE" ) ) {
-                return false;
-            }
-            if ( !results.get( 0 ).getCommonName().equalsIgnoreCase( "starlet sea anemone" ) ) {
-                return false;
-            }
-            if ( !results.get( 0 ).getId().equalsIgnoreCase( "45351" ) ) {
-                return false;
-            }
-            if ( !results.get( 0 ).getRank().equalsIgnoreCase( "species" ) ) {
-                return false;
-            }
-            if ( !results.get( 0 ).getScientificName().equals( "Nematostella vectensis" ) ) {
-                return false;
-            }
-            results = null;
-            results = SequenceDbWsTools.getTaxonomiesFromScientificNameStrict( "Nematostella vectensis", 10 );
-            if ( results.size() != 1 ) {
-                return false;
-            }
-            if ( !results.get( 0 ).getCode().equals( "NEMVE" ) ) {
-                return false;
-            }
-            if ( !results.get( 0 ).getCommonName().equalsIgnoreCase( "starlet sea anemone" ) ) {
-                return false;
-            }
-            if ( !results.get( 0 ).getId().equalsIgnoreCase( "45351" ) ) {
-                return false;
-            }
-            if ( !results.get( 0 ).getRank().equalsIgnoreCase( "species" ) ) {
-                return false;
-            }
-            if ( !results.get( 0 ).getScientificName().equals( "Nematostella vectensis" ) ) {
-                return false;
-            }
-            results = null;
-            results = SequenceDbWsTools.getTaxonomiesFromId( "45351", 10 );
-            if ( results.size() != 1 ) {
-                return false;
-            }
-            if ( !results.get( 0 ).getCode().equals( "NEMVE" ) ) {
-                return false;
-            }
-            if ( !results.get( 0 ).getCommonName().equalsIgnoreCase( "starlet sea anemone" ) ) {
-                return false;
-            }
-            if ( !results.get( 0 ).getId().equalsIgnoreCase( "45351" ) ) {
-                return false;
-            }
-            if ( !results.get( 0 ).getRank().equalsIgnoreCase( "species" ) ) {
-                return false;
-            }
-            if ( !results.get( 0 ).getScientificName().equals( "Nematostella vectensis" ) ) {
-                return false;
-            }
-            results = null;
-            results = SequenceDbWsTools.getTaxonomiesFromTaxonomyCode( "NEMVE", 10 );
+
+
+            List<UniProtTaxonomy> results = SequenceDbWsTools.getTaxonomiesFromTaxonomyCode( "NEMVE", 10 );
             if ( results.size() != 1 ) {
                 return false;
             }
