@@ -413,7 +413,6 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
                 if (line.indexOf("strain=\"") > 0) {
                     e.setStrain(SequenceDbWsTools.extractFromRemoveLast(line, "strain=\""));
                 }
-
                 if (line.indexOf("isolate=\"") > 0) {
                     e.setViralIsolate(SequenceDbWsTools.extractFromRemoveLast(line, "isolate=\""));
                 }
@@ -426,8 +425,6 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
                 if (line.indexOf("collection_date=\"") > 0) {
                     e.setCollectionDate(SequenceDbWsTools.extractFromRemoveLast(line, "collection_date=\""));
                 }
-
-
             }
             if (in_cds || in_gene) {
                 final Matcher hgnc = hgnc_PATTERN.matcher(line);

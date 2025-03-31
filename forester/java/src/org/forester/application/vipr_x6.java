@@ -37,8 +37,8 @@ public class vipr_x6 {
     public final static Pattern GENOTYPE_PATTERN_2 = Pattern.compile("enotype\\s+([A-Z0-9]+)");
     public final static Pattern GENOTYPE_PATTERN_3 = Pattern.compile("ubgroup\\s+([A-Z0-9]+)");
     private static final boolean VERBOSE = true;
-    private static final String PRG_DATE = "2025-03-28";
-    private static final String PRG_VERSION = "1.0.2";
+    private static final String PRG_DATE = "2025-03-31";
+    private static final String PRG_VERSION = "1.0.3";
 
     private static final int COL_GENOME_ID = 0;
     private static final int COL_STRAIN = 15;
@@ -341,12 +341,19 @@ public class vipr_x6 {
                     ViralUtils.addRegion(m_isolation_country, custom_data, REGION);
                 }
 
-                final String new_name = makeNewName(name);
+                String new_name = cleanName(name);
 
-                if (!ForesterUtil.isEmpty(new_name)) {
+                boolean make_new_name = true;
+
+                if (make_new_name && !ForesterUtil.isEmpty( genbank_acc )) {
+                    new_name = genbank_acc;
+                    if (!ForesterUtil.isEmpty( m_strain )) {
+                        new_name = new_name + "|" + m_strain;
+                    }
+                }
+                if (!ForesterUtil.isEmpty( new_name)) {
                     ext_node.setName(new_name);
                 }
-                ext_node.setName(new_name);
                 System.out.println("New Name: " + new_name);
                 System.out.println("---");
             }
@@ -501,7 +508,6 @@ public class vipr_x6 {
             //clade = "I";
         } else if (name_lc.indexOf("gabon") > 0) {
             loc = "Gabon";
-
         } else if (name_lc.indexOf("rwanda") > 0) {
             loc = "Rwanda";
         } else if (name_lc.indexOf("nycphl") > 0) {
@@ -516,7 +522,7 @@ public class vipr_x6 {
         return loc;
     }
 
-    private final static String makeNewName(final String name) {
+    private final static String cleanName(final String name) {
         String new_name = name;
 
         new_name = new_name.replaceAll("\\|\\|", "|");
