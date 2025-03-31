@@ -33,11 +33,12 @@ public class vipr_x6 {
 
     public final static Pattern PATTERN4_YEAR = Pattern.compile("_([12]\\d{3})_");
 
-
+    public final static Pattern GENOTYPE_PATTERN = Pattern.compile("/\\[([A-Z0-9]+)\\]");
+    public final static Pattern GENOTYPE_PATTERN_2 = Pattern.compile("enotype\\s+([A-Z0-9]+)");
+    public final static Pattern GENOTYPE_PATTERN_3 = Pattern.compile("ubgroup\\s+([A-Z0-9]+)");
     private static final boolean VERBOSE = true;
-    private static final boolean DIE_ON_ERROR = false;
-    private static final String PRG_DATE = "2024-12-03";
-    private static final String PRG_VERSION = "1.0.1";
+    private static final String PRG_DATE = "2025-03-28";
+    private static final String PRG_VERSION = "1.0.2";
 
     private static final int COL_GENOME_ID = 0;
     private static final int COL_STRAIN = 15;
@@ -61,6 +62,8 @@ public class vipr_x6 {
     private static final String STRAIN = "vipr:Strain_Number";
     private static final String YEAR = "vipr:Year";
     private static final String SUBTYPE = "vipr:Subtype";
+
+    private static final String GENOTYPE = "vipr:Genotype";
     private static final String REGION = "vipr:Region";
     private static final String STATE = "vipr:State";
     private static final String GB_ACCESSTION = "vipr:GB_Accession";
@@ -76,7 +79,7 @@ public class vipr_x6 {
 
     public static void main(final String args[]) {
         ForesterUtil.printProgramInformation(PRG_NAME, PRG_VERSION, PRG_DATE);
-        if (args.length != 3 && args.length != 5) {
+        if (args.length != 3 && args.length != 4 && args.length != 5) {
             System.out.println("\nWrong number of arguments, expected: intree mapfile outtree [name] [reroot node query]\n");
             System.out.println("    Examples: s4.xml map.txt seg_4.xml");
             System.out.println("              s4.xml map.txt seg_4.xml \"segment 4 2024-02-05\" \"/2003\"\n");
@@ -92,6 +95,9 @@ public class vipr_x6 {
         if (args.length == 5) {
             tree_name = args[3].trim();
             reroot = args[4].trim();
+        } else if (args.length == 4) {
+            tree_name = args[3].trim();
+            reroot = null;
         } else {
             tree_name = null;
             reroot = null;
@@ -122,10 +128,7 @@ public class vipr_x6 {
         } catch (final IOException e) {
             ForesterUtil.fatalError(PRG_NAME, e.getMessage());
         }
-
         if (VERBOSE) {
-
-
             for (int r = 0; r < map.getNumberOfRows(); ++r) {
                 String m_strain = map.getValue(COL_STRAIN, r).replaceAll("\"", "");
                 System.out.println("Strain: " + m_strain);
@@ -171,6 +174,7 @@ public class vipr_x6 {
                 String strain_number = null;
 
                 String subtype = null;
+                String genotype = null;
                 String genbank_acc = "";
                 String bv_acc = "";
                 if (mg.find()) {
@@ -180,7 +184,20 @@ public class vipr_x6 {
                     bv_acc = mbv.group(1).trim();
                 }
 
-
+                final Matcher mgt = GENOTYPE_PATTERN.matcher(name);
+                if (mgt.find()) {
+                    genotype = mgt.group(1).trim();
+                } else {
+                    final Matcher mgt2 = GENOTYPE_PATTERN_2.matcher(name);
+                    if (mgt2.find()) {
+                        genotype = mgt2.group(1).trim();
+                    } else {
+                        final Matcher mgt3 = GENOTYPE_PATTERN_3.matcher(name);
+                        if (mgt3.find()) {
+                            genotype = mgt3.group(1).trim();
+                        }
+                    }
+                }
 
                 String m_hostname_sci = null;
                 String m_coldate = null;
@@ -227,15 +244,17 @@ public class vipr_x6 {
                     m_hostname_sci = obtainHostFromName(name);
                 }
 
+
                 if (VERBOSE) {
                     System.out.println();
                     System.out.println();
                     System.out.println("Name    : " + name);
                     System.out.println("Strain  : " + m_strain);
                     System.out.println("Segment : " + m_segment);
-                    System.out.println("Subtype: " + m_subtype);
-                    System.out.println("Lineage: " + m_lineage);
-                    System.out.println("Clade: " + m_clade);
+                    System.out.println("Subtype : " + m_subtype);
+                    System.out.println("Lineage : " + m_lineage);
+                    System.out.println("Clade   : " + m_clade);
+                    System.out.println("Genotype: " + genotype);
                     System.out.println("Subclade: " + m_subclade);
                     System.out.println("Country : " + m_isolation_country);
                     System.out.println("Genbank : " + m_genbank);
@@ -255,15 +274,15 @@ public class vipr_x6 {
                     }
                 }
 
-                if ( ForesterUtil.isEmpty(year)) {
+                if (ForesterUtil.isEmpty(year)) {
                     year = obtainYearFromName(name);
                 }
 
-                if ( !ForesterUtil.isEmpty(year)) {
+                if (!ForesterUtil.isEmpty(year)) {
                     checkYear(year);
                 }
 
-                System.out.println("Year : " + year);
+                System.out.println("Year    : " + year);
 
                 if (ForesterUtil.isEmpty(m_isolation_country)) {
                     System.out.println("WARNING: No country for " + name);
@@ -291,9 +310,12 @@ public class vipr_x6 {
                 if (!ForesterUtil.isEmpty(subtype)) {
                     custom_data.addProperty(new Property(SUBTYPE, subtype, "", XSD_STRING, AppliesTo.NODE));
                 }
+                if (!ForesterUtil.isEmpty(genotype)) {
+                    custom_data.addProperty(new Property(GENOTYPE, genotype, "", XSD_STRING, AppliesTo.NODE));
+                }
                 if (!ForesterUtil.isEmpty(m_hostname_sci)) {
                     m_hostname_sci = m_hostname_sci.replace('_', ' ');
-                    if ( m_hostname_sci.equalsIgnoreCase("human") ) {
+                    if (m_hostname_sci.equalsIgnoreCase("human")) {
                         m_hostname_sci = "Homo sapiens";
                     }
                     custom_data.addProperty(new Property(HOST, m_hostname_sci, "", XSD_STRING, AppliesTo.NODE));
@@ -325,7 +347,7 @@ public class vipr_x6 {
                     ext_node.setName(new_name);
                 }
                 ext_node.setName(new_name);
-                System.out.println(new_name);
+                System.out.println("New Name: " + new_name);
                 System.out.println("---");
             }
         }
@@ -409,7 +431,6 @@ public class vipr_x6 {
             ForesterUtil.fatalError(PRG_NAME, "cannot re-root with " + reroot);
         }
     }
-
 
 
     private static final String obtainHostFromName(final String name) {
@@ -504,12 +525,12 @@ public class vipr_x6 {
 
         new_name = new_name.replaceAll("\\s+Monkeypox virus", "|Monkeypox virus");
 
-        if (new_name.indexOf(", partial") > 1) {
+        /*if (new_name.indexOf(", partial") > 1) {
             new_name = new_name.substring(0, new_name.indexOf(", partial"));
         }
         if (new_name.indexOf(", complete") > 1) {
             new_name = new_name.substring(0, new_name.indexOf(", complete"));
-        }
+        }*/
         if (new_name.endsWith("|")) {
             new_name = new_name.substring(0, new_name.length() - 1);
         }

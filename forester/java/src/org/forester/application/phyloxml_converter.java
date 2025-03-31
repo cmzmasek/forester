@@ -47,282 +47,272 @@ import org.forester.util.ForesterUtil;
 
 public class phyloxml_converter {
 
-    final static private String HELP_OPTION_1                     = "help";
-    final static private String HELP_OPTION_2                     = "h";
-    final static private String FIELD_OPTION                      = "f";
-    final static private String FIELD_CLADE_NAME                  = "nn";
-    final static private String FIELD_TAXONOMY_CODE               = "tc";
-    final static private String FIELD_TAXONOMY_SCI_NAME           = "sn";
-    final static private String FIELD_TAXONOMY_COMM_NAME          = "cn";
-    final static private String FIELD_SEQUENCE_GENE_NAME          = "gn";
-    final static private String FIELD_SEQUENCE_SYMBOL             = "sy";
+    final static private String HELP_OPTION_1 = "help";
+    final static private String HELP_OPTION_2 = "h";
+    final static private String FIELD_OPTION = "f";
+    final static private String FIELD_CLADE_NAME = "nn";
+    final static private String FIELD_TAXONOMY_CODE = "tc";
+    final static private String FIELD_TAXONOMY_SCI_NAME = "sn";
+    final static private String FIELD_TAXONOMY_COMM_NAME = "cn";
+    final static private String FIELD_SEQUENCE_GENE_NAME = "gn";
+    final static private String FIELD_SEQUENCE_SYMBOL = "sy";
     final static private String FIELD_UNIPROT_TAXONOMY_ID_SPLIT_1 = "i1";
     final static private String FIELD_UNIPROT_TAXONOMY_ID_SPLIT_2 = "i2";
-    final static private String FIELD_DUMMY                       = "dummy";
-    final static private String INTERNAL_NAMES_ARE_BOOT_SUPPPORT  = "i";
-    final static private String MIDPOINT_REROOT                   = "m";
-    final static private String EXTRACT_TAXONOMY                  = "xt";
-    final static private String EXTRACT_TAXONOMY_PF               = "xp";
-    final static private String ORDER_SUBTREES                    = "o";
-    final static private String NO_TREE_LEVEL_INDENDATION         = "ni";
-    final static private String REPLACE_UNDER_SCORES              = "ru";
-    final static private String IGNORE_QUOTES                     = "iqs";
-    final static private String CONFIDENCE_TYPE                   = "c";
-    final static private String PRG_NAME                          = "phyloxml_converter";
-    final static private String PRG_VERSION                       = "1.3.1";
-    final static private String PRG_DATE                          = "2024-06-06";
-    final static private String E_MAIL                            = "phyloxml@gmail.com";
-    final static private String WWW                               = "sites.google.com/site/cmzmasek/home/software/forester/phyloxml-converter";
+    final static private String FIELD_DUMMY = "dummy";
+    final static private String INTERNAL_NAMES_ARE_BOOT_SUPPPORT = "i";
+    final static private String MIDPOINT_REROOT = "m";
+    final static private String EXTRACT_TAXONOMY = "xt";
+    final static private String EXTRACT_TAXONOMY_PF = "xp";
+    final static private String ORDER_SUBTREES = "o";
+    final static private String NO_TREE_LEVEL_INDENDATION = "ni";
+    final static private String REPLACE_UNDER_SCORES = "ru";
+    final static private String IGNORE_QUOTES = "iqs";
+    final static private String CONFIDENCE_TYPE = "c";
+    final static private String PRG_NAME = "phyloxml_converter";
+    final static private String PRG_VERSION = "1.3.2";
+    final static private String PRG_DATE = "2025-03-31";
 
-    public static void main( final String args[] ) throws PhyloXmlDataFormatException {
-        ForesterUtil.printProgramInformation( PRG_NAME, PRG_VERSION, PRG_DATE, E_MAIL, WWW );
+    public static void main(final String args[]) throws PhyloXmlDataFormatException {
+        ForesterUtil.printProgramInformation(PRG_NAME, PRG_VERSION, PRG_DATE);
         CommandLineArguments cla = null;
         try {
-            cla = new CommandLineArguments( args );
+            cla = new CommandLineArguments(args);
+        } catch (final Exception e) {
+            ForesterUtil.fatalError(PRG_NAME, e.getMessage());
         }
-        catch ( final Exception e ) {
-            ForesterUtil.fatalError( PRG_NAME, e.getMessage() );
-        }
-        if ( cla.isOptionSet( HELP_OPTION_1 ) || cla.isOptionSet( HELP_OPTION_2 ) || ( args.length == 0 ) ) {
+        if (cla.isOptionSet(HELP_OPTION_1) || cla.isOptionSet(HELP_OPTION_2) || (args.length == 0)) {
             printHelp();
-            System.exit( 0 );
+            System.exit(0);
         }
-        if ( args.length < 3 ) {
+        if (args.length < 3) {
             System.out.println();
-            System.out.println( "[" + PRG_NAME + "] incorrect number of arguments" );
+            System.out.println("[" + PRG_NAME + "] incorrect number of arguments");
+            System.out.println();
+            for (int i = 0; i < args.length; i++) {
+                System.out.println("  argument " + i + ": " + args[i]);
+            }
             System.out.println();
             printHelp();
-            System.exit( -1 );
+            System.exit(-1);
         }
         final List<String> allowed_options = new ArrayList<String>();
-        allowed_options.add( NO_TREE_LEVEL_INDENDATION );
-        allowed_options.add( FIELD_OPTION );
-        allowed_options.add( MIDPOINT_REROOT );
-        allowed_options.add( ORDER_SUBTREES );
-        allowed_options.add( INTERNAL_NAMES_ARE_BOOT_SUPPPORT );
-        allowed_options.add( REPLACE_UNDER_SCORES );
-        allowed_options.add( EXTRACT_TAXONOMY );
-        allowed_options.add( EXTRACT_TAXONOMY_PF );
-        allowed_options.add( IGNORE_QUOTES );
-        allowed_options.add( CONFIDENCE_TYPE );
-        if ( cla.getNumberOfNames() != 2 ) {
+        allowed_options.add(NO_TREE_LEVEL_INDENDATION);
+        allowed_options.add(FIELD_OPTION);
+        allowed_options.add(MIDPOINT_REROOT);
+        allowed_options.add(ORDER_SUBTREES);
+        allowed_options.add(INTERNAL_NAMES_ARE_BOOT_SUPPPORT);
+        allowed_options.add(REPLACE_UNDER_SCORES);
+        allowed_options.add(EXTRACT_TAXONOMY);
+        allowed_options.add(EXTRACT_TAXONOMY_PF);
+        allowed_options.add(IGNORE_QUOTES);
+        allowed_options.add(CONFIDENCE_TYPE);
+        if (cla.getNumberOfNames() != 2) {
             System.out.println();
-            System.out.println( "[" + PRG_NAME + "] incorrect number of arguments" );
+            System.out.println("[" + PRG_NAME + "] incorrect number of arguments");
+            System.out.println();
+            for (int i = 0; i < args.length; i++) {
+                System.out.println("  argument " + i + ": " + args[i]);
+            }
             System.out.println();
             printHelp();
-            System.exit( -1 );
+            System.exit(-1);
         }
-        final String dissallowed_options = cla.validateAllowedOptionsAsString( allowed_options );
-        if ( dissallowed_options.length() > 0 ) {
-            ForesterUtil.fatalError( PRG_NAME, "unknown option(s): " + dissallowed_options );
+        final String dissallowed_options = cla.validateAllowedOptionsAsString(allowed_options);
+        if (dissallowed_options.length() > 0) {
+            ForesterUtil.fatalError(PRG_NAME, "unknown option(s): " + dissallowed_options);
         }
         final List<String> mandatory_options = new ArrayList<String>();
-        mandatory_options.add( FIELD_OPTION );
-        final String missing_options = cla.validateMandatoryOptionsAsString( mandatory_options );
-        if ( missing_options.length() > 0 ) {
-            ForesterUtil.fatalError( PRG_NAME, "missing option(s): " + missing_options );
+        mandatory_options.add(FIELD_OPTION);
+        final String missing_options = cla.validateMandatoryOptionsAsString(mandatory_options);
+        if (missing_options.length() > 0) {
+            ForesterUtil.fatalError(PRG_NAME, "missing option(s): " + missing_options);
         }
-        if ( !cla.isOptionValueSet( FIELD_OPTION ) ) {
+        if (!cla.isOptionValueSet(FIELD_OPTION)) {
             System.out.println();
             printHelp();
-            System.exit( -1 );
+            System.exit(-1);
         }
-        final String field_option_value = cla.getOptionValue( FIELD_OPTION );
+        final String field_option_value = cla.getOptionValue(FIELD_OPTION);
         PhylogenyMethods.PhylogenyNodeField field = null;
-        if ( field_option_value.equals( FIELD_CLADE_NAME ) ) {
+        if (field_option_value.equals(FIELD_CLADE_NAME)) {
             field = PhylogenyMethods.PhylogenyNodeField.CLADE_NAME;
-        }
-        else if ( field_option_value.equals( FIELD_TAXONOMY_CODE ) ) {
+        } else if (field_option_value.equals(FIELD_TAXONOMY_CODE)) {
             field = PhylogenyMethods.PhylogenyNodeField.TAXONOMY_CODE;
-        }
-        else if ( field_option_value.equals( FIELD_TAXONOMY_SCI_NAME ) ) {
+        } else if (field_option_value.equals(FIELD_TAXONOMY_SCI_NAME)) {
             field = PhylogenyMethods.PhylogenyNodeField.TAXONOMY_SCIENTIFIC_NAME;
-        }
-        else if ( field_option_value.equals( FIELD_TAXONOMY_COMM_NAME ) ) {
+        } else if (field_option_value.equals(FIELD_TAXONOMY_COMM_NAME)) {
             field = PhylogenyMethods.PhylogenyNodeField.TAXONOMY_COMMON_NAME;
-        }
-        else if ( field_option_value.equals( FIELD_SEQUENCE_GENE_NAME ) ) {
+        } else if (field_option_value.equals(FIELD_SEQUENCE_GENE_NAME)) {
             field = PhylogenyMethods.PhylogenyNodeField.SEQUENCE_NAME;
-        }
-        else if ( field_option_value.equals( FIELD_SEQUENCE_SYMBOL ) ) {
+        } else if (field_option_value.equals(FIELD_SEQUENCE_SYMBOL)) {
             field = PhylogenyMethods.PhylogenyNodeField.SEQUENCE_SYMBOL;
-        }
-        else if ( field_option_value.equals( FIELD_UNIPROT_TAXONOMY_ID_SPLIT_1 ) ) {
+        } else if (field_option_value.equals(FIELD_UNIPROT_TAXONOMY_ID_SPLIT_1)) {
             field = PhylogenyMethods.PhylogenyNodeField.TAXONOMY_ID_UNIPROT_1;
-        }
-        else if ( field_option_value.equals( FIELD_UNIPROT_TAXONOMY_ID_SPLIT_2 ) ) {
+        } else if (field_option_value.equals(FIELD_UNIPROT_TAXONOMY_ID_SPLIT_2)) {
             field = PhylogenyMethods.PhylogenyNodeField.TAXONOMY_ID_UNIPROT_2;
-        }
-        else if ( field_option_value.equals( FIELD_DUMMY ) ) {
-        }
-        else {
+        } else if (field_option_value.equals(FIELD_DUMMY)) {
+        } else {
             ForesterUtil
-                    .fatalError( PRG_NAME,
-                                 "unknown value for -\"" + FIELD_OPTION + "\" option: \"" + field_option_value + "\"" );
+                    .fatalError(PRG_NAME,
+                            "unknown value for -\"" + FIELD_OPTION + "\" option: \"" + field_option_value + "\"");
         }
         boolean ignore_quotes = false;
-        if ( cla.isOptionSet( IGNORE_QUOTES ) ) {
+        if (cla.isOptionSet(IGNORE_QUOTES)) {
             ignore_quotes = true;
         }
         boolean int_values_are_boots = false;
-        if ( cla.isOptionSet( INTERNAL_NAMES_ARE_BOOT_SUPPPORT ) ) {
+        if (cla.isOptionSet(INTERNAL_NAMES_ARE_BOOT_SUPPPORT)) {
             int_values_are_boots = true;
         }
         String conf_type = "bootstrap";
-        if ( cla.isOptionSet( CONFIDENCE_TYPE ) ) {
-            final String str = cla.getOptionValueAsCleanString( CONFIDENCE_TYPE );
-            if ( !ForesterUtil.isEmpty( str ) ) {
+        if (cla.isOptionSet(CONFIDENCE_TYPE)) {
+            final String str = cla.getOptionValueAsCleanString(CONFIDENCE_TYPE);
+            if (!ForesterUtil.isEmpty(str)) {
                 conf_type = str;
             }
         }
         boolean midpoint_reroot = false;
-        if ( cla.isOptionSet( MIDPOINT_REROOT ) ) {
+        if (cla.isOptionSet(MIDPOINT_REROOT)) {
             midpoint_reroot = true;
         }
         boolean order_subtrees = false;
-        if ( cla.isOptionSet( ORDER_SUBTREES ) ) {
+        if (cla.isOptionSet(ORDER_SUBTREES)) {
             order_subtrees = true;
         }
         boolean replace_underscores = false;
-        if ( cla.isOptionSet( REPLACE_UNDER_SCORES ) ) {
+        if (cla.isOptionSet(REPLACE_UNDER_SCORES)) {
             replace_underscores = true;
         }
         boolean no_indendation = false;
-        if ( cla.isOptionSet( NO_TREE_LEVEL_INDENDATION ) ) {
+        if (cla.isOptionSet(NO_TREE_LEVEL_INDENDATION)) {
             no_indendation = true;
         }
         boolean extr_taxonomy = false;
-        if ( cla.isOptionSet( EXTRACT_TAXONOMY ) ) {
+        if (cla.isOptionSet(EXTRACT_TAXONOMY)) {
             extr_taxonomy = true;
         }
         boolean extr_taxonomy_pf_only = false;
-        if ( cla.isOptionSet( EXTRACT_TAXONOMY_PF ) ) {
+        if (cla.isOptionSet(EXTRACT_TAXONOMY_PF)) {
             extr_taxonomy_pf_only = true;
         }
-        final File infile = cla.getFile( 0 );
-        final File outfile = cla.getFile( 1 );
-        if ( outfile.exists() ) {
-            ForesterUtil.fatalError( PRG_NAME, "[" + outfile + "] already exists" );
+        final File infile = cla.getFile(0);
+        final File outfile = cla.getFile(1);
+        if (outfile.exists()) {
+            ForesterUtil.fatalError(PRG_NAME, "[" + outfile + "] already exists");
         }
-        if ( !infile.exists() ) {
-            ForesterUtil.fatalError( PRG_NAME, "[" + infile + "] does not exist" );
+        if (!infile.exists()) {
+            ForesterUtil.fatalError(PRG_NAME, "[" + infile + "] does not exist");
         }
         Phylogeny[] phys = null;
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            final PhylogenyParser parser = ParserUtils.createParserDependingOnFileType( infile, true );
-            if ( parser instanceof NHXParser ) {
-                if ( ( field != PhylogenyMethods.PhylogenyNodeField.TAXONOMY_CODE )
-                        && ( field != PhylogenyMethods.PhylogenyNodeField.TAXONOMY_COMMON_NAME )
-                        && ( field != PhylogenyMethods.PhylogenyNodeField.TAXONOMY_SCIENTIFIC_NAME ) ) {
-                    if ( extr_taxonomy_pf_only ) {
-                        ( ( NHXParser ) parser )
-                                .setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT );
+            final PhylogenyParser parser = ParserUtils.createParserDependingOnFileType(infile, true);
+            if (parser instanceof NHXParser) {
+                if ((field != PhylogenyMethods.PhylogenyNodeField.TAXONOMY_CODE)
+                        && (field != PhylogenyMethods.PhylogenyNodeField.TAXONOMY_COMMON_NAME)
+                        && (field != PhylogenyMethods.PhylogenyNodeField.TAXONOMY_SCIENTIFIC_NAME)) {
+                    if (extr_taxonomy_pf_only) {
+                        ((NHXParser) parser)
+                                .setTaxonomyExtraction(NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT);
+                        replace_underscores = false;
+                    } else if (extr_taxonomy) {
+                        ((NHXParser) parser)
+                                .setTaxonomyExtraction(NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED);
                         replace_underscores = false;
                     }
-                    else if ( extr_taxonomy ) {
-                        ( ( NHXParser ) parser )
-                                .setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
-                        replace_underscores = false;
-                    }
+                } else {
+                    ((NHXParser) parser).setTaxonomyExtraction(NHXParser.TAXONOMY_EXTRACTION.NO);
                 }
-                else {
-                    ( ( NHXParser ) parser ).setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.NO );
-                }
-                ( ( NHXParser ) parser ).setReplaceUnderscores( replace_underscores );
-                ( ( NHXParser ) parser ).setIgnoreQuotes( ignore_quotes );
+                ((NHXParser) parser).setReplaceUnderscores(replace_underscores);
+                ((NHXParser) parser).setIgnoreQuotes(ignore_quotes);
+            } else if (parser instanceof NexusPhylogeniesParser) {
+                ((NexusPhylogeniesParser) parser).setReplaceUnderscores(replace_underscores);
+                ((NexusPhylogeniesParser) parser).setIgnoreQuotes(false);
             }
-            else if ( parser instanceof NexusPhylogeniesParser ) {
-                ( ( NexusPhylogeniesParser ) parser ).setReplaceUnderscores( replace_underscores );
-                ( ( NexusPhylogeniesParser ) parser ).setIgnoreQuotes( false );
-            }
-            phys = factory.create( infile, parser );
+            phys = factory.create(infile, parser);
+        } catch (final IOException e) {
+            ForesterUtil.fatalError(PRG_NAME, "failed to read phylogeny from [" + infile + "]: " + e.getMessage());
         }
-        catch ( final IOException e ) {
-            ForesterUtil.fatalError( PRG_NAME, "failed to read phylogeny from [" + infile + "]: " + e.getMessage() );
-        }
-        if ( int_values_are_boots ) {
-            for( final Phylogeny phy : phys ) {
-                PhylogenyMethods.transferInternalNamesToConfidenceValues( phy, conf_type );
+        if (int_values_are_boots) {
+            for (final Phylogeny phy : phys) {
+                PhylogenyMethods.transferInternalNamesToConfidenceValues(phy, conf_type);
             }
         }
-        if ( field != null ) {
-            for( final Phylogeny phy : phys ) {
-                PhylogenyMethods.transferNodeNameToField( phy, field, false );
+        if (field != null) {
+            for (final Phylogeny phy : phys) {
+                PhylogenyMethods.transferNodeNameToField(phy, field, false);
             }
         }
-        if ( midpoint_reroot ) {
+        if (midpoint_reroot) {
             try {
-                for( final Phylogeny phy : phys ) {
-                    PhylogenyMethods.midpointRoot( phy );
+                for (final Phylogeny phy : phys) {
+                    PhylogenyMethods.midpointRoot(phy);
                 }
-            }
-            catch ( final Exception e ) {
-                System.out.println( "" );
-                ForesterUtil.printWarningMessage( PRG_NAME, "midpoint rerooting failed: " + e.getLocalizedMessage() );
+            } catch (final Exception e) {
+                System.out.println("");
+                ForesterUtil.printWarningMessage(PRG_NAME, "midpoint rerooting failed: " + e.getLocalizedMessage());
             }
         }
-        if ( order_subtrees ) {
-            for( final Phylogeny phy : phys ) {
-                PhylogenyMethods.orderAppearance( phy.getRoot(), true, true, DESCENDANT_SORT_PRIORITY.TAXONOMY );
+        if (order_subtrees) {
+            for (final Phylogeny phy : phys) {
+                PhylogenyMethods.orderAppearance(phy.getRoot(), true, true, DESCENDANT_SORT_PRIORITY.TAXONOMY);
                 phy.externalNodesHaveChanged();
                 phy.clearHashIdToNodeMap();
-                phy.recalculateNumberOfExternalDescendants( true );
+                phy.recalculateNumberOfExternalDescendants(true);
             }
         }
         try {
             final PhylogenyWriter writer = new PhylogenyWriter();
-            if ( no_indendation ) {
-                writer.setIndentPhyloxml( false );
+            if (no_indendation) {
+                writer.setIndentPhyloxml(false);
             }
-            writer.toPhyloXML( phys, 0, outfile, ForesterUtil.LINE_SEPARATOR );
+            writer.toPhyloXML(phys, 0, outfile, ForesterUtil.LINE_SEPARATOR);
+        } catch (final IOException e) {
+            ForesterUtil.fatalError(PRG_NAME, "failed to write to [" + outfile + "]: " + e.getMessage());
         }
-        catch ( final IOException e ) {
-            ForesterUtil.fatalError( PRG_NAME, "failed to write to [" + outfile + "]: " + e.getMessage() );
-        }
-        System.out.println( "[" + PRG_NAME + "] wrote: [" + outfile + "]" );
-        System.out.println( "[" + PRG_NAME + "] OK" );
+        System.out.println("[" + PRG_NAME + "] wrote: [" + outfile + "]");
+        System.out.println("[" + PRG_NAME + "] OK");
         System.out.println();
     }
 
     private static void printHelp() {
-        System.out.println( "Usage:" );
+        System.out.println("Usage:");
         System.out.println();
-        System.out.println( PRG_NAME + " -" + FIELD_OPTION
-                + "=<field option> [options] <infile in New Hamphshire, NHX, Nexus, ToL XML, or phyloXML format> <outfile>" );
+        System.out.println(PRG_NAME + " -" + FIELD_OPTION
+                + "=<field option> [options] <infile in New Hamphshire, NHX, Nexus, ToL XML, or phyloXML format> <outfile>");
         System.out.println();
-        System.out.println( " field options: " );
+        System.out.println(" field options: ");
         System.out.println();
-        System.out.println( "   " + FIELD_CLADE_NAME + ":    transfer name to node/clade name" );
-        System.out.println( "   " + FIELD_TAXONOMY_CODE + ":    transfer name to taxonomy code" );
-        System.out.println( "   " + FIELD_TAXONOMY_SCI_NAME + ":    transfer name to taxonomy scientific name" );
-        System.out.println( "   " + FIELD_TAXONOMY_COMM_NAME + ":    transfer name to taxonomy common name" );
-        System.out.println( "   " + FIELD_SEQUENCE_GENE_NAME + ":    transfer name to sequence name" );
-        System.out.println( "   " + FIELD_SEQUENCE_SYMBOL + ":    transfer name to sequence symbol" );
-        System.out.println( "   " + FIELD_DUMMY + ": to convert NHX formatted trees to phyloXML" );
-        System.out.println( "   " + FIELD_UNIPROT_TAXONOMY_ID_SPLIT_1
-                + ":    transfer/split name to taxonomy uniprot identifier" );
-        System.out.println( "          (split at underscore if \"id_name\" pattern, e.g. \"817_SusD\")" );
-        System.out.println( "   " + FIELD_UNIPROT_TAXONOMY_ID_SPLIT_2
-                + ":    transfer/split name to taxonomy uniprot identifier" );
-        System.out.println( "          (split at underscore if \"name_id\" pattern, e.g. \"SusD_817\")" );
+        System.out.println("   " + FIELD_CLADE_NAME + ":    transfer name to node/clade name");
+        System.out.println("   " + FIELD_TAXONOMY_CODE + ":    transfer name to taxonomy code");
+        System.out.println("   " + FIELD_TAXONOMY_SCI_NAME + ":    transfer name to taxonomy scientific name");
+        System.out.println("   " + FIELD_TAXONOMY_COMM_NAME + ":    transfer name to taxonomy common name");
+        System.out.println("   " + FIELD_SEQUENCE_GENE_NAME + ":    transfer name to sequence name");
+        System.out.println("   " + FIELD_SEQUENCE_SYMBOL + ":    transfer name to sequence symbol");
+        System.out.println("   " + FIELD_DUMMY + ": to convert NHX formatted trees to phyloXML");
+        System.out.println("   " + FIELD_UNIPROT_TAXONOMY_ID_SPLIT_1
+                + ":    transfer/split name to taxonomy uniprot identifier");
+        System.out.println("          (split at underscore if \"id_name\" pattern, e.g. \"817_SusD\")");
+        System.out.println("   " + FIELD_UNIPROT_TAXONOMY_ID_SPLIT_2
+                + ":    transfer/split name to taxonomy uniprot identifier");
+        System.out.println("          (split at underscore if \"name_id\" pattern, e.g. \"SusD_817\")");
         System.out.println();
-        System.out.println( " options: " );
-        System.out.println( " -" + INTERNAL_NAMES_ARE_BOOT_SUPPPORT
-                + "       : internal names in NH or NHX tree are confidence values" );
-        System.out.println( " -" + CONFIDENCE_TYPE + "=<conf>"
-                + ": confidence type (e.g. \"bootstrap\", default is \"unknown\")" );
-        System.out.println( " -" + REPLACE_UNDER_SCORES + "      : replace all underscores with spaces" );
-        System.out.println( " -" + MIDPOINT_REROOT + "       : midpoint reroot" );
-        System.out.println( " -" + ORDER_SUBTREES + "       : order subtrees" );
-        System.out.println( " -" + EXTRACT_TAXONOMY
+        System.out.println(" options: ");
+        System.out.println(" -" + INTERNAL_NAMES_ARE_BOOT_SUPPPORT
+                + "       : internal names in NH or NHX tree are confidence values");
+        System.out.println(" -" + CONFIDENCE_TYPE + "=<conf>"
+                + ": confidence type (e.g. \"bootstrap\", default is \"unknown\")");
+        System.out.println(" -" + REPLACE_UNDER_SCORES + "      : replace all underscores with spaces");
+        System.out.println(" -" + MIDPOINT_REROOT + "       : midpoint reroot");
+        System.out.println(" -" + ORDER_SUBTREES + "       : order subtrees");
+        System.out.println(" -" + EXTRACT_TAXONOMY
                 + "      : extract taxonomy to taxonomy code from \"seqname_TAXON\"-style names (cannot be used with the following field options: "
-                + FIELD_TAXONOMY_CODE + ", " + FIELD_TAXONOMY_COMM_NAME + ", " + FIELD_TAXONOMY_SCI_NAME + ")" );
-        System.out.println( " -" + EXTRACT_TAXONOMY_PF
+                + FIELD_TAXONOMY_CODE + ", " + FIELD_TAXONOMY_COMM_NAME + ", " + FIELD_TAXONOMY_SCI_NAME + ")");
+        System.out.println(" -" + EXTRACT_TAXONOMY_PF
                 + "      : extract taxonomy to taxonomy code from Pfam (\"seqname_TAXON/x-y\") style names only (cannot be used with the following field options: "
-                + FIELD_TAXONOMY_CODE + ", " + FIELD_TAXONOMY_COMM_NAME + ", " + FIELD_TAXONOMY_SCI_NAME + ")" );
-        System.out.println( " -" + NO_TREE_LEVEL_INDENDATION + "      : no tree level indendation in phyloXML output" );
-        System.out.println( " -" + IGNORE_QUOTES + "     : ignore quotes and whitespace (e.g. \"a b\" becomes ab)" );
+                + FIELD_TAXONOMY_CODE + ", " + FIELD_TAXONOMY_COMM_NAME + ", " + FIELD_TAXONOMY_SCI_NAME + ")");
+        System.out.println(" -" + NO_TREE_LEVEL_INDENDATION + "      : no tree level indendation in phyloXML output");
+        System.out.println(" -" + IGNORE_QUOTES + "     : ignore quotes and whitespace (e.g. \"a b\" becomes ab)");
         System.out.println();
     }
 }
