@@ -60,22 +60,17 @@ public final class AncestralTaxonomyInference {
         if (n1.getNodeData().isHasTaxonomy() && n2.getNodeData().isHasTaxonomy() && n1.getNodeData().getTaxonomy().getLineage() != null && n2.getNodeData().getTaxonomy().getLineage() != null) {
             final List<String> lin1 = n1.getNodeData().getTaxonomy().getLineage();
             final List<String> lin2 = n2.getNodeData().getTaxonomy().getLineage();
-            System.out.println("++++++++++++++++++" + lin1 );
-            System.out.println("++++++++++++++++++" + lin2 );
 
             final List<String> lin = new ArrayList<>();
             final int s = lin1.size() <= lin2.size() ? lin1.size() : lin2.size();
 
             for (int i = 0; i < s; ++i) {
-                System.out.println("........................................>>>>>" + lin1.get(i) );
-                System.out.println("........................................>>>>>" + lin2.get(i) );
                 if (lin1.get(i).equalsIgnoreCase(lin2.get(i))) {
                     lin.add(lin1.get(i));
                 } else {
                     break;
                 }
             }
-            System.out.println("........................................" + lin );
             final Taxonomy tax = new Taxonomy();
             tax.setLineage(lin);
 

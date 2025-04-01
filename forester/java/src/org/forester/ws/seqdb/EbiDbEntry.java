@@ -276,7 +276,6 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
         boolean in_mrna = false;
         boolean in_protein = false;
         for (final String line : lines) {
-
             if (line.startsWith("ACCESSION ")) {
                 e.setAccession(SequenceDbWsTools.extractFrom(line, "ACCESSION"));
                 in_definition = false;

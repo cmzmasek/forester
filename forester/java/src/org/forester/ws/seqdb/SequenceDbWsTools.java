@@ -57,7 +57,7 @@ public final class SequenceDbWsTools {
     public final static String EMBL_REFSEQN = "https://www.ebi.ac.uk/Tools/dbfetch/dbfetch?db=refseqn&style=raw&id=";
 
     public final static String EMBL_EMBL = "https://www.ebi.ac.uk/Tools/dbfetch/dbfetch?db=EMBL&style=raw&id=";
-    private final static boolean DEBUG = true;
+    private final static boolean DEBUG = false;
     private final static String URL_ENC = "UTF-8";
     private final static int SLEEP = 200;
     private static final boolean ALLOW_TO_OVERWRITE_MOL_SEQ = false;

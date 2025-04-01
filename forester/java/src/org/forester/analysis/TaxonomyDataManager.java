@@ -434,7 +434,6 @@ public final class TaxonomyDataManager extends RunnableProcess {
         if ( up_tax.getLineage() != null ) {
             tax.setLineage( new ArrayList<String>() );
             for( final String lin : up_tax.getLineage() ) {
-                System.out.println(">>>>>>>>" + lin);
                 if ( !ForesterUtil.isEmpty( lin ) ) {
                     tax.getLineage().add( lin );
                 }
