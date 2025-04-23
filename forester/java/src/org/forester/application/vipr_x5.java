@@ -29,7 +29,7 @@ public class vipr_x5 {
 
     private static final boolean VERBOSE = false;
     private static final boolean DIE_ON_ERROR = false;
-    private static final String PRG_DATE = "2024-11-23";
+    private static final String PRG_DATE = "2025-04-06";
     private static final String PRG_VERSION = "1.0.2";
 
     private static final int COL_GENOME_ID = 0;

@@ -179,6 +179,22 @@ public final class ViralUtils {
                 || l.equals("ks")
                 || l.equals("ak")
                 || l.equals("nd")
+                || l.equals("ny")
+                || l.equals("wi")
+                || l.equals("ne")
+                || l.equals("ky")
+                || l.equals("wv")
+                || l.equals("nc")
+                || l.equals("ar")
+                || l.equals("ky")
+                || l.equals("ne")
+                || l.equals("ms")
+                || l.equals("wv")
+                || l.equals("nj")
+                || l.equals("vt")
+                || l.equals("ct")
+                || l.equals("nv")
+                || l.equals("de")
                 || l.equals("maryland")
                 || l.equals("massachusetts")
                 || l.equals("michigan")
@@ -212,6 +228,7 @@ public final class ViralUtils {
                 || l.equals("west virginia")
                 || l.equals("wisconsin")
                 || l.equals("wyoming")
+                || l.equals("washington")
         ) {
             return "USA";
         } else if (l.equals("hokkaido")
@@ -353,6 +370,9 @@ public final class ViralUtils {
         }
         if (l.equals("sd")) {
             return "South Dakota";
+        }
+        if (l.equals("ny")) {
+            return "New York";
         }
 
         if (l.equals("alabama")
@@ -507,7 +527,7 @@ public final class ViralUtils {
             }
         }
 
-        if (year_int < 1800 || year_int > 2024) {
+        if (year_int < 1800 || year_int > 2025) {
             System.out.println("Error year \"" + year + "\" is out of range");
             System.exit(-1);
         }
@@ -550,6 +570,7 @@ public final class ViralUtils {
                 || h.equals("dog")
                 || h.equals("canine")
                 || h.equals("mink")
+                || h.equals("pig")
                 || h.equals("ferret")
                 || h.equals("bovine milk")
                 || h.equals("stone marten")) {
@@ -573,7 +594,10 @@ public final class ViralUtils {
                 || h.equals("bobcat")
                 || h.equals("bottlenose dolphin")
                 || h.startsWith("mustela")
-                || h.equals("pig")
+                || h.equals("serval")
+                || h.equals("fox")
+                || h.equals("lion")
+                || h.equals("ermine")
         ) {
             hg1 = "Non-Human Mammal";
             hg2 = "Non-Human Mammal (wild)";
@@ -666,6 +690,8 @@ public final class ViralUtils {
                 || h.equals("pheasant")
                 || h.equals("vulture")
                 || h.equals("rock pigeon")
+                || h.equals("northern shoveler")
+                || h.equals("northern pintail")
                 || h.equals("white-winged dove")
                 || h.indexOf("stork") > -1
                 || h.indexOf("duck") > -1
@@ -673,6 +699,15 @@ public final class ViralUtils {
                 || h.indexOf("goose") > -1
                 || h.indexOf("owl") > -1
                 || h.indexOf("hawk") > -1
+                || h.indexOf("teal") > -1
+                || h.indexOf("heron") > -1
+                || h.indexOf("falcon") > -1
+                || h.indexOf("ibis") > -1
+                || h.indexOf("gull") > -1
+                || h.indexOf("swan") > -1
+                || h.indexOf("egret") > -1
+                || h.indexOf("marganser") > -1
+                || h.indexOf("flamingo") > -1
         ) {
             hg1 = "Avian";
             hg2 = "Avian (wild)";

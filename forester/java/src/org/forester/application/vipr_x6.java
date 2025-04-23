@@ -37,8 +37,8 @@ public class vipr_x6 {
     public final static Pattern GENOTYPE_PATTERN_2 = Pattern.compile("enotype\\s+([A-Z0-9]+)");
     public final static Pattern GENOTYPE_PATTERN_3 = Pattern.compile("ubgroup\\s+([A-Z0-9]+)");
     private static final boolean VERBOSE = true;
-    private static final String PRG_DATE = "2025-03-31";
-    private static final String PRG_VERSION = "1.0.3";
+    private static final String PRG_DATE = "2025-04-23";
+    private static final String PRG_VERSION = "1.0.4";
 
     private static final int COL_GENOME_ID = 0;
     private static final int COL_STRAIN = 15;
@@ -62,8 +62,7 @@ public class vipr_x6 {
     private static final String STRAIN = "vipr:Strain_Number";
     private static final String YEAR = "vipr:Year";
     private static final String SUBTYPE = "vipr:Subtype";
-
-    private static final String GENOTYPE = "vipr:Genotype";
+    private static final String SUBCLADE = "vipr:Subclade";
     private static final String REGION = "vipr:Region";
     private static final String STATE = "vipr:State";
     private static final String GB_ACCESSTION = "vipr:GB_Accession";
@@ -311,7 +310,7 @@ public class vipr_x6 {
                     custom_data.addProperty(new Property(SUBTYPE, subtype, "", XSD_STRING, AppliesTo.NODE));
                 }
                 if (!ForesterUtil.isEmpty(genotype)) {
-                    custom_data.addProperty(new Property(GENOTYPE, genotype, "", XSD_STRING, AppliesTo.NODE));
+                    custom_data.addProperty(new Property(SUBCLADE, genotype, "", XSD_STRING, AppliesTo.NODE));
                 }
                 if (!ForesterUtil.isEmpty(m_hostname_sci)) {
                     m_hostname_sci = m_hostname_sci.replace('_', ' ');
@@ -473,39 +472,32 @@ public class vipr_x6 {
         String loc = null;
         if (name_lc.indexOf("nigeria") > 0) {
             loc = "Nigeria";
-
         } else if (name_lc.indexOf("germany") > 0) {
             loc = "Germany";
         } else if (name_lc.indexOf("/chn") > 0) {
             loc = "China";
         } else if (name_lc.indexOf("ivoire") > 0) {
             loc = "Cote d'Ivoire";
-
         } else if (name_lc.indexOf("democratic republic of the congo") > 0 || name.indexOf("DRC") > 0 || name.indexOf("RDC") > 0) {
             loc = "Democratic Republic of the Congo";
-
         } else if (name_lc.indexOf("central african rep") > 0) {
             loc = "Central African Republic";
-
         } else if (name_lc.indexOf("cameroon") > 0) {
             loc = "Cameroon";
         } else if (name_lc.indexOf("thailand") > 0) {
             loc = "Thailand";
         } else if (name_lc.indexOf("liberia") > 0) {
             loc = "Liberia";
-
         } else if (name_lc.indexOf("sierra leone") > 0) {
             loc = "Sierra Leone";
         } else if (name_lc.indexOf("congo") > 0) {
             loc = "Congo";
-
         } else if (name.indexOf("USA") > 0) {
             loc = "USA";
         } else if (name.indexOf("CAN") > 0) {
             loc = "Canada";
         } else if (name_lc.indexOf("australia") > 0) {
             loc = "Australia";
-            //clade = "I";
         } else if (name_lc.indexOf("gabon") > 0) {
             loc = "Gabon";
         } else if (name_lc.indexOf("rwanda") > 0) {
@@ -550,7 +542,7 @@ public class vipr_x6 {
 
     public static void checkYear(final String year) {
         int year_int = Integer.parseInt(year);
-        if (year_int < 1960 || year_int > 2025) {
+        if (year_int < 1900 || year_int > 2025) {
             System.out.println("Error year \"" + year + "\" is out of range");
             System.exit(-1);
         }
