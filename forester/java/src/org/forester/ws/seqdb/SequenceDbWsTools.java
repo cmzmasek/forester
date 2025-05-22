@@ -273,7 +273,7 @@ public final class SequenceDbWsTools {
             }
             try {
                 db_entry = obtainUniProtEntry(query, lines_to_return);
-            } catch (final FileNotFoundException e) {
+            } catch (final IOException e) {
                 // Eat this, and move to next.
             }
         } else if (acc.getSource().equals(Source.REFSEQ.toString())) {
@@ -282,7 +282,7 @@ public final class SequenceDbWsTools {
             }
             try {
                 db_entry = obtainRefSeqEntryFromEmbl(new Accession(query), lines_to_return);
-            } catch (final FileNotFoundException e) {
+            } catch (final IOException e) {
                 // Eat this, and move to next.
             }
         } else if (acc.getSource().equals(Source.EMBL.toString()) || acc.getSource().equals(Source.NCBI.toString()) || acc.getSource().equals(Source.EMBL.toString())) {
@@ -291,7 +291,7 @@ public final class SequenceDbWsTools {
             }
             try {
                 db_entry = obtainEmblEntry(acc, lines_to_return);
-            } catch (final FileNotFoundException e) {
+            } catch (final IOException e) {
                 // Eat this, and move to next.
             }
         } else if (acc.getSource().equals(Source.GI.toString())) {
@@ -300,7 +300,7 @@ public final class SequenceDbWsTools {
             }
             try {
                 db_entry = obtainRefSeqEntryFromEmbl(new Accession(query), lines_to_return);
-            } catch (final FileNotFoundException e) {
+            } catch (final IOException e) {
                 // Eat this, and move to next.
             }
         }
