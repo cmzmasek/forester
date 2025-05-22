@@ -37,8 +37,8 @@ public class vipr_x6 {
     public final static Pattern GENOTYPE_PATTERN_2 = Pattern.compile("enotype\\s+([A-Z0-9]+)");
     public final static Pattern GENOTYPE_PATTERN_3 = Pattern.compile("ubgroup\\s+([A-Z0-9]+)");
     private static final boolean VERBOSE = true;
-    private static final String PRG_DATE = "2025-04-23";
-    private static final String PRG_VERSION = "1.0.4";
+    private static final String PRG_DATE = "2025-05-22";
+    private static final String PRG_VERSION = "1.0.5";
 
     private static final int COL_GENOME_ID = 0;
     private static final int COL_STRAIN = 15;
@@ -542,9 +542,12 @@ public class vipr_x6 {
 
     public static void checkYear(final String year) {
         int year_int = Integer.parseInt(year);
-        if (year_int < 1900 || year_int > 2025) {
-            System.out.println("Error year \"" + year + "\" is out of range");
+        if (year_int > 2025) {
+            System.out.println("Error: Year \"" + year + "\" is out of range");
             System.exit(-1);
+        }
+        if (year_int < 1900) {
+            System.out.println("Warning: Year \"" + year + "\" is potentially out of range");
         }
     }
 }
