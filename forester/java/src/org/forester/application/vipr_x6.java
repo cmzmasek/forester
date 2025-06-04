@@ -29,16 +29,18 @@ public class vipr_x6 {
 
     public final static Pattern PATTERN2_YEAR = Pattern.compile("[/\\-_]([12]\\d{3}),");
 
-    public final static Pattern PATTERN3_YEAR = Pattern.compile("\\|([12]\\d{3})");
+    public final static Pattern PATTERN3_YEAR = Pattern.compile("\\|([12]\\d{3})\\b");
 
     public final static Pattern PATTERN4_YEAR = Pattern.compile("_([12]\\d{3})_");
+
+    public final static Pattern PATTERN5_YEAR = Pattern.compile("/([12]\\d{3})\\(");
 
     public final static Pattern GENOTYPE_PATTERN = Pattern.compile("/\\[([A-Z0-9]+)\\]");
     public final static Pattern GENOTYPE_PATTERN_2 = Pattern.compile("enotype\\s+([A-Z0-9]+)");
     public final static Pattern GENOTYPE_PATTERN_3 = Pattern.compile("ubgroup\\s+([A-Z0-9]+)");
     private static final boolean VERBOSE = true;
-    private static final String PRG_DATE = "2025-05-22";
-    private static final String PRG_VERSION = "1.0.5";
+    private static final String PRG_DATE = "2025-06-04";
+    private static final String PRG_VERSION = "1.2.0";
 
     private static final int COL_GENOME_ID = 0;
     private static final int COL_STRAIN = 15;
@@ -211,6 +213,7 @@ public class vipr_x6 {
                 String m_isolation_country = null;
                 String m_genbank = null;
 
+                boolean found = false;
                 if (genbank_acc.length() > 3) {
                     for (int r = 0; r < map.getNumberOfRows(); ++r) {
                         if (map.getValue(COL_GENBANK_ACC, r).replaceAll("\"", "").equals(genbank_acc)) {
@@ -226,9 +229,40 @@ public class vipr_x6 {
                             m_subclade = map.getValue(COL_SUBCLADE, r).replaceAll("\"", "");
                             m_genbank = map.getValue(COL_GENBANK_ACC, r).replaceAll("\"", "");
                             m_isolation_country = map.getValue(COL_ISOLATION_COUNTRY, r).replaceAll("\"", "");
+                            found = true;
                             break;
                         }
                     }
+
+                }
+
+                if (!found) {
+                    if (bv_acc.length() > 3) {
+                        for (int r = 0; r < map.getNumberOfRows(); ++r) {
+                            if (map.getValue(COL_GENOME_ID, r).replaceAll("\"", "").equals(bv_acc)) {
+                                m_isolationsource = map.getValue(COL_ISOLATION_SOURCE, r).replaceAll("\"", "");
+                                m_coldate = map.getValue(COL_COLLECTION_DATE, r).replaceAll("\"", "");
+                                m_hostname_sci = map.getValue(COL_HOST_NAME_SCI, r).replaceAll("\"", "");
+                                m_bvbrc_acc = map.getValue(COL_GENOME_ID, r).replaceAll("\"", "");
+                                m_strain = map.getValue(COL_STRAIN, r).replaceAll("\"", "");
+                                m_segment = map.getValue(COL_SEGMENT, r).replaceAll("\"", "");
+                                m_subtype = map.getValue(COL_SUBTYPE, r).replaceAll("\"", "");
+                                m_lineage = map.getValue(COL_LINEAGE, r).replaceAll("\"", "");
+                                m_clade = map.getValue(COL_CLADE2, r).replaceAll("\"", "");
+                                m_subclade = map.getValue(COL_SUBCLADE, r).replaceAll("\"", "");
+                                m_genbank = map.getValue(COL_GENBANK_ACC, r).replaceAll("\"", "");
+                                m_isolation_country = map.getValue(COL_ISOLATION_COUNTRY, r).replaceAll("\"", "");
+                                found = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (!found) {
+                    System.out.println();
+                    System.out.println("Warning: No entry for " + name + " in " + mapfile);
+                    System.out.println();
                 }
 
                 if (ForesterUtil.isEmpty(m_isolation_country)) {
@@ -243,27 +277,34 @@ public class vipr_x6 {
                     m_hostname_sci = obtainHostFromName(name);
                 }
 
-
-                if (VERBOSE) {
-                    System.out.println();
-                    System.out.println();
-                    System.out.println("Name    : " + name);
-                    System.out.println("Strain  : " + m_strain);
-                    System.out.println("Segment : " + m_segment);
-                    System.out.println("Subtype : " + m_subtype);
-                    System.out.println("Lineage : " + m_lineage);
-                    System.out.println("Clade   : " + m_clade);
-                    System.out.println("Genotype: " + genotype);
-                    System.out.println("Subclade: " + m_subclade);
-                    System.out.println("Country : " + m_isolation_country);
-                    System.out.println("Genbank : " + m_genbank);
-                    System.out.println("Acc     : " + genbank_acc);
-                    System.out.println("Type    : " + type);
-                    System.out.println("Host    : " + m_hostname_sci);
-                    System.out.println("Number  : " + strain_number);
-                    System.out.println("Date    : " + m_coldate);
-                    System.out.println("Subtype : " + subtype);
+                if (!ForesterUtil.isEmpty(m_hostname_sci)) {
+                    m_hostname_sci = cap(m_hostname_sci);
                 }
+
+                if (!ForesterUtil.isEmpty(m_isolationsource)) {
+                    m_isolationsource = cap(m_isolationsource);
+                }
+
+
+                System.out.println();
+                System.out.println();
+                System.out.println("Name    : " + name);
+                System.out.println("Strain  : " + m_strain);
+                System.out.println("Segment : " + m_segment);
+                System.out.println("Subtype : " + m_subtype);
+                System.out.println("Lineage : " + m_lineage);
+                System.out.println("Clade   : " + m_clade);
+                System.out.println("Genotype: " + genotype);
+                System.out.println("Subclade: " + m_subclade);
+                System.out.println("Country : " + m_isolation_country);
+                System.out.println("Genbank : " + m_genbank);
+                System.out.println("Acc     : " + genbank_acc);
+                System.out.println("Type    : " + type);
+                System.out.println("Host    : " + m_hostname_sci);
+                System.out.println("Number  : " + strain_number);
+                System.out.println("Date    : " + m_coldate);
+                System.out.println("Subtype : " + subtype);
+
 
                 String year = null;
                 if (m_coldate != null) {
@@ -344,13 +385,13 @@ public class vipr_x6 {
 
                 boolean make_new_name = true;
 
-                if (make_new_name && !ForesterUtil.isEmpty( genbank_acc )) {
+                if (make_new_name && !ForesterUtil.isEmpty(genbank_acc)) {
                     new_name = genbank_acc;
-                    if (!ForesterUtil.isEmpty( m_strain )) {
+                    if (!ForesterUtil.isEmpty(m_strain)) {
                         new_name = new_name + "|" + m_strain;
                     }
                 }
-                if (!ForesterUtil.isEmpty( new_name)) {
+                if (!ForesterUtil.isEmpty(new_name)) {
                     ext_node.setName(new_name);
                 }
                 System.out.println("New Name: " + new_name);
@@ -463,6 +504,10 @@ public class vipr_x6 {
         if (m3.find()) {
             return m3.group(1);
         }
+        final Matcher m4 = PATTERN5_YEAR.matcher(name);
+        if (m4.find()) {
+            return m4.group(1);
+        }
         return null;
     }
 
@@ -540,14 +585,16 @@ public class vipr_x6 {
         return new_name;
     }
 
-    public static void checkYear(final String year) {
+    private static void checkYear(final String year) {
         int year_int = Integer.parseInt(year);
-        if (year_int > 2025) {
+        if (year_int > 2025 || year_int < 1800) {
             System.out.println("Error: Year \"" + year + "\" is out of range");
             System.exit(-1);
         }
-        if (year_int < 1900) {
-            System.out.println("Warning: Year \"" + year + "\" is potentially out of range");
-        }
+    }
+
+    private static String cap(final String s) {
+        final String m_s = s.trim().replaceAll("\\s+", " ");
+        return m_s.substring(0, 1).toUpperCase() + m_s.substring(1).toLowerCase();
     }
 }
