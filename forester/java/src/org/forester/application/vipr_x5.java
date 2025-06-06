@@ -347,10 +347,10 @@ public class vipr_x5 {
                     custom_data.addProperty(new Property(BV_BRC_ACC, m_bvbrc_acc, "", XSD_STRING, AppliesTo.NODE));
                 }
 
-                ext_node.getNodeData().setProperties(custom_data);
-
                 ViralUtils.addRegion(country, custom_data, REGION);
                 ViralUtils.addHostGroup(host, custom_data, HOST_GROUP, HOST_GROUP_DOMESTIC_WILD);
+
+                ext_node.getNodeData().setProperties(custom_data);
 
                 String new_name = null;
 
