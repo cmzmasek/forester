@@ -38,9 +38,17 @@ public class vipr_x6 {
     public final static Pattern GENOTYPE_PATTERN = Pattern.compile("/\\[([A-Z0-9]+)\\]");
     public final static Pattern GENOTYPE_PATTERN_2 = Pattern.compile("enotype\\s+([A-Z0-9]+)");
     public final static Pattern GENOTYPE_PATTERN_3 = Pattern.compile("ubgroup\\s+([A-Z0-9]+)");
-    private static final boolean VERBOSE = true;
-    private static final String PRG_DATE = "2025-06-04";
-    private static final String PRG_VERSION = "1.2.0";
+
+    // virus (A/chicken/West Bengal/239020/2010(H5N1))
+    public final static Pattern NAME_PATTERN_1 = Pattern.compile("virus\\s+\\((.+?)\\(H5N1\\)\\)");
+
+    //Influenza_A_virus_A/Pet_Food/USA/25-007637-002/2025|11320.866865
+    public final static Pattern NAME_PATTERN_2 = Pattern.compile("virus_A/(.+?)\\|");
+
+
+    private static final boolean VERBOSE = false;
+    private static final String PRG_DATE = "2025-06-06";
+    private static final String PRG_VERSION = "1.2.2";
 
     private static final int COL_GENOME_ID = 0;
     private static final int COL_STRAIN = 15;
@@ -233,7 +241,6 @@ public class vipr_x6 {
                             break;
                         }
                     }
-
                 }
 
                 if (!found) {
@@ -285,26 +292,26 @@ public class vipr_x6 {
                     m_isolationsource = cap(m_isolationsource);
                 }
 
-
-                System.out.println();
-                System.out.println();
-                System.out.println("Name    : " + name);
-                System.out.println("Strain  : " + m_strain);
-                System.out.println("Segment : " + m_segment);
-                System.out.println("Subtype : " + m_subtype);
-                System.out.println("Lineage : " + m_lineage);
-                System.out.println("Clade   : " + m_clade);
-                System.out.println("Genotype: " + genotype);
-                System.out.println("Subclade: " + m_subclade);
-                System.out.println("Country : " + m_isolation_country);
-                System.out.println("Genbank : " + m_genbank);
-                System.out.println("Acc     : " + genbank_acc);
-                System.out.println("Type    : " + type);
-                System.out.println("Host    : " + m_hostname_sci);
-                System.out.println("Number  : " + strain_number);
-                System.out.println("Date    : " + m_coldate);
-                System.out.println("Subtype : " + subtype);
-
+                if (VERBOSE) {
+                    System.out.println();
+                    System.out.println();
+                    System.out.println("Name    : " + name);
+                    System.out.println("Strain  : " + m_strain);
+                    System.out.println("Segment : " + m_segment);
+                    System.out.println("Subtype : " + m_subtype);
+                    System.out.println("Lineage : " + m_lineage);
+                    System.out.println("Clade   : " + m_clade);
+                    System.out.println("Genotype: " + genotype);
+                    System.out.println("Subclade: " + m_subclade);
+                    System.out.println("Country : " + m_isolation_country);
+                    System.out.println("Genbank : " + m_genbank);
+                    System.out.println("Acc     : " + genbank_acc);
+                    System.out.println("Type    : " + type);
+                    System.out.println("Host    : " + m_hostname_sci);
+                    System.out.println("Number  : " + strain_number);
+                    System.out.println("Date    : " + m_coldate);
+                    System.out.println("Subtype : " + subtype);
+                }
 
                 String year = null;
                 if (m_coldate != null) {
@@ -321,8 +328,9 @@ public class vipr_x6 {
                 if (!ForesterUtil.isEmpty(year)) {
                     checkYear(year);
                 }
-
-                System.out.println("Year    : " + year);
+                if (VERBOSE) {
+                    System.out.println("Year    : " + year);
+                }
 
                 if (ForesterUtil.isEmpty(m_isolation_country)) {
                     System.out.println("WARNING: No country for " + name);
@@ -374,34 +382,65 @@ public class vipr_x6 {
                 if (!ForesterUtil.isEmpty(m_bvbrc_acc)) {
                     custom_data.addProperty(new Property(BV_BRC_ACC, m_bvbrc_acc, "", XSD_STRING, AppliesTo.NODE));
                 }
-                ext_node.getNodeData().setSequence(null); //TODO need to be option
-                ext_node.getNodeData().setProperties(custom_data);
-
+                if (!ForesterUtil.isEmpty(m_hostname_sci)) {
+                    ViralUtils.addHostGroup(m_hostname_sci, custom_data, HOST_GROUP, HOST_GROUP_DOMESTIC_WILD);
+                }
                 if (!ForesterUtil.isEmpty(m_isolation_country)) {
                     ViralUtils.addRegion(m_isolation_country, custom_data, REGION);
                 }
+
+                ext_node.getNodeData().setProperties(custom_data);
+
+                ext_node.getNodeData().setSequence(null); //TODO need to be option
 
                 String new_name = cleanName(name);
 
                 boolean make_new_name = true;
 
-                if (make_new_name && !ForesterUtil.isEmpty(genbank_acc)) {
-                    new_name = genbank_acc;
+                if (make_new_name) {
+                    new_name = "";
+                    if (!ForesterUtil.isEmpty(genbank_acc)) {
+                        new_name = genbank_acc + "|";
+                    }
                     if (!ForesterUtil.isEmpty(m_strain)) {
-                        new_name = new_name + "|" + m_strain;
+                        new_name = new_name + m_strain;
+                    } else {
+                        // virus (A/chicken/West Bengal/239020/2010(H5N1))
+                        final Matcher m1 = NAME_PATTERN_1.matcher(name);
+                        if (m1.find()) {
+                            new_name = new_name + m1.group(1);
+                        } else {
+                            final Matcher m2 = NAME_PATTERN_2.matcher(name);
+                            if (m2.find()) {
+                                new_name = new_name + "A/" + m2.group(1);
+                            }
+                        }
                     }
                 }
                 if (!ForesterUtil.isEmpty(new_name)) {
                     ext_node.setName(new_name);
                 }
-                System.out.println("New Name: " + new_name);
-                System.out.println("---");
+                else {
+                    if ( name.startsWith("(")  && name.endsWith("))") ) {
+                        ext_node.setName(name.substring(1, name.length() -1 ));
+                    }
+                }
+
+                if (VERBOSE) {
+                    System.out.println("New Name: " + new_name);
+                    System.out.println("---");
+                } else {
+                    System.out.println(name + " -> " + new_name);
+                }
             }
         }
 
         if (!ForesterUtil.isEmpty(tree_name)) {
             p.setName(tree_name);
         }
+
+
+
         if (!ForesterUtil.isEmpty(reroot)) {
             reRoot(reroot, p);
         }
