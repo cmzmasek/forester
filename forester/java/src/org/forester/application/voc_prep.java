@@ -28,8 +28,8 @@ public class voc_prep {
     private static final String PANGO_Lineage = "vipr:PANGO_Lineage";
     private static final String WHO_NAME = "vipr:WHO_Name";
     private final static String PRG_NAME = "voc_prep";
-    private static final String PRG_DATE = "2023-09-20";
-    private static final String PRG_VERSION = "1.0.2";
+    private static final String PRG_DATE = "2025-06-03";
+    private static final String PRG_VERSION = "1.0.3";
 
     public static void main(final String args[]) {
         ForesterUtil.printProgramInformation(PRG_NAME, PRG_VERSION, PRG_DATE);
@@ -77,7 +77,7 @@ public class voc_prep {
                         System.out.println("Error: Illegal month: " + month);
                         System.exit(-1);
                     }
-                    if ((year < 1000) || (year > 2024)) {
+                    if ((year < 2019) || (year > 2025)) {
                         System.out.println("Error: Illegal year: " + year);
                         System.exit(-1);
                     }
@@ -111,6 +111,11 @@ public class voc_prep {
                 final List<Property> pango_props = custom_data.getProperties(PANGO_Lineage);
                 if (pango_props != null && pango_props.size() > 0 ) {
                     final String pango_lineage = pango_props.get(0).getValue().toUpperCase();
+                    final String node_name_again = node.getName();
+                    if ( !node_name_again.endsWith(pango_lineage)) {
+                        node.setName( node_name_again + "|" + pango_lineage);
+                    }
+
                     System.out.println(pango_lineage);
                     String who_name = "";
                     if ( pango_lineage.equals( "B.1.1.7")) {
