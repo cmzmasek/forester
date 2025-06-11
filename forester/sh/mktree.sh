@@ -1,4 +1,4 @@
-VERSION="1.0.0"
+VERSION="1.0.1"
 TAP="/usr/bin/ruby /Users/czmasek/IdeaProjects/forester/forester/ruby/evoruby/exe/tap.rb"
 MSA_PRO="/usr/bin/ruby /Users/czmasek/IdeaProjects/forester/forester/ruby/evoruby/exe/msa_pro.rb"
 DECORATOR="/usr/bin/ruby /Users/czmasek/IdeaProjects/forester/forester/ruby/evoruby/exe/phylogenies_decorator.rb"
@@ -39,7 +39,7 @@ if [ -z "$(ls -A $workdir)" ]; then
   exit 0
 fi
 
-input_suffix_re="/(.+)$input_suffix$"
+input_suffix_re=".*/(.+)$input_suffix$"
 
 for i in $workdir/*; do
   if test -f "$i"; then
