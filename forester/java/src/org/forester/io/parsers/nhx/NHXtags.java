@@ -34,4 +34,5 @@ public final class NHXtags {
     public static final String DOMAIN_STRUCTURE   = "DS=";
     public static final String GENE_NAME          = "GN=";
     public static final String SEQUENCE_ACCESSION = "AC=";
+    public static final String COMMENT = "C=";
 }
