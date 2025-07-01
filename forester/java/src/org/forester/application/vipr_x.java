@@ -21,6 +21,7 @@ import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.util.ForesterUtil;
+import org.forester.util.ViralUtils;
 
 public class vipr_x {
 
@@ -32,8 +33,8 @@ public class vipr_x {
     
     private static final String  VIPR_REGION       = "vipr:Region";
     private final static String  PRG_NAME          = "vipr_x";
-    private static final String  PRG_DATE          = "2023-09-20";
-    private static final String  PRG_VERSION       = "1.0.1";
+    private static final String  PRG_DATE          = "2025-05-29";
+    private static final String  PRG_VERSION       = "1.0.2";
     //  VP1|VP1_protein|KP322752|US/CA/14_6089|2014_08|Human|USA|NA|Enterovirus_D68
     // 1. gene symbol
     // 2. gene product name
@@ -140,10 +141,7 @@ public class vipr_x {
                             // ignore
                         }
                         ext_node.getNodeData().addSequence( seq );
-                        addRegion( country, custom_data );
-                        addSpecialData1( gb_accession, custom_data, ext_node );
-                        addSpecialData12( gb_accession, custom_data, ext_node );
-                        addSpecialData2( gb_accession, custom_data, ext_node );
+                        ViralUtils.addRegion( country, custom_data, VIPR_REGION );
                     }
                     else {
                         System.out.println( "ERROR: name \"" + name + "\" could not be matched" );
@@ -195,7 +193,7 @@ public class vipr_x {
                         }
                         seq.setAccession( new Accession( gb_accession, Accession.Source.NCBI ) );
                         ext_node.getNodeData().addSequence( seq );
-                        addRegion( country, custom_data );
+                        ViralUtils.addRegion( country, custom_data, VIPR_REGION );
                     }
                     else if ( m2.matches() ) {
                         final String gb_accession = m2.group( 2 );
@@ -241,7 +239,7 @@ public class vipr_x {
                         }
                         seq.setAccession( new Accession( gb_accession, Accession.Source.NCBI ) );
                         ext_node.getNodeData().addSequence( seq );
-                        addRegion( country, custom_data );
+                        ViralUtils.addRegion( country, custom_data, VIPR_REGION );
                     }
                     else {
                         ForesterUtil.fatalError( PRG_NAME, "name \"" + name + "\" could not be matched" );
@@ -261,168 +259,6 @@ public class vipr_x {
         System.out.println();
     }
 
-    private static void addRegion( final String country, final PropertiesList custom_data ) {
-        String region = "";
-        final String c = country.toLowerCase();
-        if ( c.equals( "canada" ) || c.equals( "usa" ) || c.equals( "mexico" ) ) {
-            region = "North America";
-        }
-        else if ( c.equals( "peru" ) || c.equals( "ecuador" ) || c.equals( "colombia" ) || c.equals( "chile" )
-                || c.equals( "brazil" ) || c.equals( "argentina" ) || c.equals( "guatemala" ) || c.equals( "uruguay" )
-                || c.equals( "venezuela" ) ) {
-            region = "South America";
-        }
-        else if ( c.equals( "denmark" ) || c.equals( "finland" ) || c.equals( "france" ) || c.equals( "germany" )
-                || c.equals( "netherlands" ) || c.equals( "norway" ) || c.equals( "united_kingdom" )
-                || c.equals( "switzerland" ) || c.equals( "austria" ) || c.equals( "estonia" ) || c.equals( "sweden" )
-                || c.equals( "belgium" ) ) {
-            region = "Western Europe";
-        }
-        else if ( c.equals( "serbia" ) || c.equals( "greece" ) || c.equals( "malta" ) || c.equals( "italy" )
-                || c.equals( "spain" ) || c.equals( "portugal" ) ) {
-            region = "Southern Europe";
-        }
-        else if ( c.equals( "poland" ) ) {
-            region = "Central Europe";
-        }
-        else if ( c.equals( "russia" ) || c.equals( "belarus" ) ) {
-            region = "Eastern Europe";
-        }
-        else if ( c.equals( "japan" ) || c.equals( "taiwan" ) || c.equals( "hong_kong" ) || c.equals( "south_korea" )
-                || c.equals( "china" ) ) {
-            region = "East Asia";
-        }
-        else if ( c.equals( "kazakhstan" ) || c.equals( "uzbekistan" ) || c.equals( "armenia" ) ) {
-            region = "Central Asia";
-        }
-        else if ( c.equals( "kuwait" ) || c.equals( "jordan" ) || c.equals( "bahrain" ) || c.equals( "iraq" )
-                || c.equals( "saudi arabia" ) || c.equals( "saudi_arabia" ) || c.equals( "turkey" ) || c.equals( "egypt" ) || c.equals( "israel" )
-                || c.equals( "west_bank" ) || c.equals( "iran" ) ) {
-            region = "West Asia";
-        }
-        else if ( c.equals( "india" )
-                || ( ( c.equals( "pakistan" ) | c.equals( "bangladesh" ) ) || c.equals( "sri_lanka" ) ) ) {
-            region = "South Asia";
-        }
-        else if ( c.equals( "laos" ) || c.equals( "cambodia" ) || c.equals( "thailand" ) || c.equals( "malaysia" )
-                || c.equals( "philippines" ) || ( c.equals( "viet_nam" ) | c.equals( "viet nam" ) )
-                || c.equals( "myanmar" ) || c.equals( "timor_leste" ) ) {
-            region = "Southeast Asia";
-        }
-        else if ( c.equals( "morocco" ) || c.equals( "gambia" ) || c.equals( "kenya" ) || c.equals( "senegal" )
-                || c.equals( "south_africa" ) || c.equals( "tanzania" ) || c.equals( "ghana" ) || c.equals( "benin" )
-                || c.equals( "tunisia" ) || c.equals( "nigeria" ) || c.equals( "libya" ) || c.equals( "djibouti" )
-                || c.equals( "sierra_leone" ) || c.equals( "guinea" ) || c.equals( "botswana" )
-                || c.equals( "ethiopia" ) || c.equals( "malawi" ) || c.equals( "mali" ) ) {
-            region = "Africa";
-        }
-        else if ( c.equals( "australia" ) || c.equals( "new_zealand" ) ) {
-            region = "Oceania";
-        }
-        else if ( c.equals( "dominican_republic" ) || c.equals( "puerto_rico" ) || c.equals( "jamaica" )
-                || c.equals( "belize" ) ) {
-            region = "Caribbean";
-        }
-        else if ( c.equals( "na" ) ) {
-            region = "";
-        }
-        else {
-            System.out.println( "ERROR: unknown country \"" + c + "\"" );
-            System.exit( -1 );
-        }
-        if ( !ForesterUtil.isEmpty( region ) ) {
-            custom_data.addProperty( new Property( VIPR_REGION, region, "", XSD_STRING, AppliesTo.NODE ) );
-        }
-    }
 
-    private static void addSpecialData1( final String gb_accession,
-                                         final PropertiesList custom_data,
-                                         final PhylogenyNode node ) {
-        if ( gb_accession.equalsIgnoreCase( "KP126912" ) || gb_accession.equalsIgnoreCase( "KP100796" )
-                || gb_accession.equalsIgnoreCase( "KP744827" ) || gb_accession.equalsIgnoreCase( "KP126911" )
-                || gb_accession.equalsIgnoreCase( "KP100794" ) || gb_accession.equalsIgnoreCase( "KP100792" )
-                || gb_accession.equalsIgnoreCase( "KP126910" ) || gb_accession.equalsIgnoreCase( "KP100793" )
-                || gb_accession.equalsIgnoreCase( "KP322752" ) || gb_accession.equalsIgnoreCase( "KY358059" )
-                || gb_accession.equalsIgnoreCase( "KX685078" ) || gb_accession.equalsIgnoreCase( "KX675263" )
-                || gb_accession.equalsIgnoreCase( "KX675261" ) || gb_accession.equalsIgnoreCase( "KX675262" ) ) {
-            custom_data.addProperty( new Property( "vipr:AFM_from_Lit", "true", "", XSD_STRING, AppliesTo.NODE ) );
-            if ( MODIFY_NODE_NAMES ) {
-                node.setName( node.getName() + "*AFM_from_Lit" );
-            }
-        }
-    }
 
-    private static void addSpecialData12( final String gb_accession,
-                                          final PropertiesList custom_data,
-                                          final PhylogenyNode node ) {
-        if ( gb_accession.equalsIgnoreCase( "VIPR_ALG4_QEG13964_1_2346_3272.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_QEG13965_1_2346_3272.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_QEG13966_1_2346_3272.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_QEG13967_1_2346_3272.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_QEG13968_1_2346_3272.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_QEJ82282_1_2347_3273.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_QEJ82283_1_2352_3278.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_QEJ82284_1_2347_3273.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_QEG13999_1_2346_3272.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_QEG14000_1_1_825.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_QEG14002_1_2346_3272.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_QEG14003_1_2346_3272.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_QEG14004_1_1_828.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_QEG14005_1_2354_3280.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_QEG14006_1_2346_3272.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_QEG14007_1_2346_3272.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_QEJ82280_1_2350_3276.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_QEJ82281_1_2348_3274.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_QEG13980_1_2346_3272.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_QEG13981_1_2346_3272.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_QEG13982_1_2354_2537.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_QEG13983_1_2354_3280.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_QEG13994_1_2346_3272.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_QEG13995_1_2346_3272.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_QEG13996_1_2346_3272.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_QEG13997_1_2346_3272.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_QEG13969_1_2346_3272.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_QEG13970_1_2346_3272.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_QEG13973_1_2346_3272.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_QEG13975_1_2342_3268.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_QEG13976_1_2346_3272.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_QEG13977_1_2346_3272.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_QEG13978_1_2346_3272.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_QEG13979_1_2346_3272.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_QEG13957_1_2346_3272.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_QEG13959_1_2346_3272.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_QEG13962_1_2346_3272.1" ) ) {
-            custom_data.addProperty( new Property( "vipr:AFM_from_Lit", "true", "", XSD_STRING, AppliesTo.NODE ) );
-            if ( MODIFY_NODE_NAMES ) {
-                node.setName( node.getName() + "*AFM_from_Lit_2" );
-            }
-        }
-    }
-
-    private static void addSpecialData2( final String gb_accession,
-                                         final PropertiesList custom_data,
-                                         final PhylogenyNode node ) {
-        if ( gb_accession.equalsIgnoreCase( "VIPR_ALG4_694265759_2332_3258.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_694265750_2353_3279.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_694265773_1905_2831.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_694265778_2367_3296.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_217316401_2309_3187.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_217316471_2313_3182.1" )
-                || gb_accession.equalsIgnoreCase( "NP_740518.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_348549271_2240_3148.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_333980908_2253_3137.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_348549277_2043_2906.1" ) ) {
-            custom_data.addProperty( new Property( "vipr:AFM_EXP", "positive", "", XSD_STRING, AppliesTo.NODE ) );
-            if ( MODIFY_NODE_NAMES ) {
-                node.setName( node.getName() + "*AFM_EXP_P" );
-            }
-        }
-        if ( gb_accession.equalsIgnoreCase( "VIPR_ALG4_913075276_2342_3265.1" )
-                || gb_accession.equalsIgnoreCase( "VIPR_ALG4_930628106_2365_3291.1" ) ) {
-            custom_data.addProperty( new Property( "vipr:AFM_EXP", "negative", "", XSD_STRING, AppliesTo.NODE ) );
-            if ( MODIFY_NODE_NAMES ) {
-                node.setName( node.getName() + "*AFM_EXP_N" );
-            }
-        }
-    }
 }

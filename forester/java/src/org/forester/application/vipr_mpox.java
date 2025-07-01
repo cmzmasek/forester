@@ -23,11 +23,13 @@ import java.util.regex.Pattern;
 
 public class vipr_mpox {
 
-    private static final String PRG_DATE = "2024-12-02";
-    private static final String PRG_VERSION = "0.0.1";
+    private static final String PRG_DATE = "2025-06-13";
+    private static final String PRG_VERSION = "1.0.0";
     private static final String PRG_NAME = "vipr_mpox";
     private static final String XSD_STRING = "xsd:string";
     private static final String CLADE = "vipr:Clade";
+    private static final String COUNTRY = "vipr:Country";
+    private static final String YEAR = "vipr:Year";
 
 
     public static void main(final String args[]) {
@@ -61,21 +63,21 @@ public class vipr_mpox {
         ForesterUtil
                 .programMessage(PRG_NAME,
                         "Successfully read in tree with " + p.getNumberOfExternalNodes() + " external nodes");
-        final int properties_added = 0;
+
 
         p.setName(desc);
 
         reRoot(p, "KJ642618", "KJ642615");
         p.setRerootable(false);
 
-        assignClade(p, "I", "KJ642618", "PQ305773");
+        assignClade(p, "I", "KJ642618", "PQ221902");
         assignClade(p, "I.a", "KJ642618", "OQ729808");
-        assignClade(p, "I.b", "PQ305773", "PP601218");
+        assignClade(p, "I.b", "PQ221902", "PP601218");
         assignClade(p, "II", "KJ642615", "KJ642614");
         assignClade(p, "II.a", "MN346692", "KJ642614");
-        assignClade(p, "II.b", "KJ642617", "PQ207094");
-        assignClade(p, "II.b.A", "PP852954", "PQ207094");
-        assignClade(p, "II.b.A.1", "PQ207094", "MT903341");
+        assignClade(p, "II.b", "KJ642617", "OP535319");
+        assignClade(p, "II.b.A", "PP852954", "OR499970");
+        assignClade(p, "II.b.A.1", "OR499970", "MT903341");
         assignClade(p, "II.b.A.2", "PP852972", "PP852967");
 
         for (final PhylogenyNodeIterator iter = p.iteratorPostorder(); iter.hasNext(); ) {
@@ -90,7 +92,6 @@ public class vipr_mpox {
         }
 
         System.out.println();
-        System.out.println("Sum of properties added: " + properties_added);
         System.out.println("Wrote outtree to       : " + outtree);
         System.out.println();
     }
@@ -117,7 +118,23 @@ public class vipr_mpox {
                     break;
                 }
             }
-            node.setName(node.getName() + "|" + clade);
+            String name = node.getName();
+            if (name.endsWith("|")) {
+                name = name.substring(0, name.length() - 1);
+            }
+            if (node.getNodeData().isHasProperties()) {
+                if (name.length() < 15) {
+                    List<Property> c = node.getNodeData().getProperties().getPropertiesWithGivenReferencePrefix(COUNTRY);
+                    if (c != null && c.size() == 1) {
+                        name = name + "|" + c.get(0).getValue().replaceAll("\\s+", "_");
+                    }
+                    List<Property> y = node.getNodeData().getProperties().getPropertiesWithGivenReferencePrefix(YEAR);
+                    if (y != null && y.size() == 1) {
+                        name = name + "|" + y.get(0).getValue();
+                    }
+                }
+            }
+            node.setName(name + "/" + clade);
 
             if (!node.getNodeData().isHasProperties()) {
                 node.getNodeData().setProperties(new PropertiesList());
