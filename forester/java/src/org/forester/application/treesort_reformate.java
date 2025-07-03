@@ -1,9 +1,6 @@
 package org.forester.application;
 
-import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.nhx.NHXParser;
-import org.forester.io.parsers.util.ParserUtils;
-import org.forester.io.writers.PhylogenyWriter;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.PropertiesList;
@@ -18,7 +15,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
-import java.util.regex.Pattern;
 
 public class treesort_reformate {
 
