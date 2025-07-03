@@ -668,7 +668,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                         final String comment = s.substring(3).trim();
                         if (!ForesterUtil.isEmpty(comment)) {
                             final PropertiesList custom_data = new PropertiesList();
-                            custom_data.addProperty(new Property("nh:comment", comment, "", "xsd:string", Property.AppliesTo.NODE));
+                            custom_data.addProperty(new Property(ForesterConstants.NH_COMMENT, comment, "", "xsd:string", Property.AppliesTo.NODE));
                             node_to_annotate.getNodeData().setProperties(custom_data);
                         }
                     }

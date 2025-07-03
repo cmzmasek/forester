@@ -73,6 +73,7 @@ public class CladeAnalysisTest {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
             final PhylogenyParser pp = ParserUtils.createParserDependingOnFileType( intreefile1, true );
             final Phylogeny p1 = factory.create( intreefile1, pp )[ 0 ];
+
             ResultSingle res = AnalysisSingle.execute( p1, "A.1.1.1", "." );
             if ( !res.getGreatestCommonPrefix().equals( "A.1" ) ) {
                 return false;

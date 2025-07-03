@@ -27,6 +27,7 @@ package org.forester.util;
 
 public final class ForesterConstants {
 
+    public final static String NH_COMMENT                          = "nh:comment";
     public final static String  FORESTER_VERSION                 = "1.051";
     public final static String  FORESTER_DATE                    = "190425";
     public final static String  PHYLO_XML_VERSION                = "1.20";

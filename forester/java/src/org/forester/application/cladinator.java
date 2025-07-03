@@ -382,6 +382,13 @@ public final class cladinator {
                 else if ( special_processing ) {
                     AnalysisMulti.performSpecialProcessing1( pattern, phy, separator, special_pattern, verbose );
                 }
+
+                final String e = AnalysisMulti.likelyProblematicQuery(phy, pattern);
+                if ( e != null ) {
+                    System.out.println( "Tree #" + counter );
+                    System.out.println( e );
+                    continue;
+                }
                 final ResultMulti res = AnalysisMulti.execute( phy, pattern, separator, cutoff_specifics );
                 if ( !quit ) {
                     if ( phys.length == 1 ) {
