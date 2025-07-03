@@ -52,18 +52,17 @@ public class treesort_reformate {
             ForesterUtil.fatalError(PRG_NAME, "Could not read \"" + intree + "\" [" + e.getMessage() + "]");
         }
         ForesterUtil.programMessage(PRG_NAME, "Successfully read in tree with " + p.getNumberOfExternalNodes() + " external nodes");
-        Writer w = null;
         int counter = 0;
         int counter_all = 0;
         try {
-            w = ForesterUtil.createBufferedWriter(outfile);
+            final Writer w = ForesterUtil.createBufferedWriter(outfile);
             for (final PhylogenyNodeIterator iter = p.iteratorPostorder(); iter.hasNext(); ) {
                 final PhylogenyNode node = iter.next();
                 if (node.isExternal()) {
                     ++counter_all;
                     final PropertiesList properties = node.getNodeData().getProperties();
                     if (properties != null && properties.size() > 0) {
-                        List<Property> c = properties.getPropertiesWithGivenReferencePrefix(ForesterConstants.NH_COMMENT);
+                        final List<Property> c = properties.getPropertiesWithGivenReferencePrefix(ForesterConstants.NH_COMMENT);
                         if (c != null && c.size() > 0) {
                             w.write(node.getName());
                             w.write(", ");
