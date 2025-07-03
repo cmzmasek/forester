@@ -1,4 +1,3 @@
-
 package org.forester.application;
 
 import org.forester.io.parsers.PhylogenyParser;
@@ -45,6 +44,10 @@ public class treesort_reformate {
         if (!ForesterUtil.isEmpty(e1)) {
             ForesterUtil.fatalError(PRG_NAME, e1);
         }
+        execute(intree, outfile);
+    }
+
+    private static void execute(File intree, File outfile) {
         Phylogeny p = null;
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
@@ -52,15 +55,12 @@ public class treesort_reformate {
         } catch (final Exception e) {
             ForesterUtil.fatalError(PRG_NAME, "Could not read \"" + intree + "\" [" + e.getMessage() + "]");
         }
-        ForesterUtil
-                .programMessage(PRG_NAME,
-                        "Successfully read in tree with " + p.getNumberOfExternalNodes() + " external nodes");
+        ForesterUtil.programMessage(PRG_NAME, "Successfully read in tree with " + p.getNumberOfExternalNodes() + " external nodes");
         Writer w = null;
         int counter = 0;
         int counter_all = 0;
         try {
             w = ForesterUtil.createBufferedWriter(outfile);
-
             for (final PhylogenyNodeIterator iter = p.iteratorPostorder(); iter.hasNext(); ) {
                 final PhylogenyNode node = iter.next();
                 if (node.isExternal()) {
@@ -70,7 +70,7 @@ public class treesort_reformate {
                         List<Property> c = properties.getPropertiesWithGivenReferencePrefix(ForesterConstants.NH_COMMENT);
                         if (c != null && c.size() > 0) {
                             w.write(node.getName());
-                            w.write('\t');
+                            w.write(", ");
                             w.write(c.get(0).getValue());
                             w.write('\n');
                             ++counter;
@@ -79,8 +79,6 @@ public class treesort_reformate {
                 }
             }
             w.close();
-            final PhylogenyWriter writer = new PhylogenyWriter();
-
         } catch (final IOException e) {
             ForesterUtil.fatalError(PRG_NAME, e.getLocalizedMessage());
         }
