@@ -52,7 +52,7 @@ import org.forester.util.UserException;
 public final class cladinator2 {
 
     final static private String        PRG_NAME                             = "cladinator";
-    final static private String        PRG_VERSION                          = "1.1.0";
+    final static private String        PRG_VERSION                          = "2.0.0";
     final static private String        PRG_DATE                             = "20230315";
     final static private String        PRG_DESC                             = "clades within clades of annotated labels -- analysis of pplacer-type outputs";
     final static private String        E_MAIL                               = "phyloxml@gmail.com";
