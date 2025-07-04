@@ -52,11 +52,11 @@ import org.forester.util.UserException;
 public final class cladinator {
 
     final static private String        PRG_NAME                             = "cladinator";
-    final static private String        PRG_VERSION                          = "1.1.0";
-    final static private String        PRG_DATE                             = "20230315";
+    final static private String        PRG_VERSION                          = "1.1.1.a1";
+    final static private String        PRG_DATE                             = "2025-07-03";
     final static private String        PRG_DESC                             = "clades within clades of annotated labels -- analysis of pplacer-type outputs";
-    final static private String        E_MAIL                               = "phyloxml@gmail.com";
-    final static private String        WWW                                  = "https://sites.google.com/site/cmzmasek/home/software/forester";
+    final static private String        E_MAIL                               = "czmasek AT jcvi DOT org";
+    final static private String        WWW                                  = "https://github.com/cmzmasek";
     final static private String        HELP_OPTION_1                        = "help";
     final static private String        HELP_OPTION_2                        = "h";
     final static private String        SEP_OPTION                           = "s";
@@ -80,7 +80,7 @@ public final class cladinator {
     private final static DecimalFormat df                                   = new DecimalFormat( "0.0###" );
     final static private boolean       TWO_COLUMNS_IN_SIMPLE_OUTPUT         = true;
     final static private boolean       ALLOW_TO_SPLIT_QUERY                 = true;
-    public static void main( final String args[] ) {
+    public static void main( final String[] args) {
         try {
             ForesterUtil.printProgramInformation( PRG_NAME,
                                                   PRG_DESC,
@@ -193,12 +193,7 @@ public final class cladinator {
             }
             final boolean simple_output;
             double simple_output_cutoff = 0.0;
-            if ( cla.isOptionSet( SIMPLE_OUTPUT_OPTION ) ) {
-                simple_output = true;
-            }
-            else {
-                simple_output = false;
-            }
+            simple_output = cla.isOptionSet(SIMPLE_OUTPUT_OPTION);
             if ( cla.isOptionSet( SIMPLE_OUTPUT_CUTOFF_OPTION ) ) {
                 if ( !simple_output ) {
                     ForesterUtil.fatalError( PRG_NAME,
@@ -230,12 +225,7 @@ public final class cladinator {
                 map = null;
             }
             final boolean extra_processing1;
-            if ( cla.isOptionSet( EXTRA_PROCESSING_OPTION1 ) ) {
-                extra_processing1 = true;
-            }
-            else {
-                extra_processing1 = false;
-            }
+            extra_processing1 = cla.isOptionSet(EXTRA_PROCESSING_OPTION1);
             String extra_processing1_sep = EXTRA_PROCESSING1_SEP_DEFAULT;
             if ( cla.isOptionSet( EXTRA_PROCESSING1_SEP_OPTION ) ) {
                 if ( !extra_processing1 ) {
@@ -288,26 +278,11 @@ public final class cladinator {
                 }
             }
             final boolean remove_annotation_sep;
-            if ( cla.isOptionSet( REMOVE_ANNOT_SEP_OPTION ) ) {
-                remove_annotation_sep = true;
-            }
-            else {
-                remove_annotation_sep = false;
-            }
+            remove_annotation_sep = cla.isOptionSet(REMOVE_ANNOT_SEP_OPTION);
             final boolean verbose;
-            if ( cla.isOptionSet( VERBOSE_OPTION ) ) {
-                verbose = true;
-            }
-            else {
-                verbose = false;
-            }
+            verbose = cla.isOptionSet(VERBOSE_OPTION);
             final boolean quit;
-            if ( cla.isOptionSet( QUIET_OPTION ) ) {
-                quit = true;
-            }
-            else {
-                quit = false;
-            }
+            quit = cla.isOptionSet(QUIET_OPTION);
             System.out.println( "Input tree                 : " + intreefile );
             System.out.println( "Specific-hit support cutoff: " + cutoff_specifics );
             if ( mapping_file != null ) {
@@ -335,7 +310,7 @@ public final class cladinator {
                 System.out.println( "Simple output              : true" );
                 System.out.println( "Cutoff for simple output   : " + simple_output_cutoff );
             }
-            Phylogeny phys[] = null;
+            Phylogeny[] phys = null;
             try {
                 final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
                 final PhylogenyParser pp = ParserUtils.createParserDependingOnFileType( intreefile, true );
@@ -430,9 +405,9 @@ public final class cladinator {
         }
     }
 
-    private final static void printResult( final ResultMulti res,
-                                           final int counter,
-                                           final boolean remove_annotation_sep ) {
+    private static void printResult(final ResultMulti res,
+                                    final int counter,
+                                    final boolean remove_annotation_sep ) {
         System.out.println();
         if ( counter == -1 ) {
             System.out.println( "Result for " + res.getQueryNamePrefix() );
@@ -516,11 +491,11 @@ public final class cladinator {
         System.out.println();
     }
 
-    private final static void writeResultToTableSimple( final ResultMulti res,
-                                                        final EasyWriter w,
-                                                        final double cutoff,
-                                                        final boolean two_columns,
-                                                        final boolean split_query )
+    private static void writeResultToTableSimple(final ResultMulti res,
+                                                 final EasyWriter w,
+                                                 final double cutoff,
+                                                 final boolean two_columns,
+                                                 final boolean split_query )
             throws IOException {
         if ( ( res.getAllMultiHitPrefixes() == null ) | ( res.getAllMultiHitPrefixes().size() < 1 ) ) {
             w.print( res.getQueryNamePrefix() );
@@ -666,9 +641,9 @@ public final class cladinator {
         }
     }
 
-    private final static void writeResultToTable( final ResultMulti res,
-                                                  final EasyWriter w,
-                                                  final boolean remove_annotation_sep )
+    private static void writeResultToTable(final ResultMulti res,
+                                           final EasyWriter w,
+                                           final boolean remove_annotation_sep )
             throws IOException {
         if ( ( res.getAllMultiHitPrefixes() == null ) | ( res.getAllMultiHitPrefixes().size() < 1 ) ) {
             w.print( res.getQueryNamePrefix() );
@@ -761,7 +736,7 @@ public final class cladinator {
         }
     }
 
-    private final static void print_help() {
+    private static void print_help() {
         System.out.println( "Usage:" );
         System.out.println();
         System.out.println( PRG_NAME + " [options] <input tree(s) file> [output table file]" );
