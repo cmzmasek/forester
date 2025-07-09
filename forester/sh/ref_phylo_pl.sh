@@ -7,22 +7,24 @@ VIPR_X="java -Xmx8048m -cp /Users/czmasek/IdeaProjects/forester/forester/java/fo
 PHYLOXML_TO_NH="java -Xmx8048m -cp /Users/czmasek/IdeaProjects/forester/forester/java/forester.jar org.forester.application.phyloxml2nh"
 
 # Example options file:
-# SEQ_TYPE=na
-# MINIMAL_LENGTH_A=450
-# MINIMAL_LENGTH_B=12000
-# CHAR_RATIO=0.999
-# CLUSTERING_CUTOFF_A=0.999
-# CLUSTERING_CUTOFF_B=0.99
-# ADDITIONAL_SEQS_A=
-# ADDITIONAL_SEQS_B=
-# MAFFT_OPTS_A=--auto --thread 8
-# MAFFT_OPTS_B=--auto --thread 8
-# MSA_PRO_OPTS_A=-rr=0.2 -rsl=450
-# MSA_PRO_OPTS_B=-rr=0.2 -rsl=450
-# TREE_INFERENCE_OPTS_A=-B100Zxm
-# TREE_INFERENCE_OPTS_B=-B100Zxm
-# TREE_A_DESC=this is tree a
-# TREE_B_DESC=this is tree b
+#SEQ_TYPE=na
+#MINIMAL_LENGTH_A=450
+#MINIMAL_LENGTH_B=12000
+#CHAR_RATIO=0.999
+#CLUSTERING_CUTOFF_A=0.999
+#CLUSTERING_CUTOFF_B=0.99
+#MAFFT_OPTS_A=--retree 1 --thread 8
+#MAFFT_OPTS_B=--retree 1 --thread 8
+#MSA_PRO_OPTS_A=-rr=0.2 -rsl=450
+#MSA_PRO_OPTS_B=-rr=0.2 -rsl=450
+#TREE_INFERENCE_OPTS_A=-B100Zn
+#TREE_INFERENCE_OPTS_B=-B100Zn
+#TREE_ALGORITHM_NAME_A=pnj
+#TREE_ALGORITHM_NAME_B=pnj
+#TREE_A_DESC=M. hominis nucleocapsid cdhit0.999 RAxML GTR G4
+#TREE_B_DESC=M. hominis genome cdhit 0.99 RAxML GTR G4
+#ADDITIONAL_SEQS_A=../base_seqs.fasta
+#ADDITIONAL_SEQS_B=../base_seqs.fasta
 
 if [ "$#" -ne 8 ]; then
   echo "Usage: " >&2
@@ -56,6 +58,8 @@ msa_pro_opts_a=""
 msa_pro_opts_b=""
 tree_inference_opts_a=""
 tree_inference_opts_b=""
+tree_algorithm_name_a=""
+tree_algorithm_name_b=""
 add_a=""
 add_b=""
 
@@ -96,6 +100,12 @@ while IFS= read -r line; do
   if [[ "$line" =~ TREE_INFERENCE_OPTS_B=[[:space:]]*(.+) ]]; then
     tree_inference_opts_b="${BASH_REMATCH[1]}"
   fi
+  if [[ "$line" =~ TREE_ALGORITHM_NAME_A=[[:space:]]*(.+) ]]; then
+    tree_algorithm_name_a="${BASH_REMATCH[1]}"
+  fi
+  if [[ "$line" =~ TREE_ALGORITHM_NAME_B=[[:space:]]*(.+) ]]; then
+    tree_algorithm_name_b="${BASH_REMATCH[1]}"
+  fi
   if [[ "$line" =~ TREE_A_DESC=[[:space:]]*(.+) ]]; then
     tree_a_desc="${BASH_REMATCH[1]}"
   fi
@@ -132,6 +142,8 @@ echo "MSA pro options A   : $msa_pro_opts_a"
 echo "MSA pro options B   : $msa_pro_opts_b"
 echo "Tree inf options A  : $tree_inference_opts_a"
 echo "Tree inf options B  : $tree_inference_opts_b"
+echo "Tree algo name A    : $tree_algorithm_name_a"
+echo "Tree algo name B    : $tree_algorithm_name_b"
 echo "Date string         : $date_str"
 echo "Tree desc A         : $tree_a_desc"
 echo "Tree desc B         : $tree_b_desc"
@@ -155,6 +167,16 @@ fi
 
 if [ "${#tree_inference_opts_b}" -lt 3 ]; then
   echo "TREE_INFERENCE_OPTS_B must be set"
+  exit -1
+fi
+
+if [ "${#tree_algorithm_name_a}" -lt 2 ]; then
+  echo "TREE_ALGORITHM_NAME_A must be set"
+  exit -1
+fi
+
+if [ "${#tree_algorithm_name_b}" -lt 2 ]; then
+  echo "TREE_ALGORITHM_NAME_B must be set"
   exit -1
 fi
 
@@ -294,12 +316,13 @@ fi
 
 # Annotation
 # ----------
-$VIPR_X $workdir/trees_a/deco/genomes_clean_a_cdhit_ni_mafft_tree_raxml_d.xml $annotation_file ${tree_a_output_name}.xml "${tree_a_desc} ${date_str}"
+
+$VIPR_X $workdir/trees_a/deco/genomes_clean_a_cdhit_ni_mafft_tree_${tree_algorithm_name_a}_d.xml $annotation_file ${tree_a_output_name}.xml "${tree_a_desc} ${date_str}"
 rc=$?
 if [[ $rc != 0 ]]; then
   exit $rc
 fi
-$VIPR_X $workdir/trees_b/deco/genomes_clean_b_cdhit_ni_mafft_tree_raxml_d.xml $annotation_file ${tree_b_output_name}.xml "${tree_b_desc} ${date_str}"
+$VIPR_X $workdir/trees_b/deco/genomes_clean_b_cdhit_ni_mafft_tree_${tree_algorithm_name_b}_d.xml $annotation_file ${tree_b_output_name}.xml "${tree_b_desc} ${date_str}"
 rc=$?
 if [[ $rc != 0 ]]; then
   exit $rc
