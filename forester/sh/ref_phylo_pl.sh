@@ -1,4 +1,4 @@
-VERSION="0.0.2"
+VERSION="0.0.3"
 CLEAN_FASTA="python3 /Users/czmasek/Dropbox/PROG/PYTHON/PYCHARM_PROJECTS/TWO/clean_fasta.py"
 CDHIT="/Users/czmasek/anaconda3/bin/cd-hit"
 MAKE_MULTI_SEQ="perl /Users/czmasek/SOFT/VARIA/make_multi_seq.pl"
