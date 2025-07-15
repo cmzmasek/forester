@@ -322,16 +322,19 @@ public final class SequenceAccessionTools {
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         Matcher m = GENBANK_PROT_PATTERN.matcher( s );
         if ( m.lookingAt() ) {
+            //System.out.println("A");
             return m.group( 1 );
         }
         else {
-            m = GENBANK_NUC_PATTERN_1.matcher( s );
+            m = GENBANK_NUC_PATTERN_2.matcher( s );
             if ( m.lookingAt() ) {
+                //System.out.println("B");
                 return m.group( 1 );
             }
             else {
-                m = GENBANK_NUC_PATTERN_2.matcher( s );
+                m = GENBANK_NUC_PATTERN_1.matcher( s );
                 if ( m.lookingAt() ) {
+                    //System.out.println("C");
                     return m.group( 1 );
                 }
                 else {
@@ -398,4 +401,10 @@ public final class SequenceAccessionTools {
         }
         return null;
     }
+
+    public static void main(String[] args)
+    {
+        System.out.println(parseGenbankAccessorFromString("LT898418.1 Porcine epidemic diarrhea virus isolate PEDV_AUSTRIA_L01065-M10_15-04_2015 genome assembly, complete genome: monopartite"));
+    }
+
 }
