@@ -401,7 +401,7 @@ public final class cladinator {
         }
         catch ( final Exception e ) {
             e.printStackTrace();
-            ForesterUtil.fatalError( PRG_NAME, "Unexpected errror!" );
+            ForesterUtil.fatalError( PRG_NAME, "Unexpected error!" );
         }
     }
 

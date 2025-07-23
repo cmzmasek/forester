@@ -392,7 +392,7 @@ public final class ResultMulti {
             }
         }
         if ( !ForesterUtil.isEqual( confidence_sum, 1.0, MIN_DIFF ) ) {
-            throw new UserException( "confidences add up to " + confidence_sum + " instead of 1.0" );
+            throw new UserException( "ERROR: confidences add up to " + confidence_sum + " instead of 1.0" );
         }
         return collapsed;
     }

@@ -103,7 +103,7 @@ public final class AnalysisMulti {
                                       final double cutoff_for_specifics)
             throws UserException {
         if (ForesterUtil.isEmpty(separator)) {
-            throw new IllegalArgumentException("separator must not be null or empty");
+            throw new UserException("separator must not be null or empty");
         }
         cleanUpExternalNames(p, separator);
         final List<PhylogenyNode> qnodes = p.getNodes(query);
@@ -142,9 +142,15 @@ public final class AnalysisMulti {
             if (matcher.find()) {
                 conf_str = matcher.group(1);
             } else {
-                throw new IllegalStateException("query pattern does not match [this should have never happened!]");
+                throw new IllegalStateException("ERROR: query pattern does not match [this should have never happened!]");
             }
-            final double conf = Double.parseDouble(conf_str);
+            final double conf;
+            try {
+                conf = Double.parseDouble(conf_str);
+            }
+            catch (final NumberFormatException ex) {
+                throw new UserException("ERROR: Could not parse confidence from \"" + conf_str +"\" from query node name \"" + qnode.getName() +"\"" );
+            }
             if (!ForesterUtil.isEmpty(greatest_common_prefix)) {
                 res.addGreatestCommonPrefix(greatest_common_prefix, conf);
             } else {
