@@ -358,7 +358,7 @@ public final class cladinator {
                     AnalysisMulti.performSpecialProcessing1( pattern, phy, separator, special_pattern, verbose );
                 }
 
-                final String e = AnalysisMulti.likelyProblematicQuery(phy, pattern);
+                final String e = AnalysisMulti.likelyProblematicQuery(phy, pattern, 2);
                 if ( e != null ) {
                     System.out.println( "Tree #" + counter );
                     System.out.println( e );

@@ -68,7 +68,7 @@ public final class AnalysisMulti {
     }
 
     public static String likelyProblematicQuery(final Phylogeny p,
-                               final Pattern query
+                               final Pattern query, final double factor
     ) {
         final List<PhylogenyNode> qnodes = p.getNodes(query);
         BasicDescriptiveStatistics s = new BasicDescriptiveStatistics();
@@ -83,7 +83,7 @@ public final class AnalysisMulti {
         //final double sd = s.sampleStandardDeviation();
         boolean all_outliers = true;
         for (final PhylogenyNode q : qnodes) {
-            if (q.calculateDistanceToRoot() < 2 * max_distance_to_root) {
+            if (q.calculateDistanceToRoot() < factor * max_distance_to_root) {
                 all_outliers = false;
                 break;
             }

@@ -363,6 +363,26 @@ public final class cladinator3 {
                 } else if (special_processing) {
                     AnalysisMulti.performSpecialProcessing1(pattern, phy, separator, special_pattern, verbose);
                 }
+
+                final String e = AnalysisMulti.likelyProblematicQuery(phy, pattern, 2);
+                if ( e != null ) {
+                    System.out.print(counter);
+                    System.out.print("\t");
+                    System.out.print(pattern);
+                    System.out.print("\t");
+                    System.out.print("Error: Possible non homologous query sequence");
+                    System.out.print("\t");
+                    System.out.print("");
+                    System.out.print("\t");
+                    System.out.print("");
+                    System.out.print("\t");
+                    System.out.print("");
+                    System.out.print("\t");
+                    System.out.print("");
+                    System.out.println();
+                    continue;
+                }
+
                 final ResultMulti res = AnalysisMulti.execute(phy, pattern, separator, cutoff_specifics);
 
 
@@ -376,8 +396,6 @@ public final class cladinator3 {
                                 simple_output_cutoff,
                                 TWO_COLUMNS_IN_SIMPLE_OUTPUT,
                                 ALLOW_TO_SPLIT_QUERY);
-                    } else {
-                        writeResultToTable(res, outtable_writer, remove_annotation_sep);
                     }
                     outtable_writer.flush();
                 }
@@ -438,22 +456,18 @@ public final class cladinator3 {
                                 res.getAllMultiHitPrefixesDown().get(0).getPrefix(),
                                 res.getAllMultiHitPrefixesUp().get(0).getPrefix(),
                                 res.getNumberOfMatches());
-
-                        // System.out.println( res.getCollapsedMultiHitPrefixesDown() );
-                        //System.out.println( res.getCollapsedMultiHitPrefixesUp() );
-
-                        System.out.println(res.getAllMultiHitPrefixesDown());
-                        System.out.println(res.getAllMultiHitPrefixesUp());
+                        //System.out.println(res.getAllMultiHitPrefixesDown());
+                       // System.out.println(res.getAllMultiHitPrefixesUp());
 
                     }
                 } else {
-                    System.out.print(res.getQueryNamePrefix());
-                    // System.out.print( "Matching Clades" );
-                    System.out.print("\t");
-                    System.out.print(prefix.getPrefix());
-                    System.out.print("\t");
-                    System.out.print(df.format(prefix.getConfidence()));
-                    System.out.println();
+                    printRow(counter,
+                            res.getQueryNamePrefix(),
+                            prefix.getPrefix(),
+                            prefix.getConfidence(),
+                            res.getAllMultiHitPrefixesDown().get(0).getPrefix(),
+                            res.getAllMultiHitPrefixesUp().get(0).getPrefix(),
+                            res.getNumberOfMatches());
                 }
                 done = true;
                 break;
@@ -466,22 +480,25 @@ public final class cladinator3 {
                         if (split_query) {
                             final String[] queries = res.getQueryNamePrefix().split("_");
                             for (final String query : queries) {
-                                System.out.print(query);
-                                // System.out.print( "Matching Down-tree Bracketing Clades" );
-                                System.out.print("\t");
-                                System.out.print(prefix.getPrefix() + "-like");
-                                System.out.print("\t");
-                                System.out.print(df.format(prefix.getConfidence()));
-                                System.out.println();
+                                printRow(counter,
+                                        query,
+                                        prefix.getPrefix(),
+                                        prefix.getConfidence(),
+                                        res.getAllMultiHitPrefixesDown().get(0).getPrefix(),
+                                        res.getAllMultiHitPrefixesUp().get(0).getPrefix(),
+                                        res.getNumberOfMatches());
+
+
                             }
                         } else {
-                            System.out.print(res.getQueryNamePrefix());
-                            // System.out.print( "Matching Down-tree Bracketing Clades" );
-                            System.out.print("\t");
-                            System.out.print(prefix.getPrefix() + "-like");
-                            System.out.print("\t");
-                            System.out.print(df.format(prefix.getConfidence()));
-                            System.out.println();
+                            printRow(counter,
+                                    res.getQueryNamePrefix(),
+                                    prefix.getPrefix(),
+                                    prefix.getConfidence(),
+                                    res.getAllMultiHitPrefixesDown().get(0).getPrefix(),
+                                    res.getAllMultiHitPrefixesUp().get(0).getPrefix(),
+                                    res.getNumberOfMatches());
+
                         }
                         done = true;
                         break;
@@ -496,22 +513,22 @@ public final class cladinator3 {
                         if (split_query) {
                             final String[] queries = res.getQueryNamePrefix().split("_");
                             for (final String query : queries) {
-                                System.out.print(query);
-                                //  System.out.print( "Matching Up-tree Bracketing Clades" );
-                                System.out.print("\t");
-                                System.out.print(prefix.getPrefix() + "-like");
-                                System.out.print("\t");
-                                System.out.print(df.format(prefix.getConfidence()));
-                                System.out.println();
+                                printRow(counter,
+                                        query,
+                                        prefix.getPrefix(),
+                                        prefix.getConfidence(),
+                                        res.getAllMultiHitPrefixesDown().get(0).getPrefix(),
+                                        res.getAllMultiHitPrefixesUp().get(0).getPrefix(),
+                                        res.getNumberOfMatches());
                             }
                         } else {
-                            System.out.print(res.getQueryNamePrefix());
-                            // System.out.print( "Matching Up-tree Bracketing Clades" );
-                            System.out.print("\t");
-                            System.out.print(prefix.getPrefix() + "-like");
-                            System.out.print("\t");
-                            System.out.print(df.format(prefix.getConfidence()));
-                            System.out.println();
+                            printRow(counter,
+                                    res.getQueryNamePrefix(),
+                                    prefix.getPrefix(),
+                                    prefix.getConfidence(),
+                                    res.getAllMultiHitPrefixesDown().get(0).getPrefix(),
+                                    res.getAllMultiHitPrefixesUp().get(0).getPrefix(),
+                                    res.getNumberOfMatches());
                         }
                         done = true;
                         break;
@@ -533,8 +550,6 @@ public final class cladinator3 {
                 System.out.println("?");
             }
         }
-        // }
-        ////
         System.out.println();
     }
 
@@ -549,21 +564,37 @@ public final class cladinator3 {
         System.out.print("\t");
         System.out.print(query);
         System.out.print("\t");
-        System.out.print(match);
+        if (!prefix_down.equals("?") && !prefix_up.equals("?")) {
+            System.out.print(match);
+        }
+        else {
+            System.out.print("n/a");
+        }
         System.out.print("\t");
         System.out.print(df.format(confidence));
         System.out.print("\t");
 
-        if (placements == 1) {
+        if (placements == 1 && !prefix_down.equals("?") && !prefix_up.equals("?")) {
             System.out.print("[" + prefix_down + ", " + prefix_up + "]");
         } else {
             System.out.print("n/a");
         }
         System.out.print("\t");
         if (!prefix_down.equals(prefix_up)) {
-            System.out.print("potential for novel sub-species within " + match + " clade");
+            if (prefix_down.equals("?") && !prefix_up.equals("?")) {
+                System.out.print("potential for novel sub-species similar to clade " +  prefix_up);
+            }
+            else if (!prefix_down.equals("?") && prefix_up.equals("?")) {
+                System.out.print("potential for novel sub-species similar to clade " + prefix_down);
+            }
+            else if (prefix_down.equals("?") && prefix_up.equals("?")) {
+                System.out.print("potential for novel sub-species different from all current sub-species");
+            }
+            else {
+                System.out.print("potential for novel sub-species within clade " + match);
+            }
         } else {
-            System.out.print("member of " + match + " clade");
+            System.out.print("member of clade " + match);
         }
         System.out.print("\t");
         System.out.print(placements);
@@ -716,95 +747,6 @@ public final class cladinator3 {
         }
     }
 
-    private final static void writeResultToTable(final ResultMulti res,
-                                                 final EasyWriter w,
-                                                 final boolean remove_annotation_sep)
-            throws IOException {
-        if ((res.getAllMultiHitPrefixes() == null) | (res.getAllMultiHitPrefixes().size() < 1)) {
-            w.print(res.getQueryNamePrefix());
-            w.print("\t");
-            w.println("No match to query pattern!");
-        } else {
-            for (final Prefix prefix : res.getCollapsedMultiHitPrefixes()) {
-                w.print(res.getQueryNamePrefix());
-                w.print("\t");
-                w.print("Matching Clades");
-                w.print("\t");
-                if (remove_annotation_sep) {
-                    w.print(prefix.getPrefixRemoveSeparator());
-                } else {
-                    w.print(prefix.getPrefix());
-                }
-                w.print("\t");
-                w.print(df.format(prefix.getConfidence()));
-                w.print("\t");
-                w.print(String.valueOf(res.getNumberOfMatches()));
-                w.print("\t");
-                w.print(String.valueOf(res.getReferenceTreeNumberOfExternalNodes()));
-                w.println();
-            }
-            if (res.isHasSpecificMultiHitsPrefixes()) {
-                for (final Prefix prefix : res.getSpecificMultiHitPrefixes()) {
-                    w.print(res.getQueryNamePrefix());
-                    w.print("\t");
-                    w.print("Specific-hits");
-                    w.print("\t");
-                    if (remove_annotation_sep) {
-                        w.print(prefix.getPrefixRemoveSeparator());
-                    } else {
-                        w.print(prefix.getPrefix());
-                    }
-                    w.print("\t");
-                    w.print(df.format(prefix.getConfidence()));
-                    w.print("\t");
-                    w.print(String.valueOf(res.getNumberOfMatches()));
-                    w.print("\t");
-                    w.print(String.valueOf(res.getReferenceTreeNumberOfExternalNodes()));
-                    w.println();
-                }
-            }
-            if (!ForesterUtil.isEmpty(res.getAllMultiHitPrefixesDown())) {
-                for (final Prefix prefix : res.getCollapsedMultiHitPrefixesDown()) {
-                    w.print(res.getQueryNamePrefix());
-                    w.print("\t");
-                    w.print("Matching Down-tree Bracketing Clades");
-                    w.print("\t");
-                    if (remove_annotation_sep) {
-                        w.print(prefix.getPrefixRemoveSeparator());
-                    } else {
-                        w.print(prefix.getPrefix());
-                    }
-                    w.print("\t");
-                    w.print(df.format(prefix.getConfidence()));
-                    w.print("\t");
-                    w.print(String.valueOf(res.getNumberOfMatches()));
-                    w.print("\t");
-                    w.print(String.valueOf(res.getReferenceTreeNumberOfExternalNodes()));
-                    w.println();
-                }
-            }
-            if (!ForesterUtil.isEmpty(res.getAllMultiHitPrefixesUp())) {
-                for (final Prefix prefix : res.getCollapsedMultiHitPrefixesUp()) {
-                    w.print(res.getQueryNamePrefix());
-                    w.print("\t");
-                    w.print("Matching Up-tree Bracketing Clades");
-                    w.print("\t");
-                    if (remove_annotation_sep) {
-                        w.print(prefix.getPrefixRemoveSeparator());
-                    } else {
-                        w.print(prefix.getPrefix());
-                    }
-                    w.print("\t");
-                    w.print(df.format(prefix.getConfidence()));
-                    w.print("\t");
-                    w.print(String.valueOf(res.getNumberOfMatches()));
-                    w.print("\t");
-                    w.print(String.valueOf(res.getReferenceTreeNumberOfExternalNodes()));
-                    w.println();
-                }
-            }
-        }
-    }
 
     private final static void print_help() {
         System.out.println("Usage:");
