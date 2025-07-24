@@ -4,7 +4,7 @@ MSA_PRO="/usr/bin/ruby /Users/czmasek/IdeaProjects/forester/forester/ruby/evorub
 DECORATOR="/usr/bin/ruby /Users/czmasek/IdeaProjects/forester/forester/ruby/evoruby/exe/phylogenies_decorator.rb"
 PHYLO_PL="perl /Users/czmasek/IdeaProjects/forester/forester/perl/phylo_pl.pl"
 MAFFT="/Users/czmasek/anaconda3/bin/mafft"
-MSA_RENAME="/Users/czmasek/Dropbox/PROG/PYTHON/PYCHARM_PROJECTS/TWO/msa_rename.py"
+MSA_RENAME="python3 /Users/czmasek/Dropbox/PROG/PYTHON/PYCHARM_PROJECTS/TWO/msa_rename.py"
 
 if [ "$#" -ne 5 ]; then
   echo "Usage: mktree.sh <mafft options> <msa_pro options> <phylopl options> <input suffix> <workdir>" >&2
@@ -71,8 +71,8 @@ for i in $workdir/*; do
         fi
 
         if [ ! -f $workdir/${name}_mafft.fasta ]; then
-          echo "        Executing: python $MSA_RENAME $workdir/${name}_ni_mafft.fasta $workdir/${name}.nim $workdir/${name}_mafft.fasta:"
-          python $MSA_RENAME $workdir/${name}_ni_mafft.fasta $workdir/${name}.nim $workdir/${name}_mafft.fasta
+          echo "        Executing: $MSA_RENAME $workdir/${name}_ni_mafft.fasta $workdir/${name}.nim $workdir/${name}_mafft.fasta:"
+          $MSA_RENAME $workdir/${name}_ni_mafft.fasta $workdir/${name}.nim $workdir/${name}_mafft.fasta
           rc=$?
           if [[ $rc != 0 ]]; then
             exit $rc

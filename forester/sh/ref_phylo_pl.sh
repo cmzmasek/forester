@@ -1,4 +1,4 @@
-VERSION="0.0.3"
+VERSION="0.0.4"
 CLEAN_FASTA="python3 /Users/czmasek/Dropbox/PROG/PYTHON/PYCHARM_PROJECTS/TWO/clean_fasta.py"
 CDHIT="/Users/czmasek/anaconda3/bin/cd-hit"
 MAKE_MULTI_SEQ="perl /Users/czmasek/SOFT/VARIA/make_multi_seq.pl"
@@ -11,16 +11,18 @@ PHYLOXML_TO_NH="java -Xmx8048m -cp /Users/czmasek/IdeaProjects/forester/forester
 #MINIMAL_LENGTH_A=450
 #MINIMAL_LENGTH_B=12000
 #CHAR_RATIO=0.999
-#CLUSTERING_CUTOFF_A=0.999
-#CLUSTERING_CUTOFF_B=0.99
+#CDHIT_CLUSTERING_CUTOFF_A=0.999
+#CDHIT_CLUSTERING_CUTOFF_B=0.99
+#CDHIT_WORDSIZE_A=5
+#CDHIT_WORDSIZE_B=5
 #MAFFT_OPTS_A=--retree 1 --thread 8
 #MAFFT_OPTS_B=--retree 1 --thread 8
 #MSA_PRO_OPTS_A=-rr=0.2 -rsl=450
 #MSA_PRO_OPTS_B=-rr=0.2 -rsl=450
-#TREE_INFERENCE_OPTS_A=-B100Zn
-#TREE_INFERENCE_OPTS_B=-B100Zn
-#TREE_ALGORITHM_NAME_A=pnj
-#TREE_ALGORITHM_NAME_B=pnj
+#TREE_INFERENCE_OPTS_A=-B100Zxm
+#TREE_INFERENCE_OPTS_B=-B100Zxm
+#TREE_ALGORITHM_NAME_A=raxml
+#TREE_ALGORITHM_NAME_B=raxml
 #TREE_A_DESC=M. hominis nucleocapsid cdhit0.999 RAxML GTR G4
 #TREE_B_DESC=M. hominis genome cdhit 0.99 RAxML GTR G4
 #ADDITIONAL_SEQS_A=../base_seqs.fasta
@@ -52,6 +54,8 @@ minimal_length_b=100
 char_ratio=0.99
 clustering_cutoff_a=""
 clustering_cutoff_b=""
+cdhit_wordsize_a=""
+cdhit_wordsize_b=""
 mafft_opts_a="--auto"
 mafft_opts_b="--auto"
 msa_pro_opts_a=""
@@ -76,11 +80,17 @@ while IFS= read -r line; do
   if [[ "$line" =~ CHAR_RATIO=[[:space:]]*(.+) ]]; then
     char_ratio="${BASH_REMATCH[1]}"
   fi
-  if [[ "$line" =~ CLUSTERING_CUTOFF_A=[[:space:]]*(.+) ]]; then
+  if [[ "$line" =~ CDHIT_CLUSTERING_CUTOFF_A=[[:space:]]*(.+) ]]; then
     clustering_cutoff_a="${BASH_REMATCH[1]}"
   fi
-  if [[ "$line" =~ CLUSTERING_CUTOFF_B=[[:space:]]*(.+) ]]; then
+  if [[ "$line" =~ CDHIT_CLUSTERING_CUTOFF_B=[[:space:]]*(.+) ]]; then
     clustering_cutoff_b="${BASH_REMATCH[1]}"
+  fi
+  if [[ "$line" =~ CDHIT_WORDSIZE_A=[[:space:]]*(.+) ]]; then
+    cdhit_wordsize_a="${BASH_REMATCH[1]}"
+  fi
+  if [[ "$line" =~ CDHIT_WORDSIZE_B=[[:space:]]*(.+) ]]; then
+    cdhit_wordsize_b="${BASH_REMATCH[1]}"
   fi
   if [[ "$line" =~ MAFFT_OPTS_A=[[:space:]]*(.+) ]]; then
     mafft_opts_a="${BASH_REMATCH[1]}"
@@ -136,6 +146,8 @@ echo "Min length B        : $minimal_length_b"
 echo "Ratio               : $char_ratio"
 echo "Clustering cutoff A : $clustering_cutoff_a"
 echo "Clustering cutoff B : $clustering_cutoff_b"
+echo "CDHIT wordsize A    : $cdhit_wordsize_a"
+echo "CDHIT wordsize B    : $cdhit_wordsize_b"
 echo "MAFFT options A     : $mafft_opts_a"
 echo "MAFFT options B     : $mafft_opts_b"
 echo "MSA pro options A   : $msa_pro_opts_a"
@@ -245,7 +257,11 @@ fi
 # ----------
 if [ ! -f $workdir/genomes_clean_a_cdhit.fasta ]; then
   if [ "${#clustering_cutoff_a}" -gt 0 ]; then
-    $CDHIT -c $clustering_cutoff_a -d 0 -g 1 -i $workdir/genomes_clean_a.fasta -o $workdir/genomes_clean_a_cdhit.fasta
+    if [ "${#cdhit_wordsize_a}" -gt 0 ]; then
+      $CDHIT -c $clustering_cutoff_a -n $cdhit_wordsize_a -d 0 -g 1 -i $workdir/genomes_clean_a.fasta -o $workdir/genomes_clean_a_cdhit.fasta
+    else
+      $CDHIT -c $clustering_cutoff_a -d 0 -g 1 -i $workdir/genomes_clean_a.fasta -o $workdir/genomes_clean_a_cdhit.fasta
+    fi
     rc=$?
     if [[ $rc != 0 ]]; then
       exit $rc
@@ -258,7 +274,11 @@ fi
 
 if [ ! -f $workdir/genomes_clean_b_cdhit.fasta ]; then
   if [ "${#clustering_cutoff_b}" -gt 0 ]; then
-    $CDHIT -c $clustering_cutoff_b -d 0 -g 1 -i $workdir/genomes_clean_b.fasta -o $workdir/genomes_clean_b_cdhit.fasta
+    if [ "${#cdhit_wordsize_a}" -gt 0 ]; then
+      $CDHIT -c $clustering_cutoff_b -n $cdhit_wordsize_b -d 0 -g 1 -i $workdir/genomes_clean_b.fasta -o $workdir/genomes_clean_b_cdhit.fasta
+    else
+      $CDHIT -c $clustering_cutoff_b -d 0 -g 1 -i $workdir/genomes_clean_b.fasta -o $workdir/genomes_clean_b_cdhit.fasta
+    fi
     rc=$?
     if [[ $rc != 0 ]]; then
       exit $rc
