@@ -476,23 +476,24 @@ public final class cladinator3 {
             if (split_query) {
                 final String[] queries = res.getQueryNamePrefix().split("_");
                 for (final String query : queries) {
-                    for (final Prefix prefix : res.getCollapsedMultiHitPrefixesUp()) {
-                        System.out.println(prefix);
-                    }
+
+                    final Prefix r = res.getAllMultiHitPrefixes().get(0);
+
                     printRow(counter,
                             query,
-                            AnalysisMulti.UNKNOWN,
-                            -1,
+                            r.getPrefix(),
+                            r.getConfidence(),
                             AnalysisMulti.UNKNOWN,
                             AnalysisMulti.UNKNOWN,
                             res.getNumberOfMatches(),
                             w);
                 }
             } else {
+                final Prefix r = res.getAllMultiHitPrefixes().get(0);
                 printRow(counter,
                         res.getQueryNamePrefix(),
-                        AnalysisMulti.UNKNOWN,
-                        -1,
+                        r.getPrefix(),
+                        r.getConfidence(),
                         AnalysisMulti.UNKNOWN,
                         AnalysisMulti.UNKNOWN,
                         res.getNumberOfMatches(),

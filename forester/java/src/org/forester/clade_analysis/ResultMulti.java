@@ -48,11 +48,8 @@ public final class ResultMulti {
     private final List<Prefix> _greatest_common_prefixes_down = new ArrayList<Prefix>();
     private List<Prefix> _all = null;
     private List<Prefix> _collapsed = null;
-
-
     private List<Prefix> _all_up = null;
     private List<Prefix> _collapsed_up = null;
-
     private List<Prefix> _all_down = null;
     private List<Prefix> _collapsed_down = null;
     private int _matches = 0;
@@ -90,7 +87,6 @@ public final class ResultMulti {
         return _collapsed_down;
     }
 
-
     public List<Prefix> getAllMultiHitPrefixes() {
         return _all;
     }
@@ -98,7 +94,6 @@ public final class ResultMulti {
     public List<Prefix> getCollapsedMultiHitPrefixes() {
         return _collapsed;
     }
-
 
     public String getQueryNamePrefix() {
         return _query_name_prefix;
@@ -235,37 +230,6 @@ public final class ResultMulti {
         }
     }
 
-    static List<Prefix> obtainSpecifics(final double cutoff,
-                                        final List<Prefix> cleaned,
-                                        final List<Prefix> collapsed,
-                                        final String separator) {
-        final List<Prefix> cleaned_spec = new ArrayList<Prefix>();
-        final Set<String> collapsed_set = new HashSet<String>();
-        for (final Prefix prefix : collapsed) {
-            collapsed_set.add(prefix.getPrefix());
-        }
-        final List<Prefix> spec = new ArrayList<Prefix>();
-        for (final Prefix prefix : cleaned) {
-            if ((prefix.getConfidence() >= cutoff) && !collapsed_set.contains(prefix.getPrefix())) {
-                spec.add(prefix);
-            }
-        }
-        for (final Prefix o : spec) {
-            boolean ok = true;
-            for (final Prefix i : spec) {
-                if ((!o.getPrefix().equals(i.getPrefix()))
-                        && (ForesterUtil.isContainsPrefix(i.getPrefix(), o.getPrefix(), separator))) {
-                    ok = false;
-                    break;
-                }
-
-            }
-            if (ok) {
-                cleaned_spec.add(o);
-            }
-        }
-        return cleaned_spec;
-    }
 
     private static List<Prefix> collapse(final List<Prefix> cleaned) throws UserException {
         final List<Prefix> collapsed = new ArrayList<Prefix>();
