@@ -45,62 +45,53 @@ import org.forester.util.UserException;
 
 public final class AnalysisMulti {
 
-    private final static String UNKNOWN = "?";
-    public final static double DEFAULT_CUTOFF_FOR_SPECIFICS = 0.5;
+    public final static String UNKNOWN = "?";
     public final static String DEFAULT_SEPARATOR = ".";
     public final static Pattern DEFAULT_QUERY_PATTERN_FOR_PPLACER_TYPE = Pattern.compile("_#\\d+_M=(.+)");
 
     public static ResultMulti execute(final Phylogeny p) throws UserException {
-        return execute(p, DEFAULT_QUERY_PATTERN_FOR_PPLACER_TYPE, DEFAULT_SEPARATOR, DEFAULT_CUTOFF_FOR_SPECIFICS);
+        return execute(p, DEFAULT_QUERY_PATTERN_FOR_PPLACER_TYPE, DEFAULT_SEPARATOR);
     }
 
     public static ResultMulti execute(final Phylogeny p, final String separator) throws UserException {
-        return execute(p, DEFAULT_QUERY_PATTERN_FOR_PPLACER_TYPE, separator, DEFAULT_CUTOFF_FOR_SPECIFICS);
+        return execute(p, DEFAULT_QUERY_PATTERN_FOR_PPLACER_TYPE, separator);
     }
 
-    public static ResultMulti execute(final Phylogeny p, final String separator, final double cutoff_for_specifics)
-            throws UserException {
-        return execute(p, DEFAULT_QUERY_PATTERN_FOR_PPLACER_TYPE, separator, cutoff_for_specifics);
-    }
 
-    public static ResultMulti execute(final Phylogeny p, final double cutoff_for_specifics) throws UserException {
-        return execute(p, DEFAULT_QUERY_PATTERN_FOR_PPLACER_TYPE, DEFAULT_SEPARATOR, cutoff_for_specifics);
-    }
-
-    public static String likelyProblematicQuery(final Phylogeny p,
-                               final Pattern query, final double factor
+    public static boolean likelyProblematicQuery(final Phylogeny p,
+                                                 final Pattern query, final double factor
     ) {
         final List<PhylogenyNode> qnodes = p.getNodes(query);
-        BasicDescriptiveStatistics s = new BasicDescriptiveStatistics();
-        for (final PhylogenyNodeIterator it = p.iteratorExternalForward(); it.hasNext(); ) {
-            final PhylogenyNode i = it.next();
-            if (!qnodes.contains(i)) {
-                s.addValue(i.calculateDistanceToRoot());
+        if (qnodes.size() > 0) {
+
+            BasicDescriptiveStatistics s = new BasicDescriptiveStatistics();
+            for (final PhylogenyNodeIterator it = p.iteratorExternalForward(); it.hasNext(); ) {
+                final PhylogenyNode i = it.next();
+                if (!qnodes.contains(i)) {
+                    s.addValue(i.calculateDistanceToRoot());
+                }
+            }
+            final double max_distance_to_root = s.getMax();
+            boolean all_outliers = true;
+            for (final PhylogenyNode q : qnodes) {
+                if (q.calculateDistanceToRoot() < factor * max_distance_to_root) {
+                    all_outliers = false;
+                    break;
+                }
+            }
+            if (all_outliers) {
+                return true;
+            } else {
+                return false;
             }
         }
-        //final double mean_distance_to_root = s.arithmeticMean();
-        final double max_distance_to_root = s.getMax();
-        //final double sd = s.sampleStandardDeviation();
-        boolean all_outliers = true;
-        for (final PhylogenyNode q : qnodes) {
-            if (q.calculateDistanceToRoot() < factor * max_distance_to_root) {
-                all_outliers = false;
-                break;
-            }
-        }
-        if ( all_outliers ) {
-            return "Error: Possible non homologous query sequence";
-        }
-        else {
-            return null;
-        }
+        return false;
     }
 
 
     public static ResultMulti execute(final Phylogeny p,
                                       final Pattern query,
-                                      final String separator,
-                                      final double cutoff_for_specifics)
+                                      final String separator)
             throws UserException {
         if (ForesterUtil.isEmpty(separator)) {
             throw new UserException("separator must not be null or empty");
@@ -114,10 +105,11 @@ public final class AnalysisMulti {
         for (int i = 0; i < qnodes.size(); ++i) {
             final PhylogenyNode qnode = qnodes.get(i);
             if (qnode.isRoot()) {
-                throw new UserException("query " + query + " is root");
+                throw new UserException("ERROR: query \"" + query + "\" is root");
             }
             if (qnode.getParent().isRoot()) {
-                throw new UserException("parent of query " + query + " is root");
+                res.addGreatestCommonPrefix(UNKNOWN, parseConfidence(query, qnode));
+                continue;
             }
             PhylogenyNode qnode_p = qnode.getParent();
             PhylogenyNode qnode_pp = qnode.getParent().getParent();
@@ -137,20 +129,7 @@ public final class AnalysisMulti {
                 }
             }
             final String greatest_common_prefix = ForesterUtil.greatestCommonPrefix(qnode_ext_nodes_names, separator);
-            final Matcher matcher = query.matcher(qnode.getName());
-            String conf_str = null;
-            if (matcher.find()) {
-                conf_str = matcher.group(1);
-            } else {
-                throw new IllegalStateException("ERROR: query pattern does not match [this should have never happened!]");
-            }
-            final double conf;
-            try {
-                conf = Double.parseDouble(conf_str);
-            }
-            catch (final NumberFormatException ex) {
-                throw new UserException("ERROR: Could not parse confidence from \"" + conf_str +"\" from query node name \"" + qnode.getName() +"\"" );
-            }
+            final double conf = parseConfidence(query, qnode);
             if (!ForesterUtil.isEmpty(greatest_common_prefix)) {
                 res.addGreatestCommonPrefix(greatest_common_prefix, conf);
             } else {
@@ -169,8 +148,25 @@ public final class AnalysisMulti {
                 res.addGreatestCommonPrefixDown(UNKNOWN, conf);
             }
         }
-        res.analyze(cutoff_for_specifics);
+        res.analyze();
         return res;
+    }
+
+    private static double parseConfidence(final Pattern query, final PhylogenyNode n) throws UserException {
+        final Matcher matcher = query.matcher(n.getName());
+        final String conf_str;
+        if (matcher.find()) {
+            conf_str = matcher.group(1);
+        } else {
+            throw new IllegalStateException("ERROR: query pattern does not match [this should have never happened!]");
+        }
+        final double conf;
+        try {
+            conf = Double.parseDouble(conf_str);
+        } catch (final NumberFormatException ex) {
+            throw new UserException("ERROR: Could not parse confidence from \"" + conf_str + "\" from query node name \"" + n.getName() + "\"");
+        }
+        return conf;
     }
 
     private final static String obtainQueryPrefix(final Pattern query, final List<PhylogenyNode> qnodes)
