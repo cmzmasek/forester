@@ -63,7 +63,6 @@ public final class AnalysisMulti {
     ) {
         final List<PhylogenyNode> qnodes = p.getNodes(query);
         if (qnodes.size() > 0) {
-
             BasicDescriptiveStatistics s = new BasicDescriptiveStatistics();
             for (final PhylogenyNodeIterator it = p.iteratorExternalForward(); it.hasNext(); ) {
                 final PhylogenyNode i = it.next();

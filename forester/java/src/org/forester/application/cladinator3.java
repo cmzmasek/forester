@@ -25,8 +25,7 @@
 
 package org.forester.application;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +39,7 @@ import org.forester.clade_analysis.ResultMulti;
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.util.ParserUtils;
 import org.forester.phylogeny.Phylogeny;
+import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.util.BasicTable;
@@ -61,7 +61,6 @@ public final class cladinator3 {
     final static private String HELP_OPTION_2 = "h";
     final static private String SEP_OPTION = "s";
     final static private String QUERY_PATTERN_OPTION = "q";
-
     final static private String MAPPING_FILE_OPTION = "m";
     final static private String EXTRA_PROCESSING_OPTION1 = "x";
     final static private String EXTRA_PROCESSING1_SEP_OPTION = "xs";
@@ -280,21 +279,25 @@ public final class cladinator3 {
             System.out.println("Number of input trees      : " + phys.length);
             if (phys.length == 1) {
                 System.out.println("Ext. nodes in input tree   : " + phys[0].getNumberOfExternalNodes());
-            } else {
-                System.out.println("Ext. nodes in input tree 1 : " + phys[0].getNumberOfExternalNodes());
             }
             final EasyWriter outtable_writer;
             if (outtablefile != null) {
                 outtable_writer = ForesterUtil.createEasyWriter(outtablefile);
-                if (!TWO_COLUMNS_IN_SIMPLE_OUTPUT) {
-                    outtable_writer.print("#" + PRG_NAME + " " + PRG_VERSION + " " + PRG_DATE);
-                    outtable_writer.print(" Input tree: " + intreefile);
-                }
+
             } else {
                 outtable_writer = null;
             }
+            final BufferedWriter print_writer = new BufferedWriter(new PrintWriter(System.out));
             int counter = 0;
+            System.out.println();
+            System.out.println("Results:");
+            System.out.println();
+            if (outtable_writer != null) {
+                describeColumns(outtable_writer);
+            }
+            describeColumns(print_writer);
             for (final Phylogeny phy : phys) {
+                ++counter;
                 if (map != null) {
                     AnalysisMulti.performMapping(pattern, map, phy, true);
                 }
@@ -310,34 +313,34 @@ public final class cladinator3 {
                 }
 
                 if (AnalysisMulti.likelyProblematicQuery(phy, pattern, 2)) {
-                    System.out.print(counter);
-                    System.out.print("\t");
-                    System.out.print(pattern);
-                    System.out.print("\t");
-                    System.out.print("Error: Possible non-homologous query sequence");
-                    System.out.print("\t");
-                    System.out.print("");
-                    System.out.print("\t");
-                    System.out.print("");
-                    System.out.print("\t");
-                    System.out.print("");
-                    System.out.print("\t");
-                    System.out.print("");
-                    System.out.println();
+                    int c = 0;
+                    try {
+                         c = phy.getNodes(pattern).size();
+                    }
+                    catch ( final Exception e) {
+                        // Eat exception
+                    }
+                    if (outtable_writer != null) {
+                        nonHomogousQueryError( counter, c, outtable_writer);
+                    }
+                    nonHomogousQueryError(counter, c, print_writer);
                     continue;
                 }
 
                 final ResultMulti res = AnalysisMulti.execute(phy, pattern, separator);
 
-                printResult(res, counter, pattern);
-
-
-                ++counter;
+                if (outtable_writer != null) {
+                    printResult(res, counter, pattern, outtable_writer);
+                }
+                printResult(res, counter, pattern, print_writer);
+                print_writer.flush();
             }
             if (outtable_writer != null) {
                 outtable_writer.flush();
                 outtable_writer.close();
             }
+            print_writer.flush();
+            print_writer.close();
         } catch (final UserException e) {
             ForesterUtil.fatalError(PRG_NAME, e.getMessage());
         } catch (final IOException e) {
@@ -348,18 +351,34 @@ public final class cladinator3 {
         }
     }
 
+    private static void nonHomogousQueryError(final int counter, final int placements, final BufferedWriter w) throws IOException {
+        w.write(String.valueOf(counter));
+        w.write("\t");
+        w.write("");
+        w.write("\t");
+        w.write("Error: Possible non-homologous query sequence");
+        w.write("\t");
+        w.write("");
+        w.write("\t");
+        w.write("");
+        w.write("\t");
+        w.write("");
+        w.write("\t");
+        w.write(String.valueOf(placements));
+        w.write("\n");
+        w.flush();
+    }
+
     private final static void printResult(final ResultMulti res,
                                           final int counter,
-                                          final Pattern pattern) {
-        System.out.println();
-        System.out.println("Results:");
-        System.out.println("#Tree #\tQuery\tAssignment\tConfidence\tBrackets\tConclusion\tPlacement count");
+                                          final Pattern pattern,
+                                          final BufferedWriter w) throws IOException {
         if ((res.getAllMultiHitPrefixes() == null) || (res.getAllMultiHitPrefixes().size() < 1)) {
+            w.flush();
             ForesterUtil.fatalError(PRG_NAME, "ERROR: No match to query pattern \"" + pattern + "\" in tree #" + counter);
         }
         final boolean split_query = true;
         final double cutoff = 0.7;
-
         boolean done = false;
         for (final Prefix prefix : res.getCollapsedMultiHitPrefixes()) {
             if ((prefix.getConfidence() >= cutoff) && !prefix.getPrefix().equals(AnalysisMulti.UNKNOWN)) {
@@ -372,7 +391,8 @@ public final class cladinator3 {
                                 prefix.getConfidence(),
                                 res.getAllMultiHitPrefixesDown().get(0).getPrefix(),
                                 res.getAllMultiHitPrefixesUp().get(0).getPrefix(),
-                                res.getNumberOfMatches());
+                                res.getNumberOfMatches(),
+                                w);
                     }
                 } else {
                     printRow(counter,
@@ -381,7 +401,8 @@ public final class cladinator3 {
                             prefix.getConfidence(),
                             res.getAllMultiHitPrefixesDown().get(0).getPrefix(),
                             res.getAllMultiHitPrefixesUp().get(0).getPrefix(),
-                            res.getNumberOfMatches());
+                            res.getNumberOfMatches(),
+                            w);
                 }
                 done = true;
                 break;
@@ -400,7 +421,8 @@ public final class cladinator3 {
                                         prefix.getConfidence(),
                                         res.getAllMultiHitPrefixesDown().get(0).getPrefix(),
                                         res.getAllMultiHitPrefixesUp().get(0).getPrefix(),
-                                        res.getNumberOfMatches());
+                                        res.getNumberOfMatches(),
+                                        w);
                             }
                         } else {
                             printRow(counter,
@@ -409,7 +431,8 @@ public final class cladinator3 {
                                     prefix.getConfidence(),
                                     res.getAllMultiHitPrefixesDown().get(0).getPrefix(),
                                     res.getAllMultiHitPrefixesUp().get(0).getPrefix(),
-                                    res.getNumberOfMatches());
+                                    res.getNumberOfMatches(),
+                                    w);
                         }
                         done = true;
                         break;
@@ -430,7 +453,8 @@ public final class cladinator3 {
                                         prefix.getConfidence(),
                                         res.getAllMultiHitPrefixesDown().get(0).getPrefix(),
                                         res.getAllMultiHitPrefixesUp().get(0).getPrefix(),
-                                        res.getNumberOfMatches());
+                                        res.getNumberOfMatches(),
+                                        w);
                             }
                         } else {
                             printRow(counter,
@@ -439,7 +463,8 @@ public final class cladinator3 {
                                     prefix.getConfidence(),
                                     res.getAllMultiHitPrefixesDown().get(0).getPrefix(),
                                     res.getAllMultiHitPrefixesUp().get(0).getPrefix(),
-                                    res.getNumberOfMatches());
+                                    res.getNumberOfMatches(),
+                                    w);
                         }
                         done = true;
                         break;
@@ -460,7 +485,8 @@ public final class cladinator3 {
                             -1,
                             AnalysisMulti.UNKNOWN,
                             AnalysisMulti.UNKNOWN,
-                            res.getNumberOfMatches());
+                            res.getNumberOfMatches(),
+                            w);
                 }
             } else {
                 printRow(counter,
@@ -469,10 +495,17 @@ public final class cladinator3 {
                         -1,
                         AnalysisMulti.UNKNOWN,
                         AnalysisMulti.UNKNOWN,
-                        res.getNumberOfMatches());
+                        res.getNumberOfMatches(),
+                        w);
             }
         }
-        System.out.println();
+        w.write("\n");
+        w.flush();
+    }
+
+    private static void describeColumns(BufferedWriter w) throws IOException {
+        w.write("#Tree #\tQuery\tAssignment\tConfidence\tBrackets\tConclusion\tPlacement count");
+        w.write("\n");
     }
 
     private static void printRow(final int counter,
@@ -481,57 +514,48 @@ public final class cladinator3 {
                                  final double confidence,
                                  final String prefix_down,
                                  final String prefix_up,
-                                 final int placements) {
-        System.out.print(counter);
-        System.out.print("\t");
-        System.out.print(query);
-        System.out.print("\t");
+                                 final int placements,
+                                 final BufferedWriter w) throws IOException {
+        w.write(String.valueOf(counter));
+        w.write("\t");
+        w.write(query);
+        w.write("\t");
         if (!prefix_down.equals(AnalysisMulti.UNKNOWN) && !prefix_up.equals(AnalysisMulti.UNKNOWN)) {
-            System.out.print(match);
+            w.write(match);
         } else {
-            System.out.print("potentially novel");
+            w.write("potentially novel");
         }
-        System.out.print("\t");
-        System.out.print(df.format(confidence));
-        System.out.print("\t");
+        w.write("\t");
+        w.write(df.format(confidence));
+        w.write("\t");
 
         if (placements == 1 && !prefix_down.equals(AnalysisMulti.UNKNOWN) && !prefix_up.equals(AnalysisMulti.UNKNOWN)) {
-            System.out.print("[" + prefix_down + ", " + prefix_up + "]");
+            w.write("[" + prefix_down + ", " + prefix_up + "]");
         } else {
-            System.out.print("n/a");
+            w.write("n/a");
         }
-        System.out.print("\t");
+        w.write("\t");
         if (!prefix_down.equals(prefix_up)) {
             if (prefix_down.equals(AnalysisMulti.UNKNOWN) && !prefix_up.equals(AnalysisMulti.UNKNOWN)) {
-                System.out.print("potential for novel sub-species similar to clade " + prefix_up);
+                w.write("potential for novel sub-species similar to clade " + prefix_up);
             } else if (!prefix_down.equals("?") && prefix_up.equals(AnalysisMulti.UNKNOWN)) {
-                System.out.print("potential for novel sub-species similar to clade " + prefix_down);
+                w.write("potential for novel sub-species similar to clade " + prefix_down);
             } else if (prefix_down.equals("?") && prefix_up.equals(AnalysisMulti.UNKNOWN)) {
-                System.out.print("potential for novel sub-species different from all current sub-species");
+                w.write("potential for novel sub-species different from all current sub-species");
             } else {
-                System.out.print("potential for novel sub-species within clade " + match);
+                w.write("potential for novel sub-species within clade " + match);
             }
         } else if (match.equals(AnalysisMulti.UNKNOWN)) {
-            System.out.print("potential for novel sub-species");
+            w.write("potential for novel sub-species");
         } else {
-            System.out.print("member of clade " + match);
+            w.write("member of clade " + match);
         }
 
-        System.out.print("\t");
-        System.out.print(placements);
-        System.out.println();
+        w.write("\t");
+        w.write(String.valueOf(placements));
+        w.flush();
     }
 
-
-    private final static void writeResultToTableSimple(final ResultMulti res,
-                                                       final EasyWriter w,
-                                                       final double cutoff,
-                                                       final boolean two_columns,
-                                                       final boolean split_query)
-            throws IOException {
-
-
-    }
 
 
     private final static void print_help() {
