@@ -380,6 +380,13 @@ public final class cladinator3 {
         final boolean split_query = true;
         final double cutoff = 0.7;
         boolean done = false;
+
+        System.out.println("UP:");
+        System.out.println( res.getAllMultiHitPrefixesUp() );
+        System.out.println("DOWN:");
+        System.out.println( res.getAllMultiHitPrefixesDown() );
+        System.out.println("CONS:");
+         System.out.println( res.getAllMultiHitPrefixes() );
         for (final Prefix prefix : res.getCollapsedMultiHitPrefixes()) {
             if ((prefix.getConfidence() >= cutoff) && !prefix.getPrefix().equals(AnalysisMulti.UNKNOWN)) {
                 if (split_query) {
