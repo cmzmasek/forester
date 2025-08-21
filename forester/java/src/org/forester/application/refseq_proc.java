@@ -57,7 +57,7 @@ public final class refseq_proc {
     public final static Pattern PATTERN_PROTEIN_ID = Pattern
             .compile("\\[protein_id=(.+?)\\]");
     public final static Pattern PATTERN_LOCATION = Pattern
-            .compile("\\[location=.+?(\\d+?)\\]");
+            .compile("\\[location=.+?(\\d+)");
     public final static Pattern PATTERN_GBKEY = Pattern
             .compile("\\[gbkey=(.+?)\\]");
 
@@ -82,48 +82,52 @@ public final class refseq_proc {
                 final Matcher mg = PATTERN_GENE.matcher(id);
                 if (mg.find()) {
                     gene = mg.group(1).trim();
-                    System.out.println(gene);
                 } else {
                     System.out.println(bseq.getIdentifier() + " did not match");
+                    System.exit(-1);
                 }
 
                 String protein = "";
                 final Matcher mp = PATTERN_PROTEIN.matcher(id);
                 if (mp.find()) {
                     protein = mp.group(1).trim();
-                    System.out.println(protein);
                 } else {
                     System.out.println(bseq.getIdentifier() + " did not match");
+                    System.exit(-1);
                 }
 
                 String protein_id = "";
                 final Matcher mpi = PATTERN_PROTEIN_ID.matcher(id);
                 if (mpi.find()) {
                     protein_id = mpi.group(1).trim();
-                    System.out.println(protein_id);
                 } else {
                     System.out.println(bseq.getIdentifier() + " did not match");
+                    System.exit(-1);
                 }
 
                 String loc = "";
                 final Matcher ml = PATTERN_LOCATION.matcher(id);
                 if (ml.find()) {
                     loc = ml.group(1).trim();
-                    System.out.println(loc);
                 } else {
                     System.out.println(bseq.getIdentifier() + " did not match");
+                    System.exit(-1);
                 }
 
                 String gbkey = "";
                 final Matcher mk = PATTERN_GBKEY.matcher(id);
                 if (mk.find()) {
                     gbkey = mk.group(1).trim();
-                    System.out.println(gbkey);
                 } else {
                     System.out.println(bseq.getIdentifier() + " did not match");
+                    System.exit(-1);
                 }
 
+                String new_id = protein_id + " gene=\"" + gene + "\" organism=\"Lumpy skin disease virus NI-2490\" splice_form=\"e" + loc + "\"";
+                bseq.setIdentifier(new_id);
 
+                System.out.println("[gene:" + gene + "]");
+                System.out.println("product=" + protein);
             }
             SequenceWriter.writeSeqs(seqs, outfile, SEQ_FORMAT.FASTA, 60);
         } catch (FileNotFoundException e) {
