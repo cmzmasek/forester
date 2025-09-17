@@ -10,24 +10,20 @@ fi
 indir=$1
 
 if [ -z "$(ls -A $indir)" ]; then
-    echo "Directory is empty"
-    exit 0
+  echo "Directory is empty"
+  exit 0
 fi
 
-for i in $indir/*
-do
-    if test -f "$i" 
-    then
-        if [[ $i =~ $re ]]
-        then
-            name=${BASH_REMATCH[1]}
-            echo $name
-            ruby $MSA_PRO -i=f -o=p -d -c -rr=0.5 -rsgr=0.5 $i ${name}_mafft_1000_l_05_05
-            rc=$?
-            if [[ $rc != 0 ]]
-            then
-                exit $rc
-            fi
-        fi
+for i in $indir/*; do
+  if test -f "$i"; then
+    if [[ $i =~ $re ]]; then
+      name=${BASH_REMATCH[1]}
+      echo $name
+      ruby $MSA_PRO -i=f -o=p -d -c -rr=0.5 $i ${name}_mafft_1000_l_05
+      rc=$?
+      if [[ $rc != 0 ]]; then
+        exit $rc
+      fi
     fi
+  fi
 done

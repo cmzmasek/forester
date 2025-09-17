@@ -1,7 +1,7 @@
 TAP_RB="/Users/czmasek/IdeaProjects/forester/forester/ruby/evoruby/exe/tap.rb"
 
 if [ "$#" -ne 1 ]; then
-  echo "Usage: $0 <dir>" >&2
+  echo "Usage: $0 <indir>" >&2
   exit 1
 fi
 

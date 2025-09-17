@@ -8,9 +8,10 @@ MSA_RENAME="python3 /Users/czmasek/Dropbox/PROG/PYTHON/PYCHARM_PROJECTS/TWO/msa_
 
 if [ "$#" -ne 5 ]; then
   echo "Usage: mktree.sh <mafft options> <msa_pro options> <phylopl options> <input suffix> <workdir>" >&2
-  echo "    Example 1: mktree.sh \"--retree 1\" \"\" \"-B1Wnq\" .fasta trees"
-  echo "    Example 2: mktree.sh \"--maxiterate 1000 --localpair --thread 8\" \"-rr=0.5 -rsgr=0.5\" \"-B100Znq\" .fasta trees"
-  echo "    Example 3: mktree.sh \"--maxiterate 1000 --localpair --thread 8\" \"-rr=0.5 -rsgr=0.5\" \"-B100Wnqxg\" .fasta trees"
+  echo "    Example 1: mktree.sh \"--auto --thread -1\" \"\" \"-B1Zq\" .fasta trees"
+  echo "    Example 2: mktree.sh \"--retree 1 --thread -1\" \"\" \"-B1Wnq\" .fasta trees"
+  echo "    Example 3: mktree.sh \"--maxiterate 1000 --localpair --thread 8\" \"-rr=0.5 -rsgr=0.5\" \"-B100Znq\" .fasta trees"
+  echo "    Example 4: mktree.sh \"--maxiterate 1000 --localpair --thread 8\" \"-rr=0.5 -rsgr=0.5\" \"-B100Wnqxg\" .fasta trees"
   exit 1
 fi
 
