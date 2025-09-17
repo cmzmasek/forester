@@ -41,369 +41,341 @@ public final class SequenceAccessionTools {
     // Nucleotide: 1 letter + 5 numerals OR 2 letters + 6 numerals
     // Protein: 3 letters + 5 numerals
     // http://www.ncbi.nlm.nih.gov/Sequin/acc.html
-    public final static Pattern  GENBANK_NUC_PATTERN_1       = Pattern
-            .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]\\d{5}(?:\\.\\d+)?)(?:[^a-zA-Z0-9]|\\Z)" );
-    public final static Pattern  GENBANK_NUC_PATTERN_2       = Pattern
-            .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]{2}\\d{6}(?:\\.\\d+)?)(?:[^a-zA-Z0-9]|\\Z)" );
-    public final static Pattern  GENBANK_PROT_PATTERN        = Pattern
-            .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]{3}\\d{5}(?:\\.\\d+)?)(?:[^a-zA-Z0-9]|\\Z)" );
-    public final static Pattern  GENBANK_PROT_PATTERN_2      = Pattern
-            .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]{3}\\d{5}(?:\\.\\d+))(?:[^a-zA-Z0-9]|\\Z)" );
-    public final static Pattern  GI_PATTERN                  = Pattern
-            .compile( "(?:\\b|_)(?:GI|gi)[|_=:](\\d+)(?:\\b|_)" );
-    public final static String   UNIPROT_KB_BASE_PATTERN_STR = "((?:[OPQ][0-9][A-Z0-9]{3}[0-9])|(?:[A-NR-Z][0-9]([A-Z][A-Z0-9]{2}[0-9]){1,2}))";
-    public final static Pattern  UNIPROT_KB_PATTERN_0        = Pattern
-            .compile( "(?:\\b|_)" + UNIPROT_KB_BASE_PATTERN_STR + "(?:\\b|_)" );
-    public final static Pattern  UNIPROT_KB_PATTERN_1        = Pattern
-            .compile( "(?:\\b|_)(?:sp|tr)[\\.|\\-_=/\\\\]" + UNIPROT_KB_BASE_PATTERN_STR + "(?:\\b|_)" );
-    public final static Pattern  UNIPROT_KB_PATTERN_2        = Pattern.compile( "(?:\\b|_)(?:[A-Z0-9]{2,5}|"
-            + UNIPROT_KB_BASE_PATTERN_STR + ")_(([A-Z9][A-Z]{2}[A-Z0-9]{2})|RAT|PIG|PEA)(?:\\b|_)" );
-    public final static Pattern  ENSEMBL_PATTERN             = Pattern.compile( "(?:\\b|_)(ENS[A-Z]*[0-9]+)(?:\\b|_)" );
+    public final static Pattern GENBANK_NUC_PATTERN_1 = Pattern
+            .compile("(?:\\A|.*[^a-zA-Z0-9])([A-Z]\\d{5}(?:\\.\\d+)?)(?:[^a-zA-Z0-9]|\\Z)");
+    public final static Pattern GENBANK_NUC_PATTERN_2 = Pattern
+            .compile("(?:\\A|.*[^a-zA-Z0-9])([A-Z]{2}\\d{6}(?:\\.\\d+)?)(?:[^a-zA-Z0-9]|\\Z)");
+    public final static Pattern GENBANK_PROT_PATTERN = Pattern
+            .compile("(?:\\A|.*[^a-zA-Z0-9])([A-Z]{3}\\d{5}(?:\\.\\d+)?)(?:[^a-zA-Z0-9]|\\Z)");
+
+    //public final static Pattern GENBANK_PROT_PATTERN_YP = Pattern
+    //        .compile("(?:\\A|.*[^a-zA-Z0-9])(YP_\\d{9}(?:\\.\\d+)?)(?:[^a-zA-Z0-9]|\\Z)");
+    public final static Pattern GENBANK_PROT_PATTERN_2 = Pattern
+            .compile("(?:\\A|.*[^a-zA-Z0-9])([A-Z]{3}\\d{5}(?:\\.\\d+))(?:[^a-zA-Z0-9]|\\Z)");
+    public final static Pattern GI_PATTERN = Pattern
+            .compile("(?:\\b|_)(?:GI|gi)[|_=:](\\d+)(?:\\b|_)");
+    public final static String UNIPROT_KB_BASE_PATTERN_STR = "((?:[OPQ][0-9][A-Z0-9]{3}[0-9])|(?:[A-NR-Z][0-9]([A-Z][A-Z0-9]{2}[0-9]){1,2}))";
+    public final static Pattern UNIPROT_KB_PATTERN_0 = Pattern
+            .compile("(?:\\b|_)" + UNIPROT_KB_BASE_PATTERN_STR + "(?:\\b|_)");
+    public final static Pattern UNIPROT_KB_PATTERN_1 = Pattern
+            .compile("(?:\\b|_)(?:sp|tr)[\\.|\\-_=/\\\\]" + UNIPROT_KB_BASE_PATTERN_STR + "(?:\\b|_)");
+    public final static Pattern UNIPROT_KB_PATTERN_2 = Pattern.compile("(?:\\b|_)(?:[A-Z0-9]{2,5}|"
+            + UNIPROT_KB_BASE_PATTERN_STR + ")_(([A-Z9][A-Z]{2}[A-Z0-9]{2})|RAT|PIG|PEA)(?:\\b|_)");
+    public final static Pattern ENSEMBL_PATTERN = Pattern.compile("(?:\\b|_)(ENS[A-Z]*[0-9]+)(?:\\b|_)");
     // RefSeq accession numbers can be distinguished from GenBank accessions
     // by their distinct prefix format of 2 characters followed by an
     // underscore character ('_'). For example, a RefSeq protein accession is NP_015325.
-    private final static Pattern REFSEQ_PATTERN              = Pattern
-            .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]{2}_\\d{6,}(\\.\\d)?)(?:[^a-zA-Z0-9]|\\Z)" );
-    private final static Pattern VIPR_PATTERN                = Pattern.compile( "\\|(VIPR_.+?)\\|" );
-    public final static String   VIPR_SOURCE                 = "ViPR";
+    private final static Pattern REFSEQ_PATTERN = Pattern
+            .compile("(?:\\A|.*[^a-zA-Z0-9])([A-Z]{2}_\\d{6,}(\\.\\d)?)(?:[^a-zA-Z0-9]|\\Z)");
+    //.compile("(?:\\A|.*[^a-zA-Z0-9])(YP_\\d{9}(?:\\.\\d+)?)(?:[^a-zA-Z0-9]|\\Z)");
+
+
     private SequenceAccessionTools() {
         // Hiding the constructor.
     }
 
-    public final static boolean isProteinDbQuery( final String query ) {
-        final String r1 = parseRefSeqAccessorFromString( query );
-        if ( !ForesterUtil.isEmpty( r1 ) && ( r1.charAt( 1 ) == 'P' ) ) {
+    public final static boolean isProteinDbQuery(final String query) {
+        final String r1 = parseRefSeqAccessorFromString(query);
+        if (!ForesterUtil.isEmpty(r1) && (r1.charAt(1) == 'P')) {
             return true;
         }
-        final String r2 = parseUniProtAccessorFromString( query );
-        if ( !ForesterUtil.isEmpty( r2 ) ) {
+        final String r2 = parseUniProtAccessorFromString(query);
+        if (!ForesterUtil.isEmpty(r2)) {
             return true;
         }
-        return GENBANK_PROT_PATTERN.matcher( query ).lookingAt();
+        return GENBANK_PROT_PATTERN.matcher(query).lookingAt();
     }
 
-    public final static Accession obtainAccessorFromDataFields( final PhylogenyNode n ) {
-        String a = obtainUniProtAccessorFromDataFields( n );
-        if ( !ForesterUtil.isEmpty( a ) ) {
-            return new Accession( a, Source.UNIPROT );
+    public final static Accession obtainAccessorFromDataFields(final PhylogenyNode n) {
+        String a = obtainUniProtAccessorFromDataFields(n);
+        if (!ForesterUtil.isEmpty(a)) {
+            return new Accession(a, Source.UNIPROT);
         }
-        a = obtainGenbankAccessorFromDataFields( n );
-        if ( !ForesterUtil.isEmpty( a ) ) {
-            return new Accession( a, Source.NCBI );
+        a = obtainGenbankAccessorFromDataFields(n);
+        if (!ForesterUtil.isEmpty(a)) {
+            return new Accession(a, Source.NCBI);
         }
-        a = obtainRefSeqAccessorFromDataFields( n );
-        if ( !ForesterUtil.isEmpty( a ) ) {
-            return new Accession( a, Source.REFSEQ );
+        a = obtainRefSeqAccessorFromDataFields(n);
+        if (!ForesterUtil.isEmpty(a)) {
+            return new Accession(a, Source.REFSEQ);
         }
-        a = obtainGiNumberFromDataFields( n );
-        if ( !ForesterUtil.isEmpty( a ) ) {
-            return new Accession( a, Source.GI );
+        a = obtainGiNumberFromDataFields(n);
+        if (!ForesterUtil.isEmpty(a)) {
+            return new Accession(a, Source.GI);
         }
         return null;
     }
 
-    public final static Accession obtainFromSeqAccession( final PhylogenyNode n ) {
-        if ( n.getNodeData().isHasSequence() && ( n.getNodeData().getSequence().getAccession() != null )
-                && !ForesterUtil.isEmpty( n.getNodeData().getSequence().getAccession().getSource() )
-                && !ForesterUtil.isEmpty( n.getNodeData().getSequence().getAccession().getValue() ) ) {
+    public final static Accession obtainFromSeqAccession(final PhylogenyNode n) {
+        if (n.getNodeData().isHasSequence() && (n.getNodeData().getSequence().getAccession() != null)
+                && !ForesterUtil.isEmpty(n.getNodeData().getSequence().getAccession().getSource())
+                && !ForesterUtil.isEmpty(n.getNodeData().getSequence().getAccession().getValue())) {
             final String source = n.getNodeData().getSequence().getAccession().getSource().toLowerCase();
             final String value = n.getNodeData().getSequence().getAccession().getValue();
-            if ( ( source.startsWith( "uniprot" ) || source.equals( "swissprot" ) || source.equals( "trembl" )
-                    || source.equals( "sp" ) ) ) {
-                return new Accession( value, Source.UNIPROT );
-            }
-            else if ( source.equals( "embl" ) || source.equals( "ebi" ) ) {
-                return new Accession( value, Source.EMBL );
-            }
-            else if ( source.equals( "ncbi" ) || source.equals( "genbank" ) ) {
-                return new Accession( value, Source.NCBI );
-            }
-            else if ( source.equals( "refseq" ) ) {
-                return new Accession( value, Source.REFSEQ );
-            }
-            else if ( source.equals( "gi" ) ) {
-                return new Accession( value, Source.GI );
+            if ((source.startsWith("uniprot") || source.equals("swissprot") || source.equals("trembl")
+                    || source.equals("sp"))) {
+                return new Accession(value, Source.UNIPROT);
+            } else if (source.equals("embl") || source.equals("ebi")) {
+                return new Accession(value, Source.EMBL);
+            } else if (source.equals("ncbi") || source.equals("genbank")) {
+                return new Accession(value, Source.NCBI);
+            } else if (source.equals("refseq")) {
+                return new Accession(value, Source.REFSEQ);
+            } else if (source.equals("gi")) {
+                return new Accession(value, Source.GI);
             }
         }
         return null;
     }
 
-    public final static String obtainGenbankAccessorFromDataFields( final PhylogenyNode n ) {
+    public final static String obtainGenbankAccessorFromDataFields(final PhylogenyNode n) {
         String a = null;
-        if ( n.getNodeData().isHasSequence() ) {
+        if (n.getNodeData().isHasSequence()) {
             final Sequence seq = n.getNodeData().getSequence();
-            if ( !ForesterUtil.isEmpty( seq.getSymbol() ) ) {
-                a = parseGenbankAccessorFromString( seq.getSymbol() );
+            if (!ForesterUtil.isEmpty(seq.getSymbol())) {
+                a = parseGenbankAccessorFromString(seq.getSymbol());
             }
-            if ( !ForesterUtil.isEmpty( seq.getGeneName() ) ) {
-                a = parseGenbankAccessorFromString( seq.getGeneName() );
+            if (!ForesterUtil.isEmpty(seq.getGeneName())) {
+                a = parseGenbankAccessorFromString(seq.getGeneName());
             }
-            if ( ForesterUtil.isEmpty( a ) && !ForesterUtil.isEmpty( seq.getName() ) ) {
-                a = parseGenbankAccessorFromString( seq.getName() );
+            if (ForesterUtil.isEmpty(a) && !ForesterUtil.isEmpty(seq.getName())) {
+                a = parseGenbankAccessorFromString(seq.getName());
             }
-            if ( ForesterUtil.isEmpty( a ) && ( n.getNodeData().getSequence().getAccession() != null )
-                    && !ForesterUtil.isEmpty( seq.getAccession().getValue() ) ) {
-                a = parseGenbankAccessorFromString( seq.getAccession().getValue() );
+            if (ForesterUtil.isEmpty(a) && (n.getNodeData().getSequence().getAccession() != null)
+                    && !ForesterUtil.isEmpty(seq.getAccession().getValue())) {
+                a = parseGenbankAccessorFromString(seq.getAccession().getValue());
             }
         }
-        if ( ForesterUtil.isEmpty( a ) && !ForesterUtil.isEmpty( n.getName() ) ) {
-            a = parseGenbankAccessorFromString( n.getName() );
+        if (ForesterUtil.isEmpty(a) && !ForesterUtil.isEmpty(n.getName())) {
+            a = parseGenbankAccessorFromString(n.getName());
         }
         return a;
     }
 
-    public final static String obtainGiNumberFromDataFields( final PhylogenyNode n ) {
+    public final static String obtainGiNumberFromDataFields(final PhylogenyNode n) {
         String a = null;
-        if ( n.getNodeData().isHasSequence() ) {
+        if (n.getNodeData().isHasSequence()) {
             final Sequence seq = n.getNodeData().getSequence();
-            if ( ForesterUtil.isEmpty( a ) && !ForesterUtil.isEmpty( seq.getName() ) ) {
-                a = parseGInumberFromString( seq.getName() );
+            if (ForesterUtil.isEmpty(a) && !ForesterUtil.isEmpty(seq.getName())) {
+                a = parseGInumberFromString(seq.getName());
             }
-            if ( ForesterUtil.isEmpty( a ) && !ForesterUtil.isEmpty( seq.getGeneName() ) ) {
-                a = parseGInumberFromString( seq.getGeneName() );
+            if (ForesterUtil.isEmpty(a) && !ForesterUtil.isEmpty(seq.getGeneName())) {
+                a = parseGInumberFromString(seq.getGeneName());
             }
-            if ( ForesterUtil.isEmpty( a ) && ( n.getNodeData().getSequence().getAccession() != null )
-                    && !ForesterUtil.isEmpty( seq.getAccession().getValue() ) ) {
-                a = parseGInumberFromString( seq.getAccession().getValue() );
+            if (ForesterUtil.isEmpty(a) && (n.getNodeData().getSequence().getAccession() != null)
+                    && !ForesterUtil.isEmpty(seq.getAccession().getValue())) {
+                a = parseGInumberFromString(seq.getAccession().getValue());
             }
         }
-        if ( ForesterUtil.isEmpty( a ) && !ForesterUtil.isEmpty( n.getName() ) ) {
-            a = parseGInumberFromString( n.getName() );
+        if (ForesterUtil.isEmpty(a) && !ForesterUtil.isEmpty(n.getName())) {
+            a = parseGInumberFromString(n.getName());
         }
         return a;
     }
 
-    public final static String obtainRefSeqAccessorFromDataFields( final PhylogenyNode n ) {
+    public final static String obtainRefSeqAccessorFromDataFields(final PhylogenyNode n) {
         String a = null;
-        if ( n.getNodeData().isHasSequence() ) {
+        if (n.getNodeData().isHasSequence()) {
             final Sequence seq = n.getNodeData().getSequence();
-            if ( !ForesterUtil.isEmpty( seq.getSymbol() ) ) {
-                a = parseRefSeqAccessorFromString( seq.getSymbol() );
+            if (!ForesterUtil.isEmpty(seq.getSymbol())) {
+                a = parseRefSeqAccessorFromString(seq.getSymbol());
             }
-            if ( !ForesterUtil.isEmpty( seq.getGeneName() ) ) {
-                a = parseRefSeqAccessorFromString( seq.getGeneName() );
+            if (!ForesterUtil.isEmpty(seq.getGeneName())) {
+                a = parseRefSeqAccessorFromString(seq.getGeneName());
             }
-            if ( ForesterUtil.isEmpty( a ) && !ForesterUtil.isEmpty( seq.getName() ) ) {
-                a = parseRefSeqAccessorFromString( seq.getName() );
+            if (ForesterUtil.isEmpty(a) && !ForesterUtil.isEmpty(seq.getName())) {
+                a = parseRefSeqAccessorFromString(seq.getName());
             }
-            if ( ForesterUtil.isEmpty( a ) && ( n.getNodeData().getSequence().getAccession() != null )
-                    && !ForesterUtil.isEmpty( seq.getAccession().getValue() ) ) {
-                a = parseRefSeqAccessorFromString( seq.getAccession().getValue() );
+            if (ForesterUtil.isEmpty(a) && (n.getNodeData().getSequence().getAccession() != null)
+                    && !ForesterUtil.isEmpty(seq.getAccession().getValue())) {
+                a = parseRefSeqAccessorFromString(seq.getAccession().getValue());
             }
         }
-        if ( ForesterUtil.isEmpty( a ) && !ForesterUtil.isEmpty( n.getName() ) ) {
-            a = parseRefSeqAccessorFromString( n.getName() );
+        if (ForesterUtil.isEmpty(a) && !ForesterUtil.isEmpty(n.getName())) {
+            a = parseRefSeqAccessorFromString(n.getName());
         }
         return a;
     }
 
-    public final static String obtainUniProtAccessorFromDataFields( final PhylogenyNode n ) {
+    public final static String obtainUniProtAccessorFromDataFields(final PhylogenyNode n) {
         String a = null;
-        if ( n.getNodeData().isHasSequence() ) {
+        if (n.getNodeData().isHasSequence()) {
             final Sequence seq = n.getNodeData().getSequence();
-            if ( !ForesterUtil.isEmpty( seq.getSymbol() ) ) {
-                a = SequenceAccessionTools.parseUniProtAccessorFromString( seq.getSymbol() );
+            if (!ForesterUtil.isEmpty(seq.getSymbol())) {
+                a = SequenceAccessionTools.parseUniProtAccessorFromString(seq.getSymbol());
             }
-            if ( ForesterUtil.isEmpty( a ) && !ForesterUtil.isEmpty( seq.getName() ) ) {
-                a = SequenceAccessionTools.parseUniProtAccessorFromString( seq.getName() );
+            if (ForesterUtil.isEmpty(a) && !ForesterUtil.isEmpty(seq.getName())) {
+                a = SequenceAccessionTools.parseUniProtAccessorFromString(seq.getName());
             }
-            if ( ForesterUtil.isEmpty( a ) && !ForesterUtil.isEmpty( seq.getGeneName() ) ) {
-                a = SequenceAccessionTools.parseUniProtAccessorFromString( seq.getGeneName() );
+            if (ForesterUtil.isEmpty(a) && !ForesterUtil.isEmpty(seq.getGeneName())) {
+                a = SequenceAccessionTools.parseUniProtAccessorFromString(seq.getGeneName());
             }
-            if ( ForesterUtil.isEmpty( a ) && ( n.getNodeData().getSequence().getAccession() != null )
-                    && !ForesterUtil.isEmpty( seq.getAccession().getValue() ) ) {
-                a = SequenceAccessionTools.parseUniProtAccessorFromString( seq.getAccession().getValue() );
+            if (ForesterUtil.isEmpty(a) && (n.getNodeData().getSequence().getAccession() != null)
+                    && !ForesterUtil.isEmpty(seq.getAccession().getValue())) {
+                a = SequenceAccessionTools.parseUniProtAccessorFromString(seq.getAccession().getValue());
             }
         }
-        if ( ForesterUtil.isEmpty( a ) && !ForesterUtil.isEmpty( n.getName() ) ) {
-            a = SequenceAccessionTools.parseUniProtAccessorFromString( n.getName() );
+        if (ForesterUtil.isEmpty(a) && !ForesterUtil.isEmpty(n.getName())) {
+            a = SequenceAccessionTools.parseUniProtAccessorFromString(n.getName());
         }
         return a;
     }
 
-    public final static Accession parseAccessorFromString( final String s ) {
-        if ( !ForesterUtil.isEmpty( s ) ) {
-            String v = parseGenbankAccessorFromString( s );
-            if ( !ForesterUtil.isEmpty( v ) ) {
-                return new Accession( v, Source.NCBI );
+    public final static Accession parseAccessorFromString(final String s) {
+        if (!ForesterUtil.isEmpty(s)) {
+            String v = parseGenbankAccessorFromString(s);
+            if (!ForesterUtil.isEmpty(v)) {
+                return new Accession(v, Source.NCBI);
             }
-            v = parseRefSeqAccessorFromString( s );
-            if ( !ForesterUtil.isEmpty( v ) ) {
-                return new Accession( v, Source.REFSEQ );
+            v = parseRefSeqAccessorFromString(s);
+            if (!ForesterUtil.isEmpty(v)) {
+                return new Accession(v, Source.REFSEQ);
             }
-            v = parseGInumberFromString( s );
-            if ( !ForesterUtil.isEmpty( v ) ) {
-                return new Accession( v, Source.GI );
+            v = parseGInumberFromString(s);
+            if (!ForesterUtil.isEmpty(v)) {
+                return new Accession(v, Source.GI);
             }
-            v = parseEnsemlAccessorFromString( s );
-            if ( !ForesterUtil.isEmpty( v ) ) {
-                return new Accession( v, Source.ENSEMBL );
+            v = parseEnsemlAccessorFromString(s);
+            if (!ForesterUtil.isEmpty(v)) {
+                return new Accession(v, Source.ENSEMBL);
             }
-            v = parseUniProtAccessorFromString( s );
-            if ( !ForesterUtil.isEmpty( v ) ) {
-                return new Accession( v, Source.UNIPROT );
-            }
-            v = parseViprFromString( s );
-            if ( !ForesterUtil.isEmpty( v ) ) {
-                return new Accession( v, SequenceAccessionTools.VIPR_SOURCE );
+            v = parseUniProtAccessorFromString(s);
+            if (!ForesterUtil.isEmpty(v)) {
+                return new Accession(v, Source.UNIPROT);
             }
         }
         return null;
     }
 
-    public final static Accession parseAccessorFromString_GenbankProteinPriority( final String s ) {
-        if ( !ForesterUtil.isEmpty( s ) ) {
-            String v = parseGenbankProteinAccessorFromString( s );
-            if ( !ForesterUtil.isEmpty( v ) ) {
-                return new Accession( v, Source.NCBI );
+    public final static Accession parseAccessorFromString_GenbankProteinPriority(final String s) {
+        if (!ForesterUtil.isEmpty(s)) {
+            String v = parseGenbankProteinAccessorFromString(s);
+            if (!ForesterUtil.isEmpty(v)) {
+                return new Accession(v, Source.NCBI);
             }
-            v = parseRefSeqAccessorFromString( s );
-            if ( !ForesterUtil.isEmpty( v ) ) {
-                return new Accession( v, Source.REFSEQ );
+            v = parseRefSeqAccessorFromString(s);
+            if (!ForesterUtil.isEmpty(v)) {
+                return new Accession(v, Source.REFSEQ);
             }
-            v = parseGInumberFromString( s );
-            if ( !ForesterUtil.isEmpty( v ) ) {
-                return new Accession( v, Source.GI );
+            v = parseGInumberFromString(s);
+            if (!ForesterUtil.isEmpty(v)) {
+                return new Accession(v, Source.GI);
             }
-            v = parseEnsemlAccessorFromString( s );
-            if ( !ForesterUtil.isEmpty( v ) ) {
-                return new Accession( v, Source.ENSEMBL );
+            v = parseEnsemlAccessorFromString(s);
+            if (!ForesterUtil.isEmpty(v)) {
+                return new Accession(v, Source.ENSEMBL);
             }
-            v = parseUniProtAccessorFromString( s );
-            if ( !ForesterUtil.isEmpty( v ) ) {
-                return new Accession( v, Source.UNIPROT );
+            v = parseUniProtAccessorFromString(s);
+            if (!ForesterUtil.isEmpty(v)) {
+                return new Accession(v, Source.UNIPROT);
             }
-            v = parseGenbankAccessorFromString( s );
-            if ( !ForesterUtil.isEmpty( v ) ) {
-                return new Accession( v, Source.NCBI );
-            }
-            v = parseViprFromString( s );
-            if ( !ForesterUtil.isEmpty( v ) ) {
-                return new Accession( v, SequenceAccessionTools.VIPR_SOURCE );
+            v = parseGenbankAccessorFromString(s);
+            if (!ForesterUtil.isEmpty(v)) {
+                return new Accession(v, Source.NCBI);
             }
         }
         return null;
     }
 
-    public final static Accession parseAccessorFromString_UniProtPriority( final String s ) {
-        if ( !ForesterUtil.isEmpty( s ) ) {
-            String v = parseUniProtAccessorFromString( s );
-            if ( !ForesterUtil.isEmpty( v ) ) {
-                return new Accession( v, Source.UNIPROT );
+    public final static Accession parseAccessorFromString_UniProtPriority(final String s) {
+        if (!ForesterUtil.isEmpty(s)) {
+            String v = parseUniProtAccessorFromString(s);
+            if (!ForesterUtil.isEmpty(v)) {
+                return new Accession(v, Source.UNIPROT);
             }
-            v = parseViprFromString( s );
-            if ( !ForesterUtil.isEmpty( v ) ) {
-                return new Accession( v, SequenceAccessionTools.VIPR_SOURCE );
+            v = parseRefSeqAccessorFromString(s);
+            if (!ForesterUtil.isEmpty(v)) {
+                return new Accession(v, Source.REFSEQ);
             }
-            v = parseRefSeqAccessorFromString( s );
-            if ( !ForesterUtil.isEmpty( v ) ) {
-                return new Accession( v, Source.REFSEQ );
+            v = parseGInumberFromString(s);
+            if (!ForesterUtil.isEmpty(v)) {
+                return new Accession(v, Source.GI);
             }
-            v = parseGInumberFromString( s );
-            if ( !ForesterUtil.isEmpty( v ) ) {
-                return new Accession( v, Source.GI );
+            v = parseEnsemlAccessorFromString(s);
+            if (!ForesterUtil.isEmpty(v)) {
+                return new Accession(v, Source.ENSEMBL);
             }
-            v = parseEnsemlAccessorFromString( s );
-            if ( !ForesterUtil.isEmpty( v ) ) {
-                return new Accession( v, Source.ENSEMBL );
-            }
-            v = parseGenbankAccessorFromString( s );
-            if ( !ForesterUtil.isEmpty( v ) ) {
-                return new Accession( v, Source.NCBI );
+            v = parseGenbankAccessorFromString(s);
+            if (!ForesterUtil.isEmpty(v)) {
+                return new Accession(v, Source.NCBI);
             }
         }
         return null;
     }
 
-    public final static String parseGenbankAccessorFromString( final String s ) {
+    public final static String parseGenbankAccessorFromString(final String s) {
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         // 2020-05-08:
         // Changed order: before it was GENBANK_NUC_PATTERN_1 first, and GENBANK_PROT_PATTERN last.
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        Matcher m = GENBANK_PROT_PATTERN.matcher( s );
-        if ( m.lookingAt() ) {
-            //System.out.println("A");
-            return m.group( 1 );
-        }
-        else {
-            m = GENBANK_NUC_PATTERN_2.matcher( s );
-            if ( m.lookingAt() ) {
-                //System.out.println("B");
-                return m.group( 1 );
-            }
-            else {
-                m = GENBANK_NUC_PATTERN_1.matcher( s );
-                if ( m.lookingAt() ) {
-                    //System.out.println("C");
-                    return m.group( 1 );
-                }
-                else {
+        Matcher m = GENBANK_PROT_PATTERN.matcher(s);
+        if (m.lookingAt()) {
+            return m.group(1);
+        } else {
+            m = GENBANK_NUC_PATTERN_2.matcher(s);
+            if (m.lookingAt()) {
+                return m.group(1);
+            } else {
+                m = GENBANK_NUC_PATTERN_1.matcher(s);
+                if (m.lookingAt()) {
+                    return m.group(1);
+                } else {
                     return null;
                 }
             }
         }
     }
 
-    public final static String parseGenbankProteinAccessorFromString( final String s ) {
-        final Matcher m = GENBANK_PROT_PATTERN.matcher( s );
-        if ( m.lookingAt() ) {
-            return m.group( 1 );
-        }
-        else {
+    public final static String parseGenbankProteinAccessorFromString(final String s) {
+        final Matcher m = GENBANK_PROT_PATTERN.matcher(s);
+        if (m.lookingAt()) {
+            return m.group(1);
+        } else {
             return null;
         }
     }
 
-    public final static String parseGInumberFromString( final String s ) {
-        final Matcher m = GI_PATTERN.matcher( s );
-        if ( m.find() ) {
-            return m.group( 1 );
+    public final static String parseGInumberFromString(final String s) {
+        final Matcher m = GI_PATTERN.matcher(s);
+        if (m.find()) {
+            return m.group(1);
         }
         return null;
     }
 
-    public final static String parseEnsemlAccessorFromString( final String s ) {
-        final Matcher m = ENSEMBL_PATTERN.matcher( s );
-        if ( m.find() ) {
-            return m.group( 1 );
+    public final static String parseEnsemlAccessorFromString(final String s) {
+        final Matcher m = ENSEMBL_PATTERN.matcher(s);
+        if (m.find()) {
+            return m.group(1);
         }
         return null;
     }
 
-    public final static String parseRefSeqAccessorFromString( final String s ) {
-        final Matcher m = REFSEQ_PATTERN.matcher( s );
-        if ( m.lookingAt() ) {
-            return m.group( 1 );
+    public final static String parseRefSeqAccessorFromString(final String s) {
+        final Matcher m = REFSEQ_PATTERN.matcher(s);
+        if (m.lookingAt()) {
+            return m.group(1);
         }
         return null;
     }
 
-    public final static String parseViprFromString( final String s ) {
-        final Matcher m = VIPR_PATTERN.matcher( s );
-        if ( m.find() ) {
-            return m.group( 1 );
+    public final static String parseUniProtAccessorFromString(final String s) {
+        Matcher m = UNIPROT_KB_PATTERN_1.matcher(s);
+        if (m.find()) {
+            return m.group(1);
         }
-        return null;
-    }
-
-    public final static String parseUniProtAccessorFromString( final String s ) {
-        Matcher m = UNIPROT_KB_PATTERN_1.matcher( s );
-        if ( m.find() ) {
-            return m.group( 1 );
-        }
-        m = UNIPROT_KB_PATTERN_2.matcher( s );
-        if ( m.find() ) {
+        m = UNIPROT_KB_PATTERN_2.matcher(s);
+        if (m.find()) {
             return m.group();
         }
-        m = UNIPROT_KB_PATTERN_0.matcher( s );
-        if ( m.find() ) {
-            return m.group( 1 );
+        m = UNIPROT_KB_PATTERN_0.matcher(s);
+        if (m.find()) {
+            return m.group(1);
         }
         return null;
     }
 
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         System.out.println(parseGenbankAccessorFromString("LT898418.1 Porcine epidemic diarrhea virus isolate PEDV_AUSTRIA_L01065-M10_15-04_2015 genome assembly, complete genome: monopartite"));
     }
 

@@ -26,7 +26,6 @@
 package org.forester.ws.seqdb;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
@@ -54,7 +53,7 @@ public final class SequenceDbWsTools {
     public final static String BASE_UNIPROT_REST_URL = "https://rest.uniprot.org/";
     public final static int DEFAULT_LINES_TO_RETURN = 4000;
     public final static String EMBL_GENBANK = "https://www.ebi.ac.uk/Tools/dbfetch/dbfetch?db=GENBANK&style=raw&id=";
-    public final static String EMBL_REFSEQN = "https://www.ebi.ac.uk/Tools/dbfetch/dbfetch?db=refseqn&style=raw&id=";
+    public final static String EMBL_REFSEQ = "https://www.ebi.ac.uk/Tools/dbfetch/dbfetch?db=refseq&style=raw&id=";
 
     public final static String EMBL_EMBL = "https://www.ebi.ac.uk/Tools/dbfetch/dbfetch?db=EMBL&style=raw&id=";
     private final static boolean DEBUG = false;
@@ -221,7 +220,7 @@ public final class SequenceDbWsTools {
         if (acc.getSource().equals(Source.NCBI.toString())) {
             url_sb.append(EMBL_GENBANK);
         } else if (acc.getSource().equals(Source.REFSEQ.toString())) {
-            url_sb.append(EMBL_REFSEQN);
+            url_sb.append(EMBL_REFSEQ);
         } else if (acc.getSource().equals(Source.EMBL.toString())) {
             url_sb.append(EMBL_EMBL);
         } else {
@@ -232,7 +231,7 @@ public final class SequenceDbWsTools {
 
     public static List<String> queryEmblDbForRefSeqEntry(final Accession id, final int max_lines_to_return) throws IOException {
         final StringBuilder url_sb = new StringBuilder();
-        url_sb.append(EMBL_REFSEQN);
+        url_sb.append(EMBL_REFSEQ);
         return queryDb(id.getValue(), max_lines_to_return, url_sb.toString());
     }
 

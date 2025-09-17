@@ -62,9 +62,6 @@ public final class UniprotRetrieve {
                 else if ( acc.getSource().equals( "uniprot" ) ) {
                     System.out.println( "NOTE: query \"" + query + "\" is UniProt -- ignored" );
                 }
-                else if ( acc.getSource().equals( SequenceAccessionTools.VIPR_SOURCE ) ) {
-                    System.out.println( "NOTE: query \"" + query + "\" is ViPR -- ignored" );
-                }
                 else {
                     System.out.println( "NOTE: query \"" + query + "\" is of unknown source -- ignored" );
                 }

@@ -512,7 +512,6 @@ final class MinimalDomainomeCalculator {
         final Set<String> all_accs = new HashSet<>();
         int multiple_acc_counter = 0;
         int uniprot_acc_counter = 0;
-        int vipr_acc_counter = 0;
         int ref_seq_acc_counter = 0;
         int gi_acc_counter = 0;
         int ensembl_acc_counter = 0;
@@ -570,9 +569,6 @@ final class MinimalDomainomeCalculator {
                         if ( acc.getSource().equals( Accession.Source.ENSEMBL.toString() ) ) {
                             ensembl_acc_counter++;
                         }
-                        if ( acc.getSource().equals( SequenceAccessionTools.VIPR_SOURCE.toString() ) ) {
-                            vipr_acc_counter++;
-                        }
                         id = acc.getValue();
                     }
                     ids.add( id );
@@ -588,7 +584,6 @@ final class MinimalDomainomeCalculator {
         if ( GlobalOptions.getVerbosity() > 2 ) {
             System.out.println( "DA      : " + domain_id );
             System.out.println( "uniprot : " + uniprot_acc_counter );
-            System.out.println( "vipr    : " + vipr_acc_counter );
             System.out.println( "ref seq : " + ref_seq_acc_counter );
             System.out.println( "gi acc  : " + gi_acc_counter );
             System.out.println( "ensembl : " + ensembl_acc_counter );

@@ -12291,17 +12291,6 @@ public final class Test {
                 }
                 return false;
             }
-            id = SequenceAccessionTools
-                    .parseAccessorFromString("Rhinolophus_bat_coronavirus_HKU2|VIPR_P_148283140_15203_16990.1|HKU2/GD/430/2006|NA|Unknown|nsp13|nsp13");
-            if ((id == null) || ForesterUtil.isEmpty(id.getValue()) || ForesterUtil.isEmpty(id.getSource())
-                    || !id.getValue().equals("VIPR_P_148283140_15203_16990.1")
-                    || !id.getSource().equals(SequenceAccessionTools.VIPR_SOURCE)) {
-                if (id != null) {
-                    System.out.println("value   =" + id.getValue());
-                    System.out.println("provider=" + id.getSource());
-                }
-                return false;
-            }
         } catch (final Exception e) {
             e.printStackTrace(System.out);
             return false;

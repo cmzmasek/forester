@@ -47,8 +47,8 @@ public class vipr_x6 {
 
 
     private static final boolean VERBOSE = false;
-    private static final String PRG_DATE = "2025-06-06";
-    private static final String PRG_VERSION = "1.2.2";
+    private static final String PRG_DATE = "2025-09-16";
+    private static final String PRG_VERSION = "1.3.0";
 
     private static final int COL_GENOME_ID = 0;
     private static final int COL_STRAIN = 15;
@@ -98,6 +98,8 @@ public class vipr_x6 {
         final File infile = new File(args[0]);
         final File mapfile = new File(args[1]);
         final File outfile = new File(args[2]);
+
+        final boolean obtain_data_from_name = false;
 
         final String tree_name;
         final String reroot;
@@ -272,16 +274,20 @@ public class vipr_x6 {
                     System.out.println();
                 }
 
-                if (ForesterUtil.isEmpty(m_isolation_country)) {
-                    m_isolation_country = obtainCountryFromName(name);
+                if ( obtain_data_from_name) {
+
+                    if (ForesterUtil.isEmpty(m_isolation_country)) {
+                        m_isolation_country = obtainCountryFromName(name);
+                    }
                 }
 
                 if (!ForesterUtil.isEmpty(m_isolation_country)) {
                     m_isolation_country = ViralUtils.determineCountry(m_isolation_country);
                 }
-
-                if (ForesterUtil.isEmpty(m_hostname_sci)) {
-                    m_hostname_sci = obtainHostFromName(name);
+                if ( obtain_data_from_name) {
+                    if (ForesterUtil.isEmpty(m_hostname_sci)) {
+                        m_hostname_sci = obtainHostFromName(name);
+                    }
                 }
 
                 if (!ForesterUtil.isEmpty(m_hostname_sci)) {
@@ -321,8 +327,10 @@ public class vipr_x6 {
                     }
                 }
 
-                if (ForesterUtil.isEmpty(year)) {
-                    year = obtainYearFromName(name);
+                if ( obtain_data_from_name) {
+                    if (ForesterUtil.isEmpty(year)) {
+                        year = obtainYearFromName(name);
+                    }
                 }
 
                 if (!ForesterUtil.isEmpty(year)) {
