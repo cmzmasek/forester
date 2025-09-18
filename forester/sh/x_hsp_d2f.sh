@@ -24,7 +24,7 @@ for i in $indir/*; do
       if [[ $rc != 0 ]]; then
         exit $rc
       fi
-      ruby $D2F -o ${name}_hmmscan_domain_table ${name}_ni.fasta
+      ruby $D2F -o ${name}_hmmscan_domain_table ${name}_ni.fasta ${name}.dff
       rc=$?
       if [[ $rc != 0 ]]; then
         exit $rc
