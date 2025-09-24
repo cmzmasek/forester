@@ -19,7 +19,7 @@ for i in $indir/*; do
     if [[ $i =~ $re ]]; then
       name=${BASH_REMATCH[1]}
       echo $name
-      ruby $MSA_PRO -i=f -o=p -d -c -rr=0.5 $i ${name}_mafft_1000_l_05
+      ruby $MSA_PRO -i=f -o=p -d -c $i ${name}_mafft_1000_l
       rc=$?
       if [[ $rc != 0 ]]; then
         exit $rc
