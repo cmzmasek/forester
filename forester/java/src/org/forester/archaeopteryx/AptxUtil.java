@@ -27,7 +27,6 @@ package org.forester.archaeopteryx;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -43,17 +42,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
-import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
-import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
-import javax.imageio.stream.ImageOutputStream;
 import javax.swing.JOptionPane;
 import javax.swing.text.MaskFormatter;
 
@@ -353,78 +346,8 @@ public final class AptxUtil {
                 JOptionPane.ERROR_MESSAGE);
     }
 
-    public static void writePhylogenyToGraphicsFile(final File intree,
-                                                    final File outfile,
-                                                    final int width,
-                                                    final int height,
-                                                    final GraphicsExportType type,
-                                                    final Configuration config)
-            throws IOException {
-        final PhylogenyParser parser = ParserUtils.createParserDependingOnFileType(intree, true);
-        Phylogeny[] phys = null;
-        phys = PhylogenyMethods.readPhylogenies(parser, intree);
-        writePhylogenyToGraphicsFile(phys[0], outfile, width, height, type, config);
-    }
 
-    public static void writePhylogenyToGraphicsFile(final Phylogeny phy,
-                                                    final File outfile,
-                                                    final int width,
-                                                    final int height,
-                                                    final GraphicsExportType type,
-                                                    final Configuration config)
-            throws IOException {
-        final Phylogeny[] phys = new Phylogeny[1];
-        phys[0] = phy;
-        final MainFrameApplication mf = MainFrameApplication.createInstance(phys, config);
-        AptxUtil.writePhylogenyToGraphicsFileNonInteractive(outfile,
-                width,
-                height,
-                mf.getMainPanel().getCurrentTreePanel(),
-                mf.getMainPanel().getControlPanel(),
-                type,
-                mf.getOptions());
-        mf.end();
-    }
 
-    public final static void writePhylogenyToGraphicsFileNonInteractive(final File outfile,
-                                                                        final int width,
-                                                                        final int height,
-                                                                        final TreePanel tree_panel,
-                                                                        final ControlPanel ac,
-                                                                        final GraphicsExportType type,
-                                                                        final Options options)
-            throws IOException {
-        tree_panel.calcParametersForPainting(width, height);
-        tree_panel.resetPreferredSize();
-        tree_panel.repaint();
-        final RenderingHints rendering_hints = new RenderingHints(RenderingHints.KEY_RENDERING,
-                RenderingHints.VALUE_RENDER_QUALITY);
-        rendering_hints.put(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
-        if (options.isAntialiasPrint()) {
-            rendering_hints.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-            rendering_hints.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        } else {
-            rendering_hints.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
-            rendering_hints.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
-        }
-        final Phylogeny phylogeny = tree_panel.getPhylogeny();
-        if ((phylogeny == null) || phylogeny.isEmpty()) {
-            return;
-        }
-        if (outfile.isDirectory()) {
-            throw new IOException("\"" + outfile + "\" is a directory");
-        }
-        final BufferedImage buffered_img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        final Graphics2D g2d = buffered_img.createGraphics();
-        g2d.setRenderingHints(rendering_hints);
-        tree_panel.paintPhylogeny(g2d, false, true, width, height, 0, 0);
-        if (type == GraphicsExportType.TIFF) {
-            writeToTiff(outfile, buffered_img);
-        } else {
-            ImageIO.write(buffered_img, type.toString(), outfile);
-        }
-        g2d.dispose();
-    }
 
     final private static char normalizeCharForRGB(char c) {
         c -= 65;
@@ -552,13 +475,7 @@ public final class AptxUtil {
         }
     }
 
-    final static void addPhylogenyToPanel(final Phylogeny[] phys,
-                                          final Configuration configuration,
-                                          final MainPanel main_panel) {
-        final Phylogeny phy = phys[0];
-        main_panel.addPhylogenyInPanel(phy, configuration);
-        lookAtSomeTreePropertiesForAptxControlSettings(phy, main_panel.getControlPanel(), configuration);
-    }
+
 
     // Returns true if the specified format name can be written
     final static boolean canWriteFormat(final String format_name) {
@@ -735,16 +652,7 @@ public final class AptxUtil {
         System.exit(-1);
     }
 
-    final static String[] getAllPossibleRanks() {
-        final String[] str_array = new String[TaxonomyUtil.TAXONOMY_RANKS_LIST.size() - 2];
-        int i = 0;
-        for (final String e : TaxonomyUtil.TAXONOMY_RANKS_LIST) {
-            if (!e.equals(TaxonomyUtil.UNKNOWN) && !e.equals(TaxonomyUtil.OTHER)) {
-                str_array[i++] = e;
-            }
-        }
-        return str_array;
-    }
+
 
     final static String[] getAllPossibleRanks(final Map<String, Integer> present_ranks) {
         final String[] str_array = new String[TaxonomyUtil.TAXONOMY_RANKS_LIST.size() - 2];
@@ -761,31 +669,12 @@ public final class AptxUtil {
         return str_array;
     }
 
-    final static String[] getAllRanks(final Phylogeny tree) {
-        final SortedSet<String> ranks = new TreeSet<String>();
-        for (final PhylogenyNodeIterator it = tree.iteratorPreorder(); it.hasNext(); ) {
-            final PhylogenyNode n = it.next();
-            if (n.getNodeData().isHasTaxonomy() && !ForesterUtil.isEmpty(n.getNodeData().getTaxonomy().getRank())) {
-                ranks.add(n.getNodeData().getTaxonomy().getRank());
-            }
-        }
-        return ForesterUtil.stringSetToArray(ranks);
-    }
+
 
     final static String[] getAvailableFontFamiliesSorted() {
         return AVAILABLE_FONT_FAMILIES_SORTED;
     }
 
-    final static boolean isUsOrCanada() {
-        try {
-            if ((Locale.getDefault().equals(Locale.CANADA)) || (Locale.getDefault().equals(Locale.US))) {
-                return true;
-            }
-        } catch (final Exception e) {
-            return false;
-        }
-        return false;
-    }
 
     final static void lookAtRealBranchLengthsForAptxControlSettings(final Phylogeny t, final ControlPanel cp) {
         if ((t != null) && !t.isEmpty()) {
@@ -931,63 +820,7 @@ public final class AptxUtil {
                 JOptionPane.ERROR_MESSAGE);
     }
 
-    final static String writePhylogenyToGraphicsByteArrayOutputStream(final ByteArrayOutputStream baos,
-                                                                      int width,
-                                                                      int height,
-                                                                      final TreePanel tree_panel,
-                                                                      final ControlPanel ac,
-                                                                      final GraphicsExportType type,
-                                                                      final Options options)
-            throws IOException {
-        final RenderingHints rendering_hints = new RenderingHints(RenderingHints.KEY_RENDERING,
-                RenderingHints.VALUE_RENDER_QUALITY);
-        rendering_hints.put(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
-        if (options.isAntialiasPrint()) {
-            rendering_hints.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-            rendering_hints.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        } else {
-            rendering_hints.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
-            rendering_hints.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
-        }
-        final Phylogeny phylogeny = tree_panel.getPhylogeny();
-        if ((phylogeny == null) || phylogeny.isEmpty()) {
-            return "";
-        }
-        Rectangle visible = null;
-        //        if ( !options.isGraphicsExportUsingActualSize() ) {
-        //            width = options.getPrintSizeX();
-        //            height = options.getPrintSizeY();
-        //        }
-        /* else*/
-        if (options.isGraphicsExportVisibleOnly()) {
-            visible = tree_panel.getVisibleRect();
-            width = visible.width;
-            height = visible.height;
-        }
-        final BufferedImage buffered_img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g2d = buffered_img.createGraphics();
-        g2d.setRenderingHints(rendering_hints);
-        int x = 0;
-        int y = 0;
-        if (options.isGraphicsExportVisibleOnly()) {
-            g2d = (Graphics2D) g2d.create(-visible.x, -visible.y, visible.width, visible.height);
-            g2d.setClip(null);
-            x = visible.x;
-            y = visible.y;
-        }
-        tree_panel.paintPhylogeny(g2d, false, true, width, height, x, y);
-        ImageIO.write(buffered_img, type.toString(), baos);
-        g2d.dispose();
-        System.gc();
-        if (!options.isGraphicsExportUsingActualSize()) {
-            tree_panel.getMainPanel().getControlPanel().showWhole();
-        }
-        String msg = baos.toString();
-        if ((width > 0) && (height > 0)) {
-            msg += " [size: " + width + ", " + height + "]";
-        }
-        return msg;
-    }
+
 
     final static String writePhylogenyToGraphicsFile(final String file_name,
                                                      int width,

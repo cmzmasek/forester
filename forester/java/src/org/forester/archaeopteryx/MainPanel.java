@@ -215,42 +215,7 @@ public class MainPanel extends JPanel implements ComponentListener {
         repaint();
     }
 
-    void addPhylogenyInPanel( final Phylogeny phy, final Configuration config ) {
-        final TreePanel treepanel = new TreePanel( phy, config, this );
-        getControlPanel().phylogenyAdded( config );
-        treepanel.setControlPanel( getControlPanel() );
-        _treepanels.add( treepanel );
-        final JScrollPane treegraphic_scroll_pane = new JScrollPane( treepanel );
-        treegraphic_scroll_pane.getHorizontalScrollBar().addAdjustmentListener( new AdjustmentListener() {
 
-            @Override
-            public void adjustmentValueChanged( final AdjustmentEvent e ) {
-                if ( treepanel.isOvOn() || getOptions().isShowScale() ) {
-                    treepanel.repaint();
-                }
-            }
-        } );
-        treegraphic_scroll_pane.getVerticalScrollBar().addAdjustmentListener( new AdjustmentListener() {
-
-            @Override
-            public void adjustmentValueChanged( final AdjustmentEvent e ) {
-                if ( treepanel.isOvOn() || getOptions().isShowScale() ) {
-                    treepanel.repaint();
-                    //System.out.println( e.getValue() );
-                }
-            }
-        } );
-        treegraphic_scroll_pane.getHorizontalScrollBar().setUnitIncrement( 20 );
-        treegraphic_scroll_pane.getHorizontalScrollBar().setBlockIncrement( 50 );
-        treegraphic_scroll_pane.getVerticalScrollBar().setUnitIncrement( 20 );
-        treegraphic_scroll_pane.getVerticalScrollBar().setBlockIncrement( 50 );
-        final JPanel treegraphic_scroll_pane_panel = new JPanel();
-        treegraphic_scroll_pane_panel.setLayout( new BorderLayout() );
-        treegraphic_scroll_pane_panel.add( treegraphic_scroll_pane, BorderLayout.CENTER );
-        _treegraphic_scroll_pane_panels.add( treegraphic_scroll_pane_panel );
-        _treegraphic_scroll_panes.add( treegraphic_scroll_pane );
-        add( treegraphic_scroll_pane_panel, BorderLayout.CENTER );
-    }
 
     void adjustJScrollPane() {
         if ( getTabbedPane() != null ) {

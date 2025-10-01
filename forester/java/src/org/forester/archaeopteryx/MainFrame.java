@@ -135,7 +135,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String SHOW_ANN_REF_SOURCE_LABEL = "Seq Annotation Ref Sources";
     static final String COLOR_LABELS_TIP = "To use parent branch colors for node labels as well, need to turn off taxonomy dependent colorization and turn on branch colorization for this to become apparent";
     static final String ABBREV_SN_LABEL = "Abbreviate Scientific Taxonomic Names";
-    static final String TAXONOMY_COLORIZE_NODE_SHAPES_LABEL = "Colorize Node Shapes According to Taxonomy";
     static final String CYCLE_NODE_SHAPE_LABEL = "Cycle Node Shapes";
     static final String CYCLE_NODE_FILL_LABEL = "Cycle Node Fill Type";
     static final String CHOOSE_NODE_SIZE_LABEL = "Choose Node Shape Size";
@@ -277,10 +276,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem _help_item;
     JMenuItem _website_item;
     JMenuItem _aptxjs_website_item;
-    JMenuItem _mailing_list_item;
     JMenuItem _phyloxml_website_item;
     JMenuItem _phyloxml_ref_item;
-    JMenuItem _aptx_ref_item;
+
     //
     File _current_dir;
     JFileChooser _writetopdf_filechooser;
@@ -563,25 +561,13 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             } catch (final IOException e1) {
                 ForesterUtil.printErrorMessage(AptxConstants.PRG_NAME, e1.toString());
             }
-        } else if (o == _mailing_list_item) {
-            try {
-                AptxUtil.openWebsite(AptxConstants.APTX_MAILING_LIST);
-            } catch (final IOException e1) {
-                ForesterUtil.printErrorMessage(AptxConstants.PRG_NAME, e1.toString());
-            }
         } else if (o == _phyloxml_website_item) {
             try {
                 AptxUtil.openWebsite(AptxConstants.PHYLOXML_WEB_SITE);
             } catch (final IOException e1) {
                 ForesterUtil.printErrorMessage(AptxConstants.PRG_NAME, e1.toString());
             }
-        } else if (o == _aptx_ref_item) {
-            try {
-                AptxUtil.openWebsite(AptxConstants.APTX_REFERENCE_URL);
-            } catch (final IOException e1) {
-                ForesterUtil.printErrorMessage(AptxConstants.PRG_NAME, e1.toString());
-            }
-        } else if (o == _phyloxml_ref_item) {
+        }  else if (o == _phyloxml_ref_item) {
             try {
                 AptxUtil.openWebsite(AptxConstants.PHYLOXML_REFERENCE_URL);
             } catch (final IOException e1) {
@@ -1100,9 +1086,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _help_jmenu.add(_help_item = new JMenuItem("Documentation"));
         _help_jmenu.addSeparator();
         _help_jmenu.add(_website_item = new JMenuItem("Archaeopteryx Home"));
-        _help_jmenu.add(_aptxjs_website_item = new JMenuItem("NEW! Archaeopteryx online version: Archaeopteryx.js"));
-        _help_jmenu.add(_mailing_list_item = new JMenuItem("Mailing List"));
-        _aptx_ref_item = new JMenuItem("Archaeopteryx Reference"); //TODO need to add this...
+        _help_jmenu.add(_aptxjs_website_item = new JMenuItem("Archaeopteryx online version: Archaeopteryx.js"));
         _help_jmenu.add(_phyloxml_website_item = new JMenuItem("phyloXML Home"));
         _help_jmenu.add(_phyloxml_ref_item = new JMenuItem("phyloXML Reference"));
         _help_jmenu.addSeparator();
@@ -1110,13 +1094,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         customizeJMenuItem(_help_item);
         customizeJMenuItem(_website_item);
         customizeJMenuItem(_aptxjs_website_item);
-        customizeJMenuItem(_mailing_list_item);
         customizeJMenuItem(_phyloxml_website_item);
-        customizeJMenuItem(_aptx_ref_item);
         customizeJMenuItem(_phyloxml_ref_item);
         customizeJMenuItem(_about_item);
         _phyloxml_ref_item.setToolTipText(PHYLOXML_REF_TOOL_TIP);
-        _aptx_ref_item.setToolTipText(APTX_REF_TOOL_TIP);
         _jmenubar.add(_help_jmenu);
     }
 

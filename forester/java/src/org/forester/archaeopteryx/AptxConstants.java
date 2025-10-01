@@ -39,7 +39,7 @@ public final class AptxConstants {
     final static boolean __ALLOW_PHYLOGENETIC_INFERENCE = true;
     public final static String PRG_NAME = "Archaeopteryx";
     final static String VERSION = "0.9.4 beta";
-    final static String PRG_DATE = "2025-09-17";
+    final static String PRG_DATE = "2025-10-01";
     final static String DEFAULT_CONFIGURATION_FILE_NAME = "_aptx_configuration_file";
     final static String[] DEFAULT_FONT_CHOICES = {
             "Arial Unicode MS", "Dialog", "SansSerif", "Sans", "Arial", "Helvetica"};
@@ -67,10 +67,9 @@ public final class AptxConstants {
     static final String APPLET_PARAM_NAME_FOR_DEFAULT_SEQUENCE_RELATION_TYPE = "homology_type_analysis_initial_relation_type";
     static final int MAX_TREES_TO_LOAD = 100;
     final static float PDF_LINE_WIDTH_DEFAULT = 0.5f;
-    final static String APTX_WEB_SITE = "https://sites.google.com/site/cmzmasek/home/software/archaeopteryx";
-    final static String APTX_JS_WEB_SITE = "https://sites.google.com/site/cmzmasek/home/software/archaeopteryx-js";
-    final static String APTX_MAILING_LIST = "https://groups.google.com/forum/?fromgroups#!forum/archaeopteryx";
-    final static String APTX_DOC_SITE = "https://sites.google.com/site/cmzmasek/home/software/archaeopteryx/documentation";
+    final static String APTX_WEB_SITE = "https://sites.google.com/view/archaeopteryx/home";
+    final static String APTX_JS_WEB_SITE = "https://sites.google.com/view/archaeopteryxjs";
+    final static String APTX_DOC_SITE = "https://sites.google.com/view/cmzmasek/christian-zmasek/software/archaeopteryx/documentation";
     final static String PHYLOXML_WEB_SITE = ForesterConstants.PHYLO_XML_LOCATION;
     final static String PHYLOXML_REFERENCE_URL = "http://www.biomedcentral.com/1471-2105/10/356/";
     final static String APTX_REFERENCE_URL = "http://www.biomedcentral.com/bmcbioinformatics/";
