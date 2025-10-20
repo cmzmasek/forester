@@ -137,7 +137,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String ABBREV_SN_LABEL = "Abbreviate Scientific Taxonomic Names";
     static final String CYCLE_NODE_SHAPE_LABEL = "Cycle Node Shapes";
     static final String CYCLE_NODE_FILL_LABEL = "Cycle Node Fill Type";
-    static final String CHOOSE_NODE_SIZE_LABEL = "Choose Node Shape Size";
+    static final String CHOOSE_BRANCH_WIDTH_LABEL = "Set Branch Width";
+    static final String CHOOSE_NODE_SIZE_LABEL = "Set Node Shape Size";
     static final String SHOW_CONF_STDDEV_LABEL = "Confidence Standard Deviations";
     static final String USE_BRACKETS_FOR_CONF_IN_NH_LABEL = "Use Brackets for Confidence Values";
     static final String USE_INTERNAL_NAMES_FOR_CONF_IN_NH_LABEL = "Use Internal Node Names for Confidence Values";
@@ -225,6 +226,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem _cycle_node_shape_mi;
     JMenuItem _cycle_node_fill_mi;
     JMenuItem _choose_node_size_mi;
+
+    JMenuItem _choose_default_branch_width_mi;
+
     JMenuItem _cycle_data_return;
     JCheckBoxMenuItem _show_confidence_stddev_cbmi;
     JCheckBoxMenuItem _right_line_up_domains_cbmi;
@@ -424,6 +428,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             chooseMinimalConfidence();
         } else if (o == _choose_node_size_mi) {
             chooseNodeSize(getOptions(), this);
+        } else if (o == _choose_default_branch_width_mi) {
+            chooseDefaultBranchWidth(getOptions(), this);
         } else if (o == _overview_placment_mi) {
             MainFrame.cycleOverview(getOptions(), getCurrentTreePanel());
         } else if (o == _cycle_node_fill_mi) {
@@ -567,7 +573,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             } catch (final IOException e1) {
                 ForesterUtil.printErrorMessage(AptxConstants.PRG_NAME, e1.toString());
             }
-        }  else if (o == _phyloxml_ref_item) {
+        } else if (o == _phyloxml_ref_item) {
             try {
                 AptxUtil.openWebsite(AptxConstants.PHYLOXML_REFERENCE_URL);
             } catch (final IOException e1) {
@@ -1966,6 +1972,37 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
     }
 
+    static void chooseDefaultBranchWidth(final Options options, final Component parent) {
+        final String s = (String) JOptionPane.showInputDialog(parent,
+                "Please enter the default branch width.\n"
+                        + "[current value: "
+                        + options.getDefaultBranchWidth() + "]\n",
+                "Branch Width",
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                null,
+                options.getDefaultBranchWidth());
+        if (!ForesterUtil.isEmpty(s)) {
+            boolean success = true;
+            float w = 0;
+            final String m_str = s.trim();
+            if (!ForesterUtil.isEmpty(m_str)) {
+                try {
+                    w = Float.parseFloat(m_str);
+                } catch (final Exception ex) {
+                    success = false;
+                }
+            } else {
+                success = false;
+            }
+            if (success && (w > 0.1) && (w < 10)) {
+                options.setDefaultBranchWidth(w);
+
+            }
+        }
+    }
+
+
     static String createCurrentFontDesc(final TreeFontSet tree_font_set) {
         return tree_font_set.getLargeFont().getFamily() + " " + tree_font_set.getLargeFont().getSize();
     }
@@ -2177,6 +2214,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     static void setTextNodeSizeMenuItem(final JMenuItem mi, final Options options) {
         mi.setText("Enter Default Node Shape Size... (current: " + options.getDefaultNodeShapeSize() + ")");
+    }
+
+    static void setDefaultBranchWidthMenuItem(final JMenuItem mi, final Options options) {
+        mi.setText("Enter Default Branch Width... (current: " + options.getDefaultBranchWidth() + ")");
     }
 
     static void updateScreenTextAntialias(final List<TreePanel> treepanels) {

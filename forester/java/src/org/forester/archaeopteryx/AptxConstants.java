@@ -38,8 +38,8 @@ public final class AptxConstants {
 
     final static boolean __ALLOW_PHYLOGENETIC_INFERENCE = true;
     public final static String PRG_NAME = "Archaeopteryx";
-    final static String VERSION = "0.9.4 beta";
-    final static String PRG_DATE = "2025-10-01";
+    final static String VERSION = "0.9.5 beta";
+    final static String PRG_DATE = "2025-10-20";
     final static String DEFAULT_CONFIGURATION_FILE_NAME = "_aptx_configuration_file";
     final static String[] DEFAULT_FONT_CHOICES = {
             "Arial Unicode MS", "Dialog", "SansSerif", "Sans", "Arial", "Helvetica"};
@@ -60,11 +60,6 @@ public final class AptxConstants {
     static final Dimension NODE_PANEL_SPLIT_MINIMUM_SIZE = new Dimension(100, 50);
     static final Dimension NODE_PANEL_SIZE = new Dimension(500, 540);
     static final Dimension NODE_FRAME_SIZE = new Dimension(520, 640);
-    static final String APPLET_PARAM_NAME_FOR_URL_OF_TREE_TO_LOAD = "url_of_tree_to_load";
-    static final String APPLET_PARAM_NAME_FOR_URL_OF_SPECIES_TREE_TO_LOAD = "url_of_species_tree_to_load";
-    static final String APPLET_PARAM_NAME_FOR_CONFIG_FILE_URL = "config_file";
-    static final String APPLET_PARAM_NAME_FOR_DEFAULT_QUERY_SEQUENCE = "homology_type_analysis_query_sequence";
-    static final String APPLET_PARAM_NAME_FOR_DEFAULT_SEQUENCE_RELATION_TYPE = "homology_type_analysis_initial_relation_type";
     static final int MAX_TREES_TO_LOAD = 100;
     final static float PDF_LINE_WIDTH_DEFAULT = 0.5f;
     final static String APTX_WEB_SITE = "https://sites.google.com/view/archaeopteryx/home";

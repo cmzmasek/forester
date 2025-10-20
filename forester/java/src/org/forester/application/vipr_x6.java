@@ -46,11 +46,28 @@ public class vipr_x6 {
     public final static Pattern NAME_PATTERN_2 = Pattern.compile("virus_A/(.+?)\\|");
 
 
-    private static final boolean VERBOSE = false;
-    private static final String PRG_DATE = "2025-09-16";
-    private static final String PRG_VERSION = "1.3.0";
+    private static final boolean VERBOSE = true;
+    private static final String PRG_DATE = "2025-10-07";
+    private static final String PRG_VERSION = "1.4.0";
 
     private static final int COL_GENOME_ID = 0;
+    private static final int COL_GENOME_NAME = 1;
+
+    private static final int COL_NCBI_TAXON_ID = 3;
+    // 4 Taxon Lineage IDs
+    // 5 Taxon Lineage Names
+    // 6 Superkingdom
+    // 7 Kingdom
+    // 8 Phylum
+    // 9 Class
+    // 10 Order
+    // 11 Family
+
+    private static final int COL_GENUS = 12;
+
+    private static final int COL_SPECIES = 13;
+    // 14 Genome Status
+
     private static final int COL_STRAIN = 15;
     private static final int COL_SEGMENT = 20;
     private static final int COL_SUBTYPE = 21;
@@ -63,7 +80,7 @@ public class vipr_x6 {
 
 
     private static final int COL_ISOLATION_COUNTRY = 70;
-    private static final int COL_HOST_NAME_SCI = 74;
+    private static final int COL_HOST_NAME_SCI = 77;
 
     private static final String UNKNOWN = "unknown";
     private static final String XSD_STRING = "xsd:string";
@@ -77,12 +94,15 @@ public class vipr_x6 {
     private static final String STATE = "vipr:State";
     private static final String GB_ACCESSTION = "vipr:GB_Accession";
     private static final String HOST_GROUP = "vipr:Host_Group";
-    private static final String HOST_GROUP_DOMESTIC_WILD = "vipr:Host_Group_Domestic_vs_Wild";
     private static final String HOST_SCI = "vipr:Host_Scientific";
     private static final String YEAR_MONTH = "vipr:Year_Month";
     private static final String ISOLATION_SOURCE = "vipr:Isolation_Source";
     private static final String BV_BRC_ACC = "vipr:BVBRC_Accession";
 
+    private static final String GENOME_NAME = "vipr:Genome_Name";
+    private static final String NCBI_TAXON_ID = "vipr:NCBI_Taxon_Id";
+    private static final String GENUS = "vipr:Genus";
+    private static final String SPECIES = "vipr:Species";
     private final static String PRG_NAME = "vipr_x6";
 
 
@@ -100,6 +120,7 @@ public class vipr_x6 {
         final File outfile = new File(args[2]);
 
         final boolean obtain_data_from_name = false;
+        final boolean make_new_from_genus_species_strain = true;
 
         final String tree_name;
         final String reroot;
@@ -222,6 +243,10 @@ public class vipr_x6 {
                 String m_subclade = null;
                 String m_isolation_country = null;
                 String m_genbank = null;
+                String m_genome_name = null;
+                String m_ncbi_taxon_id = null;
+                String m_genus = null;
+                String m_species = null;
 
                 boolean found = false;
                 if (genbank_acc.length() > 3) {
@@ -239,6 +264,10 @@ public class vipr_x6 {
                             m_subclade = map.getValue(COL_SUBCLADE, r).replaceAll("\"", "");
                             m_genbank = map.getValue(COL_GENBANK_ACC, r).replaceAll("\"", "");
                             m_isolation_country = map.getValue(COL_ISOLATION_COUNTRY, r).replaceAll("\"", "");
+                            m_genome_name = map.getValue(COL_GENOME_NAME, r).replaceAll("\"", "");
+                            m_ncbi_taxon_id = map.getValue(COL_NCBI_TAXON_ID, r).replaceAll("\"", "");
+                            m_genus = map.getValue(COL_GENUS, r).replaceAll("\"", "");
+                            m_species = map.getValue(COL_SPECIES, r).replaceAll("\"", "");
                             found = true;
                             break;
                         }
@@ -261,6 +290,10 @@ public class vipr_x6 {
                                 m_subclade = map.getValue(COL_SUBCLADE, r).replaceAll("\"", "");
                                 m_genbank = map.getValue(COL_GENBANK_ACC, r).replaceAll("\"", "");
                                 m_isolation_country = map.getValue(COL_ISOLATION_COUNTRY, r).replaceAll("\"", "");
+                                m_genome_name = map.getValue(COL_GENOME_NAME, r).replaceAll("\"", "");
+                                m_ncbi_taxon_id = map.getValue(COL_NCBI_TAXON_ID, r).replaceAll("\"", "");
+                                m_genus = map.getValue(COL_GENUS, r).replaceAll("\"", "");
+                                m_species = map.getValue(COL_SPECIES, r).replaceAll("\"", "");
                                 found = true;
                                 break;
                             }
@@ -268,14 +301,12 @@ public class vipr_x6 {
                     }
                 }
 
+
                 if (!found) {
-                    System.out.println();
-                    System.out.println("Warning: No entry for " + name + " in " + mapfile);
-                    System.out.println();
+                    ForesterUtil.fatalError("No entry for " + name + " in " + mapfile);
                 }
 
-                if ( obtain_data_from_name) {
-
+                if (obtain_data_from_name) {
                     if (ForesterUtil.isEmpty(m_isolation_country)) {
                         m_isolation_country = obtainCountryFromName(name);
                     }
@@ -284,7 +315,7 @@ public class vipr_x6 {
                 if (!ForesterUtil.isEmpty(m_isolation_country)) {
                     m_isolation_country = ViralUtils.determineCountry(m_isolation_country);
                 }
-                if ( obtain_data_from_name) {
+                if (obtain_data_from_name) {
                     if (ForesterUtil.isEmpty(m_hostname_sci)) {
                         m_hostname_sci = obtainHostFromName(name);
                     }
@@ -302,7 +333,11 @@ public class vipr_x6 {
                     System.out.println();
                     System.out.println();
                     System.out.println("Name    : " + name);
+                    System.out.println("Genus   : " + m_genus);
+                    System.out.println("Species : " + m_species);
                     System.out.println("Strain  : " + m_strain);
+                    System.out.println("Tax ID  : " + m_ncbi_taxon_id);
+                    System.out.println("Genome  : " + m_genome_name);
                     System.out.println("Segment : " + m_segment);
                     System.out.println("Subtype : " + m_subtype);
                     System.out.println("Lineage : " + m_lineage);
@@ -327,7 +362,7 @@ public class vipr_x6 {
                     }
                 }
 
-                if ( obtain_data_from_name) {
+                if (obtain_data_from_name) {
                     if (ForesterUtil.isEmpty(year)) {
                         year = obtainYearFromName(name);
                     }
@@ -391,12 +426,23 @@ public class vipr_x6 {
                     custom_data.addProperty(new Property(BV_BRC_ACC, m_bvbrc_acc, "", XSD_STRING, AppliesTo.NODE));
                 }
                 if (!ForesterUtil.isEmpty(m_hostname_sci)) {
-                    ViralUtils.addHostGroup(m_hostname_sci, custom_data, HOST_GROUP, HOST_GROUP_DOMESTIC_WILD);
+                    ViralUtils.addHostGroup(m_hostname_sci, custom_data, HOST_GROUP, null);
                 }
                 if (!ForesterUtil.isEmpty(m_isolation_country)) {
                     ViralUtils.addRegion(m_isolation_country, custom_data, REGION);
                 }
-
+                if (!ForesterUtil.isEmpty(m_species)) {
+                    custom_data.addProperty(new Property(SPECIES, m_species, "", XSD_STRING, AppliesTo.NODE));
+                }
+                if (!ForesterUtil.isEmpty(m_genus)) {
+                    custom_data.addProperty(new Property(GENUS, m_genus, "", XSD_STRING, AppliesTo.NODE));
+                }
+                if (!ForesterUtil.isEmpty(m_genome_name)) {
+                    custom_data.addProperty(new Property(GENOME_NAME, m_genome_name, "", XSD_STRING, AppliesTo.NODE));
+                }
+                if (!ForesterUtil.isEmpty(m_ncbi_taxon_id)) {
+                    custom_data.addProperty(new Property(NCBI_TAXON_ID, m_ncbi_taxon_id, "", XSD_STRING, AppliesTo.NODE));
+                }
                 ext_node.getNodeData().setProperties(custom_data);
 
                 ext_node.getNodeData().setSequence(null); //TODO need to be option
@@ -407,30 +453,47 @@ public class vipr_x6 {
 
                 if (make_new_name) {
                     new_name = "";
-                    if (!ForesterUtil.isEmpty(genbank_acc)) {
-                        new_name = genbank_acc + "|";
-                    }
-                    if (!ForesterUtil.isEmpty(m_strain)) {
-                        new_name = new_name + m_strain;
+                    if (make_new_from_genus_species_strain && !ForesterUtil.isEmpty(m_species)) {
+                        if (!ForesterUtil.isEmpty(m_genus)) {
+                            new_name = m_genus;
+                        }
+                        if (!ForesterUtil.isEmpty(m_species)) {
+                            if (!ForesterUtil.isEmpty(new_name)) {
+                                new_name += "|";
+                            }
+                            new_name += m_species;
+                        }
+                        if (!ForesterUtil.isEmpty(m_strain)) {
+                            if (!ForesterUtil.isEmpty(new_name)) {
+                                new_name += "|";
+                            }
+                            new_name += m_strain;
+                        }
                     } else {
-                        // virus (A/chicken/West Bengal/239020/2010(H5N1))
-                        final Matcher m1 = NAME_PATTERN_1.matcher(name);
-                        if (m1.find()) {
-                            new_name = new_name + m1.group(1);
+                        if (!ForesterUtil.isEmpty(genbank_acc)) {
+                            new_name = genbank_acc + "|";
+                        }
+                        if (!ForesterUtil.isEmpty(m_strain)) {
+                            new_name = new_name + m_strain;
                         } else {
-                            final Matcher m2 = NAME_PATTERN_2.matcher(name);
-                            if (m2.find()) {
-                                new_name = new_name + "A/" + m2.group(1);
+                            // virus (A/chicken/West Bengal/239020/2010(H5N1))
+                            final Matcher m1 = NAME_PATTERN_1.matcher(name);
+                            if (m1.find()) {
+                                new_name = new_name + m1.group(1);
+                            } else {
+                                final Matcher m2 = NAME_PATTERN_2.matcher(name);
+                                if (m2.find()) {
+                                    new_name = new_name + "A/" + m2.group(1);
+                                }
                             }
                         }
                     }
                 }
                 if (!ForesterUtil.isEmpty(new_name)) {
                     ext_node.setName(new_name);
-                }
-                else {
-                    if ( name.startsWith("(")  && name.endsWith("))") ) {
-                        ext_node.setName(name.substring(1, name.length() -1 ));
+                } else {
+                    if (name.startsWith("(") && name.endsWith("))")) {
+                        ext_node.setName(name.substring(1, name.length() - 1));
                     }
                 }
 
@@ -446,7 +509,6 @@ public class vipr_x6 {
         if (!ForesterUtil.isEmpty(tree_name)) {
             p.setName(tree_name);
         }
-
 
 
         if (!ForesterUtil.isEmpty(reroot)) {

@@ -237,6 +237,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private static final BasicStroke STROKE_075 = new BasicStroke(0.75f);
     private static final BasicStroke STROKE_1 = new BasicStroke(1f);
     private static final BasicStroke STROKE_2 = new BasicStroke(2f);
+
+
+
     private static final BasicStroke STROKE_01_DASHED = new BasicStroke(0.1f,
             BasicStroke.CAP_SQUARE,
             BasicStroke.JOIN_ROUND,
@@ -412,6 +415,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         repaint();
         requestFocusInWindow();
+    }
+
+    private static BasicStroke makeStroke(final float width ) {
+        return new BasicStroke(width);
     }
 
     public synchronized Hashtable<String, BufferedImage> getImageMap() {
@@ -3811,6 +3818,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     private final void setupStroke(final Graphics2D g) {
+
+        float w = _options.getDefaultBranchWidth();
+
+
         if (getYdistance() < 0.0001) {
             g.setStroke(STROKE_0025);
         }
@@ -3824,10 +3835,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             g.setStroke(STROKE_05);
         } else if (getYdistance() < 2) {
             g.setStroke(STROKE_075);
-        } else if ((getYdistance() < 20) || !getConfiguration().isAllowThickStrokes()) {
-            g.setStroke(STROKE_1);
+        } else if (_options.getDefaultBranchWidth() > 0 ) {
+            g.setStroke(makeStroke(_options.getDefaultBranchWidth()));
         } else {
-            g.setStroke(STROKE_2);
+            g.setStroke(STROKE_1);
         }
     }
 

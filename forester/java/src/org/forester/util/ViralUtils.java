@@ -68,7 +68,7 @@ public final class ViralUtils {
             .compile("\\[(.*?)/([A-za-z-\\s'()]*?)/([A-za-z-\\s]*?)/(.*?)/(\\d{2,4}?)\\|");
 
     public final static Pattern PATTERN_GB = Pattern
-            .compile("^(?:accn)?\\|?([A-Z][A-Z0-9.]+?)[_\\s|]");
+            .compile("^(?:accn)?\\|?([A-Z].{5,}?)[_\\s|]");
 
     public final static Pattern PATTERN_BVBRC_ACC = Pattern
             .compile("\\|([0-9]+\\.[0-9]+)\\]$");
@@ -723,7 +723,7 @@ public final class ViralUtils {
         if (!ForesterUtil.isEmpty(hg1)) {
             custom_data.addProperty(new Property(host_group_ref, hg1, "", XSD_STRING, Property.AppliesTo.NODE));
         }
-        if (!ForesterUtil.isEmpty(hg2)) {
+        if (!ForesterUtil.isEmpty(host_group_dom_vs_wild_ref) && !ForesterUtil.isEmpty(hg2)) {
             custom_data.addProperty(new Property(host_group_dom_vs_wild_ref, hg2, "", XSD_STRING, Property.AppliesTo.NODE));
         }
     }

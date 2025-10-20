@@ -1582,13 +1582,12 @@ public final class MainFrameApplication extends MainFrame {
                     ++replaced_names;
                 }
             }
-            if ( replaced_names > 0 ) {
+            if (replaced_names > 0) {
                 JOptionPane.showMessageDialog(this,
                         "Successfully replaced " + replaced_names + " external nodes (out of " + phy.getNumberOfExternalNodes() + ")",
                         "Success",
                         JOptionPane.INFORMATION_MESSAGE);
-            }
-            else {
+            } else {
                 JOptionPane.showMessageDialog(this,
                         "Failed to replace any node names",
                         "Failed to replace any node names",
@@ -1997,12 +1996,13 @@ public final class MainFrameApplication extends MainFrame {
                 MainFrame.setTextForFontChooserMenuItem(_choose_font_mi,
                         MainFrame.createCurrentFontDesc(getMainPanel()
                                 .getTreeFontSet()));
-                //  MainFrame.setTextForGraphicsSizeChooserMenuItem( _print_size_mi, getOptions() );
+
                 MainFrame.setTextForPdfLineWidthChooserMenuItem(_choose_pdf_width_mi, getOptions());
                 MainFrame.setCycleNodeFillMenuItem(_cycle_node_fill_mi, getOptions());
                 MainFrame.setCycleNodeShapeMenuItem(_cycle_node_shape_mi, getOptions());
                 MainFrame.setCycleDataReturnMenuItem(_cycle_data_return, getOptions());
                 MainFrame.setTextNodeSizeMenuItem(_choose_node_size_mi, getOptions());
+                MainFrame.setDefaultBranchWidthMenuItem(_choose_default_branch_width_mi, getOptions());
                 try {
                     getMainPanel().getControlPanel().setVisibilityOfDomainStrucureCB();
                     getMainPanel().getControlPanel().setVisibilityOfX();
@@ -2049,6 +2049,7 @@ public final class MainFrameApplication extends MainFrame {
         _options_jmenu.add(_background_gradient_cbmi = new JCheckBoxMenuItem(BG_GRAD_LABEL));
         _options_jmenu.add(_cycle_node_shape_mi = new JMenuItem(MainFrame.CYCLE_NODE_SHAPE_LABEL));
         _options_jmenu.add(_cycle_node_fill_mi = new JMenuItem(MainFrame.CYCLE_NODE_FILL_LABEL));
+        _options_jmenu.add(_choose_default_branch_width_mi = new JMenuItem(MainFrame.CHOOSE_BRANCH_WIDTH_LABEL));
         _options_jmenu.add(_choose_node_size_mi = new JMenuItem(MainFrame.CHOOSE_NODE_SIZE_LABEL));
         _options_jmenu.add(_choose_minimal_confidence_mi = new JMenuItem(""));
         _options_jmenu.add(_overview_placment_mi = new JMenuItem(""));
@@ -2122,6 +2123,7 @@ public final class MainFrameApplication extends MainFrame {
         customizeCheckBoxMenuItem(_show_default_node_shapes_for_marked_cbmi,
                 getOptions().isShowDefaultNodeShapesForMarkedNodes());
         customizeJMenuItem(_cycle_node_shape_mi);
+        customizeJMenuItem(_choose_default_branch_width_mi);
         customizeJMenuItem(_cycle_node_fill_mi);
         customizeJMenuItem(_choose_node_size_mi);
         customizeJMenuItem(_cycle_data_return);

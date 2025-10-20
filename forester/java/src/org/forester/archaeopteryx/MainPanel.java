@@ -55,114 +55,111 @@ import org.forester.util.ForesterUtil;
 
 public class MainPanel extends JPanel implements ComponentListener {
 
-    private static final long                serialVersionUID = -2682765312661416435L;
-    MainFrame                                _mainframe;
-    List<TreePanel>                          _treepanels;
-    ControlPanel                             _control_panel;
-    private List<JScrollPane>                _treegraphic_scroll_panes;
-    private List<JPanel>                     _treegraphic_scroll_pane_panels;
-    Configuration                            _configuration;
-    private JTabbedPane                      _tabbed_pane;
-    private TreeColorSet                     _colorset;
-    private TreeFontSet                      _fontset;
-    private Phylogeny                        _cut_or_copied_tree;
-    private Set<Long>                        _copied_and_pasted_nodes;
+    private static final long serialVersionUID = -2682765312661416435L;
+    MainFrame _mainframe;
+    List<TreePanel> _treepanels;
+    ControlPanel _control_panel;
+    private List<JScrollPane> _treegraphic_scroll_panes;
+    private List<JPanel> _treegraphic_scroll_pane_panels;
+    Configuration _configuration;
+    private JTabbedPane _tabbed_pane;
+    private TreeColorSet _colorset;
+    private TreeFontSet _fontset;
+    private Phylogeny _cut_or_copied_tree;
+    private Set<Long> _copied_and_pasted_nodes;
     private Hashtable<String, BufferedImage> _image_map;
-    private static Map<String, String>       _lineage_to_rank_map;
+    private static Map<String, String> _lineage_to_rank_map;
 
-    public MainPanel( final Configuration configuration, final MainFrame parent ) {
-        if ( configuration == null ) {
-            throw new IllegalArgumentException( "configuration is null" );
+    public MainPanel(final Configuration configuration, final MainFrame parent) {
+        if (configuration == null) {
+            throw new IllegalArgumentException("configuration is null");
         }
-        addComponentListener( this );
+        addComponentListener(this);
         _configuration = configuration;
         _mainframe = parent;
         _treepanels = new ArrayList<TreePanel>();
         initialize();
-        _control_panel = new ControlPanel( this, configuration );
-        add( _control_panel, BorderLayout.WEST );
-        setupTreeGraphic( configuration, getControlPanel() );
+        _control_panel = new ControlPanel(this, configuration);
+        add(_control_panel, BorderLayout.WEST);
+        setupTreeGraphic(configuration, getControlPanel());
         getControlPanel().showWhole();
     }
 
     MainPanel() {
     }
 
-    public void addPhylogenyInNewTab( final Phylogeny phy,
-                                      final Configuration config,
-                                      final String default_name,
-                                      final String full_path ) {
-        final TreePanel treepanel = new TreePanel( phy, config, this );
-        getControlPanel().phylogenyAdded( config );
-        treepanel.setControlPanel( getControlPanel() );
-        _treepanels.add( treepanel );
+    public void addPhylogenyInNewTab(final Phylogeny phy,
+                                     final Configuration config,
+                                     final String default_name,
+                                     final String full_path) {
+        final TreePanel treepanel = new TreePanel(phy, config, this);
+        getControlPanel().phylogenyAdded(config);
+        treepanel.setControlPanel(getControlPanel());
+        _treepanels.add(treepanel);
         String name = "";
-        if ( !ForesterUtil.isEmpty( phy.getName() ) ) {
+        if (!ForesterUtil.isEmpty(phy.getName())) {
             name = phy.getName();
-        }
-        else if ( phy.getIdentifier() != null ) {
+        } else if (phy.getIdentifier() != null) {
             name = phy.getIdentifier().toString();
-        }
-        else if ( !ForesterUtil.isEmpty( default_name ) ) {
+        } else if (!ForesterUtil.isEmpty(default_name)) {
             name = default_name;
+        } else {
+            name = "[" + (getTabbedPane().getTabCount() + 1) + "]";
         }
-        else {
-            name = "[" + ( getTabbedPane().getTabCount() + 1 ) + "]";
-        }
-        final JScrollPane treegraphic_scroll_pane = new JScrollPane( treepanel );
-        treegraphic_scroll_pane.getHorizontalScrollBar().addAdjustmentListener( new AdjustmentListener() {
+        final JScrollPane treegraphic_scroll_pane = new JScrollPane(treepanel);
+        treegraphic_scroll_pane.getHorizontalScrollBar().addAdjustmentListener(new AdjustmentListener() {
 
             @Override
-            public void adjustmentValueChanged( final AdjustmentEvent e ) {
-                if ( treepanel.isOvOn() || getOptions().isShowScale() ) {
+            public void adjustmentValueChanged(final AdjustmentEvent e) {
+                if (treepanel.isOvOn() || getOptions().isShowScale()) {
                     treepanel.repaint();
                 }
             }
-        } );
-        treegraphic_scroll_pane.getVerticalScrollBar().addAdjustmentListener( new AdjustmentListener() {
+        });
+        treegraphic_scroll_pane.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
 
             @Override
-            public void adjustmentValueChanged( final AdjustmentEvent e ) {
-                if ( treepanel.isOvOn() || getOptions().isShowScale() ) {
+            public void adjustmentValueChanged(final AdjustmentEvent e) {
+                if (treepanel.isOvOn() || getOptions().isShowScale()) {
                     treepanel.repaint();
                     //System.out.println( e.getValue() );
                 }
             }
-        } );
-        treegraphic_scroll_pane.getHorizontalScrollBar().setUnitIncrement( 10 );
-        treegraphic_scroll_pane.getHorizontalScrollBar().setBlockIncrement( 200 );
-        treegraphic_scroll_pane.getVerticalScrollBar().setUnitIncrement( 10 );
-        treegraphic_scroll_pane.getVerticalScrollBar().setBlockIncrement( 200 );
+        });
+        treegraphic_scroll_pane.getHorizontalScrollBar().setUnitIncrement(10);
+        treegraphic_scroll_pane.getHorizontalScrollBar().setBlockIncrement(200);
+        treegraphic_scroll_pane.getVerticalScrollBar().setUnitIncrement(10);
+        treegraphic_scroll_pane.getVerticalScrollBar().setBlockIncrement(200);
         final JPanel treegraphic_scroll_pane_panel = new JPanel();
-        treegraphic_scroll_pane_panel.setLayout( new BorderLayout() );
-        treegraphic_scroll_pane_panel.add( treegraphic_scroll_pane, BorderLayout.CENTER );
-        _treegraphic_scroll_pane_panels.add( treegraphic_scroll_pane_panel );
-        _treegraphic_scroll_panes.add( treegraphic_scroll_pane );
-        getTabbedPane().addTab( name, null, treegraphic_scroll_pane_panel, "" );
-        getTabbedPane().setSelectedIndex( getTabbedPane().getTabCount() - 1 );
+        treegraphic_scroll_pane_panel.setLayout(new BorderLayout());
+        treegraphic_scroll_pane_panel.add(treegraphic_scroll_pane, BorderLayout.CENTER);
+        _treegraphic_scroll_pane_panels.add(treegraphic_scroll_pane_panel);
+        _treegraphic_scroll_panes.add(treegraphic_scroll_pane);
+        getTabbedPane().addTab(name, null, treegraphic_scroll_pane_panel, "");
+        getTabbedPane().setSelectedIndex(getTabbedPane().getTabCount() - 1);
         getControlPanel().showWhole();
     }
 
     @Override
-    public void componentHidden( final ComponentEvent e ) {
+    public void componentHidden(final ComponentEvent e) {
         // Do nothing.
     }
 
     @Override
-    public void componentMoved( final ComponentEvent e ) {
+    public void componentMoved(final ComponentEvent e) {
         // Do nothing.
     }
 
     @Override
-    public void componentResized( final ComponentEvent e ) {
-        if ( getCurrentTreePanel() != null ) {
+    public void componentResized(final ComponentEvent e) {
+        if (getCurrentTreePanel() != null) {
             getCurrentTreePanel().updateOvSettings();
             getCurrentTreePanel().updateOvSizes();
         }
     }
 
     @Override
-    public void componentShown( final ComponentEvent e ) {
+    public void componentShown(final ComponentEvent e) {
         // Do nothing.
     }
 
@@ -176,14 +173,12 @@ public class MainPanel extends JPanel implements ComponentListener {
 
     public TreePanel getCurrentTreePanel() {
         final int selected = getTabbedPane().getSelectedIndex();
-        if ( selected >= 0 ) {
-            return _treepanels.get( selected );
-        }
-        else {
-            if ( _treepanels.size() == 1 ) {
-                return _treepanels.get( 0 );
-            }
-            else {
+        if (selected >= 0) {
+            return _treepanels.get(selected);
+        } else {
+            if (_treepanels.size() == 1) {
+                return _treepanels.get(0);
+            } else {
                 return null;
             }
         }
@@ -202,37 +197,36 @@ public class MainPanel extends JPanel implements ComponentListener {
     }
 
     public void setArrowCursor() {
-        setCursor( TreePanel.ARROW_CURSOR );
+        setCursor(TreePanel.ARROW_CURSOR);
         repaint();
     }
 
-    public void setCopiedAndPastedNodes( final Set<Long> node_ids ) {
+    public void setCopiedAndPastedNodes(final Set<Long> node_ids) {
         _copied_and_pasted_nodes = node_ids;
     }
 
     public void setWaitCursor() {
-        setCursor( TreePanel.WAIT_CURSOR );
+        setCursor(TreePanel.WAIT_CURSOR);
         repaint();
     }
 
 
-
     void adjustJScrollPane() {
-        if ( getTabbedPane() != null ) {
-            getCurrentScrollPanePanel().remove( getCurrentScrollPane() );
-            getCurrentScrollPanePanel().add( getCurrentScrollPane(), BorderLayout.CENTER );
+        if (getTabbedPane() != null) {
+            getCurrentScrollPanePanel().remove(getCurrentScrollPane());
+            getCurrentScrollPanePanel().add(getCurrentScrollPane(), BorderLayout.CENTER);
         }
         getCurrentScrollPane().revalidate();
     }
 
     void closeCurrentPane() {
         final int index = getCurrentTabIndex();
-        if ( ( index >= 0 ) && ( getTabbedPane().getTabCount() > 0 ) ) {
-            getTabbedPane().remove( index );
-            getTreePanels().remove( index );
-            _treegraphic_scroll_panes.remove( index );
-            _treegraphic_scroll_pane_panels.remove( index );
-            getControlPanel().phylogenyRemoved( index );
+        if ((index >= 0) && (getTabbedPane().getTabCount() > 0)) {
+            getTabbedPane().remove(index);
+            getTreePanels().remove(index);
+            _treegraphic_scroll_panes.remove(index);
+            _treegraphic_scroll_pane_panels.remove(index);
+            getControlPanel().phylogenyRemoved(index);
         }
     }
 
@@ -241,43 +235,39 @@ public class MainPanel extends JPanel implements ComponentListener {
     }
 
     Phylogeny getCurrentPhylogeny() {
-        if ( getCurrentTreePanel() == null ) {
+        if (getCurrentTreePanel() == null) {
             return null;
         }
         return getCurrentTreePanel().getPhylogeny();
     }
 
     JScrollPane getCurrentScrollPane() {
-        if ( _treegraphic_scroll_panes.size() > 0 ) {
+        if (_treegraphic_scroll_panes.size() > 0) {
             final int selected = getTabbedPane().getSelectedIndex();
-            if ( selected >= 0 ) {
-                return _treegraphic_scroll_panes.get( selected );
+            if (selected >= 0) {
+                return _treegraphic_scroll_panes.get(selected);
+            } else {
+                return _treegraphic_scroll_panes.get(0);
             }
-            else {
-                return _treegraphic_scroll_panes.get( 0 );
-            }
-        }
-        else {
+        } else {
             return null;
         }
     }
 
     JPanel getCurrentScrollPanePanel() {
         final int selected = getTabbedPane().getSelectedIndex();
-        if ( selected >= 0 ) {
-            return _treegraphic_scroll_pane_panels.get( selected );
-        }
-        else {
-            return _treegraphic_scroll_pane_panels.get( 0 );
+        if (selected >= 0) {
+            return _treegraphic_scroll_pane_panels.get(selected);
+        } else {
+            return _treegraphic_scroll_pane_panels.get(0);
         }
     }
 
     int getCurrentTabIndex() {
         final int selected = getTabbedPane().getSelectedIndex();
-        if ( selected >= 0 ) {
+        if (selected >= 0) {
             return selected;
-        }
-        else {
+        } else {
             return 0;
         }
     }
@@ -294,11 +284,11 @@ public class MainPanel extends JPanel implements ComponentListener {
         return _mainframe;
     }
 
-    Phylogeny getPhylogeny( final int index ) {
-        if ( getCurrentTreePanel() == null ) {
+    Phylogeny getPhylogeny(final int index) {
+        if (getCurrentTreePanel() == null) {
             return null;
         }
-        return _treepanels.get( index ).getPhylogeny();
+        return _treepanels.get(index).getPhylogeny();
     }
 
     Dimension getSizeOfViewport() {
@@ -314,92 +304,92 @@ public class MainPanel extends JPanel implements ComponentListener {
     }
 
     void initialize() {
-        if ( !getConfiguration().isUseNativeUI() ) {
-            setBackground( getConfiguration().getGuiBackgroundColor() );
+        if (!getConfiguration().isUseNativeUI()) {
+            setBackground(getConfiguration().getGuiBackgroundColor());
         }
-        setTreeFontSet( new TreeFontSet( this ) );
-        getTreeFontSet().setBaseFont( getOptions().getBaseFont() );
-        setLayout( new BorderLayout() );
-        setTreeColorSet( TreeColorSet.createInstance( getConfiguration() ) );
+        setTreeFontSet(new TreeFontSet(this));
+        getTreeFontSet().setBaseFont(getOptions().getBaseFont());
+        setLayout(new BorderLayout());
+        setTreeColorSet(TreeColorSet.createInstance(getConfiguration()));
         _treegraphic_scroll_panes = new ArrayList<JScrollPane>();
         _treegraphic_scroll_pane_panels = new ArrayList<JPanel>();
-        _tabbed_pane = new JTabbedPane( SwingConstants.TOP );
-        if ( !getConfiguration().isUseNativeUI() ) {
-            _tabbed_pane.setBackground( getConfiguration().getGuiBackgroundColor() );
-            _tabbed_pane.setForeground( getConfiguration().getGuiBackgroundColor() );
+        _tabbed_pane = new JTabbedPane(SwingConstants.TOP);
+        if (!getConfiguration().isUseNativeUI()) {
+            _tabbed_pane.setBackground(getConfiguration().getGuiBackgroundColor());
+            _tabbed_pane.setForeground(getConfiguration().getGuiBackgroundColor());
         }
-        _tabbed_pane.addChangeListener( new ChangeListener() {
+        _tabbed_pane.addChangeListener(new ChangeListener() {
 
             // This method is called whenever the selected tab changes
             @Override
-            public void stateChanged( final ChangeEvent evt ) {
-                final JTabbedPane pane = ( JTabbedPane ) evt.getSource();
+            public void stateChanged(final ChangeEvent evt) {
+                final JTabbedPane pane = (JTabbedPane) evt.getSource();
                 getControlPanel().tabChanged();
                 // Get current tab
                 final int sel = pane.getSelectedIndex();
-                if ( sel >= 0 ) {
-                    if ( !getConfiguration().isUseNativeUI() ) {
-                        if ( _tabbed_pane.getTabCount() > 0 ) {
-                            _tabbed_pane.setForegroundAt( sel, AptxConstants.TAB_LABEL_FOREGROUND_COLOR_SELECTED );
-                            for( int i = 0; i < _tabbed_pane.getTabCount(); ++i ) {
-                                if ( i != sel ) {
-                                    _tabbed_pane.setBackgroundAt( i, getConfiguration().getGuiBackgroundColor() );
-                                    _tabbed_pane.setForegroundAt( i, getConfiguration().getGuiCheckboxTextColor() );
+                if (sel >= 0) {
+                    if (!getConfiguration().isUseNativeUI()) {
+                        if (_tabbed_pane.getTabCount() > 0) {
+                            _tabbed_pane.setForegroundAt(sel, AptxConstants.TAB_LABEL_FOREGROUND_COLOR_SELECTED);
+                            for (int i = 0; i < _tabbed_pane.getTabCount(); ++i) {
+                                if (i != sel) {
+                                    _tabbed_pane.setBackgroundAt(i, getConfiguration().getGuiBackgroundColor());
+                                    _tabbed_pane.setForegroundAt(i, getConfiguration().getGuiCheckboxTextColor());
                                 }
                             }
                         }
                     }
                 }
             }
-        } );
-        if ( !getConfiguration().isUseNativeUI() ) {
-            _tabbed_pane.setFont( ControlPanel.jcb_font );
+        });
+        if (!getConfiguration().isUseNativeUI()) {
+            _tabbed_pane.setFont(ControlPanel.jcb_font);
         }
-        _tabbed_pane.setTabLayoutPolicy( JTabbedPane.SCROLL_TAB_LAYOUT );
-        add( _tabbed_pane, BorderLayout.CENTER );
+        _tabbed_pane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+        add(_tabbed_pane, BorderLayout.CENTER);
     }
 
-    void setCutOrCopiedTree( final Phylogeny cut_or_copied_tree ) {
+    void setCutOrCopiedTree(final Phylogeny cut_or_copied_tree) {
         _cut_or_copied_tree = cut_or_copied_tree;
     }
 
-    synchronized void setImageMap( final Hashtable<String, BufferedImage> image_map ) {
+    synchronized void setImageMap(final Hashtable<String, BufferedImage> image_map) {
         _image_map = image_map;
     }
 
-    void setTitleOfSelectedTab( final String title ) {
+    void setTitleOfSelectedTab(final String title) {
         final int selected = getTabbedPane().getSelectedIndex();
-        if ( selected >= 0 ) {
-            getTabbedPane().setTitleAt( selected, title );
+        if (selected >= 0) {
+            getTabbedPane().setTitleAt(selected, title);
         }
     }
 
-    void setTreeColorSet( final TreeColorSet colorset ) {
+    void setTreeColorSet(final TreeColorSet colorset) {
         _colorset = colorset;
-        for( final TreePanel p : getTreePanels() ) {
-            p.setBackground( colorset.getBackgroundColor() );
+        for (final TreePanel p : getTreePanels()) {
+            p.setBackground(colorset.getBackgroundColor());
         }
     }
 
-    void setTreeFontSet( final TreeFontSet fontset ) {
+    void setTreeFontSet(final TreeFontSet fontset) {
         _fontset = fontset;
     }
 
-    void setupTreeGraphic( final Configuration config_settings, final ControlPanel control ) {
-        control.setSpeciesColors( config_settings.getSpeciesColors() );
-        control.setSequenceColors( config_settings.getSequenceColors() );
-        control.setAnnotationColors( config_settings.getAnnotationColors() );
-        RenderableDomainArchitecture.setColorMap( config_settings.getDomainColors() );
+    void setupTreeGraphic(final Configuration config_settings, final ControlPanel control) {
+        control.setSpeciesColors(config_settings.getSpeciesColors());
+        control.setSequenceColors(config_settings.getSequenceColors());
+        control.setAnnotationColors(config_settings.getAnnotationColors());
+        RenderableDomainArchitecture.setColorMap(config_settings.getDomainColors());
     }
 
     void terminate() {
-        for( final TreePanel atvtreepanel : _treepanels ) {
+        for (final TreePanel atvtreepanel : _treepanels) {
             atvtreepanel.removeAllEditNodeJFrames();
         }
     }
 
     public synchronized static Map<String, String> getLineageToRankMap() {
-        if ( _lineage_to_rank_map == null ) {
+        if (_lineage_to_rank_map == null) {
             _lineage_to_rank_map = new HashMap<String, String>();
         }
         return _lineage_to_rank_map;

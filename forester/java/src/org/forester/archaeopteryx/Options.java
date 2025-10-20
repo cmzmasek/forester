@@ -132,9 +132,20 @@ final public class Options {
     private boolean _show_abbreviated_labels_for_collapsed_nodes;
 
     private boolean _search_properties;
+    private float _default_branch_width;
 
     private Options() {
         init();
+    }
+
+
+    public void setDefaultBranchWidth(final float default_branch_width) {
+        _default_branch_width = default_branch_width;
+
+    }
+
+    public float getDefaultBranchWidth() {
+        return _default_branch_width;
     }
 
     public NodeDataField getExtDescNodeDataToReturn() {
@@ -239,6 +250,7 @@ final public class Options {
         _collapsed_with_average_height = true;
         _show_abbreviated_labels_for_collapsed_nodes = true;
         _search_properties = true;
+        _default_branch_width = 1;
     }
 
     final private void setNumberOfDigitsAfterCommaForBranchLength(final short number_of_digits_after_comma_for_branch_length_values) {
