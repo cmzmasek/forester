@@ -79,7 +79,11 @@ public final class rem_dup_regex {
 
         final List<String> names = new ArrayList<>();
         for (final MolecularSequence s : seqs) {
-            names.add(s.getIdentifier());
+            final Matcher m_i = compiled_regex.matcher(s.getIdentifier());
+            if (m_i.find()) {
+                names.add( m_i.group(1).trim().toLowerCase().replaceAll("\\s+", "_"));
+            }
+
         }
 
         int no_match = 0;
@@ -98,12 +102,7 @@ public final class rem_dup_regex {
             }
             int count = 0;
             for (final String name : names) {
-                final Matcher m_i = compiled_regex.matcher(name);
-                String id_i = "";
-                if (m_i.find()) {
-                    id_i = m_i.group(1).trim().toLowerCase().replaceAll("\\s+", "_");
-                }
-                if (id_i.equals(id_o)) {
+                if (name.equals(id_o)) {
                     ++count;
                 }
             }
@@ -115,7 +114,6 @@ public final class rem_dup_regex {
             } else {
                 ForesterUtil.fatalError(PRG_NAME, "This should never have happened.");
             }
-
         }
 
         try {
