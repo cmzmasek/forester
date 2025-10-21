@@ -81,9 +81,8 @@ public final class rem_dup_regex {
         for (final MolecularSequence s : seqs) {
             final Matcher m_i = compiled_regex.matcher(s.getIdentifier());
             if (m_i.find()) {
-                names.add( m_i.group(1).trim().toLowerCase().replaceAll("\\s+", "_"));
+                names.add(m_i.group(1).trim().toLowerCase().replaceAll("\\s+", "_"));
             }
-
         }
 
         int no_match = 0;
