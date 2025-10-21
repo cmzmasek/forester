@@ -125,6 +125,7 @@ public final class rem_dup_regex {
         }
 
         System.out.println();
+        System.out.println("[" + PRG_NAME + "] version   : " + PRG_VERSION);
         System.out.println("[" + PRG_NAME + "] infile    : " + infile);
         System.out.println("[" + PRG_NAME + "] regex     : " + regex);
         System.out.println("[" + PRG_NAME + "] input     : " + seqs.size() + " sequences");
