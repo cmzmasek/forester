@@ -41,27 +41,24 @@ import org.forester.util.ForesterUtil;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class segment_select_2 {
 
-    private static final String PRG_DATE = "2024-05-22";
-    private static final String PRG_VERSION = "1.0.1";
+    private static final String PRG_DATE = "2025-10-20";
+    private static final String PRG_VERSION = "2.0.0";
 
     private static final boolean VERBOSE = true;
 
     private final static String PRG_NAME = "segment_select_2";
 
-   // public final static Pattern P0 = Pattern
-        //    .compile("(\\(A/.+?)[_\\s]segment[_\\s]");
+    // public final static Pattern P0 = Pattern
+    //    .compile("(\\(A/.+?)[_\\s]segment[_\\s]");
 
-  //  public final static Pattern P0 = Pattern
-  //          .compile("(\\(A/.+?\\)\\))");
+    //  public final static Pattern P0 = Pattern
+    //          .compile("(\\(A/.+?\\)\\))");
 
     public final static Pattern P0 = Pattern
             .compile("(A/.+?\\))");
@@ -70,15 +67,26 @@ public final class segment_select_2 {
     public static void main(final String args[]) {
         ForesterUtil.printProgramInformation(PRG_NAME, PRG_VERSION, PRG_DATE);
 
-        if (args.length != 3) {
-            System.out.println("\nWrong number of arguments, expected: <fasta file to be trimmed> <fasta file> <outfile>\n");
+        if (args.length != 3 && args.length != 4) {
+            System.out.println("\nWrong number of arguments, expected: [regex] <fasta file to be trimmed> <\"guide\" fasta file> <outfile>\n");
             System.exit(-1);
         }
+        String regex;
+        final File infile_to_be_trimmed;
+        final File infile_guide;
+        final File outfile;
 
-        final File infile_to_be_trimmed = new File(args[0]);
-        final File infile_guide = new File(args[1]);
-        final File outfile = new File(args[2]);
-
+        if (args.length == 4) {
+            regex = args[0];
+            infile_to_be_trimmed = new File(args[1]);
+            infile_guide = new File(args[2]);
+            outfile = new File(args[3]);
+        } else {
+            regex = null;
+            infile_to_be_trimmed = new File(args[0]);
+            infile_guide = new File(args[1]);
+            outfile = new File(args[2]);
+        }
         if (!infile_to_be_trimmed.exists()) {
             ForesterUtil.fatalError(PRG_NAME, "[" + infile_to_be_trimmed + "] does not exist");
         }
@@ -89,7 +97,12 @@ public final class segment_select_2 {
         if (outfile.exists()) {
             ForesterUtil.fatalError(PRG_NAME, "[" + outfile + "] already exists");
         }
-
+        final Pattern compiled_regex;
+        if (regex != null) {
+            compiled_regex = Pattern.compile(regex);
+        } else {
+            compiled_regex = P0;
+        }
 
         Map<String, MolecularSequence> outseqs = new HashMap<>();
 
@@ -109,33 +122,55 @@ public final class segment_select_2 {
             throw new RuntimeException(e);
         }
 
+        final SortedSet matches  = new TreeSet<String>();
+
         for (MolecularSequence s_trimmed : seqs_to_be_trimmed) {
-            final Matcher m0 = P0.matcher(s_trimmed.getIdentifier());
+            final Matcher m0 = compiled_regex.matcher(s_trimmed.getIdentifier());
 
             String virus_id_tr = "";
             if (m0.find()) {
-                virus_id_tr = m0.group(1).trim().toLowerCase().replaceAll( "\\s+", "_");
+                virus_id_tr = m0.group(1).trim().toLowerCase().replaceAll("\\s+", "_");
             } else {
-                System.out.println("Error: MSA name \"" + s_trimmed.getIdentifier() + "\" could not be matched");
+                System.out.println("Error: Sequence \"" + s_trimmed.getIdentifier() + "\" could not be matched");
                 //System.exit(-1);
                 continue;
             }
+            if (matches.contains(virus_id_tr)) {
+                System.out.println("Error: Match \"" +virus_id_tr + "\" is not specific");
+                System.out.println("     " + s_trimmed.getIdentifier());
+                System.exit(-1);
+            }
+            else {
+                matches.add(virus_id_tr);
+            }
 
-            I: for (MolecularSequence sguide : seqs_guide) {
-                final Matcher m1 = P0.matcher(sguide.getIdentifier());
 
+
+            int counter = 0;
+            boolean found = false;
+            for (MolecularSequence sguide : seqs_guide) {
+                final Matcher m1 = compiled_regex.matcher(sguide.getIdentifier());
+                ++counter;
                 String virus_id_g = "";
                 if (m1.find()) {
-                    virus_id_g = m1.group(1).trim().toLowerCase().replaceAll( "\\s+", "_");
+                    virus_id_g = m1.group(1).trim().toLowerCase().replaceAll("\\s+", "_");
                 } else {
-                    System.out.println("Error: MSA name \"" + sguide.getIdentifier() + "\" could not be matched");
+                    System.out.println("Error: Guide sequence " + counter + " \"" + sguide.getIdentifier() + "\" could not be matched");
                     System.exit(-1);
                 }
-
+                // if (virus_id_g.split("/").length > 4 ) {
                 if (virus_id_g.equals(virus_id_tr)) {
+                    if ( found) {
+                        System.out.println("Error: " + virus_id_g + " is not specific");
+                        System.out.println("Guide: " + sguide.getIdentifier());
+                        System.out.println("     : " + s_trimmed.getIdentifier());
+                        System.exit(-1);
+                    }
+                    found = true;
+                    System.out.println(" == " + virus_id_g);
                     outseqs.put(s_trimmed.getIdentifier(), s_trimmed);
-                    break I;
                 }
+                // }
             }
         }
 
