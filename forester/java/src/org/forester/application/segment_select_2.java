@@ -47,8 +47,8 @@ import java.util.regex.Pattern;
 
 public final class segment_select_2 {
 
-    private static final String PRG_DATE = "2025-10-20";
-    private static final String PRG_VERSION = "2.0.0";
+    private static final String PRG_DATE = "2025-10-21";
+    private static final String PRG_VERSION = "2.0.1";
 
     private static final boolean VERBOSE = true;
 
@@ -122,7 +122,7 @@ public final class segment_select_2 {
             throw new RuntimeException(e);
         }
 
-        final SortedSet matches  = new TreeSet<String>();
+        final SortedSet matches = new TreeSet<String>();
 
         for (MolecularSequence s_trimmed : seqs_to_be_trimmed) {
             final Matcher m0 = compiled_regex.matcher(s_trimmed.getIdentifier());
@@ -132,19 +132,15 @@ public final class segment_select_2 {
                 virus_id_tr = m0.group(1).trim().toLowerCase().replaceAll("\\s+", "_");
             } else {
                 System.out.println("Error: Sequence \"" + s_trimmed.getIdentifier() + "\" could not be matched");
-                //System.exit(-1);
-                continue;
-            }
-            if (matches.contains(virus_id_tr)) {
-                System.out.println("Error: Match \"" +virus_id_tr + "\" is not specific");
-                System.out.println("     " + s_trimmed.getIdentifier());
                 System.exit(-1);
             }
-            else {
+            if (matches.contains(virus_id_tr)) {
+                System.out.println("Error: Match \"" + virus_id_tr + "\" is not specific");
+                System.out.println("     " + s_trimmed.getIdentifier());
+                System.exit(-1);
+            } else {
                 matches.add(virus_id_tr);
             }
-
-
 
             int counter = 0;
             boolean found = false;
@@ -158,19 +154,16 @@ public final class segment_select_2 {
                     System.out.println("Error: Guide sequence " + counter + " \"" + sguide.getIdentifier() + "\" could not be matched");
                     System.exit(-1);
                 }
-                // if (virus_id_g.split("/").length > 4 ) {
                 if (virus_id_g.equals(virus_id_tr)) {
-                    if ( found) {
+                    if (found) {
                         System.out.println("Error: " + virus_id_g + " is not specific");
                         System.out.println("Guide: " + sguide.getIdentifier());
                         System.out.println("     : " + s_trimmed.getIdentifier());
                         System.exit(-1);
                     }
                     found = true;
-                    System.out.println(" == " + virus_id_g);
                     outseqs.put(s_trimmed.getIdentifier(), s_trimmed);
                 }
-                // }
             }
         }
 
@@ -184,10 +177,14 @@ public final class segment_select_2 {
 
         System.out.println();
 
-        System.out.println("[" + PRG_NAME + "] orig    : " + seqs_to_be_trimmed.size() + " sequences");
-        System.out.println("[" + PRG_NAME + "] guide   : " + seqs_guide.size() + " sequences");
-        System.out.println("[" + PRG_NAME + "] retained: " + outseqlist.size() + " sequences");
-        System.out.println("[" + PRG_NAME + "] wrote: [" + outfile + "]");
+        System.out.println("[" + PRG_NAME + "] version      : " + PRG_VERSION);
+        System.out.println("[" + PRG_NAME + "] to be trimmed: " + infile_to_be_trimmed);
+        System.out.println("[" + PRG_NAME + "] guide        : " + infile_guide);
+        System.out.println("[" + PRG_NAME + "] regex        : " + regex);
+        System.out.println("[" + PRG_NAME + "] orig         : " + seqs_to_be_trimmed.size() + " sequences");
+        System.out.println("[" + PRG_NAME + "] guide        : " + seqs_guide.size() + " sequences");
+        System.out.println("[" + PRG_NAME + "] retained     : " + outseqlist.size() + " sequences");
+        System.out.println("[" + PRG_NAME + "] wrote        : [" + outfile + "]");
         System.out.println("[" + PRG_NAME + "] OK");
         System.out.println();
     }
