@@ -30,7 +30,7 @@ public class hmmscan_seq_extract {
     final static private String PRG_VERSION = "1.2.0";
     final static private String PRG_DATE = "2024-07-01";
     final static private String PRG_DESC = "hmmscan seq extract";
-    final static private String E_MAIL = "phyloxml@gmail.com";
+    final static private String E_MAIL = "";
     final static private String WWW = "https://github.com/cmzmasek/forester";
     final static private String HELP_OPTION_1 = "help";
     final static private String HELP_OPTION_2 = "h";

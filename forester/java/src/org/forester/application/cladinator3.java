@@ -39,7 +39,6 @@ import org.forester.clade_analysis.ResultMulti;
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.util.ParserUtils;
 import org.forester.phylogeny.Phylogeny;
-import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.util.BasicTable;
@@ -52,11 +51,11 @@ import org.forester.util.UserException;
 public final class cladinator3 {
 
     final static private String PRG_NAME = "cladinator3";
-    final static private String PRG_VERSION = "3.0.0.a1";
-    final static private String PRG_DATE = "2025-07-24";
+    final static private String PRG_VERSION = "3.0.0";
+    final static private String PRG_DATE = "2025-10-29";
     final static private String PRG_DESC = "clades within clades of annotated labels -- analysis of pplacer-type outputs";
     final static private String E_MAIL = "czmasek@jcvi.org";
-    final static private String WWW = "https://sites.google.com/site/cmzmasek/home/software/forester";
+    final static private String WWW = "https://github.com/cmzmasek/forester";
     final static private String HELP_OPTION_1 = "help";
     final static private String HELP_OPTION_2 = "h";
     final static private String SEP_OPTION = "s";
@@ -381,12 +380,12 @@ public final class cladinator3 {
         final double cutoff = 0.7;
         boolean done = false;
 
-        System.out.println("UP:");
-        System.out.println( res.getAllMultiHitPrefixesUp() );
-        System.out.println("DOWN:");
-        System.out.println( res.getAllMultiHitPrefixesDown() );
-        System.out.println("CONS:");
-         System.out.println( res.getAllMultiHitPrefixes() );
+        //System.out.println("UP:");
+        //System.out.println( res.getAllMultiHitPrefixesUp() );
+        //System.out.println("DOWN:");
+        //System.out.println( res.getAllMultiHitPrefixesDown() );
+        //System.out.println("CONS:");
+        // System.out.println( res.getAllMultiHitPrefixes() );
         for (final Prefix prefix : res.getCollapsedMultiHitPrefixes()) {
             if ((prefix.getConfidence() >= cutoff) && !prefix.getPrefix().equals(AnalysisMulti.UNKNOWN)) {
                 if (split_query) {
