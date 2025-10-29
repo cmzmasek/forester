@@ -46,6 +46,22 @@ Examples:
  cladinator3 -m=map.tsv -S='(\d+)([a-z?]*)_.+' pp_out_trees.sing.tre result.tsv
 ```
 
+Output example:
+```
+Input tree                 : clade_analysis_test_1_2_A.xml
+Annotation-separator       : .
+Query pattern              : _#\d+_M=(.+)
+Output table               : test
+Number of input trees      : 1
+Ext. nodes in input tree   : 28
+
+Results:
+
+#Tree # Query	Assignment Confidence	Brackets           Conclusion              Placement count
+1       Q	    A.3.1.2    1.0	       [A.3.1.2, A.3.1.2]	member of clade A.3.1.2	1
+```
+
+
 
 Archaeoptryx
 ------------
