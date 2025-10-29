@@ -39,6 +39,7 @@ import org.forester.clade_analysis.ResultMulti;
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.util.ParserUtils;
 import org.forester.phylogeny.Phylogeny;
+import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.util.BasicTable;
@@ -51,7 +52,7 @@ import org.forester.util.UserException;
 public final class cladinator3 {
 
     final static private String PRG_NAME = "cladinator3";
-    final static private String PRG_VERSION = "3.0.0";
+    final static private String PRG_VERSION = "3.0.1";
     final static private String PRG_DATE = "2025-10-29";
     final static private String PRG_DESC = "clades within clades of annotated labels -- analysis of pplacer-type outputs";
     final static private String E_MAIL = "czmasek@jcvi.org";
@@ -71,18 +72,11 @@ public final class cladinator3 {
     final static private String EXTRA_PROCESSING1_SEP_DEFAULT = "|";
     final static private boolean EXTRA_PROCESSING1_KEEP_EXTRA_DEFAULT = false;
     private final static DecimalFormat df = new DecimalFormat("0.0###");
-    final static private boolean TWO_COLUMNS_IN_SIMPLE_OUTPUT = true;
-    final static private boolean ALLOW_TO_SPLIT_QUERY = true;
+
 
     public static void main(final String args[]) {
         try {
-            ForesterUtil.printProgramInformation(PRG_NAME,
-                    PRG_DESC,
-                    PRG_VERSION,
-                    PRG_DATE,
-                    E_MAIL,
-                    WWW,
-                    ForesterUtil.getForesterLibraryInformation());
+            ForesterUtil.printProgramInformation(PRG_NAME, PRG_DESC, PRG_VERSION, PRG_DATE, E_MAIL, WWW, ForesterUtil.getForesterLibraryInformation());
             CommandLineArguments cla = null;
             try {
                 cla = new CommandLineArguments(args);
@@ -127,8 +121,7 @@ public final class cladinator3 {
                     try {
                         compiled_query = Pattern.compile(query_str);
                     } catch (final PatternSyntaxException e) {
-                        ForesterUtil.fatalError(PRG_NAME,
-                                "error in regular expression: " + query_str + ": " + e.getMessage());
+                        ForesterUtil.fatalError(PRG_NAME, "error in regular expression: " + query_str + ": " + e.getMessage());
                     }
                 } else {
                     ForesterUtil.fatalError(PRG_NAME, "no value for query pattern option");
@@ -170,9 +163,7 @@ public final class cladinator3 {
             if (mapping_file != null) {
                 t = BasicTableParser.parse(mapping_file, '\t');
                 if (t.getNumberOfColumns() != 2) {
-                    ForesterUtil.fatalError(PRG_NAME,
-                            "mapping file needs to have 2 tab-separated columns, not "
-                                    + t.getNumberOfColumns());
+                    ForesterUtil.fatalError(PRG_NAME, "mapping file needs to have 2 tab-separated columns, not " + t.getNumberOfColumns());
                 }
                 map = t.getColumnsAsMap(0, 1);
             } else {
@@ -188,9 +179,7 @@ public final class cladinator3 {
             String extra_processing1_sep = EXTRA_PROCESSING1_SEP_DEFAULT;
             if (cla.isOptionSet(EXTRA_PROCESSING1_SEP_OPTION)) {
                 if (!extra_processing1) {
-                    ForesterUtil.fatalError(PRG_NAME,
-                            "extra processing is not enabled, cannot set -"
-                                    + EXTRA_PROCESSING1_SEP_OPTION + " option");
+                    ForesterUtil.fatalError(PRG_NAME, "extra processing is not enabled, cannot set -" + EXTRA_PROCESSING1_SEP_OPTION + " option");
                 }
                 if (cla.isOptionValueSet(EXTRA_PROCESSING1_SEP_OPTION)) {
                     extra_processing1_sep = cla.getOptionValue(EXTRA_PROCESSING1_SEP_OPTION);
@@ -199,15 +188,12 @@ public final class cladinator3 {
                 }
             }
             if ((extra_processing1_sep != null) && extra_processing1_sep.equals(separator)) {
-                ForesterUtil.fatalError(PRG_NAME,
-                        "extra processing separator must not be the same the annotation-separator");
+                ForesterUtil.fatalError(PRG_NAME, "extra processing separator must not be the same the annotation-separator");
             }
             boolean extra_processing1_keep = EXTRA_PROCESSING1_KEEP_EXTRA_DEFAULT;
             if (cla.isOptionSet(EXTRA_PROCESSING1_KEEP_EXTRA_OPTION)) {
                 if (!extra_processing1) {
-                    ForesterUtil.fatalError(PRG_NAME,
-                            "extra processing is not enabled, cannot set -"
-                                    + EXTRA_PROCESSING1_KEEP_EXTRA_OPTION + " option");
+                    ForesterUtil.fatalError(PRG_NAME, "extra processing is not enabled, cannot set -" + EXTRA_PROCESSING1_KEEP_EXTRA_OPTION + " option");
                 }
                 extra_processing1_keep = true;
             }
@@ -215,18 +201,14 @@ public final class cladinator3 {
             boolean special_processing = false;
             if (cla.isOptionSet(SPECIAL_PROCESSING_OPTION)) {
                 if (extra_processing1) {
-                    ForesterUtil
-                            .fatalError(PRG_NAME,
-                                    "extra processing cannot be used together with special processing pattern");
+                    ForesterUtil.fatalError(PRG_NAME, "extra processing cannot be used together with special processing pattern");
                 }
                 if (cla.isOptionValueSet(SPECIAL_PROCESSING_OPTION)) {
                     final String str = cla.getOptionValue(SPECIAL_PROCESSING_OPTION);
                     try {
                         special_pattern = Pattern.compile(str);
                     } catch (final PatternSyntaxException e) {
-                        ForesterUtil
-                                .fatalError(PRG_NAME,
-                                        "error in special processing pattern: " + str + ": " + e.getMessage());
+                        ForesterUtil.fatalError(PRG_NAME, "error in special processing pattern: " + str + ": " + e.getMessage());
                     }
                     special_processing = true;
                 } else {
@@ -243,8 +225,7 @@ public final class cladinator3 {
 
             System.out.println("Input tree                 : " + intreefile);
             if (mapping_file != null) {
-                System.out.println("Mapping file               : " + mapping_file + " (" + t.getNumberOfRows()
-                        + " rows)");
+                System.out.println("Mapping file               : " + mapping_file + " (" + t.getNumberOfRows() + " rows)");
             }
             System.out.println("Annotation-separator       : " + separator);
             if (remove_annotation_sep) {
@@ -301,28 +282,27 @@ public final class cladinator3 {
                     AnalysisMulti.performMapping(pattern, map, phy, true);
                 }
                 if (extra_processing1) {
-                    AnalysisMulti.performExtraProcessing1(pattern,
-                            phy,
-                            extra_processing1_sep,
-                            extra_processing1_keep,
-                            separator,
-                            true);
+                    AnalysisMulti.performExtraProcessing1(pattern, phy, extra_processing1_sep, extra_processing1_keep, separator, true);
                 } else if (special_processing) {
                     AnalysisMulti.performSpecialProcessing1(pattern, phy, separator, special_pattern, true);
                 }
 
                 if (AnalysisMulti.likelyProblematicQuery(phy, pattern, 2)) {
-                    int c = 0;
+                    int placements = 0;
+                    String q = "";
                     try {
-                         c = phy.getNodes(pattern).size();
-                    }
-                    catch ( final Exception e) {
+                        final List<PhylogenyNode> nodes = phy.getNodes(pattern);
+                        if (nodes != null && nodes.size() > 0) {
+                            placements = nodes.size();
+                            q = nodes.get(0).getName().split("_")[0];
+                        }
+                    } catch (final Exception e) {
                         // Eat exception
                     }
                     if (outtable_writer != null) {
-                        nonHomogousQueryError( counter, c, outtable_writer);
+                        nonHomologousQueryError(counter, q, placements, outtable_writer);
                     }
-                    nonHomogousQueryError(counter, c, print_writer);
+                    nonHomologousQueryError(counter, q, placements, print_writer);
                     continue;
                 }
 
@@ -350,28 +330,25 @@ public final class cladinator3 {
         }
     }
 
-    private static void nonHomogousQueryError(final int counter, final int placements, final BufferedWriter w) throws IOException {
+    private static void nonHomologousQueryError(final int counter, final String query, final int placements, final BufferedWriter w) throws IOException {
         w.write(String.valueOf(counter));
         w.write("\t");
-        w.write("");
-        w.write("\t");
-        w.write("Error: Possible non-homologous query sequence");
+        w.write(query);
         w.write("\t");
         w.write("");
         w.write("\t");
         w.write("");
         w.write("\t");
         w.write("");
+        w.write("\t");
+        w.write("Input sequence error: Likely non-homologous query sequence");
         w.write("\t");
         w.write(String.valueOf(placements));
         w.write("\n");
         w.flush();
     }
 
-    private final static void printResult(final ResultMulti res,
-                                          final int counter,
-                                          final Pattern pattern,
-                                          final BufferedWriter w) throws IOException {
+    private final static void printResult(final ResultMulti res, final int counter, final Pattern pattern, final BufferedWriter w) throws IOException {
         if ((res.getAllMultiHitPrefixes() == null) || (res.getAllMultiHitPrefixes().size() < 1)) {
             w.flush();
             ForesterUtil.fatalError(PRG_NAME, "ERROR: No match to query pattern \"" + pattern + "\" in tree #" + counter);
@@ -391,24 +368,10 @@ public final class cladinator3 {
                 if (split_query) {
                     final String[] queries = res.getQueryNamePrefix().split("_");
                     for (final String query : queries) {
-                        printRow(counter,
-                                query,
-                                prefix.getPrefix(),
-                                prefix.getConfidence(),
-                                res.getAllMultiHitPrefixesDown().get(0).getPrefix(),
-                                res.getAllMultiHitPrefixesUp().get(0).getPrefix(),
-                                res.getNumberOfMatches(),
-                                w);
+                        printRow(counter, query, prefix.getPrefix(), prefix.getConfidence(), res.getAllMultiHitPrefixesDown().get(0).getPrefix(), res.getAllMultiHitPrefixesUp().get(0).getPrefix(), res.getNumberOfMatches(), w);
                     }
                 } else {
-                    printRow(counter,
-                            res.getQueryNamePrefix(),
-                            prefix.getPrefix(),
-                            prefix.getConfidence(),
-                            res.getAllMultiHitPrefixesDown().get(0).getPrefix(),
-                            res.getAllMultiHitPrefixesUp().get(0).getPrefix(),
-                            res.getNumberOfMatches(),
-                            w);
+                    printRow(counter, res.getQueryNamePrefix(), prefix.getPrefix(), prefix.getConfidence(), res.getAllMultiHitPrefixesDown().get(0).getPrefix(), res.getAllMultiHitPrefixesUp().get(0).getPrefix(), res.getNumberOfMatches(), w);
                 }
                 done = true;
                 break;
@@ -421,24 +384,10 @@ public final class cladinator3 {
                         if (split_query) {
                             final String[] queries = res.getQueryNamePrefix().split("_");
                             for (final String query : queries) {
-                                printRow(counter,
-                                        query,
-                                        prefix.getPrefix(),
-                                        prefix.getConfidence(),
-                                        res.getAllMultiHitPrefixesDown().get(0).getPrefix(),
-                                        res.getAllMultiHitPrefixesUp().get(0).getPrefix(),
-                                        res.getNumberOfMatches(),
-                                        w);
+                                printRow(counter, query, prefix.getPrefix(), prefix.getConfidence(), res.getAllMultiHitPrefixesDown().get(0).getPrefix(), res.getAllMultiHitPrefixesUp().get(0).getPrefix(), res.getNumberOfMatches(), w);
                             }
                         } else {
-                            printRow(counter,
-                                    res.getQueryNamePrefix(),
-                                    prefix.getPrefix(),
-                                    prefix.getConfidence(),
-                                    res.getAllMultiHitPrefixesDown().get(0).getPrefix(),
-                                    res.getAllMultiHitPrefixesUp().get(0).getPrefix(),
-                                    res.getNumberOfMatches(),
-                                    w);
+                            printRow(counter, res.getQueryNamePrefix(), prefix.getPrefix(), prefix.getConfidence(), res.getAllMultiHitPrefixesDown().get(0).getPrefix(), res.getAllMultiHitPrefixesUp().get(0).getPrefix(), res.getNumberOfMatches(), w);
                         }
                         done = true;
                         break;
@@ -453,24 +402,10 @@ public final class cladinator3 {
                         if (split_query) {
                             final String[] queries = res.getQueryNamePrefix().split("_");
                             for (final String query : queries) {
-                                printRow(counter,
-                                        query,
-                                        prefix.getPrefix(),
-                                        prefix.getConfidence(),
-                                        res.getAllMultiHitPrefixesDown().get(0).getPrefix(),
-                                        res.getAllMultiHitPrefixesUp().get(0).getPrefix(),
-                                        res.getNumberOfMatches(),
-                                        w);
+                                printRow(counter, query, prefix.getPrefix(), prefix.getConfidence(), res.getAllMultiHitPrefixesDown().get(0).getPrefix(), res.getAllMultiHitPrefixesUp().get(0).getPrefix(), res.getNumberOfMatches(), w);
                             }
                         } else {
-                            printRow(counter,
-                                    res.getQueryNamePrefix(),
-                                    prefix.getPrefix(),
-                                    prefix.getConfidence(),
-                                    res.getAllMultiHitPrefixesDown().get(0).getPrefix(),
-                                    res.getAllMultiHitPrefixesUp().get(0).getPrefix(),
-                                    res.getNumberOfMatches(),
-                                    w);
+                            printRow(counter, res.getQueryNamePrefix(), prefix.getPrefix(), prefix.getConfidence(), res.getAllMultiHitPrefixesDown().get(0).getPrefix(), res.getAllMultiHitPrefixesUp().get(0).getPrefix(), res.getNumberOfMatches(), w);
                         }
                         done = true;
                         break;
@@ -485,25 +420,11 @@ public final class cladinator3 {
 
                     final Prefix r = res.getAllMultiHitPrefixes().get(0);
 
-                    printRow(counter,
-                            query,
-                            r.getPrefix(),
-                            r.getConfidence(),
-                            AnalysisMulti.UNKNOWN,
-                            AnalysisMulti.UNKNOWN,
-                            res.getNumberOfMatches(),
-                            w);
+                    printRow(counter, query, r.getPrefix(), r.getConfidence(), AnalysisMulti.UNKNOWN, AnalysisMulti.UNKNOWN, res.getNumberOfMatches(), w);
                 }
             } else {
                 final Prefix r = res.getAllMultiHitPrefixes().get(0);
-                printRow(counter,
-                        res.getQueryNamePrefix(),
-                        r.getPrefix(),
-                        r.getConfidence(),
-                        AnalysisMulti.UNKNOWN,
-                        AnalysisMulti.UNKNOWN,
-                        res.getNumberOfMatches(),
-                        w);
+                printRow(counter, res.getQueryNamePrefix(), r.getPrefix(), r.getConfidence(), AnalysisMulti.UNKNOWN, AnalysisMulti.UNKNOWN, res.getNumberOfMatches(), w);
             }
         }
         w.write("\n");
@@ -515,14 +436,7 @@ public final class cladinator3 {
         w.write("\n");
     }
 
-    private static void printRow(final int counter,
-                                 final String query,
-                                 final String match,
-                                 final double confidence,
-                                 final String prefix_down,
-                                 final String prefix_up,
-                                 final int placements,
-                                 final BufferedWriter w) throws IOException {
+    private static void printRow(final int counter, final String query, final String match, final double confidence, final String prefix_down, final String prefix_up, final int placements, final BufferedWriter w) throws IOException {
         w.write(String.valueOf(counter));
         w.write("\t");
         w.write(query);
@@ -530,7 +444,15 @@ public final class cladinator3 {
         if (!prefix_down.equals(AnalysisMulti.UNKNOWN) && !prefix_up.equals(AnalysisMulti.UNKNOWN)) {
             w.write(match);
         } else {
-            w.write("potentially novel");
+            if (prefix_down.equals(AnalysisMulti.UNKNOWN) && !prefix_up.equals(AnalysisMulti.UNKNOWN)) {
+                w.write(prefix_up + "-like");
+            } else if (!prefix_down.equals("?") && prefix_up.equals(AnalysisMulti.UNKNOWN)) {
+                w.write(prefix_down + "-like");
+            } else if (prefix_down.equals("?") && prefix_up.equals(AnalysisMulti.UNKNOWN)) {
+                w.write("");
+            } else {
+                w.write("");
+            }
         }
         w.write("\t");
         w.write(df.format(confidence));
@@ -564,32 +486,20 @@ public final class cladinator3 {
     }
 
 
-
     private final static void print_help() {
         System.out.println("Usage:");
         System.out.println();
         System.out.println(PRG_NAME + " [options] <input tree(s) file> [output table file]");
         System.out.println();
         System.out.println(" options:");
-        System.out.println("  -" + SEP_OPTION + "=<separator>     : the annotation-separator to be used (default: \""
-                + SEP_DEFAULT + "\")");
-        System.out.println("  -" + MAPPING_FILE_OPTION
-                + "=<mapping table> : to map node names to appropriate annotations (tab-separated, two columns) (default: no mapping)");
-        System.out.println("  -" + EXTRA_PROCESSING_OPTION1
-                + "                 : to enable extra processing of annotations (e.g. \"Q16611|A.1.1\" becomes \"A.1.1\")");
-        System.out.println("  -" + EXTRA_PROCESSING1_SEP_OPTION
-                + "=<separator>    : the separator for extra annotations (default: \"" + EXTRA_PROCESSING1_SEP_DEFAULT
-                + "\")");
-        System.out.println("  -" + EXTRA_PROCESSING1_KEEP_EXTRA_OPTION
-                + "                : to keep extra annotations (e.g. \"Q16611|A.1.1\" becomes \"A.1.1.Q16611\")");
-        System.out.println("  -" + SPECIAL_PROCESSING_OPTION
-                + "=<pattern>       : special processing with pattern (e.g. \"(\\d+)([a-z]+)_.+\" for changing \"6q_EF42\" to \"6.q\")");
-        System.out.println("  -" + REMOVE_ANNOT_SEP_OPTION
-                + "                : to remove the annotation-separator in the output (e.g. the \"" + SEP_DEFAULT
-                + "\")");
-        System.out.println("  --" + QUERY_PATTERN_OPTION
-                + "=<pattern>      : expert option: the regular expression pattern for the query (default: \""
-                + QUERY_PATTERN_DEFAULT + "\" for pplacer output)");
+        System.out.println("  -" + SEP_OPTION + "=<separator>     : the annotation-separator to be used (default: \"" + SEP_DEFAULT + "\")");
+        System.out.println("  -" + MAPPING_FILE_OPTION + "=<mapping table> : to map node names to appropriate annotations (tab-separated, two columns) (default: no mapping)");
+        System.out.println("  -" + EXTRA_PROCESSING_OPTION1 + "                 : to enable extra processing of annotations (e.g. \"Q16611|A.1.1\" becomes \"A.1.1\")");
+        System.out.println("  -" + EXTRA_PROCESSING1_SEP_OPTION + "=<separator>    : the separator for extra annotations (default: \"" + EXTRA_PROCESSING1_SEP_DEFAULT + "\")");
+        System.out.println("  -" + EXTRA_PROCESSING1_KEEP_EXTRA_OPTION + "                : to keep extra annotations (e.g. \"Q16611|A.1.1\" becomes \"A.1.1.Q16611\")");
+        System.out.println("  -" + SPECIAL_PROCESSING_OPTION + "=<pattern>       : special processing with pattern (e.g. \"(\\d+)([a-z]+)_.+\" for changing \"6q_EF42\" to \"6.q\")");
+        System.out.println("  -" + REMOVE_ANNOT_SEP_OPTION + "                : to remove the annotation-separator in the output (e.g. the \"" + SEP_DEFAULT + "\")");
+        System.out.println("  --" + QUERY_PATTERN_OPTION + "=<pattern>      : expert option: the regular expression pattern for the query (default: \"" + QUERY_PATTERN_DEFAULT + "\" for pplacer output)");
         System.out.println();
         System.out.println("Examples:");
         System.out.println();

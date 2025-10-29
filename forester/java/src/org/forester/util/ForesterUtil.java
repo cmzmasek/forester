@@ -1224,7 +1224,9 @@ public final class ForesterUtil {
         System.out.println();
         System.out.println();
         System.out.println( "WWW     : " + www );
-        System.out.println( "Contact : " + email );
+        if ( !ForesterUtil.isEmpty(email ) ) {
+            System.out.println("Contact : " + email);
+        }
         if ( !ForesterUtil.isEmpty( based_on ) ) {
             System.out.println( "Based on: " + based_on );
         }
