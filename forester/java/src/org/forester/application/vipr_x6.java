@@ -369,7 +369,9 @@ public class vipr_x6 {
                 }
 
                 if (!ForesterUtil.isEmpty(year)) {
-                    checkYear(year);
+                    if (!checkYear(year)) {
+                        year = "";
+                    }
                 }
                 if (VERBOSE) {
                     System.out.println("Year    : " + year);
@@ -694,12 +696,9 @@ public class vipr_x6 {
         return new_name;
     }
 
-    private static void checkYear(final String year) {
+    private static boolean checkYear(final String year) {
         int year_int = Integer.parseInt(year);
-        if (year_int > 2025 || year_int < 1800) {
-            System.out.println("Error: Year \"" + year + "\" is out of range");
-            System.exit(-1);
-        }
+        return (year_int <= 2025 && year_int >= 1800);
     }
 
     private static String cap(final String s) {

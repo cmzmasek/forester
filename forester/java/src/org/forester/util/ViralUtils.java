@@ -468,7 +468,7 @@ public final class ViralUtils {
             region = "Southern Europe";
         } else if (c.equals("poland")) {
             region = "Central Europe";
-        } else if (c.equals("russia") || c.equals("belarus")) {
+        } else if (c.equals("ukraine") || c.equals("russia") || c.equals("belarus")) {
             region = "Eastern Europe";
         } else if (c.equals("japan") || c.equals("taiwan") || c.equals("hong kong") || c.equals("south korea")
                 || c.equals("tibet") || c.equals("china")) {
