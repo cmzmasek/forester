@@ -1866,19 +1866,19 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     private static void cycleNodeDataReturn(final Options op, final Configuration conf) {
         switch (op.getExtDescNodeDataToReturn()) {
+            // case UNKNOWN:
+            //    op.setExtDescNodeDataToReturn(NodeDataField.DOMAINS_ALL);
+            //    break;
+            // case DOMAINS_ALL:
+            //     op.setExtDescNodeDataToReturn(NodeDataField.DOMAINS_COLLAPSED_PER_PROTEIN);
+            //     break;
+            // case DOMAINS_COLLAPSED_PER_PROTEIN:
+            //     op.setExtDescNodeDataToReturn(NodeDataField.SEQ_ANNOTATIONS);
+            //     break;
+            // case SEQ_ANNOTATIONS:
+            //     op.setExtDescNodeDataToReturn(NodeDataField.GO_TERM_IDS);
+            //     break;
             case UNKNOWN:
-                op.setExtDescNodeDataToReturn(NodeDataField.DOMAINS_ALL);
-                break;
-            case DOMAINS_ALL:
-                op.setExtDescNodeDataToReturn(NodeDataField.DOMAINS_COLLAPSED_PER_PROTEIN);
-                break;
-            case DOMAINS_COLLAPSED_PER_PROTEIN:
-                op.setExtDescNodeDataToReturn(NodeDataField.SEQ_ANNOTATIONS);
-                break;
-            case SEQ_ANNOTATIONS:
-                op.setExtDescNodeDataToReturn(NodeDataField.GO_TERM_IDS);
-                break;
-            case GO_TERM_IDS:
                 op.setExtDescNodeDataToReturn(NodeDataField.SEQUENCE_MOL_SEQ_FASTA);
                 break;
             case SEQUENCE_MOL_SEQ_FASTA:

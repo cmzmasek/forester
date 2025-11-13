@@ -100,6 +100,8 @@ class NodePanel extends JPanel implements TreeSelectionListener {
     static final String       PROP                     = "Properties";
     static final String       REFERENCE                = "Reference";
     static final String       SEQ_ACCESSION            = "Accession";
+
+    static final String       SEQ_PRIME_ACCESSION = "Primary Accession";
     static final String       SEQ_LOCATION             = "Location";
     static final String       SEQ_MOL_SEQ              = "Mol seq";
     static final String       SEQ_NAME                 = "Name";
@@ -396,6 +398,9 @@ class NodePanel extends JPanel implements TreeSelectionListener {
         addSubelement( category, SEQ_GENE_NAME, seq.getGeneName() );
         if ( seq.getAccession() != null ) {
             addSubelement( category, SEQ_ACCESSION, seq.getAccession().asText().toString() );
+        }
+        if ( seq.getPrimaryAccession() != null ) {
+            addSubelement( category, SEQ_PRIME_ACCESSION, seq.getPrimaryAccession().asText().toString() );
         }
         addSubelement( category, SEQ_LOCATION, seq.getLocation() );
         addSubelement( category, SEQ_TYPE, seq.getType() );

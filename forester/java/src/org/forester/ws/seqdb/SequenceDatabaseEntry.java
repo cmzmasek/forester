@@ -37,6 +37,8 @@ public interface SequenceDatabaseEntry {
 
     public String getAccession();
 
+    public String getPrimaryAccession();
+
     public String getGeneName();
 
     public SortedSet<GoTerm> getGoTerms();
@@ -77,4 +79,5 @@ public interface SequenceDatabaseEntry {
 
     public String getViralIsolationSource();
 
+    public String getViralSegment();
 }

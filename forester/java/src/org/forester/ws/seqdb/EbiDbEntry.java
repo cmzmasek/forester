@@ -63,15 +63,18 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
     private String _gene_name;
     private String _map;
     private String _os;
-    private String _pa;
-    private String _provider;
+    private String _acc;
+
+    private String _primary_acc;
     private String _symbol;
     private String _tax_id;
 
     private String _strain;
 
-    private String _viral_host;
 
+    private String _provider;
+    private String _viral_host;
+    private String _viral_segment;
     private String _viral_country;
     private String _viral_isolate;
     private String _viral_collection_date;
@@ -90,7 +93,11 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
 
     @Override
     public String getAccession() {
-        return _pa;
+        return _acc;
+    }
+
+    public String getPrimaryAccession() {
+        return _primary_acc;
     }
 
     @Override
@@ -182,6 +189,10 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
         return _viral_isolation_source;
     }
 
+    public String getViralSegment() {
+        return _viral_segment;
+    }
+
     @Override
     public boolean isEmpty() {
         return (ForesterUtil.isEmpty(getAccession()) && ForesterUtil.isEmpty(getSequenceName()) && ForesterUtil.isEmpty(getTaxonomyScientificName()) && ForesterUtil.isEmpty(getTaxonomyIdentifier()) && ForesterUtil.isEmpty(getSequenceSymbol()));
@@ -211,9 +222,15 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
         _cross_references.add(accession);
     }
 
-    private void setAccession(final String pa) {
-        if (_pa == null) {
-            _pa = pa;
+    private void setAccession(final String acc) {
+        if (_acc == null) {
+            _acc = acc;
+        }
+    }
+
+    private void setPrimaryAccession(final String pa) {
+        if (_primary_acc == null) {
+            _primary_acc = pa;
         }
     }
 
@@ -276,12 +293,16 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
         boolean in_mrna = false;
         boolean in_protein = false;
         for (final String line : lines) {
+            //System.out.println(line);
             if (line.startsWith("ACCESSION ")) {
                 e.setAccession(SequenceDbWsTools.extractFrom(line, "ACCESSION"));
                 in_definition = false;
             } else if (line.startsWith("ID ")) {
                 e.setAccession(SequenceDbWsTools.extractFromTo(line, "ID", ";"));
                 in_definition = false;
+            } else if (line.startsWith("PA ")) {
+               e.setPrimaryAccession(SequenceDbWsTools.extractFrom(line, "PA"));
+               in_definition = false;
             } else if (line.startsWith("DEFINITION ") || (line.startsWith("DE "))) {
                 boolean definiton = false;
                 if (line.startsWith("DEFINITION ")) {
@@ -330,7 +351,7 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
                         if (s.endsWith(".")) {
                             s = s.substring(0, s.length() - 1);
                         }
-                        if (!ForesterUtil.isEmpty(s) && !s.equalsIgnoreCase("Orthornavirae")) {
+                        if (!ForesterUtil.isEmpty(s) /*&& !s.equalsIgnoreCase("Orthornavirae")*/) { //TODO why?
                             e.addToTaxonomicLineage(s);
                         }
                     }
@@ -415,11 +436,14 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
                 if (line.indexOf("isolate=\"") > 0) {
                     e.setViralIsolate(SequenceDbWsTools.extractFromRemoveLast(line, "isolate=\""));
                 }
+                if (line.indexOf("segment=\"") > 0) {
+                    e.setViralSegment(SequenceDbWsTools.extractFromRemoveLast(line, "segment=\""));
+                }
                 if (line.indexOf("country=\"") > 0) {
                     e.setViralCountry(SequenceDbWsTools.extractFromRemoveLast(line, "country=\""));
                 }
                 if (line.indexOf("isolation_source=\"") > 0) {
-                    e.settViralIsolationSource(SequenceDbWsTools.extractFromRemoveLast(line, "isolation_source=\""));
+                    e.setViralIsolationSource(SequenceDbWsTools.extractFromRemoveLast(line, "isolation_source=\""));
                 }
                 if (line.indexOf("collection_date=\"") > 0) {
                     e.setCollectionDate(SequenceDbWsTools.extractFromRemoveLast(line, "collection_date=\""));
@@ -497,6 +521,10 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
         _viral_country = viral_country;
     }
 
+    private void setViralSegment(final String viral_segment) {
+        _viral_segment = viral_segment;
+    }
+
     private void setViralIsolate(final String viral_isolate) {
         _viral_isolate = viral_isolate;
     }
@@ -505,7 +533,7 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
         _viral_collection_date = viral_collection_date;
     }
 
-    private void settViralIsolationSource(final String viral_isolation_source) {
+    private void setViralIsolationSource(final String viral_isolation_source) {
         _viral_isolation_source = viral_isolation_source;
     }
 

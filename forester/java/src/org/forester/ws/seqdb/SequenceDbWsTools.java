@@ -308,6 +308,11 @@ public final class SequenceDbWsTools {
             if (!ForesterUtil.isEmpty(db_entry.getAccession())) {
                 seq.setAccession(new Accession(db_entry.getAccession(), acc.getSource()));
             }
+
+            if (!ForesterUtil.isEmpty(db_entry.getPrimaryAccession())) {
+                seq.setPrimaryAccession(new Accession(db_entry.getAccession(), acc.getSource()));
+            }
+
             if (!ForesterUtil.isEmpty(db_entry.getSequenceName())) {
                 seq.setName(db_entry.getSequenceName());
             }
@@ -402,6 +407,19 @@ public final class SequenceDbWsTools {
                 }
                 custom_data.addProperty(new Property("source:isolate", db_entry.getViralIsolate(), "", "xsd:string", Property.AppliesTo.NODE));
             }
+
+            if (!ForesterUtil.isEmpty(db_entry.getViralSegment())) {
+                PropertiesList custom_data;
+                if (node.getNodeData().isHasProperties()) {
+                    custom_data = node.getNodeData().getProperties();
+                } else {
+                    custom_data = new PropertiesList();
+                    node.getNodeData().setProperties(custom_data);
+                }
+                custom_data.addProperty(new Property("genome:viral_segment", db_entry.getViralIsolate(), "", "xsd:string", Property.AppliesTo.NODE));
+            }
+
+
             if (!ForesterUtil.isEmpty(db_entry.getCollectionDate())) {
                 PropertiesList custom_data;
                 if (node.getNodeData().isHasProperties()) {

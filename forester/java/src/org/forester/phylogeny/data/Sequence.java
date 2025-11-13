@@ -44,6 +44,8 @@ import org.forester.util.ForesterUtil;
 public class Sequence implements PhylogenyData, MultipleUris, Comparable<Sequence> {
 
     private Accession              _accession;
+
+    private Accession              _primary_accession;
     private SortedSet<Annotation>  _annotations;
     private DomainArchitecture     _da;
     private String                 _gene_name;
@@ -181,6 +183,14 @@ public class Sequence implements PhylogenyData, MultipleUris, Comparable<Sequenc
         else {
             seq.setAccession( null );
         }
+
+        if ( getPrimaryAccession() != null ) {
+            seq.setPrimaryAccession( ( Accession ) getPrimaryAccession().copy() );
+        }
+        else {
+            seq.setPrimaryAccession( null );
+        }
+
         try {
             seq.setType( getType() );
         }
@@ -231,6 +241,10 @@ public class Sequence implements PhylogenyData, MultipleUris, Comparable<Sequenc
 
     public Accession getAccession() {
         return _accession;
+    }
+
+    public Accession getPrimaryAccession() {
+        return _primary_accession;
     }
 
     public Annotation getAnnotation( final int i ) {
@@ -516,5 +530,8 @@ public class Sequence implements PhylogenyData, MultipleUris, Comparable<Sequenc
 
     private void setSequenceRelations( final List<SequenceRelation> seq_relations ) {
         _seq_relations = seq_relations;
+    }
+
+    public void setPrimaryAccession(Accession accession) {
     }
 }

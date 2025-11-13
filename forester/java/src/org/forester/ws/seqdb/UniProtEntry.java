@@ -56,6 +56,8 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
     public final static Pattern HGNC_PATTERN = Pattern.compile("HGNC;\\s+HGNC:(\\d+);");
     public final static Pattern NCBI_TAXID_PATTERN = Pattern.compile("NCBI_TaxID=(\\d+)");
     private String _ac;
+
+    private String _primary_acc;
     private SortedSet<Accession> _cross_references;
     private String _gene_name;
     private SortedSet<GoTerm> _go_terms;
@@ -69,6 +71,7 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
 
     private String _viral_host;
 
+
     private UniProtEntry() {
     }
 
@@ -80,6 +83,10 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
     @Override
     public String getAccession() {
         return _ac;
+    }
+
+    public String getPrimaryAccession() {
+        return _primary_acc;
     }
 
     @Override
@@ -132,6 +139,10 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
 
     @Override
     public String getViralCountry() {
+        return null;
+    }
+
+    public String getViralSegment() {
         return null;
     }
 
@@ -256,6 +267,7 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
         final StringBuffer sq_buffer = new StringBuffer();
         boolean is_aa = false;
         for (final String line : lines) {
+            System.out.println(line);
             if (line.startsWith("AC")) {
                 e.setAc(SequenceDbWsTools.extractFromTo(line, "AC", ";"));
             } else if (line.startsWith("DE") && ForesterUtil.isEmpty(e.getSequenceName())) {
