@@ -41,9 +41,10 @@
 # 4. phylip fitch ME
 # 5. Raxml
 # 6. IQTree
-# 7. phylip proml
-# 8. phylip protpars
-# 9. all
+# 7. FastTree
+# 8. phylip proml
+# 9. phylip protpars
+# 10. all
 #==========================
 
 use strict;
@@ -52,8 +53,8 @@ use FindBin;
 use lib $FindBin::Bin;
 use forester;
 
-my $VERSION                = "1.2.2";
-my $LAST_MODIFIED          = "2025-02-26";
+my $VERSION                = "1.3.0";
+my $LAST_MODIFIED          = "2025-12-10";
 
 
 my $TEMP_DIR_DEFAULT       = "/tmp/phylo_pl_"; # Where all the infiles, outfiles, etc will be created.
@@ -85,6 +86,7 @@ my $use_phylip_fitch_fm    = 0;   # 0: no; 1: yes
 my $use_phylip_fitch_me    = 0;   # 0: no; 1: yes
 my $use_raxml              = 0;   # 0: no; 1: yes
 my $use_iqtree             = 0;   # 0: no; 1: yes
+my $use_fasttree           = 0;   # 0: no; 1: yes
 my $use_proml              = 0;   # 0: no; 1: yes
 my $use_protpars           = 0;   # 0: no; 1: yes
 my $use_global_rearr       = 0;   # 0: no; 1: yes
@@ -174,6 +176,9 @@ if ( $ARGV[ 0 ] =~ /^-.+/ ) {
     if ( $options =~ /i/ ) {
         $use_iqtree = 1;
     }
+    if ( $options =~ /a/ ) {
+        $use_fasttree = 1;
+    }
     if ( $options =~ /o/ ) {
         $use_proml = 1;
     }
@@ -253,6 +258,7 @@ if ( $use_fastme    != 1 &&
      $use_phylip_fitch_me != 1 &&
      $use_raxml != 1 &&
      $use_iqtree != 1 &&
+     $use_fasttree != 1 &&
      $use_proml != 1 &&         
      $use_protpars != 1 ) {
     
@@ -261,6 +267,7 @@ if ( $use_fastme    != 1 &&
      $use_phylip_fitch_fm = 1;
      $use_phylip_fitch_me = 1;
      $use_raxml = 1;
+     $use_fasttree = 1;
      $use_iqtree = 1;
      $use_proml = 1;         
      $use_protpars = 1; 
@@ -316,6 +323,7 @@ my $phylip_nj_outtree = $outfile."_pnj.xml";
 my $phylip_fm_outtree = $outfile."_pfm.xml";
 my $phylip_me_outtree = $outfile."_pme.xml";
 my $raxml_outtree     = $outfile."_raxml.xml";
+my $fasttree_outtree  = $outfile."_fasttree.xml";
 my $iqtree_outtree    = $outfile."_iqtree.xml";
 my $iqtree_iqtree_file= $outfile."_iqtree.txt";
 my $proml_outtree     = $outfile."_proml.xml";
@@ -329,6 +337,7 @@ my $multitreefile_phylip_me = $outfile."_pme".$MULTIPLE_TREES_FILE_SUFFIX;
 my $multitreefile_raxml     = $outfile."_raxml".$MULTIPLE_TREES_FILE_SUFFIX;
 my $multitreefile_proml     = $outfile."_proml".$MULTIPLE_TREES_FILE_SUFFIX;
 my $multitreefile_protpars  = $outfile."_ppp".$MULTIPLE_TREES_FILE_SUFFIX;
+my $multitreefile_fasttree  = $outfile."_fasttree".$MULTIPLE_TREES_FILE_SUFFIX;
 
 if ( $use_fastme == 1 ) {
     &dieIfFileExists( $fastme_outtree );
@@ -363,6 +372,9 @@ if( $use_raxml == 1 ) {
 if( $use_iqtree == 1 ) {
     &dieIfFileExists( $iqtree_outtree );
 }
+if( $use_fasttree == 1 ) {
+    &dieIfFileExists( $fasttree_outtree );
+}
 if( $use_proml == 1 ) {
     &dieIfFileExists( $proml_outtree );
     if ( $keep_multiple_trees == 1 && $bootstraps > 1 ) {
@@ -390,60 +402,60 @@ if ( $infile ne "" ) {
 # Prints out the options:
 # -----------------------
 
-$log = "\n$0 logfile:\n";
-$log = $log."Version: $VERSION\n\n";
-
-
+$log = "\n$0 logfile:\n\n";
+$log = $log."Version                              : $VERSION\n";
+$log = $log."Last modified                        : $LAST_MODIFIED\n";
 if ( $infile ne ""  ) {
-    $log = $log."Input                               : $infile\n";
+    $log = $log."Input                                : $infile\n";
 }
 
 if ( $keep_multiple_trees == 1 && $bootstraps >= 2 ) {
-    $log = $log."Multiple distance matrices          : $multipwdfile\n";
+    $log = $log."Multiple distance matrices           : $multipwdfile\n";
 }
 
-
-$log = $log."Bootstraps                          : $bootstraps\n";
+$log = $log."Bootstraps                           : $bootstraps\n";
 
 if ( $use_pwd_based_methods == 1 ) {    
-    $log = $log."Prgrm to calculate pairwise dist.   : TREE-PUZZLE (version: $PUZZLE_VERSION)\n";
+    $log = $log."Prgrm to calculate pairwise dist.    : TREE-PUZZLE (version: $PUZZLE_VERSION)\n";
 }
-
 
 if ( $use_fastme == 1 ) {
-    $log = $log."Program to calculate tree           : FastME (version: $FASTME_VERSION)\n";   
+    $log = $log."Program to calculate tree            : FastME (version: $FASTME_VERSION)\n";
 }
 if ( $use_phylip_nj == 1 ) {
-    $log = $log."Program to calculate tree           : PHYLIP NEIGHBOR NJ (version: $PHYLIP_VERSION)\n";
+    $log = $log."Program to calculate tree            : PHYLIP NEIGHBOR NJ (version: $PHYLIP_VERSION)\n";
 }
 if ( $use_phylip_fitch_fm == 1 ) {
-    $log = $log."Program to calculate tree           : PHYLIP FITCH Fitch-Margoliash (version: $PHYLIP_VERSION)\n";
+    $log = $log."Program to calculate tree            : PHYLIP FITCH Fitch-Margoliash (version: $PHYLIP_VERSION)\n";
 }
 if ( $use_phylip_fitch_me == 1 ) {
-    $log = $log."Program to calculate tree           : PHYLIP FITCH Minimal Evolution (version: $PHYLIP_VERSION)\n";
+    $log = $log."Program to calculate tree            : PHYLIP FITCH Minimal Evolution (version: $PHYLIP_VERSION)\n";
 }
 if ( $use_raxml == 1 ) {
-    $log = $log."Program to calculate tree           : RAxML-NG (version: $RAXMLNG_VERSION)\n";
+    $log = $log."Program to calculate tree            : RAxML-NG (version: $RAXMLNG_VERSION)\n";
 }
 if ( $use_iqtree == 1 ) {
-    $log = $log."Program to calculate tree           : IQTree (version: $IQTREE_VERSION)\n";
+    $log = $log."Program to calculate tree            : IQTree (version: $IQTREE_VERSION)\n";
+}
+if ( $use_fasttree == 1 ) {
+    $log = $log."Program to calculate tree            : FastTree (version: $FASTTREE_VERSION)\n";
 }
 if ( $use_proml == 1 ) {
-    $log = $log."Program to calculate tree           : PHYLIP PROML (uses PAM unless JTT selected) (version: $PHYLIP_VERSION)\n";
+    $log = $log."Program to calculate tree            : PHYLIP PROML (uses PAM unless JTT selected) (version: $PHYLIP_VERSION)\n";
 }
 if ( $use_protpars == 1 ) {
-    $log = $log."Program to calculate tree           : PHYLIP PROTPARS (with global rearrangements) (version: $PHYLIP_VERSION)\n";
+    $log = $log."Program to calculate tree            : PHYLIP PROTPARS (with global rearrangements) (version: $PHYLIP_VERSION)\n";
 }
 if ( $use_phylip_fitch_fm == 1 || $use_phylip_fitch_me == 1 || $use_protpars == 1 || $use_proml ) {
-    $log = $log."Number of jumbles (input order rand): $jumbles\n"; 
+    $log = $log."Number of jumbles (input order rand) : $jumbles\n";
     
 }
 if ( $use_phylip_fitch_fm == 1 || $use_phylip_fitch_me == 1 || $use_proml ) {
     if ( $use_global_rearr == 1 ) {
-        $log = $log."Global rearrangements               : true\n";
+        $log = $log."Global rearrangements                : true\n";
     }
     else {
-        $log = $log."Global rearrangements               : false\n";
+        $log = $log."Global rearrangements                : false\n";
         
     }
 }
@@ -452,39 +464,39 @@ if ( $bootstraps > 0 ) {
     $log = $log."Prgrm to calculate ML branch lenghts: TREE-PUZZLE (version: $PUZZLE_VERSION)\n";
 }
 
-$log = $log."Model                               : ";
+$log = $log."Model                                : ";
 if ( $matrix == 0 ) { 
-    $log = $log."JTT (Jones et al. 1992)\n";
+    $log = $log."JTT (Jones et al. 1992); WAG in FastTree\n";
 }
 elsif ( $matrix == 1 ) {
-    $log = $log."PAM (Dayhoff et al. 1978)\n";
+    $log = $log."PAM (Dayhoff et al. 1978); WAG in FastTree\n";
 }
 elsif ( $matrix == 2 ) {
-    $log = $log."BLOSUM 62 (Henikoff-Henikoff 92)\n";
+    $log = $log."BLOSUM 62 (Henikoff-Henikoff 92); WAG in FastTree\n";
 }
 elsif ( $matrix == 3 ) {
-    $log = $log."mtREV24 (Adachi-Hasegawa 1996)\n";
+    $log = $log."mtREV24 (Adachi-Hasegawa 1996); WAG in FastTree\n";
 }
 elsif ( $matrix == 5 ) {
-    $log = $log."VT (Mueller-Vingron 2000)\n";
+    $log = $log."VT (Mueller-Vingron 2000); WAG in FastTree\n";
 }
 elsif ( $matrix == 6 ) {
     $log = $log."WAG (Whelan-Goldman 2000)\n";
 }
 elsif ( $matrix == 9 ) {
-    $log = $log."HKY (Hasegawa et al. 1985) in TREE-PUZZLE, GTR in RAxML\n";
+    $log = $log."HKY (Hasegawa et al. 1985) in TREE-PUZZLE; GTR in RAxML and FastTree\n";
 }
 elsif ( $matrix == 10 ) {
-    $log = $log."TN (Tamura-Nei 1993) in TREE-PUZZLE, GTR in RAxML\n";
+    $log = $log."TN (Tamura-Nei 1993) in TREE-PUZZLE; GTR in RAxML and FastTree\n";
 }
 elsif ( $matrix == 11 ) {
-    $log = $log."GTR (e.g. Lanave et al. 1980)in TREE-PUZZLE and RAxM\n";
+    $log = $log."GTR (e.g. Lanave et al. 1980)\n";
 }
 elsif ( $matrix == 12 ) {
-    $log = $log."SH (Schoeniger-von Haeseler 1994) in TREE-PUZZLE, GTR in RAxML\n";
+    $log = $log."SH (Schoeniger-von Haeseler 1994) in TREE-PUZZLE; GTR in RAxML and FastTree\n";
 }
 elsif ( $matrix == 13 ) {
-    $log = $log."LG model (Le and Gascuel, 2008) in RAxML; WAG in TREE-PUZZLE\n";
+    $log = $log."LG model (Le and Gascuel, 2008) in RAxML and FastTree; WAG in TREE-PUZZLE\n";
 }
 else {
     &dieWithUnexpectedError( "Unknown model: matrix=$matrix" );
@@ -507,10 +519,9 @@ if ( $use_raxml == 1 ) {
 $log = $log."Model of rate heterogeneity (PUZZLE) for branch lengths: ";
 $log = $log."Mixed (1 invariable + 4 Gamma rates)\n";
 
-$log = $log."Seed for random number generators   : $seed\n";
+$log = $log."Seed for random number generators    : $seed\n";
 
-$log = $log."Start time/date                     : ".`date`;
-
+$log = $log."Start time/date                      : ".`date`;
 
 
 
@@ -559,7 +570,8 @@ my $SEQBOOT_OUTFILE = "seqboot_outfile";
 
 if (  $bootstraps > 1 && ( $use_pwd_based_methods == 1
                                     || $use_proml == 1
-                                    || $use_protpars == 1 ) ) {
+                                    || $use_protpars == 1
+                                    || $use_fasttree == 1) ) {
     &executeSeqboot( $seed, $bootstraps );
     &mv( "outfile", $SEQBOOT_OUTFILE );
     &rm( "infile" );
@@ -594,6 +606,7 @@ my $OUTTREE_PROTPARS = "outtree_protpars";
 
 my $CONSENSUS_RAXML    = "consensus_raxml";
 my $CONSENSUS_IQTREE   = "consensus_iqtree";
+my $CONSENSUS_FASTTREE = "consensus_fasttree";
 my $CONSENSUS_PROML    = "consensus_proml";
 my $CONSENSUS_PROTPARS = "consensus_protpars";
 
@@ -759,6 +772,70 @@ if ( $use_iqtree == 1 ) {
     $all_count++;
 } #if ( $use_iqtree == 1 )
 
+
+if ( $use_fasttree == 1 ) {
+    my $model = "---";
+    if ( $matrix == 0 ) {
+        $model = "wag";
+    }
+    elsif ( $matrix == 1 ) {
+        $model = "wag";
+    }
+    elsif ( $matrix == 2 ) {
+        $model = "wag";
+    }
+    elsif ( $matrix == 3 ) {
+        $model = "wag";
+    }
+    elsif ( $matrix == 5 ) {
+       $model = "wag";
+    }
+    elsif ( $matrix == 6 ) {
+        $model = "wag";
+    }
+    elsif ( $matrix == 7 ) {
+        $model = "wag";
+    }
+    elsif ( $matrix == 13 ) {
+        $model = "lg";
+    }
+    elsif ( $matrix == 9 ) {
+        $model = "gtr";
+    }
+    elsif ( $matrix == 10 ) {
+        $model = "gtr";
+    }
+    elsif ( $matrix == 11 ) {
+        $model = "gtr";
+    }
+    elsif ( $matrix == 12 ) {
+        $model = "gtr";
+    }
+    else {
+        &dieWithUnexpectedError( "Unknown model: matrix=$matrix" );
+    }
+
+    my $input = "";
+    if ( $bootstraps > 1 ) {
+        $input = $SEQBOOT_OUTFILE;
+    }
+    else {
+        $input = "align";
+    }
+
+    print( "\n========== FastTree begin =========\n\n" );
+    print( "\nModel for FastTree: ".$model."\n");
+
+    &executeFastTree( $input, $model, $bootstraps );
+
+    print( "\nModel for FastTree: ".$model."\n");
+    print( "\n========== FastTree end =========\n\n" );
+
+    $all_count++;
+} #if ( $use_fasttree == 1 )
+
+
+
 if ( $use_proml == 1 ) {
     my $input = "";
     if ( $bootstraps > 1 ) {
@@ -816,7 +893,6 @@ my $OUTTREE_FASTME    = "outtree_fastme";
 my $OUTTREE_PHYLIP_NJ = "outtree_phylip_nj";
 my $OUTTREE_PHYLIP_FM = "outtree_phylip_fm";
 my $OUTTREE_PHYLIP_ME = "outtree_phylip_me";
-
 
 my $CONSENSUS_FASTME    = "consensus_fastme";
 my $CONSENSUS_PHYLIP_NJ = "consensus_phylip_nj";
@@ -876,14 +952,13 @@ if (  $use_phylip_fitch_me ) {
     } 
 }
 
-
 if ( $bootstraps > 1 && $use_raxml == 1 &&
   $use_fastme != 1 && $use_phylip_nj != 1 && $use_phylip_fitch_fm != 1 && $use_phylip_fitch_me != 1
-  &&  $use_proml != 1 &&  $use_protpars != 1 && $use_iqtree != 1 ) {
+  &&  $use_proml != 1 &&  $use_protpars != 1 && $use_iqtree != 1 && $use_fasttree != 1 ) {
     &to_phyloxml( $CONSENSUS_RAXML, $raxml_outtree, 1, 1 );
 }
 elsif ( ( $bootstraps > 1 ) && ( $use_fastme == 1 || $use_phylip_nj == 1 || $use_phylip_fitch_fm == 1 || $use_phylip_fitch_me == 1
-  ||  $use_proml == 1 ||  $use_protpars == 1 || $use_iqtree == 1 )  ) {
+  ||  $use_proml == 1 ||  $use_protpars == 1 || $use_iqtree == 1 || $use_fasttree == 1 ) ) {
     # Consense:
     if ( $use_fastme == 1 ) {
         &consense( $OUTTREE_FASTME, $CONSENSUS_FASTME );
@@ -897,19 +972,22 @@ elsif ( ( $bootstraps > 1 ) && ( $use_fastme == 1 || $use_phylip_nj == 1 || $use
     if ( $use_phylip_fitch_me == 1 ) {
         &consense( $OUTTREE_PHYLIP_ME, $CONSENSUS_PHYLIP_ME );
     }
+    if ( $use_fasttree == 1 ) {
+        &consense( $FASTTREE_OUT, $CONSENSUS_FASTTREE );
+    }
     if ( $use_proml == 1 ) {
         &consense( $OUTTREE_PROML, $CONSENSUS_PROML );
     } 
     if ( $use_protpars == 1 ) {
         &consense( $OUTTREE_PROTPARS, $CONSENSUS_PROTPARS );
-    } 
+    }
     if ( $all_count > 1 ) {
         &consense( $OUTTREES_ALL, $CONSENSUS_ALL );
     }
     else {
         &rm( $OUTTREES_ALL );
     }
-   
+
     my $INTREE_FOR_PUZZLE = "intree";
     &rm( $INTREE_FOR_PUZZLE );
     system( "touch", $INTREE_FOR_PUZZLE )
@@ -937,6 +1015,9 @@ elsif ( ( $bootstraps > 1 ) && ( $use_fastme == 1 || $use_phylip_nj == 1 || $use
     if ( $use_iqtree == 1 ) {
         &append( $CONSENSUS_IQTREE, $INTREE_FOR_PUZZLE );
     }
+    if ( $use_fasttree == 1 ) {
+        &append( $CONSENSUS_FASTTREE, $INTREE_FOR_PUZZLE );
+    }
     if ( $use_proml == 1 ) {
         &append( $CONSENSUS_PROML, $INTREE_FOR_PUZZLE );
     }
@@ -953,7 +1034,7 @@ elsif ( ( $bootstraps > 1 ) && ( $use_fastme == 1 || $use_phylip_nj == 1 || $use
     # The tree is read from intree by default.
     &rm( "infile" );
     &mv( "align", "infile" ); # align = original alignment in phylip interleaved.
-    
+
     &executePuzzleToCalculateBranchLenghts( $matrix );
 
     my $OUTTREE_PUZZLE = "outtree_puzzle";
@@ -993,6 +1074,10 @@ elsif ( ( $bootstraps > 1 ) && ( $use_fastme == 1 || $use_phylip_nj == 1 || $use
         &to_phyloxml( $CONSENSUS_IQTREE, $iqtree_outtree, 1, 1 );
         $counter++;
     }
+    if ( $use_fasttree == 1 ) {
+        &executeSupportTransfer( $OUTTREE_PUZZLE, $CONSENSUS_FASTTREE, $fasttree_outtree, $counter++ );
+        &rm( $CONSENSUS_FASTTREE );
+    }
     if ( $use_proml == 1 ) {
         &executeSupportTransfer( $OUTTREE_PUZZLE, $CONSENSUS_PROML, $proml_outtree, $counter++ );
         &rm( $CONSENSUS_PROML );
@@ -1029,7 +1114,12 @@ elsif ( ( $bootstraps > 1 ) && ( $use_fastme == 1 || $use_phylip_nj == 1 || $use
         if ( $use_protpars == 1 ) {
             &mv( $OUTTREE_PROTPARS, $multitreefile_protpars );
         }
-        &mv( $pwdfile, $multipwdfile );
+        if ( $use_fasttree == 1 ) {
+            &mv( $FASTTREE_OUT, $multitreefile_fasttree );
+        }
+        if ( length($pwdfile) > 0 ) {
+            &mv( $pwdfile, $multipwdfile );
+        }
     }
     else {
         if ( $use_fastme == 1 ) {
@@ -1049,6 +1139,9 @@ elsif ( ( $bootstraps > 1 ) && ( $use_fastme == 1 || $use_phylip_nj == 1 || $use
         }
         if ( $use_protpars == 1 ) {
             &rm( $OUTTREE_PROTPARS );
+        }
+        if ( $use_fasttree == 1 ) {
+            &rm( $FASTTREE_OUT );
         }
         &rm( $pwdfile );
     }
@@ -1080,6 +1173,10 @@ else {
         &to_phyloxml( "align.treefile", $iqtree_outtree, 1, 1 );
         &rm("align.treefile");
     }
+    if ( $use_fasttree == 1 ) {
+        &to_phyloxml( $FASTTREE_OUT, $fasttree_outtree, 1, 1 );
+        &rm($FASTTREE_OUT);
+    }
     if ( $use_proml == 1 ) {
         &to_phyloxml( $OUTTREE_PROML, $proml_outtree, 0, 1 );
     }
@@ -1094,15 +1191,15 @@ else {
 &rm( "align.reduced" );
 
 
-$log = $log."Finish time/date                    : ".`date`;
+$log = $log."Finish time/date                     : ".`date`;
 
 if ( $bootstraps > 1 ) {
-    $log = $log."Puzzle output file                  : ".$outfile."_puzzle_outfile\n";
+    $log = $log."Puzzle output file                   : ".$outfile."_puzzle_outfile\n";
 }
-$log = $log."Columns in alignment                : $number_of_aa\n";
-$log = $log."Number of sequences in alignment    : $number_of_seqs\n";
+$log = $log."Columns in alignment                 : $number_of_aa\n";
+$log = $log."Number of sequences in alignment     : $number_of_seqs\n";
 if ( $all_count > 1 ) {
-    $log = $log."Combined consensus                  : $all_outtree\n";
+    $log = $log."Combined consensus                   : $all_outtree\n";
 } 
 
 
@@ -1141,6 +1238,9 @@ if ( $bootstraps > 1 ) {
     if ( $use_iqtree == 1 ) {
         $phylos[ $ounter++ ] = $iqtree_outtree;
     }
+    if ( $use_fasttree == 1 ) {
+        $phylos[ $ounter++ ] = $fasttree_outtree;
+    }
     if ( $use_proml == 1 ) {
         $phylos[ $ounter++ ] = $proml_outtree;
     }
@@ -1167,7 +1267,10 @@ chdir( $current_dir )
 rmdir( $temp_dir )
 || print "\n\n$0: Warning: Could not remove <<$temp_dir>>: $!\n\n";
 
-print "\n\n\n$0 successfully completed.\n\n";
+print "\n\n\n================================================================================";
+
+print "\n\n\nphylo_pl wrote log to ".$logfile;
+print "\n\nphylo_pl $VERSION successfully completed.\n\n";
 
 exit( 0 ); 
     
@@ -1332,6 +1435,8 @@ sub executePuzzleToCalculateBranchLenghts {
         $rate = &setRateHeterogeneityOptionForPuzzle( $rate_heterogeneity_option );
     }
 
+    print("\n\n========= TREE-PUZZLE to calculate branch lengths - begin ========\n");
+
     my $est           = "
 e";
 
@@ -1342,7 +1447,8 @@ x
 y
 !" )
     && die "$0: Could not execute \"$PUZZLE\" (mat=$mat est=$est rate=$rate)";
-    
+
+    print("\n\n========= TREE-PUZZLE to calculate branch lengths - end ========\n");
 }
 
 # Two arguments:
@@ -1516,7 +1622,7 @@ Y
 sub printUsage {
 
     print <<END;
-Copyright (C) 2024 Christian M Zmasek
+Copyright (C) 2025 Christian M Zmasek
 All rights reserved
 
 Author: Christian M Zmasek
@@ -1538,7 +1644,7 @@ czmasek at jcvi dot org
   Options
   -------
  
-  Bx : Number of bootstraps. B0: do not bootstrap. Default is 100 bootstrapps.
+  Bx : Number of bootstraps. B0: do not bootstrap. Default is 100 bootstraps.
        The number of bootstrapps should be divisible by 10.
   J  : Use JTT model (Jones et al. 1992) in TREE-PUZZLE, RAXML; default: VT (Mueller-Vingron 2000).
   O  : Use BLOSUM 62 model (Henikoff-Henikoff 92) in TREE-PUZZLE, RAXML; default: VT.
@@ -1546,19 +1652,20 @@ czmasek at jcvi dot org
   W  : Use WAG model (Whelan-Goldman 2000) in TREE-PUZZLE, RAXML; default: VT.
   P  : Use PAM model (Dayhoff et al. 1978) in TREE-PUZZLE, RAXML; default: VT.
   L  : Use LG model (Le and Gascuel, 2008) in RAXML; WAG in TREE-PUZZLE.
-  H  : Use HKY (Hasegawa et al. 1985) in TREE-PUZZLE [for nucleic acids]
-  T  : Use TN (Tamura-Nei 1993) in TREE-PUZZLE [for nucleic acids]
-  Z  : Use GTR (e.g. Lanave et al. 1980) in TREE-PUZZLE [for nucleic acids]
-  C  : Use SH (Schoeniger-von Haeseler 1994) in TREE-PUZZLE [for nucleic acids]
-  t  : 2 Gamma distributed rates in RAxML
-  m  : 4 Gamma distributed rates in RAxML
-  g  : 8 Gamma distributed rates in RAxML
-  q  : Use FastME
-  n  : Use PHYLIP Neighbor (NJ).                    
-  f  : Use PHYLIP Fitch.
-  e  : Use PHYLIP Minimal Evolution.
+  H  : Use HKY (Hasegawa et al. 1985) in TREE-PUZZLE [for nucleic acids].
+  T  : Use TN (Tamura-Nei 1993) in TREE-PUZZLE [for nucleic acids].
+  Z  : Use GTR (e.g. Lanave et al. 1980) in TREE-PUZZLE [for nucleic acids].
+  C  : Use SH (Schoeniger-von Haeseler 1994) in TREE-PUZZLE [for nucleic acids].
+  t  : 2 Gamma distributed rates in RAxML.
+  m  : 4 Gamma distributed rates in RAxML.
+  g  : 8 Gamma distributed rates in RAxML.
+  q  : Use FastME (with TREE_PUZZLE for pairwise distance calculation).
+  n  : Use PHYLIP Neighbor (NJ) (with TREE_PUZZLE for pairwise distance calculation).
+  f  : Use PHYLIP Fitch (with TREE_PUZZLE for pairwise distance calculation).
+  e  : Use PHYLIP Minimal Evolution (with TREE_PUZZLE for pairwise distance calculation).
   x  : Use RAxML.
-  i  : Use IQTree
+  i  : Use IQTree.
+  a  : Use FastTree.
   o  : Use PHYLIP proml. 
   p  : Use PHYLIP protpars.
   jx : Number of jumbles (input order randomization) for PHYLIP FM, ME, PROTPARS, and PROML (default is 2) (random seed set with Sx).

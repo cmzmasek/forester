@@ -1,7 +1,7 @@
 # FORESTER -- software libraries and applications
 # for evolutionary biology research and applications.
 #
-# Copyright (C) 2024 Christian M. Zmasek
+# Copyright (C) 2025 Christian M. Zmasek
 # All rights reserved
 # 
 # This library is free software; you can redistribute it and/or
@@ -24,7 +24,7 @@ package forester;
 use strict;
 require Exporter;
 
-our $VERSION = "1.1.0";
+our $VERSION = "1.3.0";
 
 our @ISA    = qw( Exporter );
 
@@ -36,6 +36,7 @@ our @EXPORT = qw( executeConsense
                   executePuzzle
                   executeFastme
                   executeIQTree
+                  executeFastTree
                   executeNeighbor
                   executeFitch
                   testForTextFilePresence
@@ -66,12 +67,15 @@ our @EXPORT = qw( executeConsense
                   $RAXMLNG_VERSION
                   $IQTREE
                   $IQTREE_VERSION
+                  $FASTTREE
+                  $FASTTREE_VERSION
                   $SUPPORT_TRANSFER
                   $SUPPORT_STATISTICS
                   $NEWICK_TO_PHYLOXML
                   $BOOTSTRAPS
                   $JAVA
                   $TEMP_DIR_DEFAULT
+                  $FASTTREE_OUT
                   
  );
 
@@ -126,6 +130,12 @@ our $IQTREE_VERSION           = "2.3.2";
 our $IQTREE                   = "/Users/czmasek/SOFT/iqtree-2.3.2-macOS-arm/bin/iqtree2";
 
 
+# FASTTREE:
+# -----------------------------------------------------
+our $FASTTREE_VERSION           = "2.1.11";
+our $FASTTREE                   = "/Users//czmasek/SOFT/FastTree";
+
+
 # forester.jar.:
 # ----------------------------------------------------------------------------------------------------
 our $FORESTER_JAR              = "/Users/czmasek/IdeaProjects/forester/forester/java/forester.jar";
@@ -176,6 +186,7 @@ our $SUFFIX_BOOT_STRP_POS        = ".bsp";
 our $SUFFIX_PWD_NOT_BOOTS        = ".nbd";
 our $SUFFIX_HMM                  = ".hmm";
 
+our $FASTTREE_OUT                = "__fasttree_out";
 
 # One argument: input multiple trees file
 # Last modified: 07/05/01
@@ -206,6 +217,31 @@ sub executeIQTree {
     }
     else {
         $command = "$IQTREE -nt AUTO -s $msa -m $model";
+    }
+    print( "\n$command\n");
+
+    system( $command )
+    && &dieWithUnexpectedError( $command );
+
+}
+
+sub executeFastTree {
+    my $msa            = $_[ 0 ];
+    my $model          = $_[ 1 ];
+    my $replicates     = $_[ 2 ];
+
+    my $type = "";
+    if ( $model eq "gtr" ) {
+        $type = "-nt"
+    }
+
+    &testForTextFilePresence( $msa );
+    my $command = "";
+    if ( $replicates > 1 ) {
+        $command = "$FASTTREE $type -$model -n $replicates $msa > $FASTTREE_OUT";
+    }
+    else {
+        $command = "$FASTTREE $type -$model -nosupport $msa > $FASTTREE_OUT";
     }
     print( "\n$command\n");
 
