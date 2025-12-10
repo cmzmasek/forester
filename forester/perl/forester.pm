@@ -24,7 +24,7 @@ package forester;
 use strict;
 require Exporter;
 
-our $VERSION = "1.3.0";
+our $VERSION = "1.3.1";
 
 our @ISA    = qw( Exporter );
 

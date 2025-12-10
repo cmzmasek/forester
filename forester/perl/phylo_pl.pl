@@ -53,7 +53,7 @@ use FindBin;
 use lib $FindBin::Bin;
 use forester;
 
-my $VERSION                = "1.3.0";
+my $VERSION                = "1.3.1";
 my $LAST_MODIFIED          = "2025-12-10";
 
 
@@ -75,6 +75,7 @@ my $rate_heterogeneity     = 0;   # 0 = Uniform rate (default)
                                   # 4 = 4 Gamma distributed rates
                                   # 2 = 2 Gamma distributed rates
                                   # 8 = 8 Gamma distributed rates
+my $raxml_starting_trees   = 10;
 my $seed                   = 9;   # Seed for random number generators. Default: 9
 my $keep_multiple_trees    = 0;   # 0: delete multiple tree file
                                   # 1: do not delete multiple tree file
@@ -192,6 +193,12 @@ if ( $ARGV[ 0 ] =~ /^-.+/ ) {
         $jumbles = $1;
         if ( $jumbles < 1 ) {
             $jumbles = 0;
+        }
+    }
+    if ( $options =~ /r(\d+)/ ) {
+        $raxml_starting_trees = $1;
+        if ( $raxml_starting_trees < 1 ) {
+            $raxml_starting_trees = 10;
         }
     }
     if ( $options =~ /J/ ) {
@@ -502,6 +509,9 @@ else {
     &dieWithUnexpectedError( "Unknown model: matrix=$matrix" );
 }
 if ( $use_raxml == 1 ) {
+    $log = $log."Number of starting trees in RAxML    : $raxml_starting_trees\n";
+}
+if ( $use_raxml == 1 ) {
     $log = $log."Model of rate heterogeneity for RAxML: ";
     if ( $rate_heterogeneity == 4 ) {
         $log = $log."4 Gamma distributed rates\n";
@@ -673,7 +683,7 @@ if ( $use_raxml == 1 ) {
         &dieWithUnexpectedError( "Unknown rate heterogeneity: rate_heterogeneity=$rate_heterogeneity" );
     }
 
-    &executeRaxmlNG( "align", $raxml_model, $bootstraps );
+    &executeRaxmlNG( "align", $raxml_model, $bootstraps, $raxml_starting_trees );
 
     print( "\n========== RAxML end =========\n\n" );
     
@@ -1288,9 +1298,10 @@ sub executeRaxmlNG {
     my $msa            = $_[ 0 ];
     my $model          = $_[ 1 ];
     my $replicates     = $_[ 2 ];
+    my $starting_trees = $_[ 3 ];
 
     &testForTextFilePresence( $msa );
-    my $command = "$RAXMLNG --tree rand{20},pars{20} --msa-format PHYLIP --model $model --msa $msa";
+    my $command = "$RAXMLNG --tree rand{$starting_trees},pars{$starting_trees} --msa-format PHYLIP --model $model --msa $msa";
 
     if ( $replicates > 1 ) {
         $command = $command . " --all --bs-trees $replicates";
@@ -1659,6 +1670,7 @@ czmasek at jcvi dot org
   t  : 2 Gamma distributed rates in RAxML.
   m  : 4 Gamma distributed rates in RAxML.
   g  : 8 Gamma distributed rates in RAxML.
+  rx : Number of starting trees in RAxML (each).
   q  : Use FastME (with TREE_PUZZLE for pairwise distance calculation).
   n  : Use PHYLIP Neighbor (NJ) (with TREE_PUZZLE for pairwise distance calculation).
   f  : Use PHYLIP Fitch (with TREE_PUZZLE for pairwise distance calculation).
