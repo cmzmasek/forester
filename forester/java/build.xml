@@ -27,7 +27,8 @@
         <mkdir dir="${classes.dir}"/>
         <javac source="1.8" target="1.8" debug="true" debuglevel="lines,source" srcdir="${src.dir}"
                destdir="${classes.dir}" optimize="on" verbose="false"
-               classpath="${itextjar};${commonscodecjar};${openchartjar}">
+               classpath="${itextjar};${commonscodecjar};${openchartjar}"
+               encoding="iso-8859-1">
             <compilerarg value="-Xlint:deprecation"/>
             <compilerarg value="-Xlint:unchecked"/>
         </javac>
