@@ -1,7 +1,7 @@
 #
 # = lib/evo/apps/msa_processor.rb - MsaProcessor class
 #
-# Copyright::  Copyright (C) 2020 Christian M. Zmasek
+# Copyright::  Copyright (C) 2025 Christian M. Zmasek
 # License::    GNU Lesser General Public License (LGPL)
 #
 #
@@ -24,9 +24,9 @@ module Evoruby
   class MsaProcessor
 
     PRG_NAME       = "msa_pro"
-    PRG_DATE       = "121520"
+    PRG_DATE       = "2025-12-15"
     PRG_DESC       = "processing of multiple sequence alignments"
-    PRG_VERSION    = "1.09"
+    PRG_VERSION    = "1.0.10"
     WWW            = "https://sites.google.com/site/cmzmasek/home/software/forester"
 
     NAME_LENGTH_DEFAULT                = 10
@@ -310,6 +310,9 @@ module Evoruby
       rescue Exception => e
         Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
       end
+
+      Util.print_message( PRG_NAME, "Number of sequences in input         : " + msa.get_number_of_seqs.to_s )
+      log << "Number of sequences in input         : " + msa.get_number_of_seqs.to_s + ld
 
       if ( msa.is_aligned() )
         Util.print_message( PRG_NAME, "Length of original alignment         : " + msa.get_length.to_s )
