@@ -1,4 +1,4 @@
-VERSION="1.0.1"
+VERSION="1.0.2"
 TAP="/usr/bin/ruby /Users/czmasek/IdeaProjects/forester/forester/ruby/evoruby/exe/tap.rb"
 MSA_PRO="/usr/bin/ruby /Users/czmasek/IdeaProjects/forester/forester/ruby/evoruby/exe/msa_pro.rb"
 DECORATOR="/usr/bin/ruby /Users/czmasek/IdeaProjects/forester/forester/ruby/evoruby/exe/phylogenies_decorator.rb"
@@ -118,10 +118,16 @@ rc=$?
 if [[ $rc != 0 ]]; then
   exit $rc
 fi
-cd $current_dir
 
-rm $workdir/deco/*.nim
-rm $workdir/deco/*_ni.fasta
+for i in *; do
+  if test -f "$i"; then
+    if [[ ! $i =~ "_d.xml" ]]; then
+      rm $i
+    fi
+  fi
+done
+
+cd $current_dir
 
 rm $workdir/*_fme_stats.txt
 
