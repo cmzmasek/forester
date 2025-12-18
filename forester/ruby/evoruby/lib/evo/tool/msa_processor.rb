@@ -24,9 +24,9 @@ module Evoruby
   class MsaProcessor
 
     PRG_NAME       = "msa_pro"
-    PRG_DATE       = "2025-12-15"
+    PRG_DATE       = "2025-12-18"
     PRG_DESC       = "processing of multiple sequence alignments"
-    PRG_VERSION    = "1.0.10"
+    PRG_VERSION    = "1.0.11"
     WWW            = "https://sites.google.com/site/cmzmasek/home/software/forester"
 
     NAME_LENGTH_DEFAULT                = 10
@@ -397,7 +397,7 @@ module Evoruby
    
 
         if ( @trim )
-          msa.trim!( @first, @last, '_S' )
+          msa.trim!( @first, @last, '' )
         end
 
         if @window
