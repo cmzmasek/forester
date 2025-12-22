@@ -3,7 +3,7 @@
 # FORESTER -- software libraries and applications
 # for evolutionary biology research and applications.
 #
-# Copyright (C) 2024 Christian M. Zmasek
+# Copyright (C) 2025 Christian M. Zmasek
 # All rights reserved
 # 
 # This library is free software; you can redistribute it and/or
@@ -53,8 +53,8 @@ use FindBin;
 use lib $FindBin::Bin;
 use forester;
 
-my $VERSION                = "1.3.1";
-my $LAST_MODIFIED          = "2025-12-10";
+my $VERSION                = "1.3.2";
+my $LAST_MODIFIED          = "2025-12-22";
 
 
 my $TEMP_DIR_DEFAULT       = "/tmp/phylo_pl_"; # Where all the infiles, outfiles, etc will be created.
@@ -1155,9 +1155,7 @@ elsif ( ( $bootstraps > 1 ) && ( $use_fastme == 1 || $use_phylip_nj == 1 || $use
         }
         &rm( $pwdfile );
     }
-    if ( $all_count > 1 ) {
-        &rm( $OUTTREES_ALL );
-    }
+    &rm( $OUTTREES_ALL );
 } # if ( $bootstraps > 1 )
 else {
     &rm( "infile.dist" );
@@ -1199,6 +1197,7 @@ else {
 &rm( "infile" );
 &rm( "align" );
 &rm( "align.reduced" );
+&rm( "outtrees_all" );
 
 
 $log = $log."Finish time/date                     : ".`date`;
