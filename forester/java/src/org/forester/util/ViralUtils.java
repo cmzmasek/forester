@@ -68,7 +68,7 @@ public final class ViralUtils {
             .compile("\\[(.*?)/([A-za-z-\\s'()]*?)/([A-za-z-\\s]*?)/(.*?)/(\\d{2,4}?)\\|");
 
     public final static Pattern PATTERN_GB = Pattern
-            .compile("^(?:accn)?\\|?([A-Z].{5,}?)[_\\s|]");
+            .compile("^(?:accn)?\\|?([A-Z][A-Z0-9\\.]{5,}?)[_\\s|]");
 
     public final static Pattern PATTERN_BVBRC_ACC = Pattern
             .compile("\\|([0-9]+\\.[0-9]+)\\]$");
