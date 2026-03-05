@@ -24,9 +24,9 @@ module Evoruby
   class MsaProcessor
 
     PRG_NAME       = "msa_pro"
-    PRG_DATE       = "2025-12-18"
+    PRG_DATE       = "2026-03-05"
     PRG_DESC       = "processing of multiple sequence alignments"
-    PRG_VERSION    = "1.0.11"
+    PRG_VERSION    = "1.0.13"
     WWW            = "https://sites.google.com/site/cmzmasek/home/software/forester"
 
     NAME_LENGTH_DEFAULT                = 10
@@ -365,10 +365,13 @@ module Evoruby
             msa_new = Msa.new()
             r = 0
             k = 0
-            for j in 0 ... msa.get_number_of_seqs()
-              if ( names.include?( msa.get_sequence( j ).get_name() ) )
-                msa_new.add_sequence( msa.get_sequence( j ) )
-                k += 1
+            for i in 0 ... names.length()
+              to_keep = msa.find_by_name( names[ i ], true, true )
+              if ( to_keep.length() >= 1 )
+                for j in 0 ... to_keep.length()
+                   msa_new.add_sequence( msa.get_sequence(to_keep[j]) )
+                   k += 1
+                end
               else
                 r += 1
               end
