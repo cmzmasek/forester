@@ -2,8 +2,8 @@
 #
 # = lib/evo/apps/phylogenies_decorator
 #
-# Copyright (C) 2018 Christian M. Zmasek
-# Copyright (C) 2018 J. Craig Venter Institute
+# Copyright (C) 2026 Christian M. Zmasek
+# Copyright (C) 2026 J. Craig Venter Institute
 # License::    GNU Lesser General Public License (LGPL)
 #
 # decoration of phylogenies with sequence/species names and domain architectures
@@ -32,9 +32,9 @@ module Evoruby
    
 
     PRG_NAME       = "phylogenies_decorator"
-    PRG_DATE       = "170428"
+    PRG_DATE       = "2026-03-05"
     PRG_DESC       = "decoration of phylogenies with sequence/species names and domain architectures"
-    PRG_VERSION    = "1.05"
+    PRG_VERSION    = "1.0.6"
     WWW            = "https://sites.google.com/site/cmzmasek/home/software/forester"
 
     HELP_OPTION_1                           = "help"
@@ -243,7 +243,8 @@ module Evoruby
           log << "Ids mapfile: " + ids_mapfile_path + NL
 
           unless no_seqs_files
-            seqs_file_name = get_file( mapping_files_dir, phylogeny_id, Constants::ID_NORMALIZED_FASTA_FILE_SUFFIX )
+            seqs_file_name = get_file( mapping_files_dir, phylogeny_id, Constants::ID_NORMALIZED_FASTA_FILE_SUFFIX, '_' )
+           Util.print_message( PRG_NAME, "    seqs_file_name: " +  seqs_file_name )
             seqs_file_path = Util.canonical_path(mapping_files_dir, seqs_file_name)
             begin
               Util.check_file_for_readability( seqs_file_path  )
@@ -357,9 +358,9 @@ module Evoruby
       sleep( SLEEP_TIME )
     end
 
-    def get_file( files_in_dir, phylogeny_id, suffix_pattern )
+    def get_file( files_in_dir, phylogeny_id, suffix_pattern, sep = '.' )
       begin
-        Util.get_matching_file( files_in_dir, phylogeny_id, suffix_pattern )
+        Util.get_matching_file( files_in_dir, phylogeny_id, suffix_pattern, sep )
       rescue Exception
         Util.fatal_error( PRG_NAME, 'error: ' + $!.to_s )
       end
