@@ -1,7 +1,7 @@
 #
 # = lib/evo/util/util.rb - Util class
 #
-# Copyright::    Copyright (C) 2023 Christian M. Zmasek
+# Copyright::    Copyright (C) 2026 Christian M. Zmasek
 # License::      GNU Lesser General Public License (LGPL)
 #
 # Last modified: 2023/10/10
@@ -15,7 +15,6 @@ module Evoruby
       if child == nil
         return  File.expand_path(Pathname.new(parent).cleanpath.to_s).to_s
       end
-
       s = nil
       if parent.end_with?('/')
         s = parent + child
@@ -37,7 +36,7 @@ module Evoruby
       matching_files
     end
 
-    def Util.get_matching_file( dir_name, prefix, suffix )
+    def Util.get_matching_file( dir_name, prefix, suffix, sep = '.' )
       unless Dir.exist? dir_name
         raise IOError, "directory [#{dir_name}] does not exist"
       end
@@ -66,7 +65,7 @@ module Evoruby
         puts my_prefix
         matches = 0
         matching_files.each { | file |
-          if file.start_with?( my_prefix + "." ) # was  if file.start_with?( my_prefix )
+          if file.start_with?( my_prefix + sep ) # was  if file.start_with?( my_prefix )
             matches += 1
             if matches > 1
               the_one = nil
