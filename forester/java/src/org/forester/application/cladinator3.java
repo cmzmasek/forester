@@ -52,8 +52,8 @@ import org.forester.util.UserException;
 public final class cladinator3 {
 
     final static private String PRG_NAME = "cladinator3";
-    final static private String PRG_VERSION = "3.0.1";
-    final static private String PRG_DATE = "2025-10-29";
+    final static private String PRG_VERSION = "3.0.2";
+    final static private String PRG_DATE = "2026-04-01";
     final static private String PRG_DESC = "clades within clades of annotated labels -- analysis of pplacer-type outputs";
     final static private String E_MAIL = "czmasek@jcvi.org";
     final static private String WWW = "https://github.com/cmzmasek/forester";
@@ -482,6 +482,7 @@ public final class cladinator3 {
 
         w.write("\t");
         w.write(String.valueOf(placements));
+        w.write("\n"); // needed?
         w.flush();
     }
 
