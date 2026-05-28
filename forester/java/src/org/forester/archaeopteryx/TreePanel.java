@@ -4483,7 +4483,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             boolean use_vis = false;
             final Graphics2D g = (Graphics2D) getGraphics();
-            if (getControlPanel().isUseVisualStyles()) {
+            if ((g != null) && getControlPanel().isUseVisualStyles()) {
                 use_vis = setFont(g, node, false);
             }
             if (!use_vis) {
