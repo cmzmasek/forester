@@ -20,16 +20,14 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 //
-// Contact: phylosoft @ gmail . com
-// WWW: https://sites.google.com/site/cmzmasek/home/software/forester
 
 package org.forester.archaeopteryx;
 
 
-import java.awt.Color;
-import java.awt.Component;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
@@ -65,122 +63,139 @@ import org.forester.phylogeny.data.Reference;
 import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.data.Uri;
+import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
 
 class NodePanel extends JPanel implements TreeSelectionListener {
 
-    static final String       BASIC                    = "Basic";
-    static final String       BINARY_CHARACTERS        = "Binary characters";
-    static final String       CONFIDENCE               = "Confidence";
-    static final String       CONFIDENCE_TYPE          = "type";
-    static final String       DATE                     = "Date";
-    static final String       DATE_DESCRIPTION         = "Description";
-    static final String       DATE_MAX                 = "Max";
-    static final String       DATE_MIN                 = "Min";
-    static final String       DATE_UNIT                = "Unit";
-    static final String       DATE_VALUE               = "Value";
-    static final String       DIST_ALT_UNIT            = "Altitude unit";
-    static final String       DIST_ALTITUDE            = "Altitude";
-    static final String       DIST_DESCRIPTION         = "Description";
-    static final String       DIST_GEODETIC_DATUM      = "Geodetic datum";
-    static final String       DIST_LATITUDE            = "Latitude";
-    static final String       DIST_LONGITUDE           = "Longitude";
-    static final String       DISTRIBUTION             = "Distribution";
-    static final String       EVENTS                   = "Events";
-    static final String       EVENTS_DUPLICATIONS      = "Duplications";
-    static final String       EVENTS_GENE_LOSSES       = "Gene losses";
-    static final String       EVENTS_SPECIATIONS       = "Speciations";
-    static final String       LIT_REFERENCE            = "Reference";
-    static final String       LIT_REFERENCE_DESC       = "Description";
-    static final String       LIT_REFERENCE_DOI        = "DOI";
-    static final String       NODE_BRANCH_COLOR        = "Branch color";
-    static final String       NODE_BRANCH_LENGTH       = "Branch length";
-    static final String       NODE_BRANCH_WIDTH        = "Branch width";
-    static final String       NODE_NAME                = "Name";
-    static final String       PROP                     = "Properties";
-    static final String       REFERENCE                = "Reference";
-    static final String       SEQ_ACCESSION            = "Accession";
+    static final String BASIC = "Basic";
+    static final String BINARY_CHARACTERS = "Binary characters";
+    static final String CONFIDENCE = "Confidence";
+    static final String CONFIDENCE_TYPE = "type";
+    static final String DATE = "Date";
+    static final String DATE_DESCRIPTION = "Description";
+    static final String DATE_MAX = "Max";
+    static final String DATE_MIN = "Min";
+    static final String DATE_UNIT = "Unit";
+    static final String DATE_VALUE = "Value";
+    static final String DIST_ALT_UNIT = "Altitude unit";
+    static final String DIST_ALTITUDE = "Altitude";
+    static final String DIST_DESCRIPTION = "Description";
+    static final String DIST_GEODETIC_DATUM = "Geodetic datum";
+    static final String DIST_LATITUDE = "Latitude";
+    static final String DIST_LONGITUDE = "Longitude";
+    static final String DISTRIBUTION = "Distribution";
+    static final String EVENTS = "Events";
+    static final String EVENTS_DUPLICATIONS = "Duplications";
+    static final String EVENTS_GENE_LOSSES = "Gene losses";
+    static final String EVENTS_SPECIATIONS = "Speciations";
+    static final String LIT_REFERENCE = "Reference";
+    static final String LIT_REFERENCE_DESC = "Description";
+    static final String LIT_REFERENCE_DOI = "DOI";
+    static final String NODE_BRANCH_COLOR = "Branch color";
+    static final String NODE_BRANCH_LENGTH = "Branch length";
+    static final String NODE_BRANCH_WIDTH = "Branch width";
+    static final String NODE_NAME = "Name";
+    static final String PROP = "Properties";
+    static final String REFERENCE = "Reference";
+    static final String SEQ_ACCESSION = "Accession";
 
-    static final String       SEQ_PRIME_ACCESSION = "Primary Accession";
-    static final String       SEQ_LOCATION             = "Location";
-    static final String       SEQ_MOL_SEQ              = "Mol seq";
-    static final String       SEQ_NAME                 = "Name";
-    static final String       SEQ_SYMBOL               = "Symbol";
-    static final String       SEQ_GENE_NAME            = "Gene name";
-    static final String       SEQ_TYPE                 = "Type";
-    static final String       SEQ_URI                  = "URI";
-    static final String       SEQUENCE                 = "Sequence";
-    static final String       TAXONOMY                 = "Taxonomy";
-    static final String       TAXONOMY_AUTHORITY       = "Authority";
-    static final String       TAXONOMY_CODE            = "Code";
-    static final String       TAXONOMY_COMMON_NAME     = "Common name";
-    static final String       TAXONOMY_IDENTIFIER      = "Identifier";
-    static final String       TAXONOMY_RANK            = "Rank";
-    static final String       TAXONOMY_SCIENTIFIC_NAME = "Scientific name";
-    static final String       TAXONOMY_SYNONYM         = "Synonym";
-    static final String       TAXONOMY_URI             = "URI";
-    private static final long serialVersionUID         = 5120159904388100771L;
+    static final String SEQ_PRIME_ACCESSION = "Primary Accession";
+    static final String SEQ_LOCATION = "Location";
+    static final String SEQ_MOL_SEQ = "Mol seq";
+    static final String SEQ_NAME = "Name";
+    static final String SEQ_SYMBOL = "Symbol";
+    static final String SEQ_GENE_NAME = "Gene name";
+    static final String SEQ_TYPE = "Type";
+    static final String SEQ_URI = "URI";
+    static final String SEQUENCE = "Sequence";
+    static final String TAXONOMY = "Taxonomy";
+    static final String TAXONOMY_AUTHORITY = "Authority";
+    static final String TAXONOMY_CODE = "Code";
+    static final String TAXONOMY_COMMON_NAME = "Common name";
+    static final String TAXONOMY_IDENTIFIER = "Identifier";
+    static final String TAXONOMY_RANK = "Rank";
+    static final String TAXONOMY_SCIENTIFIC_NAME = "Scientific name";
+    static final String TAXONOMY_SYNONYM = "Synonym";
+    static final String TAXONOMY_URI = "URI";
+    private static final long serialVersionUID = 5120159904388100771L;
     private final JEditorPane _pane;
-    private final JTree       _tree;
+    private final JTree _tree;
 
-    public NodePanel( final PhylogenyNode phylogeny_node, final NodeFrame parent ) {
+    public NodePanel(final PhylogenyNode phylogeny_node, final NodeFrame parent) {
         String node_name = "";
-        if ( !ForesterUtil.isEmpty( phylogeny_node.getName() ) ) {
+        if (!ForesterUtil.isEmpty(phylogeny_node.getName())) {
             node_name = phylogeny_node.getName() + " ";
         }
-        final DefaultMutableTreeNode top = new DefaultMutableTreeNode( "Node " + node_name );
-        createNodes( top, phylogeny_node );
-        _tree = new JTree( top );
-        _tree.setEditable( false );
-        getJTree().setToggleClickCount( 1 );
-        expandPath( BASIC );
-        expandPath( TAXONOMY );
-        expandPath( SEQUENCE );
-        expandPath( EVENTS );
-        final JScrollPane tree_view = new JScrollPane( getJTree() );
-        
-        final JButton close_button = new JButton( "Close" );
-        close_button.setEnabled( true );
-       
+        final DefaultMutableTreeNode top = new DefaultMutableTreeNode("Node " + node_name);
+        createNodes(top, phylogeny_node);
+        _tree = new JTree(top);
+        _tree.setEditable(false);
+        getJTree().setToggleClickCount(1);
+        expandPath(BASIC);
+        expandPath(TAXONOMY);
+        expandPath(SEQUENCE);
+        expandPath(EVENTS);
+        expandPath(PROP);
+
+        final JScrollPane tree_view = new JScrollPane(getJTree());
+
         _pane = new JEditorPane();
-        _pane.setEditable( false );
-        
-        final JScrollPane data_view = new JScrollPane( _pane );
-        final JSplitPane split_pane = new JSplitPane( JSplitPane.VERTICAL_SPLIT );
-        split_pane.setTopComponent( tree_view );
-        data_view.add( close_button );
-        split_pane.setBottomComponent( data_view );
-        data_view.setMinimumSize( AptxConstants.NODE_PANEL_SPLIT_MINIMUM_SIZE );
-        tree_view.setMinimumSize( AptxConstants.NODE_PANEL_SPLIT_MINIMUM_SIZE );
-        split_pane.setDividerLocation( 300 );
-        split_pane.setPreferredSize( AptxConstants.NODE_PANEL_SIZE );
-       
-        
-        close_button.addActionListener( new ActionListener() {
-            public void actionPerformed( final ActionEvent e ) {
+        _pane.setEditable(false);
+        final JScrollPane data_view = new JScrollPane(_pane);
+
+        final JSplitPane split_pane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        split_pane.setTopComponent(tree_view);
+        split_pane.setBottomComponent(data_view);
+        split_pane.setPreferredSize(AptxConstants.NODE_PANEL_SIZE);
+        split_pane.setResizeWeight(2.0 / 3.0);
+        final int h = AptxConstants.NODE_PANEL_SIZE.height;
+        split_pane.setDividerLocation((h * 2) / 3);   // pixel value — top is 2/3 of total height
+        final JButton close_button = new JButton("Close");
+        close_button.addActionListener(new ActionListener() {
+            public void actionPerformed(final ActionEvent e) {
                 parent.close();
-           }
-        } );
-        
-      
-        close_button.setAlignmentX( Component.CENTER_ALIGNMENT );
-        split_pane.setAlignmentX( Component.CENTER_ALIGNMENT );
-        final JPanel panel = new JPanel();
-        panel.setLayout( new BoxLayout( panel, BoxLayout.Y_AXIS ) );
-        panel.add( split_pane );
-        panel.add( close_button );
-        add( panel );
+            }
+        });
+
+        // BorderLayout: split pane fills the center, button pinned to the bottom
+        final JPanel panel = new JPanel(new BorderLayout());
+        panel.add(split_pane, BorderLayout.CENTER);
+
+        final JPanel button_panel = new JPanel();   // keeps the button at its natural size, centered
+        button_panel.add(close_button);
+        panel.add(button_panel, BorderLayout.SOUTH);
+
+        setLayout(new BorderLayout());             // so 'panel' fills NodePanel too
+        add(panel, BorderLayout.CENTER);
     }
 
     @Override
-    public void valueChanged( final TreeSelectionEvent e ) {
+    public void valueChanged(final TreeSelectionEvent e) {
         // Do nothing.
     }
 
-    private void expandPath( final String name ) {
-        final TreePath tp = getJTree().getNextMatch( name, 0, Position.Bias.Forward );
-        if ( tp != null ) {
-            getJTree().expandPath( tp );
+    private void expandPath(final String name) {
+        final JTree tree = getJTree();
+        final List<TreePath> matches = new ArrayList<>();
+
+        int row = 0;
+        int rowCount = tree.getRowCount();
+        while (row < rowCount) {
+            final TreePath tp = tree.getNextMatch(name, row, Position.Bias.Forward);
+            if (tp == null) {
+                break;                       // no more matches
+            }
+            final int found = tree.getRowForPath(tp);
+            if (found < row) {
+                break;                       // wrapped around — done
+            }
+            matches.add(tp);
+            row = found + 1;                 // resume after this hit
+        }
+
+        for (final TreePath tp : matches) {
+            tree.expandPath(tp);
         }
     }
 
@@ -188,319 +203,332 @@ class NodePanel extends JPanel implements TreeSelectionListener {
         return _tree;
     }
 
-    private static void addAnnotation( final DefaultMutableTreeNode top, final Annotation ann, final String name ) {
+    private static void addAnnotation(final DefaultMutableTreeNode top, final Annotation ann, final String name) {
         DefaultMutableTreeNode category;
-        category = new DefaultMutableTreeNode( name );
-        top.add( category );
-        addSubelement( category, "Source", ann.getSource() );
-        addSubelement( category, "Type", ann.getType() );
-        addSubelement( category, "Evidence", ann.getEvidence() );
-        if ( ann.getConfidence() != null ) {
-            addSubelement( category, CONFIDENCE, ann.getConfidence().asText().toString() );
+        category = new DefaultMutableTreeNode(name);
+        top.add(category);
+        addSubelement(category, "Source", ann.getSource());
+        addSubelement(category, "Type", ann.getType());
+        addSubelement(category, "Evidence", ann.getEvidence());
+        if (ann.getConfidence() != null) {
+            addSubelement(category, CONFIDENCE, ann.getConfidence().asText().toString());
         }
-        if ( ann.getProperties() != null ) {
-            addProperties( category, ann.getProperties(), PROP );
+        if (ann.getProperties() != null) {
+            addProperties(category, ann.getProperties(), PROP);
         }
     }
 
-    private static void addAnnotations( final DefaultMutableTreeNode top,
-                                        final SortedSet<Annotation> annotations,
-                                        final DefaultMutableTreeNode category ) {
-        if ( ( annotations != null ) && ( annotations.size() > 0 ) ) {
-            category.add( new DefaultMutableTreeNode( "Annotations" ) );
+    private static void addAnnotations(final DefaultMutableTreeNode top,
+                                       final SortedSet<Annotation> annotations,
+                                       final DefaultMutableTreeNode category) {
+        if ((annotations != null) && (annotations.size() > 0)) {
+            category.add(new DefaultMutableTreeNode("Annotations"));
             final DefaultMutableTreeNode last = top.getLastLeaf();
-            for( final Annotation ann : annotations ) {
-                addAnnotation( last, ann, ann.asText().toString() );
+            for (final Annotation ann : annotations) {
+                addAnnotation(last, ann, ann.asText().toString());
             }
         }
     }
 
-    private static void addBasics( final DefaultMutableTreeNode top,
-                                   final PhylogenyNode phylogeny_node,
-                                   final String name ) {
-        final DefaultMutableTreeNode category = new DefaultMutableTreeNode( name );
-        top.add( category );
-        addSubelement( category, NODE_NAME, phylogeny_node.getName() );
-        if ( phylogeny_node.getDistanceToParent() != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT ) {
-            addSubelement( category,
-                           NODE_BRANCH_LENGTH,
-                           ForesterUtil.FORMATTER_6.format( phylogeny_node.getDistanceToParent() ) );
+    private static void addBasics(final DefaultMutableTreeNode top,
+                                  final PhylogenyNode phylogeny_node,
+                                  final String name) {
+        final DefaultMutableTreeNode category = new DefaultMutableTreeNode(name);
+        top.add(category);
+        addSubelement(category, NODE_NAME, phylogeny_node.getName());
+        if (phylogeny_node.getDistanceToParent() != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT) {
+            addSubelement(category,
+                    NODE_BRANCH_LENGTH,
+                    ForesterUtil.FORMATTER_6.format(phylogeny_node.getDistanceToParent()));
         }
-        if ( phylogeny_node.getBranchData().isHasConfidences() ) {
-            for( final PhylogenyData conf : phylogeny_node.getBranchData().getConfidences() ) {
-                addSubelement( category, CONFIDENCE, conf.asText().toString() );
+        if (phylogeny_node.getBranchData().isHasConfidences()) {
+            for (final PhylogenyData conf : phylogeny_node.getBranchData().getConfidences()) {
+                addSubelement(category, CONFIDENCE, conf.asText().toString());
             }
         }
-        if ( !phylogeny_node.isExternal() ) {
-            addSubelement( category, "Children", String.valueOf( phylogeny_node.getNumberOfDescendants() ) );
-            addSubelement( category,
-                           "External children",
-                           String.valueOf( phylogeny_node.getAllExternalDescendants().size() ) );
-            final Map<Taxonomy, Integer> distinct_tax = PhylogenyMethods.obtainDistinctTaxonomyCounts( phylogeny_node );
-            if ( distinct_tax != null ) {
-                final int no_tax = PhylogenyMethods.calculateNumberOfExternalNodesWithoutTaxonomy( phylogeny_node );
+        if (!phylogeny_node.isExternal()) {
+            addSubelement(category, "Children", String.valueOf(phylogeny_node.getNumberOfDescendants()));
+            addSubelement(category,
+                    "External children",
+                    String.valueOf(phylogeny_node.getAllExternalDescendants().size()));
+            final Map<Taxonomy, Integer> distinct_tax = PhylogenyMethods.obtainDistinctTaxonomyCounts(phylogeny_node);
+            if (distinct_tax != null) {
+                final int no_tax = PhylogenyMethods.calculateNumberOfExternalNodesWithoutTaxonomy(phylogeny_node);
                 final int tax_count = distinct_tax.size();
-                addSubelement( category, "Distinct external taxonomies", String.valueOf( tax_count ) );
-                if ( no_tax > 0 ) {
-                    addSubelement( category, "External nodes without taxonomy", String.valueOf( no_tax ) );
+                addSubelement(category, "Distinct external taxonomies", String.valueOf(tax_count));
+                if (no_tax > 0) {
+                    addSubelement(category, "External nodes without taxonomy", String.valueOf(no_tax));
                 }
             }
         }
-        if ( !phylogeny_node.isRoot() ) {
-            addSubelement( category, "Depth", String.valueOf( phylogeny_node.calculateDepth() ) );
+        if (!phylogeny_node.isRoot()) {
+            addSubelement(category, "Depth", String.valueOf(phylogeny_node.calculateDepth()));
             final double d = phylogeny_node.calculateDistanceToRoot();
-            if ( d > 0 ) {
-                addSubelement( category, "Distance to root", String.valueOf( ForesterUtil.FORMATTER_6.format( d ) ) );
+            if (d > 0) {
+                addSubelement(category, "Distance to root", String.valueOf(ForesterUtil.FORMATTER_6.format(d)));
             }
         }
-        if ( ( phylogeny_node.getBranchData().getBranchWidth() != null )
-                && ( phylogeny_node.getBranchData().getBranchWidth().getValue() != BranchWidth.BRANCH_WIDTH_DEFAULT_VALUE ) ) {
-            addSubelement( category,
-                           NODE_BRANCH_WIDTH,
-                           ForesterUtil.FORMATTER_3.format( phylogeny_node.getBranchData().getBranchWidth().getValue() ) );
+        if ((phylogeny_node.getBranchData().getBranchWidth() != null)
+                && (phylogeny_node.getBranchData().getBranchWidth().getValue() != BranchWidth.BRANCH_WIDTH_DEFAULT_VALUE)) {
+            addSubelement(category,
+                    NODE_BRANCH_WIDTH,
+                    ForesterUtil.FORMATTER_3.format(phylogeny_node.getBranchData().getBranchWidth().getValue()));
         }
-        if ( ( phylogeny_node.getBranchData().getBranchColor() != null ) ) {
+        if ((phylogeny_node.getBranchData().getBranchColor() != null)) {
             final Color c = phylogeny_node.getBranchData().getBranchColor().getValue();
-            addSubelement( category, NODE_BRANCH_COLOR, c.getRed() + ", " + c.getGreen() + ", " + c.getBlue() );
+            addSubelement(category, NODE_BRANCH_COLOR, c.getRed() + ", " + c.getGreen() + ", " + c.getBlue());
         }
     }
 
-    private static void addBinaryCharacters( final DefaultMutableTreeNode top,
-                                             final BinaryCharacters bc,
-                                             final String name ) {
+    private static void addBinaryCharacters(final DefaultMutableTreeNode top,
+                                            final BinaryCharacters bc,
+                                            final String name) {
         DefaultMutableTreeNode category;
-        category = new DefaultMutableTreeNode( name );
-        top.add( category );
-        addSubelement( category, "Gained", String.valueOf( bc.getGainedCount() ) );
-        addSubelement( category, "Lost", String.valueOf( bc.getLostCount() ) );
-        addSubelement( category, "Present", String.valueOf( bc.getPresentCount() ) );
-        final DefaultMutableTreeNode chars = new DefaultMutableTreeNode( "Lists" );
-        category.add( chars );
-        addSubelement( chars, "Gained", bc.getGainedCharactersAsStringBuffer().toString() );
-        addSubelement( chars, "Lost", bc.getLostCharactersAsStringBuffer().toString() );
-        addSubelement( chars, "Present", bc.getPresentCharactersAsStringBuffer().toString() );
+        category = new DefaultMutableTreeNode(name);
+        top.add(category);
+        addSubelement(category, "Gained", String.valueOf(bc.getGainedCount()));
+        addSubelement(category, "Lost", String.valueOf(bc.getLostCount()));
+        addSubelement(category, "Present", String.valueOf(bc.getPresentCount()));
+        final DefaultMutableTreeNode chars = new DefaultMutableTreeNode("Lists");
+        category.add(chars);
+        addSubelement(chars, "Gained", bc.getGainedCharactersAsStringBuffer().toString());
+        addSubelement(chars, "Lost", bc.getLostCharactersAsStringBuffer().toString());
+        addSubelement(chars, "Present", bc.getPresentCharactersAsStringBuffer().toString());
     }
 
-    private static void addCrossReference( final DefaultMutableTreeNode top, final Accession x, final String name ) {
+    private static void addCrossReference(final DefaultMutableTreeNode top, final Accession x, final String name) {
         DefaultMutableTreeNode category;
-        category = new DefaultMutableTreeNode( name );
-        top.add( category );
+        category = new DefaultMutableTreeNode(name);
+        top.add(category);
     }
 
-    private static void addCrossReferences( final DefaultMutableTreeNode top,
-                                            final SortedSet<Accession> xs,
-                                            final DefaultMutableTreeNode category ) {
-        if ( ( xs != null ) && ( xs.size() > 0 ) ) {
-            category.add( new DefaultMutableTreeNode( "Cross references" ) );
+    private static void addCrossReferences(final DefaultMutableTreeNode top,
+                                           final SortedSet<Accession> xs,
+                                           final DefaultMutableTreeNode category) {
+        if ((xs != null) && (xs.size() > 0)) {
+            category.add(new DefaultMutableTreeNode("Cross references"));
             final DefaultMutableTreeNode last = top.getLastLeaf();
-            for( final Accession x : xs ) {
-                addCrossReference( last, x, x.asText().toString() );
+            for (final Accession x : xs) {
+                addCrossReference(last, x, x.asText().toString());
             }
         }
     }
 
-    private static void addDate( final DefaultMutableTreeNode top, final Date date, final String name ) {
+    private static void addDate(final DefaultMutableTreeNode top, final Date date, final String name) {
         DefaultMutableTreeNode category;
-        category = new DefaultMutableTreeNode( name );
-        top.add( category );
-        addSubelement( category, DATE_DESCRIPTION, date.getDesc() );
-        addSubelement( category, DATE_VALUE, String.valueOf( date.getValue() ) );
-        addSubelement( category, DATE_MIN, String.valueOf( date.getMin() ) );
-        addSubelement( category, DATE_MAX, String.valueOf( date.getMax() ) );
-        addSubelement( category, DATE_UNIT, date.getUnit() );
+        category = new DefaultMutableTreeNode(name);
+        top.add(category);
+        addSubelement(category, DATE_DESCRIPTION, date.getDesc());
+        addSubelement(category, DATE_VALUE, String.valueOf(date.getValue()));
+        addSubelement(category, DATE_MIN, String.valueOf(date.getMin()));
+        addSubelement(category, DATE_MAX, String.valueOf(date.getMax()));
+        addSubelement(category, DATE_UNIT, date.getUnit());
     }
 
-    private static void addDistribution( final DefaultMutableTreeNode top, final Distribution dist, final String name ) {
+    private static void addDistribution(final DefaultMutableTreeNode top, final Distribution dist, final String name) {
         DefaultMutableTreeNode category;
-        category = new DefaultMutableTreeNode( name );
-        top.add( category );
-        addSubelement( category, DIST_DESCRIPTION, dist.getDesc() );
-        if ( ( dist.getPoints() != null ) && ( dist.getPoints().size() > 0 ) ) {
-            final Point p0 = dist.getPoints().get( 0 );
-            if ( ( p0 != null ) && !Point.isSeemsEmpty( p0 ) ) {
-                addSubelement( category, DIST_GEODETIC_DATUM, p0.getGeodeticDatum() );
-                addSubelement( category, DIST_LATITUDE, String.valueOf( p0.getLatitude() ) );
-                addSubelement( category, DIST_LONGITUDE, String.valueOf( p0.getLongitude() ) );
+        category = new DefaultMutableTreeNode(name);
+        top.add(category);
+        addSubelement(category, DIST_DESCRIPTION, dist.getDesc());
+        if ((dist.getPoints() != null) && (dist.getPoints().size() > 0)) {
+            final Point p0 = dist.getPoints().get(0);
+            if ((p0 != null) && !Point.isSeemsEmpty(p0)) {
+                addSubelement(category, DIST_GEODETIC_DATUM, p0.getGeodeticDatum());
+                addSubelement(category, DIST_LATITUDE, String.valueOf(p0.getLatitude()));
+                addSubelement(category, DIST_LONGITUDE, String.valueOf(p0.getLongitude()));
                 String alt_unit = p0.getAltiudeUnit();
-                if ( ForesterUtil.isEmpty( alt_unit ) ) {
+                if (ForesterUtil.isEmpty(alt_unit)) {
                     alt_unit = "?";
                 }
-                addSubelement( category, DIST_ALTITUDE, String.valueOf( p0.getAltitude() ) + alt_unit );
+                addSubelement(category, DIST_ALTITUDE, String.valueOf(p0.getAltitude()) + alt_unit);
             }
         }
     }
 
-    private static void addEvents( final DefaultMutableTreeNode top, final Event events, final String name ) {
+    private static void addEvents(final DefaultMutableTreeNode top, final Event events, final String name) {
         DefaultMutableTreeNode category;
-        category = new DefaultMutableTreeNode( name );
-        top.add( category );
-        if ( events.getNumberOfDuplications() > 0 ) {
-            addSubelement( category, EVENTS_DUPLICATIONS, String.valueOf( events.getNumberOfDuplications() ) );
+        category = new DefaultMutableTreeNode(name);
+        top.add(category);
+        if (events.getNumberOfDuplications() > 0) {
+            addSubelement(category, EVENTS_DUPLICATIONS, String.valueOf(events.getNumberOfDuplications()));
         }
-        if ( events.getNumberOfSpeciations() > 0 ) {
-            addSubelement( category, EVENTS_SPECIATIONS, String.valueOf( events.getNumberOfSpeciations() ) );
+        if (events.getNumberOfSpeciations() > 0) {
+            addSubelement(category, EVENTS_SPECIATIONS, String.valueOf(events.getNumberOfSpeciations()));
         }
-        if ( events.getNumberOfGeneLosses() > 0 ) {
-            addSubelement( category, EVENTS_GENE_LOSSES, String.valueOf( events.getNumberOfGeneLosses() ) );
+        if (events.getNumberOfGeneLosses() > 0) {
+            addSubelement(category, EVENTS_GENE_LOSSES, String.valueOf(events.getNumberOfGeneLosses()));
         }
-        addSubelement( category, "Type", events.getEventType().toString() );
-        if ( events.getConfidence() != null ) {
-            addSubelement( category, CONFIDENCE, events.getConfidence().asText().toString() );
+        addSubelement(category, "Type", events.getEventType().toString());
+        if (events.getConfidence() != null) {
+            addSubelement(category, CONFIDENCE, events.getConfidence().asText().toString());
         }
     }
 
-    private static void addLineage( final DefaultMutableTreeNode top,
-                                    final List<String> lineage,
-                                    final DefaultMutableTreeNode category ) {
-        if ( ( lineage != null ) && ( lineage.size() > 0 ) ) {
+    private static void addLineage(final DefaultMutableTreeNode top,
+                                   final List<String> lineage,
+                                   final DefaultMutableTreeNode category) {
+        if ((lineage != null) && (lineage.size() > 0)) {
             final StringBuilder sb = new StringBuilder();
-            for( final String lin : lineage ) {
-                if ( !ForesterUtil.isEmpty( lin ) ) {
-                    sb.append( lin );
-                    sb.append( " > " );
+            for (final String lin : lineage) {
+                if (!ForesterUtil.isEmpty(lin)) {
+                    sb.append(lin);
+                    sb.append(" > ");
                 }
             }
             String str = null;
-            if ( sb.length() > 1 ) {
-                str = sb.substring( 0, sb.length() - 3 );
+            if (sb.length() > 1) {
+                str = sb.substring(0, sb.length() - 3);
             }
-            if ( !ForesterUtil.isEmpty( str ) ) {
-                addSubelement( category, "Lineage", str );
+            if (!ForesterUtil.isEmpty(str)) {
+                addSubelement(category, "Lineage", str);
             }
         }
     }
 
-    private static void addProperties( final DefaultMutableTreeNode top,
-                                       final PropertiesList properties,
-                                       final String string ) {
+    private static void addProperties(final DefaultMutableTreeNode top,
+                                      final PropertiesList properties,
+                                      final String string) {
         final List<Property> properties_map = properties.getProperties();
-        final DefaultMutableTreeNode category = new DefaultMutableTreeNode( "Properties " );
-        top.add( category );
-        for( final Property prop : properties_map ) {
-          
-            category.add( new DefaultMutableTreeNode( prop.getRef() + "=" + prop.getValue() + " " + prop.getUnit()
-                    + " [" + prop.getAppliesTo().toString() + "]" ) );
+        final DefaultMutableTreeNode category = new DefaultMutableTreeNode("Properties ");
+        top.add(category);
+        for (final Property prop : properties_map) {
+
+            category.add(new DefaultMutableTreeNode(prop.getRef() + "=" + prop.getValue() + " " + prop.getUnit()
+                    + " [" + prop.getAppliesTo().toString() + "]"));
         }
     }
 
-    private static void addReference( final DefaultMutableTreeNode top, final Reference ref, final String name ) {
-        final DefaultMutableTreeNode category = new DefaultMutableTreeNode( name );
-        top.add( category );
-        addSubelement( category, LIT_REFERENCE_DOI, ref.getDoi() );
-        addSubelement( category, LIT_REFERENCE_DESC, ref.getDescription() );
+    private static void addReference(final DefaultMutableTreeNode top, final Reference ref, final String name) {
+        final DefaultMutableTreeNode category = new DefaultMutableTreeNode(name);
+        top.add(category);
+        addSubelement(category, LIT_REFERENCE_DOI, ref.getDoi());
+        addSubelement(category, LIT_REFERENCE_DESC, ref.getDescription());
     }
 
-    private static void addSequence( final DefaultMutableTreeNode top, final Sequence seq, final String name ) {
-        final DefaultMutableTreeNode category = new DefaultMutableTreeNode( name );
-        top.add( category );
-        addSubelement( category, SEQ_NAME, seq.getName() );
-        addSubelement( category, SEQ_SYMBOL, seq.getSymbol() );
-        addSubelement( category, SEQ_GENE_NAME, seq.getGeneName() );
-        if ( seq.getAccession() != null ) {
-            addSubelement( category, SEQ_ACCESSION, seq.getAccession().asText().toString() );
+    private static void addSequence(final DefaultMutableTreeNode top, final Sequence seq, final String name) {
+        String n = "";
+        if (!ForesterUtil.isEmpty(seq.getName())) {
+            n = " (" + seq.getName() + ")";
         }
-        if ( seq.getPrimaryAccession() != null ) {
-            addSubelement( category, SEQ_PRIME_ACCESSION, seq.getPrimaryAccession().asText().toString() );
+        final String nname = name + n;
+        final DefaultMutableTreeNode category = new DefaultMutableTreeNode(nname);
+        top.add(category);
+        addSubelement(category, SEQ_NAME, seq.getName());
+        addSubelement(category, SEQ_SYMBOL, seq.getSymbol());
+        addSubelement(category, SEQ_GENE_NAME, seq.getGeneName());
+        if (seq.getAccession() != null) {
+            addSubelement(category, SEQ_ACCESSION, seq.getAccession().asText().toString());
         }
-        addSubelement( category, SEQ_LOCATION, seq.getLocation() );
-        addSubelement( category, SEQ_TYPE, seq.getType() );
-        addSubelement( category, SEQ_MOL_SEQ, seq.getMolecularSequence() );
-        if ( ( seq.getAnnotations() != null ) && !seq.getAnnotations().isEmpty() ) {
-            addAnnotations( top, seq.getAnnotations(), category );
+        if (seq.getPrimaryAccession() != null) {
+            addSubelement(category, SEQ_PRIME_ACCESSION, seq.getPrimaryAccession().asText().toString());
         }
-        if ( ( seq.getCrossReferences() != null ) && !seq.getCrossReferences().isEmpty() ) {
-            addCrossReferences( top, seq.getCrossReferences(), category );
+        addSubelement(category, SEQ_LOCATION, seq.getLocation());
+        addSubelement(category, SEQ_TYPE, seq.getType());
+        addSubelement(category, SEQ_MOL_SEQ, seq.getMolecularSequence());
+        if ((seq.getAnnotations() != null) && !seq.getAnnotations().isEmpty()) {
+            addAnnotations(top, seq.getAnnotations(), category);
         }
-        if ( ( seq.getUris() != null ) && !seq.getUris().isEmpty() ) {
-            addUris( top, seq.getUris(), category );
+        if ((seq.getCrossReferences() != null) && !seq.getCrossReferences().isEmpty()) {
+            addCrossReferences(top, seq.getCrossReferences(), category);
         }
-    }
-
-    private static void addSubelement( final DefaultMutableTreeNode node, final String name, final String value ) {
-        if ( !ForesterUtil.isEmpty( value ) ) {
-            node.add( new DefaultMutableTreeNode( name + ": " + value ) );
-        }
-    }
-
-    private static void addTaxonomy( final DefaultMutableTreeNode top, final Taxonomy tax, final String name ) {
-        final DefaultMutableTreeNode category = new DefaultMutableTreeNode( name );
-        top.add( category );
-        if ( tax.getIdentifier() != null ) {
-            addSubelement( category, TAXONOMY_IDENTIFIER, tax.getIdentifier().asText().toString() );
-        }
-        addSubelement( category, TAXONOMY_CODE, tax.getTaxonomyCode() );
-        addSubelement( category, TAXONOMY_SCIENTIFIC_NAME, tax.getScientificName() );
-        addSubelement( category, TAXONOMY_AUTHORITY, tax.getAuthority() );
-        addSubelement( category, TAXONOMY_COMMON_NAME, tax.getCommonName() );
-        for( final String syn : tax.getSynonyms() ) {
-            addSubelement( category, TAXONOMY_SYNONYM, syn );
-        }
-        addSubelement( category, TAXONOMY_RANK, tax.getRank() );
-        if ( ( tax.getUris() != null ) && !tax.getUris().isEmpty() ) {
-            addUris( top, tax.getUris(), category );
-        }
-        if ( ( tax.getLineage() != null ) && !tax.getLineage().isEmpty() ) {
-            addLineage( top, tax.getLineage(), category );
+        if ((seq.getUris() != null) && !seq.getUris().isEmpty()) {
+            addUris(top, seq.getUris(), category);
         }
     }
 
-    private static void addUri( final DefaultMutableTreeNode top, final Uri uri, final String name ) {
+    private static void addSubelement(final DefaultMutableTreeNode node, final String name, final String value) {
+        if (!ForesterUtil.isEmpty(value)) {
+            node.add(new DefaultMutableTreeNode(name + ": " + value));
+        }
+    }
+
+    private static void addTaxonomy(final DefaultMutableTreeNode top, final Taxonomy tax, final String name) {
+        final DefaultMutableTreeNode category = new DefaultMutableTreeNode(name);
+        top.add(category);
+        if (tax.getIdentifier() != null) {
+            addSubelement(category, TAXONOMY_IDENTIFIER, tax.getIdentifier().asText().toString());
+        }
+        addSubelement(category, TAXONOMY_CODE, tax.getTaxonomyCode());
+        addSubelement(category, TAXONOMY_SCIENTIFIC_NAME, tax.getScientificName());
+        addSubelement(category, TAXONOMY_AUTHORITY, tax.getAuthority());
+        addSubelement(category, TAXONOMY_COMMON_NAME, tax.getCommonName());
+        for (final String syn : tax.getSynonyms()) {
+            addSubelement(category, TAXONOMY_SYNONYM, syn);
+        }
+        addSubelement(category, TAXONOMY_RANK, tax.getRank());
+        if ((tax.getUris() != null) && !tax.getUris().isEmpty()) {
+            addUris(top, tax.getUris(), category);
+        }
+        if ((tax.getLineage() != null) && !tax.getLineage().isEmpty()) {
+            addLineage(top, tax.getLineage(), category);
+        }
+    }
+
+    private static void addUri(final DefaultMutableTreeNode top, final Uri uri, final String name) {
         DefaultMutableTreeNode category;
-        category = new DefaultMutableTreeNode( name );
-        top.add( category );
-        addSubelement( category, "Description", uri.getDescription() );
-        addSubelement( category, "Type", uri.getType() );
-        addSubelement( category, "URI", uri.getValue().toString() );
+        category = new DefaultMutableTreeNode(name);
+        top.add(category);
+        addSubelement(category, "Description", uri.getDescription());
+        addSubelement(category, "Type", uri.getType());
+        addSubelement(category, "URI", uri.getValue().toString());
     }
 
-    private static void addUris( final DefaultMutableTreeNode top,
-                                 final List<Uri> uris,
-                                 final DefaultMutableTreeNode category ) {
-        if ( ( uris != null ) && ( uris.size() > 0 ) ) {
-            category.add( new DefaultMutableTreeNode( "URIs" ) );
+    private static void addUris(final DefaultMutableTreeNode top,
+                                final List<Uri> uris,
+                                final DefaultMutableTreeNode category) {
+        if ((uris != null) && (uris.size() > 0)) {
+            category.add(new DefaultMutableTreeNode("URIs"));
             final DefaultMutableTreeNode last = top.getLastLeaf();
             int i = 0;
-            for( final Uri uri : uris ) {
-                if ( uri != null ) {
-                    addUri( last, uri, "URI " + ( i++ ) );
+            for (final Uri uri : uris) {
+                if (uri != null) {
+                    addUri(last, uri, "URI " + (i++));
                 }
             }
         }
     }
 
-    private static void createNodes( final DefaultMutableTreeNode top, final PhylogenyNode phylogeny_node ) {
-        addBasics( top, phylogeny_node, BASIC );
+    private static void createNodes(final DefaultMutableTreeNode top, final PhylogenyNode phylogeny_node) {
+        addBasics(top, phylogeny_node, BASIC);
         // Taxonomy
-        if ( phylogeny_node.getNodeData().isHasTaxonomy() ) {
-            addTaxonomy( top, phylogeny_node.getNodeData().getTaxonomy(), TAXONOMY );
+        if (phylogeny_node.getNodeData().isHasTaxonomy()) {
+            addTaxonomy(top, phylogeny_node.getNodeData().getTaxonomy(), TAXONOMY);
         }
         // Sequence
-        if ( phylogeny_node.getNodeData().isHasSequence() ) {
-            addSequence( top, phylogeny_node.getNodeData().getSequence(), SEQUENCE );
+        if (phylogeny_node.getNodeData().isHasSequence()) {
+            final int s = phylogeny_node.getNodeData().getSequences().size();
+            for (int i = 0; i < s; ++i) {
+                if (s > 1) {
+                    addSequence(top, phylogeny_node.getNodeData().getSequence(i), SEQUENCE
+                            + " [" + i + "/" + (s - 1) + "]");
+                } else {
+                    addSequence(top, phylogeny_node.getNodeData().getSequence(i), SEQUENCE);
+                }
+            }
         }
         // Events
-        if ( phylogeny_node.getNodeData().isHasEvent() ) {
-            addEvents( top, phylogeny_node.getNodeData().getEvent(), EVENTS );
+        if (phylogeny_node.getNodeData().isHasEvent()) {
+            addEvents(top, phylogeny_node.getNodeData().getEvent(), EVENTS);
         }
         // Date
-        if ( phylogeny_node.getNodeData().isHasDate() ) {
-            addDate( top, phylogeny_node.getNodeData().getDate(), DATE );
+        if (phylogeny_node.getNodeData().isHasDate()) {
+            addDate(top, phylogeny_node.getNodeData().getDate(), DATE);
         }
         // Distribution
-        if ( phylogeny_node.getNodeData().isHasDistribution() ) {
-            addDistribution( top, phylogeny_node.getNodeData().getDistribution(), DISTRIBUTION );
+        if (phylogeny_node.getNodeData().isHasDistribution()) {
+            addDistribution(top, phylogeny_node.getNodeData().getDistribution(), DISTRIBUTION);
         }
         // Reference
-        if ( phylogeny_node.getNodeData().isHasReference() ) {
-            addReference( top, phylogeny_node.getNodeData().getReference(), LIT_REFERENCE );
+        if (phylogeny_node.getNodeData().isHasReference()) {
+            addReference(top, phylogeny_node.getNodeData().getReference(), LIT_REFERENCE);
         }
         // BinaryCharacters
-        if ( phylogeny_node.getNodeData().isHasBinaryCharacters() ) {
-            addBinaryCharacters( top, phylogeny_node.getNodeData().getBinaryCharacters(), BINARY_CHARACTERS );
+        if (phylogeny_node.getNodeData().isHasBinaryCharacters()) {
+            addBinaryCharacters(top, phylogeny_node.getNodeData().getBinaryCharacters(), BINARY_CHARACTERS);
         }
         // Properties
-        if ( phylogeny_node.getNodeData().isHasProperties() ) {
-            addProperties( top, phylogeny_node.getNodeData().getProperties(), PROP );
+        if (phylogeny_node.getNodeData().isHasProperties()) {
+            addProperties(top, phylogeny_node.getNodeData().getProperties(), PROP);
         }
     }
 }

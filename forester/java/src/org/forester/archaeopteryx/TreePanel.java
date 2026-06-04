@@ -239,7 +239,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private static final BasicStroke STROKE_2 = new BasicStroke(2f);
 
 
-
     private static final BasicStroke STROKE_01_DASHED = new BasicStroke(0.1f,
             BasicStroke.CAP_SQUARE,
             BasicStroke.JOIN_ROUND,
@@ -417,7 +416,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         requestFocusInWindow();
     }
 
-    private static BasicStroke makeStroke(final float width ) {
+    private static BasicStroke makeStroke(final float width) {
         return new BasicStroke(width);
     }
 
@@ -1670,6 +1669,35 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final String title = clickto_names.get(i);
             _node_popup_menu_items[i] = new JMenuItem(title);
             if (title.equals(Configuration.clickto_options[Configuration.open_seq_web][0])) {
+                final List<Sequence> seqs = node.getNodeData().getSequences();
+                boolean addedPerSeqItems = false;
+                if (seqs != null) {
+                    for (final Sequence seq : seqs) {
+                        final Accession acc = SequenceAccessionTools.obtainAccessorFromSequence(seq);
+                        if (acc != null) {
+                            final String seqName = seq.getName();
+                            final String trimmedName = (!ForesterUtil.isEmpty(seqName) && seqName.length() > 20)
+                                    ? seqName.substring(0, 20) + "..."
+                                    : seqName;
+                            final String label = ForesterUtil.isEmpty(trimmedName)
+                                    ? acc.getValue()
+                                    : trimmedName + " [" + acc.getValue() + "]";
+                            final JMenuItem seqItem = new JMenuItem(title + " [" + label + "]");
+                            final Sequence capturedSeq = seq;
+                            seqItem.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(final ActionEvent e) {
+                                    openSeqWebForSequence(node, capturedSeq);
+                                }
+                            });
+                            _node_popup_menu.add(seqItem);
+                            addedPerSeqItems = true;
+                        }
+                    }
+                }
+                if (addedPerSeqItems) {
+                    continue;
+                }
                 final String id = isCanOpenSeqWeb(node);
                 if (!ForesterUtil.isEmpty(id)) {
                     _node_popup_menu_items[i].setText(_node_popup_menu_items[i].getText() + " [" + id + "]");
@@ -1770,38 +1798,60 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 }
                 sb.append(node.getName());
             }
-            if (node.getNodeData().isHasSequence()) {
-                if (getControlPanel().isShowSeqSymbols()
-                        && (node.getNodeData().getSequence().getSymbol().length() > 0)) {
-                    if (sb.length() > 0) {
-                        sb.append(" ");
+            if (node.getNodeData().isHasSequence()
+                    && (getControlPanel().isShowSeqSymbols()
+                    || getControlPanel().isShowGeneNames()
+                    || getControlPanel().isShowSeqNames()
+                    || getControlPanel().isShowSequenceAcc()
+            )) {
+                final int s = node.getNodeData().getSequences().size();
+                for (int i = 0; i < s; ++i) {
+                    final Sequence seq = node.getNodeData().getSequence(i);
+                    if (seq != null) {
+                        if (s > 1) {
+                            if (i > 0) {
+                                sb.append("; [");
+                            } else {
+                                sb.append(" [");
+                            }
+                            sb.append(i);
+                            sb.append("/");
+                            sb.append(s - 1);
+                            sb.append("]");
+                        }
+                        if (getControlPanel().isShowSeqSymbols()
+                                && (seq.getSymbol().length() > 0)) {
+                            if (sb.length() > 0) {
+                                sb.append(" ");
+                            }
+                            sb.append(seq.getSymbol());
+                        }
+                        if (getControlPanel().isShowGeneNames()
+                                && (seq.getGeneName().length() > 0)) {
+                            if (sb.length() > 0) {
+                                sb.append(" ");
+                            }
+                            sb.append(seq.getGeneName());
+                        }
+                        if (getControlPanel().isShowSeqNames()
+                                && (seq.getName().length() > 0)) {
+                            if (sb.length() > 0) {
+                                sb.append(" ");
+                            }
+                            sb.append(seq.getName());
+                        }
+                        if (getControlPanel().isShowSequenceAcc()
+                                && (seq.getAccession() != null)) {
+                            if (sb.length() > 0) {
+                                sb.append(" ");
+                            }
+                            if (!ForesterUtil.isEmpty(seq.getAccession().getSource())) {
+                                sb.append(seq.getAccession().getSource());
+                                sb.append(":");
+                            }
+                            sb.append(seq.getAccession().getValue());
+                        }
                     }
-                    sb.append(node.getNodeData().getSequence().getSymbol());
-                }
-                if (getControlPanel().isShowGeneNames()
-                        && (node.getNodeData().getSequence().getGeneName().length() > 0)) {
-                    if (sb.length() > 0) {
-                        sb.append(" ");
-                    }
-                    sb.append(node.getNodeData().getSequence().getGeneName());
-                }
-                if (getControlPanel().isShowSeqNames()
-                        && (node.getNodeData().getSequence().getName().length() > 0)) {
-                    if (sb.length() > 0) {
-                        sb.append(" ");
-                    }
-                    sb.append(node.getNodeData().getSequence().getName());
-                }
-                if (getControlPanel().isShowSequenceAcc()
-                        && (node.getNodeData().getSequence().getAccession() != null)) {
-                    if (sb.length() > 0) {
-                        sb.append(" ");
-                    }
-                    if (!ForesterUtil.isEmpty(node.getNodeData().getSequence().getAccession().getSource())) {
-                        sb.append(node.getNodeData().getSequence().getAccession().getSource());
-                        sb.append(":");
-                    }
-                    sb.append(node.getNodeData().getSequence().getAccession().getValue());
                 }
             }
             if (getControlPanel().isShowProperties() && node.getNodeData().isHasProperties()) {
@@ -1899,6 +1949,23 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return;
         }
         final String uri_str = TreePanelUtil.createUriForSeqWeb(node, getConfiguration(), this);
+        if (!ForesterUtil.isEmpty(uri_str)) {
+            try {
+                AptxUtil.launchWebBrowser(new URI(uri_str), "_aptx_seq");
+            } catch (final IOException e) {
+                AptxUtil.showErrorMessage(this, e.toString());
+                e.printStackTrace();
+            } catch (final URISyntaxException e) {
+                AptxUtil.showErrorMessage(this, e.toString());
+                e.printStackTrace();
+            }
+        } else {
+            cannotOpenBrowserWarningMessage("sequence");
+        }
+    }
+
+    final private void openSeqWebForSequence(final PhylogenyNode node, final Sequence seq) {
+        final String uri_str = TreePanelUtil.createUriForSeqWeb(seq, getConfiguration(), this);
         if (!ForesterUtil.isEmpty(uri_str)) {
             try {
                 AptxUtil.launchWebBrowser(new URI(uri_str), "_aptx_seq");
@@ -3835,7 +3902,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             g.setStroke(STROKE_05);
         } else if (getYdistance() < 2) {
             g.setStroke(STROKE_075);
-        } else if (_options.getDefaultBranchWidth() > 0 ) {
+        } else if (_options.getDefaultBranchWidth() > 0) {
             g.setStroke(makeStroke(_options.getDefaultBranchWidth()));
         } else {
             g.setStroke(STROKE_1);

@@ -122,9 +122,7 @@ public final class SequenceDbWsTools {
         }
     }
 
-    public static SequenceDatabaseEntry obtainRefSeqEntryFromEmbl(final Accession acc) throws IOException {
-        return obtainRefSeqEntryFromEmbl(acc, DEFAULT_LINES_TO_RETURN);
-    }
+
 
     public static SequenceDatabaseEntry obtainRefSeqEntryFromEmbl(final Accession acc, final int max_lines_to_return) throws IOException {
         final List<String> lines = queryEmblDbForRefSeqEntry(acc, max_lines_to_return);

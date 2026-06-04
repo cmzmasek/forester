@@ -102,6 +102,69 @@ public class TreePanelUtil {
         return uri_str;
     }
 
+    public final static String createUriForSeqWeb( final Sequence seq,
+                                                   final Configuration conf,
+                                                   final TreePanel tp ) {
+        String uri_str = null;
+        final String upkb = SequenceAccessionTools.obtainUniProtAccessorFromSequence( seq );
+        if ( !ForesterUtil.isEmpty( upkb ) ) {
+            try {
+                uri_str = ForesterUtil.UNIPROT_KB + URLEncoder.encode( upkb, ForesterConstants.UTF_8 );
+            }
+            catch ( final UnsupportedEncodingException e ) {
+                AptxUtil.showErrorMessage( tp, e.toString() );
+                e.printStackTrace();
+            }
+        }
+        if ( ForesterUtil.isEmpty( uri_str ) ) {
+            final String v = SequenceAccessionTools.obtainGenbankAccessorFromSequence( seq );
+            if ( !ForesterUtil.isEmpty( v ) ) {
+                try {
+                    if ( SequenceAccessionTools.isProteinDbQuery( v ) ) {
+                        uri_str = ForesterUtil.NCBI_PROTEIN + URLEncoder.encode( v, ForesterConstants.UTF_8 );
+                    }
+                    else {
+                        uri_str = ForesterUtil.NCBI_NUCCORE + URLEncoder.encode( v, ForesterConstants.UTF_8 );
+                    }
+                }
+                catch ( final UnsupportedEncodingException e ) {
+                    AptxUtil.showErrorMessage( tp, e.toString() );
+                    e.printStackTrace();
+                }
+            }
+        }
+        if ( ForesterUtil.isEmpty( uri_str ) ) {
+            final String v = SequenceAccessionTools.obtainRefSeqAccessorFromSequence( seq );
+            if ( !ForesterUtil.isEmpty( v ) ) {
+                try {
+                    if ( SequenceAccessionTools.isProteinDbQuery( v ) ) {
+                        uri_str = ForesterUtil.NCBI_PROTEIN + URLEncoder.encode( v, ForesterConstants.UTF_8 );
+                    }
+                    else {
+                        uri_str = ForesterUtil.NCBI_NUCCORE + URLEncoder.encode( v, ForesterConstants.UTF_8 );
+                    }
+                }
+                catch ( final UnsupportedEncodingException e ) {
+                    AptxUtil.showErrorMessage( tp, e.toString() );
+                    e.printStackTrace();
+                }
+            }
+        }
+        if ( ForesterUtil.isEmpty( uri_str ) ) {
+            final String v = SequenceAccessionTools.obtainGiNumberFromSequence( seq );
+            if ( !ForesterUtil.isEmpty( v ) ) {
+                try {
+                    uri_str = ForesterUtil.NCBI_GI + URLEncoder.encode( v, ForesterConstants.UTF_8 );
+                }
+                catch ( final UnsupportedEncodingException e ) {
+                    AptxUtil.showErrorMessage( tp, e.toString() );
+                    e.printStackTrace();
+                }
+            }
+        }
+        return uri_str;
+    }
+
     public static List<String> createUrisForPdbWeb( final PhylogenyNode node,
                                                     final List<Accession> pdb_accs,
                                                     final Configuration configuration,

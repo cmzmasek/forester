@@ -38,12 +38,11 @@ public final class AptxConstants {
 
     final static boolean __ALLOW_PHYLOGENETIC_INFERENCE = true;
     public final static String PRG_NAME = "Archaeopteryx";
-    final static String VERSION = "0.9.5 beta";
-    final static String PRG_DATE = "2025-10-20";
+    final static String VERSION = "0.9.6 beta";
+    final static String PRG_DATE = "2026-06-04";
     final static String DEFAULT_CONFIGURATION_FILE_NAME = "_aptx_configuration_file";
     final static String[] DEFAULT_FONT_CHOICES = {
             "Arial Unicode MS", "Dialog", "SansSerif", "Sans", "Arial", "Helvetica"};
-    final static boolean VERBOSE_DEFAULT = false;
     final static int DOMAIN_STRUCTURE_DEFAULT_WIDTH = 100;
     final static String AUTHOR_EMAIL = "czmasek AT jcvi DOT org";
     final static int DOMAIN_STRUCTURE_E_VALUE_THR_DEFAULT_EXP = -3;
@@ -93,7 +92,6 @@ public final class AptxConstants {
             255);
     final static Color BUTTON_BORDER_COLOR_DEFAULT = new Color(0, 0, 0);
     final static Color TAB_LABEL_FOREGROUND_COLOR_SELECTED = new Color(0, 0, 0);
-    final static String NCBI_ALL_DATABASE_SEARCH = "http://www.ncbi.nlm.nih.gov/gquery/?term=";
     public final static Color DOMAIN_BASE_COLOR_FOR_PDF = new Color(100,
             100,
             100);

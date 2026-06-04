@@ -36,14 +36,14 @@ import org.forester.util.ForesterUtil;
 
 public class PropertiesList implements PhylogenyData {
 
-    private final List<Property>       _properties;
+    private final List<Property> _properties;
     private final Comparator<Property> comp = new Comparator<Property>() {
 
-                                                @Override
-                                                public int compare( final Property p1, final Property p2 ) {
-                                                    return p2.getRef().compareTo( p1.getRef() );
-                                                }
-                                            };
+        @Override
+        public int compare(final Property p1, final Property p2) {
+            return p2.getRef().compareTo(p1.getRef());
+        }
+    };
 
     public PropertiesList() {
         _properties = new ArrayList<Property>();
@@ -53,23 +53,22 @@ public class PropertiesList implements PhylogenyData {
         return _properties.size();
     }
 
-    public void addProperty( final Property property ) throws IllegalArgumentException {
-        _properties.add( property );
-        Collections.sort( _properties, comp );
+    public void addProperty(final Property property) throws IllegalArgumentException {
+        _properties.add(property);
+        Collections.sort(_properties, comp);
     }
 
     @Override
     public StringBuffer asSimpleText() {
         final StringBuffer sb = new StringBuffer();
         boolean first = true;
-        for( final Property p : getProperties() ) {
-            if ( first ) {
+        for (final Property p : getProperties()) {
+            if (first) {
                 first = false;
+            } else {
+                sb.append("\n");
             }
-            else {
-                sb.append( "\n" );
-            }
-            sb.append( p.asText() );
+            sb.append(p.asText());
         }
         return sb;
     }
@@ -82,8 +81,8 @@ public class PropertiesList implements PhylogenyData {
     @Override
     public PhylogenyData copy() {
         final PropertiesList new_one = new PropertiesList();
-        for( final Property r : getProperties() ) {
-            new_one.addProperty( r );
+        for (final Property r : getProperties()) {
+            new_one.addProperty(r);
         }
         return new_one;
     }
@@ -92,33 +91,48 @@ public class PropertiesList implements PhylogenyData {
         return _properties;
     }
 
-    public List<Property> getPropertiesWithGivenReferencePrefix( final String ref_prefix )
+    public List<Property> getPropertiesWithGivenReferencePrefix(final String ref_prefix)
             throws IllegalArgumentException {
-        if ( ForesterUtil.isEmpty( ref_prefix ) ) {
-            throw new IllegalArgumentException( "reference prefix is null or empty" );
+        if (ForesterUtil.isEmpty(ref_prefix)) {
+            throw new IllegalArgumentException("reference prefix is null or empty");
         }
-        final String my_ref_prefix = new String( ref_prefix.trim() );
+        final String my_ref_prefix = new String(ref_prefix.trim());
         final List<Property> props = new ArrayList<Property>();
-        for( final Property p : getProperties() ) {
-            if ( p.getRef().startsWith( my_ref_prefix ) ) {
-                props.add( p );
+        for (final Property p : getProperties()) {
+            if (p.getRef().startsWith(my_ref_prefix)) {
+                props.add(p);
             }
         }
         return props;
     }
 
-    public List<Property> getProperties( final String ref ) throws IllegalArgumentException {
+    public List<Property> getPropertiesWithGivenRef(final String ref)
+            throws IllegalArgumentException {
+        if (ForesterUtil.isEmpty(ref)) {
+            throw new IllegalArgumentException("reference is null or empty");
+        }
+        final String my_ref = new String(ref.trim());
         final List<Property> props = new ArrayList<Property>();
-        for( final Property p : getProperties() ) {
-            if ( p.getRef().equals( ref ) ) {
-                props.add( p );
+        for (final Property p : getProperties()) {
+            if (p.getRef().equals(my_ref)) {
+                props.add(p);
+            }
+        }
+        return props;
+    }
+
+    public List<Property> getProperties(final String ref) throws IllegalArgumentException {
+        final List<Property> props = new ArrayList<Property>();
+        for (final Property p : getProperties()) {
+            if (p.getRef().equals(ref)) {
+                props.add(p);
             }
         }
         return props;
     }
 
     @Override
-    public boolean isEqual( final PhylogenyData data ) {
+    public boolean isEqual(final PhylogenyData data) {
         throw new UnsupportedOperationException();
     }
 
@@ -128,10 +142,10 @@ public class PropertiesList implements PhylogenyData {
     }
 
     @Override
-    public void toPhyloXML( final Writer writer, final int level, final String indentation ) throws IOException {
-        if ( getProperties() != null ) {
-            for( final Property p : getProperties() ) {
-                p.toPhyloXML( writer, level, indentation );
+    public void toPhyloXML(final Writer writer, final int level, final String indentation) throws IOException {
+        if (getProperties() != null) {
+            for (final Property p : getProperties()) {
+                p.toPhyloXML(writer, level, indentation);
             }
         }
     }

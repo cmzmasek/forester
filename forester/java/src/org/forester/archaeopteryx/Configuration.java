@@ -125,16 +125,16 @@ public final class Configuration {
             {"Phylogram", "display", "?"}, {"Node Name", "display", "yes"}, {"Taxonomy Code", "display", "yes"},
             {"Seq Annotations", "display", "no"}, {"Confidence Values", "display", "?"},
             {"Node Events", "display", "?"}, {"Colorize by Taxonomy", "display", "no"},
-            {"Colorize by Sequence", "display", "no"}, {"Visual Styles/Branch Colors", "display", "no"},
+            {"Colorize by Sequence", "display", "no"}, {"Visual Styles/Branch Colors", "display", "yes"},
             {"Branch Widths", "display", "no"}, {"Domain Architectures", "display", "no"},
             {"Binary Characters", "nodisplay", "no"}, {"Binary Char Counts", "nodisplay", "no"},
-            {"Seq Name", "display", "yes"}, {"Seq Accession", "display", "no"},
+            {"Seq Name", "display", "no"}, {"Seq Accession", "display", "no"},
             {"Show Internal Data", "display", "yes"}, {"Dyna Hide", "display", "yes"},
             {"Taxonomy Scientific", "display", "yes"}, {"Taxonomy Common", "display", "no"},
-            {"Colorize by Annotation", "display", "no"}, {"Seq Symbol", "display", "yes"},
+            {"Colorize by Annotation", "display", "no"}, {"Seq Symbol", "display", "no"},
             {"Rollover", "display", "yes"}, {"Relation Confidence", "nodisplay", "no"},
-            {"Vector Data", "nodisplay", "no"}, {"Taxonomy Images", "display", "no"},
-            {"Properties", "display", "no"}, {"Gene Name", "display", "yes"},
+            {"Vector Data", "nodisplay", "no"}, {"Taxonomy Images", "nodisplay", "no"},
+            {"Properties", "display", "no"}, {"Gene Name", "display", "no"},
             {"Multiple Seq Alignment", "display", "no"}, {"Branch Length Values", "display", "no"}
             , {"Taxonomy Rank", "display", "no"}, {"Show External Data", "display", "yes"}};
     final static int display_as_phylogram = 0;

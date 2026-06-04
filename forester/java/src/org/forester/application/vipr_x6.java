@@ -52,8 +52,8 @@ public class vipr_x6 {
     private static final boolean DEBUG = false;
 
     private static final boolean ALLOW_NO_ENTRIES_FOUND = true;
-    private static final String PRG_DATE = "2025-12-22";
-    private static final String PRG_VERSION = "1.5.1";
+    private static final String PRG_DATE = "2026-01-27";
+    private static final String PRG_VERSION = "1.5.2";
 
     private static final int COL_GENOME_ID = 0;
     private static final int COL_GENOME_NAME = 1;
@@ -126,7 +126,7 @@ public class vipr_x6 {
         final File mapfile = new File(args[1]);
         final File outfile = new File(args[2]);
 
-        final boolean obtain_data_from_name = false;
+        final boolean obtain_data_from_name = true;
         final boolean make_new_from_genus_species_strain = true;
 
         final String tree_name;
@@ -267,9 +267,14 @@ public class vipr_x6 {
 
                 boolean found = false;
                 if (genbank_acc.length() > 3) {
-                    if (genbank_acc_to_row.containsKey(genbank_acc)) {
+                    String gb_acc = genbank_acc;
+                    final int pi = gb_acc.indexOf(".");
+                    if (pi > 0) {
+                        gb_acc = gb_acc.substring(0, pi);
+                    }
+                    if (genbank_acc_to_row.containsKey(gb_acc)) {
                         found = true;
-                        final int r = genbank_acc_to_row.get(genbank_acc);
+                        final int r = genbank_acc_to_row.get(gb_acc);
                         m_isolationsource = map.getValue(COL_ISOLATION_SOURCE, r).replaceAll("\"", "");
                         m_coldate = map.getValue(COL_COLLECTION_DATE, r).replaceAll("\"", "");
                         m_hostname_sci = map.getValue(COL_HOST_NAME_SCI, r).replaceAll("\"", "");
@@ -392,8 +397,15 @@ public class vipr_x6 {
                 if (ForesterUtil.isEmpty(year)) {
                     System.out.println("WARNING: No year for " + name);
                 }
+                final PropertiesList custom_data;
+                if (ext_node.isHasNodeData() && ext_node.getNodeData().isHasProperties()) {
+                    custom_data = ext_node.getNodeData().getProperties();
+                } else {
+                    custom_data = new PropertiesList();
+                    ext_node.getNodeData().setProperties(custom_data);
+                }
 
-                final PropertiesList custom_data = new PropertiesList();
+
                 if (genbank_acc.length() > 5) {
                     custom_data.addProperty(new Property(GB_ACCESSTION, genbank_acc, "", XSD_STRING, AppliesTo.NODE));
                 }
@@ -457,13 +469,13 @@ public class vipr_x6 {
                 if (!ForesterUtil.isEmpty(m_ncbi_taxon_id)) {
                     custom_data.addProperty(new Property(NCBI_TAXON_ID, m_ncbi_taxon_id, "", XSD_STRING, AppliesTo.NODE));
                 }
-                ext_node.getNodeData().setProperties(custom_data);
 
-                ext_node.getNodeData().setSequence(null); //TODO need to be option
+
+               // ext_node.getNodeData().setSequence(null); //TODO need to be option
 
                 StringBuilder new_name = new StringBuilder(cleanName(name));
 
-                boolean make_new_name = true;
+                boolean make_new_name =true;
 
                 if (make_new_name) {
                     new_name = new StringBuilder();
@@ -483,10 +495,14 @@ public class vipr_x6 {
                             }
                             new_name.append(m_strain);
                         }
+                        if (!ForesterUtil.isEmpty(genbank_acc)) {
+                            new_name.append("|");
+                            new_name.append(genbank_acc);
+                        }
                     } else {
                         if (!ForesterUtil.isEmpty(genbank_acc)) {
                             new_name = new StringBuilder(genbank_acc);
-                            new_name.append("|");
+
                         }
                         if (!ForesterUtil.isEmpty(m_strain)) {
                             new_name.append(m_strain);
@@ -504,6 +520,20 @@ public class vipr_x6 {
                                 }
                             }
                         }
+
+                        if (!ForesterUtil.isEmpty(m_isolation_country)) {
+                            new_name.append("|");
+                            new_name.append(m_isolation_country);
+                        }
+                        if (!ForesterUtil.isEmpty(m_hostname_sci)) {
+                            new_name.append("|");
+                            new_name.append(m_hostname_sci);
+                        }
+                        if (!ForesterUtil.isEmpty(year)) {
+                            new_name.append("|");
+                            new_name.append(year);
+                        }
+
                     }
                 }
                 if (!new_name.isEmpty()) {
@@ -511,6 +541,17 @@ public class vipr_x6 {
                 } else {
                     if (name.startsWith("(") && name.endsWith("))")) {
                         ext_node.setName(name.substring(1, name.length() - 1));
+                    }
+                }
+                if (name.startsWith("(") && name.endsWith("))")) {
+                    ext_node.setName(name.substring(1, name.length() - 1));
+                }
+                if (ext_node.isHasNodeData() && ext_node.getNodeData().isHasProperties()) {
+                    List<Property> pr = ext_node.getNodeData().getProperties().getPropertiesWithGivenRef("vipr:H3_clade");
+                    System.out.println(pr);
+                    if (pr != null && pr.size() == 1) {
+
+                        ext_node.setName(ext_node.getName() + "|" + pr.get(0).getValue());
                     }
                 }
 
@@ -601,7 +642,7 @@ public class vipr_x6 {
         } else if (rnodes.size() == 1) {
             p.reRoot(rnodes.get(0));
         } else {
-            ForesterUtil.fatalError(PRG_NAME, "cannot re-root with " + reroot);
+            ForesterUtil.fatalError(PRG_NAME, "cannot re-root with " + reroot + " [" + rnodes.size() + "]");
         }
     }
 

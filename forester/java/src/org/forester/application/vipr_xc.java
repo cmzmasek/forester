@@ -24,14 +24,14 @@ import java.util.regex.Pattern;
 
 public class vipr_xc {
 
-    private static final String PRG_DATE = "2024-06-11";
-    private static final String PRG_VERSION = "1.0.2";
+    private static final String PRG_DATE = "2025-01-27";
+    private static final String PRG_VERSION = "1.1.0";
     private final static String PRG_NAME = "vipr_xc";
     private static final String XSD_STRING = "xsd:string";
-    private static final String H5_CLADE = "vipr:H5_clade";
+    private static final String CLADE = "vipr:H3_clade";
+    private static final String SHORTCLADE = "vipr:H3_shortclade";
+    private static final String LEGACYCLADE = "vipr:H3_legacyclade";
 
-
-    private final static Pattern PATTERN_GB = Pattern.compile("\\|([A-Z][A-Z0-9.]{4,10}?)(_|$)");
 
     public static void main(final String args[]) {
         ForesterUtil.printProgramInformation(PRG_NAME, PRG_VERSION, PRG_DATE);
@@ -69,21 +69,18 @@ public class vipr_xc {
         }
 
 
-        /*final SortedMap<String, String> isolate_to_clade_map = new TreeMap<String, String>();
+        final SortedMap<String, String> isolate_to_clade_map = new TreeMap<String, String>();
+        final SortedMap<String, String> isolate_to_shortclade_map = new TreeMap<String, String>();
+        final SortedMap<String, String> isolate_to_legacyclade_map = new TreeMap<String, String>();
         for (int row = 0; row < isolate_to_clade.getNumberOfRows(); ++row) {
-            final String keys = isolate_to_clade.getValue(0, row);
-            final String value = isolate_to_clade.getValue(1, row);
-            final Matcher mg = PATTERN_GB.matcher(keys);
-            while(mg.find()) {
-                final String key_acc = mg.group(1);
-                if ((key_acc != null) && (value != null)) {
-                    if (isolate_to_clade_map.containsKey(key_acc)) {
-                        throw new IllegalArgumentException("attempt to use non-unique table value as key [" + key_acc + "]");
-                    }
-                    isolate_to_clade_map.put(key_acc, value);
-                }
-            }
-        }*/
+            final String key = isolate_to_clade.getValue(1, row);
+            final String clade = isolate_to_clade.getValue(2, row);
+            final String shortclade = isolate_to_clade.getValue(4, row);
+            final String legacyclade = isolate_to_clade.getValue(5, row);
+            isolate_to_clade_map.put(key, clade);
+            isolate_to_shortclade_map.put(key, shortclade);
+            isolate_to_legacyclade_map.put(key, legacyclade);
+        }
 
         final List<PhylogenyNode> ext_nodes = p.getExternalNodes();
         int ext_nodes_count = 0;
@@ -92,44 +89,22 @@ public class vipr_xc {
         for (final PhylogenyNode ext_node : ext_nodes) {
             ++ext_nodes_count;
             String name = ext_node.getName();
-            final String x[] = name.split("\\|");
-            //final String name_acc = x[x.length - 1];
-            name = x[0];
-            if (!ForesterUtil.isEmpty(name)) {
-                name = name.replaceAll(" ", "_").replace(",", "").replaceAll("'", "");
-                boolean could_map = false;
-                F:
-                for (int row = 0; row < isolate_to_clade.getNumberOfRows(); ++row) {
-                    final String names = isolate_to_clade.getValue(0, row);
-                    final String clade = isolate_to_clade.getValue(1, row);
-                    if (names.indexOf(name) > -1 && clade.indexOf("cannot") < 0) {
-                        PropertiesList custom_data = ext_node.getNodeData().getProperties();
-                        custom_data.addProperty(new Property(H5_CLADE, clade, "", XSD_STRING, AppliesTo.NODE));
-                        could_map = true;
-                        break F;
-                    }
-                }
-                if (could_map) {
-                    ++mapped;
+            if (isolate_to_clade_map.containsKey(name)) {
+                ++mapped;
+                final PropertiesList custom_data;
+                if (ext_node.isHasNodeData() && ext_node.getNodeData().isHasProperties()) {
+                    custom_data = ext_node.getNodeData().getProperties();
                 } else {
-                    System.out.println( "Could not map: " + name);
-                    ++not_mapped;
+                    custom_data = new PropertiesList();
+                    ext_node.getNodeData().setProperties(custom_data);
                 }
+                custom_data.addProperty(new Property(CLADE, isolate_to_clade_map.get(name), "", XSD_STRING, AppliesTo.NODE));
+                custom_data.addProperty(new Property(SHORTCLADE, isolate_to_shortclade_map.get(name), "", XSD_STRING, AppliesTo.NODE));
+                custom_data.addProperty(new Property(LEGACYCLADE, isolate_to_legacyclade_map.get(name), "", XSD_STRING, AppliesTo.NODE));
 
-
-                /*if (isolate_to_clade_map.containsKey(name_acc)) {
-                    final String clade = isolate_to_clade_map.get(name_acc);
-                    if (clade.length() > 0 && clade.indexOf("cannot") < 0) {
-                        PropertiesList custom_data = ext_node.getNodeData().getProperties();
-                        custom_data.addProperty(new Property(H5_CLADE, clade, "", XSD_STRING, AppliesTo.NODE));
-                        ++mapped;
-                    } else {
-                        ++not_mapped;
-                    }
-                } else {
-                    System.out.println("Error: not found in map: " + name);
-                    System.exit(-1);
-                }*/
+            } else {
+                ++not_mapped;
+                ForesterUtil.printWarningMessage(PRG_NAME, "No mapping for: " + name);
             }
         }
 

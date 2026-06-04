@@ -134,10 +134,13 @@ public final class segment_select_2 {
                 System.out.println("Error: Sequence \"" + s_trimmed.getIdentifier() + "\" could not be matched");
                 System.exit(-1);
             }
+            //if (matches.contains(virus_id_tr)) {
+            //    System.out.println("Error: Match \"" + virus_id_tr + "\" is not specific");
+            //    System.out.println("     " + s_trimmed.getIdentifier());
+            //    System.exit(-1);
             if (matches.contains(virus_id_tr)) {
-                System.out.println("Error: Match \"" + virus_id_tr + "\" is not specific");
+                System.out.println("Warning: Match \"" + virus_id_tr + "\" is not specific");
                 System.out.println("     " + s_trimmed.getIdentifier());
-                System.exit(-1);
             } else {
                 matches.add(virus_id_tr);
             }
