@@ -61,6 +61,11 @@ public final class Archaeopteryx {
     }
 
     public static void main( final String args[] ) {
+        // macOS integration: must be set before any AWT/Swing class is initialized.
+        if ( ForesterUtil.isMac() ) {
+            System.setProperty( "apple.awt.application.name", AptxConstants.PRG_NAME );
+            System.setProperty( "apple.awt.application.appearance", "system" );
+        }
         Phylogeny[] phylogenies = null;
         String config_filename = null;
         Configuration conf = null;

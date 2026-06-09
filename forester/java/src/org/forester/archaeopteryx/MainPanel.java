@@ -304,7 +304,7 @@ public class MainPanel extends JPanel implements ComponentListener {
     }
 
     void initialize() {
-        if (!getConfiguration().isUseNativeUI()) {
+        if (getConfiguration().isApplyCustomGuiColors()) {
             setBackground(getConfiguration().getGuiBackgroundColor());
         }
         setTreeFontSet(new TreeFontSet(this));
@@ -314,7 +314,7 @@ public class MainPanel extends JPanel implements ComponentListener {
         _treegraphic_scroll_panes = new ArrayList<JScrollPane>();
         _treegraphic_scroll_pane_panels = new ArrayList<JPanel>();
         _tabbed_pane = new JTabbedPane(SwingConstants.TOP);
-        if (!getConfiguration().isUseNativeUI()) {
+        if (getConfiguration().isApplyCustomGuiColors()) {
             _tabbed_pane.setBackground(getConfiguration().getGuiBackgroundColor());
             _tabbed_pane.setForeground(getConfiguration().getGuiBackgroundColor());
         }
@@ -328,7 +328,7 @@ public class MainPanel extends JPanel implements ComponentListener {
                 // Get current tab
                 final int sel = pane.getSelectedIndex();
                 if (sel >= 0) {
-                    if (!getConfiguration().isUseNativeUI()) {
+                    if (getConfiguration().isApplyCustomGuiColors()) {
                         if (_tabbed_pane.getTabCount() > 0) {
                             _tabbed_pane.setForegroundAt(sel, AptxConstants.TAB_LABEL_FOREGROUND_COLOR_SELECTED);
                             for (int i = 0; i < _tabbed_pane.getTabCount(); ++i) {
@@ -342,7 +342,7 @@ public class MainPanel extends JPanel implements ComponentListener {
                 }
             }
         });
-        if (!getConfiguration().isUseNativeUI()) {
+        if (getConfiguration().isApplyCustomGuiColors()) {
             _tabbed_pane.setFont(ControlPanel.jcb_font);
         }
         _tabbed_pane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
@@ -378,7 +378,6 @@ public class MainPanel extends JPanel implements ComponentListener {
     void setupTreeGraphic(final Configuration config_settings, final ControlPanel control) {
         control.setSpeciesColors(config_settings.getSpeciesColors());
         control.setSequenceColors(config_settings.getSequenceColors());
-        control.setAnnotationColors(config_settings.getAnnotationColors());
         RenderableDomainArchitecture.setColorMap(config_settings.getDomainColors());
     }
 

@@ -28,9 +28,7 @@
 
 package org.forester.archaeopteryx;
 
-import java.awt.AWTPermission;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Container;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -56,9 +54,6 @@ final class TextFrame extends JFrame implements ActionListener, ClipboardOwner {
      *
      */
     private static final long           serialVersionUID = -5012834229705518363L;
-    private static Color                ta_text_color    = new Color( 0, 0, 0 ),
-            ta_background_color = new Color( 240, 240, 240 ), background_color = new Color( 215, 215, 215 ),
-            button_background_color = new Color( 215, 215, 215 ), button_text_color = new Color( 0, 0, 0 );
     private final static Font           button_font      = new Font( "Helvetica", Font.PLAIN, 10 ),
             ta_font = new Font( "Helvetica", Font.PLAIN, 10 );
     private boolean                     can_use_clipboard;
@@ -75,31 +70,17 @@ final class TextFrame extends JFrame implements ActionListener, ClipboardOwner {
         setTitle( title );
         text = s;
         _tframes = tframes;
-        // check to see if we have permission to use the clipboard:
+        // SecurityManager is deprecated for removal and is not installed on modern JVMs,
+        // so clipboard access is assumed available; any failure is handled when writing to it.
         can_use_clipboard = true;
-        final SecurityManager sm = System.getSecurityManager();
-        if ( sm != null ) {
-            try {
-                sm.checkPermission( new AWTPermission( "accessClipboard" ) );
-            }
-            catch ( final Exception e ) {
-                can_use_clipboard = false;
-            }
-        }
-        // set up the frame
-        setBackground( background_color );
+        // set up the frame; component colors are left to the look-and-feel (theme-aware)
         buttonjpanel = new JPanel();
-        buttonjpanel.setBackground( background_color );
         close_button = new JButton( "          Close          " );
-        close_button.setBackground( button_background_color );
-        close_button.setForeground( button_text_color );
         close_button.setFont( button_font );
         close_button.addActionListener( this );
         buttonjpanel.add( close_button );
         if ( can_use_clipboard ) {
             copy_button = new JButton( "Copy to clipboard" );
-            copy_button.setBackground( button_background_color );
-            copy_button.setForeground( button_text_color );
             copy_button.setFont( button_font );
             copy_button.addActionListener( this );
             buttonjpanel.add( copy_button );
@@ -107,8 +88,6 @@ final class TextFrame extends JFrame implements ActionListener, ClipboardOwner {
         contentpane = getContentPane();
         contentpane.setLayout( new BorderLayout() );
         jtextarea = new JTextArea( text );
-        jtextarea.setBackground( ta_background_color );
-        jtextarea.setForeground( ta_text_color );
         jtextarea.setFont( ta_font );
         jtextarea.setEditable( false );
         jtextarea.setWrapStyleWord( true );
@@ -147,9 +126,14 @@ final class TextFrame extends JFrame implements ActionListener, ClipboardOwner {
             // can't do this!
             return;
         }
-        final Clipboard sys_clipboard = getToolkit().getSystemClipboard();
-        final StringSelection contents = new StringSelection( jtextarea.getText() );
-        sys_clipboard.setContents( contents, this );
+        try {
+            final Clipboard sys_clipboard = getToolkit().getSystemClipboard();
+            final StringSelection contents = new StringSelection( jtextarea.getText() );
+            sys_clipboard.setContents( contents, this );
+        }
+        catch ( final IllegalStateException e ) {
+            // the clipboard is currently unavailable (e.g. owned by another application); ignore
+        }
     }
 
     void close() {

@@ -115,7 +115,6 @@ final public class Options {
     private final boolean _print_using_actual_size = true;
     private double _scale_bar_length;
     private boolean _search_case_sensitive;
-    private boolean _show_annotation_ref_source;
     private boolean _show_confidence_stddev;
     private boolean _show_default_node_shapes_for_marked_nodes;
     private boolean _show_default_node_shapes_external;
@@ -164,10 +163,6 @@ final public class Options {
         return _right_align_domains;
     }
 
-    public final boolean isShowAnnotationRefSource() {
-        return _show_annotation_ref_source;
-    }
-
     public final boolean isShowDomainLabels() {
         return _show_domain_labels;
     }
@@ -194,10 +189,6 @@ final public class Options {
 
     final public void setRightLineUpDomains(final boolean right_align_domains) {
         _right_align_domains = right_align_domains;
-    }
-
-    public final void setShowAnnotationRefSource(final boolean show_annotation_ref_source) {
-        _show_annotation_ref_source = show_annotation_ref_source;
     }
 
     public void setShowDomainLabels(final boolean show_domain_labels) {
@@ -239,7 +230,6 @@ final public class Options {
         _taxonomy_extraction = TAXONOMY_EXTRACTION.NO;
         _cladogram_type = AptxConstants.CLADOGRAM_TYPE_DEFAULT;
         _show_domain_labels = true;
-        _show_annotation_ref_source = true;
         setAbbreviateScientificTaxonNames(false);
         _color_labels_same_as_parent_branch = false;
         _show_confidence_stddev = false;
@@ -581,7 +571,6 @@ final public class Options {
             instance.setEditable(configuration.isEditable());
             instance.setColorLabelsSameAsParentBranch(configuration.isColorLabelsSameAsParentBranch());
             instance.setShowDomainLabels(configuration.isShowDomainLabels());
-            instance.setShowAnnotationRefSource(configuration.isShowAnnotationRefSource());
             instance.setAbbreviateScientificTaxonNames(configuration.isAbbreviateScientificTaxonNames());
             if (configuration.getMinConfidenceValue() != MIN_CONFIDENCE_DEFAULT) {
                 instance.setMinConfidenceValue(configuration.getMinConfidenceValue());

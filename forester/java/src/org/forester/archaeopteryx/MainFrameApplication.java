@@ -54,8 +54,6 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JRadioButtonMenuItem;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -64,15 +62,7 @@ import org.forester.analysis.TaxonomyDataManager;
 import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
-import org.forester.archaeopteryx.tools.InferenceManager;
-import org.forester.archaeopteryx.tools.PhyloInferenceDialog;
-import org.forester.archaeopteryx.tools.PhylogeneticInferenceOptions;
-import org.forester.archaeopteryx.tools.PhylogeneticInferrer;
 import org.forester.archaeopteryx.tools.SequenceDataRetriver;
-import org.forester.archaeopteryx.webservices.PhylogeniesWebserviceClient;
-import org.forester.archaeopteryx.webservices.WebservicesManager;
-import org.forester.io.parsers.FastaParser;
-import org.forester.io.parsers.GeneralMsaParser;
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.nexus.NexusPhylogeniesParser;
 import org.forester.io.parsers.nhx.NHXParser;
@@ -81,9 +71,6 @@ import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.io.parsers.tol.TolParser;
 import org.forester.io.parsers.util.ParserUtils;
-import org.forester.io.writers.SequenceWriter;
-import org.forester.msa.Msa;
-import org.forester.msa.MsaFormatException;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
@@ -97,7 +84,6 @@ import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
-import org.forester.sequence.MolecularSequence;
 import org.forester.util.BasicDescriptiveStatistics;
 import org.forester.util.BasicTable;
 import org.forester.util.BasicTableParser;
@@ -112,10 +98,7 @@ public final class MainFrameApplication extends MainFrame {
     private static final long serialVersionUID = -799735726778865234L;
     private static final boolean PREPROCESS_TREES = false;
     private final JFileChooser _values_filechooser;
-    private final JFileChooser _sequences_filechooser;
     private final JFileChooser _open_filechooser;
-    private final JFileChooser _msa_filechooser;
-    private final JFileChooser _seqs_pi_filechooser;
     private final JFileChooser _open_filechooser_for_species_tree;
     private final JFileChooser _annotations_filechooser;
     // Application-only print menu items
@@ -126,18 +109,6 @@ public final class MainFrameApplication extends MainFrame {
     // Others:
     double _min_not_collapse = AptxConstants.MIN_NOT_COLLAPSE_DEFAULT;
     double _min_not_collapse_bl = 0.001;
-    // Phylogeny Inference menu
-    private JMenu _inference_menu;
-    private JMenuItem _inference_from_msa_item;
-    private JMenuItem _inference_from_seqs_item;
-    // Phylogeny Inference
-    private PhylogeneticInferenceOptions _phylogenetic_inference_options = null;
-    private Msa _msa = null;
-    private File _msa_file = null;
-    private List<MolecularSequence> _seqs = null;
-    private File _seqs_file = null;
-    JMenuItem _read_values_jmi;
-    JMenuItem _read_seqs_jmi;
 
     private MainFrameApplication(final Phylogeny[] phys, final Configuration config) {
         _configuration = config;
@@ -152,10 +123,7 @@ public final class MainFrameApplication extends MainFrame {
         _save_filechooser = null;
         _writetopdf_filechooser = null;
         _writetographics_filechooser = null;
-        _msa_filechooser = null;
-        _seqs_pi_filechooser = null;
         _values_filechooser = null;
-        _sequences_filechooser = null;
         _annotations_filechooser = null;
         _jmenubar = new JMenuBar();
         buildFileMenu();
@@ -199,29 +167,13 @@ public final class MainFrameApplication extends MainFrame {
         if (_configuration == null) {
             throw new IllegalArgumentException("configuration is null");
         }
-        try {
-            if (_configuration.isUseNativeUI()) {
-                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            } else {
-                UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-            }
-        } catch (final UnsupportedLookAndFeelException e) {
-            AptxUtil.dieWithSystemError("unsupported look and feel: " + e.toString());
-        } catch (final ClassNotFoundException e) {
-            AptxUtil.dieWithSystemError("class not found exception: " + e.toString());
-        } catch (final InstantiationException e) {
-            AptxUtil.dieWithSystemError("instantiation exception: " + e.toString());
-        } catch (final IllegalAccessException e) {
-            AptxUtil.dieWithSystemError("illegal access exception: " + e.toString());
-        }
+        installLookAndFeel(_configuration.getUi());
         if ((current_dir != null) && current_dir.canRead() && current_dir.isDirectory()) {
             setCurrentDir(current_dir);
         }
         // hide until everything is ready
         setVisible(false);
         setOptions(Options.createInstance(_configuration));
-        setInferenceManager(InferenceManager.createInstance(_configuration));
-        setPhylogeneticInferenceOptions(PhylogeneticInferenceOptions.createInstance(_configuration));
         // set title
         setTitle(AptxConstants.PRG_NAME + " " + AptxConstants.VERSION + " (" + AptxConstants.PRG_DATE + ")");
         _mainpanel = new MainPanel(_configuration, this);
@@ -240,24 +192,9 @@ public final class MainFrameApplication extends MainFrame {
         _open_filechooser_for_species_tree.addChoosableFileFilter(MainFrame.xmlfilter);
         _open_filechooser_for_species_tree.addChoosableFileFilter(MainFrame.tolfilter);
         _open_filechooser_for_species_tree.setFileFilter(MainFrame.xmlfilter);
-        // Msa:
-        _msa_filechooser = new JFileChooser();
-        _msa_filechooser.setName("Read Multiple Sequence Alignment File");
-        _msa_filechooser.setMultiSelectionEnabled(false);
-        _msa_filechooser.addChoosableFileFilter(_msa_filechooser.getAcceptAllFileFilter());
-        _msa_filechooser.addChoosableFileFilter(MainFrame.msafilter);
-        // Seqs:
-        _seqs_pi_filechooser = new JFileChooser();
-        _seqs_pi_filechooser.setName("Read Sequences File");
-        _seqs_pi_filechooser.setMultiSelectionEnabled(false);
-        _seqs_pi_filechooser.addChoosableFileFilter(_seqs_pi_filechooser.getAcceptAllFileFilter());
-        _seqs_pi_filechooser.addChoosableFileFilter(MainFrame.seqsfilter);
         // Expression
         _values_filechooser = new JFileChooser();
         _values_filechooser.setMultiSelectionEnabled(false);
-        // Sequences
-        _sequences_filechooser = new JFileChooser();
-        _sequences_filechooser.setMultiSelectionEnabled(false);
         // Annotations
         _annotations_filechooser = new JFileChooser();
         _annotations_filechooser.setMultiSelectionEnabled(false);
@@ -265,23 +202,17 @@ public final class MainFrameApplication extends MainFrame {
             final String home_dir = System.getProperty("user.home");
             _open_filechooser.setCurrentDirectory(new File(home_dir));
             _open_filechooser_for_species_tree.setCurrentDirectory(new File(home_dir));
-            _msa_filechooser.setCurrentDirectory(new File(home_dir));
-            _seqs_pi_filechooser.setCurrentDirectory(new File(home_dir));
             _values_filechooser.setCurrentDirectory(new File(home_dir));
-            _sequences_filechooser.setCurrentDirectory(new File(home_dir));
         } catch (final Exception e) {
             e.printStackTrace();
             // Do nothing. Not important.
         }
         // build the menu bar
         _jmenubar = new JMenuBar();
-        if (!_configuration.isUseNativeUI()) {
+        if (_configuration.isApplyCustomGuiColors()) {
             _jmenubar.setBackground(getConfiguration().getGuiMenuBackgroundColor());
         }
         buildFileMenu();
-        if (AptxConstants.__ALLOW_PHYLOGENETIC_INFERENCE) {
-            buildPhylogeneticInferenceMenu();
-        }
         buildAnalysisMenu();
         buildToolsMenu();
         buildViewMenu();
@@ -393,22 +324,6 @@ public final class MainFrameApplication extends MainFrame {
                 obtainDetailedTaxonomicInformationDelete();
             } else if (o == _obtain_seq_information_jmi) {
                 obtainSequenceInformation();
-            } else if (o == _read_values_jmi) {
-                if (isSubtreeDisplayed()) {
-                    return;
-                }
-                addExpressionValuesFromFile();
-            } else if (o == _read_seqs_jmi) {
-                if (isSubtreeDisplayed()) {
-                    return;
-                }
-                addSequencesFromFile();
-            } else if (o == _move_node_names_to_tax_sn_jmi) {
-                moveNodeNamesToTaxSn();
-            } else if (o == _move_node_names_to_seq_names_jmi) {
-                moveNodeNamesToSeqNames();
-            } else if (o == _extract_tax_code_from_node_names_jmi) {
-                extractTaxDataFromNodeNames();
             } else if (o == _internal_number_are_confidence_for_nh_parsing_cbmi) {
                 updateOptions(getOptions());
             } else if (o == _replace_underscores_cbmi) {
@@ -436,10 +351,6 @@ public final class MainFrameApplication extends MainFrame {
                 updateOptions(getOptions());
             } else if (o == _extract_taxonomy_no_rbmi) {
                 updateOptions(getOptions());
-            } else if (o == _inference_from_msa_item) {
-                executePhyleneticInference(false);
-            } else if (o == _inference_from_seqs_item) {
-                executePhyleneticInference(true);
             }
             _contentpane.repaint();
         } catch (final Exception ex) {
@@ -459,462 +370,6 @@ public final class MainFrameApplication extends MainFrame {
     @Override
     public MainPanel getMainPanel() {
         return _mainpanel;
-    }
-
-    public Msa getMsa() {
-        return _msa;
-    }
-
-    public File getMsaFile() {
-        return _msa_file;
-    }
-
-    public List<MolecularSequence> getSeqs() {
-        return _seqs;
-    }
-
-    public File getSeqsFile() {
-        return _seqs_file;
-    }
-
-    public void readMsaFromFile() {
-        // Set an initial directory if none set yet
-        final File my_dir = getCurrentDir();
-        _msa_filechooser.setMultiSelectionEnabled(false);
-        // Open file-open dialog and set current directory
-        if (my_dir != null) {
-            _msa_filechooser.setCurrentDirectory(my_dir);
-        }
-        final int result = _msa_filechooser.showOpenDialog(_contentpane);
-        // All done: get the msa
-        final File file = _msa_filechooser.getSelectedFile();
-        setCurrentDir(_msa_filechooser.getCurrentDirectory());
-        if ((file != null) && !file.isDirectory() && (result == JFileChooser.APPROVE_OPTION)) {
-            setMsaFile(null);
-            setMsa(null);
-            Msa msa = null;
-            try {
-                final InputStream is = new FileInputStream(file);
-                if (FastaParser.isLikelyFasta(file)) {
-                    msa = FastaParser.parseMsa(is);
-                } else {
-                    msa = GeneralMsaParser.parseMsa(is);
-                }
-            } catch (final MsaFormatException e) {
-                setArrowCursor();
-                JOptionPane.showMessageDialog(this,
-                        e.getLocalizedMessage(),
-                        "Multiple sequence alignment format error",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            } catch (final IOException e) {
-                setArrowCursor();
-                JOptionPane.showMessageDialog(this,
-                        e.getLocalizedMessage(),
-                        "Failed to read multiple sequence alignment",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            } catch (final IllegalArgumentException e) {
-                setArrowCursor();
-                JOptionPane.showMessageDialog(this,
-                        e.getLocalizedMessage(),
-                        "Unexpected error during reading of multiple sequence alignment",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            } catch (final Exception e) {
-                setArrowCursor();
-                e.printStackTrace();
-                JOptionPane.showMessageDialog(this,
-                        e.getLocalizedMessage(),
-                        "Unexpected error during reading of multiple sequence alignment",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            if ((msa == null) || (msa.getNumberOfSequences() < 1)) {
-                JOptionPane.showMessageDialog(this,
-                        "Multiple sequence alignment is empty",
-                        "Illegal Multiple Sequence Alignment",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            if (msa.getNumberOfSequences() < 4) {
-                JOptionPane.showMessageDialog(this,
-                        "Multiple sequence alignment needs to contain at least 3 sequences",
-                        "Illegal multiple sequence alignment",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            if (msa.getLength() < 2) {
-                JOptionPane.showMessageDialog(this,
-                        "Multiple sequence alignment needs to contain at least 2 residues",
-                        "Illegal multiple sequence alignment",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            System.gc();
-            setMsaFile(_msa_filechooser.getSelectedFile());
-            setMsa(msa);
-        }
-    }
-
-    public void readSeqsFromFileforPI() {
-        // Set an initial directory if none set yet
-        final File my_dir = getCurrentDir();
-        _seqs_pi_filechooser.setMultiSelectionEnabled(false);
-        // Open file-open dialog and set current directory
-        if (my_dir != null) {
-            _seqs_pi_filechooser.setCurrentDirectory(my_dir);
-        }
-        final int result = _seqs_pi_filechooser.showOpenDialog(_contentpane);
-        // All done: get the seqs
-        final File file = _seqs_pi_filechooser.getSelectedFile();
-        setCurrentDir(_seqs_pi_filechooser.getCurrentDirectory());
-        if ((file != null) && !file.isDirectory() && (result == JFileChooser.APPROVE_OPTION)) {
-            setSeqsFile(null);
-            setSeqs(null);
-            List<MolecularSequence> seqs = null;
-            try {
-                if (FastaParser.isLikelyFasta(new FileInputStream(file))) {
-                    seqs = FastaParser.parse(new FileInputStream(file));
-                    for (final MolecularSequence seq : seqs) {
-                        System.out.println(SequenceWriter.toFasta(seq, 60));
-                    }
-                } else {
-                    //TODO error
-                }
-            } catch (final MsaFormatException e) {
-                setArrowCursor();
-                JOptionPane.showMessageDialog(this,
-                        e.getLocalizedMessage(),
-                        "Multiple sequence file format error",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            } catch (final IOException e) {
-                setArrowCursor();
-                JOptionPane.showMessageDialog(this,
-                        e.getLocalizedMessage(),
-                        "Failed to read multiple sequence file",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            } catch (final IllegalArgumentException e) {
-                setArrowCursor();
-                JOptionPane.showMessageDialog(this,
-                        e.getLocalizedMessage(),
-                        "Unexpected error during reading of multiple sequence file",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            } catch (final Exception e) {
-                setArrowCursor();
-                e.printStackTrace();
-                JOptionPane.showMessageDialog(this,
-                        e.getLocalizedMessage(),
-                        "Unexpected error during reading of multiple sequence file",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            if ((seqs == null) || (seqs.size() < 1)) {
-                JOptionPane.showMessageDialog(this,
-                        "Multiple sequence file is empty",
-                        "Illegal multiple sequence file",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            if (seqs.size() < 4) {
-                JOptionPane.showMessageDialog(this,
-                        "Multiple sequence file needs to contain at least 3 sequences",
-                        "Illegal multiple sequence file",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            //  if ( msa.getLength() < 2 ) {
-            //       JOptionPane.showMessageDialog( this,
-            //                                      "Multiple sequence alignment needs to contain at least 2 residues",
-            //                                      "Illegal multiple sequence file",
-            //                                      JOptionPane.ERROR_MESSAGE );
-            //       return;
-            //   }
-            System.gc();
-            setSeqsFile(_seqs_pi_filechooser.getSelectedFile());
-            setSeqs(seqs);
-        }
-    }
-
-    private void addExpressionValuesFromFile() {
-        if ((getCurrentTreePanel() == null) || (getCurrentTreePanel().getPhylogeny() == null)) {
-            JOptionPane.showMessageDialog(this,
-                    "Need to load evolutionary tree first",
-                    "Can Not Read Expression Values",
-                    JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-        final File my_dir = getCurrentDir();
-        if (my_dir != null) {
-            _values_filechooser.setCurrentDirectory(my_dir);
-        }
-        final int result = _values_filechooser.showOpenDialog(_contentpane);
-        final File file = _values_filechooser.getSelectedFile();
-        if ((file != null) && (file.length() > 0) && (result == JFileChooser.APPROVE_OPTION)) {
-            BasicTable<String> t = null;
-            try {
-                t = BasicTableParser.parse(file, '\t');
-                if (t.getNumberOfColumns() < 2) {
-                    t = BasicTableParser.parse(file, ',');
-                }
-                if (t.getNumberOfColumns() < 2) {
-                    t = BasicTableParser.parse(file, ' ');
-                }
-            } catch (final IOException e) {
-                JOptionPane.showMessageDialog(this,
-                        e.getMessage(),
-                        "Could Not Read Expression Value Table",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            if (t.getNumberOfColumns() < 2) {
-                JOptionPane.showMessageDialog(this,
-                        "Table contains " + t.getNumberOfColumns() + " column(s)",
-                        "Problem with Expression Value Table",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            if (t.getNumberOfRows() < 1) {
-                JOptionPane.showMessageDialog(this,
-                        "Table contains zero rows",
-                        "Problem with Expression Value Table",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            final Phylogeny phy = getCurrentTreePanel().getPhylogeny();
-            if (t.getNumberOfRows() != phy.getNumberOfExternalNodes()) {
-                JOptionPane.showMessageDialog(this,
-                        "Table contains " + t.getNumberOfRows() + " rows, but tree contains "
-                                + phy.getNumberOfExternalNodes() + " external nodes",
-                        "Warning",
-                        JOptionPane.WARNING_MESSAGE);
-            }
-            final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
-            int not_found = 0;
-            for (final PhylogenyNodeIterator iter = phy.iteratorPreorder(); iter.hasNext(); ) {
-                final PhylogenyNode node = iter.next();
-                final String node_name = node.getName();
-                if (!ForesterUtil.isEmpty(node_name)) {
-                    int row = -1;
-                    try {
-                        row = t.findRow(node_name);
-                    } catch (final IllegalArgumentException e) {
-                        JOptionPane.showMessageDialog(this,
-                                e.getMessage(),
-                                "Error Mapping Node Identifiers to Expression Value Identifiers",
-                                JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }
-                    if (row < 0) {
-                        if (node.isExternal()) {
-                            not_found++;
-                        }
-                        continue;
-                    }
-                    final List<Double> l = new ArrayList<>();
-                    for (int col = 1; col < t.getNumberOfColumns(); ++col) {
-                        double d = -100;
-                        try {
-                            d = Double.parseDouble(t.getValueAsString(col, row));
-                        } catch (final NumberFormatException e) {
-                            JOptionPane.showMessageDialog(this,
-                                    "Could not parse \"" + t.getValueAsString(col, row)
-                                            + "\" into a decimal value",
-                                    "Issue with Expression Value Table",
-                                    JOptionPane.ERROR_MESSAGE);
-                            return;
-                        }
-                        stats.addValue(d);
-                        l.add(d);
-                    }
-                    if (!l.isEmpty()) {
-                        node.getNodeData().setVector(l);
-                    }
-                }
-            }
-            if (not_found > 0) {
-                JOptionPane.showMessageDialog(this,
-                        "Could not fine expression values for " + not_found
-                                + " external node(s)",
-                        "Warning",
-                        JOptionPane.WARNING_MESSAGE);
-            }
-            getCurrentTreePanel().setStatisticsForExpressionValues(stats);
-        }
-    }
-
-    private void addSequencesFromFile() {
-        if ((getCurrentTreePanel() == null) || (getCurrentTreePanel().getPhylogeny() == null)) {
-            JOptionPane.showMessageDialog(this,
-                    "Need to load evolutionary tree first",
-                    "Can Not Read Sequences",
-                    JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-        final File my_dir = getCurrentDir();
-        if (my_dir != null) {
-            _sequences_filechooser.setCurrentDirectory(my_dir);
-        }
-        final int result = _sequences_filechooser.showOpenDialog(_contentpane);
-        final File file = _sequences_filechooser.getSelectedFile();
-        List<MolecularSequence> seqs = null;
-        if ((file != null) && !file.isDirectory() && (result == JFileChooser.APPROVE_OPTION)) {
-            try {
-                final FileInputStream fis1 = new FileInputStream(file);
-                if (FastaParser.isLikelyFasta(fis1)) {
-                    final FileInputStream fis2 = new FileInputStream(file);
-                    seqs = FastaParser.parse(fis2);
-                    try {
-                        fis2.close();
-                    } catch (final Exception e) {
-                        // Ignore.
-                    }
-                } else {
-                    JOptionPane.showMessageDialog(this,
-                            "Format does not appear to be Fasta",
-                            "Multiple sequence file format error",
-                            JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-                try {
-                    fis1.close();
-                } catch (final Exception e) {
-                    // Ignore.
-                }
-            } catch (final MsaFormatException e) {
-                setArrowCursor();
-                JOptionPane.showMessageDialog(this,
-                        e.getLocalizedMessage(),
-                        "Multiple sequence file format error",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            } catch (final IOException e) {
-                setArrowCursor();
-                JOptionPane.showMessageDialog(this,
-                        e.getLocalizedMessage(),
-                        "Failed to read multiple sequence file",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            } catch (final Exception e) {
-                setArrowCursor();
-                e.printStackTrace();
-                JOptionPane.showMessageDialog(this,
-                        e.getLocalizedMessage(),
-                        "Unexpected error during reading of multiple sequence file",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            if ((seqs == null) || (seqs.size() < 1)) {
-                JOptionPane.showMessageDialog(this,
-                        "Multiple sequence file is empty",
-                        "Empty multiple sequence file",
-                        JOptionPane.ERROR_MESSAGE);
-                setArrowCursor();
-                return;
-            }
-        }
-        if (seqs != null) {
-            for (final MolecularSequence seq : seqs) {
-                System.out.println(seq.getIdentifier());
-            }
-            final Phylogeny phy = getCurrentTreePanel().getPhylogeny();
-            int total_counter = 0;
-            int attached_counter = 0;
-            for (final MolecularSequence seq : seqs) {
-                ++total_counter;
-                final String seq_name = seq.getIdentifier();
-                if (!ForesterUtil.isEmpty(seq_name)) {
-                    List<PhylogenyNode> nodes = phy.getNodesViaSequenceName(seq_name);
-                    if (nodes.isEmpty()) {
-                        nodes = phy.getNodesViaSequenceSymbol(seq_name);
-                    }
-                    if (nodes.isEmpty()) {
-                        nodes = phy.getNodesViaGeneName(seq_name);
-                    }
-                    if (nodes.isEmpty()) {
-                        nodes = phy.getNodes(seq_name);
-                    }
-                    if (nodes.size() > 1) {
-                        JOptionPane.showMessageDialog(this,
-                                "Sequence name \"" + seq_name + "\" is not unique",
-                                "Sequence name not unique",
-                                JOptionPane.ERROR_MESSAGE);
-                        setArrowCursor();
-                        return;
-                    }
-                    final String[] a = seq_name.split("\\s");
-                    if (nodes.isEmpty() && (a.length > 1)) {
-                        final String seq_name_split = a[0];
-                        nodes = phy.getNodesViaSequenceName(seq_name_split);
-                        if (nodes.isEmpty()) {
-                            nodes = phy.getNodesViaSequenceSymbol(seq_name_split);
-                        }
-                        if (nodes.isEmpty()) {
-                            nodes = phy.getNodes(seq_name_split);
-                        }
-                        if (nodes.size() > 1) {
-                            JOptionPane.showMessageDialog(this,
-                                    "Split sequence name \"" + seq_name_split
-                                            + "\" is not unique",
-                                    "Sequence name not unique",
-                                    JOptionPane.ERROR_MESSAGE);
-                            setArrowCursor();
-                            return;
-                        }
-                    }
-                    if (nodes.size() == 1) {
-                        ++attached_counter;
-                        final PhylogenyNode n = nodes.get(0);
-                        if (!n.getNodeData().isHasSequence()) {
-                            n.getNodeData().addSequence(new org.forester.phylogeny.data.Sequence());
-                        }
-                        n.getNodeData().getSequence().setMolecularSequence(seq.getMolecularSequenceAsString());
-                        if (ForesterUtil.isEmpty(n.getNodeData().getSequence().getName())) {
-                            n.getNodeData().getSequence().setName(seq_name);
-                        }
-                    }
-                }
-            }
-            if (attached_counter > 0) {
-                int ext_nodes = 0;
-                int ext_nodes_with_seq = 0;
-                for (final PhylogenyNodeIterator iter = phy.iteratorExternalForward(); iter.hasNext(); ) {
-                    ++ext_nodes;
-                    final PhylogenyNode n = iter.next();
-                    if (n.getNodeData().isHasSequence()
-                            && !ForesterUtil.isEmpty(n.getNodeData().getSequence().getMolecularSequence())) {
-                        ++ext_nodes_with_seq;
-                    }
-                }
-                final String s;
-                if (ext_nodes == ext_nodes_with_seq) {
-                    s = "All " + ext_nodes_with_seq + " external nodes now have a molecular sequence attached to them.";
-                } else {
-                    s = ext_nodes_with_seq + " out of " + ext_nodes
-                            + " external nodes now have a molecular sequence attached to them.";
-                }
-                if ((attached_counter == total_counter) && (ext_nodes == ext_nodes_with_seq)) {
-                    JOptionPane.showMessageDialog(this,
-                            "Attached all " + total_counter + " sequences to tree nodes.\n" + s,
-                            "All sequences attached",
-                            JOptionPane.INFORMATION_MESSAGE);
-                } else {
-                    JOptionPane.showMessageDialog(this,
-                            "Attached " + attached_counter + " sequences out of a total of "
-                                    + total_counter + " sequences.\n" + s,
-                            attached_counter + " sequences attached",
-                            JOptionPane.WARNING_MESSAGE);
-                }
-            } else {
-                JOptionPane.showMessageDialog(this,
-                        "No maching tree node for any of the " + total_counter + " sequences",
-                        "Could not attach any sequences",
-                        JOptionPane.ERROR_MESSAGE);
-            }
-        }
     }
 
     private void closeCurrentPane() {
@@ -1143,114 +598,12 @@ public final class MainFrameApplication extends MainFrame {
         return xml_parser;
     }
 
-    private void executePhyleneticInference(final boolean from_unaligned_seqs) {
-        final PhyloInferenceDialog dialog = new PhyloInferenceDialog(this,
-                getPhylogeneticInferenceOptions(),
-                from_unaligned_seqs);
-        dialog.activate();
-        if (dialog.getValue() == JOptionPane.OK_OPTION) {
-            if (!from_unaligned_seqs) {
-                if (getMsa() != null) {
-                    final PhylogeneticInferrer inferrer = new PhylogeneticInferrer(getMsa(),
-                            getPhylogeneticInferenceOptions()
-                                    .copy(),
-                            this);
-                    new Thread(inferrer).start();
-                } else {
-                    JOptionPane.showMessageDialog(this,
-                            "No multiple sequence alignment selected",
-                            "Phylogenetic Inference Not Launched",
-                            JOptionPane.WARNING_MESSAGE);
-                }
-            } else {
-                if (getSeqs() != null) {
-                    final PhylogeneticInferrer inferrer = new PhylogeneticInferrer(getSeqs(),
-                            getPhylogeneticInferenceOptions()
-                                    .copy(),
-                            this);
-                    new Thread(inferrer).start();
-                } else {
-                    JOptionPane.showMessageDialog(this,
-                            "No input sequences selected",
-                            "Phylogenetic Inference Not Launched",
-                            JOptionPane.WARNING_MESSAGE);
-                }
-            }
-        }
-    }
-
-    private void extractTaxDataFromNodeNames() throws PhyloXmlDataFormatException {
-        final StringBuilder sb = new StringBuilder();
-        final StringBuilder sb_failed = new StringBuilder();
-        int counter = 0;
-        int counter_failed = 0;
-        if (getCurrentTreePanel() != null) {
-            final Phylogeny phy = getCurrentTreePanel().getPhylogeny();
-            if ((phy != null) && !phy.isEmpty()) {
-                final PhylogenyNodeIterator it = phy.iteratorExternalForward();
-                while (it.hasNext()) {
-                    final PhylogenyNode n = it.next();
-                    final String name = n.getName().trim();
-                    if (!ForesterUtil.isEmpty(name)) {
-                        final String nt = ParserUtils.extractTaxonomyDataFromNodeName(n,
-                                TAXONOMY_EXTRACTION.AGGRESSIVE);
-                        if (!ForesterUtil.isEmpty(nt)) {
-                            if (counter < 15) {
-                                sb.append(name + ": " + nt + "\n");
-                            } else if (counter == 15) {
-                                sb.append("...\n");
-                            }
-                            counter++;
-                        } else {
-                            if (counter_failed < 15) {
-                                sb_failed.append(name + "\n");
-                            } else if (counter_failed == 15) {
-                                sb_failed.append("...\n");
-                            }
-                            counter_failed++;
-                        }
-                    }
-                }
-                if (counter > 0) {
-                    String failed = "";
-                    String all = "all ";
-                    if (counter_failed > 0) {
-                        all = "";
-                        failed = "\nCould not extract taxonomic data for " + counter_failed + " named external nodes:\n"
-                                + sb_failed;
-                    }
-                    JOptionPane.showMessageDialog(this,
-                            "Extracted taxonomic data from " + all + counter
-                                    + " named external nodes:\n" + sb.toString() + failed,
-                            "Taxonomic Data Extraction Completed",
-                            counter_failed > 0 ? JOptionPane.WARNING_MESSAGE
-                                    : JOptionPane.INFORMATION_MESSAGE);
-                } else {
-                    JOptionPane
-                            .showMessageDialog(this,
-                                    "Could not extract any taxonomic data.\nMaybe node names are empty\n"
-                                            + "or not in the forms \"XYZ_CAEEL\", \"XYZ_6239\", or \"XYZ_Caenorhabditis_elegans\"\n"
-                                            + "or nodes already have taxonomic data?\n",
-                                    "No Taxonomic Data Extracted",
-                                    JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        }
-    }
-
     private double getMinNotCollapseBlValue() {
         return _min_not_collapse_bl;
     }
 
     private double getMinNotCollapseConfidenceValue() {
         return _min_not_collapse;
-    }
-
-    private PhylogeneticInferenceOptions getPhylogeneticInferenceOptions() {
-        if (_phylogenetic_inference_options == null) {
-            _phylogenetic_inference_options = new PhylogeneticInferenceOptions();
-        }
-        return _phylogenetic_inference_options;
     }
 
     private boolean isUnsavedDataPresent() {
@@ -1261,27 +614,6 @@ public final class MainFrameApplication extends MainFrame {
             }
         }
         return false;
-    }
-
-    private void moveNodeNamesToSeqNames() throws PhyloXmlDataFormatException {
-        if (getCurrentTreePanel() != null) {
-            final Phylogeny phy = getCurrentTreePanel().getPhylogeny();
-            if ((phy != null) && !phy.isEmpty()) {
-                PhylogenyMethods
-                        .transferNodeNameToField(phy, PhylogenyMethods.PhylogenyNodeField.SEQUENCE_NAME, false);
-            }
-        }
-    }
-
-    private void moveNodeNamesToTaxSn() throws PhyloXmlDataFormatException {
-        if (getCurrentTreePanel() != null) {
-            final Phylogeny phy = getCurrentTreePanel().getPhylogeny();
-            if ((phy != null) && !phy.isEmpty()) {
-                PhylogenyMethods.transferNodeNameToField(phy,
-                        PhylogenyMethods.PhylogenyNodeField.TAXONOMY_SCIENTIFIC_NAME,
-                        false);
-            }
-        }
     }
 
     private void newTree() {
@@ -1872,10 +1204,6 @@ public final class MainFrameApplication extends MainFrame {
         _min_not_collapse = min_not_collapse;
     }
 
-    private void setPhylogeneticInferenceOptions(final PhylogeneticInferenceOptions phylogenetic_inference_options) {
-        _phylogenetic_inference_options = phylogenetic_inference_options;
-    }
-
     private void setSpecialOptionsForNexParser(final NexusPhylogeniesParser nex) {
         nex.setReplaceUnderscores(getOptions().isReplaceUnderscoresInNhParsing());
         nex.setTaxonomyExtraction(getOptions().getTaxonomyExtraction());
@@ -1910,15 +1238,6 @@ public final class MainFrameApplication extends MainFrame {
         _file_jmenu.add(_open_item = new JMenuItem("Read Tree from File..."));
         _file_jmenu.addSeparator();
         _file_jmenu.add(_open_url_item = new JMenuItem("Read Tree from URL/Webservice..."));
-        _file_jmenu.addSeparator();
-        final WebservicesManager webservices_manager = WebservicesManager.getInstance();
-        _load_phylogeny_from_webservice_menu_items = new JMenuItem[webservices_manager
-                .getAvailablePhylogeniesWebserviceClients().size()];
-        for (int i = 0; i < webservices_manager.getAvailablePhylogeniesWebserviceClients().size(); ++i) {
-            final PhylogeniesWebserviceClient client = webservices_manager.getAvailablePhylogeniesWebserviceClient(i);
-            _load_phylogeny_from_webservice_menu_items[i] = new JMenuItem(client.getMenuName());
-            _file_jmenu.add(_load_phylogeny_from_webservice_menu_items[i]);
-        }
         if (getConfiguration().isEditable()) {
             _file_jmenu.addSeparator();
             _file_jmenu.add(_new_item = new JMenuItem("New"));
@@ -1962,9 +1281,6 @@ public final class MainFrameApplication extends MainFrame {
                 Font.BOLD,
                 _open_item.getFont().getSize() + 4));
         customizeJMenuItem(_open_url_item);
-        for (int i = 0; i < webservices_manager.getAvailablePhylogeniesWebserviceClients().size(); ++i) {
-            customizeJMenuItem(_load_phylogeny_from_webservice_menu_items[i]);
-        }
         customizeJMenuItem(_save_item);
         if (getConfiguration().isEditable()) {
             customizeJMenuItem(_new_item);
@@ -2037,9 +1353,7 @@ public final class MainFrameApplication extends MainFrame {
                     .add(_right_line_up_domains_cbmi = new JCheckBoxMenuItem(MainFrame.RIGHT_LINE_UP_DOMAINS));
             _options_jmenu.add(_show_domain_labels = new JCheckBoxMenuItem(MainFrame.SHOW_DOMAIN_LABELS_LABEL));
         }
-        _options_jmenu.add(_show_annotation_ref_source = new JCheckBoxMenuItem(SHOW_ANN_REF_SOURCE_LABEL));
         _options_jmenu.add(_show_confidence_stddev_cbmi = new JCheckBoxMenuItem(SHOW_CONF_STDDEV_LABEL));
-        _options_jmenu.add(_color_by_taxonomic_group_cbmi = new JCheckBoxMenuItem(COLOR_BY_TAXONOMIC_GROUP));
         _options_jmenu.add(_color_labels_same_as_parent_branch = new JCheckBoxMenuItem(COLOR_LABELS_LABEL));
         _color_labels_same_as_parent_branch.setToolTipText(MainFrame.COLOR_LABELS_TIP);
         _options_jmenu.add(_abbreviate_scientific_names = new JCheckBoxMenuItem(ABBREV_SN_LABEL));
@@ -2129,11 +1443,9 @@ public final class MainFrameApplication extends MainFrame {
         customizeJMenuItem(_cycle_data_return);
         customizeCheckBoxMenuItem(_color_labels_same_as_parent_branch,
                 getOptions().isColorLabelsSameAsParentBranch());
-        customizeCheckBoxMenuItem(_color_by_taxonomic_group_cbmi, getOptions().isColorByTaxonomicGroup());
         customizeCheckBoxMenuItem(_screen_antialias_cbmi, getOptions().isAntialiasScreen());
         customizeCheckBoxMenuItem(_background_gradient_cbmi, getOptions().isBackgroundColorGradient());
         customizeCheckBoxMenuItem(_show_domain_labels, getOptions().isShowDomainLabels());
-        customizeCheckBoxMenuItem(_show_annotation_ref_source, getOptions().isShowAnnotationRefSource());
         customizeCheckBoxMenuItem(_abbreviate_scientific_names, getOptions().isAbbreviateScientificTaxonNames());
         customizeCheckBoxMenuItem(_search_case_senstive_cbmi, getOptions().isSearchCaseSensitive());
         customizeCheckBoxMenuItem(_show_scale_cbmi, getOptions().isShowScale());
@@ -2183,26 +1495,6 @@ public final class MainFrameApplication extends MainFrame {
         _jmenubar.add(_options_jmenu);
     }
 
-    void buildPhylogeneticInferenceMenu() {
-        final InferenceManager im = getInferenceManager();
-        _inference_menu = MainFrame.createMenu("Inference", getConfiguration());
-        _inference_menu.add(_inference_from_msa_item = new JMenuItem("From Multiple Sequence Alignment..."));
-        customizeJMenuItem(_inference_from_msa_item);
-        _inference_from_msa_item.setToolTipText("Basic phylogenetic inference from MSA");
-        if (im.canDoMsa()) {
-            _inference_menu.add(_inference_from_seqs_item = new JMenuItem("From Unaligned Sequences..."));
-            customizeJMenuItem(_inference_from_seqs_item);
-            _inference_from_seqs_item
-                    .setToolTipText("Basic phylogenetic inference including multiple sequence alignment");
-        } else {
-            _inference_menu
-                    .add(_inference_from_seqs_item = new JMenuItem("From Unaligned Sequences (no program found)"));
-            customizeJMenuItem(_inference_from_seqs_item);
-            _inference_from_seqs_item.setEnabled(false);
-        }
-        _jmenubar.add(_inference_menu);
-    }
-
     void buildToolsMenu() {
         _tools_menu = createMenu("Tools", getConfiguration());
         if (getConfiguration().isEditable()) {
@@ -2226,9 +1518,6 @@ public final class MainFrameApplication extends MainFrame {
         _tools_menu.add(_remove_branch_color_item = new JMenuItem("Delete All Colors From Branches"));
         _remove_branch_color_item.setToolTipText("To remove all branch color values from the current phylogeny");
         customizeJMenuItem(_remove_branch_color_item);
-        _tools_menu.addSeparator();
-        _tools_menu.add(_annotate_item = new JMenuItem("Annotate Sequences of Selected Nodes"));
-        customizeJMenuItem(_annotate_item);
         _tools_menu.addSeparator();
         _tools_menu.add(_midpoint_root_item = new JMenuItem("Midpoint-Root"));
         customizeJMenuItem(_midpoint_root_item);
@@ -2257,19 +1546,6 @@ public final class MainFrameApplication extends MainFrame {
                 .setToolTipText("To (permanently) collapse branches with branches with branch lengths below a threshold into multifurcations");
         //
         _tools_menu.addSeparator();
-        _tools_menu
-                .add(_extract_tax_code_from_node_names_jmi = new JMenuItem("Extract Taxonomic Data from Node Names"));
-        customizeJMenuItem(_extract_tax_code_from_node_names_jmi);
-        _extract_tax_code_from_node_names_jmi
-                .setToolTipText("To extract SwissProt/Uniprot taxonomic codes (mnemonics) from nodes names in the form of 'xyz_CAEEL', Uniprot/NCBI identifiers form of 'xyz_6239', or scientific names form of 'xyz_Caenorhabditis_elegans'");
-        _tools_menu
-                .add(_move_node_names_to_tax_sn_jmi = new JMenuItem("Transfer Node Names to Taxonomic Scientific Names"));
-        customizeJMenuItem(_move_node_names_to_tax_sn_jmi);
-        _move_node_names_to_tax_sn_jmi.setToolTipText("To interpret node names as taxonomic scientific names");
-        _tools_menu.add(_move_node_names_to_seq_names_jmi = new JMenuItem("Transfer Node Names to Sequence Names"));
-        customizeJMenuItem(_move_node_names_to_seq_names_jmi);
-        _move_node_names_to_seq_names_jmi.setToolTipText("To interpret node names as sequence (protein, gene) names");
-        _tools_menu.addSeparator();
         _tools_menu.add(_obtain_seq_information_jmi = new JMenuItem("Obtain Sequence Information"));
         customizeJMenuItem(_obtain_seq_information_jmi);
         _obtain_seq_information_jmi.setToolTipText("To add additional sequence information");
@@ -2283,15 +1559,6 @@ public final class MainFrameApplication extends MainFrame {
         customizeJMenuItem(_obtain_detailed_taxonomic_information_deleting_jmi);
         _obtain_detailed_taxonomic_information_deleting_jmi
                 .setToolTipText("To add additional taxonomic information, deletes nodes for which taxonomy cannot found (from UniProt Taxonomy)");
-        _tools_menu.addSeparator();
-        _tools_menu.add(_read_values_jmi = new JMenuItem("Attach Vector/Expression Values"));
-        customizeJMenuItem(_read_values_jmi);
-        _read_values_jmi.setToolTipText("To attach vector (e.g. gene expression) values to tree nodes (beta)");
-        _jmenubar.add(_tools_menu);
-        _tools_menu.add(_read_seqs_jmi = new JMenuItem("Attach Molecular Sequences"));
-        customizeJMenuItem(_read_seqs_jmi);
-        _read_seqs_jmi
-                .setToolTipText("To attach molecular sequences to tree nodes (from Fasta-formatted file) (beta)");
         _jmenubar.add(_tools_menu);
     }
 
@@ -2389,22 +1656,6 @@ public final class MainFrameApplication extends MainFrame {
         }
         activateSaveAllIfNeeded();
         System.gc();
-    }
-
-    void setMsa(final Msa msa) {
-        _msa = msa;
-    }
-
-    void setMsaFile(final File msa_file) {
-        _msa_file = msa_file;
-    }
-
-    void setSeqs(final List<MolecularSequence> seqs) {
-        _seqs = seqs;
-    }
-
-    void setSeqsFile(final File seqs_file) {
-        _seqs_file = seqs_file;
     }
 
     public static MainFrameApplication createInstance(final Phylogeny[] phys, final Configuration config) {

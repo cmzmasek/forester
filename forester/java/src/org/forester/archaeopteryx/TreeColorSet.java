@@ -60,9 +60,9 @@ public final class TreeColorSet {
     static final String[]      SCHEME_NAMES               = { "Default", "Black", "Black & White", "Simple", "Silver", "Green",
             "White & Blue", "Cyan", "Orange", "Blue", "Blue & White", "Neon" };
     private int                _color_scheme;
-    private final Color[][]    _color_schemes             = { { new Color( 0, 0, 0 ), // background_color
+    private final Color[][]    _color_schemes             = { { new Color( 43, 43, 43 ), // background_color (modern dark gray, #2B2B2B)
             new Color( 0, 100, 100 ), // background_color_gradient_bottom
-            new Color( 230, 230, 230 ), // sequence  __ Default (same as Black)
+            new Color( 230, 230, 230 ), // sequence  __ Default
             new Color( 180, 180, 180 ), // taxonomy
             new Color( 180, 180, 180 ), // support
             new Color( 140, 140, 140 ), // branch_length_color

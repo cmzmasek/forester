@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.swing.BorderFactory;
+import javax.swing.UIManager;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
@@ -113,7 +114,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     private NodeClickAction _action_when_node_clicked;
     private int _add_new_node_item;
     private Map<Integer, String> _all_click_to_names;
-    private Map<String, Color> _annotation_colors;
     private int _blast_item;
     private JComboBox<String> _click_to_combobox;
     private JLabel _click_to_label;
@@ -123,7 +123,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     private int _order_subtree_cb_item;
     private JCheckBox _color_acc_species;
     private JCheckBox _color_acc_sequence;
-    private JCheckBox _color_according_to_annotation;
     private boolean _color_branches;
     private JCheckBox _use_visual_styles_cb;
     private int _color_subtree_cb_item;
@@ -171,7 +170,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     private Sequence _selected_query_seq;
     private JCheckBox _seq_relation_confidence_switch;
     private JComboBox<SEQUENCE_RELATION_TYPE> _sequence_relation_type_box;
-    private JCheckBox _show_annotation;
     private JCheckBox _show_binary_character_counts;
     private JCheckBox _show_binary_characters;
     // Indices for the click-to options in the combo box
@@ -220,9 +218,12 @@ final class ControlPanel extends JPanel implements ActionListener {
         init();
         _mainpanel = ap;
         _configuration = configuration;
-        if (!_configuration.isUseNativeUI()) {
+        if (_configuration.isApplyCustomGuiColors()) {
             setBackground(getConfiguration().getGuiBackgroundColor());
             setBorder(BorderFactory.createRaisedBevelBorder());
+        } else {
+            // modern look-and-feels: a little breathing room instead of the legacy bevel
+            setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
         }
         setLayout(new GridLayout(0, 1, 2, 2));
         setupControls();
@@ -442,7 +443,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             _show_sequence_relations.setFocusable(false);
             _show_sequence_relations.setMaximumRowCount(20);
             _show_sequence_relations.setFont(ControlPanel.js_font);
-            if (!_configuration.isUseNativeUI()) {
+            if (_configuration.isApplyCustomGuiColors()) {
                 _show_sequence_relations.setBackground(getConfiguration().getGuiButtonBackgroundColor());
                 _show_sequence_relations.setForeground(getConfiguration().getGuiButtonTextColor());
             }
@@ -551,7 +552,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         _click_to_combobox.addItem(title);
         _click_to_names.add(title);
         _all_click_to_names.put(Integer.valueOf(which), title);
-        if (!_configuration.isUseNativeUI()) {
+        if (_configuration.isApplyCustomGuiColors()) {
             _click_to_combobox.setBackground(getConfiguration().getGuiButtonBackgroundColor());
             _click_to_combobox.setForeground(getConfiguration().getGuiButtonTextColor());
         }
@@ -567,7 +568,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         typeLabel.setFont(ControlPanel.js_font.deriveFont(7));
         getSequenceRelationTypeBox().setFocusable(false);
         _sequence_relation_type_box.setFont(ControlPanel.js_font);
-        if (!_configuration.isUseNativeUI()) {
+        if (_configuration.isApplyCustomGuiColors()) {
             _sequence_relation_type_box.setBackground(getConfiguration().getGuiButtonBackgroundColor());
             _sequence_relation_type_box.setForeground(getConfiguration().getGuiButtonTextColor());
         }
@@ -619,7 +620,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         _tree_display_types = new ArrayList<Options.PHYLOGENY_DISPLAY_TYPE>();
         setSpeciesColors(new HashMap<String, Color>());
         setSequenceColors(new HashMap<String, Color>());
-        setAnnotationColors(new HashMap<String, Color>());
     }
 
     private Options.PHYLOGENY_DISPLAY_TYPE getTreeDisplayType(final int index) {
@@ -1019,12 +1019,6 @@ final class ControlPanel extends JPanel implements ActionListener {
             setCheckbox(Configuration.color_according_to_species,
                     _configuration.doCheckOption(Configuration.color_according_to_species));
         }
-        if (_configuration.doDisplayOption(Configuration.color_according_to_annotation)) {
-            addCheckbox(Configuration.color_according_to_annotation,
-                    _configuration.getDisplayTitle(Configuration.color_according_to_annotation));
-            setCheckbox(Configuration.color_according_to_annotation,
-                    _configuration.doCheckOption(Configuration.color_according_to_annotation));
-        }
         if (_configuration.doDisplayOption(Configuration.use_style)) {
             addCheckbox(Configuration.use_style, _configuration.getDisplayTitle(Configuration.use_style));
             setCheckbox(Configuration.use_style, _configuration.doCheckOption(Configuration.use_style));
@@ -1035,7 +1029,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
         final JLabel label = new JLabel("Display Data:");
         label.setFont(ControlPanel.jcb_bold_font);
-        if (!getConfiguration().isUseNativeUI()) {
+        if (getConfiguration().isApplyCustomGuiColors()) {
             label.setForeground(getConfiguration().getGuiCheckboxTextColor());
         }
         add(label);
@@ -1084,11 +1078,6 @@ final class ControlPanel extends JPanel implements ActionListener {
                     _configuration.getDisplayTitle(Configuration.show_sequence_acc));
             setCheckbox(Configuration.show_sequence_acc,
                     _configuration.doCheckOption(Configuration.show_sequence_acc));
-        }
-        if (_configuration.doDisplayOption(Configuration.show_annotation)) {
-            addCheckbox(Configuration.show_annotation,
-                    _configuration.getDisplayTitle(Configuration.show_annotation));
-            setCheckbox(Configuration.show_annotation, _configuration.doCheckOption(Configuration.show_annotation));
         }
         if (_configuration.doDisplayOption(Configuration.write_confidence_values)) {
             addCheckbox(Configuration.write_confidence_values,
@@ -1209,7 +1198,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         final JPanel y_panel = new JPanel(new GridLayout(1, 3, 0, 0));
         final JPanel z_panel = new JPanel(new GridLayout(1, 1, 0, 0));
         final JPanel o_panel = new JPanel(new GridLayout(1, 3, 0, 0));
-        if (!getConfiguration().isUseNativeUI()) {
+        if (getConfiguration().isApplyCustomGuiColors()) {
             x_panel.setBackground(getBackground());
             y_panel.setBackground(getBackground());
             z_panel.setBackground(getBackground());
@@ -1304,13 +1293,6 @@ final class ControlPanel extends JPanel implements ActionListener {
                 addJCheckBox(_color_acc_sequence, ch_panel);
                 add(ch_panel);
                 break;
-            case Configuration.color_according_to_annotation:
-                _color_according_to_annotation = new JCheckBox(title);
-                _color_according_to_annotation
-                        .setToolTipText("To colorize sequence annotation labels as a function of sequence annotation");
-                addJCheckBox(_color_according_to_annotation, ch_panel);
-                add(ch_panel);
-                break;
             case Configuration.show_node_names:
                 _show_node_names = new JCheckBox(title);
                 addJCheckBox(_show_node_names, ch_panel);
@@ -1344,11 +1326,6 @@ final class ControlPanel extends JPanel implements ActionListener {
             case Configuration.show_binary_characters:
                 _show_binary_characters = new JCheckBox(title);
                 addJCheckBox(_show_binary_characters, ch_panel);
-                add(ch_panel);
-                break;
-            case Configuration.show_annotation:
-                _show_annotation = new JCheckBox(title);
-                addJCheckBox(_show_annotation, ch_panel);
                 add(ch_panel);
                 break;
             case Configuration.show_binary_character_counts:
@@ -1449,7 +1426,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     void addJButton(final JButton jb, final JPanel p) {
         jb.setFocusPainted(false);
         jb.setFont(ControlPanel.jcb_font);
-        if (!_configuration.isUseNativeUI()) {
+        if (_configuration.isApplyCustomGuiColors()) {
             jb.setBorder(BorderFactory.createLineBorder(getConfiguration().getGuiButtonBorderColor()));
             jb.setBackground(getConfiguration().getGuiButtonBackgroundColor());
             jb.setForeground(getConfiguration().getGuiButtonTextColor());
@@ -1461,7 +1438,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     void addJCheckBox(final JCheckBox jcb, final JPanel p) {
         jcb.setFocusPainted(false);
         jcb.setFont(ControlPanel.jcb_font);
-        if (!_configuration.isUseNativeUI()) {
+        if (_configuration.isApplyCustomGuiColors()) {
             jcb.setBackground(getConfiguration().getGuiBackgroundColor());
             jcb.setForeground(getConfiguration().getGuiCheckboxTextColor());
         }
@@ -1472,7 +1449,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     private final void setupJRadioButton(final JRadioButton rb) {
         rb.setFocusPainted(false);
         rb.setFont(ControlPanel.jcb_font);
-        if (!_configuration.isUseNativeUI()) {
+        if (_configuration.isApplyCustomGuiColors()) {
             rb.setBackground(getConfiguration().getGuiBackgroundColor());
             rb.setForeground(getConfiguration().getGuiCheckboxTextColor());
         }
@@ -1480,7 +1457,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     void addJTextField(final JTextField tf, final JPanel p) {
-        if (!_configuration.isUseNativeUI()) {
+        if (_configuration.isApplyCustomGuiColors()) {
             tf.setForeground(getConfiguration().getGuiBackgroundColor());
             tf.setFont(ControlPanel.jcb_font);
         }
@@ -1541,10 +1518,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         return _all_click_to_names;
     }
 
-    Map<String, Color> getAnnotationColors() {
-        return _annotation_colors;
-    }
-
     Configuration getConfiguration() {
         return _configuration;
     }
@@ -1601,10 +1574,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         return true;
     }
 
-    boolean isColorAccordingToAnnotation() {
-        return ((_color_according_to_annotation != null) && _color_according_to_annotation.isSelected());
-    }
-
     boolean isColorAccordingToSequence() {
         return ((_color_acc_sequence != null) && _color_acc_sequence.isSelected());
     }
@@ -1629,10 +1598,6 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     boolean isNodeDescPopup() {
         return ((getNodeDescPopupCb() != null) && getNodeDescPopupCb().isSelected());
-    }
-
-    boolean isShowAnnotation() {
-        return ((_show_annotation != null) && _show_annotation.isSelected());
     }
 
     boolean isShowBinaryCharacterCounts() {
@@ -1784,10 +1749,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         _action_when_node_clicked = action;
     }
 
-    void setAnnotationColors(final Map<String, Color> annotation_colors) {
-        _annotation_colors = annotation_colors;
-    }
-
     void setCheckbox(final int which, final boolean state) {
         switch (which) {
             case Configuration.display_as_phylogram:
@@ -1815,11 +1776,6 @@ final class ControlPanel extends JPanel implements ActionListener {
             case Configuration.color_according_to_sequence:
                 if (_color_acc_sequence != null) {
                     _color_acc_sequence.setSelected(state);
-                }
-                break;
-            case Configuration.color_according_to_annotation:
-                if (_color_according_to_annotation != null) {
-                    _color_according_to_annotation.setSelected(state);
                 }
                 break;
             case Configuration.show_node_names:
@@ -1850,11 +1806,6 @@ final class ControlPanel extends JPanel implements ActionListener {
             case Configuration.show_taxonomy_images:
                 if (_show_taxo_images_cb != null) {
                     _show_taxo_images_cb.setSelected(state);
-                }
-                break;
-            case Configuration.show_annotation:
-                if (_show_annotation != null) {
-                    _show_annotation.setSelected(state);
                 }
                 break;
             case Configuration.show_binary_characters:
@@ -2052,10 +2003,11 @@ final class ControlPanel extends JPanel implements ActionListener {
         if (is_on) {
             getDynamicallyHideData().setForeground(getConfiguration().getGuiCheckboxAndButtonActiveColor());
         } else {
-            if (!_configuration.isUseNativeUI()) {
+            if (_configuration.isApplyCustomGuiColors()) {
                 getDynamicallyHideData().setForeground(getConfiguration().getGuiButtonTextColor());
             } else {
-                getDynamicallyHideData().setForeground(Color.BLACK);
+                // reset to the look-and-feel default so the label stays visible in dark themes
+                getDynamicallyHideData().setForeground(UIManager.getColor("CheckBox.foreground"));
             }
         }
     }
@@ -2118,7 +2070,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         setupJRadioButton(getDisplayAsCladogramRb());
         final JPanel p = new JPanel(new GridLayout(1, 3, 0, 0));
         p.setFont(ControlPanel.jcb_font);
-        if (!_configuration.isUseNativeUI()) {
+        if (_configuration.isApplyCustomGuiColors()) {
             p.setBackground(getConfiguration().getGuiBackgroundColor());
             p.setForeground(getConfiguration().getGuiCheckboxTextColor());
         }
@@ -2144,14 +2096,14 @@ final class ControlPanel extends JPanel implements ActionListener {
         _decr_domain_structure_evalue_thr.setToolTipText("Decrease the E-value threshold by a factor of 10");
         _domain_structure_evalue_thr_tf = new JTextField(3);
         _domain_structure_evalue_thr_tf.setEditable(false);
-        if (!getConfiguration().isUseNativeUI()) {
+        if (getConfiguration().isApplyCustomGuiColors()) {
             _domain_structure_evalue_thr_tf.setForeground(getConfiguration().getGuiMenuBackgroundColor());
             _domain_structure_evalue_thr_tf.setBackground(getConfiguration().getGuiCheckboxTextColor());
             _domain_structure_evalue_thr_tf.setBorder(null);
         }
         final JPanel d1_panel = new JPanel(new GridLayout(1, 2, 0, 0));
         final JPanel d2_panel = new JPanel(new GridLayout(1, 3, 0, 0));
-        if (!_configuration.isUseNativeUI()) {
+        if (_configuration.isApplyCustomGuiColors()) {
             d1_panel.setBackground(getBackground());
             d2_panel.setBackground(getBackground());
         }
@@ -2179,13 +2131,13 @@ final class ControlPanel extends JPanel implements ActionListener {
         _depth_collapse_depth_tf = new JTextField(3);
         _depth_collapse_depth_tf.setToolTipText("the current depth threshold");
         _depth_collapse_depth_tf.setEditable(false);
-        if (!getConfiguration().isUseNativeUI()) {
+        if (getConfiguration().isApplyCustomGuiColors()) {
             _depth_collapse_depth_tf.setForeground(getConfiguration().getGuiMenuBackgroundColor());
             _depth_collapse_depth_tf.setBackground(getConfiguration().getGuiCheckboxTextColor());
             _depth_collapse_depth_tf.setBorder(null);
         }
         final JPanel panel = new JPanel(new GridLayout(1, 3, 0, 0));
-        if (!_configuration.isUseNativeUI()) {
+        if (_configuration.isApplyCustomGuiColors()) {
             panel.setBackground(getBackground());
         }
         add(panel);
@@ -2209,13 +2161,13 @@ final class ControlPanel extends JPanel implements ActionListener {
         _rank_collapse_depth_tf = new JTextField(3);
         _rank_collapse_depth_tf.setToolTipText("the current taxonomic rank threshold");
         _rank_collapse_depth_tf.setEditable(false);
-        if (!getConfiguration().isUseNativeUI()) {
+        if (getConfiguration().isApplyCustomGuiColors()) {
             _rank_collapse_depth_tf.setForeground(getConfiguration().getGuiMenuBackgroundColor());
             _rank_collapse_depth_tf.setBackground(getConfiguration().getGuiCheckboxTextColor());
             _rank_collapse_depth_tf.setBorder(null);
         }
         final JPanel panel = new JPanel(new GridLayout(1, 3, 0, 0));
-        if (!_configuration.isUseNativeUI()) {
+        if (_configuration.isApplyCustomGuiColors()) {
             panel.setBackground(getBackground());
         }
         add(panel);
@@ -2227,7 +2179,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     void setupSearchTools0() {
         final JLabel search_label = new JLabel("Search (A):");
         search_label.setFont(ControlPanel.jcb_bold_font);
-        if (!getConfiguration().isUseNativeUI()) {
+        if (getConfiguration().isApplyCustomGuiColors()) {
             search_label.setForeground(getConfiguration().getGuiCheckboxTextColor());
         }
         add(search_label);
@@ -2235,13 +2187,13 @@ final class ControlPanel extends JPanel implements ActionListener {
         _search_found_label_0 = new JLabel();
         getSearchFoundCountsLabel0().setVisible(false);
         _search_found_label_0.setFont(ControlPanel.jcb_bold_font);
-        if (!getConfiguration().isUseNativeUI()) {
+        if (getConfiguration().isApplyCustomGuiColors()) {
             _search_found_label_0.setForeground(getConfiguration().getGuiCheckboxTextColor());
         }
         _search_tf_0 = new JTextField(3);
         _search_tf_0.setToolTipText(SEARCH_TIP_TEXT);
         _search_tf_0.setEditable(true);
-        if (!getConfiguration().isUseNativeUI()) {
+        if (getConfiguration().isApplyCustomGuiColors()) {
             _search_tf_0.setForeground(getConfiguration().getGuiMenuBackgroundColor());
             _search_tf_0.setBackground(getConfiguration().getGuiCheckboxTextColor());
             _search_tf_0.setBorder(null);
@@ -2287,7 +2239,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     void setupSearchTools1() {
         final JLabel search_label = new JLabel("Search (B):");
         search_label.setFont(ControlPanel.jcb_bold_font);
-        if (!getConfiguration().isUseNativeUI()) {
+        if (getConfiguration().isApplyCustomGuiColors()) {
             search_label.setForeground(getConfiguration().getGuiCheckboxTextColor());
         }
         add(search_label);
@@ -2295,13 +2247,13 @@ final class ControlPanel extends JPanel implements ActionListener {
         _search_found_label_1 = new JLabel();
         getSearchFoundCountsLabel1().setVisible(false);
         _search_found_label_1.setFont(ControlPanel.jcb_bold_font);
-        if (!getConfiguration().isUseNativeUI()) {
+        if (getConfiguration().isApplyCustomGuiColors()) {
             _search_found_label_1.setForeground(getConfiguration().getGuiCheckboxTextColor());
         }
         _search_tf_1 = new JTextField(3);
         _search_tf_1.setToolTipText(SEARCH_TIP_TEXT);
         _search_tf_1.setEditable(true);
-        if (!getConfiguration().isUseNativeUI()) {
+        if (getConfiguration().isApplyCustomGuiColors()) {
             _search_tf_1.setForeground(getConfiguration().getGuiMenuBackgroundColor());
             _search_tf_1.setBackground(getConfiguration().getGuiCheckboxTextColor());
             _search_tf_1.setBorder(null);
@@ -2397,15 +2349,6 @@ final class ControlPanel extends JPanel implements ActionListener {
                         mf._abbreviate_scientific_names.setVisible(false);
                     }
                 }
-                if (AptxUtil.isHasAtLeastOneNodeWithSequenceAnnotation(getCurrentTreePanel().getPhylogeny())) {
-                    if (mf._show_annotation_ref_source != null) {
-                        mf._show_annotation_ref_source.setVisible(true);
-                    }
-                } else {
-                    if (mf._show_annotation_ref_source != null) {
-                        mf._show_annotation_ref_source.setVisible(false);
-                    }
-                }
             }
             if (isDrawPhylogram() || ((getCurrentTreePanel() != null) && ((getCurrentTreePanel()
                     .getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR)
@@ -2446,22 +2389,6 @@ final class ControlPanel extends JPanel implements ActionListener {
                 }
             }
         }
-    }
-
-    void showAnnotations() {
-        if (_show_annotation != null) {
-            _show_annotation.setSelected(true);
-        }
-        if (_color_according_to_annotation != null) {
-            _color_according_to_annotation.setSelected(true);
-        }
-        if (_color_acc_species != null) {
-            _color_acc_species.setSelected(false);
-        }
-        if (_color_acc_sequence != null) {
-            _color_acc_sequence.setSelected(false);
-        }
-        _mainpanel.getCurrentTreePanel().repaint();
     }
 
     /**
@@ -2515,7 +2442,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         _click_to_combobox.setFocusable(false);
         _click_to_combobox.setMaximumRowCount(14);
         _click_to_combobox.setFont(ControlPanel.js_font);
-        if (!_configuration.isUseNativeUI()) {
+        if (_configuration.isApplyCustomGuiColors()) {
             _click_to_combobox.setBackground(getConfiguration().getGuiBackgroundColor());
         }
         // don't add listener until all items are set (or each one will trigger
@@ -2758,7 +2685,7 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     final static JLabel customizeLabel(final JLabel label, final Configuration configuration) {
         label.setFont(ControlPanel.jcb_bold_font);
-        if (!configuration.isUseNativeUI()) {
+        if (configuration.isApplyCustomGuiColors()) {
             label.setForeground(configuration.getGuiCheckboxTextColor());
             label.setBackground(configuration.getGuiBackgroundColor());
         }

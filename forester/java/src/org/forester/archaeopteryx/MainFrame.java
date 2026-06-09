@@ -28,6 +28,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Font;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -52,14 +53,17 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.filechooser.FileFilter;
+
+import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatLightLaf;
 
 import org.forester.archaeopteryx.AptxUtil.GraphicsExportType;
 import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
 import org.forester.archaeopteryx.tools.AncestralTaxonomyInferrer;
-import org.forester.archaeopteryx.tools.InferenceManager;
 import org.forester.archaeopteryx.tools.ProcessPool;
 import org.forester.archaeopteryx.tools.ProcessRunning;
 import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
@@ -83,6 +87,35 @@ import org.forester.util.WindowsUtils;
 
 public abstract class MainFrame extends JFrame implements ActionListener {
 
+    /**
+     * Installs the given look-and-feel. FlatLaf (light/dark) is the modern default;
+     * the native and cross-platform look-and-feels are kept as alternatives.
+     */
+    static void installLookAndFeel(final Configuration.UI ui) {
+        try {
+            switch (ui) {
+                case NATIVE:
+                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+                    break;
+                case CROSSPLATFORM:
+                    UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+                    break;
+                case FLAT_DARK:
+                    FlatDarkLaf.setup();
+                    break;
+                case FLAT_LIGHT:
+                default:
+                    FlatLightLaf.setup();
+                    break;
+            }
+        }
+        catch (final Exception e) {
+            ForesterUtil.printWarningMessage(AptxConstants.PRG_NAME,
+                    "could not set look and feel [" + ui + "]: " + e.getMessage());
+            FlatLightLaf.setup();
+        }
+    }
+
     final static NHFilter nhfilter = new NHFilter();
     final static NHXFilter nhxfilter = new NHXFilter();
     final static XMLFilter xmlfilter = new XMLFilter();
@@ -90,8 +123,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     final static NexusFilter nexusfilter = new NexusFilter();
     final static PdfFilter pdffilter = new PdfFilter();
     final static GraphicsFileFilter graphicsfilefilter = new GraphicsFileFilter();
-    final static MsaFileFilter msafilter = new MsaFileFilter();
-    final static SequencesFileFilter seqsfilter = new SequencesFileFilter();
     final static DefaultFilter defaultfilter = new DefaultFilter();
     static final String USE_MOUSEWHEEL_SHIFT_TO_ROTATE = "rotate with mousewheel + Shift (or A and S), D toggles between horizontal and radial labels";
     static final String PHYLOXML_REF_TOOL_TIP = AptxConstants.PHYLOXML_REFERENCE;                                                                                                                                                //TODO //FIXME
@@ -99,7 +130,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     private static final long serialVersionUID = 3655000897845508358L;
     final static Font menu_font = new Font(Configuration.getDefaultFontFamilyName(),
             Font.PLAIN,
-            10);
+            Configuration.getGuiFontSize());
     static final String TYPE_MENU_HEADER = "Type";
     static final String RECTANGULAR_TYPE_CBMI_LABEL = "Rectangular";
     static final String EURO_TYPE_CBMI_LABEL = "Euro Type";
@@ -116,7 +147,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String SEARCH_REGEX_LABEL = "Regex";
     static final String SEARCH_CASE_SENSITIVE_LABEL = "Match Case";
     static final String INVERSE_SEARCH_RESULT_LABEL = "Inverse";
-    static final String COLOR_BY_TAXONOMIC_GROUP = "Colorize by Taxonomic Group";
     static final String DISPLAY_SCALE_LABEL = "Scale";
     static final String NON_LINED_UP_CLADOGRAMS_LABEL = "Non-Lined Up Cladogram";
     static final String LABEL_DIRECTION_LABEL = "Radial Labels";
@@ -132,7 +162,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String FONT_SIZE_MENU_LABEL = "Font Size";
     static final String NONUNIFORM_CLADOGRAMS_LABEL = "Lined Up Cladogram";
     static final String SHOW_DOMAIN_LABELS_LABEL = "Domain Labels";
-    static final String SHOW_ANN_REF_SOURCE_LABEL = "Seq Annotation Ref Sources";
     static final String COLOR_LABELS_TIP = "To use parent branch colors for node labels as well, need to turn off taxonomy dependent colorization and turn on branch colorization for this to become apparent";
     static final String ABBREV_SN_LABEL = "Abbreviate Scientific Taxonomic Names";
     static final String CYCLE_NODE_SHAPE_LABEL = "Cycle Node Shapes";
@@ -154,7 +183,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenu _options_jmenu;
     JMenu _font_size_menu;
     JMenu _help_jmenu;
-    JMenuItem[] _load_phylogeny_from_webservice_menu_items;
     // Analysis menu
     JMenu _analysis_menu;
     JMenuItem _load_species_tree_item;
@@ -187,10 +215,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem _obtain_detailed_taxonomic_information_jmi;
     JMenuItem _obtain_detailed_taxonomic_information_deleting_jmi;
     JMenuItem _obtain_seq_information_jmi;
-    JMenuItem _move_node_names_to_tax_sn_jmi;
-    JMenuItem _move_node_names_to_seq_names_jmi;
-    JMenuItem _extract_tax_code_from_node_names_jmi;
-    JMenuItem _annotate_item;
     JMenuItem _remove_branch_color_item;
     JMenuItem _remove_visual_styles_item;
     JMenuItem _delete_selected_nodes_item;
@@ -211,11 +235,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JCheckBoxMenuItem _background_gradient_cbmi;
     JRadioButtonMenuItem _non_lined_up_cladograms_rbmi;
     JRadioButtonMenuItem _ext_node_dependent_cladogram_rbmi;
-    JCheckBoxMenuItem _color_by_taxonomic_group_cbmi;
     JCheckBoxMenuItem _show_scale_cbmi;                                                                                                                                                                                                      //TODO fix me
     JCheckBoxMenuItem _show_overview_cbmi;
     JCheckBoxMenuItem _show_domain_labels;
-    JCheckBoxMenuItem _show_annotation_ref_source;
     JCheckBoxMenuItem _abbreviate_scientific_names;
     JCheckBoxMenuItem _color_labels_same_as_parent_branch;
     JMenuItem _overview_placment_mi;
@@ -275,12 +297,12 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem _view_as_XML_item;
     JMenuItem _view_as_nexus_item;
     JMenuItem _display_basic_information_item;
+    JCheckBoxMenuItem _dark_mode_cbmi;
     // help menu:
     JMenuItem _about_item;
     JMenuItem _help_item;
     JMenuItem _website_item;
     JMenuItem _aptxjs_website_item;
-    JMenuItem _phyloxml_website_item;
     JMenuItem _phyloxml_ref_item;
 
     //
@@ -297,9 +319,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     Configuration _configuration;
     Options _options;
     private Phylogeny _species_tree;
-    InferenceManager _inference_manager;
     final ProcessPool _process_pool;
-    private String _previous_node_annotation_ref;
 
     MainFrame() {
         _process_pool = ProcessPool.createInstance();
@@ -383,8 +403,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 return;
             }
             deleteSelectedNodes(false);
-        } else if (o == _annotate_item) {
-            annotateSequences();
         } else if (o == _switch_colors_mi) {
             switchColors();
         } else if (o == _display_basic_information_item) {
@@ -397,6 +415,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             viewAsXML();
         } else if (o == _view_as_nexus_item) {
             viewAsNexus();
+        } else if (o == _dark_mode_cbmi) {
+            setDarkMode(_dark_mode_cbmi.isSelected());
         } else if (o == _super_tiny_fonts_item) {
             if (getCurrentTreePanel() != null) {
                 getCurrentTreePanel().setSuperTinyFonts();
@@ -444,8 +464,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         } else if (o == _background_gradient_cbmi) {
             updateOptions(getOptions());
         } else if (o == _show_domain_labels) {
-            updateOptions(getOptions());
-        } else if (o == _show_annotation_ref_source) {
             updateOptions(getOptions());
         } else if (o == _abbreviate_scientific_names) {
             updateOptions(getOptions());
@@ -500,8 +518,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         } else if (o == _parse_beast_style_extended_nexus_tags_cbmi) {
             updateOptions(getOptions());
         } else if (o == _show_scale_cbmi) {
-            updateOptions(getOptions());
-        } else if (o == _color_by_taxonomic_group_cbmi) {
             updateOptions(getOptions());
         } else if (o == _show_confidence_stddev_cbmi) {
             updateOptions(getOptions());
@@ -564,12 +580,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             try {
                 AptxUtil.openWebsite(AptxConstants.APTX_JS_WEB_SITE);
                 ;
-            } catch (final IOException e1) {
-                ForesterUtil.printErrorMessage(AptxConstants.PRG_NAME, e1.toString());
-            }
-        } else if (o == _phyloxml_website_item) {
-            try {
-                AptxUtil.openWebsite(AptxConstants.PHYLOXML_WEB_SITE);
             } catch (final IOException e1) {
                 ForesterUtil.printErrorMessage(AptxConstants.PRG_NAME, e1.toString());
             }
@@ -675,14 +685,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 return;
             }
             executeLineageInference();
-        } else {
-            if (_load_phylogeny_from_webservice_menu_items != null) {
-                for (int i = 0; i < _load_phylogeny_from_webservice_menu_items.length; ++i) {
-                    if (o == _load_phylogeny_from_webservice_menu_items[i]) {
-                        readPhylogeniesFromWebservice(i);
-                    }
-                }
-            }
         }
         _contentpane.repaint();
     }
@@ -709,10 +711,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     public int getCurrentExternalNodesDataBufferLength() {
         return getCurrentTreePanel().getCurrentExternalNodesDataBufferAsString().length();
-    }
-
-    public InferenceManager getInferenceManager() {
-        return _inference_manager;
     }
 
     public MainPanel getMainPanel() {
@@ -746,77 +744,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 doUpdateProcessMenu();
             }
         });
-    }
-
-    private void annotateSequences() {
-        if (getCurrentTreePanel() != null) {
-            List<PhylogenyNode> nodes = null;
-            if ((getCurrentTreePanel().getFoundNodes0() != null)
-                    || (getCurrentTreePanel().getFoundNodes1() != null)) {
-                nodes = getCurrentTreePanel().getFoundNodesAsListOfPhylogenyNodes();
-            }
-            if ((nodes == null) || nodes.isEmpty()) {
-                JOptionPane
-                        .showMessageDialog(this,
-                                "Need to select nodes, either via direct selection or via the \"Search\" function",
-                                "No nodes selected for annotation",
-                                JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            final Phylogeny phy = getMainPanel().getCurrentPhylogeny();
-            if ((phy != null) && !phy.isEmpty()) {
-                final JTextField ref_field = new JTextField(10);
-                final JTextField desc_filed = new JTextField(20);
-                ref_field.setText(ForesterUtil.isEmpty(getPreviousNodeAnnotationReference()) ? ""
-                        : getPreviousNodeAnnotationReference());
-                final JPanel my_panel = new JPanel();
-                my_panel.add(new JLabel("Reference "));
-                my_panel.add(ref_field);
-                my_panel.add(Box.createHorizontalStrut(15));
-                my_panel.add(new JLabel("Description "));
-                my_panel.add(desc_filed);
-                final int result = JOptionPane.showConfirmDialog(null,
-                        my_panel,
-                        "Enter the sequence annotation(s) for the "
-                                + nodes.size() + " selected nodes",
-                        JOptionPane.OK_CANCEL_OPTION);
-                if (result == JOptionPane.OK_OPTION) {
-                    String ref = ref_field.getText();
-                    String desc = desc_filed.getText();
-                    if (!ForesterUtil.isEmpty(ref)) {
-                        ref = ref.trim();
-                        ref = ref.replaceAll("\\s+", " ");
-                        if ((ref.indexOf(':') < 1) || (ref.indexOf(':') > (ref.length() - 2))
-                                || (ref.length() < 3)) {
-                            JOptionPane.showMessageDialog(this,
-                                    "Reference needs to be in the form of \"GO:1234567\"",
-                                    "Illegal Format for Annotation Reference",
-                                    JOptionPane.ERROR_MESSAGE);
-                            return;
-                        }
-                    }
-                    if (ref != null) {
-                        setPreviousNodeAnnotationReference(ref);
-                    }
-                    if (desc != null) {
-                        desc = desc.trim();
-                        desc = desc.replaceAll("\\s+", " ");
-                    }
-                    if (!ForesterUtil.isEmpty(ref) || !ForesterUtil.isEmpty(desc)) {
-                        for (final PhylogenyNode n : nodes) {
-                            ForesterUtil.ensurePresenceOfSequence(n);
-                            final Annotation ann = ForesterUtil.isEmpty(ref) ? new Annotation()
-                                    : new Annotation(ref);
-                            if (!ForesterUtil.isEmpty(desc)) {
-                                ann.setDesc(desc);
-                            }
-                            n.getNodeData().getSequence().addAnnotation(ann);
-                        }
-                    }
-                    getMainPanel().getControlPanel().showAnnotations();
-                }
-            }
-        }
     }
 
     private void chooseFont() {
@@ -957,10 +884,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         repaint();
     }
 
-    private String getPreviousNodeAnnotationReference() {
-        return _previous_node_annotation_ref;
-    }
-
     private void removeBranchColors() {
         if (getMainPanel().getCurrentPhylogeny() != null) {
             AptxUtil.removeBranchColors(getMainPanel().getCurrentPhylogeny());
@@ -971,10 +894,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if (getMainPanel().getCurrentPhylogeny() != null) {
             AptxUtil.removeVisualStyles(getMainPanel().getCurrentPhylogeny());
         }
-    }
-
-    private void setPreviousNodeAnnotationReference(final String previous_node_annotation_ref) {
-        _previous_node_annotation_ref = previous_node_annotation_ref;
     }
 
     private void writeAllToFile() {
@@ -1093,14 +1012,12 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _help_jmenu.addSeparator();
         _help_jmenu.add(_website_item = new JMenuItem("Archaeopteryx Home"));
         _help_jmenu.add(_aptxjs_website_item = new JMenuItem("Archaeopteryx online version: Archaeopteryx.js"));
-        _help_jmenu.add(_phyloxml_website_item = new JMenuItem("phyloXML Home"));
         _help_jmenu.add(_phyloxml_ref_item = new JMenuItem("phyloXML Reference"));
         _help_jmenu.addSeparator();
         _help_jmenu.add(_about_item = new JMenuItem("About"));
         customizeJMenuItem(_help_item);
         customizeJMenuItem(_website_item);
         customizeJMenuItem(_aptxjs_website_item);
-        customizeJMenuItem(_phyloxml_website_item);
         customizeJMenuItem(_phyloxml_ref_item);
         customizeJMenuItem(_about_item);
         _phyloxml_ref_item.setToolTipText(PHYLOXML_REF_TOOL_TIP);
@@ -1144,6 +1061,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         customizeJMenuItem(_view_as_NH_item);
         customizeJMenuItem(_view_as_XML_item);
         customizeJMenuItem(_view_as_nexus_item);
+        _view_jmenu.addSeparator();
+        _view_jmenu.add(_dark_mode_cbmi = new JCheckBoxMenuItem("Dark Mode"));
+        _dark_mode_cbmi.setSelected(getConfiguration().getUi() == Configuration.UI.FLAT_DARK);
+        customizeJMenuItem(_dark_mode_cbmi);
         _jmenubar.add(_view_jmenu);
     }
 
@@ -1232,7 +1153,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     void customizeCheckBoxMenuItem(final JCheckBoxMenuItem item, final boolean is_selected) {
         if (item != null) {
             item.setFont(MainFrame.menu_font);
-            if (!getConfiguration().isUseNativeUI()) {
+            if (getConfiguration().isApplyCustomGuiColors()) {
                 item.setBackground(getConfiguration().getGuiMenuBackgroundColor());
                 item.setForeground(getConfiguration().getGuiMenuTextColor());
             }
@@ -1244,7 +1165,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem customizeJMenuItem(final JMenuItem jmi) {
         if (jmi != null) {
             jmi.setFont(MainFrame.menu_font);
-            if (!getConfiguration().isUseNativeUI()) {
+            if (getConfiguration().isApplyCustomGuiColors()) {
                 jmi.setBackground(getConfiguration().getGuiMenuBackgroundColor());
                 jmi.setForeground(getConfiguration().getGuiMenuTextColor());
             }
@@ -1256,7 +1177,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     void customizeRadioButtonMenuItem(final JRadioButtonMenuItem item, final boolean is_selected) {
         if (item != null) {
             item.setFont(MainFrame.menu_font);
-            if (!getConfiguration().isUseNativeUI()) {
+            if (getConfiguration().isApplyCustomGuiColors()) {
                 item.setBackground(getConfiguration().getGuiMenuBackgroundColor());
                 item.setForeground(getConfiguration().getGuiMenuTextColor());
             }
@@ -1495,10 +1416,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         return _label_direction_cbmi;
     }
 
-    JMenuBar getMenuBarOfMainFrame() {
-        return _jmenubar;
-    }
-
     final Phylogeny getSpeciesTree() {
         return _species_tree;
     }
@@ -1579,11 +1496,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
     }
 
-    void readPhylogeniesFromWebservice(final int i) {
-        final UrlTreeReader reader = new UrlTreeReader(this, i);
-        new Thread(reader).start();
-    }
-
     void removeAllTextFrames() {
         for (final TextFrame tf : _textframes) {
             if (tf != null) {
@@ -1614,10 +1526,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     void setCurrentDir(final File current_dir) {
         _current_dir = current_dir;
-    }
-
-    void setInferenceManager(final InferenceManager i) {
-        _inference_manager = i;
     }
 
     void setOptions(final Options options) {
@@ -1677,6 +1585,37 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         csc.setVisible(true);
     }
 
+    void setDarkMode(final boolean dark) {
+        final Configuration.UI ui = dark ? Configuration.UI.FLAT_DARK : Configuration.UI.FLAT_LIGHT;
+        getConfiguration().setUi(ui);
+        Configuration.saveUiPreference(ui);
+        installLookAndFeel(ui);
+        // restyle every open window with the new look-and-feel
+        for (final Window window : Window.getWindows()) {
+            SwingUtilities.updateComponentTreeUI(window);
+        }
+        // make the tree canvas follow the light/dark theme
+        updateTreeCanvasColors(ui);
+    }
+
+    private void updateTreeCanvasColors(final Configuration.UI ui) {
+        if (getMainPanel() == null) {
+            return;
+        }
+        final TreeColorSet colorset = getMainPanel().getTreeColorSet();
+        if (colorset == null) {
+            return;
+        }
+        // scheme 0 = "Default" (dark/black background), scheme 2 = "Black & White" (white background)
+        colorset.setColorSchema(ui == Configuration.UI.FLAT_DARK ? 0 : 2);
+        for (final TreePanel tree_panel : getMainPanel().getTreePanels()) {
+            tree_panel.setBackground(colorset.getBackgroundColor());
+        }
+        if (getMainPanel().getCurrentTreePanel() != null) {
+            getMainPanel().getCurrentTreePanel().repaint();
+        }
+    }
+
     void taxColor() {
         if (_mainpanel.getCurrentTreePanel() != null) {
             _mainpanel.getCurrentTreePanel().taxColor();
@@ -1717,8 +1656,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         options.setBackgroundColorGradient((_background_gradient_cbmi != null)
                 && _background_gradient_cbmi.isSelected());
         options.setShowDomainLabels((_show_domain_labels != null) && _show_domain_labels.isSelected());
-        options.setShowAnnotationRefSource((_show_annotation_ref_source != null)
-                && _show_annotation_ref_source.isSelected());
         options.setAbbreviateScientificTaxonNames((_abbreviate_scientific_names != null)
                 && _abbreviate_scientific_names.isSelected());
         options.setColorLabelsSameAsParentBranch((_color_labels_same_as_parent_branch != null)
@@ -1749,9 +1686,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         options.setShowOverview((_show_overview_cbmi != null) && _show_overview_cbmi.isSelected());
         options.setShowConfidenceStddev((_show_confidence_stddev_cbmi != null)
                 && _show_confidence_stddev_cbmi.isSelected());
-        if ((_color_by_taxonomic_group_cbmi != null) && _color_by_taxonomic_group_cbmi.isEnabled()) {
-            options.setColorByTaxonomicGroup(_color_by_taxonomic_group_cbmi.isSelected());
-        }
         options.setAntialiasPrint((_antialias_print_cbmi != null) && _antialias_print_cbmi.isSelected());
         if ((_use_brackets_for_conf_in_nh_export_cbmi != null)
                 && _use_brackets_for_conf_in_nh_export_cbmi.isSelected()) {
@@ -2009,7 +1943,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     static JMenu createMenu(final String title, final Configuration conf) {
         final JMenu jmenu = new JMenu(title);
-        if (!conf.isUseNativeUI()) {
+        if (conf.isApplyCustomGuiColors()) {
             jmenu.setFont(MainFrame.menu_font);
             jmenu.setBackground(conf.getGuiMenuBackgroundColor());
             jmenu.setForeground(conf.getGuiMenuTextColor());
@@ -2019,7 +1953,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     static JMenuItem customizeMenuItemAsLabel(final JMenuItem label, final Configuration configuration) {
         label.setFont(MainFrame.menu_font.deriveFont(Font.BOLD));
-        if (!configuration.isUseNativeUI()) {
+        if (configuration.isApplyCustomGuiColors()) {
             label.setBackground(configuration.getGuiMenuBackgroundColor());
             label.setForeground(configuration.getGuiMenuTextColor());
             label.setOpaque(true);
@@ -2525,21 +2459,6 @@ class GraphicsFileFilter extends FileFilter {
     }
 }
 
-class MsaFileFilter extends FileFilter {
-
-    @Override
-    public boolean accept(final File f) {
-        final String file_name = f.getName().trim().toLowerCase();
-        return file_name.endsWith(".msa") || file_name.endsWith(".aln") || file_name.endsWith(".fasta")
-                || file_name.endsWith(".fas") || file_name.endsWith(".fa") || f.isDirectory();
-    }
-
-    @Override
-    public String getDescription() {
-        return "Multiple sequence alignment files (*.msa, *.aln, *.fasta, *.fa, *.fas)";
-    }
-}
-
 class NexusFilter extends FileFilter {
 
     @Override
@@ -2598,21 +2517,6 @@ class PdfFilter extends FileFilter {
         return "PDF files (*.pdf)";
     }
 } // PdfFilter
-
-class SequencesFileFilter extends FileFilter {
-
-    @Override
-    public boolean accept(final File f) {
-        final String file_name = f.getName().trim().toLowerCase();
-        return file_name.endsWith(".fasta") || file_name.endsWith(".fa") || file_name.endsWith(".fas")
-                || file_name.endsWith(".seqs") || f.isDirectory();
-    }
-
-    @Override
-    public String getDescription() {
-        return "Sequences files (*.fasta, *.fa, *.fas, *.seqs )";
-    }
-}
 
 class TolFilter extends FileFilter {
 

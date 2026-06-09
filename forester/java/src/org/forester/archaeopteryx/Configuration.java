@@ -41,6 +41,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
+import java.util.prefs.Preferences;
 
 import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
@@ -60,8 +61,11 @@ public final class Configuration {
     }
 
     public enum UI {
-        CROSSPLATFORM, NATIVE, NIMBUS, UNKNOWN
+        CROSSPLATFORM, NATIVE, NIMBUS, FLAT_LIGHT, FLAT_DARK, UNKNOWN
     }
+
+    private static final String PREFS_NODE   = "org/forester/archaeopteryx";
+    private static final String PREFS_KEY_UI = "ui";
 
     static enum TRIPLET {
         FALSE, TRUE, UNKNOWN
@@ -171,7 +175,6 @@ public final class Configuration {
 
     static final String VALIDATE_AGAINST_PHYLOXML_XSD_SCHEMA = "validate_against_phyloxml_xsd_schema";
     private static Hashtable<String, Color> _sequence_colors;
-    private static Hashtable<String, Color> _annotation_colors;
     private static Hashtable<String, Color> _domain_colors;
     private static Hashtable<String, Color> _species_colors;
     private static String DEFAULT_FONT_FAMILY = "";
@@ -234,7 +237,6 @@ public final class Configuration {
     private File _path_to_local_raxml = null;
     private PHYLOGENY_GRAPHICS_TYPE _phylogeny_graphics_type = PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR;
     private float _print_line_width = AptxConstants.PDF_LINE_WIDTH_DEFAULT;
-    private boolean _show_annotation_ref_source = true;
     private boolean _show_default_node_shapes_external = false;
     private boolean _show_default_node_shapes_for_marked_nodes = false;
     private boolean _show_default_node_shapes_internal = false;
@@ -427,10 +429,6 @@ public final class Configuration {
 
     final public boolean isRightLineUpDomains() {
         return _right_align_domains;
-    }
-
-    public boolean isShowAnnotationRefSource() {
-        return _show_annotation_ref_source;
     }
 
     public boolean isShowDefaultNodeShapesExternal() {
@@ -866,11 +864,15 @@ public final class Configuration {
                 _ui = UI.NATIVE;
             } else if (my_str.equals("no") || my_str.equals("false")) {
                 _ui = UI.CROSSPLATFORM;
+            } else if (my_str.equals("flat") || my_str.equals("flat_light") || my_str.equals("light")) {
+                _ui = UI.FLAT_LIGHT;
+            } else if (my_str.equals("flat_dark") || my_str.equals("dark")) {
+                _ui = UI.FLAT_DARK;
             } else if (my_str.equals("?")) {
                 _ui = UI.UNKNOWN;
             } else {
-                ForesterUtil.printWarningMessage(AptxConstants.PRG_NAME, "could not parse yes/no/? value from [" + my_str
-                        + "]");
+                ForesterUtil.printWarningMessage(AptxConstants.PRG_NAME,
+                        "could not parse yes/no/flat/flat_dark/? value from [" + my_str + "]");
                 _ui = UI.UNKNOWN;
             }
         } else if (key.equals(VALIDATE_AGAINST_PHYLOXML_XSD_SCHEMA)) {
@@ -980,8 +982,6 @@ public final class Configuration {
             setColorLabelsSameAsParentBranch(parseBoolean((String) st.nextElement()));
         } else if (key.equals("show_domain_labels")) {
             setShowDomainLabels(parseBoolean((String) st.nextElement()));
-        } else if (key.equals("show_seq_annotation_ref_sources")) {
-            setShowAnnotationRefSource(parseBoolean((String) st.nextElement()));
         } else if (key.equals("abbreviate_scientific_names")) {
             setAbbreviateScientificTaxonNames(parseBoolean((String) st.nextElement()));
         } else if (key.equals("cladogram_type")) {
@@ -1299,9 +1299,6 @@ public final class Configuration {
                             Color.decode((String) st.nextElement()));
                 } else if (key.equals("domain_color")) {
                     getDomainColors().put((String) st.nextElement(), Color.decode((String) st.nextElement()));
-                } else if (key.equals("annotation_color")) {
-                    getAnnotationColors()
-                            .put((String) st.nextElement(), Color.decode((String) st.nextElement()));
                 } else if (key.equals("function_color")) {
                     ForesterUtil.printWarningMessage(AptxConstants.PRG_NAME,
                             "configuration key [function_color] is deprecated");
@@ -1354,10 +1351,6 @@ public final class Configuration {
         _path_to_local_raxml = path_to_local_raxml;
     }
 
-    private void setShowAnnotationRefSource(final boolean b) {
-        _show_annotation_ref_source = b;
-    }
-
     private void setShowOverview(final boolean show_overview) {
         _show_overview = show_overview;
     }
@@ -1389,13 +1382,6 @@ public final class Configuration {
      */
     boolean doGuessCheckOption(final int which) {
         return display_options[which][2].equals("?");
-    }
-
-    Map<String, Color> getAnnotationColors() {
-        if (_annotation_colors == null) {
-            _annotation_colors = new Hashtable<String, Color>();
-        }
-        return _annotation_colors;
     }
 
     int getBaseFontSize() {
@@ -1572,11 +1558,66 @@ public final class Configuration {
         return _show_scale;
     }
 
-    final boolean isUseNativeUI() {
-        if ((_ui == UI.UNKNOWN) && ForesterUtil.isMac()) {
-            _ui = UI.NATIVE;
+    /**
+     * Returns the resolved look-and-feel selection. When no preference has been set in
+     * the configuration file ({@code UNKNOWN}), the last theme the user chose at runtime
+     * is used; if none was ever saved, the modern FlatLaf dark theme is the default
+     * (which matches Archaeopteryx's traditional dark tree canvas).
+     */
+    final UI getUi() {
+        if (_ui == UI.UNKNOWN) {
+            _ui = readUiPreference();
         }
-        return _ui == UI.NATIVE;
+        return _ui;
+    }
+
+    final void setUi(final UI ui) {
+        _ui = ui;
+    }
+
+    private static UI readUiPreference() {
+        try {
+            final String saved = Preferences.userRoot().node(PREFS_NODE).get(PREFS_KEY_UI, null);
+            if (saved != null) {
+                final UI ui = UI.valueOf(saved);
+                if (ui != UI.UNKNOWN) {
+                    return ui;
+                }
+            }
+        }
+        catch (final Exception e) {
+            // an invalid or inaccessible preference simply falls through to the default
+        }
+        return UI.FLAT_DARK;
+    }
+
+    /**
+     * Persists the user's runtime look-and-feel choice so it survives a restart.
+     */
+    static void saveUiPreference(final UI ui) {
+        try {
+            Preferences.userRoot().node(PREFS_NODE).put(PREFS_KEY_UI, ui.name());
+        }
+        catch (final Exception e) {
+            // failing to persist the preference is non-fatal
+        }
+    }
+
+    final boolean isUseNativeUI() {
+        return getUi() == UI.NATIVE;
+    }
+
+    final boolean isUseFlatLaf() {
+        return (getUi() == UI.FLAT_LIGHT) || (getUi() == UI.FLAT_DARK);
+    }
+
+    /**
+     * Whether the legacy, hand-themed cross-platform GUI colors and fonts should be
+     * applied to the Swing components. The native and FlatLaf look-and-feels style the
+     * components themselves, so custom colors are only applied for {@code CROSSPLATFORM}.
+     */
+    final boolean isApplyCustomGuiColors() {
+        return getUi() == UI.CROSSPLATFORM;
     }
 
     /**

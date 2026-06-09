@@ -7,13 +7,12 @@
     <property name="itextjar" value="${jars.dir}/itextpdf-5.5.13.jar"/>
     <property name="commonscodecjar" value="${jars.dir}/commons-codec-1.5.jar"/>
     <property name="openchartjar" value="${jars.dir}/openchart.jar"/>
+    <property name="flatlafjar" value="${jars.dir}/flatlaf-3.7.1.jar"/>
     <property name="forester_jar" value="forester.jar"/>
-    <property name="archaeopteryx_applets_jar" value="archaeopteryx_applets.jar"/>
 
     <target name="clean" description="Delete all generated files">
         <delete dir="${classes.dir}" failonerror="false"/>
         <delete file="${forester_jar}"/>
-        <delete file="${archaeopteryx_applets_jar}"/>
     </target>
 
     <target name="copy_resources" description="Copies resources">
@@ -25,9 +24,10 @@
 
     <target name="compile" description="Compiles the Task" depends="clean">
         <mkdir dir="${classes.dir}"/>
-        <javac source="1.8" target="1.8" debug="true" debuglevel="lines,source" srcdir="${src.dir}"
+        <javac release="21" debug="true" debuglevel="lines,source" srcdir="${src.dir}"
                destdir="${classes.dir}" optimize="on" verbose="false"
-               classpath="${itextjar};${commonscodecjar};${openchartjar}">
+               includeantruntime="false"
+               classpath="${itextjar};${commonscodecjar};${openchartjar};${flatlafjar}">
             <compilerarg value="-Xlint:deprecation"/>
             <compilerarg value="-Xlint:unchecked"/>
         </javac>
@@ -52,6 +52,16 @@
             <patternset>
                 <include name="**/*.class"/>
                 <exclude name="**/*Test*.class"/>
+            </patternset>
+        </unjar>
+        <unjar src="${flatlafjar}" dest="${classes.dir}">
+            <patternset>
+                <include name="**/*.class"/>
+                <include name="**/*.properties"/>
+                <include name="com/formdev/flatlaf/natives/**"/>
+                <exclude name="module-info.class"/>
+                <!-- NOTE: no "*Test*" exclude here: FlatLaf ships no JUnit classes, and that pattern
+                     would strip the legitimate class FlatTitlePane$TitleBarCaptionHitTest. -->
             </patternset>
         </unjar>
         <jar level="9" destfile="${forester_jar}" basedir="${classes.dir}" excludes="**/Test.class" duplicate="fail"

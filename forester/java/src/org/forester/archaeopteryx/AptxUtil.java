@@ -234,18 +234,6 @@ public final class AptxUtil {
         return false;
     }
 
-    final static public boolean isHasAtLeastOneNodeWithSequenceAnnotation(final Phylogeny phy) {
-        final PhylogenyNodeIterator it = phy.iteratorPostorder();
-        while (it.hasNext()) {
-            final PhylogenyNode n = it.next();
-            if (n.getNodeData().isHasSequence()
-                    && !ForesterUtil.isEmpty(n.getNodeData().getSequence().getAnnotations())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     final public static void launchWebBrowser(final URI uri, final String frame_name) throws IOException {
         boolean no_desktop = false;
         try {

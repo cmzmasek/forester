@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.TreeMap;
 
 import javax.swing.JOptionPane;
@@ -24,7 +23,6 @@ import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Accession;
-import org.forester.phylogeny.data.Annotation;
 import org.forester.phylogeny.data.BranchColor;
 import org.forester.phylogeny.data.NodeDataField;
 import org.forester.phylogeny.data.Sequence;
@@ -433,50 +431,6 @@ public class TreePanelUtil {
             }
         }
         return colorizations;
-    }
-
-    final static String createAnnotationString( final SortedSet<Annotation> annotations,
-                                                final boolean show_ref_sources ) {
-        final SortedMap<String, List<Annotation>> m = new TreeMap<String, List<Annotation>>();
-        for( final Annotation an : annotations ) {
-            final String ref_source = ForesterUtil.isEmpty( an.getRefSource() ) ? "?" : an.getRefSource();
-            if ( !m.containsKey( ref_source ) ) {
-                m.put( ref_source, new ArrayList<Annotation>() );
-            }
-            m.get( ref_source ).add( an );
-        }
-        final StringBuilder sb = new StringBuilder();
-        for( final Entry<String, List<Annotation>> e : m.entrySet() ) {
-            final String ref_source = e.getKey();
-            final List<Annotation> ans = e.getValue();
-            if ( m.size() > 1 ) {
-                sb.append( "[" );
-            }
-            if ( show_ref_sources && !ref_source.equals( "?" ) ) {
-                sb.append( ref_source );
-                sb.append( ": " );
-            }
-            for( int i = 0; i < ans.size(); ++i ) {
-                final Annotation an = ans.get( i );
-                if ( !ForesterUtil.isEmpty( an.getRefValue() ) ) {
-                    sb.append( an.getRefValue() );
-                    sb.append( " " );
-                }
-                if ( !ForesterUtil.isEmpty( an.getDesc() ) ) {
-                    sb.append( an.getDesc() );
-                }
-                if ( sb.charAt( sb.length() - 1 ) == ' ' ) {
-                    sb.deleteCharAt( sb.length() - 1 );
-                }
-                if ( i < ( ans.size() - 1 ) ) {
-                    sb.append( ", " );
-                }
-            }
-            if ( m.size() > 1 ) {
-                sb.append( "] " );
-            }
-        }
-        return sb.toString();
     }
 
     final static boolean isHasAssignedEvent( final PhylogenyNode node ) {

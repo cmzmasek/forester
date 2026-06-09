@@ -755,28 +755,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
-    final private Color calculateColorForAnnotation(final SortedSet<Annotation> ann) {
-        Color c = getTreeColorSet().getAnnotationColor();
-        if (getControlPanel().isColorAccordingToAnnotation() && (getControlPanel().getAnnotationColors() != null)) {
-            final StringBuilder sb = new StringBuilder();
-            for (final Annotation a : ann) {
-                sb.append(!ForesterUtil.isEmpty(a.getRefValue()) ? a.getRefValue() : a.getDesc());
-            }
-            final String ann_str = sb.toString();
-            if (!ForesterUtil.isEmpty(ann_str)) {
-                c = getControlPanel().getAnnotationColors().get(ann_str);
-                if (c == null) {
-                    c = AptxUtil.calculateColorFromString(ann_str, false);
-                    getControlPanel().getAnnotationColors().put(ann_str, c);
-                }
-                if (c == null) {
-                    c = getTreeColorSet().getAnnotationColor();
-                }
-            }
-        }
-        return c;
-    }
-
     final private float calculateOvBranchLengthToParent(final PhylogenyNode node, final int factor) {
         if (getControlPanel().isDrawPhylogram()) {
             if (node.getDistanceToParent() < 0.0) {
@@ -2844,32 +2822,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 x += getFontMetrics(g.getFont()).stringWidth(_sb.toString()) + 5;
             }
         }
-        if (getControlPanel().isShowAnnotation() && node.getNodeData().isHasSequence()
-                && (node.getNodeData().getSequence().getAnnotations() != null)
-                && (!node.getNodeData().getSequence().getAnnotations().isEmpty())) {
-            final SortedSet<Annotation> ann = node.getNodeData().getSequence().getAnnotations();
-            if ((to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite()) {
-                g.setColor(Color.BLACK);
-            } else if (getControlPanel().isColorAccordingToAnnotation()) {
-                g.setColor(calculateColorForAnnotation(ann));
-            }
-            final String ann_str = TreePanelUtil.createAnnotationString(ann,
-                    getOptions().isShowAnnotationRefSource());
-            TreePanel.drawString(ann_str,
-                    node.getXcoord() + x + 3 + half_box_size,
-                    node.getYcoord()
-                            + (getFontMetricsForLargeDefaultFont().getAscent() / down_shift_factor),
-                    g);
-            _sb.setLength(0);
-            _sb.append(ann_str);
-            if (_sb.length() > 0) {
-                if (!using_visual_font && !is_in_found_nodes) {
-                    x += getFontMetricsForLargeDefaultFont().stringWidth(_sb.toString()) + 5;
-                } else {
-                    x += getFontMetrics(g.getFont()).stringWidth(_sb.toString()) + 5;
-                }
-            }
-        }
         if ((getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR)
                 || (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE)
                 || (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.ROUNDED)) {
@@ -3804,10 +3756,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             g.setColor(getSequenceBasedColor(node));
         } else if (getControlPanel().isColorAccordingToTaxonomy()) {
             g.setColor(getTaxonomyBasedColor(node));
-        } else if (getControlPanel().isColorAccordingToAnnotation()
-                && (node.getNodeData().isHasSequence() && (node.getNodeData().getSequence().getAnnotations() != null)
-                && (!node.getNodeData().getSequence().getAnnotations().isEmpty()))) {
-            g.setColor(calculateColorForAnnotation(node.getNodeData().getSequence().getAnnotations()));
         } else if (getOptions().isColorLabelsSameAsParentBranch() && getControlPanel().isUseVisualStyles()
                 && (PhylogenyMethods.getBranchColorValue(node) != null)) {
             g.setColor(PhylogenyMethods.getBranchColorValue(node));
@@ -4321,21 +4269,18 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     _popup_buffer.append(node.getNodeData().getProperties().asText());
                 }
                 if (_popup_buffer.length() > 0) {
-                    if (!getConfiguration().isUseNativeUI()) {
-                        _rollover_popup
-                                .setBorder(BorderFactory.createLineBorder(getTreeColorSet().getBranchColor()));
-                        _rollover_popup.setBackground(getTreeColorSet().getBackgroundColor());
-                        if (isInFoundNodes0(node) && !isInFoundNodes1(node)) {
-                            _rollover_popup.setForeground(getTreeColorSet().getFoundColor0());
-                        } else if (!isInFoundNodes0(node) && isInFoundNodes1(node)) {
-                            _rollover_popup.setForeground(getTreeColorSet().getFoundColor1());
-                        } else if (isInFoundNodes0(node) && isInFoundNodes1(node)) {
-                            _rollover_popup.setForeground(getTreeColorSet().getFoundColor0and1());
-                        } else {
-                            _rollover_popup.setForeground(getTreeColorSet().getSequenceColor());
-                        }
+                    // the rollover popup is a canvas overlay, so always match the tree color set
+                    // (keeps it consistent with the canvas in both light and dark themes)
+                    _rollover_popup.setBorder(BorderFactory.createLineBorder(getTreeColorSet().getBranchColor()));
+                    _rollover_popup.setBackground(getTreeColorSet().getBackgroundColor());
+                    if (isInFoundNodes0(node) && !isInFoundNodes1(node)) {
+                        _rollover_popup.setForeground(getTreeColorSet().getFoundColor0());
+                    } else if (!isInFoundNodes0(node) && isInFoundNodes1(node)) {
+                        _rollover_popup.setForeground(getTreeColorSet().getFoundColor1());
+                    } else if (isInFoundNodes0(node) && isInFoundNodes1(node)) {
+                        _rollover_popup.setForeground(getTreeColorSet().getFoundColor0and1());
                     } else {
-                        _rollover_popup.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+                        _rollover_popup.setForeground(getTreeColorSet().getSequenceColor());
                     }
                     _rollover_popup.setText(_popup_buffer.toString());
                     _node_desc_popup = PopupFactory.getSharedInstance()
