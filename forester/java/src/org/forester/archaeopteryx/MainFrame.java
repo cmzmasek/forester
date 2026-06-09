@@ -292,7 +292,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem _view_as_XML_item;
     JMenuItem _view_as_nexus_item;
     JMenuItem _display_basic_information_item;
-    JCheckBoxMenuItem _dark_mode_cbmi;
     // help menu:
     JMenuItem _about_item;
     JMenuItem _help_item;
@@ -410,8 +409,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             viewAsXML();
         } else if (o == _view_as_nexus_item) {
             viewAsNexus();
-        } else if (o == _dark_mode_cbmi) {
-            setDarkMode(_dark_mode_cbmi.isSelected());
         } else if (o == _super_tiny_fonts_item) {
             if (getCurrentTreePanel() != null) {
                 getCurrentTreePanel().setSuperTinyFonts();
@@ -1056,10 +1053,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         customizeJMenuItem(_view_as_NH_item);
         customizeJMenuItem(_view_as_XML_item);
         customizeJMenuItem(_view_as_nexus_item);
-        _view_jmenu.addSeparator();
-        _view_jmenu.add(_dark_mode_cbmi = new JCheckBoxMenuItem("Dark Mode"));
-        _dark_mode_cbmi.setSelected(getConfiguration().getUi() == Configuration.UI.FLAT_DARK);
-        customizeJMenuItem(_dark_mode_cbmi);
         _jmenubar.add(_view_jmenu);
     }
 
@@ -1593,7 +1586,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         updateTreeCanvasColors(ui);
     }
 
-    private void updateTreeCanvasColors(final Configuration.UI ui) {
+    void updateTreeCanvasColors(final Configuration.UI ui) {
         if (getMainPanel() == null) {
             return;
         }

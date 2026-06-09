@@ -137,6 +137,8 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JRadioButton _display_as_aligned_phylogram_rb;
     private JRadioButton _display_as_cladogram_rb;
     private ButtonGroup _display_as_buttongroup;
+    private JRadioButton _light_mode_rb;
+    private JRadioButton _dark_mode_rb;
     // Tree checkboxes
     private JCheckBox _display_internal_data;
     private JCheckBox _display_external_data;
@@ -2036,6 +2038,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     void setupControls() {
+        setupThemeButtons();
         setupTreeDisplayTypeOptions();
         setupDisplayCheckboxes();
         /* GUILHEM_BEG */
@@ -2052,6 +2055,43 @@ final class ControlPanel extends JPanel implements ActionListener {
         addButtons();
         setupSearchTools0();
         setupSearchTools1();
+    }
+
+    /**
+     * A compact Light/Dark theme switch shown at the very top of the control panel,
+     * just above the P/A/C display-type selector. The two radio buttons drive
+     * {@link MainFrame#setDarkMode(boolean)} directly.
+     */
+    void setupThemeButtons() {
+        _light_mode_rb = new JRadioButton("Light");
+        _dark_mode_rb = new JRadioButton("Dark");
+        final boolean dark = getConfiguration().getUi() == Configuration.UI.FLAT_DARK;
+        _light_mode_rb.setSelected(!dark);
+        _dark_mode_rb.setSelected(dark);
+        final ButtonGroup group = new ButtonGroup();
+        group.add(_light_mode_rb);
+        group.add(_dark_mode_rb);
+        _light_mode_rb.setToolTipText("light theme");
+        _dark_mode_rb.setToolTipText("dark theme");
+        for (final JRadioButton rb : new JRadioButton[] { _light_mode_rb, _dark_mode_rb }) {
+            rb.setFocusPainted(false);
+            rb.setFont(ControlPanel.jcb_font);
+            if (_configuration.isApplyCustomGuiColors()) {
+                rb.setBackground(getConfiguration().getGuiBackgroundColor());
+                rb.setForeground(getConfiguration().getGuiCheckboxTextColor());
+            }
+        }
+        _light_mode_rb.addActionListener(e -> getMainPanel().getMainFrame().setDarkMode(false));
+        _dark_mode_rb.addActionListener(e -> getMainPanel().getMainFrame().setDarkMode(true));
+        final JPanel p = new JPanel(new GridLayout(1, 2, 0, 0));
+        p.setFont(ControlPanel.jcb_font);
+        if (_configuration.isApplyCustomGuiColors()) {
+            p.setBackground(getConfiguration().getGuiBackgroundColor());
+            p.setForeground(getConfiguration().getGuiCheckboxTextColor());
+        }
+        p.add(_light_mode_rb);
+        p.add(_dark_mode_rb);
+        add(p);
     }
 
     void setupTreeDisplayTypeOptions() {

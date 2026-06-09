@@ -1561,8 +1561,7 @@ public final class Configuration {
     /**
      * Returns the resolved look-and-feel selection. When no preference has been set in
      * the configuration file ({@code UNKNOWN}), the last theme the user chose at runtime
-     * is used; if none was ever saved, the modern FlatLaf dark theme is the default
-     * (which matches Archaeopteryx's traditional dark tree canvas).
+     * is used; if none was ever saved, the modern FlatLaf light theme is the default.
      */
     final UI getUi() {
         if (_ui == UI.UNKNOWN) {
@@ -1588,7 +1587,7 @@ public final class Configuration {
         catch (final Exception e) {
             // an invalid or inaccessible preference simply falls through to the default
         }
-        return UI.FLAT_DARK;
+        return UI.FLAT_LIGHT;
     }
 
     /**

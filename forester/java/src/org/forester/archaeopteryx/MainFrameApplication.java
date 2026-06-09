@@ -146,6 +146,8 @@ public final class MainFrameApplication extends MainFrame {
             getMainPanel().getControlPanel().showWholeAll();
             getMainPanel().getControlPanel().showWhole();
         }
+        // align the tree canvas with the resolved (light/dark) theme at startup
+        updateTreeCanvasColors(getConfiguration().getUi());
         //activateSaveAllIfNeeded();
         // ...and its children
         _contentpane.repaint();
