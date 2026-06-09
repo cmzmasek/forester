@@ -6115,10 +6115,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return _attributed_string_map;
     }
 
-    private final void setAttributedStringMap(final Map<String, AttributedString> attributed_string_map) {
-        _attributed_string_map = attributed_string_map;
-    }
-
     final private static boolean plusPressed(final int key_code) {
         return ((key_code == KeyEvent.VK_ADD) || (key_code == KeyEvent.VK_PLUS)
                 || (key_code == KeyEvent.VK_EQUALS) || (key_code == KeyEvent.VK_SEMICOLON)
