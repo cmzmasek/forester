@@ -51,6 +51,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -1233,6 +1234,19 @@ public final class MainFrameApplication extends MainFrame {
         customizeJMenuItem(_lineage_inference);
         _lineage_inference.setToolTipText("Inference of ancestor taxonomies/lineages");
         _jmenubar.add(_analysis_menu);
+    }
+
+    @Override
+    void refreshFileChoosersLookAndFeel() {
+        super.refreshFileChoosersLookAndFeel();
+        // these choosers are cached and standalone, so a runtime theme switch does not
+        // reach them through the window tree; refresh them explicitly as well
+        for (final JFileChooser fc : new JFileChooser[] { _open_filechooser, _open_filechooser_for_species_tree,
+                _values_filechooser, _annotations_filechooser }) {
+            if (fc != null) {
+                SwingUtilities.updateComponentTreeUI(fc);
+            }
+        }
     }
 
     @Override
