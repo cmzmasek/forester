@@ -133,9 +133,7 @@ public final class Test {
             + ForesterUtil.getFileSeparator() + "forester/resources" + ForesterUtil.getFileSeparator();
     private final static String PATH_TO_TEST_DATA = System.getProperty("user.dir")
             + ForesterUtil.getFileSeparator() + "forester/test_data" + ForesterUtil.getFileSeparator();
-    private final static boolean PERFORM_DB_TESTS = false;
-    private static final boolean PERFORM_WEB_TREE_ACCESS = false;
-    private static final boolean PERFORM_WEB_TREE_ACCESS_TREEBASE = false;
+
     private static final String PHYLOXML_LOCAL_XSD = PATH_TO_RESOURCES + "phyloxml_schema/"
             + ForesterConstants.PHYLO_XML_VERSION + "/" + ForesterConstants.PHYLO_XML_XSD;
     private static final String PHYLOXML_REMOTE_XSD = ForesterConstants.PHYLO_XML_LOCATION + "/"
@@ -911,69 +909,8 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
-        if (PERFORM_DB_TESTS) {
-            System.out.print("Uniprot Entry Retrieval: ");
-            if (Test.testUniprotEntryRetrieval()) {
-                System.out.println("OK.");
-                succeeded++;
-            } else {
-                System.out.println("failed.");
-                failed++;
-            }
-            System.out.print("Ebi Entry Retrieval: ");
-            if (Test.testEbiEntryRetrieval()) {
-                System.out.println("OK.");
-                succeeded++;
-            } else {
-                System.out.println("failed.");
-                failed++;
-            }
-            System.out.print("Sequence DB tools 2: ");
-            if (testSequenceDbWsTools2()) {
-                System.out.println("OK.");
-                succeeded++;
-            } else {
-                System.out.println("failed.");
-                failed++;
-                System.exit(-1);
-            }
-            System.out.print("Uniprot Taxonomy Search: ");
-            if (Test.testUniprotTaxonomySearch()) {
-                System.out.println("OK.");
-                succeeded++;
-            } else {
-                System.out.println("failed.");
-                failed++;
-            }
-        }
-        if (PERFORM_WEB_TREE_ACCESS) {
 
-            System.out.print("NHX parsing from URL: ");
-            if (Test.testNHXparsingFromURL()) {
-                System.out.println("OK.");
-                succeeded++;
-            } else {
-                System.out.println("failed.");
-                failed++;
-            }
-            System.out.print("NHX parsing from URL 2: ");
-            if (Test.testNHXparsingFromURL2()) {
-                System.out.println("OK.");
-                succeeded++;
-            } else {
-                System.out.println("failed.");
-                failed++;
-            }
-            System.out.print("phyloXML parsing from URL: ");
-            if (Test.testPhyloXMLparsingFromURL()) {
-                System.out.println("OK.");
-                succeeded++;
-            } else {
-                System.out.println("failed.");
-                failed++;
-            }
 
-        }
         System.out.println();
         final Runtime rt = java.lang.Runtime.getRuntime();
         final long free_memory = rt.freeMemory() / 1000000;
