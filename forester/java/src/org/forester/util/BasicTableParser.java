@@ -37,6 +37,19 @@ public class BasicTableParser {
     private BasicTableParser() {
     }
 
+    /**
+     * Splits a (already trimmed) line into its column values. A space delimiter
+     * denotes whitespace-aligned columns, so runs of spaces collapse into a single
+     * separator. For structured delimiters (tab, comma, semicolon, ...) empty fields
+     * are preserved, so an empty cell (two adjacent delimiters) becomes an empty column.
+     */
+    private static String[] splitLine(final String line, final char column_delimiter) {
+        if (column_delimiter == ' ') {
+            return line.split(" +", -1);
+        }
+        return line.split(column_delimiter + "", -1);
+    }
+
     public static BasicTable<String> parse(final Object source, final char column_delimiter) throws IOException {
         return BasicTableParser.parse(source, column_delimiter, false, false, START_OF_COMMENT_LINE_DEFAULT, false)
                 .get(0);
@@ -91,7 +104,7 @@ public class BasicTableParser {
                     && (!use_start_of_comment_line || !line.startsWith(start_of_comment_line))) {
                 saw_first_table = true;
                 if (use_last_separator_only) {
-                    final String e[] = line.split(column_delimiter + "", -1);
+                    final String e[] = splitLine(line, column_delimiter);
                     final StringBuffer rest = new StringBuffer();
                     for (int i = 0; i < (e.length - 1); ++i) {
                         rest.append(e[i].trim());
@@ -99,7 +112,7 @@ public class BasicTableParser {
                     table.setValue(0, row, rest.toString());
                     table.setValue(1, row, e[e.length - 1]);
                 } else {
-                    final String e[] = line.split(column_delimiter + "", -1);
+                    final String e[] = splitLine(line, column_delimiter);
                     if (e.length > 0) {
                         table.setValue(0, row, e[0].trim());
                     }

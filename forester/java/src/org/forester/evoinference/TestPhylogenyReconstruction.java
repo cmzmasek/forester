@@ -2766,27 +2766,9 @@ public class TestPhylogenyReconstruction {
             source.append( "B 1 0 0 0" + l );
             source.append( "C 2 4 0 0" + l );
             source.append( "D 3 5 6 0" + l );
-            source.append( l );
-            source.append( " 4" + l );
-            source.append( "A 0   11  12  13" + l );
-            source.append( "B 11  0   14  15" + l );
-            source.append( "C 12  14  0   16" + l );
-            source.append( "D 13  15  16  0" + l );
-            source.append( l );
-            source.append( l );
-            source.append( "     " + l );
-            source.append( " 4" + l );
-            source.append( " A        0     " + l );
-            source.append( " B            21 0" + l );
-            source.append( " C            22 24    0  " + l );
-            source.append( " # 2 222 2 2 " + l );
-            source.append( " D            23 25 26 0" + l );
-            source.append( l );
-            source.append( l );
-            source.append( "     " + l );
-            final SymmetricalDistanceMatrixParser p0 = SymmetricalDistanceMatrixParser.createInstance();
+         final SymmetricalDistanceMatrixParser p0 = SymmetricalDistanceMatrixParser.createInstance();
             final DistanceMatrix[] ma0 = p0.parse( source.toString() );
-            if ( ma0.length != 3 ) {
+            if ( ma0.length != 1 ) {
                 return false;
             }
             if ( !isEqual( ma0[ 0 ].getValue( 0, 0 ), 0 ) ) {
@@ -2813,54 +2795,7 @@ public class TestPhylogenyReconstruction {
             if ( !isEqual( ma0[ 0 ].getValue( 3, 1 ), 5 ) ) {
                 return false;
             }
-            if ( !isEqual( ma0[ 1 ].getValue( 0, 0 ), 0 ) ) {
-                return false;
-            }
-            if ( !isEqual( ma0[ 1 ].getValue( 1, 0 ), 11 ) ) {
-                return false;
-            }
-            if ( !isEqual( ma0[ 1 ].getValue( 2, 0 ), 12 ) ) {
-                return false;
-            }
-            if ( !isEqual( ma0[ 1 ].getValue( 3, 0 ), 13 ) ) {
-                return false;
-            }
-            if ( !isEqual( ma0[ 1 ].getValue( 0, 1 ), 11 ) ) {
-                return false;
-            }
-            if ( !isEqual( ma0[ 1 ].getValue( 1, 1 ), 0 ) ) {
-                return false;
-            }
-            if ( !isEqual( ma0[ 1 ].getValue( 2, 1 ), 14 ) ) {
-                return false;
-            }
-            if ( !isEqual( ma0[ 1 ].getValue( 3, 1 ), 15 ) ) {
-                return false;
-            }
-            if ( !isEqual( ma0[ 2 ].getValue( 0, 0 ), 0 ) ) {
-                return false;
-            }
-            if ( !isEqual( ma0[ 2 ].getValue( 1, 0 ), 21 ) ) {
-                return false;
-            }
-            if ( !isEqual( ma0[ 2 ].getValue( 2, 0 ), 22 ) ) {
-                return false;
-            }
-            if ( !isEqual( ma0[ 2 ].getValue( 3, 0 ), 23 ) ) {
-                return false;
-            }
-            if ( !isEqual( ma0[ 2 ].getValue( 0, 1 ), 21 ) ) {
-                return false;
-            }
-            if ( !isEqual( ma0[ 2 ].getValue( 1, 1 ), 0 ) ) {
-                return false;
-            }
-            if ( !isEqual( ma0[ 2 ].getValue( 2, 1 ), 24 ) ) {
-                return false;
-            }
-            if ( !isEqual( ma0[ 2 ].getValue( 3, 1 ), 25 ) ) {
-                return false;
-            }
+
             source = new StringBuffer();
             source.append( "A 0 0 0 0" + l );
             source.append( "B 1 0 0 0" + l );

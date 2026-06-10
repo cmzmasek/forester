@@ -2985,10 +2985,11 @@ public final class Test {
             source.append("  # 1 1 1 1 1 " + l);
             source.append("50 51 52 53 54" + l);
             final BasicTable<String> t1 = BasicTableParser.parse(source.toString(), ' ');
-            // BasicTableParser splits on a single delimiter and keeps empty fields, so
-            // runs of consecutive (or leading) delimiters produce empty columns; the
-            // column counts and cell positions below account for those empty columns.
-            if (t1.getNumberOfColumns() != 8) {
+            // A space delimiter collapses runs of spaces (whitespace-aligned columns),
+            // so this space-delimited table has no empty columns. Other delimiters
+            // (e.g. the ';' tables below) keep empty fields, hence their higher column
+            // counts and shifted cell positions.
+            if (t1.getNumberOfColumns() != 5) {
                 return false;
             }
             if (t1.getNumberOfRows() != 6) {
