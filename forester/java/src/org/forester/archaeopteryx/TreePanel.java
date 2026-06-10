@@ -2702,6 +2702,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             x += add;
         }
         final int half_box_size = getOptions().getDefaultNodeShapeSize() / 2;
+        if (isColorByProperty() && (node.isExternal() || node.isCollapse())) {
+            drawPropertyColorDot(g, node);
+        }
         if (getControlPanel().isShowTaxonomyImages() && (getImageMap() != null) && !getImageMap().isEmpty()
                 && node.getNodeData().isHasTaxonomy() && ((node.getNodeData().getTaxonomy().getUris() != null)
                 && !node.getNodeData().getTaxonomy().getUris().isEmpty())) {
@@ -3749,6 +3752,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             g.setColor(Color.BLACK);
         } else if (is_in_found_nodes) {
             g.setColor(getColorForFoundNode(node));
+        } else if (isColorByProperty()) {
+            g.setColor(getPropertyBasedColor(node));
         } else if (getControlPanel().isUseVisualStyles() && (node.getNodeData().getNodeVisualData() != null)
                 && (node.getNodeData().getNodeVisualData().getFontColor() != null)) {
             g.setColor(node.getNodeData().getNodeVisualData().getFontColor());
@@ -4631,6 +4636,118 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             return c;
         }
+    }
+
+    // ---------------------------------------------------------------------------
+    // Color leaves on the fly by the value of a chosen phyloXML property.
+    // ---------------------------------------------------------------------------
+    private PropertyColorScheme _property_color_scheme = null;
+
+    /** Colorize leaves by the given property reference, or turn it off when {@code ref} is empty. */
+    void setColorByPropertyRef(final String ref) {
+        if (ForesterUtil.isEmpty(ref) || (_phylogeny == null) || _phylogeny.isEmpty()) {
+            _property_color_scheme = null;
+        } else {
+            _property_color_scheme = new PropertyColorScheme(_phylogeny, ref);
+        }
+    }
+
+    boolean isColorByProperty() {
+        return (_property_color_scheme != null) && !_property_color_scheme.isEmpty();
+    }
+
+    PropertyColorScheme getPropertyColorScheme() {
+        return _property_color_scheme;
+    }
+
+    final Color getPropertyBasedColor(final PhylogenyNode node) {
+        final Color c = (_property_color_scheme == null) ? null : _property_color_scheme.colorFor(node);
+        return (c != null) ? c : getTreeColorSet().getSequenceColor();
+    }
+
+    private void drawPropertyColorDot(final Graphics2D g, final PhylogenyNode node) {
+        final Color c = (_property_color_scheme == null) ? null : _property_color_scheme.colorFor(node);
+        if (c == null) {
+            return;
+        }
+        final int d = getOptions().getDefaultNodeShapeSize() + 3;
+        final Color saved = g.getColor();
+        g.setColor(c);
+        g.fillOval((int) node.getXcoord() - (d / 2), (int) node.getYcoord() - (d / 2), d, d);
+        g.setColor(saved);
+    }
+
+    private static final int PROPERTY_LEGEND_MAX_ENTRIES = 20;
+
+    /** Draws a capped value-to-color legend (top-right of the visible area). */
+    private void drawPropertyColorLegend(final Graphics2D g) {
+        if ((_property_color_scheme == null) || _property_color_scheme.isEmpty()) {
+            return;
+        }
+        final Map<String, Color> values = _property_color_scheme.getValueColors();
+        final int total = values.size();
+        final int shown = Math.min(total, PROPERTY_LEGEND_MAX_ENTRIES);
+        final int more = total - shown;
+        final int swatch = 10;
+        final int gap = 5;
+        final int pad = 7;
+        final int max_text_px = 200;
+        g.setFont(getTreeFontSet().getSmallFont());
+        final FontMetrics fm = g.getFontMetrics();
+        final int row_h = fm.getHeight() + 2;
+        final String ref = _property_color_scheme.getRef();
+        final int colon = ref.lastIndexOf(':');
+        final String title = "Color by: " + (colon >= 0 ? ref.substring(colon + 1) : ref);
+        int text_w = fm.stringWidth(title);
+        int i = 0;
+        for (final String v : values.keySet()) {
+            if (i++ >= shown) {
+                break;
+            }
+            text_w = Math.max(text_w, swatch + gap + fm.stringWidth(clipToWidth(v, fm, max_text_px)));
+        }
+        if (more > 0) {
+            text_w = Math.max(text_w, fm.stringWidth("… +" + more + " more"));
+        }
+        final int box_w = text_w + (2 * pad);
+        final int box_h = ((1 + shown + (more > 0 ? 1 : 0)) * row_h) + (2 * pad);
+        final Rectangle vr = getVisibleRect();
+        final int x = Math.max(vr.x, (vr.x + vr.width) - box_w - 10);
+        final int y = vr.y + 10;
+        final Color fg = getTreeColorSet().getSequenceColor();
+        g.setColor(getBackground());
+        g.fillRect(x, y, box_w, box_h);
+        g.setColor(fg);
+        g.drawRect(x, y, box_w, box_h);
+        int baseline = y + pad + fm.getAscent();
+        g.drawString(title, x + pad, baseline);
+        i = 0;
+        for (final Map.Entry<String, Color> e : values.entrySet()) {
+            if (i++ >= shown) {
+                break;
+            }
+            baseline += row_h;
+            g.setColor(e.getValue());
+            g.fillRect(x + pad, baseline - fm.getAscent() + ((fm.getAscent() - swatch) / 2) + 1, swatch, swatch);
+            g.setColor(fg);
+            g.drawString(clipToWidth(e.getKey(), fm, max_text_px), x + pad + swatch + gap, baseline);
+        }
+        if (more > 0) {
+            baseline += row_h;
+            g.drawString("… +" + more + " more", x + pad, baseline);
+        }
+    }
+
+    private static String clipToWidth(final String s, final FontMetrics fm, final int max_px) {
+        if (fm.stringWidth(s) <= max_px) {
+            return s;
+        }
+        final String ellipsis = "…";
+        int len = s.length();
+        while ((len > 1) && (fm.stringWidth(s.substring(0, len) + ellipsis) > max_px)) {
+            --len;
+        }
+        return s.substring(0, len) + ellipsis;
     }
 
     void clearCurrentExternalNodesDataBuffer() {
@@ -5599,6 +5716,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 g.setTransform(_at);
                 paintOvRectangle(g);
             }
+        }
+        if (isColorByProperty() && !to_pdf && !to_graphics_file) {
+            drawPropertyColorLegend(g);
         }
     }
 

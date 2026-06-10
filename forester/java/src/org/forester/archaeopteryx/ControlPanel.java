@@ -123,6 +123,8 @@ final class ControlPanel extends JPanel implements ActionListener {
     private int _order_subtree_cb_item;
     private JCheckBox _color_acc_species;
     private JCheckBox _color_acc_sequence;
+    private JComboBox<String> _color_by_property_cb;
+    private static final String COLOR_BY_PROPERTY_NONE = "None";
     private boolean _color_branches;
     private JCheckBox _use_visual_styles_cb;
     private int _color_subtree_cb_item;
@@ -250,7 +252,12 @@ final class ControlPanel extends JPanel implements ActionListener {
             if (tp == null) {
                 return;
             }
-            if (e.getSource() == _click_to_combobox) {
+            if (e.getSource() == _color_by_property_cb) {
+                final Object sel = _color_by_property_cb.getSelectedItem();
+                tp.setColorByPropertyRef(
+                        ((sel == null) || COLOR_BY_PROPERTY_NONE.equals(sel)) ? null : sel.toString());
+                tp.repaint();
+            } else if (e.getSource() == _click_to_combobox) {
                 setClickToAction(_click_to_combobox.getSelectedIndex());
                 getCurrentTreePanel().repaint();
             } else if (e.getSource() == _show_binary_characters) {
@@ -2037,9 +2044,65 @@ final class ControlPanel extends JPanel implements ActionListener {
         _species_colors = species_colors;
     }
 
+    /**
+     * A "Color by:" dropdown that colors the leaves on the fly by the value of a chosen
+     * phyloXML property (e.g. host). It is (re)populated per displayed tree; see
+     * {@link #populateColorByPropertyBox()}.
+     */
+    void setupColorByProperty() {
+        final JLabel label = new JLabel("Color by:");
+        label.setFont(ControlPanel.jcb_font);
+        if (_configuration.isApplyCustomGuiColors()) {
+            label.setForeground(getConfiguration().getGuiCheckboxTextColor());
+        }
+        _color_by_property_cb = new JComboBox<String>();
+        _color_by_property_cb.setFont(ControlPanel.js_font);
+        _color_by_property_cb.setToolTipText("color leaves by the value of a phyloXML property");
+        _color_by_property_cb.addItem(COLOR_BY_PROPERTY_NONE);
+        // show only the property name (without its namespace prefix) in the dropdown
+        _color_by_property_cb.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(final JList<?> list, final Object value, final int index,
+                    final boolean is_selected, final boolean has_focus) {
+                super.getListCellRendererComponent(list, value, index, is_selected, has_focus);
+                if (value instanceof String) {
+                    final String s = (String) value;
+                    final int colon = s.lastIndexOf(':');
+                    setText(colon >= 0 ? s.substring(colon + 1) : s);
+                }
+                return this;
+            }
+        });
+        _color_by_property_cb.addActionListener(this);
+        add(label);
+        add(_color_by_property_cb);
+    }
+
+    /** Repopulate the "Color by:" dropdown from the currently displayed tree's properties. */
+    void populateColorByPropertyBox() {
+        if (_color_by_property_cb == null) {
+            return;
+        }
+        final TreePanel tp = getMainPanel().getCurrentTreePanel();
+        _color_by_property_cb.removeActionListener(this);
+        _color_by_property_cb.removeAllItems();
+        _color_by_property_cb.addItem(COLOR_BY_PROPERTY_NONE);
+        if ((tp != null) && (tp.getPhylogeny() != null)) {
+            for (final String ref : PropertyColorScheme.colorableRefs(tp.getPhylogeny())) {
+                _color_by_property_cb.addItem(ref);
+            }
+            // reflect the tree panel's current state
+            _color_by_property_cb.setSelectedItem(
+                    (tp.getPropertyColorScheme() != null) ? tp.getPropertyColorScheme().getRef()
+                            : COLOR_BY_PROPERTY_NONE);
+        }
+        _color_by_property_cb.addActionListener(this);
+    }
+
     void setupControls() {
         setupThemeButtons();
         setupTreeDisplayTypeOptions();
+        setupColorByProperty();
         setupDisplayCheckboxes();
         /* GUILHEM_BEG */
         // The sequence relation query selection combo-box
@@ -2513,6 +2576,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             getMainPanel().getControlPanel().updateDomainStructureEvaluethresholdDisplay();
             getMainPanel().getControlPanel().updateDepthCollapseDepthDisplay();
             getMainPanel().getControlPanel().updateRankCollapseRankDisplay();
+            populateColorByPropertyBox();
             getSequenceRelationTypeBox().removeAllItems();
             for (final SequenceRelation.SEQUENCE_RELATION_TYPE type : getMainPanel().getCurrentPhylogeny()
                     .getRelevantSequenceRelationTypes()) {
