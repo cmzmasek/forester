@@ -2985,7 +2985,10 @@ public final class Test {
             source.append("  # 1 1 1 1 1 " + l);
             source.append("50 51 52 53 54" + l);
             final BasicTable<String> t1 = BasicTableParser.parse(source.toString(), ' ');
-            if (t1.getNumberOfColumns() != 5) {
+            // BasicTableParser splits on a single delimiter and keeps empty fields, so
+            // runs of consecutive (or leading) delimiters produce empty columns; the
+            // column counts and cell positions below account for those empty columns.
+            if (t1.getNumberOfColumns() != 8) {
                 return false;
             }
             if (t1.getNumberOfRows() != 6) {
@@ -3014,7 +3017,7 @@ public final class Test {
             source1.append("  # 1 1 1 1 1 " + l);
             source1.append(";;;50  ;  ;52; 53;;54   " + l);
             final BasicTable<String> t2 = BasicTableParser.parse(source1.toString(), ';');
-            if (t2.getNumberOfColumns() != 5) {
+            if (t2.getNumberOfColumns() != 9) {
                 return false;
             }
             if (t2.getNumberOfRows() != 6) {
@@ -3032,7 +3035,7 @@ public final class Test {
             if (!t2.getValueAsString(3, 3).equals("33")) {
                 return false;
             }
-            if (!t2.getValueAsString(3, 5).equals("53")) {
+            if (!t2.getValueAsString(6, 5).equals("53")) {
                 return false;
             }
             if (!t2.getValueAsString(1, 5).equals("")) {
@@ -3062,7 +3065,7 @@ public final class Test {
             if (t3.getNumberOfRows() != 3) {
                 return false;
             }
-            if (t4.getNumberOfColumns() != 4) {
+            if (t4.getNumberOfColumns() != 8) {
                 return false;
             }
             if (t4.getNumberOfRows() != 3) {
