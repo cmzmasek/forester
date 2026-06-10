@@ -167,6 +167,10 @@ public final class MainFrameApplication extends MainFrame {
             throw new IllegalArgumentException("configuration is null");
         }
         installLookAndFeel(_configuration.getUi());
+        // the export/save choosers were created in the super-constructor, before the
+        // look-and-feel above was installed; refresh them so they are not left with the
+        // platform default (e.g. the native macOS file dialog instead of FlatLaf).
+        refreshFileChoosersLookAndFeel();
         if ((current_dir != null) && current_dir.canRead() && current_dir.isDirectory()) {
             setCurrentDir(current_dir);
         }

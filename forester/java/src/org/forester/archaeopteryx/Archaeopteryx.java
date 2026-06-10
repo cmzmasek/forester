@@ -65,6 +65,9 @@ public final class Archaeopteryx {
         if ( ForesterUtil.isMac() ) {
             System.setProperty( "apple.awt.application.name", AptxConstants.PRG_NAME );
             System.setProperty( "apple.awt.application.appearance", "system" );
+            // Render the menu bar inside the window so it is styled by FlatLaf; the native
+            // macOS screen menu bar cannot be themed and would not match the rest of the UI.
+            System.setProperty( "apple.laf.useScreenMenuBar", "false" );
         }
         Phylogeny[] phylogenies = null;
         String config_filename = null;

@@ -1573,6 +1573,22 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         csc.setVisible(true);
     }
 
+    /**
+     * The export/save file choosers are created in the {@link MainFrame} constructor,
+     * before the look-and-feel is installed, so on macOS they pick up the native Aqua
+     * file dialog and keep it. They are also standalone (never part of a window's
+     * component tree), so a runtime theme switch does not reach them. Refresh their UI
+     * explicitly so they always match the current FlatLaf theme.
+     */
+    void refreshFileChoosersLookAndFeel() {
+        for (final JFileChooser fc : new JFileChooser[] { _writetopdf_filechooser, _writetographics_filechooser,
+                _save_filechooser }) {
+            if (fc != null) {
+                SwingUtilities.updateComponentTreeUI(fc);
+            }
+        }
+    }
+
     void setDarkMode(final boolean dark) {
         final Configuration.UI ui = dark ? Configuration.UI.FLAT_DARK : Configuration.UI.FLAT_LIGHT;
         getConfiguration().setUi(ui);
@@ -1582,6 +1598,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         for (final Window window : Window.getWindows()) {
             SwingUtilities.updateComponentTreeUI(window);
         }
+        // standalone file choosers are not part of any window, so refresh them too
+        refreshFileChoosersLookAndFeel();
         // make the tree canvas follow the light/dark theme
         updateTreeCanvasColors(ui);
     }
