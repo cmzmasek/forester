@@ -135,10 +135,10 @@ public final class Configuration {
             {"Seq Name", "display", "no"}, {"Seq Accession", "display", "no"},
             {"Show Internal Data", "display", "yes"}, {"Dyna Hide", "display", "yes"},
             {"Taxonomy Scientific", "display", "yes"}, {"Taxonomy Common", "display", "no"},
-            {"Colorize by Annotation", "display", "no"}, {"Seq Symbol", "display", "no"},
+            {"Colorize by Annotation", "display", "no"}, {"Seq Symbol", "nodisplay", "no"},
             {"Rollover", "display", "yes"}, {"Relation Confidence", "nodisplay", "no"},
             {"Vector Data", "nodisplay", "no"}, {"Taxonomy Images", "nodisplay", "no"},
-            {"Properties", "display", "no"}, {"Gene Name", "display", "no"},
+            {"Properties", "display", "no"}, {"Gene Name", "nodisplay", "no"},
             {"Multiple Seq Alignment", "display", "no"}, {"Branch Length Values", "display", "no"}
             , {"Taxonomy Rank", "display", "no"}, {"Show External Data", "display", "yes"}};
     final static int display_as_phylogram = 0;
