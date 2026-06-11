@@ -4684,6 +4684,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ((_property_color_scheme == null) || _property_color_scheme.isEmpty()) {
             return;
         }
+        if (_property_color_scheme.isGradient()) {
+            drawPropertyColorGradientLegend(g, bounds);
+            return;
+        }
         final Map<String, Color> values = _property_color_scheme.getValueColors();
         final int total = values.size();
         final int shown = Math.min(total, PROPERTY_LEGEND_MAX_ENTRIES);
@@ -4735,6 +4739,42 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             baseline += row_h;
             g.drawString("… +" + more + " more", x + pad, baseline);
         }
+    }
+
+    /** Draws a gradient bar legend (low value to high value) for a continuous property. */
+    private void drawPropertyColorGradientLegend(final Graphics2D g, final Rectangle bounds) {
+        final int pad = 7;
+        final int bar_w = 200;
+        final int bar_h = 12;
+        g.setFont(getTreeFontSet().getSmallFont());
+        final FontMetrics fm = g.getFontMetrics();
+        final String title = "Color by: " + PropertyColorScheme.displayName(_property_color_scheme.getRef());
+        final String min_lbl = _property_color_scheme.getGradientMinLabel();
+        final String max_lbl = _property_color_scheme.getGradientMaxLabel();
+        final int content_w = Math.max(fm.stringWidth(title), bar_w);
+        final int box_w = content_w + (2 * pad) + 4;
+        final int box_h = (2 * fm.getHeight()) + bar_h + 6 + (2 * pad);
+        final int x = Math.max(bounds.x, (bounds.x + bounds.width) - box_w - 10);
+        final int y = bounds.y + 10;
+        final Color fg = getTreeColorSet().getSequenceColor();
+        g.setColor(getBackground());
+        g.fillRect(x, y, box_w, box_h);
+        g.setColor(fg);
+        g.drawRect(x, y, box_w, box_h);
+        final int baseline = y + pad + fm.getAscent();
+        g.drawString(title, x + pad, baseline);
+        final int bar_x = x + pad;
+        final int bar_y = baseline + 4;
+        for (int i = 0; i < bar_w; ++i) {
+            final double t = (bar_w == 1) ? 0.0 : (i / (double) (bar_w - 1));
+            g.setColor(_property_color_scheme.gradientColorAt(t));
+            g.drawLine(bar_x + i, bar_y, bar_x + i, bar_y + bar_h);
+        }
+        g.setColor(fg);
+        g.drawRect(bar_x, bar_y, bar_w - 1, bar_h);
+        final int label_baseline = bar_y + bar_h + fm.getAscent() + 2;
+        g.drawString(min_lbl, bar_x, label_baseline);
+        g.drawString(max_lbl, (bar_x + bar_w) - fm.stringWidth(max_lbl), label_baseline);
     }
 
     private static String clipToWidth(final String s, final FontMetrics fm, final int max_px) {

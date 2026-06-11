@@ -57,23 +57,49 @@ final class PropertyColorScheme {
             new Color( 0x117864 ) };
 
     private final String             _ref;
+    // Categorical mode: one palette color per distinct value.
     private final Map<String, Color> _value_to_color;
+    // Continuous mode (numeric properties such as "year"): a blue->red gradient spanning
+    // [_min, _max] instead of distinct colors. _gradient is false for categorical refs.
+    private final boolean            _gradient;
+    private final double             _min;
+    private final double             _max;
 
     PropertyColorScheme( final Phylogeny phylogeny, final String ref ) {
         _ref = ref;
-        final TreeSet<String> values = new TreeSet<String>();
-        if ( ( phylogeny != null ) && !phylogeny.isEmpty() ) {
-            for( final PhylogenyNode node : phylogeny.getExternalNodes() ) {
-                final String v = valueFor( node, ref );
-                if ( !ForesterUtil.isEmpty( v ) ) {
-                    values.add( v );
+        _gradient = isYearRef( ref );
+        _value_to_color = new LinkedHashMap<String, Color>();
+        if ( _gradient ) {
+            double min = Double.POSITIVE_INFINITY;
+            double max = Double.NEGATIVE_INFINITY;
+            if ( ( phylogeny != null ) && !phylogeny.isEmpty() ) {
+                for( final PhylogenyNode node : phylogeny.getExternalNodes() ) {
+                    final Double d = parseNumber( valueFor( node, ref ) );
+                    if ( d != null ) {
+                        min = Math.min( min, d );
+                        max = Math.max( max, d );
+                    }
                 }
             }
+            _min = min;
+            _max = max;
         }
-        _value_to_color = new LinkedHashMap<String, Color>();
-        int i = 0;
-        for( final String v : values ) {
-            _value_to_color.put( v, PALETTE[ i++ % PALETTE.length ] );
+        else {
+            _min = 0;
+            _max = 0;
+            final TreeSet<String> values = new TreeSet<String>();
+            if ( ( phylogeny != null ) && !phylogeny.isEmpty() ) {
+                for( final PhylogenyNode node : phylogeny.getExternalNodes() ) {
+                    final String v = valueFor( node, ref );
+                    if ( !ForesterUtil.isEmpty( v ) ) {
+                        values.add( v );
+                    }
+                }
+            }
+            int i = 0;
+            for( final String v : values ) {
+                _value_to_color.put( v, PALETTE[ i++ % PALETTE.length ] );
+            }
         }
     }
 
@@ -82,7 +108,12 @@ final class PropertyColorScheme {
     }
 
     boolean isEmpty() {
-        return _value_to_color.isEmpty();
+        return _gradient ? ( _min > _max ) : _value_to_color.isEmpty();
+    }
+
+    /** Whether this scheme colors by a continuous range (a gradient) rather than distinct values. */
+    boolean isGradient() {
+        return _gradient;
     }
 
     int numberOfValues() {
@@ -91,13 +122,64 @@ final class PropertyColorScheme {
 
     /** The color for this node's value of the property, or {@code null} if it has none. */
     Color colorFor( final PhylogenyNode node ) {
+        if ( _gradient ) {
+            final Double d = parseNumber( valueFor( node, _ref ) );
+            if ( d == null ) {
+                return null;
+            }
+            final double t = ( _max > _min ) ? ( ( d - _min ) / ( _max - _min ) ) : 0.0;
+            return gradientColorAt( t );
+        }
         final String v = valueFor( node, _ref );
         return ( v == null ) ? null : _value_to_color.get( v );
     }
 
-    /** Ordered (alphabetical) value to color map, for building a legend. */
+    /** Ordered (alphabetical) value to color map, for building a (categorical) legend. */
     Map<String, Color> getValueColors() {
         return _value_to_color;
+    }
+
+    /** Color at fraction {@code t} (0..1, low value to high value) of the gradient. */
+    Color gradientColorAt( final double t ) {
+        final double tt = ( t < 0.0 ) ? 0.0 : ( ( t > 1.0 ) ? 1.0 : t );
+        // hue sweep blue (low) -> red (high), at a fixed saturation/brightness so every
+        // step stays legible on both the white and the dark canvas.
+        final float hue = (float) ( 0.66 * ( 1.0 - tt ) );
+        return Color.getHSBColor( hue, 0.78f, 0.92f );
+    }
+
+    String getGradientMinLabel() {
+        return formatNumber( _min );
+    }
+
+    String getGradientMaxLabel() {
+        return formatNumber( _max );
+    }
+
+    private static Double parseNumber( final String s ) {
+        if ( ForesterUtil.isEmpty( s ) ) {
+            return null;
+        }
+        try {
+            return Double.valueOf( s.trim() );
+        }
+        catch ( final NumberFormatException e ) {
+            return null;
+        }
+    }
+
+    private static String formatNumber( final double d ) {
+        return ( d == Math.rint( d ) ) ? Long.toString( (long) d ) : Double.toString( d );
+    }
+
+    /** True for the {@code year} property (in any namespace), which is colored as a gradient. */
+    private static boolean isYearRef( final String ref ) {
+        if ( ForesterUtil.isEmpty( ref ) ) {
+            return false;
+        }
+        final int colon = ref.lastIndexOf( ':' );
+        final String name = ( colon >= 0 ) ? ref.substring( colon + 1 ) : ref;
+        return name.equalsIgnoreCase( "year" );
     }
 
     /**
