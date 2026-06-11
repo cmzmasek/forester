@@ -31,6 +31,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -196,6 +197,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JCheckBox _show_taxo_scientific_names;
     private JCheckBox _show_vector_data_cb;
     private JButton _show_whole;
+    private JButton _expand_y;
     private int _sort_descendents_item;
     private Map<String, Color> _species_colors;
     private Map<String, Color> _sequence_colors;
@@ -303,6 +305,8 @@ final class ControlPanel extends JPanel implements ActionListener {
                 } else if (e.getSource() == _show_whole) {
                     displayedPhylogenyMightHaveChanged(true);
                     showWhole();
+                } else if (e.getSource() == _expand_y) {
+                    expandYToFitLabels();
                 } else if (e.getSource() == _return_to_super_tree) {
                     returnedToSuperTreePressed();
                 } else if (e.getSource() == _order) {
@@ -1204,7 +1208,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         spacer.setOpaque(false);
         add(spacer);
         final JPanel x_panel = new JPanel(new GridLayout(1, 1, 0, 0));
-        final JPanel y_panel = new JPanel(new GridLayout(1, 3, 0, 0));
+        final JPanel y_panel = new JPanel(new GridLayout(1, 4, 0, 0));
         final JPanel z_panel = new JPanel(new GridLayout(1, 1, 0, 0));
         final JPanel o_panel = new JPanel(new GridLayout(1, 3, 0, 0));
         if (getConfiguration().isApplyCustomGuiColors()) {
@@ -1229,6 +1233,8 @@ final class ControlPanel extends JPanel implements ActionListener {
         _zoom_out_y = new TypomaticJButton("Y-");
         _show_whole = new JButton("F");
         _show_whole.setToolTipText("fit and center tree display [Alt+C, Home, or Esc]");
+        _expand_y = new JButton("E");
+        _expand_y.setToolTipText("expand the tree in vertical direction so labels do not overlap at the current font size");
         _zoom_in_x.setToolTipText("zoom in horizontally [Alt+Right or Shift+Alt+mousewheel]");
         _zoom_in_y.setToolTipText("zoom in vertically [Alt+Up or Shift+mousewheel]");
         _zoom_out_x.setToolTipText("zoom out horizontally [Alt+Left or Shift+Alt+mousewheel]");
@@ -1243,6 +1249,14 @@ final class ControlPanel extends JPanel implements ActionListener {
         _zoom_out_y.setPreferredSize(new Dimension(10, 10));
         _zoom_in_y.setPreferredSize(new Dimension(10, 10));
         _show_whole.setPreferredSize(new Dimension(10, 10));
+        _expand_y.setPreferredSize(new Dimension(10, 10));
+        // The middle zoom row now holds four buttons (X- F E X+); trim the default button
+        // padding so the two-character X-/X+ labels still fit instead of being clipped to "...".
+        final Insets tight = new Insets(2, 1, 2, 1);
+        _zoom_out_x.setMargin(tight);
+        _show_whole.setMargin(tight);
+        _expand_y.setMargin(tight);
+        _zoom_in_x.setMargin(tight);
         _return_to_super_tree = new JButton(RETURN_TO_SUPER_TREE_TEXT);
         _return_to_super_tree.setToolTipText("return to the super-tree (if in sub-tree) [Alt+R]");
         _return_to_super_tree.setEnabled(false);
@@ -1253,6 +1267,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         addJButton(_zoom_in_y, x_panel);
         addJButton(_zoom_out_x, y_panel);
         addJButton(_show_whole, y_panel);
+        addJButton(_expand_y, y_panel);
         addJButton(_zoom_in_x, y_panel);
         addJButton(_zoom_out_y, z_panel);
         final JLabel spacer2 = new JLabel("");
@@ -2709,6 +2724,40 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
         treepanel.resetPreferredSize();
         treepanel.updateOvSizes();
+    }
+
+    /**
+     * Expands the tree vertically just enough that leaf labels no longer overlap at the current
+     * font size (so dynamic hiding is no longer needed and the "Dyna Hide" indicator clears on
+     * the next repaint). Only ever expands -- if the tree is already spaced out enough, it is left
+     * alone. Has no effect for the circular/unrooted layouts, where there are no vertical rows.
+     */
+    final void expandYToFitLabels() {
+        final TreePanel treepanel = getMainPanel().getCurrentTreePanel();
+        if ((treepanel == null) || (treepanel.getPhylogeny() == null) || treepanel.getPhylogeny().isEmpty()) {
+            return;
+        }
+        final PHYLOGENY_GRAPHICS_TYPE t = treepanel.getPhylogenyGraphicsType();
+        if ((t == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR) || (t == PHYLOGENY_GRAPHICS_TYPE.UNROOTED)) {
+            return;
+        }
+        final float target = TreePanelUtil.yDistanceToAvoidLabelOverlap(treepanel.getLargeFontHeight());
+        if (treepanel.getYdistance() >= target) {
+            return;
+        }
+        final JScrollBar sb = getMainPanel().getCurrentScrollPane().getVerticalScrollBar();
+        final double center = (sb.getMaximum() - sb.getMinimum()) / (sb.getValue() + (sb.getVisibleAmount() / 2.0));
+        treepanel.setYdistance(target);
+        getMainPanel().adjustJScrollPane();
+        treepanel.resetPreferredSize();
+        getMainPanel().getCurrentScrollPane().getViewport().validate();
+        if (center > 0) {
+            sb.setValue(ForesterUtil
+                    .roundToInt(((sb.getMaximum() - sb.getMinimum()) / center) - (sb.getVisibleAmount() / 2.0)));
+        }
+        treepanel.resetPreferredSize();
+        treepanel.updateOvSizes();
+        treepanel.repaint();
     }
 
     final void zoomInY(final float factor) {

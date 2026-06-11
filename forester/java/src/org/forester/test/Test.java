@@ -186,6 +186,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Tree panel util: ");
+        if (org.forester.archaeopteryx.TreePanelUtilTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Protein id: ");
         if (!testProteinId()) {
             System.out.println("failed.");

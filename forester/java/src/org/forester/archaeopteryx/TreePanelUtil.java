@@ -530,4 +530,18 @@ public class TreePanelUtil {
         }
         return new_phy;
     }
+
+    /**
+     * The minimum vertical leaf-to-leaf spacing -- expressed as a y-distance -- at which leaf
+     * labels of the given pixel height stop overlapping. Adjacent leaf rows are spaced
+     * {@code 2 * y-distance} apart (see {@code TreePanel.resetPreferredSize} /
+     * {@code calcParametersForPainting}), so labels of height {@code h} no longer overlap once
+     * {@code 2 * y-distance >= h}, i.e. {@code y-distance >= h / 2}. A small margin is added for
+     * breathing room; it also keeps the dynamic-hiding factor
+     * ({@code round( h / (1.5 * y-distance) )}, see {@code TreePanel.calcDynamicHidingFactor}) at
+     * {@code <= 1}, so the "Dyna Hide" indicator clears.
+     */
+    final static float yDistanceToAvoidLabelOverlap( final int label_height_px ) {
+        return ( label_height_px / 2.0f ) * 1.1f;
+    }
 }

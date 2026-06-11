@@ -1220,6 +1220,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return getTreeFontSet().getFontMetricsLarge();
     }
 
+    /** Pixel height of the (large) font used for leaf labels. */
+    final int getLargeFontHeight() {
+        return getFontMetricsForLargeDefaultFont().getHeight();
+    }
+
     final private float getLastDragPointX() {
         return _last_drag_point_x;
     }
