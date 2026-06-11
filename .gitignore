@@ -5,3 +5,6 @@
 **/classes/
 bin/
 out/
+
+# Local working notes for Claude Code — never commit.
+CLAUDE.md
