@@ -178,6 +178,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Property color scheme: ");
+        if (org.forester.archaeopteryx.PropertyColorSchemeTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Protein id: ");
         if (!testProteinId()) {
             System.out.println("failed.");

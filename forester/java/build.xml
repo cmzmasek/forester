@@ -64,7 +64,9 @@
                      would strip the legitimate class FlatTitlePane$TitleBarCaptionHitTest. -->
             </patternset>
         </unjar>
-        <jar level="9" destfile="${forester_jar}" basedir="${classes.dir}" excludes="**/Test.class" duplicate="fail"
+        <!-- keep test-only classes out of the shipped jar; spelled out by name rather than a
+             *Test* wildcard, which would also strip FlatLaf's legitimate ...$TitleBarCaptionHitTest -->
+        <jar level="9" destfile="${forester_jar}" basedir="${classes.dir}" excludes="**/Test.class,**/PropertyColorSchemeTest*.class" duplicate="fail"
              index="true">
             <manifest>
                 <attribute name="Main-Class" value="org.forester.archaeopteryx.Archaeopteryx"/>
