@@ -114,6 +114,10 @@ final class ControlPanel extends JPanel implements ActionListener {
     // The zoom cross (Y+, X-, F, E, X+, Y-) holds commonly-used functions, so give those buttons a
     // taller click target than the other small control-panel buttons.
     private static final int    ZOOM_BUTTON_HEIGHT        = 24;
+    // The full-width Y+/Y- buttons can be a little shorter than the cross-row buttons.
+    private static final int    ZOOM_Y_BUTTON_HEIGHT      = 18;
+    // Display checkboxes are packed tightly together (no extra gap between consecutive ones).
+    private static final int    CHECKBOX_GAP              = 0;
     private static final String SEARCH_TIP_TEXT = "Enter text to search for. Use ',' for logical OR and '+' for logical AND (not used in this manner for regular expression searches).";
     private static final long serialVersionUID = -8463483932821545633L;
     private NodeClickAction _action_when_node_clicked;
@@ -197,6 +201,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JCheckBox _show_vector_data_cb;
     private JButton _show_whole;
     private JButton _expand_y;
+    private JButton _fit_width;
     private int _sort_descendents_item;
     private Map<String, Color> _species_colors;
     private int _subtree_cb_item;
@@ -341,6 +346,8 @@ final class ControlPanel extends JPanel implements ActionListener {
                     showWhole();
                 } else if (e.getSource() == _expand_y) {
                     expandYToFitLabels();
+                } else if (e.getSource() == _fit_width) {
+                    fitWidth();
                 } else if (e.getSource() == _return_to_super_tree) {
                     returnedToSuperTreePressed();
                 } else if (e.getSource() == _order) {
@@ -1175,7 +1182,7 @@ final class ControlPanel extends JPanel implements ActionListener {
      */
     void addButtons() {
         final JPanel x_panel = new JPanel(new GridLayout(1, 1, 0, 0));
-        final JPanel y_panel = new JPanel(new GridLayout(1, 4, 0, 0));
+        final JPanel y_panel = new JPanel(new GridLayout(1, 5, 0, 0));
         final JPanel z_panel = new JPanel(new GridLayout(1, 1, 0, 0));
         final JPanel o_panel = new JPanel(new GridLayout(1, 3, 0, 0));
         if (getConfiguration().isApplyCustomGuiColors()) {
@@ -1203,6 +1210,8 @@ final class ControlPanel extends JPanel implements ActionListener {
         _show_whole.setToolTipText("fit and center tree display [Alt+C, Home, or Esc]");
         _expand_y = new JButton("E");
         _expand_y.setToolTipText("expand the tree in vertical direction so labels do not overlap at the current font size [Alt+E]");
+        _fit_width = new JButton("W");
+        _fit_width.setToolTipText("fit the tree to the window width, keeping the current vertical zoom [Alt+W]");
         _zoom_in_x.setToolTipText("zoom in horizontally [Alt+Right or Shift+Alt+mousewheel]");
         _zoom_in_y.setToolTipText("zoom in vertically [Alt+Up or Shift+mousewheel]");
         _zoom_out_x.setToolTipText("zoom out horizontally [Alt+Left or Shift+Alt+mousewheel]");
@@ -1214,16 +1223,18 @@ final class ControlPanel extends JPanel implements ActionListener {
             _zoom_out_x.setPreferredSize(new Dimension(10, ZOOM_BUTTON_HEIGHT));
             _zoom_in_x.setPreferredSize(new Dimension(10, ZOOM_BUTTON_HEIGHT));
         }
-        _zoom_out_y.setPreferredSize(new Dimension(10, ZOOM_BUTTON_HEIGHT));
-        _zoom_in_y.setPreferredSize(new Dimension(10, ZOOM_BUTTON_HEIGHT));
+        _zoom_out_y.setPreferredSize(new Dimension(10, ZOOM_Y_BUTTON_HEIGHT));
+        _zoom_in_y.setPreferredSize(new Dimension(10, ZOOM_Y_BUTTON_HEIGHT));
         _show_whole.setPreferredSize(new Dimension(10, ZOOM_BUTTON_HEIGHT));
         _expand_y.setPreferredSize(new Dimension(10, ZOOM_BUTTON_HEIGHT));
-        // The middle zoom row now holds four buttons (X- F E X+); trim the default button
+        _fit_width.setPreferredSize(new Dimension(10, ZOOM_BUTTON_HEIGHT));
+        // The middle zoom row now holds five buttons (X- F E W X+); trim the default button
         // padding so the two-character X-/X+ labels still fit instead of being clipped to "...".
         final Insets tight = new Insets(2, 1, 2, 1);
         _zoom_out_x.setMargin(tight);
         _show_whole.setMargin(tight);
         _expand_y.setMargin(tight);
+        _fit_width.setMargin(tight);
         _zoom_in_x.setMargin(tight);
         _return_to_super_tree = new JButton(RETURN_TO_SUPER_TREE_TEXT);
         _return_to_super_tree.setToolTipText("return to the super-tree (if in sub-tree) [Alt+R]");
@@ -1236,6 +1247,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         addJButton(_zoom_out_x, y_panel);
         addJButton(_show_whole, y_panel);
         addJButton(_expand_y, y_panel);
+        addJButton(_fit_width, y_panel);
         addJButton(_zoom_in_x, y_panel);
         addJButton(_zoom_out_y, z_panel);
         nextRowGap(SECTION_GAP);
@@ -1251,6 +1263,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     void addCheckbox(final int which, final String title) {
+        nextRowGap(CHECKBOX_GAP); // pack the display checkboxes tightly together
         final JPanel ch_panel = new JPanel(new BorderLayout(0, 0));
         switch (which) {
             case Configuration.display_internal_data:
@@ -1405,6 +1418,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     void addJCheckBox(final JCheckBox jcb, final JPanel p) {
         jcb.setFocusPainted(false);
         jcb.setFont(ControlPanel.jcb_font);
+        jcb.setMargin(new Insets(0, 0, 0, 0)); // trim vertical padding so the checkboxes pack tightly
         if (_configuration.isApplyCustomGuiColors()) {
             jcb.setBackground(getConfiguration().getGuiBackgroundColor());
             jcb.setForeground(getConfiguration().getGuiCheckboxTextColor());
