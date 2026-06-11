@@ -2307,17 +2307,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ((to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite()) {
             c = Color.BLACK;
         }
-        //TODO
-        //FIXME
-        // else if ( is_in_found_nodes ) {
-        //     c = getColorForFoundNode( node );
-        // }
-        // else if ( getControlPanel().isColorAccordingToSequence() ) {
-        //     c = getSequenceBasedColor( node );
-        // }
-        // else if ( getControlPanel().isColorAccordingToTaxonomy() ) {
-        //     c = getTaxonomyBasedColor( node );
-        // }
         else if (getOptions().isColorLabelsSameAsParentBranch() && getControlPanel().isUseVisualStyles()
                 && (PhylogenyMethods.getBranchColorValue(node) != null)) {
             c = PhylogenyMethods.getBranchColorValue(node);
@@ -3760,10 +3749,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         } else if (getControlPanel().isUseVisualStyles() && (node.getNodeData().getNodeVisualData() != null)
                 && (node.getNodeData().getNodeVisualData().getFontColor() != null)) {
             g.setColor(node.getNodeData().getNodeVisualData().getFontColor());
-        } else if (getControlPanel().isColorAccordingToSequence()) {
-            g.setColor(getSequenceBasedColor(node));
-        } else if (getControlPanel().isColorAccordingToTaxonomy()) {
-            g.setColor(getTaxonomyBasedColor(node));
         } else if (getOptions().isColorLabelsSameAsParentBranch() && getControlPanel().isUseVisualStyles()
                 && (PhylogenyMethods.getBranchColorValue(node) != null)) {
             g.setColor(PhylogenyMethods.getBranchColorValue(node));
@@ -4585,20 +4570,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         setScaleLabel(scale_label);
     }
 
-    final Color calculateSequenceBasedColor(final Sequence seq) {
-        if (ForesterUtil.isEmpty(seq.getName())) {
-            return getTreeColorSet().getSequenceColor();
-        }
-        Color c = null;
-        final String seq_name = seq.getName();
-        c = getControlPanel().getSequenceColors().get(seq_name);
-        if (c == null) {
-            c = AptxUtil.calculateColorFromString(seq_name, false);
-            getControlPanel().getSequenceColors().put(seq_name, c);
-        }
-        return c;
-    }
-
     final Color calculateTaxonomyBasedColor(final Taxonomy tax) {
         if (getOptions().isColorByTaxonomicGroup()) {
             if (!ForesterUtil.isEmpty(tax.getTaxonomyCode())) {
@@ -4892,9 +4863,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             if (_control_panel.getUseVisualStylesCb() != null) {
                 _control_panel.getUseVisualStylesCb().setSelected(true);
             }
-            if (_control_panel.getColorAccSpeciesCb() != null) {
-                _control_panel.getColorAccSpeciesCb().setSelected(false);
-            }
             _options.setColorLabelsSameAsParentBranch(true);
             if (getMainPanel().getMainFrame()._color_labels_same_as_parent_branch != null) {
                 getMainPanel().getMainFrame()._color_labels_same_as_parent_branch.setSelected(true);
@@ -5056,28 +5024,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return _graphics_type;
     }
 
-    final Color getSequenceBasedColor(final PhylogenyNode node) {
-        if (node.getNodeData().isHasSequence()) {
-            return calculateSequenceBasedColor(node.getNodeData().getSequence());
-        }
-        // return non-colorized color
-        return getTreeColorSet().getSequenceColor();
-    }
-
     final double getStartingAngle() {
         return _urt_starting_angle;
     }
 
     DescriptiveStatistics getStatisticsForExpressionValues() {
         return _statistics_for_vector_data;
-    }
-
-    final Color getTaxonomyBasedColor(final PhylogenyNode node) {
-        if (node.isExternal() && node.getNodeData().isHasTaxonomy()) {
-            return calculateTaxonomyBasedColor(node.getNodeData().getTaxonomy());
-        }
-        // return non-colorized color
-        return getTreeColorSet().getTaxonomyColor();
     }
 
     final File getTreeFile() {

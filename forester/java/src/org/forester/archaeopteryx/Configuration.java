@@ -174,7 +174,6 @@ public final class Configuration {
     final static int display_external_data = 30;
 
     static final String VALIDATE_AGAINST_PHYLOXML_XSD_SCHEMA = "validate_against_phyloxml_xsd_schema";
-    private static Hashtable<String, Color> _sequence_colors;
     private static Hashtable<String, Color> _domain_colors;
     private static Hashtable<String, Color> _species_colors;
     private static String DEFAULT_FONT_FAMILY = "";
@@ -1294,9 +1293,6 @@ public final class Configuration {
                 } else if (key.equals("species_color")) {
                     getSpeciesColors().put(((String) st.nextElement()).replace('_', ' '),
                             Color.decode((String) st.nextElement()));
-                } else if (key.equals("sequence_color")) {
-                    getSequenceColors().put(((String) st.nextElement()).replace('_', ' '),
-                            Color.decode((String) st.nextElement()));
                 } else if (key.equals("domain_color")) {
                     getDomainColors().put((String) st.nextElement(), Color.decode((String) st.nextElement()));
                 } else if (key.equals("function_color")) {
@@ -1500,12 +1496,6 @@ public final class Configuration {
         return _print_line_width;
     }
 
-    Hashtable<String, Color> getSequenceColors() {
-        if (_sequence_colors == null) {
-            _sequence_colors = new Hashtable<String, Color>();
-        }
-        return _sequence_colors;
-    }
 
     Hashtable<String, Color> getSpeciesColors() {
         if (_species_colors == null) {

@@ -123,8 +123,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     private int _collapse_cb_item;
     private int _uncollapse_all_cb_item;
     private int _order_subtree_cb_item;
-    private JCheckBox _color_acc_species;
-    private JCheckBox _color_acc_sequence;
     private JComboBox<String> _color_by_property_cb;
     private static final String COLOR_BY_PROPERTY_NONE = "None";
     private boolean _color_branches;
@@ -199,7 +197,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JButton _expand_y;
     private int _sort_descendents_item;
     private Map<String, Color> _species_colors;
-    private Map<String, Color> _sequence_colors;
     private int _subtree_cb_item;
     private int _swap_cb_item;
     private JButton _uncollapse_all;
@@ -278,15 +275,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     @Override
     public void actionPerformed(final ActionEvent e) {
         try {
-            if (e.getSource() == _color_acc_sequence) {
-                if (_color_acc_species != null) {
-                    _color_acc_species.setSelected(false);
-                }
-            } else if (e.getSource() == _color_acc_species) {
-                if (_color_acc_sequence != null) {
-                    _color_acc_sequence.setSelected(false);
-                }
-            }
             final TreePanel tp = getMainPanel().getCurrentTreePanel();
             if (tp == null) {
                 return;
@@ -413,14 +401,6 @@ final class ControlPanel extends JPanel implements ActionListener {
             _mainpanel.getCurrentTreePanel().superTree();
             showWhole();
         }
-    }
-
-    public JCheckBox getColorAccSequenceCb() {
-        return _color_acc_sequence;
-    }
-
-    public JCheckBox getColorAccSpeciesCb() {
-        return _color_acc_species;
     }
 
     public JRadioButton getDisplayAsCladogramRb() {
@@ -629,7 +609,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     private void init() {
         _tree_display_types = new ArrayList<Options.PHYLOGENY_DISPLAY_TYPE>();
         setSpeciesColors(new HashMap<String, Color>());
-        setSequenceColors(new HashMap<String, Color>());
     }
 
     private Options.PHYLOGENY_DISPLAY_TYPE getTreeDisplayType(final int index) {
@@ -1017,18 +996,6 @@ final class ControlPanel extends JPanel implements ActionListener {
             setCheckbox(Configuration.display_external_data,
                     _configuration.doCheckOption(Configuration.display_external_data));
         }
-        if (_configuration.doDisplayOption(Configuration.color_according_to_sequence)) {
-            addCheckbox(Configuration.color_according_to_sequence,
-                    _configuration.getDisplayTitle(Configuration.color_according_to_sequence));
-            setCheckbox(Configuration.color_according_to_sequence,
-                    _configuration.doCheckOption(Configuration.color_according_to_sequence));
-        }
-        if (_configuration.doDisplayOption(Configuration.color_according_to_species)) {
-            addCheckbox(Configuration.color_according_to_species,
-                    _configuration.getDisplayTitle(Configuration.color_according_to_species));
-            setCheckbox(Configuration.color_according_to_species,
-                    _configuration.doCheckOption(Configuration.color_according_to_species));
-        }
         if (_configuration.doDisplayOption(Configuration.use_style)) {
             addCheckbox(Configuration.use_style, _configuration.getDisplayTitle(Configuration.use_style));
             setCheckbox(Configuration.use_style, _configuration.doCheckOption(Configuration.use_style));
@@ -1290,18 +1257,6 @@ final class ControlPanel extends JPanel implements ActionListener {
                 _display_external_data = new JCheckBox(title);
                 _display_external_data.setToolTipText("To allow or disallow display of external labels");
                 addJCheckBox(_display_external_data, ch_panel);
-                add(ch_panel);
-                break;
-            case Configuration.color_according_to_species:
-                _color_acc_species = new JCheckBox(title);
-                _color_acc_species.setToolTipText("To colorize node labels as a function of taxonomy");
-                addJCheckBox(_color_acc_species, ch_panel);
-                add(ch_panel);
-                break;
-            case Configuration.color_according_to_sequence:
-                _color_acc_sequence = new JCheckBox(title);
-                _color_acc_sequence.setToolTipText("To colorize node labels as a function of sequence name");
-                addJCheckBox(_color_acc_sequence, ch_panel);
                 add(ch_panel);
                 break;
             case Configuration.show_node_names:
@@ -1568,10 +1523,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         return _search_tf_1;
     }
 
-    Map<String, Color> getSequenceColors() {
-        return _sequence_colors;
-    }
-
     List<String> getSingleClickToNames() {
         return _click_to_names;
     }
@@ -1582,14 +1533,6 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     boolean isAntialiasScreenText() {
         return true;
-    }
-
-    boolean isColorAccordingToSequence() {
-        return ((_color_acc_sequence != null) && _color_acc_sequence.isSelected());
-    }
-
-    boolean isColorAccordingToTaxonomy() {
-        return ((_color_acc_species != null) && _color_acc_species.isSelected());
     }
 
     boolean isDrawPhylogram() {
@@ -1776,16 +1719,6 @@ final class ControlPanel extends JPanel implements ActionListener {
             case Configuration.display_external_data:
                 if (_display_external_data != null) {
                     _display_external_data.setSelected(state);
-                }
-                break;
-            case Configuration.color_according_to_species:
-                if (_color_acc_species != null) {
-                    _color_acc_species.setSelected(state);
-                }
-                break;
-            case Configuration.color_according_to_sequence:
-                if (_color_acc_sequence != null) {
-                    _color_acc_sequence.setSelected(state);
                 }
                 break;
             case Configuration.show_node_names:
@@ -2028,10 +1961,6 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     void setSearchFoundCountsOnLabel1(final int counts) {
         getSearchFoundCountsLabel1().setText("Found: " + counts);
-    }
-
-    void setSequenceColors(final Map<String, Color> sequence_colors) {
-        _sequence_colors = sequence_colors;
     }
 
     void setShowEvents(final boolean show_events) {
