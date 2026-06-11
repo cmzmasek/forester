@@ -1529,6 +1529,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             } else if (e.getKeyCode() == KeyEvent.VK_U) {
                 getControlPanel().uncollapseAll(this);
                 getControlPanel().displayedPhylogenyMightHaveChanged(false);
+            } else if (e.getKeyCode() == KeyEvent.VK_E) {
+                getControlPanel().expandYToFitLabels();
             } else if (e.getKeyCode() == KeyEvent.VK_UP) {
                 getMainPanel().getControlPanel().zoomInY(AptxConstants.WHEEL_ZOOM_IN_FACTOR);
                 getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged(false);

@@ -1234,7 +1234,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         _show_whole = new JButton("F");
         _show_whole.setToolTipText("fit and center tree display [Alt+C, Home, or Esc]");
         _expand_y = new JButton("E");
-        _expand_y.setToolTipText("expand the tree in vertical direction so labels do not overlap at the current font size");
+        _expand_y.setToolTipText("expand the tree in vertical direction so labels do not overlap at the current font size [Alt+E]");
         _zoom_in_x.setToolTipText("zoom in horizontally [Alt+Right or Shift+Alt+mousewheel]");
         _zoom_in_y.setToolTipText("zoom in vertically [Alt+Up or Shift+mousewheel]");
         _zoom_out_x.setToolTipText("zoom out horizontally [Alt+Left or Shift+Alt+mousewheel]");
