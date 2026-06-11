@@ -59,7 +59,6 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.QuadCurve2D;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
 import java.awt.print.PageFormat;
 import java.awt.print.Printable;
 import java.awt.print.PrinterException;
@@ -77,7 +76,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -104,7 +102,6 @@ import org.forester.archaeopteryx.phylogeny.data.RenderableDomainArchitecture;
 import org.forester.archaeopteryx.phylogeny.data.RenderableMsaSequence;
 import org.forester.archaeopteryx.phylogeny.data.RenderableVector;
 import org.forester.archaeopteryx.tools.Blast;
-import org.forester.archaeopteryx.tools.ImageLoader;
 import org.forester.io.parsers.phyloxml.PhyloXmlUtil;
 import org.forester.io.writers.SequenceWriter;
 import org.forester.phylogeny.Phylogeny;
@@ -380,9 +377,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         _phylogeny = t;
         _phy_has_branch_lengths = AptxUtil.isHasAtLeastOneBranchLengthLargerThanZero(_phylogeny);
         init();
-        // if ( !_phylogeny.isEmpty() ) {
+
         _phylogeny.recalculateNumberOfExternalDescendants(true);
-        // }
+
         setBackground(getTreeColorSet().getBackgroundColor());
         final MouseListener mouse_listener = new MouseListener(this);
         addMouseListener(mouse_listener);
@@ -418,9 +415,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return new BasicStroke(width);
     }
 
-    public synchronized Hashtable<String, BufferedImage> getImageMap() {
-        return getMainPanel().getImageMap();
-    }
+
 
     final public MainPanel getMainPanel() {
         return _main_panel;
@@ -554,9 +549,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         _edited = edited;
     }
 
-    public synchronized void setImageMap(final Hashtable<String, BufferedImage> image_map) {
-        getMainPanel().setImageMap(image_map);
-    }
 
     /**
      * Set a phylogeny tree.
@@ -1135,53 +1127,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
-    private double drawTaxonomyImage(final double x, final double y, final PhylogenyNode node, final Graphics2D g) {
-        final List<Uri> us = new ArrayList<>();
-        for (final Taxonomy t : node.getNodeData().getTaxonomies()) {
-            for (final Uri uri : t.getUris()) {
-                us.add(uri);
-            }
-        }
-        double offset = 0;
-        for (final Uri uri : us) {
-            if (uri != null) {
-                final String uri_str = uri.getValue().toString().toLowerCase();
-                if (getImageMap().containsKey(uri_str)) {
-                    final BufferedImage bi = getImageMap().get(uri_str);
-                    if ((bi != null) && (bi.getHeight() > 5) && (bi.getWidth() > 5)) {
-                        double scaling_factor = 1;
-                        if (getOptions().isAllowMagnificationOfTaxonomyImages()
-                                || (bi.getHeight() > (1.8 * getYdistance()))) {
-                            scaling_factor = (1.8 * getYdistance()) / bi.getHeight();
-                        }
-                        // y = y - ( 0.9 * getYdistance() );
-                        final double hs = bi.getHeight() * scaling_factor;
-                        double ws = (bi.getWidth() * scaling_factor) + offset;
-                        final double my_y = y - (0.5 * hs);
-                        final int x_w = (int) (x + ws + 0.5);
-                        final int y_h = (int) (my_y + hs + 0.5);
-                        if (((x_w - x) > 7) && ((y_h - my_y) > 7)) {
-                            g.drawImage(bi,
-                                    (int) (x + 0.5 + offset),
-                                    (int) (my_y + 0.5),
-                                    x_w,
-                                    y_h,
-                                    0,
-                                    0,
-                                    bi.getWidth(),
-                                    bi.getHeight(),
-                                    null);
-                            ws += 8;
-                        } else {
-                            ws = 0.0;
-                        }
-                        offset = ws;
-                    }
-                }
-            }
-        }
-        return offset;
-    }
+
 
     final private void errorMessageNoCutCopyPasteInUnrootedDisplay() {
         JOptionPane.showMessageDialog(this,
@@ -1408,8 +1354,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         setEdited(false);
         initializeOvSettings();
         setStartingAngle((TWO_PI * 3) / 4);
-        final ImageLoader il = new ImageLoader(this);
-        new Thread(il).start();
     }
 
     final private void initializeOvSettings() {
@@ -1478,9 +1422,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     final private boolean isNodeDataInvisible(final PhylogenyNode node) {
         int y_dist = 40;
-        if (getControlPanel().isShowTaxonomyImages()) {
-            y_dist = 40 + (int) getYdistance();
-        }
         return ((node.getYcoord() < (getVisibleRect().getMinY() - y_dist))
                 || (node.getYcoord() > (getVisibleRect().getMaxY() + y_dist))
                 || ((node.getParent() != null) && (node.getParent().getXcoord() > getVisibleRect().getMaxX())));
@@ -2697,11 +2638,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (isColorByProperty() && (node.isExternal() || node.isCollapse())) {
             drawPropertyColorDot(g, node);
         }
-        if (getControlPanel().isShowTaxonomyImages() && (getImageMap() != null) && !getImageMap().isEmpty()
-                && node.getNodeData().isHasTaxonomy() && ((node.getNodeData().getTaxonomy().getUris() != null)
-                && !node.getNodeData().getTaxonomy().getUris().isEmpty())) {
-            x += drawTaxonomyImage(node.getXcoord() + 2 + half_box_size, node.getYcoord(), node, g);
-        }
+
         if ((getControlPanel().isShowTaxonomyCode() || getControlPanel().isShowTaxonomyScientificNames()
                 || getControlPanel().isShowTaxonomyCommonNames() || getControlPanel().isShowTaxonomyRank())
                 && node.getNodeData().isHasTaxonomy()) {
@@ -2751,7 +2688,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     }
                 }
             } else if ((_sb.length() > 0) || saw_species) {
-                //  _sb.setLength( 0 );
                 _sb.append(" [");
                 _sb.append(node.getAllExternalDescendants().size());
                 _sb.append("]");

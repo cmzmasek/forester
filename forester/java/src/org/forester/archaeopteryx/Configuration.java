@@ -135,11 +135,11 @@ public final class Configuration {
             {"Seq Name", "display", "no"}, {"Seq Accession", "display", "no"},
             {"Show Internal Data", "display", "yes"}, {"Dyna Hide", "display", "yes"},
             {"Taxonomy Scientific", "display", "yes"}, {"Taxonomy Common", "display", "no"},
-            {"Colorize by Annotation", "display", "no"}, {"Seq Symbol", "nodisplay", "no"},
+            {"Colorize by Annotation", "nodisplay", "no"}, {"Seq Symbol", "nodisplay", "no"},
             {"Rollover", "display", "yes"}, {"Relation Confidence", "nodisplay", "no"},
             {"Vector Data", "nodisplay", "no"}, {"Taxonomy Images", "nodisplay", "no"},
             {"Properties", "display", "no"}, {"Gene Name", "nodisplay", "no"},
-            {"Multiple Seq Alignment", "display", "no"}, {"Branch Length Values", "display", "no"}
+            {"Multiple Seq Alignment", "nodisplay", "no"}, {"Branch Length Values", "display", "no"}
             , {"Taxonomy Rank", "display", "no"}, {"Show External Data", "display", "yes"}};
     final static int display_as_phylogram = 0;
     final static int show_node_names = 1;
@@ -470,9 +470,6 @@ public final class Configuration {
         _base_font_size = base_font_size;
     }
 
-    public void setColorizeBranches(final boolean b) {
-        display_options[use_style][2] = b ? "yes" : "no";
-    }
 
     public void setColorLabelsSameAsParentBranch(final boolean color_labels_same_as_parent_branch) {
         _color_labels_same_as_parent_branch = color_labels_same_as_parent_branch;
@@ -498,33 +495,16 @@ public final class Configuration {
         _display_colors = display_colors;
     }
 
-    public void setDisplayConfidenceValues(final boolean b) {
-        display_options[write_confidence_values][2] = b ? "yes" : "no";
-    }
-
     public void setDisplayGeneNames(final boolean b) {
         display_options[show_gene_names][2] = b ? "yes" : "no";
     }
 
-    public void setDisplayInternalData(final boolean b) {
-        display_options[display_internal_data][2] = b ? "yes" : "no";
-    }
 
-    public void setDisplayExternalData(final boolean b) {
-        display_options[display_external_data][2] = b ? "yes" : "no";
-    }
 
     public void setDisplayMultipleSequenceAlignment(final boolean b) {
         display_options[show_mol_seqs][2] = b ? "yes" : "no";
     }
 
-    public void setDisplayNodeNames(final boolean b) {
-        display_options[show_node_names][2] = b ? "yes" : "no";
-    }
-
-    public void setDisplaySequenceAcc(final boolean b) {
-        display_options[show_sequence_acc][2] = b ? "yes" : "no";
-    }
 
     public void setDisplaySequenceNames(final boolean b) {
         display_options[show_seq_names][2] = b ? "yes" : "no";
@@ -550,17 +530,13 @@ public final class Configuration {
         display_options[show_taxonomy_common_names][2] = b ? "yes" : "no";
     }
 
-    public void setDisplayTaxonomyImages(final boolean b) {
-        display_options[show_taxonomy_images][2] = b ? "yes" : "no";
-    }
+
 
     public void setDisplayTaxonomyScientificNames(final boolean b) {
         display_options[show_taxonomy_scientific_names][2] = b ? "yes" : "no";
     }
 
-    public void setDynamicallyHideData(final boolean b) {
-        display_options[dynamically_hide_data][2] = b ? "yes" : "no";
-    }
+
 
     public void setExtDescNodeDataToReturn(final NodeDataField ext_desc_data_to_return) {
         _ext_desc_data_to_return = ext_desc_data_to_return;

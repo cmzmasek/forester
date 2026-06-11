@@ -52,7 +52,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
-import org.forester.archaeopteryx.tools.ImageLoader;
 import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Accession;
@@ -598,8 +597,6 @@ class NodeEditPanel extends JPanel {
         if ( ( mu.getUris() != null ) && ( mu.getUris().size() != number ) ) {
             mu.getUris().set( number, uri );
         }
-        final ImageLoader il = new ImageLoader( getTreePanel() );
-        new Thread( il ).start();
     }
 
     private void collapsePath( final String name ) {

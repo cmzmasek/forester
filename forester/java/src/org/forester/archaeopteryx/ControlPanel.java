@@ -111,6 +111,9 @@ final class ControlPanel extends JPanel implements ActionListener {
     final static Font js_font = new Font(Configuration
             .getDefaultFontFamilyName(), Font.PLAIN, Configuration.getGuiFontSize());
     private static final String RETURN_TO_SUPER_TREE_TEXT = "R";
+    // The zoom cross (Y+, X-, F, E, X+, Y-) holds commonly-used functions, so give those buttons a
+    // taller click target than the other small control-panel buttons.
+    private static final int    ZOOM_BUTTON_HEIGHT        = 24;
     private static final String SEARCH_TIP_TEXT = "Enter text to search for. Use ',' for logical OR and '+' for logical AND (not used in this manner for regular expression searches).";
     private static final long serialVersionUID = -8463483932821545633L;
     private NodeClickAction _action_when_node_clicked;
@@ -190,7 +193,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JCheckBox _show_taxo_code;
     private JCheckBox _show_taxo_rank;
     private JCheckBox _show_taxo_common_names;
-    private JCheckBox _show_taxo_images_cb;
     private JCheckBox _show_taxo_scientific_names;
     private JCheckBox _show_vector_data_cb;
     private JButton _show_whole;
@@ -300,7 +302,14 @@ final class ControlPanel extends JPanel implements ActionListener {
             } else if (e.getSource() == _show_domain_architectures) {
                 search0();
                 search1();
-                displayedPhylogenyMightHaveChanged(true);
+                // When the user switches domains ON, re-fit the (now wider) tree horizontally so the
+                // domains actually become visible -- otherwise it looks like nothing happened. The
+                // horizontal-only fit keeps the user's vertical zoom; turning domains OFF just repaints.
+                if (_show_domain_architectures.isSelected()) {
+                    fitWidth();
+                } else {
+                    displayedPhylogenyMightHaveChanged(true);
+                }
             } else if ((tp != null) && (tp.getPhylogeny() != null)) {
                 if (e.getSource() == getDisplayAsUnalignedPhylogramRb()) {
                     setTreeDisplayType(Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM);
@@ -484,9 +493,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         return ((_show_properties_cb != null) && _show_properties_cb.isSelected());
     }
 
-    public boolean isShowTaxonomyImages() {
-        return ((_show_taxo_images_cb != null) && _show_taxo_images_cb.isSelected());
-    }
 
     public boolean isShowVectorData() {
         return ((_show_vector_data_cb != null) && _show_vector_data_cb.isSelected());
@@ -1202,16 +1208,16 @@ final class ControlPanel extends JPanel implements ActionListener {
         _zoom_out_x.setToolTipText("zoom out horizontally [Alt+Left or Shift+Alt+mousewheel]");
         _zoom_out_y.setToolTipText("zoom out vertically [Alt+Down or Shift+mousewheel]");
         if (getConfiguration().isUseNativeUI() && ForesterUtil.isMac()) {
-            _zoom_out_x.setPreferredSize(new Dimension(55, 10));
-            _zoom_in_x.setPreferredSize(new Dimension(55, 10));
+            _zoom_out_x.setPreferredSize(new Dimension(55, ZOOM_BUTTON_HEIGHT));
+            _zoom_in_x.setPreferredSize(new Dimension(55, ZOOM_BUTTON_HEIGHT));
         } else {
-            _zoom_out_x.setPreferredSize(new Dimension(10, 10));
-            _zoom_in_x.setPreferredSize(new Dimension(10, 10));
+            _zoom_out_x.setPreferredSize(new Dimension(10, ZOOM_BUTTON_HEIGHT));
+            _zoom_in_x.setPreferredSize(new Dimension(10, ZOOM_BUTTON_HEIGHT));
         }
-        _zoom_out_y.setPreferredSize(new Dimension(10, 10));
-        _zoom_in_y.setPreferredSize(new Dimension(10, 10));
-        _show_whole.setPreferredSize(new Dimension(10, 10));
-        _expand_y.setPreferredSize(new Dimension(10, 10));
+        _zoom_out_y.setPreferredSize(new Dimension(10, ZOOM_BUTTON_HEIGHT));
+        _zoom_in_y.setPreferredSize(new Dimension(10, ZOOM_BUTTON_HEIGHT));
+        _show_whole.setPreferredSize(new Dimension(10, ZOOM_BUTTON_HEIGHT));
+        _expand_y.setPreferredSize(new Dimension(10, ZOOM_BUTTON_HEIGHT));
         // The middle zoom row now holds four buttons (X- F E X+); trim the default button
         // padding so the two-character X-/X+ labels still fit instead of being clipped to "...".
         final Insets tight = new Insets(2, 1, 2, 1);
@@ -1282,11 +1288,6 @@ final class ControlPanel extends JPanel implements ActionListener {
             case Configuration.show_tax_rank:
                 _show_taxo_rank = new JCheckBox(title);
                 addJCheckBox(_show_taxo_rank, ch_panel);
-                add(ch_panel);
-                break;
-            case Configuration.show_taxonomy_images:
-                _show_taxo_images_cb = new JCheckBox(title);
-                addJCheckBox(_show_taxo_images_cb, ch_panel);
                 add(ch_panel);
                 break;
             case Configuration.show_binary_characters:
@@ -1569,6 +1570,19 @@ final class ControlPanel extends JPanel implements ActionListener {
         return ((_show_domain_architectures != null) && _show_domain_architectures.isSelected());
     }
 
+    /**
+     * If the "Domain Architectures" checkbox is available, switch it on and fit the tree -- now wider
+     * because of the domain rows -- to the screen. Called on load for a tree that contains domain
+     * architectures so the domains are shown immediately (most users never find the checkbox).
+     */
+    void showDomainArchitecturesFitted() {
+        if ((_show_domain_architectures != null) && _show_domain_architectures.isVisible()
+                && !_show_domain_architectures.isSelected()) {
+            _show_domain_architectures.setSelected(true);
+            fitWidth(); // re-fit the (now wider) tree horizontally so the domains show; keep vertical zoom
+        }
+    }
+
     boolean isShowGeneNames() {
         return ((_show_gene_names != null) && _show_gene_names.isSelected());
     }
@@ -1744,11 +1758,6 @@ final class ControlPanel extends JPanel implements ActionListener {
             case Configuration.show_tax_rank:
                 if (_show_taxo_rank != null) {
                     _show_taxo_rank.setSelected(state);
-                }
-                break;
-            case Configuration.show_taxonomy_images:
-                if (_show_taxo_images_cb != null) {
-                    _show_taxo_images_cb.setSelected(state);
                 }
                 break;
             case Configuration.show_binary_characters:
@@ -2227,6 +2236,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         _incr_domain_structure_evalue_thr.setToolTipText("Increase the E-value threshold by a factor of 10");
         _decr_domain_structure_evalue_thr.setToolTipText("Decrease the E-value threshold by a factor of 10");
         _domain_structure_evalue_thr_tf = new JTextField(3);
+        _domain_structure_evalue_thr_tf.setFont(ControlPanel.jcb_font);
         _domain_structure_evalue_thr_tf.setEditable(false);
         if (getConfiguration().isApplyCustomGuiColors()) {
             _domain_structure_evalue_thr_tf.setForeground(getConfiguration().getGuiMenuBackgroundColor());
@@ -2264,6 +2274,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             _search_found_label_0.setForeground(getConfiguration().getGuiCheckboxTextColor());
         }
         _search_tf_0 = new JTextField(3);
+        _search_tf_0.setFont(ControlPanel.jcb_font);
         _search_tf_0.setToolTipText(SEARCH_TIP_TEXT);
         _search_tf_0.setEditable(true);
         if (getConfiguration().isApplyCustomGuiColors()) {
@@ -2324,6 +2335,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             _search_found_label_1.setForeground(getConfiguration().getGuiCheckboxTextColor());
         }
         _search_tf_1 = new JTextField(3);
+        _search_tf_1.setFont(ControlPanel.jcb_font);
         _search_tf_1.setToolTipText(SEARCH_TIP_TEXT);
         _search_tf_1.setEditable(true);
         if (getConfiguration().isApplyCustomGuiColors()) {
@@ -2492,6 +2504,40 @@ final class ControlPanel extends JPanel implements ActionListener {
         _mainpanel.getCurrentTreePanel().updateOvSizes();
     }
 
+    /**
+     * Fits the tree to the viewport in the horizontal direction only (so e.g. newly-shown domain
+     * architectures become visible), leaving the vertical zoom untouched -- unlike {@link #showWhole()},
+     * which re-fits both directions. Works by passing the tree's current vertical extent as the height
+     * to {@code calcParametersForPainting()}, which derives the y-distance from it, so the y-distance
+     * is left unchanged while the x-direction is re-fitted to the viewport width.
+     */
+    void fitWidth() {
+        if ((_mainpanel.getCurrentScrollPane() == null)
+                || _mainpanel.getCurrentTreePanel().getPhylogeny().isEmpty()) {
+            return;
+        }
+        final TreePanel tp = getCurrentTreePanel();
+        tp.updateSetOfCollapsedExternalNodes();
+        displayedPhylogenyMightHaveChanged(true); // recalc longest-ext-node info (e.g. now with domains)
+        tp.updateOvSettings();
+        tp.validate();
+        _mainpanel.validate();
+        tp.resetPreferredSize();
+        final int keep_height = tp.getPreferredSize().height; // the current vertical extent
+        tp.calcParametersForPainting(_mainpanel.getSizeOfViewport().width, keep_height);
+        tp.resetPreferredSize();
+        _mainpanel.adjustJScrollPane();
+        tp.repaint();
+        tp.validate();
+        _mainpanel.validate();
+        // second pass: a vertical scrollbar may have appeared/disappeared, changing the usable width
+        tp.calcParametersForPainting(_mainpanel.getSizeOfViewport().width, keep_height);
+        tp.resetPreferredSize();
+        _mainpanel.adjustJScrollPane();
+        tp.repaint();
+        tp.updateOvSizes();
+    }
+
     void showWholeAll() {
         for (final TreePanel tree_panel : _mainpanel.getTreePanels()) {
             if (tree_panel != null) {
@@ -2577,9 +2623,23 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     final void updateDomainStructureEvaluethresholdDisplay() {
         if (_domain_structure_evalue_thr_tf != null) {
-            _domain_structure_evalue_thr_tf
-                    .setText("10^" + getMainPanel().getCurrentTreePanel().getDomainStructureEvalueThresholdExp());
+            _domain_structure_evalue_thr_tf.setText(
+                    "10" + toSuperscript(getMainPanel().getCurrentTreePanel().getDomainStructureEvalueThresholdExp()));
         }
+    }
+
+    /** Renders an integer exponent using Unicode superscript glyphs, e.g. -3 becomes "⁻³". */
+    private static String toSuperscript(final int exponent) {
+        final char[] superscript_digits = { '⁰', '¹', '²', '³', '⁴', '⁵', '⁶',
+                '⁷', '⁸', '⁹' };
+        final StringBuilder sb = new StringBuilder();
+        if (exponent < 0) {
+            sb.append('⁻'); // superscript minus
+        }
+        for (final char digit : Integer.toString(Math.abs(exponent)).toCharArray()) {
+            sb.append(superscript_digits[digit - '0']);
+        }
+        return sb.toString();
     }
 
     final void zoomInX(final float factor, final float x_correction_factor) {

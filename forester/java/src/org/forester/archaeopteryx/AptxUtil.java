@@ -234,6 +234,18 @@ public final class AptxUtil {
         return false;
     }
 
+    final static public boolean isHasAtLeastOneNodeWithDomainArchitecture(final Phylogeny phy) {
+        final PhylogenyNodeIterator it = phy.iteratorPostorder();
+        while (it.hasNext()) {
+            final PhylogenyNode n = it.next();
+            if (n.getNodeData().isHasSequence()
+                    && (n.getNodeData().getSequence().getDomainArchitecture() != null)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     final public static void launchWebBrowser(final URI uri, final String frame_name) throws IOException {
         boolean no_desktop = false;
         try {
@@ -731,6 +743,11 @@ public final class AptxUtil {
                         cp.setCheckbox(Configuration.write_events, false);
                     }
                 }
+            }
+            // A tree with domains: switch the "Domain Architectures" display on and fit it to screen,
+            // so the domains are shown right away (most users would not find the checkbox otherwise).
+            if (AptxUtil.isHasAtLeastOneNodeWithDomainArchitecture(t)) {
+                cp.showDomainArchitecturesFitted();
             }
         }
     }

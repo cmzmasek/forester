@@ -67,7 +67,7 @@ public class MainPanel extends JPanel implements ComponentListener {
     private TreeFontSet _fontset;
     private Phylogeny _cut_or_copied_tree;
     private Set<Long> _copied_and_pasted_nodes;
-    private Hashtable<String, BufferedImage> _image_map;
+
     private static Map<String, String> _lineage_to_rank_map;
 
     public MainPanel(final Configuration configuration, final MainFrame parent) {
@@ -283,9 +283,7 @@ public class MainPanel extends JPanel implements ComponentListener {
         return _cut_or_copied_tree;
     }
 
-    synchronized Hashtable<String, BufferedImage> getImageMap() {
-        return _image_map;
-    }
+
 
     MainFrame getMainFrame() {
         return _mainframe;
@@ -360,9 +358,6 @@ public class MainPanel extends JPanel implements ComponentListener {
         _cut_or_copied_tree = cut_or_copied_tree;
     }
 
-    synchronized void setImageMap(final Hashtable<String, BufferedImage> image_map) {
-        _image_map = image_map;
-    }
 
     void setTitleOfSelectedTab(final String title) {
         final int selected = getTabbedPane().getSelectedIndex();
