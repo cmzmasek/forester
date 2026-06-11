@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -634,6 +635,10 @@ final class ControlPanel extends JPanel implements ActionListener {
         getSearchResetButton0().setVisible(true);
         String[] queries = null;
         Set<Long> nodes = null;
+        // "Visible" search option: restrict the search to the currently displayed node-data fields.
+        final Set<PhylogenyMethods.NDF> restrict = visibleSearchFields();
+        final boolean search_props = (restrict != null) ? restrict.contains(PhylogenyMethods.NDF.Properties)
+                : getOptions().isSearchProperties();
         query_str = query_str.replaceAll("\\s+", " ");
         if ((query_str.indexOf(',') >= 0) && !getOptions().isSearchWithRegex()) {
             queries = query_str.split(",+");
@@ -652,24 +657,26 @@ final class ControlPanel extends JPanel implements ActionListener {
                 if ((query.indexOf('+') > 0) && !getOptions().isSearchWithRegex()) {
                     nodes.addAll(PhylogenyMethods.searchDataLogicalAnd(query.split("\\++"),
                             tree,
-                            getOptions().isSearchProperties(),
+                            search_props,
                             getOptions().isSearchCaseSensitive(),
                             !getOptions().isMatchWholeTermsOnly(),
                             isShowDomainArchitectures(),
                             tp != null
                                     ? Math.pow(10,
                                     tp.getDomainStructureEvalueThresholdExp())
-                                    : 0));
+                                    : 0,
+                            restrict));
                 } else {
                     nodes.addAll(PhylogenyMethods
                             .searchData(query,
                                     tree,
-                                    getOptions().isSearchProperties(),
+                                    search_props,
                                     getOptions().isSearchCaseSensitive(),
                                     !getOptions().isMatchWholeTermsOnly(),
                                     getOptions().isSearchWithRegex(),
                                     isShowDomainArchitectures(),
-                                    tp != null ? Math.pow(10, tp.getDomainStructureEvalueThresholdExp()) : 0));
+                                    tp != null ? Math.pow(10, tp.getDomainStructureEvalueThresholdExp()) : 0,
+                                    restrict));
                 }
             }
             if (getOptions().isInverseSearchResult()) {
@@ -701,6 +708,10 @@ final class ControlPanel extends JPanel implements ActionListener {
         getSearchResetButton1().setVisible(true);
         String[] queries = null;
         Set<Long> nodes = null;
+        // "Visible" search option: restrict the search to the currently displayed node-data fields.
+        final Set<PhylogenyMethods.NDF> restrict = visibleSearchFields();
+        final boolean search_props = (restrict != null) ? restrict.contains(PhylogenyMethods.NDF.Properties)
+                : getOptions().isSearchProperties();
         query_str = query_str.replaceAll("\\s+", " ");
         if ((query_str.indexOf(',') >= 0) && !getOptions().isSearchWithRegex()) {
             queries = query_str.split(",+");
@@ -719,24 +730,26 @@ final class ControlPanel extends JPanel implements ActionListener {
                 if ((query.indexOf('+') > 0) && !getOptions().isSearchWithRegex()) {
                     nodes.addAll(PhylogenyMethods.searchDataLogicalAnd(query.split("\\++"),
                             tree,
-                            getOptions().isSearchProperties(),
+                            search_props,
                             getOptions().isSearchCaseSensitive(),
                             !getOptions().isMatchWholeTermsOnly(),
                             isShowDomainArchitectures(),
                             tp != null
                                     ? Math.pow(10,
                                     tp.getDomainStructureEvalueThresholdExp())
-                                    : 0));
+                                    : 0,
+                            restrict));
                 } else {
                     nodes.addAll(PhylogenyMethods
                             .searchData(query,
                                     tree,
-                                    getOptions().isSearchProperties(),
+                                    search_props,
                                     getOptions().isSearchCaseSensitive(),
                                     !getOptions().isMatchWholeTermsOnly(),
                                     getOptions().isSearchWithRegex(),
                                     isShowDomainArchitectures(),
-                                    tp != null ? Math.pow(10, tp.getDomainStructureEvalueThresholdExp()) : 0));
+                                    tp != null ? Math.pow(10, tp.getDomainStructureEvalueThresholdExp()) : 0,
+                                    restrict));
                 }
             }
             if (getOptions().isInverseSearchResult()) {
@@ -2088,6 +2101,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JCheckBox _search_regex_cb;
     private JCheckBox _search_inverse_cb;
     private JCheckBox _search_properties_cb;
+    private JCheckBox _search_visible_cb;
 
     void setupSearchOptions() {
         final JLabel header = new JLabel("Search Options:");
@@ -2101,11 +2115,13 @@ final class ControlPanel extends JPanel implements ActionListener {
         _search_regex_cb = new JCheckBox(MainFrame.SEARCH_REGEX_LABEL);
         _search_inverse_cb = new JCheckBox(MainFrame.INVERSE_SEARCH_RESULT_LABEL);
         _search_properties_cb = new JCheckBox("Properties");
+        _search_visible_cb = new JCheckBox("Visible");
         _search_case_sensitive_cb.setToolTipText("search is case sensitive");
         _search_whole_words_only_cb.setToolTipText("match complete words/terms only");
         _search_regex_cb.setToolTipText(MainFrame.SEARCH_WITH_REGEX_TIP);
         _search_inverse_cb.setToolTipText("select the nodes that do NOT match");
         _search_properties_cb.setToolTipText("also search in (phyloXML) properties");
+        _search_visible_cb.setToolTipText("search only the data that is currently displayed (per the Display Data checkboxes)");
         final Options o = getOptions();
         if (o != null) {
             _search_case_sensitive_cb.setSelected(o.isSearchCaseSensitive());
@@ -2121,7 +2137,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             }
         };
         for (final JCheckBox cb : new JCheckBox[] { _search_case_sensitive_cb, _search_whole_words_only_cb,
-                _search_regex_cb, _search_inverse_cb, _search_properties_cb }) {
+                _search_regex_cb, _search_inverse_cb, _search_properties_cb, _search_visible_cb }) {
             cb.setFocusPainted(false);
             cb.setFont(ControlPanel.jcb_font);
             cb.setMargin(new Insets(0, 0, 0, 0)); // trim vertical padding so the checkboxes pack tightly
@@ -2136,7 +2152,51 @@ final class ControlPanel extends JPanel implements ActionListener {
         nextRowGap(CHECKBOX_GAP);
         add(searchOptionsRow(_search_regex_cb, _search_inverse_cb));
         nextRowGap(CHECKBOX_GAP);
-        add(_search_properties_cb);
+        add(searchOptionsRow(_search_properties_cb, _search_visible_cb));
+    }
+
+    /**
+     * When the "Visible" search option is on, the set of node-data fields that are currently displayed (per the
+     * Display Data checkboxes), so the search is limited to them; {@code null} when "Visible" is off (search all
+     * fields). Fields with no Display Data checkbox (taxonomy synonyms/lineage/identifier, annotations, etc.)
+     * are never searched in "Visible" mode.
+     */
+    private Set<PhylogenyMethods.NDF> visibleSearchFields() {
+        if ((_search_visible_cb == null) || !_search_visible_cb.isSelected()) {
+            return null;
+        }
+        final EnumSet<PhylogenyMethods.NDF> fields = EnumSet.noneOf(PhylogenyMethods.NDF.class);
+        if (isShowNodeNames()) {
+            fields.add(PhylogenyMethods.NDF.NodeName);
+        }
+        if (isShowTaxonomyCode()) {
+            fields.add(PhylogenyMethods.NDF.TaxonomyCode);
+        }
+        if (isShowTaxonomyScientificNames()) {
+            fields.add(PhylogenyMethods.NDF.TaxonomyScientificName);
+        }
+        if (isShowTaxonomyCommonNames()) {
+            fields.add(PhylogenyMethods.NDF.TaxonomyCommonName);
+        }
+        if (isShowSeqNames()) {
+            fields.add(PhylogenyMethods.NDF.SequenceName);
+        }
+        if (isShowGeneNames()) {
+            fields.add(PhylogenyMethods.NDF.GeneName);
+        }
+        if (isShowSeqSymbols()) {
+            fields.add(PhylogenyMethods.NDF.SequenceSymbol);
+        }
+        if (isShowSequenceAcc()) {
+            fields.add(PhylogenyMethods.NDF.SequenceAccession);
+        }
+        if (isShowDomainArchitectures()) {
+            fields.add(PhylogenyMethods.NDF.Domain);
+        }
+        if (isShowProperties()) {
+            fields.add(PhylogenyMethods.NDF.Properties);
+        }
+        return fields;
     }
 
     private JPanel searchOptionsRow(final JCheckBox a, final JCheckBox b) {

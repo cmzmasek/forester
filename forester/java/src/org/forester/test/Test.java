@@ -37,6 +37,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.EnumSet;
 import java.util.Set;
 import java.util.SortedSet;
 
@@ -196,6 +197,14 @@ public final class Test {
         }
         System.out.print("Aptx util: ");
         if (org.forester.archaeopteryx.AptxUtilTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Search data field restriction: ");
+        if (testSearchDataRestrict()) {
             System.out.println("OK.");
             succeeded++;
         } else {
@@ -950,6 +959,54 @@ public final class Test {
         } else {
             System.out.println("Not OK.");
         }
+    }
+
+    private static boolean testSearchDataRestrict() {
+        try {
+            // a leaf whose node name is "alpha" and whose taxonomy scientific name is "beta"
+            final Phylogeny phy = new Phylogeny();
+            final PhylogenyNode root = new PhylogenyNode();
+            final PhylogenyNode leaf = new PhylogenyNode();
+            leaf.setName("alpha");
+            final Taxonomy tax = new Taxonomy();
+            tax.setScientificName("beta");
+            leaf.getNodeData().setTaxonomy(tax);
+            root.addAsChild(leaf);
+            root.addAsChild(new PhylogenyNode());
+            phy.setRoot(root);
+            phy.externalNodesHaveChanged();
+            // no restriction: both the node name and the scientific name are searched
+            if (PhylogenyMethods.searchData("alpha", phy, false, false, true, false, false, 0, null).size() != 1) {
+                return false;
+            }
+            if (PhylogenyMethods.searchData("beta", phy, false, false, true, false, false, 0, null).size() != 1) {
+                return false;
+            }
+            // restrict to node name only: "alpha" matches, "beta" (scientific name) does not
+            final Set<PhylogenyMethods.NDF> only_name = EnumSet.of(PhylogenyMethods.NDF.NodeName);
+            if (PhylogenyMethods.searchData("alpha", phy, false, false, true, false, false, 0, only_name).size() != 1) {
+                return false;
+            }
+            if (PhylogenyMethods.searchData("beta", phy, false, false, true, false, false, 0, only_name).size() != 0) {
+                return false;
+            }
+            // restrict to scientific name only: "beta" matches, "alpha" (node name) does not
+            final Set<PhylogenyMethods.NDF> only_sci = EnumSet.of(PhylogenyMethods.NDF.TaxonomyScientificName);
+            if (PhylogenyMethods.searchData("beta", phy, false, false, true, false, false, 0, only_sci).size() != 1) {
+                return false;
+            }
+            if (PhylogenyMethods.searchData("alpha", phy, false, false, true, false, false, 0, only_sci).size() != 0) {
+                return false;
+            }
+            // an explicit "XX:" field prefix overrides the restriction
+            if (PhylogenyMethods.searchData("NN:alpha", phy, false, false, true, false, false, 0, only_sci).size() != 1) {
+                return false;
+            }
+        } catch (final Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
     }
 
     private static boolean testEngulfingOverlapRemoval() {
