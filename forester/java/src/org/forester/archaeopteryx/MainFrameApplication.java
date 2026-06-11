@@ -35,8 +35,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -65,7 +63,6 @@ import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.nexus.NexusPhylogeniesParser;
 import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
-import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.io.parsers.tol.TolParser;
 import org.forester.io.parsers.util.ParserUtils;
@@ -74,18 +71,14 @@ import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.PhylogenyNode.NH_CONVERSION_SUPPORT_VALUE_STYLE;
 import org.forester.phylogeny.data.Confidence;
-import org.forester.phylogeny.data.NodeData;
 import org.forester.phylogeny.data.PhylogenyDataUtil;
-import org.forester.phylogeny.data.PropertiesList;
 import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
-import org.forester.util.BasicDescriptiveStatistics;
 import org.forester.util.BasicTable;
 import org.forester.util.BasicTableParser;
-import org.forester.util.DescriptiveStatistics;
 import org.forester.util.ForesterUtil;
 
 public final class MainFrameApplication extends MainFrame {
@@ -102,8 +95,6 @@ public final class MainFrameApplication extends MainFrame {
     // Application-only print menu items
     private JMenuItem _collapse_below_threshold;
     private JMenuItem _collapse_below_branch_length;
-    private ButtonGroup _radio_group_1;
-    private ButtonGroup _radio_group_2;
     // Others:
     double _min_not_collapse = AptxConstants.MIN_NOT_COLLAPSE_DEFAULT;
     double _min_not_collapse_bl = 0.001;
@@ -169,7 +160,7 @@ public final class MainFrameApplication extends MainFrame {
         }
         installLookAndFeel(_configuration.getUi());
         // the export/save choosers were created in the super-constructor, before the
-        // look-and-feel above was installed; refresh them so they are not left with the
+        // look-and-feel above was installed; refresh them, so they are not left with the
         // platform default (e.g. the native macOS file dialog instead of FlatLaf).
         refreshFileChoosersLookAndFeel();
         if ((current_dir != null) && current_dir.canRead() && current_dir.isDirectory()) {
@@ -305,13 +296,8 @@ public final class MainFrameApplication extends MainFrame {
             if (o == _open_item) {
                 readPhylogeniesFromFile();
             }
-            if (o == _open_url_item) {
-                readPhylogeniesFromURL();
-            } else if (o == _new_item) {
+            if (o == _new_item) {
                 newTree();
-                //} else if (o == _annotations_item) {
-                //    addAnnotations();
-                // }
             } else if (o == _replace_names_item) {
                 replaceNodeNames();
             } else if (o == _close_item) {
@@ -638,208 +624,6 @@ public final class MainFrameApplication extends MainFrame {
         System.gc();
     }
 
-   /* private void addAnnotations() {
-        final String KEY_TAXONOMY_SCIENTIFIC_NAME = "TAXONOMY_SCIENTIFIC_NAME";
-        final String KEY_TAXONOMY_COMMON_NAME = "TAXONOMY_COMMON_NAME";
-        final String KEY_TAXONOMY_RANK = "TAXONOMY_RANK";
-        final String KEY_TAXONOMY_AUTHORITY = "TAXONOMY_COMMON_AUTHORITY";
-        final String KEY_TAXONOMY_CODE = "TAXONOMY_CODE";
-        final String KEY_NODE_NAME = "NODE_NAME";
-        final String KEY_PROPERTY = "PROPERTY";
-        //TODO
-        if ( ( getCurrentTreePanel() == null ) || ( getCurrentTreePanel().getPhylogeny() == null ) ) {
-            JOptionPane.showMessageDialog( this,
-                                           "Need to load phylogenetic tree first",
-                                           "Can Not Add Annotations",
-                                           JOptionPane.WARNING_MESSAGE );
-            return;
-        }
-        if ( isSubtreeDisplayed() ) {
-            JOptionPane.showMessageDialog( this,
-                                           "Cannot add annotations to sub-tree",
-                                           "Can Not Add Annotations To Sub-Tree",
-                                           JOptionPane.WARNING_MESSAGE );
-            return;
-        }
-        final File my_dir = getCurrentDir();
-        if ( my_dir != null ) {
-            _values_filechooser.setCurrentDirectory( my_dir );
-        }
-        final int result = _values_filechooser.showOpenDialog( _contentpane );
-        final File file = _values_filechooser.getSelectedFile();
-        if ( ( file != null ) && ( file.length() > 0 ) && ( result == JFileChooser.APPROVE_OPTION ) ) {
-            BasicTable<String> t = null;
-            try {
-                t = BasicTableParser.parse( file, '\t' );
-                if ( t.getNumberOfColumns() < 2 ) {
-                    t = BasicTableParser.parse( file, ',' );
-                }
-            }
-            catch ( final IOException e ) {
-                JOptionPane.showMessageDialog( this,
-                                               e.getMessage(),
-                                               "Could Not Read Annotation Table",
-                                               JOptionPane.ERROR_MESSAGE );
-                return;
-            }
-            if ( t.getNumberOfColumns() < 2 ) {
-                JOptionPane.showMessageDialog( this,
-                                               "Table contains " + t.getNumberOfColumns() + " column(s)",
-                                               "Problem with Annotation Table",
-                                               JOptionPane.ERROR_MESSAGE );
-                return;
-            }
-            if ( t.getNumberOfRows() < 1 ) {
-                JOptionPane.showMessageDialog( this,
-                                               "Table contains zero rows",
-                                               "Problem with Annotation Table",
-                                               JOptionPane.ERROR_MESSAGE );
-                return;
-            }
-            final Phylogeny phy = getCurrentTreePanel().getPhylogeny();
-            if ( ( t.getNumberOfRows() - 1 ) != phy.getNumberOfExternalNodes() ) {
-                JOptionPane.showMessageDialog( this,
-                                               "Annotation table contains " + ( t.getNumberOfRows() - 1 )
-                                                       + " data rows, but tree contains "
-                                                       + phy.getNumberOfExternalNodes() + " external nodes",
-                                               "Warning",
-                                               JOptionPane.WARNING_MESSAGE );
-            }
-            final String[] table_headers = new String[ t.getNumberOfColumns() ];
-            for( int i = 0; i < t.getNumberOfColumns(); ++i ) {
-                table_headers[ i ] = t.getValue( i, 0 );
-                System.out.println( t.getValue( i, 0 ) );
-            }
-            final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
-            int not_found = 0;
-            for( final PhylogenyNodeIterator iter = phy.iteratorPreorder(); iter.hasNext(); ) {
-                final PhylogenyNode node = iter.next();
-                final String node_name = node.getName();
-                if ( !ForesterUtil.isEmpty( node_name ) ) {
-                    int row = -1;
-                    try {
-                        row = t.findRow( node_name );
-                    }
-                    catch ( final IllegalArgumentException e ) {
-                        JOptionPane.showMessageDialog( this,
-                                                       e.getMessage(),
-                                                       "Error Mapping Node Identifiers to Annotation",
-                                                       JOptionPane.ERROR_MESSAGE );
-                        return;
-                    }
-                    if ( row < 0 ) {
-                        if ( node.isExternal() ) {
-                            not_found++;
-                        }
-                        continue;
-                    }
-                    for( int col = 1; col < t.getNumberOfColumns(); ++col ) {
-                        final String annot = t.getValueAsString( col, row );
-                        final String header = table_headers[ col ].toUpperCase();
-                        if ( header.equals( KEY_NODE_NAME ) ) {
-                            node.setName( annot );
-                        }
-                        else if ( header.equals( KEY_PROPERTY ) ) {
-                            final String[] x = annot.split( "::" );
-                            String applies_to = "";
-                            String ref = "";
-                            String value = "";
-                            String data_type = "xsd:string";
-                            String unit = "";
-                            if ( x.length == 3 ) {
-                                applies_to = x[ 0 ];
-                                ref = x[ 1 ];
-                                value = x[ 2 ];
-                            }
-                            if ( x.length == 4 ) {
-                                applies_to = x[ 0 ];
-                                ref = x[ 1 ];
-                                value = x[ 2 ];
-                                data_type = x[ 3 ];
-                            }
-                            if ( x.length == 5 ) {
-                                applies_to = x[ 0 ];
-                                ref = x[ 1 ];
-                                value = x[ 2 ];
-                                data_type = x[ 3 ];
-                                unit = x[ 4 ];
-                            }
-                          
-                            if (applies_to.equalsIgnoreCase("phylogeny")) {
-                                
-                            }
-                            if (applies_to.equalsIgnoreCase("node")){
-                                
-                            }
-                            if (applies_to.equalsIgnoreCase("parent_branch")) {
-                                
-                            }
-                            PropertiesList properties = node.getNodeData().getProperties();
-                            if ( properties == null ) {
-                                properties = new PropertiesList();
-                                node.getNodeData().setProperties( properties );
-                            }
-                            properties
-                                    .addProperty( new org.forester.phylogeny.data.Property( ref,
-                                                                                            value,
-                                                                                            unit,
-                                                                                            data_type,
-                                                                                            org.forester.phylogeny.data.Property.AppliesTo.PARENT_BRANCH ) );
-                        }
-                        else if ( header.equals( KEY_TAXONOMY_SCIENTIFIC_NAME )
-                                || header.equals( KEY_TAXONOMY_COMMON_NAME ) || header.equals( KEY_TAXONOMY_RANK )
-                                || header.equals( KEY_TAXONOMY_AUTHORITY ) || header.equals( KEY_TAXONOMY_CODE ) ) {
-                            final NodeData data = node.getNodeData();
-                            if ( !data.isHasTaxonomy() ) {
-                                data.addTaxonomy( new Taxonomy() );
-                            }
-                            if ( header.equals( KEY_TAXONOMY_SCIENTIFIC_NAME ) ) {
-                                data.getTaxonomy().setScientificName( annot );
-                            }
-                            if ( header.equals( KEY_TAXONOMY_COMMON_NAME ) ) {
-                                data.getTaxonomy().setCommonName( annot );
-                            }
-                            if ( header.equals( KEY_TAXONOMY_RANK ) ) {
-                                try {
-                                    data.getTaxonomy().setRank( annot );
-                                }
-                                catch ( final PhyloXmlDataFormatException e ) {
-                                    JOptionPane.showMessageDialog( this,
-                                                                   e.getMessage(),
-                                                                   "Format Error",
-                                                                   JOptionPane.ERROR_MESSAGE );
-                                    return;
-                                }
-                            }
-                            if ( header.equals( KEY_TAXONOMY_AUTHORITY ) ) {
-                                data.getTaxonomy().setAuthority( annot );
-                            }
-                            if ( header.equals( KEY_TAXONOMY_CODE ) ) {
-                                try {
-                                    data.getTaxonomy().setTaxonomyCode( annot );
-                                }
-                                catch ( final PhyloXmlDataFormatException e ) {
-                                    JOptionPane.showMessageDialog( this,
-                                                                   e.getMessage(),
-                                                                   "Format Error",
-                                                                   JOptionPane.ERROR_MESSAGE );
-                                    return;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            if ( not_found > 0 ) {
-                JOptionPane.showMessageDialog( this,
-                                               "Could not fine expression values for " + not_found
-                                                       + " external node(s)",
-                                               "Warning",
-                                               JOptionPane.WARNING_MESSAGE );
-            }
-            getCurrentTreePanel().setStatisticsForExpressionValues( stats );
-        }
-    }*/
 
     private void replaceNodeNames() {
 
@@ -864,7 +648,7 @@ public final class MainFrameApplication extends MainFrame {
         final int result = _values_filechooser.showOpenDialog(_contentpane);
         final File file = _values_filechooser.getSelectedFile();
         if ((file != null) && (file.length() > 0) && (result == JFileChooser.APPROVE_OPTION)) {
-            BasicTable<String> t = null;
+            BasicTable<String> t;
             try {
                 t = BasicTableParser.parse(file, '\t');
                 if (t.getNumberOfColumns() < 2) {
@@ -1065,12 +849,10 @@ public final class MainFrameApplication extends MainFrame {
                                     .createParserDependingOnFileType(file,
                                             getConfiguration()
                                                     .isValidatePhyloXmlAgainstSchema());
-                            if (parser instanceof NexusPhylogeniesParser) {
-                                final NexusPhylogeniesParser nex = (NexusPhylogeniesParser) parser;
+                            if (parser instanceof NexusPhylogeniesParser nex) {
                                 setSpecialOptionsForNexParser(nex);
                                 nhx_or_nexus = true;
-                            } else if (parser instanceof NHXParser) {
-                                final NHXParser nhx = (NHXParser) parser;
+                            } else if (parser instanceof NHXParser nhx) {
                                 setSpecialOptionsForNhxParser(nhx);
                                 nhx_or_nexus = true;
                             } else if (parser instanceof PhyloXmlParser) {
@@ -1087,7 +869,7 @@ public final class MainFrameApplication extends MainFrame {
                     } else {
                         _mainpanel.setArrowCursor();
                     }
-                    if (!exception && (phys != null) && (phys.length > 0)) {
+                    if (!exception && (phys.length > 0)) {
                         boolean one_desc = false;
                         if (nhx_or_nexus) {
                             for (final Phylogeny phy : phys) {
@@ -1194,13 +976,6 @@ public final class MainFrameApplication extends MainFrame {
         }
     }
 
-    private void setArrowCursor() {
-        try {
-            _mainpanel.getCurrentTreePanel().setArrowCursor();
-        } catch (final Exception ex) {
-            // Do nothing.
-        }
-    }
 
     private void setMinNotCollapseBlValue(final double min_not_collapse_bl) {
         _min_not_collapse_bl = min_not_collapse_bl;
@@ -1255,19 +1030,11 @@ public final class MainFrameApplication extends MainFrame {
     void buildFileMenu() {
         _file_jmenu = MainFrame.createMenu("File", getConfiguration());
         _file_jmenu.add(_open_item = new JMenuItem("Read Tree from File..."));
-        _file_jmenu.addSeparator();
-        _file_jmenu.add(_open_url_item = new JMenuItem("Read Tree from URL/Webservice..."));
         if (getConfiguration().isEditable()) {
             _file_jmenu.addSeparator();
             _file_jmenu.add(_new_item = new JMenuItem("New"));
             _new_item.setToolTipText("to create a new tree with one node, as source for manual tree construction");
         }
-        // if (getConfiguration().isEditable()) {
-        //     _file_jmenu.addSeparator();
-        //     _file_jmenu.add(_annotations_item = new JMenuItem("Add Annotations"));
-        //    _annotations_item.setToolTipText("to add annnotations from a tab separated file");
-        // }
-
         _file_jmenu.addSeparator();
         _file_jmenu.add(_save_item = new JMenuItem("Save Tree As..."));
         _file_jmenu.add(_save_all_item = new JMenuItem("Save All Trees As..."));
@@ -1288,19 +1055,13 @@ public final class MainFrameApplication extends MainFrame {
             _file_jmenu.add(_write_to_bmp_item = new JMenuItem("Export to BMP file..."));
         }
         _file_jmenu.addSeparator();
-        _file_jmenu.add(_print_item = new JMenuItem("Print..."));
-        _file_jmenu.addSeparator();
         _file_jmenu.add(_close_item = new JMenuItem("Close Tab"));
         _close_item.setToolTipText("To close the current pane.");
         _close_item.setEnabled(true);
         _file_jmenu.addSeparator();
         _file_jmenu.add(_exit_item = new JMenuItem("Exit"));
         customizeJMenuItem(_open_item);
-        _open_item.setFont(new Font(_open_item.getFont().getFontName(),
-                Font.BOLD,
-                _open_item.getFont().getSize() + 4));
-        customizeJMenuItem(_open_url_item);
-        customizeJMenuItem(_save_item);
+          customizeJMenuItem(_save_item);
         if (getConfiguration().isEditable()) {
             customizeJMenuItem(_new_item);
         }
@@ -1312,7 +1073,6 @@ public final class MainFrameApplication extends MainFrame {
         customizeJMenuItem(_write_to_gif_item);
         customizeJMenuItem(_write_to_tif_item);
         customizeJMenuItem(_write_to_bmp_item);
-        customizeJMenuItem(_print_item);
         customizeJMenuItem(_exit_item);
         _jmenubar.add(_file_jmenu);
     }
@@ -1350,7 +1110,7 @@ public final class MainFrameApplication extends MainFrame {
         _options_jmenu
                 .add(_ext_node_dependent_cladogram_rbmi = new JRadioButtonMenuItem(MainFrame.NONUNIFORM_CLADOGRAMS_LABEL));
         _options_jmenu.add(_non_lined_up_cladograms_rbmi = new JRadioButtonMenuItem(NON_LINED_UP_CLADOGRAMS_LABEL));
-        _radio_group_1 = new ButtonGroup();
+        ButtonGroup _radio_group_1 = new ButtonGroup();
         _radio_group_1.add(_ext_node_dependent_cladogram_rbmi);
         _radio_group_1.add(_non_lined_up_cladograms_rbmi);
         _options_jmenu.add(_show_overview_cbmi = new JCheckBoxMenuItem(SHOW_OVERVIEW_LABEL));
@@ -1432,7 +1192,7 @@ public final class MainFrameApplication extends MainFrame {
                 .setToolTipText("To extract taxonomy codes/ids from node names in the form of e.g. \"bax_MOUSE\" or \"bax_10090\"");
         _extract_taxonomy_agressive_rbmi
                 .setToolTipText("To extract taxonomy codes/ids or scientific names from node names in the form of e.g. \"MOUSE\" or \"10090\" or \"xyz_Nematostella_vectensis\"");
-        _radio_group_2 = new ButtonGroup();
+        ButtonGroup _radio_group_2 = new ButtonGroup();
         _radio_group_2.add(_extract_taxonomy_no_rbmi);
         _radio_group_2.add(_extract_taxonomy_pfam_strict_rbmi);
         _radio_group_2.add(_extract_taxonomy_pfam_relaxed_rbmi);
@@ -1604,78 +1364,7 @@ public final class MainFrameApplication extends MainFrame {
         // System.exit( 0 ); //TODO reconfirm that this is OK, then remove.
     }
 
-    void readPhylogeniesFromURL() {
-        URL url = null;
-        Phylogeny[] phys = null;
-        final String message = "Please enter a complete URL, for example \"http://purl.org/phylo/treebase/phylows/study/TB2:S15480?format=nexus\"";
-        final String url_string = JOptionPane.showInputDialog(this,
-                message,
-                "Use URL/webservice to obtain a phylogeny",
-                JOptionPane.QUESTION_MESSAGE);
-        boolean nhx_or_nexus = false;
-        if ((url_string != null) && (url_string.length() > 0)) {
-            try {
-                url = new URL(url_string);
-                PhylogenyParser parser = null;
-                if (url.getHost().toLowerCase().indexOf("tolweb") >= 0) {
-                    parser = new TolParser();
-                } else {
-                    parser = ParserUtils
-                            .createParserDependingOnUrlContents(url,
-                                    getConfiguration().isValidatePhyloXmlAgainstSchema());
-                }
-                if (parser instanceof NexusPhylogeniesParser) {
-                    nhx_or_nexus = true;
-                } else if (parser instanceof NHXParser) {
-                    nhx_or_nexus = true;
-                }
-                if (_mainpanel.getCurrentTreePanel() != null) {
-                    _mainpanel.getCurrentTreePanel().setWaitCursor();
-                } else {
-                    _mainpanel.setWaitCursor();
-                }
-                final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-                phys = factory.create(url.openStream(), parser);
-            } catch (final MalformedURLException e) {
-                JOptionPane.showMessageDialog(this,
-                        "Malformed URL: " + url + "\n" + e.getLocalizedMessage(),
-                        "Malformed URL",
-                        JOptionPane.ERROR_MESSAGE);
-            } catch (final IOException e) {
-                JOptionPane.showMessageDialog(this,
-                        "Could not read from " + url + "\n"
-                                + ForesterUtil.wordWrap(e.getLocalizedMessage(), 80),
-                        "Failed to read URL",
-                        JOptionPane.ERROR_MESSAGE);
-            } catch (final Exception e) {
-                JOptionPane.showMessageDialog(this,
-                        ForesterUtil.wordWrap(e.getLocalizedMessage(), 80),
-                        "Unexpected Exception",
-                        JOptionPane.ERROR_MESSAGE);
-            } finally {
-                if (_mainpanel.getCurrentTreePanel() != null) {
-                    _mainpanel.getCurrentTreePanel().setArrowCursor();
-                } else {
-                    _mainpanel.setArrowCursor();
-                }
-            }
-            if ((phys != null) && (phys.length > 0)) {
-                if (nhx_or_nexus && getOptions().isInternalNumberAreConfidenceForNhParsing()) {
-                    for (final Phylogeny phy : phys) {
-                        PhylogenyMethods.transferInternalNodeNamesToConfidence(phy, "");
-                    }
-                }
-                AptxUtil.addPhylogeniesToTabs(phys,
-                        new File(url.getFile()).getName(),
-                        new File(url.getFile()).toString(),
-                        getConfiguration(),
-                        getMainPanel());
-                _mainpanel.getControlPanel().showWhole();
-            }
-        }
-        activateSaveAllIfNeeded();
-        System.gc();
-    }
+
 
     public static MainFrameApplication createInstance(final Phylogeny[] phys, final Configuration config) {
         return new MainFrameApplication(phys, config);

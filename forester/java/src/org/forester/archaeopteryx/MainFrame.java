@@ -186,14 +186,12 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem _lineage_inference;
     // file menu:
     JMenuItem _open_item;
-    JMenuItem _open_url_item;
     JMenuItem _save_item;
     JMenuItem _save_all_item;
     JMenuItem _close_item;
     JMenuItem _exit_item;
     JMenuItem _new_item;
     JMenuItem _replace_names_item;
-    JMenuItem _print_item;
     JMenuItem _write_to_pdf_item;
     JMenuItem _write_to_jpg_item;
     JMenuItem _write_to_gif_item;
@@ -308,8 +306,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenu _process_menu;
     MainPanel _mainpanel;
     Container _contentpane;
-    final LinkedList<TextFrame> _textframes = new LinkedList<TextFrame>();
-    ;
+    final LinkedList<TextFrame> _textframes = new LinkedList<>();
     Configuration _configuration;
     Options _options;
     private Phylogeny _species_tree;
@@ -571,7 +568,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         } else if (o == _aptxjs_website_item) {
             try {
                 AptxUtil.openWebsite(AptxConstants.APTX_JS_WEB_SITE);
-                ;
             } catch (final IOException e1) {
                 ForesterUtil.printErrorMessage(AptxConstants.PRG_NAME, e1.toString());
             }
@@ -648,9 +644,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             if (new_dir != null) {
                 setCurrentDir(new_dir);
             }
-        } else if (o == _print_item) {
-            print(getCurrentTreePanel(), getOptions(), this);
-        } else if (o == _save_item) {
+        }  else if (o == _save_item) {
             final File new_dir = writeToFile(_mainpanel.getCurrentPhylogeny(),
                     getMainPanel(),
                     _save_filechooser,
@@ -693,17 +687,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
      *
      * @return current external node data as String
      */
-    public String getCurrentExternalNodesDataBuffer() {
-        return getCurrentTreePanel().getCurrentExternalNodesDataBufferAsString();
-    }
-
-    public int getCurrentExternalNodesDataBufferChangeCounter() {
-        return getCurrentTreePanel().getCurrentExternalNodesDataBufferChangeCounter();
-    }
-
-    public int getCurrentExternalNodesDataBufferLength() {
-        return getCurrentTreePanel().getCurrentExternalNodesDataBufferAsString().length();
-    }
 
     public MainPanel getMainPanel() {
         return _mainpanel;
@@ -729,13 +712,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     public void updateProcessMenu() {
         // In general Swing is not thread safe.
         // See "Swing's Threading Policy".
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                doUpdateProcessMenu();
-            }
-        });
+        SwingUtilities.invokeLater(this::doUpdateProcessMenu);
     }
 
     private void chooseFont() {
@@ -786,7 +763,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if ((phy == null) || (phy.getNumberOfExternalNodes() < 2)) {
             return;
         }
-        final List<PhylogenyNode> nodes = new ArrayList<PhylogenyNode>();
+        final List<PhylogenyNode> nodes = new ArrayList<>();
         if ((getCurrentTreePanel().getFoundNodes0() != null) || (getCurrentTreePanel().getFoundNodes1() != null)) {
             final List<PhylogenyNode> all_selected_nodes = getCurrentTreePanel().getFoundNodesAsListOfPhylogenyNodes();
             for (final PhylogenyNode n : all_selected_nodes) {
@@ -825,7 +802,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 + " nodes?", function + " external nodes", JOptionPane.OK_CANCEL_OPTION);
         if (result == JOptionPane.OK_OPTION) {
             if (!delete) {
-                final List<PhylogenyNode> to_delete = new ArrayList<PhylogenyNode>();
+                final List<PhylogenyNode> to_delete = new ArrayList<>();
                 for (final PhylogenyNodeIterator it = phy.iteratorExternalForward(); it.hasNext(); ) {
                     final PhylogenyNode n = it.next();
                     if (!nodes.contains(n)) {
@@ -921,7 +898,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 }
             }
             final int count = getMainPanel().getTabbedPane().getTabCount();
-            final List<Phylogeny> trees = new ArrayList<Phylogeny>();
+            final List<Phylogeny> trees = new ArrayList<>();
             for (int i = 0; i < count; ++i) {
                 final Phylogeny phy = getMainPanel().getPhylogeny(i);
                 if (ForesterUtil.isEmpty(phy.getName())
@@ -968,8 +945,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             _file_jmenu.add(_write_to_bmp_item = new JMenuItem("Export to BMP file..."));
         }
         _file_jmenu.addSeparator();
-        _file_jmenu.add(_print_item = new JMenuItem("Print..."));
-        _file_jmenu.addSeparator();
+
         _file_jmenu.add(_exit_item = new JMenuItem("Exit"));
         customizeJMenuItem(_save_item);
         customizeJMenuItem(_write_to_pdf_item);
@@ -978,7 +954,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         customizeJMenuItem(_write_to_gif_item);
         customizeJMenuItem(_write_to_tif_item);
         customizeJMenuItem(_write_to_bmp_item);
-        customizeJMenuItem(_print_item);
         customizeJMenuItem(_exit_item);
         _jmenubar.add(_file_jmenu);
     }
@@ -1847,10 +1822,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         about.append("All Rights Reserved\n");
         about.append("License: GNU Lesser General Public License (LGPL)\n");
         about.append("Last modified: " + AptxConstants.PRG_DATE + "\n");
-        about.append("Based on: " + ForesterUtil.getForesterLibraryInformation() + "\n");
+        about.append("Based on: ").append(ForesterUtil.getForesterLibraryInformation()).append("\n");
 
         if (_configuration.isCouldReadConfigFile()) {
-            about.append("Using configuration file: " + _configuration.config_filename + "\n");
+            about.append("Using configuration file: ").append(_configuration.config_filename).append("\n");
         } else {
             about.append("Not using a configuration file\n");
         }
@@ -1858,18 +1833,17 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         about.append("phyloXML version : " + ForesterConstants.PHYLO_XML_VERSION + "\n");
         about.append("phyloXML location: " + ForesterConstants.PHYLO_XML_LOCATION + "\n");
         if (!ForesterUtil.isEmpty(ForesterUtil.JAVA_VERSION) && !ForesterUtil.isEmpty(ForesterUtil.JAVA_VENDOR)) {
-            about.append("[your Java version: " + ForesterUtil.JAVA_VERSION + " " + ForesterUtil.JAVA_VENDOR + "]\n");
+            about.append("[your Java version: ").append(ForesterUtil.JAVA_VERSION).append(" ").append(ForesterUtil.JAVA_VENDOR).append("]\n");
         }
         if (!ForesterUtil.isEmpty(ForesterUtil.OS_NAME) && !ForesterUtil.isEmpty(ForesterUtil.OS_ARCH)
                 && !ForesterUtil.isEmpty(ForesterUtil.OS_VERSION)) {
-            about.append("[your OS: " + ForesterUtil.OS_NAME + " " + ForesterUtil.OS_ARCH + " "
-                    + ForesterUtil.OS_VERSION + "]\n");
+            about.append("[your OS: ").append(ForesterUtil.OS_NAME).append(" ").append(ForesterUtil.OS_ARCH).append(" ").append(ForesterUtil.OS_VERSION).append("]\n");
         }
         final Runtime rt = java.lang.Runtime.getRuntime();
         final long free_memory = rt.freeMemory() / 1000000;
         final long total_memory = rt.totalMemory() / 1000000;
-        about.append("[free memory: " + free_memory + "MB, total memory: " + total_memory + "MB]\n");
-        about.append("[locale: " + Locale.getDefault() + "]\n");
+        about.append("[free memory: ").append(free_memory).append("MB, total memory: ").append(total_memory).append("MB]\n");
+        about.append("[locale: ").append(Locale.getDefault()).append("]\n");
         about.append("References:\n");
         about.append(AptxConstants.PHYLOXML_REFERENCE_SHORT + "\n");
         about.append("For more information & download:\n");
@@ -2029,30 +2003,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         JOptionPane.showMessageDialog(comp, "Exception" + e, "Error during File|SaveAs", JOptionPane.ERROR_MESSAGE);
     }
 
-    static void print(final TreePanel tp, final Options op, final Component c) {
-        if ((tp == null) || (tp.getPhylogeny() == null) || tp.getPhylogeny().isEmpty()) {
-            return;
-        }
-        final String job_name = AptxConstants.PRG_NAME;
-        boolean error = false;
-        String printer_name = null;
-        try {
-            printer_name = Printer.print(tp, job_name);
-        } catch (final Exception e) {
-            error = true;
-            JOptionPane.showMessageDialog(c, e.getMessage(), "Printing Error", JOptionPane.ERROR_MESSAGE);
-        }
-        if (!error && (printer_name != null)) {
-            String msg = "Printing data sent to printer";
-            if (printer_name.length() > 1) {
-                msg += " [" + printer_name + "]";
-            }
-            JOptionPane.showMessageDialog(c, msg, "Printing...", JOptionPane.INFORMATION_MESSAGE);
-        }
-        if (!op.isPrintUsingActualSize()) {
-            tp.getControlPanel().showWhole();
-        }
-    }
+
 
     static void printPhylogenyToPdf(final String file_name,
                                     final Options opts,

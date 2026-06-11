@@ -4680,7 +4680,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private static final int PROPERTY_LEGEND_MAX_ENTRIES = 20;
 
     /** Draws a capped value-to-color legend (top-right of the visible area). */
-    private void drawPropertyColorLegend(final Graphics2D g) {
+    private void drawPropertyColorLegend(final Graphics2D g, final Rectangle bounds) {
         if ((_property_color_scheme == null) || _property_color_scheme.isEmpty()) {
             return;
         }
@@ -4709,11 +4709,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (more > 0) {
             text_w = Math.max(text_w, fm.stringWidth("… +" + more + " more"));
         }
-        final int box_w = text_w + (2 * pad);
+        // a few extra px on the right so the longest value clears the border even
+        // when PDF/iText font metrics run slightly wider than AWT's stringWidth().
+        final int box_w = text_w + (2 * pad) + 4;
         final int box_h = ((1 + shown + (more > 0 ? 1 : 0)) * row_h) + (2 * pad);
-        final Rectangle vr = getVisibleRect();
-        final int x = Math.max(vr.x, (vr.x + vr.width) - box_w - 10);
-        final int y = vr.y + 10;
+        final int x = Math.max(bounds.x, (bounds.x + bounds.width) - box_w - 10);
+        final int y = bounds.y + 10;
         final Color fg = getTreeColorSet().getSequenceColor();
         g.setColor(getBackground());
         g.fillRect(x, y, box_w, box_h);
@@ -5717,8 +5718,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 paintOvRectangle(g);
             }
         }
-        if (isColorByProperty() && !to_pdf && !to_graphics_file) {
-            drawPropertyColorLegend(g);
+        if (isColorByProperty()) {
+            final Rectangle legend_bounds = (to_pdf || to_graphics_file)
+                    ? new Rectangle(graphics_file_x, graphics_file_y, graphics_file_width, graphics_file_height)
+                    : getVisibleRect();
+            drawPropertyColorLegend(g, legend_bounds);
         }
     }
 
