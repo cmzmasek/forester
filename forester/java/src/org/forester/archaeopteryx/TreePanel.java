@@ -4642,13 +4642,28 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // Color leaves on the fly by the value of a chosen phyloXML property.
     // ---------------------------------------------------------------------------
     private PropertyColorScheme _property_color_scheme = null;
+    // The selected "Color by" property ref is remembered separately from the scheme so the
+    // scheme can be rebuilt for the currently displayed (sub)tree -- and so coloring switches
+    // back on when the user returns to a super-tree even if it had no such values in a subtree.
+    private String              _color_by_property_ref = null;
 
     /** Colorize leaves by the given property reference, or turn it off when {@code ref} is empty. */
     void setColorByPropertyRef(final String ref) {
-        if (ForesterUtil.isEmpty(ref) || (_phylogeny == null) || _phylogeny.isEmpty()) {
+        _color_by_property_ref = ForesterUtil.isEmpty(ref) ? null : ref;
+        rebuildPropertyColorScheme();
+    }
+
+    /**
+     * (Re)builds the property color scheme from the currently displayed (visible) tree for the
+     * active "Color by" ref, if any. Called whenever the displayed phylogeny changes -- moving
+     * into or out of a subtree, collapsing a clade, or deleting nodes -- so the leaf colors and
+     * the legend always describe what is on screen.
+     */
+    void rebuildPropertyColorScheme() {
+        if ((_color_by_property_ref == null) || (_phylogeny == null) || _phylogeny.isEmpty()) {
             _property_color_scheme = null;
         } else {
-            _property_color_scheme = new PropertyColorScheme(_phylogeny, ref);
+            _property_color_scheme = new PropertyColorScheme(_phylogeny, _color_by_property_ref);
         }
     }
 
@@ -6039,6 +6054,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             _phylogeny.externalNodesHaveChanged();
             _phylogeny.clearHashIdToNodeMap();
             _phylogeny.recalculateNumberOfExternalDescendants(true);
+            rebuildPropertyColorScheme();
             updateSubSuperTreeButton();
             getMainPanel().getControlPanel().search0();
             getMainPanel().getControlPanel().search1();
@@ -6066,6 +6082,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         _phylogeny.externalNodesHaveChanged();
         _phylogeny.clearHashIdToNodeMap();
         _phylogeny.recalculateNumberOfExternalDescendants(true);
+        rebuildPropertyColorScheme();
         getMainPanel().getControlPanel().search0();
         getMainPanel().getControlPanel().search1();
         resetRankCollapseRankValue();

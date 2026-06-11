@@ -43,7 +43,7 @@ public final class PropertyColorSchemeTest {
 
     public static boolean test() {
         return testDisplayName() && testCategoricalGrouping() && testCountryGrouping() && testYearGradient()
-                && testAbsentAndEmpty();
+                && testAbsentAndEmpty() && testCollapseExcludesHiddenLeaves() && testCollapseRescalesGradient();
     }
 
     // ---- displayName: namespace strip, '_' -> space, capitalize, acronyms preserved ----
@@ -201,7 +201,99 @@ public final class PropertyColorSchemeTest {
         return true;
     }
 
+    // ---- collapsing a clade drops its (now hidden) leaves from the categorical legend ----
+    private static boolean testCollapseExcludesHiddenLeaves() {
+        final String ref = "repseq:host";
+        //        root
+        //       /    \
+        //   cladeA   cladeB
+        //   /   \     /   \
+        // cat  dog  fish  bird
+        final PhylogenyNode clade_b = internal( leaf( "b1", ref, "fish" ), leaf( "b2", ref, "bird" ) );
+        final Phylogeny phy = treeOf( internal( leaf( "a1", ref, "cat" ), leaf( "a2", ref, "dog" ) ), clade_b );
+        // nothing collapsed: all four values present
+        if ( new PropertyColorScheme( phy, ref ).getValueColors().size() != 4 ) {
+            return fail( "expected 4 host groups while nothing is collapsed" );
+        }
+        // collapse cladeB: its leaves (fish, bird) are hidden and must drop out
+        clade_b.setCollapse( true );
+        final PropertyColorScheme collapsed = new PropertyColorScheme( phy, ref );
+        if ( collapsed.getValueColors().size() != 2 ) {
+            return fail( "expected 2 host groups after collapsing a clade, got " + collapsed.getValueColors().size() );
+        }
+        final Map<String, Color> legend = collapsed.getValueColors();
+        if ( !legend.containsKey( "cat" ) || !legend.containsKey( "dog" ) ) {
+            return fail( "visible leaves (cat, dog) should remain in the legend" );
+        }
+        if ( legend.containsKey( "fish" ) || legend.containsKey( "bird" ) ) {
+            return fail( "collapsed-away leaves (fish, bird) should be gone from the legend" );
+        }
+        // a hidden leaf gets no color
+        if ( colorForValue( collapsed, phy, ref, "fish" ) != null ) {
+            return fail( "a collapsed-away leaf should have no color" );
+        }
+        // uncollapsing restores all four
+        clade_b.setCollapse( false );
+        if ( new PropertyColorScheme( phy, ref ).getValueColors().size() != 4 ) {
+            return fail( "uncollapsing should restore all 4 host groups" );
+        }
+        return true;
+    }
+
+    // ---- collapsing a clade rescales the year gradient to the still-visible range ----
+    private static boolean testCollapseRescalesGradient() {
+        final String ref = "repseq:year";
+        final PhylogenyNode older = internal( leaf( "b1", ref, "1950" ), leaf( "b2", ref, "1960" ) );
+        final Phylogeny phy = treeOf( internal( leaf( "a1", ref, "2000" ), leaf( "a2", ref, "2010" ) ), older );
+        final PropertyColorScheme full = new PropertyColorScheme( phy, ref );
+        if ( !eq( "1950", full.getGradientMinLabel(), "year min uncollapsed" )
+                || !eq( "2010", full.getGradientMaxLabel(), "year max uncollapsed" ) ) {
+            return false;
+        }
+        // collapse the older clade: the gradient rescales to the visible 2000..2010
+        older.setCollapse( true );
+        final PropertyColorScheme collapsed = new PropertyColorScheme( phy, ref );
+        if ( !eq( "2000", collapsed.getGradientMinLabel(), "year min after collapse" )
+                || !eq( "2010", collapsed.getGradientMaxLabel(), "year max after collapse" ) ) {
+            return false;
+        }
+        return true;
+    }
+
     // ---------------------------------------------------------------------------------------
+
+    /** A leaf node named {@code name}; a {@code null} value means "no property". */
+    private static PhylogenyNode leaf( final String name, final String ref, final String value ) {
+        final PhylogenyNode n = new PhylogenyNode();
+        n.setName( name );
+        if ( value != null ) {
+            final PropertiesList pl = new PropertiesList();
+            pl.addProperty( new Property( ref, value, "", "xsd:string", AppliesTo.NODE ) );
+            n.getNodeData().setProperties( pl );
+        }
+        return n;
+    }
+
+    /** An internal node with the given children. */
+    private static PhylogenyNode internal( final PhylogenyNode... children ) {
+        final PhylogenyNode n = new PhylogenyNode();
+        for( final PhylogenyNode c : children ) {
+            n.addAsChild( c );
+        }
+        return n;
+    }
+
+    /** A tree rooted at a new node with the given (internal) clades as children. */
+    private static Phylogeny treeOf( final PhylogenyNode... clades ) {
+        final Phylogeny phy = new Phylogeny();
+        final PhylogenyNode root = new PhylogenyNode();
+        for( final PhylogenyNode c : clades ) {
+            root.addAsChild( c );
+        }
+        phy.setRoot( root );
+        phy.externalNodesHaveChanged();
+        return phy;
+    }
 
     /** A flat tree with one external node per value; a {@code null} value means "no property". */
     private static Phylogeny treeWith( final String ref, final String... values ) {

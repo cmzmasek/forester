@@ -1496,6 +1496,7 @@ final class ControlPanel extends JPanel implements ActionListener {
                 _mainpanel.getCurrentTreePanel().updateOvSizes();
             }
             _mainpanel.getCurrentTreePanel().recalculateMaxDistanceToRoot();
+            _mainpanel.getCurrentTreePanel().rebuildPropertyColorScheme();
             setVisibilityOfDomainStrucureControls();
             updateDomainStructureEvaluethresholdDisplay();
             updateDepthCollapseDepthDisplay();

@@ -20,9 +20,11 @@
 package org.forester.archaeopteryx;
 
 import java.awt.Color;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -87,16 +89,18 @@ final class PropertyColorScheme {
         _country = isCountryRef( ref );
         _value_to_color = new LinkedHashMap<String, Color>();
         _key_to_color = new LinkedHashMap<String, Color>();
+        // Color from the leaves actually on screen (those hidden under a collapsed node are
+        // excluded), so the colors and legend track the displayed (sub)tree as the user
+        // navigates into subtrees, collapses clades, or deletes nodes.
+        final List<PhylogenyNode> leaves = visibleExternalNodes( phylogeny );
         if ( _gradient ) {
             double min = Double.POSITIVE_INFINITY;
             double max = Double.NEGATIVE_INFINITY;
-            if ( ( phylogeny != null ) && !phylogeny.isEmpty() ) {
-                for( final PhylogenyNode node : phylogeny.getExternalNodes() ) {
-                    final Double d = parseNumber( valueFor( node, ref ) );
-                    if ( d != null ) {
-                        min = Math.min( min, d );
-                        max = Math.max( max, d );
-                    }
+            for( final PhylogenyNode node : leaves ) {
+                final Double d = parseNumber( valueFor( node, ref ) );
+                if ( d != null ) {
+                    min = Math.min( min, d );
+                    max = Math.max( max, d );
                 }
             }
             _min = min;
@@ -109,20 +113,18 @@ final class PropertyColorScheme {
             // "country", the subdivision after ':') so e.g. "Human"/"human"/"homo_sapiens "
             // share one color. Each group's legend label is its most frequent spelling.
             final Map<String, Map<String, Integer>> key_to_label_counts = new HashMap<String, Map<String, Integer>>();
-            if ( ( phylogeny != null ) && !phylogeny.isEmpty() ) {
-                for( final PhylogenyNode node : phylogeny.getExternalNodes() ) {
-                    final String v = valueFor( node, ref );
-                    if ( !ForesterUtil.isEmpty( v ) ) {
-                        final String label = displayLabel( v );
-                        final String key = label.toLowerCase( Locale.ROOT );
-                        Map<String, Integer> counts = key_to_label_counts.get( key );
-                        if ( counts == null ) {
-                            counts = new HashMap<String, Integer>();
-                            key_to_label_counts.put( key, counts );
-                        }
-                        final Integer c = counts.get( label );
-                        counts.put( label, ( c == null ) ? 1 : ( c + 1 ) );
+            for( final PhylogenyNode node : leaves ) {
+                final String v = valueFor( node, ref );
+                if ( !ForesterUtil.isEmpty( v ) ) {
+                    final String label = displayLabel( v );
+                    final String key = label.toLowerCase( Locale.ROOT );
+                    Map<String, Integer> counts = key_to_label_counts.get( key );
+                    if ( counts == null ) {
+                        counts = new HashMap<String, Integer>();
+                        key_to_label_counts.put( key, counts );
                     }
+                    final Integer c = counts.get( label );
+                    counts.put( label, ( c == null ) ? 1 : ( c + 1 ) );
                 }
             }
             // [ representative label, key ] per group, ordered by label (case-insensitive)
@@ -302,6 +304,33 @@ final class PropertyColorScheme {
             }
         }
         return sb.toString();
+    }
+
+    /**
+     * The external nodes actually visible in the given (sub)tree: leaves hidden underneath a
+     * collapsed node are excluded, so collapsing a clade removes its values from the coloring
+     * and legend. A collapsed node is itself internal and carries no leaf value, so the
+     * collapsed clade contributes nothing. A {@code null}/empty phylogeny yields no leaves.
+     */
+    private static List<PhylogenyNode> visibleExternalNodes( final Phylogeny phylogeny ) {
+        final List<PhylogenyNode> leaves = new ArrayList<PhylogenyNode>();
+        if ( ( phylogeny == null ) || phylogeny.isEmpty() ) {
+            return leaves;
+        }
+        final Deque<PhylogenyNode> stack = new ArrayDeque<PhylogenyNode>();
+        stack.push( phylogeny.getRoot() );
+        while ( !stack.isEmpty() ) {
+            final PhylogenyNode n = stack.pop();
+            if ( n.isExternal() ) {
+                leaves.add( n );
+            }
+            else if ( !n.isCollapse() ) {
+                for( final PhylogenyNode child : n.getDescendants() ) {
+                    stack.push( child );
+                }
+            }
+        }
+        return leaves;
     }
 
     private static String valueFor( final PhylogenyNode node, final String ref ) {
