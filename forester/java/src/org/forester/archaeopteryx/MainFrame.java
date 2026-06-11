@@ -176,6 +176,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenu _tools_menu;
     JMenu _view_jmenu;
     JMenu _options_jmenu;
+    JMenu _settings_jmenu;
     JMenu _font_size_menu;
     JMenu _help_jmenu;
     // Analysis menu
@@ -677,7 +678,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         SwingUtilities.invokeLater(this::doUpdateProcessMenu);
     }
 
-    private void chooseFont() {
+    void chooseFont() {
         final FontChooser fc = new FontChooser();
         fc.setFont(getMainPanel().getTreeFontSet().getLargeFont());
         fc.showDialog(this, "Select the Base Font");
@@ -976,7 +977,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _unrooted_type_cbmi.setToolTipText(MainFrame.USE_MOUSEWHEEL_SHIFT_TO_ROTATE);
         _circular_type_cbmi.setToolTipText(MainFrame.USE_MOUSEWHEEL_SHIFT_TO_ROTATE);
         initializeTypeMenu(getOptions());
-        _jmenubar.add(_type_menu);
+        // _type_menu is not added to the menu bar; its items are folded into the Settings dialog.
     }
 
     void buildViewMenu() {

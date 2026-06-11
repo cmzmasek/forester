@@ -214,6 +214,7 @@ public final class MainFrameApplication extends MainFrame {
         buildFontSizeMenu();
         buildOptionsMenu();
         buildTypeMenu();
+        buildSettingsMenu();
         buildHelpMenu();
         setJMenuBar(_jmenubar);
         _jmenubar.add(_help_jmenu);
@@ -1262,7 +1263,31 @@ public final class MainFrameApplication extends MainFrame {
                         .getNhConversionSupportValueStyle() == NH_CONVERSION_SUPPORT_VALUE_STYLE.AS_INTERNAL_NODE_NAMES);
         customizeCheckBoxMenuItem(_line_up_renderable_data_cbmi, getOptions().isLineUpRendarableNodeData());
         customizeCheckBoxMenuItem(_right_line_up_domains_cbmi, getOptions().isRightLineUpDomains());
-        _jmenubar.add(_options_jmenu);
+        // _options_jmenu is not added to the menu bar; its items are folded into the Settings dialog.
+    }
+
+    void buildSettingsMenu() {
+        _settings_jmenu = createMenu("Settings", getConfiguration());
+        _settings_jmenu.setToolTipText("Display, node, export, file and theme settings");
+        // The "Settings" entry acts as a one-click launcher: selecting it opens the Settings dialog
+        // instead of dropping down an (empty) menu.
+        _settings_jmenu.addMenuListener(new javax.swing.event.MenuListener() {
+
+            @Override
+            public void menuSelected(final javax.swing.event.MenuEvent e) {
+                javax.swing.MenuSelectionManager.defaultManager().clearSelectedPath();
+                SwingUtilities.invokeLater(() -> new SettingsDialog(MainFrameApplication.this).setVisible(true));
+            }
+
+            @Override
+            public void menuDeselected(final javax.swing.event.MenuEvent e) {
+            }
+
+            @Override
+            public void menuCanceled(final javax.swing.event.MenuEvent e) {
+            }
+        });
+        _jmenubar.add(_settings_jmenu);
     }
 
     void buildToolsMenu() {

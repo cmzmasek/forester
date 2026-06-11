@@ -66,7 +66,7 @@
         </unjar>
         <!-- keep test-only classes out of the shipped jar; spelled out by name rather than a
              *Test* wildcard, which would also strip FlatLaf's legitimate ...$TitleBarCaptionHitTest -->
-        <jar level="9" destfile="${forester_jar}" basedir="${classes.dir}" excludes="**/Test.class,**/PropertyColorSchemeTest*.class,**/TreePanelUtilTest*.class,**/AptxUtilTest*.class" duplicate="fail"
+        <jar level="9" destfile="${forester_jar}" basedir="${classes.dir}" excludes="**/Test.class,**/PropertyColorSchemeTest*.class,**/TreePanelUtilTest*.class,**/AptxUtilTest*.class,**/SettingsDialogTest*.class" duplicate="fail"
              index="true">
             <manifest>
                 <attribute name="Main-Class" value="org.forester.archaeopteryx.Archaeopteryx"/>
