@@ -29,6 +29,8 @@ package org.forester.archaeopteryx;
 import java.awt.BorderLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
@@ -47,6 +49,8 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.JTabbedPane;
 import javax.swing.JOptionPane;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.SwingUtilities;
@@ -107,6 +111,7 @@ public final class MainFrameApplication extends MainFrame {
         setVisible(false);
         setOptions(Options.createInstance(_configuration));
         _mainpanel = new MainPanel(_configuration, this);
+        installTabContextMenu();
         _open_filechooser = null;
         _open_filechooser_for_species_tree = null;
         _save_filechooser = null;
@@ -172,6 +177,7 @@ public final class MainFrameApplication extends MainFrame {
         // set title
         setTitle(AptxConstants.PRG_NAME + " " + AptxConstants.VERSION + " (" + AptxConstants.PRG_DATE + ")");
         _mainpanel = new MainPanel(_configuration, this);
+        installTabContextMenu();
         // The file dialogs
         _open_filechooser = new JFileChooser();
         _open_filechooser.setMultiSelectionEnabled(true);
@@ -379,6 +385,59 @@ public final class MainFrameApplication extends MainFrame {
             getMainPanel().closeCurrentPane();
             activateSaveAllIfNeeded();
         }
+    }
+
+    /** Browser-style: right-clicking a tree tab opens a context menu with a "Close Tab" item. */
+    private void installTabContextMenu() {
+        final JTabbedPane tabs = getMainPanel().getTabbedPane();
+        if (tabs == null) {
+            return;
+        }
+        tabs.addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mousePressed(final MouseEvent e) {
+                maybeShowPopup(e);
+            }
+
+            @Override
+            public void mouseReleased(final MouseEvent e) {
+                maybeShowPopup(e);
+            }
+
+            private void maybeShowPopup(final MouseEvent e) {
+                if (!e.isPopupTrigger()) {
+                    return;
+                }
+                final int index = tabs.indexAtLocation(e.getX(), e.getY());
+                if (index < 0) {
+                    return; // not on a tab label
+                }
+                createTabPopupMenu(index).show(tabs, e.getX(), e.getY());
+            }
+        });
+    }
+
+    /** The context menu shown when right-clicking the tree tab at {@code index}. */
+    JPopupMenu createTabPopupMenu(final int index) {
+        final JPopupMenu popup = new JPopupMenu();
+        final JMenuItem close = new JMenuItem("Close Tab");
+        close.addActionListener(ae -> closeTabAt(index));
+        popup.add(close);
+        return popup;
+    }
+
+    /**
+     * Selects the tab at {@code index} (making it the current pane) and closes it, with the same
+     * unsaved-changes confirmation as File &gt; Close Tab.
+     */
+    void closeTabAt(final int index) {
+        final JTabbedPane tabs = getMainPanel().getTabbedPane();
+        if ((tabs == null) || (index < 0) || (index >= tabs.getTabCount())) {
+            return;
+        }
+        tabs.setSelectedIndex(index);
+        closeCurrentPane();
     }
 
     private void collapseBelowThreshold(final Phylogeny phy) {
