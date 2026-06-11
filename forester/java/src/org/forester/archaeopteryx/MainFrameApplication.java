@@ -1152,12 +1152,8 @@ public final class MainFrameApplication extends MainFrame {
         _options_jmenu.add(_cycle_data_return = new JMenuItem("Cycle Data Return"));
         _options_jmenu.addSeparator();
         _options_jmenu.add(customizeMenuItemAsLabel(new JMenuItem(SEARCH_SUBHEADER), getConfiguration()));
-        _options_jmenu.add(_search_properties_cbmi = new JCheckBoxMenuItem("Search Properties"));
-        _options_jmenu.add(_search_case_senstive_cbmi = new JCheckBoxMenuItem(SEARCH_CASE_SENSITIVE_LABEL));
-        _options_jmenu.add(_search_whole_words_only_cbmi = new JCheckBoxMenuItem(SEARCH_TERMS_ONLY_LABEL));
-        _options_jmenu.add(_search_with_regex_cbmi = new JCheckBoxMenuItem(MainFrame.SEARCH_REGEX_LABEL));
-        _search_with_regex_cbmi.setToolTipText(MainFrame.SEARCH_WITH_REGEX_TIP);
-        _options_jmenu.add(_inverse_search_result_cbmi = new JCheckBoxMenuItem(INVERSE_SEARCH_RESULT_LABEL));
+        // The five search-behaviour options (Match Case / Words / Regex / Inverse / Search Properties)
+        // now live in the left control panel, right next to the search fields, where users can see them.
         _options_jmenu
                 .add(_color_all_found_nodes_when_coloring_subtree_cbmi = new JCheckBoxMenuItem("Colorize All Found Nodes When Colorizing Subtree(s)"));
         _options_jmenu.addSeparator();
@@ -1226,7 +1222,6 @@ public final class MainFrameApplication extends MainFrame {
         customizeCheckBoxMenuItem(_background_gradient_cbmi, getOptions().isBackgroundColorGradient());
         customizeCheckBoxMenuItem(_show_domain_labels, getOptions().isShowDomainLabels());
         customizeCheckBoxMenuItem(_abbreviate_scientific_names, getOptions().isAbbreviateScientificTaxonNames());
-        customizeCheckBoxMenuItem(_search_case_senstive_cbmi, getOptions().isSearchCaseSensitive());
         customizeCheckBoxMenuItem(_show_scale_cbmi, getOptions().isShowScale());
         customizeCheckBoxMenuItem(_collapsed_with_average_height_cbmi, getOptions().isCollapsedWithAverageHeigh());
         customizeCheckBoxMenuItem(_show_abbreviated_labels_for_collapsed_nodes_cbmi,
@@ -1253,10 +1248,6 @@ public final class MainFrameApplication extends MainFrame {
         customizeCheckBoxMenuItem(_replace_underscores_cbmi, getOptions().isReplaceUnderscoresInNhParsing());
         customizeCheckBoxMenuItem(_allow_errors_in_distance_to_parent_cbmi,
                 getOptions().isReplaceUnderscoresInNhParsing());
-        customizeCheckBoxMenuItem(_search_properties_cbmi, getOptions().isSearchProperties());
-        customizeCheckBoxMenuItem(_search_with_regex_cbmi, getOptions().isSearchWithRegex());
-        customizeCheckBoxMenuItem(_search_whole_words_only_cbmi, getOptions().isMatchWholeTermsOnly());
-        customizeCheckBoxMenuItem(_inverse_search_result_cbmi, getOptions().isInverseSearchResult());
         customizeCheckBoxMenuItem(_color_all_found_nodes_when_coloring_subtree_cbmi,
                 getOptions().isColorAllFoundNodesWhenColoringSubtree());
         customizeCheckBoxMenuItem(_parse_beast_style_extended_nexus_tags_cbmi,

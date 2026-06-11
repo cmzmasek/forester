@@ -29,6 +29,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
@@ -147,8 +148,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JCheckBox _display_external_data;
     private JLabel _domain_display_label;
     private JTextField _domain_structure_evalue_thr_tf;
-    private JTextField _depth_collapse_depth_tf;
-    private JTextField _rank_collapse_depth_tf;
     private List<Options.PHYLOGENY_DISPLAY_TYPE> _tree_display_types;
     private JCheckBox _dynamically_hide_data;
     private int _edit_node_data_item;
@@ -213,12 +212,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JButton _zoom_out_domain_structure;
     private JButton _zoom_out_x;
     private JButton _zoom_out_y;
-    private JButton _decr_depth_collapse_level;
-    private JButton _incr_depth_collapse_level;
-    private JLabel _depth_collapse_label;
-    private JButton _decr_rank_collapse_level;
-    private JButton _incr_rank_collapse_level;
-    private JLabel _rank_collapse_label;
 
     ControlPanel(final MainPanel ap, final Configuration configuration) {
         init();
@@ -231,8 +224,52 @@ final class ControlPanel extends JPanel implements ActionListener {
             // modern look-and-feels: a little breathing room instead of the legacy bevel
             setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
         }
-        setLayout(new GridLayout(0, 1, 2, 2));
+        setLayout(new GridBagLayout());
         setupControls();
+    }
+
+    // ---- Vertical layout of the control-panel rows ------------------------------------------
+    // Rows are stacked in a single column. Each row added via add(...) gets a top gap; the gap
+    // for the NEXT row can be overridden with nextRowGap(...) to separate visual groups. Unlike
+    // the old GridLayout, a hidden row (e.g. the domain-display controls when the tree has no
+    // domains) takes up no vertical space.
+    private static final int ROW_GAP     = 2;   // default gap between rows within a group
+    private static final int SECTION_GAP = 10;  // gap above a new visual group
+    private static final int TIGHT_GAP   = 4;   // a deliberately small (but non-zero) gap
+    private int              _next_row_top_gap = ROW_GAP + 2; // top margin above the very first row
+
+    /** One-shot: sets the vertical gap above the next row added to the control panel. */
+    private void nextRowGap(final int px) {
+        _next_row_top_gap = px;
+    }
+
+    // Give every plain add(component) call a single full-width column cell with the pending top
+    // gap, so the existing setup code keeps working while we control inter-group spacing.
+    @Override
+    protected void addImpl(final Component comp, final Object constraints, final int index) {
+        if ((constraints == null) && (getLayout() instanceof GridBagLayout)) {
+            final GridBagConstraints gbc = new GridBagConstraints();
+            gbc.gridx = 0;
+            gbc.gridy = GridBagConstraints.RELATIVE;
+            gbc.weightx = 1.0;
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.anchor = GridBagConstraints.PAGE_START;
+            gbc.insets = new Insets(_next_row_top_gap, 0, 0, 0);
+            _next_row_top_gap = ROW_GAP;
+            super.addImpl(comp, gbc, index);
+        } else {
+            super.addImpl(comp, constraints, index);
+        }
+    }
+
+    /** A vertical filler added last so the rows stay top-aligned if the panel is taller than its content. */
+    private void addControlPanelGlue() {
+        final GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = GridBagConstraints.RELATIVE;
+        gbc.weighty = 1.0;
+        gbc.fill = GridBagConstraints.VERTICAL;
+        add(new JLabel(""), gbc);
     }
 
     /**
@@ -340,46 +377,6 @@ final class ControlPanel extends JPanel implements ActionListener {
                         && !_dynamically_hide_data.isSelected()) {
                     setDynamicHidingIsOn(false);
                     displayedPhylogenyMightHaveChanged(true);
-                } else if ((e.getSource() == _decr_depth_collapse_level)
-                        || (e.getSource() == _incr_depth_collapse_level)) {
-                    if (e.getSource() == _decr_depth_collapse_level) {
-                        _mainpanel.getCurrentTreePanel().decreaseDepthCollapseLevel();
-                    } else {
-                        _mainpanel.getCurrentTreePanel().increaseDepthCollapseLevel();
-                    }
-                    search0();
-                    search1();
-                    _mainpanel.getCurrentTreePanel().updateSetOfCollapsedExternalNodes();
-                    _mainpanel.getCurrentTreePanel().getPhylogeny().recalculateNumberOfExternalDescendants(true);
-                    _mainpanel.getCurrentTreePanel().resetNodeIdToDistToLeafMap();
-                    _mainpanel.getCurrentTreePanel().calculateLongestExtNodeInfo();
-                    _mainpanel.getCurrentTreePanel().setNodeInPreorderToNull();
-                    displayedPhylogenyMightHaveChanged(true);
-                    _mainpanel.getCurrentTreePanel().resetPreferredSize();
-                    _mainpanel.getCurrentTreePanel().updateOvSizes();
-                    _mainpanel.adjustJScrollPane();
-                    showWhole();
-                    repaint();
-                } else if ((e.getSource() == _decr_rank_collapse_level)
-                        || (e.getSource() == _incr_rank_collapse_level)) {
-                    if (e.getSource() == _decr_rank_collapse_level) {
-                        _mainpanel.getCurrentTreePanel().decreaseRankCollapseLevel();
-                    } else {
-                        _mainpanel.getCurrentTreePanel().increaseRankCollapseLevel();
-                    }
-                    search0();
-                    search1();
-                    _mainpanel.getCurrentTreePanel().updateSetOfCollapsedExternalNodes();
-                    _mainpanel.getCurrentTreePanel().getPhylogeny().recalculateNumberOfExternalDescendants(true);
-                    _mainpanel.getCurrentTreePanel().resetNodeIdToDistToLeafMap();
-                    _mainpanel.getCurrentTreePanel().calculateLongestExtNodeInfo();
-                    _mainpanel.getCurrentTreePanel().setNodeInPreorderToNull();
-                    displayedPhylogenyMightHaveChanged(true);
-                    _mainpanel.getCurrentTreePanel().resetPreferredSize();
-                    _mainpanel.getCurrentTreePanel().updateOvSizes();
-                    _mainpanel.adjustJScrollPane();
-                    showWhole();
-                    repaint();
                 } else {
                     displayedPhylogenyMightHaveChanged(true);
                 }
@@ -1204,9 +1201,6 @@ final class ControlPanel extends JPanel implements ActionListener {
      * Add zoom and quick edit buttons. (Last modified 8/9/04)
      */
     void addButtons() {
-        final JLabel spacer = new JLabel("");
-        spacer.setOpaque(false);
-        add(spacer);
         final JPanel x_panel = new JPanel(new GridLayout(1, 1, 0, 0));
         final JPanel y_panel = new JPanel(new GridLayout(1, 4, 0, 0));
         final JPanel z_panel = new JPanel(new GridLayout(1, 1, 0, 0));
@@ -1217,6 +1211,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             z_panel.setBackground(getBackground());
             o_panel.setBackground(getBackground());
         }
+        nextRowGap(SECTION_GAP);
         add(_zoom_label = new JLabel("Zoom:"));
         customizeLabel(_zoom_label, getConfiguration());
         add(x_panel);
@@ -1270,23 +1265,15 @@ final class ControlPanel extends JPanel implements ActionListener {
         addJButton(_expand_y, y_panel);
         addJButton(_zoom_in_x, y_panel);
         addJButton(_zoom_out_y, z_panel);
-        final JLabel spacer2 = new JLabel("");
-        add(spacer2);
+        nextRowGap(SECTION_GAP);
         add(o_panel);
         addJButton(_order, o_panel);
         addJButton(_return_to_super_tree, o_panel);
         addJButton(_uncollapse_all, o_panel);
         if (getConfiguration().doDisplayOption(Configuration.show_domain_architectures)) {
+            nextRowGap(SECTION_GAP);
             setUpControlsForDomainStrucures();
         }
-        if (true) {
-            setUpControlsForDepthCollapse();
-        }
-        if (true) {
-            setUpControlsForRankCollapse();
-        }
-        final JLabel spacer3 = new JLabel("");
-        add(spacer3);
         setVisibilityOfDomainStrucureControls();
     }
 
@@ -1514,8 +1501,6 @@ final class ControlPanel extends JPanel implements ActionListener {
             _mainpanel.getCurrentTreePanel().rebuildPropertyColorScheme();
             setVisibilityOfDomainStrucureControls();
             updateDomainStructureEvaluethresholdDisplay();
-            updateDepthCollapseDepthDisplay();
-            updateRankCollapseRankDisplay();
             getMainPanel().getControlPanel();
             _mainpanel.getCurrentTreePanel().updateButtonToUncollapseAll();
             _mainpanel.getCurrentTreePanel().calculateScaleDistance();
@@ -2116,7 +2101,9 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     void setupControls() {
         setupThemeButtons();
+        nextRowGap(SECTION_GAP); // more space between the Light/Dark row and the P/A/C row
         setupTreeDisplayTypeOptions();
+        nextRowGap(SECTION_GAP); // more space between the P/A/C row and "Color by"
         setupColorByProperty();
         setupDisplayCheckboxes();
         /* GUILHEM_BEG */
@@ -2126,13 +2113,106 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
         /* GUILHEM_END */
         // Click-to options
+        nextRowGap(SECTION_GAP);
         startClickToOptions();
         setupClickToOptions();
         endClickToOptions();
         // Zoom and quick edit buttons
         addButtons();
+        nextRowGap(SECTION_GAP);
+        setupSearchOptions();
         setupSearchTools0();
+        nextRowGap(TIGHT_GAP); // less space between Search (A) and Search (B)
         setupSearchTools1();
+        addControlPanelGlue();
+    }
+
+    // ---- Search options ---------------------------------------------------------------------
+    // These five used to live in the Options menu, where users rarely noticed them and then
+    // wondered why search behaved unexpectedly; they now sit right above the search boxes. They
+    // drive the same Options state that search0()/search1() read.
+    private JCheckBox _search_case_sensitive_cb;
+    private JCheckBox _search_whole_words_only_cb;
+    private JCheckBox _search_regex_cb;
+    private JCheckBox _search_inverse_cb;
+    private JCheckBox _search_properties_cb;
+
+    void setupSearchOptions() {
+        final JLabel header = new JLabel("Search options:");
+        header.setFont(ControlPanel.jcb_bold_font);
+        if (getConfiguration().isApplyCustomGuiColors()) {
+            header.setForeground(getConfiguration().getGuiCheckboxTextColor());
+        }
+        add(header);
+        _search_case_sensitive_cb = new JCheckBox(MainFrame.SEARCH_CASE_SENSITIVE_LABEL);
+        _search_whole_words_only_cb = new JCheckBox(MainFrame.SEARCH_TERMS_ONLY_LABEL);
+        _search_regex_cb = new JCheckBox(MainFrame.SEARCH_REGEX_LABEL);
+        _search_inverse_cb = new JCheckBox(MainFrame.INVERSE_SEARCH_RESULT_LABEL);
+        _search_properties_cb = new JCheckBox("Properties");
+        _search_case_sensitive_cb.setToolTipText("search is case sensitive");
+        _search_whole_words_only_cb.setToolTipText("match complete words/terms only");
+        _search_regex_cb.setToolTipText(MainFrame.SEARCH_WITH_REGEX_TIP);
+        _search_inverse_cb.setToolTipText("select the nodes that do NOT match");
+        _search_properties_cb.setToolTipText("also search in (phyloXML) properties");
+        final Options o = getOptions();
+        if (o != null) {
+            _search_case_sensitive_cb.setSelected(o.isSearchCaseSensitive());
+            _search_whole_words_only_cb.setSelected(o.isMatchWholeTermsOnly());
+            _search_regex_cb.setSelected(o.isSearchWithRegex());
+            _search_inverse_cb.setSelected(o.isInverseSearchResult());
+            _search_properties_cb.setSelected(o.isSearchProperties());
+        }
+        final ActionListener l = new ActionListener() {
+            @Override
+            public void actionPerformed(final ActionEvent e) {
+                searchOptionChanged((JCheckBox) e.getSource());
+            }
+        };
+        for (final JCheckBox cb : new JCheckBox[] { _search_case_sensitive_cb, _search_whole_words_only_cb,
+                _search_regex_cb, _search_inverse_cb, _search_properties_cb }) {
+            cb.setFocusPainted(false);
+            cb.setFont(ControlPanel.jcb_font);
+            if (_configuration.isApplyCustomGuiColors()) {
+                cb.setBackground(getConfiguration().getGuiBackgroundColor());
+                cb.setForeground(getConfiguration().getGuiCheckboxTextColor());
+            }
+            cb.addActionListener(l);
+        }
+        add(searchOptionsRow(_search_case_sensitive_cb, _search_whole_words_only_cb));
+        add(searchOptionsRow(_search_regex_cb, _search_inverse_cb));
+        add(_search_properties_cb);
+    }
+
+    private JPanel searchOptionsRow(final JCheckBox a, final JCheckBox b) {
+        final JPanel p = new JPanel(new GridLayout(1, 2, 0, 0));
+        if (_configuration.isApplyCustomGuiColors()) {
+            p.setBackground(getBackground());
+        }
+        p.add(a);
+        p.add(b);
+        return p;
+    }
+
+    /**
+     * Pushes the search-option checkboxes into {@link Options} (which search0()/search1() read) and
+     * re-runs the search. "Regex" is mutually exclusive with "Match Case"/"Words", as in the old menu.
+     */
+    private void searchOptionChanged(final JCheckBox source) {
+        if ((source == _search_regex_cb) && _search_regex_cb.isSelected()) {
+            _search_case_sensitive_cb.setSelected(false);
+            _search_whole_words_only_cb.setSelected(false);
+        } else if (((source == _search_case_sensitive_cb) || (source == _search_whole_words_only_cb))
+                && source.isSelected()) {
+            _search_regex_cb.setSelected(false);
+        }
+        final Options o = getOptions();
+        o.setSearchCaseSensitive(_search_case_sensitive_cb.isSelected());
+        o.setMatchWholeTermsOnly(_search_whole_words_only_cb.isSelected());
+        o.setSearchWithRegex(_search_regex_cb.isSelected());
+        o.setInverseSearchResult(_search_inverse_cb.isSelected());
+        o.setSearchProperties(_search_properties_cb.isSelected());
+        search0();
+        search1();
     }
 
     /**
@@ -2234,65 +2314,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         addJButton(_incr_domain_structure_evalue_thr, d2_panel);
     }
 
-    void setUpControlsForDepthCollapse() {
-        _depth_collapse_label = new JLabel("Collapse by Node Depth:");
-        _depth_collapse_label
-                .setToolTipText("to automaticall collapse nodes with a depth equal or larger than a threshold");
-        add(customizeLabel(_depth_collapse_label, getConfiguration()));
-        add(_depth_collapse_label);
-        _decr_depth_collapse_level = new TypomaticJButton("-");
-        _incr_depth_collapse_level = new TypomaticJButton("+");
-        _decr_depth_collapse_level.setPreferredSize(new Dimension(10, 10));
-        _incr_depth_collapse_level.setPreferredSize(new Dimension(10, 10));
-        _decr_depth_collapse_level.setToolTipText("to decrease the depth threshold (wraps around)");
-        _incr_depth_collapse_level.setToolTipText("to increase the depth threshold (wraps around)");
-        _depth_collapse_depth_tf = new JTextField(3);
-        _depth_collapse_depth_tf.setToolTipText("the current depth threshold");
-        _depth_collapse_depth_tf.setEditable(false);
-        if (getConfiguration().isApplyCustomGuiColors()) {
-            _depth_collapse_depth_tf.setForeground(getConfiguration().getGuiMenuBackgroundColor());
-            _depth_collapse_depth_tf.setBackground(getConfiguration().getGuiCheckboxTextColor());
-            _depth_collapse_depth_tf.setBorder(null);
-        }
-        final JPanel panel = new JPanel(new GridLayout(1, 3, 0, 0));
-        if (_configuration.isApplyCustomGuiColors()) {
-            panel.setBackground(getBackground());
-        }
-        add(panel);
-        addJButton(_decr_depth_collapse_level, panel);
-        addJTextField(_depth_collapse_depth_tf, panel);
-        addJButton(_incr_depth_collapse_level, panel);
-    }
-
-    void setUpControlsForRankCollapse() {
-        _rank_collapse_label = new JLabel("Collapse by Node Rank:");
-        _rank_collapse_label
-                .setToolTipText("to automatically collapse nodes with a taxonomic rank equal or lower than a threshold");
-        add(customizeLabel(_rank_collapse_label, getConfiguration()));
-        add(_rank_collapse_label);
-        _decr_rank_collapse_level = new TypomaticJButton("-");
-        _incr_rank_collapse_level = new TypomaticJButton("+");
-        _decr_rank_collapse_level.setPreferredSize(new Dimension(10, 10));
-        _incr_rank_collapse_level.setPreferredSize(new Dimension(10, 10));
-        _decr_rank_collapse_level.setToolTipText("to decrease the taxonomic rank threshold (wraps around)");
-        _incr_rank_collapse_level.setToolTipText("to increase the taxonomic rank threshold (wraps around)");
-        _rank_collapse_depth_tf = new JTextField(3);
-        _rank_collapse_depth_tf.setToolTipText("the current taxonomic rank threshold");
-        _rank_collapse_depth_tf.setEditable(false);
-        if (getConfiguration().isApplyCustomGuiColors()) {
-            _rank_collapse_depth_tf.setForeground(getConfiguration().getGuiMenuBackgroundColor());
-            _rank_collapse_depth_tf.setBackground(getConfiguration().getGuiCheckboxTextColor());
-            _rank_collapse_depth_tf.setBorder(null);
-        }
-        final JPanel panel = new JPanel(new GridLayout(1, 3, 0, 0));
-        if (_configuration.isApplyCustomGuiColors()) {
-            panel.setBackground(getBackground());
-        }
-        add(panel);
-        addJButton(_decr_rank_collapse_level, panel);
-        addJTextField(_rank_collapse_depth_tf, panel);
-        addJButton(_incr_rank_collapse_level, panel);
-    }
 
     void setupSearchTools0() {
         final JLabel search_label = new JLabel("Search (A):");
@@ -2589,8 +2610,6 @@ final class ControlPanel extends JPanel implements ActionListener {
             getMainPanel().getControlPanel().search0();
             getMainPanel().getControlPanel().search1();
             getMainPanel().getControlPanel().updateDomainStructureEvaluethresholdDisplay();
-            getMainPanel().getControlPanel().updateDepthCollapseDepthDisplay();
-            getMainPanel().getControlPanel().updateRankCollapseRankDisplay();
             populateColorByPropertyBox();
             getSequenceRelationTypeBox().removeAllItems();
             for (final SequenceRelation.SEQUENCE_RELATION_TYPE type : getMainPanel().getCurrentPhylogeny()
@@ -2618,8 +2637,6 @@ final class ControlPanel extends JPanel implements ActionListener {
             t.recalculateNumberOfExternalDescendants(false);
             tp.setNodeInPreorderToNull();
             t.clearHashIdToNodeMap();
-            tp.resetDepthCollapseDepthValue();
-            tp.resetRankCollapseRankValue();
             showWhole();
         }
     }
@@ -2628,71 +2645,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         if (_domain_structure_evalue_thr_tf != null) {
             _domain_structure_evalue_thr_tf
                     .setText("10^" + getMainPanel().getCurrentTreePanel().getDomainStructureEvalueThresholdExp());
-        }
-    }
-
-    private final String obtainDepthCollapseDepthValue() {
-        if (getMainPanel().getCurrentTreePanel() == null) {
-            return "";
-        }
-        final TreePanel tp = getMainPanel().getCurrentTreePanel();
-        final Phylogeny p = tp.getPhylogeny();
-        if ((p == null) || (p.getNumberOfExternalNodes() < 3)) {
-            return "off";
-        } else if (tp.getDepthCollapseDepthValue() < 0) {
-            tp.setDepthCollapseDepthValue(PhylogenyMethods.calculateMaxDepth(p));
-            return "off";
-        } else if (tp.getDepthCollapseDepthValue() == PhylogenyMethods.calculateMaxDepth(p)) {
-            return "off";
-        }
-        return String.valueOf(tp.getDepthCollapseDepthValue());
-    }
-
-    private final String obtainRankCollapseDepthValue() {
-        if (getMainPanel().getCurrentTreePanel() == null) {
-            return "";
-        }
-        final TreePanel tp = getMainPanel().getCurrentTreePanel();
-        final Phylogeny p = tp.getPhylogeny();
-        if ((p == null) || (p.getNumberOfExternalNodes() < 3)) {
-            return "off";
-        } else {
-            final String ranks[] = PhylogenyMethods.obtainPresentRanksSorted(p);
-            if (ranks.length < 1) {
-                return "off";
-            } else if (tp.getRankCollapseRankValue() < 0) {
-                tp.setRankCollapseRankValue(ranks.length - 1);
-                return "off";
-            } else if (tp.getRankCollapseRankValue() == (ranks.length - 1)) {
-                return "off";
-            }
-        }
-        return String.valueOf(tp.getRankCollapseRankValue());
-    }
-
-    final void updateDepthCollapseDepthDisplay() {
-        if (_depth_collapse_depth_tf != null) {
-            _depth_collapse_depth_tf.setText(" " + obtainDepthCollapseDepthValue());
-        }
-    }
-
-    final void updateRankCollapseRankDisplay() {
-        if (_rank_collapse_depth_tf != null) {
-            final String r = obtainRankCollapseDepthValue();
-            if (r.equals("off")) {
-                _rank_collapse_depth_tf.setText(" off");
-                _rank_collapse_depth_tf.setToolTipText("the current taxonomic rank threshold");
-            } else {
-                final String ranks[] = PhylogenyMethods
-                        .obtainPresentRanksSorted(getMainPanel().getCurrentTreePanel().getPhylogeny());
-                int rr = Integer.parseInt(r);
-                if (rr >= ranks.length) { // Hackish "fix" for the problem below.
-                    rr = ranks.length - 1;
-                }
-                _rank_collapse_depth_tf.setText(ranks[rr]); //TODO FIXME exception.
-                _rank_collapse_depth_tf.setToolTipText((rr + 1) + "/" + (ranks.length - 1) + ": "
-                        + ranks[rr]);
-            }
         }
     }
 

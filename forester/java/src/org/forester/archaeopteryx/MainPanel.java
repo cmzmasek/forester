@@ -80,7 +80,14 @@ public class MainPanel extends JPanel implements ComponentListener {
         _treepanels = new ArrayList<TreePanel>();
         initialize();
         _control_panel = new ControlPanel(this, configuration);
-        add(_control_panel, BorderLayout.WEST);
+        // Wrap the control panel so it scrolls vertically when the window is too short to show all
+        // of its controls (it lays its rows out at their natural height rather than cramming them).
+        final JScrollPane control_panel_scroller = new JScrollPane(_control_panel,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        control_panel_scroller.setBorder(null);
+        control_panel_scroller.getViewport().setBackground(_control_panel.getBackground());
+        control_panel_scroller.getVerticalScrollBar().setUnitIncrement(16);
+        add(control_panel_scroller, BorderLayout.WEST);
         setupTreeGraphic(configuration, getControlPanel());
         getControlPanel().showWhole();
     }

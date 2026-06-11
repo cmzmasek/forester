@@ -267,13 +267,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JCheckBoxMenuItem _use_brackets_for_conf_in_nh_export_cbmi;
     JCheckBoxMenuItem _use_internal_names_for_conf_in_nh_export_cbmi;
     JCheckBoxMenuItem _parse_beast_style_extended_nexus_tags_cbmi;
-    // _  search
-    JCheckBoxMenuItem _search_case_senstive_cbmi;
-    JCheckBoxMenuItem _search_whole_words_only_cbmi;
-    JCheckBoxMenuItem _inverse_search_result_cbmi;
-    JCheckBoxMenuItem _search_with_regex_cbmi;
-
-    JCheckBoxMenuItem _search_properties_cbmi;
+    // search: the case/words/regex/inverse/properties options moved to the left ControlPanel.
     JCheckBoxMenuItem _color_all_found_nodes_when_coloring_subtree_cbmi;
     // type menu:
     JMenu _type_menu;
@@ -470,38 +464,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         } else if (o == _ext_node_dependent_cladogram_rbmi) {
             updateOptions(getOptions());
             showWhole();
-        } else if (o == _search_case_senstive_cbmi) {
-            if ((_search_with_regex_cbmi != null) && _search_case_senstive_cbmi.isSelected()) {
-                _search_with_regex_cbmi.setSelected(false);
-            }
-            updateOptions(getOptions());
-            getMainPanel().getControlPanel().search0();
-            getMainPanel().getControlPanel().search1();
-        } else if (o == _search_whole_words_only_cbmi) {
-            if ((_search_with_regex_cbmi != null) && _search_whole_words_only_cbmi.isSelected()) {
-                _search_with_regex_cbmi.setSelected(false);
-            }
-            updateOptions(getOptions());
-            getMainPanel().getControlPanel().search0();
-            getMainPanel().getControlPanel().search1();
-        } else if (o == _inverse_search_result_cbmi) {
-            updateOptions(getOptions());
-            getMainPanel().getControlPanel().search0();
-            getMainPanel().getControlPanel().search1();
-        } else if (o == _search_properties_cbmi) {
-            updateOptions(getOptions());
-            getMainPanel().getControlPanel().search0();
-            getMainPanel().getControlPanel().search1();
-        } else if (o == _search_with_regex_cbmi) {
-            if ((_search_whole_words_only_cbmi != null) && _search_with_regex_cbmi.isSelected()) {
-                _search_whole_words_only_cbmi.setSelected(false);
-            }
-            if ((_search_case_senstive_cbmi != null) && _search_with_regex_cbmi.isSelected()) {
-                _search_case_senstive_cbmi.setSelected(false);
-            }
-            updateOptions(getOptions());
-            getMainPanel().getControlPanel().search0();
-            getMainPanel().getControlPanel().search1();
         } else if (o == _color_all_found_nodes_when_coloring_subtree_cbmi) {
             updateOptions(getOptions());
         } else if (o == _parse_beast_style_extended_nexus_tags_cbmi) {
@@ -1652,8 +1614,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         } else if ((_ext_node_dependent_cladogram_rbmi != null) && (_ext_node_dependent_cladogram_rbmi.isSelected())) {
             options.setCladogramType(CLADOGRAM_TYPE.LINED_UP);
         }
-        options.setSearchCaseSensitive((_search_case_senstive_cbmi != null)
-                && _search_case_senstive_cbmi.isSelected());
+        // The search options (case/words/regex/inverse/properties) are now set directly on Options
+        // by the control-panel checkboxes, so they are intentionally not read from menu items here.
         if ((_show_scale_cbmi != null) && _show_scale_cbmi.isEnabled()) {
             options.setShowScale(_show_scale_cbmi.isSelected());
         }
@@ -1694,12 +1656,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 && _replace_underscores_cbmi.isSelected());
         options.setAllowErrorsInDistanceToParent((_allow_errors_in_distance_to_parent_cbmi != null)
                 && _allow_errors_in_distance_to_parent_cbmi.isSelected());
-        options.setMatchWholeTermsOnly((_search_whole_words_only_cbmi != null)
-                && _search_whole_words_only_cbmi.isSelected());
-        options.setSearchWithRegex((_search_with_regex_cbmi != null) && _search_with_regex_cbmi.isSelected());
-        options.setSearchProperties((_search_properties_cbmi != null) && _search_properties_cbmi.isSelected());
-        options.setInverseSearchResult((_inverse_search_result_cbmi != null)
-                && _inverse_search_result_cbmi.isSelected());
         if (_graphics_export_visible_only_cbmi != null) {
             options.setGraphicsExportVisibleOnly(_graphics_export_visible_only_cbmi.isSelected());
         }

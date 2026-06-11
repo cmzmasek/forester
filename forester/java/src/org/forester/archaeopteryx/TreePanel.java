@@ -346,8 +346,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private int _length_of_longest_text;
     private int _longest_domain;
     private Map<String, AttributedString> _attributed_string_map = null;
-    private int _depth_collapse_level = -1;
-    private int _rank_collapse_level = -1;
 
     static {
         final DecimalFormatSymbols dfs = new DecimalFormatSymbols();
@@ -1409,8 +1407,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         setTreeFile(null);
         setEdited(false);
         initializeOvSettings();
-        resetDepthCollapseDepthValue();
-        resetRankCollapseRankValue();
         setStartingAngle((TWO_PI * 3) / 4);
         final ImageLoader il = new ImageLoader(this);
         new Thread(il).start();
@@ -4879,8 +4875,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         calculateLongestExtNodeInfo();
         setNodeInPreorderToNull();
         resetPreferredSize();
-        resetDepthCollapseDepthValue();
-        resetRankCollapseRankValue();
         _main_panel.adjustJScrollPane();
         getControlPanel().showWhole();
         setArrowCursor();
@@ -6065,11 +6059,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             updateSubSuperTreeButton();
             getMainPanel().getControlPanel().search0();
             getMainPanel().getControlPanel().search1();
-            resetRankCollapseRankValue();
-            resetDepthCollapseDepthValue();
             getMainPanel().getControlPanel().updateDomainStructureEvaluethresholdDisplay();
-            getMainPanel().getControlPanel().updateDepthCollapseDepthDisplay();
-            getMainPanel().getControlPanel().updateRankCollapseRankDisplay();
         } else if (node.isRoot() && isCurrentTreeIsSubtree()) {
             superTree();
         }
@@ -6092,11 +6082,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         rebuildPropertyColorScheme();
         getMainPanel().getControlPanel().search0();
         getMainPanel().getControlPanel().search1();
-        resetRankCollapseRankValue();
-        resetDepthCollapseDepthValue();
         getMainPanel().getControlPanel().updateDomainStructureEvaluethresholdDisplay();
-        getMainPanel().getControlPanel().updateDepthCollapseDepthDisplay();
-        getMainPanel().getControlPanel().updateRankCollapseRankDisplay();
         updateSubSuperTreeButton();
     }
 
@@ -6307,103 +6293,4 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 || (key_code == KeyEvent.VK_1));
     }
 
-    public void decreaseDepthCollapseLevel() {
-        if ((_phylogeny != null) && (_phylogeny.getNumberOfExternalNodes() > 2)) {
-            if (_depth_collapse_level <= 1) {
-                _depth_collapse_level = PhylogenyMethods.calculateMaxDepth(_phylogeny);
-                uncollapseAll();
-            } else {
-                --_depth_collapse_level;
-                PhylogenyMethods.collapseToDepth(_phylogeny, _depth_collapse_level);
-            }
-        }
-    }
-
-    public void increaseDepthCollapseLevel() {
-        if ((_phylogeny != null) && (_phylogeny.getNumberOfExternalNodes() > 2)) {
-            final int max = PhylogenyMethods.calculateMaxDepth(_phylogeny);
-            if (_depth_collapse_level >= max) {
-                _depth_collapse_level = 1;
-            } else {
-                ++_depth_collapse_level;
-            }
-            PhylogenyMethods.collapseToDepth(_phylogeny, _depth_collapse_level);
-        }
-    }
-
-    public void decreaseRankCollapseLevel() {
-        if ((_phylogeny != null) && (_phylogeny.getNumberOfExternalNodes() > 2)) {
-            final String ranks[] = PhylogenyMethods.obtainPresentRanksSorted(_phylogeny);
-            if (ranks.length > 1) {
-                if (_rank_collapse_level <= 0) {
-                    _rank_collapse_level = ranks.length - 1;
-                    uncollapseAll();
-                } else {
-                    --_rank_collapse_level;
-                    PhylogenyMethods.collapseToRank(_phylogeny,
-                            mapToAbsoluteRankLevel(ranks, _rank_collapse_level));
-                }
-            }
-        }
-    }
-
-    public void increaseRankCollapseLevel() {
-        if ((_phylogeny != null) && (_phylogeny.getNumberOfExternalNodes() > 2)) {
-            final String ranks[] = PhylogenyMethods.obtainPresentRanksSorted(_phylogeny);
-            if (ranks.length > 1) {
-                if (_rank_collapse_level >= (ranks.length - 1)) {
-                    _rank_collapse_level = 0;
-                    PhylogenyMethods.collapseToRank(_phylogeny,
-                            mapToAbsoluteRankLevel(ranks, _rank_collapse_level));
-                } else if (_rank_collapse_level == (ranks.length - 2)) {
-                    ++_rank_collapse_level;
-                    uncollapseAll();
-                } else {
-                    ++_rank_collapse_level;
-                    PhylogenyMethods.collapseToRank(_phylogeny,
-                            mapToAbsoluteRankLevel(ranks, _rank_collapse_level));
-                }
-            }
-        }
-    }
-
-    private final static int mapToAbsoluteRankLevel(final String present_ranks_sorted[],
-                                                    final int rank_collapse_level) {
-        final String rank_str = present_ranks_sorted[rank_collapse_level];
-        if (!TaxonomyUtil.RANK_TO_INT.containsKey(rank_str)) {
-            throw new IllegalStateException("unexpected exception: cannot find rank " + rank_str);
-        }
-        return TaxonomyUtil.RANK_TO_INT.get(rank_str);
-    }
-
-    private final void uncollapseAll() {
-        final PhylogenyNodeIterator it = new PreorderTreeIterator(_phylogeny);
-        while (it.hasNext()) {
-            it.next().setCollapse(false);
-        }
-    }
-
-    final int resetDepthCollapseDepthValue() {
-        return _depth_collapse_level = -1;
-    }
-
-    final int getDepthCollapseDepthValue() {
-        return _depth_collapse_level;
-    }
-
-    final void setDepthCollapseDepthValue(final int depth_collapse_level) {
-        _depth_collapse_level = depth_collapse_level;
-    }
-
-    final int resetRankCollapseRankValue() {
-        return _rank_collapse_level = -1;
-    }
-
-    final int getRankCollapseRankValue() {
-        return _rank_collapse_level;
-    }
-
-    final void setRankCollapseRankValue(final int rank_collapse_level) {
-        _rank_collapse_level = rank_collapse_level;
-    }
 }
