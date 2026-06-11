@@ -2090,7 +2090,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JCheckBox _search_properties_cb;
 
     void setupSearchOptions() {
-        final JLabel header = new JLabel("Search options:");
+        final JLabel header = new JLabel("Search Options:");
         header.setFont(ControlPanel.jcb_bold_font);
         if (getConfiguration().isApplyCustomGuiColors()) {
             header.setForeground(getConfiguration().getGuiCheckboxTextColor());
@@ -2124,14 +2124,18 @@ final class ControlPanel extends JPanel implements ActionListener {
                 _search_regex_cb, _search_inverse_cb, _search_properties_cb }) {
             cb.setFocusPainted(false);
             cb.setFont(ControlPanel.jcb_font);
+            cb.setMargin(new Insets(0, 0, 0, 0)); // trim vertical padding so the checkboxes pack tightly
             if (_configuration.isApplyCustomGuiColors()) {
                 cb.setBackground(getConfiguration().getGuiBackgroundColor());
                 cb.setForeground(getConfiguration().getGuiCheckboxTextColor());
             }
             cb.addActionListener(l);
         }
+        nextRowGap(CHECKBOX_GAP);
         add(searchOptionsRow(_search_case_sensitive_cb, _search_whole_words_only_cb));
+        nextRowGap(CHECKBOX_GAP);
         add(searchOptionsRow(_search_regex_cb, _search_inverse_cb));
+        nextRowGap(CHECKBOX_GAP);
         add(_search_properties_cb);
     }
 
