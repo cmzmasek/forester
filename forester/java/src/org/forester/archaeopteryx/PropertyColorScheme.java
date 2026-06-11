@@ -21,13 +21,16 @@ package org.forester.archaeopteryx;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
@@ -36,10 +39,18 @@ import org.forester.phylogeny.data.Property;
 import org.forester.util.ForesterUtil;
 
 /**
- * Assigns a distinct color to each distinct value of a chosen phyloXML property
- * (e.g. {@code repseq:host}), so leaves can be colored on the fly by that property:
- * the same value always maps to the same color. The categorical palette is cycled
- * when a property has more distinct values than there are palette entries.
+ * Assigns a color to each distinct value of a chosen phyloXML property (e.g.
+ * {@code repseq:host}), so leaves can be colored on the fly by that property: the same
+ * value always maps to the same color. The categorical palette is cycled when a property
+ * has more distinct values than there are palette entries.
+ * <p>
+ * Trivially different spellings are grouped before coloring -- values are compared after
+ * trimming, collapsing whitespace, treating {@code _} as a space, and case-folding -- so
+ * e.g. {@code Human}/{@code human}/{@code homo_sapiens} get one color (it cannot, however,
+ * merge semantically-equal but lexically-different values such as {@code man} vs
+ * {@code H. sapiens}). Two refs are special-cased: {@code year} is colored by a continuous
+ * gradient over its numeric range, and {@code country} is grouped by the part before the
+ * first {@code :} (so {@code USA:CA} and {@code USA:IL} share a color).
  * <p>
  * This is independent of the explicit {@code style:*} visualization properties and
  * the "Visual Styles" feature.
@@ -57,18 +68,25 @@ final class PropertyColorScheme {
             new Color( 0x117864 ) };
 
     private final String             _ref;
-    // Categorical mode: one palette color per distinct value.
+    // Categorical mode: one palette color per distinct value. _value_to_color maps the
+    // (display) representative of each group to its color, for the legend; _key_to_color
+    // maps the normalized grouping key to the same color, for looking up a node's color.
     private final Map<String, Color> _value_to_color;
+    private final Map<String, Color> _key_to_color;
     // Continuous mode (numeric properties such as "year"): a blue->red gradient spanning
     // [_min, _max] instead of distinct colors. _gradient is false for categorical refs.
     private final boolean            _gradient;
     private final double             _min;
     private final double             _max;
+    // "country": values are grouped by the part before the first ':' (USA:CA == USA:IL).
+    private final boolean            _country;
 
     PropertyColorScheme( final Phylogeny phylogeny, final String ref ) {
         _ref = ref;
         _gradient = isYearRef( ref );
+        _country = isCountryRef( ref );
         _value_to_color = new LinkedHashMap<String, Color>();
+        _key_to_color = new LinkedHashMap<String, Color>();
         if ( _gradient ) {
             double min = Double.POSITIVE_INFINITY;
             double max = Double.NEGATIVE_INFINITY;
@@ -87,18 +105,43 @@ final class PropertyColorScheme {
         else {
             _min = 0;
             _max = 0;
-            final TreeSet<String> values = new TreeSet<String>();
+            // Group trivial variants together (case, whitespace, underscores; and, for
+            // "country", the subdivision after ':') so e.g. "Human"/"human"/"homo_sapiens "
+            // share one color. Each group's legend label is its most frequent spelling.
+            final Map<String, Map<String, Integer>> key_to_label_counts = new HashMap<String, Map<String, Integer>>();
             if ( ( phylogeny != null ) && !phylogeny.isEmpty() ) {
                 for( final PhylogenyNode node : phylogeny.getExternalNodes() ) {
                     final String v = valueFor( node, ref );
                     if ( !ForesterUtil.isEmpty( v ) ) {
-                        values.add( v );
+                        final String label = displayLabel( v );
+                        final String key = label.toLowerCase( Locale.ROOT );
+                        Map<String, Integer> counts = key_to_label_counts.get( key );
+                        if ( counts == null ) {
+                            counts = new HashMap<String, Integer>();
+                            key_to_label_counts.put( key, counts );
+                        }
+                        final Integer c = counts.get( label );
+                        counts.put( label, ( c == null ) ? 1 : ( c + 1 ) );
                     }
                 }
             }
+            // [ representative label, key ] per group, ordered by label (case-insensitive)
+            final List<String[]> groups = new ArrayList<String[]>();
+            for( final Map.Entry<String, Map<String, Integer>> e : key_to_label_counts.entrySet() ) {
+                groups.add( new String[] { representative( e.getValue() ), e.getKey() } );
+            }
+            Collections.sort( groups, new Comparator<String[]>() {
+
+                @Override
+                public int compare( final String[] a, final String[] b ) {
+                    return String.CASE_INSENSITIVE_ORDER.compare( a[ 0 ], b[ 0 ] );
+                }
+            } );
             int i = 0;
-            for( final String v : values ) {
-                _value_to_color.put( v, PALETTE[ i++ % PALETTE.length ] );
+            for( final String[] g : groups ) {
+                final Color color = PALETTE[ i++ % PALETTE.length ];
+                _value_to_color.put( g[ 0 ], color );
+                _key_to_color.put( g[ 1 ], color );
             }
         }
     }
@@ -131,12 +174,48 @@ final class PropertyColorScheme {
             return gradientColorAt( t );
         }
         final String v = valueFor( node, _ref );
-        return ( v == null ) ? null : _value_to_color.get( v );
+        return ForesterUtil.isEmpty( v ) ? null : _key_to_color.get( groupKey( v ) );
     }
 
-    /** Ordered (alphabetical) value to color map, for building a (categorical) legend. */
+    /** Ordered (alphabetical) representative-label to color map, for building a (categorical) legend. */
     Map<String, Color> getValueColors() {
         return _value_to_color;
+    }
+
+    /**
+     * The display label for a raw property value: trimmed, underscores as spaces, internal
+     * whitespace collapsed; for "country" only the part before the first ':' (so USA:CA and
+     * USA:IL both read as "USA"). Case is preserved -- this is what the legend shows.
+     */
+    private String displayLabel( final String v ) {
+        String s = v;
+        if ( _country ) {
+            final int colon = s.indexOf( ':' );
+            if ( colon >= 0 ) {
+                s = s.substring( 0, colon );
+            }
+        }
+        s = s.trim().replace( '_', ' ' );
+        return s.replaceAll( "\\s+", " " );
+    }
+
+    /** The normalized key a value is grouped/colored by: its display label, case-folded. */
+    private String groupKey( final String v ) {
+        return displayLabel( v ).toLowerCase( Locale.ROOT );
+    }
+
+    /** The most frequent spelling in a group (ties broken alphabetically). */
+    private static String representative( final Map<String, Integer> label_counts ) {
+        String best = null;
+        int best_count = -1;
+        for( final Map.Entry<String, Integer> e : label_counts.entrySet() ) {
+            final int n = e.getValue();
+            if ( ( n > best_count ) || ( ( n == best_count ) && ( e.getKey().compareTo( best ) < 0 ) ) ) {
+                best = e.getKey();
+                best_count = n;
+            }
+        }
+        return best;
     }
 
     /** Color at fraction {@code t} (0..1, low value to high value) of the gradient. */
@@ -174,12 +253,20 @@ final class PropertyColorScheme {
 
     /** True for the {@code year} property (in any namespace), which is colored as a gradient. */
     private static boolean isYearRef( final String ref ) {
+        return refNameEquals( ref, "year" );
+    }
+
+    /** True for the {@code country} property (in any namespace), which drops the ':' subdivision. */
+    private static boolean isCountryRef( final String ref ) {
+        return refNameEquals( ref, "country" );
+    }
+
+    private static boolean refNameEquals( final String ref, final String name ) {
         if ( ForesterUtil.isEmpty( ref ) ) {
             return false;
         }
         final int colon = ref.lastIndexOf( ':' );
-        final String name = ( colon >= 0 ) ? ref.substring( colon + 1 ) : ref;
-        return name.equalsIgnoreCase( "year" );
+        return ( ( colon >= 0 ) ? ref.substring( colon + 1 ) : ref ).equalsIgnoreCase( name );
     }
 
     /**
