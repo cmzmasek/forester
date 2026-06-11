@@ -2123,8 +2123,9 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     /**
-     * Pushes the search-option checkboxes into {@link Options} (which search0()/search1() read) and
-     * re-runs the search. "Regex" is mutually exclusive with "Match Case"/"Words", as in the old menu.
+     * Pushes the search-option checkboxes into {@link Options} (which search0()/search1() read), then
+     * re-runs BOTH searches and repaints so the changed options are reflected immediately. "Regex" is
+     * mutually exclusive with "Match Case"/"Words", as in the old menu.
      */
     private void searchOptionChanged(final JCheckBox source) {
         if ((source == _search_regex_cb) && _search_regex_cb.isSelected()) {
@@ -2142,6 +2143,10 @@ final class ControlPanel extends JPanel implements ActionListener {
         o.setSearchProperties(_search_properties_cb.isSelected());
         search0();
         search1();
+        // re-run alone only updates the found-node sets and count labels; repaint so the tree's
+        // highlighting reflects the new options right away (the old menu got this for free when the
+        // menu closed and repainted the canvas).
+        displayedPhylogenyMightHaveChanged(true);
     }
 
     /**
