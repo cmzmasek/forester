@@ -384,6 +384,12 @@ final class ControlPanel extends JPanel implements ActionListener {
                     displayedPhylogenyMightHaveChanged(true);
                 } else {
                     displayedPhylogenyMightHaveChanged(true);
+                    // A Display Data checkbox (or similar) changed. If the "Visible" search option is on,
+                    // the set of searched fields changed too, so re-run both searches to reflect it.
+                    if ((_search_visible_cb != null) && _search_visible_cb.isSelected()) {
+                        search0();
+                        search1();
+                    }
                 }
             }
             tp.requestFocus();
@@ -690,6 +696,9 @@ final class ControlPanel extends JPanel implements ActionListener {
                 }
             }
         }
+        if (restrict != null) { // "Visible": keep only nodes whose data is currently displayed
+            nodes = retainDisplayedNodes(nodes, tree);
+        }
         if ((nodes != null) && (nodes.size() > 0)) {
             main_panel.getCurrentTreePanel().setFoundNodes0(new HashSet<Long>());
             for (final Long node : nodes) {
@@ -762,6 +771,9 @@ final class ControlPanel extends JPanel implements ActionListener {
                     }
                 }
             }
+        }
+        if (restrict != null) { // "Visible": keep only nodes whose data is currently displayed
+            nodes = retainDisplayedNodes(nodes, tree);
         }
         if ((nodes != null) && (nodes.size() > 0)) {
             main_panel.getCurrentTreePanel().setFoundNodes1(new HashSet<Long>());
@@ -2197,6 +2209,26 @@ final class ControlPanel extends JPanel implements ActionListener {
             fields.add(PhylogenyMethods.NDF.Properties);
         }
         return fields;
+    }
+
+    /**
+     * For the "Visible" search option: keep only those found nodes whose data is currently displayed --
+     * external (leaf) nodes only when "Show External Data" is on, internal nodes only when "Show Internal
+     * Data" is on -- so the search never matches data that is not on screen.
+     */
+    private Set<Long> retainDisplayedNodes(final Set<Long> ids, final Phylogeny tree) {
+        final boolean show_external = isShowExternalData();
+        final boolean show_internal = isShowInternalData();
+        if ((ids == null) || ids.isEmpty() || (show_external && show_internal)) {
+            return ids;
+        }
+        final Set<Long> kept = new HashSet<Long>();
+        for (final PhylogenyNode n : PhylogenyMethods.obtainAllNodesAsList(tree)) {
+            if (ids.contains(n.getId()) && (n.isExternal() ? show_external : show_internal)) {
+                kept.add(n.getId());
+            }
+        }
+        return kept;
     }
 
     private JPanel searchOptionsRow(final JCheckBox a, final JCheckBox b) {
