@@ -1,14 +1,24 @@
 #!/usr/bin/perl -W
 
-# $Id: pf_cutoff_extract.pl,v 1.4 2009/11/11 02:28:19 cmzmasek Exp $
-
-# This extracts GA, TC, or NC score cutoff values from
-# Pfam HMM files (GA1, TC1, NC1)
-# Copyright (C) 2008-2009 Christian M. Zmasek
+# forester -- software libraries and applications
+# for evolutionary biology and genomics.
+# Copyright (C) 2026 Christian M. Zmasek
 # All rights reserved
-# Created 2007-08-01 in Winterthur, Switzerland by CMZ
-
-# Usage: pf_cutoff_extract.pl <Pfam HMM file> <GA|TC|NC> <outfile>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <https://www.gnu.org/licenses/>.
+#
+# Contact: czmasek at jcvi dot org
 
 use strict;
 

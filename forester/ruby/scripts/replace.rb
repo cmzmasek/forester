@@ -1,17 +1,24 @@
 #!/usr/local/bin/ruby -w
-#
-# = replace 
-#
-# Copyright::  Copyright (C) 2006-2008 Christian M. Zmasek
-# License::    GNU Lesser General Public License (LGPL)
-#
-# $Id: replace.rb,v 1.5 2008/08/28 17:09:07 cmzmasek Exp $
-#
-# To replace multiple strings in file.
-# Map file contains intructions for replacement (one on each line)
-# in the following format (by example): old#new
-#
 
+# forester -- software libraries and applications
+# for evolutionary biology and genomics.
+# Copyright (C) 2026 Christian M. Zmasek
+# All rights reserved
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <https://www.gnu.org/licenses/>.
+#
+# Contact: czmasek at jcvi dot org
 
 module ForesterScripts
     

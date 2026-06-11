@@ -1,51 +1,24 @@
 #!/usr/bin/perl -W
-#
-# FORESTER -- software libraries and applications
-# for evolutionary biology research and applications.
-#
-# Copyright (C) 2025 Christian M. Zmasek
+
+# forester -- software libraries and applications
+# for evolutionary biology and genomics.
+# Copyright (C) 2026 Christian M. Zmasek
 # All rights reserved
-# 
-# This library is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public
-# License as published by the Free Software Foundation; either
-# version 2.1 of the License, or (at your option) any later version.
 #
-# This library is distributed in the hope that it will be useful,
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Lesser General Public License for more details.
-# 
-# You should have received a copy of the GNU Lesser General Public
-# License along with this library; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
 #
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <https://www.gnu.org/licenses/>.
 #
-#
-#  Requirements  phylo_pl is part of the FORESTER libraries.
-#  ------------  Many of its global variables are set via forester.pm.
-#
-#
-#  Note. Use xt.pl (for Pfam alignments) or mt.pl (for other alignments)
-#  to run phylo_pl.pl on whole directories of alignments files.       
-#
-#
-#
-#
-# =========================
-#
-# METHOD ORDER (IMPORTANT!)
-# 1. FastME
-# 2. phylip NJ
-# 3. phylip fitch FM
-# 4. phylip fitch ME
-# 5. Raxml
-# 6. IQTree
-# 7. FastTree
-# 8. phylip proml
-# 9. phylip protpars
-# 10. all
-#==========================
+# Contact: czmasek at jcvi dot org
 
 use strict;
 
@@ -53,8 +26,8 @@ use FindBin;
 use lib $FindBin::Bin;
 use forester;
 
-my $VERSION                = "1.3.2";
-my $LAST_MODIFIED          = "2025-12-22";
+my $VERSION                = "1.3.3";
+my $LAST_MODIFIED          = "2026-03-19";
 
 
 my $TEMP_DIR_DEFAULT       = "/tmp/phylo_pl_"; # Where all the infiles, outfiles, etc will be created.
@@ -318,6 +291,7 @@ elsif ( $outfile =~ /\.seqs$/i ) {
 $logfile          = $outfile.$LOG_FILE_SUFFIX;
 $multipwdfile     = $outfile.$MULTIPLE_PWD_FILE_SUFFIX;
 $distancefile     = $outfile.$SUFFIX_PWD_NOT_BOOTS;
+my $pwdoutfilefile   = $outfile.$SUFFIX_PWD;
 
 &dieIfFileExists( $logfile );
 &dieIfFileExists( $multipwdfile );
@@ -1153,13 +1127,15 @@ elsif ( ( $bootstraps > 1 ) && ( $use_fastme == 1 || $use_phylip_nj == 1 || $use
         if ( $use_fasttree == 1 ) {
             &rm( $FASTTREE_OUT );
         }
-        &rm( $pwdfile );
+        if ( length($pwdfile) > 0 ) {
+            &mv( $pwdfile,  $pwdoutfilefile );
+        }
     }
     &rm( $OUTTREES_ALL );
 } # if ( $bootstraps > 1 )
 else {
-    &rm( "infile.dist" );
-    &rm( "infile.dist_" );
+    #&rm( "infile.dist" );
+    #&rm( "infile.dist_" );
     &rm( "infile.puzzle" );
     if ( $use_fastme == 1 ) {
         &to_phyloxml( $OUTTREE_FASTME, $fastme_outtree, 0, 1 );

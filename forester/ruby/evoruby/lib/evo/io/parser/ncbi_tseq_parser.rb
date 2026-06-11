@@ -1,11 +1,22 @@
+# forester -- software libraries and applications
+# for evolutionary biology and genomics.
+# Copyright (C) 2026 Christian M. Zmasek
+# All rights reserved
 #
-# = lib/evo/io/parser/ncbi_tseq_parser - NcbiTSeqParser class
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 #
-# Copyright::  Copyright (C) 2006-2007 Christian M. Zmasek
-# License::    GNU Lesser General Public License (LGPL)
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
 #
-# $Id: ncbi_tseq_parser.rb,v 1.5 2009/01/07 02:48:20 cmzmasek Exp $
-
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <https://www.gnu.org/licenses/>.
+#
+# Contact: czmasek at jcvi dot org
 
 require 'lib/evo/io/parser/msa_parser'
 require 'lib/evo/taxonomy/taxonomy'

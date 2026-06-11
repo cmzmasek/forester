@@ -1,25 +1,22 @@
-// $Id:
-// FORESTER -- software libraries and applications
-// for evolutionary biology research and applications.
+// forester -- software libraries and applications
+// for evolutionary biology and genomics.
+// Copyright (C) 2026 Christian M. Zmasek
+// All rights reserved
 //
-// From: http://www.rgagnon.com/javadetails/java-0652.html
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
 //
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 2.1 of the License, or (at your option) any later version.
-//
-// This library is distributed in the hope that it will be useful,
+// This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-// Lesser General Public License for more details.
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
 //
-// You should have received a copy of the GNU Lesser General Public
-// License along with this library; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
 //
-// Contact: phylosoft @ gmail . com
-// WWW: https://sites.google.com/site/cmzmasek/home/software/forester
+// Contact: czmasek at jcvi dot org
 
 package org.forester.util;
 

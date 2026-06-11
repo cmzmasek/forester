@@ -1,19 +1,24 @@
 #!/usr/local/bin/ruby -w
-#
-# = replace_id 
-#
-# Copyright::  Copyright (C) 2006-2008 Christian M. Zmasek
-# License::    GNU Lesser General Public License (LGPL)
-#
-# $Id: replace_id.rb,v 1.8 2008/08/28 17:09:07 cmzmasek Exp $
-#
-# To replace ()by way of example '123_CHI5' with '123_CHICK5'
-# given a mapping file containing '123_CHICKEN'
-# (in the form '123_CHICKEN: some description which is ignored').
-#
-# Note. This will break if the species id ends with a number (as is 
-# in the case for many bacteria).
 
+# forester -- software libraries and applications
+# for evolutionary biology and genomics.
+# Copyright (C) 2026 Christian M. Zmasek
+# All rights reserved
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <https://www.gnu.org/licenses/>.
+#
+# Contact: czmasek at jcvi dot org
 
 module ForesterScripts
     

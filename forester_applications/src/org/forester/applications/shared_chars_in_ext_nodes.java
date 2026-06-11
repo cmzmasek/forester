@@ -1,35 +1,25 @@
+// forester -- software libraries and applications
+// for evolutionary biology and genomics.
+// Copyright (C) 2026 Christian M. Zmasek
+// All rights reserved
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+//
+// Contact: czmasek at jcvi dot org
 
 package org.forester.applications;
 
-// $Id:
-// FORESTER -- software libraries and applications
-// for evolutionary biology research and applications.
-//
-// Copyright (C) 2008-2011 Christian M. Zmasek
-// Copyright (C) 2008-2011 Burnham Institute for Medical Research
-// All rights reserved
-//
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 2.1 of the License, or (at your option) any later version.
-//
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-// Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License along with this library; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
-//
-// Contact: phylosoft @ gmail . com
-// WWW: www.phylosoft.org/forester
-// javac -cp ~/SOFTWARE_DEV/ECLIPSE_WORKSPACE/forester/java/forester.jar
-// ~/SOFTWARE_DEV/ECLIPSE_WORKSPACE/forester_applications/src/org/forester/applications/shared_chars_in_ext_nodes.java
-// java -Xmx2048m -cp
-// /home/czmasek/SOFTWARE_DEV/ECLIPSE_WORKSPACE/forester_applications/src/:/home/czmasek/SOFTWARE_DEV/ECLIPSE_WORKSPACE/forester/java/forester.jar
-// org.forester.applications.shared_chars_in_ext_nodes
 import java.io.File;
 import java.util.SortedSet;
 import java.util.TreeSet;

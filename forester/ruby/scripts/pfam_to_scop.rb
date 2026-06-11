@@ -1,17 +1,24 @@
 #!/usr/local/bin/ruby -w
+
+# forester -- software libraries and applications
+# for evolutionary biology and genomics.
+# Copyright (C) 2026 Christian M. Zmasek
+# All rights reserved
 #
-# = pfam_to_scop
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 #
-# Copyright::  Copyright (C) 2008-2009 Christian M. Zmasek. All rights reserved.
-# License::    GNU Lesser General Public License (LGPL)
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
 #
-# $Id: pfam_to_scop.rb,v 1.2 2008/08/28 17:09:07 cmzmasek Exp $
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <https://www.gnu.org/licenses/>.
 #
-# This extracts ID and SCOP fa (or fa and sf) from Pfam data files.
-#
-# Created 2008-06-25 in San Diego, CA, USA by CMZ
-#
-# Usage: pfam_to_scop.rb <infile: Pfam data file such as Pfam-A.full> <outfile>
+# Contact: czmasek at jcvi dot org
 
 require 'iconv'
 
