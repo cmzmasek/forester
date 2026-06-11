@@ -2059,16 +2059,15 @@ final class ControlPanel extends JPanel implements ActionListener {
         _color_by_property_cb.setFont(ControlPanel.js_font);
         _color_by_property_cb.setToolTipText("color leaves by the value of a phyloXML property");
         _color_by_property_cb.addItem(COLOR_BY_PROPERTY_NONE);
-        // show only the property name (without its namespace prefix) in the dropdown
+        // show a friendly property name (no namespace prefix, underscores as spaces,
+        // capitalized) in the dropdown -- the underlying ref is unchanged
         _color_by_property_cb.setRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(final JList<?> list, final Object value, final int index,
                     final boolean is_selected, final boolean has_focus) {
                 super.getListCellRendererComponent(list, value, index, is_selected, has_focus);
                 if (value instanceof String) {
-                    final String s = (String) value;
-                    final int colon = s.lastIndexOf(':');
-                    setText(colon >= 0 ? s.substring(colon + 1) : s);
+                    setText(PropertyColorScheme.displayName((String) value));
                 }
                 return this;
             }

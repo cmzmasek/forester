@@ -4695,9 +4695,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.setFont(getTreeFontSet().getSmallFont());
         final FontMetrics fm = g.getFontMetrics();
         final int row_h = fm.getHeight() + 2;
-        final String ref = _property_color_scheme.getRef();
-        final int colon = ref.lastIndexOf(':');
-        final String title = "Color by: " + (colon >= 0 ? ref.substring(colon + 1) : ref);
+        final String title = "Color by: " + PropertyColorScheme.displayName(_property_color_scheme.getRef());
         int text_w = fm.stringWidth(title);
         int i = 0;
         for (final String v : values.keySet()) {

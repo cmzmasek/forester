@@ -100,6 +100,41 @@ final class PropertyColorScheme {
         return _value_to_color;
     }
 
+    /**
+     * A user-friendly display label for a property ref: the namespace prefix is dropped,
+     * underscores become spaces, and the first letter of each word is capitalized
+     * (e.g. {@code repseq:protein_names} becomes {@code Protein Names}). The rest of each
+     * word is left untouched so acronyms such as {@code RNA} are preserved. For display
+     * only -- the underlying ref and the stored property values are never modified.
+     */
+    static String displayName( final String ref ) {
+        if ( ForesterUtil.isEmpty( ref ) ) {
+            return ref;
+        }
+        final int colon = ref.lastIndexOf( ':' );
+        final String name = ( colon >= 0 ) ? ref.substring( colon + 1 ) : ref;
+        final StringBuilder sb = new StringBuilder( name.length() );
+        boolean start_of_word = true;
+        for( int i = 0; i < name.length(); ++i ) {
+            char c = name.charAt( i );
+            if ( c == '_' ) {
+                c = ' ';
+            }
+            if ( Character.isWhitespace( c ) ) {
+                start_of_word = true;
+                sb.append( c );
+            }
+            else if ( start_of_word ) {
+                sb.append( Character.toUpperCase( c ) );
+                start_of_word = false;
+            }
+            else {
+                sb.append( c );
+            }
+        }
+        return sb.toString();
+    }
+
     private static String valueFor( final PhylogenyNode node, final String ref ) {
         if ( ( node.getNodeData() == null ) || ( node.getNodeData().getProperties() == null ) ) {
             return null;
