@@ -1023,7 +1023,9 @@ public class PhylogenyMethods {
             }
             final double cross_ssd = evalCross(depth_c, bb0, bb1, bb2, x);
             final double ssd = cross_ssd + down_within.get(c.getId()) + up_within.get(c.getId());
-            final double mad = Math.sqrt(ssd / n_pairs);
+            // ssd is a sum of squares (>= 0); clamp away any tiny negative from floating-point
+            // cancellation (near-clock branches have ssd ~ 0) so sqrt never yields NaN
+            final double mad = Math.sqrt(Math.max(0.0, ssd) / n_pairs);
             final BitSet key = canonicalBipartition(c, tip_index, n);
             final Double prev = bipartition_to_mad.get(key);
             if ((prev == null) || (mad < prev)) {

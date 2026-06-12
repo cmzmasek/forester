@@ -6651,6 +6651,18 @@ public final class Test {
             if (Math.abs(madScoreSsd(rt3) - bestMadSsdBruteForce(rt3_copy)) > 1e-6) {
                 return false;
             }
+            // clock-like (ultrametric) trees have many near-zero deviations, where floating-point
+            // cancellation could otherwise make sqrt(ssd) a NaN/Infinite confidence (crashing the
+            // confidence-value rendering); every internal MAD value must be finite
+            for (final long seed : new long[] { 3, 9, 17, 31 }) {
+                final Phylogeny clk = randomClockTree(40, seed);
+                PhylogenyMethods.madRoot(clk);
+                for (final PhylogenyNode nd : PhylogenyMethods.obtainAllNodesAsList(clk)) {
+                    if (!nd.isRoot() && nd.isInternal() && !Double.isFinite(madConfidence(nd))) {
+                        return false;
+                    }
+                }
+            }
         } catch (final Exception e) {
             e.printStackTrace(System.out);
             return false;
@@ -6778,6 +6790,53 @@ public final class Test {
         final Phylogeny phy = new Phylogeny();
         phy.setRoot(root);
         phy.externalNodesHaveChanged();
+        return phy;
+    }
+
+    // A random ultrametric ("clock-like") tree: branch lengths are set from random node heights so
+    // every tip is equidistant from the root, making many branches have near-zero ancestor deviation.
+    private static Phylogeny randomClockTree(final int n_tips, final long seed) {
+        final java.util.Random r = new java.util.Random(seed);
+        final List<PhylogenyNode> active = new ArrayList<>();
+        for (int i = 0; i < n_tips; ++i) {
+            final PhylogenyNode leaf = new PhylogenyNode();
+            leaf.setName("T" + i);
+            active.add(leaf);
+        }
+        while (active.size() > 2) {
+            final PhylogenyNode x = active.remove(r.nextInt(active.size()));
+            final PhylogenyNode y = active.remove(r.nextInt(active.size()));
+            final PhylogenyNode parent = new PhylogenyNode();
+            parent.addAsChild(x);
+            parent.addAsChild(y);
+            active.add(parent);
+        }
+        final PhylogenyNode root = new PhylogenyNode();
+        for (final PhylogenyNode nd : active) {
+            root.addAsChild(nd);
+        }
+        final Phylogeny phy = new Phylogeny();
+        phy.setRoot(root);
+        phy.externalNodesHaveChanged();
+        final java.util.Map<Long, Double> height = new java.util.HashMap<>();
+        for (final PhylogenyNodeIterator it = phy.iteratorPostorder(); it.hasNext(); ) {
+            final PhylogenyNode nd = it.next();
+            if (nd.isExternal()) {
+                height.put(nd.getId(), 0.0);
+            }
+            else {
+                double max_child = 0;
+                for (final PhylogenyNode ch : nd.getDescendants()) {
+                    max_child = Math.max(max_child, height.get(ch.getId()));
+                }
+                height.put(nd.getId(), max_child + 0.1 + r.nextDouble());
+            }
+        }
+        for (final PhylogenyNode nd : PhylogenyMethods.obtainAllNodesAsList(phy)) {
+            if (!nd.isRoot()) {
+                nd.setDistanceToParent(height.get(nd.getParent().getId()) - height.get(nd.getId()));
+            }
+        }
         return phy;
     }
 
