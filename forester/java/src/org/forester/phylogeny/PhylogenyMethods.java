@@ -812,10 +812,11 @@ public class PhylogenyMethods {
      * memory for {@code n} tips, via a rerooting tree traversal that shares per-subtree sums across
      * all candidate branches (rather than re-scanning all tip pairs for each branch).
      * <p>
-     * Each branch is also annotated with a {@link Confidence} of type {@value #MAD_CONFIDENCE_TYPE}
-     * whose value is that branch's minimal ancestor deviation -- the (root-mean-square) deviation if
-     * the root were placed on it -- so smaller values indicate better-supported root locations; the
-     * two branches at the new root carry the smallest (winning) value.
+     * Each internal branch is also annotated with a {@link Confidence} of type
+     * {@value #MAD_CONFIDENCE_TYPE} whose value is that branch's minimal ancestor deviation -- the
+     * (root-mean-square) deviation if the root were placed on it -- so smaller values indicate
+     * better-supported root locations; the internal branch at the new root carries the smallest
+     * (winning) value. Terminal (pendant) branches are not annotated.
      */
     public static void madRoot(final Phylogeny phylogeny) {
         if ((phylogeny == null) || (phylogeny.getNumberOfExternalNodes() < 3)) {
@@ -1039,7 +1040,8 @@ public class PhylogenyMethods {
             phylogeny.recalculateNumberOfExternalDescendants(true);
             for (final PhylogenyNodeIterator it = phylogeny.iteratorPostorder(); it.hasNext(); ) {
                 final PhylogenyNode c = it.next();
-                if (!c.isRoot()) {
+                if (!c.isRoot() && c.isInternal()) {
+                    // annotate internal branches only; the root edge always has an internal endpoint
                     final Double mad = bipartition_to_mad.get(canonicalBipartition(c, tip_index, n));
                     if (mad != null) {
                         setMadConfidence(c, mad);

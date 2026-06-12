@@ -6557,19 +6557,32 @@ public final class Test {
                     || !isEqual(distToRoot(t0.getNode("C")), 2.5)) {
                 return false;
             }
-            // the per-branch MAD ancestor deviation is attached as branch support; the winning (root)
-            // branch is ~0 here (a perfect clock root) and no branch is smaller
-            final double c_mad = madConfidence(t0.getNode("C"));
-            if (Double.isNaN(c_mad) || (c_mad > 1e-6)) {
-                return false;
+            // the per-branch MAD ancestor deviation is attached to INTERNAL branches as support; the
+            // winning (root) branch is ~0 here (a perfect clock root). The root edge is the pendant
+            // branch to leaf C, so its internal half -- the {A,B} clade branch -- carries the value.
+            if (!Double.isNaN(madConfidence(t0.getNode("C")))) {
+                return false; // terminal branches are not annotated
             }
+            double t0_min_internal = Double.POSITIVE_INFINITY;
             for (final PhylogenyNode nd : PhylogenyMethods.obtainAllNodesAsList(t0)) {
                 if (nd.isRoot()) {
                     continue;
                 }
-                if (Double.isNaN(madConfidence(nd)) || (madConfidence(nd) < (c_mad - 1e-9))) {
-                    return false; // every branch is annotated, and none beats the root branch
+                final double m = madConfidence(nd);
+                if (nd.isExternal()) {
+                    if (!Double.isNaN(m)) {
+                        return false; // no terminal annotations
+                    }
                 }
+                else {
+                    if (Double.isNaN(m)) {
+                        return false; // every internal branch is annotated
+                    }
+                    t0_min_internal = Math.min(t0_min_internal, m);
+                }
+            }
+            if (t0_min_internal > 1e-6) {
+                return false; // the winning (clock) root branch is ~0
             }
             // symmetric balanced tree: the MAD root is the central branch's midpoint, leaving every
             // tip equidistant (2) from the root.
@@ -6605,21 +6618,30 @@ public final class Test {
                             + " (seed " + seed + ")");
                     return false;
                 }
-                // every branch is annotated with a MAD value, and the smallest matches the optimum
+                // every INTERNAL branch is annotated (no terminal ones), and the smallest MAD value
+                // matches the optimum (the winning root edge always has an internal endpoint)
                 double min_mad = Double.POSITIVE_INFINITY;
-                int annotated = 0, branches = 0;
+                int annotated_internal = 0, internal_branches = 0;
                 for (final PhylogenyNode nd : PhylogenyMethods.obtainAllNodesAsList(rt)) {
                     if (nd.isRoot()) {
                         continue;
                     }
-                    ++branches;
                     final double m = madConfidence(nd);
-                    if (!Double.isNaN(m)) {
-                        ++annotated;
-                        min_mad = Math.min(min_mad, m);
+                    if (nd.isExternal()) {
+                        if (!Double.isNaN(m)) {
+                            return false; // terminal branches must not be annotated
+                        }
+                    }
+                    else {
+                        ++internal_branches;
+                        if (!Double.isNaN(m)) {
+                            ++annotated_internal;
+                            min_mad = Math.min(min_mad, m);
+                        }
                     }
                 }
-                if ((annotated != branches) || (Math.abs(min_mad - Math.sqrt(best / ((10 * 9.0) / 2.0))) > 1e-6)) {
+                if ((annotated_internal != internal_branches)
+                        || (Math.abs(min_mad - Math.sqrt(best / ((10 * 9.0) / 2.0))) > 1e-6)) {
                     return false;
                 }
             }
