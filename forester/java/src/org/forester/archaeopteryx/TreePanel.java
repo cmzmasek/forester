@@ -4723,15 +4723,37 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
-    // Top-left corner at which to draw the legend box: the dragged position (clamped into the visible
-    // area) when on screen, otherwise the default top-right corner.
-    private Point legendTopLeft(final Rectangle bounds, final int box_w, final int box_h, final boolean draggable) {
-        if (!draggable || (_legend_offset == null)) {
-            return new Point(Math.max(bounds.x, (bounds.x + bounds.width) - box_w - 10), bounds.y + 10);
+    // Top-left corner at which to draw the legend box; honors a dragged position on screen AND in
+    // exports (PDF/PNG/...), mapping it onto the export target by its viewport fraction.
+    private Point legendTopLeft(final Rectangle bounds, final int box_w, final int box_h) {
+        return legendTopLeftFor(bounds, getVisibleRect(), _legend_offset, box_w, box_h);
+    }
+
+    /**
+     * Computes the top-left corner at which to draw the property-color legend. {@code offset} is the
+     * user-dragged position within the on-screen {@code viewport} (or {@code null} for the default
+     * top-right corner of {@code target}). The dragged position is mapped onto {@code target} -- the
+     * viewport on screen, the full page/image on export -- by its fractional position, so a moved
+     * legend is honored in PDF/PNG/etc. exports instead of snapping back to the corner. When
+     * {@code target} matches the viewport (on-screen rendering and "visible region only" exports)
+     * this reproduces the exact dragged pixel position. Tested by {@link LegendPlacementTest}.
+     */
+    static Point legendTopLeftFor(final Rectangle target, final Rectangle viewport, final Point offset,
+                                  final int box_w, final int box_h) {
+        if (offset == null) {
+            return new Point(Math.max(target.x, (target.x + target.width) - box_w - 10), target.y + 10);
         }
-        final int ox = Math.max(0, Math.min(_legend_offset.x, Math.max(0, bounds.width - box_w)));
-        final int oy = Math.max(0, Math.min(_legend_offset.y, Math.max(0, bounds.height - box_h)));
-        return new Point(bounds.x + ox, bounds.y + oy);
+        final double fx = ((viewport.width - box_w) <= 0) ? 0.0
+                : clamp01(offset.x / (double) (viewport.width - box_w));
+        final double fy = ((viewport.height - box_h) <= 0) ? 0.0
+                : clamp01(offset.y / (double) (viewport.height - box_h));
+        final int ox = (int) Math.round(fx * Math.max(0, target.width - box_w));
+        final int oy = (int) Math.round(fy * Math.max(0, target.height - box_h));
+        return new Point(target.x + ox, target.y + oy);
+    }
+
+    private static double clamp01(final double v) {
+        return (v < 0.0) ? 0.0 : ((v > 1.0) ? 1.0 : v);
     }
 
     /** Colorize leaves by the given property reference, or turn it off when {@code ref} is empty. */
@@ -4837,7 +4859,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // when PDF/iText font metrics run slightly wider than AWT's stringWidth().
         final int box_w = text_w + (2 * pad) + 4;
         final int box_h = ((1 + shown + (more > 0 ? 1 : 0)) * row_h) + (2 * pad);
-        final Point tl = legendTopLeft(bounds, box_w, box_h, draggable);
+        final Point tl = legendTopLeft(bounds, box_w, box_h);
         final int x = tl.x;
         final int y = tl.y;
         if (draggable) {
@@ -4891,7 +4913,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final int content_w = Math.max(fm.stringWidth(title), bar_w);
         final int box_w = content_w + (2 * pad) + 4;
         final int box_h = (2 * fm.getHeight()) + bar_h + 6 + (2 * pad);
-        final Point tl = legendTopLeft(bounds, box_w, box_h, draggable);
+        final Point tl = legendTopLeft(bounds, box_w, box_h);
         final int x = tl.x;
         final int y = tl.y;
         if (draggable) {

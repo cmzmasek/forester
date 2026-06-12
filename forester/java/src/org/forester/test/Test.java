@@ -199,6 +199,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Legend placement: ");
+        if (org.forester.archaeopteryx.LegendPlacementTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Tree panel util: ");
         if (org.forester.archaeopteryx.TreePanelUtilTest.test()) {
             System.out.println("OK.");
