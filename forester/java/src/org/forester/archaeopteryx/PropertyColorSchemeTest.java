@@ -90,6 +90,17 @@ public final class PropertyColorSchemeTest {
         if ( colors.size() != 24 ) {
             return fail( "the 24 most frequent values should have 24 distinct colors, got " + colors.size() );
         }
+        // per-value leaf counts (for the legend): value x_i occurs (i+1) times
+        final Map<String, Integer> ct = s.getValueCounts();
+        if ( ct.size() != 26 ) {
+            return fail( "expected 26 per-value counts, got " + ct.size() );
+        }
+        for( int k = 0; k <= 25; ++k ) {
+            final String name = String.format( "x%02d", k );
+            if ( ( ct.get( name ) == null ) || ( ct.get( name ).intValue() != ( k + 1 ) ) ) {
+                return fail( "count for " + name + " expected " + ( k + 1 ) + " got " + ct.get( name ) );
+            }
+        }
         return true;
     }
 

@@ -4614,6 +4614,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         // the most frequent values (what is most visible on the tree), re-sorted alphabetically
         final Map<String, Color> values = _property_color_scheme.legendValues(PROPERTY_LEGEND_MAX_ENTRIES);
+        final Map<String, Integer> counts = _property_color_scheme.getValueCounts();
         final int total = _property_color_scheme.numberOfValues();
         final int shown = values.size();
         final int more = total - shown;
@@ -4627,7 +4628,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final String title = "Color by: " + PropertyColorScheme.displayName(_property_color_scheme.getRef());
         int text_w = fm.stringWidth(title);
         for (final String v : values.keySet()) {
-            text_w = Math.max(text_w, swatch + gap + fm.stringWidth(clipToWidth(v, fm, max_text_px)));
+            text_w = Math.max(text_w, swatch + gap + fm.stringWidth(legendRowText(v, counts, fm, max_text_px)));
         }
         if (more > 0) {
             text_w = Math.max(text_w, fm.stringWidth("… +" + more + " more"));
@@ -4650,12 +4651,19 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             g.setColor(e.getValue());
             g.fillRect(x + pad, baseline - fm.getAscent() + ((fm.getAscent() - swatch) / 2) + 1, swatch, swatch);
             g.setColor(fg);
-            g.drawString(clipToWidth(e.getKey(), fm, max_text_px), x + pad + swatch + gap, baseline);
+            g.drawString(legendRowText(e.getKey(), counts, fm, max_text_px), x + pad + swatch + gap, baseline);
         }
         if (more > 0) {
             baseline += row_h;
             g.drawString("… +" + more + " more", x + pad, baseline);
         }
+    }
+
+    /** A legend row: the (clipped) value label followed by its leaf count, e.g. {@code "USA (42)"}. */
+    private String legendRowText(final String value, final Map<String, Integer> counts, final FontMetrics fm,
+                                 final int max_px) {
+        final Integer count = counts.get(value);
+        return clipToWidth(value, fm, max_px) + ((count != null) ? (" (" + count + ")") : "");
     }
 
     /** Draws a gradient bar legend (low value to high value) for a continuous property. */

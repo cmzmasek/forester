@@ -78,6 +78,8 @@ final class PropertyColorScheme {
     // maps the normalized grouping key to the same color, for looking up a node's color.
     private final Map<String, Color> _value_to_color;
     private final Map<String, Color> _key_to_color;
+    // representative label -> number of (visible) leaves in that group, for the legend
+    private final Map<String, Integer> _value_to_count;
     // Continuous mode (numeric properties such as "year"): a blue->red gradient spanning
     // [_min, _max] instead of distinct colors. _gradient is false for categorical refs.
     private final boolean            _gradient;
@@ -94,6 +96,7 @@ final class PropertyColorScheme {
         _truncate_at = truncationDelimiter( ref );
         _value_to_color = new LinkedHashMap<String, Color>();
         _key_to_color = new LinkedHashMap<String, Color>();
+        _value_to_count = new LinkedHashMap<String, Integer>();
         // Color from the leaves actually on screen (those hidden under a collapsed node are
         // excluded), so the colors and legend track the displayed (sub)tree as the user
         // navigates into subtrees, collapses clades, or deletes nodes.
@@ -159,6 +162,7 @@ final class PropertyColorScheme {
                 final Color color = PALETTE[ i++ % PALETTE.length ];
                 _value_to_color.put( g[ 0 ], color ); // _value_to_color is now ordered most-frequent first
                 _key_to_color.put( g[ 1 ], color );
+                _value_to_count.put( g[ 0 ], key_to_total.get( g[ 1 ] ) );
             }
         }
     }
@@ -197,6 +201,11 @@ final class PropertyColorScheme {
     /** Representative-label to color map of all distinct values, ordered most-frequent first. */
     Map<String, Color> getValueColors() {
         return _value_to_color;
+    }
+
+    /** Representative-label to (visible) leaf count for each value; empty in gradient mode. */
+    Map<String, Integer> getValueCounts() {
+        return _value_to_count;
     }
 
     /**
