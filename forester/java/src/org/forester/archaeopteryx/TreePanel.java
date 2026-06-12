@@ -279,7 +279,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             false,
             false);
     private PHYLOGENY_GRAPHICS_TYPE _graphics_type = PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR;
-    private PhylogenyNode _highlight_node = null;
     private boolean _in_ov = false;
     private boolean _in_ov_rect = false;
     private float _last_drag_point_x = 0;
@@ -2444,13 +2443,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                     final boolean to_graphics_file) {
         if (node.isCollapse()) {
             return;
-        }
-        // if this node should be highlighted, do so
-        if ((_highlight_node == node) && !to_pdf && !to_graphics_file) {
-            g.setColor(getTreeColorSet().getFoundColor0());
-            drawOval(x - 8, y - 8, 16, 16, g);
-            drawOval(x - 9, y - 8, 17, 17, g);
-            drawOval(x - 9, y - 9, 18, 18, g);
         }
         if ((isInFoundNodes(node) || isInCurrentExternalNodes(node))
                 || (getOptions().isShowDefaultNodeShapesExternal() && node.isExternal())
@@ -5170,7 +5162,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 if (!node.isRoot() && node.getParent().isCollapse()) {
                     return;
                 }
-                _highlight_node = node;
                 // Check if shift key is down
                 if ((e.getModifiersEx() & InputEvent.SHIFT_DOWN_MASK) != 0) {
                     // Yes, so add to _found_nodes
@@ -5196,9 +5187,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         handleClickToAction(_control_panel.getActionWhenNodeClicked(), node);
                     }
                 }
-            } else {
-                // no node was clicked
-                _highlight_node = null;
             }
         }
         repaint();
