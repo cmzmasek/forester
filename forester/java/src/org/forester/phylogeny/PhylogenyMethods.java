@@ -1084,6 +1084,28 @@ public class PhylogenyMethods {
         node.getBranchData().addConfidence(new Confidence(value, MAD_CONFIDENCE_TYPE));
     }
 
+    /**
+     * Removes every {@value #MAD_CONFIDENCE_TYPE} branch confidence (added by {@link #madRoot}) from
+     * the tree, keeping all other confidences. Use when the tree is rerooted by some other means
+     * (manual reroot, midpoint rooting, ...), which makes the per-branch MAD support stale.
+     */
+    public static void removeMadConfidences(final Phylogeny phylogeny) {
+        if (phylogeny == null) {
+            return;
+        }
+        for (final PhylogenyNodeIterator it = phylogeny.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode node = it.next();
+            if (node.getBranchData().isHasConfidences()) {
+                final List<Confidence> confidences = node.getBranchData().getConfidences();
+                for (final Iterator<Confidence> ci = confidences.iterator(); ci.hasNext(); ) {
+                    if (MAD_CONFIDENCE_TYPE.equals(ci.next().getType())) {
+                        ci.remove();
+                    }
+                }
+            }
+        }
+    }
+
     // Sum of squared cross-pair deviations between subtree(c) and its complement, for the root placed
     // at distance x from c toward its parent. With K = 2*(x - depth[c]) the per-pair deviation is
     // K/d + (2*depth[j]/d - 1), so the sum is K^2*b0 + 2*K*b1 + b2 (b0,b1,b2 = the between-set sums).

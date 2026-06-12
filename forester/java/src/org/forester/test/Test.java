@@ -6552,6 +6552,28 @@ public final class Test {
         return true;
     }
 
+    private static boolean hasConfidenceOfType(final Phylogeny phy, final String type) {
+        for (final PhylogenyNode nd : PhylogenyMethods.obtainAllNodesAsList(phy)) {
+            for (final org.forester.phylogeny.data.Confidence c : nd.getBranchData().getConfidences()) {
+                if (type.equals(c.getType())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean hasOtherConfidence(final Phylogeny phy, final String type) {
+        for (final PhylogenyNode nd : PhylogenyMethods.obtainAllNodesAsList(phy)) {
+            for (final org.forester.phylogeny.data.Confidence c : nd.getBranchData().getConfidences()) {
+                if (!type.equals(c.getType())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private static double madConfidence(final PhylogenyNode node) {
         for (final org.forester.phylogeny.data.Confidence c : node.getBranchData().getConfidences()) {
             if (PhylogenyMethods.MAD_CONFIDENCE_TYPE.equals(c.getType())) {
@@ -6693,6 +6715,18 @@ public final class Test {
                         return false;
                     }
                 }
+            }
+            // removeMadConfidences strips MAD support (used when the tree is rerooted otherwise) but
+            // keeps other confidences (here the bootstrap values)
+            final Phylogeny t4 = factory.create("((A:1,B:2)x:1[&&NHX:B=80],(C:3,D:4)y:1[&&NHX:B=90])",
+                    new NHXParser())[0];
+            PhylogenyMethods.madRoot(t4);
+            if (!hasConfidenceOfType(t4, "MAD") || !hasOtherConfidence(t4, "MAD")) {
+                return false; // both MAD and the bootstrap confidences present after MAD rooting
+            }
+            PhylogenyMethods.removeMadConfidences(t4);
+            if (hasConfidenceOfType(t4, "MAD") || !hasOtherConfidence(t4, "MAD")) {
+                return false; // MAD gone, bootstrap kept
             }
         } catch (final Exception e) {
             e.printStackTrace(System.out);

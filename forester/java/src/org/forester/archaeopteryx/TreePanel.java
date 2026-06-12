@@ -5130,6 +5130,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         setNodeInPreorderToNull();
         setWaitCursor();
         PhylogenyMethods.midpointRoot(_phylogeny);
+        PhylogenyMethods.removeMadConfidences(_phylogeny); // a different rooting; MAD support is stale
         resetNodeIdToDistToLeafMap();
         setArrowCursor();
         setEdited(true);
@@ -5727,6 +5728,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     "Attempt to reroot tree in unrooted display",
                     JOptionPane.WARNING_MESSAGE);
             return;
+        }
+        if (!node.isRoot()) {
+            // a different rooting was chosen manually; any MAD root support is now stale
+            PhylogenyMethods.removeMadConfidences(getPhylogeny());
         }
         getPhylogeny().reRoot(node);
         getPhylogeny().recalculateNumberOfExternalDescendants(true);
