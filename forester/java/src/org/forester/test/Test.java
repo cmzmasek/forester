@@ -6568,11 +6568,155 @@ public final class Test {
             if (t3.getNumberOfExternalNodes() != 4) {
                 return false;
             }
+            // validate the O(n^2) madRoot against an independent O(n^3) brute force (which reroots
+            // copies and scores each via LCAs) on random trees, including a multifurcating root.
+            final long[] seeds = { 1, 2, 3, 7, 11, 23 };
+            for (final long seed : seeds) {
+                final Phylogeny rt = randomTree(10, seed, 2);
+                final Phylogeny rt_copy = rt.copy();
+                PhylogenyMethods.madRoot(rt); // the O(n^2) method under test
+                final double achieved = madScoreSsd(rt);
+                final double best = bestMadSsdBruteForce(rt_copy);
+                if (Math.abs(achieved - best) > 1e-6) {
+                    System.out.println("  MAD O(n^2) vs brute force: achieved " + achieved + ", best " + best
+                            + " (seed " + seed + ")");
+                    return false;
+                }
+            }
+            final Phylogeny rt3 = randomTree(11, 42, 3); // multifurcating (degree-3) root
+            final Phylogeny rt3_copy = rt3.copy();
+            PhylogenyMethods.madRoot(rt3);
+            if (Math.abs(madScoreSsd(rt3) - bestMadSsdBruteForce(rt3_copy)) > 1e-6) {
+                return false;
+            }
         } catch (final Exception e) {
             e.printStackTrace(System.out);
             return false;
         }
         return true;
+    }
+
+    // Sum of squared MAD ancestor deviations of the tree's CURRENT rooting (each pair's ancestor is
+    // its LCA); independent of PhylogenyMethods.madRoot's internals, so it can validate them.
+    private static double madScoreSsd(final Phylogeny phy) {
+        final List<PhylogenyNode> tips = phy.getExternalNodes();
+        final int n = tips.size();
+        double ssd = 0;
+        for (int a = 0; a < n; ++a) {
+            final double di = distToRoot(tips.get(a));
+            for (int b = a + 1; b < n; ++b) {
+                final double dj = distToRoot(tips.get(b));
+                final double dl = distToRoot(PhylogenyMethods.calculateLCA(tips.get(a), tips.get(b)));
+                final double dij = (di - dl) + (dj - dl);
+                if (dij > 1e-9) {
+                    final double dev = ((2.0 * (di - dl)) / dij) - 1.0;
+                    ssd += dev * dev;
+                }
+            }
+        }
+        return ssd;
+    }
+
+    private static java.util.Set<String> tipNamesUnder(final PhylogenyNode node) {
+        final java.util.Set<String> names = new HashSet<>();
+        for (final PhylogenyNode ext : node.getAllExternalDescendants()) {
+            names.add(ext.getName());
+        }
+        return names;
+    }
+
+    private static PhylogenyNode nodeWithTipNames(final Phylogeny phy, final java.util.Set<String> wanted) {
+        for (final PhylogenyNode node : PhylogenyMethods.obtainAllNodesAsList(phy)) {
+            if (tipNamesUnder(node).equals(wanted)) {
+                return node;
+            }
+        }
+        return null;
+    }
+
+    // Minimal achievable MAD score, found by trying every branch: the optimal position is computed
+    // analytically from the cross pairs, then a fresh copy is rerooted there and scored.
+    private static double bestMadSsdBruteForce(final Phylogeny original) {
+        double best = Double.POSITIVE_INFINITY;
+        final List<PhylogenyNode> tips = original.getExternalNodes();
+        for (final PhylogenyNode c : PhylogenyMethods.obtainAllNodesAsList(original)) {
+            if (c.isRoot()) {
+                continue;
+            }
+            final double dc = distToRoot(c);
+            final java.util.Set<String> sv = tipNamesUnder(c);
+            double sum_inv = 0, sum_inv_sq = 0, sum_a = 0;
+            for (final PhylogenyNode jn : tips) {
+                if (!sv.contains(jn.getName())) {
+                    continue; // j in the subtree of c
+                }
+                final double aj = distToRoot(jn) - dc;
+                for (final PhylogenyNode in : tips) {
+                    if (sv.contains(in.getName())) {
+                        continue; // i outside the subtree of c
+                    }
+                    final double dl = distToRoot(PhylogenyMethods.calculateLCA(in, jn));
+                    final double dij = (distToRoot(in) - dl) + (distToRoot(jn) - dl);
+                    if (dij > 1e-9) {
+                        final double inv = 1.0 / dij;
+                        sum_inv += inv;
+                        sum_inv_sq += inv * inv;
+                        sum_a += aj * inv * inv;
+                    }
+                }
+            }
+            double branch = c.getDistanceToParent();
+            if (branch < 0) {
+                branch = 0;
+            }
+            double x = (sum_inv_sq > 1e-12) ? ((sum_inv - (2.0 * sum_a)) / (2.0 * sum_inv_sq)) : 0.0;
+            if (x < 0) {
+                x = 0;
+            }
+            else if (x > branch) {
+                x = branch;
+            }
+            final Phylogeny copy = original.copy();
+            final PhylogenyNode cc = nodeWithTipNames(copy, sv);
+            if ((cc == null) || cc.isRoot()) {
+                continue;
+            }
+            copy.reRoot(cc, x);
+            copy.recalculateNumberOfExternalDescendants(true);
+            best = Math.min(best, madScoreSsd(copy));
+        }
+        return best;
+    }
+
+    // A random tree with branch lengths; rootDegree is the number of children of the root (2 for a
+    // bifurcating root, 3+ to exercise multifurcation), all other internal nodes are bifurcating.
+    private static Phylogeny randomTree(final int n_tips, final long seed, final int root_degree) {
+        final java.util.Random r = new java.util.Random(seed);
+        final List<PhylogenyNode> active = new ArrayList<>();
+        for (int i = 0; i < n_tips; ++i) {
+            final PhylogenyNode leaf = new PhylogenyNode();
+            leaf.setName("T" + i);
+            active.add(leaf);
+        }
+        while (active.size() > root_degree) {
+            final PhylogenyNode x = active.remove(r.nextInt(active.size()));
+            final PhylogenyNode y = active.remove(r.nextInt(active.size()));
+            x.setDistanceToParent(0.05 + r.nextDouble());
+            y.setDistanceToParent(0.05 + r.nextDouble());
+            final PhylogenyNode parent = new PhylogenyNode();
+            parent.addAsChild(x);
+            parent.addAsChild(y);
+            active.add(parent);
+        }
+        final PhylogenyNode root = new PhylogenyNode();
+        for (final PhylogenyNode nd : active) {
+            nd.setDistanceToParent(0.05 + r.nextDouble());
+            root.addAsChild(nd);
+        }
+        final Phylogeny phy = new Phylogeny();
+        phy.setRoot(root);
+        phy.externalNodesHaveChanged();
+        return phy;
     }
 
     private static boolean testMsaQualityMethod() {

@@ -23,13 +23,10 @@ package org.forester.phylogeny;
 import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.BitSet;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -810,8 +807,9 @@ public class PhylogenyMethods {
      * the branch and position yielding the smallest overall deviation become the new root.
      * <p>
      * Requires branch lengths and at least three external nodes; otherwise it is a no-op (use
-     * {@link #midpointRoot(Phylogeny)} for trees without branch lengths). Runs in O(b * n^2) time
-     * for {@code b} branches and {@code n} tips, which is suitable for moderately sized trees.
+     * {@link #midpointRoot(Phylogeny)} for trees without branch lengths). Runs in O(n^2) time and
+     * memory for {@code n} tips, via a rerooting tree traversal that shares per-subtree sums across
+     * all candidate branches (rather than re-scanning all tip pairs for each branch).
      */
     public static void madRoot(final Phylogeny phylogeny) {
         if ((phylogeny == null) || (phylogeny.getNumberOfExternalNodes() < 3)) {
@@ -826,29 +824,171 @@ public class PhylogenyMethods {
         for (int i = 0; i < n; ++i) {
             tip_index.put(tips.get(i).getId(), i);
         }
-        // distance from every node to every tip (treating the tree as unrooted)
-        final Map<Long, double[]> dist_from = new HashMap<>();
-        // descendant-tip membership (in the current rooting) of every node
-        final Map<Long, BitSet> descendant_tips = new HashMap<>();
+        // depth (distance from the current root) of every node
+        final Map<Long, Double> depth = new HashMap<>();
+        depth.put(phylogeny.getRoot().getId(), 0.0);
+        for (final PhylogenyNodeIterator it = phylogeny.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode node = it.next();
+            if (!node.isRoot()) {
+                depth.put(node.getId(), depth.get(node.getParent().getId()) + nonNegative(node.getDistanceToParent()));
+            }
+        }
+        final double[] tip_depth = new double[n];
+        for (int i = 0; i < n; ++i) {
+            tip_depth[i] = depth.get(tips.get(i).getId());
+        }
+        // Pass 1 (post-order): fill the tip-to-tip distance matrix d[][] at each pair's LCA, and the
+        // "within-subtree" deviation sums. For a pair whose common ancestor m is at depth depth[m],
+        // d[i][j] = depth[i] + depth[j] - 2*depth[m] and the deviation is 2*(depth[i]-depth[m])/d - 1.
+        final double[][] d = new double[n][n];
+        final Map<Long, Double> down_within = new HashMap<>(); // sum dev^2 over pairs with LCA inside the subtree
+        final Map<Long, Double> w0 = new HashMap<>(); // sum_{i!=j in subtree} 1/d^2                 (ordered)
+        final Map<Long, Double> w1 = new HashMap<>(); // sum_{i!=j in subtree} (2*depth[j]/d^2 - 1/d) (j second)
+        final Map<Long, Double> w2 = new HashMap<>(); // sum_{i!=j in subtree} (2*depth[j]/d - 1)^2   (j second)
+        final Map<Long, List<Integer>> subtree_tips = new HashMap<>();
         for (final PhylogenyNodeIterator it = phylogeny.iteratorPostorder(); it.hasNext(); ) {
             final PhylogenyNode node = it.next();
-            dist_from.put(node.getId(), distancesToTips(node, tip_index, n));
-            final BitSet bits = new BitSet(n);
             if (node.isExternal()) {
-                bits.set(tip_index.get(node.getId()));
+                final List<Integer> one = new ArrayList<>();
+                one.add(tip_index.get(node.getId()));
+                subtree_tips.put(node.getId(), one);
+                down_within.put(node.getId(), 0.0);
+                w0.put(node.getId(), 0.0);
+                w1.put(node.getId(), 0.0);
+                w2.put(node.getId(), 0.0);
+                continue;
             }
-            else {
-                for (final PhylogenyNode child : node.getDescendants()) {
-                    bits.or(descendant_tips.get(child.getId()));
+            final double dm = depth.get(node.getId());
+            final List<PhylogenyNode> children = node.getDescendants();
+            double dwn = 0, sw0 = 0, sw1 = 0, sw2 = 0;
+            for (final PhylogenyNode child : children) {
+                dwn += down_within.get(child.getId());
+                sw0 += w0.get(child.getId());
+                sw1 += w1.get(child.getId());
+                sw2 += w2.get(child.getId());
+            }
+            // pairs whose lowest common ancestor is this node: one tip from each of two children
+            for (int a = 0; a < children.size(); ++a) {
+                final List<Integer> la = subtree_tips.get(children.get(a).getId());
+                for (int b = a + 1; b < children.size(); ++b) {
+                    final List<Integer> lb = subtree_tips.get(children.get(b).getId());
+                    for (final int i : la) {
+                        final double di = tip_depth[i];
+                        for (final int j : lb) {
+                            final double dj = tip_depth[j];
+                            final double dij = (di - dm) + (dj - dm); // depth[i] + depth[j] - 2*depth[m]
+                            d[i][j] = dij;
+                            d[j][i] = dij;
+                            if (dij > MAD_EPSILON) {
+                                final double inv = 1.0 / dij;
+                                final double inv2 = inv * inv;
+                                final double dev = (2.0 * (di - dm) * inv) - 1.0;
+                                dwn += dev * dev;
+                                sw0 += 2.0 * inv2; // both orderings
+                                sw1 += (2.0 * (di + dj) * inv2) - (2.0 * inv);
+                                final double gi = (2.0 * di * inv) - 1.0;
+                                final double gj = (2.0 * dj * inv) - 1.0;
+                                sw2 += (gi * gi) + (gj * gj);
+                            }
+                        }
+                    }
                 }
             }
-            descendant_tips.put(node.getId(), bits);
+            final List<Integer> merged = new ArrayList<>();
+            for (final PhylogenyNode child : children) {
+                merged.addAll(subtree_tips.remove(child.getId())); // children lists no longer needed
+            }
+            subtree_tips.put(node.getId(), merged);
+            down_within.put(node.getId(), dwn);
+            w0.put(node.getId(), sw0);
+            w1.put(node.getId(), sw1);
+            w2.put(node.getId(), sw2);
         }
-        // the tip-to-tip patristic distance matrix
-        final double[][] d = new double[n][];
-        for (int i = 0; i < n; ++i) {
-            d[i] = dist_from.get(tips.get(i).getId());
+        // Pass 2: column sums over the distance matrix, then per-subtree "all-i" sums a0,a1,a2 (the
+        // between-set cross sums for a branch are then b_k = a_k - w_k).
+        final double[] colsum0 = new double[n]; // sum_{i!=j} 1/d^2
+        final double[] colsum_inv = new double[n]; // sum_{i!=j} 1/d
+        for (int j = 0; j < n; ++j) {
+            double s0 = 0, sinv = 0;
+            final double[] dj = d[j];
+            for (int i = 0; i < n; ++i) {
+                final double dij = dj[i];
+                if ((i != j) && (dij > MAD_EPSILON)) {
+                    final double inv = 1.0 / dij;
+                    s0 += inv * inv;
+                    sinv += inv;
+                }
+            }
+            colsum0[j] = s0;
+            colsum_inv[j] = sinv;
         }
+        final double[] colsum1 = new double[n];
+        final double[] colsum2 = new double[n];
+        for (int j = 0; j < n; ++j) {
+            colsum1[j] = (2.0 * tip_depth[j] * colsum0[j]) - colsum_inv[j];
+            colsum2[j] = (4.0 * tip_depth[j] * tip_depth[j] * colsum0[j]) - (4.0 * tip_depth[j] * colsum_inv[j])
+                    + (n - 1);
+        }
+        final Map<Long, Double> b0 = new HashMap<>();
+        final Map<Long, Double> b1 = new HashMap<>();
+        final Map<Long, Double> b2 = new HashMap<>();
+        final Map<Long, Double> a0 = new HashMap<>();
+        final Map<Long, Double> a1 = new HashMap<>();
+        final Map<Long, Double> a2 = new HashMap<>();
+        for (final PhylogenyNodeIterator it = phylogeny.iteratorPostorder(); it.hasNext(); ) {
+            final PhylogenyNode node = it.next();
+            double s0, s1, s2;
+            if (node.isExternal()) {
+                final int idx = tip_index.get(node.getId());
+                s0 = colsum0[idx];
+                s1 = colsum1[idx];
+                s2 = colsum2[idx];
+            }
+            else {
+                s0 = s1 = s2 = 0;
+                for (final PhylogenyNode child : node.getDescendants()) {
+                    s0 += a0.get(child.getId());
+                    s1 += a1.get(child.getId());
+                    s2 += a2.get(child.getId());
+                }
+            }
+            a0.put(node.getId(), s0);
+            a1.put(node.getId(), s1);
+            a2.put(node.getId(), s2);
+            b0.put(node.getId(), s0 - w0.get(node.getId()));
+            b1.put(node.getId(), s1 - w1.get(node.getId()));
+            b2.put(node.getId(), s2 - w2.get(node.getId()));
+        }
+        // Pass 3 (pre-order): up_within[node] = deviation sum of the pairs whose ancestor lies in the
+        // complement of subtree(node), via the rerooting recursion, so every branch's total is O(1).
+        final Map<Long, Double> up_within = new HashMap<>();
+        up_within.put(phylogeny.getRoot().getId(), 0.0);
+        for (final PhylogenyNodeIterator it = phylogeny.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode p = it.next();
+            final List<PhylogenyNode> children = p.getDescendants();
+            if (children.isEmpty()) {
+                continue;
+            }
+            double sum_children_down = 0;
+            double sum_children_eval_at_p = 0;
+            for (final PhylogenyNode c : children) {
+                sum_children_down += down_within.get(c.getId());
+                sum_children_eval_at_p += evalCross(depth.get(c.getId()), b0.get(c.getId()), b1.get(c.getId()),
+                        b2.get(c.getId()), nonNegative(c.getDistanceToParent()));
+            }
+            // cross deviation among all groups meeting at p (its child subtrees and its complement)
+            final double sc_p = p.isRoot() ? 0.0
+                    : evalCross(depth.get(p.getId()), b0.get(p.getId()), b1.get(p.getId()), b2.get(p.getId()), 0.0);
+            final double cross_among = (sum_children_eval_at_p + sc_p) / 2.0;
+            final double up_p = up_within.get(p.getId());
+            for (final PhylogenyNode c : children) {
+                final double eval_c_at_p = evalCross(depth.get(c.getId()), b0.get(c.getId()), b1.get(c.getId()),
+                        b2.get(c.getId()), nonNegative(c.getDistanceToParent()));
+                up_within.put(c.getId(),
+                        up_p + (sum_children_down - down_within.get(c.getId())) + (cross_among - eval_c_at_p));
+            }
+        }
+        // choose the branch and position minimizing the total ancestor deviation
         double best_ssd = Double.POSITIVE_INFINITY;
         PhylogenyNode best_node = null;
         double best_x = 0;
@@ -857,55 +997,21 @@ public class PhylogenyMethods {
             if (c.isRoot()) {
                 continue;
             }
-            final PhylogenyNode p = c.getParent();
-            double branch_length = c.getDistanceToParent();
-            if (branch_length < 0) {
-                branch_length = 0;
-            }
-            final double[] dist_c = dist_from.get(c.getId()); // distances from c (the child end)
-            final double[] dist_p = dist_from.get(p.getId()); // distances from p (the parent end)
-            final int[] sv = setBits(descendant_tips.get(c.getId()), n); // tips below c
-            final int[] su = clearBits(descendant_tips.get(c.getId()), n); // all other tips
-            // optimal root position x in [0, branch_length] from c, minimizing the cross-pair
-            // deviations: a cross pair (i in Su, j in Sv) has the root as ancestor, with
-            // dist(root,j) = x + dist_c[j] and dist(i,j) = d[i][j].
-            double sum_inv = 0, sum_inv_sq = 0, sum_a_inv_sq = 0;
-            for (final int j : sv) {
-                final double aj = dist_c[j];
-                for (final int i : su) {
-                    final double dij = d[i][j];
-                    if (dij <= MAD_EPSILON) {
-                        continue;
-                    }
-                    final double inv = 1.0 / dij;
-                    final double inv_sq = inv * inv;
-                    sum_inv += inv;
-                    sum_inv_sq += inv_sq;
-                    sum_a_inv_sq += aj * inv_sq;
-                }
-            }
-            double x = (sum_inv_sq <= 0) ? 0 : ((sum_inv - (2.0 * sum_a_inv_sq)) / (2.0 * sum_inv_sq));
+            final double depth_c = depth.get(c.getId());
+            final double bb0 = b0.get(c.getId());
+            final double bb1 = b1.get(c.getId());
+            final double bb2 = b2.get(c.getId());
+            final double branch_length = nonNegative(c.getDistanceToParent());
+            // optimal root position x (distance from c toward its parent), clamped to the branch
+            double x = (bb0 > MAD_EPSILON) ? (depth_c - (bb1 / (2.0 * bb0))) : 0.0;
             if (x < 0) {
                 x = 0;
             }
             else if (x > branch_length) {
                 x = branch_length;
             }
-            // total squared relative deviation over all tip pairs for this rooting
-            double ssd = 0;
-            for (final int j : sv) {
-                final double aj = dist_c[j];
-                for (final int i : su) {
-                    final double dij = d[i][j];
-                    if (dij <= MAD_EPSILON) {
-                        continue;
-                    }
-                    final double dev = ((2.0 * (x + aj)) / dij) - 1.0;
-                    ssd += dev * dev;
-                }
-            }
-            ssd += sameSideSquaredDeviation(sv, dist_c, d); // pairs whose ancestor is on c's side
-            ssd += sameSideSquaredDeviation(su, dist_p, d); // pairs whose ancestor is on p's side
+            final double cross_ssd = evalCross(depth_c, bb0, bb1, bb2, x);
+            final double ssd = cross_ssd + down_within.get(c.getId()) + up_within.get(c.getId());
             if (ssd < best_ssd) {
                 best_ssd = ssd;
                 best_node = c;
@@ -918,84 +1024,17 @@ public class PhylogenyMethods {
         }
     }
 
-    // Sum of squared relative deviations for tip pairs on the same side of the candidate branch.
-    // Their common ancestor is the node on the pair's path nearest the branch endpoint on that side,
-    // for which the deviation reduces to |dist_end[i] - dist_end[j]| / dist(i,j).
-    private static double sameSideSquaredDeviation(final int[] same_side, final double[] dist_end, final double[][] d) {
-        double ssd = 0;
-        for (int a = 0; a < same_side.length; ++a) {
-            final int i = same_side[a];
-            for (int b = a + 1; b < same_side.length; ++b) {
-                final int j = same_side[b];
-                final double dij = d[i][j];
-                if (dij <= MAD_EPSILON) {
-                    continue;
-                }
-                final double dev = (dist_end[i] - dist_end[j]) / dij;
-                ssd += dev * dev;
-            }
-        }
-        return ssd;
-    }
-
-    // Distances from a single node to every tip, walking the tree as if unrooted (over both
-    // children and parent), so it works for any node as a candidate branch endpoint.
-    private static double[] distancesToTips(final PhylogenyNode start, final Map<Long, Integer> tip_index,
-                                            final int n) {
-        final double[] dist = new double[n];
-        Arrays.fill(dist, -1);
-        final Deque<PhylogenyNode> nodes = new ArrayDeque<>();
-        final Deque<PhylogenyNode> came_from = new ArrayDeque<>();
-        final Deque<Double> distances = new ArrayDeque<>();
-        nodes.push(start);
-        came_from.push(start); // self as sentinel (ArrayDeque forbids null); no neighbor equals start
-        distances.push(0.0);
-        while (!nodes.isEmpty()) {
-            final PhylogenyNode node = nodes.pop();
-            final PhylogenyNode prev = came_from.pop();
-            final double here = distances.pop();
-            if (node.isExternal()) {
-                dist[tip_index.get(node.getId())] = here;
-            }
-            for (final PhylogenyNode child : node.getDescendants()) {
-                if (child != prev) {
-                    nodes.push(child);
-                    came_from.push(node);
-                    distances.push(here + nonNegative(child.getDistanceToParent()));
-                }
-            }
-            final PhylogenyNode parent = node.getParent();
-            if ((parent != null) && (parent != prev)) {
-                nodes.push(parent);
-                came_from.push(node);
-                distances.push(here + nonNegative(node.getDistanceToParent()));
-            }
-        }
-        return dist;
+    // Sum of squared cross-pair deviations between subtree(c) and its complement, for the root placed
+    // at distance x from c toward its parent. With K = 2*(x - depth[c]) the per-pair deviation is
+    // K/d + (2*depth[j]/d - 1), so the sum is K^2*b0 + 2*K*b1 + b2 (b0,b1,b2 = the between-set sums).
+    private static double evalCross(final double depth_c, final double b0, final double b1, final double b2,
+                                    final double x) {
+        final double k = 2.0 * (x - depth_c);
+        return (k * k * b0) + (2.0 * k * b1) + b2;
     }
 
     private static double nonNegative(final double d) {
         return (d < 0) ? 0 : d;
-    }
-
-    private static int[] setBits(final BitSet bits, final int n) {
-        final int[] a = new int[bits.cardinality()];
-        int k = 0;
-        for (int i = bits.nextSetBit(0); i >= 0; i = bits.nextSetBit(i + 1)) {
-            a[k++] = i;
-        }
-        return a;
-    }
-
-    private static int[] clearBits(final BitSet bits, final int n) {
-        final int[] a = new int[n - bits.cardinality()];
-        int k = 0;
-        for (int i = 0; i < n; ++i) {
-            if (!bits.get(i)) {
-                a[k++] = i;
-            }
-        }
-        return a;
     }
 
     public static void normalizeBootstrapValues(final Phylogeny phylogeny,
