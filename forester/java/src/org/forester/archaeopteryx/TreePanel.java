@@ -203,6 +203,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private final static int EURO_D = 10;
     private final static NumberFormat FORMATTER_BRANCH_LENGTH;
     private final static NumberFormat FORMATTER_CONFIDENCE;
+    // MAD support values lie in [0,1], so they get their own fixed (up to 2-decimal) format, kept
+    // independent of the "digits after comma" setting that the regular confidences use.
+    private final static NumberFormat FORMATTER_MAD;
     private static final float HALF_PI = (float) (Math.PI
             / 2.0);
     private final static int LIMIT_FOR_HQ_RENDERING = 2000;
@@ -343,6 +346,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         dfs.setDecimalSeparator('.');
         FORMATTER_CONFIDENCE = new DecimalFormat("#.###", dfs);
         FORMATTER_BRANCH_LENGTH = new DecimalFormat("#.###", dfs);
+        FORMATTER_MAD = new DecimalFormat("0.##", dfs); // e.g. 0 -> "0", 0.05 -> "0.05", 0.123 -> "0.12"
     }
 
     TreePanel(final Phylogeny t, final Configuration configuration, final MainPanel tjp) {
@@ -2337,7 +2341,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 if (PhylogenyMethods.MAD_CONFIDENCE_TYPE.equals(c.getType())) {
                     final double value = c.getValue();
                     if ((value != Confidence.CONFIDENCE_DEFAULT_VALUE) && Double.isFinite(value)) {
-                        sb.append(FORMATTER_CONFIDENCE.format(ForesterUtil.round(value, digits)));
+                        sb.append(FORMATTER_MAD.format(value)); // own fixed precision, not the "digits" setting
                         not_first = true;
                     }
                 }

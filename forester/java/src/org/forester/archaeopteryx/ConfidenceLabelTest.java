@@ -49,6 +49,11 @@ public final class ConfidenceLabelTest {
         if ( !"0/90".equals( TreePanel.confidenceLabel( mad_boot, true, 50.0, false, 0 ) ) ) {
             return fail( "MAD on should show '0/90'" );
         }
+        // a non-zero MAD keeps its own (up to 2-decimal) precision even though regular uses 0 digits
+        if ( !"0.05/90".equals( TreePanel.confidenceLabel( list( new Confidence( 0.05, "MAD" ),
+                                                                 new Confidence( 90.0, "" ) ), true, 50.0, false, 0 ) ) ) {
+            return fail( "MAD should keep 2 decimals -> '0.05/90'" );
+        }
         // a regular value below the threshold is hidden, but MAD still shows
         final List<Confidence> mad_low = list( new Confidence( 0.0, "MAD" ), new Confidence( 30.0, "" ) );
         if ( !"0".equals( TreePanel.confidenceLabel( mad_low, true, 50.0, false, 0 ) ) ) {
