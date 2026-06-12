@@ -105,6 +105,7 @@ final class SettingsDialog extends JDialog {
         add( c, cb( _mf._show_confidence_stddev_cbmi ) );
         add( c, cb( _mf._screen_antialias_cbmi ) );
         add( c, cb( _mf._background_gradient_cbmi ) );
+        add( c, labeled( "\"Color by\" palette:", paletteCombo() ) );
         c.add( header( "Collapsed Subtrees & Domains" ) );
         add( c, cb( _mf._collapsed_with_average_height_cbmi ) );
         add( c, cb( _mf._show_abbreviated_labels_for_collapsed_nodes_cbmi ) );
@@ -254,6 +255,22 @@ final class SettingsDialog extends JDialog {
             final int i = combo.getSelectedIndex();
             if ( ( i >= 0 ) && ( items[ i ] != null ) && !items[ i ].isSelected() ) {
                 items[ i ].doClick();
+            }
+        } );
+        return combo;
+    }
+
+    // The categorical palette used by the "Color by:" feature for the current tree.
+    private JComboBox<String> paletteCombo() {
+        final JComboBox<String> combo = new JComboBox<>( PropertyColorScheme.paletteNames().toArray( new String[ 0 ] ) );
+        final TreePanel tp = _mf.getCurrentTreePanel();
+        if ( tp != null ) {
+            combo.setSelectedItem( tp.getColorPaletteName() );
+        }
+        combo.addActionListener( e -> {
+            final TreePanel cur = _mf.getCurrentTreePanel();
+            if ( ( cur != null ) && ( combo.getSelectedItem() != null ) ) {
+                cur.setColorPaletteName( combo.getSelectedItem().toString() );
             }
         } );
         return combo;

@@ -131,7 +131,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     private int _uncollapse_all_cb_item;
     private int _order_subtree_cb_item;
     private JComboBox<String> _color_by_property_cb;
-    private JComboBox<String> _color_palette_cb;
     private static final String COLOR_BY_PROPERTY_NONE = "None";
     private boolean _color_branches;
     private JCheckBox _use_visual_styles_cb;
@@ -293,11 +292,6 @@ final class ControlPanel extends JPanel implements ActionListener {
                 tp.setColorByPropertyRef(
                         ((sel == null) || COLOR_BY_PROPERTY_NONE.equals(sel)) ? null : sel.toString());
                 tp.repaint();
-            } else if (e.getSource() == _color_palette_cb) {
-                final Object sel = _color_palette_cb.getSelectedItem();
-                if (sel != null) {
-                    tp.setColorPaletteName(sel.toString());
-                }
             } else if (e.getSource() == _click_to_combobox) {
                 setClickToAction(_click_to_combobox.getSelectedIndex());
                 getCurrentTreePanel().repaint();
@@ -2079,21 +2073,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         _color_by_property_cb.addActionListener(this);
         add(label);
         add(_color_by_property_cb);
-        // palette selector for the categorical "Color by" colors
-        final JLabel palette_label = new JLabel("Palette:");
-        palette_label.setFont(ControlPanel.jcb_font);
-        if (_configuration.isApplyCustomGuiColors()) {
-            palette_label.setForeground(getConfiguration().getGuiCheckboxTextColor());
-        }
-        _color_palette_cb = new JComboBox<String>();
-        _color_palette_cb.setFont(ControlPanel.js_font);
-        _color_palette_cb.setToolTipText("the set of colors used when coloring leaves by a property");
-        for (final String name : PropertyColorScheme.paletteNames()) {
-            _color_palette_cb.addItem(name);
-        }
-        _color_palette_cb.addActionListener(this);
-        add(palette_label);
-        add(_color_palette_cb);
     }
 
     /** Repopulate the "Color by:" dropdown from the currently displayed tree's properties. */
@@ -2115,11 +2094,6 @@ final class ControlPanel extends JPanel implements ActionListener {
                             : COLOR_BY_PROPERTY_NONE);
         }
         _color_by_property_cb.addActionListener(this);
-        if ((_color_palette_cb != null) && (tp != null)) {
-            _color_palette_cb.removeActionListener(this);
-            _color_palette_cb.setSelectedItem(tp.getColorPaletteName());
-            _color_palette_cb.addActionListener(this);
-        }
     }
 
     void setupControls() {
