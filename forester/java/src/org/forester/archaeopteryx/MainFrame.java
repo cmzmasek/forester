@@ -197,6 +197,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem _write_to_bmp_item;
     // tools menu:
     JMenuItem _midpoint_root_item;
+    JMenuItem _mad_root_item;
     JMenuItem _taxcolor_item;
     JMenuItem _confcolor_item;
     JMenuItem _color_rank_jmi;
@@ -375,6 +376,11 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 return;
             }
             midpointRoot();
+        } else if (o == _mad_root_item) {
+            if (isSubtreeDisplayed()) {
+                return;
+            }
+            madRoot();
         } else if (o == _delete_selected_nodes_item) {
             if (isSubtreeDisplayed()) {
                 return;
@@ -1418,6 +1424,12 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     void midpointRoot() {
         if (_mainpanel.getCurrentTreePanel() != null) {
             _mainpanel.getCurrentTreePanel().midpointRoot();
+        }
+    }
+
+    void madRoot() {
+        if (_mainpanel.getCurrentTreePanel() != null) {
+            _mainpanel.getCurrentTreePanel().madRoot();
         }
     }
 

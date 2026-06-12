@@ -655,6 +655,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("MAD rooting: ");
+        if (Test.testMADrooting()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Node removal: ");
         if (Test.testNodeRemoval()) {
             System.out.println("OK.");
@@ -6504,6 +6512,60 @@ public final class Test {
                 return false;
             }
             if (!isEqual(t1.getNode("AB").getDistanceToParent(), 3)) {
+                return false;
+            }
+        } catch (final Exception e) {
+            e.printStackTrace(System.out);
+            return false;
+        }
+        return true;
+    }
+
+    private static double distToRoot(final PhylogenyNode node) {
+        double d = 0;
+        PhylogenyNode n = node;
+        while (!n.isRoot()) {
+            d += (n.getDistanceToParent() > 0 ? n.getDistanceToParent() : 0);
+            n = n.getParent();
+        }
+        return d;
+    }
+
+    private static boolean testMADrooting() {
+        try {
+            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+            // 3-taxon unrooted star with one long branch: the clock root sits 2.5 from C, leaving
+            // every tip 2.5 from the root (an exact, hand-verifiable minimal-deviation rooting).
+            final Phylogeny t0 = factory.create("(A:1,B:1,C:4)", new NHXParser())[0];
+            PhylogenyMethods.madRoot(t0);
+            if (t0.getRoot().getNumberOfDescendants() != 2) {
+                return false;
+            }
+            if (!isEqual(t0.getNode("C").getDistanceToParent(), 2.5)) {
+                return false;
+            }
+            if (!isEqual(distToRoot(t0.getNode("A")), 2.5) || !isEqual(distToRoot(t0.getNode("B")), 2.5)
+                    || !isEqual(distToRoot(t0.getNode("C")), 2.5)) {
+                return false;
+            }
+            // symmetric balanced tree: the MAD root is the central branch's midpoint, leaving every
+            // tip equidistant (2) from the root.
+            final Phylogeny t1 = factory.create("((A:1,B:1):1,(C:1,D:1):1)", new NHXParser())[0];
+            PhylogenyMethods.madRoot(t1);
+            for (final String tip : new String[] { "A", "B", "C", "D" }) {
+                if (!isEqual(distToRoot(t1.getNode(tip)), 2.0)) {
+                    return false;
+                }
+            }
+            // guards: no-op (no exception, topology intact) for < 3 tips and for missing branch lengths
+            final Phylogeny t2 = factory.create("(A:1,B:1)", new NHXParser())[0];
+            PhylogenyMethods.madRoot(t2);
+            if (t2.getNumberOfExternalNodes() != 2) {
+                return false;
+            }
+            final Phylogeny t3 = factory.create("((A,B),(C,D))", new NHXParser())[0];
+            PhylogenyMethods.madRoot(t3);
+            if (t3.getNumberOfExternalNodes() != 4) {
                 return false;
             }
         } catch (final Exception e) {

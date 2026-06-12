@@ -5130,6 +5130,24 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         repaint();
     }
 
+    final void madRoot() {
+        if ((_phylogeny == null) || (_phylogeny.getNumberOfExternalNodes() < 2)) {
+            return;
+        }
+        if (!_phylogeny.isRerootable()) {
+            JOptionPane
+                    .showMessageDialog(this, "This is not rerootable", "Not rerootable", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        setNodeInPreorderToNull();
+        setWaitCursor();
+        PhylogenyMethods.madRoot(_phylogeny);
+        resetNodeIdToDistToLeafMap();
+        setArrowCursor();
+        setEdited(true);
+        repaint();
+    }
+
     final void mouseClicked(final MouseEvent e) {
         if (getOptions().isShowOverview() && isOvOn() && isInOv()) {
             final double w_ratio = getVisibleRect().width / getOvRectangle().getWidth();
