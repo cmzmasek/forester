@@ -47,9 +47,10 @@ public final class PropertyColorSchemeTest {
     }
 
     public static boolean test() {
-        return testDisplayName() && testCategoricalGrouping() && testCountryGrouping() && testHostQualifierGrouping()
-                && testYearGradient() && testAbsentAndEmpty() && testCollapseExcludesHiddenLeaves()
-                && testCollapseRescalesGradient() && testFrequencyColorsAndLegend();
+        return testDisplayName() && testCategoricalGrouping() && testHumanSynonym() && testCountryGrouping()
+                && testHostQualifierGrouping() && testYearGradient() && testAbsentAndEmpty()
+                && testCollapseExcludesHiddenLeaves() && testCollapseRescalesGradient()
+                && testFrequencyColorsAndLegend();
     }
 
     // ---- colors assigned by frequency (distinct for the most common values); legend = top-N most
@@ -137,41 +138,69 @@ public final class PropertyColorSchemeTest {
     // ---- categorical grouping: case / whitespace / underscore variants share a color ----
     private static boolean testCategoricalGrouping() {
         final String ref = "repseq:host";
-        // "Human" x3, "human" x1, "homo_sapiens" x1, "Homo sapiens" x2, "man" x1
-        final Phylogeny phy = treeWith( ref, "Human", "Human", "Human", "human", "homo_sapiens", "Homo sapiens",
-                                        "Homo sapiens", "man" );
+        // "Mouse" x3, "mouse" x1, "mus_musculus" x1, "Mus musculus" x2, "rat" x1
+        final Phylogeny phy = treeWith( ref, "Mouse", "Mouse", "Mouse", "mouse", "mus_musculus", "Mus musculus",
+                                        "Mus musculus", "rat" );
         final PropertyColorScheme s = new PropertyColorScheme( phy, ref );
         if ( s.isGradient() ) {
             return fail( "host should not be a gradient" );
         }
-        // three groups: {Human, human}, {homo_sapiens, Homo sapiens}, {man}
+        // three groups: {Mouse, mouse}, {mus_musculus, Mus musculus}, {rat}
         if ( s.getValueColors().size() != 3 ) {
             return fail( "host groups expected 3, got " + s.getValueColors().size() );
         }
         // trivial variants -> same color
-        if ( !sameColor( s, phy, ref, "Human", "human" ) ) {
-            return fail( "Human/human should share a color" );
+        if ( !sameColor( s, phy, ref, "Mouse", "mouse" ) ) {
+            return fail( "Mouse/mouse should share a color" );
         }
-        if ( !sameColor( s, phy, ref, "homo_sapiens", "Homo sapiens" ) ) {
-            return fail( "homo_sapiens/Homo sapiens should share a color" );
+        if ( !sameColor( s, phy, ref, "mus_musculus", "Mus musculus" ) ) {
+            return fail( "mus_musculus/Mus musculus should share a color" );
         }
         // semantically equal but lexically different -> intentionally NOT merged
-        if ( sameColor( s, phy, ref, "Human", "man" ) ) {
-            return fail( "Human/man must NOT be merged (out of scope)" );
+        if ( sameColor( s, phy, ref, "Mouse", "rat" ) ) {
+            return fail( "Mouse/rat must NOT be merged (out of scope)" );
         }
-        if ( sameColor( s, phy, ref, "Human", "homo_sapiens" ) ) {
-            return fail( "Human/homo_sapiens must NOT be merged" );
+        if ( sameColor( s, phy, ref, "Mouse", "mus_musculus" ) ) {
+            return fail( "Mouse/mus_musculus must NOT be merged" );
         }
         // legend shows the most frequent spelling per group
         final Map<String, Color> legend = s.getValueColors();
-        if ( !legend.containsKey( "Human" ) || legend.containsKey( "human" ) ) {
-            return fail( "legend should show 'Human' (most frequent), not 'human'" );
+        if ( !legend.containsKey( "Mouse" ) || legend.containsKey( "mouse" ) ) {
+            return fail( "legend should show 'Mouse' (most frequent), not 'mouse'" );
         }
-        if ( !legend.containsKey( "Homo sapiens" ) || legend.containsKey( "homo_sapiens" ) ) {
-            return fail( "legend should show 'Homo sapiens' (most frequent), not 'homo_sapiens'" );
+        if ( !legend.containsKey( "Mus musculus" ) || legend.containsKey( "mus_musculus" ) ) {
+            return fail( "legend should show 'Mus musculus' (most frequent), not 'mus_musculus'" );
         }
-        if ( !legend.containsKey( "man" ) ) {
-            return fail( "legend should contain 'man'" );
+        if ( !legend.containsKey( "rat" ) ) {
+            return fail( "legend should contain 'rat'" );
+        }
+        return true;
+    }
+
+    // ---- the one deliberate synonym fold: human/Human/humans -> Homo sapiens ----
+    private static boolean testHumanSynonym() {
+        final String ref = "repseq:host";
+        final Phylogeny phy = treeWith( ref, "Human", "human", "Homo sapiens", "homo_sapiens", "man" );
+        final PropertyColorScheme s = new PropertyColorScheme( phy, ref );
+        // two groups: the merged { Human, human, Homo sapiens, homo_sapiens } and { man }
+        if ( s.getValueColors().size() != 2 ) {
+            return fail( "human synonym: expected 2 groups, got " + s.getValueColors().size() );
+        }
+        if ( !sameColor( s, phy, ref, "Human", "Homo sapiens" ) || !sameColor( s, phy, ref, "human", "homo_sapiens" ) ) {
+            return fail( "human/Human should fold into Homo sapiens" );
+        }
+        if ( sameColor( s, phy, ref, "Human", "man" ) ) {
+            return fail( "'man' must NOT fold into Homo sapiens (only 'human' is special-cased)" );
+        }
+        // the legend shows the canonical "Homo sapiens", not "Human"/"human"
+        final Map<String, Color> legend = s.getValueColors();
+        if ( !legend.containsKey( "Homo sapiens" ) || legend.containsKey( "Human" ) || legend.containsKey( "human" ) ) {
+            return fail( "legend should show 'Homo sapiens', not 'Human'/'human'" );
+        }
+        // the merged group counts all four folded/variant leaves
+        final Integer count = s.getValueCounts().get( "Homo sapiens" );
+        if ( ( count == null ) || ( count.intValue() != 4 ) ) {
+            return fail( "Homo sapiens count should be 4, got " + count );
         }
         return true;
     }

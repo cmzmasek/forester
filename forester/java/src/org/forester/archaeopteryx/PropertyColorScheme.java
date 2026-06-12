@@ -48,10 +48,11 @@ import org.forester.util.ForesterUtil;
  * has more distinct values than there are palette entries.
  * <p>
  * Trivially different spellings are grouped before coloring -- values are compared after
- * trimming, collapsing whitespace, treating {@code _} as a space, and case-folding -- so
- * e.g. {@code Human}/{@code human}/{@code homo_sapiens} get one color (it cannot, however,
- * merge semantically-equal but lexically-different values such as {@code man} vs
- * {@code H. sapiens}). A few refs are special-cased: {@code year} is colored by a continuous
+ * trimming, collapsing whitespace, treating {@code _} as a space, and case-folding. The one
+ * deliberate synonym fold is {@code human}/{@code humans} into {@code Homo sapiens}, so e.g.
+ * {@code human}/{@code Human}/{@code homo_sapiens}/{@code Homo sapiens} get one color; other
+ * semantically-equal but lexically-different values (such as {@code man} vs {@code H. sapiens})
+ * are not merged. A few refs are special-cased: {@code year} is colored by a continuous
  * gradient over its numeric range, while {@code country} and {@code host} first drop a
  * trailing qualifier -- everything from the first {@code :} (country, so {@code USA:CA} and
  * {@code USA:IL} share a color) or {@code ;} (host, so {@code Homo sapiens; male 35} and
@@ -240,7 +241,8 @@ final class PropertyColorScheme {
      * The display label for a raw property value: trimmed, underscores as spaces, internal
      * whitespace collapsed; for refs that carry a trailing qualifier ("country", "host") only
      * the part before the first ':'/';' (so "USA:CA" reads as "USA" and "Homo sapiens; male 35"
-     * reads as "Homo sapiens"). Case is preserved -- this is what the legend shows.
+     * reads as "Homo sapiens"). The synonym "human" is folded to "Homo sapiens". Case is otherwise
+     * preserved -- this is what the legend shows.
      */
     private String displayLabel( final String v ) {
         String s = v;
@@ -251,7 +253,21 @@ final class PropertyColorScheme {
             }
         }
         s = s.trim().replace( '_', ' ' );
-        return s.replaceAll( "\\s+", " " );
+        s = s.replaceAll( "\\s+", " " );
+        return canonicalSynonym( s );
+    }
+
+    /**
+     * Folds a tiny set of unambiguous synonyms to a canonical name so they share a color/legend
+     * entry. Deliberately minimal -- this is not general metadata normalization; currently only the
+     * common-name "human"/"humans" is folded into the scientific name "Homo sapiens".
+     */
+    private static String canonicalSynonym( final String label ) {
+        final String lower = label.toLowerCase( Locale.ROOT );
+        if ( lower.equals( "human" ) || lower.equals( "humans" ) ) {
+            return "Homo sapiens";
+        }
+        return label;
     }
 
     /** The normalized key a value is grouped/colored by: its display label, case-folded. */
