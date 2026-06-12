@@ -1457,7 +1457,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             } else if (e.getKeyCode() == KeyEvent.VK_O) {
                 getControlPanel().orderPressed(this);
             } else if (e.getKeyCode() == KeyEvent.VK_R) {
-                getControlPanel().returnedToWholeTreePressed();
+                if (e.isShiftDown()) {
+                    getControlPanel().returnedToWholeTreePressed();
+                } else {
+                    getControlPanel().returnedToSuperTreePressed();
+                }
             } else if (e.getKeyCode() == KeyEvent.VK_U) {
                 getControlPanel().uncollapseAll(this);
                 getControlPanel().displayedPhylogenyMightHaveChanged(false);

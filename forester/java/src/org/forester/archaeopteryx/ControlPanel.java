@@ -1272,10 +1272,10 @@ final class ControlPanel extends JPanel implements ActionListener {
         _fit_width.setMargin(tight);
         _zoom_in_x.setMargin(tight);
         _return_to_whole_tree = new JButton(RETURN_TO_WHOLE_TREE_TEXT);
-        _return_to_whole_tree.setToolTipText("return all the way to the complete tree (if in a sub-tree) [Alt+R]");
+        _return_to_whole_tree.setToolTipText("return all the way to the complete tree (if in a sub-tree) [Alt+Shift+R]");
         _return_to_whole_tree.setEnabled(false);
         _return_to_super_tree = new JButton(RETURN_UP_ONE_LEVEL_TEXT);
-        _return_to_super_tree.setToolTipText("move up by one level towards the complete tree (if in a sub-tree)");
+        _return_to_super_tree.setToolTipText("move up by one level towards the complete tree (if in a sub-tree) [Alt+R]");
         _return_to_super_tree.setEnabled(false);
         _order = new JButton("O");
         _order.setToolTipText("order all [Alt+O]");

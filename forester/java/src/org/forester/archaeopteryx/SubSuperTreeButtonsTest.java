@@ -21,6 +21,8 @@
 package org.forester.archaeopteryx;
 
 import java.awt.GraphicsEnvironment;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
@@ -100,6 +102,24 @@ public final class SubSuperTreeButtonsTest {
                 if ( ( leaves( tp ) != 4 ) || tp.isCurrentTreeIsSubtree() ) {
                     ok[ 0 ] = false;
                 }
+                // keyboard shortcuts (dispatched through the panel's own key listener):
+                // Alt+R moves up one level, Alt+Shift+R returns all the way to the root.
+                tp.subTree( internalNamed( tp.getPhylogeny(), "A" ) );
+                tp.subTree( internalNamed( tp.getPhylogeny(), "B" ) );
+                pressR( tp, false ); // Alt+R: up one -> A (3 leaves)
+                if ( ( leaves( tp ) != 3 ) || !tp.isCurrentTreeIsSubtree() ) {
+                    ok[ 0 ] = false;
+                }
+                pressR( tp, false ); // Alt+R again: up one -> whole tree (4 leaves)
+                if ( ( leaves( tp ) != 4 ) || tp.isCurrentTreeIsSubtree() ) {
+                    ok[ 0 ] = false;
+                }
+                tp.subTree( internalNamed( tp.getPhylogeny(), "A" ) );
+                tp.subTree( internalNamed( tp.getPhylogeny(), "B" ) );
+                pressR( tp, true ); // Alt+Shift+R: straight to the root (4 leaves)
+                if ( ( leaves( tp ) != 4 ) || tp.isCurrentTreeIsSubtree() ) {
+                    ok[ 0 ] = false;
+                }
                 ( (JFrame) mf[ 0 ] ).dispose();
             } );
             return ok[ 0 ];
@@ -112,6 +132,16 @@ public final class SubSuperTreeButtonsTest {
 
     private static int leaves( final TreePanel tp ) {
         return tp.getPhylogeny().getNumberOfExternalNodes();
+    }
+
+    /** Press Alt+R (or Alt+Shift+R when {@code shift}) on the panel via its registered key listener. */
+    private static void pressR( final TreePanel tp, final boolean shift ) {
+        int mods = InputEvent.ALT_DOWN_MASK;
+        if ( shift ) {
+            mods |= InputEvent.SHIFT_DOWN_MASK;
+        }
+        tp.dispatchEvent( new KeyEvent( tp, KeyEvent.KEY_PRESSED, System.currentTimeMillis(), mods, KeyEvent.VK_R,
+                                        'r' ) );
     }
 
     /**
