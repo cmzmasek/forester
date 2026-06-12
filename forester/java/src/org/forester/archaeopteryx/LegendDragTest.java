@@ -96,6 +96,32 @@ public final class LegendDragTest {
                     if ( ( Math.abs( back.x - home.x ) > 1 ) || ( Math.abs( back.y - home.y ) > 1 ) ) {
                         ok[ 0 ] = false;
                     }
+                    // a left-click on a value row maps to that value; setting/clearing an override
+                    // updates the scheme's color for it
+                    String first = null;
+                    for( int yy = back.y + 1; yy < ( back.y + back.height ); ++yy ) {
+                        final String v = tp.legendValueAt( at( tp, back.x + 12, yy ) );
+                        if ( v != null ) {
+                            first = v;
+                            break;
+                        }
+                    }
+                    if ( first == null ) {
+                        ok[ 0 ] = false;
+                    }
+                    else {
+                        final String key = tp.getPropertyColorScheme().getValueKeys().get( first );
+                        tp.setColorOverride( key, new java.awt.Color( 0x010203 ) );
+                        if ( !new java.awt.Color( 0x010203 )
+                                .equals( tp.getPropertyColorScheme().getValueColors().get( first ) ) ) {
+                            ok[ 0 ] = false;
+                        }
+                        tp.clearColorOverride( key );
+                        if ( new java.awt.Color( 0x010203 )
+                                .equals( tp.getPropertyColorScheme().getValueColors().get( first ) ) ) {
+                            ok[ 0 ] = false;
+                        }
+                    }
                 }
                 ( (JFrame) mf[ 0 ] ).dispose();
             } );

@@ -81,6 +81,8 @@ final class PropertyColorScheme {
     private final Map<String, Color> _key_to_color;
     // representative label -> number of (visible) leaves in that group, for the legend
     private final Map<String, Integer> _value_to_count;
+    // representative label -> its (stable, normalized) group key, for keying per-value overrides
+    private final Map<String, String>  _value_to_key;
     // Continuous mode (numeric properties such as "year"): a blue->red gradient spanning
     // [_min, _max] instead of distinct colors. _gradient is false for categorical refs.
     private final boolean            _gradient;
@@ -92,12 +94,21 @@ final class PropertyColorScheme {
     private final char               _truncate_at;
 
     PropertyColorScheme( final Phylogeny phylogeny, final String ref ) {
+        this( phylogeny, ref, null );
+    }
+
+    /**
+     * @param overrides optional user-assigned colors, keyed by group key (see {@link #getValueKeys()}),
+     *                  that replace the automatic palette color for those values; may be null/empty.
+     */
+    PropertyColorScheme( final Phylogeny phylogeny, final String ref, final Map<String, Color> overrides ) {
         _ref = ref;
         _gradient = isYearRef( ref );
         _truncate_at = truncationDelimiter( ref );
         _value_to_color = new LinkedHashMap<String, Color>();
         _key_to_color = new LinkedHashMap<String, Color>();
         _value_to_count = new LinkedHashMap<String, Integer>();
+        _value_to_key = new LinkedHashMap<String, String>();
         // Color from the leaves actually on screen (those hidden under a collapsed node are
         // excluded), so the colors and legend track the displayed (sub)tree as the user
         // navigates into subtrees, collapses clades, or deletes nodes.
@@ -160,10 +171,14 @@ final class PropertyColorScheme {
             } );
             int i = 0;
             for( final String[] g : groups ) {
-                final Color color = PALETTE[ i++ % PALETTE.length ];
+                Color color = PALETTE[ i++ % PALETTE.length ];
+                if ( ( overrides != null ) && overrides.containsKey( g[ 1 ] ) ) {
+                    color = overrides.get( g[ 1 ] ); // user-assigned color for this value
+                }
                 _value_to_color.put( g[ 0 ], color ); // _value_to_color is now ordered most-frequent first
                 _key_to_color.put( g[ 1 ], color );
                 _value_to_count.put( g[ 0 ], key_to_total.get( g[ 1 ] ) );
+                _value_to_key.put( g[ 0 ], g[ 1 ] );
             }
         }
     }
@@ -207,6 +222,11 @@ final class PropertyColorScheme {
     /** Representative-label to (visible) leaf count for each value; empty in gradient mode. */
     Map<String, Integer> getValueCounts() {
         return _value_to_count;
+    }
+
+    /** Representative-label to its stable group key (the key to use for a per-value color override). */
+    Map<String, String> getValueKeys() {
+        return _value_to_key;
     }
 
     /**

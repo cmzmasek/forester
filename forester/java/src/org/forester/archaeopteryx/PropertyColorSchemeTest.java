@@ -22,6 +22,7 @@ package org.forester.archaeopteryx;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +51,7 @@ public final class PropertyColorSchemeTest {
         return testDisplayName() && testCategoricalGrouping() && testHumanSynonym() && testCountryGrouping()
                 && testHostQualifierGrouping() && testYearGradient() && testAbsentAndEmpty()
                 && testCollapseExcludesHiddenLeaves() && testCollapseRescalesGradient()
-                && testFrequencyColorsAndLegend();
+                && testFrequencyColorsAndLegend() && testColorOverrides();
     }
 
     // ---- colors assigned by frequency (distinct for the most common values); legend = top-N most
@@ -173,6 +174,33 @@ public final class PropertyColorSchemeTest {
         }
         if ( !legend.containsKey( "rat" ) ) {
             return fail( "legend should contain 'rat'" );
+        }
+        return true;
+    }
+
+    // ---- user-assigned per-value color overrides (keyed by group key) ----
+    private static boolean testColorOverrides() {
+        final String ref = "repseq:host";
+        final Phylogeny phy = treeWith( ref, "cat", "cat", "dog", "fish" );
+        final Map<String, Color> overrides = new HashMap<String, Color>();
+        overrides.put( "cat", new Color( 0x123456 ) ); // keyed by the group key (lower-cased "cat")
+        final PropertyColorScheme s = new PropertyColorScheme( phy, ref, overrides );
+        if ( !new Color( 0x123456 ).equals( colorForValue( s, phy, ref, "cat" ) ) ) {
+            return fail( "cat should use the override color" );
+        }
+        // dog and fish keep distinct automatic palette colors, different from the override
+        final Color dog = colorForValue( s, phy, ref, "dog" );
+        final Color fish = colorForValue( s, phy, ref, "fish" );
+        if ( new Color( 0x123456 ).equals( dog ) || new Color( 0x123456 ).equals( fish ) || dog.equals( fish ) ) {
+            return fail( "dog/fish should keep distinct automatic colors" );
+        }
+        // getValueKeys maps a representative label to its (stable) group key
+        if ( !"cat".equals( s.getValueKeys().get( "cat" ) ) ) {
+            return fail( "getValueKeys should map 'cat' -> 'cat'" );
+        }
+        // without overrides, cat is automatic again
+        if ( new Color( 0x123456 ).equals( colorForValue( new PropertyColorScheme( phy, ref, null ), phy, ref, "cat" ) ) ) {
+            return fail( "without overrides, cat should use an automatic color" );
         }
         return true;
     }

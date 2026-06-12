@@ -49,9 +49,7 @@ final class MouseListener extends MouseAdapter implements MouseMotionListener {
     @Override
     public void mouseClicked( final MouseEvent e ) {
         if ( _treepanel.isOnPropertyLegend( e ) ) {
-            if ( e.getClickCount() == 2 ) {
-                _treepanel.resetLegendPosition(); // double-click the legend to send it back to the corner
-            }
+            _treepanel.handleLegendClick( e ); // recolor a value row, or double-click to reset position
             return; // a click on the legend is not a node action
         }
         _click_point.setLocation( e.getX(), e.getY() );

@@ -4562,6 +4562,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private Rectangle           _property_legend_bounds = null;
     private int                 _legend_grab_dx = 0;
     private int                 _legend_grab_dy = 0;
+    // User-assigned per-value colors: ref -> (group key -> color); applied by the color scheme,
+    // overriding the automatic palette color, and kept across scheme rebuilds (navigation).
+    private final Map<String, Map<String, Color>> _property_color_overrides = new HashMap<>();
+    // Layout of the legend's value rows (recorded when drawn) so a click can be mapped to a value.
+    private java.util.List<String> _legend_row_labels   = new java.util.ArrayList<>();
+    private int                 _legend_rows_top    = 0;
+    private int                 _legend_row_height  = 0;
 
     /** The on-screen bounds of the last-drawn property-color legend, or null; used by the drag test. */
     final Rectangle getPropertyLegendBounds() {
@@ -4605,6 +4612,89 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         repaint();
     }
 
+    /** The legend value label under {@code e}, or null (title row, "+N more", or not on the legend). */
+    final String legendValueAt(final MouseEvent e) {
+        if (!isOnPropertyLegend(e) || _legend_row_labels.isEmpty() || (_legend_row_height <= 0)) {
+            return null;
+        }
+        final int idx = (e.getY() - _legend_rows_top) / _legend_row_height;
+        return ((idx >= 0) && (idx < _legend_row_labels.size())) ? _legend_row_labels.get(idx) : null;
+    }
+
+    final void handleLegendClick(final MouseEvent e) {
+        final String value = legendValueAt(e);
+        if (value != null) {
+            if (e.getClickCount() == 1) {
+                chooseColorForValue(value); // left-click a value row -> set its color
+            }
+        } else if (e.getClickCount() == 2) {
+            resetLegendPosition(); // double-click off a value row returns the legend to its corner
+        }
+    }
+
+    // Opens a color chooser for the clicked value; OK assigns the color, "Use Automatic Color" clears
+    // a prior override. Overrides are kept per ref so they survive navigation and ref switches.
+    private void chooseColorForValue(final String label) {
+        if ((_property_color_scheme == null) || (_color_by_property_ref == null)) {
+            return;
+        }
+        final String key = _property_color_scheme.getValueKeys().get(label);
+        if (key == null) {
+            return;
+        }
+        final Map<String, Color> per_ref = _property_color_overrides.get(_color_by_property_ref);
+        final boolean has_override = (per_ref != null) && per_ref.containsKey(key);
+        final Color current = _property_color_scheme.getValueColors().get(label);
+        final javax.swing.JColorChooser chooser = new javax.swing.JColorChooser((current != null) ? current
+                : java.awt.Color.GRAY);
+        final int[] action = { 0 }; // 0 = cancel, 1 = ok, 2 = automatic
+        final javax.swing.JDialog dialog = new javax.swing.JDialog(javax.swing.SwingUtilities.getWindowAncestor(this),
+                "Color for \"" + label + "\"", java.awt.Dialog.ModalityType.APPLICATION_MODAL);
+        final javax.swing.JButton ok = new javax.swing.JButton("OK");
+        final javax.swing.JButton cancel = new javax.swing.JButton("Cancel");
+        final javax.swing.JButton auto = new javax.swing.JButton("Use Automatic Color");
+        auto.setEnabled(has_override);
+        ok.addActionListener(ev -> { action[0] = 1; dialog.dispose(); });
+        cancel.addActionListener(ev -> { action[0] = 0; dialog.dispose(); });
+        auto.addActionListener(ev -> { action[0] = 2; dialog.dispose(); });
+        final javax.swing.JPanel buttons = new javax.swing.JPanel();
+        buttons.add(auto);
+        buttons.add(cancel);
+        buttons.add(ok);
+        dialog.getContentPane().add(chooser, java.awt.BorderLayout.CENTER);
+        dialog.getContentPane().add(buttons, java.awt.BorderLayout.SOUTH);
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+        if (action[0] == 1) {
+            setColorOverride(key, chooser.getColor());
+        } else if (action[0] == 2) {
+            clearColorOverride(key);
+        }
+    }
+
+    void setColorOverride(final String key, final Color color) {
+        Map<String, Color> per_ref = _property_color_overrides.get(_color_by_property_ref);
+        if (per_ref == null) {
+            per_ref = new HashMap<>();
+            _property_color_overrides.put(_color_by_property_ref, per_ref);
+        }
+        per_ref.put(key, color);
+        rebuildPropertyColorScheme();
+        setEdited(true);
+        repaint();
+    }
+
+    void clearColorOverride(final String key) {
+        final Map<String, Color> per_ref = _property_color_overrides.get(_color_by_property_ref);
+        if (per_ref != null) {
+            per_ref.remove(key);
+            rebuildPropertyColorScheme();
+            setEdited(true);
+            repaint();
+        }
+    }
+
     // Top-left corner at which to draw the legend box: the dragged position (clamped into the visible
     // area) when on screen, otherwise the default top-right corner.
     private Point legendTopLeft(final Rectangle bounds, final int box_w, final int box_h, final boolean draggable) {
@@ -4632,7 +4722,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ((_color_by_property_ref == null) || (_phylogeny == null) || _phylogeny.isEmpty()) {
             _property_color_scheme = null;
         } else {
-            _property_color_scheme = new PropertyColorScheme(_phylogeny, _color_by_property_ref);
+            _property_color_scheme = new PropertyColorScheme(_phylogeny, _color_by_property_ref,
+                    _property_color_overrides.get(_color_by_property_ref));
         }
     }
 
@@ -4710,6 +4801,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final int y = tl.y;
         if (draggable) {
             _property_legend_bounds = new Rectangle(x, y, box_w, box_h);
+            _legend_row_labels = new java.util.ArrayList<>(values.keySet());
+            _legend_rows_top = y + pad + row_h; // first value row starts just below the title row
+            _legend_row_height = row_h;
         }
         final Color fg = getTreeColorSet().getSequenceColor();
         g.setColor(getBackground());
@@ -4756,6 +4850,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final int y = tl.y;
         if (draggable) {
             _property_legend_bounds = new Rectangle(x, y, box_w, box_h);
+            _legend_row_labels = new java.util.ArrayList<>(); // a gradient legend has no clickable value rows
         }
         final Color fg = getTreeColorSet().getSequenceColor();
         g.setColor(getBackground());
