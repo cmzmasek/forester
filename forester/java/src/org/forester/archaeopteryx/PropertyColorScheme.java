@@ -65,13 +65,35 @@ final class PropertyColorScheme {
 
     // A categorical palette of reasonably distinct colors that read on a white or a
     // dark canvas; cycled when a property has more distinct values than entries.
-    private static final Color[] PALETTE = { new Color( 0xE6194B ), new Color( 0x3CB44B ), new Color( 0x4363D8 ),
+    private static final Color[] DEFAULT_PALETTE = { new Color( 0xE6194B ), new Color( 0x3CB44B ), new Color( 0x4363D8 ),
             new Color( 0xF58231 ), new Color( 0x911EB4 ), new Color( 0x469990 ), new Color( 0xF032E6 ),
             new Color( 0x9A6324 ), new Color( 0x800000 ), new Color( 0x000075 ), new Color( 0x808000 ),
             new Color( 0xE67E22 ), new Color( 0x2980B9 ), new Color( 0x16A085 ), new Color( 0xC0392B ),
             new Color( 0x8E44AD ), new Color( 0xD35400 ), new Color( 0x27AE60 ), new Color( 0x7F8C8D ),
             new Color( 0xB7950B ), new Color( 0x1F618D ), new Color( 0x6C3483 ), new Color( 0xBD1E51 ),
             new Color( 0x117864 ) };
+    // The Okabe-Ito colorblind-safe set (grey instead of black so it reads on a dark canvas too).
+    private static final Color[] COLORBLIND_PALETTE = { new Color( 0xE69F00 ), new Color( 0x56B4E9 ),
+            new Color( 0x009E73 ), new Color( 0xF0E442 ), new Color( 0x0072B2 ), new Color( 0xD55E00 ),
+            new Color( 0xCC79A7 ), new Color( 0x999999 ) };
+
+    /** The default palette name; selectable palettes are listed by {@link #paletteNames()}. */
+    static final String DEFAULT_PALETTE_NAME = "Default";
+    private static final java.util.LinkedHashMap<String, Color[]> PALETTES = new java.util.LinkedHashMap<>();
+    static {
+        PALETTES.put( DEFAULT_PALETTE_NAME, DEFAULT_PALETTE );
+        PALETTES.put( "Colorblind-friendly", COLORBLIND_PALETTE );
+    }
+
+    /** The names of the selectable categorical palettes, in display order. */
+    static List<String> paletteNames() {
+        return new ArrayList<String>( PALETTES.keySet() );
+    }
+
+    private static Color[] paletteByName( final String name ) {
+        final Color[] p = PALETTES.get( name );
+        return ( p != null ) ? p : DEFAULT_PALETTE;
+    }
 
     private final String             _ref;
     // Categorical mode: one palette color per distinct value. _value_to_color maps the
@@ -83,6 +105,7 @@ final class PropertyColorScheme {
     private final Map<String, Integer> _value_to_count;
     // representative label -> its (stable, normalized) group key, for keying per-value overrides
     private final Map<String, String>  _value_to_key;
+    private final Color[]              _palette; // the categorical palette in use
     // Continuous mode (numeric properties such as "year"): a blue->red gradient spanning
     // [_min, _max] instead of distinct colors. _gradient is false for categorical refs.
     private final boolean            _gradient;
@@ -94,15 +117,22 @@ final class PropertyColorScheme {
     private final char               _truncate_at;
 
     PropertyColorScheme( final Phylogeny phylogeny, final String ref ) {
-        this( phylogeny, ref, null );
+        this( phylogeny, ref, null, DEFAULT_PALETTE_NAME );
+    }
+
+    PropertyColorScheme( final Phylogeny phylogeny, final String ref, final Map<String, Color> overrides ) {
+        this( phylogeny, ref, overrides, DEFAULT_PALETTE_NAME );
     }
 
     /**
-     * @param overrides optional user-assigned colors, keyed by group key (see {@link #getValueKeys()}),
-     *                  that replace the automatic palette color for those values; may be null/empty.
+     * @param overrides    optional user-assigned colors, keyed by group key (see {@link #getValueKeys()}),
+     *                     that replace the automatic palette color for those values; may be null/empty.
+     * @param palette_name the categorical palette to assign colors from (see {@link #paletteNames()}).
      */
-    PropertyColorScheme( final Phylogeny phylogeny, final String ref, final Map<String, Color> overrides ) {
+    PropertyColorScheme( final Phylogeny phylogeny, final String ref, final Map<String, Color> overrides,
+                         final String palette_name ) {
         _ref = ref;
+        _palette = paletteByName( palette_name );
         _gradient = isYearRef( ref );
         _truncate_at = truncationDelimiter( ref );
         _value_to_color = new LinkedHashMap<String, Color>();
@@ -171,7 +201,7 @@ final class PropertyColorScheme {
             } );
             int i = 0;
             for( final String[] g : groups ) {
-                Color color = PALETTE[ i++ % PALETTE.length ];
+                Color color = _palette[ i++ % _palette.length ];
                 if ( ( overrides != null ) && overrides.containsKey( g[ 1 ] ) ) {
                     color = overrides.get( g[ 1 ] ); // user-assigned color for this value
                 }

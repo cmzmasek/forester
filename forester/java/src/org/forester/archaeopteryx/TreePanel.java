@@ -4555,6 +4555,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // scheme can be rebuilt for the currently displayed (sub)tree -- and so coloring switches
     // back on when the user returns to a super-tree even if it had no such values in a subtree.
     private String              _color_by_property_ref = null;
+    private String              _color_palette_name = PropertyColorScheme.DEFAULT_PALETTE_NAME;
     // The property-color legend can be dragged: _legend_offset is its top-left relative to the
     // visible area (null = the default top-right corner), so it stays put as the user scrolls.
     // _property_legend_bounds is where it was last drawn on screen (for hit-testing a drag).
@@ -4712,6 +4713,19 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         rebuildPropertyColorScheme();
     }
 
+    String getColorPaletteName() {
+        return _color_palette_name;
+    }
+
+    /** Selects the categorical palette (see {@link PropertyColorScheme#paletteNames()}) and recolors. */
+    void setColorPaletteName(final String name) {
+        if (!ForesterUtil.isEmpty(name) && !name.equals(_color_palette_name)) {
+            _color_palette_name = name;
+            rebuildPropertyColorScheme();
+            repaint();
+        }
+    }
+
     /**
      * (Re)builds the property color scheme from the currently displayed (visible) tree for the
      * active "Color by" ref, if any. Called whenever the displayed phylogeny changes -- moving
@@ -4723,7 +4737,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             _property_color_scheme = null;
         } else {
             _property_color_scheme = new PropertyColorScheme(_phylogeny, _color_by_property_ref,
-                    _property_color_overrides.get(_color_by_property_ref));
+                    _property_color_overrides.get(_color_by_property_ref), _color_palette_name);
         }
     }
 

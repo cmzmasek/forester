@@ -51,7 +51,7 @@ public final class PropertyColorSchemeTest {
         return testDisplayName() && testCategoricalGrouping() && testHumanSynonym() && testCountryGrouping()
                 && testHostQualifierGrouping() && testYearGradient() && testAbsentAndEmpty()
                 && testCollapseExcludesHiddenLeaves() && testCollapseRescalesGradient()
-                && testFrequencyColorsAndLegend() && testColorOverrides();
+                && testFrequencyColorsAndLegend() && testColorOverrides() && testPalettes();
     }
 
     // ---- colors assigned by frequency (distinct for the most common values); legend = top-N most
@@ -174,6 +174,32 @@ public final class PropertyColorSchemeTest {
         }
         if ( !legend.containsKey( "rat" ) ) {
             return fail( "legend should contain 'rat'" );
+        }
+        return true;
+    }
+
+    // ---- selectable categorical palettes ----
+    private static boolean testPalettes() {
+        if ( !PropertyColorScheme.paletteNames().contains( "Default" )
+                || !PropertyColorScheme.paletteNames().contains( "Colorblind-friendly" ) ) {
+            return fail( "expected Default and Colorblind-friendly palettes" );
+        }
+        final String ref = "repseq:host";
+        // "common" is the most frequent value, so it gets the first color of the chosen palette
+        final Phylogeny phy = treeWith( ref, "common", "common", "common", "rare" );
+        if ( !new Color( 0xE6194B ).equals( colorForValue( new PropertyColorScheme( phy, ref, null, "Default" ), phy,
+                                                           ref, "common" ) ) ) {
+            return fail( "Default palette: 'common' should get the first default color" );
+        }
+        if ( !new Color( 0xE69F00 ).equals( colorForValue( new PropertyColorScheme( phy, ref, null,
+                                                                                    "Colorblind-friendly" ),
+                                                           phy, ref, "common" ) ) ) {
+            return fail( "Colorblind palette: 'common' should get the first colorblind color" );
+        }
+        // an unknown palette name falls back to the default
+        if ( !new Color( 0xE6194B ).equals( colorForValue( new PropertyColorScheme( phy, ref, null, "Nonexistent" ),
+                                                           phy, ref, "common" ) ) ) {
+            return fail( "unknown palette name should fall back to Default" );
         }
         return true;
     }

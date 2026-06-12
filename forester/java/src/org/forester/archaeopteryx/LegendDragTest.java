@@ -121,6 +121,16 @@ public final class LegendDragTest {
                                 .equals( tp.getPropertyColorScheme().getValueColors().get( first ) ) ) {
                             ok[ 0 ] = false;
                         }
+                        // switching the palette recolors; switching back restores
+                        final java.awt.Color before = tp.getPropertyColorScheme().getValueColors().get( first );
+                        tp.setColorPaletteName( "Colorblind-friendly" );
+                        if ( before.equals( tp.getPropertyColorScheme().getValueColors().get( first ) ) ) {
+                            ok[ 0 ] = false;
+                        }
+                        tp.setColorPaletteName( "Default" );
+                        if ( !before.equals( tp.getPropertyColorScheme().getValueColors().get( first ) ) ) {
+                            ok[ 0 ] = false;
+                        }
                     }
                 }
                 ( (JFrame) mf[ 0 ] ).dispose();
