@@ -4846,6 +4846,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             _legend_rows_top = y + pad + row_h; // first value row starts just below the title row
             _legend_row_height = row_h;
         }
+        // constant 1px stroke for the box outline -- see drawPropertyColorGradientLegend (the
+        // swatches are fillRect, so they are already stroke-independent)
+        final Stroke saved_stroke = g.getStroke();
+        g.setStroke(STROKE_1);
         final Color fg = getTreeColorSet().getSequenceColor();
         g.setColor(getBackground());
         g.fillRect(x, y, box_w, box_h);
@@ -4864,6 +4868,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             baseline += row_h;
             g.drawString("… +" + more + " more", x + pad, baseline);
         }
+        g.setStroke(saved_stroke);
     }
 
     /** A legend row: the (clipped) value label followed by its leaf count, e.g. {@code "USA (42)"}. */
@@ -4893,6 +4898,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             _property_legend_bounds = new Rectangle(x, y, box_w, box_h);
             _legend_row_labels = new java.util.ArrayList<>(); // a gradient legend has no clickable value rows
         }
+        // The legend is a fixed UI key, not tree data: draw its borders with a constant 1px stroke
+        // rather than inheriting the branch stroke set by setupStroke(), which shrinks to sub-pixel
+        // widths when the tree is zoomed out. The gradient bar itself is painted with stroke-
+        // independent fillRect columns (see paintGradientBar) so its colors stay saturated at every
+        // zoom level. (The legend font is likewise floored independent of the node-label font.)
+        final Stroke saved_stroke = g.getStroke();
+        g.setStroke(STROKE_1);
         final Color fg = getTreeColorSet().getSequenceColor();
         g.setColor(getBackground());
         g.fillRect(x, y, box_w, box_h);
@@ -4902,16 +4914,31 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.drawString(title, x + pad, baseline);
         final int bar_x = x + pad;
         final int bar_y = baseline + 4;
-        for (int i = 0; i < bar_w; ++i) {
-            final double t = (bar_w == 1) ? 0.0 : (i / (double) (bar_w - 1));
-            g.setColor(_property_color_scheme.gradientColorAt(t));
-            g.drawLine(bar_x + i, bar_y, bar_x + i, bar_y + bar_h);
-        }
+        paintGradientBar(g, bar_x, bar_y, bar_w, bar_h + 1, t -> _property_color_scheme.gradientColorAt(t));
         g.setColor(fg);
         g.drawRect(bar_x, bar_y, bar_w - 1, bar_h);
         final int label_baseline = bar_y + bar_h + fm.getAscent() + 2;
         g.drawString(min_lbl, bar_x, label_baseline);
         g.drawString(max_lbl, (bar_x + bar_w) - fm.stringWidth(max_lbl), label_baseline);
+        g.setStroke(saved_stroke);
+    }
+
+    /**
+     * Paints a horizontal left-to-right color bar filling {@code [x, x+w) x [y, y+h)}. Each 1px-wide
+     * column is drawn with {@link Graphics2D#fillRect} so its color depends on neither the caller's
+     * stroke nor antialiasing -- an axis-aligned, integer-aligned fill always covers whole pixels.
+     * That keeps the "Color by:" gradient legend equally saturated at every tree zoom level, instead
+     * of washing out when the (zoom-dependent) branch stroke shrinks to sub-pixel widths.
+     * {@code colorAt} maps t in [0,1] (left to right) to a column color. Tested by
+     * {@link PropertyLegendBarTest}.
+     */
+    static void paintGradientBar(final Graphics2D g, final int x, final int y, final int w, final int h,
+                                 final java.util.function.DoubleFunction<Color> colorAt) {
+        for (int i = 0; i < w; ++i) {
+            final double t = (w == 1) ? 0.0 : (i / (double) (w - 1));
+            g.setColor(colorAt.apply(t));
+            g.fillRect(x + i, y, 1, h);
+        }
     }
 
     private static String clipToWidth(final String s, final FontMetrics fm, final int max_px) {
