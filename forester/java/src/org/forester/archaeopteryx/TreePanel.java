@@ -4612,9 +4612,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             drawPropertyColorGradientLegend(g, bounds);
             return;
         }
-        final Map<String, Color> values = _property_color_scheme.getValueColors();
-        final int total = values.size();
-        final int shown = Math.min(total, PROPERTY_LEGEND_MAX_ENTRIES);
+        // the most frequent values (what is most visible on the tree), re-sorted alphabetically
+        final Map<String, Color> values = _property_color_scheme.legendValues(PROPERTY_LEGEND_MAX_ENTRIES);
+        final int total = _property_color_scheme.numberOfValues();
+        final int shown = values.size();
         final int more = total - shown;
         final int swatch = 10;
         final int gap = 5;
@@ -4625,11 +4626,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final int row_h = fm.getHeight() + 2;
         final String title = "Color by: " + PropertyColorScheme.displayName(_property_color_scheme.getRef());
         int text_w = fm.stringWidth(title);
-        int i = 0;
         for (final String v : values.keySet()) {
-            if (i++ >= shown) {
-                break;
-            }
             text_w = Math.max(text_w, swatch + gap + fm.stringWidth(clipToWidth(v, fm, max_text_px)));
         }
         if (more > 0) {
@@ -4648,11 +4645,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.drawRect(x, y, box_w, box_h);
         int baseline = y + pad + fm.getAscent();
         g.drawString(title, x + pad, baseline);
-        i = 0;
         for (final Map.Entry<String, Color> e : values.entrySet()) {
-            if (i++ >= shown) {
-                break;
-            }
             baseline += row_h;
             g.setColor(e.getValue());
             g.fillRect(x + pad, baseline - fm.getAscent() + ((fm.getAscent() - swatch) / 2) + 1, swatch, swatch);

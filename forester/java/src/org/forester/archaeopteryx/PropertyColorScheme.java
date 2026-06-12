@@ -132,22 +132,32 @@ final class PropertyColorScheme {
                     counts.put( label, ( c == null ) ? 1 : ( c + 1 ) );
                 }
             }
-            // [ representative label, key ] per group, ordered by label (case-insensitive)
+            // [ representative label, key ] per group, plus each group's total leaf count
             final List<String[]> groups = new ArrayList<String[]>();
+            final Map<String, Integer> key_to_total = new HashMap<String, Integer>();
             for( final Map.Entry<String, Map<String, Integer>> e : key_to_label_counts.entrySet() ) {
+                int total = 0;
+                for( final int c : e.getValue().values() ) {
+                    total += c;
+                }
+                key_to_total.put( e.getKey(), total );
                 groups.add( new String[] { representative( e.getValue() ), e.getKey() } );
             }
+            // Most frequent first (ties broken alphabetically), so the most common values get the
+            // most distinct palette colors and head the legend; palette cycling, when there are more
+            // distinct values than colors, then only affects the rarest values.
             Collections.sort( groups, new Comparator<String[]>() {
 
                 @Override
                 public int compare( final String[] a, final String[] b ) {
-                    return String.CASE_INSENSITIVE_ORDER.compare( a[ 0 ], b[ 0 ] );
+                    final int by_count = Integer.compare( key_to_total.get( b[ 1 ] ), key_to_total.get( a[ 1 ] ) );
+                    return ( by_count != 0 ) ? by_count : String.CASE_INSENSITIVE_ORDER.compare( a[ 0 ], b[ 0 ] );
                 }
             } );
             int i = 0;
             for( final String[] g : groups ) {
                 final Color color = PALETTE[ i++ % PALETTE.length ];
-                _value_to_color.put( g[ 0 ], color );
+                _value_to_color.put( g[ 0 ], color ); // _value_to_color is now ordered most-frequent first
                 _key_to_color.put( g[ 1 ], color );
             }
         }
@@ -184,9 +194,37 @@ final class PropertyColorScheme {
         return ForesterUtil.isEmpty( v ) ? null : _key_to_color.get( groupKey( v ) );
     }
 
-    /** Ordered (alphabetical) representative-label to color map, for building a (categorical) legend. */
+    /** Representative-label to color map of all distinct values, ordered most-frequent first. */
     Map<String, Color> getValueColors() {
         return _value_to_color;
+    }
+
+    /**
+     * The legend entries: the {@code max} most frequent values (so the legend describes what is most
+     * visible on the tree), re-sorted alphabetically for readability, mapped to their colors. Returns
+     * fewer than {@code max} entries when there are fewer distinct values; empty in gradient mode.
+     */
+    Map<String, Color> legendValues( final int max ) {
+        final List<Map.Entry<String, Color>> top = new ArrayList<Map.Entry<String, Color>>();
+        int i = 0;
+        for( final Map.Entry<String, Color> e : _value_to_color.entrySet() ) { // already most-frequent first
+            if ( i++ >= max ) {
+                break;
+            }
+            top.add( e );
+        }
+        Collections.sort( top, new Comparator<Map.Entry<String, Color>>() {
+
+            @Override
+            public int compare( final Map.Entry<String, Color> a, final Map.Entry<String, Color> b ) {
+                return String.CASE_INSENSITIVE_ORDER.compare( a.getKey(), b.getKey() );
+            }
+        } );
+        final Map<String, Color> result = new LinkedHashMap<String, Color>();
+        for( final Map.Entry<String, Color> e : top ) {
+            result.put( e.getKey(), e.getValue() );
+        }
+        return result;
     }
 
     /**

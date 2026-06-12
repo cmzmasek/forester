@@ -21,7 +21,11 @@
 package org.forester.archaeopteryx;
 
 import java.awt.Color;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
@@ -45,7 +49,48 @@ public final class PropertyColorSchemeTest {
     public static boolean test() {
         return testDisplayName() && testCategoricalGrouping() && testCountryGrouping() && testHostQualifierGrouping()
                 && testYearGradient() && testAbsentAndEmpty() && testCollapseExcludesHiddenLeaves()
-                && testCollapseRescalesGradient();
+                && testCollapseRescalesGradient() && testFrequencyColorsAndLegend();
+    }
+
+    // ---- colors assigned by frequency (distinct for the most common values); legend = top-N most
+    //      frequent, re-sorted alphabetically ----
+    private static boolean testFrequencyColorsAndLegend() {
+        final String ref = "repseq:host";
+        // 26 distinct values "x00".."x25"; value x_i occurs (i+1) times, so frequency INCREASES with
+        // i (x25 most frequent, x00 least) -- the reverse of alphabetical order.
+        final List<String> vals = new ArrayList<String>();
+        for( int i = 0; i <= 25; ++i ) {
+            final String name = String.format( "x%02d", i );
+            for( int c = 0; c <= i; ++c ) {
+                vals.add( name );
+            }
+        }
+        final Phylogeny phy = treeWith( ref, vals.toArray( new String[ 0 ] ) );
+        final PropertyColorScheme s = new PropertyColorScheme( phy, ref );
+        if ( s.numberOfValues() != 26 ) {
+            return fail( "expected 26 distinct values, got " + s.numberOfValues() );
+        }
+        // the legend shows the 20 MOST FREQUENT values (x06..x25), re-sorted alphabetically
+        final Map<String, Color> legend = s.legendValues( 20 );
+        final List<String> keys = new ArrayList<String>( legend.keySet() );
+        if ( keys.size() != 20 ) {
+            return fail( "legend should hold 20 entries, got " + keys.size() );
+        }
+        for( int k = 0; k < 20; ++k ) {
+            final String expected = String.format( "x%02d", k + 6 ); // x06..x25, in alphabetical order
+            if ( !expected.equals( keys.get( k ) ) ) {
+                return fail( "legend entry " + k + " expected " + expected + " got " + keys.get( k ) );
+            }
+        }
+        // the 24 most frequent values (x02..x25) must all have distinct colors (no palette cycling)
+        final Set<Color> colors = new HashSet<Color>();
+        for( int k = 2; k <= 25; ++k ) {
+            colors.add( colorForValue( s, phy, ref, String.format( "x%02d", k ) ) );
+        }
+        if ( colors.size() != 24 ) {
+            return fail( "the 24 most frequent values should have 24 distinct colors, got " + colors.size() );
+        }
+        return true;
     }
 
     // ---- displayName: namespace strip, '_' -> space, capitalize, acronyms preserved ----
