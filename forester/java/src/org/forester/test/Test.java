@@ -6521,6 +6521,15 @@ public final class Test {
         return true;
     }
 
+    private static double madConfidence(final PhylogenyNode node) {
+        for (final org.forester.phylogeny.data.Confidence c : node.getBranchData().getConfidences()) {
+            if (PhylogenyMethods.MAD_CONFIDENCE_TYPE.equals(c.getType())) {
+                return c.getValue();
+            }
+        }
+        return Double.NaN;
+    }
+
     private static double distToRoot(final PhylogenyNode node) {
         double d = 0;
         PhylogenyNode n = node;
@@ -6547,6 +6556,20 @@ public final class Test {
             if (!isEqual(distToRoot(t0.getNode("A")), 2.5) || !isEqual(distToRoot(t0.getNode("B")), 2.5)
                     || !isEqual(distToRoot(t0.getNode("C")), 2.5)) {
                 return false;
+            }
+            // the per-branch MAD ancestor deviation is attached as branch support; the winning (root)
+            // branch is ~0 here (a perfect clock root) and no branch is smaller
+            final double c_mad = madConfidence(t0.getNode("C"));
+            if (Double.isNaN(c_mad) || (c_mad > 1e-6)) {
+                return false;
+            }
+            for (final PhylogenyNode nd : PhylogenyMethods.obtainAllNodesAsList(t0)) {
+                if (nd.isRoot()) {
+                    continue;
+                }
+                if (Double.isNaN(madConfidence(nd)) || (madConfidence(nd) < (c_mad - 1e-9))) {
+                    return false; // every branch is annotated, and none beats the root branch
+                }
             }
             // symmetric balanced tree: the MAD root is the central branch's midpoint, leaving every
             // tip equidistant (2) from the root.
@@ -6580,6 +6603,23 @@ public final class Test {
                 if (Math.abs(achieved - best) > 1e-6) {
                     System.out.println("  MAD O(n^2) vs brute force: achieved " + achieved + ", best " + best
                             + " (seed " + seed + ")");
+                    return false;
+                }
+                // every branch is annotated with a MAD value, and the smallest matches the optimum
+                double min_mad = Double.POSITIVE_INFINITY;
+                int annotated = 0, branches = 0;
+                for (final PhylogenyNode nd : PhylogenyMethods.obtainAllNodesAsList(rt)) {
+                    if (nd.isRoot()) {
+                        continue;
+                    }
+                    ++branches;
+                    final double m = madConfidence(nd);
+                    if (!Double.isNaN(m)) {
+                        ++annotated;
+                        min_mad = Math.min(min_mad, m);
+                    }
+                }
+                if ((annotated != branches) || (Math.abs(min_mad - Math.sqrt(best / ((10 * 9.0) / 2.0))) > 1e-6)) {
                     return false;
                 }
             }

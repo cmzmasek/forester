@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -810,6 +811,11 @@ public class PhylogenyMethods {
      * {@link #midpointRoot(Phylogeny)} for trees without branch lengths). Runs in O(n^2) time and
      * memory for {@code n} tips, via a rerooting tree traversal that shares per-subtree sums across
      * all candidate branches (rather than re-scanning all tip pairs for each branch).
+     * <p>
+     * Each branch is also annotated with a {@link Confidence} of type {@value #MAD_CONFIDENCE_TYPE}
+     * whose value is that branch's minimal ancestor deviation -- the (root-mean-square) deviation if
+     * the root were placed on it -- so smaller values indicate better-supported root locations; the
+     * two branches at the new root carry the smallest (winning) value.
      */
     public static void madRoot(final Phylogeny phylogeny) {
         if ((phylogeny == null) || (phylogeny.getNumberOfExternalNodes() < 3)) {
@@ -988,7 +994,11 @@ public class PhylogenyMethods {
                         up_p + (sum_children_down - down_within.get(c.getId())) + (cross_among - eval_c_at_p));
             }
         }
-        // choose the branch and position minimizing the total ancestor deviation
+        // choose the branch and position minimizing the total ancestor deviation, and record each
+        // branch's minimal MAD value (= sqrt(ssd / number-of-pairs)) keyed by its bipartition, so it
+        // survives the parent/child flips of rerooting
+        final double n_pairs = (n * (n - 1.0)) / 2.0;
+        final Map<BitSet, Double> bipartition_to_mad = new HashMap<>();
         double best_ssd = Double.POSITIVE_INFINITY;
         PhylogenyNode best_node = null;
         double best_x = 0;
@@ -1012,6 +1022,12 @@ public class PhylogenyMethods {
             }
             final double cross_ssd = evalCross(depth_c, bb0, bb1, bb2, x);
             final double ssd = cross_ssd + down_within.get(c.getId()) + up_within.get(c.getId());
+            final double mad = Math.sqrt(ssd / n_pairs);
+            final BitSet key = canonicalBipartition(c, tip_index, n);
+            final Double prev = bipartition_to_mad.get(key);
+            if ((prev == null) || (mad < prev)) {
+                bipartition_to_mad.put(key, mad); // two half-edges of a bifurcating root share a key
+            }
             if (ssd < best_ssd) {
                 best_ssd = ssd;
                 best_node = c;
@@ -1021,7 +1037,47 @@ public class PhylogenyMethods {
         if (best_node != null) {
             phylogeny.reRoot(best_node, best_x);
             phylogeny.recalculateNumberOfExternalDescendants(true);
+            for (final PhylogenyNodeIterator it = phylogeny.iteratorPostorder(); it.hasNext(); ) {
+                final PhylogenyNode c = it.next();
+                if (!c.isRoot()) {
+                    final Double mad = bipartition_to_mad.get(canonicalBipartition(c, tip_index, n));
+                    if (mad != null) {
+                        setMadConfidence(c, mad);
+                    }
+                }
+            }
         }
+    }
+
+    /** The phyloXML/Newick confidence {@code type} used for per-branch MAD ancestor-deviation values. */
+    public static final String MAD_CONFIDENCE_TYPE = "MAD";
+
+    // The bipartition induced by a branch, as the set of tip indices on the side NOT containing tip 0
+    // (a fixed canonical orientation, so the same edge maps to the same key regardless of rooting).
+    private static BitSet canonicalBipartition(final PhylogenyNode node, final Map<Long, Integer> tip_index,
+                                               final int n) {
+        final BitSet bits = new BitSet(n);
+        for (final PhylogenyNode ext : node.getAllExternalDescendants()) {
+            final Integer idx = tip_index.get(ext.getId());
+            if (idx != null) {
+                bits.set(idx);
+            }
+        }
+        if (bits.get(0)) {
+            bits.flip(0, n);
+        }
+        return bits;
+    }
+
+    // Replaces any existing MAD confidence on the branch (so re-running is idempotent), keeping others.
+    private static void setMadConfidence(final PhylogenyNode node, final double value) {
+        final List<Confidence> confidences = node.getBranchData().getConfidences();
+        for (final Iterator<Confidence> it = confidences.iterator(); it.hasNext(); ) {
+            if (MAD_CONFIDENCE_TYPE.equals(it.next().getType())) {
+                it.remove();
+            }
+        }
+        node.getBranchData().addConfidence(new Confidence(value, MAD_CONFIDENCE_TYPE));
     }
 
     // Sum of squared cross-pair deviations between subtree(c) and its complement, for the root placed
