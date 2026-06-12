@@ -6583,6 +6583,27 @@ public final class Test {
         return Double.NaN;
     }
 
+    private static int madConfidenceCount(final Phylogeny phy) {
+        int count = 0;
+        for (final PhylogenyNode nd : PhylogenyMethods.obtainAllNodesAsList(phy)) {
+            if (!Double.isNaN(madConfidence(nd))) {
+                ++count;
+            }
+        }
+        return count;
+    }
+
+    // sorted tip-to-root distances -- a rooting "fingerprint" for comparing two rootings
+    private static double[] sortedTipDepths(final Phylogeny phy) {
+        final List<PhylogenyNode> tips = phy.getExternalNodes();
+        final double[] depths = new double[tips.size()];
+        for (int i = 0; i < tips.size(); ++i) {
+            depths[i] = distToRoot(tips.get(i));
+        }
+        java.util.Arrays.sort(depths);
+        return depths;
+    }
+
     private static double distToRoot(final PhylogenyNode node) {
         double d = 0;
         PhylogenyNode n = node;
@@ -6593,144 +6614,178 @@ public final class Test {
         return d;
     }
 
+    // MAD rooting is a non-trivial numerical algorithm (an O(n^2) rerooting tree DP), so it is
+    // covered from several independent angles. Touching PhylogenyMethods.madRoot without keeping all
+    // of these green almost certainly introduces a regression:
+    //   - testMADexactCases:        small, hand-verified trees with a known optimal root / support
+    //   - testMADguards:            no-op behavior for < 3 tips and for trees without branch lengths
+    //   - testMADbranchSupport:     the per-branch confidence annotation contract
+    //   - testMADbruteForceEquiv:   THE safety net -- agreement with an independent O(n^3) brute
+    //                               force on the chosen root AND every per-branch value, over many
+    //                               tree shapes (binary, multifurcating, caterpillar, star) and sizes
+    //   - testMADdeterminismEtc:    determinism, structural validity, and finiteness on clock trees
     private static boolean testMADrooting() {
         try {
-            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            // 3-taxon unrooted star with one long branch: the clock root sits 2.5 from C, leaving
-            // every tip 2.5 from the root (an exact, hand-verifiable minimal-deviation rooting).
-            final Phylogeny t0 = factory.create("(A:1,B:1,C:4)", new NHXParser())[0];
-            PhylogenyMethods.madRoot(t0);
-            if (t0.getRoot().getNumberOfDescendants() != 2) {
-                return false;
-            }
-            if (!isEqual(t0.getNode("C").getDistanceToParent(), 2.5)) {
-                return false;
-            }
-            if (!isEqual(distToRoot(t0.getNode("A")), 2.5) || !isEqual(distToRoot(t0.getNode("B")), 2.5)
-                    || !isEqual(distToRoot(t0.getNode("C")), 2.5)) {
-                return false;
-            }
-            // the per-branch MAD ancestor deviation is attached to INTERNAL branches as support; the
-            // winning (root) branch is ~0 here (a perfect clock root). The root edge is the pendant
-            // branch to leaf C, so its internal half -- the {A,B} clade branch -- carries the value.
-            if (!Double.isNaN(madConfidence(t0.getNode("C")))) {
-                return false; // terminal branches are not annotated
-            }
-            double t0_min_internal = Double.POSITIVE_INFINITY;
-            for (final PhylogenyNode nd : PhylogenyMethods.obtainAllNodesAsList(t0)) {
-                if (nd.isRoot()) {
-                    continue;
-                }
-                final double m = madConfidence(nd);
-                if (nd.isExternal()) {
-                    if (!Double.isNaN(m)) {
-                        return false; // no terminal annotations
-                    }
-                }
-                else {
-                    if (Double.isNaN(m)) {
-                        return false; // every internal branch is annotated
-                    }
-                    t0_min_internal = Math.min(t0_min_internal, m);
-                }
-            }
-            if (t0_min_internal > 1e-6) {
-                return false; // the winning (clock) root branch is ~0
-            }
-            // symmetric balanced tree: the MAD root is the central branch's midpoint, leaving every
-            // tip equidistant (2) from the root.
-            final Phylogeny t1 = factory.create("((A:1,B:1):1,(C:1,D:1):1)", new NHXParser())[0];
-            PhylogenyMethods.madRoot(t1);
-            for (final String tip : new String[] { "A", "B", "C", "D" }) {
-                if (!isEqual(distToRoot(t1.getNode(tip)), 2.0)) {
-                    return false;
-                }
-            }
-            // guards: no-op (no exception, topology intact) for < 3 tips and for missing branch lengths
-            final Phylogeny t2 = factory.create("(A:1,B:1)", new NHXParser())[0];
-            PhylogenyMethods.madRoot(t2);
-            if (t2.getNumberOfExternalNodes() != 2) {
-                return false;
-            }
-            final Phylogeny t3 = factory.create("((A,B),(C,D))", new NHXParser())[0];
-            PhylogenyMethods.madRoot(t3);
-            if (t3.getNumberOfExternalNodes() != 4) {
-                return false;
-            }
-            // validate the O(n^2) madRoot against an independent O(n^3) brute force (which reroots
-            // copies and scores each via LCAs) on random trees, including a multifurcating root.
-            final long[] seeds = { 1, 2, 3, 7, 11, 23 };
-            for (final long seed : seeds) {
-                final Phylogeny rt = randomTree(10, seed, 2);
-                final Phylogeny rt_copy = rt.copy();
-                PhylogenyMethods.madRoot(rt); // the O(n^2) method under test
-                final double achieved = madScoreSsd(rt);
-                final double best = bestMadSsdBruteForce(rt_copy);
-                if (Math.abs(achieved - best) > 1e-6) {
-                    System.out.println("  MAD O(n^2) vs brute force: achieved " + achieved + ", best " + best
-                            + " (seed " + seed + ")");
-                    return false;
-                }
-                // every INTERNAL branch is annotated (no terminal ones), and the smallest MAD value
-                // matches the optimum (the winning root edge always has an internal endpoint)
-                double min_mad = Double.POSITIVE_INFINITY;
-                int annotated_internal = 0, internal_branches = 0;
-                for (final PhylogenyNode nd : PhylogenyMethods.obtainAllNodesAsList(rt)) {
-                    if (nd.isRoot()) {
-                        continue;
-                    }
-                    final double m = madConfidence(nd);
-                    if (nd.isExternal()) {
-                        if (!Double.isNaN(m)) {
-                            return false; // terminal branches must not be annotated
-                        }
-                    }
-                    else {
-                        ++internal_branches;
-                        if (!Double.isNaN(m)) {
-                            ++annotated_internal;
-                            min_mad = Math.min(min_mad, m);
-                        }
-                    }
-                }
-                if ((annotated_internal != internal_branches)
-                        || (Math.abs(min_mad - Math.sqrt(best / ((10 * 9.0) / 2.0))) > 1e-6)) {
-                    return false;
-                }
-            }
-            final Phylogeny rt3 = randomTree(11, 42, 3); // multifurcating (degree-3) root
-            final Phylogeny rt3_copy = rt3.copy();
-            PhylogenyMethods.madRoot(rt3);
-            if (Math.abs(madScoreSsd(rt3) - bestMadSsdBruteForce(rt3_copy)) > 1e-6) {
-                return false;
-            }
-            // clock-like (ultrametric) trees have many near-zero deviations, where floating-point
-            // cancellation could otherwise make sqrt(ssd) a NaN/Infinite confidence (crashing the
-            // confidence-value rendering); every internal MAD value must be finite
-            for (final long seed : new long[] { 3, 9, 17, 31 }) {
-                final Phylogeny clk = randomClockTree(40, seed);
-                PhylogenyMethods.madRoot(clk);
-                for (final PhylogenyNode nd : PhylogenyMethods.obtainAllNodesAsList(clk)) {
-                    if (!nd.isRoot() && nd.isInternal() && !Double.isFinite(madConfidence(nd))) {
-                        return false;
-                    }
-                }
-            }
-            // removeMadConfidences strips MAD support (used when the tree is rerooted otherwise) but
-            // keeps other confidences (here the bootstrap values)
-            final Phylogeny t4 = factory.create("((A:1,B:2)x:1[&&NHX:B=80],(C:3,D:4)y:1[&&NHX:B=90])",
-                    new NHXParser())[0];
-            PhylogenyMethods.madRoot(t4);
-            if (!hasConfidenceOfType(t4, "MAD") || !hasOtherConfidence(t4, "MAD")) {
-                return false; // both MAD and the bootstrap confidences present after MAD rooting
-            }
-            PhylogenyMethods.removeMadConfidences(t4);
-            if (hasConfidenceOfType(t4, "MAD") || !hasOtherConfidence(t4, "MAD")) {
-                return false; // MAD gone, bootstrap kept
-            }
+            return testMADexactCases() && testMADguards() && testMADbranchSupport()
+                    && testMADbruteForceEquiv() && testMADdeterminismEtc();
         } catch (final Exception e) {
             e.printStackTrace(System.out);
             return false;
+        }
+    }
+
+    private static boolean testMADexactCases() throws Exception {
+        final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+        // 3-taxon unrooted star with one long branch: the clock root sits 2.5 from C, leaving every
+        // tip 2.5 from the root (an exact, hand-verifiable minimal-deviation rooting).
+        final Phylogeny t0 = factory.create("(A:1,B:1,C:4)", new NHXParser())[0];
+        PhylogenyMethods.madRoot(t0);
+        if (t0.getRoot().getNumberOfDescendants() != 2) {
+            return false;
+        }
+        if (!isEqual(t0.getNode("C").getDistanceToParent(), 2.5)) {
+            return false;
+        }
+        if (!isEqual(distToRoot(t0.getNode("A")), 2.5) || !isEqual(distToRoot(t0.getNode("B")), 2.5)
+                || !isEqual(distToRoot(t0.getNode("C")), 2.5)) {
+            return false;
+        }
+        // symmetric balanced tree: the MAD root is the central branch's midpoint, leaving every tip
+        // equidistant (2) from the root.
+        final Phylogeny t1 = factory.create("((A:1,B:1):1,(C:1,D:1):1)", new NHXParser())[0];
+        PhylogenyMethods.madRoot(t1);
+        for (final String tip : new String[] { "A", "B", "C", "D" }) {
+            if (!isEqual(distToRoot(t1.getNode(tip)), 2.0)) {
+                return false;
+            }
+        }
+        // asymmetric 4-taxon tree with a known answer: the unrooted tree A,B | (X) | C with D pulled
+        // out on a long branch -- the optimal root is on the long D branch; reuse the brute force.
+        if (!validateMadAgainstBruteForce(factory.create("((A:1,B:1):1,(C:1,D:6):1)", new NHXParser())[0])) {
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean testMADguards() throws Exception {
+        final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+        // no-op (no exception, topology intact) for < 3 tips and for trees without branch lengths
+        final Phylogeny t2 = factory.create("(A:1,B:1)", new NHXParser())[0];
+        PhylogenyMethods.madRoot(t2);
+        if (t2.getNumberOfExternalNodes() != 2) {
+            return false;
+        }
+        final Phylogeny t3 = factory.create("((A,B),(C,D))", new NHXParser())[0];
+        PhylogenyMethods.madRoot(t3);
+        if ((t3.getNumberOfExternalNodes() != 4) || hasConfidenceOfType(t3, "MAD")) {
+            return false; // no branch lengths -> no rooting and no MAD annotations
+        }
+        final Phylogeny two = randomTree(2, 1, 2); // below the 3-tip minimum
+        PhylogenyMethods.madRoot(two);
+        if ((two.getNumberOfExternalNodes() != 2) || (madConfidenceCount(two) != 0)) {
+            return false; // a no-op: tree intact, no MAD annotations
+        }
+        return true;
+    }
+
+    private static boolean testMADbranchSupport() throws Exception {
+        final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+        // MAD support is attached to INTERNAL branches only; the winning (root) branch is ~0 here (a
+        // perfect clock root). The root edge is the pendant branch to leaf C, so its internal half --
+        // the {A,B} clade branch -- carries the value; leaf branches are not annotated.
+        final Phylogeny t0 = factory.create("(A:1,B:1,C:4)", new NHXParser())[0];
+        PhylogenyMethods.madRoot(t0);
+        if (!Double.isNaN(madConfidence(t0.getNode("C")))) {
+            return false; // terminal branches are not annotated
+        }
+        double min_internal = Double.POSITIVE_INFINITY;
+        for (final PhylogenyNode nd : PhylogenyMethods.obtainAllNodesAsList(t0)) {
+            if (nd.isRoot()) {
+                continue;
+            }
+            final double m = madConfidence(nd);
+            if (nd.isExternal()) {
+                if (!Double.isNaN(m)) {
+                    return false; // no terminal annotations
+                }
+            }
+            else {
+                if (Double.isNaN(m)) {
+                    return false; // every internal branch is annotated
+                }
+                min_internal = Math.min(min_internal, m);
+            }
+        }
+        if (min_internal > 1e-6) {
+            return false; // the winning (clock) root branch is ~0
+        }
+        // removeMadConfidences strips MAD support (used when the tree is rerooted otherwise) but
+        // keeps other confidences (here the bootstrap values)
+        final Phylogeny t4 = factory.create("((A:1,B:2)x:1[&&NHX:B=80],(C:3,D:4)y:1[&&NHX:B=90])",
+                new NHXParser())[0];
+        PhylogenyMethods.madRoot(t4);
+        if (!hasConfidenceOfType(t4, "MAD") || !hasOtherConfidence(t4, "MAD")) {
+            return false; // both MAD and the bootstrap confidences present after MAD rooting
+        }
+        PhylogenyMethods.removeMadConfidences(t4);
+        if (hasConfidenceOfType(t4, "MAD") || !hasOtherConfidence(t4, "MAD")) {
+            return false; // MAD gone, bootstrap kept
+        }
+        return true;
+    }
+
+    // The core safety net: the fast O(n^2) madRoot must agree -- on the chosen root AND on every
+    // per-branch support value -- with an independent O(n^3) brute force, across many tree shapes
+    // and sizes. A regression in the (subtle) rerooting DP shows up here.
+    private static boolean testMADbruteForceEquiv() {
+        for (final long seed : new long[] { 1, 2, 3, 5, 7, 11, 13, 23 }) {
+            for (final int n : new int[] { 4, 5, 6, 8, 11, 14, 18 }) {
+                if (!validateMadAgainstBruteForce(randomTree(n, seed, 2))) {
+                    return false; // binary tree, bifurcating root
+                }
+                if (!validateMadAgainstBruteForce(randomTree(n, seed, 3))) {
+                    return false; // multifurcating (degree-3) root
+                }
+                if (!validateMadAgainstBruteForce(randomMultifurcatingTree(n, seed))) {
+                    return false; // internal polytomies
+                }
+                if (!validateMadAgainstBruteForce(caterpillarTree(n, seed))) {
+                    return false; // deeply unbalanced (stresses the rerooting recursion)
+                }
+            }
+            if (!validateMadAgainstBruteForce(starTree(6, seed))) {
+                return false; // every branch is a pendant branch
+            }
+        }
+        return true;
+    }
+
+    private static boolean testMADdeterminismEtc() {
+        // running MAD twice on identical input must yield an identical rooting (e.g. tie-breaking
+        // must not depend on hash-map iteration order)
+        for (final long seed : new long[] { 1, 2, 3, 4 }) {
+            final Phylogeny a = randomTree(16, seed, 2);
+            final Phylogeny b = a.copy();
+            PhylogenyMethods.madRoot(a);
+            PhylogenyMethods.madRoot(b);
+            final double[] da = sortedTipDepths(a);
+            final double[] db = sortedTipDepths(b);
+            for (int i = 0; i < da.length; ++i) {
+                if (Math.abs(da[i] - db[i]) > 1e-9) {
+                    return false;
+                }
+            }
+        }
+        // clock-like (ultrametric) trees have many near-zero deviations, where floating-point
+        // cancellation could otherwise make sqrt(ssd) a NaN/Infinite support value
+        for (final long seed : new long[] { 3, 9, 17, 31, 5, 8, 12 }) {
+            final Phylogeny clk = randomClockTree(40, seed);
+            PhylogenyMethods.madRoot(clk);
+            for (final PhylogenyNode nd : PhylogenyMethods.obtainAllNodesAsList(clk)) {
+                if (!nd.isRoot() && nd.isInternal() && !Double.isFinite(madConfidence(nd))) {
+                    return false;
+                }
+            }
         }
         return true;
     }
@@ -6773,10 +6828,34 @@ public final class Test {
         return null;
     }
 
-    // Minimal achievable MAD score, found by trying every branch: the optimal position is computed
-    // analytically from the cross pairs, then a fresh copy is rerooted there and scored.
-    private static double bestMadSsdBruteForce(final Phylogeny original) {
-        double best = Double.POSITIVE_INFINITY;
+    // A canonical key for the bipartition a branch induces: the sorted tip names on the side NOT
+    // containing the (lexicographically) first tip, so the same edge maps to the same key regardless
+    // of where the tree is rooted.
+    private static String bipartitionKey(final Phylogeny phy, final java.util.Set<String> tips_under) {
+        final List<String> all = new ArrayList<>();
+        for (final PhylogenyNode t : phy.getExternalNodes()) {
+            all.add(t.getName());
+        }
+        java.util.Collections.sort(all);
+        final java.util.Set<String> side;
+        if (tips_under.contains(all.get(0))) {
+            side = new HashSet<>(all);
+            side.removeAll(tips_under);
+        }
+        else {
+            side = tips_under;
+        }
+        final List<String> sorted = new ArrayList<>(side);
+        java.util.Collections.sort(sorted);
+        return String.join(",", sorted);
+    }
+
+    // Independent O(n^3) brute force: for every branch, compute the analytic optimal root position
+    // from its cross pairs, reroot a fresh copy there, and score it via LCAs. Returns the per-branch
+    // minimal total ancestor deviation (ssd) keyed by bipartition (min over a bifurcating root's two
+    // half-edges, like madRoot itself). Shares none of madRoot's internals, so it can validate them.
+    private static java.util.Map<String, Double> bruteForceBipToSsd(final Phylogeny original) {
+        final java.util.Map<String, Double> map = new java.util.HashMap<>();
         final List<PhylogenyNode> tips = original.getExternalNodes();
         for (final PhylogenyNode c : PhylogenyMethods.obtainAllNodesAsList(original)) {
             if (c.isRoot()) {
@@ -6822,9 +6901,57 @@ public final class Test {
             }
             copy.reRoot(cc, x);
             copy.recalculateNumberOfExternalDescendants(true);
-            best = Math.min(best, madScoreSsd(copy));
+            final double ssd = madScoreSsd(copy);
+            final String key = bipartitionKey(original, sv);
+            final Double prev = map.get(key);
+            if ((prev == null) || (ssd < prev)) {
+                map.put(key, ssd);
+            }
         }
-        return best;
+        return map;
+    }
+
+    // Roots a copy of the tree with the O(n^2) madRoot under test and checks it against the brute
+    // force: same overall optimum, structurally valid result, and every internal branch annotated
+    // with exactly the brute-force per-branch value (no terminal branch annotated).
+    private static boolean validateMadAgainstBruteForce(final Phylogeny original) {
+        final int n = original.getNumberOfExternalNodes();
+        final double n_pairs = (n * (n - 1.0)) / 2.0;
+        final java.util.Map<String, Double> brute = bruteForceBipToSsd(original);
+        double brute_min = Double.POSITIVE_INFINITY;
+        for (final double v : brute.values()) {
+            brute_min = Math.min(brute_min, v);
+        }
+        final Phylogeny work = original.copy();
+        PhylogenyMethods.madRoot(work);
+        if (Math.abs(madScoreSsd(work) - brute_min) > 1e-6) {
+            return false; // the chosen rooting must achieve the global minimum total deviation
+        }
+        if (!work.isRooted() || (work.getNumberOfExternalNodes() != n)
+                || (work.getRoot().getNumberOfDescendants() < 2)) {
+            return false; // structurally valid rooted tree with the same tips
+        }
+        for (final PhylogenyNode nd : PhylogenyMethods.obtainAllNodesAsList(work)) {
+            if (nd.isRoot()) {
+                continue;
+            }
+            final double support = madConfidence(nd);
+            if (nd.isExternal()) {
+                if (!Double.isNaN(support)) {
+                    return false; // terminal branches must not be annotated
+                }
+                continue;
+            }
+            if (!Double.isFinite(support)) {
+                return false; // every internal branch annotated with a finite value
+            }
+            final Double expected = brute.get(bipartitionKey(work, tipNamesUnder(nd)));
+            // support = sqrt(ssd / n_pairs)  ->  ssd = support^2 * n_pairs
+            if ((expected == null) || (Math.abs((support * support * n_pairs) - expected) > 1e-6)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     // A random tree with branch lengths; rootDegree is the number of children of the root (2 for a
@@ -6902,6 +7029,71 @@ public final class Test {
                 nd.setDistanceToParent(height.get(nd.getParent().getId()) - height.get(nd.getId()));
             }
         }
+        return phy;
+    }
+
+    private static PhylogenyNode madTestLeaf(final String name, final double dist) {
+        final PhylogenyNode leaf = new PhylogenyNode();
+        leaf.setName(name);
+        leaf.setDistanceToParent(dist);
+        return leaf;
+    }
+
+    // A random tree with internal polytomies (each internal node joins 2-4 nodes), to exercise the
+    // multifurcation handling in the rerooting DP.
+    private static Phylogeny randomMultifurcatingTree(final int n_tips, final long seed) {
+        final java.util.Random r = new java.util.Random(seed);
+        final List<PhylogenyNode> active = new ArrayList<>();
+        for (int i = 0; i < n_tips; ++i) {
+            final PhylogenyNode leaf = new PhylogenyNode();
+            leaf.setName("T" + i);
+            active.add(leaf);
+        }
+        while (active.size() > 1) {
+            final int k = Math.min(2 + r.nextInt(3), active.size()); // join 2-4 nodes
+            final PhylogenyNode parent = new PhylogenyNode();
+            for (int i = 0; i < k; ++i) {
+                final PhylogenyNode x = active.remove(r.nextInt(active.size()));
+                x.setDistanceToParent(0.05 + r.nextDouble());
+                parent.addAsChild(x);
+            }
+            active.add(parent);
+        }
+        final Phylogeny phy = new Phylogeny();
+        phy.setRoot(active.get(0));
+        phy.externalNodesHaveChanged();
+        return phy;
+    }
+
+    // A star tree: every tip hangs directly off the root, so every branch is a pendant branch.
+    private static Phylogeny starTree(final int n_tips, final long seed) {
+        final java.util.Random r = new java.util.Random(seed);
+        final PhylogenyNode root = new PhylogenyNode();
+        for (int i = 0; i < n_tips; ++i) {
+            root.addAsChild(madTestLeaf("T" + i, 0.05 + r.nextDouble()));
+        }
+        final Phylogeny phy = new Phylogeny();
+        phy.setRoot(root);
+        phy.externalNodesHaveChanged();
+        return phy;
+    }
+
+    // A caterpillar (fully unbalanced ladder) tree: deepest possible nesting for a given size.
+    private static Phylogeny caterpillarTree(final int n_tips, final long seed) {
+        final java.util.Random r = new java.util.Random(seed);
+        PhylogenyNode current = new PhylogenyNode();
+        current.addAsChild(madTestLeaf("T0", 0.05 + r.nextDouble()));
+        current.addAsChild(madTestLeaf("T1", 0.05 + r.nextDouble()));
+        for (int i = 2; i < n_tips; ++i) {
+            current.setDistanceToParent(0.05 + r.nextDouble());
+            final PhylogenyNode next = new PhylogenyNode();
+            next.addAsChild(current);
+            next.addAsChild(madTestLeaf("T" + i, 0.05 + r.nextDouble()));
+            current = next;
+        }
+        final Phylogeny phy = new Phylogeny();
+        phy.setRoot(current);
+        phy.externalNodesHaveChanged();
         return phy;
     }
 

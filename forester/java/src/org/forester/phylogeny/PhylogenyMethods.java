@@ -817,6 +817,10 @@ public class PhylogenyMethods {
      * (root-mean-square) deviation if the root were placed on it -- so smaller values indicate
      * better-supported root locations; the internal branch at the new root carries the smallest
      * (winning) value. Terminal (pendant) branches are not annotated.
+     * <p>
+     * This method is intricate; before changing it, note that {@code org.forester.test.Test}'s
+     * {@code testMADrooting} validates the chosen root AND every per-branch value against an
+     * independent brute force over many random tree shapes -- keep those tests green.
      */
     public static void madRoot(final Phylogeny phylogeny) {
         if ((phylogeny == null) || (phylogeny.getNumberOfExternalNodes() < 3)) {
