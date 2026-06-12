@@ -155,6 +155,21 @@ public final class SubSuperTreeButtonsTest {
                 if ( ( leaves( tp ) != 3 ) || !tp.isCurrentTreeIsSubtree() ) {
                     ok[ 0 ] = false;
                 }
+                // Clicking the displayed sub-tree's ROOT climbs one branch (like R1), not back to
+                // the whole tree. Reset, then dive two levels in with a single leaf click.
+                cp.returnedToWholeTreePressed();
+                tp.subTree( leafNamed( tp.getPhylogeny(), "b1" ) ); // -> B (b1, b2), two levels deep
+                if ( ( leaves( tp ) != 2 ) || !tp.isCurrentTreeIsSubtree() ) {
+                    ok[ 0 ] = false;
+                }
+                tp.subTree( tp.getPhylogeny().getRoot() ); // click the sub-tree root -> up one branch to A
+                if ( ( leaves( tp ) != 3 ) || !tp.isCurrentTreeIsSubtree() ) {
+                    ok[ 0 ] = false;
+                }
+                tp.subTree( tp.getPhylogeny().getRoot() ); // again -> A's parent is the root -> whole tree
+                if ( ( leaves( tp ) != 4 ) || tp.isCurrentTreeIsSubtree() ) {
+                    ok[ 0 ] = false;
+                }
                 ( (JFrame) mf[ 0 ] ).dispose();
             } );
             return ok[ 0 ];

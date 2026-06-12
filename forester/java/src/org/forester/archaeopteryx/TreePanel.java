@@ -5943,9 +5943,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             getMainPanel().getControlPanel().search1();
             getMainPanel().getControlPanel().updateDomainStructureEvaluethresholdDisplay();
         } else if (node.isRoot() && isCurrentTreeIsSubtree() && !redirected_from_leaf) {
-            // an explicit click on the displayed (sub-tree) root goes up one level; a leaf whose
-            // parent is that same root does not (its parent's sub-tree is already what is shown)
-            superTree();
+            // an explicit click on the displayed (sub-tree) root climbs one branch toward the
+            // root -- the same gesture as the "R1" button -- rather than jumping all the way
+            // back; a leaf whose parent is that same root does nothing (already shown)
+            superTreeOneLevel();
         }
         _main_panel.getControlPanel().showWhole();
         repaint();
