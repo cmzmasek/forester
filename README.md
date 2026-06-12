@@ -90,6 +90,21 @@ The **Tools** menu offers two ways to (re)root a tree with branch lengths:
   location. Turn on **Confidence Values** in the left control panel to see the
   values. Requires branch lengths and at least three tips.
 
+### 5. Coloring leaves by a property
+
+The **Color by:** dropdown in the left control panel colors the leaves on the
+fly by the value of a chosen phyloXML property (e.g. host, country, year). It
+recomputes for whatever (sub)tree is currently displayed, and the legend is
+included in PDF/PNG exports.
+
+When a property has more distinct values than the palette has colors, the colors
+are assigned **most-frequent-first**, so the most common values get the most
+distinct colors (cycling only affects the rarest values). The legend then lists
+the **most frequent** values — re-sorted alphabetically for readability — with a
+`… +N more` footer for the remainder. (A few properties are special-cased:
+`year` is shown as a continuous gradient, and `country`/`host` are grouped by the
+part before a `:` / `;` qualifier.)
+
 
 For Developers
 --------------
