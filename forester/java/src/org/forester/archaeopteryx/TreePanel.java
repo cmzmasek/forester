@@ -2333,7 +2333,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             if (ForesterUtil.isEmpty(SHOW_ONLY_THIS_CONF_TYPE) || (!ForesterUtil.isEmpty(confidence.getType())
                     && confidence.getType().equalsIgnoreCase(SHOW_ONLY_THIS_CONF_TYPE))) {
                 final double value = confidence.getValue();
-                if (value != Confidence.CONFIDENCE_DEFAULT_VALUE) {
+                // skip non-finite (NaN/Infinity) confidence values rather than render garbage / crash
+                if ((value != Confidence.CONFIDENCE_DEFAULT_VALUE) && Double.isFinite(value)) {
                     if (value < getOptions().getMinConfidenceValue()) {
                         return;
                     }
@@ -2345,7 +2346,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     sb.append(FORMATTER_CONFIDENCE.format(ForesterUtil
                             .round(value, getOptions().getNumberOfDigitsAfterCommaForConfidenceValues())));
                     if (getOptions().isShowConfidenceStddev()) {
-                        if (confidence.getStandardDeviation() != Confidence.CONFIDENCE_DEFAULT_VALUE) {
+                        if ((confidence.getStandardDeviation() != Confidence.CONFIDENCE_DEFAULT_VALUE)
+                                && Double.isFinite(confidence.getStandardDeviation())) {
                             sb.append("(");
                             sb.append(FORMATTER_CONFIDENCE.format(ForesterUtil
                                     .round(confidence.getStandardDeviation(),
@@ -4163,6 +4165,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 if (node.getBranchData().isHasConfidences()) {
                     final List<Confidence> confs = node.getBranchData().getConfidences();
                     for (final Confidence confidence : confs) {
+                        if (!Double.isFinite(confidence.getValue())) {
+                            continue; // skip non-finite (NaN/Infinity) confidence values
+                        }
                         lines++;
                         if (_popup_buffer.length() > 0) {
                             _popup_buffer.append("\n");
@@ -4175,7 +4180,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         _popup_buffer.append(FORMATTER_CONFIDENCE.format(ForesterUtil
                                 .round(confidence.getValue(),
                                         getOptions().getNumberOfDigitsAfterCommaForConfidenceValues())));
-                        if (confidence.getStandardDeviation() != Confidence.CONFIDENCE_DEFAULT_VALUE) {
+                        if ((confidence.getStandardDeviation() != Confidence.CONFIDENCE_DEFAULT_VALUE)
+                                && Double.isFinite(confidence.getStandardDeviation())) {
                             _popup_buffer.append(" (sd=");
                             _popup_buffer.append(FORMATTER_CONFIDENCE.format(ForesterUtil
                                     .round(confidence.getStandardDeviation(),

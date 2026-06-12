@@ -1339,6 +1339,9 @@ public final class ForesterUtil {
     }
 
     final public static double round( final double value, final int decimal_place ) {
+        if ( !Double.isFinite( value ) ) {
+            return value; // rounding is undefined for NaN/Infinity; pass through instead of throwing
+        }
         BigDecimal bd = new BigDecimal( value );
         bd = bd.setScale( decimal_place, RoundingMode.HALF_UP );
         return bd.doubleValue();

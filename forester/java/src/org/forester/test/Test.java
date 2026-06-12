@@ -663,6 +663,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Rounding: ");
+        if (Test.testRound()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Node removal: ");
         if (Test.testNodeRemoval()) {
             System.out.println("OK.");
@@ -6516,6 +6524,29 @@ public final class Test {
             }
         } catch (final Exception e) {
             e.printStackTrace(System.out);
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean testRound() {
+        if (!isEqual(ForesterUtil.round(3.14159, 3), 3.142)) {
+            return false;
+        }
+        if (!isEqual(ForesterUtil.round(2.5, 0), 3.0)) { // HALF_UP
+            return false;
+        }
+        if (!isEqual(ForesterUtil.round(1.2349, 2), 1.23)) {
+            return false;
+        }
+        // non-finite inputs must pass through instead of throwing (would crash value rendering)
+        if (!Double.isNaN(ForesterUtil.round(Double.NaN, 3))) {
+            return false;
+        }
+        if (ForesterUtil.round(Double.POSITIVE_INFINITY, 3) != Double.POSITIVE_INFINITY) {
+            return false;
+        }
+        if (ForesterUtil.round(Double.NEGATIVE_INFINITY, 3) != Double.NEGATIVE_INFINITY) {
             return false;
         }
         return true;
