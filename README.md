@@ -75,6 +75,21 @@ For very large trees, give the JVM more memory with `-Xmx`:
 java -Xmx4g -jar forester.jar mytree.xml
 ```
 
+### 4. Rooting a tree
+
+The **Tools** menu offers two ways to (re)root a tree with branch lengths:
+
+- **Midpoint-Root** — places the root at the midpoint of the longest tip-to-tip
+  path. Fast, and works on any tree with branch lengths.
+- **MAD-Root** — Minimal Ancestor Deviation rooting (Tria, Landan & Dagan,
+  *Nature Ecology & Evolution* 2017,
+  [doi:10.1038/s41559-017-0193](https://doi.org/10.1038/s41559-017-0193)). It
+  chooses the root that minimizes how far every pair of tips deviates from a
+  clock-like (equidistant-from-their-ancestor) expectation, and annotates each
+  internal branch with its MAD value — smaller means a better-supported root
+  location. Turn on **Confidence Values** in the left control panel to see the
+  values. Requires branch lengths and at least three tips.
+
 
 For Developers
 --------------
