@@ -160,6 +160,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String CHOOSE_BRANCH_WIDTH_LABEL = "Set Branch Width";
     static final String CHOOSE_NODE_SIZE_LABEL = "Set Node Shape Size";
     static final String SHOW_CONF_STDDEV_LABEL = "Confidence Standard Deviations";
+    static final String SHOW_MAD_CONF_LABEL    = "MAD Confidence Values (MAD/regular)";
     static final String USE_BRACKETS_FOR_CONF_IN_NH_LABEL = "Use Brackets for Confidence Values";
     static final String USE_INTERNAL_NAMES_FOR_CONF_IN_NH_LABEL = "Use Internal Node Names for Confidence Values";
     static final String SHOW_BASIC_TREE_INFORMATION_LABEL = "Basic Tree Information";
@@ -244,6 +245,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     JMenuItem _cycle_data_return;
     JCheckBoxMenuItem _show_confidence_stddev_cbmi;
+    JCheckBoxMenuItem _show_mad_confidence_cbmi;
     JCheckBoxMenuItem _right_line_up_domains_cbmi;
     JCheckBoxMenuItem _line_up_renderable_data_cbmi;
     JCheckBoxMenuItem _collapsed_with_average_height_cbmi;
@@ -474,6 +476,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         } else if (o == _show_scale_cbmi) {
             updateOptions(getOptions());
         } else if (o == _show_confidence_stddev_cbmi) {
+            updateOptions(getOptions());
+        } else if (o == _show_mad_confidence_cbmi) {
             updateOptions(getOptions());
         } else if (o == _use_brackets_for_conf_in_nh_export_cbmi) {
             if (_use_brackets_for_conf_in_nh_export_cbmi.isSelected()) {
@@ -1643,6 +1647,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         options.setShowOverview((_show_overview_cbmi != null) && _show_overview_cbmi.isSelected());
         options.setShowConfidenceStddev((_show_confidence_stddev_cbmi != null)
                 && _show_confidence_stddev_cbmi.isSelected());
+        options.setShowMadConfidence((_show_mad_confidence_cbmi != null) && _show_mad_confidence_cbmi.isSelected());
         options.setAntialiasPrint((_antialias_print_cbmi != null) && _antialias_print_cbmi.isSelected());
         if ((_use_brackets_for_conf_in_nh_export_cbmi != null)
                 && _use_brackets_for_conf_in_nh_export_cbmi.isSelected()) {

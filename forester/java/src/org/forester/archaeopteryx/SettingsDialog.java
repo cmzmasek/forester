@@ -103,6 +103,7 @@ final class SettingsDialog extends JDialog {
         add( c, cb( _mf._color_labels_same_as_parent_branch ) );
         add( c, cb( _mf._abbreviate_scientific_names ) );
         add( c, cb( _mf._show_confidence_stddev_cbmi ) );
+        add( c, cb( _mf._show_mad_confidence_cbmi ) );
         add( c, cb( _mf._screen_antialias_cbmi ) );
         add( c, cb( _mf._background_gradient_cbmi ) );
         add( c, labeled( "\"Color by\" palette:", paletteCombo() ) );

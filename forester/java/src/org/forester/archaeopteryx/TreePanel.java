@@ -2321,43 +2321,66 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         paintNodeData(g, node, to_graphics_file, to_pdf, is_in_found_nodes, s);
     }
 
+    /**
+     * The branch label for a node's confidences: the MAD support (type {@code "MAD"}) first -- only
+     * when {@code show_mad} is on, and never hidden by {@code min_confidence} (for MAD, low is good)
+     * -- followed by the regular confidences (e.g. bootstrap), each shown only if {@code >=
+     * min_confidence} (for those, high is good). Joined by '/', so a MAD-rooted tree reads as e.g.
+     * "0/90" (MAD/bootstrap). Non-finite values are skipped. Returns "" when nothing should show.
+     */
+    static String confidenceLabel(final List<Confidence> confidences, final boolean show_mad,
+                                  final double min_confidence, final boolean show_stddev, final int digits) {
+        final StringBuilder sb = new StringBuilder();
+        boolean not_first = false;
+        if (show_mad) {
+            for (final Confidence c : confidences) {
+                if (PhylogenyMethods.MAD_CONFIDENCE_TYPE.equals(c.getType())) {
+                    final double value = c.getValue();
+                    if ((value != Confidence.CONFIDENCE_DEFAULT_VALUE) && Double.isFinite(value)) {
+                        sb.append(FORMATTER_CONFIDENCE.format(ForesterUtil.round(value, digits)));
+                        not_first = true;
+                    }
+                }
+            }
+        }
+        for (final Confidence c : confidences) {
+            if (PhylogenyMethods.MAD_CONFIDENCE_TYPE.equals(c.getType())) {
+                continue; // MAD handled above
+            }
+            if (!ForesterUtil.isEmpty(SHOW_ONLY_THIS_CONF_TYPE) && (ForesterUtil.isEmpty(c.getType())
+                    || !c.getType().equalsIgnoreCase(SHOW_ONLY_THIS_CONF_TYPE))) {
+                continue;
+            }
+            final double value = c.getValue();
+            // skip non-finite values, and regular values below the "min. confidence" threshold
+            if ((value != Confidence.CONFIDENCE_DEFAULT_VALUE) && Double.isFinite(value) && (value >= min_confidence)) {
+                if (not_first) {
+                    sb.append("/");
+                }
+                else {
+                    not_first = true;
+                }
+                sb.append(FORMATTER_CONFIDENCE.format(ForesterUtil.round(value, digits)));
+                if (show_stddev && (c.getStandardDeviation() != Confidence.CONFIDENCE_DEFAULT_VALUE)
+                        && Double.isFinite(c.getStandardDeviation())) {
+                    sb.append("(");
+                    sb.append(FORMATTER_CONFIDENCE.format(ForesterUtil.round(c.getStandardDeviation(), digits)));
+                    sb.append(")");
+                }
+            }
+        }
+        return sb.toString();
+    }
+
     final private void paintConfidenceValues(final Graphics2D g,
                                              final PhylogenyNode node,
                                              final boolean to_pdf,
                                              final boolean to_graphics_file) {
         final List<Confidence> confidences = node.getBranchData().getConfidences();
-        boolean not_first = false;
         Collections.sort(confidences);
-        final StringBuilder sb = new StringBuilder();
-        for (final Confidence confidence : confidences) {
-            if (ForesterUtil.isEmpty(SHOW_ONLY_THIS_CONF_TYPE) || (!ForesterUtil.isEmpty(confidence.getType())
-                    && confidence.getType().equalsIgnoreCase(SHOW_ONLY_THIS_CONF_TYPE))) {
-                final double value = confidence.getValue();
-                // skip non-finite (NaN/Infinity) confidence values rather than render garbage / crash
-                if ((value != Confidence.CONFIDENCE_DEFAULT_VALUE) && Double.isFinite(value)) {
-                    if (value < getOptions().getMinConfidenceValue()) {
-                        return;
-                    }
-                    if (not_first) {
-                        sb.append("/");
-                    } else {
-                        not_first = true;
-                    }
-                    sb.append(FORMATTER_CONFIDENCE.format(ForesterUtil
-                            .round(value, getOptions().getNumberOfDigitsAfterCommaForConfidenceValues())));
-                    if (getOptions().isShowConfidenceStddev()) {
-                        if ((confidence.getStandardDeviation() != Confidence.CONFIDENCE_DEFAULT_VALUE)
-                                && Double.isFinite(confidence.getStandardDeviation())) {
-                            sb.append("(");
-                            sb.append(FORMATTER_CONFIDENCE.format(ForesterUtil
-                                    .round(confidence.getStandardDeviation(),
-                                            getOptions().getNumberOfDigitsAfterCommaForConfidenceValues())));
-                            sb.append(")");
-                        }
-                    }
-                }
-            }
-        }
+        final StringBuilder sb = new StringBuilder(confidenceLabel(confidences, getOptions().isShowMadConfidence(),
+                getOptions().getMinConfidenceValue(), getOptions().isShowConfidenceStddev(),
+                getOptions().getNumberOfDigitsAfterCommaForConfidenceValues()));
         if (sb.length() > 0) {
             final float parent_x = node.getParent().getXcoord();
             float x = node.getXcoord();

@@ -1189,6 +1189,7 @@ public final class MainFrameApplication extends MainFrame {
             _options_jmenu.add(_show_domain_labels = new JCheckBoxMenuItem(MainFrame.SHOW_DOMAIN_LABELS_LABEL));
         }
         _options_jmenu.add(_show_confidence_stddev_cbmi = new JCheckBoxMenuItem(SHOW_CONF_STDDEV_LABEL));
+        _options_jmenu.add(_show_mad_confidence_cbmi = new JCheckBoxMenuItem(MainFrame.SHOW_MAD_CONF_LABEL));
         _options_jmenu.add(_color_labels_same_as_parent_branch = new JCheckBoxMenuItem(COLOR_LABELS_LABEL));
         _color_labels_same_as_parent_branch.setToolTipText(MainFrame.COLOR_LABELS_TIP);
         _options_jmenu.add(_abbreviate_scientific_names = new JCheckBoxMenuItem(ABBREV_SN_LABEL));
@@ -1310,6 +1311,7 @@ public final class MainFrameApplication extends MainFrame {
                 getOptions().isParseBeastStyleExtendedNexusTags());
         customizeCheckBoxMenuItem(_graphics_export_visible_only_cbmi, getOptions().isGraphicsExportVisibleOnly());
         customizeCheckBoxMenuItem(_show_confidence_stddev_cbmi, getOptions().isShowConfidenceStddev());
+        customizeCheckBoxMenuItem(_show_mad_confidence_cbmi, getOptions().isShowMadConfidence());
         customizeCheckBoxMenuItem(_use_brackets_for_conf_in_nh_export_cbmi,
                 getOptions()
                         .getNhConversionSupportValueStyle() == NH_CONVERSION_SUPPORT_VALUE_STYLE.IN_SQUARE_BRACKETS);

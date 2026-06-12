@@ -76,7 +76,7 @@ final public class Options {
         }
     }
 
-    static final double MIN_CONFIDENCE_DEFAULT = 0.0;
+    static final double MIN_CONFIDENCE_DEFAULT = 50.0;
     private boolean _abbreviate_scientific_names;
     private boolean _allow_errors_in_distance_to_parent;
     private boolean _antialias_print;
@@ -111,6 +111,7 @@ final public class Options {
     private double _scale_bar_length;
     private boolean _search_case_sensitive;
     private boolean _show_confidence_stddev;
+    private boolean _show_mad_confidence;
     private boolean _show_default_node_shapes_for_marked_nodes;
     private boolean _show_default_node_shapes_external;
     private boolean _show_default_node_shapes_internal;
@@ -228,6 +229,7 @@ final public class Options {
         setAbbreviateScientificTaxonNames(false);
         _color_labels_same_as_parent_branch = false;
         _show_confidence_stddev = false;
+        _show_mad_confidence = false;
         _nh_conversion_support_value_style = NH_CONVERSION_SUPPORT_VALUE_STYLE.NONE;
         _ext_desc_data_to_return = NodeDataField.UNKNOWN;
         _line_up_renderable_node_data = true;
@@ -389,6 +391,14 @@ final public class Options {
 
     boolean isShowConfidenceStddev() {
         return _show_confidence_stddev;
+    }
+
+    boolean isShowMadConfidence() {
+        return _show_mad_confidence;
+    }
+
+    void setShowMadConfidence(final boolean show_mad_confidence) {
+        _show_mad_confidence = show_mad_confidence;
     }
 
     boolean isShowDefaultNodeShapesExternal() {
