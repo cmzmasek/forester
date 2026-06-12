@@ -255,6 +255,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             new float[]{
                     2.0f},
             0f);
+    // Neutral guide color for the lined-up-data connector (see connectorColor()/drawConnection).
+    private static final Color CONNECTOR_GUIDE_COLOR = new Color(200, 200, 200);
     private static final double TWO_PI = 2 * Math.PI;
     private final static int WIGGLE = 2;
     private static final String SHOW_ONLY_THIS_CONF_TYPE = null;                                                     //TODO remove me
@@ -2749,7 +2751,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         if ((getControlPanel().getTreeDisplayType() == Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM)
                 && (node.isExternal() || node.isCollapse())) {
-            drawConnection(node.getXcoord(), pos_x - x, node.getYcoord(), 5, 20, g, to_pdf);
+            drawConnection(node.getXcoord(), pos_x - x, node.getYcoord(), 5, 20, g);
             if (node.isCollapse()) {
                 pos_x -= add;
             }
@@ -2811,6 +2813,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                             "-" + node.getNodeData().getBinaryCharacters().getLostCount());
                 }
             }
+        }
+        if (to_pdf && is_in_found_nodes) {
+            resyncPdfStrokeColor(g);
         }
         return x;
     }
@@ -2880,11 +2885,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                       final float y,
                                       final int dist_left,
                                       final int dist_right,
-                                      final Graphics2D g,
-                                      final boolean pdf) {
+                                      final Graphics2D g) {
         if (((x1 + dist_left) < (x2 - dist_right))) {
             final Stroke stroke = g.getStroke();
-            Color col = null;
+            final Color saved_color = g.getColor();
             if (stroke == STROKE_005) {
                 g.setStroke(STROKE_001_DASHED);
             } else if (stroke == STROKE_01) {
@@ -2892,24 +2896,46 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             } else {
                 g.setStroke(STROKE_01_DASHED);
             }
-            if (pdf) {
-                col = g.getColor();
-                g.setColor(lighter(col));
-            }
+            // The connector is a neutral structural guide linking the (short) branch tip to the
+            // lined-up label. It must NOT inherit g's current color, which here is the node's label
+            // color: for a search-found node that color is the bright red/green highlight. On screen
+            // the sub-pixel dashed stroke antialiases it into near-invisibility, but in an export it
+            // renders as a fully saturated red/green "branch" (a long-standing bug). (The matching PDF
+            // bug, where the next branch inherits the bold label's stroke color, is handled centrally
+            // by resyncPdfStrokeColor().)
+            g.setColor(connectorColor());
             drawLine(x1 + dist_left, y, x2 - dist_right, y, g);
             g.setStroke(stroke);
-            if (pdf) {
-                g.setColor(col);
-            }
+            g.setColor(saved_color);
         }
     }
 
-    private static Color lighter(final Color color) {
-        if ((color.getRed() == 0) && (color.getGreen() == 0) && (color.getBlue() == 0)) {
-            return new Color(200, 200, 200);
-        } else {
-            return color;
-        }
+    /**
+     * The color of the lined-up-data connector: a fixed, neutral guide gray that is deliberately
+     * independent of the node's label/highlight color, so the search-found highlight never bleeds
+     * into the connector (which exports as a colored "branch").
+     */
+    static Color connectorColor() {
+        return CONNECTOR_GUIDE_COLOR;
+    }
+
+    private static final java.awt.geom.Path2D EMPTY_PATH = new java.awt.geom.Path2D.Float();
+
+    /**
+     * iText workaround. Its {@code PdfGraphics2D} draws a bold label (a search-found node's label is
+     * bold) by *stroking* the glyph outlines, which sets the PDF stroke color directly (via
+     * {@code PdfContentByte.setColorStroke}) without updating its own stroke-color cache. The next
+     * branch (or connector) stroke whose color equals that now-stale cache is then skipped by iText
+     * and silently inherits the label's red/green color -- coloring whole branches in PDF exports
+     * only (raster Graphics2D have no such cache). Re-emit a sentinel stroke color that branches and
+     * connectors never use, so the cache is consistent again and the following strokes paint their
+     * own color. The empty path makes this a state-only change that draws nothing.
+     */
+    private static void resyncPdfStrokeColor(final Graphics2D g) {
+        final Color saved = g.getColor();
+        g.setColor(Color.WHITE);
+        g.draw(EMPTY_PATH);
+        g.setColor(saved);
     }
 
     private final void addLabelForCollapsed(final String first,
@@ -3088,6 +3114,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             if (need_to_reset) {
                 g.setTransform(_at);
             }
+        }
+        if (to_pdf && is_in_found_nodes) {
+            resyncPdfStrokeColor(g);
         }
     }
 
