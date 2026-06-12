@@ -129,12 +129,31 @@ This compiles the sources and produces the self-contained
 
 ### Run the test suite
 
-The suite resolves its test data relative to the repository root, so run it from
-there with the compiled classes on the classpath:
+The headless test suite (`org.forester.test.Test`) resolves its test data
+relative to the repository root, so run it from there with the compiled classes
+on the classpath:
 
 ```
 java -Duser.dir="$(pwd)" -cp forester/java/classes org.forester.test.Test
 ```
+
+It prints `Failed tests: 0` on success. Numerically involved code is tested
+thoroughly: for example, MAD rooting is validated against an independent
+brute-force implementation — agreeing on the chosen root **and** every
+per-branch support value — across a wide variety of random tree shapes (binary,
+multifurcating, caterpillar, star) and sizes, so an accidental regression in the
+algorithm is caught.
+
+A handful of GUI integration tests need a display (and FlatLaf), so they are kept
+out of the headless suite (and out of the shipped jar) and run individually, for
+example:
+
+```
+java -cp forester/java/classes org.forester.archaeopteryx.SubSuperTreeButtonsTest
+```
+
+New or changed code should come with tests — see the existing `*Test` classes for
+the established patterns.
 
 
 Using Programs From Forester
