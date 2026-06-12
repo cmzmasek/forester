@@ -33,6 +33,7 @@ final class MouseListener extends MouseAdapter implements MouseMotionListener {
 
     private final TreePanel _treepanel;
     private boolean         _being_dragged = false;
+    private boolean         _dragging_legend = false;
     private final Point     _click_point   = new Point();
 
     /**
@@ -47,12 +48,22 @@ final class MouseListener extends MouseAdapter implements MouseMotionListener {
      */
     @Override
     public void mouseClicked( final MouseEvent e ) {
+        if ( _treepanel.isOnPropertyLegend( e ) ) {
+            if ( e.getClickCount() == 2 ) {
+                _treepanel.resetLegendPosition(); // double-click the legend to send it back to the corner
+            }
+            return; // a click on the legend is not a node action
+        }
         _click_point.setLocation( e.getX(), e.getY() );
         _treepanel.mouseClicked( e );
     }
 
     @Override
     public void mouseDragged( final MouseEvent e ) {
+        if ( _dragging_legend ) {
+            _treepanel.dragLegend( e );
+            return;
+        }
         if ( ( e.getModifiersEx() == InputEvent.BUTTON1_DOWN_MASK )
                 || ( e.getModifiersEx() == InputEvent.BUTTON3_DOWN_MASK ) ) {
             if ( !_treepanel.inOvRectangle( e ) ) {
@@ -76,11 +87,20 @@ final class MouseListener extends MouseAdapter implements MouseMotionListener {
 
     @Override
     public void mouseMoved( final MouseEvent e ) {
+        if ( _treepanel.isOnPropertyLegend( e ) ) {
+            _treepanel.setCursor( TreePanel.MOVE_CURSOR ); // hint that the legend can be dragged
+            return;
+        }
         _treepanel.mouseMoved( e );
     }
 
     @Override
     public void mousePressed( final MouseEvent e ) {
+        if ( ( e.getModifiersEx() == InputEvent.BUTTON1_DOWN_MASK ) && _treepanel.isOnPropertyLegend( e ) ) {
+            _dragging_legend = true;
+            _treepanel.startLegendDrag( e );
+            return;
+        }
         //TODO is this a good idea? It is certainly not NEEDED.
         if ( e.getModifiersEx() == InputEvent.BUTTON1_DOWN_MASK ) {
             if ( !_being_dragged ) {
@@ -99,6 +119,11 @@ final class MouseListener extends MouseAdapter implements MouseMotionListener {
 
     @Override
     public void mouseReleased( final MouseEvent e ) {
+        if ( _dragging_legend ) {
+            _dragging_legend = false;
+            _treepanel.endLegendDrag();
+            return;
+        }
         if ( _being_dragged ) {
             _being_dragged = false;
         }

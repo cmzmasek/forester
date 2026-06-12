@@ -4555,6 +4555,66 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // scheme can be rebuilt for the currently displayed (sub)tree -- and so coloring switches
     // back on when the user returns to a super-tree even if it had no such values in a subtree.
     private String              _color_by_property_ref = null;
+    // The property-color legend can be dragged: _legend_offset is its top-left relative to the
+    // visible area (null = the default top-right corner), so it stays put as the user scrolls.
+    // _property_legend_bounds is where it was last drawn on screen (for hit-testing a drag).
+    private Point               _legend_offset = null;
+    private Rectangle           _property_legend_bounds = null;
+    private int                 _legend_grab_dx = 0;
+    private int                 _legend_grab_dy = 0;
+
+    /** The on-screen bounds of the last-drawn property-color legend, or null; used by the drag test. */
+    final Rectangle getPropertyLegendBounds() {
+        return _property_legend_bounds;
+    }
+
+    /** Whether the point of {@code e} is over the (last-drawn) property-color legend box. */
+    final boolean isOnPropertyLegend(final MouseEvent e) {
+        return (_property_color_scheme != null) && (_property_legend_bounds != null)
+                && _property_legend_bounds.contains(e.getX(), e.getY());
+    }
+
+    final void startLegendDrag(final MouseEvent e) {
+        if (_property_legend_bounds != null) {
+            _legend_grab_dx = e.getX() - _property_legend_bounds.x;
+            _legend_grab_dy = e.getY() - _property_legend_bounds.y;
+            setCursor(MOVE_CURSOR);
+        }
+    }
+
+    final void dragLegend(final MouseEvent e) {
+        if (_property_legend_bounds == null) {
+            return;
+        }
+        final Rectangle vp = getVisibleRect();
+        int ox = (e.getX() - _legend_grab_dx) - vp.x;
+        int oy = (e.getY() - _legend_grab_dy) - vp.y;
+        ox = Math.max(0, Math.min(ox, Math.max(0, vp.width - _property_legend_bounds.width)));
+        oy = Math.max(0, Math.min(oy, Math.max(0, vp.height - _property_legend_bounds.height)));
+        _legend_offset = new Point(ox, oy);
+        repaint();
+    }
+
+    final void endLegendDrag() {
+        setCursor(ARROW_CURSOR);
+    }
+
+    /** Returns the legend to its default top-right corner. */
+    final void resetLegendPosition() {
+        _legend_offset = null;
+        repaint();
+    }
+
+    // Top-left corner at which to draw the legend box: the dragged position (clamped into the visible
+    // area) when on screen, otherwise the default top-right corner.
+    private Point legendTopLeft(final Rectangle bounds, final int box_w, final int box_h, final boolean draggable) {
+        if (!draggable || (_legend_offset == null)) {
+            return new Point(Math.max(bounds.x, (bounds.x + bounds.width) - box_w - 10), bounds.y + 10);
+        }
+        final int ox = Math.max(0, Math.min(_legend_offset.x, Math.max(0, bounds.width - box_w)));
+        final int oy = Math.max(0, Math.min(_legend_offset.y, Math.max(0, bounds.height - box_h)));
+        return new Point(bounds.x + ox, bounds.y + oy);
+    }
 
     /** Colorize leaves by the given property reference, or turn it off when {@code ref} is empty. */
     void setColorByPropertyRef(final String ref) {
@@ -4611,13 +4671,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return small.deriveFont(Math.max(small.getSize2D(), PROPERTY_LEGEND_MIN_FONT_SIZE));
     }
 
-    /** Draws a capped value-to-color legend (top-right of the visible area). */
-    private void drawPropertyColorLegend(final Graphics2D g, final Rectangle bounds) {
+    /** Draws a capped value-to-color legend; draggable (recorded for hit-testing) on screen. */
+    private void drawPropertyColorLegend(final Graphics2D g, final Rectangle bounds, final boolean draggable) {
         if ((_property_color_scheme == null) || _property_color_scheme.isEmpty()) {
             return;
         }
         if (_property_color_scheme.isGradient()) {
-            drawPropertyColorGradientLegend(g, bounds);
+            drawPropertyColorGradientLegend(g, bounds, draggable);
             return;
         }
         // the most frequent values (what is most visible on the tree), re-sorted alphabetically
@@ -4645,8 +4705,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // when PDF/iText font metrics run slightly wider than AWT's stringWidth().
         final int box_w = text_w + (2 * pad) + 4;
         final int box_h = ((1 + shown + (more > 0 ? 1 : 0)) * row_h) + (2 * pad);
-        final int x = Math.max(bounds.x, (bounds.x + bounds.width) - box_w - 10);
-        final int y = bounds.y + 10;
+        final Point tl = legendTopLeft(bounds, box_w, box_h, draggable);
+        final int x = tl.x;
+        final int y = tl.y;
+        if (draggable) {
+            _property_legend_bounds = new Rectangle(x, y, box_w, box_h);
+        }
         final Color fg = getTreeColorSet().getSequenceColor();
         g.setColor(getBackground());
         g.fillRect(x, y, box_w, box_h);
@@ -4675,7 +4739,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     /** Draws a gradient bar legend (low value to high value) for a continuous property. */
-    private void drawPropertyColorGradientLegend(final Graphics2D g, final Rectangle bounds) {
+    private void drawPropertyColorGradientLegend(final Graphics2D g, final Rectangle bounds, final boolean draggable) {
         final int pad = 7;
         final int bar_w = 200;
         final int bar_h = 12;
@@ -4687,8 +4751,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final int content_w = Math.max(fm.stringWidth(title), bar_w);
         final int box_w = content_w + (2 * pad) + 4;
         final int box_h = (2 * fm.getHeight()) + bar_h + 6 + (2 * pad);
-        final int x = Math.max(bounds.x, (bounds.x + bounds.width) - box_w - 10);
-        final int y = bounds.y + 10;
+        final Point tl = legendTopLeft(bounds, box_w, box_h, draggable);
+        final int x = tl.x;
+        final int y = tl.y;
+        if (draggable) {
+            _property_legend_bounds = new Rectangle(x, y, box_w, box_h);
+        }
         final Color fg = getTreeColorSet().getSequenceColor();
         g.setColor(getBackground());
         g.fillRect(x, y, box_w, box_h);
@@ -5684,10 +5752,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
         }
         if (isColorByProperty()) {
-            final Rectangle legend_bounds = (to_pdf || to_graphics_file)
-                    ? new Rectangle(graphics_file_x, graphics_file_y, graphics_file_width, graphics_file_height)
-                    : getVisibleRect();
-            drawPropertyColorLegend(g, legend_bounds);
+            final boolean to_screen = !(to_pdf || to_graphics_file);
+            final Rectangle legend_bounds = to_screen
+                    ? getVisibleRect()
+                    : new Rectangle(graphics_file_x, graphics_file_y, graphics_file_width, graphics_file_height);
+            drawPropertyColorLegend(g, legend_bounds, to_screen);
         }
     }
 
