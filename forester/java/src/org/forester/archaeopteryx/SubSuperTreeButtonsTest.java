@@ -33,13 +33,14 @@ import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
 
 /**
- * Integration test for the two sub-tree navigation buttons in the control panel: <b>R</b> must
+ * Integration test for sub-tree navigation in the control panel. The two buttons: <b>R</b> must
  * jump all the way back to the complete tree, while <b>R1</b> must move up by exactly one level
- * towards it. Both are exercised through {@link ControlPanel#returnedToWholeTreePressed()} and
- * {@link ControlPanel#returnedToSuperTreePressed()}; depth is checked via the number of external
- * nodes of the displayed (sub)tree. Guarded to a no-op on a headless box. Needs FlatLaf on the
- * classpath (via {@code MainFrameApplication.createInstance}), so it is run standalone, not as
- * part of the headless suite.
+ * towards it (also via the Alt+Shift+R / Alt+R shortcuts). And {@link TreePanel#subTree} must, for
+ * a click on an external node, descend into the sub-tree of that leaf's parent (it must not pop the
+ * old modal warning, which could freeze the app). Depth is checked via the number of external nodes
+ * of the displayed (sub)tree. Guarded to a no-op on a headless box. Needs FlatLaf on the classpath
+ * (via {@code MainFrameApplication.createInstance}), so it is run standalone, not as part of the
+ * headless suite.
  */
 public final class SubSuperTreeButtonsTest {
 
@@ -120,6 +121,30 @@ public final class SubSuperTreeButtonsTest {
                 if ( ( leaves( tp ) != 4 ) || tp.isCurrentTreeIsSubtree() ) {
                     ok[ 0 ] = false;
                 }
+                // Clicking an external node in "subtree" mode shows the subtree of the leaf's
+                // PARENT (it used to pop a modal warning that could freeze the app). Calling this
+                // on the EDT would itself block on that modal dialog, so it also guards the hang.
+                // We are at the whole tree now.
+                tp.subTree( leafNamed( tp.getPhylogeny(), "b1" ) ); // parent B -> descend into B (b1, b2)
+                if ( ( leaves( tp ) != 2 ) || !tp.isCurrentTreeIsSubtree() ) {
+                    ok[ 0 ] = false;
+                }
+                // a leaf whose parent is the current sub-tree root is a harmless no-op
+                tp.subTree( leafNamed( tp.getPhylogeny(), "b1" ) );
+                if ( leaves( tp ) != 2 ) {
+                    ok[ 0 ] = false;
+                }
+                cp.returnedToWholeTreePressed();
+                // a leaf directly under the whole-tree root is likewise a no-op (parent is the root)
+                tp.subTree( leafNamed( tp.getPhylogeny(), "r2" ) );
+                if ( ( leaves( tp ) != 4 ) || tp.isCurrentTreeIsSubtree() ) {
+                    ok[ 0 ] = false;
+                }
+                // a leaf under an internal, non-root clade descends into that clade
+                tp.subTree( leafNamed( tp.getPhylogeny(), "a3" ) ); // parent A -> descend into A (b1, b2, a3)
+                if ( ( leaves( tp ) != 3 ) || !tp.isCurrentTreeIsSubtree() ) {
+                    ok[ 0 ] = false;
+                }
                 ( (JFrame) mf[ 0 ] ).dispose();
             } );
             return ok[ 0 ];
@@ -173,6 +198,16 @@ public final class SubSuperTreeButtonsTest {
         final PhylogenyNode n = new PhylogenyNode();
         n.setName( name );
         return n;
+    }
+
+    /** The external node with the given name in the (sub)tree, or null. */
+    private static PhylogenyNode leafNamed( final Phylogeny phy, final String name ) {
+        for( final PhylogenyNode n : phy.getExternalNodes() ) {
+            if ( name.equals( n.getName() ) ) {
+                return n;
+            }
+        }
+        return null;
     }
 
     /** The first internal (non-external) node with the given name in the (sub)tree, or null. */

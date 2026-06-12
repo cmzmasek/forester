@@ -5910,7 +5910,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         repaint();
     }
 
-    final void subTree(final PhylogenyNode node) {
+    final void subTree(final PhylogenyNode clicked_node) {
         if (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED) {
             JOptionPane.showMessageDialog(this,
                     "Cannot get a sub/super tree in unrooted display",
@@ -5918,19 +5918,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     JOptionPane.WARNING_MESSAGE);
             return;
         }
-        if (node.isExternal()) {
-            JOptionPane.showMessageDialog(this,
-                    "Cannot get a subtree of a external node",
-                    "Attempt to get subtree of external node",
-                    JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-        if (node.isRoot() && !isCurrentTreeIsSubtree()) {
-            JOptionPane.showMessageDialog(this,
-                    "Cannot get a subtree of the root node",
-                    "Attempt to get subtree of root node",
-                    JOptionPane.WARNING_MESSAGE);
-            return;
+        // A leaf cannot root a sub-tree, so show the smallest enclosing clade -- the leaf's
+        // parent -- instead. (This used to pop up a modal warning, which could freeze the app.)
+        final boolean redirected_from_leaf = clicked_node.isExternal();
+        final PhylogenyNode node = redirected_from_leaf ? clicked_node.getParent() : clicked_node;
+        if (node == null) {
+            return; // a single-node tree: nothing to show
         }
         setNodeInPreorderToNull();
         if (!node.isExternal() && !node.isRoot() && (_subtree_index <= (TreePanel.MAX_SUBTREES - 1))) {
@@ -5949,7 +5942,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             getMainPanel().getControlPanel().search0();
             getMainPanel().getControlPanel().search1();
             getMainPanel().getControlPanel().updateDomainStructureEvaluethresholdDisplay();
-        } else if (node.isRoot() && isCurrentTreeIsSubtree()) {
+        } else if (node.isRoot() && isCurrentTreeIsSubtree() && !redirected_from_leaf) {
+            // an explicit click on the displayed (sub-tree) root goes up one level; a leaf whose
+            // parent is that same root does not (its parent's sub-tree is already what is shown)
             superTree();
         }
         _main_panel.getControlPanel().showWhole();
