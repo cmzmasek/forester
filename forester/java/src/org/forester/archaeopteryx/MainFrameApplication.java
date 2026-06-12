@@ -1370,11 +1370,11 @@ public final class MainFrameApplication extends MainFrame {
         _remove_branch_color_item.setToolTipText("To remove all branch color values from the current phylogeny");
         customizeJMenuItem(_remove_branch_color_item);
         _tools_menu.addSeparator();
-        _tools_menu.add(_midpoint_root_item = new JMenuItem("Midpoint-Root"));
-        customizeJMenuItem(_midpoint_root_item);
         _tools_menu.add(_mad_root_item = new JMenuItem("MAD-Root"));
         _mad_root_item.setToolTipText("Root by Minimal Ancestor Deviation (Tria et al. 2017); requires branch lengths");
         customizeJMenuItem(_mad_root_item);
+        _tools_menu.add(_midpoint_root_item = new JMenuItem("Midpoint-Root"));
+        customizeJMenuItem(_midpoint_root_item);
         _tools_menu.addSeparator();
         _tools_menu.add(_delete_selected_nodes_item = new JMenuItem("Delete Selected Nodes"));
         _delete_selected_nodes_item.setToolTipText("To delete all selected external nodes");
