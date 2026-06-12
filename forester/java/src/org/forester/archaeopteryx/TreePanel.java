@@ -4602,6 +4602,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     private static final int PROPERTY_LEGEND_MAX_ENTRIES = 20;
+    // The legend is a fixed key, not tree data, so keep it readable even when node-label fonts are
+    // set very small: use the small tree font but never below this floor.
+    private static final float PROPERTY_LEGEND_MIN_FONT_SIZE = 11f;
+
+    private Font legendFont() {
+        final Font small = getTreeFontSet().getSmallFont();
+        return small.deriveFont(Math.max(small.getSize2D(), PROPERTY_LEGEND_MIN_FONT_SIZE));
+    }
 
     /** Draws a capped value-to-color legend (top-right of the visible area). */
     private void drawPropertyColorLegend(final Graphics2D g, final Rectangle bounds) {
@@ -4622,7 +4630,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final int gap = 5;
         final int pad = 7;
         final int max_text_px = 200;
-        g.setFont(getTreeFontSet().getSmallFont());
+        g.setFont(legendFont());
         final FontMetrics fm = g.getFontMetrics();
         final int row_h = fm.getHeight() + 2;
         final String title = "Color by: " + PropertyColorScheme.displayName(_property_color_scheme.getRef());
@@ -4671,7 +4679,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final int pad = 7;
         final int bar_w = 200;
         final int bar_h = 12;
-        g.setFont(getTreeFontSet().getSmallFont());
+        g.setFont(legendFont());
         final FontMetrics fm = g.getFontMetrics();
         final String title = "Color by: " + PropertyColorScheme.displayName(_property_color_scheme.getRef());
         final String min_lbl = _property_color_scheme.getGradientMinLabel();
