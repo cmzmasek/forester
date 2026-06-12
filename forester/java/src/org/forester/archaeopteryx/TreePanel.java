@@ -5970,6 +5970,30 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         updateSubSuperTreeButton();
     }
 
+    /**
+     * Move the displayed sub-tree up by exactly one branch in the tree's topology: show the
+     * sub-tree rooted at the <i>parent</i> of the current sub-tree's root. This differs from
+     * {@link #superTree()}, which pops one frame off the navigation stack -- when the user
+     * descended by clicking a leaf (a single stack frame that can span many topological levels),
+     * popping the frame jumps far, whereas this always climbs one branch. A no-op on the whole
+     * tree. Implemented as "pop the current frame, then re-descend into the parent clade".
+     */
+    final void superTreeOneLevel() {
+        if (!isCurrentTreeIsSubtree()) {
+            return;
+        }
+        final PhylogenyNode current_root = _sub_phylogenies_temp_roots[_subtree_index - 1];
+        final PhylogenyNode parent = current_root.getParent();
+        superTree(); // back to the phylogeny we descended from (restores current_root's children)
+        if ((parent != null) && !parent.isRoot()) {
+            subTree(parent); // re-descend one branch up; subTree() fits and repaints
+        } else {
+            // the parent is the root of that phylogeny, which is now exactly what is displayed
+            getMainPanel().getControlPanel().showWhole();
+            repaint();
+        }
+    }
+
     final void orderSubtree(final PhylogenyNode node) {
         if (node.isExternal()) {
             return;

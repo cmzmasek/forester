@@ -422,10 +422,9 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     void returnedToSuperTreePressed() {
-        if (getCurrentTreePanel().isCurrentTreeIsSubtree()) {
-            getCurrentTreePanel().superTree();
-            showWhole();
-        }
+        // "R1": climb exactly one branch toward the root (not one navigation-stack frame, which
+        // can span many levels when the user descended by clicking a leaf).
+        getCurrentTreePanel().superTreeOneLevel();
     }
 
     void returnedToWholeTreePressed() {

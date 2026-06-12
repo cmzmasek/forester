@@ -125,23 +125,33 @@ public final class SubSuperTreeButtonsTest {
                 // PARENT (it used to pop a modal warning that could freeze the app). Calling this
                 // on the EDT would itself block on that modal dialog, so it also guards the hang.
                 // We are at the whole tree now.
-                tp.subTree( leafNamed( tp.getPhylogeny(), "b1" ) ); // parent B -> descend into B (b1, b2)
+                tp.subTree( leafNamed( tp.getPhylogeny(), "b1" ) ); // parent B (two levels down) -> B (b1, b2)
                 if ( ( leaves( tp ) != 2 ) || !tp.isCurrentTreeIsSubtree() ) {
                     ok[ 0 ] = false;
                 }
-                // a leaf whose parent is the current sub-tree root is a harmless no-op
-                tp.subTree( leafNamed( tp.getPhylogeny(), "b1" ) );
-                if ( leaves( tp ) != 2 ) {
+                // R1 must climb exactly ONE branch: B -> its parent clade A -- NOT jump back to the
+                // root, even though B was reached by a single (deep) leaf click (one stack frame).
+                cp.returnedToSuperTreePressed();
+                if ( ( leaves( tp ) != 3 ) || !tp.isCurrentTreeIsSubtree() ) { // A: b1, b2, a3
                     ok[ 0 ] = false;
                 }
-                cp.returnedToWholeTreePressed();
-                // a leaf directly under the whole-tree root is likewise a no-op (parent is the root)
+                // one more branch up reaches the root (the complete tree)
+                cp.returnedToSuperTreePressed();
+                if ( ( leaves( tp ) != 4 ) || tp.isCurrentTreeIsSubtree() ) {
+                    ok[ 0 ] = false;
+                }
+                // a leaf directly under the whole-tree root is a harmless no-op (parent is the root)
                 tp.subTree( leafNamed( tp.getPhylogeny(), "r2" ) );
                 if ( ( leaves( tp ) != 4 ) || tp.isCurrentTreeIsSubtree() ) {
                     ok[ 0 ] = false;
                 }
                 // a leaf under an internal, non-root clade descends into that clade
                 tp.subTree( leafNamed( tp.getPhylogeny(), "a3" ) ); // parent A -> descend into A (b1, b2, a3)
+                if ( ( leaves( tp ) != 3 ) || !tp.isCurrentTreeIsSubtree() ) {
+                    ok[ 0 ] = false;
+                }
+                // in A's sub-tree, clicking a3 (whose parent is A, the current root) is a no-op
+                tp.subTree( leafNamed( tp.getPhylogeny(), "a3" ) );
                 if ( ( leaves( tp ) != 3 ) || !tp.isCurrentTreeIsSubtree() ) {
                     ok[ 0 ] = false;
                 }
