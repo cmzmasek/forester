@@ -1457,7 +1457,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             } else if (e.getKeyCode() == KeyEvent.VK_O) {
                 getControlPanel().orderPressed(this);
             } else if (e.getKeyCode() == KeyEvent.VK_R) {
-                getControlPanel().returnedToSuperTreePressed();
+                getControlPanel().returnedToWholeTreePressed();
             } else if (e.getKeyCode() == KeyEvent.VK_U) {
                 getControlPanel().uncollapseAll(this);
                 getControlPanel().displayedPhylogenyMightHaveChanged(false);
@@ -6113,9 +6113,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     final void updateSubSuperTreeButton() {
         if (_subtree_index < 1) {
-            getControlPanel().deactivateButtonToReturnToSuperTree();
+            getControlPanel().deactivateButtonsToReturnToSuperTree();
         } else {
-            getControlPanel().activateButtonToReturnToSuperTree(_subtree_index);
+            getControlPanel().activateButtonsToReturnToSuperTree();
         }
     }
 

@@ -107,7 +107,10 @@ final class ControlPanel extends JPanel implements ActionListener {
             .getDefaultFontFamilyName(), Font.PLAIN, Configuration.getGuiFontSize());
     final static Font js_font = new Font(Configuration
             .getDefaultFontFamilyName(), Font.PLAIN, Configuration.getGuiFontSize());
-    private static final String RETURN_TO_SUPER_TREE_TEXT = "R";
+    // Two sub-tree navigation buttons: "R" jumps all the way back to the complete tree,
+    // "R1" moves up by a single level to the immediate super-tree.
+    private static final String RETURN_TO_WHOLE_TREE_TEXT  = "R";
+    private static final String RETURN_UP_ONE_LEVEL_TEXT   = "R1";
     // The zoom cross (Y+, X-, F, E, X+, Y-) holds commonly-used functions, so give those buttons a
     // taller click target than the other small control-panel buttons.
     private static final int    ZOOM_BUTTON_HEIGHT        = 24;
@@ -164,6 +167,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JButton _order;
     private int _paste_subtree_item;
     private int _reroot_cb_item;
+    private JButton _return_to_whole_tree;
     private JButton _return_to_super_tree;
     // Search
     private JLabel _search_found_label_0;
@@ -345,6 +349,8 @@ final class ControlPanel extends JPanel implements ActionListener {
                     expandYToFitLabels();
                 } else if (e.getSource() == _fit_width) {
                     fitWidth();
+                } else if (e.getSource() == _return_to_whole_tree) {
+                    returnedToWholeTreePressed();
                 } else if (e.getSource() == _return_to_super_tree) {
                     returnedToSuperTreePressed();
                 } else if (e.getSource() == _order) {
@@ -417,7 +423,19 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     void returnedToSuperTreePressed() {
         if (getCurrentTreePanel().isCurrentTreeIsSubtree()) {
-            _mainpanel.getCurrentTreePanel().superTree();
+            getCurrentTreePanel().superTree();
+            showWhole();
+        }
+    }
+
+    void returnedToWholeTreePressed() {
+        final TreePanel tp = getCurrentTreePanel();
+        boolean changed = false;
+        while (tp.isCurrentTreeIsSubtree()) {
+            tp.superTree();
+            changed = true;
+        }
+        if (changed) {
             showWhole();
         }
     }
@@ -1182,13 +1200,9 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
     }
 
-    void activateButtonToReturnToSuperTree(int index) {
-        --index;
-        if (index > 0) {
-            _return_to_super_tree.setText(RETURN_TO_SUPER_TREE_TEXT + " " + index);
-        } else {
-            _return_to_super_tree.setText(RETURN_TO_SUPER_TREE_TEXT);
-        }
+    void activateButtonsToReturnToSuperTree() {
+        _return_to_whole_tree.setForeground(getConfiguration().getGuiCheckboxAndButtonActiveColor());
+        _return_to_whole_tree.setEnabled(true);
         _return_to_super_tree.setForeground(getConfiguration().getGuiCheckboxAndButtonActiveColor());
         _return_to_super_tree.setEnabled(true);
     }
@@ -1205,7 +1219,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         final JPanel x_panel = new JPanel(new GridLayout(1, 1, 0, 0));
         final JPanel y_panel = new JPanel(new GridLayout(1, 5, 0, 0));
         final JPanel z_panel = new JPanel(new GridLayout(1, 1, 0, 0));
-        final JPanel o_panel = new JPanel(new GridLayout(1, 3, 0, 0));
+        final JPanel o_panel = new JPanel(new GridLayout(1, 4, 0, 0));
         if (getConfiguration().isApplyCustomGuiColors()) {
             x_panel.setBackground(getBackground());
             y_panel.setBackground(getBackground());
@@ -1257,13 +1271,22 @@ final class ControlPanel extends JPanel implements ActionListener {
         _expand_y.setMargin(tight);
         _fit_width.setMargin(tight);
         _zoom_in_x.setMargin(tight);
-        _return_to_super_tree = new JButton(RETURN_TO_SUPER_TREE_TEXT);
-        _return_to_super_tree.setToolTipText("return to the super-tree (if in sub-tree) [Alt+R]");
+        _return_to_whole_tree = new JButton(RETURN_TO_WHOLE_TREE_TEXT);
+        _return_to_whole_tree.setToolTipText("return all the way to the complete tree (if in a sub-tree) [Alt+R]");
+        _return_to_whole_tree.setEnabled(false);
+        _return_to_super_tree = new JButton(RETURN_UP_ONE_LEVEL_TEXT);
+        _return_to_super_tree.setToolTipText("move up by one level towards the complete tree (if in a sub-tree)");
         _return_to_super_tree.setEnabled(false);
         _order = new JButton("O");
         _order.setToolTipText("order all [Alt+O]");
         _uncollapse_all = new JButton("U");
         _uncollapse_all.setToolTipText("uncollapse all [Alt+U]");
+        // Four buttons share the bottom row (O R R1 U); trim the default padding so the
+        // two-character "R1" label is not clipped to "..." under FlatLaf.
+        _order.setMargin(tight);
+        _return_to_whole_tree.setMargin(tight);
+        _return_to_super_tree.setMargin(tight);
+        _uncollapse_all.setMargin(tight);
         addJButton(_zoom_in_y, x_panel);
         addJButton(_zoom_out_x, y_panel);
         addJButton(_show_whole, y_panel);
@@ -1274,6 +1297,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         nextRowGap(SECTION_GAP);
         add(o_panel);
         addJButton(_order, o_panel);
+        addJButton(_return_to_whole_tree, o_panel);
         addJButton(_return_to_super_tree, o_panel);
         addJButton(_uncollapse_all, o_panel);
         if (getConfiguration().doDisplayOption(Configuration.show_domain_architectures)) {
@@ -1467,8 +1491,9 @@ final class ControlPanel extends JPanel implements ActionListener {
         tf.addActionListener(this);
     }
 
-    void deactivateButtonToReturnToSuperTree() {
-        _return_to_super_tree.setText(RETURN_TO_SUPER_TREE_TEXT);
+    void deactivateButtonsToReturnToSuperTree() {
+        _return_to_whole_tree.setForeground(getConfiguration().getGuiButtonTextColor());
+        _return_to_whole_tree.setEnabled(false);
         _return_to_super_tree.setForeground(getConfiguration().getGuiButtonTextColor());
         _return_to_super_tree.setEnabled(false);
     }
