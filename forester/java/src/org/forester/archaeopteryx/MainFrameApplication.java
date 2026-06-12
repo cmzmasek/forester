@@ -1054,6 +1054,7 @@ public final class MainFrameApplication extends MainFrame {
 
     void buildAnalysisMenu() {
         _analysis_menu = MainFrame.createMenu("Analysis", getConfiguration());
+        _analysis_menu.setToolTipText("Reconcile gene and species trees, and infer lineages");
         _analysis_menu.add(_gsdi_item = new JMenuItem("GSDI (Generalized Speciation Duplication Inference)"));
         _analysis_menu.add(_gsdir_item = new JMenuItem("GSDIR (GSDI with re-rooting)"));
         _analysis_menu.add(_load_species_tree_item = new JMenuItem("Load Species Tree..."));
@@ -1083,6 +1084,7 @@ public final class MainFrameApplication extends MainFrame {
     @Override
     void buildFileMenu() {
         _file_jmenu = MainFrame.createMenu("File", getConfiguration());
+        _file_jmenu.setToolTipText("Read, save, and export trees; close tabs or exit");
         _file_jmenu.add(_open_item = new JMenuItem("Read Tree from File..."));
         if (getConfiguration().isEditable()) {
             _file_jmenu.addSeparator();
@@ -1345,6 +1347,7 @@ public final class MainFrameApplication extends MainFrame {
 
     void buildToolsMenu() {
         _tools_menu = createMenu("Tools", getConfiguration());
+        _tools_menu.setToolTipText("Colorize branches and subtrees, and replace node names");
         if (getConfiguration().isEditable()) {
             _tools_menu.add(_replace_names_item = new JMenuItem("Replace Node Names"));
             _replace_names_item.setToolTipText("to replace external node names using a tab separated mapping file");

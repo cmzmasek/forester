@@ -919,6 +919,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     void buildFontSizeMenu() {
         _font_size_menu = createMenu(FONT_SIZE_MENU_LABEL, getConfiguration());
+        _font_size_menu.setToolTipText("Set the font size of the tree display");
         _font_size_menu.add(_super_tiny_fonts_item = new JMenuItem("Super Tiny Fonts"));
         _font_size_menu.add(_tiny_fonts_item = new JMenuItem("Tiny Fonts"));
         _font_size_menu.add(_small_fonts_item = new JMenuItem("Small Fonts"));
@@ -934,6 +935,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     void buildHelpMenu() {
         _help_jmenu = createMenu("Help", getConfiguration());
+        _help_jmenu.setToolTipText("Documentation, web links, and program information");
         _help_jmenu.add(_help_item = new JMenuItem("Documentation"));
         _help_jmenu.addSeparator();
         _help_jmenu.add(_website_item = new JMenuItem("Archaeopteryx Home"));
@@ -978,6 +980,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     void buildViewMenu() {
         _view_jmenu = createMenu("View", getConfiguration());
+        _view_jmenu.setToolTipText("Show tree information, or the tree as phyloXML, Newick, or Nexus");
         _view_jmenu.add(_display_basic_information_item = new JMenuItem(SHOW_BASIC_TREE_INFORMATION_LABEL));
         _view_jmenu.addSeparator();
         _view_jmenu.add(_view_as_XML_item = new JMenuItem("as phyloXML"));
