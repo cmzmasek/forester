@@ -43,8 +43,9 @@ public final class PropertyColorSchemeTest {
     }
 
     public static boolean test() {
-        return testDisplayName() && testCategoricalGrouping() && testCountryGrouping() && testYearGradient()
-                && testAbsentAndEmpty() && testCollapseExcludesHiddenLeaves() && testCollapseRescalesGradient();
+        return testDisplayName() && testCategoricalGrouping() && testCountryGrouping() && testHostQualifierGrouping()
+                && testYearGradient() && testAbsentAndEmpty() && testCollapseExcludesHiddenLeaves()
+                && testCollapseRescalesGradient();
     }
 
     // ---- displayName: namespace strip, '_' -> space, capitalize, acronyms preserved ----
@@ -141,6 +142,39 @@ public final class PropertyColorSchemeTest {
             if ( label.indexOf( ':' ) >= 0 ) {
                 return fail( "country legend label should not contain ':' -> " + label );
             }
+        }
+        return true;
+    }
+
+    // ---- host: drop the qualifier after the first ';' (Homo sapiens; male == Homo sapiens) ----
+    private static boolean testHostQualifierGrouping() {
+        final String ref = "repseq:host";
+        final Phylogeny phy = treeWith( ref, "Homo sapiens; male 35", "Homo sapiens; female old", "Homo sapiens",
+                                        "homo_sapiens; juvenile", "Mus musculus; female", "Gallus gallus" );
+        final PropertyColorScheme s = new PropertyColorScheme( phy, ref );
+        // three groups: {the four Homo sapiens}, {Mus musculus}, {Gallus gallus}
+        if ( s.getValueColors().size() != 3 ) {
+            return fail( "host groups expected 3 (Homo sapiens, Mus musculus, Gallus gallus), got "
+                    + s.getValueColors().size() );
+        }
+        // same base host with different qualifiers -- and underscore/case variants -- share a color
+        if ( !sameColor( s, phy, ref, "Homo sapiens; male 35", "Homo sapiens; female old" )
+                || !sameColor( s, phy, ref, "Homo sapiens; male 35", "Homo sapiens" )
+                || !sameColor( s, phy, ref, "Homo sapiens; male 35", "homo_sapiens; juvenile" ) ) {
+            return fail( "Homo sapiens with different qualifiers should share a color" );
+        }
+        // different base hosts stay distinct
+        if ( sameColor( s, phy, ref, "Homo sapiens; male 35", "Mus musculus; female" ) ) {
+            return fail( "Homo sapiens and Mus musculus must differ" );
+        }
+        // legend labels carry no ';' qualifier and show the most frequent spelling
+        for( final String label : s.getValueColors().keySet() ) {
+            if ( label.indexOf( ';' ) >= 0 ) {
+                return fail( "host legend label should not contain ';' -> " + label );
+            }
+        }
+        if ( !s.getValueColors().containsKey( "Homo sapiens" ) ) {
+            return fail( "host legend should show 'Homo sapiens' (most frequent spelling)" );
         }
         return true;
     }

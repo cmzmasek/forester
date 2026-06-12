@@ -51,9 +51,11 @@ import org.forester.util.ForesterUtil;
  * trimming, collapsing whitespace, treating {@code _} as a space, and case-folding -- so
  * e.g. {@code Human}/{@code human}/{@code homo_sapiens} get one color (it cannot, however,
  * merge semantically-equal but lexically-different values such as {@code man} vs
- * {@code H. sapiens}). Two refs are special-cased: {@code year} is colored by a continuous
- * gradient over its numeric range, and {@code country} is grouped by the part before the
- * first {@code :} (so {@code USA:CA} and {@code USA:IL} share a color).
+ * {@code H. sapiens}). A few refs are special-cased: {@code year} is colored by a continuous
+ * gradient over its numeric range, while {@code country} and {@code host} first drop a
+ * trailing qualifier -- everything from the first {@code :} (country, so {@code USA:CA} and
+ * {@code USA:IL} share a color) or {@code ;} (host, so {@code Homo sapiens; male 35} and
+ * {@code Homo sapiens; female old} share a color) onward -- before that grouping.
  * <p>
  * This is independent of the explicit {@code style:*} visualization properties and
  * the "Visual Styles" feature.
@@ -81,13 +83,15 @@ final class PropertyColorScheme {
     private final boolean            _gradient;
     private final double             _min;
     private final double             _max;
-    // "country": values are grouped by the part before the first ':' (USA:CA == USA:IL).
-    private final boolean            _country;
+    // For refs whose value carries a trailing qualifier, the delimiter at which the value is
+    // truncated before grouping: ':' for "country" (USA:CA == USA:IL), ';' for "host"
+    // (Homo sapiens; male 35 == Homo sapiens; female old). 0 means keep the whole value.
+    private final char               _truncate_at;
 
     PropertyColorScheme( final Phylogeny phylogeny, final String ref ) {
         _ref = ref;
         _gradient = isYearRef( ref );
-        _country = isCountryRef( ref );
+        _truncate_at = truncationDelimiter( ref );
         _value_to_color = new LinkedHashMap<String, Color>();
         _key_to_color = new LinkedHashMap<String, Color>();
         // Color from the leaves actually on screen (those hidden under a collapsed node are
@@ -111,8 +115,8 @@ final class PropertyColorScheme {
             _min = 0;
             _max = 0;
             // Group trivial variants together (case, whitespace, underscores; and, for
-            // "country", the subdivision after ':') so e.g. "Human"/"human"/"homo_sapiens "
-            // share one color. Each group's legend label is its most frequent spelling.
+            // "country"/"host", the qualifier after ':'/';') so e.g. "Human"/"human"/
+            // "homo_sapiens " share one color. Each group's legend label is its most frequent spelling.
             final Map<String, Map<String, Integer>> key_to_label_counts = new HashMap<String, Map<String, Integer>>();
             for( final PhylogenyNode node : leaves ) {
                 final String v = valueFor( node, ref );
@@ -187,15 +191,16 @@ final class PropertyColorScheme {
 
     /**
      * The display label for a raw property value: trimmed, underscores as spaces, internal
-     * whitespace collapsed; for "country" only the part before the first ':' (so USA:CA and
-     * USA:IL both read as "USA"). Case is preserved -- this is what the legend shows.
+     * whitespace collapsed; for refs that carry a trailing qualifier ("country", "host") only
+     * the part before the first ':'/';' (so "USA:CA" reads as "USA" and "Homo sapiens; male 35"
+     * reads as "Homo sapiens"). Case is preserved -- this is what the legend shows.
      */
     private String displayLabel( final String v ) {
         String s = v;
-        if ( _country ) {
-            final int colon = s.indexOf( ':' );
-            if ( colon >= 0 ) {
-                s = s.substring( 0, colon );
+        if ( _truncate_at != 0 ) {
+            final int idx = s.indexOf( _truncate_at );
+            if ( idx >= 0 ) {
+                s = s.substring( 0, idx );
             }
         }
         s = s.trim().replace( '_', ' ' );
@@ -259,9 +264,21 @@ final class PropertyColorScheme {
         return refNameEquals( ref, "year" );
     }
 
-    /** True for the {@code country} property (in any namespace), which drops the ':' subdivision. */
-    private static boolean isCountryRef( final String ref ) {
-        return refNameEquals( ref, "country" );
+    /**
+     * The delimiter at which a value of this ref is truncated before grouping (dropping a
+     * trailing qualifier), or {@code 0} for refs whose whole value is used. A {@code country}
+     * value keeps only the part before the first {@code :} (the subdivision); a {@code host}
+     * value keeps only the part before the first {@code ;} (sex/age qualifiers). Matched on the
+     * ref name in any namespace.
+     */
+    private static char truncationDelimiter( final String ref ) {
+        if ( refNameEquals( ref, "country" ) ) {
+            return ':';
+        }
+        if ( refNameEquals( ref, "host" ) ) {
+            return ';';
+        }
+        return 0;
     }
 
     private static boolean refNameEquals( final String ref, final String name ) {
