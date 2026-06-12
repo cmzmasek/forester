@@ -1170,6 +1170,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         gene_tree.setRerootable(false);
         gene_tree.clearHashIdToNodeMap();
         gene_tree.recalculateNumberOfExternalDescendants(true);
+        PhylogenyMethods.removeMadConfidences(gene_tree); // the result is a reconciliation, not a MAD rooting
         _mainpanel.addPhylogenyInNewTab(gene_tree, getConfiguration(), "gene tree", null);
         getMainPanel().getControlPanel().setShowEvents(true);
         showWhole();
@@ -1241,6 +1242,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         result_gene_tree.setRerootable(false);
         result_gene_tree.clearHashIdToNodeMap();
         result_gene_tree.recalculateNumberOfExternalDescendants(true);
+        PhylogenyMethods.removeMadConfidences(result_gene_tree); // GSDIR rerooted the tree; MAD support is stale
         PhylogenyMethods.orderAppearance(result_gene_tree.getRoot(), true, true, DESCENDANT_SORT_PRIORITY.NODE_NAME);
         _mainpanel.addPhylogenyInNewTab(result_gene_tree, getConfiguration(), "gene tree", null);
         getMainPanel().getControlPanel().setShowEvents(true);
