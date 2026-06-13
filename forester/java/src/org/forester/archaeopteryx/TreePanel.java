@@ -200,6 +200,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private static final float ANGLE_ROTATION_UNIT = (float) (Math.PI
             / 32);
     private final static int CONFIDENCE_LEFT_MARGIN = 4;
+    // Fractional-metrics context for measuring label advance on the vector-export path; see
+    // fractionalAdvanceWidth().
+    private final static FontRenderContext FRC_FRACTIONAL = new FontRenderContext(null, true, true);
     private final static int EURO_D = 10;
     private final static NumberFormat FORMATTER_BRANCH_LENGTH;
     private final static NumberFormat FORMATTER_CONFIDENCE;
@@ -2771,7 +2774,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
         }
         if (_sb.length() > 0) {
-            if (!using_visual_font && !is_in_found_nodes) {
+            if (to_pdf) {
+                x += fractionalAdvanceWidth(g, _sb.toString()) + 5;
+            } else if (!using_visual_font && !is_in_found_nodes) {
                 x += getFontMetricsForLargeDefaultFont().stringWidth(_sb.toString()) + 5;
             } else {
                 x += getFontMetrics(g.getFont()).stringWidth(_sb.toString()) + 5;
@@ -3489,6 +3494,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         /* GUILHEM_END */
         TreePanel.drawString(label, start_x, start_y, g);
+        if (to_pdf) {
+            return fractionalAdvanceWidth(g, label);
+        }
         if (!using_visual_font && !is_in_found_nodes) {
             return getFontMetricsForLargeDefaultFont().stringWidth(label);
         }
@@ -3725,6 +3733,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     final private void setCutOrCopiedTree(final Phylogeny cut_or_copied_tree) {
         getMainPanel().setCutOrCopiedTree(cut_or_copied_tree);
+    }
+
+    // Horizontal advance (px) that the vector backends (PDF via OpenPDF glyph outlines, SVG/EPS via
+    // VectorGraphics2D <text>) actually use when drawing s in g's current font. They advance glyphs by
+    // the font's true *fractional* widths, whereas FontMetrics.stringWidth grid-fits each advance to an
+    // integer; at the small leaf-label font that rounding deficit accumulates over a long label into a
+    // one-to-two character overlap with the next label (e.g. scientific name running into node name).
+    // Raster/screen are unaffected -- AWT grid-fits glyphs to the same integers it measures -- so this
+    // is used only on the to_pdf (vector) path, keeping screen and raster output pixel-identical.
+    static int fractionalAdvanceWidth(final Graphics2D g, final String s) {
+        return (int) Math.ceil(g.getFont().getStringBounds(s, FRC_FRACTIONAL).getWidth());
     }
 
     private boolean setFont(final Graphics2D g, final PhylogenyNode node, final boolean is_in_found_nodes) {
