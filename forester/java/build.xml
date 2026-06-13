@@ -4,7 +4,7 @@
     <property name="src.dir" value="src"/>
     <property name="classes.dir" value="classes"/>
     <property name="jars.dir" value="resources"/>
-    <property name="itextjar" value="${jars.dir}/itextpdf-5.5.13.jar"/>
+    <property name="openpdfjar" value="${jars.dir}/openpdf-1.3.35.jar"/>
     <property name="commonscodecjar" value="${jars.dir}/commons-codec-1.5.jar"/>
     <property name="openchartjar" value="${jars.dir}/openchart.jar"/>
     <property name="flatlafjar" value="${jars.dir}/flatlaf-3.7.1.jar"/>
@@ -28,19 +28,21 @@
         <javac release="21" debug="true" debuglevel="lines,source" srcdir="${src.dir}"
                destdir="${classes.dir}" optimize="on" verbose="false"
                includeantruntime="false"
-               classpath="${itextjar};${commonscodecjar};${openchartjar};${flatlafjar};${vectorgraphics2djar}">
+               classpath="${openpdfjar};${commonscodecjar};${openchartjar};${flatlafjar};${vectorgraphics2djar}">
             <compilerarg value="-Xlint:deprecation"/>
             <compilerarg value="-Xlint:unchecked"/>
         </javac>
     </target>
 
     <target name="jar" description="JARs the classes files" depends="compile,copy_resources">
-        <unjar src="${itextjar}" dest="${classes.dir}">
+        <unjar src="${openpdfjar}" dest="${classes.dir}">
             <patternset>
                 <include name="**/*.class"/>
                 <include name="**/*.afm"/>
+                <include name="**/*.cmap"/>
+                <include name="**/*.properties"/>
                 <include name="**/*.txt"/>
-                <exclude name="**/*Test*.class"/>
+                <exclude name="module-info.class"/>
             </patternset>
         </unjar>
         <unjar src="${commonscodecjar}" dest="${classes.dir}">

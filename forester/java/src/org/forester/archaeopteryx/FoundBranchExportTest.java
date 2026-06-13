@@ -36,16 +36,17 @@ import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 
 /**
- * Integration test for the long-standing "search highlight bleeds into PDF branches" bug. iText's
- * {@code PdfGraphics2D} draws a bold label (a search-found node's label is bold) by *stroking* the
- * glyphs, setting the PDF stroke color directly while bypassing its own stroke-color cache; a
- * following stroke whose color matches that now-stale cache is then skipped by iText and silently
- * inherits the label's red/green color. So in a regular phylogram the *branches* of the next clade
- * came out red/green, and in an aligned phylogram the lined-up *connector* did -- in the PDF only;
- * raster exports (PNG/TIFF) and the screen were always fine. {@code resyncPdfStrokeColor} re-syncs
- * the cache after each found label, so nothing past the found node's own box+label is colored.
+ * Integration test for the long-standing "search highlight bleeds into PDF branches" bug. The PDF
+ * {@code PdfGraphics2D} (iText, now OpenPDF) drew a bold label (a search-found node's label is bold)
+ * by *stroking* the glyphs, setting the PDF stroke color directly while bypassing its own
+ * stroke-color cache; a following stroke whose color matched that now-stale cache was then skipped
+ * and silently inherited the label's red/green color. So in a regular phylogram the *branches* of
+ * the next clade came out red/green, and in an aligned phylogram the lined-up *connector* did -- in
+ * the PDF only; raster exports (PNG/TIFF) and the screen were always fine. {@link PdfExporter} now
+ * renders text as vector outlines ({@code createGraphicsShapes}), so glyphs are filled rather than
+ * stroked and nothing poisons the stroke-color cache -- the bug cannot occur.
  *
- * <p>This drives the real iText PDF path ({@link PdfExporter}) -- for both a regular and an aligned
+ * <p>This drives the real PDF path ({@link PdfExporter}) -- for both a regular and an aligned
  * phylogram -- and rasterizes the result with {@code sips} (macOS), then asserts that color appears
  * only on the found nodes' own rows. It needs FlatLaf + a display + {@code sips}, so it is a
  * standalone test, not part of the headless suite, and it is a no-op (returns true) wherever any of

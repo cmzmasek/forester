@@ -24,30 +24,18 @@ import java.awt.Graphics2D;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.Map;
 
 import org.forester.phylogeny.Phylogeny;
-import org.forester.util.ForesterUtil;
 
-import com.itextpdf.awt.DefaultFontMapper;
-import com.itextpdf.awt.DefaultFontMapper.BaseFontParameters;
-import com.itextpdf.awt.PdfGraphics2D;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.FontFactory;
-import com.itextpdf.text.Rectangle;
-import com.itextpdf.text.pdf.BaseFont;
-import com.itextpdf.text.pdf.PdfContentByte;
-import com.itextpdf.text.pdf.PdfWriter;
+import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
+import com.lowagie.text.Rectangle;
+import com.lowagie.text.pdf.PdfContentByte;
+import com.lowagie.text.pdf.PdfWriter;
 
 /*
- * 
- * This uses iText.
- * 
- * See: http://www.lowagie.com/iText/
- * 
- * Current version: iText-5.5.9
+ * PDF export via OpenPDF (https://github.com/LibrePDF/OpenPDF), the LGPL/MPL community fork of
+ * iText 4 -- API-compatible (com.lowagie.text.*) but without iText 5's AGPL license.
  */
 final class PdfExporter {
 
@@ -102,25 +90,11 @@ final class PdfExporter {
             throw new IOException( e );
         }
         document.open();
-        final DefaultFontMapper mapper = new DefaultFontMapper();
-        FontFactory.registerDirectories();
-        if ( ForesterUtil.isWindows() ) {
-            mapper.insertDirectory( "c:/windows/fonts" );
-        }
-        else if ( ForesterUtil.isMac() ) {
-            mapper.insertDirectory( "/Library/Fonts/" );
-            mapper.insertDirectory( "/System/Library/Fonts/" );
-        }
-        else {
-            mapper.insertDirectory( "/usr/X/lib/X11/fonts/TrueType/" );
-            mapper.insertDirectory( "/usr/X/lib/X11/fonts/Type1/" );
-            mapper.insertDirectory( "/usr/share/fonts/default/TrueType/" );
-            mapper.insertDirectory( "/usr/share/fonts/default/Type1/" );
-        }
-        enableUnicode( mapper );
+        // Text is rendered as vector outlines (createGraphicsShapes), so the figure needs no font
+        // embedding/mapping and is fully portable; it also sidesteps the bold-glyph stroke-color
+        // bleed that the glyph-font path has in iText/OpenPDF.
         final PdfContentByte cb = writer.getDirectContent();
-        
-        final Graphics2D g2 = new PdfGraphics2D(cb, my_width, my_height, mapper); 
+        final Graphics2D g2 = cb.createGraphicsShapes(my_width, my_height);
     
         try {
             tree_panel.paintPhylogeny( g2, true, false, my_width, my_height, 0, 0 );
@@ -140,47 +114,4 @@ final class PdfExporter {
         final String msg = file.toString() +  " [size: " + my_width + ", " + my_height + "]";
         return msg;
     }
-
-    private final static void enableUnicode( final DefaultFontMapper mapper ) {
-        final Map<String, DefaultFontMapper.BaseFontParameters> map = mapper.getMapper();
-        for (final Iterator<String> i = map.keySet().iterator(); i.hasNext();) {
-            final String name = i.next();
-            final String name_lc = name.toLowerCase();
-            if ( name_lc.contains( "unicode" ) || name_lc.equals( "dialog" ) ) {
-                final BaseFontParameters pfps = map.get(name);
-                try {
-                    pfps.encoding = BaseFont.IDENTITY_H;
-                    pfps.embedded = true;
-                }
-                catch ( Exception e )  {
-                    //Ignore.
-                }
-            }
-        }
-    }
-    
-    /* not used currently 
-    static FontMapper arial_uni = new FontMapper() {
-        public BaseFont awtToPdf(Font font) {
-            System.out.println( font.toString() );
-            try {
-                return BaseFont.createFont(
-                        "c:/windows/fonts/arialuni.ttf",
-                        BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
-            }
-            catch (DocumentException e) {
-                e.printStackTrace();
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-       
-        @Override
-        public Font pdfToAwt( BaseFont arg0, int arg1 ) {
-            return null;
-        }
-    };
-    */
 }

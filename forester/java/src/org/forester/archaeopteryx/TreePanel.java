@@ -2814,9 +2814,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 }
             }
         }
-        if (to_pdf && is_in_found_nodes) {
-            resyncPdfStrokeColor(g);
-        }
         return x;
     }
 
@@ -2900,9 +2897,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             // lined-up label. It must NOT inherit g's current color, which here is the node's label
             // color: for a search-found node that color is the bright red/green highlight. On screen
             // the sub-pixel dashed stroke antialiases it into near-invisibility, but in an export it
-            // renders as a fully saturated red/green "branch" (a long-standing bug). (The matching PDF
-            // bug, where the next branch inherits the bold label's stroke color, is handled centrally
-            // by resyncPdfStrokeColor().)
+            // renders as a fully saturated red/green "branch" (a long-standing bug).
             g.setColor(connectorColor());
             drawLine(x1 + dist_left, y, x2 - dist_right, y, g);
             g.setStroke(stroke);
@@ -2917,25 +2912,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      */
     static Color connectorColor() {
         return CONNECTOR_GUIDE_COLOR;
-    }
-
-    private static final java.awt.geom.Path2D EMPTY_PATH = new java.awt.geom.Path2D.Float();
-
-    /**
-     * iText workaround. Its {@code PdfGraphics2D} draws a bold label (a search-found node's label is
-     * bold) by *stroking* the glyph outlines, which sets the PDF stroke color directly (via
-     * {@code PdfContentByte.setColorStroke}) without updating its own stroke-color cache. The next
-     * branch (or connector) stroke whose color equals that now-stale cache is then skipped by iText
-     * and silently inherits the label's red/green color -- coloring whole branches in PDF exports
-     * only (raster Graphics2D have no such cache). Re-emit a sentinel stroke color that branches and
-     * connectors never use, so the cache is consistent again and the following strokes paint their
-     * own color. The empty path makes this a state-only change that draws nothing.
-     */
-    private static void resyncPdfStrokeColor(final Graphics2D g) {
-        final Color saved = g.getColor();
-        g.setColor(Color.WHITE);
-        g.draw(EMPTY_PATH);
-        g.setColor(saved);
     }
 
     private final void addLabelForCollapsed(final String first,
@@ -3114,9 +3090,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             if (need_to_reset) {
                 g.setTransform(_at);
             }
-        }
-        if (to_pdf && is_in_found_nodes) {
-            resyncPdfStrokeColor(g);
         }
     }
 
