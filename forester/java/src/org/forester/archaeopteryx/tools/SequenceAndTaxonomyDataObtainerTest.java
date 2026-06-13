@@ -114,6 +114,21 @@ public final class SequenceAndTaxonomyDataObtainerTest {
                 || !both.contains( "Taxonomy data: error - tax error" ) ) {
             return fail( "combined message missing a section: " + both );
         }
+
+        // 8. commit policy: commit unless BOTH phases errored (a total failure obtains nothing,
+        //    so the displayed tree and its edited-state must be left untouched).
+        if ( !SequenceAndTaxonomyDataObtainer.shouldCommit( null, null ) ) {
+            return fail( "both phases succeeding must commit" );
+        }
+        if ( !SequenceAndTaxonomyDataObtainer.shouldCommit( "seq down", null ) ) {
+            return fail( "a successful taxonomy phase must still commit" );
+        }
+        if ( !SequenceAndTaxonomyDataObtainer.shouldCommit( null, "tax down" ) ) {
+            return fail( "a successful sequence phase must still commit" );
+        }
+        if ( SequenceAndTaxonomyDataObtainer.shouldCommit( "seq down", "tax down" ) ) {
+            return fail( "a total failure (both phases errored) must not commit" );
+        }
         return true;
     }
 

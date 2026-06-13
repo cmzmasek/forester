@@ -23,7 +23,6 @@ package org.forester.analysis;
 import java.util.SortedSet;
 
 import org.forester.phylogeny.Phylogeny;
-import org.forester.phylogeny.PhylogenyNode;
 
 /**
  * Test for the offline behavior of {@link TaxonomyDataManager#obtainDetailedTaxonomicInformation}.
@@ -45,8 +44,11 @@ public final class TaxonomyDataManagerTest {
 
     public static boolean test() {
         try {
-            // Only external nodes are reported; named internal nodes are NOT.
-            final SortedSet<String> nf = TaxonomyDataManager.obtainDetailedTaxonomicInformation( nestedTree(), false );
+            // root[ROOT] -> { inner[INNER] -> { A, B }, C }: only external nodes are reported;
+            // named internal nodes are NOT.
+            final SortedSet<String> nf = TaxonomyDataManager
+                    .obtainDetailedTaxonomicInformation( Phylogeny.createInstanceFromNhxString( "((A,B)INNER,C)ROOT" ),
+                                                         false );
             if ( nf.size() != 3 ) {
                 return fail( "expected 3 not-found external nodes, got " + nf.size() + ": " + nf );
             }
@@ -57,16 +59,16 @@ public final class TaxonomyDataManagerTest {
                 return fail( "internal nodes must not be reported as not-found: " + nf );
             }
 
-            // A tree whose leaves all resolve trivially would contact the network; instead use an
-            // unnamed leaf, which is reported (by node.toString()) without any lookup.
-            final SortedSet<String> nf2 = TaxonomyDataManager.obtainDetailedTaxonomicInformation( oneUnnamedLeaf(),
-                                                                                                  false );
+            // A tree whose leaves all resolve trivially would contact the network; instead use a
+            // single unnamed external leaf, which is reported (by node.toString()) without any lookup.
+            final SortedSet<String> nf2 = TaxonomyDataManager
+                    .obtainDetailedTaxonomicInformation( Phylogeny.createInstanceFromNhxString( "()ROOT" ), false );
             if ( nf2.size() != 1 ) {
                 return fail( "an unnamed external leaf must yield exactly one not-found entry, got " + nf2.size() );
             }
 
             // The tree is not mutated/pruned (the old "delete unresolved nodes" behavior is gone).
-            final Phylogeny phy = nestedTree();
+            final Phylogeny phy = Phylogeny.createInstanceFromNhxString( "((A,B)INNER,C)ROOT" );
             TaxonomyDataManager.obtainDetailedTaxonomicInformation( phy, false );
             if ( phy.getNumberOfExternalNodes() != 3 ) {
                 return fail( "no node may be deleted; expected 3 external nodes, got "
@@ -78,39 +80,6 @@ public final class TaxonomyDataManagerTest {
             e.printStackTrace();
             return fail( e.toString() );
         }
-    }
-
-    // root[ROOT] -> { inner[INNER] -> { A, B }, C }
-    private static Phylogeny nestedTree() {
-        final PhylogenyNode root = new PhylogenyNode();
-        root.setName( "ROOT" );
-        final PhylogenyNode inner = new PhylogenyNode();
-        inner.setName( "INNER" );
-        inner.addAsChild( leaf( "A" ) );
-        inner.addAsChild( leaf( "B" ) );
-        root.addAsChild( inner );
-        root.addAsChild( leaf( "C" ) );
-        return phylogeny( root );
-    }
-
-    private static Phylogeny oneUnnamedLeaf() {
-        final PhylogenyNode root = new PhylogenyNode();
-        root.setName( "ROOT" );
-        root.addAsChild( new PhylogenyNode() ); // single unnamed external leaf; root stays internal
-        return phylogeny( root );
-    }
-
-    private static PhylogenyNode leaf( final String name ) {
-        final PhylogenyNode n = new PhylogenyNode();
-        n.setName( name );
-        return n;
-    }
-
-    private static Phylogeny phylogeny( final PhylogenyNode root ) {
-        final Phylogeny phy = new Phylogeny();
-        phy.setRoot( root );
-        phy.externalNodesHaveChanged();
-        return phy;
     }
 
     private static boolean fail( final String msg ) {

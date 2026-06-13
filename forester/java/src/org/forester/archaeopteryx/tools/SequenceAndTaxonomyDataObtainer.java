@@ -98,9 +98,14 @@ public final class SequenceAndTaxonomyDataObtainer extends RunnableProcess {
         finally {
             end( _mf );
         }
-        _treepanel.setTree( _phy );
-        _mf.showWhole();
-        _treepanel.setEdited( true );
+        // Only commit (replace the displayed tree and mark it edited) when at least one phase
+        // completed without error; on a total failure nothing was obtained, so leave the tree
+        // and its edited-state untouched -- just report the errors below.
+        if ( shouldCommit( seq_error, tax_error ) ) {
+            _treepanel.setTree( _phy );
+            _mf.showWhole();
+            _treepanel.setEdited( true );
+        }
         final String message = buildCompletionMessage( seq_not_found, seq_error, tax_not_found, tax_error );
         final int type = hasIssues( seq_not_found, seq_error, tax_not_found, tax_error ) ? JOptionPane.WARNING_MESSAGE
                 : JOptionPane.INFORMATION_MESSAGE;
@@ -110,6 +115,15 @@ public final class SequenceAndTaxonomyDataObtainer extends RunnableProcess {
         catch ( final Exception e ) {
             // Not important if this fails, do nothing.
         }
+    }
+
+    /**
+     * True if at least one phase completed without error, so whatever it obtained should be
+     * committed to the displayed tree. When both phases fail, nothing was obtained and the
+     * tree (and its edited-state) is left untouched.
+     */
+    static boolean shouldCommit( final String seq_error, final String tax_error ) {
+        return ( seq_error == null ) || ( tax_error == null );
     }
 
     /** True if either phase produced an error or left at least one node unresolved. */
