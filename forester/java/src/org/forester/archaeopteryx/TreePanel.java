@@ -5115,7 +5115,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             msg += "select a different rank (e.g. phylum, genus, ...)\n";
             msg += "  and/or\n";
             msg += "execute:\n";
-            msg += "1. \"" + MainFrame.OBTAIN_DETAILED_TAXONOMIC_INFORMATION + "\" (Tools)\n";
+            msg += "1. \"" + MainFrame.OBTAIN_SEQUENCE_AND_TAXONOMIC_INFORMATION + "\" (Tools)\n";
             msg += "2. \"" + MainFrame.INFER_ANCESTOR_TAXONOMIES + "\" (Analysis)";
             JOptionPane
                     .showMessageDialog(this, msg, "Taxonomy Rank-Colorization Failed", JOptionPane.WARNING_MESSAGE);

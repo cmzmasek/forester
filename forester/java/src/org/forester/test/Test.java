@@ -215,6 +215,22 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Seq & taxonomy obtainer: ");
+        if (org.forester.archaeopteryx.tools.SequenceAndTaxonomyDataObtainerTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Taxonomy data manager: ");
+        if (org.forester.analysis.TaxonomyDataManagerTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Tree panel util: ");
         if (org.forester.archaeopteryx.TreePanelUtilTest.test()) {
             System.out.println("OK.");

@@ -21,7 +21,6 @@
 package org.forester.analysis;
 
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,12 +28,6 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 
-import javax.swing.JOptionPane;
-
-import org.forester.archaeopteryx.MainFrameApplication;
-import org.forester.archaeopteryx.TreePanel;
-import org.forester.archaeopteryx.tools.AncestralTaxonomyInferrer;
-import org.forester.archaeopteryx.tools.RunnableProcess;
 import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.parsers.util.ParserUtils;
@@ -48,7 +41,7 @@ import org.forester.util.TaxonomyUtil;
 import org.forester.ws.seqdb.SequenceDbWsTools;
 import org.forester.ws.seqdb.UniProtTaxonomy;
 
-public final class TaxonomyDataManager extends RunnableProcess {
+public final class TaxonomyDataManager {
 
     enum QUERY_TYPE {
         CODE, SN, ID, LIN;
@@ -59,30 +52,9 @@ public final class TaxonomyDataManager extends RunnableProcess {
     private static final HashMap<String, UniProtTaxonomy> _lineage_up_cache_map    = new HashMap<String, UniProtTaxonomy>();
     private static final HashMap<String, UniProtTaxonomy> _code_up_cache_map       = new HashMap<String, UniProtTaxonomy>();
     private static final HashMap<String, UniProtTaxonomy> _id_up_cache_map         = new HashMap<String, UniProtTaxonomy>();
-    private final Phylogeny                               _phy;
-    private final MainFrameApplication                    _mf;
-    private final TreePanel                               _treepanel;
-    private final boolean                                 _delete;
-    private final boolean                                 _allow_simple_names;
 
-    public TaxonomyDataManager( final MainFrameApplication mf, final TreePanel treepanel, final Phylogeny phy ) {
-        _phy = phy;
-        _mf = mf;
-        _treepanel = treepanel;
-        _delete = false;
-        _allow_simple_names = false;
-    }
-
-    public TaxonomyDataManager( final MainFrameApplication mf,
-                                final TreePanel treepanel,
-                                final Phylogeny phy,
-                                final boolean delete,
-                                final boolean allow_simple_name ) {
-        _phy = phy;
-        _mf = mf;
-        _treepanel = treepanel;
-        _delete = delete;
-        _allow_simple_names = allow_simple_name;
+    private TaxonomyDataManager() {
+        // static utility class -- not instantiable
     }
 
     synchronized static void clearCachesIfTooLarge() {
@@ -191,16 +163,18 @@ public final class TaxonomyDataManager extends RunnableProcess {
                 .equalsIgnoreCase( "uniprotkb" ) ) ) );
     }
 
-    synchronized final private static SortedSet<String> obtainDetailedTaxonomicInformation( final Phylogeny phy,
-                                                                                            final boolean delete,
-                                                                                            final boolean allow_to_use_basic_node_names )
-                                                                                                    throws IOException, AncestralTaxonomyInferenceException {
+    /**
+     * Resolves detailed taxonomic information (from UniProt Taxonomy) for every node of the tree
+     * that carries enough of a taxonomic hint, updating each node's {@link Taxonomy} in place.
+     *
+     * @param allow_to_use_basic_node_names if true, a node's plain name may be used as a fallback hint
+     * @return the (sorted) set of nodes/taxonomies that could not be resolved; empty if all resolved
+     */
+    public synchronized static SortedSet<String> obtainDetailedTaxonomicInformation( final Phylogeny phy,
+                                                                                     final boolean allow_to_use_basic_node_names )
+            throws IOException, AncestralTaxonomyInferenceException {
         clearCachesIfTooLarge();
         final SortedSet<String> not_found = new TreeSet<String>();
-        List<PhylogenyNode> not_found_external_nodes = null;
-        if ( delete ) {
-            not_found_external_nodes = new ArrayList<PhylogenyNode>();
-        }
         for( final PhylogenyNodeIterator iter = phy.iteratorPostorder(); iter.hasNext(); ) {
             final PhylogenyNode node = iter.next();
             final QUERY_TYPE qt = null;
@@ -217,9 +191,6 @@ public final class TaxonomyDataManager extends RunnableProcess {
                 }
                 else {
                     not_found.add( node.toString() );
-                }
-                if ( delete ) {
-                    not_found_external_nodes.add( node );
                 }
             }
             UniProtTaxonomy uniprot_tax = null;
@@ -249,19 +220,8 @@ public final class TaxonomyDataManager extends RunnableProcess {
                     else {
                         not_found.add( node.getName() );
                     }
-                    if ( delete && node.isExternal() ) {
-                        not_found_external_nodes.add( node );
-                    }
                 }
             }
-        }
-        if ( delete ) {
-            for( final PhylogenyNode node : not_found_external_nodes ) {
-                phy.deleteSubtree( node, true );
-            }
-            phy.externalNodesHaveChanged();
-            phy.clearHashIdToNodeMap();
-            phy.recalculateNumberOfExternalDescendants( true );
         }
         return not_found;
     }
@@ -435,120 +395,4 @@ public final class TaxonomyDataManager extends RunnableProcess {
         }
     }
 
-    private final void execute() {
-        start( _mf, "taxonomy data" );
-        SortedSet<String> not_found = null;
-        try {
-            not_found = obtainDetailedTaxonomicInformation( _phy, _delete, _allow_simple_names );
-        }
-        catch ( final UnknownHostException e ) {
-            JOptionPane.showMessageDialog( _mf,
-                                           "Could not connect to \"" + getBaseUrl() + "\"",
-                                           "Network error during taxonomic information gathering",
-                                           JOptionPane.ERROR_MESSAGE );
-            return;
-        }
-        catch ( final IOException e ) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog( _mf,
-                                           e.toString(),
-                                           "Failed to obtain taxonomic information",
-                                           JOptionPane.ERROR_MESSAGE );
-            return;
-        }
-        catch ( final AncestralTaxonomyInferenceException e ) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog( _mf,
-                                           e.toString(),
-                                           "Failed to obtain taxonomic information",
-                                           JOptionPane.ERROR_MESSAGE );
-            return;
-        }
-        finally {
-            end( _mf );
-        }
-        if ( ( _phy == null ) || _phy.isEmpty() ) {
-            try {
-                JOptionPane.showMessageDialog( _mf,
-                                               "None of the external node taxonomies could be resolved",
-                                               "Taxonomy Tool Failed",
-                                               JOptionPane.WARNING_MESSAGE );
-            }
-            catch ( final Exception e ) {
-                // Not important if this fails, do nothing.
-            }
-            return;
-        }
-        _treepanel.setTree( _phy );
-        _mf.showWhole();
-        _treepanel.setEdited( true );
-        if ( ( not_found != null ) && ( not_found.size() > 0 ) ) {
-            int max = not_found.size();
-            boolean more = false;
-            if ( max > 20 ) {
-                more = true;
-                max = 20;
-            }
-            final StringBuffer sb = new StringBuffer();
-            sb.append( "Not all taxonomies could be resolved.\n" );
-            if ( not_found.size() == 1 ) {
-                if ( _delete ) {
-                    sb.append( "The following taxonomy was not found and deleted (if external):\n" );
-                }
-                else {
-                    sb.append( "The following taxonomy was not found:\n" );
-                }
-            }
-            else {
-                if ( _delete ) {
-                    sb.append( "The following taxonomies were not found and deleted (if external) (total: "
-                            + not_found.size() + "):\n" );
-                }
-                else {
-                    sb.append( "The following taxonomies were not found (total: " + not_found.size() + "):\n" );
-                }
-            }
-            int i = 0;
-            for( final String string : not_found ) {
-                if ( i > 19 ) {
-                    break;
-                }
-                sb.append( string );
-                sb.append( "\n" );
-                ++i;
-            }
-            if ( more ) {
-                sb.append( "..." );
-            }
-            try {
-                JOptionPane.showMessageDialog( _mf,
-                                               sb.toString(),
-                                               "Taxonomy Tool Completed",
-                                               JOptionPane.WARNING_MESSAGE );
-            }
-            catch ( final Exception e ) {
-                // Not important if this fails, do nothing.
-            }
-        }
-        else {
-            try {
-                JOptionPane.showMessageDialog( _mf,
-                                               "Taxonomy tool successfully completed",
-                                               "Taxonomy Tool Completed",
-                                               JOptionPane.INFORMATION_MESSAGE );
-            }
-            catch ( final Exception e ) {
-                // Not important if this fails, do nothing.
-            }
-        }
-    }
-
-    private final String getBaseUrl() {
-        return AncestralTaxonomyInferrer.getBaseUrl();
-    }
-
-    @Override
-    public void run() {
-        execute();
-    }
 }

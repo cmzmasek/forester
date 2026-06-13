@@ -167,7 +167,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String RIGHT_LINE_UP_DOMAINS = "Right-align Domain Architectures";
     static final String LINE_UP_RENDERABLE_DATA = "Line Up Diagrams (such as Domain Architectures)";
     static final String INFER_ANCESTOR_TAXONOMIES = "Infer Ancestor Taxonomies";
-    static final String OBTAIN_DETAILED_TAXONOMIC_INFORMATION = "Obtain Detailed Taxonomic Information";
+    static final String OBTAIN_SEQUENCE_AND_TAXONOMIC_INFORMATION = "Obtain Sequence & Taxonomic Information";
     JMenuBar _jmenubar;
     JMenu _file_jmenu;
     JMenu _tools_menu;
@@ -204,9 +204,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem _color_rank_jmi;
     JMenuItem _collapse_species_specific_subtrees;
 
-    JMenuItem _obtain_detailed_taxonomic_information_jmi;
-    JMenuItem _obtain_detailed_taxonomic_information_deleting_jmi;
-    JMenuItem _obtain_seq_information_jmi;
+    JMenuItem _obtain_seq_and_tax_information_jmi;
     JMenuItem _remove_branch_color_item;
     JMenuItem _remove_visual_styles_item;
     JMenuItem _delete_selected_nodes_item;

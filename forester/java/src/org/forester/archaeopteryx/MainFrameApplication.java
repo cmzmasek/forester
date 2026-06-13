@@ -52,11 +52,10 @@ import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.forester.analysis.TaxonomyDataManager;
 import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
-import org.forester.archaeopteryx.tools.SequenceDataRetriver;
+import org.forester.archaeopteryx.tools.SequenceAndTaxonomyDataObtainer;
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.nexus.NexusPhylogeniesParser;
 import org.forester.io.parsers.nhx.NHXParser;
@@ -305,18 +304,11 @@ public final class MainFrameApplication extends MainFrame {
                 closeCurrentPane();
             } else if (o == _load_species_tree_item) {
                 readSpeciesTreeFromFile();
-            } else if (o == _obtain_detailed_taxonomic_information_jmi) {
+            } else if (o == _obtain_seq_and_tax_information_jmi) {
                 if (isSubtreeDisplayed()) {
                     return;
                 }
-                obtainDetailedTaxonomicInformation();
-            } else if (o == _obtain_detailed_taxonomic_information_deleting_jmi) {
-                if (isSubtreeDisplayed()) {
-                    return;
-                }
-                obtainDetailedTaxonomicInformationDelete();
-            } else if (o == _obtain_seq_information_jmi) {
-                obtainSequenceInformation();
+                obtainSequenceAndTaxonomicInformation();
             } else if (o == _internal_number_are_confidence_for_nh_parsing_cbmi) {
                 updateOptions(getOptions());
             } else if (o == _replace_underscores_cbmi) {
@@ -773,42 +765,14 @@ public final class MainFrameApplication extends MainFrame {
     }
 
 
-    private void obtainDetailedTaxonomicInformation() {
+    private void obtainSequenceAndTaxonomicInformation() {
         if (getCurrentTreePanel() != null) {
             final Phylogeny phy = getCurrentTreePanel().getPhylogeny();
             if ((phy != null) && !phy.isEmpty()) {
-                final TaxonomyDataManager t = new TaxonomyDataManager(this,
-                        _mainpanel.getCurrentTreePanel(),
-                        phy.copy(),
-                        false,
-                        true);
-                new Thread(t).start();
-            }
-        }
-    }
-
-    private void obtainDetailedTaxonomicInformationDelete() {
-        if (getCurrentTreePanel() != null) {
-            final Phylogeny phy = getCurrentTreePanel().getPhylogeny();
-            if ((phy != null) && !phy.isEmpty()) {
-                final TaxonomyDataManager t = new TaxonomyDataManager(this,
-                        _mainpanel.getCurrentTreePanel(),
-                        phy.copy(),
-                        true,
-                        true);
-                new Thread(t).start();
-            }
-        }
-    }
-
-    private void obtainSequenceInformation() {
-        if (getCurrentTreePanel() != null) {
-            final Phylogeny phy = getCurrentTreePanel().getPhylogeny();
-            if ((phy != null) && !phy.isEmpty()) {
-                final SequenceDataRetriver u = new SequenceDataRetriver(this,
+                final SequenceAndTaxonomyDataObtainer t = new SequenceAndTaxonomyDataObtainer(this,
                         _mainpanel.getCurrentTreePanel(),
                         phy.copy());
-                new Thread(u).start();
+                new Thread(t).start();
             }
         }
     }
@@ -1402,19 +1366,11 @@ public final class MainFrameApplication extends MainFrame {
                 .setToolTipText("To (permanently) collapse branches with branches with branch lengths below a threshold into multifurcations");
         //
         _tools_menu.addSeparator();
-        _tools_menu.add(_obtain_seq_information_jmi = new JMenuItem("Obtain Sequence Information"));
-        customizeJMenuItem(_obtain_seq_information_jmi);
-        _obtain_seq_information_jmi.setToolTipText("To add additional sequence information");
         _tools_menu
-                .add(_obtain_detailed_taxonomic_information_jmi = new JMenuItem(OBTAIN_DETAILED_TAXONOMIC_INFORMATION));
-        customizeJMenuItem(_obtain_detailed_taxonomic_information_jmi);
-        _obtain_detailed_taxonomic_information_jmi
-                .setToolTipText("To add additional taxonomic information (from UniProt Taxonomy)");
-        _tools_menu
-                .add(_obtain_detailed_taxonomic_information_deleting_jmi = new JMenuItem("Obtain Detailed Taxonomic Information (deletes nodes!)"));
-        customizeJMenuItem(_obtain_detailed_taxonomic_information_deleting_jmi);
-        _obtain_detailed_taxonomic_information_deleting_jmi
-                .setToolTipText("To add additional taxonomic information, deletes nodes for which taxonomy cannot found (from UniProt Taxonomy)");
+                .add(_obtain_seq_and_tax_information_jmi = new JMenuItem(OBTAIN_SEQUENCE_AND_TAXONOMIC_INFORMATION));
+        customizeJMenuItem(_obtain_seq_and_tax_information_jmi);
+        _obtain_seq_and_tax_information_jmi
+                .setToolTipText("To add additional sequence information and detailed taxonomic information (from UniProt/EMBL-GenBank and UniProt Taxonomy)");
         _jmenubar.add(_tools_menu);
     }
 
