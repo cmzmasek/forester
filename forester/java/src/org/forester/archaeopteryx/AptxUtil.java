@@ -72,7 +72,9 @@ public final class AptxUtil {
         JPG("jpg"),
         PDF("pdf"),
         PNG("png"),
-        TIFF("tif");
+        TIFF("tif"),
+        SVG("svg"),
+        EPS("eps");
 
         private final String _suffix;
 
@@ -830,6 +832,16 @@ public final class AptxUtil {
                                                      final GraphicsExportType type,
                                                      final Options options)
             throws IOException {
+        if ((type == GraphicsExportType.SVG) || (type == GraphicsExportType.EPS)) {
+            // vector formats reuse the on-screen paint path through VectorGraphics2D (WYSIWYG);
+            // the raster setup below is skipped entirely.
+            return VectorGraphicsExporter.writePhylogenyToVectorGraphicsFile(file_name,
+                    tree_panel,
+                    width,
+                    height,
+                    (type == GraphicsExportType.SVG) ? VectorGraphicsExporter.Format.SVG
+                            : VectorGraphicsExporter.Format.EPS);
+        }
         final RenderingHints rendering_hints = new RenderingHints(RenderingHints.KEY_RENDERING,
                 RenderingHints.VALUE_RENDER_QUALITY);
         rendering_hints.put(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);

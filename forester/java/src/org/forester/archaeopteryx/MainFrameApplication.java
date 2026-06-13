@@ -1062,6 +1062,10 @@ public final class MainFrameApplication extends MainFrame {
         _save_all_item.setEnabled(false);
         _file_jmenu.addSeparator();
         _file_jmenu.add(_write_to_pdf_item = new JMenuItem("Export to PDF file ..."));
+        _file_jmenu.add(_write_to_svg_item = new JMenuItem("Export to SVG file..."));
+        _write_to_svg_item.setToolTipText("Scalable vector graphics for publication (edit in Illustrator/Inkscape)");
+        _file_jmenu.add(_write_to_eps_item = new JMenuItem("Export to EPS file..."));
+        _write_to_eps_item.setToolTipText("Encapsulated PostScript vector graphics for publication");
         if (AptxUtil.canWriteFormat("tif") || AptxUtil.canWriteFormat("tiff")
                 || AptxUtil.canWriteFormat("TIF")) {
             _file_jmenu.add(_write_to_tif_item = new JMenuItem("Export to TIFF file..."));
@@ -1088,6 +1092,8 @@ public final class MainFrameApplication extends MainFrame {
         customizeJMenuItem(_close_item);
         customizeJMenuItem(_save_all_item);
         customizeJMenuItem(_write_to_pdf_item);
+        customizeJMenuItem(_write_to_svg_item);
+        customizeJMenuItem(_write_to_eps_item);
         customizeJMenuItem(_write_to_png_item);
         customizeJMenuItem(_write_to_jpg_item);
         customizeJMenuItem(_write_to_gif_item);

@@ -231,6 +231,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Vector graphics export: ");
+        if (org.forester.archaeopteryx.VectorGraphicsExporterTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Tree panel util: ");
         if (org.forester.archaeopteryx.TreePanelUtilTest.test()) {
             System.out.println("OK.");

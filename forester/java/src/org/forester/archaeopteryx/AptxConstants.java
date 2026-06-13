@@ -29,7 +29,7 @@ import org.forester.util.ForesterConstants;
 public final class AptxConstants {
 
     public final static String PRG_NAME = "Archaeopteryx";
-    final static String VERSION = "0.9.12";
+    final static String VERSION = "0.9.13";
     final static String PRG_DATE = "2026-06-12";
     final static String DEFAULT_CONFIGURATION_FILE_NAME = "_aptx_configuration_file";
     final static String[] DEFAULT_FONT_CHOICES = {

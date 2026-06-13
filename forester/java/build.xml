@@ -8,6 +8,7 @@
     <property name="commonscodecjar" value="${jars.dir}/commons-codec-1.5.jar"/>
     <property name="openchartjar" value="${jars.dir}/openchart.jar"/>
     <property name="flatlafjar" value="${jars.dir}/flatlaf-3.7.1.jar"/>
+    <property name="vectorgraphics2djar" value="${jars.dir}/VectorGraphics2D-0.13.jar"/>
     <property name="forester_jar" value="forester.jar"/>
 
     <target name="clean" description="Delete all generated files">
@@ -27,7 +28,7 @@
         <javac release="21" debug="true" debuglevel="lines,source" srcdir="${src.dir}"
                destdir="${classes.dir}" optimize="on" verbose="false"
                includeantruntime="false"
-               classpath="${itextjar};${commonscodecjar};${openchartjar};${flatlafjar}">
+               classpath="${itextjar};${commonscodecjar};${openchartjar};${flatlafjar};${vectorgraphics2djar}">
             <compilerarg value="-Xlint:deprecation"/>
             <compilerarg value="-Xlint:unchecked"/>
         </javac>
@@ -64,9 +65,14 @@
                      would strip the legitimate class FlatTitlePane$TitleBarCaptionHitTest. -->
             </patternset>
         </unjar>
+        <unjar src="${vectorgraphics2djar}" dest="${classes.dir}">
+            <patternset>
+                <include name="**/*.class"/>
+            </patternset>
+        </unjar>
         <!-- keep test-only classes out of the shipped jar; spelled out by name rather than a
              *Test* wildcard, which would also strip FlatLaf's legitimate ...$TitleBarCaptionHitTest -->
-        <jar level="9" destfile="${forester_jar}" basedir="${classes.dir}" excludes="**/Test.class,**/PropertyColorSchemeTest*.class,**/TreePanelUtilTest*.class,**/AptxUtilTest*.class,**/SettingsDialogTest*.class,**/TabContextMenuTest*.class,**/SubSuperTreeButtonsTest*.class,**/MenuTooltipsTest*.class,**/ConfidenceRenderTest*.class,**/MadSupportClearedTest*.class,**/LegendDragTest*.class,**/ConfidenceLabelTest*.class,**/PropertyLegendBarTest*.class,**/LegendPlacementTest*.class,**/ConnectorColorTest*.class,**/FoundBranchExportTest*.class,**/SequenceAndTaxonomyDataObtainerTest*.class,**/TaxonomyDataManagerTest*.class" duplicate="fail"
+        <jar level="9" destfile="${forester_jar}" basedir="${classes.dir}" excludes="**/Test.class,**/PropertyColorSchemeTest*.class,**/TreePanelUtilTest*.class,**/AptxUtilTest*.class,**/SettingsDialogTest*.class,**/TabContextMenuTest*.class,**/SubSuperTreeButtonsTest*.class,**/MenuTooltipsTest*.class,**/ConfidenceRenderTest*.class,**/MadSupportClearedTest*.class,**/LegendDragTest*.class,**/ConfidenceLabelTest*.class,**/PropertyLegendBarTest*.class,**/LegendPlacementTest*.class,**/ConnectorColorTest*.class,**/FoundBranchExportTest*.class,**/SequenceAndTaxonomyDataObtainerTest*.class,**/TaxonomyDataManagerTest*.class,**/VectorGraphicsExporterTest*.class" duplicate="fail"
              index="true">
             <manifest>
                 <attribute name="Main-Class" value="org.forester.archaeopteryx.Archaeopteryx"/>

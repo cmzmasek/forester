@@ -196,6 +196,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem _write_to_tif_item;
     JMenuItem _write_to_png_item;
     JMenuItem _write_to_bmp_item;
+    JMenuItem _write_to_svg_item;
+    JMenuItem _write_to_eps_item;
     // tools menu:
     JMenuItem _midpoint_root_item;
     JMenuItem _mad_root_item;
@@ -611,6 +613,28 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             if (new_dir != null) {
                 setCurrentDir(new_dir);
             }
+        } else if (o == _write_to_svg_item) {
+            final File new_dir = writeToGraphicsFile(_mainpanel.getCurrentPhylogeny(),
+                    GraphicsExportType.SVG,
+                    _mainpanel,
+                    _writetographics_filechooser,
+                    this,
+                    getContentPane(),
+                    _current_dir);
+            if (new_dir != null) {
+                setCurrentDir(new_dir);
+            }
+        } else if (o == _write_to_eps_item) {
+            final File new_dir = writeToGraphicsFile(_mainpanel.getCurrentPhylogeny(),
+                    GraphicsExportType.EPS,
+                    _mainpanel,
+                    _writetographics_filechooser,
+                    this,
+                    getContentPane(),
+                    _current_dir);
+            if (new_dir != null) {
+                setCurrentDir(new_dir);
+            }
         }  else if (o == _save_item) {
             final File new_dir = writeToFile(_mainpanel.getCurrentPhylogeny(),
                     getMainPanel(),
@@ -900,6 +924,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _file_jmenu.add(_save_item = new JMenuItem("Save Tree As..."));
         _file_jmenu.addSeparator();
         _file_jmenu.add(_write_to_pdf_item = new JMenuItem("Export to PDF file ..."));
+        _file_jmenu.add(_write_to_svg_item = new JMenuItem("Export to SVG file..."));
+        _write_to_svg_item.setToolTipText("Scalable vector graphics for publication (edit in Illustrator/Inkscape)");
+        _file_jmenu.add(_write_to_eps_item = new JMenuItem("Export to EPS file..."));
+        _write_to_eps_item.setToolTipText("Encapsulated PostScript vector graphics for publication");
         if (AptxUtil.canWriteFormat("tif") || AptxUtil.canWriteFormat("tiff") || AptxUtil.canWriteFormat("TIF")) {
             _file_jmenu.add(_write_to_tif_item = new JMenuItem("Export to TIFF file..."));
         }
@@ -916,6 +944,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _file_jmenu.add(_exit_item = new JMenuItem("Exit"));
         customizeJMenuItem(_save_item);
         customizeJMenuItem(_write_to_pdf_item);
+        customizeJMenuItem(_write_to_svg_item);
+        customizeJMenuItem(_write_to_eps_item);
         customizeJMenuItem(_write_to_png_item);
         customizeJMenuItem(_write_to_jpg_item);
         customizeJMenuItem(_write_to_gif_item);
