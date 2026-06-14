@@ -54,7 +54,7 @@ public final class SettingsDialogTest {
             root.addAsChild( new PhylogenyNode() );
             phy.setRoot( root );
             phy.externalNodesHaveChanged();
-            final Configuration conf = new Configuration( null, false, false, true );
+            final Configuration conf = new Configuration();
             final MainFrame[] mf = new MainFrame[ 1 ];
             SwingUtilities.invokeAndWait( () -> mf[ 0 ] = MainFrameApplication
                     .createInstance( new Phylogeny[] { phy }, conf, "settings test" ) );

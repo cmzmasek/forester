@@ -62,11 +62,10 @@ bundled inside it, so there is nothing else to install.
 java -jar forester.jar
 ```
 
-You can also open a tree directly, and/or load a configuration file:
+You can also open a tree directly:
 
 ```
 java -jar forester.jar mytree.xml
-java -jar forester.jar -c my_configuration_file mytree.xml
 ```
 
 For very large trees, give the JVM more memory with `-Xmx`:

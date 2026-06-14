@@ -287,6 +287,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Configuration: ");
+        if (org.forester.archaeopteryx.ConfigurationTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Search data field restriction: ");
         if (testSearchDataRestrict()) {
             System.out.println("OK.");

@@ -25,7 +25,6 @@ import java.io.File;
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.nexus.NexusPhylogeniesParser;
 import org.forester.io.parsers.nhx.NHXParser;
-import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.io.parsers.util.ParserUtils;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
@@ -36,7 +35,7 @@ public final class Archaeopteryx {
     public static MainFrame createApplication( final Phylogeny phylogeny ) {
         final Phylogeny[] phylogenies = new Phylogeny[ 1 ];
         phylogenies[ 0 ] = phylogeny;
-        return createApplication( phylogenies, "", "" );
+        return createApplication( phylogenies );
     }
 
     public static MainFrame createApplication( final Phylogeny phylogeny, final Configuration config, final String title ) {
@@ -46,13 +45,7 @@ public final class Archaeopteryx {
     }
 
     public static MainFrame createApplication( final Phylogeny[] phylogenies ) {
-        return createApplication( phylogenies, "", "" );
-    }
-
-    public static MainFrame createApplication( final Phylogeny[] phylogenies,
-                                               final String config_file_name,
-                                               final String title ) {
-        return MainFrameApplication.createInstance( phylogenies, config_file_name, title );
+        return MainFrameApplication.createInstance( phylogenies, new Configuration(), "" );
     }
 
     public static void main( final String args[] ) {
@@ -64,25 +57,21 @@ public final class Archaeopteryx {
             // macOS screen menu bar cannot be themed and would not match the rest of the UI.
             System.setProperty( "apple.laf.useScreenMenuBar", "false" );
         }
+        // Configuration files are no longer supported: the -c option and its parser have been removed.
+        if ( ( args.length > 0 ) && AptxUtil.isConfigFileOption( args[ 0 ] ) ) {
+            ForesterUtil.fatalError( AptxConstants.PRG_NAME,
+                                     "configuration files are no longer supported: the -c option has been removed. "
+                                             + "Archaeopteryx now uses its built-in defaults; change settings at runtime via the Settings dialog." );
+        }
         Phylogeny[] phylogenies = null;
-        String config_filename = null;
-        Configuration conf = null;
+        final Configuration conf = new Configuration();
         File f = null;
         try {
             int filename_index = 0;
-            if ( args.length == 0 ) {
-                conf = new Configuration( null, false, false, true );
-            }
-            else if ( args.length > 0 ) {
-                // check for a config file
-                if ( args[ 0 ].startsWith( "-c" ) ) {
-                    config_filename = args[ 1 ];
-                    filename_index += 2;
-                }
+            if ( args.length > 0 ) {
                 if ( args[ 0 ].startsWith( "-open" ) ) {
                     filename_index += 1;
                 }
-                conf = new Configuration( config_filename, false, false, true );
                 if ( args.length > filename_index ) {
                     f = new File( args[ filename_index ] );
                     final String err = ForesterUtil.isReadableFile( f );
@@ -104,9 +93,6 @@ public final class Archaeopteryx {
                         final NexusPhylogeniesParser nex = ( NexusPhylogeniesParser ) p;
                         nex.setReplaceUnderscores( conf.isReplaceUnderscoresInNhParsing() );
                         nex.setIgnoreQuotes( false );
-                    }
-                    else if ( p instanceof PhyloXmlParser ) {
-                        MainFrameApplication.warnIfNotPhyloXmlValidation( conf );
                     }
                     phylogenies = PhylogenyMethods.readPhylogenies( p, f );
                     if ( nhx_or_nexus && conf.isInternalNumberAreConfidenceForNhParsing() ) {

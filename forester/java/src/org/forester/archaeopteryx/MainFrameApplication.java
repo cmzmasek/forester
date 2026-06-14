@@ -265,11 +265,6 @@ public final class MainFrameApplication extends MainFrame {
         System.gc();
     }
 
-    private MainFrameApplication(final Phylogeny[] phys, final String config_file, final String title) {
-        // Reads the config file (false, false => not url, not applet):
-        this(phys, new Configuration(config_file, false, false, true), title);
-    }
-
     @Override
     public void actionPerformed(final ActionEvent e) {
         try {
@@ -670,7 +665,6 @@ public final class MainFrameApplication extends MainFrame {
                             exceptionOccuredDuringOpenFile(e);
                         }
                     } else if (_open_filechooser.getFileFilter() == MainFrame.xmlfilter) {
-                        warnIfNotPhyloXmlValidation(getConfiguration());
                         try {
                             final PhyloXmlParser xml_parser = createPhyloXmlParser();
                             phys = PhylogenyMethods.readPhylogenies(xml_parser, file);
@@ -709,8 +703,6 @@ public final class MainFrameApplication extends MainFrame {
                             } else if (parser instanceof NHXParser nhx) {
                                 setSpecialOptionsForNhxParser(nhx);
                                 nhx_or_nexus = true;
-                            } else if (parser instanceof PhyloXmlParser) {
-                                warnIfNotPhyloXmlValidation(getConfiguration());
                             }
                             phys = PhylogenyMethods.readPhylogenies(parser, file);
                         } catch (final Exception e) {
@@ -1237,21 +1229,5 @@ public final class MainFrameApplication extends MainFrame {
 
     static MainFrame createInstance(final Phylogeny[] phys, final Configuration config, final String title) {
         return new MainFrameApplication(phys, config, title);
-    }
-
-    static MainFrame createInstance(final Phylogeny[] phys, final String config_file_name, final String title) {
-        return new MainFrameApplication(phys, config_file_name, title);
-    }
-
-    static void warnIfNotPhyloXmlValidation(final Configuration c) {
-        if (!c.isValidatePhyloXmlAgainstSchema()) {
-            JOptionPane
-                    .showMessageDialog(null,
-                            ForesterUtil
-                                    .wordWrap("phyloXML XSD-based validation is turned off [enable with line 'validate_against_phyloxml_xsd_schem: true' in configuration file]",
-                                            80),
-                            "Warning",
-                            JOptionPane.WARNING_MESSAGE);
-        }
     }
 } // MainFrameApplication.

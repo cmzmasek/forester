@@ -40,8 +40,6 @@ public final class TreeFontSet {
     private Font                _large_font;
     private Font                _large_font_memory;
     private Font                _large_font_system;
-    private final int           _max;
-    private final int           _min;
     // the owner (needed to get font metrics)
     private final MainPanel     _owner;
     // The fonts
@@ -54,8 +52,6 @@ public final class TreeFontSet {
 
     TreeFontSet( final MainPanel owner ) {
         _owner = owner;
-        _min = _owner.getConfiguration().getMinBaseFontSize();
-        _max = _owner.getConfiguration().getMinBaseFontSize();
         setBaseFont( new Font( DEFAULT_FONT, Font.PLAIN, 10 ) );
     }
 

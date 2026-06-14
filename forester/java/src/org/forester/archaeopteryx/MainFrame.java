@@ -1786,12 +1786,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         about.append("Last modified: " + AptxConstants.PRG_DATE + "\n");
         about.append("Based on: ").append(ForesterUtil.getForesterLibraryInformation()).append("\n");
 
-        if (_configuration.isCouldReadConfigFile()) {
-            about.append("Using configuration file: ").append(_configuration.config_filename).append("\n");
-        } else {
-            about.append("Not using a configuration file\n");
-        }
-
         about.append("phyloXML version : " + ForesterConstants.PHYLO_XML_VERSION + "\n");
         about.append("phyloXML location: " + ForesterConstants.PHYLO_XML_LOCATION + "\n");
         if (!ForesterUtil.isEmpty(ForesterUtil.JAVA_VERSION) && !ForesterUtil.isEmpty(ForesterUtil.JAVA_VENDOR)) {

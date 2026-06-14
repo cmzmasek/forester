@@ -55,7 +55,7 @@ public final class MadSupportClearedTest {
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
             final Phylogeny phy = factory.create( "(A:1,B:1,(C:1,D:3):1)", new NHXParser() )[ 0 ];
-            final Configuration conf = new Configuration( null, false, false, true );
+            final Configuration conf = new Configuration();
             final MainFrame[] mf = new MainFrame[ 1 ];
             SwingUtilities.invokeAndWait(
                     () -> mf[ 0 ] = MainFrameApplication.createInstance( new Phylogeny[] { phy }, conf, "mad" ) );

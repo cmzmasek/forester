@@ -54,7 +54,7 @@ public final class ConnectorColorTest {
             return fail( "connector color should be a light-but-visible gray: " + c );
         }
         // crucially, must not be any of the search-found highlight colors (red / green / yellow / blue)
-        final TreeColorSet tcs = TreeColorSet.createInstance( new Configuration( null, false, false, false ) );
+        final TreeColorSet tcs = TreeColorSet.createInstance( new Configuration() );
         if ( c.equals( tcs.getFoundColor0() ) || c.equals( tcs.getFoundColor1() )
                 || c.equals( tcs.getFoundColor0and1() ) ) {
             return fail( "connector color must not be a search-found highlight color: " + c );

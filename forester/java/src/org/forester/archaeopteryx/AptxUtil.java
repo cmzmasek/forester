@@ -38,6 +38,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -282,6 +283,19 @@ public final class AptxUtil {
 
     public final static void printWarningMessage(final String name, final String message) {
         System.out.println("[" + name + "] > " + message);
+    }
+
+    /**
+     * Whether a command-line argument is the (removed) configuration-file option: {@code -c} or
+     * {@code -config}, with or without an attached {@code =value}. Configuration files are no
+     * longer supported, so the launcher uses this to reject the option with a hard exit.
+     */
+    public final static boolean isConfigFileOption(final String arg) {
+        if (ForesterUtil.isEmpty(arg)) {
+            return false;
+        }
+        final String a = arg.trim().toLowerCase(Locale.ROOT);
+        return a.equals("-c") || a.equals("-config") || a.startsWith("-c=") || a.startsWith("-config=");
     }
 
     final public static Phylogeny[] readPhylogeniesFromUrl(final URL url,

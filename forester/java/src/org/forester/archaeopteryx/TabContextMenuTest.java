@@ -54,7 +54,7 @@ public final class TabContextMenuTest {
             return true; // GUI integration test; needs a display toolkit
         }
         try {
-            final Configuration conf = new Configuration( null, false, false, true );
+            final Configuration conf = new Configuration();
             final Phylogeny a = make( "A" );
             final Phylogeny b = make( "B" );
             final MainFrame[] mf = new MainFrame[ 1 ];

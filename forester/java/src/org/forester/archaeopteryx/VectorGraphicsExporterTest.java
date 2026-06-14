@@ -119,7 +119,7 @@ public final class VectorGraphicsExporterTest {
             return true;
         }
         try {
-            final Configuration conf = new Configuration( null, false, false, true );
+            final Configuration conf = new Configuration();
             final MainFrame[] mf = new MainFrame[ 1 ];
             final Phylogeny phy = Phylogeny
                     .createInstanceFromNhxString( "(((A,B)x,(C,D)y)p,((E,F)z,(G,H,I)w)q)root" );

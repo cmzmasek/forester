@@ -50,7 +50,7 @@ public final class CollapseMenuFontTest {
             return true;
         }
         try {
-            final Configuration conf = new Configuration( null, false, false, true );
+            final Configuration conf = new Configuration();
             final MainFrame[] mf = new MainFrame[ 1 ];
             SwingUtilities.invokeAndWait(
                     () -> mf[ 0 ] = MainFrameApplication.createInstance( new Phylogeny[] { tinyTree() }, conf, "cmf" ) );

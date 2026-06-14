@@ -51,7 +51,7 @@ public final class ConfidenceRenderTest {
             return true; // GUI integration test; needs a display toolkit
         }
         try {
-            final Configuration conf = new Configuration( null, false, false, true );
+            final Configuration conf = new Configuration();
             final MainFrame[] mf = new MainFrame[ 1 ];
             SwingUtilities.invokeAndWait(
                     () -> mf[ 0 ] = MainFrameApplication.createInstance( new Phylogeny[] { naNConfidenceTree() }, conf,

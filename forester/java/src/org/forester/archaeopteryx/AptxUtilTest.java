@@ -52,7 +52,26 @@ public final class AptxUtilTest {
     public static boolean test() {
         return testHasAtLeastOneNodeWithDomainArchitecture() && testGraphicsExportTypes() && testColorizableRanks()
                 && testRankCounts() && testRankCoverageCounts() && testNodePruningOutcome()
-                && testBranchesToCollapse();
+                && testBranchesToCollapse() && testConfigFileOption();
+    }
+
+    /**
+     * The launcher uses this to reject the removed {@code -c} configuration-file option: {@code -c} /
+     * {@code -config} (any case, with or without an attached {@code =value}) match; tree files,
+     * {@code -open}, empty, and {@code null} do not.
+     */
+    private static boolean testConfigFileOption() {
+        for( final String yes : new String[] { "-c", "-config", "-C", "-Config", "-c=foo", "-config=my.txt" } ) {
+            if ( !AptxUtil.isConfigFileOption( yes ) ) {
+                return false;
+            }
+        }
+        for( final String no : new String[] { null, "", "  ", "-open", "mytree.xml", "-cache", "c", "config" } ) {
+            if ( AptxUtil.isConfigFileOption( no ) ) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
