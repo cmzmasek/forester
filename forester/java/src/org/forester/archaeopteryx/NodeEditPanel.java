@@ -227,6 +227,9 @@ class NodeEditPanel extends JPanel {
                 }
                 AptxUtil.lookAtRealBranchLengthsForAptxControlSettings( tree_panel.getPhylogeny(),
                                                                         tree_panel.getControlPanel() );
+                // editing a node may have added/removed a data type, so refresh which Display Data
+                // checkboxes are shown for the (in-place mutated) tree.
+                tree_panel.getControlPanel().updateDataCheckboxVisibility( true );
                 getTreePanel().repaint();
             }
         } );
@@ -662,6 +665,7 @@ class NodeEditPanel extends JPanel {
     private void keyEvent( final KeyEvent e ) {
         if ( e.getKeyCode() == KeyEvent.VK_ENTER ) {
             writeBack( getSelectedTreeNode() );
+            getTreePanel().getControlPanel().updateDataCheckboxVisibility( true );
         }
     }
 

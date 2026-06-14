@@ -217,6 +217,24 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JButton _zoom_out_domain_structure;
     private JButton _zoom_out_x;
     private JButton _zoom_out_y;
+    // "Display Data" checkboxes are shown only when the current tree actually carries the
+    // corresponding data (so the panel is not a wall of toggles that silently do nothing). This
+    // maps each option constant to its wrapper panel (so a whole row can be collapsed/shown) and
+    // caches the last presence scan, keyed by tree identity so pure navigation reuses it.
+    private final Map<Integer, JPanel> _checkbox_panels = new HashMap<Integer, JPanel>();
+    private Set<Integer>               _data_presence;
+    private Phylogeny                  _data_presence_for;
+    // The data-dependent checkboxes (Node Name is intentionally NOT here: it is always shown). Their
+    // visibility tracks scanForDataPresence over the whole loaded tree.
+    private final static int[]         DATA_GATED_CHECKBOXES     = {
+            Configuration.show_tax_code, Configuration.show_taxonomy_scientific_names,
+            Configuration.show_taxonomy_common_names, Configuration.show_tax_rank, Configuration.show_seq_names,
+            Configuration.show_gene_names, Configuration.show_seq_symbols, Configuration.show_sequence_acc,
+            Configuration.write_confidence_values, Configuration.write_branch_length_values,
+            Configuration.write_events, Configuration.show_binary_characters,
+            Configuration.show_binary_character_counts, Configuration.show_domain_architectures,
+            Configuration.show_vector_data, Configuration.show_properties, Configuration.use_style,
+            Configuration.width_branches };
 
     ControlPanel(final MainPanel ap, final Configuration configuration) {
         init();
@@ -1024,144 +1042,52 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     private void setupDisplayCheckboxes() {
-        if (_configuration.doDisplayOption(Configuration.dynamically_hide_data)) {
-            addCheckbox(Configuration.dynamically_hide_data,
-                    _configuration.getDisplayTitle(Configuration.dynamically_hide_data));
-            setCheckbox(Configuration.dynamically_hide_data,
-                    _configuration.doCheckOption(Configuration.dynamically_hide_data));
-        }
-        if (_configuration.doDisplayOption(Configuration.node_data_popup)) {
-            addCheckbox(Configuration.node_data_popup,
-                    _configuration.getDisplayTitle(Configuration.node_data_popup));
-            setCheckbox(Configuration.node_data_popup, _configuration.doCheckOption(Configuration.node_data_popup));
-        }
-        if (_configuration.doDisplayOption(Configuration.display_internal_data)) {
-            addCheckbox(Configuration.display_internal_data,
-                    _configuration.getDisplayTitle(Configuration.display_internal_data));
-            setCheckbox(Configuration.display_internal_data,
-                    _configuration.doCheckOption(Configuration.display_internal_data));
-        }
-        if (_configuration.doDisplayOption(Configuration.display_external_data)) {
-            addCheckbox(Configuration.display_external_data,
-                    _configuration.getDisplayTitle(Configuration.display_external_data));
-            setCheckbox(Configuration.display_external_data,
-                    _configuration.doCheckOption(Configuration.display_external_data));
-        }
-        if (_configuration.doDisplayOption(Configuration.use_style)) {
-            addCheckbox(Configuration.use_style, _configuration.getDisplayTitle(Configuration.use_style));
-            setCheckbox(Configuration.use_style, _configuration.doCheckOption(Configuration.use_style));
-        }
-        if (_configuration.doDisplayOption(Configuration.width_branches)) {
-            addCheckbox(Configuration.width_branches, _configuration.getDisplayTitle(Configuration.width_branches));
-            setCheckbox(Configuration.width_branches, _configuration.doCheckOption(Configuration.width_branches));
-        }
+        addDisplayCheckbox(Configuration.dynamically_hide_data);
+        addDisplayCheckbox(Configuration.node_data_popup);
+        addDisplayCheckbox(Configuration.display_internal_data);
+        addDisplayCheckbox(Configuration.display_external_data);
+        addDisplayCheckbox(Configuration.use_style);
+        addDisplayCheckbox(Configuration.width_branches);
         final JLabel label = new JLabel("Display Data:");
         label.setFont(ControlPanel.jcb_bold_font);
         if (getConfiguration().isApplyCustomGuiColors()) {
             label.setForeground(getConfiguration().getGuiCheckboxTextColor());
         }
         add(label);
-        if (_configuration.doDisplayOption(Configuration.show_node_names)) {
-            addCheckbox(Configuration.show_node_names,
-                    _configuration.getDisplayTitle(Configuration.show_node_names));
-            setCheckbox(Configuration.show_node_names, _configuration.doCheckOption(Configuration.show_node_names));
+        addDisplayCheckbox(Configuration.show_node_names);
+        addDisplayCheckbox(Configuration.show_tax_code);
+        addDisplayCheckbox(Configuration.show_taxonomy_scientific_names);
+        addDisplayCheckbox(Configuration.show_taxonomy_common_names);
+        addDisplayCheckbox(Configuration.show_tax_rank);
+        addDisplayCheckbox(Configuration.show_seq_names);
+        addDisplayCheckbox(Configuration.show_gene_names);
+        addDisplayCheckbox(Configuration.show_seq_symbols);
+        addDisplayCheckbox(Configuration.show_sequence_acc);
+        addDisplayCheckbox(Configuration.write_confidence_values);
+        addDisplayCheckbox(Configuration.write_branch_length_values);
+        addDisplayCheckbox(Configuration.show_binary_characters);
+        addDisplayCheckbox(Configuration.show_binary_character_counts);
+        addDisplayCheckbox(Configuration.show_domain_architectures);
+        // NB: "Multiple Seq Alignment" (show_mol_seqs) is deliberately NOT built — there is currently no
+        // MSA viewer, so the checkbox would only mislead. Re-add here if/when one exists.
+        addDisplayCheckbox(Configuration.write_events);
+        addDisplayCheckbox(Configuration.show_vector_data);
+        addDisplayCheckbox(Configuration.show_properties);
+        // Data-dependent checkboxes start hidden; the first scan of the loaded tree reveals only the
+        // ones whose data is actually present (Node Name is intentionally always shown).
+        for (final int which : DATA_GATED_CHECKBOXES) {
+            final JPanel p = _checkbox_panels.get(which);
+            if (p != null) {
+                p.setVisible(false);
+            }
         }
-        if (_configuration.doDisplayOption(Configuration.show_tax_code)) {
-            addCheckbox(Configuration.show_tax_code, _configuration.getDisplayTitle(Configuration.show_tax_code));
-            setCheckbox(Configuration.show_tax_code, _configuration.doCheckOption(Configuration.show_tax_code));
-        }
-        if (_configuration.doDisplayOption(Configuration.show_taxonomy_scientific_names)) {
-            addCheckbox(Configuration.show_taxonomy_scientific_names,
-                    _configuration.getDisplayTitle(Configuration.show_taxonomy_scientific_names));
-            setCheckbox(Configuration.show_taxonomy_scientific_names,
-                    _configuration.doCheckOption(Configuration.show_taxonomy_scientific_names));
-        }
-        if (_configuration.doDisplayOption(Configuration.show_taxonomy_common_names)) {
-            addCheckbox(Configuration.show_taxonomy_common_names,
-                    _configuration.getDisplayTitle(Configuration.show_taxonomy_common_names));
-            setCheckbox(Configuration.show_taxonomy_common_names,
-                    _configuration.doCheckOption(Configuration.show_taxonomy_common_names));
-        }
-        if (_configuration.doDisplayOption(Configuration.show_tax_rank)) {
-            addCheckbox(Configuration.show_tax_rank, _configuration.getDisplayTitle(Configuration.show_tax_rank));
-            setCheckbox(Configuration.show_tax_rank, _configuration.doCheckOption(Configuration.show_tax_rank));
-        }
-        if (_configuration.doDisplayOption(Configuration.show_seq_names)) {
-            addCheckbox(Configuration.show_seq_names, _configuration.getDisplayTitle(Configuration.show_seq_names));
-            setCheckbox(Configuration.show_seq_names, _configuration.doCheckOption(Configuration.show_seq_names));
-        }
-        if (_configuration.doDisplayOption(Configuration.show_gene_names)) {
-            addCheckbox(Configuration.show_gene_names,
-                    _configuration.getDisplayTitle(Configuration.show_gene_names));
-            setCheckbox(Configuration.show_gene_names, _configuration.doCheckOption(Configuration.show_gene_names));
-        }
-        if (_configuration.doDisplayOption(Configuration.show_seq_symbols)) {
-            addCheckbox(Configuration.show_seq_symbols,
-                    _configuration.getDisplayTitle(Configuration.show_seq_symbols));
-            setCheckbox(Configuration.show_seq_symbols,
-                    _configuration.doCheckOption(Configuration.show_seq_symbols));
-        }
-        if (_configuration.doDisplayOption(Configuration.show_sequence_acc)) {
-            addCheckbox(Configuration.show_sequence_acc,
-                    _configuration.getDisplayTitle(Configuration.show_sequence_acc));
-            setCheckbox(Configuration.show_sequence_acc,
-                    _configuration.doCheckOption(Configuration.show_sequence_acc));
-        }
-        if (_configuration.doDisplayOption(Configuration.write_confidence_values)) {
-            addCheckbox(Configuration.write_confidence_values,
-                    _configuration.getDisplayTitle(Configuration.write_confidence_values));
-            setCheckbox(Configuration.write_confidence_values,
-                    _configuration.doCheckOption(Configuration.write_confidence_values));
-        }
-        if (_configuration.doDisplayOption(Configuration.write_branch_length_values)) {
-            addCheckbox(Configuration.write_branch_length_values,
-                    _configuration.getDisplayTitle(Configuration.write_branch_length_values));
-            setCheckbox(Configuration.write_branch_length_values,
-                    _configuration.doCheckOption(Configuration.write_branch_length_values));
-        }
-        if (_configuration.doDisplayOption(Configuration.show_binary_characters)) {
-            addCheckbox(Configuration.show_binary_characters,
-                    _configuration.getDisplayTitle(Configuration.show_binary_characters));
-            setCheckbox(Configuration.show_binary_characters,
-                    _configuration.doCheckOption(Configuration.show_binary_characters));
-        }
-        if (_configuration.doDisplayOption(Configuration.show_binary_character_counts)) {
-            addCheckbox(Configuration.show_binary_character_counts,
-                    _configuration.getDisplayTitle(Configuration.show_binary_character_counts));
-            setCheckbox(Configuration.show_binary_character_counts,
-                    _configuration.doCheckOption(Configuration.show_binary_character_counts));
-        }
-        if (_configuration.doDisplayOption(Configuration.show_domain_architectures)) {
-            addCheckbox(Configuration.show_domain_architectures,
-                    _configuration.getDisplayTitle(Configuration.show_domain_architectures));
-            setCheckbox(Configuration.show_domain_architectures,
-                    _configuration.doCheckOption(Configuration.show_domain_architectures));
-        }
-        if (_configuration.doDisplayOption(Configuration.show_mol_seqs)) {
-            addCheckbox(Configuration.show_mol_seqs, _configuration.getDisplayTitle(Configuration.show_mol_seqs));
-            setCheckbox(Configuration.show_mol_seqs, _configuration.doCheckOption(Configuration.show_mol_seqs));
-        }
-        if (_configuration.doDisplayOption(Configuration.write_events)) {
-            addCheckbox(Configuration.write_events, _configuration.getDisplayTitle(Configuration.write_events));
-            setCheckbox(Configuration.write_events, _configuration.doCheckOption(Configuration.write_events));
-        }
-        if (_configuration.doDisplayOption(Configuration.show_vector_data)) {
-            addCheckbox(Configuration.show_vector_data,
-                    _configuration.getDisplayTitle(Configuration.show_vector_data));
-            setCheckbox(Configuration.show_vector_data,
-                    _configuration.doCheckOption(Configuration.show_vector_data));
-        }
-        if (_configuration.doDisplayOption(Configuration.show_properties)) {
-            addCheckbox(Configuration.show_properties,
-                    _configuration.getDisplayTitle(Configuration.show_properties));
-            setCheckbox(Configuration.show_properties, _configuration.doCheckOption(Configuration.show_properties));
-        }
-        if (_configuration.doDisplayOption(Configuration.show_taxonomy_images)) {
-            addCheckbox(Configuration.show_taxonomy_images,
-                    _configuration.getDisplayTitle(Configuration.show_taxonomy_images));
-            setCheckbox(Configuration.show_taxonomy_images,
-                    _configuration.doCheckOption(Configuration.show_taxonomy_images));
-        }
+    }
+
+    // Build a "Display Data" checkbox and set its initial checked state. Whether it is actually
+    // visible is then governed by updateDataCheckboxVisibility (data presence in the current tree).
+    private void addDisplayCheckbox(final int which) {
+        addCheckbox(which, _configuration.getDisplayTitle(which));
+        setCheckbox(which, _configuration.doCheckOption(which));
     }
 
     private void setVisibilityOfDomainStrucureControls() {
@@ -1445,6 +1371,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             default:
                 throw new RuntimeException("unknown checkbox: " + which);
         }
+        _checkbox_panels.put(which, ch_panel);
     }// addCheckbox
 
     void addJButton(final JButton jb, final JPanel p) {
@@ -1502,6 +1429,46 @@ final class ControlPanel extends JPanel implements ActionListener {
         _uncollapse_all.setEnabled(false);
     }
 
+    /**
+     * Shows only the "Display Data" checkboxes whose data is actually present somewhere in the whole
+     * loaded tree, and collapses the rest. The presence scan is cached by tree identity, so pure
+     * navigation (same tree) reuses it; pass {@code force_rescan == true} after the tree's data may
+     * have changed (load, tab switch, node/annotation edit, add/remove node). Node Name is never
+     * gated here -- it is always shown.
+     */
+    void updateDataCheckboxVisibility(final boolean force_rescan) {
+        if ((_mainpanel == null) || (_mainpanel.getCurrentPhylogeny() == null)
+                || _mainpanel.getCurrentPhylogeny().isEmpty()) {
+            return;
+        }
+        final Phylogeny phy = _mainpanel.getCurrentPhylogeny();
+        if (force_rescan || (phy != _data_presence_for) || (_data_presence == null)) {
+            _data_presence = AptxUtil.scanForDataPresence(phy);
+            _data_presence_for = phy;
+        }
+        boolean changed = false;
+        for (final int which : DATA_GATED_CHECKBOXES) {
+            final JPanel p = _checkbox_panels.get(which);
+            if (p != null) {
+                final boolean vis = _data_presence.contains(which);
+                if (p.isVisible() != vis) {
+                    p.setVisible(vis);
+                    changed = true;
+                }
+            }
+        }
+        if (changed) {
+            revalidate();
+            repaint();
+        }
+    }
+
+    // For tests: whether the "Display Data" checkbox row for the given option constant is showing.
+    boolean isDisplayDataCheckboxVisible(final int which) {
+        final JPanel p = _checkbox_panels.get(which);
+        return (p != null) && p.isVisible();
+    }
+
     void displayedPhylogenyMightHaveChanged(final boolean recalc_longest_ext_node_info) {
         if ((_mainpanel != null)
                 && ((_mainpanel.getCurrentPhylogeny() != null) && !_mainpanel.getCurrentPhylogeny().isEmpty())) {
@@ -1509,6 +1476,7 @@ final class ControlPanel extends JPanel implements ActionListener {
                 _mainpanel.getCurrentTreePanel().initNodeData();
                 _mainpanel.getCurrentTreePanel().calculateLongestExtNodeInfo();
             }
+            updateDataCheckboxVisibility(recalc_longest_ext_node_info);
             if (getOptions().isShowOverview()) {
                 _mainpanel.getCurrentTreePanel().updateOvSizes();
             }
@@ -2720,6 +2688,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             getMainPanel().getControlPanel().search0();
             getMainPanel().getControlPanel().search1();
             getMainPanel().getControlPanel().updateDomainStructureEvaluethresholdDisplay();
+            updateDataCheckboxVisibility(true);
             populateColorByPropertyBox();
             getSequenceRelationTypeBox().removeAllItems();
             for (final SequenceRelation.SEQUENCE_RELATION_TYPE type : getMainPanel().getCurrentPhylogeny()

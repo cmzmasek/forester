@@ -32,11 +32,18 @@ import java.util.Set;
 import org.forester.archaeopteryx.AptxUtil.GraphicsExportType;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
+import org.forester.phylogeny.data.Accession;
+import org.forester.phylogeny.data.BranchColor;
+import org.forester.phylogeny.data.BranchWidth;
 import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.data.DomainArchitecture;
+import org.forester.phylogeny.data.Event;
 import org.forester.phylogeny.data.PhylogenyData;
+import org.forester.phylogeny.data.PropertiesList;
+import org.forester.phylogeny.data.Property;
 import org.forester.phylogeny.data.ProteinDomain;
 import org.forester.phylogeny.data.Sequence;
+import org.forester.phylogeny.data.Taxonomy;
 
 /**
  * Unit tests for {@link AptxUtil}. Lives in the {@code org.forester.archaeopteryx} package. Run
@@ -52,7 +59,115 @@ public final class AptxUtilTest {
     public static boolean test() {
         return testHasAtLeastOneNodeWithDomainArchitecture() && testGraphicsExportTypes() && testColorizableRanks()
                 && testRankCounts() && testRankCoverageCounts() && testNodePruningOutcome()
-                && testBranchesToCollapse() && testConfigFileOption();
+                && testBranchesToCollapse() && testConfigFileOption() && testScanForDataPresence();
+    }
+
+    /**
+     * The control panel uses {@link AptxUtil#scanForDataPresence} to show only the "Display Data"
+     * checkboxes whose data is actually present. A barren tree (topology + node names only) must
+     * report only node names; a richly annotated node must light up every corresponding flag; and
+     * a null/empty tree yields the empty set.
+     */
+    private static boolean testScanForDataPresence() {
+        try {
+            if (!AptxUtil.scanForDataPresence(null).isEmpty()
+                    || !AptxUtil.scanForDataPresence(new Phylogeny()).isEmpty()) {
+                return false;
+            }
+            // barren tree: two named leaves, no branch lengths, no annotations
+            final Phylogeny barren = new Phylogeny();
+            final PhylogenyNode br = new PhylogenyNode();
+            final PhylogenyNode b1 = new PhylogenyNode();
+            b1.setName("a");
+            final PhylogenyNode b2 = new PhylogenyNode();
+            b2.setName("b");
+            br.addAsChild(b1);
+            br.addAsChild(b2);
+            barren.setRoot(br);
+            barren.externalNodesHaveChanged();
+            final Set<Integer> barren_set = AptxUtil.scanForDataPresence(barren);
+            if (!barren_set.contains(Configuration.show_node_names) || (barren_set.size() != 1)) {
+                return false;
+            }
+            // rich node: one leaf carrying many kinds of data
+            final Phylogeny rich = new Phylogeny();
+            final PhylogenyNode rr = new PhylogenyNode();
+            final PhylogenyNode leaf = new PhylogenyNode();
+            leaf.setName("leaf");
+            leaf.setDistanceToParent(0.5);
+            leaf.getBranchData().addConfidence(new Confidence(0.9, "bootstrap"));
+            leaf.getBranchData().setBranchWidth(new BranchWidth(3.0));
+            leaf.getBranchData().setBranchColor(new BranchColor(java.awt.Color.RED));
+            leaf.getNodeData().setEvent(Event.createSingleDuplicationEvent());
+            final Taxonomy tax = new Taxonomy();
+            tax.setScientificName("Homo sapiens");
+            tax.setCommonName("human");
+            tax.setTaxonomyCode("HUMAN");
+            tax.setRank("species");
+            leaf.getNodeData().setTaxonomy(tax);
+            final Sequence seq = new Sequence();
+            seq.setName("p53");
+            seq.setGeneName("TP53");
+            seq.setMolecularSequence("MEEPQSDPSV");
+            seq.setAccession(new Accession("P04637", "uniprot"));
+            leaf.getNodeData().setSequence(seq);
+            final PropertiesList props = new PropertiesList();
+            props.addProperty(new Property("aptx:test", "1", "", "xsd:string", Property.AppliesTo.NODE));
+            leaf.getNodeData().setProperties(props);
+            leaf.getNodeData().setVector(Arrays.asList(1.0, 2.0, 3.0));
+            rr.addAsChild(leaf);
+            rr.addAsChild(new PhylogenyNode());
+            rich.setRoot(rr);
+            rich.externalNodesHaveChanged();
+            final Set<Integer> s = AptxUtil.scanForDataPresence(rich);
+            final int[] expected = { Configuration.show_node_names, Configuration.write_branch_length_values,
+                    Configuration.write_confidence_values, Configuration.width_branches, Configuration.use_style,
+                    Configuration.write_events, Configuration.show_taxonomy_scientific_names,
+                    Configuration.show_taxonomy_common_names, Configuration.show_tax_code, Configuration.show_tax_rank,
+                    Configuration.show_seq_names, Configuration.show_gene_names, Configuration.show_sequence_acc,
+                    Configuration.show_properties, Configuration.show_vector_data };
+            for (final int which : expected) {
+                if (!s.contains(which)) {
+                    return false;
+                }
+            }
+            // exact set: every present flag is an expected one too, so an over-report (a spurious flag
+            // that would re-introduce an inert checkbox) is caught, not just under-reporting.
+            if (s.size() != expected.length) {
+                return false;
+            }
+            // spot-check a few that must be absent (subsumed by the size check, kept for intent).
+            // show_mol_seqs in particular must NOT be reported even though the rich node HAS a molecular
+            // sequence: there is no MSA viewer, so that checkbox is deliberately never built/scanned.
+            if (s.contains(Configuration.show_domain_architectures) || s.contains(Configuration.show_seq_symbols)
+                    || s.contains(Configuration.show_binary_characters) || s.contains(Configuration.show_mol_seqs)) {
+                return false;
+            }
+            // regression (renderer match): a legitimate zero-length branch and a source-only accession
+            // are both drawn, so both must be reported present.
+            final Phylogeny edge = new Phylogeny();
+            final PhylogenyNode er = new PhylogenyNode();
+            final PhylogenyNode el = new PhylogenyNode();
+            el.setName("e");
+            el.setDistanceToParent(0.0);
+            final Sequence es = new Sequence();
+            es.setAccession(new Accession("", "UniProt"));
+            el.getNodeData().setSequence(es);
+            er.addAsChild(el);
+            er.addAsChild(new PhylogenyNode());
+            edge.setRoot(er);
+            edge.externalNodesHaveChanged();
+            final Set<Integer> edge_set = AptxUtil.scanForDataPresence(edge);
+            if (!edge_set.contains(Configuration.write_branch_length_values)
+                    || !edge_set.contains(Configuration.show_sequence_acc)) {
+                return false;
+            }
+            return true;
+        }
+        catch (final Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     /**

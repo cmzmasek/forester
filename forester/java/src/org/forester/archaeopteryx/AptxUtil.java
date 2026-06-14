@@ -59,7 +59,9 @@ import org.forester.phylogeny.PhylogenyMethods.DESCENDANT_SORT_PRIORITY;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.BranchWidth;
 import org.forester.phylogeny.data.Confidence;
+import org.forester.phylogeny.data.NodeData;
 import org.forester.phylogeny.data.PhylogenyDataUtil;
+import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.util.AsciiHistogram;
@@ -242,6 +244,106 @@ public final class AptxUtil {
             }
         }
         return false;
+    }
+
+    // The number of distinct "Display Data" option constants scanForDataPresence can report (kept in
+    // sync by hand with the present.add(...) calls below); used to short-circuit the scan once every
+    // flag has been found.
+    private final static int NUM_DATA_PRESENCE_FLAGS = 19;
+
+    /**
+     * Scans the whole tree once and returns the set of "Display Data" option constants (from
+     * {@link Configuration}) for which at least one node actually carries the corresponding data.
+     * The control panel uses this to show only the checkboxes that would do something for the
+     * current tree, instead of an intimidating wall of toggles that silently do nothing. A single
+     * pre-order pass; each flag is tested only until it is found, and the whole scan stops early
+     * once every flag is set (cheap even on very large trees).
+     */
+    public final static Set<Integer> scanForDataPresence(final Phylogeny phy) {
+        final Set<Integer> present = new HashSet<Integer>();
+        if ((phy == null) || phy.isEmpty()) {
+            return present;
+        }
+        for (final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext();) {
+            final PhylogenyNode n = it.next();
+            final NodeData nd = n.getNodeData();
+            if (!present.contains(Configuration.show_node_names) && !ForesterUtil.isEmpty(n.getName())) {
+                present.add(Configuration.show_node_names);
+            }
+            // Match the renderer: it writes the branch length whenever it is set to anything other than
+            // the "no length" sentinel (so legitimate zero-length and negative branches count too).
+            if (!present.contains(Configuration.write_branch_length_values)
+                    && (n.getDistanceToParent() != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT)) {
+                present.add(Configuration.write_branch_length_values);
+            }
+            if (!present.contains(Configuration.write_confidence_values) && n.getBranchData().isHasConfidences()) {
+                present.add(Configuration.write_confidence_values);
+            }
+            if (!present.contains(Configuration.width_branches) && (n.getBranchData().getBranchWidth() != null)
+                    && (n.getBranchData().getBranchWidth().getValue() != BranchWidth.BRANCH_WIDTH_DEFAULT_VALUE)) {
+                present.add(Configuration.width_branches);
+            }
+            if (!present.contains(Configuration.use_style)
+                    && (((nd.getNodeVisualData() != null) && !nd.getNodeVisualData().isEmpty())
+                            || (n.getBranchData().getBranchColor() != null))) {
+                present.add(Configuration.use_style);
+            }
+            if (!present.contains(Configuration.write_events) && nd.isHasEvent()) {
+                present.add(Configuration.write_events);
+            }
+            if (!present.contains(Configuration.show_binary_characters) && nd.isHasBinaryCharacters()) {
+                present.add(Configuration.show_binary_characters);
+                present.add(Configuration.show_binary_character_counts);
+            }
+            if (!present.contains(Configuration.show_vector_data) && !ForesterUtil.isEmpty(nd.getVector())) {
+                present.add(Configuration.show_vector_data);
+            }
+            if (!present.contains(Configuration.show_properties) && (nd.getProperties() != null)
+                    && (nd.getProperties().size() > 0)) {
+                present.add(Configuration.show_properties);
+            }
+            if (nd.isHasTaxonomy()) {
+                final Taxonomy t = nd.getTaxonomy();
+                if (!present.contains(Configuration.show_tax_code) && !ForesterUtil.isEmpty(t.getTaxonomyCode())) {
+                    present.add(Configuration.show_tax_code);
+                }
+                if (!present.contains(Configuration.show_taxonomy_scientific_names)
+                        && !ForesterUtil.isEmpty(t.getScientificName())) {
+                    present.add(Configuration.show_taxonomy_scientific_names);
+                }
+                if (!present.contains(Configuration.show_taxonomy_common_names)
+                        && !ForesterUtil.isEmpty(t.getCommonName())) {
+                    present.add(Configuration.show_taxonomy_common_names);
+                }
+                if (!present.contains(Configuration.show_tax_rank) && !ForesterUtil.isEmpty(t.getRank())) {
+                    present.add(Configuration.show_tax_rank);
+                }
+            }
+            if (nd.isHasSequence()) {
+                final Sequence s = nd.getSequence();
+                if (!present.contains(Configuration.show_seq_names) && !ForesterUtil.isEmpty(s.getName())) {
+                    present.add(Configuration.show_seq_names);
+                }
+                if (!present.contains(Configuration.show_gene_names) && !ForesterUtil.isEmpty(s.getGeneName())) {
+                    present.add(Configuration.show_gene_names);
+                }
+                if (!present.contains(Configuration.show_seq_symbols) && !ForesterUtil.isEmpty(s.getSymbol())) {
+                    present.add(Configuration.show_seq_symbols);
+                }
+                // Match the renderer: it draws the accession (source and/or value) whenever one exists.
+                if (!present.contains(Configuration.show_sequence_acc) && (s.getAccession() != null)) {
+                    present.add(Configuration.show_sequence_acc);
+                }
+                if (!present.contains(Configuration.show_domain_architectures)
+                        && (s.getDomainArchitecture() != null)) {
+                    present.add(Configuration.show_domain_architectures);
+                }
+            }
+            if (present.size() >= NUM_DATA_PRESENCE_FLAGS) {
+                break;
+            }
+        }
+        return present;
     }
 
     final public static void launchWebBrowser(final URI uri, final String frame_name) throws IOException {
@@ -885,6 +987,8 @@ public final class AptxUtil {
             if (AptxUtil.isHasAtLeastOneNodeWithDomainArchitecture(t)) {
                 cp.showDomainArchitecturesFitted();
             }
+            // Show only the Display Data checkboxes for which this tree actually has data.
+            cp.updateDataCheckboxVisibility(true);
         }
     }
 
