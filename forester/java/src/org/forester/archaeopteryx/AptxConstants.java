@@ -29,8 +29,8 @@ import org.forester.util.ForesterConstants;
 public final class AptxConstants {
 
     public final static String PRG_NAME = "Archaeopteryx";
-    final static String VERSION = "0.9.18";
-    final static String PRG_DATE = "2026-06-13";
+    final static String VERSION = "0.9.19";
+    final static String PRG_DATE = "2026-06-14";
     final static String[] DEFAULT_FONT_CHOICES = {
             "Arial Unicode MS", "Dialog", "SansSerif", "Sans", "Arial", "Helvetica"};
     final static int DOMAIN_STRUCTURE_DEFAULT_WIDTH = 100;

@@ -34,6 +34,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.SortedSet;
 import java.util.NoSuchElementException;
 
 import javax.swing.JCheckBoxMenuItem;
@@ -1045,35 +1046,50 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     }
 
     void colorRank() {
-        if (_mainpanel.getCurrentTreePanel() != null) {
-            final Phylogeny phy = _mainpanel.getCurrentTreePanel().getPhylogeny();
-            final Map<String, Integer> present_ranks = AptxUtil.getRankCounts(phy);
-            final Map<String, Integer> coverage_counts = AptxUtil.getRankCoverageCounts(phy);
-            final int total_external = (phy == null) ? 0 : phy.getNumberOfExternalNodes();
-            final String[] ranks = AptxUtil.getColorizableRanks(present_ranks, coverage_counts, total_external);
-            if (ranks.length == 0) {
-                JOptionPane.showMessageDialog(this,
-                        "This tree has no internal nodes with a taxonomic rank to colorize by.\n"
-                                + "(Ranks such as order, family, or genus must be present on internal-node taxonomies.)",
-                        "No Ranks Available for Colorization",
-                        JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-            String rank = (String) JOptionPane
-                    .showInputDialog(this,
-                            "What rank should the colorization be based on",
-                            "Rank Selection",
-                            JOptionPane.QUESTION_MESSAGE,
-                            null,
-                            ranks,
-                            ranks[0]);
-            if (!ForesterUtil.isEmpty(rank)) {
-                if (rank.indexOf('(') > 0) {
-                    rank = rank.substring(0, rank.indexOf('(')).trim();
-                }
-                _mainpanel.getCurrentTreePanel().colorRank(rank);
+        if (_mainpanel.getCurrentTreePanel() == null) {
+            return;
+        }
+        final TreePanel tp = _mainpanel.getCurrentTreePanel();
+        final Phylogeny phy = tp.getPhylogeny();
+        if ((phy == null) || phy.isEmpty() || (phy.getNumberOfExternalNodes() < 2)) {
+            return;
+        }
+        final Map<String, Integer> present_ranks = AptxUtil.getRankCounts(phy);
+        final Map<String, Integer> coverage_counts = AptxUtil.getRankCoverageCounts(phy);
+        final String[] ranks = AptxUtil.getRankChoices(present_ranks, coverage_counts, phy.getNumberOfExternalNodes());
+        String rank = (String) JOptionPane.showInputDialog(this,
+                "What rank should the colorization be based on?",
+                "Rank Selection",
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                ranks,
+                ranks[0]);
+        if (ForesterUtil.isEmpty(rank)) {
+            return;
+        }
+        if (rank.indexOf('(') > 0) {
+            rank = rank.substring(0, rank.indexOf('(')).trim();
+        }
+        // Decide whether the DB is needed BEFORE colorizing (cache-only, never blocks the EDT), so we
+        // colorize the tree exactly once -- either here, or (on the online path) in the resolver after
+        // the fetch -- rather than colorizing now and again, which flashed a partial result.
+        final SortedSet<String> unresolved = TreePanelUtil.unresolvedTipTaxa(phy, rank,
+                TreePanelUtil.getDefaultLineageService());
+        if (!unresolved.isEmpty()) {
+            final int choice = JOptionPane.showConfirmDialog(this,
+                    unresolved.size() + " tip " + ((unresolved.size() == 1) ? "taxon" : "taxa")
+                            + " could not be placed at rank \"" + rank + "\" from the tree's own data.\n"
+                            + "Resolve via the NCBI taxonomy database? (requires an internet connection)",
+                    "Resolve Taxa Online?",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE);
+            if (choice == JOptionPane.YES_OPTION) {
+                new Thread(new RankColorizationResolver(this, tp, rank, unresolved)).start();
+                return; // the background resolver colorizes and reports when done
             }
         }
+        // no online resolution -- colorize once from what the tree (and cache) already know
+        tp.reportRankColorization(rank, tp.colorByRank(rank));
     }
 
 

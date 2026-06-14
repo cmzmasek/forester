@@ -5167,7 +5167,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         _rank_legend = null;
         _rank_legend_title = null;
         final Map<String, Color> legend = new HashMap<>();
-        final int colorizations = TreePanelUtil.colorPhylogenyAccordingToRanks(_phylogeny, rank, this, legend);
+        final int colorizations = TreePanelUtil.colorPhylogenyAccordingToRanks(_phylogeny, rank,
+                TreePanelUtil.getDefaultLineageService(), legend);
         if (!legend.isEmpty()) {
             _rank_legend = new java.util.TreeMap<>(legend); // sorted by taxon name
             _rank_legend_title = "Taxonomy: " + rank;
@@ -5188,28 +5189,25 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return colorizations;
     }
 
-    final void colorRank(final String rank) {
-        final int colorizations = colorByRank(rank);
+    /**
+     * Shows the result dialog after a rank colorization (the colorizing itself is done by
+     * {@link #colorByRank}); {@code colorizations} is how many clades were colored. Called on the EDT
+     * by {@code MainFrame.colorRank} for the local path and by {@code RankColorizationResolver} after
+     * a background taxonomy-database resolution.
+     */
+    final void reportRankColorization(final String rank, final int colorizations) {
         if (colorizations > 0) {
-            String msg = "Taxonomy colorization via " + rank + " completed:\n";
-            if (colorizations > 1) {
-                msg += "colorized " + colorizations + " subtrees";
-            } else {
-                msg += "colorized one subtree";
-            }
             setEdited(true);
+            final String msg = "Taxonomy colorization via " + rank + " completed:\n"
+                    + ((colorizations > 1) ? ("colorized " + colorizations + " clades") : "colorized one clade");
             JOptionPane.showMessageDialog(this,
                     msg,
                     "Taxonomy Rank-Colorization Completed (" + rank + ")",
                     JOptionPane.INFORMATION_MESSAGE);
         } else {
-            String msg = "Could not taxonomy rank-colorize any subtree via " + rank + ".\n";
-            msg += "Possible solutions (given that suitable taxonomic information is present):\n";
-            msg += "select a different rank (e.g. phylum, genus, ...)\n";
-            msg += "  and/or\n";
-            msg += "execute:\n";
-            msg += "1. \"" + MainFrame.OBTAIN_SEQUENCE_AND_TAXONOMIC_INFORMATION + "\" (Tools)\n";
-            msg += "2. \"" + MainFrame.INFER_ANCESTOR_TAXONOMIES + "\" (Analysis)";
+            final String msg = "Could not place any tip at rank \"" + rank + "\".\n"
+                    + "Try a different rank (e.g. order, family, genus), or check that the tips carry\n"
+                    + "taxonomic names the taxonomy database can resolve.";
             JOptionPane
                     .showMessageDialog(this, msg, "Taxonomy Rank-Colorization Failed", JOptionPane.WARNING_MESSAGE);
         }

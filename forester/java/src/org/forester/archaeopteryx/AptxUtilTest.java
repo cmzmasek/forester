@@ -20,6 +20,7 @@
 
 package org.forester.archaeopteryx;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -57,9 +58,48 @@ public final class AptxUtilTest {
     }
 
     public static boolean test() {
-        return testHasAtLeastOneNodeWithDomainArchitecture() && testGraphicsExportTypes() && testColorizableRanks()
+        return testHasAtLeastOneNodeWithDomainArchitecture() && testGraphicsExportTypes() && testRankChoices()
                 && testRankCounts() && testRankCoverageCounts() && testNodePruningOutcome()
-                && testBranchesToCollapse() && testConfigFileOption() && testScanForDataPresence();
+                && testBranchesToCollapse() && testConfigFileOption() && testScanForDataPresence()
+                && testAssignDistinctColors();
+    }
+
+    /**
+     * The rank colorizer's palette: each taxon gets a color, the colors are all distinct, the result
+     * is deterministic (same input -&gt; same colors) and ordered like the (sorted) input, and an
+     * empty/null input yields an empty map.
+     */
+    private static boolean testAssignDistinctColors() {
+        if (!AptxUtil.assignDistinctColors(null).isEmpty()
+                || !AptxUtil.assignDistinctColors(new java.util.TreeSet<String>()).isEmpty()) {
+            return fail("null/empty taxa must yield an empty color map");
+        }
+        final java.util.SortedSet<String> taxa = new java.util.TreeSet<String>(
+                java.util.Arrays.asList("Carnivora", "Rodentia", "Primates", "Chiroptera", "Cetacea"));
+        final Map<String, Color> a = AptxUtil.assignDistinctColors(taxa);
+        if (a.size() != taxa.size()) {
+            return fail("every taxon must get a color");
+        }
+        // all colors distinct
+        if (new java.util.HashSet<Color>(a.values()).size() != taxa.size()) {
+            return fail("colors must be pairwise distinct; got " + a.values());
+        }
+        // ordered like the sorted input
+        if (!new java.util.ArrayList<String>(a.keySet()).equals(new java.util.ArrayList<String>(taxa))) {
+            return fail("color map must follow the input's (sorted) order");
+        }
+        // deterministic
+        final Map<String, Color> b = AptxUtil.assignDistinctColors(taxa);
+        if (!a.equals(b)) {
+            return fail("assignDistinctColors must be deterministic for the same taxa");
+        }
+        // a single taxon still gets a (valid) color
+        final java.util.SortedSet<String> one = new java.util.TreeSet<String>(java.util.Arrays.asList("Carnivora"));
+        if ((AptxUtil.assignDistinctColors(one).size() != 1)
+                || (AptxUtil.assignDistinctColors(one).get("Carnivora") == null)) {
+            return fail("a single taxon must get exactly one color");
+        }
+        return true;
     }
 
     /**
@@ -316,56 +356,61 @@ public final class AptxUtilTest {
     }
 
     /**
-     * getColorizableRanks must offer only ranks that can actually drive a colorization -- present on
-     * internal nodes with a count &gt; 0 -- labeled "rank (count) (P% coverage)" in canonical order,
-     * and an empty array (which the caller turns into a warning) when nothing is colorizable.
+     * getRankChoices offers, in canonical order: every rank present on the tree (labeled
+     * "rank (count) (P% coverage)") AND the major Linnaean ranks even when absent (labeled plainly) --
+     * so a genus-only tree can still be colored by, e.g., order, which the taxonomy DB will resolve.
      */
-    private static boolean testColorizableRanks() {
-        final Map<String, Integer> no_coverage = new LinkedHashMap<String, Integer>();
-        // nothing present -> nothing colorizable (caller shows a warning and returns)
-        if ( AptxUtil.getColorizableRanks( null, no_coverage, 10 ).length != 0 ) {
-            return fail( "null rank counts must yield no colorizable ranks" );
+    private static boolean testRankChoices() {
+        // with no present ranks, the major ranks are still offered (plain), in canonical order
+        final List<String> majors = Arrays.asList( AptxUtil.getRankChoices( new LinkedHashMap<String, Integer>(),
+                                                                            null,
+                                                                            0 ) );
+        for( final String r : new String[] { "superkingdom", "kingdom", "phylum", "class", "order", "family", "genus",
+                "species" } ) {
+            if ( !majors.contains( r ) ) {
+                return fail( "major rank '" + r + "' must always be offered; got " + majors );
+            }
         }
-        if ( AptxUtil.getColorizableRanks( new LinkedHashMap<String, Integer>(), no_coverage, 10 ).length != 0 ) {
-            return fail( "empty rank counts must yield no colorizable ranks" );
+        if ( !( ( majors.indexOf( "order" ) < majors.indexOf( "family" ) )
+                && ( majors.indexOf( "family" ) < majors.indexOf( "genus" ) )
+                && ( majors.indexOf( "genus" ) < majors.indexOf( "species" ) ) ) ) {
+            return fail( "ranks must be offered in canonical order; got " + majors );
         }
-        // a count of 0 is present but not colorizable -> excluded
-        final Map<String, Integer> zero_only = new LinkedHashMap<String, Integer>();
-        zero_only.put( "family", 0 );
-        if ( AptxUtil.getColorizableRanks( zero_only, no_coverage, 10 ).length != 0 ) {
-            return fail( "a rank with count 0 must not be offered" );
-        }
-        // only count > 0 ranks appear, labeled "rank (count) (P% coverage)", canonical order (order < genus)
+        // a present rank is labeled with count + coverage; absent majors stay plain
         final Map<String, Integer> counts = new LinkedHashMap<String, Integer>();
-        counts.put( "genus", 4 ); // inserted out of canonical order on purpose
         counts.put( "order", 2 );
-        counts.put( "family", 0 ); // present but zero -> excluded
         final Map<String, Integer> coverage = new LinkedHashMap<String, Integer>();
         coverage.put( "order", 6 ); // 6 of 10 external nodes -> 60%
-        coverage.put( "genus", 3 ); // 3 of 10 -> 30%
-        final String[] ranks = AptxUtil.getColorizableRanks( counts, coverage, 10 );
-        if ( ranks.length != 2 ) {
-            return fail( "only ranks with count > 0 should appear; got " + Arrays.toString( ranks ) );
+        final List<String> choices = Arrays.asList( AptxUtil.getRankChoices( counts, coverage, 10 ) );
+        if ( !choices.contains( "order (2) (60% coverage)" ) ) {
+            return fail( "a present rank must be labeled \"rank (count) (P% coverage)\"; got " + choices );
         }
-        if ( !ranks[ 0 ].equals( "order (2) (60% coverage)" ) || !ranks[ 1 ].equals( "genus (4) (30% coverage)" ) ) {
-            return fail( "labels must be \"rank (count) (P% coverage)\" in canonical order; got "
-                    + Arrays.toString( ranks ) );
+        if ( !choices.contains( "family" ) || !choices.contains( "genus" ) ) {
+            return fail( "absent major ranks must still be offered plainly; got " + choices );
         }
-        // missing coverage entry, or zero total, yields 0% rather than a crash
-        final Map<String, Integer> just_order = new LinkedHashMap<String, Integer>();
-        just_order.put( "order", 2 );
-        if ( !AptxUtil.getColorizableRanks( just_order, null, 10 )[ 0 ].equals( "order (2) (0% coverage)" ) ) {
-            return fail( "absent coverage map must render 0% coverage" );
+        // a present NON-major rank is offered too (labeled), even though it is not in the always-offer set
+        final Map<String, Integer> sub = new LinkedHashMap<String, Integer>();
+        sub.put( "subfamily", 3 );
+        final List<String> sub_choices = Arrays.asList( AptxUtil.getRankChoices( sub, null, 10 ) );
+        if ( !sub_choices.contains( "subfamily (3) (0% coverage)" ) ) {
+            return fail( "a present non-major rank must be offered; got " + sub_choices );
         }
-        if ( !AptxUtil.getColorizableRanks( just_order, coverage, 0 )[ 0 ].equals( "order (2) (0% coverage)" ) ) {
-            return fail( "zero external total must render 0% coverage (no divide-by-zero)" );
+        // a present NON-major rank with count 0 must NOT be offered (it is neither colorizable nor a major)
+        final Map<String, Integer> zero_sub = new LinkedHashMap<String, Integer>();
+        zero_sub.put( "subfamily", 0 );
+        final List<String> zero_choices = Arrays.asList( AptxUtil.getRankChoices( zero_sub, null, 10 ) );
+        if ( zero_choices.contains( "subfamily (0) (0% coverage)" ) || zero_choices.contains( "subfamily" ) ) {
+            return fail( "a present non-major rank with count 0 must not be offered; got " + zero_choices );
         }
-        // a nonzero-but-tiny coverage reads "<1%", never "0%" (a rank that colors something is not 0%)
-        final Map<String, Integer> tiny = new LinkedHashMap<String, Integer>();
-        tiny.put( "order", 1 );
-        if ( !AptxUtil.getColorizableRanks( just_order, tiny, 300 )[ 0 ].equals( "order (2) (<1% coverage)" ) ) {
-            return fail( "1 of 300 covered (0.33%) must render <1% coverage, not 0%" );
+        // two present ranks come out in canonical order (order before genus), regardless of map insertion order
+        final Map<String, Integer> two = new LinkedHashMap<String, Integer>();
+        two.put( "genus", 4 ); // inserted out of canonical order on purpose
+        two.put( "order", 2 );
+        final List<String> two_choices = Arrays.asList( AptxUtil.getRankChoices( two, null, 10 ) );
+        if ( two_choices.indexOf( "order (2) (0% coverage)" ) >= two_choices.indexOf( "genus (4) (0% coverage)" ) ) {
+            return fail( "present ranks must be emitted in canonical order (order before genus); got " + two_choices );
         }
+        // coveragePercentLabel (still used to build the labels above)
         if ( !AptxUtil.coveragePercentLabel( 0, 100 ).equals( "0%" )
                 || !AptxUtil.coveragePercentLabel( 1, 300 ).equals( "<1%" ) // 0.33% rounds to 0 -> <1%
                 || !AptxUtil.coveragePercentLabel( 1, 200 ).equals( "1%" )  // 0.5% rounds half-up to 1%

@@ -22,13 +22,18 @@ package org.forester.archaeopteryx;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
+import java.util.SortedSet;
 
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.data.Taxonomy;
+import org.forester.ws.seqdb.RankedLineage;
+import org.forester.ws.seqdb.TaxonomicLineageService;
 
 /**
  * Unit tests for {@link TreePanelUtil}. Lives in the {@code org.forester.archaeopteryx} package
@@ -44,7 +49,257 @@ public final class TreePanelUtilTest {
 
     public static boolean test() {
         return testYDistanceToAvoidLabelOverlap() && testSupportSymbolMath() && testDetectConfidenceScaleMax()
-                && testCapEntries() && testTaxonomyLabel();
+                && testCapEntries() && testTaxonomyLabel() && testRankColorization() && testTipQueryName();
+    }
+
+    /**
+     * tipQueryName prefers the TIP's own identity (scientific name, else code, else common name, else
+     * node name) and only falls back to an ancestor's scientific name when the tip carries no identity
+     * at all -- so a code-only tip under a sci-name ancestor is queried by its own (more specific) code,
+     * not the ancestor's coarser name.
+     */
+    private static boolean testTipQueryName() {
+        // tip's own scientific name wins
+        final PhylogenyNode sci = new PhylogenyNode();
+        final Taxonomy st = new Taxonomy();
+        st.setScientificName( "Felis" );
+        sci.getNodeData().setTaxonomy( st );
+        if ( !"Felis".equals( TreePanelUtil.tipQueryName( sci ) ) ) {
+            return fail( "tip's own scientific name must be used" );
+        }
+        // a code-only tip under a sci-name-bearing ancestor returns the TIP's code, not the ancestor's name
+        final PhylogenyNode ancestor = new PhylogenyNode();
+        final Taxonomy at = new Taxonomy();
+        at.setScientificName( "Mammalia" );
+        ancestor.getNodeData().setTaxonomy( at );
+        final PhylogenyNode code_leaf = new PhylogenyNode();
+        final Taxonomy ct = new Taxonomy();
+        try {
+            ct.setTaxonomyCode( "FELCA" ); // validated against the taxonomy-code format
+        }
+        catch ( final Exception e ) {
+            throw new RuntimeException( e );
+        }
+        code_leaf.getNodeData().setTaxonomy( ct );
+        ancestor.addAsChild( code_leaf );
+        if ( !"FELCA".equals( TreePanelUtil.tipQueryName( code_leaf ) ) ) {
+            return fail( "a code-only tip must be queried by its own code, not the ancestor's scientific name" );
+        }
+        // a tip with no taxonomy but a node name uses the node name
+        final PhylogenyNode named = new PhylogenyNode();
+        named.setName( "Homo_sapiens" );
+        if ( !"Homo_sapiens".equals( TreePanelUtil.tipQueryName( named ) ) ) {
+            return fail( "a tip with only a node name must use the node name" );
+        }
+        // a tip with no identity at all falls back to the nearest ancestor's scientific name
+        final PhylogenyNode anc2 = new PhylogenyNode();
+        final Taxonomy a2 = new Taxonomy();
+        a2.setScientificName( "Carnivora" );
+        anc2.getNodeData().setTaxonomy( a2 );
+        final PhylogenyNode bare = new PhylogenyNode();
+        anc2.addAsChild( bare );
+        if ( !"Carnivora".equals( TreePanelUtil.tipQueryName( bare ) ) ) {
+            return fail( "an identity-less tip must fall back to the ancestor's scientific name" );
+        }
+        return true;
+    }
+
+    /**
+     * The assignment-based rank colorizer (the major-flaw fix): every tip is placed under its taxon
+     * at the chosen rank -- from an in-tree rank annotation when present, else the lineage service's
+     * cache -- and each maximal monophyletic run of one taxon is colored. The test tree mixes a
+     * Rodentia clade annotated at rank=order with two cats/dogs that are only genus-annotated and
+     * sit in different parts of the tree (paraphyletic Carnivora), plus one tip the DB can't resolve.
+     */
+    private static boolean testRankColorization() {
+        // a fake taxonomy DB: Felis and Canis resolve to order Carnivora; "Nonexistus" is unknown
+        final FakeLineageService svc = new FakeLineageService();
+        svc.know( "Felis", lineage( "class", "Mammalia", "order", "Carnivora", "genus", "Felis" ) );
+        svc.know( "Canis", lineage( "class", "Mammalia", "order", "Carnivora", "genus", "Canis" ) );
+
+        final Phylogeny tree = mammalTree();
+        final PhylogenyNode felis = findLeaf( tree, "Felis" );
+        final PhylogenyNode canis = findLeaf( tree, "Canis" );
+
+        // --- phase 1: cache empty, so only the in-tree-annotated Rodentia tips are placeable ---
+        Map<PhylogenyNode, String> assignment = TreePanelUtil.assignTipsToRankTaxon( tree, "order", svc );
+        if ( assignment.size() != 2 ) {
+            return fail( "with an empty cache only the 2 Rodentia tips should be placeable, got " + assignment.size() );
+        }
+        final SortedSet<String> unresolved = TreePanelUtil.unresolvedTipTaxa( tree, "order", svc );
+        // Felis, Canis, and the unknown tip's query name must all be flagged for fetching
+        if ( !unresolved.contains( "Felis" ) || !unresolved.contains( "Canis" ) || !unresolved.contains( "Nonexistus" ) ) {
+            return fail( "unresolved tip taxa must include Felis, Canis and Nonexistus; got " + unresolved );
+        }
+
+        // --- background fetch (simulated): resolve every unresolved name once ---
+        try {
+            for( final String name : unresolved ) {
+                svc.fetch( name );
+            }
+        }
+        catch ( final Exception e ) {
+            return fail( "fake fetch must not throw: " + e );
+        }
+        // after fetching, nothing is left to fetch (no repeated prompts)
+        if ( !TreePanelUtil.unresolvedTipTaxa( tree, "order", svc ).isEmpty() ) {
+            return fail( "after fetching all names, unresolvedTipTaxa must be empty" );
+        }
+
+        // --- phase 2: now Felis and Canis place at Carnivora; the unknown tip stays unplaced ---
+        assignment = TreePanelUtil.assignTipsToRankTaxon( tree, "order", svc );
+        if ( assignment.size() != 4 ) {
+            return fail( "after fetch, 4 tips (2 Rodentia + Felis + Canis) should be placed, got " + assignment.size() );
+        }
+        if ( !"Carnivora".equals( assignment.get( felis ) ) || !"Carnivora".equals( assignment.get( canis ) ) ) {
+            return fail( "Felis and Canis must be placed under order Carnivora" );
+        }
+
+        // maximal roots: the Rodentia clade + Felis + Canis (paraphyletic Carnivora -> two roots, one taxon)
+        final Map<PhylogenyNode, String> roots = TreePanelUtil.maximalMonochromaticRoots( tree, assignment );
+        if ( roots.size() != 3 ) {
+            return fail( "expected 3 maximal monochromatic roots (Rodentia clade, Felis, Canis), got " + roots.size() );
+        }
+        int carnivora_roots = 0;
+        for( final String t : roots.values() ) {
+            if ( "Carnivora".equals( t ) ) {
+                ++carnivora_roots;
+            }
+        }
+        if ( carnivora_roots != 2 ) {
+            return fail( "paraphyletic Carnivora must yield two same-taxon roots, got " + carnivora_roots );
+        }
+
+        // full colorize: 3 clades colored, legend has the 2 distinct taxa, Felis and Canis share a color
+        final Map<String, Color> legend = new LinkedHashMap<String, Color>();
+        final int colorized = TreePanelUtil.colorPhylogenyAccordingToRanks( tree, "order", svc, legend );
+        if ( colorized != 3 ) {
+            return fail( "colorize should report 3 colored clades, got " + colorized );
+        }
+        if ( ( legend.size() != 2 ) || !legend.containsKey( "Carnivora" ) || !legend.containsKey( "Rodentia" ) ) {
+            return fail( "legend must list exactly Carnivora and Rodentia; got " + legend.keySet() );
+        }
+        final Color felis_c = felis.getBranchData().getBranchColor().getValue();
+        final Color canis_c = canis.getBranchData().getBranchColor().getValue();
+        if ( ( felis_c == null ) || !felis_c.equals( canis_c ) ) {
+            return fail( "Felis and Canis (same order) must get the same color" );
+        }
+        if ( felis_c.equals( legend.get( "Rodentia" ) ) ) {
+            return fail( "Carnivora and Rodentia must get distinct colors" );
+        }
+        // the unresolvable tip is never colored
+        if ( findLeaf( tree, "x_unknown" ).getBranchData().getBranchColor() != null ) {
+            return fail( "an unplaceable tip must be left uncolored, not swept into a neighbor's color" );
+        }
+        return true;
+    }
+
+    /** Builds a LinkedHashMap of rank-&gt;name pairs from a flat rank1,name1,rank2,name2,... list. */
+    private static Map<String, String> lineage( final String... rank_name_pairs ) {
+        final Map<String, String> m = new LinkedHashMap<String, String>();
+        for( int i = 0; ( i + 1 ) < rank_name_pairs.length; i += 2 ) {
+            m.put( rank_name_pairs[ i ], rank_name_pairs[ i + 1 ] );
+        }
+        return m;
+    }
+
+    /**
+     * root
+     *  +-- A
+     *  |    +-- Rodentia (internal, rank=order)
+     *  |    |    +-- Mus     (genus)
+     *  |    |    +-- Rattus  (genus)
+     *  |    +-- Felis        (genus; resolves to order Carnivora only via the DB)
+     *  +-- B
+     *       +-- Canis        (genus; order Carnivora via the DB) -- not a clade with Felis (paraphyly)
+     *       +-- x_unknown    (scientific name the DB cannot resolve)
+     */
+    private static Phylogeny mammalTree() {
+        final PhylogenyNode rodentia = internalOrder( "Rodentia" );
+        rodentia.addAsChild( genusLeaf( "Mus" ) );
+        rodentia.addAsChild( genusLeaf( "Rattus" ) );
+        final PhylogenyNode a = new PhylogenyNode();
+        a.addAsChild( rodentia );
+        a.addAsChild( genusLeaf( "Felis" ) );
+        final PhylogenyNode b = new PhylogenyNode();
+        b.addAsChild( genusLeaf( "Canis" ) );
+        b.addAsChild( namedLeaf( "x_unknown", "Nonexistus" ) ); // queryable, but unknown to the DB
+        final PhylogenyNode root = new PhylogenyNode();
+        root.addAsChild( a );
+        root.addAsChild( b );
+        final Phylogeny phy = new Phylogeny();
+        phy.setRoot( root );
+        phy.externalNodesHaveChanged();
+        return phy;
+    }
+
+    private static PhylogenyNode internalOrder( final String sci ) {
+        final PhylogenyNode n = new PhylogenyNode();
+        final Taxonomy t = new Taxonomy();
+        t.setScientificName( sci );
+        try {
+            t.setRank( "order" );
+        }
+        catch ( final Exception e ) {
+            throw new RuntimeException( e );
+        }
+        n.getNodeData().setTaxonomy( t );
+        return n;
+    }
+
+    private static PhylogenyNode genusLeaf( final String sci ) {
+        final PhylogenyNode n = namedLeaf( sci, sci );
+        try {
+            n.getNodeData().getTaxonomy().setRank( "genus" );
+        }
+        catch ( final Exception e ) {
+            throw new RuntimeException( e );
+        }
+        return n;
+    }
+
+    private static PhylogenyNode namedLeaf( final String node_name, final String sci ) {
+        final PhylogenyNode n = new PhylogenyNode();
+        n.setName( node_name );
+        final Taxonomy t = new Taxonomy();
+        t.setScientificName( sci );
+        n.getNodeData().setTaxonomy( t );
+        return n;
+    }
+
+    private static PhylogenyNode findLeaf( final Phylogeny tree, final String node_name ) {
+        for( final org.forester.phylogeny.iterators.PhylogenyNodeIterator it = tree
+                .iteratorExternalForward(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if ( node_name.equals( n.getName() ) ) {
+                return n;
+            }
+        }
+        return null;
+    }
+
+    /** In-memory {@link TaxonomicLineageService}: {@code lineageOf} is cache-only; {@code fetch} copies from the "DB". */
+    private static final class FakeLineageService implements TaxonomicLineageService {
+
+        private final Map<String, RankedLineage> _db    = new HashMap<String, RankedLineage>();
+        private final Map<String, RankedLineage> _cache = new HashMap<String, RankedLineage>();
+
+        void know( final String name, final Map<String, String> rank_to_name ) {
+            _db.put( name.toLowerCase( Locale.ROOT ), new RankedLineage( rank_to_name ) );
+        }
+
+        @Override
+        public RankedLineage lineageOf( final String taxon ) {
+            return ( taxon == null ) ? null : _cache.get( taxon.toLowerCase( Locale.ROOT ) );
+        }
+
+        @Override
+        public RankedLineage fetch( final String taxon ) {
+            final String k = taxon.toLowerCase( Locale.ROOT );
+            final RankedLineage rl = _db.containsKey( k ) ? _db.get( k ) : RankedLineage.EMPTY;
+            _cache.put( k, rl );
+            return rl;
+        }
     }
 
     /**

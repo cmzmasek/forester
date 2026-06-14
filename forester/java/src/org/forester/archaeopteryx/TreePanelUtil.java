@@ -32,11 +32,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import javax.swing.JOptionPane;
 
-import org.forester.analysis.TaxonomyDataManager;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
@@ -51,7 +52,9 @@ import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
 import org.forester.util.SequenceAccessionTools;
 import org.forester.util.StringInt;
-import org.forester.ws.seqdb.UniProtTaxonomy;
+import org.forester.ws.seqdb.NcbiTaxonomyLineageService;
+import org.forester.ws.seqdb.RankedLineage;
+import org.forester.ws.seqdb.TaxonomicLineageService;
 
 public class TreePanelUtil {
 
@@ -367,98 +370,217 @@ public class TreePanelUtil {
         return "";
     }
 
+    /** Sentinel for {@link #maximalMonochromaticRoots}: a subtree whose tips are not all one rank taxon. */
+    private final static String MIXED_TAXON = "<<MIXED>>";
+    // process-wide lineage service: one shared cache across colorize invocations and background fetches.
+    private static TaxonomicLineageService _default_lineage_service;
+
+    /** The shared {@link TaxonomicLineageService} (NCBI-backed) used by the rank colorizer. */
+    final static synchronized TaxonomicLineageService getDefaultLineageService() {
+        if ( _default_lineage_service == null ) {
+            _default_lineage_service = new NcbiTaxonomyLineageService();
+        }
+        return _default_lineage_service;
+    }
+
     /**
-     * Colorizes subtrees by the taxonomy at the given {@code rank}. When {@code legend_out} is
-     * non-null it is filled with the taxon-name &rarr; color pairs used, so the caller can show a
-     * legend mapping colors to taxa.
+     * Colorizes the tree by taxonomic {@code rank}: every external node is assigned to the taxon it
+     * belongs to at {@code rank} (from in-tree rank annotations first, then the {@code service}'s
+     * cached lineages), then each maximal clade whose tips all share one such taxon is colored with a
+     * distinct color. Unlike the old "color the subtree of any node literally annotated at the rank"
+     * approach this places a genus-only tip (e.g. <i>Felis</i>) under its order (Carnivora) and
+     * colors paraphyletic groups as several same-colored runs. When {@code legend_out} is non-null it
+     * is filled with the taxon&rarr;color pairs used. Returns the number of colored clades.
+     *
+     * <p>Network-pure: it only reads {@code service}'s cache ({@link TaxonomicLineageService#lineageOf})
+     * and never fetches, so it is safe on the EDT and unit-testable with an in-memory service. Callers
+     * fetch unresolved taxa (see {@link #unresolvedTipTaxa}) off the EDT first, then call this again.
      */
     final static int colorPhylogenyAccordingToRanks( final Phylogeny tree,
                                                      final String rank,
-                                                     final TreePanel tree_panel,
+                                                     final TaxonomicLineageService service,
                                                      final Map<String, Color> legend_out ) {
-        final Map<String, Color> true_lineage_to_color_map = new HashMap<String, Color>();
+        final Map<PhylogenyNode, String> assignment = assignTipsToRankTaxon( tree, rank, service );
+        final SortedSet<String> taxa = new TreeSet<String>( assignment.values() );
+        final Map<String, Color> colors = AptxUtil.assignDistinctColors( taxa );
+        final Map<PhylogenyNode, String> roots = maximalMonochromaticRoots( tree, assignment );
         int colorizations = 0;
-        for( final PhylogenyNodeIterator it = tree.iteratorPostorder(); it.hasNext(); ) {
-            final PhylogenyNode n = it.next();
-            if ( n.getNodeData().isHasTaxonomy()
-                    && ( !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getScientificName() )
-                            || !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getCommonName() )
-                            || !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getTaxonomyCode() ) ) ) {
-                if ( !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getRank() )
-                        && n.getNodeData().getTaxonomy().getRank().equalsIgnoreCase( rank ) ) {
-                    final BranchColor c = new BranchColor( tree_panel
-                            .calculateTaxonomyBasedColor( n.getNodeData().getTaxonomy() ) );
-                    TreePanelUtil.colorizeSubtree( n, c );
-                    ++colorizations;
-                    // legend label: scientific name, else common name, else taxonomy code -- so taxa
-                    // identified only by a code/common name still get a legend row (for scientific
-                    // names this key also doubles as the lineage-match key used in the next pass)
-                    final String label = taxonomyLabel( n.getNodeData().getTaxonomy() );
-                    if ( !ForesterUtil.isEmpty( label ) ) {
-                        true_lineage_to_color_map.put( label, c.getValue() );
-                    }
-                }
-            }
-        }
-        for( final PhylogenyNodeIterator it = tree.iteratorPostorder(); it.hasNext(); ) {
-            final PhylogenyNode node = it.next();
-            if ( ( node.getBranchData().getBranchColor() == null ) && node.getNodeData().isHasTaxonomy()
-                    && !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getLineage() ) ) {
-                boolean success = false;
-                if ( !true_lineage_to_color_map.isEmpty() ) {
-                    for( final String lin : node.getNodeData().getTaxonomy().getLineage() ) {
-                        if ( true_lineage_to_color_map.containsKey( lin ) ) {
-                            TreePanelUtil.colorizeSubtree( node,
-                                                           new BranchColor( true_lineage_to_color_map.get( lin ) ) );
-                            ++colorizations;
-                            success = true;
-                            break;
-                        }
-                    }
-                }
-                if ( !success ) {
-                    final Map<String, String> lineage_to_rank_map = MainPanel.getLineageToRankMap();
-                    for( final String lin : node.getNodeData().getTaxonomy().getLineage() ) {
-                        final Taxonomy temp_tax = new Taxonomy();
-                        temp_tax.setScientificName( lin );
-                        if ( lineage_to_rank_map.containsKey( lin )
-                                && !ForesterUtil.isEmpty( lineage_to_rank_map.get( lin ) )
-                                && lineage_to_rank_map.get( lin ).equalsIgnoreCase( rank ) ) {
-                            final BranchColor c = new BranchColor( tree_panel.calculateTaxonomyBasedColor( temp_tax ) );
-                            TreePanelUtil.colorizeSubtree( node, c );
-                            ++colorizations;
-                            true_lineage_to_color_map.put( lin, c.getValue() );
-                            break;
-                        }
-                        else {
-                            UniProtTaxonomy up = null;
-                            try {
-                                up = TaxonomyDataManager.obtainUniProtTaxonomy( temp_tax, null, null );
-                            }
-                            catch ( final Exception e ) {
-                                e.printStackTrace();
-                            }
-                            if ( ( up != null ) && !ForesterUtil.isEmpty( up.getRank() ) ) {
-                                lineage_to_rank_map.put( lin, up.getRank() );
-                                System.out.println( lin + "->" + up.getRank() );
-                                if ( up.getRank().equalsIgnoreCase( rank ) ) {
-                                    final BranchColor c = new BranchColor( tree_panel
-                                            .calculateTaxonomyBasedColor( temp_tax ) );
-                                    TreePanelUtil.colorizeSubtree( node, c );
-                                    ++colorizations;
-                                    true_lineage_to_color_map.put( lin, c.getValue() );
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
+        for( final Entry<PhylogenyNode, String> e : roots.entrySet() ) {
+            final Color c = colors.get( e.getValue() );
+            if ( c != null ) {
+                TreePanelUtil.colorizeSubtree( e.getKey(), new BranchColor( c ) );
+                ++colorizations;
             }
         }
         if ( legend_out != null ) {
-            legend_out.putAll( true_lineage_to_color_map );
+            legend_out.putAll( colors );
         }
         return colorizations;
+    }
+
+    /**
+     * Maps each external node to its taxon at {@code rank}, omitting tips that cannot be placed.
+     * Resolution order per tip: (a) the nearest self-or-ancestor node annotated with exactly that
+     * rank (free, in-tree); (b) the tip's cached {@link RankedLineage} from {@code service} (no
+     * network here -- a cache miss simply leaves the tip unplaced).
+     */
+    final static Map<PhylogenyNode, String> assignTipsToRankTaxon( final Phylogeny tree,
+                                                                   final String rank,
+                                                                   final TaxonomicLineageService service ) {
+        final Map<PhylogenyNode, String> assignment = new HashMap<PhylogenyNode, String>();
+        if ( ( tree == null ) || tree.isEmpty() || ForesterUtil.isEmpty( rank ) ) {
+            return assignment;
+        }
+        for( final PhylogenyNodeIterator it = tree.iteratorExternalForward(); it.hasNext(); ) {
+            final PhylogenyNode tip = it.next();
+            String taxon = inTreeRankTaxon( tip, rank );
+            if ( ( taxon == null ) && ( service != null ) ) {
+                final String q = tipQueryName( tip );
+                if ( !ForesterUtil.isEmpty( q ) ) {
+                    final RankedLineage rl = service.lineageOf( q );
+                    if ( rl != null ) {
+                        taxon = rl.at( rank );
+                    }
+                }
+            }
+            if ( !ForesterUtil.isEmpty( taxon ) ) {
+                assignment.put( tip, taxon );
+            }
+        }
+        return assignment;
+    }
+
+    /** The taxon label on the nearest self-or-ancestor node carrying exactly {@code rank}, or null. */
+    final static String inTreeRankTaxon( final PhylogenyNode tip, final String rank ) {
+        for( PhylogenyNode n = tip; n != null; n = n.getParent() ) {
+            if ( n.getNodeData().isHasTaxonomy() ) {
+                final Taxonomy tax = n.getNodeData().getTaxonomy();
+                if ( !ForesterUtil.isEmpty( tax.getRank() ) && tax.getRank().equalsIgnoreCase( rank ) ) {
+                    final String label = taxonomyLabel( tax );
+                    if ( !ForesterUtil.isEmpty( label ) ) {
+                        return label;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * The most specific name to query a taxonomy DB with for {@code tip}. The tip's OWN identity is
+     * the most specific, so it is preferred (scientific name, else code, else common name, else node
+     * name); only when the tip carries no identity at all do we fall back to the nearest ancestor's
+     * scientific name (which can still place the tip at a rank at/above that ancestor). Querying an
+     * ancestor's name before the tip's own code/common name would lose specificity and mis-resolve.
+     */
+    final static String tipQueryName( final PhylogenyNode tip ) {
+        if ( tip.getNodeData().isHasTaxonomy() ) {
+            final Taxonomy tax = tip.getNodeData().getTaxonomy();
+            if ( !ForesterUtil.isEmpty( tax.getScientificName() ) ) {
+                return tax.getScientificName();
+            }
+            if ( !ForesterUtil.isEmpty( tax.getTaxonomyCode() ) ) {
+                return tax.getTaxonomyCode();
+            }
+            if ( !ForesterUtil.isEmpty( tax.getCommonName() ) ) {
+                return tax.getCommonName();
+            }
+        }
+        if ( !ForesterUtil.isEmpty( tip.getName() ) ) {
+            return tip.getName();
+        }
+        for( PhylogenyNode n = tip.getParent(); n != null; n = n.getParent() ) {
+            if ( n.getNodeData().isHasTaxonomy()
+                    && !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getScientificName() ) ) {
+                return n.getNodeData().getTaxonomy().getScientificName();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * The distinct taxon query-names of tips that are neither placeable from in-tree rank annotations
+     * nor already in {@code service}'s cache -- i.e. exactly the names a caller must
+     * {@link TaxonomicLineageService#fetch} (off the EDT) to place more tips at {@code rank}. Taxa
+     * already in the cache are excluded even if the cache lacks {@code rank} (refetching would not
+     * help), so a second call after a fetch pass returns an empty set (no repeated prompts).
+     */
+    final static SortedSet<String> unresolvedTipTaxa( final Phylogeny tree,
+                                                      final String rank,
+                                                      final TaxonomicLineageService service ) {
+        final SortedSet<String> names = new TreeSet<String>();
+        if ( ( tree == null ) || tree.isEmpty() || ForesterUtil.isEmpty( rank ) ) {
+            return names;
+        }
+        for( final PhylogenyNodeIterator it = tree.iteratorExternalForward(); it.hasNext(); ) {
+            final PhylogenyNode tip = it.next();
+            if ( inTreeRankTaxon( tip, rank ) != null ) {
+                continue;
+            }
+            final String q = tipQueryName( tip );
+            if ( ForesterUtil.isEmpty( q ) ) {
+                continue;
+            }
+            if ( ( service != null ) && ( service.lineageOf( q ) != null ) ) {
+                continue; // already attempted/cached -- refetching would not help
+            }
+            names.add( q );
+        }
+        return names;
+    }
+
+    /**
+     * Each node that roots a <i>maximal</i> clade whose external descendants all share one rank
+     * taxon, mapped to that taxon. A node qualifies iff its whole subtree is uniform in
+     * {@code assignment} and its parent's subtree is not the same taxon (so only the topmost such
+     * node is returned). Handles paraphyly: a taxon split across the tree yields several roots, all
+     * mapping to the same taxon (hence the same color). A tip with no assignment breaks uniformity,
+     * so an unplaced tip is never swept into a neighboring clade's color.
+     */
+    final static Map<PhylogenyNode, String> maximalMonochromaticRoots( final Phylogeny tree,
+                                                                       final Map<PhylogenyNode, String> assignment ) {
+        final Map<PhylogenyNode, String> subtree = new HashMap<PhylogenyNode, String>();
+        final Map<PhylogenyNode, String> roots = new LinkedHashMap<PhylogenyNode, String>();
+        if ( ( tree == null ) || tree.isEmpty() ) {
+            return roots;
+        }
+        for( final PhylogenyNodeIterator it = tree.iteratorPostorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if ( n.isExternal() ) {
+                final String t = assignment.get( n );
+                subtree.put( n, ( t != null ) ? t : MIXED_TAXON );
+            }
+            else {
+                String uniform = null;
+                boolean mixed = false;
+                for( final PhylogenyNode c : n.getDescendants() ) {
+                    final String cs = subtree.get( c );
+                    if ( ( cs == null ) || cs.equals( MIXED_TAXON ) ) {
+                        mixed = true;
+                        break;
+                    }
+                    if ( uniform == null ) {
+                        uniform = cs;
+                    }
+                    else if ( !uniform.equals( cs ) ) {
+                        mixed = true;
+                        break;
+                    }
+                }
+                subtree.put( n, ( !mixed && ( uniform != null ) ) ? uniform : MIXED_TAXON );
+            }
+        }
+        for( final PhylogenyNodeIterator it = tree.iteratorPostorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            final String t = subtree.get( n );
+            if ( ( t != null ) && !t.equals( MIXED_TAXON ) ) {
+                final PhylogenyNode p = n.getParent();
+                if ( ( p == null ) || !t.equals( subtree.get( p ) ) ) {
+                    roots.put( n, t );
+                }
+            }
+        }
+        return roots;
     }
 
     /**

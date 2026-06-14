@@ -37,10 +37,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriter;
@@ -132,6 +134,31 @@ public final class AptxUtil {
             third = 255;
         }
         return new Color(first, second, third);
+    }
+
+    /**
+     * Assigns each taxon a visually distinct color from a qualitative palette: hues spread evenly
+     * around the wheel with a slight saturation/brightness alternation so adjacent entries separate
+     * further. Deterministic in the input's (sorted) iteration order, so the same set of taxa always
+     * yields the same colors and exports are reproducible. Used by the rank colorizer instead of
+     * {@link #calculateColorFromString} (which derives a color from a name's spelling, so similar
+     * names collide into near-identical, muddy colors). Returns a map in the same order as the input.
+     */
+    final static Map<String, Color> assignDistinctColors(final SortedSet<String> taxa) {
+        final Map<String, Color> result = new LinkedHashMap<String, Color>();
+        if ((taxa == null) || taxa.isEmpty()) {
+            return result;
+        }
+        final int n = taxa.size();
+        int i = 0;
+        for (final String taxon : taxa) {
+            final float hue = (float) i / (float) n;
+            final float sat = ((i % 2) == 0) ? 0.75f : 0.95f;
+            final float bri = ((i % 2) == 0) ? 0.95f : 0.78f;
+            result.put(taxon, Color.getHSBColor(hue, sat, bri));
+            ++i;
+        }
+        return result;
     }
 
     public static MaskFormatter createMaskFormatter(final String s) {
@@ -767,28 +794,41 @@ public final class AptxUtil {
 
 
 
+
+    // The major Linnaean ranks the rank-colorization chooser always offers (the taxonomy DB can
+    // resolve a tip to any of them), even when no node in the tree is annotated at that rank -- so a
+    // genus/species-only tree can still be colored by, say, order. NCBI uses "superkingdom" for the
+    // domain level, hence its inclusion here rather than "domain".
+    private static final Set<String> OFFERABLE_RANKS = new HashSet<String>(Arrays.asList("superkingdom",
+                                                                                         "kingdom",
+                                                                                         "phylum",
+                                                                                         "class",
+                                                                                         "order",
+                                                                                         "family",
+                                                                                         "genus",
+                                                                                         "species"));
+
     /**
-     * The taxonomic ranks that can actually drive a subtree colorization: those present on internal
-     * nodes with a count &gt; 0 in {@code present_ranks}, each labeled
-     * {@code "rank (count) (P% coverage)"}, in canonical rank order (e.g. order before family before
-     * genus). {@code count} is how many internal nodes carry the rank; {@code P} is the share of
-     * external nodes the rank would color (from {@code coverage_counts} / {@code total_external}).
-     * Ranks not present, ranks with a zero count, and the UNKNOWN/OTHER pseudo-ranks are omitted;
-     * returns an empty array when nothing is colorizable.
+     * The ranks to offer in the "Colorize Subtrees via Taxonomic Rank" chooser, in canonical order:
+     * every rank actually present on the tree (labeled {@code "rank (count) (P% coverage)"}) plus the
+     * major Linnaean ranks ({@link #OFFERABLE_RANKS}) even when absent (labeled plainly). The latter
+     * is the key change behind the colorizer fix: a tip can be placed at a rank via the taxonomy DB
+     * even when no node is literally annotated at that rank, so the chooser must offer it regardless.
      */
-    final static String[] getColorizableRanks(final Map<String, Integer> present_ranks,
-                                              final Map<String, Integer> coverage_counts,
-                                              final int total_external) {
+    final static String[] getRankChoices(final Map<String, Integer> present_ranks,
+                                         final Map<String, Integer> coverage_counts,
+                                         final int total_external) {
         final List<String> ranks = new ArrayList<String>();
-        if (present_ranks != null) {
-            for (final String e : TaxonomyUtil.TAXONOMY_RANKS_LIST) {
-                if (!e.equals(TaxonomyUtil.UNKNOWN) && !e.equals(TaxonomyUtil.OTHER)) {
-                    final Integer count = present_ranks.get(e);
-                    if ((count != null) && (count > 0)) {
-                        final Integer covered = (coverage_counts == null) ? null : coverage_counts.get(e);
-                        ranks.add(e + " (" + count + ") (" + coveragePercentLabel(covered, total_external) + " coverage)");
-                    }
-                }
+        for (final String e : TaxonomyUtil.TAXONOMY_RANKS_LIST) {
+            if (e.equals(TaxonomyUtil.UNKNOWN) || e.equals(TaxonomyUtil.OTHER)) {
+                continue;
+            }
+            final Integer count = (present_ranks == null) ? null : present_ranks.get(e);
+            if ((count != null) && (count > 0)) {
+                final Integer covered = (coverage_counts == null) ? null : coverage_counts.get(e);
+                ranks.add(e + " (" + count + ") (" + coveragePercentLabel(covered, total_external) + " coverage)");
+            } else if (OFFERABLE_RANKS.contains(e)) {
+                ranks.add(e);
             }
         }
         return ranks.toArray(new String[0]);
