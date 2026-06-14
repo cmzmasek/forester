@@ -27,10 +27,10 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -265,33 +265,6 @@ public class TreePanelUtil {
         JOptionPane.showMessageDialog( parent, msg, title, JOptionPane.INFORMATION_MESSAGE );
     }
 
-    final static void collapseSpeciesSpecificSubtrees( final Phylogeny phy ) {
-        boolean inferred = false;
-        for( final PhylogenyNodeIterator iter = phy.iteratorPreorder(); iter.hasNext(); ) {
-            iter.next().setCollapse( false );
-        }
-        for( final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
-            final PhylogenyNode n = it.next();
-            if ( !n.isExternal() && !n.isCollapse() && ( n.getNumberOfDescendants() > 1 ) ) {
-                final Set<Taxonomy> taxs = PhylogenyMethods.obtainDistinctTaxonomies( n );
-                if ( ( taxs != null ) && ( taxs.size() == 1 ) ) {
-                    TreePanelUtil.collapseSubtree( n, true );
-                    if ( !n.getNodeData().isHasTaxonomy() ) {
-                        n.getNodeData().setTaxonomy( ( Taxonomy ) n.getAllExternalDescendants().get( 0 ).getNodeData()
-                                .getTaxonomy().copy() );
-                    }
-                    inferred = true;
-                }
-                else {
-                    n.setCollapse( false );
-                }
-            }
-        }
-        if ( inferred ) {
-            phy.setRerootable( false );
-        }
-    }
-
     final static void collapseSubtree( final PhylogenyNode node, final boolean collapse ) {
         node.setCollapse( collapse );
         if ( node.isExternal() ) {
@@ -322,56 +295,87 @@ public class TreePanelUtil {
         }
     }
 
-    final static void colorPhylogenyAccordingToConfidenceValues( final Phylogeny tree, final TreePanel tree_panel ) {
-        double max_conf = 0.0;
-        for( final PhylogenyNodeIterator it = tree.iteratorPreorder(); it.hasNext(); ) {
-            final PhylogenyNode n = it.next();
-            n.getBranchData().setBranchColor( null );
-            if ( n.getBranchData().isHasConfidences() ) {
-                final double conf = PhylogenyMethods.getConfidenceValue( n );
-                if ( conf > max_conf ) {
-                    max_conf = conf;
-                }
-            }
-        }
-        if ( max_conf > 0.0 ) {
-            final Color bg = tree_panel.getTreeColorSet().getBackgroundColor();
-            final Color br = tree_panel.getTreeColorSet().getBranchColor();
-            for( final PhylogenyNodeIterator it = tree.iteratorPreorder(); it.hasNext(); ) {
-                final PhylogenyNode n = it.next();
-                if ( n.getBranchData().isHasConfidences() ) {
-                    final double conf = PhylogenyMethods.getConfidenceValue( n );
-                    final BranchColor c = new BranchColor( ForesterUtil.calcColor( conf, 0.0, max_conf, bg, br ) );
-                    TreePanelUtil.colorizeSubtree( n, c );
-                }
-            }
-        }
+    // --- Node-symbol support visualization (see TreePanel.paintNodeSupportSymbol) -----------------
+    // Support values come on different absolute scales -- posterior probabilities and aLRT in 0..1,
+    // bootstrap and SH-aLRT in 0..100. We pick the scale ceiling from the data (anything above 1
+    // implies the 0..100 family) rather than normalizing to the max observed value, so a given
+    // symbol size/threshold means the same thing across trees.
+
+    /** The support-scale ceiling implied by the largest value present: 100 if any value exceeds 1, else 1. */
+    final static double confidenceScaleMaxFor( final double observed_max ) {
+        return ( observed_max > 1.0 ) ? 100.0 : 1.0;
     }
 
-    final static void colorPhylogenyAccordingToExternalTaxonomy( final Phylogeny tree, final TreePanel tree_panel ) {
-        for( final PhylogenyNodeIterator it = tree.iteratorPreorder(); it.hasNext(); ) {
-            it.next().getBranchData().setBranchColor( null );
-        }
+    /** Scans a tree's internal-node confidences and returns the implied scale ceiling (1 or 100). */
+    final static double detectConfidenceScaleMax( final Phylogeny tree ) {
+        double max = 0.0;
         for( final PhylogenyNodeIterator it = tree.iteratorPreorder(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
-            if ( !n.getBranchData().isHasBranchColor() ) {
-                final Taxonomy tax = PhylogenyMethods.getExternalDescendantsTaxonomy( n );
-                if ( tax != null ) {
-                    n.getBranchData()
-                            .setBranchColor( new BranchColor( tree_panel.calculateTaxonomyBasedColor( tax ) ) );
-                    final List<PhylogenyNode> descs = PhylogenyMethods.getAllDescendants( n );
-                    for( final PhylogenyNode desc : descs ) {
-                        desc.getBranchData()
-                                .setBranchColor( new BranchColor( tree_panel.calculateTaxonomyBasedColor( tax ) ) );
-                    }
+            if ( n.isInternal() && n.getBranchData().isHasConfidences() ) {
+                final double c = PhylogenyMethods.getConfidenceValue( n );
+                if ( c > max ) {
+                    max = c;
                 }
             }
         }
+        return confidenceScaleMaxFor( max );
     }
 
+    /** Support as a fraction of the scale ceiling, clamped to 0..1. */
+    final static double supportFraction( final double confidence, final double scale_max ) {
+        if ( scale_max <= 0.0 ) {
+            return 0.0;
+        }
+        final double f = confidence / scale_max;
+        if ( f < 0.0 ) {
+            return 0.0;
+        }
+        if ( f > 1.0 ) {
+            return 1.0;
+        }
+        return f;
+    }
+
+    /** SIZE_SCALED diameter: linearly interpolates min..max by the support fraction. */
+    final static float supportSymbolSize( final double confidence,
+                                          final double scale_max,
+                                          final float min_size,
+                                          final float max_size ) {
+        return (float) ( min_size + ( supportFraction( confidence, scale_max ) * ( max_size - min_size ) ) );
+    }
+
+    /** THRESHOLD_MARKS test: is the support at or above the cutoff (a fraction 0..1 of the scale)? */
+    final static boolean isSupportAtOrAboveThreshold( final double confidence,
+                                                      final double scale_max,
+                                                      final double threshold_fraction ) {
+        return supportFraction( confidence, scale_max ) >= threshold_fraction;
+    }
+
+    /** The best display label for a taxonomy: scientific name, else common name, else taxonomy code, else "". */
+    final static String taxonomyLabel( final Taxonomy tax ) {
+        if ( tax != null ) {
+            if ( !ForesterUtil.isEmpty( tax.getScientificName() ) ) {
+                return tax.getScientificName();
+            }
+            if ( !ForesterUtil.isEmpty( tax.getCommonName() ) ) {
+                return tax.getCommonName();
+            }
+            if ( !ForesterUtil.isEmpty( tax.getTaxonomyCode() ) ) {
+                return tax.getTaxonomyCode();
+            }
+        }
+        return "";
+    }
+
+    /**
+     * Colorizes subtrees by the taxonomy at the given {@code rank}. When {@code legend_out} is
+     * non-null it is filled with the taxon-name &rarr; color pairs used, so the caller can show a
+     * legend mapping colors to taxa.
+     */
     final static int colorPhylogenyAccordingToRanks( final Phylogeny tree,
                                                      final String rank,
-                                                     final TreePanel tree_panel ) {
+                                                     final TreePanel tree_panel,
+                                                     final Map<String, Color> legend_out ) {
         final Map<String, Color> true_lineage_to_color_map = new HashMap<String, Color>();
         int colorizations = 0;
         for( final PhylogenyNodeIterator it = tree.iteratorPostorder(); it.hasNext(); ) {
@@ -386,9 +390,12 @@ public class TreePanelUtil {
                             .calculateTaxonomyBasedColor( n.getNodeData().getTaxonomy() ) );
                     TreePanelUtil.colorizeSubtree( n, c );
                     ++colorizations;
-                    if ( !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getScientificName() ) ) {
-                        true_lineage_to_color_map.put( n.getNodeData().getTaxonomy().getScientificName(),
-                                                       c.getValue() );
+                    // legend label: scientific name, else common name, else taxonomy code -- so taxa
+                    // identified only by a code/common name still get a legend row (for scientific
+                    // names this key also doubles as the lineage-match key used in the next pass)
+                    final String label = taxonomyLabel( n.getNodeData().getTaxonomy() );
+                    if ( !ForesterUtil.isEmpty( label ) ) {
+                        true_lineage_to_color_map.put( label, c.getValue() );
                     }
                 }
             }
@@ -448,7 +455,28 @@ public class TreePanelUtil {
                 }
             }
         }
+        if ( legend_out != null ) {
+            legend_out.putAll( true_lineage_to_color_map );
+        }
         return colorizations;
+    }
+
+    /**
+     * The first {@code max} entries of {@code in} in iteration order, for capping a legend; an
+     * unmodifiable view is not needed -- callers treat it read-only. Used to bound the rank legend.
+     */
+    final static Map<String, Color> capEntries( final Map<String, Color> in, final int max ) {
+        final Map<String, Color> out = new LinkedHashMap<String, Color>();
+        if ( in != null ) {
+            int i = 0;
+            for( final Entry<String, Color> e : in.entrySet() ) {
+                if ( i++ >= max ) {
+                    break;
+                }
+                out.put( e.getKey(), e.getValue() );
+            }
+        }
+        return out;
     }
 
     final static boolean isHasAssignedEvent( final PhylogenyNode node ) {

@@ -342,6 +342,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private float _x_correction_factor = 0.0f;
     private float _x_distance = 0.0f;
     private float _y_distance = 0.0f;
+    // support-scale ceiling (1 or 100) for node-symbol support visualization; recomputed per paint
+    private double _confidence_scale_max = 1.0;
     private int _length_of_longest_text;
     private int _longest_domain;
     private Map<String, AttributedString> _attributed_string_map = null;
@@ -2462,6 +2464,57 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     /**
+     * Draws the branch-support (confidence) symbol at an internal node, per the
+     * {@link Options.SUPPORT_VISUALIZATION} mode. Monochrome (branch color) so it does not compete
+     * with clade/taxonomy coloring; uses the absolute support scale (1 or 100, detected per paint
+     * into {@code _confidence_scale_max}) rather than normalizing to the maximum present, so a given
+     * symbol means the same thing across trees. THRESHOLD_MARKS draws a fixed dot only at or above
+     * the cutoff; SIZE_SCALED draws a dot whose diameter grows with support.
+     */
+    final private void paintNodeSupportSymbol(final float x,
+                                              final float y,
+                                              final PhylogenyNode node,
+                                              final Graphics2D g,
+                                              final boolean to_pdf,
+                                              final boolean to_graphics_file) {
+        final Options.SUPPORT_VISUALIZATION mode = getOptions().getSupportVisualization();
+        if ((mode == Options.SUPPORT_VISUALIZATION.NONE) || node.isExternal()
+                || !node.getBranchData().isHasConfidences()) {
+            return;
+        }
+        final double conf = PhylogenyMethods.getConfidenceValue(node);
+        if (conf < 0.0) {
+            return;
+        }
+        final float diameter;
+        if (mode == Options.SUPPORT_VISUALIZATION.THRESHOLD_MARKS) {
+            if (!TreePanelUtil.isSupportAtOrAboveThreshold(conf, _confidence_scale_max,
+                    getOptions().getSupportThreshold())) {
+                return;
+            }
+            diameter = AptxConstants.SUPPORT_SYMBOL_MAX_DIAMETER;
+        } else {
+            diameter = TreePanelUtil.supportSymbolSize(conf,
+                    _confidence_scale_max,
+                    AptxConstants.SUPPORT_SYMBOL_MIN_DIAMETER,
+                    AptxConstants.SUPPORT_SYMBOL_MAX_DIAMETER);
+            if (diameter <= 0.0f) {
+                return;
+            }
+        }
+        Color c = getGraphicsForNodeBoxWithColorForParentBranch(node);
+        if (to_pdf && (c == getTreeColorSet().getBranchColor())) {
+            c = getTreeColorSet().getBranchColorForPdf();
+        }
+        if ((to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite()) {
+            c = Color.BLACK;
+        }
+        g.setColor(c);
+        final float half = diameter / 2.0f;
+        drawOvalFilled(x - half, y - half, diameter, diameter, g);
+    }
+
+    /**
      * Draw a box at the indicated node.
      *
      * @param x
@@ -2478,6 +2531,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (node.isCollapse()) {
             return;
         }
+        paintNodeSupportSymbol(x, y, node, g, to_pdf, to_graphics_file);
         if ((isInFoundNodes(node) || isInCurrentExternalNodes(node))
                 || (getOptions().isShowDefaultNodeShapesExternal() && node.isExternal())
                 || (getOptions().isShowDefaultNodeShapesInternal() && node.isInternal())
@@ -4618,15 +4672,20 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private java.util.List<String> _legend_row_labels   = new java.util.ArrayList<>();
     private int                 _legend_rows_top    = 0;
     private int                 _legend_row_height  = 0;
+    // Legend for "Colorize Subtrees via Taxonomic Rank": taxon name -> color (sorted), with a title.
+    // Shown (and draggable, via the same machinery as the property legend) when no property-color
+    // legend is active. Null when not colorizing by rank.
+    private Map<String, Color>  _rank_legend = null;
+    private String              _rank_legend_title = null;
 
     /** The on-screen bounds of the last-drawn property-color legend, or null; used by the drag test. */
     final Rectangle getPropertyLegendBounds() {
         return _property_legend_bounds;
     }
 
-    /** Whether the point of {@code e} is over the (last-drawn) property-color legend box. */
+    /** Whether the point of {@code e} is over the (last-drawn) legend box (property-color or rank). */
     final boolean isOnPropertyLegend(final MouseEvent e) {
-        return (_property_color_scheme != null) && (_property_legend_bounds != null)
+        return ((_property_color_scheme != null) || hasRankLegend()) && (_property_legend_bounds != null)
                 && _property_legend_bounds.contains(e.getX(), e.getY());
     }
 
@@ -4666,8 +4725,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (!isOnPropertyLegend(e) || _legend_row_labels.isEmpty() || (_legend_row_height <= 0)) {
             return null;
         }
+        if (e.getY() < _legend_rows_top) {
+            return null; // the title row / padding above the first value row (avoids a negative index truncating to 0)
+        }
         final int idx = (e.getY() - _legend_rows_top) / _legend_row_height;
-        return ((idx >= 0) && (idx < _legend_row_labels.size())) ? _legend_row_labels.get(idx) : null;
+        return (idx < _legend_row_labels.size()) ? _legend_row_labels.get(idx) : null;
     }
 
     final void handleLegendClick(final MouseEvent e) {
@@ -4780,7 +4842,22 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     /** Colorize leaves by the given property reference, or turn it off when {@code ref} is empty. */
     void setColorByPropertyRef(final String ref) {
         _color_by_property_ref = ForesterUtil.isEmpty(ref) ? null : ref;
+        if (_color_by_property_ref != null) {
+            clearRankLegend(); // the property-color legend takes over the (single) legend slot
+        }
         rebuildPropertyColorScheme();
+    }
+
+    /** Hides the taxonomic-rank legend (after colors are cleared, or another coloring takes over). */
+    final void clearRankLegend() {
+        _rank_legend = null;
+        _rank_legend_title = null;
+        repaint();
+    }
+
+    /** Whether a taxonomic-rank legend is currently available to show. */
+    final boolean hasRankLegend() {
+        return (_rank_legend != null) && !_rank_legend.isEmpty();
     }
 
     String getColorPaletteName() {
@@ -4857,10 +4934,30 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         // the most frequent values (what is most visible on the tree), re-sorted alphabetically
         final Map<String, Color> values = _property_color_scheme.legendValues(PROPERTY_LEGEND_MAX_ENTRIES);
-        final Map<String, Integer> counts = _property_color_scheme.getValueCounts();
-        final int total = _property_color_scheme.numberOfValues();
+        final int more = _property_color_scheme.numberOfValues() - values.size();
+        final String title = "Color by: " + PropertyColorScheme.displayName(_property_color_scheme.getRef());
+        drawCategoricalLegend(g, bounds, draggable, title, values, _property_color_scheme.getValueCounts(), more);
+    }
+
+    /** Draws the "Colorize Subtrees via Taxonomic Rank" legend (taxon -> color); draggable. */
+    private void drawRankLegend(final Graphics2D g, final Rectangle bounds, final boolean draggable) {
+        if (!hasRankLegend()) {
+            return;
+        }
+        final Map<String, Color> values = TreePanelUtil.capEntries(_rank_legend, PROPERTY_LEGEND_MAX_ENTRIES);
+        drawCategoricalLegend(g, bounds, draggable, _rank_legend_title, values, null, _rank_legend.size() - values.size());
+    }
+
+    /**
+     * Draws a boxed title plus swatch/label rows for an ordered value-to-color map, with an optional
+     * "+N more" footer. Shared by the property-color and taxonomic-rank legends. {@code counts} may be
+     * null (then rows show no count). When {@code draggable}, records the on-screen bounds and row
+     * layout so the shared drag/hit-test machinery can map a click back to this legend.
+     */
+    private void drawCategoricalLegend(final Graphics2D g, final Rectangle bounds, final boolean draggable,
+                                       final String title, final Map<String, Color> values,
+                                       final Map<String, Integer> counts, final int more) {
         final int shown = values.size();
-        final int more = total - shown;
         final int swatch = 10;
         final int gap = 5;
         final int pad = 7;
@@ -4868,7 +4965,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.setFont(legendFont());
         final FontMetrics fm = g.getFontMetrics();
         final int row_h = fm.getHeight() + 2;
-        final String title = "Color by: " + PropertyColorScheme.displayName(_property_color_scheme.getRef());
         int text_w = fm.stringWidth(title);
         for (final String v : values.keySet()) {
             text_w = Math.max(text_w, swatch + gap + fm.stringWidth(legendRowText(v, counts, fm, max_text_px)));
@@ -4877,7 +4973,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             text_w = Math.max(text_w, fm.stringWidth("… +" + more + " more"));
         }
         // a few extra px on the right so the longest value clears the border even
-        // when PDF/iText font metrics run slightly wider than AWT's stringWidth().
+        // when PDF font metrics run slightly wider than AWT's stringWidth().
         final int box_w = text_w + (2 * pad) + 4;
         final int box_h = ((1 + shown + (more > 0 ? 1 : 0)) * row_h) + (2 * pad);
         final Point tl = legendTopLeft(bounds, box_w, box_h);
@@ -4914,10 +5010,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.setStroke(saved_stroke);
     }
 
-    /** A legend row: the (clipped) value label followed by its leaf count, e.g. {@code "USA (42)"}. */
+    /** A legend row: the (clipped) value label followed by its count, e.g. {@code "USA (42)"}. */
     private String legendRowText(final String value, final Map<String, Integer> counts, final FontMetrics fm,
                                  final int max_px) {
-        final Integer count = counts.get(value);
+        final Integer count = (counts == null) ? null : counts.get(value);
         return clipToWidth(value, fm, max_px) + ((count != null) ? (" (" + count + ")") : "");
     }
 
@@ -5052,30 +5148,30 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
-    final void collapseSpeciesSpecificSubtrees() {
-        if ((_phylogeny == null) || (_phylogeny.getNumberOfExternalNodes() < 2)) {
-            return;
-        }
-        setWaitCursor();
-        TreePanelUtil.collapseSpeciesSpecificSubtrees(_phylogeny);
-        updateSetOfCollapsedExternalNodes();
-        _phylogeny.recalculateNumberOfExternalDescendants(true);
-        resetNodeIdToDistToLeafMap();
-        calculateLongestExtNodeInfo();
-        setNodeInPreorderToNull();
-        resetPreferredSize();
-        _main_panel.adjustJScrollPane();
-        getControlPanel().showWhole();
-        setArrowCursor();
-    }
 
-    final void colorRank(final String rank) {
+    /**
+     * Colorizes subtrees by taxonomic {@code rank} and builds the movable taxon-&gt;color legend
+     * (sorted by taxon name). UI-free; returns the number of colorized subtrees. {@link #colorRank}
+     * wraps this with the user-facing result dialogs.
+     */
+    final int colorByRank(final String rank) {
         if ((_phylogeny == null) || (_phylogeny.getNumberOfExternalNodes() < 2)) {
-            return;
+            return 0;
         }
         setWaitCursor();
+        // a rank colorization takes over branch coloring, so turn off any active color-by-property
+        // (otherwise its legend would be drawn over the rank-colored branches) and sync the dropdown
+        setColorByPropertyRef(null);
+        _control_panel.populateColorByPropertyBox();
         AptxUtil.removeBranchColors(_phylogeny);
-        final int colorizations = TreePanelUtil.colorPhylogenyAccordingToRanks(_phylogeny, rank, this);
+        _rank_legend = null;
+        _rank_legend_title = null;
+        final Map<String, Color> legend = new HashMap<>();
+        final int colorizations = TreePanelUtil.colorPhylogenyAccordingToRanks(_phylogeny, rank, this, legend);
+        if (!legend.isEmpty()) {
+            _rank_legend = new java.util.TreeMap<>(legend); // sorted by taxon name
+            _rank_legend_title = "Taxonomy: " + rank;
+        }
         if (colorizations > 0) {
             _control_panel.setColorBranches(true);
             if (_control_panel.getUseVisualStylesCb() != null) {
@@ -5089,6 +5185,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         setArrowCursor();
         repaint();
+        return colorizations;
+    }
+
+    final void colorRank(final String rank) {
+        final int colorizations = colorByRank(rank);
         if (colorizations > 0) {
             String msg = "Taxonomy colorization via " + rank + " completed:\n";
             if (colorizations > 1) {
@@ -5112,21 +5213,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             JOptionPane
                     .showMessageDialog(this, msg, "Taxonomy Rank-Colorization Failed", JOptionPane.WARNING_MESSAGE);
         }
-    }
-
-    final void confColor() {
-        if ((_phylogeny == null) || (_phylogeny.getNumberOfExternalNodes() < 2)) {
-            return;
-        }
-        setWaitCursor();
-        AptxUtil.removeBranchColors(_phylogeny);
-        TreePanelUtil.colorPhylogenyAccordingToConfidenceValues(_phylogeny, this);
-        _control_panel.setColorBranches(true);
-        if (_control_panel.getUseVisualStylesCb() != null) {
-            _control_panel.getUseVisualStylesCb().setSelected(true);
-        }
-        setArrowCursor();
-        repaint();
     }
 
     final void decreaseDomainStructureEvalueThresholdExp() {
@@ -5762,6 +5848,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ((_phylogeny == null) || _phylogeny.isEmpty()) {
             return;
         }
+        _confidence_scale_max = (getOptions().getSupportVisualization() != Options.SUPPORT_VISUALIZATION.NONE)
+                ? TreePanelUtil.detectConfidenceScaleMax(_phylogeny)
+                : 1.0;
         if (_control_panel.isShowSequenceRelations()) {
             _query_sequence = _control_panel.getSelectedQuerySequence();
         }
@@ -5957,12 +6046,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 paintOvRectangle(g);
             }
         }
-        if (isColorByProperty()) {
+        if (isColorByProperty() || hasRankLegend()) {
             final boolean to_screen = !(to_pdf || to_graphics_file);
             final Rectangle legend_bounds = to_screen
                     ? getVisibleRect()
                     : new Rectangle(graphics_file_x, graphics_file_y, graphics_file_width, graphics_file_height);
-            drawPropertyColorLegend(g, legend_bounds, to_screen);
+            // one legend slot; the property-color legend wins if both are somehow active
+            if (isColorByProperty()) {
+                drawPropertyColorLegend(g, legend_bounds, to_screen);
+            } else {
+                drawRankLegend(g, legend_bounds, to_screen);
+            }
         }
     }
 
@@ -6341,20 +6435,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         repaint();
     }
 
-    final void taxColor() {
-        if ((_phylogeny == null) || (_phylogeny.getNumberOfExternalNodes() < 2)) {
-            return;
-        }
-        setWaitCursor();
-        TreePanelUtil.colorPhylogenyAccordingToExternalTaxonomy(_phylogeny, this);
-        _control_panel.setColorBranches(true);
-        if (_control_panel.getUseVisualStylesCb() != null) {
-            _control_panel.getUseVisualStylesCb().setSelected(true);
-        }
-        setEdited(true);
-        setArrowCursor();
-        repaint();
-    }
 
     final void updateOvSettings() {
         switch (getOptions().getOvPlacement()) {

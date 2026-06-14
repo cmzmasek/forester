@@ -29,7 +29,7 @@ import org.forester.util.ForesterConstants;
 public final class AptxConstants {
 
     public final static String PRG_NAME = "Archaeopteryx";
-    final static String VERSION = "0.9.15";
+    final static String VERSION = "0.9.16";
     final static String PRG_DATE = "2026-06-13";
     final static String DEFAULT_CONFIGURATION_FILE_NAME = "_aptx_configuration_file";
     final static String[] DEFAULT_FONT_CHOICES = {
@@ -90,4 +90,9 @@ public final class AptxConstants {
             0);
     final static short DEFAULT_NODE_SHAPE_SIZE_DEFAULT = 7;
     static final int MAX_LENGTH_FOR_COLLAPSED_NAME = 8;
+    // Diameters (in tree coordinate space, so they scale with zoom like node shapes) of the
+    // internal-node support symbols: the smallest dot drawn for low support in SIZE_SCALED mode,
+    // and the fixed dot for THRESHOLD_MARKS / full support.
+    public final static float SUPPORT_SYMBOL_MIN_DIAMETER = 2.0f;
+    public final static float SUPPORT_SYMBOL_MAX_DIAMETER = 8.0f;
 }

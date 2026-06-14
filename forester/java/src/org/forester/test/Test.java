@@ -255,6 +255,30 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Node support symbol: ");
+        if (org.forester.archaeopteryx.NodeSupportSymbolTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Rank legend: ");
+        if (org.forester.archaeopteryx.RankLegendTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Collapse menu font: ");
+        if (org.forester.archaeopteryx.CollapseMenuFontTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Aptx util: ");
         if (org.forester.archaeopteryx.AptxUtilTest.test()) {
             System.out.println("OK.");

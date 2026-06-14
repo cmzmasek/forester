@@ -46,6 +46,7 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.SpinnerNumberModel;
 
 import org.forester.archaeopteryx.Options.OVERVIEW_PLACEMENT_TYPE;
+import org.forester.archaeopteryx.Options.SUPPORT_VISUALIZATION;
 import org.forester.phylogeny.data.NodeDataField;
 import org.forester.phylogeny.data.NodeVisualData.NodeFill;
 import org.forester.phylogeny.data.NodeVisualData.NodeShape;
@@ -133,6 +134,11 @@ final class SettingsDialog extends JDialog {
                                                          v -> { _mf.getOptions().setDefaultBranchWidth( v.floatValue() ); repaintTree(); } ) ) );
         add( c, labeled( "Min. confidence shown:", doubleSpinner( _mf.getOptions().getMinConfidenceValue(), 0, 1.0E8, 0.1,
                                                                   v -> { _mf.getOptions().setMinConfidenceValue( v ); repaintTree(); } ) ) );
+        add( c, labeled( "Support symbols:", enumCombo( SUPPORT_VISUALIZATION.values(),
+                                                        _mf.getOptions().getSupportVisualization(),
+                                                        v -> { _mf.getOptions().setSupportVisualization( v ); repaintTree(); } ) ) );
+        add( c, labeled( "Support threshold (0–1):", doubleSpinner( _mf.getOptions().getSupportThreshold(), 0, 1.0, 0.05,
+                                                                       v -> { _mf.getOptions().setSupportThreshold( v ); repaintTree(); } ) ) );
         c.add( header( "Colors & Font" ) );
         add( c, labeled( "Color scheme:", button( "Choose…", () -> _mf.switchColors() ) ) );
         add( c, labeled( "Tree font:", button( "Choose…", () -> _mf.chooseFont() ) ) );

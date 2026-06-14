@@ -76,7 +76,29 @@ final public class Options {
         }
     }
 
+    // How branch support (confidence) at internal nodes is drawn as a node symbol. Monochrome by
+    // design (uses the branch color) so the color channel stays free for clade/taxonomy identity.
+    static enum SUPPORT_VISUALIZATION {
+        NONE("none"),
+        THRESHOLD_MARKS("threshold marks"),
+        SIZE_SCALED("size-scaled");
+
+        private final String _name;
+
+        private SUPPORT_VISUALIZATION(final String name) {
+            _name = name;
+        }
+
+        @Override
+        public String toString() {
+            return _name;
+        }
+    }
+
     static final double MIN_CONFIDENCE_DEFAULT = 50.0;
+    // Default cutoff for THRESHOLD_MARKS, as a fraction (0..1) of the support scale -- 0.95 marks
+    // the conventional "well-supported" node (>=95% bootstrap or >=0.95 posterior probability).
+    static final double SUPPORT_THRESHOLD_DEFAULT = 0.95;
     private boolean _abbreviate_scientific_names;
     private boolean _allow_errors_in_distance_to_parent;
     private boolean _antialias_print;
@@ -98,6 +120,8 @@ final public class Options {
     private boolean _match_whole_terms_only;
     private boolean _search_with_regex;
     private double _min_confidence_value;
+    private SUPPORT_VISUALIZATION _support_visualization;
+    private double _support_threshold;
     private NH_CONVERSION_SUPPORT_VALUE_STYLE _nh_conversion_support_value_style;
     private boolean _nh_parsing_replace_underscores;
     private NODE_LABEL_DIRECTION _node_label_direction;
@@ -208,6 +232,8 @@ final public class Options {
         _color_all_found_nodes_when_coloring_subtree = false;
         _parse_beast_style_extended_nexus_tags = true;
         _min_confidence_value = MIN_CONFIDENCE_DEFAULT;
+        _support_visualization = SUPPORT_VISUALIZATION.NONE;
+        _support_threshold = SUPPORT_THRESHOLD_DEFAULT;
         _print_black_and_white = false;
         _phylogeny_graphics_type = PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR;
         _base_font = new Font(Configuration.getDefaultFontFamilyName(), Font.PLAIN, 10);
@@ -270,6 +296,14 @@ final public class Options {
 
     final double getMinConfidenceValue() {
         return _min_confidence_value;
+    }
+
+    final SUPPORT_VISUALIZATION getSupportVisualization() {
+        return _support_visualization;
+    }
+
+    final double getSupportThreshold() {
+        return _support_threshold;
     }
 
     NH_CONVERSION_SUPPORT_VALUE_STYLE getNhConversionSupportValueStyle() {
@@ -479,6 +513,14 @@ final public class Options {
 
     final void setMinConfidenceValue(final double min_confidence_value) {
         _min_confidence_value = min_confidence_value;
+    }
+
+    final void setSupportVisualization(final SUPPORT_VISUALIZATION support_visualization) {
+        _support_visualization = support_visualization;
+    }
+
+    final void setSupportThreshold(final double support_threshold) {
+        _support_threshold = support_threshold;
     }
 
     void setNhConversionSupportValueStyle(final NH_CONVERSION_SUPPORT_VALUE_STYLE nh_conversion_support_value_style) {

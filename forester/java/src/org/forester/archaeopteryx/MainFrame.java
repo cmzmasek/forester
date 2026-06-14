@@ -167,7 +167,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String RIGHT_LINE_UP_DOMAINS = "Right-align Domain Architectures";
     static final String LINE_UP_RENDERABLE_DATA = "Line Up Diagrams (such as Domain Architectures)";
     static final String INFER_ANCESTOR_TAXONOMIES = "Infer Ancestor Taxonomies";
-    static final String OBTAIN_SEQUENCE_AND_TAXONOMIC_INFORMATION = "Obtain Sequence & Taxonomic Information";
+    static final String OBTAIN_SEQUENCE_AND_TAXONOMIC_INFORMATION = "Fetch Sequence & Taxonomic Data";
     JMenuBar _jmenubar;
     JMenu _file_jmenu;
     JMenu _tools_menu;
@@ -189,22 +189,16 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem _close_item;
     JMenuItem _exit_item;
     JMenuItem _new_item;
-    JMenuItem _replace_names_item;
     JMenuItem _write_to_pdf_item;
     JMenuItem _write_to_jpg_item;
-    JMenuItem _write_to_gif_item;
     JMenuItem _write_to_tif_item;
     JMenuItem _write_to_png_item;
-    JMenuItem _write_to_bmp_item;
     JMenuItem _write_to_svg_item;
     JMenuItem _write_to_eps_item;
     // tools menu:
     JMenuItem _midpoint_root_item;
     JMenuItem _mad_root_item;
-    JMenuItem _taxcolor_item;
-    JMenuItem _confcolor_item;
     JMenuItem _color_rank_jmi;
-    JMenuItem _collapse_species_specific_subtrees;
 
     JMenuItem _obtain_seq_and_tax_information_jmi;
     JMenuItem _remove_branch_color_item;
@@ -350,19 +344,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 return;
             }
             executeGSDIR();
-        } else if (o == _taxcolor_item) {
-            taxColor();
-        } else if (o == _confcolor_item) {
-            confColor();
         } else if (o == _color_rank_jmi) {
             colorRank();
-        } else if (o == _collapse_species_specific_subtrees) {
-            if (isSubtreeDisplayed()) {
-                return;
-            }
-            if (getCurrentTreePanel() != null) {
-                getCurrentTreePanel().collapseSpeciesSpecificSubtrees();
-            }
         } else if (o == _remove_branch_color_item) {
             if (isSubtreeDisplayed()) {
                 return;
@@ -569,31 +552,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             if (new_dir != null) {
                 setCurrentDir(new_dir);
             }
-        } else if (o == _write_to_gif_item) {
-            final File new_dir = writeToGraphicsFile(_mainpanel.getCurrentPhylogeny(),
-                    GraphicsExportType.GIF,
-                    _mainpanel,
-                    _writetographics_filechooser,
-                    this,
-                    getContentPane(),
-                    _current_dir);
-            if (new_dir != null) {
-                setCurrentDir(new_dir);
-            }
         } else if (o == _write_to_tif_item) {
             final File new_dir = writeToGraphicsFile(_mainpanel.getCurrentPhylogeny(),
                     GraphicsExportType.TIFF,
-                    _mainpanel,
-                    _writetographics_filechooser,
-                    this,
-                    getContentPane(),
-                    _current_dir);
-            if (new_dir != null) {
-                setCurrentDir(new_dir);
-            }
-        } else if (o == _write_to_bmp_item) {
-            final File new_dir = writeToGraphicsFile(_mainpanel.getCurrentPhylogeny(),
-                    GraphicsExportType.BMP,
                     _mainpanel,
                     _writetographics_filechooser,
                     this,
@@ -750,44 +711,46 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     }
 
     private void deleteSelectedNodes(final boolean delete) {
+        final String function = delete ? "Delete" : "Retain";
         final Phylogeny phy = getMainPanel().getCurrentPhylogeny();
-        if ((phy == null) || (phy.getNumberOfExternalNodes() < 2)) {
-            return;
-        }
+        final int ext = (phy == null) ? 0 : phy.getNumberOfExternalNodes();
         final List<PhylogenyNode> nodes = new ArrayList<>();
-        if ((getCurrentTreePanel().getFoundNodes0() != null) || (getCurrentTreePanel().getFoundNodes1() != null)) {
-            final List<PhylogenyNode> all_selected_nodes = getCurrentTreePanel().getFoundNodesAsListOfPhylogenyNodes();
-            for (final PhylogenyNode n : all_selected_nodes) {
+        if ((phy != null) && (getCurrentTreePanel() != null)
+                && ((getCurrentTreePanel().getFoundNodes0() != null)
+                        || (getCurrentTreePanel().getFoundNodes1() != null))) {
+            for (final PhylogenyNode n : getCurrentTreePanel().getFoundNodesAsListOfPhylogenyNodes()) {
                 if (n.isExternal()) {
                     nodes.add(n);
                 }
             }
         }
-        String function = "Retain";
-        if (delete) {
-            function = "Delete";
-        }
-        if ((nodes == null) || nodes.isEmpty()) {
-            JOptionPane
-                    .showMessageDialog(this,
-                            "Need to select external nodes, either via direct selection or via the \"Search\" function",
-                            "No external nodes selected to " + function.toLowerCase(),
-                            JOptionPane.ERROR_MESSAGE);
-            return;
+        switch (AptxUtil.nodePruningOutcome(ext, nodes.size(), delete)) {
+            case NO_TREE:
+                JOptionPane.showMessageDialog(this,
+                        "Load a tree with at least two external nodes before using \"" + function
+                                + " Selected Nodes\".",
+                        "Cannot " + function.toLowerCase() + " nodes",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            case NO_SELECTION:
+                JOptionPane.showMessageDialog(this,
+                        "Select one or more external nodes first — click them in the tree, or use the \"Search\" "
+                                + "field to find and highlight them — then choose \"" + function
+                                + " Selected Nodes\" again.",
+                        "No external nodes selected to " + function.toLowerCase(),
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            case WOULD_REMOVE_ALL:
+                JOptionPane.showMessageDialog(this,
+                        "That would remove every external node, leaving an empty tree.",
+                        "Cannot " + function.toLowerCase() + " all nodes",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            default:
+                break;
         }
         final int todo = nodes.size();
-        final int ext = phy.getNumberOfExternalNodes();
-        int res = todo;
-        if (delete) {
-            res = ext - todo;
-        }
-        if (res < 1) {
-            JOptionPane.showMessageDialog(this,
-                    "Cannot delete all nodes",
-                    "Attempt to delete all nodes ",
-                    JOptionPane.ERROR_MESSAGE);
-            return;
-        }
+        final int res = delete ? (ext - todo) : todo;
         final int result = JOptionPane.showConfirmDialog(null, function + " " + todo
                 + " external node(s), from a total of " + ext + " external nodes," + "\nresulting in tree with " + res
                 + " nodes?", function + " external nodes", JOptionPane.OK_CANCEL_OPTION);
@@ -847,6 +810,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     private void removeBranchColors() {
         if (getMainPanel().getCurrentPhylogeny() != null) {
             AptxUtil.removeBranchColors(getMainPanel().getCurrentPhylogeny());
+            if (getMainPanel().getCurrentTreePanel() != null) {
+                getMainPanel().getCurrentTreePanel().clearRankLegend(); // the rank legend no longer reflects the tree
+            }
         }
     }
 
@@ -933,12 +899,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         _file_jmenu.add(_write_to_png_item = new JMenuItem("Export to PNG file..."));
         _file_jmenu.add(_write_to_jpg_item = new JMenuItem("Export to JPG file..."));
-        if (AptxUtil.canWriteFormat("gif")) {
-            _file_jmenu.add(_write_to_gif_item = new JMenuItem("Export to GIF file..."));
-        }
-        if (AptxUtil.canWriteFormat("bmp")) {
-            _file_jmenu.add(_write_to_bmp_item = new JMenuItem("Export to BMP file..."));
-        }
         _file_jmenu.addSeparator();
 
         _file_jmenu.add(_exit_item = new JMenuItem("Exit"));
@@ -948,9 +908,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         customizeJMenuItem(_write_to_eps_item);
         customizeJMenuItem(_write_to_png_item);
         customizeJMenuItem(_write_to_jpg_item);
-        customizeJMenuItem(_write_to_gif_item);
         customizeJMenuItem(_write_to_tif_item);
-        customizeJMenuItem(_write_to_bmp_item);
         customizeJMenuItem(_exit_item);
         _jmenubar.add(_file_jmenu);
     }
@@ -1088,8 +1046,19 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     void colorRank() {
         if (_mainpanel.getCurrentTreePanel() != null) {
-            final Map<String, Integer> present_ranks = AptxUtil.getRankCounts(_mainpanel.getCurrentTreePanel().getPhylogeny());
-            final String[] ranks = AptxUtil.getAllPossibleRanks(present_ranks);
+            final Phylogeny phy = _mainpanel.getCurrentTreePanel().getPhylogeny();
+            final Map<String, Integer> present_ranks = AptxUtil.getRankCounts(phy);
+            final Map<String, Integer> coverage_counts = AptxUtil.getRankCoverageCounts(phy);
+            final int total_external = (phy == null) ? 0 : phy.getNumberOfExternalNodes();
+            final String[] ranks = AptxUtil.getColorizableRanks(present_ranks, coverage_counts, total_external);
+            if (ranks.length == 0) {
+                JOptionPane.showMessageDialog(this,
+                        "This tree has no internal nodes with a taxonomic rank to colorize by.\n"
+                                + "(Ranks such as order, family, or genus must be present on internal-node taxonomies.)",
+                        "No Ranks Available for Colorization",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
             String rank = (String) JOptionPane
                     .showInputDialog(this,
                             "What rank should the colorization be based on",
@@ -1097,7 +1066,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                             JOptionPane.QUESTION_MESSAGE,
                             null,
                             ranks,
-                            null);
+                            ranks[0]);
             if (!ForesterUtil.isEmpty(rank)) {
                 if (rank.indexOf('(') > 0) {
                     rank = rank.substring(0, rank.indexOf('(')).trim();
@@ -1107,11 +1076,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
     }
 
-    void confColor() {
-        if (_mainpanel.getCurrentTreePanel() != null) {
-            _mainpanel.getCurrentTreePanel().confColor();
-        }
-    }
 
     void customizeCheckBoxMenuItem(final JCheckBoxMenuItem item, final boolean is_selected) {
         if (item != null) {
@@ -1605,11 +1569,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
     }
 
-    void taxColor() {
-        if (_mainpanel.getCurrentTreePanel() != null) {
-            _mainpanel.getCurrentTreePanel().taxColor();
-        }
-    }
 
     void typeChanged(final Object o) {
         updateTypeCheckboxes(getOptions(), o);
@@ -2410,12 +2369,12 @@ class GraphicsFileFilter extends FileFilter {
     public boolean accept(final File f) {
         final String file_name = f.getName().trim().toLowerCase();
         return file_name.endsWith(".jpg") || file_name.endsWith(".jpeg") || file_name.endsWith(".png")
-                || file_name.endsWith(".gif") || file_name.endsWith(".bmp") || f.isDirectory();
+                || f.isDirectory();
     }
 
     @Override
     public String getDescription() {
-        return "Image files (*.jpg, *.jpeg, *.png, *.gif, *.bmp)";
+        return "Image files (*.jpg, *.jpeg, *.png)";
     }
 }
 

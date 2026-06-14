@@ -32,6 +32,7 @@ import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -57,6 +58,7 @@ import org.forester.phylogeny.PhylogenyMethods.DESCENDANT_SORT_PRIORITY;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.BranchWidth;
 import org.forester.phylogeny.data.Confidence;
+import org.forester.phylogeny.data.PhylogenyDataUtil;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.util.AsciiHistogram;
@@ -67,8 +69,6 @@ import org.forester.util.TaxonomyUtil;
 public final class AptxUtil {
 
     public static enum GraphicsExportType {
-        BMP("bmp"),
-        GIF("gif"),
         JPG("jpg"),
         PDF("pdf"),
         PNG("png"),
@@ -651,19 +651,144 @@ public final class AptxUtil {
 
 
 
-    final static String[] getAllPossibleRanks(final Map<String, Integer> present_ranks) {
-        final String[] str_array = new String[TaxonomyUtil.TAXONOMY_RANKS_LIST.size() - 2];
-        int i = 0;
-        for (final String e : TaxonomyUtil.TAXONOMY_RANKS_LIST) {
-            if (!e.equals(TaxonomyUtil.UNKNOWN) && !e.equals(TaxonomyUtil.OTHER)) {
-                if (present_ranks != null && present_ranks.containsKey(e)) {
-                    str_array[i++] = e + " (" + present_ranks.get(e) + ")";
-                } else {
-                    str_array[i++] = e;
+    /**
+     * The taxonomic ranks that can actually drive a subtree colorization: those present on internal
+     * nodes with a count &gt; 0 in {@code present_ranks}, each labeled
+     * {@code "rank (count) (P% coverage)"}, in canonical rank order (e.g. order before family before
+     * genus). {@code count} is how many internal nodes carry the rank; {@code P} is the share of
+     * external nodes the rank would color (from {@code coverage_counts} / {@code total_external}).
+     * Ranks not present, ranks with a zero count, and the UNKNOWN/OTHER pseudo-ranks are omitted;
+     * returns an empty array when nothing is colorizable.
+     */
+    final static String[] getColorizableRanks(final Map<String, Integer> present_ranks,
+                                              final Map<String, Integer> coverage_counts,
+                                              final int total_external) {
+        final List<String> ranks = new ArrayList<String>();
+        if (present_ranks != null) {
+            for (final String e : TaxonomyUtil.TAXONOMY_RANKS_LIST) {
+                if (!e.equals(TaxonomyUtil.UNKNOWN) && !e.equals(TaxonomyUtil.OTHER)) {
+                    final Integer count = present_ranks.get(e);
+                    if ((count != null) && (count > 0)) {
+                        final Integer covered = (coverage_counts == null) ? null : coverage_counts.get(e);
+                        ranks.add(e + " (" + count + ") (" + coveragePercentLabel(covered, total_external) + " coverage)");
+                    }
                 }
             }
         }
-        return str_array;
+        return ranks.toArray(new String[0]);
+    }
+
+    /**
+     * Coverage as a percent label: "0%" when nothing is covered, "&lt;1%" when a nonzero-but-tiny
+     * fraction would round down to 0 (so a rank that does color something never reads as 0%),
+     * otherwise the rounded whole percent (e.g. "60%").
+     */
+    final static String coveragePercentLabel(final Integer covered, final int total_external) {
+        if ((total_external <= 0) || (covered == null) || (covered <= 0)) {
+            return "0%";
+        }
+        final long pct = Math.round((100.0 * covered) / total_external);
+        return (pct < 1) ? "<1%" : (pct + "%");
+    }
+
+    /**
+     * Per taxonomic rank, how many external nodes that rank would color: an external node is covered
+     * by rank R if any non-root node on its path to the root carries taxonomy rank R. This is the
+     * structural ("direct rank annotation") coverage that drives the rank chooser's "P% coverage"
+     * hint; it does not run the colorizer's secondary lineage-matching/UniProt pass, so it is a fast,
+     * deterministic lower bound. Keys are lower-cased ranks.
+     */
+    final static Map<String, Integer> getRankCoverageCounts(final Phylogeny tree) {
+        final Map<String, Integer> covered = new HashMap<String, Integer>();
+        if ((tree != null) && !tree.isEmpty()) {
+            for (final PhylogenyNodeIterator it = tree.iteratorExternalForward(); it.hasNext(); ) {
+                final Set<String> ranks_on_path = new HashSet<String>();
+                for (PhylogenyNode n = it.next(); n != null; n = n.getParent()) {
+                    if (!n.isRoot() && n.getNodeData().isHasTaxonomy()
+                            && !ForesterUtil.isEmpty(n.getNodeData().getTaxonomy().getRank())) {
+                        ranks_on_path.add(n.getNodeData().getTaxonomy().getRank().toLowerCase());
+                    }
+                }
+                for (final String r : ranks_on_path) {
+                    covered.merge(r, 1, Integer::sum);
+                }
+            }
+        }
+        return covered;
+    }
+
+    /** Outcome of a "Delete/Retain Selected Nodes" request; OK means the prune may proceed. */
+    static enum NodePruningOutcome {
+        NO_TREE,         // no tree, or fewer than two external nodes -- nothing meaningful to prune
+        NO_SELECTION,    // no external nodes are selected
+        WOULD_REMOVE_ALL,// the prune would leave an empty tree
+        OK
+    }
+
+    /**
+     * Decides what "Delete Selected Nodes" / "Retain Selected Nodes" should do, given the tree's
+     * external-node count, how many external nodes are selected, and whether we are deleting (vs.
+     * retaining). Pure decision that drives the warning dialogs in MainFrame.deleteSelectedNodes.
+     */
+    final static NodePruningOutcome nodePruningOutcome(final int external_count, final int selected_external,
+                                                       final boolean delete) {
+        if (external_count < 2) {
+            return NodePruningOutcome.NO_TREE;
+        }
+        if (selected_external < 1) {
+            return NodePruningOutcome.NO_SELECTION;
+        }
+        final int remaining = delete ? (external_count - selected_external) : selected_external;
+        return (remaining < 1) ? NodePruningOutcome.WOULD_REMOVE_ALL : NodePruningOutcome.OK;
+    }
+
+    /**
+     * Internal, non-root branches whose (maximum) confidence is below {@code threshold} -- the
+     * branches the "Collapse Weakly-Supported Branches" tool would permanently collapse into
+     * polytomies. External nodes and the root are never candidates.
+     */
+    final static List<PhylogenyNode> branchesToCollapseByConfidence(final Phylogeny phy, final double threshold) {
+        final List<PhylogenyNode> result = new ArrayList<PhylogenyNode>();
+        if ((phy != null) && !phy.isEmpty()) {
+            for (final PhylogenyNodeIterator it = phy.iteratorPostorder(); it.hasNext(); ) {
+                final PhylogenyNode n = it.next();
+                if (!n.isExternal() && !n.isRoot()) {
+                    final List<Confidence> confidences = n.getBranchData().getConfidences();
+                    if ((confidences != null) && !confidences.isEmpty()) {
+                        double max = 0;
+                        for (final Confidence c : confidences) {
+                            if (c.getValue() > max) {
+                                max = c.getValue();
+                            }
+                        }
+                        if (max < threshold) {
+                            result.add(n);
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Internal, non-root branches whose branch length is present and below {@code threshold} -- the
+     * branches the "Collapse Short Branches" tool would permanently collapse into polytomies.
+     */
+    final static List<PhylogenyNode> branchesToCollapseByBranchLength(final Phylogeny phy, final double threshold) {
+        final List<PhylogenyNode> result = new ArrayList<PhylogenyNode>();
+        if ((phy != null) && !phy.isEmpty()) {
+            for (final PhylogenyNodeIterator it = phy.iteratorPostorder(); it.hasNext(); ) {
+                final PhylogenyNode n = it.next();
+                if (!n.isExternal() && !n.isRoot()) {
+                    final double bl = n.getDistanceToParent();
+                    if ((bl != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT) && (bl < threshold)) {
+                        result.add(n);
+                    }
+                }
+            }
+        }
+        return result;
     }
 
 
@@ -904,8 +1029,11 @@ public final class AptxUtil {
         if ((tree != null) && !tree.isEmpty()) {
             for (final PhylogenyNodeIterator it = tree.iteratorPostorder(); it.hasNext(); ) {
                 final PhylogenyNode n = it.next();
-                if (!n.isExternal() && n.getNodeData().isHasTaxonomy()
-                        && !ForesterUtil.isEmpty(n.getNodeData().getTaxonomy().getRank()) && !n.isRoot()) {
+                // count every non-root node carrying the rank -- including external nodes, since
+                // species (and other low ranks) live on leaves and the colorizer anchors on them too;
+                // skipping leaves here undercounted those ranks (e.g. "species (3)" vs. many colored).
+                if (!n.isRoot() && n.getNodeData().isHasTaxonomy()
+                        && !ForesterUtil.isEmpty(n.getNodeData().getTaxonomy().getRank())) {
                     final String rank = n.getNodeData().getTaxonomy().getRank().toLowerCase();
                     if (present_ranks.containsKey(rank)) {
                         present_ranks.put(rank, present_ranks.get(rank) + 1);

@@ -75,20 +75,59 @@ For very large trees, give the JVM more memory with `-Xmx`:
 java -Xmx4g -jar forester.jar mytree.xml
 ```
 
-### 4. Rooting a tree
+### 4. The Tools menu
 
-The **Tools** menu offers two ways to (re)root a tree with branch lengths:
+The **Tools** menu collects operations that root, prune, colorize, collapse, and
+annotate the current tree. In menu order:
 
-- **Midpoint-Root** — places the root at the midpoint of the longest tip-to-tip
-  path. Fast, and works on any tree with branch lengths.
+**Rooting**
+
 - **MAD-Root** — Minimal Ancestor Deviation rooting (Tria, Landan & Dagan,
   *Nature Ecology & Evolution* 2017,
-  [doi:10.1038/s41559-017-0193](https://doi.org/10.1038/s41559-017-0193)). It
-  chooses the root that minimizes how far every pair of tips deviates from a
-  clock-like (equidistant-from-their-ancestor) expectation, and annotates each
-  internal branch with its MAD value — smaller means a better-supported root
-  location. Turn on **Confidence Values** in the left control panel to see the
-  values. Requires branch lengths and at least three tips.
+  [doi:10.1038/s41559-017-0193](https://doi.org/10.1038/s41559-017-0193)). Chooses
+  the root that minimizes how far every pair of tips deviates from a clock-like
+  (equidistant-from-their-ancestor) expectation, and annotates each internal
+  branch with its MAD value — smaller means a better-supported root location. Turn
+  on **Confidence Values** in the left control panel to see them. Requires branch
+  lengths and at least three tips.
+- **Midpoint-Root** — places the root at the midpoint of the longest tip-to-tip
+  path. Fast, and works on any tree with branch lengths.
+
+**Pruning**
+
+- **Delete Selected Nodes** — removes the selected external nodes from the tree.
+  Select nodes first by clicking them, or via the **Search** field.
+- **Retain Selected Nodes** — the inverse: keeps the selected external nodes and
+  deletes all the others.
+
+**Coloring**
+
+- **Colorize Subtrees via Taxonomic Rank** — colors clades by their taxonomy at a
+  rank you choose (e.g. order, family, genus). The chooser lists only the ranks
+  actually present, with how many nodes carry each and the share of leaves it
+  would color; a movable legend mapping colors to taxa is drawn on the tree and
+  included in PDF/PNG exports. (This is distinct from **Color by:** in the control
+  panel — see below — which colors *leaves* by an arbitrary property.)
+
+**Clearing styles and colors**
+
+- **Delete All Visual Styles From Nodes** — removes every per-node visual style
+  (fonts, colors).
+- **Delete All Colors From Branches** — removes every branch color.
+
+**Collapsing branches** (the **Collapse Branches** submenu)
+
+- **Collapse Weakly-Supported Branches…** — permanently collapses internal
+  branches whose confidence is below a threshold you enter into polytomies
+  (multifurcations). Cannot be undone.
+- **Collapse Short Branches…** — permanently collapses internal branches shorter
+  than a branch-length threshold you enter. Cannot be undone.
+
+**Data retrieval**
+
+- **Fetch Sequence & Taxonomic Data** — looks up additional sequence information
+  and detailed taxonomy for the tree's nodes from UniProt / EMBL-GenBank and the
+  UniProt taxonomy.
 
 ### 5. Coloring leaves by a property
 

@@ -31,16 +31,14 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
+import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -67,15 +65,11 @@ import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.PhylogenyNode.NH_CONVERSION_SUPPORT_VALUE_STYLE;
-import org.forester.phylogeny.data.Confidence;
-import org.forester.phylogeny.data.PhylogenyDataUtil;
 import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
-import org.forester.util.BasicTable;
-import org.forester.util.BasicTableParser;
 import org.forester.util.ForesterUtil;
 
 public final class MainFrameApplication extends MainFrame {
@@ -85,10 +79,8 @@ public final class MainFrameApplication extends MainFrame {
     // Filters for the file-open dialog (classes defined in this file)
     private static final long serialVersionUID = -799735726778865234L;
     private static final boolean PREPROCESS_TREES = false;
-    private final JFileChooser _values_filechooser;
     private final JFileChooser _open_filechooser;
     private final JFileChooser _open_filechooser_for_species_tree;
-    private final JFileChooser _annotations_filechooser;
     // Application-only print menu items
     private JMenuItem _collapse_below_threshold;
     private JMenuItem _collapse_below_branch_length;
@@ -110,8 +102,6 @@ public final class MainFrameApplication extends MainFrame {
         _save_filechooser = null;
         _writetopdf_filechooser = null;
         _writetographics_filechooser = null;
-        _values_filechooser = null;
-        _annotations_filechooser = null;
         _jmenubar = new JMenuBar();
         buildFileMenu();
         buildTypeMenu();
@@ -186,17 +176,10 @@ public final class MainFrameApplication extends MainFrame {
         _open_filechooser_for_species_tree.addChoosableFileFilter(MainFrame.xmlfilter);
         _open_filechooser_for_species_tree.addChoosableFileFilter(MainFrame.tolfilter);
         _open_filechooser_for_species_tree.setFileFilter(MainFrame.xmlfilter);
-        // Expression
-        _values_filechooser = new JFileChooser();
-        _values_filechooser.setMultiSelectionEnabled(false);
-        // Annotations
-        _annotations_filechooser = new JFileChooser();
-        _annotations_filechooser.setMultiSelectionEnabled(false);
         try {
             final String home_dir = System.getProperty("user.home");
             _open_filechooser.setCurrentDirectory(new File(home_dir));
             _open_filechooser_for_species_tree.setCurrentDirectory(new File(home_dir));
-            _values_filechooser.setCurrentDirectory(new File(home_dir));
         } catch (final Exception e) {
             e.printStackTrace();
             // Do nothing. Not important.
@@ -298,8 +281,6 @@ public final class MainFrameApplication extends MainFrame {
             }
             if (o == _new_item) {
                 newTree();
-            } else if (o == _replace_names_item) {
-                replaceNodeNames();
             } else if (o == _close_item) {
                 closeCurrentPane();
             } else if (o == _load_species_tree_item) {
@@ -427,69 +408,48 @@ public final class MainFrameApplication extends MainFrame {
     }
 
     private void collapseBelowThreshold(final Phylogeny phy) {
-        final PhylogenyNodeIterator it = phy.iteratorPostorder();
-        final List<PhylogenyNode> to_be_removed = new ArrayList<>();
-        double min_support = Double.MAX_VALUE;
-        boolean conf_present = false;
-        while (it.hasNext()) {
-            final PhylogenyNode n = it.next();
-            if (!n.isExternal() && !n.isRoot()) {
-                final List<Confidence> c = n.getBranchData().getConfidences();
-                if ((c != null) && (c.size() > 0)) {
-                    conf_present = true;
-                    double max = 0;
-                    for (final Confidence confidence : c) {
-                        if (confidence.getValue() > max) {
-                            max = confidence.getValue();
-                        }
-                    }
-                    if (max < getMinNotCollapseConfidenceValue()) {
-                        to_be_removed.add(n);
-                    }
-                    if (max < min_support) {
-                        min_support = max;
-                    }
-                }
-            }
-        }
-        if (conf_present) {
-            for (final PhylogenyNode node : to_be_removed) {
-                PhylogenyMethods.removeNode(node, phy);
-            }
-            if (to_be_removed.size() > 0) {
-                phy.externalNodesHaveChanged();
-                phy.clearHashIdToNodeMap();
-                phy.recalculateNumberOfExternalDescendants(true);
-                getCurrentTreePanel().resetNodeIdToDistToLeafMap();
-                getCurrentTreePanel().updateSetOfCollapsedExternalNodes();
-                getCurrentTreePanel().calculateLongestExtNodeInfo();
-                getCurrentTreePanel().setNodeInPreorderToNull();
-                getCurrentTreePanel().recalculateMaxDistanceToRoot();
-                getCurrentTreePanel().resetPreferredSize();
-                getCurrentTreePanel().setEdited(true);
-                getCurrentTreePanel().repaint();
-                repaint();
-            }
-            if (to_be_removed.size() > 0) {
-                JOptionPane.showMessageDialog(this,
-                        "Collapsed " + to_be_removed.size()
-                                + " branches with\nconfidence values below "
-                                + getMinNotCollapseConfidenceValue(),
-                        "Collapsed " + to_be_removed.size() + " branches",
-                        JOptionPane.INFORMATION_MESSAGE);
-            } else {
-                JOptionPane.showMessageDialog(this,
-                        "No branch collapsed,\nminimum confidence value per branch is "
-                                + min_support,
-                        "No branch collapsed",
-                        JOptionPane.INFORMATION_MESSAGE);
-            }
-        } else {
+        final double threshold = getMinNotCollapseConfidenceValue();
+        final List<PhylogenyNode> candidates = AptxUtil.branchesToCollapseByConfidence(phy, threshold);
+        if (candidates.isEmpty()) {
             JOptionPane.showMessageDialog(this,
-                    "No branch collapsed because no confidence values present",
-                    "No confidence values present",
+                    "No branches have a confidence value below " + threshold + " — nothing to collapse.",
+                    "No branches collapsed",
                     JOptionPane.INFORMATION_MESSAGE);
+            return;
         }
+        final int confirm = JOptionPane.showConfirmDialog(this,
+                "Permanently collapse " + candidates.size() + " branch(es) with confidence below " + threshold
+                        + " into polytomies?\nThis cannot be undone.",
+                "Collapse " + candidates.size() + " branch(es)?",
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.WARNING_MESSAGE);
+        if (confirm != JOptionPane.OK_OPTION) {
+            return;
+        }
+        for (final PhylogenyNode n : candidates) {
+            PhylogenyMethods.removeNode(n, phy);
+        }
+        refreshAfterBranchCollapse(phy);
+        JOptionPane.showMessageDialog(this,
+                "Collapsed " + candidates.size() + " branch(es) with confidence below " + threshold + ".",
+                "Collapsed " + candidates.size() + " branch(es)",
+                JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    /** Recomputes derived tree state and repaints after branches were removed by a collapse tool. */
+    private void refreshAfterBranchCollapse(final Phylogeny phy) {
+        phy.externalNodesHaveChanged();
+        phy.clearHashIdToNodeMap();
+        phy.recalculateNumberOfExternalDescendants(true);
+        getCurrentTreePanel().resetNodeIdToDistToLeafMap();
+        getCurrentTreePanel().updateSetOfCollapsedExternalNodes();
+        getCurrentTreePanel().calculateLongestExtNodeInfo();
+        getCurrentTreePanel().setNodeInPreorderToNull();
+        getCurrentTreePanel().recalculateMaxDistanceToRoot();
+        getCurrentTreePanel().resetPreferredSize();
+        getCurrentTreePanel().setEdited(true);
+        getCurrentTreePanel().repaint();
+        repaint();
     }
 
     private void collapseBelowBranchLengthThreshold() {
@@ -560,62 +520,32 @@ public final class MainFrameApplication extends MainFrame {
     }
 
     private void collapseBl(final Phylogeny phy) {
-        final PhylogenyNodeIterator it = phy.iteratorPostorder();
-        final List<PhylogenyNode> to_be_removed = new ArrayList<>();
-        double min_bl = Double.MAX_VALUE;
-        boolean bl_present = false;
-        while (it.hasNext()) {
-            final PhylogenyNode n = it.next();
-            if (!n.isExternal() && !n.isRoot()) {
-                final double bl = n.getDistanceToParent();
-                if (bl != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT) {
-                    bl_present = true;
-                    if (bl < getMinNotCollapseBlValue()) {
-                        to_be_removed.add(n);
-                    }
-                    if (bl < min_bl) {
-                        min_bl = bl;
-                    }
-                }
-            }
-        }
-        if (bl_present) {
-            for (final PhylogenyNode node : to_be_removed) {
-                PhylogenyMethods.removeNode(node, phy);
-            }
-            if (to_be_removed.size() > 0) {
-                phy.externalNodesHaveChanged();
-                phy.clearHashIdToNodeMap();
-                phy.recalculateNumberOfExternalDescendants(true);
-                getCurrentTreePanel().resetNodeIdToDistToLeafMap();
-                getCurrentTreePanel().updateSetOfCollapsedExternalNodes();
-                getCurrentTreePanel().calculateLongestExtNodeInfo();
-                getCurrentTreePanel().setNodeInPreorderToNull();
-                getCurrentTreePanel().recalculateMaxDistanceToRoot();
-                getCurrentTreePanel().resetPreferredSize();
-                getCurrentTreePanel().setEdited(true);
-                getCurrentTreePanel().repaint();
-                repaint();
-            }
-            if (to_be_removed.size() > 0) {
-                JOptionPane.showMessageDialog(this,
-                        "Collapsed " + to_be_removed.size()
-                                + " branches with\nbranch length values below "
-                                + getMinNotCollapseBlValue(),
-                        "Collapsed " + to_be_removed.size() + " branches",
-                        JOptionPane.INFORMATION_MESSAGE);
-            } else {
-                JOptionPane.showMessageDialog(this,
-                        "No branch collapsed,\nminimum branch length is " + min_bl,
-                        "No branch collapsed",
-                        JOptionPane.INFORMATION_MESSAGE);
-            }
-        } else {
+        final double threshold = getMinNotCollapseBlValue();
+        final List<PhylogenyNode> candidates = AptxUtil.branchesToCollapseByBranchLength(phy, threshold);
+        if (candidates.isEmpty()) {
             JOptionPane.showMessageDialog(this,
-                    "No branch collapsed because no branch length values present",
-                    "No branch length values present",
+                    "No branches have a branch length below " + threshold + " — nothing to collapse.",
+                    "No branches collapsed",
                     JOptionPane.INFORMATION_MESSAGE);
+            return;
         }
+        final int confirm = JOptionPane.showConfirmDialog(this,
+                "Permanently collapse " + candidates.size() + " branch(es) shorter than " + threshold
+                        + " into polytomies?\nThis cannot be undone.",
+                "Collapse " + candidates.size() + " branch(es)?",
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.WARNING_MESSAGE);
+        if (confirm != JOptionPane.OK_OPTION) {
+            return;
+        }
+        for (final PhylogenyNode n : candidates) {
+            PhylogenyMethods.removeNode(n, phy);
+        }
+        refreshAfterBranchCollapse(phy);
+        JOptionPane.showMessageDialog(this,
+                "Collapsed " + candidates.size() + " branch(es) shorter than " + threshold + ".",
+                "Collapsed " + candidates.size() + " branch(es)",
+                JOptionPane.INFORMATION_MESSAGE);
     }
 
     private PhyloXmlParser createPhyloXmlParser() {
@@ -668,100 +598,6 @@ public final class MainFrameApplication extends MainFrame {
         getMainPanel().getMainFrame().setSelectedTypeInTypeMenu(PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR);
         activateSaveAllIfNeeded();
         System.gc();
-    }
-
-
-    private void replaceNodeNames() {
-
-        if ((getCurrentTreePanel() == null) || (getCurrentTreePanel().getPhylogeny() == null)) {
-            JOptionPane.showMessageDialog(this,
-                    "Need to load phylogenetic tree first",
-                    "Can Not Replace Node Names",
-                    JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-        if (isSubtreeDisplayed()) {
-            JOptionPane.showMessageDialog(this,
-                    "Cannot replace node names in sub-tree",
-                    "Can Not Replace Node Names In Sub-Tree",
-                    JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-        final File my_dir = getCurrentDir();
-        if (my_dir != null) {
-            _values_filechooser.setCurrentDirectory(my_dir);
-        }
-        final int result = _values_filechooser.showOpenDialog(_contentpane);
-        final File file = _values_filechooser.getSelectedFile();
-        if ((file != null) && (file.length() > 0) && (result == JFileChooser.APPROVE_OPTION)) {
-            BasicTable<String> t;
-            try {
-                t = BasicTableParser.parse(file, '\t');
-                if (t.getNumberOfColumns() < 2) {
-                    t = BasicTableParser.parse(file, ',');
-                }
-            } catch (final IOException e) {
-                JOptionPane.showMessageDialog(this,
-                        e.getMessage(),
-                        "Could Not Read Mapping File",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            if (t.getNumberOfColumns() != 2) {
-                JOptionPane.showMessageDialog(this,
-                        "Table contains " + t.getNumberOfColumns() + " column(s)",
-                        "Problem with Mapping File",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            final Phylogeny phy = getCurrentTreePanel().getPhylogeny();
-            if (t.getNumberOfRows() != phy.getNumberOfExternalNodes()) {
-                JOptionPane.showMessageDialog(this,
-                        "Mapping file contains " + t.getNumberOfRows()
-                                + " rows, tree has "
-                                + phy.getNumberOfExternalNodes() + " external nodes",
-                        "Warning",
-                        JOptionPane.WARNING_MESSAGE);
-            }
-
-
-            int replaced_names = 0;
-            for (int row = 0; row < t.getNumberOfRows(); ++row) {
-                final String key = t.getValueAsString(0, row);
-                PhylogenyNode found_node = null;
-                String new_name = null;
-                int count = 0;
-                for (final PhylogenyNodeIterator iter = phy.iteratorExternalForward(); iter.hasNext(); ) {
-                    final PhylogenyNode node = iter.next();
-                    final String node_name = node.getName();
-                    if (!ForesterUtil.isEmpty(node_name)) {
-                        final Pattern pattern = Pattern.compile("\\b" + key + "\\b");
-                        final Matcher m = pattern.matcher(node_name);
-                        if (m.find()) {
-                            found_node = node;
-                            new_name = t.getValueAsString(1, row);
-                            ++count;
-                        }
-                    }
-                }
-                if (count == 1 && found_node != null) {
-                    found_node.setName(new_name);
-                    ++replaced_names;
-                }
-            }
-            if (replaced_names > 0) {
-                JOptionPane.showMessageDialog(this,
-                        "Successfully replaced " + replaced_names + " external nodes (out of " + phy.getNumberOfExternalNodes() + ")",
-                        "Success",
-                        JOptionPane.INFORMATION_MESSAGE);
-            } else {
-                JOptionPane.showMessageDialog(this,
-                        "Failed to replace any node names",
-                        "Failed to replace any node names",
-                        JOptionPane.ERROR_MESSAGE);
-            }
-        }
     }
 
 
@@ -1037,8 +873,7 @@ public final class MainFrameApplication extends MainFrame {
         super.refreshFileChoosersLookAndFeel();
         // these choosers are cached and standalone, so a runtime theme switch does not
         // reach them through the window tree; refresh them explicitly as well
-        for (final JFileChooser fc : new JFileChooser[] { _open_filechooser, _open_filechooser_for_species_tree,
-                _values_filechooser, _annotations_filechooser }) {
+        for (final JFileChooser fc : new JFileChooser[] { _open_filechooser, _open_filechooser_for_species_tree }) {
             if (fc != null) {
                 SwingUtilities.updateComponentTreeUI(fc);
             }
@@ -1072,12 +907,6 @@ public final class MainFrameApplication extends MainFrame {
         }
         _file_jmenu.add(_write_to_png_item = new JMenuItem("Export to PNG file..."));
         _file_jmenu.add(_write_to_jpg_item = new JMenuItem("Export to JPG file..."));
-        if (AptxUtil.canWriteFormat("gif")) {
-            _file_jmenu.add(_write_to_gif_item = new JMenuItem("Export to GIF file..."));
-        }
-        if (AptxUtil.canWriteFormat("bmp")) {
-            _file_jmenu.add(_write_to_bmp_item = new JMenuItem("Export to BMP file..."));
-        }
         _file_jmenu.addSeparator();
         _file_jmenu.add(_close_item = new JMenuItem("Close Tab"));
         _close_item.setToolTipText("To close the current pane.");
@@ -1096,9 +925,7 @@ public final class MainFrameApplication extends MainFrame {
         customizeJMenuItem(_write_to_eps_item);
         customizeJMenuItem(_write_to_png_item);
         customizeJMenuItem(_write_to_jpg_item);
-        customizeJMenuItem(_write_to_gif_item);
         customizeJMenuItem(_write_to_tif_item);
-        customizeJMenuItem(_write_to_bmp_item);
         customizeJMenuItem(_exit_item);
         _jmenubar.add(_file_jmenu);
     }
@@ -1189,7 +1016,7 @@ public final class MainFrameApplication extends MainFrame {
         _options_jmenu.add(_antialias_print_cbmi = new JCheckBoxMenuItem("Antialias"));
         _options_jmenu.add(_print_black_and_white_cbmi = new JCheckBoxMenuItem("Export in Black and White"));
         _options_jmenu
-                .add(_graphics_export_visible_only_cbmi = new JCheckBoxMenuItem("Limit to Visible ('Screenshot') for PNG, JPG, and GIF export"));
+                .add(_graphics_export_visible_only_cbmi = new JCheckBoxMenuItem("Limit to Visible ('Screenshot') for PNG and JPG export"));
         _options_jmenu.add(_choose_pdf_width_mi = new JMenuItem(""));
         _options_jmenu.addSeparator();
         _options_jmenu.add(customizeMenuItemAsLabel(new JMenuItem("Newick/NHX/Nexus Read:"), getConfiguration()));
@@ -1319,21 +1146,28 @@ public final class MainFrameApplication extends MainFrame {
 
     void buildToolsMenu() {
         _tools_menu = createMenu("Tools", getConfiguration());
-        _tools_menu.setToolTipText("Colorize branches and subtrees, and replace node names");
-        if (getConfiguration().isEditable()) {
-            _tools_menu.add(_replace_names_item = new JMenuItem("Replace Node Names"));
-            _replace_names_item.setToolTipText("to replace external node names using a tab separated mapping file");
-            _tools_menu.addSeparator();
-            customizeJMenuItem(_replace_names_item);
-        }
-        _tools_menu.add(_confcolor_item = new JMenuItem("Colorize Branches Depending on Confidence"));
-        customizeJMenuItem(_confcolor_item);
+        _tools_menu.setToolTipText("Root, prune, colorize, collapse, and fetch data for the current tree");
+        // Rooting
+        _tools_menu.add(_mad_root_item = new JMenuItem("MAD-Root"));
+        _mad_root_item.setToolTipText("Root by Minimal Ancestor Deviation (Tria et al. 2017); requires branch lengths");
+        customizeJMenuItem(_mad_root_item);
+        _tools_menu.add(_midpoint_root_item = new JMenuItem("Midpoint-Root"));
+        customizeJMenuItem(_midpoint_root_item);
+        _tools_menu.addSeparator();
+        // Pruning
+        _tools_menu.add(_delete_selected_nodes_item = new JMenuItem("Delete Selected Nodes"));
+        _delete_selected_nodes_item.setToolTipText("To delete all selected external nodes");
+        customizeJMenuItem(_delete_selected_nodes_item);
+        _tools_menu.add(_delete_not_selected_nodes_item = new JMenuItem("Retain Selected Nodes"));
+        _delete_not_selected_nodes_item.setToolTipText("To delete all not selected external nodes");
+        customizeJMenuItem(_delete_not_selected_nodes_item);
+        _tools_menu.addSeparator();
+        // Colorizing
         _tools_menu.add(_color_rank_jmi = new JMenuItem("Colorize Subtrees via Taxonomic Rank"));
         customizeJMenuItem(_color_rank_jmi);
         _color_rank_jmi.setToolTipText("for example, at \"Class\" level, colorize mammal specific subtree red");
-        _tools_menu.add(_taxcolor_item = new JMenuItem("Taxonomy Colorize Branches"));
-        customizeJMenuItem(_taxcolor_item);
         _tools_menu.addSeparator();
+        // Clearing styles & colors
         _tools_menu.add(_remove_visual_styles_item = new JMenuItem("Delete All Visual Styles From Nodes"));
         _remove_visual_styles_item
                 .setToolTipText("To remove all node visual styles (fonts, colors) from the current phylogeny");
@@ -1342,36 +1176,21 @@ public final class MainFrameApplication extends MainFrame {
         _remove_branch_color_item.setToolTipText("To remove all branch color values from the current phylogeny");
         customizeJMenuItem(_remove_branch_color_item);
         _tools_menu.addSeparator();
-        _tools_menu.add(_mad_root_item = new JMenuItem("MAD-Root"));
-        _mad_root_item.setToolTipText("Root by Minimal Ancestor Deviation (Tria et al. 2017); requires branch lengths");
-        customizeJMenuItem(_mad_root_item);
-        _tools_menu.add(_midpoint_root_item = new JMenuItem("Midpoint-Root"));
-        customizeJMenuItem(_midpoint_root_item);
-        _tools_menu.addSeparator();
-        _tools_menu.add(_delete_selected_nodes_item = new JMenuItem("Delete Selected Nodes"));
-        _delete_selected_nodes_item.setToolTipText("To delete all selected external nodes");
-        customizeJMenuItem(_delete_selected_nodes_item);
-        _tools_menu.add(_delete_not_selected_nodes_item = new JMenuItem("Retain Selected Nodes"));
-        _delete_not_selected_nodes_item.setToolTipText("To delete all not selected external nodes");
-        customizeJMenuItem(_delete_not_selected_nodes_item);
-        _tools_menu.addSeparator();
-        _tools_menu.add(_collapse_species_specific_subtrees = new JMenuItem("Collapse Single Taxonomy-Subtrees"));
-        customizeJMenuItem(_collapse_species_specific_subtrees);
-        _collapse_species_specific_subtrees
-                .setToolTipText("To (reversibly) collapse subtrees associated with only one taxonomy (such as species specific subtrees)");
-        _tools_menu
-                .add(_collapse_below_threshold = new JMenuItem("Collapse Branches with Confidence Below Threshold into Multifurcations"));
+        // Collapsing
+        final JMenu collapse_menu = createMenu("Collapse Branches", getConfiguration());
+        collapse_menu.setFont(MainFrame.menu_font); // match the sibling items (createMenu sets the font only in custom-colors mode)
+        collapse_menu.setToolTipText("Permanently collapse weakly-supported or very short branches into polytomies");
+        collapse_menu.add(_collapse_below_threshold = new JMenuItem("Collapse Weakly-Supported Branches…"));
         customizeJMenuItem(_collapse_below_threshold);
-        _collapse_below_threshold
-                .setToolTipText("To (permanently) collapse branches with confidence values below a threshold into multifurcations (in the case of multiple confidences per branch: without at least one confidence value above a threshold)");
-        //
-        _tools_menu
-                .add(_collapse_below_branch_length = new JMenuItem("Collapse Branches with Branch Lengths Below Threshold into Multifurcations"));
+        _collapse_below_threshold.setToolTipText(
+                "Permanently collapse internal branches whose confidence is below a threshold into polytomies (multifurcations). Cannot be undone.");
+        collapse_menu.add(_collapse_below_branch_length = new JMenuItem("Collapse Short Branches…"));
         customizeJMenuItem(_collapse_below_branch_length);
-        _collapse_below_branch_length
-                .setToolTipText("To (permanently) collapse branches with branches with branch lengths below a threshold into multifurcations");
-        //
+        _collapse_below_branch_length.setToolTipText(
+                "Permanently collapse internal branches shorter than a threshold into polytomies (multifurcations). Cannot be undone.");
+        _tools_menu.add(collapse_menu);
         _tools_menu.addSeparator();
+        // Data retrieval
         _tools_menu
                 .add(_obtain_seq_and_tax_information_jmi = new JMenuItem(OBTAIN_SEQUENCE_AND_TAXONOMIC_INFORMATION));
         customizeJMenuItem(_obtain_seq_and_tax_information_jmi);
