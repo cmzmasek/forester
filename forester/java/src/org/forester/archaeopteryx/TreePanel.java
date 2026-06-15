@@ -455,9 +455,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         if (e.isControlDown() && e.isShiftDown()) {
             if (notches < 0) {
-                getTreeFontSet().increaseFontSize();
+                getTreeFontSet().increaseUserFontSize();
             } else {
-                getTreeFontSet().decreaseFontSize(1, false);
+                getTreeFontSet().decreaseUserFontSize();
             }
             getControlPanel().displayedPhylogenyMightHaveChanged(true);
             resetPreferredSize();
@@ -1459,10 +1459,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 getControlPanel().showWhole();
             } else if (e.isShiftDown()
                     && ((e.getKeyCode() == KeyEvent.VK_SUBTRACT) || (e.getKeyCode() == KeyEvent.VK_MINUS))) {
-                getMainPanel().getTreeFontSet().decreaseFontSize(1, false);
+                getMainPanel().getTreeFontSet().decreaseUserFontSize();
                 getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged(true);
             } else if (e.isShiftDown() && plusPressed(e.getKeyCode())) {
-                getMainPanel().getTreeFontSet().increaseFontSize();
+                getMainPanel().getTreeFontSet().increaseUserFontSize();
                 getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged(true);
             } else if (e.getKeyCode() == KeyEvent.VK_O) {
                 getControlPanel().orderPressed(this);
@@ -1585,10 +1585,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ((e.getKeyCode() == KeyEvent.VK_HOME) || (e.getKeyCode() == KeyEvent.VK_ESCAPE)) {
             getControlPanel().showWhole();
         } else if (e.getKeyCode() == KeyEvent.VK_PAGE_UP) {
-            getMainPanel().getTreeFontSet().increaseFontSize();
+            getMainPanel().getTreeFontSet().increaseUserFontSize();
             getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged(true);
         } else if (e.getKeyCode() == KeyEvent.VK_PAGE_DOWN) {
-            getMainPanel().getTreeFontSet().decreaseFontSize(1, false);
+            getMainPanel().getTreeFontSet().decreaseUserFontSize();
             getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged(true);
         }
         e.consume();
@@ -4425,6 +4425,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     calculateLongestExtNodeInfo();
                 }
             }
+            // the overlap auto-fit above may have changed the displayed font size -> reflect it in the slider
+            if (getControlPanel() != null) {
+                getControlPanel().updateFontSizeSlider();
+            }
             _length_of_longest_text = calcLengthOfLongestText(); //~~~
             int ext_nodes = _phylogeny.getRoot().getNumberOfExternalNodes();
             final int max_depth = PhylogenyMethods.calculateMaxDepthConsiderCollapsed(_phylogeny) + 1;
@@ -6194,20 +6198,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         _in_ov_rect = in_ov_rect;
     }
 
-    final void setLargeFonts() {
-        getTreeFontSet().largeFonts();
-    }
-
     final void setLastMouseDragPointX(final float x) {
         _last_drag_point_x = x;
     }
 
     final void setLastMouseDragPointY(final float y) {
         _last_drag_point_y = y;
-    }
-
-    final void setMediumFonts() {
-        getTreeFontSet().mediumFonts();
     }
 
     final void setNodeInPreorderToNull() {
@@ -6223,20 +6219,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         setTextAntialias();
     }
 
-    final void setSmallFonts() {
-        getTreeFontSet().smallFonts();
-    }
-
     final void setStartingAngle(final double starting_angle) {
         _urt_starting_angle = starting_angle;
     }
 
     void setStatisticsForExpressionValues(final DescriptiveStatistics statistics_for_expression_values) {
         _statistics_for_vector_data = statistics_for_expression_values;
-    }
-
-    final void setSuperTinyFonts() {
-        getTreeFontSet().superTinyFonts();
     }
 
     final void setTextAntialias() {
@@ -6259,10 +6247,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             _rendering_hints.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
             _rendering_hints.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
         }
-    }
-
-    final void setTinyFonts() {
-        getTreeFontSet().tinyFonts();
     }
 
     final void setTreeFile(final File treefile) {

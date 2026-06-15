@@ -151,7 +151,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String DISPLAY_NODE_BOXES_LABEL_INT = "Shapes for Internal Nodes";
     static final String DISPLAY_NODE_BOXES_LABEL_MARKED = "Shapes for Nodes with Visual Data";
     static final String SHOW_OVERVIEW_LABEL = "Overview";
-    static final String FONT_SIZE_MENU_LABEL = "Font Size";
     static final String NONUNIFORM_CLADOGRAMS_LABEL = "Lined Up Cladogram";
     static final String SHOW_DOMAIN_LABELS_LABEL = "Domain Labels";
     static final String COLOR_LABELS_TIP = "To use parent branch colors for node labels as well, need to turn off taxonomy dependent colorization and turn on branch colorization for this to become apparent";
@@ -175,7 +174,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenu _view_jmenu;
     JMenu _options_jmenu;
     JMenu _settings_jmenu;
-    JMenu _font_size_menu;
     JMenu _help_jmenu;
     // Analysis menu
     JMenu _analysis_menu;
@@ -207,11 +205,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem _delete_selected_nodes_item;
     JMenuItem _delete_not_selected_nodes_item;
     // font size menu:
-    JMenuItem _super_tiny_fonts_item;
-    JMenuItem _tiny_fonts_item;
-    JMenuItem _small_fonts_item;
-    JMenuItem _medium_fonts_item;
-    JMenuItem _large_fonts_item;
     // options menu:
     // _  screen and print
     JMenuItem _choose_font_mi;
@@ -389,31 +382,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             viewAsXML();
         } else if (o == _view_as_nexus_item) {
             viewAsNexus();
-        } else if (o == _super_tiny_fonts_item) {
-            if (getCurrentTreePanel() != null) {
-                getCurrentTreePanel().setSuperTinyFonts();
-                getCurrentTreePanel().repaint();
-            }
-        } else if (o == _tiny_fonts_item) {
-            if (getCurrentTreePanel() != null) {
-                getCurrentTreePanel().setTinyFonts();
-                getCurrentTreePanel().repaint();
-            }
-        } else if (o == _small_fonts_item) {
-            if (getCurrentTreePanel() != null) {
-                getCurrentTreePanel().setSmallFonts();
-                getCurrentTreePanel().repaint();
-            }
-        } else if (o == _medium_fonts_item) {
-            if (getCurrentTreePanel() != null) {
-                getCurrentTreePanel().setMediumFonts();
-                getCurrentTreePanel().repaint();
-            }
-        } else if (o == _large_fonts_item) {
-            if (getCurrentTreePanel() != null) {
-                getCurrentTreePanel().setLargeFonts();
-                getCurrentTreePanel().repaint();
-            }
         } else if (o == _choose_font_mi) {
             chooseFont();
         } else if (o == _choose_minimal_confidence_mi) {
@@ -670,7 +638,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     void chooseFont() {
         final FontChooser fc = new FontChooser();
-        fc.setFont(getMainPanel().getTreeFontSet().getLargeFont());
+        fc.setFont(getMainPanel().getTreeFontSet().getBaseFont()); // the user size, not the transient auto-shrunk one
         fc.showDialog(this, "Select the Base Font");
         getMainPanel().getTreeFontSet().setBaseFont(fc.getFont());
         getControlPanel().displayedPhylogenyMightHaveChanged(true);
@@ -918,22 +886,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         customizeJMenuItem(_write_to_tif_item);
         customizeJMenuItem(_exit_item);
         _jmenubar.add(_file_jmenu);
-    }
-
-    void buildFontSizeMenu() {
-        _font_size_menu = createMenu(FONT_SIZE_MENU_LABEL, getConfiguration());
-        _font_size_menu.setToolTipText("Set the font size of the tree display");
-        _font_size_menu.add(_super_tiny_fonts_item = new JMenuItem("Super Tiny Fonts"));
-        _font_size_menu.add(_tiny_fonts_item = new JMenuItem("Tiny Fonts"));
-        _font_size_menu.add(_small_fonts_item = new JMenuItem("Small Fonts"));
-        _font_size_menu.add(_medium_fonts_item = new JMenuItem("Medium Fonts"));
-        _font_size_menu.add(_large_fonts_item = new JMenuItem("Large Fonts"));
-        customizeJMenuItem(_super_tiny_fonts_item);
-        customizeJMenuItem(_tiny_fonts_item);
-        customizeJMenuItem(_small_fonts_item);
-        customizeJMenuItem(_medium_fonts_item);
-        customizeJMenuItem(_large_fonts_item);
-        _jmenubar.add(_font_size_menu);
     }
 
     void buildHelpMenu() {

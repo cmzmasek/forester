@@ -292,6 +292,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Font size control: ");
+        if (org.forester.archaeopteryx.FontSizeControlTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Node support symbol: ");
         if (org.forester.archaeopteryx.NodeSupportSymbolTest.test()) {
             System.out.println("OK.");

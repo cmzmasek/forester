@@ -30,7 +30,9 @@ public final class TreeFontSet {
 
     static final int            BOLD_AND_ITALIC           = Font.BOLD + Font.ITALIC;
     final static float          FONT_SIZE_CHANGE_STEP     = 1.0f;
-    final static float          SMALL_FONTS_BASE          = 8;
+    // bounds for the user-chosen tip-label font size (the control-panel slider range)
+    static final int            MIN_FONT_SIZE             = 2;
+    static final int            MAX_FONT_SIZE             = 32;
     private final static String DEFAULT_FONT              = FontResources.DEFAULT_FIGURE_FONT;
     private Font                _base_font;
     private boolean             _decreased_size_by_system = false;
@@ -140,22 +142,32 @@ public final class TreeFontSet {
         setupFontMetrics();
     }
 
+    // ---- user-chosen font size (single source of truth: the base font) -------------------------
+    // increaseFontSize()/decreaseFontSize(min,true) above remain the *transient* overlap auto-shrink
+    // used by the paint loop; the methods below are the *user* size, driven by the slider/keyboard/dialog.
+
+    /** The user-chosen tip-label (large) font size; the small font is this minus 2. */
+    int getUserFontSize() {
+        return getBaseFont().getSize();
+    }
+
+    /** Sets the user font size (clamped), re-deriving large/small from it and clearing any auto-shrink. */
+    void setUserFontSize( final int size ) {
+        final int s = Math.max( MIN_FONT_SIZE, Math.min( MAX_FONT_SIZE, size ) );
+        setDecreasedSizeBySystem( false );
+        setBaseFont( getBaseFont().deriveFont( (float) s ) ); // re-derives large/small + their memory
+    }
+
+    void increaseUserFontSize() {
+        setUserFontSize( getUserFontSize() + (int) FONT_SIZE_CHANGE_STEP );
+    }
+
+    void decreaseUserFontSize() {
+        setUserFontSize( getUserFontSize() - (int) FONT_SIZE_CHANGE_STEP );
+    }
+
     boolean isDecreasedSizeBySystem() {
         return _decreased_size_by_system;
-    }
-
-    void largeFonts() {
-        setDecreasedSizeBySystem( false );
-        _small_font = _small_font.deriveFont( 12f );
-        _large_font = _large_font.deriveFont( 14f );
-        setupFontMetrics();
-    }
-
-    void mediumFonts() {
-        setDecreasedSizeBySystem( false );
-        _small_font = _small_font.deriveFont( 8f );
-        _large_font = _large_font.deriveFont( 10f );
-        setupFontMetrics();
     }
 
     void reset() {
@@ -167,24 +179,4 @@ public final class TreeFontSet {
         intializeFonts();
     }
 
-    void smallFonts() {
-        setDecreasedSizeBySystem( false );
-        _small_font = _small_font.deriveFont( SMALL_FONTS_BASE - 2 );
-        _large_font = _large_font.deriveFont( SMALL_FONTS_BASE );
-        setupFontMetrics();
-    }
-
-    void superTinyFonts() {
-        setDecreasedSizeBySystem( false );
-        _small_font = _small_font.deriveFont( 2f );
-        _large_font = _large_font.deriveFont( 4f );
-        setupFontMetrics();
-    }
-
-    void tinyFonts() {
-        setDecreasedSizeBySystem( false );
-        _small_font = _small_font.deriveFont( 4f );
-        _large_font = _large_font.deriveFont( 6f );
-        setupFontMetrics();
-    }
 }

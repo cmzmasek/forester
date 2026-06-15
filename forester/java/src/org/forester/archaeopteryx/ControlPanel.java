@@ -53,6 +53,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JSlider;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -217,6 +218,10 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JButton _zoom_out_domain_structure;
     private JButton _zoom_out_x;
     private JButton _zoom_out_y;
+    // tip-label font size (replaces the old "Font Size" menu); the slider is the user-chosen size
+    private JLabel  _font_size_label;
+    private JSlider _font_size_slider;
+    private boolean _font_slider_is_being_set; // guard so programmatic slider updates don't re-apply
     // "Display Data" checkboxes are shown only when the current tree actually carries the
     // corresponding data (so the panel is not a wall of toggles that silently do nothing). This
     // maps each option constant to its wrapper panel (so a whole row can be collapsed/shown) and
@@ -1219,6 +1224,21 @@ final class ControlPanel extends JPanel implements ActionListener {
         addJButton(_fit_width, y_panel);
         addJButton(_zoom_in_x, y_panel);
         addJButton(_zoom_out_y, z_panel);
+        // tip-label font-size slider (replaces the retired "Font Size" menu)
+        nextRowGap(SECTION_GAP);
+        add(_font_size_label = new JLabel(fontSizeLabelText(AptxConstants.DEFAULT_TREE_FONT_SIZE)));
+        customizeLabel(_font_size_label, getConfiguration());
+        _font_size_slider = new JSlider(TreeFontSet.MIN_FONT_SIZE, TreeFontSet.MAX_FONT_SIZE,
+                AptxConstants.DEFAULT_TREE_FONT_SIZE);
+        _font_size_slider.setToolTipText("tip-label font size [PageUp/PageDown, Shift +/-, or Ctrl+mousewheel]");
+        // a small preferred width so the slider does not widen the control panel; the full-width GridBag row
+        // stretches it to the panel width (set by the comboboxes), like the zoom buttons do
+        _font_size_slider.setPreferredSize(new Dimension(10, _font_size_slider.getPreferredSize().height));
+        if (!getConfiguration().isUseNativeUI()) {
+            _font_size_slider.setBackground(getBackground());
+        }
+        _font_size_slider.addChangeListener(e -> fontSizeSliderChanged());
+        add(_font_size_slider);
         nextRowGap(SECTION_GAP);
         add(o_panel);
         addJButton(_order, o_panel);
@@ -1230,6 +1250,58 @@ final class ControlPanel extends JPanel implements ActionListener {
             setUpControlsForDomainStrucures();
         }
         setVisibilityOfDomainStrucureControls();
+    }
+
+    /** Applies the slider value as the user font size (on release / discrete change); keeps the label live. */
+    private void fontSizeSliderChanged() {
+        if (_font_slider_is_being_set) {
+            return;
+        }
+        final int size = _font_size_slider.getValue();
+        _font_size_label.setText(fontSizeLabelText(size)); // live feedback while dragging
+        if (_font_size_slider.getValueIsAdjusting()) {
+            return; // defer the (re)layout until the drag settles
+        }
+        getMainPanel().getTreeFontSet().setUserFontSize(size);
+        displayedPhylogenyMightHaveChanged(true);
+    }
+
+    /**
+     * Syncs the font-size slider + label to the font size currently <i>displayed</i> ({@code getLargeFont}),
+     * so it tracks the overlap auto-fit too -- e.g. after F/E/W or a horizontal zoom shrink/grow the labels.
+     */
+    void updateFontSizeSlider() {
+        if (_font_size_slider == null) {
+            return;
+        }
+        final TreeFontSet tfs = getMainPanel().getTreeFontSet();
+        if (tfs == null) {
+            return;
+        }
+        final int size = Math.max(TreeFontSet.MIN_FONT_SIZE,
+                Math.min(TreeFontSet.MAX_FONT_SIZE, tfs.getLargeFont().getSize()));
+        if (_font_size_slider.getValue() != size) {
+            _font_slider_is_being_set = true; // don't let setValue() re-trigger an apply
+            _font_size_slider.setValue(size);
+            _font_slider_is_being_set = false;
+        }
+        _font_size_label.setText(fontSizeLabelText(size));
+    }
+
+    private static String fontSizeLabelText(final int size) {
+        return "Font size: " + size;
+    }
+
+    /** For tests: the current slider value (-1 if the slider is not built). */
+    int getFontSizeSliderValue() {
+        return (_font_size_slider == null) ? -1 : _font_size_slider.getValue();
+    }
+
+    /** For tests: move the slider (fires the change listener, so it applies the size like a user drag-release). */
+    void setFontSizeSliderValue(final int value) {
+        if (_font_size_slider != null) {
+            _font_size_slider.setValue(value);
+        }
     }
 
     void addCheckbox(final int which, final String title) {
@@ -1491,6 +1563,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             _mainpanel.adjustJScrollPane();
             _mainpanel.getCurrentTreePanel().repaint();
             // _mainpanel.getCurrentTreePanel().setUpUrtFactor();
+            updateFontSizeSlider(); // keep the slider in sync with keyboard/wheel nudges and the font dialog
         }
     }
 

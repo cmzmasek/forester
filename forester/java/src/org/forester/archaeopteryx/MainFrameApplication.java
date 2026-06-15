@@ -194,7 +194,6 @@ public final class MainFrameApplication extends MainFrame {
         buildAnalysisMenu();
         buildToolsMenu();
         buildViewMenu();
-        buildFontSizeMenu();
         buildOptionsMenu();
         buildTypeMenu();
         buildSettingsMenu();
