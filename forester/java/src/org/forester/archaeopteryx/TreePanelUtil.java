@@ -372,15 +372,14 @@ public class TreePanelUtil {
 
     /** Sentinel for {@link #maximalMonochromaticRoots}: a subtree whose tips are not all one rank taxon. */
     private final static String MIXED_TAXON = "<<MIXED>>";
-    // process-wide lineage service: one shared cache across colorize invocations and background fetches.
-    private static TaxonomicLineageService _default_lineage_service;
 
-    /** The shared {@link TaxonomicLineageService} (NCBI-backed) used by the rank colorizer. */
+    /**
+     * The process-wide shared {@link TaxonomicLineageService} (NCBI-backed) used by the rank colorizer.
+     * It is the same singleton the Fetch tool and the Settings cache panel use, so all three share one
+     * in-memory cache and one persistent (cross-session) disk cache.
+     */
     final static synchronized TaxonomicLineageService getDefaultLineageService() {
-        if ( _default_lineage_service == null ) {
-            _default_lineage_service = new NcbiTaxonomyLineageService();
-        }
-        return _default_lineage_service;
+        return NcbiTaxonomyLineageService.getShared();
     }
 
     /**

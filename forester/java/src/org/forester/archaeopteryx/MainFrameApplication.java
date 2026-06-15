@@ -71,6 +71,7 @@ import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.util.ForesterUtil;
+import org.forester.ws.seqdb.NcbiTaxonomyLineageService;
 
 public final class MainFrameApplication extends MainFrame {
 
@@ -263,6 +264,8 @@ public final class MainFrameApplication extends MainFrame {
         // ...and its children
         _contentpane.repaint();
         System.gc();
+        // warm the persistent taxonomy cache off the EDT now, so the first colorize/fetch is snappy
+        NcbiTaxonomyLineageService.getShared().primeAsync();
     }
 
     @Override

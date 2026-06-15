@@ -83,8 +83,20 @@ public final class SettingsDialogTest {
                 dlg.pack();
                 final List<JTabbedPane> tabs = new ArrayList<>();
                 collect( dlg.getContentPane(), JTabbedPane.class, tabs );
-                if ( tabs.isEmpty() || ( tabs.get( 0 ).getTabCount() != 6 ) ) {
+                if ( tabs.isEmpty() || ( tabs.get( 0 ).getTabCount() != 7 ) ) {
                     ok[ 0 ] = false;
+                }
+                else {
+                    // the persistent-taxonomy-cache tab must be present, with its on/off checkbox
+                    boolean has_cache_tab = false;
+                    for ( int i = 0; i < tabs.get( 0 ).getTabCount(); ++i ) {
+                        if ( "Taxonomy Cache".equals( tabs.get( 0 ).getTitleAt( i ) ) ) {
+                            has_cache_tab = true;
+                        }
+                    }
+                    if ( !has_cache_tab || ( findCheckBox( dlg.getContentPane(), "Use persistent cache" ) == null ) ) {
+                        ok[ 0 ] = false;
+                    }
                 }
                 // a dialog checkbox must drive its backing menu item (the doClick binding)
                 final boolean before = mf[ 0 ]._show_scale_cbmi.isSelected();

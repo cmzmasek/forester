@@ -36,6 +36,7 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JRadioButtonMenuItem;
@@ -50,6 +51,8 @@ import org.forester.archaeopteryx.Options.SUPPORT_VISUALIZATION;
 import org.forester.phylogeny.data.NodeDataField;
 import org.forester.phylogeny.data.NodeVisualData.NodeFill;
 import org.forester.phylogeny.data.NodeVisualData.NodeShape;
+import org.forester.ws.seqdb.NcbiTaxonomyLineageService;
+import org.forester.ws.seqdb.TaxonomyCacheStatus;
 
 /**
  * A modeless, live-apply "Settings" dialog that replaces the old Options and Type menus (and the
@@ -62,6 +65,12 @@ final class SettingsDialog extends JDialog {
 
     private static final long serialVersionUID = 1L;
     private final MainFrame   _mf;
+    // "Taxonomy Cache" tab widgets, refreshed whenever that tab is shown
+    private JCheckBox         _cache_enabled_cb;
+    private JLabel            _cache_location_label;
+    private JLabel            _cache_size_label;
+    private JLabel            _cache_status_label;
+    private int               _cache_tab_index = -1;
 
     SettingsDialog( final MainFrame mf ) {
         super( mf, "Settings", false );
@@ -73,6 +82,14 @@ final class SettingsDialog extends JDialog {
         tabs.addTab( "Export & Print", scroll( exportTab() ) );
         tabs.addTab( "File Reading", scroll( readTab() ) );
         tabs.addTab( "File Saving", scroll( saveTab() ) );
+        _cache_tab_index = tabs.getTabCount();
+        tabs.addTab( "Taxonomy Cache", scroll( cacheTab() ) );
+        // the cache stats are read from disk; refresh them each time the tab is brought to the front
+        tabs.addChangeListener( e -> {
+            if ( tabs.getSelectedIndex() == _cache_tab_index ) {
+                refreshCacheTab();
+            }
+        } );
         final JButton close = new JButton( "Close" );
         close.addActionListener( e -> setVisible( false ) );
         final JPanel south = new JPanel( new FlowLayout( FlowLayout.RIGHT ) );
@@ -192,6 +209,66 @@ final class SettingsDialog extends JDialog {
         add( c, cb( _mf._use_brackets_for_conf_in_nh_export_cbmi ) );
         add( c, cb( _mf._use_internal_names_for_conf_in_nh_export_cbmi ) );
         return c;
+    }
+
+    private JPanel cacheTab() {
+        final JPanel c = column();
+        c.add( header( "Persistent Taxonomy Cache" ) );
+        final JLabel intro = new JLabel( "<html>NCBI taxonomy lookups are remembered on disk for 30 days, so trees of"
+                + " organisms you've already seen<br>load without re-querying. If the cache can't be written,"
+                + " Archaeopteryx still works &mdash; lookups<br>just aren't remembered between sessions.</html>" );
+        intro.setAlignmentX( Component.LEFT_ALIGNMENT );
+        c.add( intro );
+        c.add( Box.createVerticalStrut( 8 ) );
+        _cache_enabled_cb = new JCheckBox( "Use persistent cache" );
+        _cache_enabled_cb.addActionListener( e -> {
+            NcbiTaxonomyLineageService.getShared().setPersistentCacheEnabled( _cache_enabled_cb.isSelected() );
+            refreshCacheTab();
+        } );
+        add( c, _cache_enabled_cb );
+        c.add( Box.createVerticalStrut( 4 ) );
+        _cache_location_label = new JLabel();
+        _cache_size_label = new JLabel();
+        _cache_status_label = new JLabel();
+        add( c, _cache_location_label );
+        add( c, _cache_size_label );
+        add( c, _cache_status_label );
+        c.add( Box.createVerticalStrut( 8 ) );
+        add( c, button( "Clear Cache", () -> {
+            final int ok = JOptionPane.showConfirmDialog( this, "Delete all cached taxonomy data?",
+                                                          "Clear Taxonomy Cache", JOptionPane.OK_CANCEL_OPTION,
+                                                          JOptionPane.QUESTION_MESSAGE );
+            if ( ok == JOptionPane.OK_OPTION ) {
+                NcbiTaxonomyLineageService.getShared().clearPersistentCache();
+                refreshCacheTab();
+            }
+        } ) );
+        refreshCacheTab();
+        return c;
+    }
+
+    /** Reads the current cache status from disk and updates the tab's labels/checkbox. */
+    private void refreshCacheTab() {
+        final TaxonomyCacheStatus s = NcbiTaxonomyLineageService.getShared().getCacheStatus();
+        _cache_enabled_cb.setSelected( s.isEnabled() );
+        _cache_location_label.setText( "Location: " + s.getPath() );
+        if ( !s.isAvailable() ) {
+            _cache_size_label.setText( " " );
+            final String why = ( s.getUnavailableReason() == null ) ? "" : ( s.getUnavailableReason() + " " );
+            _cache_status_label.setText( "Cache unavailable: " + why + "— lookups still work, just slower." );
+        }
+        else if ( !s.isEnabled() ) {
+            // available, but switched off: make clear nothing is being read/written right now
+            _cache_size_label.setText( "Disabled — " + TaxonomyCacheStatus.formatBytes( s.getBytes() ) + " ("
+                    + s.getEntries() + " taxa) retained on disk." );
+            _cache_status_label.setText( "Re-check \"Use persistent cache\" to use it again." );
+        }
+        else {
+            _cache_size_label.setText( "Size: " + TaxonomyCacheStatus.formatBytes( s.getBytes() ) + " — "
+                    + s.getEntries() + " taxa" );
+            _cache_status_label.setText( TaxonomyCacheStatus.describeAge( s.getOldestEpochMs(),
+                                                                         System.currentTimeMillis() ) );
+        }
     }
 
     // ---- bindings ------------------------------------------------------------------------------

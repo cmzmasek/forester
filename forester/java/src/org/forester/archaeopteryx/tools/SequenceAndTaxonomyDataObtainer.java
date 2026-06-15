@@ -60,8 +60,9 @@ public final class SequenceAndTaxonomyDataObtainer extends RunnableProcess {
         start( _mf, "sequence & taxonomy data" );
         final SequenceTaxonomyResolver.Result result;
         try {
+            // the shared singleton: same in-memory + persistent taxonomy cache as the rank colorizer
             final SequenceTaxonomyResolver resolver = new SequenceTaxonomyResolver( new WebSequenceFetcher(),
-                                                                                    new NcbiTaxonomyLineageService() );
+                                                                                    NcbiTaxonomyLineageService.getShared() );
             result = resolver.resolve( _phy, this ); // `this` is the CancelFlag
         }
         finally {

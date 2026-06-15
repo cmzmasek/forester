@@ -276,6 +276,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Taxonomy disk cache: ");
+        if (org.forester.ws.seqdb.TaxonomyDiskCacheTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Node support symbol: ");
         if (org.forester.archaeopteryx.NodeSupportSymbolTest.test()) {
             System.out.println("OK.");
