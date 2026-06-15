@@ -23,11 +23,13 @@ package org.forester.archaeopteryx.tools;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.forester.ws.seqdb.SequenceTaxonomyResolver;
+
 /**
- * Unit test for the pure report-building logic of {@link SequenceAndTaxonomyDataObtainer}
- * ({@code hasIssues} / {@code buildCompletionMessage}). These need no network or GUI, so they
- * run in the headless suite; the actual web-service phases are exercised only against live
- * UniProt/EMBL-GenBank and are not unit-tested here.
+ * Unit test for the pure report/commit logic of {@link SequenceAndTaxonomyDataObtainer}
+ * ({@code shouldCommit} / {@code hasIssues} / {@code buildCompletionMessage}) over the new
+ * {@link SequenceTaxonomyResolver.Result}. No network or GUI, so it runs in the headless suite; the
+ * actual web-service resolution is exercised only against live UniProt/NCBI.
  */
 public final class SequenceAndTaxonomyDataObtainerTest {
 
@@ -38,65 +40,65 @@ public final class SequenceAndTaxonomyDataObtainerTest {
     }
 
     public static boolean test() {
-        // 1. nothing wrong: not an issue, and a plain success message (both null and both empty).
-        if ( SequenceAndTaxonomyDataObtainer.hasIssues( null, null, null, null ) ) {
-            return fail( "all-null must not be an issue" );
+        // 1. clean success: not an issue, plain success message, and it commits (something was written).
+        final SequenceTaxonomyResolver.Result clean = result( empty(), 3, 2, false, null );
+        if ( SequenceAndTaxonomyDataObtainer.hasIssues( clean ) ) {
+            return fail( "a clean run must not be an issue" );
         }
-        if ( SequenceAndTaxonomyDataObtainer.hasIssues( empty(), null, empty(), null ) ) {
-            return fail( "empty not-found sets must not be an issue" );
+        if ( !SequenceAndTaxonomyDataObtainer.shouldCommit( clean ) ) {
+            return fail( "a run that wrote data must commit" );
         }
-        final String success = SequenceAndTaxonomyDataObtainer.buildCompletionMessage( empty(), null, empty(), null );
-        if ( !success.equals( "Sequence and taxonomy data successfully obtained." ) ) {
-            return fail( "unexpected success message: " + success );
-        }
-
-        // 2. a sequence error is an issue and is reported (taxonomy section absent when clean).
-        if ( !SequenceAndTaxonomyDataObtainer.hasIssues( null, "boom", null, null ) ) {
-            return fail( "a sequence error must be an issue" );
-        }
-        final String se = SequenceAndTaxonomyDataObtainer.buildCompletionMessage( null, "no connection", empty(), null );
-        if ( !se.contains( "Sequence data: error - no connection" ) ) {
-            return fail( "sequence error not reported: " + se );
-        }
-        if ( se.contains( "Taxonomy data" ) ) {
-            return fail( "clean taxonomy section must be absent: " + se );
+        final String ok_msg = SequenceAndTaxonomyDataObtainer.buildCompletionMessage( clean );
+        if ( !ok_msg.startsWith( "Sequence and taxonomy data successfully obtained" )
+                || !ok_msg.contains( "3 sequence(s)" ) || !ok_msg.contains( "2 taxonomy" ) ) {
+            return fail( "unexpected success message: " + ok_msg );
         }
 
-        // 3. a taxonomy error is an issue and is reported.
-        if ( !SequenceAndTaxonomyDataObtainer.hasIssues( null, null, null, "tax boom" ) ) {
-            return fail( "a taxonomy error must be an issue" );
-        }
-        final String te = SequenceAndTaxonomyDataObtainer.buildCompletionMessage( empty(), null, null, "tax down" );
-        if ( !te.contains( "Taxonomy data: error - tax down" ) ) {
-            return fail( "taxonomy error not reported: " + te );
+        // 2. nothing written -> do not commit (leave the tree + its edited-state untouched).
+        if ( SequenceAndTaxonomyDataObtainer.shouldCommit( result( empty(), 0, 0, false, null ) ) ) {
+            return fail( "a run that wrote nothing must not commit" );
         }
 
-        // 4. a single not-found node uses the singular wording and lists the node.
-        final String one = SequenceAndTaxonomyDataObtainer.buildCompletionMessage( set( "node_x" ), null, empty(), null );
-        if ( !SequenceAndTaxonomyDataObtainer.hasIssues( set( "node_x" ), null, null, null ) ) {
-            return fail( "a single not-found node must be an issue" );
+        // 3. a transport error is an issue and is reported.
+        final SequenceTaxonomyResolver.Result err = result( empty(), 1, 0, false, "connection reset" );
+        if ( !SequenceAndTaxonomyDataObtainer.hasIssues( err ) ) {
+            return fail( "an error must be an issue" );
         }
-        if ( !one.contains( "following node:" ) || !one.contains( "node_x" ) ) {
+        if ( !SequenceAndTaxonomyDataObtainer.buildCompletionMessage( err ).contains( "Error: connection reset" ) ) {
+            return fail( "error not reported" );
+        }
+
+        // 4. cancellation is an issue and is reported; a partial write still commits.
+        final SequenceTaxonomyResolver.Result cancelled = result( empty(), 5, 5, true, null );
+        if ( !SequenceAndTaxonomyDataObtainer.hasIssues( cancelled )
+                || !SequenceAndTaxonomyDataObtainer.shouldCommit( cancelled ) ) {
+            return fail( "a cancelled-but-partial run is an issue but must still commit" );
+        }
+        if ( !SequenceAndTaxonomyDataObtainer.buildCompletionMessage( cancelled ).contains( "Cancelled" ) ) {
+            return fail( "cancellation not reported" );
+        }
+
+        // 5. a single not-found node: singular wording, listed, no total.
+        final String one = SequenceAndTaxonomyDataObtainer
+                .buildCompletionMessage( result( set( "node_x" ), 0, 1, false, null ) );
+        if ( !one.contains( "following node:" ) || !one.contains( "node_x" ) || one.contains( "total:" ) ) {
             return fail( "single not-found wording/listing wrong: " + one );
         }
-        if ( one.contains( "total:" ) ) {
-            return fail( "single not-found must not print a total: " + one );
-        }
 
-        // 5. multiple not-found nodes print a total and list each.
-        final SortedSet<String> three = set( "a", "b", "c" );
-        final String multi = SequenceAndTaxonomyDataObtainer.buildCompletionMessage( three, null, empty(), null );
+        // 6. multiple not-found nodes: a total and each listed.
+        final String multi = SequenceAndTaxonomyDataObtainer
+                .buildCompletionMessage( result( set( "a", "b", "c" ), 0, 0, false, null ) );
         if ( !multi.contains( "total: 3" ) || !multi.contains( "a" ) || !multi.contains( "b" )
                 || !multi.contains( "c" ) ) {
             return fail( "multi not-found wording/listing wrong: " + multi );
         }
 
-        // 6. a long not-found list is truncated to 20 entries with an ellipsis, total still exact.
+        // 7. a long not-found list is truncated to 20 with an ellipsis; total stays exact.
         final SortedSet<String> many = new TreeSet<>();
         for( int i = 0; i < 25; i++ ) {
             many.add( String.format( "n%02d", i ) );
         }
-        final String trunc = SequenceAndTaxonomyDataObtainer.buildCompletionMessage( empty(), null, many, null );
+        final String trunc = SequenceAndTaxonomyDataObtainer.buildCompletionMessage( result( many, 0, 0, false, null ) );
         if ( !trunc.contains( "total: 25" ) || !trunc.contains( "..." ) ) {
             return fail( "long list not truncated/totalled: " + trunc );
         }
@@ -106,30 +108,15 @@ public final class SequenceAndTaxonomyDataObtainerTest {
         if ( !trunc.contains( "n00" ) || !trunc.contains( "n19" ) ) {
             return fail( "truncated list must include the first 20 entries: " + trunc );
         }
-
-        // 7. issues in BOTH phases produce BOTH sections in one message.
-        final String both = SequenceAndTaxonomyDataObtainer.buildCompletionMessage( set( "seqnode" ), null,
-                                                                                    null, "tax error" );
-        if ( !both.contains( "Sequence data" ) || !both.contains( "seqnode" )
-                || !both.contains( "Taxonomy data: error - tax error" ) ) {
-            return fail( "combined message missing a section: " + both );
-        }
-
-        // 8. commit policy: commit unless BOTH phases errored (a total failure obtains nothing,
-        //    so the displayed tree and its edited-state must be left untouched).
-        if ( !SequenceAndTaxonomyDataObtainer.shouldCommit( null, null ) ) {
-            return fail( "both phases succeeding must commit" );
-        }
-        if ( !SequenceAndTaxonomyDataObtainer.shouldCommit( "seq down", null ) ) {
-            return fail( "a successful taxonomy phase must still commit" );
-        }
-        if ( !SequenceAndTaxonomyDataObtainer.shouldCommit( null, "tax down" ) ) {
-            return fail( "a successful sequence phase must still commit" );
-        }
-        if ( SequenceAndTaxonomyDataObtainer.shouldCommit( "seq down", "tax down" ) ) {
-            return fail( "a total failure (both phases errored) must not commit" );
-        }
         return true;
+    }
+
+    private static SequenceTaxonomyResolver.Result result( final SortedSet<String> not_found,
+                                                           final int seq,
+                                                           final int tax,
+                                                           final boolean cancelled,
+                                                           final String error ) {
+        return new SequenceTaxonomyResolver.Result( not_found, seq, tax, cancelled, error );
     }
 
     private static SortedSet<String> empty() {

@@ -25,10 +25,11 @@ import java.util.Calendar;
 
 final public class ProcessRunning {
 
-    private static long  count = 0;
-    final private long   _id;
-    final private String _name;
-    final private String _start;
+    private static long           count = 0;
+    final private long            _id;
+    final private String          _name;
+    final private String          _start;
+    final private RunnableProcess _process; // the cancellable task, or null for a non-cancellable process
 
     public long getId() {
         return _id;
@@ -42,23 +43,29 @@ final public class ProcessRunning {
         return _start;
     }
 
+    /** The running task (so the UI can request its cancellation), or {@code null} if not cancellable. */
+    public RunnableProcess getProcess() {
+        return _process;
+    }
+
     @Override
     public String toString() {
         return getName() + " [id=" + getId() + "] [start=" + getStart() + "]";
     }
 
-    synchronized static ProcessRunning createInstance( final String name ) {
+    synchronized static ProcessRunning createInstance( final String name, final RunnableProcess process ) {
         final Calendar cal = Calendar.getInstance();
         final SimpleDateFormat sdf = new SimpleDateFormat( "HH:mm:ss" );
-        return new ProcessRunning( count++, name, sdf.format( cal.getTime() ) );
+        return new ProcessRunning( count++, name, sdf.format( cal.getTime() ), process );
     }
 
-    private ProcessRunning( final long id, final String name, final String start ) {
+    private ProcessRunning( final long id, final String name, final String start, final RunnableProcess process ) {
         if ( id < 0 ) {
             throw new IllegalArgumentException( "process id cannot be negative" );
         }
         _id = id;
         _name = name;
         _start = start;
+        _process = process;
     }
 }

@@ -66,6 +66,9 @@ public final class RankColorizationResolver extends RunnableProcess {
         String error = null;
         try {
             for( final String name : _names ) {
+                if ( isCancelled() ) {
+                    break; // user cancelled from the process menu -- colorize what was resolved so far
+                }
                 try {
                     _service.fetch( name );
                 }

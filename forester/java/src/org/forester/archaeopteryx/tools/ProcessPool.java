@@ -54,7 +54,11 @@ public class ProcessPool {
     }
 
     public synchronized long addProcess( final String name ) {
-        final ProcessRunning p = ProcessRunning.createInstance( name );
+        return addProcess( name, null );
+    }
+
+    public synchronized long addProcess( final String name, final RunnableProcess process ) {
+        final ProcessRunning p = ProcessRunning.createInstance( name, process );
         final long id = p.getId();
         if ( getProcessById( id ) != null ) {
             throw new IllegalStateException( " process with id " + id + "already exists" );

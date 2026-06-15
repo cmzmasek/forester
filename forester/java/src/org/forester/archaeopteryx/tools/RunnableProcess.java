@@ -23,10 +23,27 @@ package org.forester.archaeopteryx.tools;
 import org.forester.archaeopteryx.AptxConstants;
 import org.forester.archaeopteryx.MainFrame;
 import org.forester.util.ForesterUtil;
+import org.forester.ws.seqdb.CancelFlag;
 
-public abstract class RunnableProcess implements Runnable {
+/**
+ * A background task registered with the {@link ProcessPool} (so it shows in the process menu while it
+ * runs). It is a {@link CancelFlag}: a long-running task should poll {@link #isCancelled()} and stop
+ * promptly when the user requests cancellation (the process menu calls {@link #requestCancel()}).
+ */
+public abstract class RunnableProcess implements Runnable, CancelFlag {
 
-    long _process_id;
+    long             _process_id;
+    private volatile boolean _cancelled = false;
+
+    @Override
+    public boolean isCancelled() {
+        return _cancelled;
+    }
+
+    /** Requests cooperative cancellation; a running task polling {@link #isCancelled()} stops at its next check. */
+    public void requestCancel() {
+        _cancelled = true;
+    }
 
     long getProcessId() {
         return _process_id;
@@ -37,7 +54,7 @@ public abstract class RunnableProcess implements Runnable {
     }
 
     public void start( final MainFrame mf, final String name ) {
-        setProcessId( mf.getProcessPool().addProcess( name ) );
+        setProcessId( mf.getProcessPool().addProcess( name, this ) );
         mf.updateProcessMenu();
     }
 

@@ -795,7 +795,13 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             _jmenubar.add(_process_menu);
             for (int i = 0; i < _process_pool.size(); ++i) {
                 final ProcessRunning p = _process_pool.getProcessByIndex(i);
-                _process_menu.add(customizeJMenuItem(new JMenuItem(p.getName() + " [" + p.getStart() + "]")));
+                final boolean cancellable = (p.getProcess() != null) && !p.getProcess().isCancelled();
+                final JMenuItem item = customizeJMenuItem(new JMenuItem(
+                        p.getName() + " [" + p.getStart() + "]" + (cancellable ? "  — click to cancel" : "")));
+                if (cancellable) {
+                    item.addActionListener(e -> p.getProcess().requestCancel());
+                }
+                _process_menu.add(item);
             }
         } else {
             if (_process_menu != null) {

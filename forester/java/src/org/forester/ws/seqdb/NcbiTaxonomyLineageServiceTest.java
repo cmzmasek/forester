@@ -43,6 +43,7 @@ public final class NcbiTaxonomyLineageServiceTest {
               <Taxon>
                 <TaxId>9682</TaxId>
                 <ScientificName>Felis</ScientificName>
+                <OtherNames><GenbankCommonName>cats</GenbankCommonName></OtherNames>
                 <Rank>genus</Rank>
                 <LineageEx>
                   <Taxon><TaxId>131567</TaxId><ScientificName>cellular organisms</ScientificName><Rank>no rank</Rank></Taxon>
@@ -123,17 +124,37 @@ public final class NcbiTaxonomyLineageServiceTest {
             return fail( "malformed efetch must yield empty lineage, not throw" );
         }
 
-        // request throttling (keeps the client under NCBI's ~3 req/sec limit -> avoids HTTP 429)
-        if ( NcbiTaxonomyLineageService.throttleDelayMs( 1000L, 1100L, 350L ) != 250L ) {
+        // full taxonomy detail (the "Fetch Sequence & Taxonomic Data" path): scientific name, rank,
+        // tax-id, common name, and the COMPLETE lineage of scientific names (incl. the no-rank ancestor)
+        final ResolvedTaxonomy rt = NcbiTaxonomyLineageService.parseEfetchTaxonomyDetail( EFETCH_FELIS );
+        if ( ( rt == null ) || rt.isEmpty() ) {
+            return fail( "Felis detail did not parse" );
+        }
+        if ( !"Felis".equals( rt.getScientificName() ) || !"genus".equals( rt.getRank() )
+                || !"9682".equals( rt.getTaxId() ) || !"cats".equals( rt.getCommonName() ) ) {
+            return fail( "detail fields wrong: " + rt );
+        }
+        if ( !rt.getLineage().contains( "Carnivora" )
+                || !"Felis".equals( rt.getLineage().get( rt.getLineage().size() - 1 ) )
+                || !rt.getLineage().contains( "cellular organisms" ) ) {
+            return fail( "detail lineage must be the full name path ending in Felis; got " + rt.getLineage() );
+        }
+        if ( !NcbiTaxonomyLineageService.parseEfetchTaxonomyDetail( "" ).isEmpty()
+                || !NcbiTaxonomyLineageService.parseEfetchTaxonomyDetail( "<broken" ).isEmpty() ) {
+            return fail( "empty/malformed efetch detail must yield an empty ResolvedTaxonomy, not throw" );
+        }
+
+        // request throttling (keeps the clients under NCBI's ~3 req/sec limit -> avoids HTTP 429)
+        if ( WsHttp.throttleDelayMs( 1000L, 1100L, 350L ) != 250L ) {
             return fail( "throttle must wait the remaining interval (250ms)" );
         }
-        if ( NcbiTaxonomyLineageService.throttleDelayMs( 1000L, 1350L, 350L ) != 0L ) {
+        if ( WsHttp.throttleDelayMs( 1000L, 1350L, 350L ) != 0L ) {
             return fail( "throttle must not wait once the interval has elapsed (boundary)" );
         }
-        if ( NcbiTaxonomyLineageService.throttleDelayMs( 1000L, 9999L, 350L ) != 0L ) {
+        if ( WsHttp.throttleDelayMs( 1000L, 9999L, 350L ) != 0L ) {
             return fail( "throttle must never return a negative wait" );
         }
-        if ( NcbiTaxonomyLineageService.throttleDelayMs( 0L, 0L, 350L ) != 350L ) {
+        if ( WsHttp.throttleDelayMs( 0L, 0L, 350L ) != 350L ) {
             return fail( "the first request waits the full interval from a zero baseline" );
         }
         return true;

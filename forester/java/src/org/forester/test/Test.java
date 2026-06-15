@@ -119,9 +119,6 @@ import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
 import org.forester.util.GeneralTable;
 import org.forester.util.SequenceAccessionTools;
-import org.forester.ws.seqdb.SequenceDatabaseEntry;
-import org.forester.ws.seqdb.SequenceDbWsTools;
-import org.forester.ws.seqdb.UniProtTaxonomy;
 
 @SuppressWarnings("unused")
 public final class Test {
@@ -223,14 +220,6 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
-        System.out.print("Taxonomy data manager: ");
-        if (org.forester.analysis.TaxonomyDataManagerTest.test()) {
-            System.out.println("OK.");
-            succeeded++;
-        } else {
-            System.out.println("failed.");
-            failed++;
-        }
         System.out.print("Vector graphics export: ");
         if (org.forester.archaeopteryx.VectorGraphicsExporterTest.test()) {
             System.out.println("OK.");
@@ -257,6 +246,30 @@ public final class Test {
         }
         System.out.print("NCBI taxonomy lineage service: ");
         if (org.forester.ws.seqdb.NcbiTaxonomyLineageServiceTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("UniProtKB client: ");
+        if (org.forester.ws.seqdb.UniProtKbClientTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("NCBI sequence client: ");
+        if (org.forester.ws.seqdb.NcbiSequenceClientTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Sequence & taxonomy resolver: ");
+        if (org.forester.ws.seqdb.SequenceTaxonomyResolverTest.test()) {
             System.out.println("OK.");
             succeeded++;
         } else {
@@ -393,14 +406,6 @@ public final class Test {
         }
         System.out.print("UniProtKB id extraction: ");
         if (Test.testExtractUniProtKbProteinSeqIdentifier()) {
-            System.out.println("OK.");
-            succeeded++;
-        } else {
-            System.out.println("failed.");
-            failed++;
-        }
-        System.out.print("Sequence DB tools 1: ");
-        if (testSequenceDbWsTools1()) {
             System.out.println("OK.");
             succeeded++;
         } else {
@@ -4423,187 +4428,6 @@ public final class Test {
                 return false;
             }
         } catch (final Exception e) {
-            return false;
-        }
-        return true;
-    }
-
-    private static boolean testEbiEntryRetrieval() {
-        try {
-            final SequenceDatabaseEntry entry = SequenceDbWsTools.obtainEntry("AAK41263");
-            if (!entry.getAccession().equals("AAK41263")) {
-                System.out.println(entry.getAccession());
-                return false;
-            }
-            if (!entry.getTaxonomyScientificName().equals("Sulfolobus solfataricus P2")) {
-                System.out.println(entry.getTaxonomyScientificName());
-                return false;
-            }
-            if (!entry.getSequenceName()
-                    .equals("Sulfolobus solfataricus P2 Glycogen debranching enzyme, hypothetical (treX-like)")) {
-                System.out.println(entry.getSequenceName());
-                return false;
-            }
-            if (!entry.getGeneName().equals("treX-like")) {
-                System.out.println(entry.getGeneName());
-                return false;
-            }
-            if (!entry.getTaxonomyIdentifier().equals("273057")) {
-                System.out.println(entry.getTaxonomyIdentifier());
-                return false;
-            }
-            if (!entry.getAnnotations().first().getRefValue().equals("3.2.1.33")) {
-                System.out.println(entry.getAnnotations().first().getRefValue());
-                return false;
-            }
-            if (!entry.getAnnotations().first().getRefSource().equals("EC")) {
-                System.out.println(entry.getAnnotations().first().getRefSource());
-                return false;
-            }
-            if (entry.getCrossReferences().size() < 1) {
-                return false;
-            }
-            final SequenceDatabaseEntry entry1 = SequenceDbWsTools.obtainEntry("ABJ16409");
-            if (!entry1.getAccession().equals("ABJ16409")) {
-                return false;
-            }
-            if (!entry1.getTaxonomyScientificName().equals("Felis catus")) {
-                System.out.println(entry1.getTaxonomyScientificName());
-                return false;
-            }
-            if (!entry1.getSequenceName().equals("Felis catus (domestic cat) partial BCL2")) {
-                System.out.println(entry1.getSequenceName());
-                return false;
-            }
-            if (!entry1.getTaxonomyIdentifier().equals("9685")) {
-                System.out.println(entry1.getTaxonomyIdentifier());
-                return false;
-            }
-            if (!entry1.getGeneName().equals("BCL2")) {
-                System.out.println(entry1.getGeneName());
-                return false;
-            }
-            if (entry1.getCrossReferences().size() < 1) {
-                return false;
-            }
-            final SequenceDatabaseEntry entry2 = SequenceDbWsTools.obtainEntry("NM_184234");
-            if (!entry2.getAccession().equals("NM_184234")) {
-                return false;
-            }
-            if (!entry2.getTaxonomyScientificName().equals("Homo sapiens")) {
-                System.out.println(entry2.getTaxonomyScientificName());
-                return false;
-            }
-            if (!entry2.getSequenceName()
-                    .equals("Homo sapiens RNA binding motif protein 39 (RBM39), transcript variant 1, mRNA")) {
-                System.out.println(entry2.getSequenceName());
-                return false;
-            }
-            if (!entry2.getTaxonomyIdentifier().equals("9606")) {
-                System.out.println(entry2.getTaxonomyIdentifier());
-                return false;
-            }
-            if (!entry2.getGeneName().equals("RBM39")) {
-                System.out.println(entry2.getGeneName());
-                return false;
-            }
-            if (entry2.getCrossReferences().size() < 1) {
-                return false;
-            }
-            if (!entry2.getChromosome().equals("20")) {
-                return false;
-            }
-            if (!entry2.getMap().equals("20q11.22")) {
-                return false;
-            }
-            final SequenceDatabaseEntry entry3 = SequenceDbWsTools.obtainEntry("HM043801");
-            if (!entry3.getAccession().equals("HM043801")) {
-                return false;
-            }
-            if (!entry3.getTaxonomyScientificName().equals("Bursaphelenchus xylophilus")) {
-                System.out.println(entry3.getTaxonomyScientificName());
-                return false;
-            }
-            if (!entry3.getSequenceName().equals("Bursaphelenchus xylophilus RAF gene, complete cds")) {
-                System.out.println(entry3.getSequenceName());
-                return false;
-            }
-            if (!entry3.getTaxonomyIdentifier().equals("6326")) {
-                System.out.println(entry3.getTaxonomyIdentifier());
-                return false;
-            }
-            if (!entry3.getSequenceSymbol().equals("RAF")) {
-                System.out.println(entry3.getSequenceSymbol());
-                return false;
-            }
-            if (!ForesterUtil.isEmpty(entry3.getGeneName())) {
-                return false;
-            }
-            if (entry3.getCrossReferences().size() < 1) {
-                return false;
-            }
-            final SequenceDatabaseEntry entry4 = SequenceDbWsTools.obtainEntry("AAA36557.1");
-            if (!entry4.getAccession().equals("AAA36557")) {
-                return false;
-            }
-            if (!entry4.getTaxonomyScientificName().equals("Homo sapiens")) {
-                System.out.println(entry4.getTaxonomyScientificName());
-                return false;
-            }
-            if (!entry4.getSequenceName().equals("Homo sapiens (human) ras protein")) {
-                System.out.println(entry4.getSequenceName());
-                return false;
-            }
-            if (!entry4.getTaxonomyIdentifier().equals("9606")) {
-                System.out.println(entry4.getTaxonomyIdentifier());
-                return false;
-            }
-            if (!entry4.getGeneName().equals("ras")) {
-                System.out.println(entry4.getGeneName());
-                return false;
-            }
-            final SequenceDatabaseEntry entry5 = SequenceDbWsTools.obtainEntry("AAZ45343.1");
-            if (!entry5.getAccession().equals("AAZ45343")) {
-                return false;
-            }
-            if (!entry5.getTaxonomyScientificName().equals("Dechloromonas aromatica RCB")) {
-                System.out.println(entry5.getTaxonomyScientificName());
-                return false;
-            }
-            if (!entry5.getSequenceName().equals("Dechloromonas aromatica RCB 1,4-alpha-glucan branching enzyme")) {
-                System.out.println(entry5.getSequenceName());
-                return false;
-            }
-            if (!entry5.getTaxonomyIdentifier().equals("159087")) {
-                System.out.println(entry5.getTaxonomyIdentifier());
-                return false;
-            }
-            final SequenceDatabaseEntry entry6 = SequenceDbWsTools.obtainEntry("M30539");
-            if (!entry6.getAccession().equals("M30539")) {
-                return false;
-            }
-            if (!entry6.getGeneName().equals("ras")) {
-                return false;
-            }
-            if (!entry6.getSequenceName().equals("Human SK2 c-Ha-ras-1 oncogene-encoded protein gene, exon 1")) {
-                return false;
-            }
-            if (!entry6.getTaxonomyIdentifier().equals("9606")) {
-                return false;
-            }
-            if (!entry6.getTaxonomyScientificName().equals("Homo sapiens")) {
-                return false;
-            }
-            if (entry6.getCrossReferences().size() < 1) {
-                return false;
-            }
-        } catch (final IOException e) {
-            System.out.println();
-            System.out.println("the following might be due to absence internet connection:");
-            e.printStackTrace(System.out);
-            return true;
-        } catch (final Exception e) {
-            e.printStackTrace();
             return false;
         }
         return true;
@@ -12446,189 +12270,6 @@ public final class Test {
         return true;
     }
 
-    private static boolean testSequenceDbWsTools1() {
-        try {
-            final PhylogenyNode n = new PhylogenyNode();
-            n.setName("NP_001025424");
-            Accession acc = SequenceDbWsTools.obtainSeqAccession(n);
-            if ((acc == null) || !acc.getSource().equals(Source.REFSEQ.toString())
-                    || !acc.getValue().equals("NP_001025424")) {
-                return false;
-            }
-            n.setName("340 0559 -- _NP_001025424_dsfdg15 05");
-            acc = SequenceDbWsTools.obtainSeqAccession(n);
-            if ((acc == null) || !acc.getSource().equals(Source.REFSEQ.toString())
-                    || !acc.getValue().equals("NP_001025424")) {
-                return false;
-            }
-            n.setName("NP_001025424.1");
-            acc = SequenceDbWsTools.obtainSeqAccession(n);
-            if ((acc == null) || !acc.getSource().equals(Source.REFSEQ.toString())
-                    || !acc.getValue().equals("NP_001025424.1")) {
-                return false;
-            }
-            n.setName("NM_001030253");
-            acc = SequenceDbWsTools.obtainSeqAccession(n);
-            if ((acc == null) || !acc.getSource().equals(Source.REFSEQ.toString())
-                    || !acc.getValue().equals("NM_001030253")) {
-                return false;
-            }
-            n.setName("BCL2_HUMAN");
-            acc = SequenceDbWsTools.obtainSeqAccession(n);
-            if ((acc == null) || !acc.getSource().equals(Source.UNIPROT.toString())
-                    || !acc.getValue().equals("BCL2_HUMAN")) {
-                System.out.println(acc.toString());
-                return false;
-            }
-            n.setName("P10415");
-            acc = SequenceDbWsTools.obtainSeqAccession(n);
-            if ((acc == null) || !acc.getSource().equals(Source.UNIPROT.toString())
-                    || !acc.getValue().equals("P10415")) {
-                System.out.println(acc.toString());
-                return false;
-            }
-            n.setName(" P10415 ");
-            acc = SequenceDbWsTools.obtainSeqAccession(n);
-            if ((acc == null) || !acc.getSource().equals(Source.UNIPROT.toString())
-                    || !acc.getValue().equals("P10415")) {
-                System.out.println(acc.toString());
-                return false;
-            }
-            n.setName("_P10415|");
-            acc = SequenceDbWsTools.obtainSeqAccession(n);
-            if ((acc == null) || !acc.getSource().equals(Source.UNIPROT.toString())
-                    || !acc.getValue().equals("P10415")) {
-                System.out.println(acc.toString());
-                return false;
-            }
-            n.setName("AY695820");
-            acc = SequenceDbWsTools.obtainSeqAccession(n);
-            if ((acc == null) || !acc.getSource().equals(Source.NCBI.toString())
-                    || !acc.getValue().equals("AY695820")) {
-                System.out.println(acc.toString());
-                return false;
-            }
-            n.setName("_AY695820_");
-            acc = SequenceDbWsTools.obtainSeqAccession(n);
-            if ((acc == null) || !acc.getSource().equals(Source.NCBI.toString())
-                    || !acc.getValue().equals("AY695820")) {
-                System.out.println(acc.toString());
-                return false;
-            }
-            n.setName("AAA59452");
-            acc = SequenceDbWsTools.obtainSeqAccession(n);
-            if ((acc == null) || !acc.getSource().equals(Source.NCBI.toString())
-                    || !acc.getValue().equals("AAA59452")) {
-                System.out.println(acc.toString());
-                return false;
-            }
-            n.setName("_AAA59452_");
-            acc = SequenceDbWsTools.obtainSeqAccession(n);
-            if ((acc == null) || !acc.getSource().equals(Source.NCBI.toString())
-                    || !acc.getValue().equals("AAA59452")) {
-                System.out.println(acc.toString());
-                return false;
-            }
-            n.setName("AAA59452.1");
-            acc = SequenceDbWsTools.obtainSeqAccession(n);
-            if ((acc == null) || !acc.getSource().equals(Source.NCBI.toString())
-                    || !acc.getValue().equals("AAA59452.1")) {
-                System.out.println(acc.toString());
-                return false;
-            }
-            n.setName("_AAA59452.1_");
-            acc = SequenceDbWsTools.obtainSeqAccession(n);
-            if ((acc == null) || !acc.getSource().equals(Source.NCBI.toString())
-                    || !acc.getValue().equals("AAA59452.1")) {
-                System.out.println(acc.toString());
-                return false;
-            }
-            n.setName("GI:94894583");
-            acc = SequenceDbWsTools.obtainSeqAccession(n);
-            if ((acc == null) || !acc.getSource().equals(Source.GI.toString())
-                    || !acc.getValue().equals("94894583")) {
-                System.out.println(acc.toString());
-                return false;
-            }
-            n.setName("gi|71845847|1,4-alpha-glucan branching enzyme [Dechloromonas aromatica RCB]");
-            acc = SequenceDbWsTools.obtainSeqAccession(n);
-            if ((acc == null) || !acc.getSource().equals(Source.GI.toString())
-                    || !acc.getValue().equals("71845847")) {
-                System.out.println(acc.toString());
-                return false;
-            }
-            n.setName("gi|71845847|gb|AAZ45343.1| 1,4-alpha-glucan branching enzyme [Dechloromonas aromatica RCB]");
-            acc = SequenceDbWsTools.obtainSeqAccession(n);
-            if ((acc == null) || !acc.getSource().equals(Source.NCBI.toString())
-                    || !acc.getValue().equals("AAZ45343.1")) {
-                System.out.println(acc.toString());
-                return false;
-            }
-        } catch (final Exception e) {
-            return false;
-        }
-        return true;
-    }
-
-    private static boolean testSequenceDbWsTools2() {
-        try {
-            final PhylogenyNode n1 = new PhylogenyNode("NP_001025424");
-            SequenceDbWsTools.obtainSeqInformation(n1);
-            if (!n1.getNodeData().getSequence().getName().equals("Bcl2")) {
-                return false;
-            }
-            if (!n1.getNodeData().getTaxonomy().getScientificName().equals("Danio rerio")) {
-                return false;
-            }
-            if (!n1.getNodeData().getSequence().getAccession().getSource().equals(Source.REFSEQ.toString())) {
-                return false;
-            }
-            if (!n1.getNodeData().getSequence().getAccession().getValue().equals("NP_001025424")) {
-                return false;
-            }
-            final PhylogenyNode n2 = new PhylogenyNode("NM_001030253");
-            SequenceDbWsTools.obtainSeqInformation(n2);
-            if (!n2.getNodeData().getSequence().getName()
-                    .equals("Danio rerio BCL2, apoptosis regulator a (bcl2a), mRNA")) {
-                System.out.println(n2.getNodeData().getSequence().getName());
-                return false;
-            }
-            if (!n2.getNodeData().getTaxonomy().getScientificName().equals("Danio rerio")) {
-                return false;
-            }
-            if (!n2.getNodeData().getSequence().getAccession().getSource().equals(Source.REFSEQ.toString())) {
-                return false;
-            }
-            if (!n2.getNodeData().getSequence().getAccession().getValue().equals("NM_001030253")) {
-                return false;
-            }
-            final PhylogenyNode n3 = new PhylogenyNode("NM_184234.2");
-            SequenceDbWsTools.obtainSeqInformation(n3);
-            if (!n3.getNodeData().getSequence().getName()
-                    .equals("Homo sapiens RNA binding motif protein 39 (RBM39), transcript variant 1, mRNA")) {
-                return false;
-            }
-            if (!n3.getNodeData().getTaxonomy().getScientificName().equals("Homo sapiens")) {
-                return false;
-            }
-            if (!n3.getNodeData().getSequence().getAccession().getSource().equals(Source.REFSEQ.toString())) {
-                return false;
-            }
-            if (!n3.getNodeData().getSequence().getAccession().getValue().equals("NM_184234")) {
-                return false;
-            }
-        } catch (final IOException e) {
-            System.out.println();
-            System.out.println("the following might be due to absence internet connection:");
-            e.printStackTrace(System.out);
-            return true;
-        } catch (final Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-        return true;
-    }
-
     private static boolean testSequenceIdParsing() {
         try {
             Accession id = SequenceAccessionTools.parseAccessorFromString("gb_ADF31344_segmented_worms_");
@@ -14010,171 +13651,4 @@ public final class Test {
         return true;
     }
 
-    private static boolean testUniprotEntryRetrieval() {
-        try {
-            final SequenceDatabaseEntry entry = SequenceDbWsTools.obtainUniProtEntry("P12345", 5000);
-            if (!entry.getAccession().equals("P12345")) {
-                return false;
-            }
-            if (!entry.getTaxonomyScientificName().equals("Oryctolagus cuniculus")) {
-                return false;
-            }
-            if (!entry.getSequenceName().equals("Aspartate aminotransferase, mitochondrial")) {
-                return false;
-            }
-            if (!entry.getSequenceSymbol().equals("mAspAT")) {
-                return false;
-            }
-            if (!entry.getGeneName().equals("GOT2")) {
-                return false;
-            }
-            if (!entry.getTaxonomyIdentifier().equals("9986")) {
-                return false;
-            }
-            if (entry.getMolecularSequence() == null) {
-                return false;
-            }
-            if (!entry.getMolecularSequence().getMolecularSequenceAsString()
-                    .startsWith("MALLHSARVLSGVASAFHPGLAAAASARASSWWAHVEMGPPDPILGVTEAYKRDTNSKKMNLGVGAYRDDNGKPYVLPSVRKAEAQIAAKGLDKEYLPIGGLAEFCRASAELALGENSEV")
-                    || !entry.getMolecularSequence().getMolecularSequenceAsString().endsWith("LAHAIHQVTK")) {
-                System.out.println("got: " + entry.getMolecularSequence().getMolecularSequenceAsString());
-                System.out.println("expected something else.");
-                return false;
-            }
-        } catch (final IOException e) {
-            System.out.println();
-            System.out.println("the following might be due to absence internet connection:");
-            e.printStackTrace(System.out);
-            return true;
-        } catch (final NullPointerException f) {
-            f.printStackTrace(System.out);
-            return false;
-        } catch (final Exception e) {
-            return false;
-        }
-        return true;
-    }
-
-    private static boolean testUniprotTaxonomySearch() {
-        try {
-
-
-            List<UniProtTaxonomy> results = SequenceDbWsTools.getTaxonomiesFromTaxonomyCode("NEMVE", 10);
-            if (results.size() != 1) {
-                return false;
-            }
-            if (!results.get(0).getCode().equals("NEMVE")) {
-                return false;
-            }
-            if (!results.get(0).getCommonName().equalsIgnoreCase("starlet sea anemone")) {
-                return false;
-            }
-            if (!results.get(0).getId().equalsIgnoreCase("45351")) {
-                return false;
-            }
-            if (!results.get(0).getRank().equalsIgnoreCase("species")) {
-                return false;
-            }
-            if (!results.get(0).getScientificName().equals("Nematostella vectensis")) {
-                return false;
-            }
-            if (!results.get(0).getLineage().get(1).equals("Eukaryota")) {
-                return false;
-            }
-            if (!results.get(0).getLineage().get(2).equals("Metazoa")) {
-                return false;
-            }
-            if (!results.get(0).getLineage().get(results.get(0).getLineage().size() - 1)
-                    .equals("Nematostella vectensis")) {
-                System.out.println(results.get(0).getLineage());
-                return false;
-            }
-            //
-            results = null;
-            results = SequenceDbWsTools.getTaxonomiesFromScientificNameStrict("Xenopus tropicalis", 10);
-            if (results.size() != 1) {
-                return false;
-            }
-            if (!results.get(0).getCode().equals("XENTR")) {
-                return false;
-            }
-            if (!results.get(0).getCommonName().equalsIgnoreCase("Western clawed frog")) {
-                return false;
-            }
-            if (!results.get(0).getId().equalsIgnoreCase("8364")) {
-                return false;
-            }
-            if (!results.get(0).getRank().equalsIgnoreCase("species")) {
-                return false;
-            }
-            if (!results.get(0).getScientificName().equals("Xenopus tropicalis")) {
-                return false;
-            }
-            if (!results.get(0).getLineage().get(results.get(0).getLineage().size() - 1)
-                    .equals("Xenopus tropicalis")) {
-                System.out.println(results.get(0).getLineage());
-                return false;
-            }
-            //
-            results = null;
-            results = SequenceDbWsTools.getTaxonomiesFromId("8364", 10);
-            if (results.size() != 1) {
-                return false;
-            }
-            if (!results.get(0).getCode().equals("XENTR")) {
-                return false;
-            }
-            if (!results.get(0).getCommonName().equalsIgnoreCase("Western clawed frog")) {
-                return false;
-            }
-            if (!results.get(0).getId().equalsIgnoreCase("8364")) {
-                return false;
-            }
-            if (!results.get(0).getRank().equalsIgnoreCase("species")) {
-                return false;
-            }
-            if (!results.get(0).getScientificName().equals("Xenopus tropicalis")) {
-                return false;
-            }
-            if (!results.get(0).getLineage().get(results.get(0).getLineage().size() - 1)
-                    .equals("Xenopus tropicalis")) {
-                System.out.println(results.get(0).getLineage());
-                return false;
-            }
-            //
-            results = null;
-            results = SequenceDbWsTools.getTaxonomiesFromTaxonomyCode("XENTR", 10);
-            if (results.size() != 1) {
-                return false;
-            }
-            if (!results.get(0).getCode().equals("XENTR")) {
-                return false;
-            }
-            if (!results.get(0).getCommonName().equalsIgnoreCase("Western clawed frog")) {
-                return false;
-            }
-            if (!results.get(0).getId().equalsIgnoreCase("8364")) {
-                return false;
-            }
-            if (!results.get(0).getRank().equalsIgnoreCase("species")) {
-                return false;
-            }
-            if (!results.get(0).getScientificName().equals("Xenopus tropicalis")) {
-                return false;
-            }
-            if (!results.get(0).getLineage().get(results.get(0).getLineage().size() - 1)
-                    .equals("Xenopus tropicalis")) {
-                System.out.println(results.get(0).getLineage());
-                return false;
-            }
-        } catch (final IOException e) {
-            System.out.println();
-            System.out.println("the following might be due to absence internet connection:");
-            e.printStackTrace(System.out);
-            return true;
-        } catch (final Exception e) {
-            return false;
-        }
-        return true;
-    }
 }

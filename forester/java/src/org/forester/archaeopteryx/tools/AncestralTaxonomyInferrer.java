@@ -20,22 +20,26 @@
 
 package org.forester.archaeopteryx.tools;
 
-import java.net.UnknownHostException;
-
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 import org.forester.analysis.AncestralTaxonomyInference;
 import org.forester.analysis.AncestralTaxonomyInferenceException;
 import org.forester.archaeopteryx.MainFrame;
 import org.forester.archaeopteryx.TreePanel;
 import org.forester.phylogeny.Phylogeny;
-import org.forester.ws.seqdb.SequenceDbWsTools;
 
+/**
+ * The Analysis-menu "Infer Ancestor Taxonomies" operation: assigns each internal node the deepest
+ * common lineage of its descendants. This is a <b>local</b> computation (no network -- it intersects the
+ * lineages already present on the descendants), run on a background thread; the result is committed to
+ * the tree and reported on the EDT (Swing is not thread-safe).
+ */
 public class AncestralTaxonomyInferrer extends RunnableProcess {
 
-    private final Phylogeny            _phy;
+    private final Phylogeny _phy;
     private final MainFrame _mf;
-    private final TreePanel            _treepanel;
+    private final TreePanel _treepanel;
 
     public AncestralTaxonomyInferrer( final MainFrame mf, final TreePanel treepanel, final Phylogeny phy ) {
         _phy = phy;
@@ -43,62 +47,45 @@ public class AncestralTaxonomyInferrer extends RunnableProcess {
         _treepanel = treepanel;
     }
 
-    public static String getBaseUrl() {
-        return SequenceDbWsTools.BASE_UNIPROT_REST_URL;
-    }
-
     private void inferTaxonomies() {
         start( _mf, "ancestral taxonomy" );
+        String error = null;
         try {
             AncestralTaxonomyInference.inferTaxonomyFromDescendents( _phy );
         }
         catch ( final AncestralTaxonomyInferenceException e ) {
-            end( _mf );
-            JOptionPane.showMessageDialog( _mf,
-                                           e.getMessage(),
-                                           "Error during ancestral taxonomy inference",
-                                           JOptionPane.ERROR_MESSAGE );
-            return;
-        }
-        catch ( final UnknownHostException e ) {
-            end( _mf );
-            JOptionPane.showMessageDialog( _mf,
-                                           "Could not connect to \"" + getBaseUrl() + "\"",
-                                           "Network error during ancestral taxonomy inference",
-                                           JOptionPane.ERROR_MESSAGE );
-            return;
+            error = e.getMessage();
         }
         catch ( final Exception e ) {
-            end( _mf );
             e.printStackTrace();
-            JOptionPane.showMessageDialog( _mf,
-                                           e.toString(),
-                                           "Unexpected exception during ancestral taxonomy inference",
-                                           JOptionPane.ERROR_MESSAGE );
-            return;
+            error = e.toString();
         }
         catch ( final Error e ) {
+            error = e.toString();
+        }
+        finally {
             end( _mf );
-            JOptionPane.showMessageDialog( _mf,
-                                           e.toString(),
-                                           "Unexpected error during ancestral taxonomy inference",
-                                           JOptionPane.ERROR_MESSAGE );
-            return;
         }
-        _phy.setRerootable( false );
-        _treepanel.setTree( _phy );
-        _mf.showWhole();
-        _treepanel.setEdited( true );
-        end( _mf );
-        try {
-            JOptionPane.showMessageDialog( _mf,
-                                           "Ancestral taxonomy inference successfully completed",
-                                           "Ancestral Taxonomy Inference Completed",
-                                           JOptionPane.INFORMATION_MESSAGE );
-        }
-        catch ( final Exception e ) {
-            // Not important if this fails, do nothing.
-        }
+        final String err = error;
+        // commit + report on the EDT
+        SwingUtilities.invokeLater( () -> {
+            if ( err != null ) {
+                JOptionPane.showMessageDialog( _mf, err, "Error during ancestral taxonomy inference",
+                                               JOptionPane.ERROR_MESSAGE );
+                return;
+            }
+            _phy.setRerootable( false );
+            _treepanel.setTree( _phy );
+            _mf.showWhole();
+            _treepanel.setEdited( true );
+            try {
+                JOptionPane.showMessageDialog( _mf, "Ancestral taxonomy inference successfully completed",
+                                               "Ancestral Taxonomy Inference Completed", JOptionPane.INFORMATION_MESSAGE );
+            }
+            catch ( final Exception e ) {
+                // not important if the dialog fails
+            }
+        } );
     }
 
     @Override
