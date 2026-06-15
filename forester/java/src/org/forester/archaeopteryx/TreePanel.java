@@ -2787,7 +2787,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             // _sb.setLength( 0 );
         }
         // nodeDataAsSB( node, _sb );
-        final boolean using_visual_font = setFont(g, node, is_in_found_nodes);
+        final boolean using_visual_font = setFont(g, node);
         float down_shift_factor = 3.0f;
         if (!node.isExternal() && (node.getNumberOfDescendants() == 1)) {
             down_shift_factor = 1;
@@ -3102,7 +3102,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // }
         if (_sb.length() > 1) {
             setColor(g, node, to_graphics_file, to_pdf, is_in_found_nodes, getTreeColorSet().getSequenceColor());
-            final boolean using_visual_font = setFont(g, node, is_in_found_nodes);
+            final boolean using_visual_font = setFont(g, node);
             final String sb_str = _sb.toString();
             double m = 0;
             if (_graphics_type == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR) {
@@ -3514,7 +3514,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                     final boolean to_graphics_file,
                                     final float x_shift) {
         final Taxonomy taxonomy = node.getNodeData().getTaxonomy();
-        final boolean using_visual_font = setFont(g, node, is_in_found_nodes);
+        final boolean using_visual_font = setFont(g, node);
         setColor(g, node, to_graphics_file, to_pdf, is_in_found_nodes, getTreeColorSet().getTaxonomyColor());
         float start_x = node.getXcoord() + 3 + (getOptions().getDefaultNodeShapeSize() / 2) + x_shift;
         if ((getControlPanel().getTreeDisplayType() == Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM)
@@ -3800,7 +3800,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return (int) Math.ceil(g.getFont().getStringBounds(s, FRC_FRACTIONAL).getWidth());
     }
 
-    private boolean setFont(final Graphics2D g, final PhylogenyNode node, final boolean is_in_found_nodes) {
+    private boolean setFont(final Graphics2D g, final PhylogenyNode node) {
         Font visual_font = null;
         if (getControlPanel().isUseVisualStyles() && (node.getNodeData().getNodeVisualData() != null)) {
             visual_font = node.getNodeData().getNodeVisualData().getFont();
@@ -3808,9 +3808,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         } else {
             g.setFont(getTreeFontSet().getLargeFont());
         }
-        if (is_in_found_nodes) {
-            g.setFont(g.getFont().deriveFont(Font.BOLD));
-        }
+        // found/selected node labels are highlighted by COLOR only (no bold) -- see setColor / getColorForFoundNode
         return visual_font != null;
     }
 
@@ -4526,7 +4524,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             boolean use_vis = false;
             final Graphics2D g = (Graphics2D) getGraphics();
             if (getControlPanel().isUseVisualStyles()) {
-                use_vis = setFont(g, node, false);
+                use_vis = setFont(g, node);
             }
             if (!use_vis) {
                 sum = getFontMetricsForLargeDefaultFont().stringWidth(sb.toString());

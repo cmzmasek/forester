@@ -29,10 +29,16 @@ import org.forester.util.ForesterConstants;
 public final class AptxConstants {
 
     public final static String PRG_NAME = "Archaeopteryx";
-    final static String VERSION = "0.9.21";
+    final static String VERSION = "0.9.22";
     final static String PRG_DATE = "2026-06-15";
+    // The first three are bundled and registered at startup (see FontResources), so they are always
+    // present and give identical, reproducible figure type across platforms; the rest are fallbacks.
     final static String[] DEFAULT_FONT_CHOICES = {
-            "Arial Unicode MS", "Dialog", "SansSerif", "Sans", "Arial", "Helvetica"};
+            "Source Sans 3", "Liberation Sans", "Noto Sans", "Arial Unicode MS", "Dialog", "SansSerif", "Sans",
+            "Arial", "Helvetica"};
+    // Default tree (large/tip-label) font size; small font is this minus 2. Tuned up from 10 for a more
+    // readable, publication-ready look out of the box (Source Sans 3 reads well here).
+    final static int DEFAULT_TREE_FONT_SIZE = 12;
     final static int DOMAIN_STRUCTURE_DEFAULT_WIDTH = 100;
     final static String AUTHOR_EMAIL = "czmasek AT jcvi DOT org";
     final static int DOMAIN_STRUCTURE_E_VALUE_THR_DEFAULT_EXP = -3;

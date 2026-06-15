@@ -57,6 +57,9 @@ public final class Archaeopteryx {
             // macOS screen menu bar cannot be themed and would not match the rest of the UI.
             System.setProperty( "apple.laf.useScreenMenuBar", "false" );
         }
+        // Register the bundled default figure font BEFORE the default font family is chosen (in
+        // Configuration); must come after the macOS AWT properties above (this initializes AWT).
+        FontResources.registerBundledFonts();
         // Configuration files are no longer supported: the -c option and its parser have been removed.
         if ( ( args.length > 0 ) && AptxUtil.isConfigFileOption( args[ 0 ] ) ) {
             ForesterUtil.fatalError( AptxConstants.PRG_NAME,

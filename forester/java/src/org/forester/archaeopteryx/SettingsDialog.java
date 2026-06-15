@@ -71,13 +71,14 @@ final class SettingsDialog extends JDialog {
     private JLabel            _cache_size_label;
     private JLabel            _cache_status_label;
     private int               _cache_tab_index = -1;
+    private JLabel            _current_font_label; // "Fonts, Nodes and Branches" tab
 
     SettingsDialog( final MainFrame mf ) {
         super( mf, "Settings", false );
         _mf = mf;
         final JTabbedPane tabs = new JTabbedPane();
         tabs.addTab( "Display", scroll( displayTab() ) );
-        tabs.addTab( "Nodes & Branches", scroll( nodesTab() ) );
+        tabs.addTab( "Fonts, Nodes and Branches", scroll( nodesTab() ) );
         tabs.addTab( "Search", scroll( searchTab() ) );
         tabs.addTab( "Export & Print", scroll( exportTab() ) );
         tabs.addTab( "File Reading", scroll( readTab() ) );
@@ -89,6 +90,7 @@ final class SettingsDialog extends JDialog {
             if ( tabs.getSelectedIndex() == _cache_tab_index ) {
                 refreshCacheTab();
             }
+            refreshFontInfo(); // cheap; keep the "Current font" line in sync with any font change
         } );
         final JButton close = new JButton( "Close" );
         close.addActionListener( e -> setVisible( false ) );
@@ -156,9 +158,16 @@ final class SettingsDialog extends JDialog {
                                                         v -> { _mf.getOptions().setSupportVisualization( v ); repaintTree(); } ) ) );
         add( c, labeled( "Support threshold (0–1):", doubleSpinner( _mf.getOptions().getSupportThreshold(), 0, 1.0, 0.05,
                                                                        v -> { _mf.getOptions().setSupportThreshold( v ); repaintTree(); } ) ) );
-        c.add( header( "Colors & Font" ) );
+        c.add( header( "Fonts" ) );
+        add( c, labeled( "Tree font:", button( "Choose…", () -> { _mf.chooseFont(); refreshFontInfo(); } ) ) );
+        _current_font_label = new JLabel();
+        add( c, _current_font_label );
+        final JLabel font_blurb = new JLabel( buildPreferredFontsHtml() );
+        font_blurb.setAlignmentX( Component.LEFT_ALIGNMENT );
+        c.add( font_blurb );
+        refreshFontInfo();
+        c.add( header( "Colors" ) );
         add( c, labeled( "Color scheme:", button( "Choose…", () -> _mf.switchColors() ) ) );
-        add( c, labeled( "Tree font:", button( "Choose…", () -> _mf.chooseFont() ) ) );
         c.add( header( "Behavior" ) );
         add( c, labeled( "Data returned on copy:", enumCombo( NodeDataField.values(),
                                                               _mf.getOptions().getExtDescNodeDataToReturn(),
@@ -269,6 +278,47 @@ final class SettingsDialog extends JDialog {
             _cache_status_label.setText( TaxonomyCacheStatus.describeAge( s.getOldestEpochMs(),
                                                                          System.currentTimeMillis() ) );
         }
+    }
+
+    /** Updates the "Current font" line from the active tree's base font. */
+    private void refreshFontInfo() {
+        if ( _current_font_label == null ) {
+            return;
+        }
+        try {
+            final Font f = _mf.getMainPanel().getTreeFontSet().getBaseFont();
+            _current_font_label.setText( "Current font:   " + f.getFamily() + ",   " + f.getSize() + " pt,   "
+                    + styleName( f ) );
+        }
+        catch ( final Exception e ) {
+            _current_font_label.setText( " " );
+        }
+    }
+
+    private static String styleName( final Font f ) {
+        if ( f.isBold() && f.isItalic() ) {
+            return "Bold Italic";
+        }
+        if ( f.isBold() ) {
+            return "Bold";
+        }
+        if ( f.isItalic() ) {
+            return "Italic";
+        }
+        return "Plain";
+    }
+
+    /** A short HTML blurb describing the three bundled, always-available figure fonts. */
+    private static String buildPreferredFontsHtml() {
+        // single-line items: the dialog's width is set by its tab-header row (7 tabs), which comfortably
+        // exceeds this blurb, so no width constraint is needed (and constraining only forces taller wrapping)
+        final StringBuilder sb = new StringBuilder(
+                "<html><i>Three publication-quality fonts are bundled and always available:</i>"
+                        + "<ul style='margin-top:3px;margin-bottom:0'>" );
+        for ( final FontResources.Preferred p : FontResources.PREFERRED ) {
+            sb.append( "<li><b>" ).append( p.family ).append( "</b> &mdash; " ).append( p.description ).append( "</li>" );
+        }
+        return sb.append( "</ul></html>" ).toString();
     }
 
     // ---- bindings ------------------------------------------------------------------------------

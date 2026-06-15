@@ -236,7 +236,7 @@ final public class Options {
         _support_threshold = SUPPORT_THRESHOLD_DEFAULT;
         _print_black_and_white = false;
         _phylogeny_graphics_type = PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR;
-        _base_font = new Font(Configuration.getDefaultFontFamilyName(), Font.PLAIN, 10);
+        _base_font = new Font(Configuration.getDefaultFontFamilyName(), Font.PLAIN, AptxConstants.DEFAULT_TREE_FONT_SIZE);
         _match_whole_terms_only = false;
         _search_with_regex = false;
         _search_case_sensitive = false;

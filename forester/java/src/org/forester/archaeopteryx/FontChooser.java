@@ -180,7 +180,7 @@ public class FontChooser extends JDialog implements ActionListener, ListSelectio
                 _style = Font.ITALIC;
             }
             else if ( _style_tf.getText().equals( BOLD_ITALIC ) ) {
-                _style = Font.BOLD & Font.ITALIC;
+                _style = Font.BOLD | Font.ITALIC; // bitwise OR: AND would yield 0 (PLAIN)
             }
             _style_list.setSelectedIndex( _style );
             _test_tf.setFont( new Font( _type, _style, _size ) );

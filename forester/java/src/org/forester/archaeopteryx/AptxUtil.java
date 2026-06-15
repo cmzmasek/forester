@@ -93,12 +93,10 @@ public final class AptxUtil {
         }
     }
 
-    private final static String[] AVAILABLE_FONT_FAMILIES_SORTED = GraphicsEnvironment.getLocalGraphicsEnvironment()
-            .getAvailableFontFamilyNames();
-
-    static {
-        Arrays.sort(AVAILABLE_FONT_FAMILIES_SORTED);
-    }
+    // Built lazily (NOT at class-load) and refreshable, so fonts registered at startup (see FontResources)
+    // are reflected no matter when this class is first touched -- the old static-final cache forced a brittle
+    // "register the bundled fonts before AptxUtil is loaded" ordering.
+    private static String[] _available_font_families_sorted;
 
     final public static Color calculateColorFromString(final String str, final boolean is_taxonomy) {
         final String my_str = str.toUpperCase();
@@ -949,8 +947,18 @@ public final class AptxUtil {
 
 
 
-    final static String[] getAvailableFontFamiliesSorted() {
-        return AVAILABLE_FONT_FAMILIES_SORTED;
+    static synchronized String[] getAvailableFontFamiliesSorted() {
+        if ( _available_font_families_sorted == null ) {
+            final String[] families = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
+            Arrays.sort( families );
+            _available_font_families_sorted = families;
+        }
+        return _available_font_families_sorted;
+    }
+
+    /** Discards the cached available-font list so the next access rebuilds it (call after registering fonts). */
+    static synchronized void refreshAvailableFontFamilies() {
+        _available_font_families_sorted = null;
     }
 
 
