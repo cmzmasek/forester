@@ -4,7 +4,7 @@ Archaeopteryx
 Archaeopteryx is an interactive viewer and editor for phylogenetic trees, and is
 part of the **forester** toolkit. It reads phyloXML, Newick/New Hampshire
 (NH/NHX), and Nexus trees, and supports rich annotation, on-the-fly coloring, and
-export to PDF, PNG, and other graphics formats.
+export to PDF, SVG, EPS, PNG, and other graphics formats.
 
 
 For Users
@@ -126,7 +126,8 @@ annotate the current tree. In menu order:
 
 - **Fetch Sequence & Taxonomic Data** — looks up additional sequence information
   and detailed taxonomy for the tree's nodes from UniProt / EMBL-GenBank and the
-  UniProt taxonomy.
+  NCBI taxonomy. Looked-up taxonomy is cached on disk, so subsequent runs and
+  rank-coloring are fast.
 
 ### 5. Coloring leaves by a property
 
@@ -142,6 +143,23 @@ the **most frequent** values — re-sorted alphabetically for readability — wi
 `… +N more` footer for the remainder. (A few properties are special-cased:
 `year` is shown as a continuous gradient, and `country`/`host` are grouped by the
 part before a `:` / `;` qualifier.)
+
+### 6. Other recent additions
+
+- **Settings dialog** — display, node/branch, font, export, and file options in
+  one live-apply dialog (replaces the old Options and Type menus).
+- **Bundled fonts** — ships three publication-quality fonts (**Source Sans 3**
+  default, plus **Liberation Sans** and **Noto Sans**), so figures render
+  identically on every machine. Set the tip-label size with the **font-size
+  slider** in the left control panel.
+- **Taxonomy cache** — taxonomy looked up from NCBI is cached on disk (30 days),
+  so re-opening trees of organisms you've already seen is instant. Manage it
+  under **Settings → Taxonomy Cache** (toggle, size, clear).
+- **Vector export** — true **SVG** and **EPS** output alongside PDF/PNG/TIFF/JPG,
+  for publication figures.
+- **Adaptive control panel** — "Display Data" checkboxes appear only for data the
+  tree actually has; node-symbol **support visualization** (threshold marks or
+  size-scaled).
 
 
 For Developers
@@ -160,9 +178,10 @@ cd forester
   *"release version 21 not supported"*.
 - **Apache Ant**.
 
-All Java library dependencies (FlatLaf, iText, Apache Commons Codec, and
-OpenChart) are vendored in `forester/java/resources/` and unpacked into the
-output jar by the build, so there is no separate dependency-management step.
+All Java library dependencies (FlatLaf, OpenPDF, Apache Commons Codec, OpenChart,
+and VectorGraphics2D) and the bundled fonts are vendored in
+`forester/java/resources/` and unpacked into the output jar by the build, so there
+is no separate dependency-management step.
 
 ### Build
 
