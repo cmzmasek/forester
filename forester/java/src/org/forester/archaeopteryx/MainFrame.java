@@ -24,6 +24,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Font;
+import java.awt.GridLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -37,13 +38,18 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.NoSuchElementException;
 
+import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -132,9 +138,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String ROUNDED_TYPE_CBMI_LABEL = "Rounded";
     static final String UNROOTED_TYPE_CBMI_LABEL = "Unrooted (alpha)";                                                                                                                                                          //TODO
     static final String CIRCULAR_TYPE_CBMI_LABEL = "Circular (alpha)";                                                                                                                                                          //TODO
-    static final String OPTIONS_HEADER = "Options";
-    static final String SEARCH_SUBHEADER = "Search:";
-    static final String DISPLAY_SUBHEADER = "Display:";
     static final String SEARCH_TERMS_ONLY_LABEL = "Words";
     static final String SEARCH_REGEX_LABEL = "Regex";
     static final String SEARCH_CASE_SENSITIVE_LABEL = "Match Case";
@@ -144,9 +147,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String LABEL_DIRECTION_LABEL = "Radial Labels";
     static final String LABEL_DIRECTION_TIP = "To use radial node labels in radial and unrooted display types";
     static final String SEARCH_WITH_REGEX_TIP = "To search using regular expressions (~Java/Perl syntax). For example, use \"^B.+\\d{2,}$\" to search for everything starting with a B and ending with at least two digits.";
-    static final String SCREEN_ANTIALIAS_LABEL = "Antialias";
     static final String COLOR_LABELS_LABEL = "Colorize Labels Same as Parent Branch";
-    static final String BG_GRAD_LABEL = "Background Color Gradient";
     static final String DISPLAY_NODE_BOXES_LABEL_EXT = "Shapes for External Nodes";
     static final String DISPLAY_NODE_BOXES_LABEL_INT = "Shapes for Internal Nodes";
     static final String DISPLAY_NODE_BOXES_LABEL_MARKED = "Shapes for Nodes with Visual Data";
@@ -155,10 +156,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String SHOW_DOMAIN_LABELS_LABEL = "Domain Labels";
     static final String COLOR_LABELS_TIP = "To use parent branch colors for node labels as well, need to turn off taxonomy dependent colorization and turn on branch colorization for this to become apparent";
     static final String ABBREV_SN_LABEL = "Abbreviate Scientific Taxonomic Names";
-    static final String CYCLE_NODE_SHAPE_LABEL = "Cycle Node Shapes";
-    static final String CYCLE_NODE_FILL_LABEL = "Cycle Node Fill Type";
-    static final String CHOOSE_BRANCH_WIDTH_LABEL = "Set Branch Width";
-    static final String CHOOSE_NODE_SIZE_LABEL = "Set Node Shape Size";
     static final String SHOW_CONF_STDDEV_LABEL = "Confidence Standard Deviations";
     static final String SHOW_MAD_CONF_LABEL    = "MAD Confidence Values (MAD/regular)";
     static final String USE_BRACKETS_FOR_CONF_IN_NH_LABEL = "Use Brackets for Confidence Values";
@@ -172,7 +169,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenu _file_jmenu;
     JMenu _tools_menu;
     JMenu _view_jmenu;
-    JMenu _options_jmenu;
     JMenu _settings_jmenu;
     JMenu _help_jmenu;
     // Analysis menu
@@ -198,6 +194,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem _midpoint_root_item;
     JMenuItem _mad_root_item;
     JMenuItem _color_rank_jmi;
+    JMenuItem _clade_bands_jmi;
 
     JMenuItem _obtain_seq_and_tax_information_jmi;
     JMenuItem _remove_branch_color_item;
@@ -207,12 +204,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     // font size menu:
     // options menu:
     // _  screen and print
-    JMenuItem _choose_font_mi;
-    JMenuItem _switch_colors_mi;
     JCheckBoxMenuItem _label_direction_cbmi;
     // _  screen display
-    JCheckBoxMenuItem _screen_antialias_cbmi;
-    JCheckBoxMenuItem _background_gradient_cbmi;
     JRadioButtonMenuItem _non_lined_up_cladograms_rbmi;
     JRadioButtonMenuItem _ext_node_dependent_cladogram_rbmi;
     JCheckBoxMenuItem _show_scale_cbmi;                                                                                                                                                                                                      //TODO fix me
@@ -220,18 +213,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JCheckBoxMenuItem _show_domain_labels;
     JCheckBoxMenuItem _abbreviate_scientific_names;
     JCheckBoxMenuItem _color_labels_same_as_parent_branch;
-    JMenuItem _overview_placment_mi;
-    JMenuItem _choose_minimal_confidence_mi;
     JCheckBoxMenuItem _show_default_node_shapes_internal_cbmi;
     JCheckBoxMenuItem _show_default_node_shapes_external_cbmi;
     JCheckBoxMenuItem _show_default_node_shapes_for_marked_cbmi;
-    JMenuItem _cycle_node_shape_mi;
-    JMenuItem _cycle_node_fill_mi;
-    JMenuItem _choose_node_size_mi;
-
-    JMenuItem _choose_default_branch_width_mi;
-
-    JMenuItem _cycle_data_return;
     JCheckBoxMenuItem _show_confidence_stddev_cbmi;
     JCheckBoxMenuItem _show_mad_confidence_cbmi;
     JCheckBoxMenuItem _right_line_up_domains_cbmi;
@@ -243,7 +227,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JCheckBoxMenuItem _antialias_print_cbmi;
     JCheckBoxMenuItem _print_black_and_white_cbmi;
     //JMenuItem                        _print_size_mi;
-    JMenuItem _choose_pdf_width_mi;
     // _  parsing
     JCheckBoxMenuItem _internal_number_are_confidence_for_nh_parsing_cbmi;
     JRadioButtonMenuItem _extract_taxonomy_no_rbmi;
@@ -340,6 +323,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             executeGSDIR();
         } else if (o == _color_rank_jmi) {
             colorRank();
+        } else if (o == _clade_bands_jmi) {
+            labelCladesByRank();
         } else if (o == _remove_branch_color_item) {
             if (isSubtreeDisplayed()) {
                 return;
@@ -370,8 +355,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 return;
             }
             deleteSelectedNodes(false);
-        } else if (o == _switch_colors_mi) {
-            switchColors();
         } else if (o == _display_basic_information_item) {
             if (getCurrentTreePanel() != null) {
                 displayBasicInformation(getCurrentTreePanel().getTreeFile());
@@ -382,27 +365,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             viewAsXML();
         } else if (o == _view_as_nexus_item) {
             viewAsNexus();
-        } else if (o == _choose_font_mi) {
-            chooseFont();
-        } else if (o == _choose_minimal_confidence_mi) {
-            chooseMinimalConfidence();
-        } else if (o == _choose_node_size_mi) {
-            chooseNodeSize(getOptions(), this);
-        } else if (o == _choose_default_branch_width_mi) {
-            chooseDefaultBranchWidth(getOptions(), this);
-        } else if (o == _overview_placment_mi) {
-            MainFrame.cycleOverview(getOptions(), getCurrentTreePanel());
-        } else if (o == _cycle_node_fill_mi) {
-            MainFrame.cycleNodeFill(getOptions());
-        } else if (o == _cycle_node_shape_mi) {
-            MainFrame.cycleNodeShape(getOptions());
-        } else if (o == _cycle_data_return) {
-            MainFrame.cycleNodeDataReturn(getOptions(), getConfiguration());
-        } else if (o == _screen_antialias_cbmi) {
-            updateOptions(getOptions());
-            updateScreenTextAntialias(getMainPanel().getTreePanels());
-        } else if (o == _background_gradient_cbmi) {
-            updateOptions(getOptions());
         } else if (o == _show_domain_labels) {
             updateOptions(getOptions());
         } else if (o == _abbreviate_scientific_names) {
@@ -581,8 +543,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             updateOptions(getOptions());
         } else if (o == _print_black_and_white_cbmi) {
             updateOptions(getOptions());
-        } else if (o == _choose_pdf_width_mi) {
-            choosePdfWidth();
         } else if (o == _lineage_inference) {
             if (isSubtreeDisplayed()) {
                 JOptionPane.showMessageDialog(this,
@@ -648,35 +608,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
 
         repaint();
-    }
-
-    private void chooseMinimalConfidence() {
-        final String s = (String) JOptionPane
-                .showInputDialog(this,
-                        "Please enter the minimum for confidence values to be displayed.\n"
-                                + "[current value: " + getOptions().getMinConfidenceValue() + "]\n",
-                        "Minimal Confidence Value",
-                        JOptionPane.QUESTION_MESSAGE,
-                        null,
-                        null,
-                        getOptions().getMinConfidenceValue());
-        if (!ForesterUtil.isEmpty(s)) {
-            boolean success = true;
-            double m = 0.0;
-            final String m_str = s.trim();
-            if (!ForesterUtil.isEmpty(m_str)) {
-                try {
-                    m = Double.parseDouble(m_str);
-                } catch (final Exception ex) {
-                    success = false;
-                }
-            } else {
-                success = false;
-            }
-            if (success && (m >= 0.0)) {
-                getOptions().setMinConfidenceValue(m);
-            }
-        }
     }
 
     private void deleteSelectedNodes(final boolean delete) {
@@ -962,35 +893,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
     }
 
-    void choosePdfWidth() {
-        final String s = (String) JOptionPane.showInputDialog(this,
-                "Please enter the default line width for PDF export.\n"
-                        + "[current value: "
-                        + getOptions().getPrintLineWidth() + "]\n",
-                "Line Width for PDF Export",
-                JOptionPane.QUESTION_MESSAGE,
-                null,
-                null,
-                getOptions().getPrintLineWidth());
-        if (!ForesterUtil.isEmpty(s)) {
-            boolean success = true;
-            float f = 0.0f;
-            final String m_str = s.trim();
-            if (!ForesterUtil.isEmpty(m_str)) {
-                try {
-                    f = Float.parseFloat(m_str);
-                } catch (final Exception ex) {
-                    success = false;
-                }
-            } else {
-                success = false;
-            }
-            if (success && (f > 0.0)) {
-                getOptions().setPrintLineWidth(f);
-            }
-        }
-    }
-
     void close() {
         removeAllTextFrames();
         if (_mainpanel != null) {
@@ -1031,23 +933,118 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         // Decide whether the DB is needed BEFORE colorizing (cache-only, never blocks the EDT), so we
         // colorize the tree exactly once -- either here, or (on the online path) in the resolver after
         // the fetch -- rather than colorizing now and again, which flashed a partial result.
-        final SortedSet<String> unresolved = TreePanelUtil.unresolvedTipTaxa(phy, rank,
+        final String r = rank;
+        final SortedSet<String> unresolved = TreePanelUtil.unresolvedTipTaxa(phy, r,
                 TreePanelUtil.getDefaultLineageService());
         if (!unresolved.isEmpty()) {
             final int choice = JOptionPane.showConfirmDialog(this,
                     unresolved.size() + " tip " + ((unresolved.size() == 1) ? "taxon" : "taxa")
-                            + " could not be placed at rank \"" + rank + "\" from the tree's own data.\n"
+                            + " could not be placed at rank \"" + r + "\" from the tree's own data.\n"
                             + "Resolve via the NCBI taxonomy database? (requires an internet connection)",
                     "Resolve Taxa Online?",
                     JOptionPane.YES_NO_OPTION,
                     JOptionPane.QUESTION_MESSAGE);
             if (choice == JOptionPane.YES_OPTION) {
-                new Thread(new RankColorizationResolver(this, tp, rank, unresolved)).start();
+                new Thread(new OnlineTaxonResolver(this, "rank colorization (" + r + ")", unresolved, err -> {
+                    final int colorized = tp.colorByRank(r);
+                    if (err != null) {
+                        // colorByRank mutated branch colors but does not set the edited flag; on the error
+                        // path we skip reportRankColorization, so mark the tree edited here.
+                        if (colorized > 0) {
+                            tp.setEdited(true);
+                        }
+                        JOptionPane.showMessageDialog(this,
+                                "Colorized " + colorized + " clade(s), but some taxa could not be resolved:\n" + err,
+                                "Taxonomy Rank-Colorization (" + r + ")", JOptionPane.WARNING_MESSAGE);
+                    } else {
+                        tp.reportRankColorization(r, colorized);
+                    }
+                })).start();
                 return; // the background resolver colorizes and reports when done
             }
         }
         // no online resolution -- colorize once from what the tree (and cache) already know
-        tp.reportRankColorization(rank, tp.colorByRank(rank));
+        tp.reportRankColorization(r, tp.colorByRank(r));
+    }
+
+    /**
+     * The Tools "Annotate Clades by Rank…" operation: pick a rank and a mode (shaded boxes or right-edge
+     * bars), resolve any unplaced tips online if the user agrees (off the EDT), then draw the bands.
+     * Mirrors {@link #colorRank()} but renders {@link CladeBand}s instead of coloring branches.
+     */
+    void labelCladesByRank() {
+        if (_mainpanel.getCurrentTreePanel() == null) {
+            return;
+        }
+        final TreePanel tp = _mainpanel.getCurrentTreePanel();
+        final Phylogeny phy = tp.getPhylogeny();
+        if ((phy == null) || phy.isEmpty() || (phy.getNumberOfExternalNodes() < 2)) {
+            return;
+        }
+        final String[] ranks = AptxUtil.getRankChoices(AptxUtil.getRankCounts(phy),
+                AptxUtil.getRankCoverageCounts(phy), phy.getNumberOfExternalNodes());
+        final JComboBox<String> rank_box = new JComboBox<>(ranks);
+        final JRadioButton boxes_rb = new JRadioButton("Shaded boxes (behind the clades)", true);
+        final JRadioButton bars_rb = new JRadioButton("Bars + labels (at the right edge)");
+        final ButtonGroup bg = new ButtonGroup();
+        bg.add(boxes_rb);
+        bg.add(bars_rb);
+        final JPanel panel = new JPanel(new GridLayout(0, 1, 0, 2));
+        panel.add(new JLabel("Annotate clades by rank:"));
+        panel.add(rank_box);
+        panel.add(new JLabel(" "));
+        panel.add(new JLabel("Show as:"));
+        panel.add(boxes_rb);
+        panel.add(bars_rb);
+        if (JOptionPane.showConfirmDialog(this, panel, "Annotate Clades by Rank", JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE) != JOptionPane.OK_OPTION) {
+            return;
+        }
+        String rank = (String) rank_box.getSelectedItem();
+        if (ForesterUtil.isEmpty(rank)) {
+            return;
+        }
+        if (rank.indexOf('(') > 0) {
+            rank = rank.substring(0, rank.indexOf('(')).trim();
+        }
+        final String r = rank;
+        final TreePanel.CLADE_VIS mode = bars_rb.isSelected() ? TreePanel.CLADE_VIS.BARS : TreePanel.CLADE_VIS.BOXES;
+        final SortedSet<String> unresolved = TreePanelUtil.unresolvedTipTaxa(phy, r,
+                TreePanelUtil.getDefaultLineageService());
+        if (!unresolved.isEmpty()) {
+            final int choice = JOptionPane.showConfirmDialog(this,
+                    unresolved.size() + " tip " + ((unresolved.size() == 1) ? "taxon" : "taxa")
+                            + " could not be placed at rank \"" + r + "\" from the tree's own data.\n"
+                            + "Resolve via the NCBI taxonomy database? (requires an internet connection)",
+                    "Resolve Taxa Online?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+            if (choice == JOptionPane.YES_OPTION) {
+                new Thread(new OnlineTaxonResolver(this, "clade bands (" + r + ")", unresolved,
+                        err -> reportCladeBands(tp, r, mode, err))).start();
+                return;
+            }
+        }
+        reportCladeBands(tp, r, mode, null);
+    }
+
+    private void reportCladeBands(final TreePanel tp, final String rank, final TreePanel.CLADE_VIS mode,
+                                  final String error) {
+        final int n = tp.setCladeBands(rank, mode);
+        if (n > 0) {
+            tp.setEdited(true);
+        }
+        final String kind = (mode == TreePanel.CLADE_VIS.BARS) ? "bar(s)" : "box(es)";
+        if (error != null) {
+            JOptionPane.showMessageDialog(this, "Drew " + n + " clade " + kind + " at rank \"" + rank
+                    + "\", but some taxa could not be resolved:\n" + error, "Annotate Clades by Rank (" + rank + ")",
+                    JOptionPane.WARNING_MESSAGE);
+        } else if (n > 0) {
+            JOptionPane.showMessageDialog(this, "Drew " + n + " clade " + kind + " at rank \"" + rank + "\".",
+                    "Annotate Clades by Rank (" + rank + ")", JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(this, "Could not place any tip at rank \"" + rank + "\".\n"
+                    + "Try a different rank, or check that the tips carry resolvable taxonomic names.",
+                    "Annotate Clades by Rank (" + rank + ")", JOptionPane.WARNING_MESSAGE);
+        }
     }
 
 
@@ -1488,12 +1485,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _circular_type_cbmi.setSelected(false);
     }
 
-    void switchColors() {
-        final TreeColorSet colorset = _mainpanel.getTreeColorSet();
-        final ColorSchemeChooser csc = new ColorSchemeChooser(getMainPanel(), colorset);
-        csc.setVisible(true);
-    }
-
     /**
      * The export/save file choosers are created in the {@link MainFrame} constructor,
      * before the look-and-feel is installed, so on macOS they pick up the native Aqua
@@ -1533,8 +1524,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if (colorset == null) {
             return;
         }
-        // scheme 0 = "Default" (dark/black background), scheme 2 = "Black & White" (white background)
-        colorset.setColorSchema(ui == Configuration.UI.FLAT_DARK ? 0 : 2);
+        // scheme 0 = Dark, scheme 1 = Light (TreeColorSet has only these two)
+        colorset.setColorSchema(ui == Configuration.UI.FLAT_DARK ? 0 : 1);
         for (final TreePanel tree_panel : getMainPanel().getTreePanels()) {
             tree_panel.setBackground(colorset.getBackgroundColor());
         }
@@ -1574,9 +1565,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     }
 
     void updateOptions(final Options options) {
-        options.setAntialiasScreen((_screen_antialias_cbmi != null) && _screen_antialias_cbmi.isSelected());
-        options.setBackgroundColorGradient((_background_gradient_cbmi != null)
-                && _background_gradient_cbmi.isSelected());
         options.setShowDomainLabels((_show_domain_labels != null) && _show_domain_labels.isSelected());
         options.setAbbreviateScientificTaxonNames((_abbreviate_scientific_names != null)
                 && _abbreviate_scientific_names.isSelected());
@@ -1715,40 +1703,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
     }
 
-    private static void cycleNodeDataReturn(final Options op, final Configuration conf) {
-        switch (op.getExtDescNodeDataToReturn()) {
-            // case UNKNOWN:
-            //    op.setExtDescNodeDataToReturn(NodeDataField.DOMAINS_ALL);
-            //    break;
-            // case DOMAINS_ALL:
-            //     op.setExtDescNodeDataToReturn(NodeDataField.DOMAINS_COLLAPSED_PER_PROTEIN);
-            //     break;
-            // case DOMAINS_COLLAPSED_PER_PROTEIN:
-            //     op.setExtDescNodeDataToReturn(NodeDataField.SEQ_ANNOTATIONS);
-            //     break;
-            // case SEQ_ANNOTATIONS:
-            //     op.setExtDescNodeDataToReturn(NodeDataField.GO_TERM_IDS);
-            //     break;
-            case UNKNOWN:
-                op.setExtDescNodeDataToReturn(NodeDataField.SEQUENCE_MOL_SEQ_FASTA);
-                break;
-            case SEQUENCE_MOL_SEQ_FASTA:
-                if ((conf != null) && (conf.getExtDescNodeDataToReturn() != null)
-                        && (conf.getExtDescNodeDataToReturn() != NodeDataField.DOMAINS_ALL)
-                        && (conf.getExtDescNodeDataToReturn() != NodeDataField.DOMAINS_COLLAPSED_PER_PROTEIN)
-                        && (conf.getExtDescNodeDataToReturn() != NodeDataField.SEQ_ANNOTATIONS)
-                        && (conf.getExtDescNodeDataToReturn() != NodeDataField.GO_TERM_IDS)
-                        && (conf.getExtDescNodeDataToReturn() != NodeDataField.SEQUENCE_MOL_SEQ_FASTA)) {
-                    op.setExtDescNodeDataToReturn(conf.getExtDescNodeDataToReturn());
-                } else {
-                    op.setExtDescNodeDataToReturn(NodeDataField.UNKNOWN);
-                }
-                break;
-            default:
-                op.setExtDescNodeDataToReturn(NodeDataField.UNKNOWN);
-        }
-    }
-
     /**
      * Display the about box.
      */
@@ -1784,73 +1738,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         JOptionPane.showMessageDialog(null, about, AptxConstants.PRG_NAME, JOptionPane.PLAIN_MESSAGE);
     }
 
-    static void chooseNodeSize(final Options options, final Component parent) {
-        final String s = (String) JOptionPane.showInputDialog(parent,
-                "Please enter the default size for node shapes.\n"
-                        + "[current value: "
-                        + options.getDefaultNodeShapeSize() + "]\n",
-                "Node Shape Size",
-                JOptionPane.QUESTION_MESSAGE,
-                null,
-                null,
-                options.getDefaultNodeShapeSize());
-        if (!ForesterUtil.isEmpty(s)) {
-            boolean success = true;
-            double m = 0.0;
-            final String m_str = s.trim();
-            if (!ForesterUtil.isEmpty(m_str)) {
-                try {
-                    m = Double.parseDouble(m_str);
-                } catch (final Exception ex) {
-                    success = false;
-                }
-            } else {
-                success = false;
-            }
-            if (success && (m >= 0.0)) {
-                final short size = ForesterUtil.roundToShort(m);
-                if (size >= 0.0) {
-                    options.setDefaultNodeShapeSize(size);
-                }
-            }
-        }
-    }
-
-    static void chooseDefaultBranchWidth(final Options options, final Component parent) {
-        final String s = (String) JOptionPane.showInputDialog(parent,
-                "Please enter the default branch width.\n"
-                        + "[current value: "
-                        + options.getDefaultBranchWidth() + "]\n",
-                "Branch Width",
-                JOptionPane.QUESTION_MESSAGE,
-                null,
-                null,
-                options.getDefaultBranchWidth());
-        if (!ForesterUtil.isEmpty(s)) {
-            boolean success = true;
-            float w = 0;
-            final String m_str = s.trim();
-            if (!ForesterUtil.isEmpty(m_str)) {
-                try {
-                    w = Float.parseFloat(m_str);
-                } catch (final Exception ex) {
-                    success = false;
-                }
-            } else {
-                success = false;
-            }
-            if (success && (w > 0.1) && (w < 10)) {
-                options.setDefaultBranchWidth(w);
-
-            }
-        }
-    }
-
-
-    static String createCurrentFontDesc(final TreeFontSet tree_font_set) {
-        return tree_font_set.getLargeFont().getFamily() + " " + tree_font_set.getLargeFont().getSize();
-    }
-
     static JMenu createMenu(final String title, final Configuration conf) {
         final JMenu jmenu = new JMenu(title);
         if (conf.isApplyCustomGuiColors()) {
@@ -1859,47 +1746,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             jmenu.setForeground(conf.getGuiMenuTextColor());
         }
         return jmenu;
-    }
-
-    static JMenuItem customizeMenuItemAsLabel(final JMenuItem label, final Configuration configuration) {
-        label.setFont(MainFrame.menu_font.deriveFont(Font.BOLD));
-        if (configuration.isApplyCustomGuiColors()) {
-            label.setBackground(configuration.getGuiMenuBackgroundColor());
-            label.setForeground(configuration.getGuiMenuTextColor());
-            label.setOpaque(true);
-        }
-        label.setSelected(false);
-        label.setEnabled(false);
-        return label;
-    }
-
-    static void cycleNodeFill(final Options op) {
-        switch (op.getDefaultNodeFill()) {
-            case GRADIENT:
-                op.setDefaultNodeFill(NodeFill.SOLID);
-                break;
-            case NONE:
-                op.setDefaultNodeFill(NodeFill.GRADIENT);
-                break;
-            case SOLID:
-                op.setDefaultNodeFill(NodeFill.NONE);
-                break;
-            default:
-                throw new RuntimeException("unknown fill: " + op.getDefaultNodeFill());
-        }
-    }
-
-    static void cycleNodeShape(final Options op) {
-        switch (op.getDefaultNodeShape()) {
-            case CIRCLE:
-                op.setDefaultNodeShape(NodeShape.RECTANGLE);
-                break;
-            case RECTANGLE:
-                op.setDefaultNodeShape(NodeShape.CIRCLE);
-                break;
-            default:
-                throw new RuntimeException("unknown shape: " + op.getDefaultNodeShape());
-        }
     }
 
     static void cycleOverview(final Options op, final TreePanel tree_panel) {
@@ -1969,76 +1815,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if (!opts.isPrintUsingActualSize()) {
             tp.getControlPanel().showWhole();
         }
-    }
-
-    static void setCycleDataReturnMenuItem(final JMenuItem mi, final Options options) {
-        if ((options != null) && (options.getExtDescNodeDataToReturn() != null)) {
-            mi.setText("Cycle Node Return Data... (current: " + options.getExtDescNodeDataToReturn().toString() + ")");
-        } else {
-            mi.setText("Cycle Node Return Data...");
-        }
-    }
-
-    static void setCycleNodeFillMenuItem(final JMenuItem mi, final Options options) {
-        if ((options != null) && (options.getDefaultNodeFill() != null)) {
-            mi.setText("Cycle Node Shape Fill Type... (current: "
-                    + options.getDefaultNodeFill().toString().toLowerCase() + ")");
-        } else {
-            mi.setText("Cycle Node Shape Fill Type...");
-        }
-    }
-
-    static void setCycleNodeShapeMenuItem(final JMenuItem mi, final Options options) {
-        if ((options != null) && (options.getDefaultNodeShape() != null)) {
-            mi.setText("Cycle Node Shape Fill Type... (current: "
-                    + options.getDefaultNodeShape().toString().toLowerCase() + ")");
-        } else {
-            mi.setText("Cycle Node Shape Fill Type...");
-        }
-    }
-
-    static void setOvPlacementColorChooseMenuItem(final JMenuItem mi, final Options options) {
-        if ((options != null) && (options.getOvPlacement() != null)) {
-            mi.setText("Cycle Overview Placement... (current: " + options.getOvPlacement() + ")");
-        } else {
-            mi.setText("Cycle Overview Placement...");
-        }
-    }
-
-    static void setTextColorChooseMenuItem(final JMenuItem mi, final TreePanel tree_panel) {
-        if ((tree_panel != null) && (tree_panel.getTreeColorSet() != null)) {
-            mi.setText("Select Color Scheme... (current: " + tree_panel.getTreeColorSet().getCurrentColorSchemeName()
-                    + ")");
-        } else {
-            mi.setText("Select Color Scheme...");
-        }
-    }
-
-    static void setTextForFontChooserMenuItem(final JMenuItem mi, final String font_desc) {
-        mi.setText("Select Default Font... (current: " + font_desc + ")");
-    }
-
-    static void setTextForPdfLineWidthChooserMenuItem(final JMenuItem mi, final Options o) {
-        mi.setText("Enter Default Line Width for PDF Export... (current: " + o.getPrintLineWidth() + ")");
-    }
-
-    static void setTextMinSupportMenuItem(final JMenuItem mi, final Options options, final TreePanel current_tree_panel) {
-        if ((current_tree_panel == null) || (current_tree_panel.getPhylogeny() == null)) {
-            mi.setEnabled(true);
-        } else if (AptxUtil.isHasAtLeastOneBranchWithSupportValues(current_tree_panel.getPhylogeny())) {
-            mi.setEnabled(true);
-        } else {
-            mi.setEnabled(false);
-        }
-        mi.setText("Enter Min Confidence Value... (current: " + options.getMinConfidenceValue() + ")");
-    }
-
-    static void setTextNodeSizeMenuItem(final JMenuItem mi, final Options options) {
-        mi.setText("Enter Default Node Shape Size... (current: " + options.getDefaultNodeShapeSize() + ")");
-    }
-
-    static void setDefaultBranchWidthMenuItem(final JMenuItem mi, final Options options) {
-        mi.setText("Enter Default Branch Width... (current: " + options.getDefaultBranchWidth() + ")");
     }
 
     static void updateScreenTextAntialias(final List<TreePanel> treepanels) {

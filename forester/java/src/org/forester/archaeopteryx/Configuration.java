@@ -58,7 +58,7 @@ public final class Configuration {
     final static String clickto_options[][] = {
             {"Display Node Data", "display"}, {"Collapse/Uncollapse", "display"}, {"Root/Reroot", "display"},
             {"Go to Sub/Supertree", "display"}, {"Swap Descendants", "display"},
-            {"Colorize Node(s)", "display"}, {"Change Node Font(s)", "display"},
+            {"Colorize Node(s)", "display"},
             {"Colorize Subtree(s)", "display"}, {"Open Sequence DB", "display"}, {"Open PDB", "display"},
             {"Open Taxonomy DB", "display"}, {"Launch BLAST", "display"}, {"Cut Subtree", "display"},
             {"Copy Subtree", "display"}, {"Paste Subtree", "display"}, {"Delete Subtree/Node", "display"},
@@ -88,23 +88,22 @@ public final class Configuration {
     final static int subtree = 3;
     final static int swap = 4;
     final static int color_node_font = 5;
-    final static int change_node_font = 6;
-    final static int color_subtree = 7;
-    final static int open_seq_web = 8;
-    final static int open_pdb_web = 9;
-    final static int open_tax_web = 10;
-    final static int blast = 11;
-    final static int cut_subtree = 12;
-    final static int copy_subtree = 13;
-    final static int paste_subtree = 14;
-    final static int delete_subtree_or_node = 15;
-    final static int add_new_node = 16;
-    final static int edit_node_data = 17;
-    final static int sort_descendents = 18;
-    final static int get_ext_desc_data = 19;
-    final static int select_nodes = 20;
-    final static int uncollapse_all = 21;
-    final static int order_subtree = 22;
+    final static int color_subtree = 6;
+    final static int open_seq_web = 7;
+    final static int open_pdb_web = 8;
+    final static int open_tax_web = 9;
+    final static int blast = 10;
+    final static int cut_subtree = 11;
+    final static int copy_subtree = 12;
+    final static int paste_subtree = 13;
+    final static int delete_subtree_or_node = 14;
+    final static int add_new_node = 15;
+    final static int edit_node_data = 16;
+    final static int sort_descendents = 17;
+    final static int get_ext_desc_data = 18;
+    final static int select_nodes = 19;
+    final static int uncollapse_all = 20;
+    final static int order_subtree = 21;
 
     // ------------------
     // Click-to options
@@ -171,8 +170,6 @@ public final class Configuration {
     int default_clickto = Configuration.display_node_data;
 
     private boolean _abbreviate_scientific_names = false;
-    private boolean _antialias_screen = true;
-    private boolean _background_color_gradient = false;
     private String _base_font_family_name = "";
     private int _base_font_size = -1;
     private CLADOGRAM_TYPE _cladogram_type = AptxConstants.CLADOGRAM_TYPE_DEFAULT;
@@ -307,10 +304,6 @@ public final class Configuration {
         return _abbreviate_scientific_names;
     }
 
-    public boolean isBackgroundColorGradient() {
-        return _background_color_gradient;
-    }
-
     public boolean isColorByTaxonomicGroup() {
         return false;
     }
@@ -357,10 +350,6 @@ public final class Configuration {
 
     public void setAddTaxonomyImagesCB(final boolean b) {
         display_options[show_taxonomy_images][1] = b ? "yes" : "no";
-    }
-
-    public void setBackgroundColorGradient(final boolean background_color_gradient) {
-        _background_color_gradient = background_color_gradient;
     }
 
     public void setBaseFontFamilyName(final String base_font_family_name) {
@@ -663,10 +652,6 @@ public final class Configuration {
 
     final TAXONOMY_EXTRACTION getTaxonomyExtraction() {
         return _taxonomy_extraction;
-    }
-
-    boolean isAntialiasScreen() {
-        return _antialias_screen;
     }
 
     /**

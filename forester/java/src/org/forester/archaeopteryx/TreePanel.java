@@ -771,58 +771,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 JOptionPane.WARNING_MESSAGE);
     }
 
-    private void changeNodeFont(final PhylogenyNode node) {
-        final FontChooser fc = new FontChooser();
-        Font f = null;
-        if ((node.getNodeData().getNodeVisualData() != null) && !node.getNodeData().getNodeVisualData().isEmpty()) {
-            f = node.getNodeData().getNodeVisualData().getFont();
-        }
-        if (f != null) {
-            fc.setFont(f);
-        } else {
-            fc.setFont(getMainPanel().getTreeFontSet().getLargeFont());
-        }
-        List<PhylogenyNode> nodes = new ArrayList<>();
-        if ((getFoundNodes0() != null) || (getFoundNodes1() != null)) {
-            nodes = getFoundNodesAsListOfPhylogenyNodes();
-        }
-        if (!nodes.contains(node)) {
-            nodes.add(node);
-        }
-        final int count = nodes.size();
-        String title = "Change the font for ";
-        if (count == 1) {
-            title += "one node";
-        } else {
-            title += (count + " nodes");
-        }
-        fc.showDialog(this, title);
-        if ((fc.getFont() != null) && !ForesterUtil.isEmpty(fc.getFont().getFamily().trim())) {
-            for (final PhylogenyNode n : nodes) {
-                if (n.getNodeData().getNodeVisualData() == null) {
-                    n.getNodeData().setNodeVisualData(new NodeVisualData());
-                }
-                final NodeVisualData vd = n.getNodeData().getNodeVisualData();
-                final Font ff = fc.getFont();
-                vd.setFontName(ff.getFamily().trim());
-                int s = ff.getSize();
-                if (s < 0) {
-                    s = 0;
-                }
-                if (s > Byte.MAX_VALUE) {
-                    s = Byte.MAX_VALUE;
-                }
-                vd.setFontSize(s);
-                vd.setFontStyle(ff.getStyle());
-            }
-            if (_control_panel.getUseVisualStylesCb() != null) {
-                getControlPanel().getUseVisualStylesCb().setSelected(true);
-            }
-        }
-        setEdited(true);
-        repaint();
-    }
-
     final private void colorizeNodes(final Color c,
                                      final PhylogenyNode node,
                                      final List<PhylogenyNode> additional_nodes) {
@@ -973,13 +921,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         resetNodeIdToDistToLeafMap();
         setEdited(true);
         repaint();
-    }
-
-    final private void cycleColors() {
-        getMainPanel().getTreeColorSet().cycleColorScheme();
-        for (final TreePanel tree_panel : getMainPanel().getTreePanels()) {
-            tree_panel.setBackground(getMainPanel().getTreeColorSet().getBackgroundColor());
-        }
     }
 
     final private void decreaseOvSize() {
@@ -1280,9 +1221,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             case COLOR_NODE_FONT:
                 colorNodeFont(node);
                 break;
-            case CHANGE_NODE_FONT:
-                changeNodeFont(node);
-                break;
             case OPEN_SEQ_WEB:
                 openSeqWeb(node);
                 break;
@@ -1569,9 +1507,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 repaint();
             } else if (e.getKeyCode() == KeyEvent.VK_X) {
                 switchDisplaygetPhylogenyGraphicsType();
-                repaint();
-            } else if (e.getKeyCode() == KeyEvent.VK_C) {
-                cycleColors();
                 repaint();
             } else if (getOptions().isShowOverview() && isOvOn() && (e.getKeyCode() == KeyEvent.VK_O)) {
                 MainFrame.cycleOverview(getOptions(), this);
@@ -4679,6 +4614,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // legend is active. Null when not colorizing by rank.
     private Map<String, Color>  _rank_legend = null;
     private String              _rank_legend_title = null;
+    // Clade annotation bands: shaded boxes (behind/over the clade) or right-edge bars by taxonomic rank.
+    // See CladeBand / TreePanelUtil.cladeBands; geometry is computed at paint time from the clade's tips.
+    enum CLADE_VIS {
+        BOXES, BARS
+    }
+    private java.util.List<CladeBand> _clade_bands = null;
+    private CLADE_VIS                 _clade_bands_mode = CLADE_VIS.BOXES;
+    private String                    _clade_bands_rank = null;
+    private final static int          CLADE_BOX_ALPHA = 46;
+    private final static int          CLADE_BAR_WIDTH = 9;
+    private final static int          CLADE_BAR_GAP   = 16;
 
     /** The on-screen bounds of the last-drawn property-color legend, or null; used by the drag test. */
     final Rectangle getPropertyLegendBounds() {
@@ -5194,7 +5140,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     /**
      * Shows the result dialog after a rank colorization (the colorizing itself is done by
      * {@link #colorByRank}); {@code colorizations} is how many clades were colored. Called on the EDT
-     * by {@code MainFrame.colorRank} for the local path and by {@code RankColorizationResolver} after
+     * by {@code MainFrame.colorRank} for the local path and by {@code OnlineTaxonResolver} after
      * a background taxonomy-database resolution.
      */
     final void reportRankColorization(final String rank, final int colorizations) {
@@ -5212,6 +5158,124 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     + "taxonomic names the taxonomy database can resolve.";
             JOptionPane
                     .showMessageDialog(this, msg, "Taxonomy Rank-Colorization Failed", JOptionPane.WARNING_MESSAGE);
+        }
+    }
+
+    // ---- clade-annotation bands (boxes / right-edge bars by taxonomic rank) --------------------
+
+    /** Annotates the tree's clades with boxes or bars at {@code rank}; returns the number of bands. */
+    final int setCladeBands(final String rank, final CLADE_VIS mode) {
+        _clade_bands_rank = rank;
+        _clade_bands_mode = mode;
+        rebuildCladeBands();
+        repaint();
+        return (_clade_bands == null) ? 0 : _clade_bands.size();
+    }
+
+    final void clearCladeBands() {
+        _clade_bands = null;
+        _clade_bands_rank = null;
+    }
+
+    final boolean hasCladeBands() {
+        return (_clade_bands != null) && !_clade_bands.isEmpty();
+    }
+
+    CLADE_VIS getCladeBandsMode() {
+        return _clade_bands_mode;
+    }
+
+    /** Recomputes the bands from the current tree (cache-only); call after navigation swaps the tree. */
+    final void rebuildCladeBands() {
+        if (ForesterUtil.isEmpty(_clade_bands_rank) || (_phylogeny == null) || _phylogeny.isEmpty()) {
+            _clade_bands = null;
+            return;
+        }
+        _clade_bands = TreePanelUtil.cladeBands(_phylogeny, _clade_bands_rank,
+                TreePanelUtil.getDefaultLineageService());
+    }
+
+    /** Draws the clade bands over the tree (boxes = translucent wash; bars = right-edge with labels). */
+    private void paintCladeBands(final Graphics2D g) {
+        if (!hasCladeBands()) {
+            return;
+        }
+        if (_clade_bands_mode == CLADE_VIS.BARS) {
+            drawCladeBars(g);
+        } else {
+            drawCladeBoxes(g);
+        }
+    }
+
+    /** The x just past the longest tip label (where right-edge bars/box ends sit). */
+    private float cladeBandRightEdge() {
+        return getPhylogeny().getFirstExternalNode().getXcoord() + _length_of_longest_text;
+    }
+
+    /** {@code {yTop, yBottom}} of a clade's tips in current paint coordinates, or null if none. */
+    private float[] cladeBandYRange(final PhylogenyNode root) {
+        float min = Float.MAX_VALUE;
+        float max = -Float.MAX_VALUE;
+        if (root.isExternal()) {
+            min = max = root.getYcoord();
+        } else {
+            for (final PhylogenyNode t : root.getAllExternalDescendants()) {
+                final float y = t.getYcoord();
+                if (y < min) {
+                    min = y;
+                }
+                if (y > max) {
+                    max = y;
+                }
+            }
+        }
+        return (min > max) ? null : new float[] { min, max };
+    }
+
+    private void drawCladeBoxes(final Graphics2D g) {
+        final float right = cladeBandRightEdge();
+        final float pad = getYdistance();
+        for (final CladeBand band : _clade_bands) {
+            final float[] yr = cladeBandYRange(band.getRoot());
+            if (yr == null) {
+                continue;
+            }
+            final float left = band.getRoot().getXcoord();
+            final int w = Math.round(right - left);
+            final int h = Math.round((yr[1] - yr[0]) + (2 * pad));
+            if ((w <= 0) || (h <= 0)) {
+                continue;
+            }
+            final Color c = band.getColor();
+            g.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), CLADE_BOX_ALPHA));
+            g.fillRect(Math.round(left), Math.round(yr[0] - pad), w, h);
+        }
+    }
+
+    private void drawCladeBars(final Graphics2D g) {
+        final float bar_x = cladeBandRightEdge() + CLADE_BAR_GAP;
+        final float pad = getYdistance();
+        final Font font = getTreeFontSet().getLargeFont();
+        final AffineTransform saved = g.getTransform();
+        for (final CladeBand band : _clade_bands) {
+            final float[] yr = cladeBandYRange(band.getRoot());
+            if (yr == null) {
+                continue;
+            }
+            final int y = Math.round(yr[0] - pad);
+            final int h = Math.max(1, Math.round((yr[1] - yr[0]) + (2 * pad)));
+            g.setColor(band.getColor());
+            g.fillRect(Math.round(bar_x), y, CLADE_BAR_WIDTH, h);
+            // taxon label rotated 90 deg (reading bottom-to-top), centered on the bar, just to its right
+            g.setFont(font);
+            g.setColor(getTreeColorSet().getSequenceColor());
+            final FontMetrics fm = g.getFontMetrics();
+            final float label_x = bar_x + CLADE_BAR_WIDTH + 3;
+            final float mid_y = (yr[0] + yr[1]) / 2.0f;
+            final int tw = fm.stringWidth(band.getTaxon());
+            g.rotate(-Math.PI / 2.0, label_x, mid_y);
+            g.drawString(band.getTaxon(), label_x - (tw / 2.0f), mid_y + fm.getAscent());
+            g.setTransform(saved);
         }
     }
 
@@ -5857,34 +5921,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // Color the background
         if (!to_pdf) {
             final Rectangle r = getVisibleRect();
-            if (!getOptions().isBackgroundColorGradient() || getOptions().isPrintBlackAndWhite()) {
-                g.setColor(getTreeColorSet().getBackgroundColor());
-                if (!to_graphics_file) {
-                    g.fill(r);
-                } else {
-                    if (getOptions().isPrintBlackAndWhite()) {
-                        g.setColor(Color.WHITE);
-                    }
-                    g.fillRect(graphics_file_x, graphics_file_y, graphics_file_width, graphics_file_height);
-                }
+            g.setColor(getTreeColorSet().getBackgroundColor());
+            if (!to_graphics_file) {
+                g.fill(r);
             } else {
-                if (!to_graphics_file) {
-                    g.setPaint(new GradientPaint(r.x,
-                            r.y,
-                            getTreeColorSet().getBackgroundColor(),
-                            r.x,
-                            r.y + r.height,
-                            getTreeColorSet().getBackgroundColorGradientBottom()));
-                    g.fill(r);
-                } else {
-                    g.setPaint(new GradientPaint(graphics_file_x,
-                            graphics_file_y,
-                            getTreeColorSet().getBackgroundColor(),
-                            graphics_file_x,
-                            graphics_file_y + graphics_file_height,
-                            getTreeColorSet().getBackgroundColorGradientBottom()));
-                    g.fillRect(graphics_file_x, graphics_file_y, graphics_file_width, graphics_file_height);
+                if (getOptions().isPrintBlackAndWhite()) {
+                    g.setColor(Color.WHITE);
                 }
+                g.fillRect(graphics_file_x, graphics_file_y, graphics_file_width, graphics_file_height);
             }
             setupStroke(g);
         } else {
@@ -5932,6 +5976,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         to_graphics_file,
                         disallow_shortcutting);
             }
+            paintCladeBands(g); // clade boxes/bars over the tree -- node coords are set by the loop above
             if (getOptions().isShowScale() && getControlPanel().isDrawPhylogram() && (getScaleDistance() > 0.0)) {
                 if (!(to_graphics_file || to_pdf)) {
                     paintScale(g,
@@ -6235,18 +6280,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 _rendering_hints.put(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
             }
         }
-        if (getMainPanel().getOptions().isAntialiasScreen()) {
-            _rendering_hints.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            // try {
-            _rendering_hints.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
-            // }
-            // catch ( final Throwable e ) {
-            //    _rendering_hints.put( RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON );
-            //}
-        } else {
-            _rendering_hints.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
-            _rendering_hints.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
-        }
+        // Screen antialiasing is always on: it is free on modern hardware and essential for legible
+        // labels (the old on/off toggle was a relic of when antialiasing slowed redraws too much).
+        _rendering_hints.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        _rendering_hints.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
     }
 
     final void setTreeFile(final File treefile) {
@@ -6313,6 +6350,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             _phylogeny.clearHashIdToNodeMap();
             _phylogeny.recalculateNumberOfExternalDescendants(true);
             rebuildPropertyColorScheme();
+            rebuildCladeBands(); // band roots referenced the old tree -- recompute for the subtree
             updateSubSuperTreeButton();
             getMainPanel().getControlPanel().search0();
             getMainPanel().getControlPanel().search1();
@@ -6340,6 +6378,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         _phylogeny.clearHashIdToNodeMap();
         _phylogeny.recalculateNumberOfExternalDescendants(true);
         rebuildPropertyColorScheme();
+        rebuildCladeBands(); // band roots referenced the old (sub)tree -- recompute for the restored tree
         getMainPanel().getControlPanel().search0();
         getMainPanel().getControlPanel().search1();
         getMainPanel().getControlPanel().updateDomainStructureEvaluethresholdDisplay();

@@ -36,7 +36,42 @@ public final class ConfigurationTest {
     }
 
     public static boolean test() {
-        return testDefaults();
+        return testDefaults() && testClickToOptionAlignment();
+    }
+
+    /**
+     * The click-to options use a fragile parallel-array scheme: each {@code final static int} index
+     * must address the matching row of {@link Configuration#clickto_options}. Guards that coupling
+     * (notably after "Change Node Font(s)" was removed and the trailing indices shifted down).
+     */
+    private static boolean testClickToOptionAlignment() {
+        final Configuration c = new Configuration();
+        if ( !"Display Node Data".equals( c.getClickToTitle( Configuration.display_node_data ) ) ) {
+            return false;
+        }
+        if ( !"Colorize Node(s)".equals( c.getClickToTitle( Configuration.color_node_font ) ) ) {
+            return false;
+        }
+        if ( !"Colorize Subtree(s)".equals( c.getClickToTitle( Configuration.color_subtree ) ) ) {
+            return false;
+        }
+        if ( !"List Node Data".equals( c.getClickToTitle( Configuration.get_ext_desc_data ) ) ) {
+            return false;
+        }
+        if ( !"Order Subtree".equals( c.getClickToTitle( Configuration.order_subtree ) ) ) {
+            return false;
+        }
+        // the removed "Change Node Font(s)" option must no longer appear anywhere in the table
+        for ( final String[] option : Configuration.clickto_options ) {
+            if ( "Change Node Font(s)".equals( option[ 0 ] ) ) {
+                return false;
+            }
+        }
+        // the last index must still address the final row (no off-by-one after the shift)
+        if ( Configuration.order_subtree != ( Configuration.clickto_options.length - 1 ) ) {
+            return false;
+        }
+        return true;
     }
 
     /** The no-arg constructor yields the built-in defaults (no file is read). */

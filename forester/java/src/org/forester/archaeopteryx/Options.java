@@ -102,8 +102,6 @@ final public class Options {
     private boolean _abbreviate_scientific_names;
     private boolean _allow_errors_in_distance_to_parent;
     private boolean _antialias_print;
-    private boolean _antialias_screen;
-    private boolean _background_color_gradient;
     private Font _base_font;
     private CLADOGRAM_TYPE _cladogram_type;
     private boolean _color_by_taxonomic_group;
@@ -191,10 +189,6 @@ final public class Options {
         _allow_errors_in_distance_to_parent = allow_errors_in_distance_to_parent;
     }
 
-    public void setBackgroundColorGradient(final boolean background_color_gradient) {
-        _background_color_gradient = background_color_gradient;
-    }
-
     public void setColorLabelsSameAsParentBranch(final boolean color_labels_same_as_parent_branch) {
         _color_labels_same_as_parent_branch = color_labels_same_as_parent_branch;
     }
@@ -217,15 +211,14 @@ final public class Options {
 
     final private void init() {
         _default_node_shape = NodeShape.CIRCLE;
-        _default_node_fill = NodeFill.GRADIENT;
+        // GRADIENT was retired as a user-selectable node fill, so do not default to it.
+        _default_node_fill = NodeFill.SOLID;
         _default_node_shape_size = AptxConstants.DEFAULT_NODE_SHAPE_SIZE_DEFAULT;
         _internal_number_are_confidence_for_nh_parsing = false;
         _show_scale = false;
-        _antialias_screen = true;
         _antialias_print = true;
         _graphics_export_visible_only = false;
         _editable = true;
-        _background_color_gradient = false;
         _show_default_node_shapes_internal = false;
         _show_default_node_shapes_external = false;
         _show_default_node_shapes_for_marked_nodes = false;
@@ -354,14 +347,6 @@ final public class Options {
         return _antialias_print;
     }
 
-    final boolean isAntialiasScreen() {
-        return _antialias_screen;
-    }
-
-    final boolean isBackgroundColorGradient() {
-        return _background_color_gradient;
-    }
-
     final boolean isColorByTaxonomicGroup() {
         return _color_by_taxonomic_group;
     }
@@ -461,10 +446,6 @@ final public class Options {
 
     final void setAntialiasPrint(final boolean antialias_print) {
         _antialias_print = antialias_print;
-    }
-
-    final void setAntialiasScreen(final boolean antialias_screen) {
-        _antialias_screen = antialias_screen;
     }
 
     final void setBaseFont(final Font base_font) {
@@ -594,7 +575,6 @@ final public class Options {
     public final static Options createInstance(final Configuration configuration) {
         final Options instance = createDefaultInstance();
         if (configuration != null) {
-            instance.setAntialiasScreen(configuration.isAntialiasScreen());
             instance.setShowScale(configuration.isShowScale());
             instance.setShowOverview(configuration.isShowOverview());
             instance.setColorByTaxonomicGroup(configuration.isColorByTaxonomicGroup());
@@ -602,7 +582,6 @@ final public class Options {
             instance.setOvPlacement(configuration.getOvPlacement());
             instance.setPrintLineWidth(configuration.getPrintLineWidth());
             instance.setNodeLabelDirection(configuration.getNodeLabelDirection());
-            instance.setBackgroundColorGradient(configuration.isBackgroundColorGradient());
             if (configuration.getNumberOfDigitsAfterCommaForBranchLengthValues() >= 0) {
                 instance.setNumberOfDigitsAfterCommaForBranchLength(configuration
                         .getNumberOfDigitsAfterCommaForBranchLengthValues());

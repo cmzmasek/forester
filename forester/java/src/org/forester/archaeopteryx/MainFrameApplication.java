@@ -47,8 +47,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
@@ -194,7 +192,7 @@ public final class MainFrameApplication extends MainFrame {
         buildAnalysisMenu();
         buildToolsMenu();
         buildViewMenu();
-        buildOptionsMenu();
+        buildOptionItems();
         buildTypeMenu();
         buildSettingsMenu();
         buildHelpMenu();
@@ -924,112 +922,51 @@ public final class MainFrameApplication extends MainFrame {
         _jmenubar.add(_file_jmenu);
     }
 
-    void buildOptionsMenu() {
-        _options_jmenu = MainFrame.createMenu(OPTIONS_HEADER, getConfiguration());
-        _options_jmenu.addChangeListener(new ChangeListener() {
-
-            @Override
-            public void stateChanged(final ChangeEvent e) {
-                MainFrame.setOvPlacementColorChooseMenuItem(_overview_placment_mi, getOptions());
-                MainFrame.setTextColorChooseMenuItem(_switch_colors_mi, getCurrentTreePanel());
-                MainFrame.setTextMinSupportMenuItem(_choose_minimal_confidence_mi,
-                        getOptions(),
-                        getCurrentTreePanel());
-                MainFrame.setTextForFontChooserMenuItem(_choose_font_mi,
-                        MainFrame.createCurrentFontDesc(getMainPanel()
-                                .getTreeFontSet()));
-
-                MainFrame.setTextForPdfLineWidthChooserMenuItem(_choose_pdf_width_mi, getOptions());
-                MainFrame.setCycleNodeFillMenuItem(_cycle_node_fill_mi, getOptions());
-                MainFrame.setCycleNodeShapeMenuItem(_cycle_node_shape_mi, getOptions());
-                MainFrame.setCycleDataReturnMenuItem(_cycle_data_return, getOptions());
-                MainFrame.setTextNodeSizeMenuItem(_choose_node_size_mi, getOptions());
-                MainFrame.setDefaultBranchWidthMenuItem(_choose_default_branch_width_mi, getOptions());
-                try {
-                    getMainPanel().getControlPanel().setVisibilityOfDomainStrucureCB();
-                    getMainPanel().getControlPanel().setVisibilityOfX();
-                } catch (final Exception ignore) {
-                    // do nothing, not important.
-                }
-            }
-        });
-        _options_jmenu.add(customizeMenuItemAsLabel(new JMenuItem(DISPLAY_SUBHEADER), getConfiguration()));
-        _options_jmenu
-                .add(_ext_node_dependent_cladogram_rbmi = new JRadioButtonMenuItem(MainFrame.NONUNIFORM_CLADOGRAMS_LABEL));
-        _options_jmenu.add(_non_lined_up_cladograms_rbmi = new JRadioButtonMenuItem(NON_LINED_UP_CLADOGRAMS_LABEL));
+    /**
+     * Builds the checkbox/radio "menu items" that exist only as the backing model for the Settings
+     * dialog (which drives them via doClick()). They are no longer shown in any menu -- the old,
+     * never-displayed "Options" menu has been retired -- so they are created detached here. The
+     * customize* calls below set each item's initial state and, crucially, wire its action listener.
+     */
+    void buildOptionItems() {
+        _ext_node_dependent_cladogram_rbmi = new JRadioButtonMenuItem(MainFrame.NONUNIFORM_CLADOGRAMS_LABEL);
+        _non_lined_up_cladograms_rbmi = new JRadioButtonMenuItem(NON_LINED_UP_CLADOGRAMS_LABEL);
         ButtonGroup _radio_group_1 = new ButtonGroup();
         _radio_group_1.add(_ext_node_dependent_cladogram_rbmi);
         _radio_group_1.add(_non_lined_up_cladograms_rbmi);
-        _options_jmenu.add(_show_overview_cbmi = new JCheckBoxMenuItem(SHOW_OVERVIEW_LABEL));
-        _options_jmenu.add(_show_scale_cbmi = new JCheckBoxMenuItem(DISPLAY_SCALE_LABEL));
-        _options_jmenu
-                .add(_show_default_node_shapes_internal_cbmi = new JCheckBoxMenuItem(DISPLAY_NODE_BOXES_LABEL_INT));
-        _options_jmenu
-                .add(_show_default_node_shapes_external_cbmi = new JCheckBoxMenuItem(DISPLAY_NODE_BOXES_LABEL_EXT));
-        _options_jmenu
-                .add(_show_default_node_shapes_for_marked_cbmi = new JCheckBoxMenuItem(MainFrame.DISPLAY_NODE_BOXES_LABEL_MARKED));
-        _options_jmenu
-                .add(_collapsed_with_average_height_cbmi = new JCheckBoxMenuItem("Proportional Height of Collapsed Subtrees"));
-        _options_jmenu
-                .add(_show_abbreviated_labels_for_collapsed_nodes_cbmi = new JCheckBoxMenuItem("Add Abbreviated Labels to Collapsed Subtrees"));
-        _options_jmenu
-                .add(_line_up_renderable_data_cbmi = new JCheckBoxMenuItem(MainFrame.LINE_UP_RENDERABLE_DATA));
+        _show_overview_cbmi = new JCheckBoxMenuItem(SHOW_OVERVIEW_LABEL);
+        _show_scale_cbmi = new JCheckBoxMenuItem(DISPLAY_SCALE_LABEL);
+        _show_default_node_shapes_internal_cbmi = new JCheckBoxMenuItem(DISPLAY_NODE_BOXES_LABEL_INT);
+        _show_default_node_shapes_external_cbmi = new JCheckBoxMenuItem(DISPLAY_NODE_BOXES_LABEL_EXT);
+        _show_default_node_shapes_for_marked_cbmi = new JCheckBoxMenuItem(MainFrame.DISPLAY_NODE_BOXES_LABEL_MARKED);
+        _collapsed_with_average_height_cbmi = new JCheckBoxMenuItem("Proportional Height of Collapsed Subtrees");
+        _show_abbreviated_labels_for_collapsed_nodes_cbmi = new JCheckBoxMenuItem("Add Abbreviated Labels to Collapsed Subtrees");
+        _line_up_renderable_data_cbmi = new JCheckBoxMenuItem(MainFrame.LINE_UP_RENDERABLE_DATA);
         if (getConfiguration().doDisplayOption(Configuration.show_domain_architectures)) {
-            _options_jmenu
-                    .add(_right_line_up_domains_cbmi = new JCheckBoxMenuItem(MainFrame.RIGHT_LINE_UP_DOMAINS));
-            _options_jmenu.add(_show_domain_labels = new JCheckBoxMenuItem(MainFrame.SHOW_DOMAIN_LABELS_LABEL));
+            _right_line_up_domains_cbmi = new JCheckBoxMenuItem(MainFrame.RIGHT_LINE_UP_DOMAINS);
+            _show_domain_labels = new JCheckBoxMenuItem(MainFrame.SHOW_DOMAIN_LABELS_LABEL);
         }
-        _options_jmenu.add(_show_confidence_stddev_cbmi = new JCheckBoxMenuItem(SHOW_CONF_STDDEV_LABEL));
-        _options_jmenu.add(_show_mad_confidence_cbmi = new JCheckBoxMenuItem(MainFrame.SHOW_MAD_CONF_LABEL));
-        _options_jmenu.add(_color_labels_same_as_parent_branch = new JCheckBoxMenuItem(COLOR_LABELS_LABEL));
+        _show_confidence_stddev_cbmi = new JCheckBoxMenuItem(SHOW_CONF_STDDEV_LABEL);
+        _show_mad_confidence_cbmi = new JCheckBoxMenuItem(MainFrame.SHOW_MAD_CONF_LABEL);
+        _color_labels_same_as_parent_branch = new JCheckBoxMenuItem(COLOR_LABELS_LABEL);
         _color_labels_same_as_parent_branch.setToolTipText(MainFrame.COLOR_LABELS_TIP);
-        _options_jmenu.add(_abbreviate_scientific_names = new JCheckBoxMenuItem(ABBREV_SN_LABEL));
-        _options_jmenu.add(_label_direction_cbmi = new JCheckBoxMenuItem(LABEL_DIRECTION_LABEL));
+        _abbreviate_scientific_names = new JCheckBoxMenuItem(ABBREV_SN_LABEL);
+        _label_direction_cbmi = new JCheckBoxMenuItem(LABEL_DIRECTION_LABEL);
         _label_direction_cbmi.setToolTipText(LABEL_DIRECTION_TIP);
-        _options_jmenu.add(_screen_antialias_cbmi = new JCheckBoxMenuItem(SCREEN_ANTIALIAS_LABEL));
-        _options_jmenu.add(_background_gradient_cbmi = new JCheckBoxMenuItem(BG_GRAD_LABEL));
-        _options_jmenu.add(_cycle_node_shape_mi = new JMenuItem(MainFrame.CYCLE_NODE_SHAPE_LABEL));
-        _options_jmenu.add(_cycle_node_fill_mi = new JMenuItem(MainFrame.CYCLE_NODE_FILL_LABEL));
-        _options_jmenu.add(_choose_default_branch_width_mi = new JMenuItem(MainFrame.CHOOSE_BRANCH_WIDTH_LABEL));
-        _options_jmenu.add(_choose_node_size_mi = new JMenuItem(MainFrame.CHOOSE_NODE_SIZE_LABEL));
-        _options_jmenu.add(_choose_minimal_confidence_mi = new JMenuItem(""));
-        _options_jmenu.add(_overview_placment_mi = new JMenuItem(""));
-        _options_jmenu.add(_switch_colors_mi = new JMenuItem(""));
-        _options_jmenu.add(_choose_font_mi = new JMenuItem(""));
-        _options_jmenu.addSeparator();
-        _options_jmenu.add(_cycle_data_return = new JMenuItem("Cycle Data Return"));
-        _options_jmenu.addSeparator();
-        _options_jmenu.add(customizeMenuItemAsLabel(new JMenuItem(SEARCH_SUBHEADER), getConfiguration()));
-        // The five search-behaviour options (Match Case / Words / Regex / Inverse / Search Properties)
-        // now live in the left control panel, right next to the search fields, where users can see them.
-        _options_jmenu
-                .add(_color_all_found_nodes_when_coloring_subtree_cbmi = new JCheckBoxMenuItem("Colorize All Found Nodes When Colorizing Subtree(s)"));
-        _options_jmenu.addSeparator();
-        _options_jmenu
-                .add(customizeMenuItemAsLabel(new JMenuItem("Graphics Export & Printing:"), getConfiguration()));
-        _options_jmenu.add(_antialias_print_cbmi = new JCheckBoxMenuItem("Antialias"));
-        _options_jmenu.add(_print_black_and_white_cbmi = new JCheckBoxMenuItem("Export in Black and White"));
-        _options_jmenu
-                .add(_graphics_export_visible_only_cbmi = new JCheckBoxMenuItem("Limit to Visible ('Screenshot') for PNG and JPG export"));
-        _options_jmenu.add(_choose_pdf_width_mi = new JMenuItem(""));
-        _options_jmenu.addSeparator();
-        _options_jmenu.add(customizeMenuItemAsLabel(new JMenuItem("Newick/NHX/Nexus Read:"), getConfiguration()));
-        _options_jmenu
-                .add(_internal_number_are_confidence_for_nh_parsing_cbmi = new JCheckBoxMenuItem("Internal Node Names are Confidence Values"));
-        _options_jmenu.add(_replace_underscores_cbmi = new JCheckBoxMenuItem("Replace Underscores with Spaces"));
-        _options_jmenu
-                .add(_parse_beast_style_extended_nexus_tags_cbmi = new JCheckBoxMenuItem("Parse BEAST-style extended Newick/Nexus tags"));
+        _color_all_found_nodes_when_coloring_subtree_cbmi = new JCheckBoxMenuItem("Colorize All Found Nodes When Colorizing Subtree(s)");
+        _antialias_print_cbmi = new JCheckBoxMenuItem("Antialias (export)");
+        _print_black_and_white_cbmi = new JCheckBoxMenuItem("Export in Black and White");
+        _graphics_export_visible_only_cbmi = new JCheckBoxMenuItem("Limit to Visible ('Screenshot') for PNG and JPG export");
+        _internal_number_are_confidence_for_nh_parsing_cbmi = new JCheckBoxMenuItem("Internal Node Names are Confidence Values");
+        _replace_underscores_cbmi = new JCheckBoxMenuItem("Replace Underscores with Spaces");
+        _parse_beast_style_extended_nexus_tags_cbmi = new JCheckBoxMenuItem("Parse BEAST-style extended Newick/Nexus tags");
         _parse_beast_style_extended_nexus_tags_cbmi
                 .setToolTipText("to parse elements in the form of \"[&!color=#800080]\" in Newick/Nexus formatted trees");
-        _options_jmenu
-                .add(_allow_errors_in_distance_to_parent_cbmi = new JCheckBoxMenuItem("Ignore Distance Values Format Errors"));
-        _options_jmenu.add(_extract_taxonomy_no_rbmi = new JRadioButtonMenuItem("No Taxonomy Extraction"));
-        _options_jmenu
-                .add(_extract_taxonomy_pfam_strict_rbmi = new JRadioButtonMenuItem("Extract Taxonomy Codes/Ids from Pfam-style Node Names"));
-        _options_jmenu
-                .add(_extract_taxonomy_pfam_relaxed_rbmi = new JRadioButtonMenuItem("Extract Taxonomy Codes/Ids from Pfam-style like Node Names"));
-        _options_jmenu
-                .add(_extract_taxonomy_agressive_rbmi = new JRadioButtonMenuItem("Extract Taxonomy Codes/Ids/Scientific Names from Node Names"));
+        _allow_errors_in_distance_to_parent_cbmi = new JCheckBoxMenuItem("Ignore Distance Values Format Errors");
+        _extract_taxonomy_no_rbmi = new JRadioButtonMenuItem("No Taxonomy Extraction");
+        _extract_taxonomy_pfam_strict_rbmi = new JRadioButtonMenuItem("Extract Taxonomy Codes/Ids from Pfam-style Node Names");
+        _extract_taxonomy_pfam_relaxed_rbmi = new JRadioButtonMenuItem("Extract Taxonomy Codes/Ids from Pfam-style like Node Names");
+        _extract_taxonomy_agressive_rbmi = new JRadioButtonMenuItem("Extract Taxonomy Codes/Ids/Scientific Names from Node Names");
         _extract_taxonomy_pfam_strict_rbmi
                 .setToolTipText("To extract taxonomy codes/ids from node names in the form of e.g. \"BCL2_MOUSE/123-304\" or \"BCL2_10090/123-304\"");
         _extract_taxonomy_pfam_relaxed_rbmi
@@ -1041,33 +978,18 @@ public final class MainFrameApplication extends MainFrame {
         _radio_group_2.add(_extract_taxonomy_pfam_strict_rbmi);
         _radio_group_2.add(_extract_taxonomy_pfam_relaxed_rbmi);
         _radio_group_2.add(_extract_taxonomy_agressive_rbmi);
-        _options_jmenu.add(customizeMenuItemAsLabel(new JMenuItem("Newick/Nexus Save:"), getConfiguration()));
-        _options_jmenu
-                .add(_use_brackets_for_conf_in_nh_export_cbmi = new JCheckBoxMenuItem(USE_BRACKETS_FOR_CONF_IN_NH_LABEL));
+        _use_brackets_for_conf_in_nh_export_cbmi = new JCheckBoxMenuItem(USE_BRACKETS_FOR_CONF_IN_NH_LABEL);
         _use_brackets_for_conf_in_nh_export_cbmi
                 .setToolTipText("e.g. \"0.1[90]\" for a branch with support 90 and a length of 0.1");
-        _options_jmenu
-                .add(_use_internal_names_for_conf_in_nh_export_cbmi = new JCheckBoxMenuItem(USE_INTERNAL_NAMES_FOR_CONF_IN_NH_LABEL));
-        customizeJMenuItem(_choose_font_mi);
-        customizeJMenuItem(_choose_minimal_confidence_mi);
-        customizeJMenuItem(_switch_colors_mi);
-        customizeJMenuItem(_choose_pdf_width_mi);
-        customizeJMenuItem(_overview_placment_mi);
+        _use_internal_names_for_conf_in_nh_export_cbmi = new JCheckBoxMenuItem(USE_INTERNAL_NAMES_FOR_CONF_IN_NH_LABEL);
         customizeCheckBoxMenuItem(_show_default_node_shapes_external_cbmi,
                 getOptions().isShowDefaultNodeShapesExternal());
         customizeCheckBoxMenuItem(_show_default_node_shapes_internal_cbmi,
                 getOptions().isShowDefaultNodeShapesInternal());
         customizeCheckBoxMenuItem(_show_default_node_shapes_for_marked_cbmi,
                 getOptions().isShowDefaultNodeShapesForMarkedNodes());
-        customizeJMenuItem(_cycle_node_shape_mi);
-        customizeJMenuItem(_choose_default_branch_width_mi);
-        customizeJMenuItem(_cycle_node_fill_mi);
-        customizeJMenuItem(_choose_node_size_mi);
-        customizeJMenuItem(_cycle_data_return);
         customizeCheckBoxMenuItem(_color_labels_same_as_parent_branch,
                 getOptions().isColorLabelsSameAsParentBranch());
-        customizeCheckBoxMenuItem(_screen_antialias_cbmi, getOptions().isAntialiasScreen());
-        customizeCheckBoxMenuItem(_background_gradient_cbmi, getOptions().isBackgroundColorGradient());
         customizeCheckBoxMenuItem(_show_domain_labels, getOptions().isShowDomainLabels());
         customizeCheckBoxMenuItem(_abbreviate_scientific_names, getOptions().isAbbreviateScientificTaxonNames());
         customizeCheckBoxMenuItem(_show_scale_cbmi, getOptions().isShowScale());
@@ -1095,7 +1017,7 @@ public final class MainFrameApplication extends MainFrame {
                 getOptions().getTaxonomyExtraction() == TAXONOMY_EXTRACTION.AGGRESSIVE);
         customizeCheckBoxMenuItem(_replace_underscores_cbmi, getOptions().isReplaceUnderscoresInNhParsing());
         customizeCheckBoxMenuItem(_allow_errors_in_distance_to_parent_cbmi,
-                getOptions().isReplaceUnderscoresInNhParsing());
+                getOptions().isAllowErrorsInDistanceToParent());
         customizeCheckBoxMenuItem(_color_all_found_nodes_when_coloring_subtree_cbmi,
                 getOptions().isColorAllFoundNodesWhenColoringSubtree());
         customizeCheckBoxMenuItem(_parse_beast_style_extended_nexus_tags_cbmi,
@@ -1111,7 +1033,6 @@ public final class MainFrameApplication extends MainFrame {
                         .getNhConversionSupportValueStyle() == NH_CONVERSION_SUPPORT_VALUE_STYLE.AS_INTERNAL_NODE_NAMES);
         customizeCheckBoxMenuItem(_line_up_renderable_data_cbmi, getOptions().isLineUpRendarableNodeData());
         customizeCheckBoxMenuItem(_right_line_up_domains_cbmi, getOptions().isRightLineUpDomains());
-        // _options_jmenu is not added to the menu bar; its items are folded into the Settings dialog.
     }
 
     void buildSettingsMenu() {
@@ -1160,6 +1081,9 @@ public final class MainFrameApplication extends MainFrame {
         _tools_menu.add(_color_rank_jmi = new JMenuItem("Colorize Subtrees via Taxonomic Rank"));
         customizeJMenuItem(_color_rank_jmi);
         _color_rank_jmi.setToolTipText("for example, at \"Class\" level, colorize mammal specific subtree red");
+        _tools_menu.add(_clade_bands_jmi = new JMenuItem("Annotate Clades by Rank…"));
+        customizeJMenuItem(_clade_bands_jmi);
+        _clade_bands_jmi.setToolTipText("mark clades at a chosen rank with shaded boxes or right-edge bars + labels");
         _tools_menu.addSeparator();
         // Clearing styles & colors
         _tools_menu.add(_remove_visual_styles_item = new JMenuItem("Delete All Visual Styles From Nodes"));

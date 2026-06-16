@@ -29,7 +29,6 @@ public final class TreeColorSet {
 
     public static final String ANNOTATION                 = "Annotation";
     public static final String BACKGROUND                 = "Background";
-    public static final String BACKGROUND_GRADIENT_BOTTOM = "Background Gradient Bottom";
     public static final String BINARY_DOMAIN_COMBINATIONS = "Binary Domain Combinations";
     public static final String BRANCH                     = "Branch";
     public static final String BRANCH_LENGTH              = "Branch Length";
@@ -47,16 +46,20 @@ public final class TreeColorSet {
     public static final String SEQUENCE                   = "Sequence";
     public static final String SPECIATION                 = "Speciation";
     public static final String TAXONOMY                   = "Taxonomy";
-    static final String[]      COLOR_FIELDS               = { BACKGROUND, BACKGROUND_GRADIENT_BOTTOM, SEQUENCE,
+    static final String[]      COLOR_FIELDS               = { BACKGROUND, SEQUENCE,
             TAXONOMY, CONFIDENCE, BRANCH_LENGTH, BRANCH, NODE_BOX, COLLAPSED, MATCHING_NODES_A, MATCHING_NODES_B,
             MATCHING_NODES_A_AND_B, DUPLICATION, SPECIATION, DUPLICATION_OR_SPECATION, DOMAIN_LABEL, DOMAIN_BASE,
             BINARY_DOMAIN_COMBINATIONS, ANNOTATION, OVERVIEW };
-    static final String[]      SCHEME_NAMES               = { "Default", "Black", "Black & White", "Simple", "Silver", "Green",
-            "White & Blue", "Cyan", "Orange", "Blue", "Blue & White", "Neon" };
+    // Archaeopteryx has exactly two tree color schemes: index 0 = Dark, index 1 = Light. They mirror the
+    // FlatLaf light/dark UI theme and are selected by MainFrame.updateTreeCanvasColors (driven by the
+    // Settings "Theme" Light/Dark control). There is no scheme chooser or cycling.
+    static final String[]      SCHEME_NAMES               = { "Dark", "Light" };
     private int                _color_scheme;
-    private final Color[][]    _color_schemes             = { { new Color( 43, 43, 43 ), // background_color (modern dark gray, #2B2B2B)
-            new Color( 0, 100, 100 ), // background_color_gradient_bottom
-            new Color( 230, 230, 230 ), // sequence  __ Default
+    // Each row holds one Color per COLOR_FIELDS entry, in that order (see setColorSchema).
+    // Package-private (not private) so TreeColorSchemeTest can assert the row-width invariant.
+    final Color[][]            _color_schemes             = {
+            { new Color( 43, 43, 43 ), // background_color (modern dark gray, #2B2B2B)  __ Dark
+            new Color( 230, 230, 230 ), // sequence
             new Color( 180, 180, 180 ), // taxonomy
             new Color( 180, 180, 180 ), // support
             new Color( 140, 140, 140 ), // branch_length_color
@@ -72,31 +75,10 @@ public final class TreeColorSet {
             new Color( 230, 230, 230 ), // domain_label
             new Color( 100, 100, 100 ), // domains_base
             new Color( 65, 105, 255 ), // binary_domain_combinations_color
-            new Color( 173, 255, 47 ) // annotation
-            , new Color( 130, 130, 130 )                 // overview
-            }, { new Color( 0, 0, 0 ), // background_color
-            new Color( 0, 255, 255 ), // background_color_gradient_bottom
-            new Color( 230, 230, 230 ), // sequence  __ Black
-            new Color( 180, 180, 180 ), // taxonomy
-            new Color( 180, 180, 180 ), // support
-            new Color( 140, 140, 140 ), // branch_length_color
-            new Color( 255, 255, 255 ), // branch_color
-            new Color( 255, 255, 255 ), // box_color
-            new Color( 255, 255, 255 ), // collapesed_fill_color
-            new Color( 0, 255, 0 ), // found_color 0
-            new Color( 255, 0, 0 ), // found_color 1
-            new Color( 255, 255, 0 ), // found_color 1 + 2
-            new Color( 255, 0, 0 ), // duplication_box_color
-            new Color( 0, 255, 0 ), // speciation_box_color
-            new Color( 255, 255, 0 ), // duplication_speciation_color
-            new Color( 230, 230, 230 ), // domain_label
-            new Color( 100, 100, 100 ), // domains_base
-            new Color( 65, 105, 255 ), // binary_domain_combinations_color
-            new Color( 173, 255, 47 ) // annotation
-            , new Color( 130, 130, 130 ) // ov
-            }, { new Color( 255, 255, 255 ), // background_color
-            new Color( 0, 255, 255 ), // background_color_gradient_bottom
-            new Color( 0, 0, 0 ), // sequence  __ Black & White
+            new Color( 173, 255, 47 ), // annotation
+            new Color( 130, 130, 130 ) }, // overview
+            { new Color( 255, 255, 255 ), // background_color  __ Light
+            new Color( 0, 0, 0 ), // sequence
             new Color( 0, 0, 0 ), // taxonomy
             new Color( 0, 0, 0 ), // support
             new Color( 0, 0, 0 ), // branch_length_color
@@ -112,205 +94,10 @@ public final class TreeColorSet {
             new Color( 0, 0, 0 ), // domain_label
             new Color( 100, 100, 100 ), // domains_base
             new Color( 0, 0, 0 ), // binary_domain_combinations_color
-            new Color( 0, 0, 0 ) // annotation
-            , new Color( 220, 220, 220 ) // ov
-            }, 
-            
-            
-            
-            
-            { new Color( 255, 255, 255 ), // background_color
-                new Color( 0, 255, 255 ), // background_color_gradient_bottom
-                new Color( 0, 0, 153 ), //sequence __ NEW
-                new Color( 0, 0, 102 ), // taxonomy
-                new Color( 0, 0, 204 ), // support
-                new Color( 0, 51, 255 ), // branch_length_color
-                new Color( 0, 0, 0 ), // branch_color
-                new Color( 0, 51, 255 ), // box_color
-                new Color( 0, 51, 255 ), // collapesed_fill_color
-                new Color( 0, 0, 255 ), // found_color 0
-                new Color( 0, 255, 0 ), // found_color 1
-                new Color( 0, 255, 255 ), // found_color 0 + 1
-                new Color( 102, 51, 255 ), // duplication_box_color
-                new Color( 153, 153, 153 ), // speciation_box_color
-                new Color( 255, 255, 0 ), // duplication_speciation_color
-                new Color( 51, 51, 51), // domain_label
-                new Color(  51, 51, 51 ), // domains_base
-                new Color( 0, 0, 153 ), // binary_domain_combinations_color
-                new Color( 0, 0, 153 ),// annotation
-                new Color( 51, 51, 51 ) // ov
-            }  ,
-            
-            
-            
-            
-            
-            
-            
-            { new Color( 0, 0, 0 ), // background_color
-            new Color( 0, 255, 255 ), // background_color_gradient_bottom
-            new Color( 220, 220, 220 ), // sequence __ Silver
-            new Color( 180, 180, 180 ), // taxonomy
-            new Color( 140, 140, 140 ), // support
-            new Color( 140, 140, 140 ), // branch_length_color
-            new Color( 240, 240, 240 ), // branch_color
-            new Color( 140, 140, 140 ), // box_color
-            new Color( 240, 240, 240 ), // collapesed_fill_color
-            new Color( 255, 0, 0 ), // found_color 0
-            new Color( 0, 255, 0 ), // found_color 1
-            new Color( 255, 255, 0 ), // found_color 1 + 2
-            new Color( 255, 0, 0 ), // duplication_box_color
-            new Color( 0, 255, 0 ), // speciation_box_color
-            new Color( 255, 255, 0 ), // duplication_speciation_color
-            new Color( 230, 230, 230 ), // domain_label
-            new Color( 100, 100, 100 ), // domains_base
-            new Color( 180, 180, 180 ), // binary_domain_combinations_color
-            new Color( 140, 140, 140 ) // annotation
-            , new Color( 40, 40, 40 ) // ov
-            }, { new Color( 0, 10, 0 ), // background_color
-            new Color( 0, 255, 255 ), // background_color_gradient_bottom
-            new Color( 0, 255, 0 ), // sequence __ the Matrix
-            new Color( 30, 200, 30 ), // taxonomy
-            new Color( 0, 155, 0 ), // support
-            new Color( 0, 100, 0 ), // branch_length_color
-            new Color( 0, 155, 0 ), // branch_color
-            new Color( 0, 255, 0 ), // box_color
-            new Color( 0, 155, 0 ), // collapesed_fill_color
-            new Color( 255, 0, 0 ), // found_color 0
-            new Color( 0, 255, 0 ), // found_color 1
-            new Color( 255, 255, 0 ), // found_color 1 + 2
-            new Color( 255, 0, 0 ), // duplication_box_color
-            new Color( 0, 255, 0 ), // speciation_box_color
-            new Color( 255, 255, 0 ), // duplication_speciation_color
-            new Color( 230, 230, 230 ), // domain_label
-            new Color( 100, 100, 100 ), // domains_base
-            new Color( 0, 235, 0 ), // binary_domain_combinations_color
-            new Color( 0, 235, 0 ) // annotation
-            , new Color( 40, 40, 40 ) // ov
-            }, { new Color( 255, 255, 255 ), // background_color
-            new Color( 0, 255, 255 ), // background_color_gradient_bottom
-            new Color( 0, 0, 0 ), //sequence __ White & Blue
-            new Color( 40, 40, 40 ), // taxonomy
-            new Color( 0, 125, 0 ), // support
-            new Color( 70, 70, 0 ), // branch_length_color
-            new Color( 0, 20, 200 ), // branch_color
-            new Color( 0, 20, 200 ), // box_color
-            new Color( 0, 20, 200 ), // collapesed_fill_color
-            new Color( 0, 255, 0 ), // found_color 0
-            new Color( 255, 0, 0 ), // found_color 1
-            new Color( 0, 0, 255 ), // found_color 0 + 1
-            new Color( 255, 0, 0 ), // duplication_box_color
-            new Color( 0, 255, 0 ), // speciation_box_color
-            new Color( 255, 255, 0 ), // duplication_speciation_color
-            new Color( 0, 0, 0 ), // domain_label
-            new Color( 50, 50, 50 ), // domains_base
-            new Color( 65, 105, 225 ), // binary_domain_combinations_color
-            new Color( 173, 255, 47 ) // annotation
-            , new Color( 220, 220, 220 ) // ov
-            }, { new Color( 0, 0, 0 ), // background_color
-            new Color( 0, 255, 255 ), // background_color_gradient_bottom
-            new Color( 255, 255, 255 ), // sequence __ Cyan
-            new Color( 200, 200, 200 ), // taxonomy
-            new Color( 255, 255, 255 ), // support
-            new Color( 200, 200, 200 ), // branch_length_color
-            new Color( 0, 255, 255 ), // branch_color
-            new Color( 0, 255, 255 ), // box_color
-            new Color( 0, 255, 255 ), // collapesed_fill_color
-            new Color( 0, 255, 0 ), // found_color 0
-            new Color( 0, 0, 255 ), // found_color 1
-            new Color( 0, 255, 255 ), // found_color 0 + 1
-            new Color( 255, 0, 0 ), // duplication_box_color
-            new Color( 0, 255, 0 ), // speciation_box_color
-            new Color( 255, 255, 0 ), // duplication_speciation_color
-            new Color( 230, 230, 230 ), // domain_label
-            new Color( 100, 100, 100 ), // domains_base
-            new Color( 65, 105, 225 ), // binary_domain_combinations_color
-            new Color( 173, 255, 47 ) // annotation
-            , new Color( 0, 120, 120 ) // ov
-            }, { new Color( 0, 0, 0 ), // background_color
-            new Color( 0, 255, 255 ), // background_color_gradient_bottom
-            new Color( 255, 200, 0 ), // sequence __ Clockwork
-            new Color( 255, 200, 0 ), // taxonomy
-            new Color( 255, 200, 0 ), // support
-            new Color( 255, 200, 0 ), // branch_length_color
-            new Color( 255, 200, 0 ), // branch_color
-            new Color( 255, 200, 0 ), // box_color
-            new Color( 255, 200, 0 ), // collapesed_fill_color
-            new Color( 255, 255, 0 ), // found_color 0
-            new Color( 0, 255, 255 ), // found_color 1
-            new Color( 255, 255, 255 ), // found_color 0 + 1
-            new Color( 255, 0, 0 ), // duplication_box_color
-            new Color( 0, 255, 0 ), // speciation_box_color
-            new Color( 255, 255, 0 ), // duplication_speciation_color
-            new Color( 255, 200, 0 ), // domain_label
-            new Color( 255, 200, 0 ), // domains_base
-            new Color( 150, 150, 150 ), // binary_domain_combinations_color
-            new Color( 150, 150, 150 ) // annotation
-            , new Color( 150, 150, 150 ) // ov
-            }, { new Color( 0, 0, 100 ), // background_color
-            new Color( 0, 255, 255 ), // background_color_gradient_bottom
-            new Color( 255, 255, 255 ), // sequence __ Blue
-            new Color( 255, 255, 255 ), // taxonomy
-            new Color( 255, 0, 0 ), // support
-            new Color( 255, 0, 0 ), // branch_length_color
-            new Color( 255, 0, 0 ), // branch_color
-            new Color( 255, 0, 0 ), // box_color
-            new Color( 255, 0, 0 ), // collapesed_fill_color
-            new Color( 0, 255, 0 ), // found_color
-            new Color( 255, 0, 0 ), // found_color 1
-            new Color( 255, 255, 0 ), // found_color 1 + 2
-            new Color( 255, 0, 0 ), // duplication_box_color
-            new Color( 0, 255, 0 ), // speciation_box_color
-            new Color( 255, 255, 0 ), // duplication_speciation_color
-            new Color( 255, 255, 255 ), // domain_label
-            new Color( 100, 100, 100 ), // domains_base
-            new Color( 255, 255, 255 ), // binary_domain_combinations_color
-            new Color( 255, 255, 255 ) // annotation
-            , new Color( 77, 77, 255 ) // ov
-            }, { new Color( 0, 0, 0 ), // background_color
-            new Color( 0, 255, 255 ), // background_color_gradient_bottom
-            new Color( 255, 255, 255 ), // sequence __ blue &  white
-            new Color( 255, 255, 255 ), // taxonomy
-            new Color( 255, 255, 255 ), // support
-            new Color( 0, 191, 255 ), // branch_length_color
-            new Color( 0, 191, 255 ), // branch_color
-            new Color( 0, 191, 255 ), // box_color
-            new Color( 0, 191, 255 ), // collapesed_fill_color
-            new Color( 255, 0, 0 ), // found_color 0
-            new Color( 0, 255, 0 ), // found_color 1
-            new Color( 255, 255, 0 ), // found_color 0 + 1
-            new Color( 255, 0, 0 ), // duplication_box_color
-            new Color( 0, 255, 0 ), // speciation_box_color
-            new Color( 255, 255, 0 ), // duplication_speciation_color
-            new Color( 255, 255, 255 ), // domain_label
-            new Color( 150, 150, 150 ), // domains_base
-            new Color( 255, 255, 255 ), // binary_domain_combinations_color
-            new Color( 255, 255, 255 ) // annotation
-            , new Color( 170, 187, 204 ) // ov
-            }, { new Color( 0, 0, 0 ), // background_color
-            new Color( 255, 255, 0 ), // background_color_gradient_bottom
-            new Color( 127, 255, 0 ), // sequence __ Neon
-            new Color( 255, 110, 199 ), // taxonomy
-            new Color( 234, 173, 234 ), // support
-            new Color( 77, 77, 255 ), // branch_length_color
-            new Color( 234, 173, 234 ), // branch_color
-            new Color( 77, 77, 255 ), // box_color
-            new Color( 234, 173, 234 ), // collapsed_fill_color
-            new Color( 243, 243, 21 ), // found_color 0
-            new Color( 255, 20, 147 ), // found_color 1
-            new Color( 255, 255, 255 ), // found_color 1 + 2
-            new Color( 255, 0, 0 ), // duplication_box_color
-            new Color( 0, 255, 0 ), // speciation_box_color
-            new Color( 255, 255, 0 ), // duplication_speciation_color
-            new Color( 127, 255, 0 ), // domain_label
-            new Color( 234, 173, 234 ), // domains_base
-            new Color( 27, 255, 0 ), // binary_domain_combinations_color
-            new Color( 27, 255, 0 ) // annotation
-            , new Color( 77, 77, 255 ) // ov
-            }                                            };
+            new Color( 0, 0, 0 ), // annotation
+            new Color( 220, 220, 220 ) } }; // overview
     private Color              annotation_color;
     private Color              background_color;
-    private Color              background_color_gradient_bottom;
     private Color              binary_domain_combinations_color;
     private Color              bootstrap_color;
     private Color              box_color;
@@ -346,25 +133,12 @@ public final class TreeColorSet {
         _color_schemes[ 0 ][ i ] = color;
     }
 
-    void cycleColorScheme() {
-        if ( getCurrentColorScheme() >= ( _color_schemes.length - 1 ) ) {
-            setColorSchema( 0 );
-        }
-        else {
-            setColorSchema( getCurrentColorScheme() + 1 );
-        }
-    }
-
     Color getAnnotationColor() {
         return annotation_color;
     }
 
     Color getBackgroundColor() {
         return background_color;
-    }
-
-    Color getBackgroundColorGradientBottom() {
-        return background_color_gradient_bottom;
     }
 
     Color getBinaryDomainCombinationsColor() {
@@ -392,10 +166,6 @@ public final class TreeColorSet {
 
     Color getCollapseFillColor() {
         return collapse_fill_color;
-    }
-
-    Color[][] getColorSchemes() {
-        return _color_schemes;
     }
 
     Color getConfidenceColor() {
@@ -477,29 +247,24 @@ public final class TreeColorSet {
     void setColorSchema( final int scheme ) {
         _color_scheme = scheme;
         background_color = _color_schemes[ scheme ][ 0 ];
-        background_color_gradient_bottom = _color_schemes[ scheme ][ 1 ];
-        seq_color = _color_schemes[ scheme ][ 2 ];
-        taxonomy_color = _color_schemes[ scheme ][ 3 ];
-        bootstrap_color = _color_schemes[ scheme ][ 4 ];
-        branch_length_color = _color_schemes[ scheme ][ 5 ];
-        branch_color = _color_schemes[ scheme ][ 6 ];
-        box_color = _color_schemes[ scheme ][ 7 ];
-        collapse_fill_color = _color_schemes[ scheme ][ 8 ];
-        found_color_0 = _color_schemes[ scheme ][ 9 ];
-        found_color_1 = _color_schemes[ scheme ][ 10 ];
-        found_color_0_and_1 = _color_schemes[ scheme ][ 11 ];
-        dup_box_color = _color_schemes[ scheme ][ 12 ];
-        spec_box_color = _color_schemes[ scheme ][ 13 ];
-        duplication_or_specation_color = _color_schemes[ scheme ][ 14 ];
-        domain_label_color = _color_schemes[ scheme ][ 15 ];
-        domain_base_color = _color_schemes[ scheme ][ 16 ];
-        binary_domain_combinations_color = _color_schemes[ scheme ][ 17 ];
-        annotation_color = _color_schemes[ scheme ][ 18 ];
-        ov_color = _color_schemes[ scheme ][ 19 ];
-    }
-
-    void setCurrentColorScheme( final int color_scheme ) {
-        _color_scheme = color_scheme;
+        seq_color = _color_schemes[ scheme ][ 1 ];
+        taxonomy_color = _color_schemes[ scheme ][ 2 ];
+        bootstrap_color = _color_schemes[ scheme ][ 3 ];
+        branch_length_color = _color_schemes[ scheme ][ 4 ];
+        branch_color = _color_schemes[ scheme ][ 5 ];
+        box_color = _color_schemes[ scheme ][ 6 ];
+        collapse_fill_color = _color_schemes[ scheme ][ 7 ];
+        found_color_0 = _color_schemes[ scheme ][ 8 ];
+        found_color_1 = _color_schemes[ scheme ][ 9 ];
+        found_color_0_and_1 = _color_schemes[ scheme ][ 10 ];
+        dup_box_color = _color_schemes[ scheme ][ 11 ];
+        spec_box_color = _color_schemes[ scheme ][ 12 ];
+        duplication_or_specation_color = _color_schemes[ scheme ][ 13 ];
+        domain_label_color = _color_schemes[ scheme ][ 14 ];
+        domain_base_color = _color_schemes[ scheme ][ 15 ];
+        binary_domain_combinations_color = _color_schemes[ scheme ][ 16 ];
+        annotation_color = _color_schemes[ scheme ][ 17 ];
+        ov_color = _color_schemes[ scheme ][ 18 ];
     }
 
     static TreeColorSet createInstance() {

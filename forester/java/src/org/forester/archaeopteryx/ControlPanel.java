@@ -96,7 +96,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         SORT_DESCENDENTS,
         SUBTREE,
         SWAP,
-        CHANGE_NODE_FONT,
         COLOR_NODE_FONT,
         UNCOLLAPSE_ALL,
         ORDER_SUBTREE;
@@ -136,7 +135,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     private boolean _color_branches;
     private JCheckBox _use_visual_styles_cb;
     private int _color_subtree_cb_item;
-    private int _change_node_font_item;
     // The settings from the conf file
     private final Configuration _configuration;
     private int _copy_subtree_item;
@@ -909,15 +907,6 @@ final class ControlPanel extends JPanel implements ActionListener {
             }
             cb_index++;
         }
-        if (_configuration.doDisplayClickToOption(Configuration.change_node_font)) {
-            _change_node_font_item = cb_index;
-            addClickToOption(Configuration.change_node_font,
-                    _configuration.getClickToTitle(Configuration.change_node_font));
-            if (default_option == Configuration.change_node_font) {
-                selected_index = cb_index;
-            }
-            cb_index++;
-        }
         if (_configuration.doDisplayClickToOption(Configuration.color_subtree)) {
             _color_subtree_cb_item = cb_index;
             addClickToOption(Configuration.color_subtree,
@@ -1632,10 +1621,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         return _species_colors;
     }
 
-    boolean isAntialiasScreenText() {
-        return true;
-    }
-
     boolean isDrawPhylogram() {
         final Options.PHYLOGENY_DISPLAY_TYPE t = getTreeDisplayType(getMainPanel().getCurrentTabIndex());
         return ((t == Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM)
@@ -2009,8 +1994,6 @@ final class ControlPanel extends JPanel implements ActionListener {
             setActionWhenNodeClicked(NodeClickAction.OPEN_PDB_WEB);
         } else if (action == _color_node_font_item) {
             setActionWhenNodeClicked(NodeClickAction.COLOR_NODE_FONT);
-        } else if (action == _change_node_font_item) {
-            setActionWhenNodeClicked(NodeClickAction.CHANGE_NODE_FONT);
         } else if (action == _uncollapse_all_cb_item) {
             setActionWhenNodeClicked(NodeClickAction.UNCOLLAPSE_ALL);
         } else if (action == _order_subtree_cb_item) {

@@ -418,6 +418,31 @@ public class TreePanelUtil {
     }
 
     /**
+     * The clade bands for annotating {@code tree} at {@code rank} with shaded boxes or right-edge bars:
+     * one {@link CladeBand} (taxon + distinct color + clade-root) per maximal-monophyletic clade, from
+     * the SAME assignment the rank colorizer uses (so paraphyletic groups yield several same-colored
+     * bands). Network-pure (cache-only via {@code service}); the band geometry is computed later, at
+     * paint time, from each clade's tip coordinates. Unit-testable with an in-memory service.
+     */
+    final static List<CladeBand> cladeBands( final Phylogeny tree,
+                                             final String rank,
+                                             final TaxonomicLineageService service ) {
+        final List<CladeBand> bands = new ArrayList<CladeBand>();
+        if ( ( tree == null ) || tree.isEmpty() || ForesterUtil.isEmpty( rank ) ) {
+            return bands;
+        }
+        final Map<PhylogenyNode, String> assignment = assignTipsToRankTaxon( tree, rank, service );
+        final Map<String, Color> colors = AptxUtil.assignDistinctColors( new TreeSet<String>( assignment.values() ) );
+        for( final Entry<PhylogenyNode, String> e : maximalMonochromaticRoots( tree, assignment ).entrySet() ) {
+            final Color c = colors.get( e.getValue() );
+            if ( c != null ) {
+                bands.add( new CladeBand( e.getValue(), c, e.getKey() ) );
+            }
+        }
+        return bands;
+    }
+
+    /**
      * Maps each external node to its taxon at {@code rank}, omitting tips that cannot be placed.
      * Resolution order per tip: (a) the nearest self-or-ancestor node annotated with exactly that
      * rank (free, in-tree); (b) the tip's cached {@link RankedLineage} from {@code service} (no

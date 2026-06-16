@@ -124,8 +124,6 @@ final class SettingsDialog extends JDialog {
         add( c, cb( _mf._abbreviate_scientific_names ) );
         add( c, cb( _mf._show_confidence_stddev_cbmi ) );
         add( c, cb( _mf._show_mad_confidence_cbmi ) );
-        add( c, cb( _mf._screen_antialias_cbmi ) );
-        add( c, cb( _mf._background_gradient_cbmi ) );
         add( c, labeled( "\"Color by\" palette:", paletteCombo() ) );
         c.add( header( "Collapsed Subtrees & Domains" ) );
         add( c, cb( _mf._collapsed_with_average_height_cbmi ) );
@@ -144,7 +142,9 @@ final class SettingsDialog extends JDialog {
         add( c, cb( _mf._show_default_node_shapes_for_marked_cbmi ) );
         add( c, labeled( "Node shape:", enumCombo( NodeShape.values(), _mf.getOptions().getDefaultNodeShape(),
                                                    v -> { _mf.getOptions().setDefaultNodeShape( v ); repaintTree(); } ) ) );
-        add( c, labeled( "Node fill:", enumCombo( NodeFill.values(), _mf.getOptions().getDefaultNodeFill(),
+        // GRADIENT node fill is retired as a user choice (kept in the NodeFill enum only for phyloXML round-tripping).
+        add( c, labeled( "Node fill:", enumCombo( new NodeFill[] { NodeFill.DEFAULT, NodeFill.NONE, NodeFill.SOLID },
+                                                  _mf.getOptions().getDefaultNodeFill(),
                                                   v -> { _mf.getOptions().setDefaultNodeFill( v ); repaintTree(); } ) ) );
         add( c, labeled( "Node size:", intSpinner( _mf.getOptions().getDefaultNodeShapeSize(), 0, 100, 1,
                                                    v -> { _mf.getOptions().setDefaultNodeShapeSize( v.shortValue() ); repaintTree(); } ) ) );
@@ -166,8 +166,6 @@ final class SettingsDialog extends JDialog {
         font_blurb.setAlignmentX( Component.LEFT_ALIGNMENT );
         c.add( font_blurb );
         refreshFontInfo();
-        c.add( header( "Colors" ) );
-        add( c, labeled( "Color scheme:", button( "Choose…", () -> _mf.switchColors() ) ) );
         c.add( header( "Behavior" ) );
         add( c, labeled( "Data returned on copy:", enumCombo( NodeDataField.values(),
                                                               _mf.getOptions().getExtDescNodeDataToReturn(),

@@ -49,7 +49,8 @@ public final class TreePanelUtilTest {
 
     public static boolean test() {
         return testYDistanceToAvoidLabelOverlap() && testSupportSymbolMath() && testDetectConfidenceScaleMax()
-                && testCapEntries() && testTaxonomyLabel() && testRankColorization() && testTipQueryName();
+                && testCapEntries() && testTaxonomyLabel() && testRankColorization() && testTipQueryName()
+                && testCladeBands();
     }
 
     /**
@@ -190,6 +191,58 @@ public final class TreePanelUtilTest {
         // the unresolvable tip is never colored
         if ( findLeaf( tree, "x_unknown" ).getBranchData().getBranchColor() != null ) {
             return fail( "an unplaceable tip must be left uncolored, not swept into a neighbor's color" );
+        }
+        return true;
+    }
+
+    /** Clade bands reuse the same assignment as the colorizer: one band per maximal-monophyletic clade. */
+    private static boolean testCladeBands() {
+        final FakeLineageService svc = new FakeLineageService();
+        svc.know( "Felis", lineage( "class", "Mammalia", "order", "Carnivora", "genus", "Felis" ) );
+        svc.know( "Canis", lineage( "class", "Mammalia", "order", "Carnivora", "genus", "Canis" ) );
+        final Phylogeny tree = mammalTree();
+        try {
+            for( final String name : TreePanelUtil.unresolvedTipTaxa( tree, "order", svc ) ) {
+                svc.fetch( name );
+            }
+        }
+        catch ( final Exception e ) {
+            return fail( "fake fetch must not throw: " + e );
+        }
+        final java.util.List<CladeBand> bands = TreePanelUtil.cladeBands( tree, "order", svc );
+        // the same three maximal clades the colorizer finds: the Rodentia clade + Felis + Canis
+        if ( bands.size() != 3 ) {
+            return fail( "expected 3 clade bands (Rodentia, Felis, Canis), got " + bands.size() );
+        }
+        final java.util.List<Color> carnivora_colors = new java.util.ArrayList<Color>();
+        Color rodentia_color = null;
+        for( final CladeBand b : bands ) {
+            if ( ( b.getColor() == null ) || ( b.getRoot() == null ) ) {
+                return fail( "every band must carry a color and a clade root" );
+            }
+            if ( "Carnivora".equals( b.getTaxon() ) ) {
+                carnivora_colors.add( b.getColor() );
+            }
+            else if ( "Rodentia".equals( b.getTaxon() ) ) {
+                rodentia_color = b.getColor();
+            }
+            else {
+                return fail( "unexpected band taxon: " + b.getTaxon() );
+            }
+        }
+        if ( ( carnivora_colors.size() != 2 ) || ( rodentia_color == null ) ) {
+            return fail( "paraphyletic Carnivora must yield 2 bands + 1 Rodentia band" );
+        }
+        if ( !carnivora_colors.get( 0 ).equals( carnivora_colors.get( 1 ) ) ) {
+            return fail( "the two Carnivora bands (same taxon) must share a color" );
+        }
+        if ( carnivora_colors.get( 0 ).equals( rodentia_color ) ) {
+            return fail( "Carnivora and Rodentia bands must have distinct colors" );
+        }
+        // degenerate inputs yield no bands (never throw)
+        if ( !TreePanelUtil.cladeBands( tree, "", svc ).isEmpty()
+                || !TreePanelUtil.cladeBands( null, "order", svc ).isEmpty() ) {
+            return fail( "empty rank / null tree must yield no bands" );
         }
         return true;
     }
