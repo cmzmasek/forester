@@ -102,6 +102,12 @@ public final class RankLegendTest {
                     ok[ 0 ] = false;
                     System.out.println( "  'automatic' did not revert the clade-band recolor" );
                 }
+                // BRACKETS mode is monochrome -> it must NOT create a color legend
+                tp.setCladeBands( "order", TreePanel.CLADE_VIS.BRACKETS );
+                if ( tp.hasRankLegend() ) {
+                    ok[ 0 ] = false;
+                    System.out.println( "  bracket (B&W) mode must not create a color legend" );
+                }
                 // clearing the bands must remove the legend
                 tp.clearCladeBands();
                 if ( tp.hasRankLegend() ) {

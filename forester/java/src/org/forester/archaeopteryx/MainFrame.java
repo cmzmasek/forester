@@ -986,9 +986,11 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         final JComboBox<String> rank_box = new JComboBox<>(ranks);
         final JRadioButton boxes_rb = new JRadioButton("Shaded boxes (behind the clades)", true);
         final JRadioButton bars_rb = new JRadioButton("Bars + labels (at the right edge)");
+        final JRadioButton brackets_rb = new JRadioButton("Brackets ] + labels (black & white, no legend)");
         final ButtonGroup bg = new ButtonGroup();
         bg.add(boxes_rb);
         bg.add(bars_rb);
+        bg.add(brackets_rb);
         final JPanel panel = new JPanel(new GridLayout(0, 1, 0, 2));
         panel.add(new JLabel("Annotate clades by rank:"));
         panel.add(rank_box);
@@ -996,6 +998,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         panel.add(new JLabel("Show as:"));
         panel.add(boxes_rb);
         panel.add(bars_rb);
+        panel.add(brackets_rb);
         if (JOptionPane.showConfirmDialog(this, panel, "Annotate Clades by Rank", JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE) != JOptionPane.OK_OPTION) {
             return;
@@ -1008,7 +1011,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             rank = rank.substring(0, rank.indexOf('(')).trim();
         }
         final String r = rank;
-        final TreePanel.CLADE_VIS mode = bars_rb.isSelected() ? TreePanel.CLADE_VIS.BARS : TreePanel.CLADE_VIS.BOXES;
+        final TreePanel.CLADE_VIS mode = bars_rb.isSelected() ? TreePanel.CLADE_VIS.BARS
+                : brackets_rb.isSelected() ? TreePanel.CLADE_VIS.BRACKETS : TreePanel.CLADE_VIS.BOXES;
         final SortedSet<String> unresolved = TreePanelUtil.unresolvedTipTaxa(phy, r,
                 TreePanelUtil.getDefaultLineageService());
         if (!unresolved.isEmpty()) {
@@ -1031,8 +1035,14 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         final int n = tp.setCladeBands(rank, mode);
         if (n > 0) {
             tp.setEdited(true);
+            // bars/brackets extend to the right of the labels; fit the width so they are immediately
+            // visible without the user having to press "W" (boxes sit within the existing tree width)
+            if ((mode == TreePanel.CLADE_VIS.BARS) || (mode == TreePanel.CLADE_VIS.BRACKETS)) {
+                tp.getControlPanel().fitWidth();
+            }
         }
-        final String kind = (mode == TreePanel.CLADE_VIS.BARS) ? "bar(s)" : "box(es)";
+        final String kind = (mode == TreePanel.CLADE_VIS.BARS) ? "bar(s)"
+                : (mode == TreePanel.CLADE_VIS.BRACKETS) ? "bracket(s)" : "box(es)";
         if (error != null) {
             JOptionPane.showMessageDialog(this, "Drew " + n + " clade " + kind + " at rank \"" + rank
                     + "\", but some taxa could not be resolved:\n" + error, "Annotate Clades by Rank (" + rank + ")",

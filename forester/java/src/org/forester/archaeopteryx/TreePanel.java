@@ -4377,10 +4377,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             float xdist = 0;
             float ov_xdist = 0;
             if (!isNonLinedUpCladogram()) {
-                xdist = (float) ((x - getLongestExtNodeInfo() - TreePanel.MOVE) / (ext_nodes + 3.0));
+                xdist = (float) ((x - getLongestExtNodeInfo() - cladeBandExtraWidth() - TreePanel.MOVE)
+                        / (ext_nodes + 3.0));
                 ov_xdist = (float) (getOvMaxWidth() / (ext_nodes + 3.0));
             } else {
-                xdist = ((x - getLongestExtNodeInfo() - TreePanel.MOVE) / (max_depth + 1));
+                xdist = ((x - getLongestExtNodeInfo() - cladeBandExtraWidth() - TreePanel.MOVE) / (max_depth + 1));
                 ov_xdist = (getOvMaxWidth() / (max_depth + 1));
             }
             float ydist = (float) ((y - TreePanel.MOVE) / (ext_nodes * 2.0));
@@ -4400,7 +4401,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             //final double height = PhylogenyMethods.calculateMaxDepth( _phylogeny );
             if (height > 0) {
                 final float corr = (float) ((x - (2.0 * TreePanel.MOVE) - getLongestExtNodeInfo()
-                        - getXdistance()) / height);
+                        - cladeBandExtraWidth() - getXdistance()) / height);
                 setXcorrectionFactor(corr > 0 ? corr : 0);
                 final float ov_corr = (float) ((getOvMaxWidth() - getOvXDistance()) / height);
                 setOvXcorrectionFactor(ov_corr > 0 ? ov_corr : 0);
@@ -4623,7 +4624,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // Clade annotation bands: shaded boxes (behind/over the clade) or right-edge bars by taxonomic rank.
     // See CladeBand / TreePanelUtil.cladeBands; geometry is computed at paint time from the clade's tips.
     enum CLADE_VIS {
-        BOXES, BARS
+        BOXES, BARS, BRACKETS
     }
     private java.util.List<CladeBand> _clade_bands = null;
     private CLADE_VIS                 _clade_bands_mode = CLADE_VIS.BOXES;
@@ -4633,6 +4634,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private final static int          CLADE_BAR_GAP   = 16;
     // a few px of breathing room past the longest label, so the box/bar clears the text
     private final static int          CLADE_BAND_RIGHT_PAD = 6;
+    private final static int          CLADE_BRACKET_TICK = 5;       // end-tick length of the monochrome "]" bracket
+    private final static float        CLADE_BRACKET_STROKE = 1.5f;
 
     /** The on-screen bounds of the last-drawn property-color legend, or null; used by the drag test. */
     final Rectangle getPropertyLegendBounds() {
@@ -5310,6 +5313,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (!hasCladeBands()) {
             return;
         }
+        if (_clade_bands_mode == CLADE_VIS.BRACKETS) {
+            // monochrome brackets carry no color key; drop the clade legend unless a branch
+            // rank-colorization still owns the legend slot
+            if (_branch_rank_colorize_rank == null) {
+                clearRankLegend();
+            }
+            return;
+        }
         final Map<String, Color> legend = new java.util.TreeMap<>(); // sorted by taxon name; dedups repeated taxa
         for (final CladeBand band : _clade_bands) {
             legend.put(band.getTaxon(), band.getColor());
@@ -5320,15 +5331,25 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
-    /** Draws the clade bands over the tree (boxes = translucent wash; bars = right-edge with labels). */
+    /**
+     * Draws the clade annotations over the tree: boxes = translucent color wash; bars = colored right-edge
+     * bars with labels (color key in the legend); brackets = monochrome "]" brackets with labels (no color,
+     * no legend) for when color already encodes something else.
+     */
     private void paintCladeBands(final Graphics2D g) {
         if (!hasCladeBands()) {
             return;
         }
-        if (_clade_bands_mode == CLADE_VIS.BARS) {
-            drawCladeBars(g);
-        } else {
-            drawCladeBoxes(g);
+        switch (_clade_bands_mode) {
+            case BARS:
+                drawCladeBars(g);
+                break;
+            case BRACKETS:
+                drawCladeBrackets(g);
+                break;
+            default:
+                drawCladeBoxes(g);
+                break;
         }
     }
 
@@ -5347,6 +5368,24 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             labels_end = getPhylogeny().getFirstExternalNode().getXcoord() + getLongestExtNodeInfo();
         }
         return labels_end + CLADE_BAND_RIGHT_PAD;
+    }
+
+    /**
+     * Horizontal space the clade annotation needs to the RIGHT of the label reservation
+     * ({@link #getLongestExtNodeInfo()}), so layout / "fit to window" / zoom keep it on-screen. Boxes
+     * only add the small pad; bars/brackets add the gap, the mark, and the rotated label (whose horizontal
+     * extent is the font height). 0 when no bands are shown.
+     */
+    private int cladeBandExtraWidth() {
+        if (!hasCladeBands()) {
+            return 0;
+        }
+        if (_clade_bands_mode == CLADE_VIS.BOXES) {
+            return CLADE_BAND_RIGHT_PAD;
+        }
+        final int label_h = getFontMetricsForLargeDefaultFont().getHeight();
+        final int mark = (_clade_bands_mode == CLADE_VIS.BARS) ? (CLADE_BAR_WIDTH + 3) : 4;
+        return CLADE_BAND_RIGHT_PAD + CLADE_BAR_GAP + mark + label_h + 4;
     }
 
     /** {@code {yTop, yBottom}} of a clade's tips in current paint coordinates, or null if none. */
@@ -5414,6 +5453,44 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             g.drawString(band.getTaxon(), label_x - (tw / 2.0f), mid_y + fm.getAscent());
             g.setTransform(saved);
         }
+    }
+
+    // Monochrome "named clade" annotation: a thin "]" bracket (vertical spine + short end-ticks pointing
+    // toward the tips) per clade with the rotated taxon label, all in the foreground color -- no per-clade
+    // colors and no legend, for use when color already encodes something else.
+    private void drawCladeBrackets(final Graphics2D g) {
+        final float spine_x = cladeBandRightEdge() + CLADE_BAR_GAP;
+        // less outward pad than the filled bars/boxes, so adjacent brackets keep a clear vertical gap
+        // (one "]" per clade) instead of merging into a single continuous line
+        final float pad = getYdistance() * 0.3f;
+        final Font font = getTreeFontSet().getLargeFont();
+        final AffineTransform saved_at = g.getTransform();
+        final Stroke saved_stroke = g.getStroke();
+        g.setStroke(new BasicStroke(CLADE_BRACKET_STROKE));
+        g.setColor(getTreeColorSet().getSequenceColor());
+        for (final CladeBand band : _clade_bands) {
+            final float[] yr = cladeBandYRange(band.getRoot());
+            if (yr == null) {
+                continue;
+            }
+            final int x = Math.round(spine_x);
+            final int y0 = Math.round(yr[0] - pad);
+            final int y1 = Math.round(yr[1] + pad);
+            // "]" : vertical spine plus short end-ticks pointing left, toward the tips
+            g.drawLine(x, y0, x, y1);
+            g.drawLine(x, y0, x - CLADE_BRACKET_TICK, y0);
+            g.drawLine(x, y1, x - CLADE_BRACKET_TICK, y1);
+            // taxon label rotated 90 deg (reading bottom-to-top), centered on the bracket, just to its right
+            g.setFont(font);
+            final FontMetrics fm = g.getFontMetrics();
+            final float label_x = spine_x + 4;
+            final float mid_y = (yr[0] + yr[1]) / 2.0f;
+            final int tw = fm.stringWidth(band.getTaxon());
+            g.rotate(-Math.PI / 2.0, label_x, mid_y);
+            g.drawString(band.getTaxon(), label_x - (tw / 2.0f), mid_y + fm.getAscent());
+            g.setTransform(saved_at);
+        }
+        g.setStroke(saved_stroke);
     }
 
     final void decreaseDomainStructureEvalueThresholdExp() {
@@ -6319,16 +6396,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         y = TreePanel.MOVE
                 + ForesterUtil.roundToInt(getYdistance() * getPhylogeny().getRoot().getNumberOfExternalNodes() * 2);
         if (getControlPanel().isDrawPhylogram()) {
-            x = TreePanel.MOVE + getLongestExtNodeInfo()
+            x = TreePanel.MOVE + getLongestExtNodeInfo() + cladeBandExtraWidth()
                     + ForesterUtil.roundToInt((getXcorrectionFactor()
                     * getPhylogeny().calculateHeight(!_options.isCollapsedWithAverageHeigh()))
                     + getXdistance());
         } else {
             if (!isNonLinedUpCladogram()) {
-                x = TreePanel.MOVE + getLongestExtNodeInfo() + ForesterUtil
+                x = TreePanel.MOVE + getLongestExtNodeInfo() + cladeBandExtraWidth() + ForesterUtil
                         .roundToInt(getXdistance() * (getPhylogeny().getRoot().getNumberOfExternalNodes() + 2));
             } else {
-                x = TreePanel.MOVE + getLongestExtNodeInfo() + ForesterUtil
+                x = TreePanel.MOVE + getLongestExtNodeInfo() + cladeBandExtraWidth() + ForesterUtil
                         .roundToInt(getXdistance() * (PhylogenyMethods.calculateMaxDepth(getPhylogeny()) + 1));
             }
         }
