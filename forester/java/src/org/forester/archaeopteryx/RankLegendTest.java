@@ -59,6 +59,66 @@ public final class RankLegendTest {
         if ( GraphicsEnvironment.isHeadless() ) {
             return true;
         }
+        return testRankColorizeLegend() && testCladeBandLegend();
+    }
+
+    /** Clade bands ("Annotate Clades by Rank") must reuse the same draggable taxon-&gt;color legend, so the
+     *  boxes/bars are labeled; clearing the bands must remove it. */
+    private static boolean testCladeBandLegend() {
+        try {
+            final Configuration conf = new Configuration();
+            final MainFrame[] mf = new MainFrame[ 1 ];
+            SwingUtilities.invokeAndWait(
+                    () -> mf[ 0 ] = MainFrameApplication.createInstance( new Phylogeny[] { orderTree() }, conf, "clb" ) );
+            final boolean[] ok = { true };
+            SwingUtilities.invokeAndWait( () -> {
+                final TreePanel tp = mf[ 0 ].getMainPanel().getCurrentTreePanel();
+                final int bands = tp.setCladeBands( "order", TreePanel.CLADE_VIS.BOXES );
+                if ( bands < 1 ) {
+                    ok[ 0 ] = false;
+                    System.out.println( "  no clade bands at rank 'order'" );
+                }
+                if ( !tp.hasRankLegend() ) {
+                    ok[ 0 ] = false;
+                    System.out.println( "  clade bands did not build the legend" );
+                }
+                final Rectangle vp = tp.getVisibleRect();
+                if ( ( vp.width >= 300 ) && ( vp.height >= 300 ) ) {
+                    paint( tp, vp ); // on-screen path records the legend bounds
+                    if ( tp.getPropertyLegendBounds() == null ) {
+                        ok[ 0 ] = false;
+                        System.out.println( "  clade-band legend was not drawn (no bounds)" );
+                    }
+                }
+                // unified click-to-recolor: a legend recolor updates the band/legend color and persists,
+                // and "Use Automatic Color" reverts it
+                tp.setRankColorOverride( "order", ORDERS[ 0 ], java.awt.Color.MAGENTA );
+                if ( !java.awt.Color.MAGENTA.equals( tp.rankLegendColor( ORDERS[ 0 ] ) ) ) {
+                    ok[ 0 ] = false;
+                    System.out.println( "  clade-band legend recolor did not take effect" );
+                }
+                tp.clearRankColorOverride( "order", ORDERS[ 0 ] );
+                if ( java.awt.Color.MAGENTA.equals( tp.rankLegendColor( ORDERS[ 0 ] ) ) ) {
+                    ok[ 0 ] = false;
+                    System.out.println( "  'automatic' did not revert the clade-band recolor" );
+                }
+                // clearing the bands must remove the legend
+                tp.clearCladeBands();
+                if ( tp.hasRankLegend() ) {
+                    ok[ 0 ] = false;
+                    System.out.println( "  clade-band legend was not cleared with the bands" );
+                }
+                ( (JFrame) mf[ 0 ] ).dispose();
+            } );
+            return ok[ 0 ];
+        }
+        catch ( final Throwable e ) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private static boolean testRankColorizeLegend() {
         try {
             final Configuration conf = new Configuration();
             final MainFrame[] mf = new MainFrame[ 1 ];
@@ -142,6 +202,20 @@ public final class RankLegendTest {
                     if ( ( Math.abs( back.x - home.x ) > 1 ) || ( Math.abs( back.y - home.y ) > 1 ) ) {
                         ok[ 0 ] = false;
                         System.out.println( "  legend did not reset to its corner" );
+                    }
+                    // unified click-to-recolor also works on the branch rank-colorize legend (re-applies
+                    // to the branches), and "Use Automatic Color" reverts it
+                    if ( found != null ) {
+                        tp.setRankColorOverride( "order", found, java.awt.Color.PINK );
+                        if ( !java.awt.Color.PINK.equals( tp.rankLegendColor( found ) ) ) {
+                            ok[ 0 ] = false;
+                            System.out.println( "  rank-colorize legend recolor did not take effect" );
+                        }
+                        tp.clearRankColorOverride( "order", found );
+                        if ( java.awt.Color.PINK.equals( tp.rankLegendColor( found ) ) ) {
+                            ok[ 0 ] = false;
+                            System.out.println( "  'automatic' did not revert the rank-colorize recolor" );
+                        }
                     }
                     // clearing branch colors removes the legend
                     tp.clearRankLegend();

@@ -4614,6 +4614,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // legend is active. Null when not colorizing by rank.
     private Map<String, Color>  _rank_legend = null;
     private String              _rank_legend_title = null;
+    // Per-rank user color overrides for the rank-colorize / clade-band legend (mirrors
+    // _property_color_overrides): rank -> (taxon -> chosen color). Persist across navigation & re-apply.
+    private final Map<String, Map<String, Color>> _rank_color_overrides = new HashMap<>();
+    // The rank at which branches are currently rank-colorized, or null. Lets a legend recolor re-apply to
+    // the branches as well as to clade bands.
+    private String              _branch_rank_colorize_rank = null;
     // Clade annotation bands: shaded boxes (behind/over the clade) or right-edge bars by taxonomic rank.
     // See CladeBand / TreePanelUtil.cladeBands; geometry is computed at paint time from the clade's tips.
     enum CLADE_VIS {
@@ -4625,6 +4631,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private final static int          CLADE_BOX_ALPHA = 46;
     private final static int          CLADE_BAR_WIDTH = 9;
     private final static int          CLADE_BAR_GAP   = 16;
+    // a few px of breathing room past the longest label, so the box/bar clears the text
+    private final static int          CLADE_BAND_RIGHT_PAD = 6;
 
     /** The on-screen bounds of the last-drawn property-color legend, or null; used by the drag test. */
     final Rectangle getPropertyLegendBounds() {
@@ -4691,22 +4699,23 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
-    // Opens a color chooser for the clicked value; OK assigns the color, "Use Automatic Color" clears
-    // a prior override. Overrides are kept per ref so they survive navigation and ref switches.
+    // Clicking any categorical legend row recolors that value -- property-color, rank-colorize, or
+    // clade-band legends all behave the same (the inconsistency was that only the property one did).
     private void chooseColorForValue(final String label) {
-        if ((_property_color_scheme == null) || (_color_by_property_ref == null)) {
-            return;
+        if ((_property_color_scheme != null) && (_color_by_property_ref != null)) {
+            choosePropertyColorForValue(label);
+        } else if (hasRankLegend()) {
+            chooseRankColorForValue(label);
         }
-        final String key = _property_color_scheme.getValueKeys().get(label);
-        if (key == null) {
-            return;
-        }
-        final Map<String, Color> per_ref = _property_color_overrides.get(_color_by_property_ref);
-        final boolean has_override = (per_ref != null) && per_ref.containsKey(key);
-        final Color current = _property_color_scheme.getValueColors().get(label);
+    }
+
+    // Opens the shared legend color chooser. Returns 0 = cancel, 1 = set (out[0] = chosen color),
+    // 2 = automatic ("Use Automatic Color", enabled only when an override already exists).
+    private int showLegendColorDialog(final String label, final Color current, final boolean has_override,
+                                      final Color[] out) {
         final javax.swing.JColorChooser chooser = new javax.swing.JColorChooser((current != null) ? current
                 : java.awt.Color.GRAY);
-        final int[] action = { 0 }; // 0 = cancel, 1 = ok, 2 = automatic
+        final int[] action = { 0 };
         final javax.swing.JDialog dialog = new javax.swing.JDialog(javax.swing.SwingUtilities.getWindowAncestor(this),
                 "Color for \"" + label + "\"", java.awt.Dialog.ModalityType.APPLICATION_MODAL);
         final javax.swing.JButton ok = new javax.swing.JButton("OK");
@@ -4725,10 +4734,84 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         dialog.pack();
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
-        if (action[0] == 1) {
-            setColorOverride(key, chooser.getColor());
-        } else if (action[0] == 2) {
+        out[0] = chooser.getColor();
+        return action[0];
+    }
+
+    // Property-color legend row: OK assigns the color, "Use Automatic Color" clears a prior override.
+    // Overrides are kept per ref so they survive navigation and ref switches.
+    private void choosePropertyColorForValue(final String label) {
+        final String key = _property_color_scheme.getValueKeys().get(label);
+        if (key == null) {
+            return;
+        }
+        final Map<String, Color> per_ref = _property_color_overrides.get(_color_by_property_ref);
+        final boolean has_override = (per_ref != null) && per_ref.containsKey(key);
+        final Color[] out = new Color[1];
+        final int action = showLegendColorDialog(label, _property_color_scheme.getValueColors().get(label),
+                has_override, out);
+        if (action == 1) {
+            setColorOverride(key, out[0]);
+        } else if (action == 2) {
             clearColorOverride(key);
+        }
+    }
+
+    // Rank-colorize / clade-band legend row: same chooser; the override is stored per rank and re-applied
+    // to the branches and/or clade bands (see reapplyRankColorization).
+    private void chooseRankColorForValue(final String taxon) {
+        final String rank = currentRankLegendRank();
+        if ((rank == null) || (_rank_legend == null)) {
+            return;
+        }
+        final Map<String, Color> per_rank = _rank_color_overrides.get(rank);
+        final boolean has_override = (per_rank != null) && per_rank.containsKey(taxon);
+        final Color[] out = new Color[1];
+        final int action = showLegendColorDialog(taxon, _rank_legend.get(taxon), has_override, out);
+        if (action == 1) {
+            setRankColorOverride(rank, taxon, out[0]);
+        } else if (action == 2) {
+            clearRankColorOverride(rank, taxon);
+        }
+    }
+
+    /** The rank the current rank/clade legend is for (clade bands take precedence), or null. */
+    private String currentRankLegendRank() {
+        return hasCladeBands() ? _clade_bands_rank : _branch_rank_colorize_rank;
+    }
+
+    private Map<String, Color> rankOverridesFor(final String rank) {
+        final Map<String, Color> m = (rank == null) ? null : _rank_color_overrides.get(rank);
+        return (m != null) ? m : java.util.Collections.<String, Color> emptyMap();
+    }
+
+    void setRankColorOverride(final String rank, final String taxon, final Color color) {
+        if (rank == null) {
+            return;
+        }
+        _rank_color_overrides.computeIfAbsent(rank, k -> new HashMap<>()).put(taxon, color);
+        reapplyRankColorization();
+        setEdited(true);
+        repaint();
+    }
+
+    void clearRankColorOverride(final String rank, final String taxon) {
+        final Map<String, Color> per_rank = (rank == null) ? null : _rank_color_overrides.get(rank);
+        if (per_rank != null) {
+            per_rank.remove(taxon);
+            reapplyRankColorization();
+            setEdited(true);
+            repaint();
+        }
+    }
+
+    // Re-derive whatever the rank legend drives, honoring the (just-changed) overrides.
+    private void reapplyRankColorization() {
+        if (hasCladeBands()) {
+            rebuildCladeBands();
+        }
+        if (_branch_rank_colorize_rank != null) {
+            recolorBranchesByRank(_branch_rank_colorize_rank);
         }
     }
 
@@ -4800,12 +4883,18 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     final void clearRankLegend() {
         _rank_legend = null;
         _rank_legend_title = null;
+        _branch_rank_colorize_rank = null; // branches are no longer rank-colorized
         repaint();
     }
 
     /** Whether a taxonomic-rank legend is currently available to show. */
     final boolean hasRankLegend() {
         return (_rank_legend != null) && !_rank_legend.isEmpty();
+    }
+
+    /** Test hook: the current legend color for {@code taxon} (rank/clade legend), or null. */
+    final Color rankLegendColor(final String taxon) {
+        return (_rank_legend == null) ? null : _rank_legend.get(taxon);
     }
 
     String getColorPaletteName() {
@@ -5111,16 +5200,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // (otherwise its legend would be drawn over the rank-colored branches) and sync the dropdown
         setColorByPropertyRef(null);
         _control_panel.populateColorByPropertyBox();
-        AptxUtil.removeBranchColors(_phylogeny);
         _rank_legend = null;
         _rank_legend_title = null;
-        final Map<String, Color> legend = new HashMap<>();
-        final int colorizations = TreePanelUtil.colorPhylogenyAccordingToRanks(_phylogeny, rank,
-                TreePanelUtil.getDefaultLineageService(), legend);
-        if (!legend.isEmpty()) {
-            _rank_legend = new java.util.TreeMap<>(legend); // sorted by taxon name
-            _rank_legend_title = "Taxonomy: " + rank;
-        }
+        _branch_rank_colorize_rank = null;
+        final int colorizations = recolorBranchesByRank(rank); // honors any stored overrides for this rank
         if (colorizations > 0) {
             _control_panel.setColorBranches(true);
             if (_control_panel.getUseVisualStylesCb() != null) {
@@ -5134,6 +5217,24 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         setArrowCursor();
         repaint();
+        return colorizations;
+    }
+
+    /**
+     * Colors the branches by taxon at {@code rank} (honoring this rank's user color overrides) and
+     * (re)builds the matching legend. Used both by the menu action ({@link #colorByRank}) and when a
+     * legend recolor needs to re-apply. Returns the number of clades colored.
+     */
+    private int recolorBranchesByRank(final String rank) {
+        AptxUtil.removeBranchColors(_phylogeny);
+        final Map<String, Color> legend = new HashMap<>();
+        final int colorizations = TreePanelUtil.colorPhylogenyAccordingToRanks(_phylogeny, rank,
+                TreePanelUtil.getDefaultLineageService(), legend, rankOverridesFor(rank));
+        if (!legend.isEmpty()) {
+            _rank_legend = new java.util.TreeMap<>(legend); // sorted by taxon name
+            _rank_legend_title = "Taxonomy: " + rank;
+            _branch_rank_colorize_rank = rank;
+        }
         return colorizations;
     }
 
@@ -5175,6 +5276,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     final void clearCladeBands() {
         _clade_bands = null;
         _clade_bands_rank = null;
+        // drop the color key with the bands -- unless a branch rank-colorization still owns the legend
+        if (_branch_rank_colorize_rank == null) {
+            clearRankLegend();
+        }
     }
 
     final boolean hasCladeBands() {
@@ -5189,10 +5294,30 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     final void rebuildCladeBands() {
         if (ForesterUtil.isEmpty(_clade_bands_rank) || (_phylogeny == null) || _phylogeny.isEmpty()) {
             _clade_bands = null;
-            return;
+            return; // leave any existing (property/rank-colorize) legend untouched
         }
         _clade_bands = TreePanelUtil.cladeBands(_phylogeny, _clade_bands_rank,
-                TreePanelUtil.getDefaultLineageService());
+                TreePanelUtil.getDefaultLineageService(), rankOverridesFor(_clade_bands_rank));
+        updateCladeBandLegend();
+    }
+
+    /**
+     * Mirrors the current clade bands in the shared, draggable taxon-&gt;color legend, so the boxes/bars
+     * are labeled even when internal-node data is hidden. Reuses the rank-colorization legend slot (no
+     * new control); whichever rank feature was applied last owns the single legend.
+     */
+    private void updateCladeBandLegend() {
+        if (!hasCladeBands()) {
+            return;
+        }
+        final Map<String, Color> legend = new java.util.TreeMap<>(); // sorted by taxon name; dedups repeated taxa
+        for (final CladeBand band : _clade_bands) {
+            legend.put(band.getTaxon(), band.getColor());
+        }
+        if (!legend.isEmpty()) {
+            _rank_legend = legend;
+            _rank_legend_title = "Taxonomy: " + _clade_bands_rank;
+        }
     }
 
     /** Draws the clade bands over the tree (boxes = translucent wash; bars = right-edge with labels). */
@@ -5207,9 +5332,21 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
-    /** The x just past the longest tip label (where right-edge bars/box ends sit). */
+    /**
+     * The x a few pixels past the end of the longest currently shown tip label (the full label --
+     * all text fields plus any aligned domain/vector/MSA columns -- via {@link #getLongestExtNodeInfo()}).
+     * Mirrors the tree's own label-end logic: in a phylogram labels start at each tip's own x, so the
+     * rightmost label ends past the DEEPEST tip; in an aligned/cladogram view all tips share one x.
+     */
     private float cladeBandRightEdge() {
-        return getPhylogeny().getFirstExternalNode().getXcoord() + _length_of_longest_text;
+        final float labels_end;
+        if (getControlPanel().isDrawPhylogram()) {
+            labels_end = (float) ((getMaxDistanceToRoot() * getXcorrectionFactor())
+                    + _phylogeny.getRoot().getXcoord() + getLongestExtNodeInfo());
+        } else {
+            labels_end = getPhylogeny().getFirstExternalNode().getXcoord() + getLongestExtNodeInfo();
+        }
+        return labels_end + CLADE_BAND_RIGHT_PAD;
     }
 
     /** {@code {yTop, yBottom}} of a clade's tips in current paint coordinates, or null if none. */

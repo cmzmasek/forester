@@ -239,6 +239,31 @@ public final class TreePanelUtilTest {
         if ( carnivora_colors.get( 0 ).equals( rodentia_color ) ) {
             return fail( "Carnivora and Rodentia bands must have distinct colors" );
         }
+        // a user color override (taxon -> color) replaces the auto-assigned color for that taxon only
+        final Color override = new Color( 12, 34, 56 );
+        final java.util.Map<String, Color> overrides = new java.util.HashMap<String, Color>();
+        overrides.put( "Carnivora", override );
+        int overridden = 0;
+        for( final CladeBand b : TreePanelUtil.cladeBands( tree, "order", svc, overrides ) ) {
+            if ( "Carnivora".equals( b.getTaxon() ) ) {
+                if ( !override.equals( b.getColor() ) ) {
+                    return fail( "Carnivora band did not pick up the color override" );
+                }
+                ++overridden;
+            }
+            else if ( override.equals( b.getColor() ) ) {
+                return fail( "override leaked onto a non-overridden band" );
+            }
+        }
+        if ( overridden != 2 ) {
+            return fail( "both Carnivora bands must use the override color" );
+        }
+        // the branch colorizer honors the same override (it surfaces in the legend it fills)
+        final java.util.Map<String, Color> legend = new java.util.HashMap<String, Color>();
+        TreePanelUtil.colorPhylogenyAccordingToRanks( mammalTree(), "order", svc, legend, overrides );
+        if ( !override.equals( legend.get( "Carnivora" ) ) ) {
+            return fail( "colorPhylogenyAccordingToRanks did not apply the override to its legend" );
+        }
         // degenerate inputs yield no bands (never throw)
         if ( !TreePanelUtil.cladeBands( tree, "", svc ).isEmpty()
                 || !TreePanelUtil.cladeBands( null, "order", svc ).isEmpty() ) {

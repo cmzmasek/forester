@@ -399,9 +399,19 @@ public class TreePanelUtil {
                                                      final String rank,
                                                      final TaxonomicLineageService service,
                                                      final Map<String, Color> legend_out ) {
+        return colorPhylogenyAccordingToRanks( tree, rank, service, legend_out, null );
+    }
+
+    /** {@code overrides} (taxon -&gt; user-chosen color) replaces the auto-assigned color for those taxa. */
+    final static int colorPhylogenyAccordingToRanks( final Phylogeny tree,
+                                                     final String rank,
+                                                     final TaxonomicLineageService service,
+                                                     final Map<String, Color> legend_out,
+                                                     final Map<String, Color> overrides ) {
         final Map<PhylogenyNode, String> assignment = assignTipsToRankTaxon( tree, rank, service );
         final SortedSet<String> taxa = new TreeSet<String>( assignment.values() );
         final Map<String, Color> colors = AptxUtil.assignDistinctColors( taxa );
+        applyColorOverrides( colors, overrides );
         final Map<PhylogenyNode, String> roots = maximalMonochromaticRoots( tree, assignment );
         int colorizations = 0;
         for( final Entry<PhylogenyNode, String> e : roots.entrySet() ) {
@@ -427,12 +437,21 @@ public class TreePanelUtil {
     final static List<CladeBand> cladeBands( final Phylogeny tree,
                                              final String rank,
                                              final TaxonomicLineageService service ) {
+        return cladeBands( tree, rank, service, null );
+    }
+
+    /** {@code overrides} (taxon -&gt; user-chosen color) replaces the auto-assigned color for those taxa. */
+    final static List<CladeBand> cladeBands( final Phylogeny tree,
+                                             final String rank,
+                                             final TaxonomicLineageService service,
+                                             final Map<String, Color> overrides ) {
         final List<CladeBand> bands = new ArrayList<CladeBand>();
         if ( ( tree == null ) || tree.isEmpty() || ForesterUtil.isEmpty( rank ) ) {
             return bands;
         }
         final Map<PhylogenyNode, String> assignment = assignTipsToRankTaxon( tree, rank, service );
         final Map<String, Color> colors = AptxUtil.assignDistinctColors( new TreeSet<String>( assignment.values() ) );
+        applyColorOverrides( colors, overrides );
         for( final Entry<PhylogenyNode, String> e : maximalMonochromaticRoots( tree, assignment ).entrySet() ) {
             final Color c = colors.get( e.getValue() );
             if ( c != null ) {
@@ -440,6 +459,19 @@ public class TreePanelUtil {
             }
         }
         return bands;
+    }
+
+    /** Replaces the auto-assigned color with the user's override for each taxon that has one. */
+    private static void applyColorOverrides( final Map<String, Color> colors, final Map<String, Color> overrides ) {
+        if ( ( colors == null ) || ( overrides == null ) || overrides.isEmpty() ) {
+            return;
+        }
+        for( final String taxon : colors.keySet() ) {
+            final Color o = overrides.get( taxon );
+            if ( o != null ) {
+                colors.put( taxon, o ); // value-only update of an existing key is safe during keySet iteration
+            }
+        }
     }
 
     /**
