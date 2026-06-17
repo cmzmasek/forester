@@ -42,7 +42,7 @@ public final class UniProtKbClient {
     private static final String[]            FIELDS = { "accession", "id", "protein_name", "gene_primary",
             "gene_names", "sequence", "organism_name", "organism_id", "lineage", "go_id", "xref_refseq", "xref_pdb" };
     private static final String              BASE   = "https://rest.uniprot.org/uniprotkb/search?format=tsv&size=1&fields="
-            + String.join( ",", FIELDS ) + "&query=accession:";
+            + String.join( ",", FIELDS ) + "&query=";
     private final Map<String, SequenceEntry> _cache = Collections
             .synchronizedMap( new HashMap<String, SequenceEntry>() );
 
@@ -62,7 +62,7 @@ public final class UniProtKbClient {
                 return _cache.get( k );
             }
         }
-        final String tsv = WsHttp.httpGet( BASE + WsHttp.encode( accession.trim() ) );
+        final String tsv = WsHttp.httpGet( BASE + WsHttp.encode( searchQuery( accession.trim() ) ) );
         final SequenceEntry parsed = parseTsv( tsv );
         if ( !parsed.isEmpty() ) {
             _cache.put( k, parsed );
@@ -75,6 +75,17 @@ public final class UniProtKbClient {
             _cache.put( k, SequenceEntry.EMPTY );
         }
         return SequenceEntry.EMPTY;
+    }
+
+    /**
+     * The UniProt query for {@code id}, field-qualified by its shape: an <b>entry name</b> (the SwissProt
+     * mnemonic {@code RL7_HUMAN}) always contains an underscore and a UniProt <b>accession</b>
+     * ({@code P12345}) never does, so the underscore picks the field. This matters because UniProt
+     * validates the {@code accession:} field and returns HTTP 400 for a non-accession value -- a single
+     * OR-query would fail outright; the qualified query resolves both common shapes cleanly.
+     */
+    static String searchQuery( final String id ) {
+        return ( id.indexOf( '_' ) >= 0 ? "id:" : "accession:" ) + id;
     }
 
     /** A UniProt "no match" response is exactly the header row (which contains tabs) with no data row. */

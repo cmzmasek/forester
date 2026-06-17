@@ -52,9 +52,11 @@ import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
 import org.forester.util.SequenceAccessionTools;
 import org.forester.util.StringInt;
+import org.forester.ws.seqdb.AccessionAwareLineageService;
 import org.forester.ws.seqdb.NcbiTaxonomyLineageService;
 import org.forester.ws.seqdb.RankedLineage;
 import org.forester.ws.seqdb.TaxonomicLineageService;
+import org.forester.ws.seqdb.WebSequenceFetcher;
 
 public class TreePanelUtil {
 
@@ -373,13 +375,22 @@ public class TreePanelUtil {
     /** Sentinel for {@link #maximalMonochromaticRoots}: a subtree whose tips are not all one rank taxon. */
     private final static String MIXED_TAXON = "<<MIXED>>";
 
+    private static TaxonomicLineageService _default_lineage_service;
+
     /**
-     * The process-wide shared {@link TaxonomicLineageService} (NCBI-backed) used by the rank colorizer.
-     * It is the same singleton the Fetch tool and the Settings cache panel use, so all three share one
-     * in-memory cache and one persistent (cross-session) disk cache.
+     * The process-wide {@link TaxonomicLineageService} used by the rank colorizer and "Annotate Clades by
+     * Rank". It wraps the shared NCBI taxonomy singleton (whose in-memory + persistent caches it shares
+     * with the Fetch tool and the Settings cache panel) in an {@link AccessionAwareLineageService}, so
+     * tips identified by a UniProt/SwissProt/RefSeq/GenBank/GI <i>sequence</i> accession -- which a bare
+     * taxonomy database cannot place -- are resolved to their organism via the sequence DB first. Trees
+     * with UniProt and/or mixed NCBI/UniProt identifiers are very common.
      */
     final static synchronized TaxonomicLineageService getDefaultLineageService() {
-        return NcbiTaxonomyLineageService.getShared();
+        if ( _default_lineage_service == null ) {
+            _default_lineage_service = new AccessionAwareLineageService( NcbiTaxonomyLineageService.getShared(),
+                                                                         new WebSequenceFetcher() );
+        }
+        return _default_lineage_service;
     }
 
     /**

@@ -85,6 +85,14 @@ public final class UniProtKbClientTest {
         if ( !UniProtKbClient.parseTsv( "" ).isEmpty() || !UniProtKbClient.parseTsv( HEADER + "\n" ).isEmpty() ) {
             return fail( "empty / header-only TSV must yield an empty entry" );
         }
+        // the search query is field-qualified by shape: an entry name (has '_') -> id:, else accession:.
+        // UniProt 400s on a non-accession value in the accession: field, so the OR-both approach fails.
+        if ( !"id:RL7_HUMAN".equals( UniProtKbClient.searchQuery( "RL7_HUMAN" ) ) ) {
+            return fail( "a SwissProt entry name must query the id: field; got " + UniProtKbClient.searchQuery( "RL7_HUMAN" ) );
+        }
+        if ( !"accession:P12345".equals( UniProtKbClient.searchQuery( "P12345" ) ) ) {
+            return fail( "a UniProt accession must query the accession: field; got " + UniProtKbClient.searchQuery( "P12345" ) );
+        }
         return true;
     }
 

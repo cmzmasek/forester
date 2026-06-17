@@ -157,6 +157,15 @@ public final class NcbiTaxonomyLineageServiceTest {
         if ( WsHttp.throttleDelayMs( 0L, 0L, 350L ) != 350L ) {
             return fail( "the first request waits the full interval from a zero baseline" );
         }
+
+        // tax-id detection: a bare numeric query is efetched directly (no esearch); anything else is a name
+        if ( !NcbiTaxonomyLineageService.isTaxId( "9606" ) || !NcbiTaxonomyLineageService.isTaxId( " 9682 " ) ) {
+            return fail( "a run of digits (optionally padded) must be recognized as a tax-id" );
+        }
+        if ( NcbiTaxonomyLineageService.isTaxId( "Felis" ) || NcbiTaxonomyLineageService.isTaxId( "P12345" )
+                || NcbiTaxonomyLineageService.isTaxId( "9606A" ) || NcbiTaxonomyLineageService.isTaxId( "" ) ) {
+            return fail( "names / accessions / mixed strings must not be treated as a tax-id" );
+        }
         return true;
     }
 

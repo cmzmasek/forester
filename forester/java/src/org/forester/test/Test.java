@@ -260,6 +260,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Accession-aware lineage service: ");
+        if (org.forester.ws.seqdb.AccessionAwareLineageServiceTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("NCBI sequence client: ");
         if (org.forester.ws.seqdb.NcbiSequenceClientTest.test()) {
             System.out.println("OK.");

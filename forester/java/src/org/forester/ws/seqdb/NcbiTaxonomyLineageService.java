@@ -168,7 +168,15 @@ public final class NcbiTaxonomyLineageService implements TaxonomicLineageService
                 return _cache.get( k );
             }
         }
-        final String id = parseEsearchFirstId( WsHttp.httpGet( ESEARCH + WsHttp.encode( taxon ) ) );
+        // A bare NCBI tax-id (e.g. the organism id read from a sequence entry) is authoritative: efetch it
+        // directly, skipping esearch and its name-ambiguity. Otherwise map the name to a tax-id via esearch.
+        final String id;
+        if ( isTaxId( taxon ) ) {
+            id = taxon.trim();
+        }
+        else {
+            id = parseEsearchFirstId( WsHttp.httpGet( ESEARCH + WsHttp.encode( taxon ) ) );
+        }
         if ( ForesterUtil.isEmpty( id ) ) {
             // esearch found nothing -- a definitive negative; cache it (in memory only) so we never re-query.
             _cache.put( k, RankedLineage.EMPTY );
@@ -230,7 +238,7 @@ public final class NcbiTaxonomyLineageService implements TaxonomicLineageService
     }
 
     /** True if {@code s} is a non-empty run of digits (an NCBI tax-id). */
-    private static boolean isTaxId( final String s ) {
+    static boolean isTaxId( final String s ) {
         final String t = s.trim();
         if ( t.isEmpty() ) {
             return false;

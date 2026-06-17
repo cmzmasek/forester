@@ -940,7 +940,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             final int choice = JOptionPane.showConfirmDialog(this,
                     unresolved.size() + " tip " + ((unresolved.size() == 1) ? "taxon" : "taxa")
                             + " could not be placed at rank \"" + r + "\" from the tree's own data.\n"
-                            + "Resolve via the NCBI taxonomy database? (requires an internet connection)",
+                            + "Resolve online via the NCBI and UniProt databases? (requires an internet connection)",
                     "Resolve Taxa Online?",
                     JOptionPane.YES_NO_OPTION,
                     JOptionPane.QUESTION_MESSAGE);
@@ -1019,7 +1019,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             final int choice = JOptionPane.showConfirmDialog(this,
                     unresolved.size() + " tip " + ((unresolved.size() == 1) ? "taxon" : "taxa")
                             + " could not be placed at rank \"" + r + "\" from the tree's own data.\n"
-                            + "Resolve via the NCBI taxonomy database? (requires an internet connection)",
+                            + "Resolve online via the NCBI and UniProt databases? (requires an internet connection)",
                     "Resolve Taxa Online?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
             if (choice == JOptionPane.YES_OPTION) {
                 new Thread(new OnlineTaxonResolver(this, "clade bands (" + r + ")", unresolved,

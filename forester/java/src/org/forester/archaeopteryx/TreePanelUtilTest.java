@@ -30,9 +30,13 @@ import java.util.SortedSet;
 
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
+import org.forester.phylogeny.data.Accession;
 import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.data.Taxonomy;
+import org.forester.ws.seqdb.AccessionAwareLineageService;
 import org.forester.ws.seqdb.RankedLineage;
+import org.forester.ws.seqdb.SequenceEntry;
+import org.forester.ws.seqdb.SequenceFetcher;
 import org.forester.ws.seqdb.TaxonomicLineageService;
 
 /**
@@ -50,7 +54,93 @@ public final class TreePanelUtilTest {
     public static boolean test() {
         return testYDistanceToAvoidLabelOverlap() && testSupportSymbolMath() && testDetectConfidenceScaleMax()
                 && testCapEntries() && testTaxonomyLabel() && testRankColorization() && testTipQueryName()
-                && testCladeBands();
+                && testCladeBands() && testRankColorizationViaSequenceIds();
+    }
+
+    /**
+     * End-to-end (no network) of the very-common case the user hit: a tree whose tips are UniProt/SwissProt
+     * <i>sequence</i> identifiers (no taxonomy on the nodes). The default service is an
+     * {@link AccessionAwareLineageService}, so the fetch pass bridges each accession to its organism's
+     * lineage and the cache-only colorize then places every tip -- exactly the production flow, with the
+     * network replaced by in-memory fakes.
+     */
+    private static boolean testRankColorizationViaSequenceIds() {
+        // delegate keyed by NCBI tax-id (what the bridge resolves an accession's organism to)
+        final FakeLineageService delegate = new FakeLineageService();
+        delegate.know( "9606", lineage( "order", "Primates" ) );  // human
+        delegate.know( "10090", lineage( "order", "Rodentia" ) ); // mouse
+        // sequence DB: accession -> organism tax-id
+        final FakeSequenceFetcher seqs = new FakeSequenceFetcher();
+        seqs.know( "P12345", "9606" );   // UniProt accession, human
+        seqs.know( "RL7_HUMAN", "9606" );// SwissProt entry name, human
+        seqs.know( "P63017", "10090" );  // UniProt accession, mouse
+        final AccessionAwareLineageService svc = new AccessionAwareLineageService( delegate, seqs );
+
+        // ((P12345, RL7_HUMAN), Q9MOUS): two human tips form one clade, the mouse tip is a second
+        final PhylogenyNode humans = new PhylogenyNode();
+        humans.addAsChild( bareLeaf( "P12345" ) );
+        humans.addAsChild( bareLeaf( "RL7_HUMAN" ) );
+        final PhylogenyNode root = new PhylogenyNode();
+        root.addAsChild( humans );
+        root.addAsChild( bareLeaf( "P63017" ) );
+        final Phylogeny tree = new Phylogeny();
+        tree.setRoot( root );
+        tree.externalNodesHaveChanged();
+
+        // every tip is unplaceable from the tree alone (sequence ids, not taxa)
+        final SortedSet<String> unresolved = TreePanelUtil.unresolvedTipTaxa( tree, "order", svc );
+        if ( unresolved.size() != 3 ) {
+            return fail( "all three sequence-id tips must need online resolution; got " + unresolved );
+        }
+        try {
+            for( final String name : unresolved ) {
+                svc.fetch( name ); // the off-EDT fetch pass: bridges acc -> organism -> ranked lineage
+            }
+        }
+        catch ( final java.io.IOException e ) {
+            return fail( "fake fetch must not throw: " + e );
+        }
+        // cache-only colorize now places all three tips by order
+        final Map<PhylogenyNode, String> assignment = TreePanelUtil.assignTipsToRankTaxon( tree, "order", svc );
+        if ( assignment.size() != 3 ) {
+            return fail( "all three tips must be placed at rank order after the fetch; got " + assignment );
+        }
+        final Map<String, Color> legend = new LinkedHashMap<String, Color>();
+        final int colorizations = TreePanelUtil.colorPhylogenyAccordingToRanks( tree, "order", svc, legend );
+        if ( colorizations != 2 ) {
+            return fail( "expected 2 colorized clades (Primates clade + Rodentia tip); got " + colorizations );
+        }
+        if ( ( legend.size() != 2 ) || !legend.containsKey( "Primates" ) || !legend.containsKey( "Rodentia" ) ) {
+            return fail( "legend must hold the two resolved orders; got " + legend.keySet() );
+        }
+        return true;
+    }
+
+    /** A leaf with only a node name (no taxonomy) -- so tipQueryName returns the name (a sequence id). */
+    private static PhylogenyNode bareLeaf( final String node_name ) {
+        final PhylogenyNode n = new PhylogenyNode();
+        n.setName( node_name );
+        return n;
+    }
+
+    /** In-memory sequence DB: maps an accession value to an organism NCBI tax-id. */
+    private static final class FakeSequenceFetcher implements SequenceFetcher {
+
+        private final Map<String, String> _organism_id = new HashMap<String, String>();
+
+        void know( final String accession, final String organism_id ) {
+            _organism_id.put( accession.toUpperCase( Locale.ROOT ), organism_id );
+        }
+
+        @Override
+        public SequenceEntry fetch( final Accession acc ) {
+            final String id = _organism_id.get( acc.getValue().toUpperCase( Locale.ROOT ) );
+            if ( id == null ) {
+                return SequenceEntry.EMPTY;
+            }
+            return new SequenceEntry( acc.getValue(), null, "protein", null, null, SequenceEntry.MoleculeType.PROTEIN,
+                                      null, id, null, null, null, null );
+        }
     }
 
     /**
