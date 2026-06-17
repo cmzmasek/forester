@@ -239,6 +239,21 @@ public final class TreePanelUtilTest {
         if ( carnivora_colors.get( 0 ).equals( rodentia_color ) ) {
             return fail( "Carnivora and Rodentia bands must have distinct colors" );
         }
+        // The branch colorizer ("Colorize Subtrees via Taxonomic Rank") handles the SAME polyphyly /
+        // gene-duplication shape: all 3 monophyletic clades (2 separate Carnivora + 1 Rodentia) are
+        // colorized, but they collapse to just 2 colors (one per taxon NAME), so the two Carnivora
+        // clades match. This is the property that matters for large gene trees.
+        final java.util.Map<String, Color> branch_legend = new java.util.HashMap<String, Color>();
+        final int colorizations = TreePanelUtil.colorPhylogenyAccordingToRanks( mammalTree(), "order", svc,
+                                                                                branch_legend );
+        if ( colorizations != 3 ) {
+            return fail( "branch colorizer: expected 3 colorized clades (2 Carnivora + 1 Rodentia), got "
+                    + colorizations );
+        }
+        if ( branch_legend.size() != 2 ) {
+            return fail( "branch colorizer: 3 polyphyletic clades must collapse to 2 colors (by taxon name), got "
+                    + branch_legend.size() );
+        }
         // a user color override (taxon -> color) replaces the auto-assigned color for that taxon only
         final Color override = new Color( 12, 34, 56 );
         final java.util.Map<String, Color> overrides = new java.util.HashMap<String, Color>();

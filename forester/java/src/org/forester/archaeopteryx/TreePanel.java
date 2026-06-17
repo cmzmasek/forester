@@ -5360,12 +5360,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      * rightmost label ends past the DEEPEST tip; in an aligned/cladogram view all tips share one x.
      */
     private float cladeBandRightEdge() {
+        // when external labels are hidden ("Show External Data" off) they occupy no width, so the
+        // annotation sits right after the tips rather than after the (now invisible) labels -- mirrors
+        // the label-drawing guard (see isShowExternalData checks in paintNodeData)
+        final float label_w = getControlPanel().isShowExternalData() ? getLongestExtNodeInfo() : 0;
         final float labels_end;
         if (getControlPanel().isDrawPhylogram()) {
             labels_end = (float) ((getMaxDistanceToRoot() * getXcorrectionFactor())
-                    + _phylogeny.getRoot().getXcoord() + getLongestExtNodeInfo());
+                    + _phylogeny.getRoot().getXcoord() + label_w);
         } else {
-            labels_end = getPhylogeny().getFirstExternalNode().getXcoord() + getLongestExtNodeInfo();
+            labels_end = getPhylogeny().getFirstExternalNode().getXcoord() + label_w;
         }
         return labels_end + CLADE_BAND_RIGHT_PAD;
     }
