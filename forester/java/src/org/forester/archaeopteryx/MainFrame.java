@@ -66,7 +66,6 @@ import org.forester.archaeopteryx.tools.AncestralTaxonomyInferrer;
 import org.forester.archaeopteryx.tools.LabelDataExtractor;
 import org.forester.archaeopteryx.tools.ProcessPool;
 import org.forester.archaeopteryx.tools.ProcessRunning;
-import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
 import org.forester.io.writers.PhylogenyWriter;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
@@ -243,10 +242,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     //JMenuItem                        _print_size_mi;
     // _  parsing
     JCheckBoxMenuItem _internal_number_are_confidence_for_nh_parsing_cbmi;
-    JRadioButtonMenuItem _extract_taxonomy_no_rbmi;
-    JRadioButtonMenuItem _extract_taxonomy_agressive_rbmi;
-    JRadioButtonMenuItem _extract_taxonomy_pfam_strict_rbmi;
-    JRadioButtonMenuItem _extract_taxonomy_pfam_relaxed_rbmi;
     JCheckBoxMenuItem _replace_underscores_cbmi;
     JCheckBoxMenuItem _allow_errors_in_distance_to_parent_cbmi;
     JCheckBoxMenuItem _use_brackets_for_conf_in_nh_export_cbmi;
@@ -1730,15 +1725,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 && _print_black_and_white_cbmi.isSelected());
         options.setInternalNumberAreConfidenceForNhParsing((_internal_number_are_confidence_for_nh_parsing_cbmi != null)
                 && _internal_number_are_confidence_for_nh_parsing_cbmi.isSelected());
-        if ((_extract_taxonomy_pfam_strict_rbmi != null) && _extract_taxonomy_pfam_strict_rbmi.isSelected()) {
-            options.setTaxonomyExtraction(TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT);
-        } else if ((_extract_taxonomy_pfam_relaxed_rbmi != null) && _extract_taxonomy_pfam_relaxed_rbmi.isSelected()) {
-            options.setTaxonomyExtraction(TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED);
-        } else if ((_extract_taxonomy_agressive_rbmi != null) && _extract_taxonomy_agressive_rbmi.isSelected()) {
-            options.setTaxonomyExtraction(TAXONOMY_EXTRACTION.AGGRESSIVE);
-        } else if ((_extract_taxonomy_no_rbmi != null) && _extract_taxonomy_no_rbmi.isSelected()) {
-            options.setTaxonomyExtraction(TAXONOMY_EXTRACTION.NO);
-        }
+        // Taxonomy extraction from node names has no GUI control any more; Options keeps its default
+        // (TAXONOMY_EXTRACTION.NO) so the NHX/Nexus parsers read with no extraction.
         options.setReplaceUnderscoresInNhParsing((_replace_underscores_cbmi != null)
                 && _replace_underscores_cbmi.isSelected());
         options.setAllowErrorsInDistanceToParent((_allow_errors_in_distance_to_parent_cbmi != null)

@@ -412,20 +412,22 @@ public class TreePanelUtil {
     }
 
     /**
-     * Abbreviates a binomial scientific name to the genus initial + first two letters of the species
-     * (e.g. {@code "Homo sapiens"} &rarr; {@code "Hsa"}), appending any further epithets verbatim. A name
-     * that is not an abbreviatable binomial -- fewer than two whitespace-separated tokens, an empty first
-     * token (leading whitespace), or a species token shorter than two characters -- is returned unchanged
-     * rather than throwing.
+     * Abbreviates a binomial scientific name to the genus initial + ". " + the full species epithet, per
+     * the standard convention (e.g. {@code "Homo sapiens"} &rarr; {@code "H. sapiens"}); any further
+     * epithets are kept verbatim ({@code "Homo sapiens neanderthalensis"} &rarr;
+     * {@code "H. sapiens neanderthalensis"}). Display-only: the caller never writes this back to the
+     * taxonomy. A name that is not an abbreviatable binomial -- fewer than two whitespace-separated tokens
+     * or an empty first token (leading whitespace) -- is returned unchanged rather than throwing.
      */
     final static String abbreviateScientificName( final String scientific_name ) {
         final String[] a = scientific_name.split( "\\s+" );
-        if ( ( a.length < 2 ) || a[ 0 ].isEmpty() || ( a[ 1 ].length() < 2 ) ) {
+        if ( ( a.length < 2 ) || a[ 0 ].isEmpty() ) {
             return scientific_name;
         }
         final StringBuilder sb = new StringBuilder();
-        sb.append( a[ 0 ].substring( 0, 1 ) );
-        sb.append( a[ 1 ].substring( 0, 2 ) );
+        sb.append( a[ 0 ].charAt( 0 ) );
+        sb.append( ". " );
+        sb.append( a[ 1 ] );
         for( int i = 2; i < a.length; i++ ) {
             sb.append( " " );
             sb.append( a[ i ] );

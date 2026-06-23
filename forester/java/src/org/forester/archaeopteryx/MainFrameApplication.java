@@ -55,7 +55,6 @@ import org.forester.archaeopteryx.tools.SequenceAndTaxonomyDataObtainer;
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.nexus.NexusPhylogeniesParser;
 import org.forester.io.parsers.nhx.NHXParser;
-import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.io.parsers.tol.TolParser;
 import org.forester.io.parsers.util.ParserUtils;
@@ -297,9 +296,6 @@ public final class MainFrameApplication extends MainFrame {
             } else if (o == _internal_number_are_confidence_for_nh_parsing_cbmi) {
                 updateOptions(getOptions());
             } else if (o == _replace_underscores_cbmi) {
-                if ((_extract_taxonomy_no_rbmi != null) && !_extract_taxonomy_no_rbmi.isSelected()) {
-                    _extract_taxonomy_no_rbmi.setSelected(true);
-                }
                 updateOptions(getOptions());
             } else if (o == _allow_errors_in_distance_to_parent_cbmi) {
                 updateOptions(getOptions());
@@ -313,14 +309,6 @@ public final class MainFrameApplication extends MainFrame {
                     return;
                 }
                 collapseBelowBranchLengthThreshold();
-            } else if ((o == _extract_taxonomy_pfam_strict_rbmi) || (o == _extract_taxonomy_pfam_relaxed_rbmi)
-                    || (o == _extract_taxonomy_agressive_rbmi)) {
-                if (_replace_underscores_cbmi != null) {
-                    _replace_underscores_cbmi.setSelected(false);
-                }
-                updateOptions(getOptions());
-            } else if (o == _extract_taxonomy_no_rbmi) {
-                updateOptions(getOptions());
             }
             _contentpane.repaint();
         } catch (final Exception ex) {
@@ -984,21 +972,8 @@ public final class MainFrameApplication extends MainFrame {
         _parse_beast_style_extended_nexus_tags_cbmi
                 .setToolTipText("to parse elements in the form of \"[&!color=#800080]\" in Newick/Nexus formatted trees");
         _allow_errors_in_distance_to_parent_cbmi = new JCheckBoxMenuItem("Ignore Distance Values Format Errors");
-        _extract_taxonomy_no_rbmi = new JRadioButtonMenuItem("No Taxonomy Extraction");
-        _extract_taxonomy_pfam_strict_rbmi = new JRadioButtonMenuItem("Extract Taxonomy Codes/Ids from Pfam-style Node Names");
-        _extract_taxonomy_pfam_relaxed_rbmi = new JRadioButtonMenuItem("Extract Taxonomy Codes/Ids from Pfam-style like Node Names");
-        _extract_taxonomy_agressive_rbmi = new JRadioButtonMenuItem("Extract Taxonomy Codes/Ids/Scientific Names from Node Names");
-        _extract_taxonomy_pfam_strict_rbmi
-                .setToolTipText("To extract taxonomy codes/ids from node names in the form of e.g. \"BCL2_MOUSE/123-304\" or \"BCL2_10090/123-304\"");
-        _extract_taxonomy_pfam_relaxed_rbmi
-                .setToolTipText("To extract taxonomy codes/ids from node names in the form of e.g. \"bax_MOUSE\" or \"bax_10090\"");
-        _extract_taxonomy_agressive_rbmi
-                .setToolTipText("To extract taxonomy codes/ids or scientific names from node names in the form of e.g. \"MOUSE\" or \"10090\" or \"xyz_Nematostella_vectensis\"");
-        ButtonGroup _radio_group_2 = new ButtonGroup();
-        _radio_group_2.add(_extract_taxonomy_no_rbmi);
-        _radio_group_2.add(_extract_taxonomy_pfam_strict_rbmi);
-        _radio_group_2.add(_extract_taxonomy_pfam_relaxed_rbmi);
-        _radio_group_2.add(_extract_taxonomy_agressive_rbmi);
+        // The "Taxonomy Extraction from Node Names" GUI controls were retired (the TAXONOMY_EXTRACTION
+        // enum + ParserUtils stay for the CLI/library and config); the GUI now reads with no extraction.
         _use_brackets_for_conf_in_nh_export_cbmi = new JCheckBoxMenuItem(USE_BRACKETS_FOR_CONF_IN_NH_LABEL);
         _use_brackets_for_conf_in_nh_export_cbmi
                 .setToolTipText("e.g. \"0.1[90]\" for a branch with support 90 and a length of 0.1");
@@ -1035,14 +1010,6 @@ public final class MainFrameApplication extends MainFrame {
         customizeCheckBoxMenuItem(_print_black_and_white_cbmi, getOptions().isPrintBlackAndWhite());
         customizeCheckBoxMenuItem(_internal_number_are_confidence_for_nh_parsing_cbmi,
                 getOptions().isInternalNumberAreConfidenceForNhParsing());
-        customizeRadioButtonMenuItem(_extract_taxonomy_no_rbmi,
-                getOptions().getTaxonomyExtraction() == TAXONOMY_EXTRACTION.NO);
-        customizeRadioButtonMenuItem(_extract_taxonomy_pfam_strict_rbmi,
-                getOptions().getTaxonomyExtraction() == TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT);
-        customizeRadioButtonMenuItem(_extract_taxonomy_pfam_relaxed_rbmi,
-                getOptions().getTaxonomyExtraction() == TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED);
-        customizeRadioButtonMenuItem(_extract_taxonomy_agressive_rbmi,
-                getOptions().getTaxonomyExtraction() == TAXONOMY_EXTRACTION.AGGRESSIVE);
         customizeCheckBoxMenuItem(_replace_underscores_cbmi, getOptions().isReplaceUnderscoresInNhParsing());
         customizeCheckBoxMenuItem(_allow_errors_in_distance_to_parent_cbmi,
                 getOptions().isAllowErrorsInDistanceToParent());

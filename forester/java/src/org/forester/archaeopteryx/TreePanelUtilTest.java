@@ -59,16 +59,21 @@ public final class TreePanelUtilTest {
     }
 
     /**
-     * The binomial abbreviation ("Homo sapiens" -&gt; "Hsa", with extra epithets kept) and -- the point
-     * of the guard -- that malformed names (single token, trailing/leading whitespace, a one-letter
-     * species) are returned verbatim instead of throwing an {@link ArrayIndexOutOfBoundsException}.
+     * The binomial abbreviation ("Homo sapiens" -&gt; "H. sapiens", genus initial + full species, extra
+     * epithets kept) and -- the point of the guard -- that malformed names (single token, trailing/leading
+     * whitespace) are returned verbatim instead of throwing an {@link ArrayIndexOutOfBoundsException}.
      */
     private static boolean testAbbreviateScientificName() {
-        if ( !"Hsa".equals( TreePanelUtil.abbreviateScientificName( "Homo sapiens" ) ) ) {
-            return fail( "binomial: 'Homo sapiens' -> 'Hsa'; got " + TreePanelUtil.abbreviateScientificName( "Homo sapiens" ) );
+        if ( !"H. sapiens".equals( TreePanelUtil.abbreviateScientificName( "Homo sapiens" ) ) ) {
+            return fail( "binomial: 'Homo sapiens' -> 'H. sapiens'; got "
+                    + TreePanelUtil.abbreviateScientificName( "Homo sapiens" ) );
         }
-        if ( !"Hsa neanderthalensis".equals( TreePanelUtil.abbreviateScientificName( "Homo sapiens neanderthalensis" ) ) ) {
-            return fail( "trinomial: extra epithet must be kept verbatim" );
+        if ( !"H. sapiens neanderthalensis"
+                .equals( TreePanelUtil.abbreviateScientificName( "Homo sapiens neanderthalensis" ) ) ) {
+            return fail( "trinomial: genus abbreviated, further epithets kept verbatim" );
+        }
+        if ( !"E. coli".equals( TreePanelUtil.abbreviateScientificName( "Escherichia  coli" ) ) ) {
+            return fail( "collapsed internal whitespace: 'Escherichia  coli' -> 'E. coli'" );
         }
         // malformed inputs must not throw and must come back unchanged
         if ( !"Homo ".equals( TreePanelUtil.abbreviateScientificName( "Homo " ) ) ) {
@@ -76,9 +81,6 @@ public final class TreePanelUtilTest {
         }
         if ( !"Homo".equals( TreePanelUtil.abbreviateScientificName( "Homo" ) ) ) {
             return fail( "single token must be returned verbatim" );
-        }
-        if ( !"Homo x".equals( TreePanelUtil.abbreviateScientificName( "Homo x" ) ) ) {
-            return fail( "one-letter species must be returned verbatim (no substring(0,2))" );
         }
         if ( !" sapiens".equals( TreePanelUtil.abbreviateScientificName( " sapiens" ) ) ) {
             return fail( "leading whitespace (empty first token) must be returned verbatim" );

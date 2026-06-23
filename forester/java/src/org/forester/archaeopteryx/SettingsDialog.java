@@ -207,9 +207,6 @@ final class SettingsDialog extends JDialog {
         add( c, cb( _mf._replace_underscores_cbmi ) );
         add( c, cb( _mf._parse_beast_style_extended_nexus_tags_cbmi ) );
         add( c, cb( _mf._allow_errors_in_distance_to_parent_cbmi ) );
-        c.add( header( "Taxonomy Extraction from Node Names" ) );
-        addRadioGroup( c, _mf._extract_taxonomy_no_rbmi, _mf._extract_taxonomy_pfam_strict_rbmi,
-                       _mf._extract_taxonomy_pfam_relaxed_rbmi, _mf._extract_taxonomy_agressive_rbmi );
         return c;
     }
 
