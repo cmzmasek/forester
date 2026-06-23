@@ -968,6 +968,10 @@ public final class MainFrameApplication extends MainFrame {
         _color_labels_same_as_parent_branch = new JCheckBoxMenuItem(COLOR_LABELS_LABEL);
         _color_labels_same_as_parent_branch.setToolTipText(MainFrame.COLOR_LABELS_TIP);
         _abbreviate_scientific_names = new JCheckBoxMenuItem(ABBREV_SN_LABEL);
+        _use_italic_scientific_names_cbmi = new JCheckBoxMenuItem(MainFrame.ITALIC_SN_LABEL);
+        _use_italic_scientific_names_cbmi.setToolTipText(MainFrame.ITALIC_SN_TIP);
+        _outline_fonts_in_vector_export_cbmi = new JCheckBoxMenuItem(MainFrame.OUTLINE_FONTS_VECTOR_LABEL);
+        _outline_fonts_in_vector_export_cbmi.setToolTipText(MainFrame.OUTLINE_FONTS_VECTOR_TIP);
         _label_direction_cbmi = new JCheckBoxMenuItem(LABEL_DIRECTION_LABEL);
         _label_direction_cbmi.setToolTipText(LABEL_DIRECTION_TIP);
         _color_all_found_nodes_when_coloring_subtree_cbmi = new JCheckBoxMenuItem("Colorize All Found Nodes When Colorizing Subtree(s)");
@@ -1013,6 +1017,9 @@ public final class MainFrameApplication extends MainFrame {
                 getOptions().isColorLabelsSameAsParentBranch());
         customizeCheckBoxMenuItem(_show_domain_labels, getOptions().isShowDomainLabels());
         customizeCheckBoxMenuItem(_abbreviate_scientific_names, getOptions().isAbbreviateScientificTaxonNames());
+        customizeCheckBoxMenuItem(_use_italic_scientific_names_cbmi, getOptions().isUseItalicScientificNames());
+        customizeCheckBoxMenuItem(_outline_fonts_in_vector_export_cbmi,
+                getOptions().isOutlineFontsInVectorExport());
         customizeCheckBoxMenuItem(_show_scale_cbmi, getOptions().isShowScale());
         customizeCheckBoxMenuItem(_collapsed_with_average_height_cbmi, getOptions().isCollapsedWithAverageHeigh());
         customizeCheckBoxMenuItem(_show_abbreviated_labels_for_collapsed_nodes_cbmi,

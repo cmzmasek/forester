@@ -332,6 +332,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private JTextArea _rollover_popup;
     private PhylogenyNode _root;
     private final StringBuilder _sb = new StringBuilder();
+    // Cache for the italic-derived scientific-name font: deriveFont() allocates, and taxonomyLabel runs
+    // per node per repaint, so re-derive only when the base font actually changes (see italicOf()).
+    private Font _italic_base_font;
+    private Font _italic_derived_font;
     private double _scale_distance = 0.0;
     private String _scale_label = null;
     private DescriptiveStatistics _statistics_for_vector_data;
@@ -581,18 +585,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         paint(g);
     }
 
-    private void abbreviateScientificName(final String sn, final StringBuilder sb) {
-        final String[] a = sn.split("\\s+");
-        sb.append(a[0].substring(0, 1));
-        sb.append(a[1].substring(0, 2));
-        if (a.length > 2) {
-            for (int i = 2; i < a.length; i++) {
-                sb.append(" ");
-                sb.append(a[i]);
-            }
-        }
-    }
-
     final private void addEmptyNode(final PhylogenyNode node) {
         if (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED) {
             errorMessageNoCutCopyPasteInUnrootedDisplay();
@@ -724,14 +716,19 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final private int calcLengthOfLongestText() {
-        final StringBuilder sb = new StringBuilder();
-        if (_ext_node_with_longest_txt_info != null) {
-            nodeDataAsSB(_ext_node_with_longest_txt_info, sb);
-            if (_ext_node_with_longest_txt_info.getNodeData().isHasTaxonomy()) {
-                nodeTaxonomyDataAsSB(_ext_node_with_longest_txt_info.getNodeData().getTaxonomy(), sb);
-            }
+        if (_ext_node_with_longest_txt_info == null) {
+            return 0;
         }
-        return getFontMetricsForLargeDefaultFont().stringWidth(sb.toString());
+        final StringBuilder sb = new StringBuilder();
+        nodeDataAsSB(_ext_node_with_longest_txt_info, sb);
+        int sum = getFontMetricsForLargeDefaultFont().stringWidth(sb.toString());
+        // Measure the taxonomy part italic-aware (the scientific name may be drawn in italics), so the
+        // reserved width matches what is painted instead of a roman over/under-estimate.
+        if (_ext_node_with_longest_txt_info.getNodeData().isHasTaxonomy()) {
+            sum += taxonomyLabelWidth(_ext_node_with_longest_txt_info.getNodeData().getTaxonomy(),
+                    getTreeFontSet().getLargeFont());
+        }
+        return sum;
     }
 
     /**
@@ -1742,55 +1739,65 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     private final void nodeTaxonomyDataAsSB(final Taxonomy taxonomy, final StringBuilder sb) {
+        forEachTaxonomyLabelPart(taxonomy, (text, scientific) -> sb.append(text));
+    }
+
+    /** Receives the ordered parts of a taxonomy label; {@code scientific} marks the scientific-name part. */
+    private interface TaxonomyLabelPartVisitor {
+
+        void visit(String text, boolean scientific);
+    }
+
+    /**
+     * Walks a taxonomy label in display order, emitting it one part at a time so callers can render or
+     * measure each part differently -- the single place the rank / code / scientific-name / common-name
+     * assembly lives. The scientific-name part is flagged so it can be italicized; the rank "[..]", the
+     * code, the common name and its parentheses and all separators are non-scientific. The concatenation
+     * of the emitted parts is exactly the string {@link #nodeTaxonomyDataAsSB} produces.
+     */
+    private void forEachTaxonomyLabelPart(final Taxonomy taxonomy, final TaxonomyLabelPartVisitor v) {
         if (_control_panel.isShowTaxonomyRank() && !ForesterUtil.isEmpty(taxonomy.getRank())) {
-            sb.append("[");
-            sb.append(taxonomy.getRank());
-            sb.append("] ");
+            v.visit("[" + taxonomy.getRank() + "] ", false);
         }
         if (_control_panel.isShowTaxonomyCode() && !ForesterUtil.isEmpty(taxonomy.getTaxonomyCode())) {
-            sb.append(taxonomy.getTaxonomyCode());
-            sb.append(" ");
+            v.visit(taxonomy.getTaxonomyCode() + " ", false);
         }
-        if (_control_panel.isShowTaxonomyScientificNames() && _control_panel.isShowTaxonomyCommonNames()) {
-            if (!ForesterUtil.isEmpty(taxonomy.getScientificName())
-                    && !ForesterUtil.isEmpty(taxonomy.getCommonName())) {
-                if (getOptions().isAbbreviateScientificTaxonNames()
-                        && (taxonomy.getScientificName().indexOf(' ') > 0)) {
-                    abbreviateScientificName(taxonomy.getScientificName(), sb);
-                } else {
-                    sb.append(taxonomy.getScientificName());
-                }
-                sb.append(" (");
-                sb.append(taxonomy.getCommonName());
-                sb.append(") ");
-            } else if (!ForesterUtil.isEmpty(taxonomy.getScientificName())) {
-                if (getOptions().isAbbreviateScientificTaxonNames()
-                        && (taxonomy.getScientificName().indexOf(' ') > 0)) {
-                    abbreviateScientificName(taxonomy.getScientificName(), sb);
-                } else {
-                    sb.append(taxonomy.getScientificName());
-                }
-                sb.append(" ");
-            } else if (!ForesterUtil.isEmpty(taxonomy.getCommonName())) {
-                sb.append(taxonomy.getCommonName());
-                sb.append(" ");
+        final boolean show_sci = _control_panel.isShowTaxonomyScientificNames();
+        final boolean show_common = _control_panel.isShowTaxonomyCommonNames();
+        final boolean has_sci = !ForesterUtil.isEmpty(taxonomy.getScientificName());
+        final boolean has_common = !ForesterUtil.isEmpty(taxonomy.getCommonName());
+        if (show_sci && show_common) {
+            if (has_sci && has_common) {
+                v.visit(scientificNameForDisplay(taxonomy), true);
+                v.visit(" (" + taxonomy.getCommonName() + ") ", false);
+            } else if (has_sci) {
+                v.visit(scientificNameForDisplay(taxonomy), true);
+                v.visit(" ", false);
+            } else if (has_common) {
+                v.visit(taxonomy.getCommonName() + " ", false);
             }
-        } else if (_control_panel.isShowTaxonomyScientificNames()) {
-            if (!ForesterUtil.isEmpty(taxonomy.getScientificName())) {
-                if (getOptions().isAbbreviateScientificTaxonNames()
-                        && (taxonomy.getScientificName().indexOf(' ') > 0)) {
-                    abbreviateScientificName(taxonomy.getScientificName(), sb);
-                } else {
-                    sb.append(taxonomy.getScientificName());
-                }
-                sb.append(" ");
+        } else if (show_sci) {
+            if (has_sci) {
+                v.visit(scientificNameForDisplay(taxonomy), true);
+                v.visit(" ", false);
             }
-        } else if (_control_panel.isShowTaxonomyCommonNames()) {
-            if (!ForesterUtil.isEmpty(taxonomy.getCommonName())) {
-                sb.append(taxonomy.getCommonName());
-                sb.append(" ");
+        } else if (show_common) {
+            if (has_common) {
+                v.visit(taxonomy.getCommonName() + " ", false);
             }
         }
+    }
+
+    /**
+     * The scientific name as displayed: abbreviated ("H. sapiens") when that option is on and the name is
+     * binomial (has a space), else verbatim.
+     */
+    private String scientificNameForDisplay(final Taxonomy taxonomy) {
+        final String sn = taxonomy.getScientificName();
+        if (getOptions().isAbbreviateScientificTaxonNames() && (sn.indexOf(' ') > 0)) {
+            return TreePanelUtil.abbreviateScientificName(sn);
+        }
+        return sn;
     }
 
     private final String obtainTitleForExtDescNodeData() {
@@ -2682,13 +2689,18 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return paintInternalLabelAboveBranch(g, node, is_in_found_nodes, to_pdf, to_graphics_file, half_box_size);
         }
 
+        // Whether a taxonomy label was actually drawn. taxonomyLabel no longer leaves the label in _sb
+        // (the old paintTaxonomy did, and this flag used to read _sb.length()), so derive it from the
+        // painted advance instead -- the collapsed-node label logic below depends on it.
+        boolean saw_species = false;
         if ((getControlPanel().isShowTaxonomyCode() || getControlPanel().isShowTaxonomyScientificNames()
                 || getControlPanel().isShowTaxonomyCommonNames() || getControlPanel().isShowTaxonomyRank())
                 && node.getNodeData().isHasTaxonomy()) {
-            x += paintTaxonomy(g, node, is_in_found_nodes, to_pdf, to_graphics_file, x);
+            final int taxonomy_width = paintTaxonomy(g, node, is_in_found_nodes, to_pdf, to_graphics_file, x);
+            x += taxonomy_width;
+            saw_species = taxonomy_width > 0;
         }
         setColor(g, node, to_graphics_file, to_pdf, is_in_found_nodes, getTreeColorSet().getSequenceColor());
-        final boolean saw_species = _sb.length() > 0;
         _sb.setLength(0);
         nodeDataAsSB(node, _sb);
         if (node.isCollapse() && ((!node.isRoot() && !node.getParent().isCollapse()) || node.isRoot())) {
@@ -2894,7 +2906,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ((taxo.length() == 0) && (data.length() == 0)) {
             return 0;
         }
-        final int taxo_w = labelStringWidth(g, taxo, using_visual_font, is_in_found_nodes, to_pdf);
+        // Measure the taxonomy segment via taxonomyLabel (draw=false) -- the same italic-aware, per-part
+        // path that draws it below -- so the right-alignment width matches what is painted.
+        final int taxo_w = (taxo.length() > 0)
+                ? taxonomyLabel(g, node.getNodeData().getTaxonomy(), 0, 0, to_pdf, false) : 0;
         final int data_w = labelStringWidth(g, data, using_visual_font, is_in_found_nodes, to_pdf);
         final int font_descent = using_visual_font ? getFontMetrics(g.getFont()).getMaxDescent()
                 : getFontMetricsForLargeDefaultFont().getMaxDescent();
@@ -2907,7 +2922,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         if (taxo.length() > 0) {
             setColor(g, node, to_graphics_file, to_pdf, is_in_found_nodes, getTreeColorSet().getTaxonomyColor());
-            TreePanel.drawString(taxo, layout[0], layout[2], g);
+            taxonomyLabel(g, node.getNodeData().getTaxonomy(), layout[0], layout[2], to_pdf, true);
         }
         return 0;
     }
@@ -3590,24 +3605,74 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             start_y = node.getYcoord()
                     + (getFontMetrics(g.getFont()).getAscent() / (node.getNumberOfDescendants() == 1 ? 1 : 3.0f));
         }
-        _sb.setLength(0);
-        nodeTaxonomyDataAsSB(taxonomy, _sb);
-        final String label = _sb.toString();
         /* GUILHEM_BEG */
-        if (_control_panel.isShowSequenceRelations() && (label.length() > 0)
-                && (node.getNodeData().isHasSequence())
+        if (_control_panel.isShowSequenceRelations() && (node.getNodeData().isHasSequence())
                 && node.getNodeData().getSequence().equals(_query_sequence)) {
             // invert font color and background color to show that this is the query sequence
-            final Rectangle2D nodeTextBounds = new TextLayout(label,
-                    g.getFont(),
-                    new FontRenderContext(null, false, false))
-                    .getBounds();
-            g.fillRect((int) start_x - 1, (int) start_y - 8, (int) nodeTextBounds.getWidth() + 4, 11);
-            g.setColor(getTreeColorSet().getBackgroundColor());
+            final int label_w = taxonomyLabel(g, taxonomy, start_x, start_y, to_pdf, false);
+            if (label_w > 0) {
+                g.fillRect((int) start_x - 1, (int) start_y - 8, label_w + 4, 11);
+                g.setColor(getTreeColorSet().getBackgroundColor());
+            }
         }
         /* GUILHEM_END */
-        TreePanel.drawString(label, start_x, start_y, g);
-        return labelStringWidth(g, label, using_visual_font, is_in_found_nodes, to_pdf);
+        return taxonomyLabel(g, taxonomy, start_x, start_y, to_pdf, true);
+    }
+
+    /**
+     * Measures and (when {@code draw}) paints a taxonomy label starting at {@code start_x} /
+     * {@code baseline_y}, italicizing the scientific-name part when {@link Options#isUseItalicScientificNames()}
+     * is on; the rest is drawn in g's current font and color. g's font is restored on return. Returns the
+     * total advance width. Each part is measured in the very font it is drawn in, so italic and roman
+     * advances stay accurate and adjacent parts (and the node-data drawn after the label) do not overlap.
+     */
+    private int taxonomyLabel(final Graphics2D g, final Taxonomy taxonomy, final float start_x,
+                              final float baseline_y, final boolean to_pdf, final boolean draw) {
+        final Font base = g.getFont();
+        final Font italic = getOptions().isUseItalicScientificNames() ? italicOf(base) : base;
+        final int[] w = { 0 };
+        forEachTaxonomyLabelPart(taxonomy, (text, scientific) -> {
+            if (text.isEmpty()) {
+                return;
+            }
+            // The scientific-name part uses an italic-derived font; the SVG/EPS backend turns all text
+            // (italic included) into glyph outlines so the bundled face is not substituted by the viewer
+            // (see OutliningVectorGraphics2D). PDF and screen draw with the real font.
+            g.setFont(scientific ? italic : base);
+            if (draw) {
+                TreePanel.drawString(text, start_x + w[0], baseline_y, g);
+            }
+            w[0] += to_pdf ? fractionalAdvanceWidth(g, text) : getFontMetrics(g.getFont()).stringWidth(text);
+        });
+        g.setFont(base);
+        return w[0];
+    }
+
+    /**
+     * Width (px) of a taxonomy label measured part-by-part in the very font each part is drawn in -- the
+     * scientific-name part in italics when that option is on -- so layout reservation
+     * ({@link #calculateLongestExtNodeInfo}, {@link #calcLengthOfLongestText}) matches what
+     * {@link #taxonomyLabel} actually paints. Graphics-free (component-level integer metrics, the same the
+     * rest of the layout calc uses); {@code base} is the node's large or visual font.
+     */
+    private int taxonomyLabelWidth(final Taxonomy taxonomy, final Font base) {
+        final Font italic = getOptions().isUseItalicScientificNames() ? italicOf(base) : base;
+        final int[] w = { 0 };
+        forEachTaxonomyLabelPart(taxonomy, (text, scientific) -> {
+            if (!text.isEmpty()) {
+                w[0] += getFontMetrics(scientific ? italic : base).stringWidth(text);
+            }
+        });
+        return w[0];
+    }
+
+    /** The italic-derived variant of {@code base}, cached so repeated paints don't re-allocate the Font. */
+    private Font italicOf(final Font base) {
+        if (base != _italic_base_font) {
+            _italic_base_font = base;
+            _italic_derived_font = base.deriveFont(base.getStyle() | Font.ITALIC);
+        }
+        return _italic_derived_font;
     }
 
     final private void paintUnrooted(final PhylogenyNode n,
@@ -4571,10 +4636,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             final StringBuilder sb = new StringBuilder();
             nodeDataAsSB(node, sb);
-            if (node.getNodeData().isHasTaxonomy()) {
-                nodeTaxonomyDataAsSB(node.getNodeData().getTaxonomy(), sb);
+            final boolean has_tax = node.getNodeData().isHasTaxonomy();
+            // Combined character count selects the longest-text node; the taxonomy chars are counted here
+            // but the taxonomy PIXEL width is measured italic-aware below (not from this roman string).
+            int txt = sb.length();
+            if (has_tax) {
+                final StringBuilder tax_sb = new StringBuilder();
+                nodeTaxonomyDataAsSB(node.getNodeData().getTaxonomy(), tax_sb);
+                txt += tax_sb.length();
             }
-            final int txt = sb.length();
             if (txt > longest_txt) {
                 longest_txt = txt;
                 longest_txt_node = node;
@@ -4584,10 +4654,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             if (getControlPanel().isUseVisualStyles()) {
                 use_vis = setFont(g, node);
             }
-            if (!use_vis) {
-                sum = getFontMetricsForLargeDefaultFont().stringWidth(sb.toString());
-            } else {
-                sum = getFontMetrics(g.getFont()).stringWidth(sb.toString());
+            final Font base = use_vis ? g.getFont() : getTreeFontSet().getLargeFont();
+            sum = (use_vis ? getFontMetrics(g.getFont()) : getFontMetricsForLargeDefaultFont())
+                    .stringWidth(sb.toString());
+            if (has_tax) {
+                sum += taxonomyLabelWidth(node.getNodeData().getTaxonomy(), base);
             }
             if (getControlPanel().isShowBinaryCharacters() && node.getNodeData().isHasBinaryCharacters()) {
                 sum += getFontMetricsForLargeDefaultFont().stringWidth(node.getNodeData().getBinaryCharacters()

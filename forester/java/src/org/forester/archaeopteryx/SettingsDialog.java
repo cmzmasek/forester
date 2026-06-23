@@ -123,6 +123,7 @@ final class SettingsDialog extends JDialog {
         c.add( new JLabel( "Internal label placement:" ) );
         addRadioGroup( c, _mf._internal_labels_above_branch_rbmi, _mf._internal_labels_right_of_node_rbmi );
         add( c, cb( _mf._color_labels_same_as_parent_branch ) );
+        add( c, cb( _mf._use_italic_scientific_names_cbmi ) );
         add( c, cb( _mf._abbreviate_scientific_names ) );
         add( c, cb( _mf._show_confidence_stddev_cbmi ) );
         add( c, cb( _mf._show_mad_confidence_cbmi ) );
@@ -190,6 +191,7 @@ final class SettingsDialog extends JDialog {
     private JPanel exportTab() {
         final JPanel c = column();
         c.add( header( "Graphics Export & Printing" ) );
+        add( c, cb( _mf._outline_fonts_in_vector_export_cbmi ) );
         add( c, cb( _mf._antialias_print_cbmi ) );
         add( c, cb( _mf._print_black_and_white_cbmi ) );
         add( c, cb( _mf._graphics_export_visible_only_cbmi ) );

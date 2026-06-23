@@ -1170,7 +1170,8 @@ public final class AptxUtil {
                     width,
                     height,
                     (type == GraphicsExportType.SVG) ? VectorGraphicsExporter.Format.SVG
-                            : VectorGraphicsExporter.Format.EPS);
+                            : VectorGraphicsExporter.Format.EPS,
+                    options.isOutlineFontsInVectorExport());
         }
         final RenderingHints rendering_hints = new RenderingHints(RenderingHints.KEY_RENDERING,
                 RenderingHints.VALUE_RENDER_QUALITY);

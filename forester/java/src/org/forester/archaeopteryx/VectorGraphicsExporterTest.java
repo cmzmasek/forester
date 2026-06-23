@@ -22,10 +22,12 @@ package org.forester.archaeopteryx;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.function.Consumer;
 
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
@@ -59,41 +61,50 @@ public final class VectorGraphicsExporterTest {
 
     public static boolean test() {
         try {
-            // ---- SVG: viewBox is the pixel size, content is real vector text + lines ----
-            final String svg = new String( VectorGraphicsExporter.render( 300, 120, Format.SVG, g -> {
+            final Consumer<Graphics2D> painter = g -> {
                 g.setColor( Color.BLACK );
                 g.drawLine( 10, 10, 290, 10 );
                 g.setFont( new Font( "SansSerif", Font.PLAIN, 12 ) );
                 g.drawString( LABEL, 20, 40 );
-            } ), StandardCharsets.UTF_8 );
+            };
+            // ---- SVG, outlining ON (default): text is vectorized to glyph outlines (no viewer font
+            // substitution), so the literal label string must NOT appear ----
+            final String svg = new String( VectorGraphicsExporter.render( 300, 120, Format.SVG, true, painter ),
+                                           StandardCharsets.UTF_8 );
             if ( !svg.contains( "<svg" ) || !svg.contains( "</svg>" ) ) {
                 return fail( "svg: not a well-formed <svg> document: " + head( svg ) );
             }
             if ( !svg.contains( "viewBox=\"0 0 300 120\"" ) ) {
                 return fail( "svg: viewBox should equal the pixel size 300x120: " + head( svg ) );
             }
-            if ( !svg.contains( LABEL ) ) {
-                return fail( "svg: label must be emitted as real text (not vectorized)" );
+            if ( svg.contains( LABEL ) ) {
+                return fail( "svg(outline): label must be vectorized, not emitted as substitutable text" );
             }
-            if ( !svg.contains( "<line" ) && !svg.contains( "<path" ) ) {
-                return fail( "svg: the drawn line is missing" );
+            // ---- SVG, outlining OFF (the opt-out): the label is kept as real, selectable text ----
+            final String svg_text = new String( VectorGraphicsExporter.render( 300, 120, Format.SVG, false, painter ),
+                                                StandardCharsets.UTF_8 );
+            if ( !svg_text.contains( LABEL ) ) {
+                return fail( "svg(no-outline): label should be emitted as real text when outlining is off" );
+            }
+            // Outlining must turn the label into vector path content -> strictly MORE <path> than the
+            // text version; a backend that silently dropped the label could not satisfy this.
+            if ( countPaths( svg ) <= countPaths( svg_text ) ) {
+                return fail( "svg: outlining must add vector paths vs the text version (" + countPaths( svg )
+                        + " vs " + countPaths( svg_text ) + ")" );
             }
 
-            // ---- EPS: valid encapsulated PostScript, bounding box ~ pixel size (1 px -> 1 pt) ----
-            final String eps = new String( VectorGraphicsExporter.render( 300, 120, Format.EPS, g -> {
-                g.setColor( Color.BLACK );
-                g.drawLine( 10, 10, 290, 10 );
-                g.setFont( new Font( "SansSerif", Font.PLAIN, 12 ) );
-                g.drawString( LABEL, 20, 40 );
-            } ), StandardCharsets.ISO_8859_1 );
+            // ---- EPS, outlining ON: valid encapsulated PostScript, bbox ~ pixel size; the literal
+            // label string must NOT appear (vectorized) ----
+            final String eps = new String( VectorGraphicsExporter.render( 300, 120, Format.EPS, true, painter ),
+                                           StandardCharsets.ISO_8859_1 );
             if ( !eps.startsWith( "%!PS-Adobe" ) ) {
                 return fail( "eps: bad header: " + head( eps ) );
             }
             if ( !eps.contains( "%%BoundingBox" ) ) {
                 return fail( "eps: missing %%BoundingBox" );
             }
-            if ( !eps.contains( LABEL ) ) {
-                return fail( "eps: label text missing" );
+            if ( eps.contains( LABEL ) ) {
+                return fail( "eps: label must be vectorized, not emitted as substitutable text" );
             }
             final int bbox_w = epsBoundingBoxWidth( eps );
             if ( Math.abs( bbox_w - 300 ) > 3 ) {
@@ -148,15 +159,16 @@ public final class VectorGraphicsExporterTest {
                                                                                   GraphicsExportType.SVG,
                                                                                   mp.getOptions() );
                     final String svg = new String( Files.readAllBytes( out.toPath() ), StandardCharsets.UTF_8 );
-                    for( final String leaf : new String[] { "A", "B", "C", "D", "E", "F", "G", "H", "I" } ) {
-                        if ( !svg.contains( ">" + leaf + "<" ) ) {
-                            ok[ 0 ] = false;
-                            System.out.println( "  missing leaf label in svg: " + leaf );
-                        }
-                    }
-                    if ( !svg.contains( "<path" ) && !svg.contains( "<line" ) ) {
+                    // labels are vectorized to outlines, so they are not literal text; instead require a
+                    // path per drawn glyph/branch -- 9 leaf labels + internal labels + branches => many.
+                    final int paths = svg.split( "<path", -1 ).length - 1;
+                    if ( paths < 9 ) {
                         ok[ 0 ] = false;
-                        System.out.println( "  no branches drawn in svg" );
+                        System.out.println( "  too few vector paths in svg (labels/branches missing?): " + paths );
+                    }
+                    if ( svg.contains( ">A<" ) ) {
+                        ok[ 0 ] = false;
+                        System.out.println( "  leaf labels should be outlined, not emitted as substitutable text" );
                     }
                     if ( !svg.contains( "<svg" ) || !svg.contains( "</svg>" ) ) {
                         ok[ 0 ] = false;
@@ -176,6 +188,10 @@ public final class VectorGraphicsExporterTest {
             t.printStackTrace();
             return false;
         }
+    }
+
+    private static int countPaths( final String svg ) {
+        return svg.split( "<path", -1 ).length - 1;
     }
 
     private static int epsBoundingBoxWidth( final String eps ) {

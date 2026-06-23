@@ -87,10 +87,11 @@ final class VectorGraphicsExporter {
      * @param height intended height in pixels
      * @return the encoded SVG or EPS document
      */
-    static byte[] render( final int width, final int height, final Format fmt, final Consumer<Graphics2D> painter )
+    static byte[] render( final int width, final int height, final Format fmt, final boolean outline_text,
+                          final Consumer<Graphics2D> painter )
             throws IOException {
         final ByteArrayOutputStream out = new ByteArrayOutputStream( 1 << 16 );
-        render( width, height, fmt, painter, out );
+        render( width, height, fmt, outline_text, painter, out );
         return out.toByteArray();
     }
 
@@ -98,10 +99,14 @@ final class VectorGraphicsExporter {
     private static void render( final int width,
                                 final int height,
                                 final Format fmt,
+                                final boolean outline_text,
                                 final Consumer<Graphics2D> painter,
                                 final OutputStream out )
             throws IOException {
-        final VectorGraphics2D g = new VectorGraphics2D();
+        // When outline_text, every text string is rendered as glyph outlines: VectorGraphics2D embeds no
+        // fonts, so font-referenced text would be substituted by the viewer (EPS -> Times serif, SVG ->
+        // generic sans, italics lost). See OutliningVectorGraphics2D. Off keeps selectable text.
+        final VectorGraphics2D g = outline_text ? new OutliningVectorGraphics2D() : new VectorGraphics2D();
         painter.accept( g );
         final Processor processor = Processors.get( fmt.id() );
         final PageSize page = ( fmt == Format.SVG ) ? new PageSize( width, height )
@@ -120,7 +125,8 @@ final class VectorGraphicsExporter {
                                                       final TreePanel tree_panel,
                                                       final int width,
                                                       final int height,
-                                                      final Format fmt )
+                                                      final Format fmt,
+                                                      final boolean outline_text )
             throws IOException {
         final Phylogeny phylogeny = tree_panel.getPhylogeny();
         if ( ( phylogeny == null ) || phylogeny.isEmpty() ) {
@@ -139,7 +145,7 @@ final class VectorGraphicsExporter {
         final int my_width = ( width < WIDTH_LIMIT ? WIDTH_LIMIT : width ) + ( 2 * MARGIN_X );
         final int my_height = ( height < HEIGHT_LIMIT ? HEIGHT_LIMIT : height ) + ( 2 * MARGIN_Y );
         try ( final OutputStream out = new BufferedOutputStream( new FileOutputStream( file ) ) ) {
-            render( my_width, my_height, fmt, g -> {
+            render( my_width, my_height, fmt, outline_text, g -> {
                 try {
                     tree_panel.paintPhylogeny( g, true, false, my_width, my_height, 0, 0 );
                 }

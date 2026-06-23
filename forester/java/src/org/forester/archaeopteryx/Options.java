@@ -138,6 +138,8 @@ final public class Options {
     private boolean _show_default_node_shapes_external;
     private boolean _show_default_node_shapes_internal;
     private boolean _internal_labels_above_branch;
+    private boolean _use_italic_scientific_names;
+    private boolean _outline_fonts_in_vector_export;
     private boolean _show_domain_labels;
     private boolean _show_overview;
     private boolean _show_scale;
@@ -225,6 +227,14 @@ final public class Options {
         // Rank") sit to the LEFT of the node, right-aligned, on top of the incoming branch -- where the
         // space is usually empty -- rather than to the right, where the node's own subtree fans out.
         _internal_labels_above_branch = true;
+        // Publication convention: scientific (Latin) taxonomic names are set in italics (e.g. Homo
+        // sapiens). On by default for figure-ready output; only the scientific-name run is italicized,
+        // not the taxonomy code, common name or rank.
+        _use_italic_scientific_names = true;
+        // SVG/EPS export (VectorGraphics2D) embeds no fonts, so by default all text is rendered as glyph
+        // outlines to stop viewers substituting the bundled font (EPS -> Times serif, SVG -> generic
+        // sans). Turn off to keep selectable/searchable text at the risk of viewer font substitution.
+        _outline_fonts_in_vector_export = true;
         _show_default_node_shapes_external = false;
         _show_default_node_shapes_for_marked_nodes = false;
         _color_all_found_nodes_when_coloring_subtree = false;
@@ -441,6 +451,14 @@ final public class Options {
         return _internal_labels_above_branch;
     }
 
+    boolean isUseItalicScientificNames() {
+        return _use_italic_scientific_names;
+    }
+
+    boolean isOutlineFontsInVectorExport() {
+        return _outline_fonts_in_vector_export;
+    }
+
     final boolean isShowOverview() {
         return _show_overview;
     }
@@ -571,6 +589,14 @@ final public class Options {
 
     void setInternalLabelsAboveBranch(final boolean internal_labels_above_branch) {
         _internal_labels_above_branch = internal_labels_above_branch;
+    }
+
+    void setUseItalicScientificNames(final boolean use_italic_scientific_names) {
+        _use_italic_scientific_names = use_italic_scientific_names;
+    }
+
+    void setOutlineFontsInVectorExport(final boolean outline_fonts_in_vector_export) {
+        _outline_fonts_in_vector_export = outline_fonts_in_vector_export;
     }
 
     final void setShowOverview(final boolean show_overview) {

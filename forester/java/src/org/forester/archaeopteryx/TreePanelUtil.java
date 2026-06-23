@@ -411,6 +411,28 @@ public class TreePanelUtil {
         return new float[] { taxo_x, data_x, baseline_y };
     }
 
+    /**
+     * Abbreviates a binomial scientific name to the genus initial + first two letters of the species
+     * (e.g. {@code "Homo sapiens"} &rarr; {@code "Hsa"}), appending any further epithets verbatim. A name
+     * that is not an abbreviatable binomial -- fewer than two whitespace-separated tokens, an empty first
+     * token (leading whitespace), or a species token shorter than two characters -- is returned unchanged
+     * rather than throwing.
+     */
+    final static String abbreviateScientificName( final String scientific_name ) {
+        final String[] a = scientific_name.split( "\\s+" );
+        if ( ( a.length < 2 ) || a[ 0 ].isEmpty() || ( a[ 1 ].length() < 2 ) ) {
+            return scientific_name;
+        }
+        final StringBuilder sb = new StringBuilder();
+        sb.append( a[ 0 ].substring( 0, 1 ) );
+        sb.append( a[ 1 ].substring( 0, 2 ) );
+        for( int i = 2; i < a.length; i++ ) {
+            sb.append( " " );
+            sb.append( a[ i ] );
+        }
+        return sb.toString();
+    }
+
     /** The best display label for a taxonomy: scientific name, else common name, else taxonomy code, else "". */
     final static String taxonomyLabel( final Taxonomy tax ) {
         if ( tax != null ) {

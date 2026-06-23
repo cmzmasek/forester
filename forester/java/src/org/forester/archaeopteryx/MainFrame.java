@@ -161,6 +161,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String SHOW_DOMAIN_LABELS_LABEL = "Domain Labels";
     static final String COLOR_LABELS_TIP = "To use parent branch colors for node labels as well, need to turn off taxonomy dependent colorization and turn on branch colorization for this to become apparent";
     static final String ABBREV_SN_LABEL = "Abbreviate Scientific Taxonomic Names";
+    static final String ITALIC_SN_LABEL = "Italic Scientific Taxonomic Names";
+    static final String ITALIC_SN_TIP = "To set scientific (Latin) taxonomic names in italics (e.g. Homo sapiens), per the publication convention; only the scientific-name part is italicized, not the code, common name or rank";
+    static final String OUTLINE_FONTS_VECTOR_LABEL = "Outline Fonts (SVG/EPS export)";
+    static final String OUTLINE_FONTS_VECTOR_TIP = "SVG/EPS export embeds no fonts; outlining renders text as vector shapes so viewers cannot substitute the figure font (recommended). Turn off to keep selectable/searchable text, at the risk of font substitution.";
     static final String SHOW_CONF_STDDEV_LABEL = "Confidence Standard Deviations";
     static final String SHOW_MAD_CONF_LABEL    = "MAD Confidence Values (MAD/regular)";
     static final String USE_BRACKETS_FOR_CONF_IN_NH_LABEL = "Use Brackets for Confidence Values";
@@ -218,6 +222,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JCheckBoxMenuItem _show_overview_cbmi;
     JCheckBoxMenuItem _show_domain_labels;
     JCheckBoxMenuItem _abbreviate_scientific_names;
+    JCheckBoxMenuItem _use_italic_scientific_names_cbmi;
+    JCheckBoxMenuItem _outline_fonts_in_vector_export_cbmi;
     JCheckBoxMenuItem _color_labels_same_as_parent_branch;
     JCheckBoxMenuItem _show_default_node_shapes_internal_cbmi;
     JRadioButtonMenuItem _internal_labels_above_branch_rbmi;
@@ -378,6 +384,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         } else if (o == _show_domain_labels) {
             updateOptions(getOptions());
         } else if (o == _abbreviate_scientific_names) {
+            updateOptions(getOptions());
+        } else if (o == _use_italic_scientific_names_cbmi) {
+            updateOptions(getOptions());
+        } else if (o == _outline_fonts_in_vector_export_cbmi) {
             updateOptions(getOptions());
         } else if (o == _color_labels_same_as_parent_branch) {
             updateOptions(getOptions());
@@ -1670,6 +1680,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         options.setShowDomainLabels((_show_domain_labels != null) && _show_domain_labels.isSelected());
         options.setAbbreviateScientificTaxonNames((_abbreviate_scientific_names != null)
                 && _abbreviate_scientific_names.isSelected());
+        options.setUseItalicScientificNames((_use_italic_scientific_names_cbmi != null)
+                && _use_italic_scientific_names_cbmi.isSelected());
+        options.setOutlineFontsInVectorExport((_outline_fonts_in_vector_export_cbmi != null)
+                && _outline_fonts_in_vector_export_cbmi.isSelected());
         options.setColorLabelsSameAsParentBranch((_color_labels_same_as_parent_branch != null)
                 && _color_labels_same_as_parent_branch.isSelected());
         options.setShowDefaultNodeShapesInternal((_show_default_node_shapes_internal_cbmi != null)
