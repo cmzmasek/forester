@@ -29,8 +29,8 @@ import org.forester.util.ForesterConstants;
 public final class AptxConstants {
 
     public final static String PRG_NAME = "Archaeopteryx";
-    final static String VERSION = "0.9.29";
-    final static String PRG_DATE = "2026-06-17";
+    final static String VERSION = "0.9.30";
+    final static String PRG_DATE = "2026-06-22";
     // The first three are bundled and registered at startup (see FontResources), so they are always
     // present and give identical, reproducible figure type across platforms; the rest are fallbacks.
     final static String[] DEFAULT_FONT_CHOICES = {
@@ -95,6 +95,10 @@ public final class AptxConstants {
             0);
     final static short DEFAULT_NODE_SHAPE_SIZE_DEFAULT = 7;
     static final int MAX_LENGTH_FOR_COLLAPSED_NAME = 8;
+    // External node names longer than this (e.g. whole UniProt/NCBI FASTA-header descriptions pasted in
+    // as labels) are shown head + "…" when "Shorten Labels" is on. Also the threshold at which that
+    // (data-gated) checkbox appears at all -- trees with sane labels never see it. Display-only.
+    static final int LONG_NODE_NAME_LIMIT = 60;
     // Diameters (in tree coordinate space, so they scale with zoom like node shapes) of the
     // internal-node support symbols: the smallest dot drawn for low support in SIZE_SCALED mode,
     // and the fixed dot for THRESHOLD_MARKS / full support.

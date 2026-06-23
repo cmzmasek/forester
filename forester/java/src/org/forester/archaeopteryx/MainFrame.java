@@ -63,6 +63,7 @@ import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
 import org.forester.archaeopteryx.tools.AncestralTaxonomyInferrer;
+import org.forester.archaeopteryx.tools.LabelDataExtractor;
 import org.forester.archaeopteryx.tools.ProcessPool;
 import org.forester.archaeopteryx.tools.ProcessRunning;
 import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
@@ -197,6 +198,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem _clade_bands_jmi;
 
     JMenuItem _obtain_seq_and_tax_information_jmi;
+    JMenuItem _extract_label_data_jmi;
     JMenuItem _remove_branch_color_item;
     JMenuItem _remove_visual_styles_item;
     JMenuItem _delete_selected_nodes_item;
@@ -275,6 +277,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     Configuration _configuration;
     Options _options;
     private Phylogeny _species_tree;
+    // the rank last chosen in "Annotate Clades by Rank", pre-selected next time (per session); null = first use
+    private String _last_clade_rank;
     final ProcessPool _process_pool;
 
     MainFrame() {
@@ -984,6 +988,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         final String[] ranks = AptxUtil.getRankChoices(AptxUtil.getRankCounts(phy),
                 AptxUtil.getRankCoverageCounts(phy), phy.getNumberOfExternalNodes());
         final JComboBox<String> rank_box = new JComboBox<>(ranks);
+        preselectLastCladeRank(rank_box, ranks);
         final JRadioButton boxes_rb = new JRadioButton("Shaded boxes (behind the clades)", true);
         final JRadioButton bars_rb = new JRadioButton("Bars + labels (at the right edge)");
         final JRadioButton brackets_rb = new JRadioButton("Brackets ] + labels (black & white, no legend)");
@@ -1011,6 +1016,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             rank = rank.substring(0, rank.indexOf('(')).trim();
         }
         final String r = rank;
+        _last_clade_rank = r; // remember for the next invocation's pre-selection
         final TreePanel.CLADE_VIS mode = bars_rb.isSelected() ? TreePanel.CLADE_VIS.BARS
                 : brackets_rb.isSelected() ? TreePanel.CLADE_VIS.BRACKETS : TreePanel.CLADE_VIS.BOXES;
         final SortedSet<String> unresolved = TreePanelUtil.unresolvedTipTaxa(phy, r,
@@ -1028,6 +1034,18 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             }
         }
         reportCladeBands(tp, r, mode, null);
+    }
+
+    /**
+     * Pre-selects in {@code rank_box} the rank last used in "Annotate Clades by Rank" (this session), so a
+     * repeat invocation defaults to the same rank. A no-op on first use, or when the remembered rank is
+     * absent from the current tree's choices.
+     */
+    private void preselectLastCladeRank(final JComboBox<String> rank_box, final String[] ranks) {
+        final int idx = AptxUtil.indexOfRank(ranks, _last_clade_rank);
+        if (idx >= 0) {
+            rank_box.setSelectedIndex(idx);
+        }
     }
 
     private void reportCladeBands(final TreePanel tp, final String rank, final TreePanel.CLADE_VIS mode,
@@ -1054,6 +1072,70 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             JOptionPane.showMessageDialog(this, "Could not place any tip at rank \"" + rank + "\".\n"
                     + "Try a different rank, or check that the tips carry resolvable taxonomic names.",
                     "Annotate Clades by Rank (" + rank + ")", JOptionPane.WARNING_MESSAGE);
+        }
+    }
+
+    /**
+     * Just after a tree is loaded, if most of its labels are UniProt FASTA headers, offer once to extract
+     * their data (the proactive half of the feature; the Tools menu item is the on-demand half). A no-op
+     * for ordinary trees, so it never nags.
+     */
+    void offerLabelExtraction(final Phylogeny[] phys) {
+        if (phys == null) {
+            return;
+        }
+        boolean offer = false;
+        for (final Phylogeny p : phys) {
+            if (LabelDataExtractor.mostLabelsParsable(p)) {
+                offer = true;
+                break;
+            }
+        }
+        if (!offer) {
+            return;
+        }
+        final int choice = JOptionPane.showConfirmDialog(this,
+                "These node labels look like UniProt or GenBank FASTA headers.\n"
+                        + "Extract their accession, description, gene and taxonomy into proper fields?\n"
+                        + "(Node names are shortened to the accession; only empty fields are filled.)",
+                "Extract Data from Labels?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+        if (choice == JOptionPane.YES_OPTION) {
+            extractLabelData();
+        }
+    }
+
+    /**
+     * The Tools "Extract Data from Labels…" operation: parse UniProt FASTA-header node names into proper
+     * sequence + taxonomy fields (offline, only filling empties), shorten the names to their accession,
+     * then reveal "Seq Name" + "Taxonomy Scientific" so the cleaned-up labels are visible.
+     */
+    void extractLabelData() {
+        if (_mainpanel.getCurrentTreePanel() == null) {
+            return;
+        }
+        final TreePanel tp = _mainpanel.getCurrentTreePanel();
+        final Phylogeny phy = tp.getPhylogeny();
+        if ((phy == null) || phy.isEmpty()) {
+            return;
+        }
+        final int n = LabelDataExtractor.extract(phy);
+        if (n > 0) {
+            tp.setEdited(true);
+            // surface the freshly-populated fields so the value of the cleanup is immediately visible
+            tp.getControlPanel().setCheckbox(Configuration.show_seq_names, true);
+            tp.getControlPanel().setCheckbox(Configuration.show_taxonomy_scientific_names, true);
+            tp.getControlPanel().displayedPhylogenyMightHaveChanged(true);
+            tp.repaint();
+            JOptionPane.showMessageDialog(this,
+                    "Extracted accession, description and taxonomy from " + n + " label" + ((n == 1) ? "" : "s")
+                            + ".\nNode names were shortened to their accession; \"Seq Name\" and "
+                            + "\"Taxonomy Scientific\" are now shown.",
+                    "Extract Data from Labels", JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(this,
+                    "No UniProt or GenBank FASTA-header labels (e.g. \"tr|ACC|ENTRY … OS=… OX=…\" or "
+                            + "\"NP_000537.1 … [Homo sapiens]\") were found to extract from.",
+                    "Extract Data from Labels", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 

@@ -43,6 +43,11 @@ public final class UniProtKbClient {
             "gene_names", "sequence", "organism_name", "organism_id", "lineage", "go_id", "xref_refseq", "xref_pdb" };
     private static final String              BASE   = "https://rest.uniprot.org/uniprotkb/search?format=tsv&size=1&fields="
             + String.join( ",", FIELDS ) + "&query=";
+    // Taxonomy-only projection for the rank-colorizer bridge: just the organism, no molecular sequence /
+    // GO / xrefs to fetch or hold onto.
+    private static final String[]            ORG_FIELDS = { "accession", "id", "organism_name", "organism_id" };
+    private static final String              ORG_BASE   = "https://rest.uniprot.org/uniprotkb/search?format=tsv&size=1&fields="
+            + String.join( ",", ORG_FIELDS ) + "&query=";
     private final Map<String, SequenceEntry> _cache = Collections
             .synchronizedMap( new HashMap<String, SequenceEntry>() );
 
@@ -75,6 +80,39 @@ public final class UniProtKbClient {
             _cache.put( k, SequenceEntry.EMPTY );
         }
         return SequenceEntry.EMPTY;
+    }
+
+    /**
+     * Just the {@link Organism} (NCBI tax-id + scientific name) for {@code accession}, fetched with the
+     * minimal {@link #ORG_FIELDS} projection -- for taxonomy-only callers (the rank-colorizer bridge)
+     * that must not pull or cache the whole protein record. Deliberately <b>not cached</b> here: the
+     * bridge caches the final lineage by accession, so a repeat never reaches this method. Network I/O --
+     * call off the EDT. Returns {@link Organism#EMPTY} when not found.
+     *
+     * @throws IOException on a connection/transport failure.
+     */
+    public Organism organism( final String accession ) throws IOException {
+        if ( ForesterUtil.isEmpty( accession ) ) {
+            return Organism.EMPTY;
+        }
+        return parseOrganismTsv( WsHttp.httpGet( ORG_BASE + WsHttp.encode( searchQuery( accession.trim() ) ) ) );
+    }
+
+    /**
+     * Parses an {@link #ORG_FIELDS} TSV response (header + zero/one row: accession, id, organism_name,
+     * organism_id) into an {@link Organism}. Pure -- no I/O; {@link Organism#EMPTY} when there is no row.
+     */
+    static Organism parseOrganismTsv( final String tsv ) {
+        if ( ForesterUtil.isEmpty( tsv ) ) {
+            return Organism.EMPTY;
+        }
+        final String[] lines = tsv.split( "\n" );
+        if ( lines.length < 2 ) {
+            return Organism.EMPTY; // header only (or nothing)
+        }
+        final String[] c = lines[ 1 ].split( "\t", -1 );
+        final Organism org = new Organism( col( c, 3 ), organismName( col( c, 2 ) ) ); // organism_id, organism_name
+        return org.isEmpty() ? Organism.EMPTY : org;
     }
 
     /**

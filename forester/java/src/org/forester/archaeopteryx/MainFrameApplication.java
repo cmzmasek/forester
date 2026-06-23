@@ -124,6 +124,10 @@ public final class MainFrameApplication extends MainFrame {
             validate();
             getMainPanel().getControlPanel().showWholeAll();
             getMainPanel().getControlPanel().showWhole();
+            // offer label extraction for a command-line / initially-loaded header tree too, but only after
+            // the frame is realized (deferred), so the dialog never appears mid-construction
+            final Phylogeny[] loaded = phys;
+            javax.swing.SwingUtilities.invokeLater(() -> offerLabelExtraction(loaded));
         }
         // align the tree canvas with the resolved (light/dark) theme at startup
         updateTreeCanvasColors(getConfiguration().getUi());
@@ -285,6 +289,11 @@ public final class MainFrameApplication extends MainFrame {
                     return;
                 }
                 obtainSequenceAndTaxonomicInformation();
+            } else if (o == _extract_label_data_jmi) {
+                if (isSubtreeDisplayed()) {
+                    return;
+                }
+                extractLabelData();
             } else if (o == _internal_number_are_confidence_for_nh_parsing_cbmi) {
                 updateOptions(getOptions());
             } else if (o == _replace_underscores_cbmi) {
@@ -746,6 +755,7 @@ public final class MainFrameApplication extends MainFrame {
                                             "Warning: Possible Error in New Hampshire Formatted Data",
                                             JOptionPane.WARNING_MESSAGE);
                         }
+                        offerLabelExtraction(phys);
                     }
                 }
             }
@@ -1114,6 +1124,10 @@ public final class MainFrameApplication extends MainFrame {
         customizeJMenuItem(_obtain_seq_and_tax_information_jmi);
         _obtain_seq_and_tax_information_jmi
                 .setToolTipText("To add additional sequence information and detailed taxonomic information (from UniProt/EMBL-GenBank and UniProt Taxonomy)");
+        _tools_menu.add(_extract_label_data_jmi = new JMenuItem("Extract Data from Labels…"));
+        customizeJMenuItem(_extract_label_data_jmi);
+        _extract_label_data_jmi.setToolTipText(
+                "Parse UniProt or GenBank/RefSeq FASTA-header node names into accession, description, gene and taxonomy fields (offline, no network); only empty fields are filled");
         _jmenubar.add(_tools_menu);
     }
 

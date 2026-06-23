@@ -61,7 +61,34 @@ public final class AptxUtilTest {
         return testHasAtLeastOneNodeWithDomainArchitecture() && testGraphicsExportTypes() && testRankChoices()
                 && testRankCounts() && testRankCoverageCounts() && testNodePruningOutcome()
                 && testBranchesToCollapse() && testConfigFileOption() && testScanForDataPresence()
-                && testAssignDistinctColors();
+                && testAssignDistinctColors() && testShortenLabel();
+    }
+
+    /**
+     * shortenLabel returns short/exact-length/null labels unchanged, and an over-long label as its head
+     * (with trailing whitespace trimmed) plus a single-character ellipsis -- the display-only treatment
+     * for pasted-in UniProt/NCBI FASTA-header names.
+     */
+    private static boolean testShortenLabel() {
+        if ( !"abc".equals( AptxUtil.shortenLabel( "abc", 10 ) ) || ( AptxUtil.shortenLabel( null, 10 ) != null ) ) {
+            return fail( "short or null labels must be returned unchanged" );
+        }
+        if ( !"abcde".equals( AptxUtil.shortenLabel( "abcde", 5 ) ) ) {
+            return fail( "a label exactly at the limit must not be shortened" );
+        }
+        if ( !"abcd…".equals( AptxUtil.shortenLabel( "abcdef", 5 ) ) ) {
+            return fail( "an over-long label must become head + ellipsis; got " + AptxUtil.shortenLabel( "abcdef", 5 ) );
+        }
+        if ( !"ab…".equals( AptxUtil.shortenLabel( "ab cdef", 4 ) ) ) {
+            return fail( "whitespace before the cut must be trimmed; got " + AptxUtil.shortenLabel( "ab cdef", 4 ) );
+        }
+        final String header = "tr|A0A8H5JZG0|A0A8H5JZG0_9HYPO Radical s-adenosyl methionine domain-containing protein OS=Fusarium phyllophilum";
+        final String shortened = AptxUtil.shortenLabel( header, 60 );
+        if ( ( shortened.length() > 60 ) || !shortened.endsWith( "…" )
+                || !header.startsWith( shortened.substring( 0, shortened.length() - 1 ) ) ) {
+            return fail( "a UniProt header must shorten to a <=60-char head ending in the ellipsis; got " + shortened );
+        }
+        return true;
     }
 
     /**
@@ -200,6 +227,20 @@ public final class AptxUtilTest {
             final Set<Integer> edge_set = AptxUtil.scanForDataPresence(edge);
             if (!edge_set.contains(Configuration.write_branch_length_values)
                     || !edge_set.contains(Configuration.show_sequence_acc)) {
+                return false;
+            }
+            // "Shorten Labels" is offered only when an external name is over-long (a pasted-in
+            // UniProt/NCBI header); the short-named barren/rich trees above already assert it stays absent.
+            final Phylogeny longlbl = new Phylogeny();
+            final PhylogenyNode lr = new PhylogenyNode();
+            final PhylogenyNode ll = new PhylogenyNode();
+            ll.setName("tr|A0A8H5JZG0|A0A8H5JZG0_9HYPO Radical s-adenosyl methionine "
+                    + "domain-containing protein OS=Fusarium phyllophilum OX=47803 GN=FPHYL_5758 PE=4 SV=1");
+            lr.addAsChild(ll);
+            lr.addAsChild(new PhylogenyNode());
+            longlbl.setRoot(lr);
+            longlbl.externalNodesHaveChanged();
+            if (!AptxUtil.scanForDataPresence(longlbl).contains(Configuration.shorten_labels)) {
                 return false;
             }
             return true;
@@ -417,6 +458,19 @@ public final class AptxUtilTest {
                 || !AptxUtil.coveragePercentLabel( 6, 10 ).equals( "60%" )
                 || !AptxUtil.coveragePercentLabel( null, 10 ).equals( "0%" ) ) {
             return fail( "coveragePercentLabel: wrong percent label" );
+        }
+        // indexOfRank: pre-selecting the last-used rank must match a bare rank against count-suffixed choices
+        final String[] mixed = { "phylum", "order (2) (60% coverage)", "family", "genus (4) (0% coverage)" };
+        if ( ( AptxUtil.indexOfRank( mixed, "order" ) != 1 ) || ( AptxUtil.indexOfRank( mixed, "genus" ) != 3 )
+                || ( AptxUtil.indexOfRank( mixed, "family" ) != 2 ) ) {
+            return fail( "indexOfRank must find a bare rank whether the choice is plain or count-suffixed" );
+        }
+        if ( AptxUtil.indexOfRank( mixed, "ORDER" ) != 1 ) {
+            return fail( "indexOfRank must be case-insensitive" );
+        }
+        if ( ( AptxUtil.indexOfRank( mixed, "species" ) != -1 ) || ( AptxUtil.indexOfRank( mixed, null ) != -1 )
+                || ( AptxUtil.indexOfRank( mixed, "" ) != -1 ) || ( AptxUtil.indexOfRank( null, "order" ) != -1 ) ) {
+            return fail( "indexOfRank must return -1 for an absent/empty rank or null choices (first-use case)" );
         }
         return true;
     }

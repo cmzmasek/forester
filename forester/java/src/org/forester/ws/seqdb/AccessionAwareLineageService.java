@@ -37,29 +37,31 @@ import org.forester.util.SequenceAccessionTools;
  * NCBI/UniProt identifiers are very common, so the rank colorizer and "Annotate Clades by Rank" need to
  * place them too.
  *
- * <p>It decorates a taxonomy {@code delegate} (NCBI) with a {@link SequenceFetcher}: when a query looks
- * like a sequence accession, it fetches that entry, reads the organism's NCBI tax-id, and resolves the
- * ranked lineage for that tax-id through the delegate (an exact efetch -- the dominant case is many
- * proteins of a few organisms, so the per-organism lineage is fetched once and reused). The result is
- * cached under the <i>accession's own query string</i> so the cache-only {@link #lineageOf} the EDT
+ * <p>It decorates a taxonomy {@code delegate} (NCBI) with an {@link OrganismSource}: when a query looks
+ * like a sequence accession, it resolves just the organism (taxonomy-only -- never the full protein
+ * record), reads the organism's NCBI tax-id, and resolves the ranked lineage for that tax-id through the
+ * delegate (an exact efetch -- the dominant case is many proteins of a few organisms, so the
+ * per-organism lineage is fetched once and reused). The <b>only</b> thing cached here is that ranked
+ * lineage, under the <i>accession's own query string</i>, so the cache-only {@link #lineageOf} the EDT
  * uses hits exactly the key the colorizer looks up. Plain scientific names (and bare tax-ids) pass
  * straight through to the delegate.
  *
  * <p>Network I/O happens in {@link #fetch} only -- call it off the EDT; {@link #lineageOf} is cache-only.
- * The seam design (delegate + fetcher) makes it unit-testable with in-memory fakes.
+ * The seam design (delegate + organism source) makes it unit-testable with in-memory fakes.
  */
 public final class AccessionAwareLineageService implements TaxonomicLineageService {
 
     private final TaxonomicLineageService            _delegate;
-    private final SequenceFetcher                    _sequences;
+    private final OrganismSource                     _organisms;
     // accession query string -> ranked lineage (including EMPTY negatives), so a later cache-only
-    // lineageOf(accession) hits and the accession is never re-fetched.
+    // lineageOf(accession) hits and the accession is never re-fetched. The lineage is all we cache --
+    // never the protein record the organism was read from.
     private final Map<String, RankedLineage>         _alias = Collections
             .synchronizedMap( new HashMap<String, RankedLineage>() );
 
-    public AccessionAwareLineageService( final TaxonomicLineageService delegate, final SequenceFetcher sequences ) {
+    public AccessionAwareLineageService( final TaxonomicLineageService delegate, final OrganismSource organisms ) {
         _delegate = delegate;
-        _sequences = sequences;
+        _organisms = organisms;
     }
 
     @Override
@@ -99,14 +101,14 @@ public final class AccessionAwareLineageService implements TaxonomicLineageServi
      * transport failure propagates so the caller can stop the run cleanly.
      */
     private RankedLineage fetchViaAccession( final String query, final Accession acc ) throws IOException {
-        final SequenceEntry entry = _sequences.fetch( acc );
+        final Organism org = _organisms.organismOf( acc );
         RankedLineage rl = RankedLineage.EMPTY;
-        if ( ( entry != null ) && !entry.isEmpty() ) {
-            if ( !ForesterUtil.isEmpty( entry.getOrganismId() ) ) {
-                rl = _delegate.fetch( entry.getOrganismId() ); // exact efetch by NCBI tax-id
+        if ( ( org != null ) && !org.isEmpty() ) {
+            if ( !ForesterUtil.isEmpty( org.getTaxId() ) ) {
+                rl = _delegate.fetch( org.getTaxId() ); // exact efetch by NCBI tax-id
             }
-            if ( ( ( rl == null ) || rl.isEmpty() ) && !ForesterUtil.isEmpty( entry.getOrganismName() ) ) {
-                rl = _delegate.fetch( entry.getOrganismName() ); // fall back to the organism scientific name
+            if ( ( ( rl == null ) || rl.isEmpty() ) && !ForesterUtil.isEmpty( org.getScientificName() ) ) {
+                rl = _delegate.fetch( org.getScientificName() ); // fall back to the organism scientific name
             }
         }
         if ( rl == null ) {

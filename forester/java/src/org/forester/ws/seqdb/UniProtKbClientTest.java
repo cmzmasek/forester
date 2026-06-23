@@ -93,6 +93,19 @@ public final class UniProtKbClientTest {
         if ( !"accession:P12345".equals( UniProtKbClient.searchQuery( "P12345" ) ) ) {
             return fail( "a UniProt accession must query the accession: field; got " + UniProtKbClient.searchQuery( "P12345" ) );
         }
+
+        // the taxonomy-only projection (accession, id, organism_name, organism_id) -> Organism, no record kept
+        final String org_header = String.join( "\t", "Entry", "Entry Name", "Organism", "Organism (ID)" );
+        final Organism org = UniProtKbClient
+                .parseOrganismTsv( org_header + "\n" + String.join( "\t", "P99999", "CYC_HUMAN", "Homo sapiens (Human)",
+                                                                    "9606" ) + "\n" );
+        if ( org.isEmpty() || !"9606".equals( org.getTaxId() ) || !"Homo sapiens".equals( org.getScientificName() ) ) {
+            return fail( "parseOrganismTsv must read the tax-id and strip the organism's common name; got " + org );
+        }
+        if ( !UniProtKbClient.parseOrganismTsv( org_header + "\n" ).isEmpty()
+                || !UniProtKbClient.parseOrganismTsv( "" ).isEmpty() ) {
+            return fail( "header-only / empty organism TSV must yield an empty Organism" );
+        }
         return true;
     }
 

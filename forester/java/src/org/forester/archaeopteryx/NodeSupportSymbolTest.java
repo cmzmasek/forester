@@ -93,6 +93,18 @@ public final class NodeSupportSymbolTest {
                         System.out.println( "  size-scaled should mark more nodes than the 0.95 threshold (threshold="
                                 + threshold + ", size=" + size + ")" );
                     }
+                    // the support dot belongs on the middle of the branch (a branch property), not the node
+                    PhylogenyNode i90 = null;
+                    for( final PhylogenyNode ext : phy.getExternalNodes() ) {
+                        if ( "D".equals( ext.getName() ) ) {
+                            i90 = ext.getParent(); // ((A,(B,C)60)99,(D,E)90)root -> parent of D is the support-90 node
+                            break;
+                        }
+                    }
+                    if ( ( i90 != null )
+                            && !dotIsMidBranch( renderImage( tp, mp, SUPPORT_VISUALIZATION.SIZE_SCALED ), i90 ) ) {
+                        ok[ 0 ] = false;
+                    }
                 }
                 catch ( final Exception e ) {
                     e.printStackTrace();
@@ -112,26 +124,71 @@ public final class NodeSupportSymbolTest {
 
     private static long renderDarkPixels( final TreePanel tp, final MainPanel mp, final SUPPORT_VISUALIZATION mode )
             throws Exception {
+        final BufferedImage img = renderImage( tp, mp, mode );
+        long dark = 0;
+        for( int y = 0; y < img.getHeight(); y++ ) {
+            for( int x = 0; x < img.getWidth(); x++ ) {
+                if ( isDark( img, x, y ) ) {
+                    dark++;
+                }
+            }
+        }
+        return dark;
+    }
+
+    private static BufferedImage renderImage( final TreePanel tp, final MainPanel mp,
+                                              final SUPPORT_VISUALIZATION mode ) throws Exception {
         mp.getOptions().setSupportVisualization( mode );
         final File out = File.createTempFile( "aptx_support_" + mode, ".png" );
         try {
             AptxUtil.writePhylogenyToGraphicsFile( out.getAbsolutePath(), tp.getWidth(), tp.getHeight(), tp,
                                                    mp.getControlPanel(), GraphicsExportType.PNG, mp.getOptions() );
-            final BufferedImage img = ImageIO.read( out );
-            long dark = 0;
-            for( int y = 0; y < img.getHeight(); y++ ) {
-                for( int x = 0; x < img.getWidth(); x++ ) {
-                    final int rgb = img.getRGB( x, y );
-                    if ( ( ( ( rgb >> 16 ) & 0xFF ) + ( ( rgb >> 8 ) & 0xFF ) + ( rgb & 0xFF ) ) < 200 ) {
-                        dark++;
-                    }
-                }
-            }
-            return dark;
+            return ImageIO.read( out );
         }
         finally {
             out.delete();
         }
+    }
+
+    private static boolean isDark( final BufferedImage img, final int x, final int y ) {
+        if ( ( x < 0 ) || ( y < 0 ) || ( x >= img.getWidth() ) || ( y >= img.getHeight() ) ) {
+            return false;
+        }
+        final int rgb = img.getRGB( x, y );
+        return ( ( ( ( rgb >> 16 ) & 0xFF ) + ( ( rgb >> 8 ) & 0xFF ) + ( rgb & 0xFF ) ) < 200 );
+    }
+
+    /** Dark pixels in the (2r+1)x(2r+1) window centered at (cx, cy). */
+    private static long darkInWindow( final BufferedImage img, final int cx, final int cy, final int r ) {
+        long n = 0;
+        for( int y = cy - r; y <= ( cy + r ); ++y ) {
+            for( int x = cx - r; x <= ( cx + r ); ++x ) {
+                if ( isDark( img, x, y ) ) {
+                    ++n;
+                }
+            }
+        }
+        return n;
+    }
+
+    /**
+     * Verifies the support dot is drawn on the MIDDLE of an internal branch, not at the node: a window at
+     * the branch midpoint must hold clearly more dark pixels (the filled dot, on top of the branch line)
+     * than a same-size window on the branch just left of the node (the bare line). Returns true if OK.
+     */
+    private static boolean dotIsMidBranch( final BufferedImage img, final PhylogenyNode internal ) {
+        final int by = Math.round( internal.getYcoord() );
+        final int parent_x = Math.round( internal.getParent().getXcoord() );
+        final int node_x = Math.round( internal.getXcoord() );
+        final int mid_x = ( parent_x + node_x ) / 2;
+        final long mid_dark = darkInWindow( img, mid_x, by, 6 );
+        final long node_dark = darkInWindow( img, node_x - 9, by, 6 ); // on the branch, clear of the node connector
+        final boolean ok = mid_dark > ( node_dark + 15 );
+        if ( !ok ) {
+            System.out.println( "  support dot not at branch middle (mid_dark=" + mid_dark + ", node_dark=" + node_dark
+                    + ", parent_x=" + parent_x + ", node_x=" + node_x + ")" );
+        }
+        return ok;
     }
 
     /** ((A,(B,C)60)99,(D,E)90)root -- bootstrap support on the internal branches. */

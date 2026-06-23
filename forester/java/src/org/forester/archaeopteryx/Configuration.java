@@ -102,7 +102,8 @@ public final class Configuration {
             {"Vector Data", "nodisplay", "no"}, {"Taxonomy Images", "nodisplay", "no"},
             {"Properties", "display", "no"}, {"Gene Name", "nodisplay", "no"},
             {"Multiple Seq Alignment", "nodisplay", "no"}, {"Branch Length Values", "display", "no"}
-            , {"Taxonomy Rank", "display", "no"}, {"Show External Data", "display", "yes"}};
+            , {"Taxonomy Rank", "display", "no"}, {"Show External Data", "display", "yes"},
+            {"Shorten Labels", "display", "yes"}};
     final static int display_as_phylogram = 0;
     final static int show_node_names = 1;
     final static int show_tax_code = 2;
@@ -130,6 +131,7 @@ public final class Configuration {
     final static int write_branch_length_values = 28;
     final static int show_tax_rank = 29;
     final static int display_external_data = 30;
+    final static int shorten_labels = 31;
 
     private static Hashtable<String, Color> _domain_colors;
     private static Hashtable<String, Color> _species_colors;

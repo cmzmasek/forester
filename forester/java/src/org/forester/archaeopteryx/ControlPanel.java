@@ -189,6 +189,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JCheckBox _show_events;
     private JCheckBox _show_gene_names;
     private JCheckBox _show_node_names;
+    private JCheckBox _shorten_labels_cb;
     private JCheckBox _show_properties_cb;
     private JCheckBox _show_seq_names;
     private JCheckBox _show_seq_symbols;
@@ -237,7 +238,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             Configuration.write_events, Configuration.show_binary_characters,
             Configuration.show_binary_character_counts, Configuration.show_domain_architectures,
             Configuration.show_vector_data, Configuration.show_properties, Configuration.use_style,
-            Configuration.width_branches };
+            Configuration.width_branches, Configuration.shorten_labels };
 
     ControlPanel(final MainPanel ap, final Configuration configuration) {
         init();
@@ -1049,6 +1050,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
         add(label);
         addDisplayCheckbox(Configuration.show_node_names);
+        addDisplayCheckbox(Configuration.shorten_labels);
         addDisplayCheckbox(Configuration.show_tax_code);
         addDisplayCheckbox(Configuration.show_taxonomy_scientific_names);
         addDisplayCheckbox(Configuration.show_taxonomy_common_names);
@@ -1312,6 +1314,13 @@ final class ControlPanel extends JPanel implements ActionListener {
             case Configuration.show_node_names:
                 _show_node_names = new JCheckBox(title);
                 addJCheckBox(_show_node_names, ch_panel);
+                add(ch_panel);
+                break;
+            case Configuration.shorten_labels:
+                _shorten_labels_cb = new JCheckBox(title);
+                _shorten_labels_cb.setToolTipText(
+                        "Display over-long external labels (e.g. full UniProt/NCBI descriptions) shortened with an ellipsis; the underlying names are not changed");
+                addJCheckBox(_shorten_labels_cb, ch_panel);
                 add(ch_panel);
                 break;
             case Configuration.show_taxonomy_scientific_names:
@@ -1684,6 +1693,10 @@ final class ControlPanel extends JPanel implements ActionListener {
         return ((_show_node_names != null) && _show_node_names.isSelected());
     }
 
+    boolean isShortenLabels() {
+        return ((_shorten_labels_cb != null) && _shorten_labels_cb.isSelected());
+    }
+
     boolean isShowSeqNames() {
         return ((_show_seq_names != null) && _show_seq_names.isSelected());
     }
@@ -1823,6 +1836,11 @@ final class ControlPanel extends JPanel implements ActionListener {
             case Configuration.show_node_names:
                 if (_show_node_names != null) {
                     _show_node_names.setSelected(state);
+                }
+                break;
+            case Configuration.shorten_labels:
+                if (_shorten_labels_cb != null) {
+                    _shorten_labels_cb.setSelected(state);
                 }
                 break;
             case Configuration.show_taxonomy_scientific_names:

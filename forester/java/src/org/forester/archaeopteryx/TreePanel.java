@@ -1664,7 +1664,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 if (sb.length() > 0) {
                     sb.append(" ");
                 }
-                sb.append(node.getName());
+                // Display-only shortening of an over-long name (e.g. a whole UniProt/NCBI header): the
+                // node's actual name is left intact, so export / Find / accession parsing keep the full text.
+                sb.append(getControlPanel().isShortenLabels()
+                        ? AptxUtil.shortenLabel(node.getName(), AptxConstants.LONG_NODE_NAME_LIMIT)
+                        : node.getName());
             }
             if (node.getNodeData().isHasSequence()
                     && (getControlPanel().isShowSeqSymbols()
@@ -2399,12 +2403,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     /**
-     * Draws the branch-support (confidence) symbol at an internal node, per the
-     * {@link Options.SUPPORT_VISUALIZATION} mode. Monochrome (branch color) so it does not compete
-     * with clade/taxonomy coloring; uses the absolute support scale (1 or 100, detected per paint
-     * into {@code _confidence_scale_max}) rather than normalizing to the maximum present, so a given
-     * symbol means the same thing across trees. THRESHOLD_MARKS draws a fixed dot only at or above
-     * the cutoff; SIZE_SCALED draws a dot whose diameter grows with support.
+     * Draws the branch-support (confidence) symbol on the <i>middle of the branch</i> (support is a
+     * branch property, not a node one -- matching where the confidence <i>value</i> text is drawn),
+     * per the {@link Options.SUPPORT_VISUALIZATION} mode. Monochrome (branch color) so it does not
+     * compete with clade/taxonomy coloring; uses the absolute support scale (1 or 100, detected per
+     * paint into {@code _confidence_scale_max}) rather than normalizing to the maximum present, so a
+     * given symbol means the same thing across trees. THRESHOLD_MARKS draws a fixed dot only at or
+     * above the cutoff; SIZE_SCALED draws a dot whose diameter grows with support.
      */
     final private void paintNodeSupportSymbol(final float x,
                                               final float y,
@@ -2445,8 +2450,21 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             c = Color.BLACK;
         }
         g.setColor(c);
+        // Center the symbol on the middle of the branch (parent -> node), not at the node on its right
+        // end. The root has no branch, so it falls back to the passed-in node position.
+        float cx = x;
+        float cy = y;
+        final PhylogenyNode parent = node.getParent();
+        if (parent != null) {
+            final boolean radial = (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED)
+                    || (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR);
+            final float[] center = TreePanelUtil.supportSymbolCenter(parent.getXcoord(), node.getXcoord(),
+                    parent.getYcoord(), node.getYcoord(), radial);
+            cx = center[0];
+            cy = center[1];
+        }
         final float half = diameter / 2.0f;
-        drawOvalFilled(x - half, y - half, diameter, diameter, g);
+        drawOvalFilled(cx - half, cy - half, diameter, diameter, g);
     }
 
     /**

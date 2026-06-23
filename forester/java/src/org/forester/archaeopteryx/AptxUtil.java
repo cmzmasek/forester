@@ -274,7 +274,7 @@ public final class AptxUtil {
     // The number of distinct "Display Data" option constants scanForDataPresence can report (kept in
     // sync by hand with the present.add(...) calls below); used to short-circuit the scan once every
     // flag has been found.
-    private final static int NUM_DATA_PRESENCE_FLAGS = 19;
+    private final static int NUM_DATA_PRESENCE_FLAGS = 20;
 
     /**
      * Scans the whole tree once and returns the set of "Display Data" option constants (from
@@ -294,6 +294,12 @@ public final class AptxUtil {
             final NodeData nd = n.getNodeData();
             if (!present.contains(Configuration.show_node_names) && !ForesterUtil.isEmpty(n.getName())) {
                 present.add(Configuration.show_node_names);
+            }
+            // Offer "Shorten Labels" only for trees that actually have an over-long external name (e.g. a
+            // whole UniProt/NCBI FASTA header used as a label) -- otherwise the checkbox stays hidden.
+            if (!present.contains(Configuration.shorten_labels) && n.isExternal() && (n.getName() != null)
+                    && (n.getName().length() > AptxConstants.LONG_NODE_NAME_LIMIT)) {
+                present.add(Configuration.shorten_labels);
             }
             // Match the renderer: it writes the branch length whenever it is set to anything other than
             // the "no length" sentinel (so legitimate zero-length and negative branches count too).
@@ -369,6 +375,18 @@ public final class AptxUtil {
             }
         }
         return present;
+    }
+
+    /**
+     * A display-shortened {@code label}: if longer than {@code max} characters, its head followed by an
+     * ellipsis ("…"); otherwise unchanged. Trailing whitespace before the ellipsis is trimmed so a cut at
+     * a word boundary reads cleanly. Display-only -- callers must not write the result back onto the node.
+     */
+    public final static String shortenLabel(final String label, final int max) {
+        if ((label == null) || (max < 2) || (label.length() <= max)) {
+            return label;
+        }
+        return label.substring(0, max - 1).stripTrailing() + "…";
     }
 
     final public static void launchWebBrowser(final URI uri, final String frame_name) throws IOException {
@@ -830,6 +848,27 @@ public final class AptxUtil {
             }
         }
         return ranks.toArray(new String[0]);
+    }
+
+    /**
+     * The index in {@code choices} (as produced by {@link #getRankChoices}) whose bare rank equals
+     * {@code bare_rank}, or {@code -1} if none. A choice may carry a "(count) (coverage)" suffix while
+     * {@code bare_rank} is the plain rank, so each choice is compared by its prefix before " (". Used to
+     * pre-select the last-used rank in the "Annotate Clades by Rank" chooser. Case-insensitive.
+     */
+    final static int indexOfRank(final String[] choices, final String bare_rank) {
+        if ((choices == null) || ForesterUtil.isEmpty(bare_rank)) {
+            return -1;
+        }
+        for (int i = 0; i < choices.length; ++i) {
+            final String c = choices[i];
+            final int paren = c.indexOf('(');
+            final String bare = (paren > 0) ? c.substring(0, paren).trim() : c.trim();
+            if (bare.equalsIgnoreCase(bare_rank)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     /**

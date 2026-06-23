@@ -34,9 +34,9 @@ import org.forester.phylogeny.data.Accession;
 import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.ws.seqdb.AccessionAwareLineageService;
+import org.forester.ws.seqdb.Organism;
+import org.forester.ws.seqdb.OrganismSource;
 import org.forester.ws.seqdb.RankedLineage;
-import org.forester.ws.seqdb.SequenceEntry;
-import org.forester.ws.seqdb.SequenceFetcher;
 import org.forester.ws.seqdb.TaxonomicLineageService;
 
 /**
@@ -69,8 +69,8 @@ public final class TreePanelUtilTest {
         final FakeLineageService delegate = new FakeLineageService();
         delegate.know( "9606", lineage( "order", "Primates" ) );  // human
         delegate.know( "10090", lineage( "order", "Rodentia" ) ); // mouse
-        // sequence DB: accession -> organism tax-id
-        final FakeSequenceFetcher seqs = new FakeSequenceFetcher();
+        // organism source: accession -> organism NCBI tax-id
+        final FakeOrganismSource seqs = new FakeOrganismSource();
         seqs.know( "P12345", "9606" );   // UniProt accession, human
         seqs.know( "RL7_HUMAN", "9606" );// SwissProt entry name, human
         seqs.know( "P63017", "10090" );  // UniProt accession, mouse
@@ -123,8 +123,8 @@ public final class TreePanelUtilTest {
         return n;
     }
 
-    /** In-memory sequence DB: maps an accession value to an organism NCBI tax-id. */
-    private static final class FakeSequenceFetcher implements SequenceFetcher {
+    /** In-memory organism source: maps an accession value to an organism NCBI tax-id. */
+    private static final class FakeOrganismSource implements OrganismSource {
 
         private final Map<String, String> _organism_id = new HashMap<String, String>();
 
@@ -133,13 +133,9 @@ public final class TreePanelUtilTest {
         }
 
         @Override
-        public SequenceEntry fetch( final Accession acc ) {
+        public Organism organismOf( final Accession acc ) {
             final String id = _organism_id.get( acc.getValue().toUpperCase( Locale.ROOT ) );
-            if ( id == null ) {
-                return SequenceEntry.EMPTY;
-            }
-            return new SequenceEntry( acc.getValue(), null, "protein", null, null, SequenceEntry.MoleculeType.PROTEIN,
-                                      null, id, null, null, null, null );
+            return ( id == null ) ? Organism.EMPTY : new Organism( id, null );
         }
     }
 
@@ -603,6 +599,19 @@ public final class TreePanelUtilTest {
         }
         if ( !TreePanelUtil.isSupportAtOrAboveThreshold( 0.96, 1.0, 0.95 ) ) {
             return fail( "0.96 on a 0..1 scale must meet the 0.95 cutoff (scale-independent)" );
+        }
+        // symbol center: the middle of the branch (support is a branch property), not the node
+        // rectangular: x is the branch midpoint; y is the node's y (horizontal branch)
+        final float[] rect = TreePanelUtil.supportSymbolCenter( 10f, 30f, 5f, 20f, false );
+        if ( ( rect[ 0 ] != 20f ) || ( rect[ 1 ] != 20f ) ) {
+            return fail( "rectangular support symbol must sit at branch-midpoint x and node y; got " + rect[ 0 ] + ","
+                    + rect[ 1 ] );
+        }
+        // radial (unrooted/circular): the branch is slanted, so y is the segment midpoint too
+        final float[] radial = TreePanelUtil.supportSymbolCenter( 10f, 30f, 5f, 25f, true );
+        if ( ( radial[ 0 ] != 20f ) || ( radial[ 1 ] != 15f ) ) {
+            return fail( "radial support symbol must sit at the 2-D branch midpoint; got " + radial[ 0 ] + ","
+                    + radial[ 1 ] );
         }
         return true;
     }

@@ -31,7 +31,7 @@ import org.forester.phylogeny.data.Accession;
 /**
  * Unit tests for {@link AccessionAwareLineageService} -- the bridge that lets the rank colorizer /
  * "Annotate Clades by Rank" place tips identified by a UniProt/SwissProt/RefSeq sequence accession.
- * Driven by in-memory fakes (no network): a {@link SequenceFetcher} that maps an accession to an
+ * Driven by in-memory fakes (no network): an {@link OrganismSource} that maps an accession to an
  * organism tax-id, and a {@link TaxonomicLineageService} delegate that maps a tax-id/name to a ranked
  * lineage. Lives in the same package to use the package-private seams.
  */
@@ -48,10 +48,10 @@ public final class AccessionAwareLineageServiceTest {
         delegate.know( "10090", "order", "Rodentia" );       // mouse, keyed by NCBI tax-id
         delegate.know( "Felis", "order", "Carnivora" );      // a plain scientific name
         delegate.know( "Mus musculus", "order", "Rodentia" );// organism scientific name (id-less entry)
-        final FakeSequences seqs = new FakeSequences();
+        final FakeOrganisms seqs = new FakeOrganisms();
         seqs.know( "P12345", "9606", "Homo sapiens" );        // UniProt accession -> human
         seqs.know( "RL7_HUMAN", "9606", "Homo sapiens" );     // SwissProt entry name -> human
-        seqs.know( "Q12340", null, "Mus musculus" );          // id-less entry: only an organism name
+        seqs.know( "Q12340", null, "Mus musculus" );          // id-less organism: only a scientific name
         final AccessionAwareLineageService svc = new AccessionAwareLineageService( delegate, seqs );
 
         try {
@@ -82,11 +82,11 @@ public final class AccessionAwareLineageServiceTest {
                 return fail( "a plain scientific name must resolve through the taxonomy delegate" );
             }
             if ( seqs.calls() != seq_calls_before ) {
-                return fail( "a plain name must not hit the sequence database" );
+                return fail( "a plain name must not hit the organism source" );
             }
 
             // (5) a not-found accession caches a negative: lineageOf returns EMPTY (non-null) and a re-fetch
-            //     does not hit the sequence database again
+            //     does not hit the organism source again
             final RankedLineage miss = svc.fetch( "P99988" );
             if ( ( miss == null ) || !miss.isEmpty() ) {
                 return fail( "an unresolvable accession must return an empty (not null) lineage" );
@@ -97,7 +97,7 @@ public final class AccessionAwareLineageServiceTest {
             final int calls_after_miss = seqs.calls();
             svc.fetch( "P99988" );
             if ( seqs.calls() != calls_after_miss ) {
-                return fail( "a cached-negative accession must not be fetched from the sequence DB again" );
+                return fail( "a cached-negative accession must not be fetched from the organism source again" );
             }
 
             // (6) empty / blank queries are safe
@@ -142,23 +142,21 @@ public final class AccessionAwareLineageServiceTest {
         }
     }
 
-    /** In-memory sequence DB: maps an accession value to an organism (tax-id + scientific name); counts calls. */
-    private static final class FakeSequences implements SequenceFetcher {
+    /** In-memory organism source: maps an accession value to an organism (tax-id + scientific name); counts calls. */
+    private static final class FakeOrganisms implements OrganismSource {
 
-        private final Map<String, SequenceEntry> _db = new HashMap<String, SequenceEntry>();
-        private int                              _calls;
+        private final Map<String, Organism> _db = new HashMap<String, Organism>();
+        private int                         _calls;
 
-        void know( final String accession, final String organism_id, final String organism_name ) {
-            _db.put( accession.toUpperCase( Locale.ROOT ),
-                     new SequenceEntry( accession, null, "protein", null, null, SequenceEntry.MoleculeType.PROTEIN,
-                                        organism_name, organism_id, null, null, null, null ) );
+        void know( final String accession, final String tax_id, final String scientific_name ) {
+            _db.put( accession.toUpperCase( Locale.ROOT ), new Organism( tax_id, scientific_name ) );
         }
 
         @Override
-        public SequenceEntry fetch( final Accession acc ) {
+        public Organism organismOf( final Accession acc ) {
             ++_calls;
-            final SequenceEntry e = _db.get( acc.getValue().toUpperCase( Locale.ROOT ) );
-            return ( e == null ) ? SequenceEntry.EMPTY : e;
+            final Organism o = _db.get( acc.getValue().toUpperCase( Locale.ROOT ) );
+            return ( o == null ) ? Organism.EMPTY : o;
         }
 
         int calls() {

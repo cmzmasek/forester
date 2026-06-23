@@ -56,7 +56,7 @@ import org.forester.ws.seqdb.AccessionAwareLineageService;
 import org.forester.ws.seqdb.NcbiTaxonomyLineageService;
 import org.forester.ws.seqdb.RankedLineage;
 import org.forester.ws.seqdb.TaxonomicLineageService;
-import org.forester.ws.seqdb.WebSequenceFetcher;
+import org.forester.ws.seqdb.WebOrganismSource;
 
 public class TreePanelUtil {
 
@@ -356,6 +356,23 @@ public class TreePanelUtil {
         return supportFraction( confidence, scale_max ) >= threshold_fraction;
     }
 
+    /**
+     * The {@code {x, y}} center at which a branch-support symbol is drawn: the middle of the branch
+     * (parent&rarr;node), since support is a branch property. The horizontal x is always the branch
+     * midpoint. For {@code radial} (unrooted/circular) layouts the branch is a slanted segment, so the y
+     * is the segment midpoint too; for the rectangular layouts the branch is a horizontal segment at the
+     * node's y, so the y is simply {@code node_y}.
+     */
+    final static float[] supportSymbolCenter( final float parent_x,
+                                              final float node_x,
+                                              final float parent_y,
+                                              final float node_y,
+                                              final boolean radial ) {
+        final float cx = ( parent_x + node_x ) / 2.0f;
+        final float cy = radial ? ( ( parent_y + node_y ) / 2.0f ) : node_y;
+        return new float[] { cx, cy };
+    }
+
     /** The best display label for a taxonomy: scientific name, else common name, else taxonomy code, else "". */
     final static String taxonomyLabel( final Taxonomy tax ) {
         if ( tax != null ) {
@@ -382,13 +399,14 @@ public class TreePanelUtil {
      * Rank". It wraps the shared NCBI taxonomy singleton (whose in-memory + persistent caches it shares
      * with the Fetch tool and the Settings cache panel) in an {@link AccessionAwareLineageService}, so
      * tips identified by a UniProt/SwissProt/RefSeq/GenBank/GI <i>sequence</i> accession -- which a bare
-     * taxonomy database cannot place -- are resolved to their organism via the sequence DB first. Trees
-     * with UniProt and/or mixed NCBI/UniProt identifiers are very common.
+     * taxonomy database cannot place -- are resolved to their organism (taxonomy-only; the full protein
+     * record is never cached) first. Trees with UniProt and/or mixed NCBI/UniProt identifiers are very
+     * common.
      */
     final static synchronized TaxonomicLineageService getDefaultLineageService() {
         if ( _default_lineage_service == null ) {
             _default_lineage_service = new AccessionAwareLineageService( NcbiTaxonomyLineageService.getShared(),
-                                                                         new WebSequenceFetcher() );
+                                                                         new WebOrganismSource() );
         }
         return _default_lineage_service;
     }
