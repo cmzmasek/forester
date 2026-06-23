@@ -200,6 +200,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private static final float ANGLE_ROTATION_UNIT = (float) (Math.PI
             / 32);
     private final static int CONFIDENCE_LEFT_MARGIN = 4;
+    // Horizontal gap between the taxonomy and node-data segments of an above-the-branch internal label.
+    private final static int INTERNAL_LABEL_SEGMENT_GAP = 5;
+    // Smallest x an above-the-branch internal label may start at: a long label on an internal node near
+    // the root would otherwise grow leftward off-canvas and lose its leading characters, so it is shifted
+    // right to keep its leftmost glyph visible at this margin instead of being clipped.
+    private final static float INTERNAL_LABEL_MIN_LEFT_MARGIN = 2;
     // Fractional-metrics context for measuring label advance on the vector-export path; see
     // fractionalAdvanceWidth().
     private final static FontRenderContext FRC_FRACTIONAL = new FontRenderContext(null, true, true);
@@ -2672,6 +2678,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (isColorByProperty() && (node.isExternal() || node.isCollapse())) {
             drawPropertyColorDot(g, node);
         }
+        if (usesAboveBranchInternalLabel(node)) {
+            return paintInternalLabelAboveBranch(g, node, is_in_found_nodes, to_pdf, to_graphics_file, half_box_size);
+        }
 
         if ((getControlPanel().isShowTaxonomyCode() || getControlPanel().isShowTaxonomyScientificNames()
                 || getControlPanel().isShowTaxonomyCommonNames() || getControlPanel().isShowTaxonomyRank())
@@ -2781,13 +2790,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
         }
         if (_sb.length() > 0) {
-            if (to_pdf) {
-                x += fractionalAdvanceWidth(g, _sb.toString()) + 5;
-            } else if (!using_visual_font && !is_in_found_nodes) {
-                x += getFontMetricsForLargeDefaultFont().stringWidth(_sb.toString()) + 5;
-            } else {
-                x += getFontMetrics(g.getFont()).stringWidth(_sb.toString()) + 5;
-            }
+            x += labelStringWidth(g, _sb.toString(), using_visual_font, is_in_found_nodes, to_pdf) + 5;
         }
         if ((getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR)
                 || (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE)
@@ -2827,6 +2830,109 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
         }
         return x;
+    }
+
+    /**
+     * Whether {@code node}'s label should use the publication-style placement: to the LEFT of the node,
+     * right-aligned, on top of the incoming branch. Applies to non-root internal nodes (not collapsed)
+     * in the rectangular-family layouts when the option is on. Nodes that also show binary characters (a
+     * rare legacy feature positioned to the right of the node) keep the old right-placement so nothing
+     * is dropped.
+     */
+    private boolean usesAboveBranchInternalLabel(final PhylogenyNode node) {
+        if (!getOptions().isInternalLabelsAboveBranch() || node.isExternal() || node.isCollapse()
+                || node.isRoot()) {
+            return false;
+        }
+        final PHYLOGENY_GRAPHICS_TYPE t = getPhylogenyGraphicsType();
+        if ((t != PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR) && (t != PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE)
+                && (t != PHYLOGENY_GRAPHICS_TYPE.ROUNDED)) {
+            return false;
+        }
+        if ((getControlPanel().isShowBinaryCharacters() || getControlPanel().isShowBinaryCharacterCounts())
+                && node.getNodeData().isHasBinaryCharacters()) {
+            return false;
+        }
+        // Sequence relations (the query-sequence highlight / ortholog underline) are drawn to the RIGHT
+        // of the node by paintSequenceRelation; keep the old placement for such nodes so that rendering
+        // is not dropped -- same rationale as the binary-characters exclusion above.
+        if (getControlPanel().isShowSequenceRelations() && (_query_sequence != null)
+                && node.getNodeData().isHasSequence()) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Draws an internal node's textual label (taxonomy + node-data, e.g. a clade name from "Annotate
+     * Clades by Rank") to the LEFT of the node, right-aligned so it ends just left of the node and sits
+     * on top of the incoming branch -- the publication-style placement. Confidence values and branch
+     * lengths are drawn elsewhere and unaffected. Returns 0: the label grows leftward, consuming no
+     * space to the right of the node (so any right-side renderable data starts at the node).
+     */
+    private int paintInternalLabelAboveBranch(final Graphics2D g,
+                                              final PhylogenyNode node,
+                                              final boolean is_in_found_nodes,
+                                              final boolean to_pdf,
+                                              final boolean to_graphics_file,
+                                              final int half_box_size) {
+        final boolean using_visual_font = setFont(g, node);
+        // Each segment is right-aligned to the node, so strip edge whitespace: a measured trailing space
+        // (nodeTaxonomyDataAsSB appends one; a property's asText() might) would otherwise push the visible
+        // glyphs left of the node. Unlike the classic left-anchored path, trailing space is not harmless.
+        String taxo = "";
+        if ((getControlPanel().isShowTaxonomyCode() || getControlPanel().isShowTaxonomyScientificNames()
+                || getControlPanel().isShowTaxonomyCommonNames() || getControlPanel().isShowTaxonomyRank())
+                && node.getNodeData().isHasTaxonomy()) {
+            _sb.setLength(0);
+            nodeTaxonomyDataAsSB(node.getNodeData().getTaxonomy(), _sb);
+            taxo = _sb.toString().trim();
+        }
+        _sb.setLength(0);
+        nodeDataAsSB(node, _sb);
+        final String data = _sb.toString().trim();
+        if ((taxo.length() == 0) && (data.length() == 0)) {
+            return 0;
+        }
+        final int taxo_w = labelStringWidth(g, taxo, using_visual_font, is_in_found_nodes, to_pdf);
+        final int data_w = labelStringWidth(g, data, using_visual_font, is_in_found_nodes, to_pdf);
+        final int font_descent = using_visual_font ? getFontMetrics(g.getFont()).getMaxDescent()
+                : getFontMetricsForLargeDefaultFont().getMaxDescent();
+        final float[] layout = TreePanelUtil.internalLabelAboveBranchLayout(node.getXcoord(),
+                node.getYcoord(), half_box_size, taxo_w, data_w, INTERNAL_LABEL_SEGMENT_GAP, font_descent,
+                INTERNAL_LABEL_MIN_LEFT_MARGIN);
+        if (data.length() > 0) {
+            setColor(g, node, to_graphics_file, to_pdf, is_in_found_nodes, getTreeColorSet().getSequenceColor());
+            TreePanel.drawString(data, layout[1], layout[2], g);
+        }
+        if (taxo.length() > 0) {
+            setColor(g, node, to_graphics_file, to_pdf, is_in_found_nodes, getTreeColorSet().getTaxonomyColor());
+            TreePanel.drawString(taxo, layout[0], layout[2], g);
+        }
+        return 0;
+    }
+
+    /**
+     * Advance width of a label string under the same font selection node painting uses everywhere: the
+     * fractional-metrics advance for the vector-export path, the large default font otherwise (unless a
+     * per-node visual font or a found-node font is in effect). Single source of truth for the width logic
+     * in paintTaxonomy, paintNodeData and paintInternalLabelAboveBranch.
+     */
+    private int labelStringWidth(final Graphics2D g,
+                                 final String str,
+                                 final boolean using_visual_font,
+                                 final boolean is_in_found_nodes,
+                                 final boolean to_pdf) {
+        if (str.length() == 0) {
+            return 0;
+        }
+        if (to_pdf) {
+            return fractionalAdvanceWidth(g, str);
+        }
+        if (!using_visual_font && !is_in_found_nodes) {
+            return getFontMetricsForLargeDefaultFont().stringWidth(str);
+        }
+        return getFontMetrics(g.getFont()).stringWidth(str);
     }
 
     private final int paintSequenceRelation(final Graphics2D g,
@@ -3501,13 +3607,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         /* GUILHEM_END */
         TreePanel.drawString(label, start_x, start_y, g);
-        if (to_pdf) {
-            return fractionalAdvanceWidth(g, label);
-        }
-        if (!using_visual_font && !is_in_found_nodes) {
-            return getFontMetricsForLargeDefaultFont().stringWidth(label);
-        }
-        return getFontMetrics(g.getFont()).stringWidth(label);
+        return labelStringWidth(g, label, using_visual_font, is_in_found_nodes, to_pdf);
     }
 
     final private void paintUnrooted(final PhylogenyNode n,

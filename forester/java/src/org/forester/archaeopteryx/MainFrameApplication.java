@@ -947,6 +947,13 @@ public final class MainFrameApplication extends MainFrame {
         _show_overview_cbmi = new JCheckBoxMenuItem(SHOW_OVERVIEW_LABEL);
         _show_scale_cbmi = new JCheckBoxMenuItem(DISPLAY_SCALE_LABEL);
         _show_default_node_shapes_internal_cbmi = new JCheckBoxMenuItem(DISPLAY_NODE_BOXES_LABEL_INT);
+        _internal_labels_above_branch_rbmi = new JRadioButtonMenuItem(MainFrame.INTERNAL_LABELS_ABOVE_BRANCH_LABEL);
+        _internal_labels_above_branch_rbmi.setToolTipText(MainFrame.INTERNAL_LABELS_ABOVE_BRANCH_TIP);
+        _internal_labels_right_of_node_rbmi = new JRadioButtonMenuItem(MainFrame.INTERNAL_LABELS_RIGHT_OF_NODE_LABEL);
+        _internal_labels_right_of_node_rbmi.setToolTipText(MainFrame.INTERNAL_LABELS_RIGHT_OF_NODE_TIP);
+        final ButtonGroup _radio_group_internal_labels = new ButtonGroup();
+        _radio_group_internal_labels.add(_internal_labels_above_branch_rbmi);
+        _radio_group_internal_labels.add(_internal_labels_right_of_node_rbmi);
         _show_default_node_shapes_external_cbmi = new JCheckBoxMenuItem(DISPLAY_NODE_BOXES_LABEL_EXT);
         _show_default_node_shapes_for_marked_cbmi = new JCheckBoxMenuItem(MainFrame.DISPLAY_NODE_BOXES_LABEL_MARKED);
         _collapsed_with_average_height_cbmi = new JCheckBoxMenuItem("Proportional Height of Collapsed Subtrees");
@@ -996,6 +1003,10 @@ public final class MainFrameApplication extends MainFrame {
                 getOptions().isShowDefaultNodeShapesExternal());
         customizeCheckBoxMenuItem(_show_default_node_shapes_internal_cbmi,
                 getOptions().isShowDefaultNodeShapesInternal());
+        customizeRadioButtonMenuItem(_internal_labels_above_branch_rbmi,
+                getOptions().isInternalLabelsAboveBranch());
+        customizeRadioButtonMenuItem(_internal_labels_right_of_node_rbmi,
+                !getOptions().isInternalLabelsAboveBranch());
         customizeCheckBoxMenuItem(_show_default_node_shapes_for_marked_cbmi,
                 getOptions().isShowDefaultNodeShapesForMarkedNodes());
         customizeCheckBoxMenuItem(_color_labels_same_as_parent_branch,

@@ -120,6 +120,8 @@ final class SettingsDialog extends JDialog {
                                                            v -> { _mf.getOptions().setOvPlacement( v );
                                                                   updateOverview(); } ) ) );
         c.add( header( "Labels & Colors" ) );
+        c.add( new JLabel( "Internal label placement:" ) );
+        addRadioGroup( c, _mf._internal_labels_above_branch_rbmi, _mf._internal_labels_right_of_node_rbmi );
         add( c, cb( _mf._color_labels_same_as_parent_branch ) );
         add( c, cb( _mf._abbreviate_scientific_names ) );
         add( c, cb( _mf._show_confidence_stddev_cbmi ) );

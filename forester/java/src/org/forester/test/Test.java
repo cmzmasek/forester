@@ -332,6 +332,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Internal label placement: ");
+        if (org.forester.archaeopteryx.InternalLabelPlacementTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Collapse menu font: ");
         if (org.forester.archaeopteryx.CollapseMenuFontTest.test()) {
             System.out.println("OK.");

@@ -54,7 +54,60 @@ public final class TreePanelUtilTest {
     public static boolean test() {
         return testYDistanceToAvoidLabelOverlap() && testSupportSymbolMath() && testDetectConfidenceScaleMax()
                 && testCapEntries() && testTaxonomyLabel() && testRankColorization() && testTipQueryName()
-                && testCladeBands() && testRankColorizationViaSequenceIds();
+                && testCladeBands() && testRankColorizationViaSequenceIds() && testInternalLabelAboveBranchLayout();
+    }
+
+    /**
+     * The publication-style internal label sits to the LEFT of the node, right-aligned so the
+     * (rightmost) node-data segment ends just left of the node, with the taxonomy segment to its left
+     * and a baseline just above the branch. Verifies the right-alignment invariant for both-present,
+     * data-only and taxonomy-only cases, and the left-edge clamp for a label that would overflow.
+     */
+    private static boolean testInternalLabelAboveBranchLayout() {
+        final float node_x = 100f;
+        final float node_y = 50f;
+        final int hbs = 3;       // half box size
+        final int gap = 5;
+        final int descent = 4;
+        final float min_x = 2f;
+        final float right = node_x - hbs - 2;                  // 95: the node's left edge
+        // both segments present: taxo (40) | gap (5) | data (30), data ending at the node
+        final float[] both = TreePanelUtil.internalLabelAboveBranchLayout( node_x, node_y, hbs, 40, 30, gap, descent, min_x );
+        if ( ( both[ 0 ] != 20f ) || ( both[ 1 ] != 65f ) || ( both[ 2 ] != 45f ) ) {
+            return fail( "both segments: expected {20,65,45}; got " + both[ 0 ] + "," + both[ 1 ] + "," + both[ 2 ] );
+        }
+        if ( both[ 1 ] + 30 != right ) {
+            return fail( "node-data segment must end at the node's left edge" );
+        }
+        if ( both[ 0 ] + 40 != ( both[ 1 ] - gap ) ) {
+            return fail( "taxonomy segment must end one gap left of the node-data segment" );
+        }
+        // data only: no gap applied, data still right-aligned to the node
+        final float[] data_only = TreePanelUtil.internalLabelAboveBranchLayout( node_x, node_y, hbs, 0, 30, gap, descent, min_x );
+        if ( ( data_only[ 1 ] != 65f ) || ( data_only[ 1 ] + 30 != right ) ) {
+            return fail( "data-only: node-data must end at the node's left edge with no gap; got " + data_only[ 1 ] );
+        }
+        // taxonomy only: no gap applied, taxonomy right-aligned to the node
+        final float[] taxo_only = TreePanelUtil.internalLabelAboveBranchLayout( node_x, node_y, hbs, 40, 0, gap, descent, min_x );
+        if ( ( taxo_only[ 0 ] != 55f ) || ( taxo_only[ 0 ] + 40 != right ) ) {
+            return fail( "taxo-only: taxonomy must end at the node's left edge with no gap; got " + taxo_only[ 0 ] );
+        }
+        // baseline sits above the branch line (smaller y is higher on screen)
+        if ( both[ 2 ] >= node_y ) {
+            return fail( "label baseline must be above the branch line" );
+        }
+        // left-edge clamp: a wide label on a node near the root would right-align to a negative x
+        // (taxo_x = 30-3-2-30-5-40 = -50); it must shift right so the leftmost glyph is at min_x, while
+        // the internal taxo->data spacing (gap + taxo_width = 45) is preserved.
+        final float[] clamped = TreePanelUtil.internalLabelAboveBranchLayout( 30f, node_y, hbs, 40, 30, gap, descent, min_x );
+        if ( clamped[ 0 ] != min_x ) {
+            return fail( "clamp: leftmost (taxonomy) segment must start at min_x; got " + clamped[ 0 ] );
+        }
+        if ( ( clamped[ 1 ] - clamped[ 0 ] ) != ( gap + 40 ) ) {
+            return fail( "clamp: taxo->data spacing must be preserved after the shift; got "
+                    + ( clamped[ 1 ] - clamped[ 0 ] ) );
+        }
+        return true;
     }
 
     /**

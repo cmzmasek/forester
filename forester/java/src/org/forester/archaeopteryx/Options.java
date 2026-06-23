@@ -137,6 +137,7 @@ final public class Options {
     private boolean _show_default_node_shapes_for_marked_nodes;
     private boolean _show_default_node_shapes_external;
     private boolean _show_default_node_shapes_internal;
+    private boolean _internal_labels_above_branch;
     private boolean _show_domain_labels;
     private boolean _show_overview;
     private boolean _show_scale;
@@ -220,6 +221,10 @@ final public class Options {
         _graphics_export_visible_only = false;
         _editable = true;
         _show_default_node_shapes_internal = false;
+        // Publication-style default: internal-node labels (e.g. clade names from "Annotate Clades by
+        // Rank") sit to the LEFT of the node, right-aligned, on top of the incoming branch -- where the
+        // space is usually empty -- rather than to the right, where the node's own subtree fans out.
+        _internal_labels_above_branch = true;
         _show_default_node_shapes_external = false;
         _show_default_node_shapes_for_marked_nodes = false;
         _color_all_found_nodes_when_coloring_subtree = false;
@@ -432,6 +437,10 @@ final public class Options {
         return _show_default_node_shapes_internal;
     }
 
+    boolean isInternalLabelsAboveBranch() {
+        return _internal_labels_above_branch;
+    }
+
     final boolean isShowOverview() {
         return _show_overview;
     }
@@ -558,6 +567,10 @@ final public class Options {
 
     void setShowDefaultNodeShapesInternal(final boolean show_default_node_shapes_internal) {
         _show_default_node_shapes_internal = show_default_node_shapes_internal;
+    }
+
+    void setInternalLabelsAboveBranch(final boolean internal_labels_above_branch) {
+        _internal_labels_above_branch = internal_labels_above_branch;
     }
 
     final void setShowOverview(final boolean show_overview) {

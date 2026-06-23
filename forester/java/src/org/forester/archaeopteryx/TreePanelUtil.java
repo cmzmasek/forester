@@ -373,6 +373,44 @@ public class TreePanelUtil {
         return new float[] { cx, cy };
     }
 
+    /**
+     * Draw positions for an internal node's label placed to the LEFT of the node, right-aligned so it
+     * ends just left of the node and sits on top of the incoming branch (the publication-style
+     * placement). The label is two adjacent segments read left-to-right: an optional taxonomy segment
+     * then an optional node-data segment, with the node-data segment's right edge at the node. Returns
+     * {@code {taxo_x, data_x, baseline_y}}: the left x at which to draw each segment and the shared text
+     * baseline. The inter-segment {@code gap} is only applied when both segments are present.
+     *
+     * <p>If right-alignment would push the label's leftmost glyph left of {@code min_x} (a long label on
+     * an internal node near the root), the whole label is shifted right to start at {@code min_x} so it
+     * stays on-canvas rather than being clipped -- it then extends rightward from {@code min_x} instead
+     * of ending exactly at the node.
+     */
+    final static float[] internalLabelAboveBranchLayout( final float node_x,
+                                                         final float node_y,
+                                                         final int half_box_size,
+                                                         final int taxo_width,
+                                                         final int data_width,
+                                                         final int gap,
+                                                         final int font_descent,
+                                                         final float min_x ) {
+        // "- 2" is the small gap between the node and the label's right edge (mirrors the classic
+        // right-of-node path's "+ 2 + half_box_size"); "- 1" on the baseline lifts the glyph bottoms
+        // just clear of the horizontal branch line at node_y (screen y grows downward).
+        final float right = node_x - half_box_size - 2;
+        float data_x = right - data_width;
+        final int effective_gap = ( ( taxo_width > 0 ) && ( data_width > 0 ) ) ? gap : 0;
+        float taxo_x = data_x - effective_gap - taxo_width;
+        final float leftmost = ( taxo_width > 0 ) ? taxo_x : data_x;
+        if ( leftmost < min_x ) {
+            final float shift = min_x - leftmost;
+            data_x += shift;
+            taxo_x += shift;
+        }
+        final float baseline_y = node_y - font_descent - 1;
+        return new float[] { taxo_x, data_x, baseline_y };
+    }
+
     /** The best display label for a taxonomy: scientific name, else common name, else taxonomy code, else "". */
     final static String taxonomyLabel( final Taxonomy tax ) {
         if ( tax != null ) {

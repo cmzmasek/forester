@@ -152,6 +152,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String DISPLAY_NODE_BOXES_LABEL_EXT = "Shapes for External Nodes";
     static final String DISPLAY_NODE_BOXES_LABEL_INT = "Shapes for Internal Nodes";
     static final String DISPLAY_NODE_BOXES_LABEL_MARKED = "Shapes for Nodes with Visual Data";
+    static final String INTERNAL_LABELS_ABOVE_BRANCH_LABEL = "Above Branch (Left of Node)";
+    static final String INTERNAL_LABELS_RIGHT_OF_NODE_LABEL = "Right of Node";
+    static final String INTERNAL_LABELS_ABOVE_BRANCH_TIP = "Place internal-node labels to the left of the node, right-aligned, on top of the branch";
+    static final String INTERNAL_LABELS_RIGHT_OF_NODE_TIP = "Place internal-node labels to the right of the node (classic placement)";
     static final String SHOW_OVERVIEW_LABEL = "Overview";
     static final String NONUNIFORM_CLADOGRAMS_LABEL = "Lined Up Cladogram";
     static final String SHOW_DOMAIN_LABELS_LABEL = "Domain Labels";
@@ -216,6 +220,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JCheckBoxMenuItem _abbreviate_scientific_names;
     JCheckBoxMenuItem _color_labels_same_as_parent_branch;
     JCheckBoxMenuItem _show_default_node_shapes_internal_cbmi;
+    JRadioButtonMenuItem _internal_labels_above_branch_rbmi;
+    JRadioButtonMenuItem _internal_labels_right_of_node_rbmi;
     JCheckBoxMenuItem _show_default_node_shapes_external_cbmi;
     JCheckBoxMenuItem _show_default_node_shapes_for_marked_cbmi;
     JCheckBoxMenuItem _show_confidence_stddev_cbmi;
@@ -376,6 +382,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         } else if (o == _color_labels_same_as_parent_branch) {
             updateOptions(getOptions());
         } else if (o == _show_default_node_shapes_internal_cbmi) {
+            updateOptions(getOptions());
+        } else if (o == _internal_labels_above_branch_rbmi) {
+            updateOptions(getOptions());
+        } else if (o == _internal_labels_right_of_node_rbmi) {
             updateOptions(getOptions());
         } else if (o == _show_default_node_shapes_external_cbmi) {
             updateOptions(getOptions());
@@ -1664,6 +1674,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 && _color_labels_same_as_parent_branch.isSelected());
         options.setShowDefaultNodeShapesInternal((_show_default_node_shapes_internal_cbmi != null)
                 && _show_default_node_shapes_internal_cbmi.isSelected());
+        if ((_internal_labels_above_branch_rbmi != null) && (_internal_labels_right_of_node_rbmi != null)) {
+            options.setInternalLabelsAboveBranch(_internal_labels_above_branch_rbmi.isSelected());
+        }
         options.setShowDefaultNodeShapesExternal((_show_default_node_shapes_external_cbmi != null)
                 && _show_default_node_shapes_external_cbmi.isSelected());
         options.setShowDefaultNodeShapesForMarkedNodes((_show_default_node_shapes_for_marked_cbmi != null)
