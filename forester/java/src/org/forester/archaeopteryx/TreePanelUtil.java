@@ -360,15 +360,35 @@ public class TreePanelUtil {
      */
     final static Color supportColor( final double fraction, final Color strong, final Color background ) {
         final double f = ( fraction < 0.0 ) ? 0.0 : ( ( fraction > 1.0 ) ? 1.0 : fraction );
-        final double fade = SUPPORT_COLOR_MAX_FADE * ( 1.0 - f );
-        return new Color( blend( strong.getRed(), background.getRed(), fade ),
-                          blend( strong.getGreen(), background.getGreen(), fade ),
-                          blend( strong.getBlue(), background.getBlue(), fade ) );
+        return blend( strong, background, SUPPORT_COLOR_MAX_FADE * ( 1.0 - f ) );
     }
 
-    /** One 8-bit channel blended {@code t} (0..1) of the way from {@code a} toward {@code b}. */
-    private static int blend( final int a, final int b, final double t ) {
-        return (int) Math.round( a + ( t * ( b - a ) ) );
+    /** {@code a} blended {@code t} (clamped to 0..1) of the way toward {@code b}, per channel. */
+    final static Color blend( final Color a, final Color b, final double t ) {
+        final double tt = ( t < 0.0 ) ? 0.0 : ( ( t > 1.0 ) ? 1.0 : t );
+        return new Color( (int) Math.round( a.getRed() + ( tt * ( b.getRed() - a.getRed() ) ) ),
+                          (int) Math.round( a.getGreen() + ( tt * ( b.getGreen() - a.getGreen() ) ) ),
+                          (int) Math.round( a.getBlue() + ( tt * ( b.getBlue() - a.getBlue() ) ) ) );
+    }
+
+    /**
+     * X positions of the vertical distance grid lines: starting one {@code spacing} to the right of
+     * {@code origin_x} (the distance-0 root) and stepping by {@code spacing} up to and including
+     * {@code max_x} (the deepest tip). Empty when {@code spacing} is non-positive or the tree has no depth.
+     */
+    final static float[] scaleGridLineXs( final float origin_x, final float spacing, final float max_x ) {
+        if ( spacing <= 0.0f ) {
+            return new float[ 0 ];
+        }
+        final int n = (int) Math.floor( ( max_x - origin_x ) / spacing );
+        if ( n <= 0 ) {
+            return new float[ 0 ];
+        }
+        final float[] xs = new float[ n ];
+        for ( int i = 0; i < n; i++ ) {
+            xs[ i ] = origin_x + ( ( i + 1 ) * spacing );
+        }
+        return xs;
     }
 
     /** THRESHOLD_MARKS test: is the support at or above the cutoff (a fraction 0..1 of the scale)? */

@@ -55,7 +55,38 @@ public final class TreePanelUtilTest {
         return testYDistanceToAvoidLabelOverlap() && testSupportSymbolMath() && testDetectConfidenceScaleMax()
                 && testCapEntries() && testTaxonomyLabel() && testRankColorization() && testTipQueryName()
                 && testCladeBands() && testRankColorizationViaSequenceIds() && testInternalLabelAboveBranchLayout()
-                && testAbbreviateScientificName() && testSupportColor();
+                && testAbbreviateScientificName() && testSupportColor() && testScaleGridLines();
+    }
+
+    /**
+     * Distance grid lines step by {@code spacing} from one spacing right of the root up to and including
+     * the deepest tip; non-positive spacing or a zero-depth tree yields none.
+     */
+    private static boolean testScaleGridLines() {
+        // origin 10, spacing 5, max 30 -> 15,20,25,30 (max included exactly); assert EVERY element so a
+        // regression to accumulation or an off-by-one start (origin + i*spacing) is caught, not just count.
+        final float[] a = TreePanelUtil.scaleGridLineXs( 10f, 5f, 30f );
+        if ( ( a.length != 4 ) || ( a[ 0 ] != 15f ) || ( a[ 1 ] != 20f ) || ( a[ 2 ] != 25f ) || ( a[ 3 ] != 30f ) ) {
+            return fail( "expected lines 15,20,25,30; got " + java.util.Arrays.toString( a ) );
+        }
+        // non-integer origin (exactly-representable .25 steps to avoid float-equality flak): lines are
+        // origin + (i+1)*spacing -- the first is 10.75, NOT 10.5 (which an off-by-one start would give).
+        final float[] b = TreePanelUtil.scaleGridLineXs( 10.5f, 0.25f, 11.5f );
+        if ( ( b.length != 4 ) || ( b[ 0 ] != 10.75f ) || ( b[ 1 ] != 11.0f ) || ( b[ 2 ] != 11.25f )
+                || ( b[ 3 ] != 11.5f ) ) {
+            return fail( "non-integer origin: expected 10.75,11.0,11.25,11.5; got " + java.util.Arrays.toString( b ) );
+        }
+        // max not on a boundary -> last line is the largest multiple <= max (no overshoot past 30)
+        if ( TreePanelUtil.scaleGridLineXs( 10f, 5f, 32f ).length != 4 ) {
+            return fail( "must not place a line beyond max_x" );
+        }
+        // no room for even one line, and degenerate spacings -> empty
+        if ( ( TreePanelUtil.scaleGridLineXs( 10f, 5f, 12f ).length != 0 )
+                || ( TreePanelUtil.scaleGridLineXs( 10f, 0f, 30f ).length != 0 )
+                || ( TreePanelUtil.scaleGridLineXs( 10f, -1f, 30f ).length != 0 ) ) {
+            return fail( "too-small / non-positive spacing must yield no grid lines" );
+        }
+        return true;
     }
 
     /**

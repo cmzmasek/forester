@@ -146,6 +146,7 @@ final public class Options {
     private boolean _show_domain_labels;
     private boolean _show_overview;
     private boolean _show_scale;
+    private boolean _show_scale_grid;
     private TAXONOMY_EXTRACTION _taxonomy_extraction;
     private boolean _line_up_renderable_node_data;
     private boolean _right_align_domains;
@@ -222,6 +223,7 @@ final public class Options {
         _default_node_shape_size = AptxConstants.DEFAULT_NODE_SHAPE_SIZE_DEFAULT;
         _internal_number_are_confidence_for_nh_parsing = false;
         _show_scale = false;
+        _show_scale_grid = false;
         _antialias_print = true;
         _graphics_export_visible_only = false;
         _editable = true;
@@ -490,6 +492,14 @@ final public class Options {
 
     final boolean isShowScale() {
         return _show_scale;
+    }
+
+    final boolean isShowScaleGrid() {
+        return _show_scale_grid;
+    }
+
+    final void setShowScaleGrid(final boolean show_scale_grid) {
+        _show_scale_grid = show_scale_grid;
     }
 
     final void setAbbreviateScientificTaxonNames(final boolean abbreviate_scientific_names) {

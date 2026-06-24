@@ -937,6 +937,8 @@ public final class MainFrameApplication extends MainFrame {
         _radio_group_1.add(_non_lined_up_cladograms_rbmi);
         _show_overview_cbmi = new JCheckBoxMenuItem(SHOW_OVERVIEW_LABEL);
         _show_scale_cbmi = new JCheckBoxMenuItem(DISPLAY_SCALE_LABEL);
+        _show_scale_grid_cbmi = new JCheckBoxMenuItem(MainFrame.DISPLAY_SCALE_GRID_LABEL);
+        _show_scale_grid_cbmi.setToolTipText(MainFrame.DISPLAY_SCALE_GRID_TIP);
         _show_default_node_shapes_internal_cbmi = new JCheckBoxMenuItem(DISPLAY_NODE_BOXES_LABEL_INT);
         _internal_labels_above_branch_rbmi = new JRadioButtonMenuItem(MainFrame.INTERNAL_LABELS_ABOVE_BRANCH_LABEL);
         _internal_labels_above_branch_rbmi.setToolTipText(MainFrame.INTERNAL_LABELS_ABOVE_BRANCH_TIP);
@@ -1003,6 +1005,7 @@ public final class MainFrameApplication extends MainFrame {
         customizeCheckBoxMenuItem(_transparent_export_background_cbmi,
                 getOptions().isTransparentExportBackground());
         customizeCheckBoxMenuItem(_show_scale_cbmi, getOptions().isShowScale());
+        customizeCheckBoxMenuItem(_show_scale_grid_cbmi, getOptions().isShowScaleGrid());
         customizeCheckBoxMenuItem(_collapsed_with_average_height_cbmi, getOptions().isCollapsedWithAverageHeigh());
         customizeCheckBoxMenuItem(_show_abbreviated_labels_for_collapsed_nodes_cbmi,
                 getOptions().isShowAbbreviatedLabelsForCollapsedNodes());

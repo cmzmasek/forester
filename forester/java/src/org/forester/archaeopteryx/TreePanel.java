@@ -255,6 +255,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             0f);
     // Neutral guide color for the lined-up-data connector (see connectorColor()/drawConnection).
     private static final Color CONNECTOR_GUIDE_COLOR = new Color(200, 200, 200);
+    // How far the (faint) scale-grid color is blended from the background toward the branch-length color.
+    private static final double SCALE_GRID_BLEND = 0.18;
     private static final double TWO_PI = 2 * Math.PI;
     private final static int WIGGLE = 2;
     private static final String SHOW_ONLY_THIS_CONF_TYPE = null;                                                     //TODO remove me
@@ -3562,6 +3564,47 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.setStroke(s);
     }
 
+    /**
+     * Faint vertical reference lines at scale-distance intervals across the tree (phylograms only), drawn
+     * BEHIND the branches so branch depths can be read off. Lines use the same distance unit as the scale
+     * bar, measured from the root (distance 0).
+     */
+    final private void paintScaleGrid(final Graphics2D g,
+                                      final boolean to_pdf,
+                                      final boolean to_graphics_file,
+                                      final int graphics_file_y,
+                                      final int graphics_file_height) {
+        final float origin_x = _phylogeny.getRoot().getXcoord();
+        final float spacing = (float) (getScaleDistance() * getXcorrectionFactor());
+        final float max_x = (float) (origin_x + (getMaxDistanceToRoot() * getXcorrectionFactor()));
+        final float[] xs = TreePanelUtil.scaleGridLineXs(origin_x, spacing, max_x);
+        if (xs.length == 0) {
+            return;
+        }
+        // Use the export canvas extent only when it is real; the direct printer path (TreePanel.print)
+        // passes to_pdf=true with height 0, so fall back to the panel height there as on screen.
+        final boolean use_export_extent = (to_pdf || to_graphics_file) && (graphics_file_height > 0);
+        final int top = use_export_extent ? graphics_file_y : 0;
+        final int bottom = use_export_extent ? (graphics_file_y + graphics_file_height) : getHeight();
+        final Color saved_color = g.getColor();
+        final Stroke saved_stroke = g.getStroke();
+        g.setColor(scaleGridColor(to_pdf, to_graphics_file));
+        g.setStroke(STROKE_05);
+        for (final float x : xs) {
+            drawLine(x, top, x, bottom, g);
+        }
+        g.setColor(saved_color);
+        g.setStroke(saved_stroke);
+    }
+
+    /** Faint, theme-aware color for the scale grid: the background nudged slightly toward the branch-length color. */
+    private Color scaleGridColor(final boolean to_pdf, final boolean to_graphics_file) {
+        if ((to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite()) {
+            return new Color(220, 220, 220);
+        }
+        return TreePanelUtil.blend(getTreeColorSet().getBackgroundColor(),
+                getTreeColorSet().getBranchLengthColor(), SCALE_GRID_BLEND);
+    }
 
     final private void paintTreeName(final Graphics2D g,
                                      int x1,
@@ -6385,6 +6428,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final boolean disallow_shortcutting = (dynamic_hiding_factor < 40)
                     /* || getControlPanel().isUseVisualStyles() || getOptions().isShowDefaultNodeShapesForMarkedNodes()*/ //TODO check if this is really not needed.
                     || to_graphics_file || to_pdf;
+            if (getOptions().isShowScaleGrid() && getControlPanel().isDrawPhylogram() && (getScaleDistance() > 0.0)) {
+                paintScaleGrid(g, to_pdf, to_graphics_file, graphics_file_y, graphics_file_height);
+            }
             for (final PhylogenyNode element : _nodes_in_preorder) {
                 paintNodeRectangular(g,
                         element,

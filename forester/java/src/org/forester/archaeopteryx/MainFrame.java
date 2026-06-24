@@ -143,6 +143,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String SEARCH_CASE_SENSITIVE_LABEL = "Match Case";
     static final String INVERSE_SEARCH_RESULT_LABEL = "Inverse";
     static final String DISPLAY_SCALE_LABEL = "Scale";
+    static final String DISPLAY_SCALE_GRID_LABEL = "Scale Grid Lines";
+    static final String DISPLAY_SCALE_GRID_TIP = "Draw faint vertical reference lines at scale intervals across the tree (phylograms only), so branch depths are easy to compare.";
     static final String NON_LINED_UP_CLADOGRAMS_LABEL = "Non-Lined Up Cladogram";
     static final String LABEL_DIRECTION_LABEL = "Radial Labels";
     static final String LABEL_DIRECTION_TIP = "To use radial node labels in radial and unrooted display types";
@@ -220,6 +222,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JRadioButtonMenuItem _non_lined_up_cladograms_rbmi;
     JRadioButtonMenuItem _ext_node_dependent_cladogram_rbmi;
     JCheckBoxMenuItem _show_scale_cbmi;                                                                                                                                                                                                      //TODO fix me
+    JCheckBoxMenuItem _show_scale_grid_cbmi;
     JCheckBoxMenuItem _show_overview_cbmi;
     JCheckBoxMenuItem _show_domain_labels;
     JCheckBoxMenuItem _abbreviate_scientific_names;
@@ -412,6 +415,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         } else if (o == _parse_beast_style_extended_nexus_tags_cbmi) {
             updateOptions(getOptions());
         } else if (o == _show_scale_cbmi) {
+            updateOptions(getOptions());
+        } else if (o == _show_scale_grid_cbmi) {
             updateOptions(getOptions());
         } else if (o == _show_confidence_stddev_cbmi) {
             updateOptions(getOptions());
@@ -1744,6 +1749,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         // The search options (case/words/regex/inverse/properties) are now set directly on Options
         // by the control-panel checkboxes, so they are intentionally not read from menu items here.
+        options.setShowScaleGrid((_show_scale_grid_cbmi != null) && _show_scale_grid_cbmi.isSelected());
         if ((_show_scale_cbmi != null) && _show_scale_cbmi.isEnabled()) {
             options.setShowScale(_show_scale_cbmi.isSelected());
         }

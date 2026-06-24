@@ -115,6 +115,7 @@ final class SettingsDialog extends JDialog {
         addRadioGroup( c, _mf._ext_node_dependent_cladogram_rbmi, _mf._non_lined_up_cladograms_rbmi );
         add( c, cb( _mf._label_direction_cbmi ) );
         add( c, cb( _mf._show_scale_cbmi ) );
+        add( c, cb( _mf._show_scale_grid_cbmi ) );
         add( c, cb( _mf._show_overview_cbmi ) );
         add( c, labeled( "Overview placement:", enumCombo( OVERVIEW_PLACEMENT_TYPE.values(),
                                                            _mf.getOptions().getOvPlacement(),
