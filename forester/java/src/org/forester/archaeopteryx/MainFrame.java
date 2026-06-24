@@ -33,6 +33,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -68,6 +69,7 @@ import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
 import org.forester.archaeopteryx.tools.AncestralTaxonomyInferrer;
 import org.forester.archaeopteryx.tools.LabelDataExtractor;
 import org.forester.archaeopteryx.tools.NodeDataExporter;
+import org.forester.archaeopteryx.tools.NodeDataImporter;
 import org.forester.archaeopteryx.tools.ProcessPool;
 import org.forester.archaeopteryx.tools.ProcessRunning;
 import org.forester.io.writers.PhylogenyWriter;
@@ -208,6 +210,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem _write_to_eps_item;
     JMenuItem _export_seqs_fasta_item;
     JMenuItem _export_node_data_item;
+    JMenuItem _import_node_data_item;
     // tools menu:
     JMenuItem _midpoint_root_item;
     JMenuItem _mad_root_item;
@@ -566,6 +569,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             exportSequencesAsFasta();
         } else if (o == _export_node_data_item) {
             exportNodeDataAsTsv();
+        } else if (o == _import_node_data_item) {
+            importNodeDataFromTsv();
         }  else if (o == _save_item) {
             final File new_dir = writeToFile(_mainpanel.getCurrentPhylogeny(),
                     getMainPanel(),
@@ -2094,6 +2099,61 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             writeDataExportToFile(NodeDataExporter.toNodeDataTsv(scope.tips), "node-data rows (TSV)", rows,
                     scope.description, suggestedExportName(phy, ".tsv", scope.restricted ? rows : -1), note);
         }
+    }
+
+    /**
+     * File -> Import Node Data (TSV): read a tab-separated, tip-keyed table (the round-trip of
+     * {@link #exportNodeDataAsTsv}) and write its columns onto the matching external nodes. Recognized columns
+     * fill the taxonomy/sequence fields; any other column becomes a node property usable for column coloring.
+     */
+    void importNodeDataFromTsv() {
+        final Phylogeny phy = currentPhylogenyForExport();
+        if (phy == null) {
+            return;
+        }
+        final JFileChooser fc = new JFileChooser();
+        fc.setMultiSelectionEnabled(false);
+        fc.setDialogTitle("Import Node Data (TSV)");
+        if (getCurrentDir() != null) {
+            fc.setCurrentDirectory(getCurrentDir());
+        }
+        if (fc.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+        final File file = fc.getSelectedFile();
+        if (file == null) {
+            return;
+        }
+        setCurrentDir(fc.getCurrentDirectory());
+        final String tsv;
+        try {
+            tsv = Files.readString(file.toPath());
+        }
+        catch (final IOException e) {
+            JOptionPane.showMessageDialog(this, "Failed to read " + file + ":\n" + e.getMessage(), "Read Failed",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        final NodeDataImporter.ImportResult result;
+        try {
+            result = NodeDataImporter.apply(phy, tsv);
+        }
+        catch (final IllegalArgumentException e) {
+            JOptionPane.showMessageDialog(this, "This file cannot be read as a node-data table:\n" + e.getMessage(),
+                    "Import Failed", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        if (result.getTipsAnnotated() > 0) {
+            final TreePanel tp = _mainpanel.getCurrentTreePanel();
+            if (tp != null) {
+                tp.setTree(phy); // recompute the layout so the new labels/data show
+                showWhole();
+                tp.setEdited(true);
+            }
+        }
+        final int type = result.getWarnings().isEmpty() ? JOptionPane.INFORMATION_MESSAGE : JOptionPane.WARNING_MESSAGE;
+        JOptionPane.showMessageDialog(this, "Imported from " + file.getName() + ":\n\n" + result.summary(),
+                "Import Complete", type);
     }
 
     /**

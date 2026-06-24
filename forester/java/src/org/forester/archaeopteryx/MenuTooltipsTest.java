@@ -92,6 +92,19 @@ public final class MenuTooltipsTest {
                         }
                     }
                 }
+                // the import item must advertise that custom columns become color-able properties
+                final JMenuItem import_item = itemByText( file, "Import Node Data (TSV)..." );
+                if ( import_item == null ) {
+                    System.out.println( "  [MenuTooltipsTest] import item not found" );
+                    ok[ 0 ] = false;
+                }
+                else {
+                    final String tip = import_item.getToolTipText();
+                    if ( ( tip == null ) || !tip.contains( "color by" ) ) {
+                        System.out.println( "  [MenuTooltipsTest] import item missing color-by hint" );
+                        ok[ 0 ] = false;
+                    }
+                }
                 ( (JFrame) mf[ 0 ] ).dispose();
             } );
             return ok[ 0 ];
