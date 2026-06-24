@@ -48,11 +48,18 @@ public final class NodeDataExporterTest {
         try {
             final Phylogeny phy = buildTree();
 
-            // ---- FASTA: a record per tip with a molecular sequence, header = the tip name ----
+            // ---- FASTA: a record per tip with a molecular sequence, with a self-describing header ----
             final String fasta = NodeDataExporter.toFasta( phy );
-            if ( !fasta.contains( ">ZIKV_1" ) || !fasta.contains( "MKNPK" )
-                    || !fasta.contains( ">ZIKV_2" ) || !fasta.contains( "MGGKL" ) ) {
-                return fail( "fasta missing a tip record:\n" + fasta );
+            if ( !fasta.contains( "MKNPK" ) || !fasta.contains( "MGGKL" ) ) {
+                return fail( "fasta missing a tip sequence:\n" + fasta );
+            }
+            // ZIKV_1's rich header: id, then the (differing) accession, organism, and " | " + description
+            if ( !fasta.contains( ">ZIKV_1 PQ48392 Orthoflavivirus zikae | polyprotein" ) ) {
+                return fail( "ZIKV_1 FASTA header not enriched as expected:\n" + fasta );
+            }
+            // ZIKV_2 has only a name + sequence -> a bare header (nothing accession/organism/desc appended)
+            if ( !fasta.contains( ">ZIKV_2" ) || fasta.contains( ">ZIKV_2 " ) || fasta.contains( ">ZIKV_2 |" ) ) {
+                return fail( "ZIKV_2 FASTA header should be bare:\n" + fasta );
             }
             // tip with no molecular sequence is not in the FASTA
             if ( fasta.contains( "ZIKV_3" ) ) {

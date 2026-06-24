@@ -51,7 +51,12 @@ public final class NodeDataExporter {
     private static final int    FASTA_LINE_WIDTH = 60;
     private static final String TAB              = "\t";
 
-    /** FASTA of every tip's molecular sequence(s); the header is the tip's identifier. Empty if none. */
+    /**
+     * FASTA of every tip's molecular sequence(s). The header is a self-describing line -- the tip identifier
+     * (the round-trip key, kept as the first whitespace-delimited token), then, when present, the sequence
+     * accession, the organism (scientific or common name), and {@code " | "} + a sequence/protein
+     * description. Empty if no tip carries a molecular sequence.
+     */
     public static String toFasta( final Phylogeny phy ) {
         final StringBuilder sb = new StringBuilder();
         if ( phy == null ) {
@@ -65,7 +70,7 @@ public final class NodeDataExporter {
                 if ( ( seq == null ) || ForesterUtil.isEmpty( seq.getMolecularSequence() ) ) {
                     continue;
                 }
-                sb.append( SequenceWriter.toFasta( fastaIdentifier( n, seq ), seq.getMolecularSequence(),
+                sb.append( SequenceWriter.toFasta( fastaHeader( n, seq ), seq.getMolecularSequence(),
                                                    FASTA_LINE_WIDTH ) );
                 sb.append( ForesterUtil.LINE_SEPARATOR );
             }
@@ -83,6 +88,61 @@ public final class NodeDataExporter {
         }
         if ( !ForesterUtil.isEmpty( seq.getName() ) ) {
             return seq.getName();
+        }
+        return "";
+    }
+
+    /**
+     * A self-describing FASTA header line: {@code id [accession] [organism] [| description]}. The id is the
+     * first token (so downstream FASTA tools still key on it); accession, organism and description are added
+     * only when present, and the accession is skipped when it is already the id.
+     */
+    private static String fastaHeader( final PhylogenyNode n, final Sequence seq ) {
+        final List<String> prefix = new ArrayList<>();
+        final String id = fastaIdentifier( n, seq );
+        if ( !id.isEmpty() ) {
+            prefix.add( id );
+        }
+        final String acc = ( seq.getAccession() != null ) ? seq.getAccession().getValue() : "";
+        if ( !ForesterUtil.isEmpty( acc ) && !acc.equals( id ) ) {
+            prefix.add( acc );
+        }
+        final String organism = organismName( n );
+        if ( !organism.isEmpty() ) {
+            prefix.add( organism );
+        }
+        String header = String.join( " ", prefix );
+        final String description = sequenceDescription( seq );
+        if ( !description.isEmpty() ) {
+            header = header.isEmpty() ? description : header + " | " + description;
+        }
+        return sanitize( header );
+    }
+
+    /** Organism for the FASTA header: scientific name, else common name. */
+    private static String organismName( final PhylogenyNode n ) {
+        if ( n.getNodeData().isHasTaxonomy() ) {
+            final Taxonomy t = n.getNodeData().getTaxonomy();
+            if ( !ForesterUtil.isEmpty( t.getScientificName() ) ) {
+                return t.getScientificName();
+            }
+            if ( !ForesterUtil.isEmpty( t.getCommonName() ) ) {
+                return t.getCommonName();
+            }
+        }
+        return "";
+    }
+
+    /** Human-readable sequence descriptor for the FASTA header: sequence name, else gene name, else symbol. */
+    private static String sequenceDescription( final Sequence seq ) {
+        if ( !ForesterUtil.isEmpty( seq.getName() ) ) {
+            return seq.getName();
+        }
+        if ( !ForesterUtil.isEmpty( seq.getGeneName() ) ) {
+            return seq.getGeneName();
+        }
+        if ( !ForesterUtil.isEmpty( seq.getSymbol() ) ) {
+            return seq.getSymbol();
         }
         return "";
     }
