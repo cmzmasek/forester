@@ -157,7 +157,7 @@ final class SettingsDialog extends JDialog {
                                                          v -> { _mf.getOptions().setDefaultBranchWidth( v.floatValue() ); repaintTree(); } ) ) );
         add( c, labeled( "Min. confidence shown:", doubleSpinner( _mf.getOptions().getMinConfidenceValue(), 0, 1.0E8, 0.1,
                                                                   v -> { _mf.getOptions().setMinConfidenceValue( v ); repaintTree(); } ) ) );
-        add( c, labeled( "Support symbols:", enumCombo( SUPPORT_VISUALIZATION.values(),
+        add( c, labeled( "Show support as:", enumCombo( SUPPORT_VISUALIZATION.values(),
                                                         _mf.getOptions().getSupportVisualization(),
                                                         v -> { _mf.getOptions().setSupportVisualization( v ); repaintTree(); } ) ) );
         add( c, labeled( "Support threshold (0–1):", doubleSpinner( _mf.getOptions().getSupportThreshold(), 0, 1.0, 0.05,

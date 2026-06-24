@@ -349,6 +349,28 @@ public class TreePanelUtil {
         return (float) ( min_size + ( supportFraction( confidence, scale_max ) * ( max_size - min_size ) ) );
     }
 
+    // The most a weakly-supported branch fades toward the background in COLOR_BRANCHES mode (a fraction-0
+    // branch keeps 1 - this of its color, so it stays faint-but-visible rather than vanishing).
+    private static final double SUPPORT_COLOR_MAX_FADE = 0.8;
+
+    /**
+     * COLOR_BRANCHES branch color: the full {@code strong} (branch) color at support {@code fraction}=1,
+     * fading toward the {@code background} as support drops (theme-aware -- "weak support fades into the
+     * background"). Pure; clamps the fraction to 0..1.
+     */
+    final static Color supportColor( final double fraction, final Color strong, final Color background ) {
+        final double f = ( fraction < 0.0 ) ? 0.0 : ( ( fraction > 1.0 ) ? 1.0 : fraction );
+        final double fade = SUPPORT_COLOR_MAX_FADE * ( 1.0 - f );
+        return new Color( blend( strong.getRed(), background.getRed(), fade ),
+                          blend( strong.getGreen(), background.getGreen(), fade ),
+                          blend( strong.getBlue(), background.getBlue(), fade ) );
+    }
+
+    /** One 8-bit channel blended {@code t} (0..1) of the way from {@code a} toward {@code b}. */
+    private static int blend( final int a, final int b, final double t ) {
+        return (int) Math.round( a + ( t * ( b - a ) ) );
+    }
+
     /** THRESHOLD_MARKS test: is the support at or above the cutoff (a fraction 0..1 of the scale)? */
     final static boolean isSupportAtOrAboveThreshold( final double confidence,
                                                       final double scale_max,

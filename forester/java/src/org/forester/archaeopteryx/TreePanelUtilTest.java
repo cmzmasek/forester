@@ -55,7 +55,42 @@ public final class TreePanelUtilTest {
         return testYDistanceToAvoidLabelOverlap() && testSupportSymbolMath() && testDetectConfidenceScaleMax()
                 && testCapEntries() && testTaxonomyLabel() && testRankColorization() && testTipQueryName()
                 && testCladeBands() && testRankColorizationViaSequenceIds() && testInternalLabelAboveBranchLayout()
-                && testAbbreviateScientificName();
+                && testAbbreviateScientificName() && testSupportColor();
+    }
+
+    /**
+     * COLOR_BRANCHES gradient: full strong color at fraction 1, fading toward the background as support
+     * drops, monotonic in between, fraction clamped. Theme-agnostic (works from any strong/background pair).
+     */
+    private static boolean testSupportColor() {
+        final java.awt.Color black = java.awt.Color.BLACK;
+        final java.awt.Color white = java.awt.Color.WHITE;
+        // strong support -> full branch color (no fade)
+        if ( !black.equals( TreePanelUtil.supportColor( 1.0, black, white ) ) ) {
+            return fail( "fraction 1 must be the full strong color; got " + TreePanelUtil.supportColor( 1.0, black, white ) );
+        }
+        // weakest support fades 80% toward the background: 0 + 0.8*255 = 204
+        final java.awt.Color weak = TreePanelUtil.supportColor( 0.0, black, white );
+        if ( ( weak.getRed() != 204 ) || ( weak.getGreen() != 204 ) || ( weak.getBlue() != 204 ) ) {
+            return fail( "fraction 0 must fade 80% toward the background; got " + weak );
+        }
+        // monotonic: stronger support is darker (closer to the strong color) on a light background
+        if ( !( TreePanelUtil.supportColor( 0.25, black, white ).getRed()
+                > TreePanelUtil.supportColor( 0.75, black, white ).getRed() ) ) {
+            return fail( "stronger support must be closer to the strong color" );
+        }
+        // theme-aware: on a dark background the weak color fades toward dark, not light
+        final java.awt.Color dark_bg = new java.awt.Color( 30, 30, 30 );
+        final java.awt.Color light_branch = new java.awt.Color( 230, 230, 230 );
+        if ( TreePanelUtil.supportColor( 0.0, light_branch, dark_bg ).getRed() >= light_branch.getRed() ) {
+            return fail( "on a dark theme, weak support must fade toward the (dark) background" );
+        }
+        // out-of-range fractions clamp
+        if ( !black.equals( TreePanelUtil.supportColor( 1.5, black, white ) )
+                || !weak.equals( TreePanelUtil.supportColor( -0.5, black, white ) ) ) {
+            return fail( "fraction must clamp to 0..1" );
+        }
+        return true;
     }
 
     /**

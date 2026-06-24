@@ -81,7 +81,8 @@ final public class Options {
     static enum SUPPORT_VISUALIZATION {
         NONE("none"),
         THRESHOLD_MARKS("threshold marks"),
-        SIZE_SCALED("size-scaled");
+        SIZE_SCALED("size-scaled dots"),
+        COLOR_BRANCHES("branch color");
 
         private final String _name;
 

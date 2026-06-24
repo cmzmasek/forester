@@ -649,6 +649,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 && (getCopiedAndPastedNodes() != null) && !to_pdf && !to_graphics_file
                 && getCopiedAndPastedNodes().contains(node.getId())) {
             g.setColor(getTreeColorSet().getFoundColor0());
+        } else if ((getOptions().getSupportVisualization() == Options.SUPPORT_VISUALIZATION.COLOR_BRANCHES)
+                && !node.isExternal() && node.getBranchData().isHasConfidences()
+                && (PhylogenyMethods.getConfidenceValue(node) >= 0.0)) {
+            g.setColor(supportBranchColor(node, to_pdf));
         } else if (getControlPanel().isUseVisualStyles() && (PhylogenyMethods.getBranchColorValue(node) != null)) {
             g.setColor(PhylogenyMethods.getBranchColorValue(node));
         } else if (to_pdf) {
@@ -656,6 +660,19 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         } else {
             g.setColor(getTreeColorSet().getBranchColor());
         }
+    }
+
+    /**
+     * The branch (parent&rarr;node) color when "Show support as: branch color" is on: the full branch
+     * color for strong support, fading toward the background for weak support (theme-aware -- works on
+     * both light and dark backgrounds). The branch's confidence and the tree's support scale drive the
+     * fraction, exactly as the support symbols do.
+     */
+    private Color supportBranchColor(final PhylogenyNode node, final boolean to_pdf) {
+        final double fraction = TreePanelUtil.supportFraction(PhylogenyMethods.getConfidenceValue(node),
+                _confidence_scale_max);
+        final Color strong = to_pdf ? getTreeColorSet().getBranchColorForPdf() : getTreeColorSet().getBranchColor();
+        return TreePanelUtil.supportColor(fraction, strong, getTreeColorSet().getBackgroundColor());
     }
 
     final private void blast(final PhylogenyNode node) {
@@ -2423,7 +2440,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                               final boolean to_pdf,
                                               final boolean to_graphics_file) {
         final Options.SUPPORT_VISUALIZATION mode = getOptions().getSupportVisualization();
-        if ((mode == Options.SUPPORT_VISUALIZATION.NONE) || node.isExternal()
+        // COLOR_BRANCHES shows support by coloring the branch (assignGraphicsForBranchWithColorForParentBranch),
+        // not by a symbol, so it draws no dot here.
+        if ((mode == Options.SUPPORT_VISUALIZATION.NONE)
+                || (mode == Options.SUPPORT_VISUALIZATION.COLOR_BRANCHES) || node.isExternal()
                 || !node.getBranchData().isHasConfidences()) {
             return;
         }
