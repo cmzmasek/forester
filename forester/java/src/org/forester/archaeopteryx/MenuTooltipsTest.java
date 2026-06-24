@@ -25,6 +25,7 @@ import java.awt.GraphicsEnvironment;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 
 import org.forester.phylogeny.Phylogeny;
@@ -39,8 +40,8 @@ import org.forester.phylogeny.PhylogenyNode;
  */
 public final class MenuTooltipsTest {
 
-    private static final String[] EXPECTED_MENUS = { "File", "Analysis", "Tools", "View", "Font Size", "Settings",
-            "Help" };
+    // "Font Size" was retired as a top-level menu (it is now a slider in the control panel).
+    private static final String[] EXPECTED_MENUS = { "File", "Analysis", "Tools", "View", "Settings", "Help" };
 
     public static void main( final String[] args ) {
         final boolean ok = test();
@@ -75,6 +76,22 @@ public final class MenuTooltipsTest {
                         }
                     }
                 }
+                // the two data-export items must advertise how to scope the export (discoverability hint)
+                final JMenu file = menuByTitle( bar, "File" );
+                for( final String label : new String[] { "Export Sequences (FASTA)...", "Export Node Data (TSV)..." } ) {
+                    final JMenuItem item = itemByText( file, label );
+                    if ( item == null ) {
+                        System.out.println( "  [MenuTooltipsTest] export item not found: " + label );
+                        ok[ 0 ] = false;
+                    }
+                    else {
+                        final String tip = item.getToolTipText();
+                        if ( ( tip == null ) || !tip.contains( "restrict the export" ) ) {
+                            System.out.println( "  [MenuTooltipsTest] export item missing scope hint: " + label );
+                            ok[ 0 ] = false;
+                        }
+                    }
+                }
                 ( (JFrame) mf[ 0 ] ).dispose();
             } );
             return ok[ 0 ];
@@ -90,6 +107,19 @@ public final class MenuTooltipsTest {
             final JMenu m = bar.getMenu( i );
             if ( ( m != null ) && title.equals( m.getText() ) ) {
                 return m;
+            }
+        }
+        return null;
+    }
+
+    private static JMenuItem itemByText( final JMenu menu, final String text ) {
+        if ( menu == null ) {
+            return null;
+        }
+        for( int i = 0; i < menu.getItemCount(); ++i ) {
+            final JMenuItem it = menu.getItem( i );
+            if ( ( it != null ) && text.equals( it.getText() ) ) {
+                return it;
             }
         }
         return null;

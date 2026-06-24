@@ -372,6 +372,70 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Menu tooltips: ");
+        if (org.forester.archaeopteryx.MenuTooltipsTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Settings dialog: ");
+        if (org.forester.archaeopteryx.SettingsDialogTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Confidence render (NaN): ");
+        if (org.forester.archaeopteryx.ConfidenceRenderTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Found-branch PDF export: ");
+        if (org.forester.archaeopteryx.FoundBranchExportTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Legend drag: ");
+        if (org.forester.archaeopteryx.LegendDragTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("MAD support cleared: ");
+        if (org.forester.archaeopteryx.MadSupportClearedTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Sub/super tree buttons: ");
+        if (org.forester.archaeopteryx.SubSuperTreeButtonsTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Tab context menu: ");
+        if (org.forester.archaeopteryx.TabContextMenuTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Display data checkboxes: ");
         if (org.forester.archaeopteryx.DisplayDataCheckboxTest.test()) {
             System.out.println("OK.");

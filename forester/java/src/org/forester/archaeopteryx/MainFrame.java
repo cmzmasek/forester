@@ -2073,8 +2073,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 return; // cancelled
             }
             final String fasta = NodeDataExporter.toFasta(scope.tips);
-            writeDataExportToFile(fasta, "molecular sequences (FASTA)", NodeDataExporter.fastaRecordCount(fasta),
-                    scope.description, suggestedExportName(phy, ".fasta"), null);
+            final int records = NodeDataExporter.fastaRecordCount(fasta);
+            writeDataExportToFile(fasta, "molecular sequences (FASTA)", records, scope.description,
+                    suggestedExportName(phy, ".fasta", scope.restricted ? records : -1), null);
         }
     }
 
@@ -2089,19 +2090,26 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             final String note = NodeDataExporter.tipNamesFormUniqueKey(scope.tips) ? null
                     : "Some tip names are blank or duplicated, so a \"node_id\" column was added as the unique key.";
             // one row per tip, so the row count is the size of the chosen scope
-            writeDataExportToFile(NodeDataExporter.toNodeDataTsv(scope.tips), "node-data rows (TSV)",
-                    scope.tips.size(), scope.description, suggestedExportName(phy, ".tsv"), note);
+            final int rows = scope.tips.size();
+            writeDataExportToFile(NodeDataExporter.toNodeDataTsv(scope.tips), "node-data rows (TSV)", rows,
+                    scope.description, suggestedExportName(phy, ".tsv", scope.restricted ? rows : -1), note);
         }
     }
 
-    /** A chosen export scope: the tips to export and a human phrase for the completion message. */
+    /**
+     * A chosen export scope: the tips to export, a human phrase for the completion message, and whether the
+     * scope is a restricted subset of the whole loaded tree (sub-tree display or a selection) -- in which case
+     * the suggested file name gets a {@code _N} element-count suffix.
+     */
     private static final class ExportScope {
         final List<PhylogenyNode> tips;
         final String              description;
+        final boolean             restricted;
 
-        ExportScope(final List<PhylogenyNode> tips, final String description) {
+        ExportScope(final List<PhylogenyNode> tips, final String description, final boolean restricted) {
             this.tips = tips;
             this.description = description;
+            this.restricted = restricted;
         }
     }
 
@@ -2119,22 +2127,35 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         final List<PhylogenyNode> selected = (tp == null) ? new ArrayList<>()
                 : NodeDataExporter.externalTipsForSelection(phy, tp.getFoundNodesAsListOfPhylogenyNodes());
         if (selected.isEmpty()) {
-            return new ExportScope(all, all_desc); // no selection -> whole displayed tree, no prompt
+            // no selection -> whole displayed tree, no prompt; restricted only if that tree is a sub-tree
+            return new ExportScope(all, all_desc, from_subtree);
         }
         final List<PhylogenyNode> not_selected = NodeDataExporter.complementExternalTips(all, selected);
         final Object[] options = {"Selected tips (" + selected.size() + ")",
                 "Not-selected tips (" + not_selected.size() + ")", "All displayed tips (" + all.size() + ")",
                 "Cancel"};
-        final int choice = JOptionPane.showOptionDialog(this,
-                selected.size() + " of " + all.size() + " tips are selected. Which tips do you want to export?",
-                "Export Scope", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+        // FlatLaf/macOS lays option-dialog buttons right-to-left (default on the right). For this multi-choice
+        // picker a left-to-right reading order (Selected, Not-selected, All, Cancel) is clearer, so force
+        // forward button order for just this dialog and restore the previous setting afterwards.
+        final Object prev_yes_last = UIManager.get("OptionPane.isYesLast");
+        UIManager.put("OptionPane.isYesLast", Boolean.FALSE);
+        final int choice;
+        try {
+            choice = JOptionPane.showOptionDialog(this,
+                    selected.size() + " of " + all.size() + " tips are selected. Which tips do you want to export?",
+                    "Export Scope", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options,
+                    options[0]);
+        }
+        finally {
+            UIManager.put("OptionPane.isYesLast", prev_yes_last);
+        }
         switch (choice) {
             case 0:
-                return new ExportScope(selected, selected.size() + " selected tips");
+                return new ExportScope(selected, selected.size() + " selected tips", true);
             case 1:
-                return new ExportScope(not_selected, not_selected.size() + " not-selected tips");
+                return new ExportScope(not_selected, not_selected.size() + " not-selected tips", true);
             case 2:
-                return new ExportScope(all, all_desc);
+                return new ExportScope(all, all_desc, from_subtree);
             default:
                 return null; // Cancel or dialog closed
         }
@@ -2149,7 +2170,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     }
 
     /** A suggested file name for a data export: the loaded tree file's base name (or the tree name) + ext. */
-    private String suggestedExportName(final Phylogeny phy, final String ext) {
+    private String suggestedExportName(final Phylogeny phy, final String ext, final int count) {
         String base = null;
         if ((_mainpanel.getCurrentTreePanel() != null) && (_mainpanel.getCurrentTreePanel().getTreeFile() != null)) {
             base = _mainpanel.getCurrentTreePanel().getTreeFile().getName();
@@ -2161,7 +2182,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if (ForesterUtil.isEmpty(base)) {
             base = ForesterUtil.isEmpty(phy.getName()) ? "tree_data" : phy.getName();
         }
-        return base.replaceAll("[^A-Za-z0-9._-]+", "_") + ext;
+        // A restricted export (count >= 0) tags the name with how many elements it holds, e.g. flavi_43.tsv.
+        final String suffix = (count >= 0) ? ("_" + count) : "";
+        return base.replaceAll("[^A-Za-z0-9._-]+", "_") + suffix + ext;
     }
 
     /** Shared save flow for the read-only data exports: pick a file (overwrite-confirmed) and write the text. */
