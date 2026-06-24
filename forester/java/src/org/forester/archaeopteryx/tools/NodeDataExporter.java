@@ -21,9 +21,11 @@
 package org.forester.archaeopteryx.tools;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.Function;
@@ -147,6 +149,24 @@ public final class NodeDataExporter {
         return "";
     }
 
+    /**
+     * Whether the external-node names can serve as the import key: every tip has a non-empty name and all the
+     * names are distinct. When false, {@link #toNodeDataTsv} adds a {@code node_id} key column.
+     */
+    public static boolean tipNamesFormUniqueKey( final Phylogeny phy ) {
+        return ( phy != null ) && namesFormUniqueKey( phy.getExternalNodes() );
+    }
+
+    private static boolean namesFormUniqueKey( final List<PhylogenyNode> tips ) {
+        final Set<String> seen = new HashSet<>();
+        for( final PhylogenyNode n : tips ) {
+            if ( ForesterUtil.isEmpty( n.getName() ) || !seen.add( n.getName() ) ) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     /** Tab-separated tip-data table; columns with no value across every tip are omitted (except {@code name}). */
     public static String toNodeDataTsv( final Phylogeny phy ) {
         if ( phy == null ) {
@@ -154,6 +174,11 @@ public final class NodeDataExporter {
         }
         final List<PhylogenyNode> tips = phy.getExternalNodes();
         final LinkedHashMap<String, String[]> cols = new LinkedHashMap<>();
+        // When tip names are blank or duplicated they cannot key the table back to tips on import, so prepend
+        // a guaranteed-unique node_id column (the stable per-tip node id within this tree) in that case.
+        if ( !namesFormUniqueKey( tips ) ) {
+            addColumn( cols, "node_id", tips, n -> String.valueOf( n.getId() ), true );
+        }
         addColumn( cols, "name", tips, n -> n.getName(), true );
         addColumn( cols, "taxonomy_scientific_name", tips, n -> tax( n, Taxonomy::getScientificName ), false );
         addColumn( cols, "taxonomy_common_name", tips, n -> tax( n, Taxonomy::getCommonName ), false );

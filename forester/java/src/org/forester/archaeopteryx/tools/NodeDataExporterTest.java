@@ -21,7 +21,9 @@
 package org.forester.archaeopteryx.tools;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
@@ -101,6 +103,29 @@ public final class NodeDataExporterTest {
             if ( !"".equals( row2.get( header.indexOf( "taxonomy_scientific_name" ) ) ) ) {
                 return fail( "ZIKV_2 should have an empty scientific-name cell: " + row2 );
             }
+
+            // ---- TSV key robustness ----
+            // clean, distinct, non-empty names form a key -> no node_id column
+            if ( header.contains( "node_id" ) || !NodeDataExporter.tipNamesFormUniqueKey( phy ) ) {
+                return fail( "clean tip names should be the key, with no node_id column: " + header );
+            }
+            // a blank or duplicated name breaks the key -> a unique node_id key column is prepended
+            final Phylogeny ambig = buildAmbiguousTree();
+            if ( NodeDataExporter.tipNamesFormUniqueKey( ambig ) ) {
+                return fail( "tree with a duplicate and a blank tip name must not form a unique key" );
+            }
+            final String[] alines = NodeDataExporter.toNodeDataTsv( ambig ).split( "\\R" );
+            final List<String> aheader = Arrays.asList( alines[ 0 ].split( "\t", -1 ) );
+            if ( !"node_id".equals( aheader.get( 0 ) ) || !"name".equals( aheader.get( 1 ) ) ) {
+                return fail( "expected node_id then name as the first columns: " + aheader );
+            }
+            final Set<String> ids = new HashSet<>();
+            for ( int i = 1; i < alines.length; i++ ) {
+                final String id = alines[ i ].split( "\t", -1 )[ 0 ];
+                if ( id.isEmpty() || !ids.add( id ) ) {
+                    return fail( "node_id values must be present and unique: row " + i + " = " + alines[ i ] );
+                }
+            }
             return true;
         }
         catch ( final Exception e ) {
@@ -142,6 +167,23 @@ public final class NodeDataExporterTest {
         root.addAsChild( t1 );
         root.addAsChild( t2 );
         root.addAsChild( t3 );
+        phy.setRoot( root );
+        phy.externalNodesHaveChanged();
+        return phy;
+    }
+
+    /** A tree whose tip names cannot key the table: two share a name and one is blank. */
+    private static Phylogeny buildAmbiguousTree() {
+        final Phylogeny phy = new Phylogeny();
+        final PhylogenyNode root = new PhylogenyNode();
+        final PhylogenyNode a = new PhylogenyNode();
+        a.setName( "dup" );
+        final PhylogenyNode b = new PhylogenyNode();
+        b.setName( "dup" ); // duplicate name
+        final PhylogenyNode c = new PhylogenyNode(); // blank name
+        root.addAsChild( a );
+        root.addAsChild( b );
+        root.addAsChild( c );
         phy.setRoot( root );
         phy.externalNodesHaveChanged();
         return phy;

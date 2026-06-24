@@ -2069,7 +2069,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         final Phylogeny phy = currentPhylogenyForExport();
         if (phy != null) {
             writeDataExportToFile(NodeDataExporter.toFasta(phy), "molecular sequences (FASTA)",
-                    suggestedExportName(phy, ".fasta"));
+                    suggestedExportName(phy, ".fasta"), null);
         }
     }
 
@@ -2077,8 +2077,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     void exportNodeDataAsTsv() {
         final Phylogeny phy = currentPhylogenyForExport();
         if (phy != null) {
+            final String note = NodeDataExporter.tipNamesFormUniqueKey(phy) ? null
+                    : "Some tip names are blank or duplicated, so a \"node_id\" column was added as the unique key.";
             writeDataExportToFile(NodeDataExporter.toNodeDataTsv(phy), "node data (TSV)",
-                    suggestedExportName(phy, ".tsv"));
+                    suggestedExportName(phy, ".tsv"), note);
         }
     }
 
@@ -2107,7 +2109,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     }
 
     /** Shared save flow for the read-only data exports: pick a file (overwrite-confirmed) and write the text. */
-    private void writeDataExportToFile(final String content, final String what, final String suggested_name) {
+    private void writeDataExportToFile(final String content, final String what, final String suggested_name,
+                                       final String note) {
         if (ForesterUtil.isEmpty(content)) {
             JOptionPane.showMessageDialog(this, "There is no " + what + " in this tree to export.",
                     "Nothing to Export", JOptionPane.INFORMATION_MESSAGE);
@@ -2141,8 +2144,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             return;
         }
         setCurrentDir(fc.getCurrentDirectory());
-        JOptionPane.showMessageDialog(this, "Wrote " + what + " to:\n" + file, "Export Complete",
-                JOptionPane.INFORMATION_MESSAGE);
+        final String msg = "Wrote " + what + " to:\n" + file
+                + (ForesterUtil.isEmpty(note) ? "" : "\n\n" + note);
+        JOptionPane.showMessageDialog(this, msg, "Export Complete", JOptionPane.INFORMATION_MESSAGE);
     }
 
     static File writeToFile(final Phylogeny t,
