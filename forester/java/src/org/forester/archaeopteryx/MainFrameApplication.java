@@ -901,6 +901,12 @@ public final class MainFrameApplication extends MainFrame {
         _file_jmenu.add(_write_to_png_item = new JMenuItem("Export to PNG file..."));
         _file_jmenu.add(_write_to_jpg_item = new JMenuItem("Export to JPG file..."));
         _file_jmenu.addSeparator();
+        _file_jmenu.add(_export_seqs_fasta_item = new JMenuItem("Export Sequences (FASTA)..."));
+        _export_seqs_fasta_item.setToolTipText("Write the tip molecular sequences to a FASTA file.");
+        _file_jmenu.add(_export_node_data_item = new JMenuItem("Export Node Data (TSV)..."));
+        _export_node_data_item.setToolTipText("Write the tip data (names, taxonomy, sequence, branch length, "
+                + "properties) to a tab-separated table.");
+        _file_jmenu.addSeparator();
         _file_jmenu.add(_close_item = new JMenuItem("Close Tab"));
         _close_item.setToolTipText("To close the current pane.");
         _close_item.setEnabled(true);
@@ -919,6 +925,8 @@ public final class MainFrameApplication extends MainFrame {
         customizeJMenuItem(_write_to_png_item);
         customizeJMenuItem(_write_to_jpg_item);
         customizeJMenuItem(_write_to_tif_item);
+        customizeJMenuItem(_export_seqs_fasta_item);
+        customizeJMenuItem(_export_node_data_item);
         customizeJMenuItem(_exit_item);
         _jmenubar.add(_file_jmenu);
     }

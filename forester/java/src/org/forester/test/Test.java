@@ -276,6 +276,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Node data exporter: ");
+        if (org.forester.archaeopteryx.tools.NodeDataExporterTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("NCBI sequence client: ");
         if (org.forester.ws.seqdb.NcbiSequenceClientTest.test()) {
             System.out.println("OK.");

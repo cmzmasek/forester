@@ -28,8 +28,11 @@ import java.awt.GridLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -64,6 +67,7 @@ import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
 import org.forester.archaeopteryx.tools.AncestralTaxonomyInferrer;
 import org.forester.archaeopteryx.tools.LabelDataExtractor;
+import org.forester.archaeopteryx.tools.NodeDataExporter;
 import org.forester.archaeopteryx.tools.ProcessPool;
 import org.forester.archaeopteryx.tools.ProcessRunning;
 import org.forester.io.writers.PhylogenyWriter;
@@ -202,6 +206,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem _write_to_png_item;
     JMenuItem _write_to_svg_item;
     JMenuItem _write_to_eps_item;
+    JMenuItem _export_seqs_fasta_item;
+    JMenuItem _export_node_data_item;
     // tools menu:
     JMenuItem _midpoint_root_item;
     JMenuItem _mad_root_item;
@@ -556,6 +562,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             if (new_dir != null) {
                 setCurrentDir(new_dir);
             }
+        } else if (o == _export_seqs_fasta_item) {
+            exportSequencesAsFasta();
+        } else if (o == _export_node_data_item) {
+            exportNodeDataAsTsv();
         }  else if (o == _save_item) {
             final File new_dir = writeToFile(_mainpanel.getCurrentPhylogeny(),
                     getMainPanel(),
@@ -2052,6 +2062,87 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             }
         }
         contentpane.repaint();
+    }
+
+    /** File -> Export Sequences (FASTA): write the current tree's tip molecular sequences as FASTA. */
+    void exportSequencesAsFasta() {
+        final Phylogeny phy = currentPhylogenyForExport();
+        if (phy != null) {
+            writeDataExportToFile(NodeDataExporter.toFasta(phy), "molecular sequences (FASTA)",
+                    suggestedExportName(phy, ".fasta"));
+        }
+    }
+
+    /** File -> Export Node Data (TSV): write the current tree's tip data as a tab-separated table. */
+    void exportNodeDataAsTsv() {
+        final Phylogeny phy = currentPhylogenyForExport();
+        if (phy != null) {
+            writeDataExportToFile(NodeDataExporter.toNodeDataTsv(phy), "node data (TSV)",
+                    suggestedExportName(phy, ".tsv"));
+        }
+    }
+
+    private Phylogeny currentPhylogenyForExport() {
+        if (_mainpanel.getCurrentTreePanel() == null) {
+            return null;
+        }
+        final Phylogeny phy = _mainpanel.getCurrentPhylogeny();
+        return ((phy == null) || phy.isEmpty()) ? null : phy;
+    }
+
+    /** A suggested file name for a data export: the loaded tree file's base name (or the tree name) + ext. */
+    private String suggestedExportName(final Phylogeny phy, final String ext) {
+        String base = null;
+        if ((_mainpanel.getCurrentTreePanel() != null) && (_mainpanel.getCurrentTreePanel().getTreeFile() != null)) {
+            base = _mainpanel.getCurrentTreePanel().getTreeFile().getName();
+            final int dot = base.lastIndexOf('.');
+            if (dot > 0) {
+                base = base.substring(0, dot);
+            }
+        }
+        if (ForesterUtil.isEmpty(base)) {
+            base = ForesterUtil.isEmpty(phy.getName()) ? "tree_data" : phy.getName();
+        }
+        return base.replaceAll("[^A-Za-z0-9._-]+", "_") + ext;
+    }
+
+    /** Shared save flow for the read-only data exports: pick a file (overwrite-confirmed) and write the text. */
+    private void writeDataExportToFile(final String content, final String what, final String suggested_name) {
+        if (ForesterUtil.isEmpty(content)) {
+            JOptionPane.showMessageDialog(this, "There is no " + what + " in this tree to export.",
+                    "Nothing to Export", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        final JFileChooser fc = new JFileChooser();
+        fc.setMultiSelectionEnabled(false);
+        if (getCurrentDir() != null) {
+            fc.setCurrentDirectory(getCurrentDir());
+        }
+        if (!ForesterUtil.isEmpty(suggested_name)) {
+            fc.setSelectedFile(new File(suggested_name));
+        }
+        if (fc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+        final File file = fc.getSelectedFile();
+        if (file == null) {
+            return;
+        }
+        if (file.exists() && (JOptionPane.showConfirmDialog(this, file + " already exists.\nOverwrite?",
+                "Overwrite?", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) != JOptionPane.OK_OPTION)) {
+            return;
+        }
+        try (final Writer w = new BufferedWriter(new FileWriter(file))) {
+            w.write(content);
+        }
+        catch (final IOException e) {
+            JOptionPane.showMessageDialog(this, "Failed to write " + file + ":\n" + e.getMessage(),
+                    "Write Failed", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        setCurrentDir(fc.getCurrentDirectory());
+        JOptionPane.showMessageDialog(this, "Wrote " + what + " to:\n" + file, "Export Complete",
+                JOptionPane.INFORMATION_MESSAGE);
     }
 
     static File writeToFile(final Phylogeny t,
