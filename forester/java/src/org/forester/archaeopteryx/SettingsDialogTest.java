@@ -28,6 +28,7 @@ import java.util.List;
 
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JTabbedPane;
@@ -98,6 +99,12 @@ public final class SettingsDialogTest {
                         ok[ 0 ] = false;
                     }
                 }
+                // the retired "Behavior" section and its "Data returned on copy:" combo (the old "List Node
+                // Data" config) must no longer appear anywhere in the dialog
+                if ( ( findLabel( dlg.getContentPane(), "Behavior" ) != null )
+                        || ( findLabel( dlg.getContentPane(), "Data returned on copy:" ) != null ) ) {
+                    ok[ 0 ] = false;
+                }
                 // a dialog checkbox must drive its backing menu item (the doClick binding)
                 final boolean before = mf[ 0 ]._show_scale_cbmi.isSelected();
                 final JCheckBox cb = findCheckBox( dlg.getContentPane(), mf[ 0 ]._show_scale_cbmi.getText() );
@@ -139,6 +146,17 @@ public final class SettingsDialogTest {
         for ( final JCheckBox cb : all ) {
             if ( text.equals( cb.getText() ) ) {
                 return cb;
+            }
+        }
+        return null;
+    }
+
+    private static JLabel findLabel( final Container c, final String text ) {
+        final List<JLabel> all = new ArrayList<>();
+        collect( c, JLabel.class, all );
+        for ( final JLabel l : all ) {
+            if ( text.equals( l.getText() ) ) {
+                return l;
             }
         }
         return null;

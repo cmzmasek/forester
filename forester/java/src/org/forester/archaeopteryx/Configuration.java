@@ -33,16 +33,11 @@ import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
 import org.forester.archaeopteryx.Options.OVERVIEW_PLACEMENT_TYPE;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
 import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
-import org.forester.phylogeny.data.NodeDataField;
 import org.forester.phylogeny.data.NodeVisualData.NodeFill;
 import org.forester.phylogeny.data.NodeVisualData.NodeShape;
 import org.forester.util.ForesterUtil;
 
 public final class Configuration {
-
-    public enum EXT_NODE_DATA_RETURN_ON {
-        BUFFER_ONLY, CONSOLE, WINODW
-    }
 
     public enum UI {
         CROSSPLATFORM, NATIVE, NIMBUS, FLAT_LIGHT, FLAT_DARK, UNKNOWN
@@ -59,7 +54,7 @@ public final class Configuration {
             {"Open Taxonomy DB", "display"}, {"Launch BLAST", "display"}, {"Cut Subtree", "display"},
             {"Copy Subtree", "display"}, {"Paste Subtree", "display"}, {"Delete Subtree/Node", "display"},
             {"Add New Node", "display"}, {"Edit Node Data", "display"}, {"Sort Descendants", "display"},
-            {"List Node Data", "display"}, {"Select Node(s)", "display"}, {"Uncollapse All", "display"}, {"Order Subtree", "display"},};
+            {"Select Node(s)", "display"}, {"Uncollapse All", "display"}, {"Order Subtree", "display"},};
 
     final static int display_node_data = 0;
     final static int collapse_uncollapse = 1;
@@ -79,10 +74,9 @@ public final class Configuration {
     final static int add_new_node = 15;
     final static int edit_node_data = 16;
     final static int sort_descendents = 17;
-    final static int get_ext_desc_data = 18;
-    final static int select_nodes = 19;
-    final static int uncollapse_all = 20;
-    final static int order_subtree = 21;
+    final static int select_nodes = 18;
+    final static int uncollapse_all = 19;
+    final static int order_subtree = 20;
 
     // ------------------
     // Click-to options
@@ -155,8 +149,6 @@ public final class Configuration {
     private SortedMap<String, Color> _display_colors = null;
     private boolean _display_sequence_relations = false;
 
-    private NodeDataField _ext_desc_data_to_return = NodeDataField.UNKNOWN;
-    private final EXT_NODE_DATA_RETURN_ON _ext_node_data_return_on = EXT_NODE_DATA_RETURN_ON.WINODW;
     private final Color _gui_background_color = AptxConstants.GUI_BACKGROUND_DEFAULT;
     private final Color _gui_button_background_color = AptxConstants.BUTTON_BACKGROUND_COLOR_DEFAULT;
     private final Color _gui_button_border_color = AptxConstants.BUTTON_BORDER_COLOR_DEFAULT;
@@ -167,7 +159,6 @@ public final class Configuration {
     private final Color _gui_menu_text_color = AptxConstants.MENU_TEXT_COLOR_DEFAULT;
     private final boolean _hide_controls_and_menus = false;
     private final boolean _internal_number_are_confidence_for_nh_parsing = false;
-    private String _label_for_get_ext_descendents_data = "";
     private boolean _midpoint_root = false;
     private int _min_base_font_size = 2;
     private double _min_confidence_value = Options.MIN_CONFIDENCE_DEFAULT;
@@ -231,19 +222,6 @@ public final class Configuration {
 
     public short getDefaultNodeShapeSize() {
         return _default_node_shape_size;
-    }
-
-    public NodeDataField getExtDescNodeDataToReturn() {
-        return _ext_desc_data_to_return;
-    }
-
-    public EXT_NODE_DATA_RETURN_ON getExtNodeDataReturnOn() {
-        return _ext_node_data_return_on;
-    }
-
-
-    public String getLabelForGetExtDescendentsData() {
-        return _label_for_get_ext_descendents_data;
     }
 
     public double getVectorDataHeight() {

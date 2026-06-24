@@ -24,7 +24,6 @@ import java.awt.Font;
 
 import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
 import org.forester.phylogeny.PhylogenyNode.NH_CONVERSION_SUPPORT_VALUE_STYLE;
-import org.forester.phylogeny.data.NodeDataField;
 import org.forester.phylogeny.data.NodeVisualData;
 import org.forester.phylogeny.data.NodeVisualData.NodeFill;
 import org.forester.phylogeny.data.NodeVisualData.NodeShape;
@@ -111,7 +110,6 @@ final public class Options {
     private NodeVisualData.NodeShape _default_node_shape;
     private short _default_node_shape_size;
     private boolean _editable;
-    private NodeDataField _ext_desc_data_to_return;
     private final boolean _graphics_export_using_actual_size = true;
     private boolean _graphics_export_visible_only;
     private boolean _internal_number_are_confidence_for_nh_parsing;
@@ -172,10 +170,6 @@ final public class Options {
         return _default_branch_width;
     }
 
-    public NodeDataField getExtDescNodeDataToReturn() {
-        return _ext_desc_data_to_return;
-    }
-
     public boolean isAllowErrorsInDistanceToParent() {
         return _allow_errors_in_distance_to_parent;
     }
@@ -198,10 +192,6 @@ final public class Options {
 
     public void setColorLabelsSameAsParentBranch(final boolean color_labels_same_as_parent_branch) {
         _color_labels_same_as_parent_branch = color_labels_same_as_parent_branch;
-    }
-
-    public void setExtDescNodeDataToReturn(final NodeDataField ext_desc_data_to_return) {
-        _ext_desc_data_to_return = ext_desc_data_to_return;
     }
 
     final public void setLineUpRendarableNodeData(final boolean line_up_renderable_node_data) {
@@ -276,7 +266,6 @@ final public class Options {
         _show_confidence_stddev = false;
         _show_mad_confidence = false;
         _nh_conversion_support_value_style = NH_CONVERSION_SUPPORT_VALUE_STYLE.NONE;
-        _ext_desc_data_to_return = NodeDataField.UNKNOWN;
         _line_up_renderable_node_data = true;
         _right_align_domains = false;
         _collapsed_with_average_height = true;
@@ -697,9 +686,6 @@ final public class Options {
             instance.setShowDefaultNodeShapesInternal(configuration.isShowDefaultNodeShapesInternal());
             instance.setShowDefaultNodeShapesExternal(configuration.isShowDefaultNodeShapesExternal());
             instance.setShowDefaultNodeShapesForMarkedNodes(configuration.isShowDefaultNodeShapesForMarkedNodes());
-            if (configuration.getExtDescNodeDataToReturn() != null) {
-                instance.setExtDescNodeDataToReturn(configuration.getExtDescNodeDataToReturn());
-            }
             instance.setRightLineUpDomains(configuration.isRightLineUpDomains());
             instance.setLineUpRendarableNodeData(configuration.isLineUpRendarableNodeData());
             instance.setAllowErrorsInDistanceToParent(false);

@@ -49,7 +49,6 @@ import javax.swing.SpinnerNumberModel;
 
 import org.forester.archaeopteryx.Options.OVERVIEW_PLACEMENT_TYPE;
 import org.forester.archaeopteryx.Options.SUPPORT_VISUALIZATION;
-import org.forester.phylogeny.data.NodeDataField;
 import org.forester.phylogeny.data.NodeVisualData.NodeFill;
 import org.forester.phylogeny.data.NodeVisualData.NodeShape;
 import org.forester.ws.seqdb.NcbiTaxonomyLineageService;
@@ -171,10 +170,6 @@ final class SettingsDialog extends JDialog {
         font_blurb.setAlignmentX( Component.LEFT_ALIGNMENT );
         c.add( font_blurb );
         refreshFontInfo();
-        c.add( header( "Behavior" ) );
-        add( c, labeled( "Data returned on copy:", enumCombo( NodeDataField.values(),
-                                                              _mf.getOptions().getExtDescNodeDataToReturn(),
-                                                              v -> _mf.getOptions().setExtDescNodeDataToReturn( v ) ) ) );
         return c;
     }
 

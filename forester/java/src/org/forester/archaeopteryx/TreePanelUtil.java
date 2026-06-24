@@ -25,15 +25,12 @@ import java.awt.Component;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.TreeMap;
 import java.util.TreeSet;
 
 import javax.swing.JOptionPane;
@@ -43,7 +40,6 @@ import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Accession;
 import org.forester.phylogeny.data.BranchColor;
-import org.forester.phylogeny.data.NodeDataField;
 import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
@@ -51,7 +47,6 @@ import org.forester.phylogeny.iterators.PreorderTreeIterator;
 import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
 import org.forester.util.SequenceAccessionTools;
-import org.forester.util.StringInt;
 import org.forester.ws.seqdb.AccessionAwareLineageService;
 import org.forester.ws.seqdb.NcbiTaxonomyLineageService;
 import org.forester.ws.seqdb.RankedLineage;
@@ -199,71 +194,6 @@ public class TreePanelUtil {
             }
         }
         return uris;
-    }
-
-   
-
-    public final static void showExtDescNodeDataUserSelectedHelper( final ControlPanel cp,
-                                                                    final PhylogenyNode node,
-                                                                    final List<String> data ) {
-        final StringBuilder sb = new StringBuilder();
-        if ( cp.isShowNodeNames() && !ForesterUtil.isEmpty( node.getName() ) ) {
-            TreePanelUtil.showExtDescNodeDataUserSelectedHelperHelper( node.getName(), sb );
-        }
-        if ( cp.isShowSeqNames() && node.getNodeData().isHasSequence()
-                && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getName() ) ) {
-            TreePanelUtil.showExtDescNodeDataUserSelectedHelperHelper( node.getNodeData().getSequence().getName(), sb );
-        }
-        if ( cp.isShowSeqSymbols() && node.getNodeData().isHasSequence()
-                && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getSymbol() ) ) {
-            TreePanelUtil.showExtDescNodeDataUserSelectedHelperHelper( node.getNodeData().getSequence().getSymbol(),
-                                                                       sb );
-        }
-        if ( cp.isShowGeneNames() && node.getNodeData().isHasSequence()
-                && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getGeneName() ) ) {
-            TreePanelUtil.showExtDescNodeDataUserSelectedHelperHelper( node.getNodeData().getSequence().getGeneName(),
-                                                                       sb );
-        }
-        if ( cp.isShowSequenceAcc() && node.getNodeData().isHasSequence()
-                && ( node.getNodeData().getSequence().getAccession() != null )
-                && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().toString() ) ) {
-            TreePanelUtil.showExtDescNodeDataUserSelectedHelperHelper( node.getNodeData().getSequence().getAccession()
-                    .toString(), sb );
-        }
-        if ( cp.isShowTaxonomyCode() && node.getNodeData().isHasTaxonomy()
-                && !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getTaxonomyCode() ) ) {
-            TreePanelUtil
-                    .showExtDescNodeDataUserSelectedHelperHelper( node.getNodeData().getTaxonomy().getTaxonomyCode(),
-                                                                  sb );
-        }
-        if ( cp.isShowTaxonomyScientificNames() && node.getNodeData().isHasTaxonomy()
-                && !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getScientificName() ) ) {
-            TreePanelUtil
-                    .showExtDescNodeDataUserSelectedHelperHelper( node.getNodeData().getTaxonomy().getScientificName(),
-                                                                  sb );
-        }
-        if ( cp.isShowTaxonomyCommonNames() && node.getNodeData().isHasTaxonomy()
-                && !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getCommonName() ) ) {
-            TreePanelUtil.showExtDescNodeDataUserSelectedHelperHelper( node.getNodeData().getTaxonomy().getCommonName(),
-                                                                       sb );
-        }
-        //        if ( ( cp.isShowSeqNames() || cp.isShowSeqSymbols() || cp.isShowSequenceAcc() )
-        //                && node.getNodeData().isHasSequence()
-        //                && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getMolecularSequence() ) ) {
-        //            TreePanelUtil.showExtDescNodeDataUserSelectedHelperHelper( node.getNodeData().getSequence()
-        //                    .getMolecularSequence(), sb );
-        //        }
-        final String s = sb.toString().trim();
-        if ( !ForesterUtil.isEmpty( s ) ) {
-            data.add( s );
-        }
-    }
-
-    public final static void showExtDescNodeDataUserSelectedHelperHelper( final String s, final StringBuilder sb ) {
-        if ( sb.length() > 0 ) {
-            sb.append( "\t" );
-        }
-        sb.append( s );
     }
 
     final public static void showInformationMessage( final Component parent, final String title, final String msg ) {
@@ -809,60 +739,6 @@ public class TreePanelUtil {
         return ( ( tax.getIdentifier() == null ) && ForesterUtil.isEmpty( tax.getTaxonomyCode() )
                 && ForesterUtil.isEmpty( tax.getCommonName() ) && ForesterUtil.isEmpty( tax.getScientificName() )
                 && tax.getSynonyms().isEmpty() );
-    }
-
-    static final int nodeDataIntoStringBuffer( final List<String> data, final Options optz, final StringBuilder sb ) {
-        final SortedMap<String, Integer> map = new TreeMap<String, Integer>();
-        int size = 0;
-        if ( ( optz.getExtDescNodeDataToReturn() != NodeDataField.SEQUENCE_MOL_SEQ_FASTA )
-                && ( optz.getExtDescNodeDataToReturn() != NodeDataField.GO_TERM_IDS ) ) {
-            for( final String d : data ) {
-                if ( !ForesterUtil.isEmpty( d ) ) {
-                    if ( map.containsKey( d ) ) {
-                        map.put( d, map.get( d ) + 1 );
-                    }
-                    else {
-                        map.put( d, 1 );
-                    }
-                }
-            }
-            if ( ( optz.getExtDescNodeDataToReturn() == NodeDataField.DOMAINS_ALL )
-                    || ( optz.getExtDescNodeDataToReturn() == NodeDataField.DOMAINS_COLLAPSED_PER_PROTEIN )
-                    || ( optz.getExtDescNodeDataToReturn() == NodeDataField.SEQ_ANNOTATIONS ) ) {
-                final ArrayList<StringInt> sis = new ArrayList<StringInt>();
-                for( final Entry<String, Integer> e : map.entrySet() ) {
-                    sis.add( new StringInt( e.getKey(), e.getValue() ) );
-                }
-                Collections.sort( sis, new StringInt.DescendingIntComparator() );
-                for( final StringInt si : sis ) {
-                    sb.append( si.getString() );
-                    sb.append( "\t" );
-                    sb.append( si.getInt() );
-                    sb.append( ForesterUtil.LINE_SEPARATOR );
-                }
-            }
-            else {
-                for( final Entry<String, Integer> e : map.entrySet() ) {
-                    final String v = e.getKey();
-                    final Object c = e.getValue();
-                    sb.append( v );
-                    sb.append( "\t" );
-                    sb.append( c );
-                    sb.append( ForesterUtil.LINE_SEPARATOR );
-                }
-            }
-            size = map.size();
-        }
-        else {
-            for( final String d : data ) {
-                if ( !ForesterUtil.isEmpty( d ) ) {
-                    sb.append( d );
-                    sb.append( ForesterUtil.LINE_SEPARATOR );
-                }
-            }
-            size = data.size();
-        }
-        return size;
     }
 
     final static String pdbAccToString( final List<Accession> accs, final int i ) {

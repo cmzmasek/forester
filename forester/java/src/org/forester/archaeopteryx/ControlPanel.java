@@ -85,7 +85,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         CUT_SUBTREE,
         DELETE_NODE_OR_SUBTREE,
         EDIT_NODE_DATA,
-        GET_EXT_DESC_DATA,
         OPEN_PDB_WEB,
         OPEN_SEQ_WEB,
         OPEN_TAX_WEB,
@@ -155,7 +154,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     private List<Options.PHYLOGENY_DISPLAY_TYPE> _tree_display_types;
     private JCheckBox _dynamically_hide_data;
     private int _edit_node_data_item;
-    private int _get_ext_desc_data;
     private JButton _incr_domain_structure_evalue_thr;
     private final MainPanel _mainpanel;
     private JCheckBox _node_desc_popup_cb;
@@ -957,20 +955,6 @@ final class ControlPanel extends JPanel implements ActionListener {
             addClickToOption(Configuration.select_nodes,
                     _configuration.getClickToTitle(Configuration.select_nodes));
             if (default_option == Configuration.select_nodes) {
-                selected_index = cb_index;
-            }
-            cb_index++;
-        }
-        if (_configuration.doDisplayClickToOption(Configuration.get_ext_desc_data)) {
-            _get_ext_desc_data = cb_index;
-            if (!ForesterUtil.isEmpty(getConfiguration().getLabelForGetExtDescendentsData())) {
-                addClickToOption(Configuration.get_ext_desc_data,
-                        getConfiguration().getLabelForGetExtDescendentsData());
-            } else {
-                addClickToOption(Configuration.get_ext_desc_data,
-                        getConfiguration().getClickToTitle(Configuration.get_ext_desc_data));
-            }
-            if (default_option == Configuration.get_ext_desc_data) {
                 selected_index = cb_index;
             }
             cb_index++;
@@ -2006,8 +1990,6 @@ final class ControlPanel extends JPanel implements ActionListener {
             setActionWhenNodeClicked(NodeClickAction.EDIT_NODE_DATA);
         } else if (action == _select_nodes_item) {
             setActionWhenNodeClicked(NodeClickAction.SELECT_NODES);
-        } else if (action == _get_ext_desc_data) {
-            setActionWhenNodeClicked(NodeClickAction.GET_EXT_DESC_DATA);
         } else if (action == _open_pdb_item) {
             setActionWhenNodeClicked(NodeClickAction.OPEN_PDB_WEB);
         } else if (action == _color_node_font_item) {

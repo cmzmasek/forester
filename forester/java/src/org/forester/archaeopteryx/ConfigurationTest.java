@@ -55,15 +55,12 @@ public final class ConfigurationTest {
         if ( !"Colorize Subtree(s)".equals( c.getClickToTitle( Configuration.color_subtree ) ) ) {
             return false;
         }
-        if ( !"List Node Data".equals( c.getClickToTitle( Configuration.get_ext_desc_data ) ) ) {
-            return false;
-        }
         if ( !"Order Subtree".equals( c.getClickToTitle( Configuration.order_subtree ) ) ) {
             return false;
         }
-        // the removed "Change Node Font(s)" option must no longer appear anywhere in the table
+        // the removed "Change Node Font(s)" and "List Node Data" options must no longer appear in the table
         for ( final String[] option : Configuration.clickto_options ) {
-            if ( "Change Node Font(s)".equals( option[ 0 ] ) ) {
+            if ( "Change Node Font(s)".equals( option[ 0 ] ) || "List Node Data".equals( option[ 0 ] ) ) {
                 return false;
             }
         }

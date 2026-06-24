@@ -88,7 +88,6 @@ import javax.swing.Popup;
 import javax.swing.PopupFactory;
 import javax.swing.SwingUtilities;
 
-import org.forester.archaeopteryx.Configuration.EXT_NODE_DATA_RETURN_ON;
 import org.forester.archaeopteryx.ControlPanel.NodeClickAction;
 import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
@@ -98,23 +97,19 @@ import org.forester.archaeopteryx.phylogeny.data.RenderableMsaSequence;
 import org.forester.archaeopteryx.phylogeny.data.RenderableVector;
 import org.forester.archaeopteryx.tools.Blast;
 import org.forester.io.parsers.phyloxml.PhyloXmlUtil;
-import org.forester.io.writers.SequenceWriter;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyMethods.DESCENDANT_SORT_PRIORITY;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Accession;
-import org.forester.phylogeny.data.Annotation;
 import org.forester.phylogeny.data.BranchColor;
 import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.data.DomainArchitecture;
 import org.forester.phylogeny.data.Event;
-import org.forester.phylogeny.data.NodeDataField;
 import org.forester.phylogeny.data.NodeVisualData;
 import org.forester.phylogeny.data.NodeVisualData.NodeFill;
 import org.forester.phylogeny.data.NodeVisualData.NodeShape;
 import org.forester.phylogeny.data.PhylogenyDataUtil;
-import org.forester.phylogeny.data.ProteinDomain;
 import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.SequenceRelation;
 import org.forester.phylogeny.data.Taxonomy;
@@ -269,9 +264,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private Configuration _configuration = null;
     private ControlPanel _control_panel = null;
     private final CubicCurve2D _cubic_curve = new CubicCurve2D.Float();
-    private Set<Long> _current_external_nodes = null;
-    private StringBuilder _current_external_nodes_data_buffer = new StringBuilder();
-    private int _current_external_nodes_data_buffer_change_counter = 0;
     private int _domain_structure_e_value_thr_exp = AptxConstants.DOMAIN_STRUCTURE_E_VALUE_THR_DEFAULT_EXP;
     private double _domain_structure_width = AptxConstants.DOMAIN_STRUCTURE_DEFAULT_WIDTH;
     private int _dynamic_hiding_factor = 0;
@@ -628,13 +620,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         resetNodeIdToDistToLeafMap();
         setEdited(true);
         repaint();
-    }
-
-    final private void addToCurrentExternalNodes(final long i) {
-        if (_current_external_nodes == null) {
-            _current_external_nodes = new HashSet<>();
-        }
-        _current_external_nodes.add(i);
     }
 
     final private void assignGraphicsForBranchWithColorForParentBranch(final PhylogenyNode node,
@@ -1097,9 +1082,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     private final Color getColorForFoundNode(final PhylogenyNode n) {
-        if (isInCurrentExternalNodes(n)) {
-            return getTreeColorSet().getFoundColor0();
-        } else if (isInFoundNodes0(n) && !isInFoundNodes1(n)) {
+        if (isInFoundNodes0(n) && !isInFoundNodes1(n)) {
             return getTreeColorSet().getFoundColor0();
         } else if (!isInFoundNodes0(n) && isInFoundNodes1(n)) {
             return getTreeColorSet().getFoundColor1();
@@ -1110,10 +1093,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     final private Set<Long> getCopiedAndPastedNodes() {
         return getMainPanel().getCopiedAndPastedNodes();
-    }
-
-    final private Set<Long> getCurrentExternalNodes() {
-        return _current_external_nodes;
     }
 
     final private Phylogeny getCutOrCopiedTree() {
@@ -1271,9 +1250,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             case SORT_DESCENDENTS:
                 sortDescendants(node);
                 break;
-            case GET_EXT_DESC_DATA:
-                showExtDescNodeData(node, '_');
-                break;
             case UNCOLLAPSE_ALL:
                 uncollapseAll(node);
                 break;
@@ -1283,10 +1259,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             default:
                 throw new IllegalArgumentException("unknown action: " + action);
         }
-    }
-
-    final private void increaseCurrentExternalNodesDataBufferChangeCounter() {
-        _current_external_nodes_data_buffer_change_counter++;
     }
 
     final private void increaseOvSize() {
@@ -1355,10 +1327,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         } else {
             return false;
         }
-    }
-
-    final private boolean isInCurrentExternalNodes(final PhylogenyNode node) {
-        return ((getCurrentExternalNodes() != null) && getCurrentExternalNodes().contains(node.getId()));
     }
 
     private boolean isInFoundNodes(final PhylogenyNode n) {
@@ -1616,10 +1584,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 } else {
                     _node_popup_menu_items[i].setEnabled(false);
                 }
-            } else if (title.startsWith(Configuration.clickto_options[Configuration.get_ext_desc_data][0])) {
-                _node_popup_menu_items[i]
-                        .setText(Configuration.clickto_options[Configuration.get_ext_desc_data][0] + ": "
-                                + getOptions().getExtDescNodeDataToReturn().toString());
             } else if (title.equals(Configuration.clickto_options[Configuration.open_tax_web][0])) {
                 _node_popup_menu_items[i].setEnabled(isCanOpenTaxWeb(node));
             } else if (title.equals(Configuration.clickto_options[Configuration.blast][0])) {
@@ -1809,10 +1773,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return TreePanelUtil.abbreviateScientificName(sn);
         }
         return sn;
-    }
-
-    private final String obtainTitleForExtDescNodeData() {
-        return getOptions().getExtDescNodeDataToReturn().toString();
     }
 
     final private void openPdbWeb(final PhylogenyNode node) {
@@ -2512,7 +2472,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return;
         }
         paintNodeSupportSymbol(x, y, node, g, to_pdf, to_graphics_file);
-        if ((isInFoundNodes(node) || isInCurrentExternalNodes(node))
+        if ((isInFoundNodes(node))
                 || (getOptions().isShowDefaultNodeShapesExternal() && node.isExternal())
                 || (getOptions().isShowDefaultNodeShapesInternal() && node.isInternal())
                 || (getOptions().isShowDefaultNodeShapesForMarkedNodes()
@@ -2540,7 +2500,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             Color outline_color = null;
             if ((to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite()) {
                 outline_color = Color.BLACK;
-            } else if (isInFoundNodes(node) || isInCurrentExternalNodes(node)) {
+            } else if (isInFoundNodes(node)) {
                 outline_color = getColorForFoundNode(node);
             } else if (vis != null) {
                 if (vis.getNodeColor() != null) {
@@ -3237,7 +3197,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (node.isCollapse()) {
             return;
         }
-        if (isInFoundNodes(node) || isInCurrentExternalNodes(node)) {
+        if (isInFoundNodes(node)) {
             g.setColor(getColorForFoundNode(node));
             drawRectFilled(node.getXSecondary() - OVERVIEW_FOUND_NODE_BOX_SIZE_HALF,
                     node.getYSecondary() - OVERVIEW_FOUND_NODE_BOX_SIZE_HALF,
@@ -3281,7 +3241,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                             final int dynamic_hiding_factor,
                                             final boolean to_graphics_file,
                                             final boolean disallow_shortcutting) {
-        final boolean is_in_found_nodes = isInFoundNodes(node) || isInCurrentExternalNodes(node);
+        final boolean is_in_found_nodes = isInFoundNodes(node);
         if (node.isCollapse()) {
             if ((!node.isRoot() && !node.getParent().isCollapse())) {
                 paintCollapsedNode(g, node, to_graphics_file, to_pdf, is_in_found_nodes);
@@ -3746,7 +3706,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     to_graphics_file,
                     radial_labels,
                     (high_angle + low_angle) / 2,
-                    isInFoundNodes(n) || isInCurrentExternalNodes(n));
+                    isInFoundNodes(n));
             return;
         }
         final float num_enclosed = n.getNumberOfExternalNodes();
@@ -3836,7 +3796,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final float new_y = (float) (y + (Math.sin(mid_angle) * length));
             desc.setXSecondary(new_x);
             desc.setYSecondary(new_y);
-            if (isInFoundNodes(desc) || isInCurrentExternalNodes(desc)) {
+            if (isInFoundNodes(desc)) {
                 g.setColor(getColorForFoundNode(desc));
                 drawRectFilled(desc.getXSecondary() - OVERVIEW_FOUND_NODE_BOX_SIZE_HALF,
                         desc.getYSecondary() - OVERVIEW_FOUND_NODE_BOX_SIZE_HALF,
@@ -4074,208 +4034,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     final private void setUrtFactorOv(final float urt_factor_ov) {
         _urt_factor_ov = urt_factor_ov;
-    }
-
-    private void showExtDescNodeData(final PhylogenyNode node, final char separator) {
-        final List<String> data = new ArrayList<>();
-        final List<PhylogenyNode> nodes = node.getAllExternalDescendants();
-        if ((getFoundNodes0() != null) || (getFoundNodes1() != null)) {
-            for (final PhylogenyNode n : getFoundNodesAsListOfPhylogenyNodes()) {
-                if (!nodes.contains(n)) {
-                    nodes.add(n);
-                }
-            }
-        }
-        for (final PhylogenyNode n : nodes) {
-            switch (getOptions().getExtDescNodeDataToReturn()) {
-                case NODE_NAME:
-                    if (!ForesterUtil.isEmpty(n.getName())) {
-                        data.add(n.getName());
-                    }
-                    break;
-                case SEQUENCE_NAME:
-                    if (n.getNodeData().isHasSequence()
-                            && !ForesterUtil.isEmpty(n.getNodeData().getSequence().getName())) {
-                        data.add(n.getNodeData().getSequence().getName());
-                    }
-                    break;
-                case GENE_NAME:
-                    if (n.getNodeData().isHasSequence()
-                            && !ForesterUtil.isEmpty(n.getNodeData().getSequence().getGeneName())) {
-                        data.add(n.getNodeData().getSequence().getGeneName());
-                    }
-                    break;
-                case SEQUENCE_SYMBOL:
-                    if (n.getNodeData().isHasSequence()
-                            && !ForesterUtil.isEmpty(n.getNodeData().getSequence().getSymbol())) {
-                        data.add(n.getNodeData().getSequence().getSymbol());
-                    }
-                    break;
-                case SEQUENCE_MOL_SEQ_FASTA:
-                    final StringBuilder sb = new StringBuilder();
-                    if (n.getNodeData().isHasSequence()
-                            && !ForesterUtil.isEmpty(n.getNodeData().getSequence().getMolecularSequence())) {
-                        final StringBuilder ann = new StringBuilder();
-                        if (getControlPanel().isShowNodeNames() && !ForesterUtil.isEmpty(n.getName())) {
-                            ann.append(n.getName());
-                            ann.append(separator);
-                        }
-                        if (n.getNodeData().isHasTaxonomy()) {
-                            if (getControlPanel().isShowTaxonomyCode()
-                                    && !ForesterUtil.isEmpty(n.getNodeData().getTaxonomy().getTaxonomyCode())) {
-                                ann.append(n.getNodeData().getTaxonomy().getTaxonomyCode());
-                                ann.append(separator);
-                            }
-                            if (getControlPanel().isShowTaxonomyScientificNames()
-                                    && !ForesterUtil.isEmpty(n.getNodeData().getTaxonomy().getScientificName())) {
-                                ann.append(n.getNodeData().getTaxonomy().getScientificName());
-                                ann.append(separator);
-                            }
-                            if (getControlPanel().isShowTaxonomyCommonNames()
-                                    && !ForesterUtil.isEmpty(n.getNodeData().getTaxonomy().getCommonName())) {
-                                ann.append(n.getNodeData().getTaxonomy().getCommonName());
-                                ann.append(separator);
-                            }
-                        }
-                        if (getControlPanel().isShowSeqSymbols()
-                                && !ForesterUtil.isEmpty(n.getNodeData().getSequence().getSymbol())) {
-                            ann.append(n.getNodeData().getSequence().getSymbol());
-                            ann.append(separator);
-                        }
-                        if (getControlPanel().isShowSeqNames()
-                                && !ForesterUtil.isEmpty(n.getNodeData().getSequence().getName())) {
-                            ann.append(n.getNodeData().getSequence().getName());
-                            ann.append(separator);
-                        }
-                        if (getControlPanel().isShowGeneNames()
-                                && !ForesterUtil.isEmpty(n.getNodeData().getSequence().getGeneName())) {
-                            ann.append(n.getNodeData().getSequence().getGeneName());
-                            ann.append(separator);
-                        }
-                        if (getControlPanel().isShowSequenceAcc()
-                                && (n.getNodeData().getSequence().getAccession() != null)) {
-                            ann.append(n.getNodeData().getSequence().getAccession().asText());
-                            ann.append(separator);
-                        }
-                        final String ann_str;
-                        if ((ann.length() > 0) && (ann.charAt(ann.length() - 1) == separator)) {
-                            ann_str = ann.substring(0, ann.length() - 1);
-                        } else {
-                            ann_str = ann.toString();
-                        }
-                        sb.append(SequenceWriter
-                                .toFasta(ann_str, n.getNodeData().getSequence().getMolecularSequence(), 60));
-                        data.add(sb.toString());
-                    }
-                    break;
-                case SEQUENCE_ACC:
-                    if (n.getNodeData().isHasSequence() && (n.getNodeData().getSequence().getAccession() != null)
-                            && !ForesterUtil.isEmpty(n.getNodeData().getSequence().getAccession().toString())) {
-                        data.add(n.getNodeData().getSequence().getAccession().toString());
-                    }
-                    break;
-                case TAXONOMY_SCIENTIFIC_NAME:
-                    if (n.getNodeData().isHasTaxonomy()
-                            && !ForesterUtil.isEmpty(n.getNodeData().getTaxonomy().getScientificName())) {
-                        data.add(n.getNodeData().getTaxonomy().getScientificName());
-                    }
-                    break;
-                case TAXONOMY_CODE:
-                    if (n.getNodeData().isHasTaxonomy()
-                            && !ForesterUtil.isEmpty(n.getNodeData().getTaxonomy().getTaxonomyCode())) {
-                        data.add(n.getNodeData().getTaxonomy().getTaxonomyCode());
-                    }
-                    break;
-                case DOMAINS_ALL:
-                case DOMAINS_COLLAPSED_PER_PROTEIN:
-                    if (n.getNodeData().isHasSequence()
-                            && (n.getNodeData().getSequence().getDomainArchitecture() != null)) {
-                        final DomainArchitecture da = n.getNodeData().getSequence().getDomainArchitecture();
-                        final Set<String> s = new HashSet<>();
-                        for (int i = 0; i < da.getDomains().size(); ++i) {
-                            final ProteinDomain d = da.getDomain(i);
-                            if (d.getConfidence() <= Math.pow(10, getDomainStructureEvalueThresholdExp())) {
-                                final String name = d.getName();
-                                if (!(s.contains(name))) {
-                                    data.add(name);
-                                    if (getOptions()
-                                            .getExtDescNodeDataToReturn() == NodeDataField.DOMAINS_COLLAPSED_PER_PROTEIN) {
-                                        s.add(name);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    break;
-                case SEQ_ANNOTATIONS:
-                    if (n.getNodeData().isHasSequence()) {
-                        if (n.getNodeData().isHasSequence()
-                                && (n.getNodeData().getSequence().getAnnotations() != null)) {
-                            final SortedSet<Annotation> a = n.getNodeData().getSequence().getAnnotations();
-                            for (int i = 0; i < a.size(); ++i) {
-                                data.add(n.getNodeData().getSequence().getAnnotation(i).toString());
-                            }
-                        }
-                    }
-                    break;
-                case GO_TERM_IDS:
-                    if (n.getNodeData().isHasSequence()) {
-                        if (n.getNodeData().isHasSequence()
-                                && (n.getNodeData().getSequence().getAnnotations() != null)) {
-                            final SortedSet<Annotation> a = n.getNodeData().getSequence().getAnnotations();
-                            for (int i = 0; i < a.size(); ++i) {
-                                final Annotation ann = n.getNodeData().getSequence().getAnnotation(i);
-                                final String ref = ann.getRef();
-                                if (ref.toUpperCase().startsWith("GO:")) {
-                                    data.add(ref);
-                                }
-                            }
-                        }
-                    }
-                    break;
-                case UNKNOWN:
-                    TreePanelUtil.showExtDescNodeDataUserSelectedHelper(getControlPanel(), n, data);
-                    break;
-                default:
-                    throw new IllegalArgumentException("unknown data element: "
-                            + getOptions().getExtDescNodeDataToReturn());
-            }
-        } // for loop
-        final StringBuilder sb = new StringBuilder();
-        final int size = TreePanelUtil.nodeDataIntoStringBuffer(data, getOptions(), sb);
-        if ((getConfiguration().getExtNodeDataReturnOn() == EXT_NODE_DATA_RETURN_ON.CONSOLE)
-                || (getConfiguration().getExtNodeDataReturnOn() == EXT_NODE_DATA_RETURN_ON.BUFFER_ONLY)) {
-            if (getConfiguration().getExtNodeDataReturnOn() == EXT_NODE_DATA_RETURN_ON.CONSOLE) {
-                System.out.println(sb);
-            }
-            if (sb.length() < 1) {
-                clearCurrentExternalNodesDataBuffer();
-            } else {
-                setCurrentExternalNodesDataBuffer(sb);
-            }
-        } else if (getConfiguration().getExtNodeDataReturnOn() == EXT_NODE_DATA_RETURN_ON.WINODW) {
-            if (sb.length() < 1) {
-                TreePanelUtil.showInformationMessage(this,
-                        "No Appropriate Data (" + obtainTitleForExtDescNodeData() + ")",
-                        "Descendants of selected node do not contain selected data");
-                clearCurrentExternalNodesDataBuffer();
-            } else {
-                setCurrentExternalNodesDataBuffer(sb);
-                String title;
-                if ((getFoundNodes0() != null) && !getFoundNodes0().isEmpty()) {
-                    title = (getOptions().getExtDescNodeDataToReturn() == NodeDataField.UNKNOWN ? "Data"
-                            : obtainTitleForExtDescNodeData()) + " for " + data.size() + " nodes, unique entries: "
-                            + size;
-                } else {
-                    title = (getOptions().getExtDescNodeDataToReturn() == NodeDataField.UNKNOWN ? "Data"
-                            : obtainTitleForExtDescNodeData()) + " for " + data.size() + "/"
-                            + node.getNumberOfExternalNodes() + " external descendats of node " + node
-                            + ", unique entries: " + size;
-                }
-                final String s = sb.toString().trim();
-                getMainPanel().getMainFrame().showTextFrame(s, title);
-            }
-        }
     }
 
     final private void showNodeDataPopup(final MouseEvent e, final PhylogenyNode node) {
@@ -5374,10 +5132,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return s.substring(0, len) + ellipsis;
     }
 
-    void clearCurrentExternalNodesDataBuffer() {
-        setCurrentExternalNodesDataBuffer(new StringBuilder());
-    }
-
     /**
      * Collapse the tree from the given node
      *
@@ -5778,14 +5532,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return _control_panel;
     }
 
-    String getCurrentExternalNodesDataBufferAsString() {
-        return _current_external_nodes_data_buffer.toString();
-    }
-
-    int getCurrentExternalNodesDataBufferChangeCounter() {
-        return _current_external_nodes_data_buffer_change_counter;
-    }
-
     final int getDomainStructureEvalueThresholdExp() {
         return _domain_structure_e_value_thr_exp;
     }
@@ -6178,10 +5924,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     final void mouseMoved(final MouseEvent e) {
         requestFocusInWindow();
-        if (_current_external_nodes != null) {
-            _current_external_nodes = null;
-            repaint();
-        }
         if (getControlPanel().isNodeDescPopup()) {
             if (_node_desc_popup != null) {
                 _node_desc_popup.hide();
@@ -6211,13 +5953,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             final PhylogenyNode node = findNode(e.getX(), e.getY());
             if ((node != null) && (node.isRoot() || !node.getParent().isCollapse())) {
-                if ((getControlPanel().getActionWhenNodeClicked() == NodeClickAction.GET_EXT_DESC_DATA)) {
-                    for (final PhylogenyNode n : node.getAllExternalDescendants()) {
-                        addToCurrentExternalNodes(n.getId());
-                    }
-                    setCursor(HAND_CURSOR);
-                    repaint();
-                } else if ((getControlPanel().getActionWhenNodeClicked() == NodeClickAction.CUT_SUBTREE)
+                if ((getControlPanel().getActionWhenNodeClicked() == NodeClickAction.CUT_SUBTREE)
                         || (getControlPanel().getActionWhenNodeClicked() == NodeClickAction.COPY_SUBTREE)
                         || (getControlPanel().getActionWhenNodeClicked() == NodeClickAction.PASTE_SUBTREE)
                         || (getControlPanel().getActionWhenNodeClicked() == NodeClickAction.DELETE_NODE_OR_SUBTREE)
@@ -6270,8 +6006,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 g);
         paintNodeBox(c.getXcoord(), c.getYcoord(), c, g, to_pdf, to_graphics_file);
         if (c.isExternal()) {
-            final boolean is_in_found_nodes = isInFoundNodes0(c) || isInFoundNodes1(c)
-                    || isInCurrentExternalNodes(c);
+            final boolean is_in_found_nodes = isInFoundNodes0(c) || isInFoundNodes1(c);
             if ((_dynamic_hiding_factor > 1) && !is_in_found_nodes
                     && ((_urt_nodeid_index_map.get(c.getId()) % _dynamic_hiding_factor) != 1)) {
                 return;
@@ -6298,7 +6033,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 root_x + (Math.cos(angle) * parent_radius),
                 root_y + (Math.sin(angle) * parent_radius),
                 g);
-        if (isInFoundNodes(c) || isInCurrentExternalNodes(c)) {
+        if (isInFoundNodes(c)) {
             g.setColor(getColorForFoundNode(c));
             drawRectFilled(c.getXSecondary() - OVERVIEW_FOUND_NODE_BOX_SIZE_HALF,
                     c.getYSecondary() - OVERVIEW_FOUND_NODE_BOX_SIZE_HALF,
@@ -6688,11 +6423,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     final void setControlPanel(final ControlPanel atv_control) {
         _control_panel = atv_control;
-    }
-
-    void setCurrentExternalNodesDataBuffer(final StringBuilder sb) {
-        increaseCurrentExternalNodesDataBufferChangeCounter();
-        _current_external_nodes_data_buffer = sb;
     }
 
     final void setFoundNodes0(final Set<Long> found_nodes) {
