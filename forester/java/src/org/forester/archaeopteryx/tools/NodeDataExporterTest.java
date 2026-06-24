@@ -67,6 +67,10 @@ public final class NodeDataExporterTest {
             if ( fasta.contains( "ZIKV_3" ) ) {
                 return fail( "tip without a molecular sequence must not appear in the FASTA" );
             }
+            // record count = one per emitted sequence (ZIKV_1 + ZIKV_2; ZIKV_3 has none)
+            if ( ( NodeDataExporter.fastaRecordCount( fasta ) != 2 ) || ( NodeDataExporter.fastaRecordCount( "" ) != 0 ) ) {
+                return fail( "fastaRecordCount wrong: " + NodeDataExporter.fastaRecordCount( fasta ) );
+            }
 
             // ---- TSV: header has only the populated columns, rows carry the values ----
             final String[] lines = NodeDataExporter.toNodeDataTsv( phy ).split( "\\R" );

@@ -2068,8 +2068,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     void exportSequencesAsFasta() {
         final Phylogeny phy = currentPhylogenyForExport();
         if (phy != null) {
-            writeDataExportToFile(NodeDataExporter.toFasta(phy), "molecular sequences (FASTA)",
-                    suggestedExportName(phy, ".fasta"), null);
+            final String fasta = NodeDataExporter.toFasta(phy);
+            writeDataExportToFile(fasta, "molecular sequences (FASTA)", NodeDataExporter.fastaRecordCount(fasta),
+                    phy.getNumberOfExternalNodes(), suggestedExportName(phy, ".fasta"), null);
         }
     }
 
@@ -2079,7 +2080,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if (phy != null) {
             final String note = NodeDataExporter.tipNamesFormUniqueKey(phy) ? null
                     : "Some tip names are blank or duplicated, so a \"node_id\" column was added as the unique key.";
-            writeDataExportToFile(NodeDataExporter.toNodeDataTsv(phy), "node data (TSV)",
+            // one row per external node, so the row count equals the external-node total (for now)
+            final int total = phy.getNumberOfExternalNodes();
+            writeDataExportToFile(NodeDataExporter.toNodeDataTsv(phy), "node-data rows (TSV)", total, total,
                     suggestedExportName(phy, ".tsv"), note);
         }
     }
@@ -2109,8 +2112,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     }
 
     /** Shared save flow for the read-only data exports: pick a file (overwrite-confirmed) and write the text. */
-    private void writeDataExportToFile(final String content, final String what, final String suggested_name,
-                                       final String note) {
+    private void writeDataExportToFile(final String content, final String what, final int count, final int total,
+                                       final String suggested_name, final String note) {
         if (ForesterUtil.isEmpty(content)) {
             JOptionPane.showMessageDialog(this, "There is no " + what + " in this tree to export.",
                     "Nothing to Export", JOptionPane.INFORMATION_MESSAGE);
@@ -2144,7 +2147,12 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             return;
         }
         setCurrentDir(fc.getCurrentDirectory());
-        final String msg = "Wrote " + what + " to:\n" + file
+        // When the user has navigated into a subtree, the current phylogeny *is* that subtree, so the export
+        // covers only it -- make that explicit so the smaller count isn't a surprise.
+        final boolean from_subtree = (_mainpanel.getCurrentTreePanel() != null)
+                && _mainpanel.getCurrentTreePanel().isCurrentTreeIsSubtree();
+        final String scope = total + " external nodes" + (from_subtree ? " in the currently displayed subtree" : "");
+        final String msg = "Wrote " + count + " " + what + " from " + scope + " to:\n" + file
                 + (ForesterUtil.isEmpty(note) ? "" : "\n\n" + note);
         JOptionPane.showMessageDialog(this, msg, "Export Complete", JOptionPane.INFORMATION_MESSAGE);
     }

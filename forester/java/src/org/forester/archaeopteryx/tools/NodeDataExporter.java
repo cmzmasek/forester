@@ -149,6 +149,20 @@ public final class NodeDataExporter {
         return "";
     }
 
+    /** Number of FASTA records (header lines) in the given FASTA text produced by {@link #toFasta}. */
+    public static int fastaRecordCount( final String fasta ) {
+        if ( ForesterUtil.isEmpty( fasta ) ) {
+            return 0;
+        }
+        int count = 0;
+        for( final String line : fasta.split( "\\R", -1 ) ) {
+            if ( line.startsWith( ">" ) ) {
+                count++;
+            }
+        }
+        return count;
+    }
+
     /**
      * Whether the external-node names can serve as the import key: every tip has a non-empty name and all the
      * names are distinct. When false, {@link #toNodeDataTsv} adds a {@code node_id} key column.
