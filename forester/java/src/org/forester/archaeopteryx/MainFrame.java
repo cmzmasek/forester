@@ -164,6 +164,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String ITALIC_SN_TIP = "To set scientific (Latin) taxonomic names in italics (e.g. Homo sapiens), per the publication convention; only the scientific-name part is italicized, not the code, common name or rank";
     static final String OUTLINE_FONTS_VECTOR_LABEL = "Outline Fonts (SVG/EPS export)";
     static final String OUTLINE_FONTS_VECTOR_TIP = "SVG/EPS export embeds no fonts; outlining renders text as vector shapes so viewers cannot substitute the figure font (recommended). Turn off to keep selectable/searchable text, at the risk of font substitution.";
+    static final String TRANSPARENT_BG_LABEL = "Transparent Background (PNG)";
+    static final String TRANSPARENT_BG_TIP = "Export PNG with a transparent (alpha) background instead of the solid figure background. Ignored for formats that cannot carry transparency (JPG, etc.).";
     static final String SHOW_CONF_STDDEV_LABEL = "Confidence Standard Deviations";
     static final String SHOW_MAD_CONF_LABEL    = "MAD Confidence Values (MAD/regular)";
     static final String USE_BRACKETS_FOR_CONF_IN_NH_LABEL = "Use Brackets for Confidence Values";
@@ -223,6 +225,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JCheckBoxMenuItem _abbreviate_scientific_names;
     JCheckBoxMenuItem _use_italic_scientific_names_cbmi;
     JCheckBoxMenuItem _outline_fonts_in_vector_export_cbmi;
+    JCheckBoxMenuItem _transparent_export_background_cbmi;
     JCheckBoxMenuItem _color_labels_same_as_parent_branch;
     JCheckBoxMenuItem _show_default_node_shapes_internal_cbmi;
     JRadioButtonMenuItem _internal_labels_above_branch_rbmi;
@@ -383,6 +386,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         } else if (o == _use_italic_scientific_names_cbmi) {
             updateOptions(getOptions());
         } else if (o == _outline_fonts_in_vector_export_cbmi) {
+            updateOptions(getOptions());
+        } else if (o == _transparent_export_background_cbmi) {
             updateOptions(getOptions());
         } else if (o == _color_labels_same_as_parent_branch) {
             updateOptions(getOptions());
@@ -1120,6 +1125,46 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     }
 
     /**
+     * Load-time offer (NH/NHX/Nexus only, and only when the manual "Internal Node Names are Confidence
+     * Values" option is off): if the internal node labels look like support values
+     * ({@link AptxUtil#internalNamesLookLikeConfidenceValues}), ask whether to treat them as confidence
+     * values rather than node names.
+     */
+    void offerInternalNamesAsConfidence(final Phylogeny[] phys) {
+        if ((phys == null) || getOptions().isInternalNumberAreConfidenceForNhParsing()) {
+            return;
+        }
+        boolean offer = false;
+        for (final Phylogeny p : phys) {
+            if (AptxUtil.internalNamesLookLikeConfidenceValues(p)) {
+                offer = true;
+                break;
+            }
+        }
+        if (!offer) {
+            return;
+        }
+        final int choice = JOptionPane.showConfirmDialog(this,
+                "The internal node labels look like support / confidence values (e.g. bootstrap).\n"
+                        + "Treat them as confidence values instead of node names?",
+                "Internal Labels Look Like Support Values", JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE);
+        if (choice == JOptionPane.YES_OPTION) {
+            for (final Phylogeny p : phys) {
+                AptxUtil.stripBracketsFromInternalNames(p);
+                PhylogenyMethods.transferInternalNodeNamesToConfidence(p, "");
+            }
+            if (_mainpanel.getCurrentTreePanel() != null) {
+                _mainpanel.getCurrentTreePanel().setEdited(true);
+                // reveal the freshly-created confidence values so the conversion is immediately visible
+                _mainpanel.getControlPanel().setCheckbox(Configuration.write_confidence_values, true);
+                _mainpanel.getControlPanel().displayedPhylogenyMightHaveChanged(true);
+                _mainpanel.getCurrentTreePanel().repaint();
+            }
+        }
+    }
+
+    /**
      * The Tools "Extract Data from Labels…" operation: parse UniProt FASTA-header node names into proper
      * sequence + taxonomy fields (offline, only filling empties), shorten the names to their accession,
      * then reveal "Seq Name" + "Taxonomy Scientific" so the cleaned-up labels are visible.
@@ -1679,6 +1724,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 && _use_italic_scientific_names_cbmi.isSelected());
         options.setOutlineFontsInVectorExport((_outline_fonts_in_vector_export_cbmi != null)
                 && _outline_fonts_in_vector_export_cbmi.isSelected());
+        options.setTransparentExportBackground((_transparent_export_background_cbmi != null)
+                && _transparent_export_background_cbmi.isSelected());
         options.setColorLabelsSameAsParentBranch((_color_labels_same_as_parent_branch != null)
                 && _color_labels_same_as_parent_branch.isSelected());
         options.setShowDefaultNodeShapesInternal((_show_default_node_shapes_internal_cbmi != null)

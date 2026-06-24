@@ -348,6 +348,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Export resolution: ");
+        if (org.forester.archaeopteryx.ExportResolutionTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Collapse menu font: ");
         if (org.forester.archaeopteryx.CollapseMenuFontTest.test()) {
             System.out.println("OK.");

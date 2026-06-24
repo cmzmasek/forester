@@ -243,26 +243,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private static final BasicStroke STROKE_2 = new BasicStroke(2f);
 
 
-    private static final BasicStroke STROKE_01_DASHED = new BasicStroke(0.1f,
-            BasicStroke.CAP_SQUARE,
+    // Fine dotted "leader" that links each tip to its lined-up label/data in aligned-phylogram mode (the
+    // iTOL-style guide line). Round-capped dots at a visible width -- the old per-branch strokes were
+    // sub-pixel (0.01-0.1f) and rendered effectively invisible.
+    private static final BasicStroke LEADER_STROKE = new BasicStroke(0.7f,
+            BasicStroke.CAP_ROUND,
             BasicStroke.JOIN_ROUND,
-            0,
+            1.0f,
             new float[]{
-                    2.0f},
-            0f);
-    private static final BasicStroke STROKE_005_DASHED = new BasicStroke(0.05f,
-            BasicStroke.CAP_SQUARE,
-            BasicStroke.JOIN_ROUND,
-            0,
-            new float[]{
-                    2.0f},
-            0f);
-    private static final BasicStroke STROKE_001_DASHED = new BasicStroke(0.01f,
-            BasicStroke.CAP_SQUARE,
-            BasicStroke.JOIN_ROUND,
-            0,
-            new float[]{
-                    2.0f},
+                    1.0f, 2.0f},
             0f);
     // Neutral guide color for the lined-up-data connector (see connectorColor()/drawConnection).
     private static final Color CONNECTOR_GUIDE_COLOR = new Color(200, 200, 200);
@@ -332,6 +321,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private JTextArea _rollover_popup;
     private PhylogenyNode _root;
     private final StringBuilder _sb = new StringBuilder();
+    // Set transiently by AptxUtil around a PNG export so paintPhylogeny leaves the background unfilled
+    // (transparent). Off for screen and every other export format.
+    private boolean _export_transparent_background = false;
     // Cache for the italic-derived scientific-name font: deriveFont() allocates, and taxonomyLabel runs
     // per node per repaint, so re-derive only when the base font actually changes (see italicOf()).
     private Font _italic_base_font;
@@ -3019,18 +3011,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (((x1 + dist_left) < (x2 - dist_right))) {
             final Stroke stroke = g.getStroke();
             final Color saved_color = g.getColor();
-            if (stroke == STROKE_005) {
-                g.setStroke(STROKE_001_DASHED);
-            } else if (stroke == STROKE_01) {
-                g.setStroke(STROKE_005_DASHED);
-            } else {
-                g.setStroke(STROKE_01_DASHED);
-            }
-            // The connector is a neutral structural guide linking the (short) branch tip to the
-            // lined-up label. It must NOT inherit g's current color, which here is the node's label
-            // color: for a search-found node that color is the bright red/green highlight. On screen
-            // the sub-pixel dashed stroke antialiases it into near-invisibility, but in an export it
-            // renders as a fully saturated red/green "branch" (a long-standing bug).
+            g.setStroke(LEADER_STROKE);
+            // The connector is a neutral structural guide linking the (short) branch tip to the lined-up
+            // label. It must NOT inherit g's current color, which here is the node's label color: for a
+            // search-found node that color is the bright red/green highlight, which would otherwise render
+            // the guide as a saturated red/green "branch".
             g.setColor(connectorColor());
             drawLine(x1 + dist_left, y, x2 - dist_right, y, g);
             g.setStroke(stroke);
@@ -3664,6 +3649,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
         });
         return w[0];
+    }
+
+    /** Set by AptxUtil around a PNG export so paintPhylogeny leaves the background transparent. */
+    void setExportTransparentBackground(final boolean transparent) {
+        _export_transparent_background = transparent;
     }
 
     /** The italic-derived variant of {@code base}, cached so repeated paints don't re-allocate the Font. */
@@ -6331,12 +6321,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             g.setColor(getTreeColorSet().getBackgroundColor());
             if (!to_graphics_file) {
                 g.fill(r);
-            } else {
+            } else if (!_export_transparent_background) {
                 if (getOptions().isPrintBlackAndWhite()) {
                     g.setColor(Color.WHITE);
                 }
                 g.fillRect(graphics_file_x, graphics_file_y, graphics_file_width, graphics_file_height);
             }
+            // else: transparent PNG export -- leave the (ARGB) canvas unfilled
             setupStroke(g);
         } else {
             g.setStroke(new BasicStroke(getOptions().getPrintLineWidth()));

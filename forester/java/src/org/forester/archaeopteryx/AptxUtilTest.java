@@ -32,6 +32,7 @@ import java.util.Set;
 
 import org.forester.archaeopteryx.AptxUtil.GraphicsExportType;
 import org.forester.phylogeny.Phylogeny;
+import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Accession;
 import org.forester.phylogeny.data.BranchColor;
@@ -61,7 +62,87 @@ public final class AptxUtilTest {
         return testHasAtLeastOneNodeWithDomainArchitecture() && testGraphicsExportTypes() && testRankChoices()
                 && testRankCounts() && testRankCoverageCounts() && testNodePruningOutcome()
                 && testBranchesToCollapse() && testConfigFileOption() && testScanForDataPresence()
-                && testAssignDistinctColors() && testShortenLabel();
+                && testAssignDistinctColors() && testShortenLabel()
+                && testInternalNamesLookLikeConfidenceValues();
+    }
+
+    /**
+     * The load-time "internal labels look like support values?" heuristic: numeric internal labels in
+     * [0,100] (bare or bracketed) on >=2 nodes look like confidence; a real clade name, an out-of-range
+     * number, fewer than two labels, or none do not. The root label is ignored.
+     */
+    private static boolean testInternalNamesLookLikeConfidenceValues() {
+        try {
+            // isSupportLikeNumber units (incl. the bracketed form)
+            if ( !AptxUtil.isSupportLikeNumber( "95" ) || !AptxUtil.isSupportLikeNumber( "0.95" )
+                    || !AptxUtil.isSupportLikeNumber( "[87]" ) || !AptxUtil.isSupportLikeNumber( "100" )
+                    || !AptxUtil.isSupportLikeNumber( "0" ) ) {
+                return fail( "support-like numbers (incl. bracketed) must be recognized" );
+            }
+            if ( AptxUtil.isSupportLikeNumber( "150" ) || AptxUtil.isSupportLikeNumber( "-1" )
+                    || AptxUtil.isSupportLikeNumber( "Clade" ) || AptxUtil.isSupportLikeNumber( "" ) ) {
+                return fail( "out-of-range / non-numeric must not be support-like" );
+            }
+            // two numeric internal labels in range -> looks like confidence (root label ignored)
+            if ( !AptxUtil.internalNamesLookLikeConfidenceValues(
+                    Phylogeny.createInstanceFromNhxString( "((A,B)95,(C,D)87)myTree;" ) ) ) {
+                return fail( "two numeric internal labels should look like confidence" );
+            }
+            if ( !AptxUtil.internalNamesLookLikeConfidenceValues(
+                    Phylogeny.createInstanceFromNhxString( "((A,B)0.95,(C,D)0.87);" ) ) ) {
+                return fail( "posterior-probability internal labels should look like confidence" );
+            }
+            // a real clade name vetoes the offer
+            if ( AptxUtil.internalNamesLookLikeConfidenceValues(
+                    Phylogeny.createInstanceFromNhxString( "((A,B)95,(C,D)Mammalia);" ) ) ) {
+                return fail( "a non-numeric clade name must veto the offer" );
+            }
+            // only one labeled internal node -> below the >=2 threshold
+            if ( AptxUtil.internalNamesLookLikeConfidenceValues(
+                    Phylogeny.createInstanceFromNhxString( "((A,B)95,(C,D));" ) ) ) {
+                return fail( "a single numeric internal label is not enough" );
+            }
+            // out-of-range number vetoes
+            if ( AptxUtil.internalNamesLookLikeConfidenceValues(
+                    Phylogeny.createInstanceFromNhxString( "((A,B)150,(C,D)87);" ) ) ) {
+                return fail( "an out-of-range number must veto the offer" );
+            }
+            // no internal labels
+            if ( AptxUtil.internalNamesLookLikeConfidenceValues(
+                    Phylogeny.createInstanceFromNhxString( "((A,B),(C,D));" ) ) ) {
+                return fail( "no internal labels -> no offer" );
+            }
+            // end-to-end on the BRACKETED form (built by hand, since a parser may strip "[95]" as a
+            // comment): detector accepts it, then strip-brackets + transfer yields confidence 95 / empty name.
+            final Phylogeny bracketed = new Phylogeny();
+            final PhylogenyNode root = new PhylogenyNode();
+            final PhylogenyNode i1 = new PhylogenyNode();
+            i1.setName( "[95]" );
+            i1.addAsChild( new PhylogenyNode() );
+            i1.addAsChild( new PhylogenyNode() );
+            final PhylogenyNode i2 = new PhylogenyNode();
+            i2.setName( "[87]" );
+            i2.addAsChild( new PhylogenyNode() );
+            i2.addAsChild( new PhylogenyNode() );
+            root.addAsChild( i1 );
+            root.addAsChild( i2 );
+            bracketed.setRoot( root );
+            bracketed.externalNodesHaveChanged();
+            if ( !AptxUtil.internalNamesLookLikeConfidenceValues( bracketed ) ) {
+                return fail( "bracketed numeric internal labels should look like confidence" );
+            }
+            AptxUtil.stripBracketsFromInternalNames( bracketed );
+            PhylogenyMethods.transferInternalNodeNamesToConfidence( bracketed, "" );
+            if ( !i1.getBranchData().isHasConfidences()
+                    || ( i1.getBranchData().getConfidences().get( 0 ).getValue() != 95.0 )
+                    || !i1.getName().isEmpty() ) {
+                return fail( "strip-brackets + transfer must yield confidence 95 and clear the name" );
+            }
+            return true;
+        }
+        catch ( final Exception e ) {
+            return fail( "unexpected exception: " + e );
+        }
     }
 
     /**

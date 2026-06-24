@@ -29,7 +29,7 @@ import org.forester.util.ForesterConstants;
 public final class AptxConstants {
 
     public final static String PRG_NAME = "Archaeopteryx";
-    final static String VERSION = "0.9.33";
+    final static String VERSION = "0.9.34";
     final static String PRG_DATE = "2026-06-23";
     // The first three are bundled and registered at startup (see FontResources), so they are always
     // present and give identical, reproducible figure type across platforms; the rest are fallbacks.

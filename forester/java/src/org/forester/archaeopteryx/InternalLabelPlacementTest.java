@@ -74,6 +74,7 @@ public final class InternalLabelPlacementTest {
                     final MainPanel mp = mf[ 0 ].getMainPanel();
                     final TreePanel tp = mp.getCurrentTreePanel();
                     final ControlPanel cp = mp.getControlPanel();
+                    mp.getOptions().setRasterExportScale( 1 ); // pixel checks below are in logical coordinates
                     cp.setCheckbox( Configuration.display_internal_data, true );
                     cp.setCheckbox( Configuration.show_node_names, true );
                     cp.showWhole();

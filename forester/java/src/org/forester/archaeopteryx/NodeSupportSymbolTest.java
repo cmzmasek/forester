@@ -75,6 +75,7 @@ public final class NodeSupportSymbolTest {
                     f.validate();
                     final MainPanel mp = mf[ 0 ].getMainPanel();
                     final TreePanel tp = mp.getCurrentTreePanel();
+                    mp.getOptions().setRasterExportScale( 1 ); // pixel checks below are in logical coordinates
                     mp.getControlPanel().showWhole();
                     if ( ( tp.getWidth() < 200 ) || ( tp.getHeight() < 200 ) ) {
                         return; // no usable viewport in this environment; nothing to assert

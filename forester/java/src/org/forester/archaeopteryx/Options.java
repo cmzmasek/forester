@@ -122,6 +122,8 @@ final public class Options {
     private double _support_threshold;
     private NH_CONVERSION_SUPPORT_VALUE_STYLE _nh_conversion_support_value_style;
     private boolean _nh_parsing_replace_underscores;
+    private int _raster_export_scale;
+    private boolean _transparent_export_background;
     private NODE_LABEL_DIRECTION _node_label_direction;
     private short _number_of_digits_after_comma_for_branch_length_values;
     private short _number_of_digits_after_comma_for_confidence_values;
@@ -257,6 +259,12 @@ final public class Options {
         _number_of_digits_after_comma_for_branch_length_values = AptxConstants.NUMBER_OF_DIGITS_AFTER_COMMA_FOR_BRANCH_LENGTH_VALUES_DEFAULT;
         _number_of_digits_after_comma_for_confidence_values = AptxConstants.NUMBER_OF_DIGITS_AFTER_COMMA_FOR_CONFIDENCE_VALUES_DEFAULT;
         _nh_parsing_replace_underscores = false;
+        // Raster (PNG/JPG/TIFF/...) export multiplier: the figure is re-rendered onto an N-times-larger
+        // canvas for crisp, publication-DPI output (a true re-render, not pixel doubling). Defaults to 4
+        // so exports look print-ready out of the box; AptxUtil caps the effective scale for very large
+        // figures so it can't blow up memory. Transparent background applies to PNG only.
+        _raster_export_scale = 4;
+        _transparent_export_background = false;
         _taxonomy_extraction = TAXONOMY_EXTRACTION.NO;
         _cladogram_type = AptxConstants.CLADOGRAM_TYPE_DEFAULT;
         _show_domain_labels = true;
@@ -413,6 +421,22 @@ final public class Options {
 
     final boolean isReplaceUnderscoresInNhParsing() {
         return _nh_parsing_replace_underscores;
+    }
+
+    final int getRasterExportScale() {
+        return (_raster_export_scale < 1) ? 1 : _raster_export_scale;
+    }
+
+    final void setRasterExportScale(final int raster_export_scale) {
+        _raster_export_scale = raster_export_scale;
+    }
+
+    final boolean isTransparentExportBackground() {
+        return _transparent_export_background;
+    }
+
+    final void setTransparentExportBackground(final boolean transparent_export_background) {
+        _transparent_export_background = transparent_export_background;
     }
 
     final boolean isSearchCaseSensitive() {

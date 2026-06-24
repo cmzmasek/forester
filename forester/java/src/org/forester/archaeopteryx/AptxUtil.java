@@ -389,6 +389,72 @@ public final class AptxUtil {
         return label.substring(0, max - 1).stripTrailing() + "…";
     }
 
+    /**
+     * Heuristic for the load-time "treat internal labels as support values?" offer: {@code true} when the
+     * tree looks like a bootstrap/posterior tree -- at least two internal nodes carry a non-empty name,
+     * <em>every</em> such name is a number in [0, 100] (bare or wrapped in {@code [ ]}), and none is a real
+     * (non-numeric) clade name. Internal nodes that already carry a confidence are ignored. Strict by
+     * design so the offer never pops up on a tree with named clades or out-of-range numbers. Used only for
+     * NH/NHX/Nexus loads (phyloXML encodes confidence explicitly).
+     */
+    public final static boolean internalNamesLookLikeConfidenceValues(final Phylogeny phy) {
+        if ((phy == null) || phy.isEmpty()) {
+            return false;
+        }
+        int candidates = 0;
+        for (final PhylogenyNodeIterator it = phy.iteratorPostorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            // skip the root (a tree/root label is not a support value and must not veto the offer) and
+            // nodes that already carry a confidence (nothing to reinterpret).
+            if (n.isExternal() || n.isRoot() || n.getBranchData().isHasConfidences()) {
+                continue;
+            }
+            final String name = n.getName();
+            if (ForesterUtil.isEmpty(name)) {
+                continue;
+            }
+            if (!isSupportLikeNumber(name)) {
+                return false;
+            }
+            ++candidates;
+        }
+        return candidates >= 2;
+    }
+
+    /** A number in [0, 100], optionally wrapped in {@code [ ]} (the bracketed support form). */
+    static boolean isSupportLikeNumber(final String s) {
+        String t = s.trim();
+        if ((t.length() >= 2) && (t.charAt(0) == '[') && (t.charAt(t.length() - 1) == ']')) {
+            t = t.substring(1, t.length() - 1).trim();
+        }
+        try {
+            final double d = Double.parseDouble(t);
+            return (d >= 0.0) && (d <= 100.0);
+        }
+        catch (final NumberFormatException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Strips surrounding {@code [ ]} from internal node names (e.g. {@code "[90]"} &rarr; {@code "90"}) so
+     * the bracketed support form is convertible by {@code transferInternalNodeNamesToConfidence}, which
+     * parses the bare name. No-op on names without brackets or on external nodes.
+     */
+    public final static void stripBracketsFromInternalNames(final Phylogeny phy) {
+        for (final PhylogenyNodeIterator it = phy.iteratorPostorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if (n.isExternal()) {
+                continue;
+            }
+            final String name = n.getName();
+            if ((name != null) && (name.length() >= 2) && (name.charAt(0) == '[')
+                    && (name.charAt(name.length() - 1) == ']')) {
+                n.setName(name.substring(1, name.length() - 1).trim());
+            }
+        }
+    }
+
     final public static void launchWebBrowser(final URI uri, final String frame_name) throws IOException {
         boolean no_desktop = false;
         try {
@@ -1197,9 +1263,24 @@ public final class AptxUtil {
             width = visible.width;
             height = visible.height;
         }
-        final BufferedImage buffered_img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        // Higher-resolution export: re-render the figure onto a scale-times-larger canvas (a true
+        // re-render at the same logical coordinates, not pixel doubling), for crisp publication output.
+        // Cap the effective scale so a large figure x a high multiplier can't blow up memory (~100 MP /
+        // 400 MB ceiling); normal-sized figures keep the requested scale.
+        int scale = options.getRasterExportScale();
+        final long max_export_pixels = 100_000_000L;
+        while ((scale > 1) && ((((long) width * scale) * ((long) height * scale)) > max_export_pixels)) {
+            --scale;
+        }
+        // Transparent background only for PNG (the other raster formats can't carry an alpha channel).
+        final boolean transparent = options.isTransparentExportBackground() && (type == GraphicsExportType.PNG);
+        final BufferedImage buffered_img = new BufferedImage(width * scale, height * scale,
+                transparent ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB);
         Graphics2D g2d = buffered_img.createGraphics();
         g2d.setRenderingHints(rendering_hints);
+        if (scale != 1) {
+            g2d.scale(scale, scale);
+        }
         int x = 0;
         int y = 0;
         if (options.isGraphicsExportVisibleOnly()) {
@@ -1208,7 +1289,12 @@ public final class AptxUtil {
             x = visible.x;
             y = visible.y;
         }
-        tree_panel.paintPhylogeny(g2d, false, true, width, height, x, y);
+        tree_panel.setExportTransparentBackground(transparent);
+        try {
+            tree_panel.paintPhylogeny(g2d, false, true, width, height, x, y);
+        } finally {
+            tree_panel.setExportTransparentBackground(false);
+        }
         if (type == GraphicsExportType.TIFF) {
             writeToTiff(file, buffered_img);
         } else {

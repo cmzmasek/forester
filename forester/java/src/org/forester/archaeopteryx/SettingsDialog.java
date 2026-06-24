@@ -22,6 +22,7 @@ package org.forester.archaeopteryx;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 
@@ -191,6 +192,14 @@ final class SettingsDialog extends JDialog {
     private JPanel exportTab() {
         final JPanel c = column();
         c.add( header( "Graphics Export & Printing" ) );
+        final JSpinner raster_scale = intSpinner( _mf.getOptions().getRasterExportScale(), 1, 8, 1,
+                                                  v -> _mf.getOptions().setRasterExportScale( v ) );
+        raster_scale.setToolTipText( "<html>Resolution multiplier for raster (PNG/JPG/TIFF) export: the figure is "
+                + "re-rendered onto an N&times;-larger canvas for crisp, print-quality output<br>"
+                + "(a true re-render, not pixel doubling). 1 = on-screen size. Higher = larger files/memory; "
+                + "very large figures are capped automatically.<br>Does not affect vector (SVG/EPS/PDF) export.</html>" );
+        add( c, labeled( "Raster export scale (×):", raster_scale ) );
+        add( c, cb( _mf._transparent_export_background_cbmi ) );
         add( c, cb( _mf._outline_fonts_in_vector_export_cbmi ) );
         add( c, cb( _mf._antialias_print_cbmi ) );
         add( c, cb( _mf._print_black_and_white_cbmi ) );
@@ -488,6 +497,9 @@ final class SettingsDialog extends JDialog {
         final JPanel p = new JPanel( new FlowLayout( FlowLayout.LEFT, 6, 1 ) );
         p.add( new JLabel( label ) );
         p.add( control );
+        // Without this the row's max height is unbounded, so the Y-axis BoxLayout stretches it and the
+        // FlowLayout centers the label/control inside, leaving a large empty gap below the row.
+        p.setMaximumSize( new Dimension( Integer.MAX_VALUE, p.getPreferredSize().height ) );
         return p;
     }
 
