@@ -2068,9 +2068,13 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     void exportSequencesAsFasta() {
         final Phylogeny phy = currentPhylogenyForExport();
         if (phy != null) {
-            final String fasta = NodeDataExporter.toFasta(phy);
+            final ExportScope scope = chooseExportTips(phy);
+            if (scope == null) {
+                return; // cancelled
+            }
+            final String fasta = NodeDataExporter.toFasta(scope.tips);
             writeDataExportToFile(fasta, "molecular sequences (FASTA)", NodeDataExporter.fastaRecordCount(fasta),
-                    phy.getNumberOfExternalNodes(), suggestedExportName(phy, ".fasta"), null);
+                    scope.description, suggestedExportName(phy, ".fasta"), null);
         }
     }
 
@@ -2078,12 +2082,61 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     void exportNodeDataAsTsv() {
         final Phylogeny phy = currentPhylogenyForExport();
         if (phy != null) {
-            final String note = NodeDataExporter.tipNamesFormUniqueKey(phy) ? null
+            final ExportScope scope = chooseExportTips(phy);
+            if (scope == null) {
+                return; // cancelled
+            }
+            final String note = NodeDataExporter.tipNamesFormUniqueKey(scope.tips) ? null
                     : "Some tip names are blank or duplicated, so a \"node_id\" column was added as the unique key.";
-            // one row per external node, so the row count equals the external-node total (for now)
-            final int total = phy.getNumberOfExternalNodes();
-            writeDataExportToFile(NodeDataExporter.toNodeDataTsv(phy), "node-data rows (TSV)", total, total,
-                    suggestedExportName(phy, ".tsv"), note);
+            // one row per tip, so the row count is the size of the chosen scope
+            writeDataExportToFile(NodeDataExporter.toNodeDataTsv(scope.tips), "node-data rows (TSV)",
+                    scope.tips.size(), scope.description, suggestedExportName(phy, ".tsv"), note);
+        }
+    }
+
+    /** A chosen export scope: the tips to export and a human phrase for the completion message. */
+    private static final class ExportScope {
+        final List<PhylogenyNode> tips;
+        final String              description;
+
+        ExportScope(final List<PhylogenyNode> tips, final String description) {
+            this.tips = tips;
+            this.description = description;
+        }
+    }
+
+    /**
+     * Decide which tips a data export covers. With no node selection the whole displayed (sub)tree is used
+     * silently; with a selection the user picks Selected / Not-selected / All displayed / Cancel (a selected
+     * clade contributes its leaves). Returns null only if the user cancelled.
+     */
+    private ExportScope chooseExportTips(final Phylogeny phy) {
+        final List<PhylogenyNode> all = phy.getExternalNodes();
+        final TreePanel tp = _mainpanel.getCurrentTreePanel();
+        final boolean from_subtree = (tp != null) && tp.isCurrentTreeIsSubtree();
+        final String all_desc = all.size() + " external nodes"
+                + (from_subtree ? " in the currently displayed subtree" : "");
+        final List<PhylogenyNode> selected = (tp == null) ? new ArrayList<>()
+                : NodeDataExporter.externalTipsForSelection(phy, tp.getFoundNodesAsListOfPhylogenyNodes());
+        if (selected.isEmpty()) {
+            return new ExportScope(all, all_desc); // no selection -> whole displayed tree, no prompt
+        }
+        final List<PhylogenyNode> not_selected = NodeDataExporter.complementExternalTips(all, selected);
+        final Object[] options = {"Selected tips (" + selected.size() + ")",
+                "Not-selected tips (" + not_selected.size() + ")", "All displayed tips (" + all.size() + ")",
+                "Cancel"};
+        final int choice = JOptionPane.showOptionDialog(this,
+                selected.size() + " of " + all.size() + " tips are selected. Which tips do you want to export?",
+                "Export Scope", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+        switch (choice) {
+            case 0:
+                return new ExportScope(selected, selected.size() + " selected tips");
+            case 1:
+                return new ExportScope(not_selected, not_selected.size() + " not-selected tips");
+            case 2:
+                return new ExportScope(all, all_desc);
+            default:
+                return null; // Cancel or dialog closed
         }
     }
 
@@ -2112,8 +2165,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     }
 
     /** Shared save flow for the read-only data exports: pick a file (overwrite-confirmed) and write the text. */
-    private void writeDataExportToFile(final String content, final String what, final int count, final int total,
-                                       final String suggested_name, final String note) {
+    private void writeDataExportToFile(final String content, final String what, final int count,
+                                       final String scope_desc, final String suggested_name, final String note) {
         if (ForesterUtil.isEmpty(content)) {
             JOptionPane.showMessageDialog(this, "There is no " + what + " in this tree to export.",
                     "Nothing to Export", JOptionPane.INFORMATION_MESSAGE);
@@ -2147,12 +2200,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             return;
         }
         setCurrentDir(fc.getCurrentDirectory());
-        // When the user has navigated into a subtree, the current phylogeny *is* that subtree, so the export
-        // covers only it -- make that explicit so the smaller count isn't a surprise.
-        final boolean from_subtree = (_mainpanel.getCurrentTreePanel() != null)
-                && _mainpanel.getCurrentTreePanel().isCurrentTreeIsSubtree();
-        final String scope = total + " external nodes" + (from_subtree ? " in the currently displayed subtree" : "");
-        final String msg = "Wrote " + count + " " + what + " from " + scope + " to:\n" + file
+        final String msg = "Wrote " + count + " " + what + " from " + scope_desc + " to:\n" + file
                 + (ForesterUtil.isEmpty(note) ? "" : "\n\n" + note);
         JOptionPane.showMessageDialog(this, msg, "Export Complete", JOptionPane.INFORMATION_MESSAGE);
     }

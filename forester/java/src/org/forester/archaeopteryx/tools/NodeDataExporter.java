@@ -21,6 +21,7 @@
 package org.forester.archaeopteryx.tools;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -60,11 +61,16 @@ public final class NodeDataExporter {
      * description. Empty if no tip carries a molecular sequence.
      */
     public static String toFasta( final Phylogeny phy ) {
+        return ( phy == null ) ? "" : toFasta( phy.getExternalNodes() );
+    }
+
+    /** As {@link #toFasta(Phylogeny)} but for an explicit set of tips (the export-scope subset). */
+    public static String toFasta( final List<PhylogenyNode> tips ) {
         final StringBuilder sb = new StringBuilder();
-        if ( phy == null ) {
+        if ( tips == null ) {
             return sb.toString();
         }
-        for( final PhylogenyNode n : phy.getExternalNodes() ) {
+        for( final PhylogenyNode n : tips ) {
             if ( !n.getNodeData().isHasSequence() ) {
                 continue;
             }
@@ -171,6 +177,64 @@ public final class NodeDataExporter {
         return ( phy != null ) && namesFormUniqueKey( phy.getExternalNodes() );
     }
 
+    /** As {@link #tipNamesFormUniqueKey(Phylogeny)} but for an explicit set of tips. */
+    public static boolean tipNamesFormUniqueKey( final List<PhylogenyNode> tips ) {
+        return ( tips != null ) && namesFormUniqueKey( tips );
+    }
+
+    /**
+     * The external tips covered by a node selection, in tree order: a selected external node contributes
+     * itself, a selected internal node contributes all its external descendants (so "select a clade" exports
+     * its leaves). Duplicates are removed and the result follows {@code phy.getExternalNodes()} order.
+     */
+    public static List<PhylogenyNode> externalTipsForSelection( final Phylogeny phy,
+                                                                final Collection<PhylogenyNode> selected ) {
+        if ( ( phy == null ) || ( selected == null ) || selected.isEmpty() ) {
+            return new ArrayList<>();
+        }
+        final Set<Long> ids = new HashSet<>();
+        for( final PhylogenyNode n : selected ) {
+            if ( n.isExternal() ) {
+                ids.add( n.getId() );
+            }
+            else {
+                for( final PhylogenyNode d : n.getAllExternalDescendants() ) {
+                    ids.add( d.getId() );
+                }
+            }
+        }
+        final List<PhylogenyNode> tips = new ArrayList<>();
+        for( final PhylogenyNode ext : phy.getExternalNodes() ) {
+            if ( ids.contains( ext.getId() ) ) {
+                tips.add( ext );
+            }
+        }
+        return tips;
+    }
+
+    /**
+     * The tips of {@code all_tips} (keeping their order) that are not among {@code selected_tips}, compared by
+     * node id -- i.e. the complement used for a "Not-selected" export.
+     */
+    public static List<PhylogenyNode> complementExternalTips( final List<PhylogenyNode> all_tips,
+                                                              final Collection<PhylogenyNode> selected_tips ) {
+        final Set<Long> excluded = new HashSet<>();
+        if ( selected_tips != null ) {
+            for( final PhylogenyNode n : selected_tips ) {
+                excluded.add( n.getId() );
+            }
+        }
+        final List<PhylogenyNode> rest = new ArrayList<>();
+        if ( all_tips != null ) {
+            for( final PhylogenyNode n : all_tips ) {
+                if ( !excluded.contains( n.getId() ) ) {
+                    rest.add( n );
+                }
+            }
+        }
+        return rest;
+    }
+
     private static boolean namesFormUniqueKey( final List<PhylogenyNode> tips ) {
         final Set<String> seen = new HashSet<>();
         for( final PhylogenyNode n : tips ) {
@@ -183,10 +247,14 @@ public final class NodeDataExporter {
 
     /** Tab-separated tip-data table; columns with no value across every tip are omitted (except {@code name}). */
     public static String toNodeDataTsv( final Phylogeny phy ) {
-        if ( phy == null ) {
-            return "";
+        return ( phy == null ) ? "" : toNodeDataTsv( phy.getExternalNodes() );
+    }
+
+    /** As {@link #toNodeDataTsv(Phylogeny)} but for an explicit set of tips (the export-scope subset). */
+    public static String toNodeDataTsv( final List<PhylogenyNode> tips ) {
+        if ( ( tips == null ) || tips.isEmpty() ) {
+            return ""; // no tips -> no table (so the caller reports "nothing to export", like empty FASTA)
         }
-        final List<PhylogenyNode> tips = phy.getExternalNodes();
         final LinkedHashMap<String, String[]> cols = new LinkedHashMap<>();
         // When tip names are blank or duplicated they cannot key the table back to tips on import, so prepend
         // a guaranteed-unique node_id column (the stable per-tip node id within this tree) in that case.

@@ -130,6 +130,52 @@ public final class NodeDataExporterTest {
                     return fail( "node_id values must be present and unique: row " + i + " = " + alines[ i ] );
                 }
             }
+
+            // ---- export scope: tip-list overloads + selection expansion ----
+            final List<PhylogenyNode> ext = phy.getExternalNodes();
+            // a single-tip subset yields only that tip
+            final String one_fasta = NodeDataExporter.toFasta( ext.subList( 0, 1 ) );
+            if ( !one_fasta.contains( ">ZIKV_1" ) || one_fasta.contains( "ZIKV_2" ) ) {
+                return fail( "single-tip FASTA subset wrong:\n" + one_fasta );
+            }
+            if ( NodeDataExporter.toNodeDataTsv( ext.subList( 0, 1 ) ).split( "\\R" ).length != 2 ) {
+                return fail( "single-tip TSV should be header + 1 row" );
+            }
+            // selecting the (internal) root expands to all leaves, in tree order
+            if ( !sameOrder( NodeDataExporter.externalTipsForSelection( phy, Arrays.asList( phy.getRoot() ) ), ext ) ) {
+                return fail( "selecting the root should yield all tips in tree order" );
+            }
+            // selecting one external tip yields exactly that tip
+            final List<PhylogenyNode> one_sel = NodeDataExporter.externalTipsForSelection( phy,
+                                                                                           Arrays.asList( ext.get( 0 ) ) );
+            if ( ( one_sel.size() != 1 ) || ( one_sel.get( 0 ) != ext.get( 0 ) ) ) {
+                return fail( "selecting one tip should yield exactly that tip: " + one_sel );
+            }
+            // a tip plus its ancestor dedups to all tips (no double count)
+            if ( !sameOrder( NodeDataExporter.externalTipsForSelection( phy,
+                                                                        Arrays.asList( ext.get( 0 ), phy.getRoot() ) ),
+                             ext ) ) {
+                return fail( "tip + ancestor selection should dedup to all tips" );
+            }
+            // an empty selection yields no tips
+            if ( !NodeDataExporter.externalTipsForSelection( phy, Arrays.asList() ).isEmpty() ) {
+                return fail( "empty selection should yield no tips" );
+            }
+            // not-selected complement (by id), preserving order
+            if ( !sameOrder( NodeDataExporter.complementExternalTips( ext, Arrays.asList( ext.get( 0 ) ) ),
+                             ext.subList( 1, ext.size() ) ) ) {
+                return fail( "complement of the first tip should be the remaining tips in order" );
+            }
+            if ( !NodeDataExporter.complementExternalTips( ext, ext ).isEmpty() ) {
+                return fail( "complement of all tips should be empty" );
+            }
+            if ( !sameOrder( NodeDataExporter.complementExternalTips( ext, Arrays.asList() ), ext ) ) {
+                return fail( "complement of an empty selection should be all tips" );
+            }
+            // an empty tip scope -> empty TSV (so the caller reports "nothing to export", like empty FASTA)
+            if ( !NodeDataExporter.toNodeDataTsv( ext.subList( 0, 0 ) ).isEmpty() ) {
+                return fail( "empty-scope TSV should be empty, not a header-only table" );
+            }
             return true;
         }
         catch ( final Exception e ) {
@@ -191,6 +237,19 @@ public final class NodeDataExporterTest {
         phy.setRoot( root );
         phy.externalNodesHaveChanged();
         return phy;
+    }
+
+    /** Same nodes (by identity) in the same order. */
+    private static boolean sameOrder( final List<PhylogenyNode> a, final List<PhylogenyNode> b ) {
+        if ( a.size() != b.size() ) {
+            return false;
+        }
+        for ( int i = 0; i < a.size(); i++ ) {
+            if ( a.get( i ) != b.get( i ) ) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static boolean fail( final String message ) {
