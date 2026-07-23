@@ -22,6 +22,7 @@ package org.forester.archaeopteryx;
 
 import java.awt.BorderLayout;
 import java.awt.Font;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -36,13 +37,19 @@ import java.util.List;
 import java.util.Set;
 
 import javax.swing.ButtonGroup;
+import javax.swing.JCheckBox;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JRadioButton;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
 import javax.swing.JOptionPane;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.SwingUtilities;
@@ -51,6 +58,8 @@ import javax.swing.WindowConstants;
 import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
+import org.forester.archaeopteryx.tools.NodeDataExporter;
+import org.forester.archaeopteryx.tools.RepresentativeTipSelector;
 import org.forester.archaeopteryx.tools.SequenceAndTaxonomyDataObtainer;
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.nexus.NexusPhylogeniesParser;
@@ -82,9 +91,15 @@ public final class MainFrameApplication extends MainFrame {
     // Application-only print menu items
     private JMenuItem _collapse_below_threshold;
     private JMenuItem _collapse_below_branch_length;
+    private JMenuItem _select_representative_tips_jmi;
     // Others:
     double _min_not_collapse = AptxConstants.MIN_NOT_COLLAPSE_DEFAULT;
     double _min_not_collapse_bl = 0.001;
+    // "Select Representative Tips" remembered inputs (this session)
+    private double _repsel_cutoff = 0.05;
+    private int _repsel_target = 100;
+    private boolean _repsel_by_cutoff = true;
+    private int _repsel_pick_index = 0;
 
     private MainFrameApplication(final Phylogeny[] phys, final Configuration config) {
         _configuration = config;
@@ -309,6 +324,8 @@ public final class MainFrameApplication extends MainFrame {
                     return;
                 }
                 collapseBelowBranchLengthThreshold();
+            } else if (o == _select_representative_tips_jmi) {
+                selectRepresentativeTips();
             }
             _contentpane.repaint();
         } catch (final Exception ex) {
@@ -538,6 +555,218 @@ public final class MainFrameApplication extends MainFrame {
                 "Collapsed " + candidates.size() + " branch(es) shorter than " + threshold + ".",
                 "Collapsed " + candidates.size() + " branch(es)",
                 JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void selectRepresentativeTips() {
+        if (getCurrentTreePanel() == null) {
+            return;
+        }
+        final TreePanel tp = getCurrentTreePanel();
+        final Phylogeny phy = tp.getPhylogeny();
+        if ((phy == null) || phy.isEmpty() || (phy.getNumberOfExternalNodes() < 3)) {
+            JOptionPane.showMessageDialog(this,
+                    "The tree needs at least three external nodes to select representatives.",
+                    "Too Few Tips",
+                    JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        // tips the user has selected (search a/b + manual clicks; a selected clade contributes its leaves) can
+        // be protected from removal -- captured now, before the run overwrites the found-node highlight
+        final Set<Long> protected_ids = new HashSet<>();
+        for (final PhylogenyNode t : NodeDataExporter.externalTipsForSelection(phy,
+                tp.getFoundNodesAsListOfPhylogenyNodes())) {
+            protected_ids.add(t.getId());
+        }
+        // --- input dialog (distance-cutoff mode is unavailable without branch lengths) ---
+        final boolean has_bl = RepresentativeTipSelector.hasUsableBranchLengths(phy);
+        final RepSelInputs in = buildRepSelInputs(has_bl, _repsel_by_cutoff, _repsel_cutoff, _repsel_target,
+                _repsel_pick_index, protected_ids.size());
+        if (JOptionPane.showConfirmDialog(this, in._panel, "Select Representative Tips",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE) != JOptionPane.OK_OPTION) {
+            return;
+        }
+        // --- parse & validate ---
+        final boolean by_cutoff = in._cutoff_rb.isSelected();
+        final String s = in._value_tf.getText().trim();
+        double cutoff = 0.0;
+        int target = 0;
+        if (by_cutoff) {
+            try {
+                cutoff = Double.parseDouble(s);
+            } catch (final NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, "Please enter a numeric distance cutoff (for example 0.05).",
+                        "Invalid Cutoff", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            if (Double.isNaN(cutoff) || Double.isInfinite(cutoff) || (cutoff <= 0.0)) {
+                JOptionPane.showMessageDialog(this, "The distance cutoff must be a positive number.",
+                        "Invalid Cutoff", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+        }
+        else {
+            try {
+                target = Integer.parseInt(s);
+            } catch (final NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this,
+                        "Please enter a whole number of representatives (for example 100).",
+                        "Invalid Target", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            if (target < 1) {
+                JOptionPane.showMessageDialog(this, "The target number of representatives must be at least 1.",
+                        "Invalid Target", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+        }
+        // persist the inputs for next time; keep the remembered mode when cutoff was forced off by a
+        // branch-length-less tree, so it does not overwrite the user's real preference
+        if (has_bl) {
+            _repsel_by_cutoff = by_cutoff;
+        }
+        _repsel_pick_index = in._pick_box.getSelectedIndex();
+        if (by_cutoff) {
+            _repsel_cutoff = cutoff;
+        }
+        else {
+            _repsel_target = target;
+        }
+        final RepresentativeTipSelector.RepresentativePick pick = (_repsel_pick_index == 1)
+                ? RepresentativeTipSelector.RepresentativePick.LONGEST_BRANCH
+                : RepresentativeTipSelector.RepresentativePick.MEDOID;
+        final Set<Long> protect = in._protect_cb.isSelected() ? protected_ids : new HashSet<>();
+        // --- compute on the displayed tree & highlight ---
+        final RepresentativeTipSelector.SelectionResult result = by_cutoff
+                ? RepresentativeTipSelector.selectByCutoff(phy, cutoff, pick, protect)
+                : RepresentativeTipSelector.selectByTargetCount(phy, target, pick, protect);
+        tp.setFoundNodes0(new HashSet<>(result.representativeIds()));
+        _mainpanel.getControlPanel().displayedPhylogenyMightHaveChanged(true);
+        // --- report & offer extraction into a new tab ---
+        final int kept = result.getKeptCount();
+        final int choice = JOptionPane.showConfirmDialog(this,
+                result.summary() + "\n\nCreate a new tab containing only these " + kept
+                        + (kept == 1 ? " tip?" : " tips?"),
+                "Representative Tips Selected", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+        if (choice != JOptionPane.YES_OPTION) {
+            return;
+        }
+        // Build the extracted tree by index-mapping the kept tips onto a copy (copy() preserves external-node
+        // order), so we never depend on node ids matching across the copy.
+        final Set<Long> keep_ids = result.representativeIds();
+        final List<PhylogenyNode> orig_ext = phy.getExternalNodes();
+        final Set<Integer> keep_indices = new HashSet<>();
+        for (int i = 0; i < orig_ext.size(); ++i) {
+            if (keep_ids.contains(orig_ext.get(i).getId())) {
+                keep_indices.add(i);
+            }
+        }
+        final Phylogeny copy = phy.copy();
+        final List<PhylogenyNode> copy_ext = copy.getExternalNodes();
+        final Set<Long> to_delete = new HashSet<>();
+        for (int i = 0; i < copy_ext.size(); ++i) {
+            if (!keep_indices.contains(i)) {
+                to_delete.add(copy_ext.get(i).getId());
+            }
+        }
+        PhylogenyMethods.deleteExternalNodesNegativeSelection(to_delete, copy);
+        final String base = ForesterUtil.isEmpty(phy.getName()) ? "tree" : phy.getName();
+        copy.setName(base + " (representatives)");
+        _mainpanel.addPhylogenyInNewTab(copy, getConfiguration(), copy.getName(), null);
+        showWhole();
+        getCurrentTreePanel().setEdited(true);
+        JOptionPane.showMessageDialog(this,
+                "Created a new tab with " + copy.getNumberOfExternalNodes()
+                        + (copy.getNumberOfExternalNodes() == 1 ? " tip." : " tips."),
+                "Representatives Extracted", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    /** The input controls for the "Select Representative Tips" dialog, exposed so they can be unit-tested. */
+    static final class RepSelInputs {
+
+        final JPanel _panel;
+        final JRadioButton _cutoff_rb;
+        final JRadioButton _target_rb;
+        final JTextField _value_tf;
+        final JComboBox<String> _pick_box;
+        final JCheckBox _protect_cb;
+
+        RepSelInputs(final JPanel panel, final JRadioButton cutoff_rb, final JRadioButton target_rb,
+                     final JTextField value_tf, final JComboBox<String> pick_box, final JCheckBox protect_cb) {
+            _panel = panel;
+            _cutoff_rb = cutoff_rb;
+            _target_rb = target_rb;
+            _value_tf = value_tf;
+            _pick_box = pick_box;
+            _protect_cb = protect_cb;
+        }
+    }
+
+    /**
+     * Builds the "Select Representative Tips" input panel. When {@code has_branch_lengths} is false the
+     * distance-cutoff option is disabled and the target-count option is preselected (a note explains why),
+     * because patristic distance — and therefore a distance cutoff — is meaningless without branch lengths.
+     */
+    static RepSelInputs buildRepSelInputs(final boolean has_branch_lengths, final boolean prefer_cutoff,
+                                          final double cutoff_default, final int target_default,
+                                          final int pick_index, final int selection_count) {
+        final boolean start_cutoff = has_branch_lengths && prefer_cutoff;
+        final JRadioButton cutoff_rb = new JRadioButton("By distance cutoff", start_cutoff);
+        final JRadioButton target_rb = new JRadioButton("By target number of representatives", !start_cutoff);
+        final ButtonGroup bg = new ButtonGroup();
+        bg.add(cutoff_rb);
+        bg.add(target_rb);
+        if (!has_branch_lengths) {
+            cutoff_rb.setEnabled(false);
+        }
+        final JTextField value_tf = new JTextField(8);
+        value_tf.setText(start_cutoff ? String.valueOf(cutoff_default) : String.valueOf(target_default));
+        final JLabel hint = new JLabel();
+        final Runnable sync_hint = () -> hint.setText(cutoff_rb.isSelected()
+                ? "<html><i>Maximum distance between any two tips kept in the same group.</i></html>"
+                : "<html><i>Approximate number of representative tips to keep.</i></html>");
+        cutoff_rb.addItemListener(e -> {
+            if (cutoff_rb.isSelected()) {
+                value_tf.setText(String.valueOf(cutoff_default));
+                sync_hint.run();
+            }
+        });
+        target_rb.addItemListener(e -> {
+            if (target_rb.isSelected()) {
+                value_tf.setText(String.valueOf(target_default));
+                sync_hint.run();
+            }
+        });
+        sync_hint.run();
+        final JComboBox<String> pick_box = new JComboBox<>(
+                new String[] { "Most central (medoid)", "Most divergent (longest branch)" });
+        pick_box.setSelectedIndex(pick_index);
+        final JCheckBox protect_cb;
+        if (selection_count > 0) {
+            protect_cb = new JCheckBox("Keep the " + selection_count + " selected/found "
+                    + (selection_count == 1 ? "tip" : "tips") + " (never drop them)", true);
+        }
+        else {
+            protect_cb = new JCheckBox("Keep selected/found tips (none are selected)");
+            protect_cb.setEnabled(false);
+        }
+        final JPanel panel = new JPanel(new GridLayout(0, 1, 0, 2));
+        panel.add(new JLabel("Select one representative per group of similar tips:"));
+        panel.add(cutoff_rb);
+        panel.add(target_rb);
+        if (!has_branch_lengths) {
+            panel.add(new JLabel(
+                    "<html><i>This tree has no branch lengths, so only \"target number\" is available.</i></html>"));
+        }
+        panel.add(new JLabel(" "));
+        panel.add(new JLabel("Value:"));
+        panel.add(value_tf);
+        panel.add(hint);
+        panel.add(new JLabel(" "));
+        panel.add(new JLabel("Representative:"));
+        panel.add(pick_box);
+        panel.add(new JLabel(" "));
+        panel.add(protect_cb);
+        return new RepSelInputs(panel, cutoff_rb, target_rb, value_tf, pick_box, protect_cb);
     }
 
     private PhyloXmlParser createPhyloXmlParser() {
@@ -1098,6 +1327,10 @@ public final class MainFrameApplication extends MainFrame {
         _tools_menu.add(_delete_not_selected_nodes_item = new JMenuItem("Retain Selected Nodes"));
         _delete_not_selected_nodes_item.setToolTipText("To delete all not selected external nodes");
         customizeJMenuItem(_delete_not_selected_nodes_item);
+        _tools_menu.add(_select_representative_tips_jmi = new JMenuItem("Select Representative Tips…"));
+        customizeJMenuItem(_select_representative_tips_jmi);
+        _select_representative_tips_jmi.setToolTipText(
+                "Reduce redundancy: group tips that are close in evolutionary distance and keep one representative per group, either within a distance cutoff or to reach a target number. Highlights the representatives and can extract them into a new tree; the current tree is left unchanged.");
         _tools_menu.addSeparator();
         // Colorizing
         _tools_menu.add(_color_rank_jmi = new JMenuItem("Colorize Subtrees via Taxonomic Rank"));

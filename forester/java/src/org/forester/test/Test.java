@@ -292,6 +292,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Representative tip selector: ");
+        if (org.forester.archaeopteryx.tools.RepresentativeTipSelectorTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("NCBI sequence client: ");
         if (org.forester.ws.seqdb.NcbiSequenceClientTest.test()) {
             System.out.println("OK.");
@@ -390,6 +398,14 @@ public final class Test {
         }
         System.out.print("Settings dialog: ");
         if (org.forester.archaeopteryx.SettingsDialogTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Representative tips tool: ");
+        if (org.forester.archaeopteryx.RepresentativeTipsToolTest.test()) {
             System.out.println("OK.");
             succeeded++;
         } else {
