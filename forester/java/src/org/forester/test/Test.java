@@ -180,6 +180,22 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Annotation columns: ");
+        if (org.forester.archaeopteryx.AnnotationColumnsTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Annotation columns tool: ");
+        if (org.forester.archaeopteryx.AnnotationColumnsToolTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Confidence label: ");
         if (org.forester.archaeopteryx.ConfidenceLabelTest.test()) {
             System.out.println("OK.");

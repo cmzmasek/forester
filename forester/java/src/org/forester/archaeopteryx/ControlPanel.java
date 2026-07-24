@@ -1536,6 +1536,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             }
             _mainpanel.getCurrentTreePanel().recalculateMaxDistanceToRoot();
             _mainpanel.getCurrentTreePanel().rebuildPropertyColorScheme();
+            _mainpanel.getCurrentTreePanel().rebuildAnnotationColumns();
             setVisibilityOfDomainStrucureControls();
             updateDomainStructureEvaluethresholdDisplay();
             getMainPanel().getControlPanel();

@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -44,7 +45,11 @@ import java.util.NoSuchElementException;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JList;
+import javax.swing.JScrollPane;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -216,6 +221,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem _mad_root_item;
     JMenuItem _color_rank_jmi;
     JMenuItem _clade_bands_jmi;
+    JMenuItem _annotation_columns_jmi;
 
     JMenuItem _obtain_seq_and_tax_information_jmi;
     JMenuItem _extract_label_data_jmi;
@@ -351,6 +357,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             colorRank();
         } else if (o == _clade_bands_jmi) {
             labelCladesByRank();
+        } else if (o == _annotation_columns_jmi) {
+            chooseAnnotationColumns();
         } else if (o == _remove_branch_color_item) {
             if (isSubtreeDisplayed()) {
                 return;
@@ -721,6 +729,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             phy.clearHashIdToNodeMap();
             phy.recalculateNumberOfExternalDescendants(true);
             getCurrentTreePanel().resetNodeIdToDistToLeafMap();
+            // pruning changes the visible tips, so recompute the display schemes that summarize them
+            // (this path does not go through displayedPhylogenyMightHaveChanged)
+            getCurrentTreePanel().rebuildPropertyColorScheme();
+            getCurrentTreePanel().rebuildAnnotationColumns();
             getCurrentTreePanel().setEdited(true);
             repaint();
         }
@@ -1016,6 +1028,84 @@ public abstract class MainFrame extends JFrame implements ActionListener {
      * bars), resolve any unplaced tips online if the user agrees (off the EDT), then draw the bands.
      * Mirrors {@link #colorRank()} but renders {@link CladeBand}s instead of coloring branches.
      */
+    /**
+     * Opens the "Annotation Columns" chooser: pick which annotation fields to show as tip-aligned columns and
+     * how to render each (color strip / heat map / bar / text), then applies them to the current tree.
+     */
+    void chooseAnnotationColumns() {
+        if (_mainpanel.getCurrentTreePanel() == null) {
+            return;
+        }
+        final TreePanel tp = _mainpanel.getCurrentTreePanel();
+        final Phylogeny phy = tp.getPhylogeny();
+        if ((phy == null) || phy.isEmpty()) {
+            return;
+        }
+        final List<String> refs = PropertyColorScheme.colorableRefs(phy);
+        if (refs.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "This tree has no annotation fields to show as columns.\n"
+                            + "Import a table (File → Import Node Data) or load a tree with node properties first.",
+                    "No Annotation Fields", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        // pre-select whatever columns are shown now
+        final Map<String, AnnotationColumns.Type> current = new HashMap<String, AnnotationColumns.Type>();
+        if (tp.getAnnotationColumnSpecs() != null) {
+            for (final AnnotationColumns.ColumnSpec s : tp.getAnnotationColumnSpecs()) {
+                current.put(s._ref, s._type);
+            }
+        }
+        final DefaultListCellRenderer type_renderer = new DefaultListCellRenderer() {
+
+            @Override
+            public java.awt.Component getListCellRendererComponent(final JList<?> list, final Object value,
+                    final int index, final boolean sel, final boolean focus) {
+                super.getListCellRendererComponent(list, value, index, sel, focus);
+                if (value instanceof AnnotationColumns.Type) {
+                    setText(AnnotationColumns.label((AnnotationColumns.Type) value));
+                }
+                return this;
+            }
+        };
+        final JPanel panel = new JPanel(new GridLayout(0, 2, 10, 3));
+        panel.add(new JLabel("Field"));
+        panel.add(new JLabel("Show as"));
+        final List<JCheckBox> checks = new ArrayList<JCheckBox>();
+        final List<JComboBox<AnnotationColumns.Type>> combos = new ArrayList<JComboBox<AnnotationColumns.Type>>();
+        for (final String ref : refs) {
+            final JCheckBox cb = new JCheckBox(PropertyColorScheme.displayName(ref), current.containsKey(ref));
+            final List<AnnotationColumns.Type> types = AnnotationColumns.allowedTypes(phy, ref);
+            final JComboBox<AnnotationColumns.Type> combo = new JComboBox<AnnotationColumns.Type>(
+                    types.toArray(new AnnotationColumns.Type[0]));
+            combo.setRenderer(type_renderer);
+            combo.setSelectedItem(current.containsKey(ref) ? current.get(ref)
+                    : AnnotationColumns.defaultType(phy, ref));
+            panel.add(cb);
+            panel.add(combo);
+            checks.add(cb);
+            combos.add(combo);
+        }
+        final JScrollPane sp = new JScrollPane(panel);
+        sp.setPreferredSize(new java.awt.Dimension(380, Math.min(440, 50 + (refs.size() * 30))));
+        if (JOptionPane.showConfirmDialog(this, sp, "Annotation Columns", JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE) != JOptionPane.OK_OPTION) {
+            return;
+        }
+        final List<AnnotationColumns.ColumnSpec> specs = new ArrayList<AnnotationColumns.ColumnSpec>();
+        for (int i = 0; i < refs.size(); ++i) {
+            if (checks.get(i).isSelected()) {
+                specs.add(new AnnotationColumns.ColumnSpec(refs.get(i),
+                        (AnnotationColumns.Type) combos.get(i).getSelectedItem()));
+            }
+        }
+        tp.setAnnotationColumns(specs);
+        tp.setEdited(true);
+        getControlPanel().fitWidth(); // reveal the columns even when they extend past the current width
+        tp.repaint();
+        repaint();
+    }
+
     void labelCladesByRank() {
         if (_mainpanel.getCurrentTreePanel() == null) {
             return;
@@ -2147,6 +2237,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             final TreePanel tp = _mainpanel.getCurrentTreePanel();
             if (tp != null) {
                 tp.setTree(phy); // recompute the layout so the new labels/data show
+                tp.getControlPanel().populateColorByPropertyBox(); // surface any imported columns in "Color by:"
                 showWhole();
                 tp.setEdited(true);
             }

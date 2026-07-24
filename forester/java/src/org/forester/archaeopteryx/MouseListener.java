@@ -52,6 +52,9 @@ final class MouseListener extends MouseAdapter implements MouseMotionListener {
             _treepanel.handleLegendClick( e ); // recolor a value row, or double-click to reset position
             return; // a click on the legend is not a node action
         }
+        if ( _treepanel.handleAnnotationHeaderClick( e ) ) {
+            return; // a click on a column header toggles that column's color legend
+        }
         _click_point.setLocation( e.getX(), e.getY() );
         _treepanel.mouseClicked( e );
     }

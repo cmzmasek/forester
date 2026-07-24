@@ -1,0 +1,231 @@
+// forester -- software libraries and applications
+// for evolutionary biology and genomics.
+// Copyright (C) 2026 Christian M. Zmasek
+// All rights reserved
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+//
+// Contact: czmasek at jcvi dot org
+
+package org.forester.archaeopteryx;
+
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.GraphicsEnvironment;
+import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.SwingUtilities;
+
+import org.forester.phylogeny.Phylogeny;
+import org.forester.phylogeny.PhylogenyNode;
+import org.forester.phylogeny.data.Property;
+import org.forester.phylogeny.data.Property.AppliesTo;
+import org.forester.phylogeny.data.PropertiesList;
+
+/**
+ * Integration test for the "Annotation Columns" tool: on a real {@link MainFrame}/{@link TreePanel} it sets
+ * annotation columns of every render type, renders offscreen (exercising the paint + width-reservation path),
+ * and checks the menu item is present. Guarded to a no-op on a headless box (needs FlatLaf via
+ * {@code createInstance}); run standalone or as part of the non-headless suite.
+ */
+public final class AnnotationColumnsToolTest {
+
+    public static void main( final String[] args ) {
+        final boolean ok = test();
+        System.out.println( "AnnotationColumnsTool: " + ( ok ? "OK." : "FAILED." ) );
+        System.exit( ok ? 0 : 1 );
+    }
+
+    public static boolean test() {
+        if ( GraphicsEnvironment.isHeadless() ) {
+            return true; // GUI integration test; needs a display toolkit
+        }
+        try {
+            final Configuration conf = new Configuration();
+            final MainFrame[] mf = new MainFrame[ 1 ];
+            SwingUtilities.invokeAndWait(
+                    () -> mf[ 0 ] = MainFrameApplication.createInstance( new Phylogeny[] { annotatedTree() }, conf,
+                                                                        "anncols" ) );
+            final boolean[] ok = { true };
+            SwingUtilities.invokeAndWait( () -> {
+                final MainPanel mp = mf[ 0 ].getMainPanel();
+                final TreePanel tp = mp.getCurrentTreePanel();
+
+                // menu item present + tooltip
+                final JMenuItem item = toolsItem( mf[ 0 ].getJMenuBar(), "Annotation Columns" );
+                if ( item == null ) {
+                    System.out.println( "  [AnnotationColumnsToolTest] Tools menu item not found" );
+                    ok[ 0 ] = false;
+                }
+                else if ( ( item.getToolTipText() == null )
+                        || !item.getToolTipText().toLowerCase().contains( "column" ) ) {
+                    System.out.println( "  [AnnotationColumnsToolTest] menu item missing tooltip" );
+                    ok[ 0 ] = false;
+                }
+
+                // baseline render (bare tree, no columns) for a pixel-count comparison
+                mf[ 0 ].showWhole();
+                final int w = 700, h = 360;
+                final int without = renderOffscreen( tp, w, h );
+
+                // set one column of every render type
+                final List<AnnotationColumns.ColumnSpec> specs = new ArrayList<AnnotationColumns.ColumnSpec>();
+                specs.add( new AnnotationColumns.ColumnSpec( "data:region", AnnotationColumns.Type.COLOR_STRIP ) );
+                specs.add( new AnnotationColumns.ColumnSpec( "data:value", AnnotationColumns.Type.HEATMAP ) );
+                specs.add( new AnnotationColumns.ColumnSpec( "data:value", AnnotationColumns.Type.BAR ) );
+                specs.add( new AnnotationColumns.ColumnSpec( "data:region", AnnotationColumns.Type.TEXT ) );
+                tp.setAnnotationColumns( specs );
+                if ( !tp.hasAnnotationColumns() ) {
+                    System.out.println( "  [AnnotationColumnsToolTest] columns were not set" );
+                    ok[ 0 ] = false;
+                }
+                mf[ 0 ].showWhole();
+                // render with the columns -- exercises paintAnnotationColumns + the width reservation; the
+                // columns must add painted pixels beyond what the bare tree draws (a whole-right-half scan
+                // would false-pass on the tree's own aligned tips/labels)
+                final int with = renderOffscreen( tp, w, h );
+                if ( with <= without ) {
+                    System.out.println( "  [AnnotationColumnsToolTest] annotation columns drew no additional pixels" );
+                    ok[ 0 ] = false;
+                }
+
+                // clicking a color-column header toggles its legend -- exercises the real hit-test path
+                final java.awt.Point hp = tp.annotationHeaderMidpointForTest( 0 ); // COLOR_STRIP
+                if ( hp == null ) {
+                    System.out.println( "  [AnnotationColumnsToolTest] no header hit-point for column 0" );
+                    ok[ 0 ] = false;
+                }
+                else {
+                    final MouseEvent click = new MouseEvent( tp, MouseEvent.MOUSE_CLICKED, System.currentTimeMillis(),
+                                                             0, hp.x, hp.y, 1, false );
+                    if ( !tp.handleAnnotationHeaderClick( click ) || !tp.hasFocusedAnnotationColumn() ) {
+                        System.out.println( "  [AnnotationColumnsToolTest] header click did not open the legend" );
+                        ok[ 0 ] = false;
+                    }
+                    tp.handleAnnotationHeaderClick( click ); // a second click toggles it off
+                    if ( tp.hasFocusedAnnotationColumn() ) {
+                        System.out.println( "  [AnnotationColumnsToolTest] second header click did not close the legend" );
+                        ok[ 0 ] = false;
+                    }
+                }
+
+                // focusing a color-coded column shows that column's legend (bounds recorded on render)
+                tp.setFocusedAnnotationColumn( 0 ); // COLOR_STRIP
+                renderOffscreen( tp, w, h );
+                if ( !tp.hasFocusedAnnotationColumn() || ( tp.getPropertyLegendBounds() == null ) ) {
+                    System.out.println( "  [AnnotationColumnsToolTest] focused strip legend not drawn" );
+                    ok[ 0 ] = false;
+                }
+                tp.setFocusedAnnotationColumn( 1 ); // HEATMAP
+                renderOffscreen( tp, w, h );
+                if ( !tp.hasFocusedAnnotationColumn() || ( tp.getPropertyLegendBounds() == null ) ) {
+                    System.out.println( "  [AnnotationColumnsToolTest] focused heat-map legend not drawn" );
+                    ok[ 0 ] = false;
+                }
+                tp.setFocusedAnnotationColumn( 2 ); // a BAR column has no color key -> no legend
+                if ( tp.hasFocusedAnnotationColumn() ) {
+                    System.out.println( "  [AnnotationColumnsToolTest] a bar column should not focus a legend" );
+                    ok[ 0 ] = false;
+                }
+                tp.setFocusedAnnotationColumn( 0 );
+                tp.setFocusedAnnotationColumn( 0 ); // toggling the same column off
+                if ( tp.hasFocusedAnnotationColumn() ) {
+                    System.out.println( "  [AnnotationColumnsToolTest] a second header click should toggle the legend off" );
+                    ok[ 0 ] = false;
+                }
+
+                // clearing removes them
+                tp.clearAnnotationColumns();
+                if ( tp.hasAnnotationColumns() ) {
+                    System.out.println( "  [AnnotationColumnsToolTest] clear did not remove the columns" );
+                    ok[ 0 ] = false;
+                }
+
+                ( (JFrame) mf[ 0 ] ).dispose();
+            } );
+            return ok[ 0 ];
+        }
+        catch ( final Throwable e ) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /** Renders the panel offscreen and returns the number of non-white pixels drawn. */
+    private static int renderOffscreen( final TreePanel tp, final int w, final int h ) {
+        tp.setSize( w, h );
+        tp.validate();
+        tp.doLayout();
+        final BufferedImage img = new BufferedImage( w, h, BufferedImage.TYPE_INT_ARGB );
+        final Graphics2D g = img.createGraphics();
+        g.setColor( Color.WHITE );
+        g.fillRect( 0, 0, w, h );
+        tp.printAll( g );
+        g.dispose();
+        int n = 0;
+        for( int x = 0; x < w; ++x ) {
+            for( int y = 0; y < h; ++y ) {
+                if ( ( img.getRGB( x, y ) & 0x00FFFFFF ) != 0x00FFFFFF ) {
+                    ++n;
+                }
+            }
+        }
+        return n;
+    }
+
+    private static JMenuItem toolsItem( final JMenuBar bar, final String contains ) {
+        for( int i = 0; i < bar.getMenuCount(); ++i ) {
+            final JMenu m = bar.getMenu( i );
+            if ( ( m != null ) && "Tools".equals( m.getText() ) ) {
+                for( int j = 0; j < m.getItemCount(); ++j ) {
+                    final JMenuItem it = m.getItem( j );
+                    if ( ( it != null ) && ( it.getText() != null ) && it.getText().contains( contains ) ) {
+                        return it;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private static Phylogeny annotatedTree() {
+        final PhylogenyNode root = new PhylogenyNode();
+        final String[] regions = { "Asia", "Asia", "Europe", "Europe", "Africa", "Africa" };
+        PhylogenyNode cur = root;
+        for( int i = 0; i < 6; ++i ) {
+            final PhylogenyNode in = new PhylogenyNode();
+            cur.addAsChild( in );
+            final PhylogenyNode leaf = new PhylogenyNode();
+            leaf.setName( "t" + i );
+            final PropertiesList pl = new PropertiesList();
+            pl.addProperty( new Property( "data:region", regions[ i ], "", "xsd:string", AppliesTo.NODE ) );
+            pl.addProperty( new Property( "data:value", String.valueOf( ( i + 1 ) * 5 ), "", "xsd:string",
+                                          AppliesTo.NODE ) );
+            leaf.getNodeData().setProperties( pl );
+            in.addAsChild( leaf );
+            cur = in;
+        }
+        final Phylogeny phy = new Phylogeny();
+        phy.setRoot( root );
+        phy.externalNodesHaveChanged();
+        return phy;
+    }
+}

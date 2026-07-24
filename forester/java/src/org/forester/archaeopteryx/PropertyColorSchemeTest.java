@@ -49,9 +49,78 @@ public final class PropertyColorSchemeTest {
 
     public static boolean test() {
         return testDisplayName() && testCategoricalGrouping() && testHumanSynonym() && testCountryGrouping()
-                && testHostQualifierGrouping() && testYearGradient() && testAbsentAndEmpty()
-                && testCollapseExcludesHiddenLeaves() && testCollapseRescalesGradient()
-                && testFrequencyColorsAndLegend() && testColorOverrides() && testPalettes();
+                && testHostQualifierGrouping() && testYearGradient() && testNumericGradientGeneralization()
+                && testColorableRefs() && testAbsentAndEmpty() && testCollapseExcludesHiddenLeaves()
+                && testCollapseRescalesGradient() && testFrequencyColorsAndLegend() && testColorOverrides()
+                && testPalettes();
+    }
+
+    // ---- colorableRefs: numeric all-unique columns stay colorable (gradient); categorical all-unique don't ----
+    private static boolean testColorableRefs() {
+        // a numeric column where every tip has a distinct value is still colorable (renders as a gradient)
+        if ( !PropertyColorScheme.colorableRefs( treeWith( "data:year", "2015", "2016", "2020", "2024" ) )
+                .contains( "data:year" ) ) {
+            return fail( "an all-distinct numeric column should be colorable (gradient)" );
+        }
+        // a categorical column where every tip is unique is NOT colorable (one color per tip is useless)
+        if ( PropertyColorScheme.colorableRefs( treeWith( "data:id", "a", "b", "c", "d" ) ).contains( "data:id" ) ) {
+            return fail( "an all-distinct categorical column should not be colorable" );
+        }
+        // a repeated categorical column is colorable
+        if ( !PropertyColorScheme.colorableRefs( treeWith( "repseq:host", "cat", "cat", "dog", "dog" ) )
+                .contains( "repseq:host" ) ) {
+            return fail( "a repeated categorical column should be colorable" );
+        }
+        // a constant column (one distinct value) is not colorable
+        if ( !PropertyColorScheme.colorableRefs( treeWith( "data:const", "X", "X", "X", "X" ) ).isEmpty() ) {
+            return fail( "a constant column should not be colorable" );
+        }
+        return true;
+    }
+
+    // ---- gradient generalizes beyond "year": any predominantly-numeric column is colored by a gradient ----
+    private static boolean testNumericGradientGeneralization() {
+        // a non-"year" numeric column -> gradient over its range
+        final String age = "data:age";
+        final Phylogeny p1 = treeWith( age, "1", "2", "3", "4", "5" );
+        final PropertyColorScheme s1 = new PropertyColorScheme( p1, age );
+        if ( !s1.isGradient() ) {
+            return fail( "a numeric column (age) should be a gradient" );
+        }
+        if ( !eq( "1", s1.getGradientMinLabel(), "age min" ) || !eq( "5", s1.getGradientMaxLabel(), "age max" ) ) {
+            return false;
+        }
+        // predominantly numeric with a non-numeric sentinel (3 of 4) -> still a gradient; sentinel uncolored
+        final String pct = "data:pct_identity";
+        final Phylogeny p2 = treeWith( pct, "88.5", "91.0", "97.2", "unknown" );
+        final PropertyColorScheme s2 = new PropertyColorScheme( p2, pct );
+        if ( !s2.isGradient() ) {
+            return fail( "a 3-of-4 numeric column should still be a gradient" );
+        }
+        if ( colorForValue( s2, p2, pct, "unknown" ) != null ) {
+            return fail( "the non-numeric sentinel should have no gradient color" );
+        }
+        // mostly textual with a stray number (1 of 4) -> categorical, one color per distinct value
+        final String mixed = "data:mixed";
+        final Phylogeny p3 = treeWith( mixed, "cat", "dog", "fish", "7" );
+        final PropertyColorScheme s3 = new PropertyColorScheme( p3, mixed );
+        if ( s3.isGradient() ) {
+            return fail( "a mostly-textual column should stay categorical" );
+        }
+        if ( s3.getValueColors().size() != 4 ) {
+            return fail( "mixed column should have 4 categorical groups, got " + s3.getValueColors().size() );
+        }
+        // exactly half numeric (2 of 4) is not a strict majority -> categorical
+        final String half = "data:half";
+        if ( new PropertyColorScheme( treeWith( half, "1", "2", "cat", "dog" ), half ).isGradient() ) {
+            return fail( "a half-numeric column should not be a gradient (needs a strict majority)" );
+        }
+        // a single distinct number (no range) -> categorical, not a degenerate gradient
+        final String flat = "data:flat";
+        if ( new PropertyColorScheme( treeWith( flat, "5", "5", "5", "cat" ), flat ).isGradient() ) {
+            return fail( "a column with only one distinct number should not be a gradient" );
+        }
+        return true;
     }
 
     // ---- colors assigned by frequency (distinct for the most common values); legend = top-N most

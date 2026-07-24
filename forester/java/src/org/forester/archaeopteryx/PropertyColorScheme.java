@@ -52,8 +52,8 @@ import org.forester.util.ForesterUtil;
  * deliberate synonym fold is {@code human}/{@code humans} into {@code Homo sapiens}, so e.g.
  * {@code human}/{@code Human}/{@code homo_sapiens}/{@code Homo sapiens} get one color; other
  * semantically-equal but lexically-different values (such as {@code man} vs {@code H. sapiens})
- * are not merged. A few refs are special-cased: {@code year} is colored by a continuous
- * gradient over its numeric range, while {@code country} and {@code host} first drop a
+ * are not merged. A predominantly-numeric column (e.g. {@code year}, {@code age}) is colored by
+ * a continuous gradient over its numeric range, while {@code country} and {@code host} first drop a
  * trailing qualifier -- everything from the first {@code :} (country, so {@code USA:CA} and
  * {@code USA:IL} share a color) or {@code ;} (host, so {@code Homo sapiens; male 35} and
  * {@code Homo sapiens; female old} share a color) onward -- before that grouping.
@@ -133,7 +133,6 @@ final class PropertyColorScheme {
                          final String palette_name ) {
         _ref = ref;
         _palette = paletteByName( palette_name );
-        _gradient = isYearRef( ref );
         _truncate_at = truncationDelimiter( ref );
         _value_to_color = new LinkedHashMap<String, Color>();
         _key_to_color = new LinkedHashMap<String, Color>();
@@ -143,6 +142,9 @@ final class PropertyColorScheme {
         // excluded), so the colors and legend track the displayed (sub)tree as the user
         // navigates into subtrees, collapses clades, or deletes nodes.
         final List<PhylogenyNode> leaves = visibleExternalNodes( phylogeny );
+        // Use a continuous gradient when the column is predominantly numeric (year / age / percent-identity /
+        // ...); otherwise color by distinct categories. Decided from the visible values, not the ref name.
+        _gradient = shouldUseGradient( leaves, ref );
         if ( _gradient ) {
             double min = Double.POSITIVE_INFINITY;
             double max = Double.NEGATIVE_INFINITY;
@@ -242,6 +244,23 @@ final class PropertyColorScheme {
         }
         final String v = valueFor( node, _ref );
         return ForesterUtil.isEmpty( v ) ? null : _key_to_color.get( groupKey( v ) );
+    }
+
+    /**
+     * For a gradient (numeric) scheme, the node's value as a fraction in {@code [0, 1]} from the minimum to
+     * the maximum visible value (used to scale a bar), or {@code null} when this is not a gradient scheme or
+     * the node has no numeric value.
+     */
+    Double gradientFraction( final PhylogenyNode node ) {
+        if ( !_gradient ) {
+            return null;
+        }
+        final Double d = parseNumber( valueFor( node, _ref ) );
+        if ( d == null ) {
+            return null;
+        }
+        final double t = ( _max > _min ) ? ( ( d - _min ) / ( _max - _min ) ) : 0.0;
+        return ( t < 0.0 ) ? 0.0 : ( ( t > 1.0 ) ? 1.0 : t ); // clamp so a bar never over/underflows its column
     }
 
     /** Representative-label to color map of all distinct values, ordered most-frequent first. */
@@ -356,12 +375,16 @@ final class PropertyColorScheme {
         return formatNumber( _max );
     }
 
+    /** Parses a value as a finite number, or {@code null} if empty, non-numeric, or non-finite (NaN/Infinity).
+     * Rejecting non-finite values keeps the gradient min/max, the color, and the bar fraction well-defined
+     * even when a column carries a "NaN"/"Infinity" sentinel or an overflowing number. */
     private static Double parseNumber( final String s ) {
         if ( ForesterUtil.isEmpty( s ) ) {
             return null;
         }
         try {
-            return Double.valueOf( s.trim() );
+            final double d = Double.parseDouble( s.trim() );
+            return ( Double.isNaN( d ) || Double.isInfinite( d ) ) ? null : Double.valueOf( d );
         }
         catch ( final NumberFormatException e ) {
             return null;
@@ -372,9 +395,29 @@ final class PropertyColorScheme {
         return ( d == Math.rint( d ) ) ? Long.toString( (long) d ) : Double.toString( d );
     }
 
-    /** True for the {@code year} property (in any namespace), which is colored as a gradient. */
-    private static boolean isYearRef( final String ref ) {
-        return refNameEquals( ref, "year" );
+    /**
+     * Whether the values of this ref should be colored as a continuous gradient rather than as distinct
+     * categories: the column is <em>predominantly numeric</em> -- a strict majority of the non-empty visible
+     * values parse as finite numbers, and there are at least two distinct numbers (so there is a real range).
+     * A few non-numeric sentinels ("n/a", "unknown") are tolerated -- they simply get no color -- while a
+     * mostly-textual column with a stray number stays categorical.
+     */
+    private static boolean shouldUseGradient( final List<PhylogenyNode> leaves, final String ref ) {
+        int total = 0;
+        int numeric = 0;
+        final Set<Double> distinct = new HashSet<Double>();
+        for( final PhylogenyNode node : leaves ) {
+            final String v = valueFor( node, ref );
+            if ( !ForesterUtil.isEmpty( v ) ) {
+                ++total;
+                final Double d = parseNumber( v );
+                if ( d != null ) {
+                    ++numeric;
+                    distinct.add( d );
+                }
+            }
+        }
+        return ( ( numeric * 2 ) > total ) && ( distinct.size() >= 2 );
     }
 
     /**
@@ -483,27 +526,48 @@ final class PropertyColorScheme {
             return new ArrayList<String>();
         }
         final Map<String, Set<String>> ref_to_values = new TreeMap<String, Set<String>>();
+        final Map<String, int[]> ref_to_counts = new HashMap<String, int[]>();       // [total non-empty, numeric]
+        final Map<String, Set<Double>> ref_to_numbers = new HashMap<String, Set<Double>>();
         for( final PhylogenyNode node : phylogeny.getExternalNodes() ) {
             if ( ( node.getNodeData() != null ) && ( node.getNodeData().getProperties() != null ) ) {
                 for( final Property p : node.getNodeData().getProperties().getProperties() ) {
-                    if ( p.getRef().startsWith( NodeVisualData.APTX_VISUALIZATION_REF ) ) {
+                    final String ref = p.getRef();
+                    if ( ref.startsWith( NodeVisualData.APTX_VISUALIZATION_REF ) ) {
                         continue;
                     }
-                    Set<String> vs = ref_to_values.get( p.getRef() );
+                    Set<String> vs = ref_to_values.get( ref );
                     if ( vs == null ) {
                         vs = new HashSet<String>();
-                        ref_to_values.put( p.getRef(), vs );
+                        ref_to_values.put( ref, vs );
+                        ref_to_counts.put( ref, new int[ 2 ] );
+                        ref_to_numbers.put( ref, new HashSet<Double>() );
                     }
                     vs.add( p.getValue() );
+                    if ( !ForesterUtil.isEmpty( p.getValue() ) ) {
+                        ref_to_counts.get( ref )[ 0 ]++;
+                        final Double d = parseNumber( p.getValue() );
+                        if ( d != null ) {
+                            ref_to_counts.get( ref )[ 1 ]++;
+                            ref_to_numbers.get( ref ).add( d );
+                        }
+                    }
                 }
             }
         }
         final int leaves = phylogeny.getExternalNodes().size();
         final List<String> refs = new ArrayList<String>();
         for( final Map.Entry<String, Set<String>> e : ref_to_values.entrySet() ) {
+            final String ref = e.getKey();
             final int distinct = e.getValue().size();
-            if ( ( distinct >= 2 ) && ( distinct < leaves ) ) {
-                refs.add( e.getKey() );
+            if ( distinct < 2 ) {
+                continue; // constant column: nothing to distinguish
+            }
+            final int[] c = ref_to_counts.get( ref );
+            final boolean gradient = ( ( c[ 1 ] * 2 ) > c[ 0 ] ) && ( ref_to_numbers.get( ref ).size() >= 2 );
+            // Drop per-leaf-unique CATEGORICAL columns (one color per tip is useless to color by); a numeric
+            // column stays colorable even when every tip has a distinct value, because it renders as a gradient.
+            if ( gradient || ( distinct < leaves ) ) {
+                refs.add( ref );
             }
         }
         return refs;
