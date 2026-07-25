@@ -41,7 +41,7 @@ import org.forester.phylogeny.PhylogenyNode;
 public final class MenuTooltipsTest {
 
     // "Font Size" was retired as a top-level menu (it is now a slider in the control panel).
-    private static final String[] EXPECTED_MENUS = { "File", "Analysis", "Tools", "View", "Settings", "Help" };
+    private static final String[] EXPECTED_MENUS = { "File", "Edit", "Analysis", "Tools", "View", "Settings", "Help" };
 
     public static void main( final String[] args ) {
         final boolean ok = test();

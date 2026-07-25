@@ -207,6 +207,7 @@ public final class MainFrameApplication extends MainFrame {
             _jmenubar.setBackground(getConfiguration().getGuiMenuBackgroundColor());
         }
         buildFileMenu();
+        buildEditMenu();
         buildAnalysisMenu();
         buildToolsMenu();
         buildViewMenu();
@@ -427,14 +428,15 @@ public final class MainFrameApplication extends MainFrame {
             return;
         }
         final int confirm = JOptionPane.showConfirmDialog(this,
-                "Permanently collapse " + candidates.size() + " branch(es) with confidence below " + threshold
-                        + " into polytomies?\nThis cannot be undone.",
+                "Collapse " + candidates.size() + " branch(es) with confidence below " + threshold
+                        + " into polytomies?",
                 "Collapse " + candidates.size() + " branch(es)?",
                 JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.WARNING_MESSAGE);
+                JOptionPane.QUESTION_MESSAGE);
         if (confirm != JOptionPane.OK_OPTION) {
             return;
         }
+        getCurrentTreePanel().pushUndoCheckpoint("Collapse Branches");
         for (final PhylogenyNode n : candidates) {
             PhylogenyMethods.removeNode(n, phy);
         }
@@ -539,14 +541,14 @@ public final class MainFrameApplication extends MainFrame {
             return;
         }
         final int confirm = JOptionPane.showConfirmDialog(this,
-                "Permanently collapse " + candidates.size() + " branch(es) shorter than " + threshold
-                        + " into polytomies?\nThis cannot be undone.",
+                "Collapse " + candidates.size() + " branch(es) shorter than " + threshold + " into polytomies?",
                 "Collapse " + candidates.size() + " branch(es)?",
                 JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.WARNING_MESSAGE);
+                JOptionPane.QUESTION_MESSAGE);
         if (confirm != JOptionPane.OK_OPTION) {
             return;
         }
+        getCurrentTreePanel().pushUndoCheckpoint("Collapse Branches");
         for (final PhylogenyNode n : candidates) {
             PhylogenyMethods.removeNode(n, phy);
         }
@@ -1360,11 +1362,11 @@ public final class MainFrameApplication extends MainFrame {
         collapse_menu.add(_collapse_below_threshold = new JMenuItem("Collapse Weakly-Supported Branches…"));
         customizeJMenuItem(_collapse_below_threshold);
         _collapse_below_threshold.setToolTipText(
-                "Permanently collapse internal branches whose confidence is below a threshold into polytomies (multifurcations). Cannot be undone.");
+                "Collapse internal branches whose confidence is below a threshold into polytomies (multifurcations). Can be undone (Edit ▸ Undo).");
         collapse_menu.add(_collapse_below_branch_length = new JMenuItem("Collapse Short Branches…"));
         customizeJMenuItem(_collapse_below_branch_length);
         _collapse_below_branch_length.setToolTipText(
-                "Permanently collapse internal branches shorter than a threshold into polytomies (multifurcations). Cannot be undone.");
+                "Collapse internal branches shorter than a threshold into polytomies (multifurcations). Can be undone (Edit ▸ Undo).");
         _tools_menu.add(collapse_menu);
         _tools_menu.addSeparator();
         // Data retrieval

@@ -2747,6 +2747,9 @@ final class ControlPanel extends JPanel implements ActionListener {
             getMainPanel().getControlPanel().updateDomainStructureEvaluethresholdDisplay();
             updateDataCheckboxVisibility(true);
             populateColorByPropertyBox();
+            if (getMainPanel().getMainFrame() != null) {
+                getMainPanel().getMainFrame().updateEditMenu(); // undo history is per-tab
+            }
             getSequenceRelationTypeBox().removeAllItems();
             for (final SequenceRelation.SEQUENCE_RELATION_TYPE type : getMainPanel().getCurrentPhylogeny()
                     .getRelevantSequenceRelationTypes()) {
@@ -2755,6 +2758,9 @@ final class ControlPanel extends JPanel implements ActionListener {
             getMainPanel().getCurrentTreePanel().repaint();
             //setSequenceRelationQueries( getMainPanel().getCurrentPhylogeny().getSequenceRelationQueries() );
             // according to GUILHEM the line above can be removed.
+        }
+        else if (getMainPanel().getMainFrame() != null) {
+            getMainPanel().getMainFrame().updateEditMenu(); // last tab closed -> disable Undo/Redo
         }
     }
 

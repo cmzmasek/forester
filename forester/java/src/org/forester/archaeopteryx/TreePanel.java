@@ -548,6 +548,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     public final void setEdited(final boolean edited) {
         _edited = edited;
+        // Undo/redo safety net: any edit made outside of an undo/redo restore invalidates the redo history
+        // (it no longer describes a reachable future). Checkpointed ops already clear redo via checkpoint();
+        // this also covers mutations that were NOT checkpointed, so a later Redo can never install a tree
+        // unrelated to the current one. (The undo stack is left intact -- worst case an undo reverts one such
+        // uncheckpointed edit too, which is recoverable via redo, rather than corrupting the tree.)
+        if (edited && !_restoring_snapshot && (_history != null)) {
+            _history.clearRedo();
+            notifyEditMenu();
+        }
     }
 
 
@@ -609,8 +618,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         JOptionPane.ERROR_MESSAGE);
                 return;
             }
+            pushUndoCheckpoint("Add Node");
             phy.addAsSibling(node);
         } else {
+            pushUndoCheckpoint("Add Node");
             phy.addAsChild(node);
         }
         setNodeInPreorderToNull();
@@ -911,6 +922,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (r != JOptionPane.OK_OPTION) {
             return;
         }
+        pushUndoCheckpoint("Cut Subtree");
         setNodeInPreorderToNull();
         setCopiedAndPastedNodes(null);
         setCutOrCopiedTree(_phylogeny.copy(node));
@@ -960,6 +972,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         } else if (r != 0) {
             return;
         }
+        pushUndoCheckpoint(node_only ? "Delete Node" : "Delete Subtree");
         if (node_only) {
             PhylogenyMethods.removeNode(node, _phylogeny);
         } else {
@@ -3852,8 +3865,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         JOptionPane.ERROR_MESSAGE);
                 return;
             }
+            pushUndoCheckpoint("Paste Subtree");
             buffer_phy.addAsSibling(node);
         } else {
+            pushUndoCheckpoint("Paste Subtree");
             if ((node.getNumberOfExternalNodes() == 1) && node.isRoot()) {
                 need_to_show_whole = true;
                 _phylogeny = buffer_phy;
@@ -4640,6 +4655,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private java.util.List<AnnotationColumns.ColumnSpec> _annotation_column_specs = null; // the user's selection
     private AnnotationColumns          _annotation_columns = null;                          // built for the current view
     private int                       _focused_annotation_column = -1;                      // header-clicked -> its legend
+    private final TreeHistory         _history = new TreeHistory();                         // snapshot-based undo/redo
+    private boolean                   _restoring_snapshot = false;                          // guards setEdited during a restore
     private final static int          ANN_COL_GAP  = 5;                                     // gap around each column
     private final static int          ANN_TEXT_MAX = 130;                                   // max width of a text column
 
@@ -5379,6 +5396,127 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         _annotation_columns = new AnnotationColumns(_phylogeny, _annotation_column_specs);
     }
 
+    // --- undo/redo (snapshot-based; see TreeHistory) --------------------------------------------------------
+
+    /**
+     * Records the current tree state under {@code label} so the next mutation can be undone. Call this on the
+     * EDT immediately BEFORE mutating {@code _phylogeny} (structure, node styles, or node data).
+     */
+    void pushUndoCheckpoint(final String label) {
+        if ((_phylogeny != null) && !_phylogeny.isEmpty()) {
+            _history.checkpoint(_phylogeny, label, isEdited());
+            notifyEditMenu();
+        }
+    }
+
+    /**
+     * Records an already-captured pre-mutation state as an undo checkpoint — for operations that must run
+     * first to know whether they actually changed anything (e.g. import), so they can checkpoint only on a
+     * real change instead of leaving a spurious no-op entry. {@code pre_state} must be an independent copy.
+     */
+    void pushUndoSnapshot(final Phylogeny pre_state, final boolean was_edited, final String label) {
+        if ((pre_state != null) && !pre_state.isEmpty()) {
+            _history.checkpoint(pre_state, label, was_edited);
+            notifyEditMenu();
+        }
+    }
+
+    boolean canUndo() {
+        return _history.canUndo();
+    }
+
+    boolean canRedo() {
+        return _history.canRedo();
+    }
+
+    String undoLabel() {
+        return _history.undoLabel();
+    }
+
+    String redoLabel() {
+        return _history.redoLabel();
+    }
+
+    /** Restores the previous tree state; returns true if something was undone. */
+    boolean undo() {
+        final TreeHistory.Snapshot s = _history.undo(_phylogeny, isEdited());
+        if (s == null) {
+            return false;
+        }
+        restoreSnapshot(s);
+        return true;
+    }
+
+    /** Re-applies the last undone state; returns true if something was redone. */
+    boolean redo() {
+        final TreeHistory.Snapshot s = _history.redo(_phylogeny, isEdited());
+        if (s == null) {
+            return false;
+        }
+        restoreSnapshot(s);
+        return true;
+    }
+
+    private void restoreSnapshot(final TreeHistory.Snapshot s) {
+        _restoring_snapshot = true;
+        try {
+            final Phylogeny phy = s.getPhylogeny();
+            setTree(phy); // also nulls the preorder cache
+            setFoundNodes0(null); // the restored copy's search/selection hits from the mutated tree no longer apply
+            setFoundNodes1(null);
+            phy.externalNodesHaveChanged();
+            phy.clearHashIdToNodeMap();
+            phy.recalculateNumberOfExternalDescendants(true);
+            resetNodeIdToDistToLeafMap();
+            updateSetOfCollapsedExternalNodes();
+            ensureDomainArchitecturesRenderable(); // Phylogeny.copy() yields plain DomainArchitectures; the
+                                                   // layout/paint code requires RenderableDomainArchitecture
+            calculateLongestExtNodeInfo();
+            recalculateMaxDistanceToRoot();
+            resetPreferredSize();
+            clearRankLegend(); // the branch rank-colorization legend is UI state, not in the snapshot -- drop it
+            rebuildPropertyColorScheme(); // display schemes summarize the tree -- recompute for the restored one
+            rebuildAnnotationColumns();
+            rebuildCladeBands();
+            setEdited(s.isEdited());
+        }
+        finally {
+            _restoring_snapshot = false;
+        }
+        notifyEditMenu();
+    }
+
+    /**
+     * Wraps any plain {@link DomainArchitecture} on an external node's sequence into a
+     * {@link RenderableDomainArchitecture}, which the layout ({@link #calculateLongestExtNodeInfo}) and paint
+     * code cast to unconditionally. Needed after installing a {@link Phylogeny#copy()} (undo/redo restore),
+     * since copy() reproduces the base type, not the renderable subclass. Mirrors the lazy wrapping the paint
+     * path already does.
+     */
+    private void ensureDomainArchitecturesRenderable() {
+        if (_phylogeny == null) {
+            return;
+        }
+        for (final PhylogenyNode node : _phylogeny.getExternalNodes()) {
+            if (node.getNodeData().isHasSequence()
+                    && (node.getNodeData().getSequence().getDomainArchitecture() != null)
+                    && !(node.getNodeData().getSequence()
+                            .getDomainArchitecture() instanceof RenderableDomainArchitecture)) {
+                final RenderableDomainArchitecture rds = SPECIAL_DOMAIN_COLORING
+                        ? new RenderableDomainArchitecture(node.getNodeData().getSequence().getDomainArchitecture(),
+                                node.getName())
+                        : new RenderableDomainArchitecture(node.getNodeData().getSequence().getDomainArchitecture());
+                node.getNodeData().getSequence().setDomainArchitecture(rds);
+            }
+        }
+    }
+
+    private void notifyEditMenu() {
+        if ((getMainPanel() != null) && (getMainPanel().getMainFrame() != null)) {
+            getMainPanel().getMainFrame().updateEditMenu();
+        }
+    }
+
     /** A color-coded column (strip / heat map) has a color key; bar and text columns do not. */
     private boolean columnHasColorKey(final int i) {
         final AnnotationColumns.Type t = _annotation_columns.getColumn(i).getType();
@@ -6067,6 +6205,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     .showMessageDialog(this, "This is not rerootable", "Not rerootable", JOptionPane.WARNING_MESSAGE);
             return;
         }
+        pushUndoCheckpoint("Midpoint-Root");
         setNodeInPreorderToNull();
         setWaitCursor();
         PhylogenyMethods.midpointRoot(_phylogeny);
@@ -6086,6 +6225,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     .showMessageDialog(this, "This is not rerootable", "Not rerootable", JOptionPane.WARNING_MESSAGE);
             return;
         }
+        pushUndoCheckpoint("MAD-Root");
         setNodeInPreorderToNull();
         setWaitCursor();
         PhylogenyMethods.madRoot(_phylogeny);
@@ -6656,6 +6796,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     JOptionPane.WARNING_MESSAGE);
             return;
         }
+        pushUndoCheckpoint("Re-Root");
         if (!node.isRoot()) {
             // a different rooting was chosen manually; any MAD root support is now stale
             PhylogenyMethods.removeMadConfidences(getPhylogeny());
@@ -6803,6 +6944,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     final void sortDescendants(final PhylogenyNode node) {
         if (!node.isExternal()) {
+            pushUndoCheckpoint("Sort Descendants");
             DESCENDANT_SORT_PRIORITY pri = DESCENDANT_SORT_PRIORITY.NODE_NAME;
             if (getControlPanel().isShowTaxonomyScientificNames() || getControlPanel().isShowTaxonomyCode()) {
                 pri = DESCENDANT_SORT_PRIORITY.TAXONOMY;
@@ -6851,6 +6993,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             rebuildPropertyColorScheme();
             rebuildCladeBands(); // band roots referenced the old tree -- recompute for the subtree
             rebuildAnnotationColumns(); // rescale gradients / regroup categories to the subtree's visible tips
+            // undo history is per displayed (sub)tree: clear it at a navigation boundary so an undo can never
+            // restore a snapshot that belongs to a different view (which would desync the sub-tree stack)
+            _history.clear();
+            notifyEditMenu();
             updateSubSuperTreeButton();
             getMainPanel().getControlPanel().search0();
             getMainPanel().getControlPanel().search1();
@@ -6880,6 +7026,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         rebuildPropertyColorScheme();
         rebuildCladeBands(); // band roots referenced the old (sub)tree -- recompute for the restored tree
         rebuildAnnotationColumns(); // recompute the columns' schemes for the restored tree
+        _history.clear(); // navigation boundary -- see subTree()
+        notifyEditMenu();
         getMainPanel().getControlPanel().search0();
         getMainPanel().getControlPanel().search1();
         getMainPanel().getControlPanel().updateDomainStructureEvaluethresholdDisplay();
@@ -6921,6 +7069,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 || getControlPanel().isShowGeneNames()) {
             pri = DESCENDANT_SORT_PRIORITY.SEQUENCE;
         }
+        pushUndoCheckpoint("Order Subtree");
         PhylogenyMethods.orderAppearanceX(node, true, pri);
         setNodeInPreorderToNull();
         getPhylogeny().externalNodesHaveChanged();
@@ -6944,6 +7093,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return;
         }
         if (!node.isExternal()) {
+            pushUndoCheckpoint("Swap Descendants");
             node.swapChildren();
             setNodeInPreorderToNull();
             _phylogeny.externalNodesHaveChanged();

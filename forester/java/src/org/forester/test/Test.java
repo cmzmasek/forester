@@ -196,6 +196,22 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Tree history (undo/redo): ");
+        if (org.forester.archaeopteryx.TreeHistoryTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Undo/redo tool: ");
+        if (org.forester.archaeopteryx.UndoRedoToolTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Confidence label: ");
         if (org.forester.archaeopteryx.ConfidenceLabelTest.test()) {
             System.out.println("OK.");

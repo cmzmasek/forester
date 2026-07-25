@@ -53,7 +53,11 @@ import javax.swing.JScrollPane;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import java.awt.Toolkit;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import javax.swing.JMenu;
+import javax.swing.KeyStroke;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -222,6 +226,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem _color_rank_jmi;
     JMenuItem _clade_bands_jmi;
     JMenuItem _annotation_columns_jmi;
+    JMenu _edit_jmenu;
+    JMenuItem _undo_item;
+    JMenuItem _redo_item;
 
     JMenuItem _obtain_seq_and_tax_information_jmi;
     JMenuItem _extract_label_data_jmi;
@@ -359,6 +366,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             labelCladesByRank();
         } else if (o == _annotation_columns_jmi) {
             chooseAnnotationColumns();
+        } else if (o == _undo_item) {
+            undo();
+        } else if (o == _redo_item) {
+            redo();
         } else if (o == _remove_branch_color_item) {
             if (isSubtreeDisplayed()) {
                 return;
@@ -707,6 +718,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 + " external node(s), from a total of " + ext + " external nodes," + "\nresulting in tree with " + res
                 + " nodes?", function + " external nodes", JOptionPane.OK_CANCEL_OPTION);
         if (result == JOptionPane.OK_OPTION) {
+            getCurrentTreePanel().pushUndoCheckpoint(delete ? "Delete Nodes" : "Retain Nodes");
             if (!delete) {
                 final List<PhylogenyNode> to_delete = new ArrayList<>();
                 for (final PhylogenyNodeIterator it = phy.iteratorExternalForward(); it.hasNext(); ) {
@@ -771,6 +783,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     private void removeBranchColors() {
         if (getMainPanel().getCurrentPhylogeny() != null) {
+            getMainPanel().getCurrentTreePanel().pushUndoCheckpoint("Delete Branch Colors");
             AptxUtil.removeBranchColors(getMainPanel().getCurrentPhylogeny());
             if (getMainPanel().getCurrentTreePanel() != null) {
                 getMainPanel().getCurrentTreePanel().clearRankLegend(); // the rank legend no longer reflects the tree
@@ -780,6 +793,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     private void removeVisualStyles() {
         if (getMainPanel().getCurrentPhylogeny() != null) {
+            getMainPanel().getCurrentTreePanel().pushUndoCheckpoint("Delete Visual Styles");
             AptxUtil.removeVisualStyles(getMainPanel().getCurrentPhylogeny());
         }
     }
@@ -1002,6 +1016,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                     JOptionPane.QUESTION_MESSAGE);
             if (choice == JOptionPane.YES_OPTION) {
                 new Thread(new OnlineTaxonResolver(this, "rank colorization (" + r + ")", unresolved, err -> {
+                    tp.pushUndoCheckpoint("Colorize by Rank"); // checkpoint at the actual (deferred) colorization
                     final int colorized = tp.colorByRank(r);
                     if (err != null) {
                         // colorByRank mutated branch colors but does not set the edited flag; on the error
@@ -1020,6 +1035,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             }
         }
         // no online resolution -- colorize once from what the tree (and cache) already know
+        tp.pushUndoCheckpoint("Colorize by Rank");
         tp.reportRankColorization(r, tp.colorByRank(r));
     }
 
@@ -1028,6 +1044,54 @@ public abstract class MainFrame extends JFrame implements ActionListener {
      * bars), resolve any unplaced tips online if the user agrees (off the EDT), then draw the bands.
      * Mirrors {@link #colorRank()} but renders {@link CladeBand}s instead of coloring branches.
      */
+    void buildEditMenu() {
+        _edit_jmenu = createMenu("Edit", getConfiguration()); // font handled like the sibling top-level menus
+        _edit_jmenu.setToolTipText("Undo or redo the last tree edit");
+        final int shortcut = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx(); // Cmd on macOS, Ctrl elsewhere
+        _edit_jmenu.add(_undo_item = new JMenuItem("Undo"));
+        _undo_item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, shortcut));
+        customizeJMenuItem(_undo_item);
+        _edit_jmenu.add(_redo_item = new JMenuItem("Redo"));
+        _redo_item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, shortcut | InputEvent.SHIFT_DOWN_MASK));
+        customizeJMenuItem(_redo_item);
+        _jmenubar.add(_edit_jmenu);
+        updateEditMenu();
+    }
+
+    /** Undo the current tab's last tree edit, then refresh the view + the Edit menu. */
+    void undo() {
+        if ((getCurrentTreePanel() != null) && getCurrentTreePanel().undo()) {
+            showWhole();
+            getCurrentTreePanel().repaint();
+            repaint();
+        }
+        updateEditMenu();
+    }
+
+    /** Re-apply the last undone edit, then refresh the view + the Edit menu. */
+    void redo() {
+        if ((getCurrentTreePanel() != null) && getCurrentTreePanel().redo()) {
+            showWhole();
+            getCurrentTreePanel().repaint();
+            repaint();
+        }
+        updateEditMenu();
+    }
+
+    /** Syncs the Edit menu's enabled state + "Undo <op>"/"Redo <op>" labels to the current tab's history. */
+    void updateEditMenu() {
+        if (_undo_item == null) {
+            return;
+        }
+        final TreePanel tp = (getMainPanel() != null) ? getMainPanel().getCurrentTreePanel() : null;
+        final boolean can_undo = (tp != null) && tp.canUndo();
+        final boolean can_redo = (tp != null) && tp.canRedo();
+        _undo_item.setEnabled(can_undo);
+        _undo_item.setText(can_undo ? ("Undo " + tp.undoLabel()) : "Undo");
+        _redo_item.setEnabled(can_redo);
+        _redo_item.setText(can_redo ? ("Redo " + tp.redoLabel()) : "Redo");
+    }
+
     /**
      * Opens the "Annotation Columns" chooser: pick which annotation fields to show as tip-aligned columns and
      * how to render each (color strip / heat map / bar / text), then applies them to the current tree.
@@ -2224,6 +2288,11 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                     JOptionPane.ERROR_MESSAGE);
             return;
         }
+        // capture the pre-import state up front, but only commit it as an undo checkpoint if the import
+        // actually annotates something (so a failed / no-match import leaves no spurious "Undo" entry)
+        final TreePanel current_tp = getCurrentTreePanel();
+        final Phylogeny before = (current_tp != null) ? phy.copy() : null;
+        final boolean was_edited = (current_tp != null) && current_tp.isEdited();
         final NodeDataImporter.ImportResult result;
         try {
             result = NodeDataImporter.apply(phy, tsv);
@@ -2236,6 +2305,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if (result.getTipsAnnotated() > 0) {
             final TreePanel tp = _mainpanel.getCurrentTreePanel();
             if (tp != null) {
+                tp.pushUndoSnapshot(before, was_edited, "Import Node Data"); // now we know it changed the tree
                 tp.setTree(phy); // recompute the layout so the new labels/data show
                 tp.getControlPanel().populateColorByPropertyBox(); // surface any imported columns in "Color by:"
                 showWhole();
