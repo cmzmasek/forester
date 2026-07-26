@@ -29,7 +29,12 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import javax.swing.AbstractAction;
+import javax.swing.KeyStroke;
+import javax.swing.undo.UndoManager;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -1650,6 +1655,38 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     /**
+     * Gives a text field its own Undo/Redo (Cmd/Ctrl-Z, Cmd/Ctrl-Shift-Z) bound at WHEN_FOCUSED scope, so
+     * those keystrokes edit the field's text instead of falling through to the tree-level Undo menu
+     * accelerator -- which would otherwise revert the tree while the user is typing a search query.
+     */
+    private static void installTextUndo(final JTextField tf) {
+        final UndoManager um = new UndoManager();
+        tf.getDocument().addUndoableEditListener(um);
+        final int shortcut = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
+        tf.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, shortcut), "text-undo");
+        tf.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, shortcut | InputEvent.SHIFT_DOWN_MASK),
+                "text-redo");
+        tf.getActionMap().put("text-undo", new AbstractAction() {
+
+            @Override
+            public void actionPerformed(final ActionEvent e) {
+                if (um.canUndo()) {
+                    um.undo();
+                }
+            }
+        });
+        tf.getActionMap().put("text-redo", new AbstractAction() {
+
+            @Override
+            public void actionPerformed(final ActionEvent e) {
+                if (um.canRedo()) {
+                    um.redo();
+                }
+            }
+        });
+    }
+
+    /**
      * If the "Domain Architectures" checkbox is available, switch it on and fit the tree -- now wider
      * because of the domain rows -- to the screen. Called on load for a tree that contains domain
      * architectures so the domains are shown immediately (most users never find the checkbox).
@@ -2431,6 +2468,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         _search_tf_0 = new JTextField(3);
         _search_tf_0.setFont(ControlPanel.jcb_font);
         _search_tf_0.setToolTipText(SEARCH_TIP_TEXT);
+        installTextUndo(_search_tf_0);
         _search_tf_0.setEditable(true);
         if (getConfiguration().isApplyCustomGuiColors()) {
             _search_tf_0.setForeground(getConfiguration().getGuiMenuBackgroundColor());
@@ -2492,6 +2530,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         _search_tf_1 = new JTextField(3);
         _search_tf_1.setFont(ControlPanel.jcb_font);
         _search_tf_1.setToolTipText(SEARCH_TIP_TEXT);
+        installTextUndo(_search_tf_1);
         _search_tf_1.setEditable(true);
         if (getConfiguration().isApplyCustomGuiColors()) {
             _search_tf_1.setForeground(getConfiguration().getGuiMenuBackgroundColor());

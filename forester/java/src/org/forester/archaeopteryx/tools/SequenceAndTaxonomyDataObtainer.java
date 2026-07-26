@@ -70,11 +70,7 @@ public final class SequenceAndTaxonomyDataObtainer extends RunnableProcess {
         }
         // Swing is not thread-safe: commit the enriched tree and show the report on the EDT.
         SwingUtilities.invokeLater( () -> {
-            if ( shouldCommit( result ) ) {
-                _treepanel.setTree( _phy );
-                _mf.showWhole();
-                _treepanel.setEdited( true );
-            }
+            commit( result );
             final int type = hasIssues( result ) ? JOptionPane.WARNING_MESSAGE : JOptionPane.INFORMATION_MESSAGE;
             try {
                 JOptionPane.showMessageDialog( _mf, buildCompletionMessage( result ), "Sequence & Taxonomy Tool Completed",
@@ -84,6 +80,20 @@ public final class SequenceAndTaxonomyDataObtainer extends RunnableProcess {
                 // not important if the dialog fails
             }
         } );
+    }
+
+    /**
+     * EDT-only: when the run wrote anything, checkpoint the live (pre-fetch) tree so the enrichment can be
+     * undone, then install the enriched tree. Package-visible so the undo checkpoint can be tested without a
+     * network fetch.
+     */
+    public void commit( final SequenceTaxonomyResolver.Result result ) {
+        if ( shouldCommit( result ) ) {
+            _treepanel.pushUndoCheckpoint( "Fetch Sequence & Taxonomy Data" );
+            _treepanel.setTree( _phy );
+            _mf.showWhole();
+            _treepanel.setEdited( true );
+        }
     }
 
     /** Commit the enriched tree whenever something was written (even a partial/cancelled run). */

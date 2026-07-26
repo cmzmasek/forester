@@ -74,10 +74,7 @@ public class AncestralTaxonomyInferrer extends RunnableProcess {
                                                JOptionPane.ERROR_MESSAGE );
                 return;
             }
-            _phy.setRerootable( false );
-            _treepanel.setTree( _phy );
-            _mf.showWhole();
-            _treepanel.setEdited( true );
+            commit();
             try {
                 JOptionPane.showMessageDialog( _mf, "Ancestral taxonomy inference successfully completed",
                                                "Ancestral Taxonomy Inference Completed", JOptionPane.INFORMATION_MESSAGE );
@@ -86,6 +83,19 @@ public class AncestralTaxonomyInferrer extends RunnableProcess {
                 // not important if the dialog fails
             }
         } );
+    }
+
+    /**
+     * EDT-only: checkpoint the live (pre-inference) tree so the inferred taxonomies can be undone, then install
+     * the enriched tree. Package-visible so the undo checkpoint can be tested without running the (blocking)
+     * inference on a background thread.
+     */
+    public void commit() {
+        _treepanel.pushUndoCheckpoint( "Infer Ancestor Taxonomies" );
+        _phy.setRerootable( false );
+        _treepanel.setTree( _phy );
+        _mf.showWhole();
+        _treepanel.setEdited( true );
     }
 
     @Override

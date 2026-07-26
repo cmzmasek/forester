@@ -97,6 +97,7 @@ public final class AnnotationColumnsToolTest {
                     System.out.println( "  [AnnotationColumnsToolTest] columns were not set" );
                     ok[ 0 ] = false;
                 }
+                final float first_tip_y_without = tp.getPhylogeny().getFirstExternalNode().getYcoord();
                 mf[ 0 ].showWhole();
                 // render with the columns -- exercises paintAnnotationColumns + the width reservation; the
                 // columns must add painted pixels beyond what the bare tree draws (a whole-right-half scan
@@ -104,6 +105,37 @@ public final class AnnotationColumnsToolTest {
                 final int with = renderOffscreen( tp, w, h );
                 if ( with <= without ) {
                     System.out.println( "  [AnnotationColumnsToolTest] annotation columns drew no additional pixels" );
+                    ok[ 0 ] = false;
+                }
+
+                // every column reserves a positive width (exercises the cached width path)
+                for( int i = 0; i < specs.size(); ++i ) {
+                    if ( tp.annotationColumnWidthForTest( i ) <= 0 ) {
+                        System.out.println( "  [AnnotationColumnsToolTest] column " + i + " has non-positive width" );
+                        ok[ 0 ] = false;
+                    }
+                }
+                // the rotated headers reserve top space, and that space pushes the first tip down so the
+                // headers don't overlap the top cells (item: header/cell overlap on tight trees)
+                if ( tp.annotationHeaderTopReserveForTest() <= 0 ) {
+                    System.out.println( "  [AnnotationColumnsToolTest] no header top-reserve was computed" );
+                    ok[ 0 ] = false;
+                }
+                if ( tp.getPhylogeny().getFirstExternalNode().getYcoord() <= first_tip_y_without ) {
+                    System.out.println( "  [AnnotationColumnsToolTest] header reserve did not push the first tip down" );
+                    ok[ 0 ] = false;
+                }
+                // the preferred (scrollable) height must cover the reserve-shifted tree, or the bottom cells
+                // clip when zoomed/scrolled -- resetPreferredSize must include the same reserve the paint shifts by
+                tp.resetPreferredSize();
+                float last_tip_y = 0f;
+                for( final PhylogenyNode t : tp.getPhylogeny().getExternalNodes() ) {
+                    last_tip_y = Math.max( last_tip_y, t.getYcoord() );
+                }
+                final int last_cell_bottom = Math.round( last_tip_y + tp.getYdistance() );
+                if ( tp.getPreferredSize().height < last_cell_bottom ) {
+                    System.out.println( "  [AnnotationColumnsToolTest] preferred height " + tp.getPreferredSize().height
+                            + " clips the bottom annotation cells (need >= " + last_cell_bottom + ")" );
                     ok[ 0 ] = false;
                 }
 
@@ -140,15 +172,32 @@ public final class AnnotationColumnsToolTest {
                     System.out.println( "  [AnnotationColumnsToolTest] focused heat-map legend not drawn" );
                     ok[ 0 ] = false;
                 }
-                tp.setFocusedAnnotationColumn( 2 ); // a BAR column has no color key -> no legend
+                tp.setFocusedAnnotationColumn( 2 ); // BAR -> a length/range legend (not a color key, but a legend)
+                renderOffscreen( tp, w, h );
+                if ( !tp.hasFocusedAnnotationColumn() || ( tp.getPropertyLegendBounds() == null ) ) {
+                    System.out.println( "  [AnnotationColumnsToolTest] focused bar legend not drawn" );
+                    ok[ 0 ] = false;
+                }
+                tp.setFocusedAnnotationColumn( 3 ); // TEXT -> no legend
                 if ( tp.hasFocusedAnnotationColumn() ) {
-                    System.out.println( "  [AnnotationColumnsToolTest] a bar column should not focus a legend" );
+                    System.out.println( "  [AnnotationColumnsToolTest] a text column should not focus a legend" );
                     ok[ 0 ] = false;
                 }
                 tp.setFocusedAnnotationColumn( 0 );
                 tp.setFocusedAnnotationColumn( 0 ); // toggling the same column off
                 if ( tp.hasFocusedAnnotationColumn() ) {
                     System.out.println( "  [AnnotationColumnsToolTest] a second header click should toggle the legend off" );
+                    ok[ 0 ] = false;
+                }
+
+                // a BAR column whose values are not a numeric gradient (categorical here; or a subtree that
+                // collapsed to a single value) must NOT focus a legend -- its min/max range would be degenerate
+                final List<AnnotationColumns.ColumnSpec> deg = new ArrayList<AnnotationColumns.ColumnSpec>();
+                deg.add( new AnnotationColumns.ColumnSpec( "data:region", AnnotationColumns.Type.BAR ) );
+                tp.setAnnotationColumns( deg );
+                tp.setFocusedAnnotationColumn( 0 );
+                if ( tp.hasFocusedAnnotationColumn() ) {
+                    System.out.println( "  [AnnotationColumnsToolTest] a non-gradient bar column should not focus a legend" );
                     ok[ 0 ] = false;
                 }
 

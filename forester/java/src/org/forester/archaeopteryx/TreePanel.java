@@ -4270,6 +4270,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     final private void showNodeEditFrame(final PhylogenyNode n) {
         if (_node_frame_index < TreePanel.MAX_NODE_FRAMES) {
+            // NOTE: node-data edits are NOT yet undoable. NodeEditPanel.writeBack commits fields incrementally
+            // (and unconditionally, with no change detection) on every selection change, so a correct checkpoint
+            // would have to be a change-gated one inside that legacy commit path; a checkpoint here on mere open
+            // would clear the redo stack even when the user only inspects a node. Deferred until writeBack grows
+            // change detection. Edits are still safe: writeBack's setEdited(true) clears stale redo (safety net).
             // pop up edit box for single node
             _node_frames[_node_frame_index] = new NodeFrame(n, _phylogeny, this, _node_frame_index, "");
             _node_frame_index++;
@@ -4393,7 +4398,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 xdist = ((x - getLongestExtNodeInfo() - rightMarginExtraWidth() - TreePanel.MOVE) / (max_depth + 1));
                 ov_xdist = (getOvMaxWidth() / (max_depth + 1));
             }
-            float ydist = (float) ((y - TreePanel.MOVE) / (ext_nodes * 2.0));
+            // reserve space at the top for the rotated annotation-column headers so they don't overlap the top
+            // cells; the tree is compressed into the remaining height and its origin shifted down (see below)
+            final int top_reserve = annotationHeaderTopReserve();
+            float ydist = (float) ((y - TreePanel.MOVE - top_reserve) / (ext_nodes * 2.0));
             if (xdist < 0.0) {
                 xdist = 0.0f;
             }
@@ -4654,6 +4662,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // Tip-aligned annotation columns (color strip / heat map / bar / text), drawn right of the labels.
     private java.util.List<AnnotationColumns.ColumnSpec> _annotation_column_specs = null; // the user's selection
     private AnnotationColumns          _annotation_columns = null;                          // built for the current view
+    private int[]                     _annotation_col_widths = null;                        // cached per-column pixel widths
+    private Font                      _annotation_col_widths_font = null;                   // font they were computed for
+    private int                       _annotation_header_top_reserve = 0;                   // cached rotated-header top reserve
     private int                       _focused_annotation_column = -1;                      // header-clicked -> its legend
     private final TreeHistory         _history = new TreeHistory();                         // snapshot-based undo/redo
     private boolean                   _restoring_snapshot = false;                          // guards setEdited during a restore
@@ -5382,11 +5393,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     void clearAnnotationColumns() {
         _annotation_column_specs = null;
         _annotation_columns = null;
+        _annotation_col_widths = null;
         _focused_annotation_column = -1;
     }
 
     /** Rebuilds the column model from the stored specs against the currently displayed tree (visible tips). */
     final void rebuildAnnotationColumns() {
+        _annotation_col_widths = null; // invalidate the cached widths -- the model (and its text) may have changed
         if ((_annotation_column_specs == null) || _annotation_column_specs.isEmpty() || (_phylogeny == null)
                 || _phylogeny.isEmpty()) {
             _annotation_columns = null;
@@ -5400,9 +5413,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     /**
      * Records the current tree state under {@code label} so the next mutation can be undone. Call this on the
-     * EDT immediately BEFORE mutating {@code _phylogeny} (structure, node styles, or node data).
+     * EDT immediately BEFORE mutating {@code _phylogeny} (structure, node styles, or node data). Public so the
+     * async data tools (Fetch, Infer) in the {@code tools} sub-package can checkpoint at their EDT commit.
      */
-    void pushUndoCheckpoint(final String label) {
+    public void pushUndoCheckpoint(final String label) {
         if ((_phylogeny != null) && !_phylogeny.isEmpty()) {
             _history.checkpoint(_phylogeny, label, isEdited());
             notifyEditMenu();
@@ -5517,22 +5531,33 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
-    /** A color-coded column (strip / heat map) has a color key; bar and text columns do not. */
-    private boolean columnHasColorKey(final int i) {
+    /** Strip / heat map (color key) and bar (length/range key) columns have a legend; text columns do not. */
+    private boolean columnHasLegend(final int i) {
         final AnnotationColumns.Type t = _annotation_columns.getColumn(i).getType();
-        return (t == AnnotationColumns.Type.COLOR_STRIP) || (t == AnnotationColumns.Type.HEATMAP);
+        return (t == AnnotationColumns.Type.COLOR_STRIP) || (t == AnnotationColumns.Type.HEATMAP)
+                || (t == AnnotationColumns.Type.BAR);
     }
 
     boolean hasFocusedAnnotationColumn() {
         if (!hasAnnotationColumns() || (_focused_annotation_column < 0)
                 || (_focused_annotation_column >= _annotation_columns.size())
-                || !columnHasColorKey(_focused_annotation_column)) {
+                || !columnHasLegend(_focused_annotation_column)) {
             return false;
         }
-        // a strip/heat-map column whose visible values vanished (e.g. after navigating into a subtree) has an
-        // empty scheme and no legend to show -- do not let it hold the legend slot or leave stale drag bounds
-        final PropertyColorScheme s = _annotation_columns.getColumn(_focused_annotation_column).getScheme();
-        return (s != null) && !s.isEmpty();
+        // a column whose visible values vanished (e.g. after navigating into a subtree) has an empty scheme
+        // and no legend to show -- do not let it hold the legend slot or leave stale drag bounds
+        final AnnotationColumns.Column col = _annotation_columns.getColumn(_focused_annotation_column);
+        final PropertyColorScheme s = col.getScheme();
+        if ((s == null) || s.isEmpty()) {
+            return false;
+        }
+        // a bar legend labels the numeric min/max range, so it needs a real gradient: if the visible values
+        // collapsed to a single (or non-numeric) value the range is degenerate -- show no legend rather than a
+        // misleading full-length "0 -> 0" wedge
+        if (col.getType() == AnnotationColumns.Type.BAR) {
+            return s.isGradient();
+        }
+        return true;
     }
 
     /**
@@ -5558,10 +5583,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final int w = annotationColumnWidth(i);
             if ((x >= cx) && (x <= (cx + w))) {
                 // same anchor_y as the drawn header (see paintAnnotationColumns); the header spans y in
-                // [anchor_y - textWidth, anchor_y], so any click at y <= anchor_y in this column hits it
+                // [anchor_y, anchor_y + textWidth], so a click anywhere from the top down to the header's
+                // bottom (just above the first cell) in this column hits it
                 final int tw = fm.stringWidth(_annotation_columns.getColumn(i).getHeader());
-                final float anchor_y = Math.max(tw + 2.0f, min_tip_y - pad - 3.0f);
-                return (y <= anchor_y) ? i : -1;
+                final float anchor_y = Math.max(1.0f, (min_tip_y - pad) - 3.0f - tw);
+                return (y <= (anchor_y + tw)) ? i : -1;
             }
             cx += w + ANN_COL_GAP;
         }
@@ -5578,16 +5604,26 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return true;
     }
 
-    /** Shows column {@code col}'s color legend (toggling it off if it already showed); a bar/text or an
-     * out-of-range column clears the focus. Only color-coded columns (strip / heat map) have a legend. */
+    /** Shows column {@code col}'s legend (toggling it off if it already showed); a text or out-of-range column
+     * clears the focus. Strip / heat map (color key) and bar (length/range key) columns have a legend. */
     void setFocusedAnnotationColumn(final int col) {
         if (!hasAnnotationColumns() || (col < 0) || (col >= _annotation_columns.size())
-                || !columnHasColorKey(col) || (_focused_annotation_column == col)) {
+                || !columnHasLegend(col) || (_focused_annotation_column == col)) {
             _focused_annotation_column = -1;
         } else {
             _focused_annotation_column = col;
         }
         repaint();
+    }
+
+    /** Test hook: the width (px) reserved for annotation column {@code col}. */
+    int annotationColumnWidthForTest(final int col) {
+        return annotationColumnWidth(col);
+    }
+
+    /** Test hook: the vertical space (px) reserved above the first tip for the rotated column headers. */
+    int annotationHeaderTopReserveForTest() {
+        return annotationHeaderTopReserve();
     }
 
     /** A point inside column {@code col}'s clickable header band (for the header-click test), or null. */
@@ -5615,13 +5651,62 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ((scheme == null) || scheme.isEmpty()) {
             return;
         }
-        if (scheme.isGradient()) {
+        if (col.getType() == AnnotationColumns.Type.BAR) {
+            // a bar column encodes magnitude by length, not hue -> show a length wedge with min/max, not a
+            // color gradient
+            drawAnnotationBarLegend(g, bounds, draggable, col.getHeader(), scheme);
+        } else if (scheme.isGradient()) {
             drawPropertyColorGradientLegend(g, bounds, draggable, col.getHeader(), scheme);
         } else {
             final Map<String, Color> values = scheme.legendValues(PROPERTY_LEGEND_MAX_ENTRIES);
             drawCategoricalLegend(g, bounds, draggable, col.getHeader(), values, scheme.getValueCounts(),
                     scheme.numberOfValues() - values.size());
         }
+    }
+
+    /**
+     * Legend for a focused BAR annotation column: a right-growing wedge (short = min value, full = max value)
+     * with the numeric range labeled beneath, mirroring how the column itself draws horizontal bars whose
+     * length encodes the value. Uses the scheme's gradient min/max as the range endpoints.
+     */
+    private void drawAnnotationBarLegend(final Graphics2D g, final Rectangle bounds, final boolean draggable,
+                                         final String title, final PropertyColorScheme scheme) {
+        final int pad = 7;
+        final int bar_w = 200;
+        final int bar_h = 12;
+        g.setFont(legendFont());
+        final FontMetrics fm = g.getFontMetrics();
+        final String min_lbl = (scheme.getGradientMinLabel() != null) ? scheme.getGradientMinLabel() : "";
+        final String max_lbl = (scheme.getGradientMaxLabel() != null) ? scheme.getGradientMaxLabel() : "";
+        final int content_w = Math.max(fm.stringWidth(title), bar_w);
+        final int box_w = content_w + (2 * pad) + 4;
+        final int box_h = (2 * fm.getHeight()) + bar_h + 6 + (2 * pad);
+        final Point tl = legendTopLeft(bounds, box_w, box_h);
+        final int x = tl.x;
+        final int y = tl.y;
+        if (draggable) {
+            _property_legend_bounds = new Rectangle(x, y, box_w, box_h);
+            _legend_row_labels = new java.util.ArrayList<>(); // a bar legend has no clickable value rows
+        }
+        final Stroke saved_stroke = g.getStroke();
+        g.setStroke(STROKE_1);
+        final Color fg = getTreeColorSet().getSequenceColor();
+        g.setColor(getBackground());
+        g.fillRect(x, y, box_w, box_h);
+        g.setColor(fg);
+        g.drawRect(x, y, box_w, box_h);
+        final int baseline = y + pad + fm.getAscent();
+        g.drawString(title, x + pad, baseline);
+        final int bar_x = x + pad;
+        final int bar_y = baseline + 4;
+        // right-growing wedge: empty (min) at the left, full (max) at the right, echoing the column's bars
+        g.fillPolygon(new int[] { bar_x, bar_x + bar_w, bar_x + bar_w },
+                new int[] { bar_y + bar_h, bar_y, bar_y + bar_h }, 3);
+        g.drawRect(bar_x, bar_y, bar_w - 1, bar_h);
+        final int label_baseline = bar_y + bar_h + fm.getAscent() + 2;
+        g.drawString(min_lbl, bar_x, label_baseline);
+        g.drawString(max_lbl, (bar_x + bar_w) - fm.stringWidth(max_lbl), label_baseline);
+        g.setStroke(saved_stroke);
     }
 
     /** Total horizontal space the annotation columns occupy (0 when none), including the gaps around them.
@@ -5638,9 +5723,61 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return w;
     }
 
+    /**
+     * Vertical space (px) to reserve above the first tip for the rotated annotation-column headers, so they do
+     * not overlap the top cells on a tight tree. Because the headers are drawn rotated 90 degrees, the space
+     * they need above the tree equals the longest header's horizontal text length. Zero when there are no
+     * annotation columns/headers, or for circular/unrooted layouts (which draw no columns).
+     */
+    private int annotationHeaderTopReserve() {
+        if (!hasAnnotationColumns() || (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR)
+                || (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED)) {
+            return 0;
+        }
+        ensureAnnotationColumnWidths(); // also (re)computes the cached header reserve
+        return _annotation_header_top_reserve;
+    }
+
     private int annotationColumnWidth(final int i) {
+        ensureAnnotationColumnWidths();
+        return _annotation_col_widths[i];
+    }
+
+    /**
+     * Populates the per-column width cache (and the rotated-header top reserve) when stale. A TEXT column's
+     * width measures every tip's string and the reserve measures every header, so recomputing them on each of
+     * the several width queries per repaint is wasteful on large trees; both depend only on the column set and
+     * the (zoom-independent) tree font, so they are cached and reused until the model is rebuilt (see
+     * {@link #rebuildAnnotationColumns()}) or that font changes (family, size, or style).
+     */
+    private void ensureAnnotationColumnWidths() {
+        final Font large = getFontMetricsForLargeDefaultFont().getFont();
+        if ((_annotation_col_widths != null) && (_annotation_col_widths.length == _annotation_columns.size())
+                && large.equals(_annotation_col_widths_font)) {
+            return;
+        }
         final FontMetrics fm = getFontMetricsForLargeDefaultFont();
         final int h = fm.getHeight();
+        final int[] widths = new int[_annotation_columns.size()];
+        for (int i = 0; i < widths.length; ++i) {
+            widths[i] = computeAnnotationColumnWidth(i, fm, h);
+        }
+        _annotation_col_widths = widths;
+        _annotation_col_widths_font = large;
+        // the reserve is the longest rotated header (drawn in the small font), computed here so the paint path
+        // does not re-measure every header on every repaint (see annotationHeaderTopReserve)
+        final FontMetrics sfm = getFontMetrics(getTreeFontSet().getSmallFont());
+        int max_header = 0;
+        for (int i = 0; i < _annotation_columns.size(); ++i) {
+            final String header = _annotation_columns.getColumn(i).getHeader();
+            if ((header != null) && (header.length() > 0)) {
+                max_header = Math.max(max_header, sfm.stringWidth(header));
+            }
+        }
+        _annotation_header_top_reserve = (max_header > 0) ? (max_header + 6) : 0;
+    }
+
+    private int computeAnnotationColumnWidth(final int i, final FontMetrics fm, final int h) {
         switch (_annotation_columns.getColumn(i).getType()) {
             case BAR:
                 return Math.max(24, h * 3);
@@ -5737,7 +5874,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     }
                 }
             }
-            // column header: the field name, rotated to read bottom-to-top, just above the first cell
+            // column header: the field name, rotated to read bottom-to-top. The rotated text extends DOWN from
+            // anchor_y (to anchor_y + textWidth), so anchor it a full text-length above the first cell to sit in
+            // the reserved band there (see annotationHeaderTopReserve) instead of overlapping the top cells.
             final String header = _annotation_columns.getColumn(i).getHeader();
             if ((header.length() > 0) && (min_tip_y < Float.MAX_VALUE)) {
                 g.setFont(text_font);
@@ -5745,7 +5884,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 final FontMetrics hfm = g.getFontMetrics();
                 final int tw = hfm.stringWidth(header);
                 final float cx = xi + (w / 2.0f);
-                final float anchor_y = Math.max(tw + 2.0f, min_tip_y - pad - 3.0f); // keep the header on-canvas
+                final float anchor_y = Math.max(1.0f, (min_tip_y - pad) - 3.0f - tw); // keep the header on-canvas
                 g.rotate(-Math.PI / 2.0, cx, anchor_y);
                 g.drawString(header, cx - tw, anchor_y + (hfm.getAscent() / 2.0f));
                 g.setTransform(saved_tx);
@@ -6583,9 +6722,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             } else {
                 _phylogeny.getRoot().setXcoord(TreePanel.MOVE + getXdistance());
             }
-            // Position starting Y of tree
+            // Position starting Y of tree (shifted down by the same header reserve used in calcParametersForPainting)
             _phylogeny.getRoot().setYcoord((getYdistance() * _phylogeny.getRoot().getNumberOfExternalNodes())
-                    + (TreePanel.MOVE / 2.0f));
+                    + (TreePanel.MOVE / 2.0f) + annotationHeaderTopReserve());
             final int dynamic_hiding_factor = calcDynamicHidingFactor();
             if (getControlPanel().isDynamicallyHideData()) {
                 if (dynamic_hiding_factor > 1) {
@@ -6824,7 +6963,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         int x = 0;
         int y = 0;
-        y = TreePanel.MOVE
+        // include the annotation-header top reserve: paintPhylogeny shifts the whole tree down by it (see the
+        // root Ycoord), so the scrollable height must grow by the same amount or the bottom tips/cells clip
+        y = TreePanel.MOVE + annotationHeaderTopReserve()
                 + ForesterUtil.roundToInt(getYdistance() * getPhylogeny().getRoot().getNumberOfExternalNodes() * 2);
         if (getControlPanel().isDrawPhylogram()) {
             x = TreePanel.MOVE + getLongestExtNodeInfo() + rightMarginExtraWidth()
