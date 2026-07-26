@@ -52,7 +52,37 @@ public final class PropertyColorSchemeTest {
                 && testHostQualifierGrouping() && testYearGradient() && testNumericGradientGeneralization()
                 && testColorableRefs() && testAbsentAndEmpty() && testCollapseExcludesHiddenLeaves()
                 && testCollapseRescalesGradient() && testFrequencyColorsAndLegend() && testColorOverrides()
-                && testPalettes();
+                && testPalettes() && testOrderLegendEntriesEdges();
+    }
+
+    // ---- orderLegendEntries edge cases (formerly covered via legendValues/capEntries) ----
+    private static boolean testOrderLegendEntriesEdges() {
+        final Map<String, Color> colors = new HashMap<String, Color>();
+        colors.put( "b", Color.RED );
+        colors.put( "a", Color.GREEN );
+        colors.put( "c", Color.BLUE );
+        // null counts -> every key ranks as 0 -> the cap keeps the alphabetically-first max, displayed A-Z
+        final List<String> nc = new ArrayList<String>( TreePanel.orderLegendEntries( colors, null, 2, false ).keySet() );
+        if ( ( nc.size() != 2 ) || !"a".equals( nc.get( 0 ) ) || !"b".equals( nc.get( 1 ) ) ) {
+            return fail( "null counts, max 2: keep a,b A-Z; got " + nc );
+        }
+        // max >= size keeps everything
+        if ( TreePanel.orderLegendEntries( colors, null, 99, false ).size() != 3 ) {
+            return fail( "max >= size must keep all entries" );
+        }
+        // max == 0 -> empty
+        if ( !TreePanel.orderLegendEntries( colors, null, 0, false ).isEmpty() ) {
+            return fail( "max 0 must yield an empty legend" );
+        }
+        // partial counts: only "c" has a count, so by_count keeps it and ranks it first
+        final Map<String, Integer> partial = new HashMap<String, Integer>();
+        partial.put( "c", 5 );
+        final List<String> byc = new ArrayList<String>(
+                TreePanel.orderLegendEntries( colors, partial, 2, true ).keySet() );
+        if ( ( byc.size() != 2 ) || !"c".equals( byc.get( 0 ) ) ) {
+            return fail( "partial counts, by_count: c (count 5) must lead; got " + byc );
+        }
+        return true;
     }
 
     // ---- colorableRefs: numeric all-unique columns stay colorable (gradient); categorical all-unique don't ----
@@ -141,8 +171,9 @@ public final class PropertyColorSchemeTest {
         if ( s.numberOfValues() != 26 ) {
             return fail( "expected 26 distinct values, got " + s.numberOfValues() );
         }
-        // the legend shows the 20 MOST FREQUENT values (x06..x25), re-sorted alphabetically
-        final Map<String, Color> legend = s.legendValues( 20 );
+        // the legend keeps the 20 MOST FREQUENT values (x06..x25); A-Z display order (by_count=false)
+        final Map<String, Color> legend = TreePanel.orderLegendEntries( s.getValueColors(), s.getValueCounts(), 20,
+                                                                        false );
         final List<String> keys = new ArrayList<String>( legend.keySet() );
         if ( keys.size() != 20 ) {
             return fail( "legend should hold 20 entries, got " + keys.size() );
@@ -151,6 +182,15 @@ public final class PropertyColorSchemeTest {
             final String expected = String.format( "x%02d", k + 6 ); // x06..x25, in alphabetical order
             if ( !expected.equals( keys.get( k ) ) ) {
                 return fail( "legend entry " + k + " expected " + expected + " got " + keys.get( k ) );
+            }
+        }
+        // by_count=true display order: same 20 kept, but most-frequent first (x25, x24, ..., x06)
+        final List<String> by_count = new ArrayList<String>(
+                TreePanel.orderLegendEntries( s.getValueColors(), s.getValueCounts(), 20, true ).keySet() );
+        for( int k = 0; k < 20; ++k ) {
+            final String expected = String.format( "x%02d", 25 - k ); // x25 down to x06
+            if ( !expected.equals( by_count.get( k ) ) ) {
+                return fail( "by-count legend entry " + k + " expected " + expected + " got " + by_count.get( k ) );
             }
         }
         // the 24 most frequent values (x02..x25) must all have distinct colors (no palette cycling)

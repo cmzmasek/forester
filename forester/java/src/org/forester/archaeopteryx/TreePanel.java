@@ -4633,11 +4633,32 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private java.util.List<String> _legend_row_labels   = new java.util.ArrayList<>();
     private int                 _legend_rows_top    = 0;
     private int                 _legend_row_height  = 0;
+    // In-legend controls (recorded when a categorical legend is drawn; null otherwise): the sort toggle in
+    // the title row and the clickable "+N more / show fewer" footer. Hit-tested in handleLegendClick.
+    private Rectangle           _legend_sort_toggle_bounds = null;
+    private Rectangle           _legend_more_bounds = null;
+    // Categorical-legend display prefs (per tab, toggled from the legend itself): sort by count vs A-Z, and
+    // how many entries to show before "+N more". Default: most-frequent first, DEFAULT_LEGEND_MAX_ENTRIES cap.
+    private boolean             _legend_sort_by_count = true;
+    private int                 _legend_max_entries = DEFAULT_LEGEND_MAX_ENTRIES;
+    // Memo of the last ordered legend entries so the sort+alloc in orderLegendEntries does not run on every
+    // repaint; invalidated (by identity/value comparison) when the source map, counts, sort mode, or cap change.
+    private Map<String, Color>   _ordered_legend = null;
+    private Map<String, Color>   _ordered_legend_colors_key = null;
+    private Map<String, Integer> _ordered_legend_counts_key = null;
+    private boolean             _ordered_legend_by_count_key = true;
+    private int                 _ordered_legend_max_key = DEFAULT_LEGEND_MAX_ENTRIES;
+    // Which legend subject (property ref / rank / column) is currently shown; when it changes, the expand
+    // ("show all") state resets so expanding one legend does not leak onto a different, possibly larger one.
+    private String              _legend_subject = null;
     // Legend for "Colorize Subtrees via Taxonomic Rank": taxon name -> color (sorted), with a title.
     // Shown (and draggable, via the same machinery as the property legend) when no property-color
     // legend is active. Null when not colorizing by rank.
     private Map<String, Color>  _rank_legend = null;
     private String              _rank_legend_title = null;
+    // Per-taxon (visible) tip counts for the rank/clade legend, so its rows show "(N)" and can sort by count
+    // like the property legend. Parallel to _rank_legend; may be empty when counts were not computed.
+    private Map<String, Integer> _rank_legend_counts = null;
     // Per-rank user color overrides for the rank-colorize / clade-band legend (mirrors
     // _property_color_overrides): rank -> (taxon -> chosen color). Persist across navigation & re-apply.
     private final Map<String, Map<String, Color>> _rank_color_overrides = new HashMap<>();
@@ -4676,9 +4697,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return _property_legend_bounds;
     }
 
-    /** Whether the point of {@code e} is over the (last-drawn) legend box (property-color, rank, or column). */
+    /** Whether the point of {@code e} is over the (last-drawn) legend box (property-color, rank, or column).
+     *  The active-legend test must match the paint dispatch exactly (isColorByProperty, not just a non-null
+     *  scheme): a non-null-but-EMPTY scheme -- e.g. after navigating into a subtree where no visible tip has
+     *  the property -- draws NO legend, so its stale bounds/controls must not stay clickable. */
     final boolean isOnPropertyLegend(final MouseEvent e) {
-        return ((_property_color_scheme != null) || hasRankLegend() || hasFocusedAnnotationColumn())
+        return (isColorByProperty() || hasRankLegend() || hasFocusedAnnotationColumn())
                 && (_property_legend_bounds != null)
                 && _property_legend_bounds.contains(e.getX(), e.getY());
     }
@@ -4727,6 +4751,18 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final void handleLegendClick(final MouseEvent e) {
+        // in-legend controls take precedence over the value rows and the reset gesture
+        if ((_legend_sort_toggle_bounds != null) && _legend_sort_toggle_bounds.contains(e.getX(), e.getY())) {
+            _legend_sort_by_count = !_legend_sort_by_count; // toggle between "by count" and "A-Z"
+            repaint();
+            return;
+        }
+        if ((_legend_more_bounds != null) && _legend_more_bounds.contains(e.getX(), e.getY())) {
+            _legend_max_entries = (_legend_max_entries >= LEGEND_SHOW_ALL) ? DEFAULT_LEGEND_MAX_ENTRIES
+                    : LEGEND_SHOW_ALL; // toggle "show all" / "show fewer"
+            repaint();
+            return;
+        }
         final String value = legendValueAt(e);
         if (value != null) {
             if (e.getClickCount() == 1) {
@@ -4735,6 +4771,23 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         } else if (e.getClickCount() == 2) {
             resetLegendPosition(); // double-click off a value row returns the legend to its corner
         }
+    }
+
+    /** Test hooks for the in-legend controls (their last-drawn on-screen bounds, or null). */
+    Rectangle legendSortToggleBoundsForTest() {
+        return _legend_sort_toggle_bounds;
+    }
+
+    Rectangle legendMoreBoundsForTest() {
+        return _legend_more_bounds;
+    }
+
+    boolean isLegendSortByCount() {
+        return _legend_sort_by_count;
+    }
+
+    int legendMaxEntries() {
+        return _legend_max_entries;
     }
 
     // Clicking any categorical legend row recolors that value -- property-color, rank-colorize, or
@@ -4923,6 +4976,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     /** Hides the taxonomic-rank legend (after colors are cleared, or another coloring takes over). */
     final void clearRankLegend() {
         _rank_legend = null;
+        _rank_legend_counts = null;
         _rank_legend_title = null;
         _branch_rank_colorize_rank = null; // branches are no longer rank-colorized
         repaint();
@@ -4936,6 +4990,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     /** Test hook: the current legend color for {@code taxon} (rank/clade legend), or null. */
     final Color rankLegendColor(final String taxon) {
         return (_rank_legend == null) ? null : _rank_legend.get(taxon);
+    }
+
+    /** Test hook: the tip count recorded for {@code taxon} in the rank/clade legend, or null. */
+    final Integer rankLegendCount(final String taxon) {
+        return (_rank_legend_counts == null) ? null : _rank_legend_counts.get(taxon);
     }
 
     String getColorPaletteName() {
@@ -4991,7 +5050,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.setColor(saved);
     }
 
-    private static final int PROPERTY_LEGEND_MAX_ENTRIES = 20;
+    // Default number of categorical-legend rows shown before "+N more"; the user can expand (show all) or
+    // collapse from the legend itself (see _legend_max_entries / the clickable footer).
+    private static final int DEFAULT_LEGEND_MAX_ENTRIES = 30;
+    private static final int LEGEND_SHOW_ALL = Integer.MAX_VALUE;
     // The legend is a fixed key, not tree data, so keep it readable even when node-label fonts are
     // set very small: use the small tree font but never below this floor.
     private static final float PROPERTY_LEGEND_MIN_FONT_SIZE = 11f;
@@ -4999,6 +5061,103 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private Font legendFont() {
         final Font small = getTreeFontSet().getSmallFont();
         return small.deriveFont(Math.max(small.getSize2D(), PROPERTY_LEGEND_MIN_FONT_SIZE));
+    }
+
+    /**
+     * Chooses which categorical-legend entries to show and in what order. Always keeps the {@code max}
+     * most-frequent values (so the cap hides the least significant, not an arbitrary alphabetic tail), then
+     * orders the survivors for display: by count descending (ties A-Z) when {@code by_count}, else A-Z.
+     * {@code counts} may be null/partial (a missing count sorts as 0). Static + package-visible for testing.
+     */
+    static java.util.LinkedHashMap<String, Color> orderLegendEntries(final Map<String, Color> colors,
+            final Map<String, Integer> counts, final int max, final boolean by_count) {
+        final java.util.List<String> keys = new java.util.ArrayList<>(colors.keySet());
+        keys.sort(new java.util.Comparator<String>() { // rank by count so the cap keeps the most significant
+
+            @Override
+            public int compare(final String a, final String b) {
+                final int ca = legendCount(counts, a);
+                final int cb = legendCount(counts, b);
+                return (ca != cb) ? Integer.compare(cb, ca) : String.CASE_INSENSITIVE_ORDER.compare(a, b);
+            }
+        });
+        final java.util.List<String> ordered = new java.util.ArrayList<>((keys.size() > max)
+                ? keys.subList(0, Math.max(0, max)) : keys);
+        if (!by_count) {
+            ordered.sort(String.CASE_INSENSITIVE_ORDER);
+        }
+        final java.util.LinkedHashMap<String, Color> out = new java.util.LinkedHashMap<>();
+        for (final String k : ordered) {
+            out.put(k, colors.get(k));
+        }
+        return out;
+    }
+
+    private static int legendCount(final Map<String, Integer> counts, final String key) {
+        final Integer c = (counts == null) ? null : counts.get(key);
+        return (c == null) ? 0 : c.intValue();
+    }
+
+    /**
+     * Memoized {@link #orderLegendEntries} for the current sort mode and cap, keyed on the source maps'
+     * identity: the legend is repainted every frame (pan/zoom) but its ordering only changes when the scheme
+     * is rebuilt (new map) or the user toggles sort / expand -- so the O(n log n) sort + allocation runs then,
+     * not on every repaint.
+     */
+    /**
+     * Records the currently-shown legend's subject (a stable id: property ref, rank title, or column header).
+     * When it changes -- the user switched to a different legend -- the expand ("show all") cap resets to the
+     * default so it does not leak onto the new (possibly much larger) legend. The sort mode stays sticky (a
+     * deliberate consistency choice). A no-op across repaints/navigation of the same subject.
+     */
+    private void noteLegendSubject(final String subject) {
+        if ((subject == null) ? (_legend_subject != null) : !subject.equals(_legend_subject)) {
+            _legend_max_entries = DEFAULT_LEGEND_MAX_ENTRIES;
+            _legend_subject = subject;
+        }
+    }
+
+    private Map<String, Color> orderedLegend(final Map<String, Color> colors, final Map<String, Integer> counts) {
+        if ((_ordered_legend != null) && (colors == _ordered_legend_colors_key)
+                && (counts == _ordered_legend_counts_key) && (_ordered_legend_by_count_key == _legend_sort_by_count)
+                && (_ordered_legend_max_key == _legend_max_entries)) {
+            return _ordered_legend;
+        }
+        _ordered_legend = orderLegendEntries(colors, counts, _legend_max_entries, _legend_sort_by_count);
+        _ordered_legend_colors_key = colors;
+        _ordered_legend_counts_key = counts;
+        _ordered_legend_by_count_key = _legend_sort_by_count;
+        _ordered_legend_max_key = _legend_max_entries;
+        return _ordered_legend;
+    }
+
+    /**
+     * Draws the shared legend chrome -- a constant-1px border around a background-filled box with the title on
+     * the first line -- and records the draggable on-screen bounds. The stroke is left as STROKE_1 for the
+     * caller's own in-box drawing (the caller saves/restores it); returns the title baseline y.
+     */
+    private int drawLegendBox(final Graphics2D g, final int x, final int y, final int box_w, final int box_h,
+                              final int pad, final String title, final FontMetrics fm, final boolean draggable) {
+        if (draggable) {
+            _property_legend_bounds = new Rectangle(x, y, box_w, box_h);
+        }
+        g.setStroke(STROKE_1);
+        final Color fg = getTreeColorSet().getSequenceColor();
+        g.setColor(getBackground());
+        g.fillRect(x, y, box_w, box_h);
+        g.setColor(fg);
+        g.drawRect(x, y, box_w, box_h);
+        final int baseline = y + pad + fm.getAscent();
+        g.drawString(title, x + pad, baseline);
+        return baseline;
+    }
+
+    /** Clears the categorical-legend row/control hit-test state; used by the gradient/bar legends, which have
+     *  no clickable value rows, sort toggle, or expand control. */
+    private void clearLegendRowControls() {
+        _legend_row_labels = new java.util.ArrayList<>();
+        _legend_sort_toggle_bounds = null;
+        _legend_more_bounds = null;
     }
 
     /** Draws a capped value-to-color legend; draggable (recorded for hit-testing) on screen. */
@@ -5012,27 +5171,32 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     _property_color_scheme);
             return;
         }
-        // the most frequent values (what is most visible on the tree), re-sorted alphabetically
-        final Map<String, Color> values = _property_color_scheme.legendValues(PROPERTY_LEGEND_MAX_ENTRIES);
+        noteLegendSubject("prop:" + _property_color_scheme.getRef());
+        final Map<String, Integer> counts = _property_color_scheme.getValueCounts();
+        final Map<String, Color> values = orderedLegend(_property_color_scheme.getValueColors(), counts);
         final int more = _property_color_scheme.numberOfValues() - values.size();
         final String title = "Color by: " + PropertyColorScheme.displayName(_property_color_scheme.getRef());
-        drawCategoricalLegend(g, bounds, draggable, title, values, _property_color_scheme.getValueCounts(), more);
+        drawCategoricalLegend(g, bounds, draggable, title, values, counts, more);
     }
 
-    /** Draws the "Colorize Subtrees via Taxonomic Rank" legend (taxon -> color); draggable. */
+    /** Draws the "Colorize Subtrees via Taxonomic Rank" legend (taxon -> color, with tip counts); draggable. */
     private void drawRankLegend(final Graphics2D g, final Rectangle bounds, final boolean draggable) {
         if (!hasRankLegend()) {
             return;
         }
-        final Map<String, Color> values = TreePanelUtil.capEntries(_rank_legend, PROPERTY_LEGEND_MAX_ENTRIES);
-        drawCategoricalLegend(g, bounds, draggable, _rank_legend_title, values, null, _rank_legend.size() - values.size());
+        noteLegendSubject("rank:" + _rank_legend_title);
+        final Map<String, Color> values = orderedLegend(_rank_legend, _rank_legend_counts);
+        drawCategoricalLegend(g, bounds, draggable, _rank_legend_title, values, _rank_legend_counts,
+                _rank_legend.size() - values.size());
     }
 
     /**
-     * Draws a boxed title plus swatch/label rows for an ordered value-to-color map, with an optional
-     * "+N more" footer. Shared by the property-color and taxonomic-rank legends. {@code counts} may be
-     * null (then rows show no count). When {@code draggable}, records the on-screen bounds and row
-     * layout so the shared drag/hit-test machinery can map a click back to this legend.
+     * Draws a boxed title plus swatch/label rows for an ordered value-to-color map, with two in-legend
+     * controls: a sort toggle ("[by count]"/"[A-Z]") in the title row, and a clickable footer that expands
+     * ("[show all]") when {@code more > 0} or collapses ("[show fewer]") when currently expanded. Shared by
+     * the property-color, taxonomic-rank, and annotation-column legends. {@code counts} may be null (then
+     * rows show no count). When {@code draggable}, records the on-screen bounds and the control bounds so the
+     * shared drag/hit-test machinery can map a click back to a row or a control.
      */
     private void drawCategoricalLegend(final Graphics2D g, final Rectangle bounds, final boolean draggable,
                                        final String title, final Map<String, Color> values,
@@ -5045,37 +5209,51 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.setFont(legendFont());
         final FontMetrics fm = g.getFontMetrics();
         final int row_h = fm.getHeight() + 2;
-        int text_w = fm.stringWidth(title);
+        final boolean show_sort = shown >= 2; // a sort toggle is meaningless for a single row
+        final boolean expanded = _legend_max_entries >= LEGEND_SHOW_ALL;
+        final boolean show_all = more > 0;
+        final boolean show_fewer = expanded && !show_all && (shown > DEFAULT_LEGEND_MAX_ENTRIES);
+        final String sort_chip = _legend_sort_by_count ? "[by count]" : "[A-Z]";
+        final String more_text = "… +" + more + " more";
+        final String show_all_chip = "[show all]";
+        final String show_fewer_chip = "[show fewer]";
+        int text_w = fm.stringWidth(title) + (show_sort ? (gap + fm.stringWidth(sort_chip)) : 0);
         for (final String v : values.keySet()) {
             text_w = Math.max(text_w, swatch + gap + fm.stringWidth(legendRowText(v, counts, fm, max_text_px)));
         }
-        if (more > 0) {
-            text_w = Math.max(text_w, fm.stringWidth("… +" + more + " more"));
+        if (show_all) {
+            text_w = Math.max(text_w, fm.stringWidth(more_text) + gap + fm.stringWidth(show_all_chip));
+        } else if (show_fewer) {
+            text_w = Math.max(text_w, fm.stringWidth(show_fewer_chip));
         }
         // a few extra px on the right so the longest value clears the border even
         // when PDF font metrics run slightly wider than AWT's stringWidth().
         final int box_w = text_w + (2 * pad) + 4;
-        final int box_h = ((1 + shown + (more > 0 ? 1 : 0)) * row_h) + (2 * pad);
+        final int box_h = ((1 + shown + ((show_all || show_fewer) ? 1 : 0)) * row_h) + (2 * pad);
         final Point tl = legendTopLeft(bounds, box_w, box_h);
         final int x = tl.x;
         final int y = tl.y;
         if (draggable) {
-            _property_legend_bounds = new Rectangle(x, y, box_w, box_h);
             _legend_row_labels = new java.util.ArrayList<>(values.keySet());
             _legend_rows_top = y + pad + row_h; // first value row starts just below the title row
             _legend_row_height = row_h;
+            _legend_sort_toggle_bounds = null; // set below only when actually drawn
+            _legend_more_bounds = null;
         }
-        // constant 1px stroke for the box outline -- see drawPropertyColorGradientLegend (the
-        // swatches are fillRect, so they are already stroke-independent)
+        // constant 1px stroke for the box outline (drawLegendBox); swatches/chips are fillRect/drawString,
+        // so they are already stroke-independent
         final Stroke saved_stroke = g.getStroke();
-        g.setStroke(STROKE_1);
         final Color fg = getTreeColorSet().getSequenceColor();
-        g.setColor(getBackground());
-        g.fillRect(x, y, box_w, box_h);
+        int baseline = drawLegendBox(g, x, y, box_w, box_h, pad, title, fm, draggable);
         g.setColor(fg);
-        g.drawRect(x, y, box_w, box_h);
-        int baseline = y + pad + fm.getAscent();
-        g.drawString(title, x + pad, baseline);
+        if (show_sort) { // sort toggle, right-aligned in the title row
+            final int chip_w = fm.stringWidth(sort_chip);
+            final int chip_x = (x + box_w) - pad - chip_w;
+            g.drawString(sort_chip, chip_x, baseline);
+            if (draggable) {
+                _legend_sort_toggle_bounds = new Rectangle(chip_x - 2, y + pad, chip_w + 4, row_h);
+            }
+        }
         for (final Map.Entry<String, Color> e : values.entrySet()) {
             baseline += row_h;
             g.setColor(e.getValue());
@@ -5083,9 +5261,22 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             g.setColor(fg);
             g.drawString(legendRowText(e.getKey(), counts, fm, max_text_px), x + pad + swatch + gap, baseline);
         }
-        if (more > 0) {
+        if (show_all) { // "+N more" with a clickable "[show all]" chip on the right
             baseline += row_h;
-            g.drawString("… +" + more + " more", x + pad, baseline);
+            g.drawString(more_text, x + pad, baseline);
+            final int chip_w = fm.stringWidth(show_all_chip);
+            final int chip_x = (x + box_w) - pad - chip_w;
+            g.drawString(show_all_chip, chip_x, baseline);
+            if (draggable) {
+                _legend_more_bounds = new Rectangle(chip_x - 2, baseline - fm.getAscent(), chip_w + 4, row_h);
+            }
+        } else if (show_fewer) {
+            baseline += row_h;
+            g.drawString(show_fewer_chip, x + pad, baseline);
+            if (draggable) {
+                _legend_more_bounds = new Rectangle(x + pad - 2, baseline - fm.getAscent(),
+                        fm.stringWidth(show_fewer_chip) + 4, row_h);
+            }
         }
         g.setStroke(saved_stroke);
     }
@@ -5114,8 +5305,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final int x = tl.x;
         final int y = tl.y;
         if (draggable) {
-            _property_legend_bounds = new Rectangle(x, y, box_w, box_h);
-            _legend_row_labels = new java.util.ArrayList<>(); // a gradient legend has no clickable value rows
+            clearLegendRowControls(); // a gradient legend has no clickable value rows / sort / expand controls
         }
         // The legend is a fixed UI key, not tree data: draw its borders with a constant 1px stroke
         // rather than inheriting the branch stroke set by setupStroke(), which shrinks to sub-pixel
@@ -5123,14 +5313,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // independent fillRect columns (see paintGradientBar) so its colors stay saturated at every
         // zoom level. (The legend font is likewise floored independent of the node-label font.)
         final Stroke saved_stroke = g.getStroke();
-        g.setStroke(STROKE_1);
         final Color fg = getTreeColorSet().getSequenceColor();
-        g.setColor(getBackground());
-        g.fillRect(x, y, box_w, box_h);
-        g.setColor(fg);
-        g.drawRect(x, y, box_w, box_h);
-        final int baseline = y + pad + fm.getAscent();
-        g.drawString(title, x + pad, baseline);
+        final int baseline = drawLegendBox(g, x, y, box_w, box_h, pad, title, fm, draggable);
         final int bar_x = x + pad;
         final int bar_y = baseline + 4;
         paintGradientBar(g, bar_x, bar_y, bar_w, bar_h + 1, t -> scheme.gradientColorAt(t));
@@ -5240,6 +5424,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         setColorByPropertyRef(null);
         _control_panel.populateColorByPropertyBox();
         _rank_legend = null;
+        _rank_legend_counts = null;
         _rank_legend_title = null;
         _branch_rank_colorize_rank = null;
         final int colorizations = recolorBranchesByRank(rank); // honors any stored overrides for this rank
@@ -5267,10 +5452,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private int recolorBranchesByRank(final String rank) {
         AptxUtil.removeBranchColors(_phylogeny);
         final Map<String, Color> legend = new HashMap<>();
+        final Map<String, Integer> counts = new HashMap<>();
         final int colorizations = TreePanelUtil.colorPhylogenyAccordingToRanks(_phylogeny, rank,
-                TreePanelUtil.getDefaultLineageService(), legend, rankOverridesFor(rank));
+                TreePanelUtil.getDefaultLineageService(), legend, rankOverridesFor(rank), counts);
         if (!legend.isEmpty()) {
             _rank_legend = new java.util.TreeMap<>(legend); // sorted by taxon name
+            _rank_legend_counts = counts;
             _rank_legend_title = "Taxonomy: " + rank;
             _branch_rank_colorize_rank = rank;
         }
@@ -5335,17 +5522,18 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             _clade_bands = null;
             return; // leave any existing (property/rank-colorize) legend untouched
         }
+        final Map<String, Integer> counts = new HashMap<>();
         _clade_bands = TreePanelUtil.cladeBands(_phylogeny, _clade_bands_rank,
-                TreePanelUtil.getDefaultLineageService(), rankOverridesFor(_clade_bands_rank));
-        updateCladeBandLegend();
+                TreePanelUtil.getDefaultLineageService(), rankOverridesFor(_clade_bands_rank), counts);
+        updateCladeBandLegend(counts);
     }
 
     /**
-     * Mirrors the current clade bands in the shared, draggable taxon-&gt;color legend, so the boxes/bars
-     * are labeled even when internal-node data is hidden. Reuses the rank-colorization legend slot (no
-     * new control); whichever rank feature was applied last owns the single legend.
+     * Mirrors the current clade bands in the shared, draggable taxon-&gt;color legend (with per-taxon tip
+     * {@code counts}), so the boxes/bars are labeled even when internal-node data is hidden. Reuses the
+     * rank-colorization legend slot (no new control); whichever rank feature was applied last owns the legend.
      */
-    private void updateCladeBandLegend() {
+    private void updateCladeBandLegend(final Map<String, Integer> counts) {
         if (!hasCladeBands()) {
             return;
         }
@@ -5363,6 +5551,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         if (!legend.isEmpty()) {
             _rank_legend = legend;
+            _rank_legend_counts = counts;
             _rank_legend_title = "Taxonomy: " + _clade_bands_rank;
         }
     }
@@ -5651,6 +5840,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ((scheme == null) || scheme.isEmpty()) {
             return;
         }
+        noteLegendSubject("col:" + col.getHeader());
         if (col.getType() == AnnotationColumns.Type.BAR) {
             // a bar column encodes magnitude by length, not hue -> show a length wedge with min/max, not a
             // color gradient
@@ -5658,8 +5848,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         } else if (scheme.isGradient()) {
             drawPropertyColorGradientLegend(g, bounds, draggable, col.getHeader(), scheme);
         } else {
-            final Map<String, Color> values = scheme.legendValues(PROPERTY_LEGEND_MAX_ENTRIES);
-            drawCategoricalLegend(g, bounds, draggable, col.getHeader(), values, scheme.getValueCounts(),
+            final Map<String, Integer> counts = scheme.getValueCounts();
+            final Map<String, Color> values = orderedLegend(scheme.getValueColors(), counts);
+            drawCategoricalLegend(g, bounds, draggable, col.getHeader(), values, counts,
                     scheme.numberOfValues() - values.size());
         }
     }
@@ -5685,18 +5876,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final int x = tl.x;
         final int y = tl.y;
         if (draggable) {
-            _property_legend_bounds = new Rectangle(x, y, box_w, box_h);
-            _legend_row_labels = new java.util.ArrayList<>(); // a bar legend has no clickable value rows
+            clearLegendRowControls(); // a bar legend has no clickable value rows / sort / expand controls
         }
         final Stroke saved_stroke = g.getStroke();
-        g.setStroke(STROKE_1);
         final Color fg = getTreeColorSet().getSequenceColor();
-        g.setColor(getBackground());
-        g.fillRect(x, y, box_w, box_h);
-        g.setColor(fg);
-        g.drawRect(x, y, box_w, box_h);
-        final int baseline = y + pad + fm.getAscent();
-        g.drawString(title, x + pad, baseline);
+        final int baseline = drawLegendBox(g, x, y, box_w, box_h, pad, title, fm, draggable);
         final int bar_x = x + pad;
         final int bar_y = baseline + 4;
         // right-growing wedge: empty (min) at the left, full (max) at the right, echoing the column's bars

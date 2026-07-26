@@ -471,6 +471,19 @@ public class TreePanelUtil {
                                                      final TaxonomicLineageService service,
                                                      final Map<String, Color> legend_out,
                                                      final Map<String, Color> overrides ) {
+        return colorPhylogenyAccordingToRanks( tree, rank, service, legend_out, overrides, null );
+    }
+
+    /**
+     * {@code counts_out}, when non-null, receives each legend taxon's tip count (how many tips were assigned
+     * to it at {@code rank}), so the legend can show "(N)" and sort by count.
+     */
+    final static int colorPhylogenyAccordingToRanks( final Phylogeny tree,
+                                                     final String rank,
+                                                     final TaxonomicLineageService service,
+                                                     final Map<String, Color> legend_out,
+                                                     final Map<String, Color> overrides,
+                                                     final Map<String, Integer> counts_out ) {
         final Map<PhylogenyNode, String> assignment = assignTipsToRankTaxon( tree, rank, service );
         final SortedSet<String> taxa = new TreeSet<String>( assignment.values() );
         final Map<String, Color> colors = AptxUtil.assignDistinctColors( taxa );
@@ -487,7 +500,19 @@ public class TreePanelUtil {
         if ( legend_out != null ) {
             legend_out.putAll( colors );
         }
+        countTipsPerTaxon( assignment, counts_out );
         return colorizations;
+    }
+
+    /** Fills {@code counts_out} (when non-null) with the number of tips assigned to each taxon. */
+    private static void countTipsPerTaxon( final Map<PhylogenyNode, String> assignment,
+                                           final Map<String, Integer> counts_out ) {
+        if ( counts_out == null ) {
+            return;
+        }
+        for( final String taxon : assignment.values() ) {
+            counts_out.merge( taxon, 1, Integer::sum );
+        }
     }
 
     /**
@@ -508,6 +533,18 @@ public class TreePanelUtil {
                                              final String rank,
                                              final TaxonomicLineageService service,
                                              final Map<String, Color> overrides ) {
+        return cladeBands( tree, rank, service, overrides, null );
+    }
+
+    /**
+     * {@code counts_out}, when non-null, receives each taxon's tip count (tips assigned to it at {@code rank}),
+     * so the clade-band legend can show "(N)" and sort by count.
+     */
+    final static List<CladeBand> cladeBands( final Phylogeny tree,
+                                             final String rank,
+                                             final TaxonomicLineageService service,
+                                             final Map<String, Color> overrides,
+                                             final Map<String, Integer> counts_out ) {
         final List<CladeBand> bands = new ArrayList<CladeBand>();
         if ( ( tree == null ) || tree.isEmpty() || ForesterUtil.isEmpty( rank ) ) {
             return bands;
@@ -521,6 +558,7 @@ public class TreePanelUtil {
                 bands.add( new CladeBand( e.getValue(), c, e.getKey() ) );
             }
         }
+        countTipsPerTaxon( assignment, counts_out );
         return bands;
     }
 
@@ -700,24 +738,6 @@ public class TreePanelUtil {
             }
         }
         return roots;
-    }
-
-    /**
-     * The first {@code max} entries of {@code in} in iteration order, for capping a legend; an
-     * unmodifiable view is not needed -- callers treat it read-only. Used to bound the rank legend.
-     */
-    final static Map<String, Color> capEntries( final Map<String, Color> in, final int max ) {
-        final Map<String, Color> out = new LinkedHashMap<String, Color>();
-        if ( in != null ) {
-            int i = 0;
-            for( final Entry<String, Color> e : in.entrySet() ) {
-                if ( i++ >= max ) {
-                    break;
-                }
-                out.put( e.getKey(), e.getValue() );
-            }
-        }
-        return out;
     }
 
     final static boolean isHasAssignedEvent( final PhylogenyNode node ) {

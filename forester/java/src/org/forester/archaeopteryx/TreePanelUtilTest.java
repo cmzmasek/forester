@@ -53,7 +53,7 @@ public final class TreePanelUtilTest {
 
     public static boolean test() {
         return testYDistanceToAvoidLabelOverlap() && testSupportSymbolMath() && testDetectConfidenceScaleMax()
-                && testCapEntries() && testTaxonomyLabel() && testRankColorization() && testTipQueryName()
+                && testRankTaxonCounts() && testTaxonomyLabel() && testRankColorization() && testTipQueryName()
                 && testCladeBands() && testRankColorizationViaSequenceIds() && testInternalLabelAboveBranchLayout()
                 && testAbbreviateScientificName() && testSupportColor() && testScaleGridLines();
     }
@@ -655,34 +655,42 @@ public final class TreePanelUtilTest {
         return true;
     }
 
-    /** capEntries bounds a legend to its first N entries (iteration order), preserving keys+colors. */
-    private static boolean testCapEntries() {
-        if ( !TreePanelUtil.capEntries( null, 5 ).isEmpty() ) {
-            return fail( "null input must yield an empty cap" );
+    /** The counts_out overloads report each taxon's tip count (from the same assignment used to color). */
+    private static boolean testRankTaxonCounts() {
+        final FakeLineageService svc = new FakeLineageService();
+        svc.know( "Felis", lineage( "class", "Mammalia", "order", "Carnivora", "genus", "Felis" ) );
+        svc.know( "Canis", lineage( "class", "Mammalia", "order", "Carnivora", "genus", "Canis" ) );
+        final Phylogeny tree = mammalTree();
+        try {
+            for( final String name : TreePanelUtil.unresolvedTipTaxa( tree, "order", svc ) ) {
+                svc.fetch( name );
+            }
         }
-        final Map<String, Color> in = new LinkedHashMap<String, Color>();
-        in.put( "a", Color.RED );
-        in.put( "b", Color.GREEN );
-        in.put( "c", Color.BLUE );
-        // cap >= size keeps everything, in order
-        final Map<String, Color> all = TreePanelUtil.capEntries( in, 5 );
-        if ( !new ArrayList<String>( all.keySet() ).equals( new ArrayList<String>( in.keySet() ) ) ) {
-            return fail( "cap >= size must keep all entries in iteration order; got " + all.keySet() );
+        catch ( final Exception e ) {
+            return fail( "fake fetch must not throw: " + e );
         }
-        if ( all.get( "a" ) != Color.RED ) {
-            return fail( "cap must preserve the colors" );
+        // 2 Rodentia + Felis + Canis, with Felis & Canis both order Carnivora -> Carnivora:2, Rodentia:2
+        final Map<String, Integer> counts = new LinkedHashMap<String, Integer>();
+        TreePanelUtil.colorPhylogenyAccordingToRanks( tree, "order", svc, new LinkedHashMap<String, Color>(), null,
+                                                      counts );
+        if ( ( counts.size() != 2 ) || ( intval( counts, "Carnivora" ) != 2 ) || ( intval( counts, "Rodentia" ) != 2 ) ) {
+            return fail( "rank counts should be Carnivora=2, Rodentia=2; got " + counts );
         }
-        // cap < size keeps exactly the first N entries
-        final Map<String, Color> capped = TreePanelUtil.capEntries( in, 2 );
-        if ( ( capped.size() != 2 ) || !capped.containsKey( "a" ) || !capped.containsKey( "b" )
-                || capped.containsKey( "c" ) ) {
-            return fail( "cap < size must keep exactly the first N entries; got " + capped.keySet() );
+        // the clade-band overload reports the same per-taxon counts
+        final Map<String, Integer> band_counts = new LinkedHashMap<String, Integer>();
+        TreePanelUtil.cladeBands( tree, "order", svc, null, band_counts );
+        if ( !counts.equals( band_counts ) ) {
+            return fail( "cladeBands counts must match the colorize counts; got " + band_counts );
         }
-        // cap of 0 -> empty (the legend's "+N more" footer then accounts for all of them)
-        if ( !TreePanelUtil.capEntries( in, 0 ).isEmpty() ) {
-            return fail( "cap of 0 must yield an empty map" );
-        }
+        // a null counts_out is safe (the pre-counts callers pass null)
+        TreePanelUtil.colorPhylogenyAccordingToRanks( tree, "order", svc, new LinkedHashMap<String, Color>(), null,
+                                                      null );
         return true;
+    }
+
+    private static int intval( final Map<String, Integer> m, final String k ) {
+        final Integer v = m.get( k );
+        return ( v == null ) ? -1 : v.intValue();
     }
 
     /**

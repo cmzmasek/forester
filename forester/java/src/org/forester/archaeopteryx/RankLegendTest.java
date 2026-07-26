@@ -154,6 +154,14 @@ public final class RankLegendTest {
                     ok[ 0 ] = false;
                     System.out.println( "  rank legend was not built" );
                 }
+                // each of the 3 orders covers 2 tips, so the rank legend must record a count of 2 per taxon
+                for( final String order : ORDERS ) {
+                    final Integer c = tp.rankLegendCount( order );
+                    if ( ( c == null ) || ( c.intValue() != 2 ) ) {
+                        ok[ 0 ] = false;
+                        System.out.println( "  rank legend count for " + order + " expected 2, got " + c );
+                    }
+                }
                 final Rectangle vp = tp.getVisibleRect();
                 if ( ( vp.width < 300 ) || ( vp.height < 300 ) ) {
                     ( (JFrame) mf[ 0 ] ).dispose();

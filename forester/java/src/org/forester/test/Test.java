@@ -212,6 +212,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Legend controls tool: ");
+        if (org.forester.archaeopteryx.LegendControlsToolTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Confidence label: ");
         if (org.forester.archaeopteryx.ConfidenceLabelTest.test()) {
             System.out.println("OK.");

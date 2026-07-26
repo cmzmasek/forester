@@ -279,34 +279,6 @@ final class PropertyColorScheme {
     }
 
     /**
-     * The legend entries: the {@code max} most frequent values (so the legend describes what is most
-     * visible on the tree), re-sorted alphabetically for readability, mapped to their colors. Returns
-     * fewer than {@code max} entries when there are fewer distinct values; empty in gradient mode.
-     */
-    Map<String, Color> legendValues( final int max ) {
-        final List<Map.Entry<String, Color>> top = new ArrayList<Map.Entry<String, Color>>();
-        int i = 0;
-        for( final Map.Entry<String, Color> e : _value_to_color.entrySet() ) { // already most-frequent first
-            if ( i++ >= max ) {
-                break;
-            }
-            top.add( e );
-        }
-        Collections.sort( top, new Comparator<Map.Entry<String, Color>>() {
-
-            @Override
-            public int compare( final Map.Entry<String, Color> a, final Map.Entry<String, Color> b ) {
-                return String.CASE_INSENSITIVE_ORDER.compare( a.getKey(), b.getKey() );
-            }
-        } );
-        final Map<String, Color> result = new LinkedHashMap<String, Color>();
-        for( final Map.Entry<String, Color> e : top ) {
-            result.put( e.getKey(), e.getValue() );
-        }
-        return result;
-    }
-
-    /**
      * The display label for a raw property value: trimmed, underscores as spaces, internal
      * whitespace collapsed; for refs that carry a trailing qualifier ("country", "host") only
      * the part before the first ':'/';' (so "USA:CA" reads as "USA" and "Homo sapiens; male 35"
