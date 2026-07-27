@@ -5998,16 +5998,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private java.util.List<PhylogenyNode> visibleExternalTips() {
         final java.util.List<PhylogenyNode> tips = new java.util.ArrayList<PhylogenyNode>();
         for (final PhylogenyNode t : _phylogeny.getExternalNodes()) {
-            boolean hidden = false;
-            PhylogenyNode p = t.getParent();
-            while (p != null) {
-                if (p.isCollapse()) {
-                    hidden = true;
-                    break;
-                }
-                p = p.getParent();
-            }
-            if (!hidden) {
+            if (!isHiddenUnderCollapse(t)) {
                 tips.add(t);
             }
         }
@@ -6298,6 +6289,63 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
         }
         return null;
+    }
+
+    /**
+     * The child node whose incoming branch is under ({@code x},{@code y}), or null -- for branch-click clade
+     * selection. Picks the nearest branch within a small tolerance (same forgiveness as {@link #findNode}).
+     * The rectangular family hit-tests the horizontal leg (at the child's y); the diagonal styles
+     * (triangular/convex/curved) hit-test the straight parent-&gt;child line. No-op for circular/unrooted
+     * (radial branches). Only branches actually on screen (not hidden under a collapsed ancestor) are tested.
+     */
+    final PhylogenyNode findBranch(final int x, final int y) {
+        final PHYLOGENY_GRAPHICS_TYPE gt = getPhylogenyGraphicsType();
+        // Only the layouts whose branch geometry reconstructs EXACTLY from the node coords are supported, so
+        // the hit region matches what is drawn: RECTANGULAR (horizontal leg at the child's y + vertical fork
+        // connector at the parent's x) and TRIANGULAR (a straight parent->child line). EURO_STYLE/ROUNDED offset
+        // the leg near the parent, and CONVEX/CURVED draw Bezier curves, so branch-click is a no-op there (and
+        // no hover cursor is shown) rather than a hit region that disagrees with the painted branch. Ditto the
+        // radial layouts (circular/unrooted).
+        final boolean diagonal = (gt == PHYLOGENY_GRAPHICS_TYPE.TRIANGULAR);
+        final boolean rectangular = (gt == PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR);
+        if ((_phylogeny == null) || _phylogeny.isEmpty() || !(rectangular || diagonal)) {
+            return null;
+        }
+        final double tol = (getOptions().getDefaultNodeShapeSize() / 2.0) + WIGGLE;
+        PhylogenyNode best = null;
+        double best_dist = tol;
+        for (final PhylogenyNodeIterator iter = _phylogeny.iteratorPostorder(); iter.hasNext(); ) {
+            final PhylogenyNode n = iter.next();
+            if (n.isRoot() || n.isCollapse()) {
+                continue; // the root has no incoming branch; a collapsed clade's tips are hidden (not selectable)
+            }
+            final PhylogenyNode p = n.getParent();
+            final double a_y = diagonal ? p.getYcoord() : n.getYcoord(); // horizontal leg sits at the child's y
+            double d = Line2D.ptSegDist(p.getXcoord(), a_y, n.getXcoord(), n.getYcoord(), x, y);
+            if (rectangular && !n.isExternal()) {
+                // n's own vertical fork connector (at n's x, spanning its children) also selects n's subtree
+                d = Math.min(d, Line2D.ptSegDist(n.getXcoord(), n.getFirstChildNode().getYcoord(), n.getXcoord(),
+                        n.getLastChildNode().getYcoord(), x, y));
+            }
+            // the ancestor-collapse walk is O(depth), so gate it on the cheap distance test (near candidates only)
+            if ((d < best_dist) && !isHiddenUnderCollapse(n)) {
+                best_dist = d;
+                best = n;
+            }
+        }
+        return best;
+    }
+
+    /** True if a strict ancestor of {@code n} is collapsed (so {@code n} is not currently drawn). */
+    private static boolean isHiddenUnderCollapse(final PhylogenyNode n) {
+        PhylogenyNode p = n.getParent();
+        while (p != null) {
+            if (p.isCollapse()) {
+                return true;
+            }
+            p = p.getParent();
+        }
+        return false;
     }
 
     final Configuration getConfiguration() {
@@ -6606,15 +6654,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 }
                 // Check if shift key is down
                 if ((e.getModifiersEx() & InputEvent.SHIFT_DOWN_MASK) != 0) {
-                    // Yes, so add to _found_nodes
-                    if (getFoundNodes0() == null) {
-                        setFoundNodes0(new HashSet<Long>());
-                    }
-                    if (getFoundNodes0().contains(node.getId())) {
-                        getFoundNodes0().remove(node.getId());
-                    } else {
-                        getFoundNodes0().add(node.getId());
-                    }
+                    // Yes, so toggle this node in the selection (found set 0), keeping the count label in sync
+                    selectNode(node);
                 } else if ((e.getModifiersEx() & InputEvent.CTRL_DOWN_MASK) != 0) {
                     // Check if control key is down
                     // Yes, so pop-up menu
@@ -6628,6 +6669,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         // if not in _found_nodes, clear _found_nodes
                         handleClickToAction(_control_panel.getActionWhenNodeClicked(), node);
                     }
+                }
+            } else {
+                // no node under the cursor: a click on a branch selects/deselects that subtree's external tips
+                // (extends "Select Node(s)"; also works via shift-click regardless of the click-to mode)
+                final boolean shift = (e.getModifiersEx() & InputEvent.SHIFT_DOWN_MASK) != 0;
+                final boolean plain_left = SwingUtilities.isLeftMouseButton(e) && !shift
+                        && ((e.getModifiersEx() & InputEvent.CTRL_DOWN_MASK) == 0);
+                if (shift || (plain_left
+                        && (_control_panel.getActionWhenNodeClicked() == NodeClickAction.SELECT_NODES))) {
+                    selectSubtreeTips(findBranch(e.getX(), e.getY()));
                 }
             }
         }
@@ -6744,6 +6795,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         showNodeDataPopup(e, node);
                     }
                 }
+            } else if ((getControlPanel().getActionWhenNodeClicked() == NodeClickAction.SELECT_NODES)
+                    && (findBranch(e.getX(), e.getY()) != null)) {
+                setCursor(HAND_CURSOR); // over a branch: click selects/deselects its subtree's tips
             } else {
                 setCursor(ARROW_CURSOR);
             }
@@ -7185,19 +7239,66 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     final void selectNode(final PhylogenyNode node) {
         if ((getFoundNodes0() != null) && getFoundNodes0().contains(node.getId())) {
             getFoundNodes0().remove(node.getId());
-            getControlPanel().setSearchFoundCountsOnLabel0(getFoundNodes0().size());
-            if (getFoundNodes0().size() < 1) {
-                getControlPanel().searchReset0();
+        } else {
+            ensureFoundNodes0Visible();
+            getFoundNodes0().add(node.getId());
+        }
+        refreshFoundNodes0Bookkeeping();
+    }
+
+    /**
+     * Adds or removes an entire subtree's external tips from the manual selection (found set 0), reusing the
+     * "Select Node(s)" machinery -- for branch-click clade selection. All-or-nothing toggle: if every tip of
+     * {@code node}'s subtree is already selected, deselect them all; otherwise select the ones still missing.
+     */
+    final void selectSubtreeTips(final PhylogenyNode node) {
+        if (node == null) {
+            return;
+        }
+        final java.util.List<PhylogenyNode> tips = node.getAllExternalDescendants(); // the node itself if a leaf
+        if ((tips == null) || tips.isEmpty()) {
+            return;
+        }
+        boolean all_selected = getFoundNodes0() != null;
+        if (all_selected) {
+            for (final PhylogenyNode t : tips) {
+                if (!getFoundNodes0().contains(t.getId())) {
+                    all_selected = false;
+                    break;
+                }
+            }
+        }
+        if (all_selected) {
+            for (final PhylogenyNode t : tips) {
+                getFoundNodes0().remove(t.getId());
             }
         } else {
-            getControlPanel().getSearchFoundCountsLabel0().setVisible(true);
-            getControlPanel().getSearchResetButton0().setEnabled(true);
-            getControlPanel().getSearchResetButton0().setVisible(true);
-            if (getFoundNodes0() == null) {
-                setFoundNodes0(new HashSet<Long>());
+            ensureFoundNodes0Visible();
+            for (final PhylogenyNode t : tips) {
+                getFoundNodes0().add(t.getId());
             }
-            getFoundNodes0().add(node.getId());
-            getControlPanel().setSearchFoundCountsOnLabel0(getFoundNodes0().size());
+        }
+        refreshFoundNodes0Bookkeeping();
+    }
+
+    /** Makes the found-set-0 search UI (count label + reset button) visible and ensures the set exists. */
+    private void ensureFoundNodes0Visible() {
+        getControlPanel().getSearchFoundCountsLabel0().setVisible(true);
+        getControlPanel().getSearchResetButton0().setEnabled(true);
+        getControlPanel().getSearchResetButton0().setVisible(true);
+        if (getFoundNodes0() == null) {
+            setFoundNodes0(new HashSet<Long>());
+        }
+    }
+
+    /** After changing found set 0: refresh its count label, and reset the search-0 state when it became empty
+     *  (searchReset0 only nulls the set, so the "Found: N" label must be set to 0 here first). */
+    private void refreshFoundNodes0Bookkeeping() {
+        final Set<Long> found = getFoundNodes0();
+        final int n = (found == null) ? 0 : found.size();
+        getControlPanel().setSearchFoundCountsOnLabel0(n);
+        if (n < 1) {
+            getControlPanel().searchReset0();
         }
     }
 
