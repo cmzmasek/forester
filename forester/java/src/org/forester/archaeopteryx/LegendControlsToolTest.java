@@ -68,7 +68,7 @@ public final class LegendControlsToolTest {
                 frame.showWhole();
                 render( tp );
 
-                // the two controls are drawn (35 values > the default 30 cap -> "+5 more")
+                // the two controls are drawn (35 values > the default 20 cap -> "+15 more")
                 if ( tp.legendSortToggleBoundsForTest() == null ) {
                     fail( ok, "sort toggle was not drawn" );
                 }
@@ -77,6 +77,18 @@ public final class LegendControlsToolTest {
                 }
                 if ( !tp.isLegendSortByCount() ) {
                     fail( ok, "default sort should be by count" );
+                }
+
+                // a static export omits the interactive chips ([by count]/[show all]) but keeps the "+N more"
+                // line, so it draws fewer pixels than the on-screen legend (yet still draws the legend)
+                final int screen_px = legendPixels( tp, true );
+                final int export_px = legendPixels( tp, false );
+                if ( export_px <= 0 ) {
+                    fail( ok, "export legend drew nothing" );
+                }
+                if ( export_px >= screen_px ) {
+                    fail( ok, "export legend should drop the interactive chips (fewer pixels than on-screen): screen="
+                            + screen_px + " export=" + export_px );
                 }
 
                 // clicking the sort toggle flips count <-> A-Z (re-render between clicks: the chip label, hence
@@ -102,8 +114,8 @@ public final class LegendControlsToolTest {
                     fail( ok, "an expanded legend must offer a 'show fewer' control" );
                 }
                 clickCenter( tp, tp.legendMoreBoundsForTest() );
-                if ( tp.legendMaxEntries() != 30 ) {
-                    fail( ok, "clicking 'show fewer' should collapse to the default cap (30), got "
+                if ( tp.legendMaxEntries() != 20 ) {
+                    fail( ok, "clicking 'show fewer' should collapse to the default cap (20), got "
                             + tp.legendMaxEntries() );
                 }
 
@@ -115,8 +127,8 @@ public final class LegendControlsToolTest {
                 }
                 tp.setColorByPropertyRef( "data:kind" ); // a different property = a different legend subject
                 render( tp );
-                if ( tp.legendMaxEntries() != 30 ) {
-                    fail( ok, "switching legend subject must reset the expand cap to 30, got " + tp.legendMaxEntries() );
+                if ( tp.legendMaxEntries() != 20 ) {
+                    fail( ok, "switching legend subject must reset the expand cap to 20, got " + tp.legendMaxEntries() );
                 }
 
                 // a non-null-but-EMPTY color scheme draws no legend, so its stale bounds must not stay clickable
@@ -155,6 +167,26 @@ public final class LegendControlsToolTest {
         final int cy = r.y + ( r.height / 2 );
         tp.handleLegendClick( new MouseEvent( tp, MouseEvent.MOUSE_CLICKED, System.currentTimeMillis(), 0, cx, cy, 1,
                                               false ) );
+    }
+
+    /** Non-white pixel count of the legend alone, drawn on-screen (draggable) or in static-export mode. */
+    private static int legendPixels( final TreePanel tp, final boolean draggable ) {
+        final int w = 700, h = 500;
+        final BufferedImage img = new BufferedImage( w, h, BufferedImage.TYPE_INT_ARGB );
+        final Graphics2D g = img.createGraphics();
+        g.setColor( Color.WHITE );
+        g.fillRect( 0, 0, w, h );
+        tp.drawLegendForTest( g, new Rectangle( 0, 0, w, h ), draggable );
+        g.dispose();
+        int n = 0;
+        for( int x = 0; x < w; ++x ) {
+            for( int y = 0; y < h; ++y ) {
+                if ( ( img.getRGB( x, y ) & 0x00FFFFFF ) != 0x00FFFFFF ) {
+                    ++n;
+                }
+            }
+        }
+        return n;
     }
 
     /** Renders offscreen so the legend (and its control bounds) are laid out for the next hit-test. */

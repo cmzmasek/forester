@@ -4773,6 +4773,18 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
+    /** Test hook: draws the active legend into {@code g} at {@code bounds}, in on-screen ({@code draggable})
+     *  or static-export mode -- so a test can compare the two (exports omit the interactive chips). */
+    void drawLegendForTest(final Graphics2D g, final Rectangle bounds, final boolean draggable) {
+        if (hasFocusedAnnotationColumn()) {
+            drawAnnotationColumnLegend(g, bounds, draggable);
+        } else if (isColorByProperty()) {
+            drawPropertyColorLegend(g, bounds, draggable);
+        } else if (hasRankLegend()) {
+            drawRankLegend(g, bounds, draggable);
+        }
+    }
+
     /** Test hooks for the in-legend controls (their last-drawn on-screen bounds, or null). */
     Rectangle legendSortToggleBoundsForTest() {
         return _legend_sort_toggle_bounds;
@@ -5052,7 +5064,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     // Default number of categorical-legend rows shown before "+N more"; the user can expand (show all) or
     // collapse from the legend itself (see _legend_max_entries / the clickable footer).
-    private static final int DEFAULT_LEGEND_MAX_ENTRIES = 30;
+    private static final int DEFAULT_LEGEND_MAX_ENTRIES = 20;
     private static final int LEGEND_SHOW_ALL = Integer.MAX_VALUE;
     // The legend is a fixed key, not tree data, so keep it readable even when node-label fonts are
     // set very small: use the small tree font but never below this floor.
@@ -5191,12 +5203,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     /**
-     * Draws a boxed title plus swatch/label rows for an ordered value-to-color map, with two in-legend
-     * controls: a sort toggle ("[by count]"/"[A-Z]") in the title row, and a clickable footer that expands
-     * ("[show all]") when {@code more > 0} or collapses ("[show fewer]") when currently expanded. Shared by
-     * the property-color, taxonomic-rank, and annotation-column legends. {@code counts} may be null (then
-     * rows show no count). When {@code draggable}, records the on-screen bounds and the control bounds so the
-     * shared drag/hit-test machinery can map a click back to a row or a control.
+     * Draws a boxed title plus swatch/label rows for an ordered value-to-color map. On screen
+     * ({@code draggable}) it adds two interactive controls -- a sort toggle ("[by count]"/"[A-Z]") in the
+     * title row and a clickable footer that expands ("[show all]") or collapses ("[show fewer]") -- and
+     * records their bounds so the shared drag/hit-test machinery can map a click back to a row or control.
+     * A static export (not draggable) omits that clickable chrome but keeps the informative "+N more" line so
+     * the figure still shows that categories were truncated. Shared by the property-color, taxonomic-rank, and
+     * annotation-column legends. {@code counts} may be null (then rows show no count).
      */
     private void drawCategoricalLegend(final Graphics2D g, final Rectangle bounds, final boolean draggable,
                                        final String title, final Map<String, Color> values,
@@ -5209,27 +5222,32 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.setFont(legendFont());
         final FontMetrics fm = g.getFontMetrics();
         final int row_h = fm.getHeight() + 2;
-        final boolean show_sort = shown >= 2; // a sort toggle is meaningless for a single row
+        // The sort toggle and the [show all]/[show fewer] chips are interactive UI, so they are drawn only
+        // on screen (draggable); a static export (PDF/SVG/EPS/TIFF/PNG/JPG) keeps the informative "+N more"
+        // text but drops the clickable chrome.
         final boolean expanded = _legend_max_entries >= LEGEND_SHOW_ALL;
-        final boolean show_all = more > 0;
-        final boolean show_fewer = expanded && !show_all && (shown > DEFAULT_LEGEND_MAX_ENTRIES);
+        final boolean more_footer = more > 0;                            // "+N more" info: on screen AND in exports
+        final boolean show_sort = draggable && (shown >= 2);            // sort toggle: on-screen only
+        final boolean show_all_chip = draggable && more_footer;         // "[show all]" chip: on-screen only
+        final boolean show_fewer = draggable && expanded && !more_footer && (shown > DEFAULT_LEGEND_MAX_ENTRIES);
         final String sort_chip = _legend_sort_by_count ? "[by count]" : "[A-Z]";
         final String more_text = "… +" + more + " more";
-        final String show_all_chip = "[show all]";
+        final String show_all_chip_str = "[show all]";
         final String show_fewer_chip = "[show fewer]";
         int text_w = fm.stringWidth(title) + (show_sort ? (gap + fm.stringWidth(sort_chip)) : 0);
         for (final String v : values.keySet()) {
             text_w = Math.max(text_w, swatch + gap + fm.stringWidth(legendRowText(v, counts, fm, max_text_px)));
         }
-        if (show_all) {
-            text_w = Math.max(text_w, fm.stringWidth(more_text) + gap + fm.stringWidth(show_all_chip));
+        if (more_footer) {
+            text_w = Math.max(text_w, fm.stringWidth(more_text)
+                    + (show_all_chip ? (gap + fm.stringWidth(show_all_chip_str)) : 0));
         } else if (show_fewer) {
             text_w = Math.max(text_w, fm.stringWidth(show_fewer_chip));
         }
         // a few extra px on the right so the longest value clears the border even
         // when PDF font metrics run slightly wider than AWT's stringWidth().
         final int box_w = text_w + (2 * pad) + 4;
-        final int box_h = ((1 + shown + ((show_all || show_fewer) ? 1 : 0)) * row_h) + (2 * pad);
+        final int box_h = ((1 + shown + ((more_footer || show_fewer) ? 1 : 0)) * row_h) + (2 * pad);
         final Point tl = legendTopLeft(bounds, box_w, box_h);
         final int x = tl.x;
         final int y = tl.y;
@@ -5246,13 +5264,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final Color fg = getTreeColorSet().getSequenceColor();
         int baseline = drawLegendBox(g, x, y, box_w, box_h, pad, title, fm, draggable);
         g.setColor(fg);
-        if (show_sort) { // sort toggle, right-aligned in the title row
+        if (show_sort) { // sort toggle, right-aligned in the title row (on-screen only -> draggable)
             final int chip_w = fm.stringWidth(sort_chip);
             final int chip_x = (x + box_w) - pad - chip_w;
             g.drawString(sort_chip, chip_x, baseline);
-            if (draggable) {
-                _legend_sort_toggle_bounds = new Rectangle(chip_x - 2, y + pad, chip_w + 4, row_h);
-            }
+            _legend_sort_toggle_bounds = new Rectangle(chip_x - 2, y + pad, chip_w + 4, row_h);
         }
         for (final Map.Entry<String, Color> e : values.entrySet()) {
             baseline += row_h;
@@ -5261,22 +5277,20 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             g.setColor(fg);
             g.drawString(legendRowText(e.getKey(), counts, fm, max_text_px), x + pad + swatch + gap, baseline);
         }
-        if (show_all) { // "+N more" with a clickable "[show all]" chip on the right
+        if (more_footer) { // "+N more" info (also in exports); the "[show all]" chip is on-screen only
             baseline += row_h;
             g.drawString(more_text, x + pad, baseline);
-            final int chip_w = fm.stringWidth(show_all_chip);
-            final int chip_x = (x + box_w) - pad - chip_w;
-            g.drawString(show_all_chip, chip_x, baseline);
-            if (draggable) {
+            if (show_all_chip) {
+                final int chip_w = fm.stringWidth(show_all_chip_str);
+                final int chip_x = (x + box_w) - pad - chip_w;
+                g.drawString(show_all_chip_str, chip_x, baseline);
                 _legend_more_bounds = new Rectangle(chip_x - 2, baseline - fm.getAscent(), chip_w + 4, row_h);
             }
         } else if (show_fewer) {
             baseline += row_h;
             g.drawString(show_fewer_chip, x + pad, baseline);
-            if (draggable) {
-                _legend_more_bounds = new Rectangle(x + pad - 2, baseline - fm.getAscent(),
-                        fm.stringWidth(show_fewer_chip) + 4, row_h);
-            }
+            _legend_more_bounds = new Rectangle(x + pad - 2, baseline - fm.getAscent(),
+                    fm.stringWidth(show_fewer_chip) + 4, row_h);
         }
         g.setStroke(saved_stroke);
     }
