@@ -183,12 +183,14 @@ public final class NodeDataExporter {
     }
 
     /**
-     * The external tips covered by a node selection, in tree order: a selected external node contributes
-     * itself, a selected internal node contributes all its external descendants (so "select a clade" exports
-     * its leaves). Duplicates are removed and the result follows {@code phy.getExternalNodes()} order.
+     * The selected EXTERNAL tips, in tree order ({@code phy.getExternalNodes()} order), deduped. Only external
+     * nodes count: an internal node in the selection contributes NOTHING. To export (or protect) a whole clade,
+     * branch-click it -- that selects its tips directly and visibly -- rather than selecting the internal node
+     * and relying on a hidden expansion. This "what is highlighted is what is used" rule matches how
+     * Delete/Retain Selected already treats the selection.
      */
-    public static List<PhylogenyNode> externalTipsForSelection( final Phylogeny phy,
-                                                                final Collection<PhylogenyNode> selected ) {
+    public static List<PhylogenyNode> selectedExternalTips( final Phylogeny phy,
+                                                            final Collection<PhylogenyNode> selected ) {
         if ( ( phy == null ) || ( selected == null ) || selected.isEmpty() ) {
             return new ArrayList<>();
         }
@@ -196,11 +198,6 @@ public final class NodeDataExporter {
         for( final PhylogenyNode n : selected ) {
             if ( n.isExternal() ) {
                 ids.add( n.getId() );
-            }
-            else {
-                for( final PhylogenyNode d : n.getAllExternalDescendants() ) {
-                    ids.add( d.getId() );
-                }
             }
         }
         final List<PhylogenyNode> tips = new ArrayList<>();

@@ -677,16 +677,12 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         final String function = delete ? "Delete" : "Retain";
         final Phylogeny phy = getMainPanel().getCurrentPhylogeny();
         final int ext = (phy == null) ? 0 : phy.getNumberOfExternalNodes();
-        final List<PhylogenyNode> nodes = new ArrayList<>();
-        if ((phy != null) && (getCurrentTreePanel() != null)
-                && ((getCurrentTreePanel().getFoundNodes0() != null)
-                        || (getCurrentTreePanel().getFoundNodes1() != null))) {
-            for (final PhylogenyNode n : getCurrentTreePanel().getFoundNodesAsListOfPhylogenyNodes()) {
-                if (n.isExternal()) {
-                    nodes.add(n);
-                }
-            }
-        }
+        // the external tips the user has selected (search a/b + manual clicks; branch-click a clade to select its
+        // tips) -- shared with the export/protect scope so all three treat a selection identically (no internal
+        // expansion). selectedExternalTips tolerates a null phy / empty selection, returning no tips.
+        final TreePanel tp = getCurrentTreePanel();
+        final List<PhylogenyNode> nodes = (tp == null) ? new ArrayList<>()
+                : NodeDataExporter.selectedExternalTips(phy, tp.getFoundNodesAsListOfPhylogenyNodes());
         switch (AptxUtil.nodePruningOutcome(ext, nodes.size(), delete)) {
             case NO_TREE:
                 JOptionPane.showMessageDialog(this,
@@ -2335,9 +2331,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     }
 
     /**
-     * Decide which tips a data export covers. With no node selection the whole displayed (sub)tree is used
-     * silently; with a selection the user picks Selected / Not-selected / All displayed / Cancel (a selected
-     * clade contributes its leaves). Returns null only if the user cancelled.
+     * Decide which tips a data export covers. The scope is the selected EXTERNAL tips (branch-click a clade to
+     * select its tips; a selected internal node contributes nothing). With no tips selected the whole displayed
+     * (sub)tree is used silently; otherwise the user picks Selected / Not-selected / All displayed / Cancel.
+     * Returns null only if the user cancelled.
      */
     private ExportScope chooseExportTips(final Phylogeny phy) {
         final List<PhylogenyNode> all = phy.getExternalNodes();
@@ -2346,7 +2343,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         final String all_desc = all.size() + " external nodes"
                 + (from_subtree ? " in the currently displayed subtree" : "");
         final List<PhylogenyNode> selected = (tp == null) ? new ArrayList<>()
-                : NodeDataExporter.externalTipsForSelection(phy, tp.getFoundNodesAsListOfPhylogenyNodes());
+                : NodeDataExporter.selectedExternalTips(phy, tp.getFoundNodesAsListOfPhylogenyNodes());
         if (selected.isEmpty()) {
             // no selection -> whole displayed tree, no prompt; restricted only if that tree is a sub-tree
             return new ExportScope(all, all_desc, from_subtree);

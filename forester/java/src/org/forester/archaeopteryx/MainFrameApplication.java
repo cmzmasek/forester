@@ -572,10 +572,10 @@ public final class MainFrameApplication extends MainFrame {
                     JOptionPane.INFORMATION_MESSAGE);
             return;
         }
-        // tips the user has selected (search a/b + manual clicks; a selected clade contributes its leaves) can
-        // be protected from removal -- captured now, before the run overwrites the found-node highlight
+        // the external tips the user has selected (search a/b + manual clicks; branch-click a clade to protect
+        // its tips) can be protected from removal -- captured now, before the run overwrites the found highlight
         final Set<Long> protected_ids = new HashSet<>();
-        for (final PhylogenyNode t : NodeDataExporter.externalTipsForSelection(phy,
+        for (final PhylogenyNode t : NodeDataExporter.selectedExternalTips(phy,
                 tp.getFoundNodesAsListOfPhylogenyNodes())) {
             protected_ids.add(t.getId());
         }

@@ -131,7 +131,7 @@ public final class NodeDataExporterTest {
                 }
             }
 
-            // ---- export scope: tip-list overloads + selection expansion ----
+            // ---- export scope: tip-list overloads + selected-tip resolution (external only, no expansion) ----
             final List<PhylogenyNode> ext = phy.getExternalNodes();
             // a single-tip subset yields only that tip
             final String one_fasta = NodeDataExporter.toFasta( ext.subList( 0, 1 ) );
@@ -141,25 +141,36 @@ public final class NodeDataExporterTest {
             if ( NodeDataExporter.toNodeDataTsv( ext.subList( 0, 1 ) ).split( "\\R" ).length != 2 ) {
                 return fail( "single-tip TSV should be header + 1 row" );
             }
-            // selecting the (internal) root expands to all leaves, in tree order
-            if ( !sameOrder( NodeDataExporter.externalTipsForSelection( phy, Arrays.asList( phy.getRoot() ) ), ext ) ) {
-                return fail( "selecting the root should yield all tips in tree order" );
+            // an internal node in the selection contributes NOTHING (no expansion to descendants): selecting only
+            // the root yields no tips -- select a clade by branch-clicking its tips instead
+            if ( !NodeDataExporter.selectedExternalTips( phy, Arrays.asList( phy.getRoot() ) ).isEmpty() ) {
+                return fail( "selecting only the (internal) root should yield NO tips (no descendant expansion)" );
             }
             // selecting one external tip yields exactly that tip
-            final List<PhylogenyNode> one_sel = NodeDataExporter.externalTipsForSelection( phy,
-                                                                                           Arrays.asList( ext.get( 0 ) ) );
+            final List<PhylogenyNode> one_sel = NodeDataExporter.selectedExternalTips( phy,
+                                                                                       Arrays.asList( ext.get( 0 ) ) );
             if ( ( one_sel.size() != 1 ) || ( one_sel.get( 0 ) != ext.get( 0 ) ) ) {
                 return fail( "selecting one tip should yield exactly that tip: " + one_sel );
             }
-            // a tip plus its ancestor dedups to all tips (no double count)
-            if ( !sameOrder( NodeDataExporter.externalTipsForSelection( phy,
-                                                                        Arrays.asList( ext.get( 0 ), phy.getRoot() ) ),
-                             ext ) ) {
-                return fail( "tip + ancestor selection should dedup to all tips" );
+            // a tip plus an internal ancestor yields just that tip (the ancestor is ignored, not expanded)
+            final List<PhylogenyNode> tip_plus_ancestor = NodeDataExporter.selectedExternalTips( phy,
+                    Arrays.asList( ext.get( 0 ), phy.getRoot() ) );
+            if ( ( tip_plus_ancestor.size() != 1 ) || ( tip_plus_ancestor.get( 0 ) != ext.get( 0 ) ) ) {
+                return fail( "tip + internal ancestor should yield just the tip, got " + tip_plus_ancestor );
             }
             // an empty selection yields no tips
-            if ( !NodeDataExporter.externalTipsForSelection( phy, Arrays.asList() ).isEmpty() ) {
+            if ( !NodeDataExporter.selectedExternalTips( phy, Arrays.asList() ).isEmpty() ) {
                 return fail( "empty selection should yield no tips" );
+            }
+            // multiple selected tips come back in TREE order (not selection order) and deduped
+            if ( ext.size() >= 2 ) {
+                final PhylogenyNode first = ext.get( 0 );
+                final PhylogenyNode last = ext.get( ext.size() - 1 );
+                final List<PhylogenyNode> multi = NodeDataExporter.selectedExternalTips( phy,
+                                                                                         Arrays.asList( last, first, last ) );
+                if ( ( multi.size() != 2 ) || ( multi.get( 0 ) != first ) || ( multi.get( 1 ) != last ) ) {
+                    return fail( "selected tips must return in tree order, deduped: " + multi );
+                }
             }
             // not-selected complement (by id), preserving order
             if ( !sameOrder( NodeDataExporter.complementExternalTips( ext, Arrays.asList( ext.get( 0 ) ) ),

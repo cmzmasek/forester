@@ -119,7 +119,7 @@ public final class RepresentativeTipsToolTest {
                 sel.add( b.getId() );
                 tp.setFoundNodes0( sel );
                 final Set<Long> protected_ids = new HashSet<>();
-                for( final PhylogenyNode t : NodeDataExporter.externalTipsForSelection( phy,
+                for( final PhylogenyNode t : NodeDataExporter.selectedExternalTips( phy,
                         tp.getFoundNodesAsListOfPhylogenyNodes() ) ) {
                     protected_ids.add( t.getId() );
                 }
