@@ -272,6 +272,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private int _external_node_index = 0;
     private Set<Long> _found_nodes_0 = null;
     private Set<Long> _found_nodes_1 = null;
+    // The target currently previewed on hover in Select-Node(s) mode (or null): a single node (_hover_subtree
+    // false -> one marker on the node) or a branch (_hover_subtree true -> markers on the subtree's tips), drawn
+    // translucent as "will be added / will be removed" so a click's effect is visible before committing.
+    private PhylogenyNode _hover_node = null;
+    private boolean       _hover_subtree = false;
+    // The target just clicked: its hover preview stays suppressed until the pointer moves off it, so it does not
+    // instantly flip to the "will be removed" grey over what the click just selected.
+    private PhylogenyNode _click_suppressed = null;
     private final FontRenderContext _frc = new FontRenderContext(null,
             false,
             false);
@@ -566,7 +574,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      * @param t an instance of a Phylogeny
      */
     public final void setTree(final Phylogeny t) {
-        setNodeInPreorderToNull();
+        setNodeInPreorderToNull(); // also clears any stale branch-hover preview
         _phylogeny = t;
     }
 
@@ -2184,16 +2192,24 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                           final boolean to_graphics_file,
                                           final boolean to_pdf,
                                           final boolean is_in_found_nodes) {
-        ////
-        //// TODO
-        ////
         Color c = null;
-        int res[] = null;
-        if ((_found_nodes_0 != null) || (_found_nodes_1 != null)) {
-            res = calcFoundNodesInSubtree(node);
+        final boolean bw = (to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite();
+        // A collapsed clade's tips are hidden, so signal any selection/search hits ON the triangle itself:
+        // fill it in the found colour when EVERY tip is a hit (reads as "this whole group is selected"), or just
+        // outline it (below) when only some are. Selection is clade-wide (collapse is a view state), so a
+        // clade-select shows here even though the individual tips are not drawn. Skipped in black-and-white.
+        final int[] fc = collapsedCladeFoundCounts(node); // {hits in set 0, hits in set 1, tips hit, total tips}
+        Color found_c = null;
+        if (!bw && (fc[2] > 0)) {
+            found_c = ((fc[0] > 0) && (fc[1] > 0)) ? getTreeColorSet().getFoundColor0and1()
+                    : (fc[0] > 0) ? getTreeColorSet().getFoundColor0() : getTreeColorSet().getFoundColor1();
         }
-        if ((to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite()) {
+        final boolean all_tips_found = (found_c != null) && (fc[2] == fc[3]);
+        if (bw) {
             c = Color.BLACK;
+        }
+        else if (all_tips_found) {
+            c = found_c; // the whole collapsed clade is selected -> paint the triangle in the found colour
         }
         else if (getOptions().isColorLabelsSameAsParentBranch() && getControlPanel().isUseVisualStyles()
                 && (PhylogenyMethods.getBranchColorValue(node) != null)) {
@@ -2203,7 +2219,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         } else {
             c = getTreeColorSet().getCollapseFillColor();
         }
-        double d = node.getAllExternalDescendants().size();
+        double d = fc[3];
         float xxx;
         double s = 0;
         if (getControlPanel().isDrawPhylogram()) {
@@ -2264,6 +2280,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             g.fill(_polygon);
             g.setPaint(c);
             g.draw(_polygon);
+        }
+        if ((found_c != null) && !all_tips_found) {
+            // only SOME of the clade's tips are selected/found -> outline the triangle in the found colour as a
+            // partial hint (a full fill would over-state it, an omitted mark would hide it -- see also the
+            // "[found/total]" count in the collapsed label)
+            final Color saved = g.getColor();
+            g.setColor(found_c);
+            g.draw(_polygon);
+            g.setColor(saved);
         }
         paintNodeData(g, node, to_graphics_file, to_pdf, is_in_found_nodes, s);
     }
@@ -3049,6 +3074,30 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 _sb.append("]");
             }
         }
+    }
+
+    /**
+     * How many of a collapsed clade's (hidden) external tips are currently selected/found, so the triangle can
+     * signal it: {@code {hits in found set 0, hits in found set 1, tips in either set, total external tips}}.
+     * External tips only (selection semantics are tip-based); a tip in both sets counts once toward index 2.
+     */
+    final int[] collapsedCladeFoundCounts(final PhylogenyNode node) {
+        final List<PhylogenyNode> tips = node.getAllExternalDescendants();
+        int h0 = 0, h1 = 0, any = 0;
+        for (final PhylogenyNode t : tips) {
+            final boolean in0 = (_found_nodes_0 != null) && _found_nodes_0.contains(t.getId());
+            final boolean in1 = (_found_nodes_1 != null) && _found_nodes_1.contains(t.getId());
+            if (in0) {
+                ++h0;
+            }
+            if (in1) {
+                ++h1;
+            }
+            if (in0 || in1) {
+                ++any;
+            }
+        }
+        return new int[] { h0, h1, any, tips.size() };
     }
 
     private final int[] calcFoundNodesInSubtree(final PhylogenyNode node) {
@@ -6284,7 +6333,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     && ((node.getXcoord() - half_box_size_plus_wiggle) <= x)
                     && ((node.getXcoord() + half_box_size_plus_wiggle) >= x)
                     && ((node.getYcoord() - half_box_size_plus_wiggle) <= y)
-                    && ((node.getYcoord() + half_box_size_plus_wiggle) >= y)) {
+                    && ((node.getYcoord() + half_box_size_plus_wiggle) >= y)
+                    // skip nodes hidden under a collapsed ancestor: they keep stale pre-collapse coords, so a
+                    // box hit there is a phantom. The collapsed clade-root itself is still returned (it is drawn
+                    // as the triangle and IS selectable). Gated behind the cheap box test above (O(depth), rare).
+                    && !isHiddenUnderCollapse(node)) {
                 return node;
             }
         }
@@ -6316,14 +6369,18 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         double best_dist = tol;
         for (final PhylogenyNodeIterator iter = _phylogeny.iteratorPostorder(); iter.hasNext(); ) {
             final PhylogenyNode n = iter.next();
-            if (n.isRoot() || n.isCollapse()) {
-                continue; // the root has no incoming branch; a collapsed clade's tips are hidden (not selectable)
+            if (n.isCollapse()) {
+                continue; // a collapsed clade's tips are hidden (not individually selectable)
             }
-            final PhylogenyNode p = n.getParent();
-            final double a_y = diagonal ? p.getYcoord() : n.getYcoord(); // horizontal leg sits at the child's y
-            double d = Line2D.ptSegDist(p.getXcoord(), a_y, n.getXcoord(), n.getYcoord(), x, y);
+            double d = Double.MAX_VALUE;
+            if (!n.isRoot()) { // the incoming branch: horizontal leg (at the child's y) or straight diagonal
+                final PhylogenyNode p = n.getParent();
+                final double a_y = diagonal ? p.getYcoord() : n.getYcoord();
+                d = Line2D.ptSegDist(p.getXcoord(), a_y, n.getXcoord(), n.getYcoord(), x, y);
+            }
             if (rectangular && !n.isExternal()) {
-                // n's own vertical fork connector (at n's x, spanning its children) also selects n's subtree
+                // n's own vertical fork connector (at n's x, spanning its children) selects n's subtree -- this
+                // is also how the root becomes selectable (click its fork to select the whole tree's tips)
                 d = Math.min(d, Line2D.ptSegDist(n.getXcoord(), n.getFirstChildNode().getYcoord(), n.getXcoord(),
                         n.getLastChildNode().getYcoord(), x, y));
             }
@@ -6346,6 +6403,176 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             p = p.getParent();
         }
         return false;
+    }
+
+    // Branch-hover selection preview (on screen only): the translucent "will be added" alpha (applied to the
+    // found-selection color) and the distinct "will be removed" mark (a muted grey, so it reads as
+    // "de-selected" and is not confused with the coloured selection whatever the found colour is set to).
+    private static final int   BRANCH_HOVER_ALPHA  = 95;
+    private static final Color BRANCH_HOVER_REMOVE = new Color(90, 90, 90, 135); // click would DESELECT this clade
+
+    /** Sets the hover-preview target -- a single node ({@code subtree}=false, drawn as one marker on the node)
+     *  or a branch ({@code subtree}=true, drawn on the subtree's tips) -- repainting only on an actual change
+     *  (so gliding along one branch/over one node does not repaint). */
+    private void setHover(final PhylogenyNode node, final boolean subtree) {
+        final boolean sub = (node != null) && subtree; // canonical: no subtree flag when nothing is hovered
+        if ((node != _hover_node) || (sub != _hover_subtree)) {
+            _hover_node = node;
+            _hover_subtree = sub;
+            repaint();
+        }
+    }
+
+    /** Applies a hover target, honoring the just-clicked suppression: the target just clicked stays un-previewed
+     *  until the pointer moves off it (so it doesn't instantly flip to the "will be removed" grey). */
+    private void applyHover(final PhylogenyNode node, final boolean subtree) {
+        if (node == _click_suppressed) {
+            setHover(null, false);
+        } else {
+            _click_suppressed = null;
+            setHover(node, subtree);
+        }
+    }
+
+    /** After a click selected {@code target} (a clicked node or branch), suppress its hover preview until the
+     *  pointer moves off it, so it doesn't instantly flip to the "will be removed" grey over what was just
+     *  selected. */
+    private void suppressHoverAfterClick(final PhylogenyNode target) {
+        _click_suppressed = target;
+        setHover(null, false);
+    }
+
+    /** Clears the hover preview (e.g. when the pointer leaves the panel or moves onto the legend/overview). Does
+     *  NOT clear the just-clicked suppression -- that is released when the pointer moves onto a different target
+     *  (see applyHover) -- so a spurious MOUSE_EXITED (e.g. from a node-data popup) can't re-arm the grey flip. */
+    final void clearHoverPreview() {
+        setHover(null, false);
+    }
+
+    /**
+     * On-screen preview of what a click would select/deselect: draws a translucent marker on the affected
+     * node(s) so the pending click's effect is visible before committing. For a hovered branch the marks land
+     * on the subtree's tips; for a hovered single node (leaf or internal) it's one mark on that node. Direction
+     * aware -- targets that would be ADDED get the found-selection colour; when a click would DESELECT (the
+     * node, or a fully-selected clade) they get a distinct, larger "remove" grey. No-op off screen (exports),
+     * when not hovering, when not in Select-Node(s) mode, or for a node left over from a swapped-out tree.
+     */
+    private void paintHoverPreview(final Graphics2D g, final boolean to_screen) {
+        // _hover_node is always in the currently-displayed tree: it is only set on hover, and any tree swap
+        // clears it via setNodeInPreorderToNull (the shared structural-change chokepoint).
+        if (!to_screen || (_hover_node == null) || _hover_node.isCollapse()
+                || (getControlPanel().getActionWhenNodeClicked() != NodeClickAction.SELECT_NODES)) {
+            return; // no hover circle on a collapsed triangle (its own fill/outline already shows selection)
+        }
+        final Set<Long> found = getFoundNodes0();
+        final boolean deselect;                  // whether a click here would DESELECT rather than add
+        final java.util.List<PhylogenyNode> marks;
+        if (_hover_subtree) {
+            final java.util.List<PhylogenyNode> all = _hover_node.getAllExternalDescendants();
+            if (all.isEmpty()) {
+                return;
+            }
+            deselect = allTipsSelected(all); // direction over ALL tips (matches what a click toggles)
+            marks = new java.util.ArrayList<PhylogenyNode>();
+            collectVisibleTips(_hover_node, marks); // only laid-out tips (skip collapsed sub-clades' stale coords)
+        } else {
+            deselect = (found != null) && found.contains(_hover_node.getId()); // a click toggles just this node
+            marks = java.util.Collections.singletonList(_hover_node);
+        }
+        final Color mark;
+        if (deselect) {
+            mark = BRANCH_HOVER_REMOVE; // muted grey (its own alpha) -- "will be de-selected"
+        } else {
+            final Color f = getTreeColorSet().getFoundColor0(); // "will be added" -> preview in the found colour
+            mark = new Color(f.getRed(), f.getGreen(), f.getBlue(), BRANCH_HOVER_ALPHA);
+        }
+        // the remove mark lands on an already-selected node (with its solid found marker) so it is drawn larger
+        // to cover it; the add mark sits on a bare node and reads fine smaller
+        final int shape = getOptions().getDefaultNodeShapeSize();
+        final int d = deselect ? Math.max(10, shape + 4) : Math.max(6, shape);
+        final Color saved = g.getColor();
+        g.setColor(mark);
+        for (final PhylogenyNode t : marks) {
+            // a select marks only the not-yet-selected targets; a deselect (or the single hovered node) marks all
+            if (!_hover_subtree || deselect || (found == null) || !found.contains(t.getId())) {
+                g.fillOval(Math.round(t.getXcoord()) - (d / 2), Math.round(t.getYcoord()) - (d / 2), d, d);
+            }
+        }
+        g.setColor(saved);
+    }
+
+    /** Collects the marks to preview for {@code node}'s subtree: its currently-visible external tips only. A
+     *  collapsed sub-clade contributes NO mark -- a hover circle over its triangle is ugly and redundant (the
+     *  triangle's own fill/outline already shows the clade's selection state); its hidden tips are still toggled
+     *  by the click regardless. A leaf adds itself. */
+    private static void collectVisibleTips(final PhylogenyNode node, final java.util.List<PhylogenyNode> out) {
+        if (node.isExternal()) {
+            out.add(node);
+            return;
+        }
+        if (node.isCollapse()) {
+            return; // a collapsed clade is drawn as a single triangle; do not circle it in the hover preview
+        }
+        for (int i = 0; i < node.getNumberOfDescendants(); ++i) {
+            collectVisibleTips(node.getChildNode(i), out);
+        }
+    }
+
+    /** True if every tip in {@code tips} is already selected (found set 0) -- so a branch click would DESELECT
+     *  the clade rather than add to it. Shared by the hover preview and the selectSubtreeTips toggle. */
+    private boolean allTipsSelected(final java.util.List<PhylogenyNode> tips) {
+        final Set<Long> found = getFoundNodes0();
+        if (found == null) {
+            return false;
+        }
+        for (final PhylogenyNode t : tips) {
+            if (!found.contains(t.getId())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** Test hooks for the hover preview: the hovered node (or null), whether it's a subtree (branch) vs single
+     *  node hover, and whether a click there would deselect (vs add). */
+    PhylogenyNode hoverNodeForTest() {
+        return _hover_node;
+    }
+
+    boolean hoverIsSubtreeForTest() {
+        return _hover_subtree;
+    }
+
+    boolean hoverWouldDeselectForTest() {
+        if (_hover_node == null) {
+            return false;
+        }
+        if (_hover_subtree) {
+            return allTipsSelected(_hover_node.getAllExternalDescendants());
+        }
+        final Set<Long> found = getFoundNodes0();
+        return (found != null) && found.contains(_hover_node.getId());
+    }
+
+    /** Test hook: the node currently suppressed from re-previewing after a click (or null). Only released when
+     *  the pointer reaches a different target or the tree changes -- NOT by clearHoverPreview / a mouse-exit. */
+    PhylogenyNode clickSuppressedForTest() {
+        return _click_suppressed;
+    }
+
+    /** Test hook: the marks the hover preview would draw for the current hover -- the subtree's visible tips plus
+     *  one mark per collapsed sub-clade (or the single hovered node). Empty when not hovering. */
+    java.util.List<PhylogenyNode> hoverPreviewMarksForTest() {
+        final java.util.List<PhylogenyNode> marks = new java.util.ArrayList<PhylogenyNode>();
+        if (_hover_node == null) {
+            return marks;
+        }
+        if (_hover_subtree) {
+            collectVisibleTips(_hover_node, marks);
+        } else {
+            marks.add(_hover_node);
+        }
+        return marks;
     }
 
     final Configuration getConfiguration() {
@@ -6652,10 +6879,23 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 if (!node.isRoot() && node.getParent().isCollapse()) {
                     return;
                 }
+                // A collapsed clade is one unit: a selection-gesture click (shift, or plain in Select-Node(s)
+                // mode) toggles its WHOLE subtree's tips -- like a branch click -- so the triangle's fill updates
+                // and the count reflects the clade. Ctrl/right-click still opens the node popup on the triangle.
+                if (node.isCollapse() && ((e.getModifiersEx() & InputEvent.CTRL_DOWN_MASK) == 0)
+                        && !SwingUtilities.isRightMouseButton(e)
+                        && (((e.getModifiersEx() & InputEvent.SHIFT_DOWN_MASK) != 0)
+                        || (_control_panel.getActionWhenNodeClicked() == NodeClickAction.SELECT_NODES))) {
+                    selectSubtreeTips(node);
+                    suppressHoverAfterClick(node);
+                    repaint();
+                    return;
+                }
                 // Check if shift key is down
                 if ((e.getModifiersEx() & InputEvent.SHIFT_DOWN_MASK) != 0) {
                     // Yes, so toggle this node in the selection (found set 0), keeping the count label in sync
                     selectNode(node);
+                    suppressHoverAfterClick(node); // don't flip the node's preview to "remove" until pointer moves off
                 } else if ((e.getModifiersEx() & InputEvent.CTRL_DOWN_MASK) != 0) {
                     // Check if control key is down
                     // Yes, so pop-up menu
@@ -6668,6 +6908,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     } else {
                         // if not in _found_nodes, clear _found_nodes
                         handleClickToAction(_control_panel.getActionWhenNodeClicked(), node);
+                        if (_control_panel.getActionWhenNodeClicked() == NodeClickAction.SELECT_NODES) {
+                            suppressHoverAfterClick(node); // just selected this node -> suppress its preview
+                        }
                     }
                 }
             } else {
@@ -6678,7 +6921,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         && ((e.getModifiersEx() & InputEvent.CTRL_DOWN_MASK) == 0);
                 if (shift || (plain_left
                         && (_control_panel.getActionWhenNodeClicked() == NodeClickAction.SELECT_NODES))) {
-                    selectSubtreeTips(findBranch(e.getX(), e.getY()));
+                    final PhylogenyNode branch = findBranch(e.getX(), e.getY());
+                    selectSubtreeTips(branch);
+                    suppressHoverAfterClick(branch); // don't flip to the grey "remove" until the pointer moves off
                 }
             }
         }
@@ -6776,10 +7021,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             if (!isInOv()) {
                 setInOv(true);
             }
+            setHover(null, false); // over the overview thumbnail -> no hover preview
         } else {
             if (isInOv()) {
                 setInOv(false);
             }
+            final boolean select_mode = getControlPanel().getActionWhenNodeClicked() == NodeClickAction.SELECT_NODES;
             final PhylogenyNode node = findNode(e.getX(), e.getY());
             if ((node != null) && (node.isRoot() || !node.getParent().isCollapse())) {
                 if ((getControlPanel().getActionWhenNodeClicked() == NodeClickAction.CUT_SUBTREE)
@@ -6795,11 +7042,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         showNodeDataPopup(e, node);
                     }
                 }
-            } else if ((getControlPanel().getActionWhenNodeClicked() == NodeClickAction.SELECT_NODES)
-                    && (findBranch(e.getX(), e.getY()) != null)) {
-                setCursor(HAND_CURSOR); // over a branch: click selects/deselects its subtree's tips
+                // in Select-Node(s) mode, preview the single node a click would toggle; otherwise no preview.
+                // A collapsed clade is excluded: a hover circle over its triangle is ugly and redundant -- the
+                // hand cursor shows it is clickable and the triangle's own fill/outline shows its selection state.
+                applyHover((select_mode && !node.isCollapse()) ? node : null, false);
             } else {
-                setCursor(ARROW_CURSOR);
+                // not over a node: over a branch (Select-Node(s) mode) -> hand cursor + preview the subtree
+                final PhylogenyNode branch = select_mode ? findBranch(e.getX(), e.getY()) : null;
+                applyHover(branch, true);
+                setCursor((branch != null) ? HAND_CURSOR : ARROW_CURSOR);
             }
         }
     }
@@ -7009,6 +7260,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             paintAnnotationColumns(g); // tip-aligned columns (strip/heat map/bar/text), right of the labels
             paintCladeBands(g); // clade boxes/bars over the tree -- node coords are set by the loop above
+            paintHoverPreview(g, !(to_pdf || to_graphics_file)); // translucent select/deselect hover preview
             if (getOptions().isShowScale() && getControlPanel().isDrawPhylogram() && (getScaleDistance() > 0.0)) {
                 if (!(to_graphics_file || to_pdf)) {
                     paintScale(g,
@@ -7259,16 +7511,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ((tips == null) || tips.isEmpty()) {
             return;
         }
-        boolean all_selected = getFoundNodes0() != null;
-        if (all_selected) {
-            for (final PhylogenyNode t : tips) {
-                if (!getFoundNodes0().contains(t.getId())) {
-                    all_selected = false;
-                    break;
-                }
-            }
-        }
-        if (all_selected) {
+        if (allTipsSelected(tips)) { // all-or-nothing: fully selected -> clear it, otherwise add the missing tips
             for (final PhylogenyNode t : tips) {
                 getFoundNodes0().remove(t.getId());
             }
@@ -7333,6 +7576,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     final void setNodeInPreorderToNull() {
         _nodes_in_preorder = null;
+        // a tree-structure change (navigation, collapse, delete, ...) invalidates a branch-hover preview whose
+        // node may now be detached/relaid-out; this is the shared chokepoint for those changes
+        _hover_node = null;
+        _click_suppressed = null;
     }
 
     final void setOvOn(final boolean ov_on) {

@@ -90,9 +90,15 @@ final class MouseListener extends MouseAdapter implements MouseMotionListener {
     public void mouseMoved( final MouseEvent e ) {
         if ( _treepanel.isOnPropertyLegend( e ) ) {
             _treepanel.setCursor( TreePanel.MOVE_CURSOR ); // hint that the legend can be dragged
+            _treepanel.clearHoverPreview(); // don't leave a select/deselect preview on the tree behind the legend
             return;
         }
         _treepanel.mouseMoved( e );
+    }
+
+    @Override
+    public void mouseExited( final MouseEvent e ) {
+        _treepanel.clearHoverPreview(); // don't leave a hover preview when the pointer leaves the panel
     }
 
     @Override
