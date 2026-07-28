@@ -1348,14 +1348,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if ((phy == null) || phy.isEmpty()) {
             return;
         }
-        final int n = LabelDataExtractor.extract(phy);
+        final int n = extractLabelDataAndRefit(tp);
         if (n > 0) {
-            tp.setEdited(true);
-            // surface the freshly-populated fields so the value of the cleanup is immediately visible
-            tp.getControlPanel().setCheckbox(Configuration.show_seq_names, true);
-            tp.getControlPanel().setCheckbox(Configuration.show_taxonomy_scientific_names, true);
-            tp.getControlPanel().displayedPhylogenyMightHaveChanged(true);
-            tp.repaint();
             JOptionPane.showMessageDialog(this,
                     "Extracted accession, description and taxonomy from " + n + " label" + ((n == 1) ? "" : "s")
                             + ".\nNode names were shortened to their accession; \"Seq Name\" and "
@@ -1367,6 +1361,29 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                             + "\"NP_000537.1 … [Homo sapiens]\") were found to extract from.",
                     "Extract Data from Labels", JOptionPane.INFORMATION_MESSAGE);
         }
+    }
+
+    /**
+     * The dialog-free core of {@link #extractLabelData()} (so it is unit-testable): parses the panel's tree
+     * labels, and -- if anything was extracted -- reveals the freshly-populated "Seq Name" + "Taxonomy
+     * Scientific" columns and re-fits the tree width. Returns the number of labels changed.
+     * <p>
+     * The re-fit ({@link ControlPanel#fitWidth()}) is the point: shortening the names and revealing those two
+     * columns changes the horizontal extent (and, on domain-bearing trees, shifts the lined-up domain
+     * architectures rightward). {@code fitWidth()} recalcs the longest-ext-node info AND resets the preferred
+     * size -- which the plain {@link ControlPanel#displayedPhylogenyMightHaveChanged(boolean)} path does not,
+     * leaving the panel width stale so the rightmost domain lands at/just past the panel edge and is clipped
+     * until the user manually zooms.
+     */
+    int extractLabelDataAndRefit(final TreePanel tp) {
+        final int n = LabelDataExtractor.extract(tp.getPhylogeny());
+        if (n > 0) {
+            tp.setEdited(true);
+            tp.getControlPanel().setCheckbox(Configuration.show_seq_names, true);
+            tp.getControlPanel().setCheckbox(Configuration.show_taxonomy_scientific_names, true);
+            tp.getControlPanel().fitWidth();
+        }
+        return n;
     }
 
 

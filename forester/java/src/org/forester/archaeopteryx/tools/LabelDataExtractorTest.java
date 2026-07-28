@@ -212,6 +212,86 @@ public final class LabelDataExtractorTest {
         if ( !LabelDataExtractor.mostLabelsParsable( gb ) || ( LabelDataExtractor.extract( gb ) != 2 ) ) {
             return fail( "a GenBank-defline tree must be offered and fully extracted" );
         }
+        return testNcbiCds();
+    }
+
+    private static boolean testNcbiCds() {
+        // full CDS-from-genomic defline: accession = protein_id, description = protein, gene = gene, NO organism
+        final SequenceEntry full = LabelDataExtractor.parseNcbiCdsDefline(
+                "lcl|MT726045.1_prot_QTJ30158.1_7 [gene=ORF7a] [protein=ORF7a protein] [protein_id=QTJ30158.1] "
+                        + "[location=27187..27543] [gbkey=CDS]" );
+        if ( !"QTJ30158.1".equals( full.getAccession() ) || !"ORF7a protein".equals( full.getSequenceName() )
+                || !"ORF7a".equals( full.getGeneName() ) || ( full.getOrganismName() != null )
+                || ( full.getOrganismId() != null ) ) {
+            return fail( "full lcl| CDS defline parsed wrong: " + full );
+        }
+        // extra qualifiers (locus_tag, db_xref) are ignored; a RefSeq protein_id is taken verbatim
+        final SequenceEntry extra = LabelDataExtractor.parseNcbiCdsDefline(
+                "lcl|NC_014470.1_prot_YP_003858589.1_8 [gene=ORF7a] [locus_tag=BtCoVBM48_gp7] "
+                        + "[db_xref=GeneID:9714829] [protein=ORF7a protein] [protein_id=YP_003858589.1] "
+                        + "[location=27188..27544] [gbkey=CDS]" );
+        if ( !"YP_003858589.1".equals( extra.getAccession() ) || !"ORF7a protein".equals( extra.getSequenceName() )
+                || !"ORF7a".equals( extra.getGeneName() ) ) {
+            return fail( "lcl| CDS defline with extra qualifiers parsed wrong: " + extra );
+        }
+        // no [gene=] -> gene null, but still parses (accession + description)
+        final SequenceEntry nogene = LabelDataExtractor.parseNcbiCdsDefline(
+                "lcl|MZ190137.1_prot_QVN46564.1_8 [protein=ORF7a protein] [protein_id=QVN46564.1] "
+                        + "[location=27116..27472] [gbkey=CDS]" );
+        if ( !"QVN46564.1".equals( nogene.getAccession() ) || !"ORF7a protein".equals( nogene.getSequenceName() )
+                || ( nogene.getGeneName() != null ) ) {
+            return fail( "lcl| CDS defline without a gene parsed wrong: " + nogene );
+        }
+        // a leading ">" is tolerated
+        if ( !"QVN46564.1".equals( LabelDataExtractor
+                .parseNcbiCdsDefline( ">lcl|MZ190137.1_prot_QVN46564.1_8 [protein_id=QVN46564.1] [gbkey=CDS]" )
+                .getAccession() ) ) {
+            return fail( "a \">\"-prefixed lcl| CDS defline must parse" );
+        }
+        // an lcl| identifier with NO [key=value] qualifiers is not this dialect
+        if ( !LabelDataExtractor.parseNcbiCdsDefline( "lcl|MT726045.1_prot_QTJ30158.1_7" ).isEmpty() ) {
+            return fail( "a bare lcl| identifier (no qualifiers) must parse to EMPTY" );
+        }
+        // a plain GenBank protein defline is NOT an lcl| defline -> EMPTY here (so it does not shadow parseGenbankDefline)
+        if ( !LabelDataExtractor.parseNcbiCdsDefline( "NP_788278.1 death executioner Bcl-2 [Drosophila melanogaster]" )
+                .isEmpty() ) {
+            return fail( "a non-lcl| defline must not parse as an NCBI CDS defline" );
+        }
+        // parseHeader routes an lcl| CDS defline to the CDS path (protein_id accession), NOT the mis-reading
+        // GenBank fallback (which would have turned the [..] blob into a description and "[gbkey=CDS]" into an organism)
+        final SequenceEntry viaHeader = LabelDataExtractor.parseHeader(
+                "lcl|MT726045.1_prot_QTJ30158.1_7 [gene=ORF7a] [protein=ORF7a protein] [protein_id=QTJ30158.1] "
+                        + "[location=27187..27543] [gbkey=CDS]" );
+        if ( !"QTJ30158.1".equals( viaHeader.getAccession() ) || !"ORF7a protein".equals( viaHeader.getSequenceName() )
+                || ( viaHeader.getOrganismName() != null ) ) {
+            return fail( "parseHeader must route an lcl| CDS defline to the CDS path: " + viaHeader );
+        }
+        // applyToNode on a CDS tip: renames to the protein_id, writes the description + gene, writes NO taxonomy
+        final PhylogenyNode n = leaf(
+                "lcl|MT726045.1_prot_QTJ30158.1_7 [gene=ORF7a] [protein=ORF7a protein] [protein_id=QTJ30158.1] "
+                        + "[location=27187..27543] [gbkey=CDS]" );
+        if ( !LabelDataExtractor.applyToNode( n, LabelDataExtractor.parseHeader( n.getName() ) )
+                || !"QTJ30158.1".equals( n.getName() ) ) {
+            return fail( "CDS applyToNode must rename the node to its protein_id accession" );
+        }
+        final Sequence cs = n.getNodeData().getSequence();
+        if ( ( cs == null ) || ( cs.getAccession() == null ) || !"QTJ30158.1".equals( cs.getAccession().getValue() )
+                || !"ORF7a protein".equals( cs.getName() ) || !"ORF7a".equals( cs.getGeneName() ) ) {
+            return fail( "CDS sequence fields (accession, description, gene) not written: " + cs );
+        }
+        if ( n.getNodeData().isHasTaxonomy() ) {
+            return fail( "a CDS defline carries no organism, so no taxonomy must be written" );
+        }
+        // a tree of lcl| CDS deflines triggers the proactive offer and is fully extracted
+        final PhylogenyNode root = new PhylogenyNode();
+        root.addAsChild( leaf( "lcl|MT726045.1_prot_QTJ30158.1_7 [protein=ORF7a protein] [protein_id=QTJ30158.1] [gbkey=CDS]" ) );
+        root.addAsChild( leaf( "lcl|PV584046.1_prot_XSG41275.1_7 [protein=ORF7a protein] [protein_id=XSG41275.1] [gbkey=CDS]" ) );
+        final Phylogeny cds_tree = new Phylogeny();
+        cds_tree.setRoot( root );
+        cds_tree.externalNodesHaveChanged();
+        if ( !LabelDataExtractor.mostLabelsParsable( cds_tree ) || ( LabelDataExtractor.extract( cds_tree ) != 2 ) ) {
+            return fail( "an lcl| CDS-defline tree must be offered and fully extracted" );
+        }
         return true;
     }
 

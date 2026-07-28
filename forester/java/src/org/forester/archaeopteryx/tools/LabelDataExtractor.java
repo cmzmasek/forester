@@ -50,6 +50,10 @@ import org.forester.ws.seqdb.SequenceEntry;
  * tax-id, no gene). A nucleotide defline that embeds the organism in prose with no bracket (e.g.
  * {@code XM_006503748.2 PREDICTED: Mus musculus ketohexokinase (Khk), ... mRNA}) yields just accession +
  * description; the organism is left to the online resolver rather than guessed from the text.</li>
+ * <li><b>NCBI CDS-from-genomic</b>: {@code lcl|MT726045.1_prot_QTJ30158.1_7 [gene=ORF7a] [protein=ORF7a
+ * protein] [protein_id=QTJ30158.1] [location=27187..27543] [gbkey=CDS]} -- yields accession (the
+ * {@code protein_id}), description (the {@code protein} qualifier) and gene. Carries no organism (it is not
+ * on a CDS defline).</li>
  * </ul>
  *
  * <p>This is the offline counterpart of "Fetch Sequence &amp; Taxonomic Data": it parses what is already
@@ -70,6 +74,10 @@ public final class LabelDataExtractor {
     // A GenBank/RefSeq defline's trailing organism, e.g. "... [Drosophila melanogaster]".
     private static final Pattern TRAILING_TAXON = Pattern.compile( "\\[([^\\]]+)\\]\\s*$" );
     private static final String  PREDICTED      = "PREDICTED: ";
+    // An NCBI "CDS from genomic" FASTA defline starts with a local identifier: lcl|<nuc>_prot_<prot>_<n>.
+    private static final Pattern LCL_PREFIX     = Pattern.compile( "^lcl\\|", Pattern.CASE_INSENSITIVE );
+    // ...followed by [key=value] qualifiers, e.g. [gene=ORF7a] [protein=ORF7a protein] [protein_id=QTJ30158.1].
+    private static final Pattern BRACKET_KV     = Pattern.compile( "\\[([a-zA-Z_]+)=([^\\]]*)\\]" );
 
     private LabelDataExtractor() {
     }
@@ -119,7 +127,72 @@ public final class LabelDataExtractor {
      */
     public static SequenceEntry parseHeader( final String raw ) {
         final SequenceEntry uniprot = parseUniProtHeader( raw );
-        return uniprot.isEmpty() ? parseGenbankDefline( raw ) : uniprot;
+        if ( !uniprot.isEmpty() ) {
+            return uniprot;
+        }
+        // the NCBI "CDS from genomic" lcl| defline must be tried before the plain GenBank defline: its leading
+        // token would otherwise be mis-read as an accession and the [key=value] blob taken for a description.
+        final SequenceEntry cds = parseNcbiCdsDefline( raw );
+        return cds.isEmpty() ? parseGenbankDefline( raw ) : cds;
+    }
+
+    /**
+     * Parses an NCBI "CDS from genomic" FASTA defline: a local identifier followed by {@code [key=value]}
+     * qualifiers, e.g. {@code lcl|MT726045.1_prot_QTJ30158.1_7 [gene=ORF7a] [protein=ORF7a protein]
+     * [protein_id=QTJ30158.1] [location=27187..27543] [gbkey=CDS]}. Yields the accession (the
+     * {@code protein_id}, else an accession pulled from the {@code lcl|} token), the description (the
+     * {@code protein} qualifier) and the gene. This dialect carries <b>no organism</b> -- the organism lives
+     * on the genome record, not the CDS defline -- so none is guessed. Pure; {@link SequenceEntry#EMPTY} for
+     * anything that is not an {@code lcl|} defline with {@code [key=value]} qualifiers.
+     */
+    public static SequenceEntry parseNcbiCdsDefline( final String raw ) {
+        if ( ForesterUtil.isEmpty( raw ) ) {
+            return SequenceEntry.EMPTY;
+        }
+        String s = raw.trim();
+        if ( s.startsWith( ">" ) ) {
+            s = s.substring( 1 ).trim();
+        }
+        if ( !LCL_PREFIX.matcher( s ).find() ) {
+            return SequenceEntry.EMPTY; // not a local (lcl|) defline
+        }
+        String protein = null;    // -> sequence name (description)
+        String gene = null;
+        String protein_id = null; // -> accession
+        boolean any_qualifier = false;
+        final Matcher m = BRACKET_KV.matcher( s );
+        while ( m.find() ) {
+            any_qualifier = true;
+            final String key = m.group( 1 ).toLowerCase( Locale.ROOT );
+            final String value = m.group( 2 ).trim();
+            if ( "protein".equals( key ) && ( protein == null ) ) {
+                protein = value;
+            }
+            else if ( "gene".equals( key ) && ( gene == null ) ) {
+                gene = value;
+            }
+            else if ( "protein_id".equals( key ) && ( protein_id == null ) ) {
+                protein_id = value;
+            }
+        }
+        if ( !any_qualifier ) {
+            return SequenceEntry.EMPTY; // "lcl|..." with no [key=value] qualifiers -> not this dialect
+        }
+        // accession: prefer the protein_id qualifier; otherwise pull an accession out of the leading lcl| token
+        String accession = emptyToNull( protein_id );
+        if ( accession == null ) {
+            final String token = s.split( "\\s+", 2 )[ 0 ];
+            accession = SequenceAccessionTools.parseRefSeqAccessorFromString( token );
+            if ( ForesterUtil.isEmpty( accession ) ) {
+                accession = SequenceAccessionTools.parseGenbankAccessorFromString( token );
+            }
+            accession = emptyToNull( accession );
+        }
+        if ( ( accession == null ) && ( protein == null ) && ( gene == null ) ) {
+            return SequenceEntry.EMPTY; // nothing usable
+        }
+        return new SequenceEntry( accession, null, emptyToNull( protein ), emptyToNull( gene ), null,
+                                  SequenceEntry.MoleculeType.PROTEIN, null, null, null, null, null, null );
     }
 
     /**
