@@ -72,7 +72,10 @@ public class MainPanel extends JPanel implements ComponentListener {
         // of its controls (it lays its rows out at their natural height rather than cramming them).
         final JScrollPane control_panel_scroller = new JScrollPane(_control_panel,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        control_panel_scroller.setBorder(null);
+        // Keep the look-and-feel's own scroll-pane border (a thin line separating the control panel from
+        // the tree canvas). Do NOT null it out: the L&F installs that border at construction, but a runtime
+        // theme switch (updateComponentTreeUI) re-installs it -- so a null here made the border show up only
+        // after the first theme toggle or tree load, leaving a fresh, tree-less startup looking "incomplete".
         control_panel_scroller.getViewport().setBackground(_control_panel.getBackground());
         control_panel_scroller.getVerticalScrollBar().setUnitIncrement(16);
         add(control_panel_scroller, BorderLayout.WEST);

@@ -55,6 +55,13 @@ import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 public final class FoundBranchExportTest {
 
     private static final int FOUND_COUNT = 2; // one node in each highlight set (green + red)
+    // Minimum number of blank (uncolored) rows that must separate two colored regions for them to count as
+    // DISTINCT bands. A single found node's own box+label is a few px tall and its per-row saturated-pixel
+    // count can briefly dip below the threshold between glyph rows, so a sub-pixel layout shift can split one
+    // label into two runs a couple rows apart -- that must NOT be counted as two nodes. A genuine leak (color
+    // on another clade's branch/connector, the bug under test) lands a full leaf-row away (tens of px here),
+    // well beyond this gap, so it is still counted separately.
+    private static final int MIN_BAND_GAP = 20;
 
     public static void main( final String[] args ) {
         final boolean ok = test();
@@ -172,9 +179,10 @@ public final class FoundBranchExportTest {
         }
     }
 
-    // Number of distinct horizontal bands (groups of consecutive rows) that contain fully-saturated
-    // found colors (red 255,0,0 or green 0,255,0). After the fix this equals the number of found
-    // nodes (only their own box+label rows are colored); a leaked connector or branch adds bands.
+    // Number of distinct horizontal bands (runs of rows separated by >= MIN_BAND_GAP blank rows) that
+    // contain fully-saturated found colors (red 255,0,0 or green 0,255,0). After the fix this equals the
+    // number of found nodes (only their own box+label rows are colored); a leaked connector or branch, which
+    // lands on another clade a full leaf-row away, adds a band.
     private static int countColoredRowBands( final BufferedImage img ) {
         final int w = img.getWidth();
         final int h = img.getHeight();
@@ -192,8 +200,8 @@ public final class FoundBranchExportTest {
                 }
             }
             if ( colored >= 3 ) {
-                if ( gap >= 2 ) {
-                    bands++; // start of a new band (separated from the previous by >= 2 blank rows)
+                if ( gap >= MIN_BAND_GAP ) {
+                    bands++; // start of a new band (separated from the previous by a real inter-node gap)
                 }
                 gap = 0;
             }
