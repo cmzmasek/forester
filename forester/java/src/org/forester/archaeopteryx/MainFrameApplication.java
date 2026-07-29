@@ -21,8 +21,12 @@
 package org.forester.archaeopteryx;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.GridLayout;
+import java.awt.GraphicsEnvironment;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -36,12 +40,18 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBox;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JScrollPane;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -583,8 +593,27 @@ public final class MainFrameApplication extends MainFrame {
         final boolean has_bl = RepresentativeTipSelector.hasUsableBranchLengths(phy);
         final RepSelInputs in = buildRepSelInputs(has_bl, _repsel_by_cutoff, _repsel_cutoff, _repsel_target,
                 _repsel_pick_index, protected_ids.size());
-        if (JOptionPane.showConfirmDialog(this, in._panel, "Select Representative Tips",
-                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE) != JOptionPane.OK_OPTION) {
+        final JOptionPane pane = new JOptionPane(in._panel, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
+        final JDialog dialog = pane.createDialog(this, "Select Representative Tips");
+        dialog.setResizable(true);
+        // The plain showConfirmDialog is fixed-size and centered on the main window, so on a shorter/scaled
+        // display (or a larger UI font) its bottom -- the OK/Cancel row -- can be clipped or pushed under the
+        // Dock. Pack once to measure the real chrome (title bar + button row), and if the dialog exceeds the
+        // usable screen, scroll-cap just the form so the whole dialog fits; then clamp it fully on-screen.
+        final Rectangle usable = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
+        if (dialog.getHeight() > usable.height) {
+            final int chrome = dialog.getHeight() - in._panel.getHeight(); // measured title + buttons + insets
+            final Component fitted = fitToScreen(in._panel, usable.height - chrome);
+            if (fitted != in._panel) {
+                pane.setMessage(fitted);
+                dialog.pack();
+            }
+        }
+        dialog.setLocation(clampFullyOnScreen(dialog.getLocation(), dialog.getSize(), usable));
+        dialog.setVisible(true);
+        dialog.dispose();
+        final Object pane_value = pane.getValue();
+        if (!(pane_value instanceof Integer) || (((Integer) pane_value).intValue() != JOptionPane.OK_OPTION)) {
             return;
         }
         // --- parse & validate ---
@@ -671,8 +700,19 @@ public final class MainFrameApplication extends MainFrame {
             }
         }
         PhylogenyMethods.deleteExternalNodesNegativeSelection(to_delete, copy);
-        final String base = ForesterUtil.isEmpty(phy.getName()) ? "tree" : phy.getName();
-        copy.setName(base + " (representatives)");
+        // Base the extracted tree's name on the parent's DISPLAYED name (its tab title, e.g. "mammals"),
+        // which is what the user sees; phy.getName() is often empty for loaded trees (the tab title then
+        // comes from the file name).
+        final int parent_tab = _mainpanel.getTabbedPane().getSelectedIndex();
+        final String parent_title = (parent_tab >= 0) ? _mainpanel.getTabbedPane().getTitleAt(parent_tab) : null;
+        final String parent_display = resolveParentTreeName(phy.getName(), parent_title);
+        final int n_reps = copy.getNumberOfExternalNodes();
+        copy.setName(representativeTreeName(parent_display, n_reps));
+        // Record how this tree was produced in its description (provenance), preserving any inherited one.
+        final String provenance = representativeTreeDescription(by_cutoff, cutoff, target, pick, n_reps,
+                stripShortExtension(parent_display), phy.getNumberOfExternalNodes());
+        final String existing_desc = copy.getDescription();
+        copy.setDescription(ForesterUtil.isEmpty(existing_desc) ? provenance : existing_desc + " " + provenance);
         _mainpanel.addPhylogenyInNewTab(copy, getConfiguration(), copy.getName(), null);
         showWhole();
         getCurrentTreePanel().setEdited(true);
@@ -751,24 +791,132 @@ public final class MainFrameApplication extends MainFrame {
             protect_cb = new JCheckBox("Keep selected/found tips (none are selected)");
             protect_cb.setEnabled(false);
         }
-        final JPanel panel = new JPanel(new GridLayout(0, 1, 0, 2));
-        panel.add(new JLabel("Select one representative per group of similar tips:"));
-        panel.add(cutoff_rb);
-        panel.add(target_rb);
+        // A vertical BoxLayout (not GridLayout) so each row keeps its own natural height: a GridLayout(0,1)
+        // stretches every row -- labels and blank spacers included -- to the tallest child (the combo box),
+        // inflating the dialog by ~100px and, on a smaller/scaled display, pushing the OK/Cancel row off the
+        // bottom. Small struts give the group spacing the old blank-label rows provided, far more compactly.
+        final JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        value_tf.setMaximumSize(new Dimension(Integer.MAX_VALUE, value_tf.getPreferredSize().height));
+        pick_box.setMaximumSize(new Dimension(Integer.MAX_VALUE, pick_box.getPreferredSize().height));
+        addLeft(panel, new JLabel("Select one representative per group of similar tips:"));
+        addLeft(panel, cutoff_rb);
+        addLeft(panel, target_rb);
         if (!has_branch_lengths) {
-            panel.add(new JLabel(
+            addLeft(panel, new JLabel(
                     "<html><i>This tree has no branch lengths, so only \"target number\" is available.</i></html>"));
         }
-        panel.add(new JLabel(" "));
-        panel.add(new JLabel("Value:"));
-        panel.add(value_tf);
-        panel.add(hint);
-        panel.add(new JLabel(" "));
-        panel.add(new JLabel("Representative:"));
-        panel.add(pick_box);
-        panel.add(new JLabel(" "));
-        panel.add(protect_cb);
+        panel.add(Box.createVerticalStrut(10));
+        addLeft(panel, new JLabel("Value:"));
+        addLeft(panel, value_tf);
+        addLeft(panel, hint);
+        panel.add(Box.createVerticalStrut(10));
+        addLeft(panel, new JLabel("Representative:"));
+        addLeft(panel, pick_box);
+        panel.add(Box.createVerticalStrut(10));
+        addLeft(panel, protect_cb);
         return new RepSelInputs(panel, cutoff_rb, target_rb, value_tf, pick_box, protect_cb);
+    }
+
+    /** Adds a component to a vertical-BoxLayout panel, left-aligned so the column does not zig-zag. */
+    private static void addLeft(final JPanel panel, final JComponent c) {
+        c.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(c);
+    }
+
+    /**
+     * Caps a dialog's message component to a maximum height. When {@code form}'s preferred height exceeds
+     * {@code max_form_height} it is wrapped in a borderless vertical scroll pane sized to that height so the
+     * surrounding dialog's OK/Cancel row cannot be pushed off-screen; otherwise the form is returned
+     * unchanged. The caller supplies the available height (usable screen minus the dialog's actual title +
+     * button-row chrome, measured after a first pack), so this stays pure and headless-safe for unit tests.
+     */
+    static Component fitToScreen(final JComponent form, final int max_form_height) {
+        final Dimension pref = form.getPreferredSize();
+        if (pref.height <= max_form_height) {
+            return form;
+        }
+        final JScrollPane scroller = new JScrollPane(form, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scroller.setBorder(BorderFactory.createEmptyBorder());
+        scroller.getViewport().setPreferredSize(new Dimension(pref.width + 24, Math.max(120, max_form_height)));
+        return scroller;
+    }
+
+    /**
+     * Clamps a window location so a window of {@code size} sits fully inside {@code usable} (the screen area
+     * excluding the menu bar and Dock). Prevents a dialog centered on a large parent from spilling its bottom
+     * (the OK/Cancel row) under the Dock or off the screen edge. If the window is larger than the usable area
+     * in a dimension it is pinned to that edge (top/left) so at least the start is reachable. Pure/testable.
+     */
+    static Point clampFullyOnScreen(final Point location, final Dimension size, final Rectangle usable) {
+        final int max_x = Math.max(usable.x, (usable.x + usable.width) - size.width);
+        final int max_y = Math.max(usable.y, (usable.y + usable.height) - size.height);
+        final int x = Math.min(Math.max(location.x, usable.x), max_x);
+        final int y = Math.min(Math.max(location.y, usable.y), max_y);
+        return new Point(x, y);
+    }
+
+    /**
+     * The parent tree's display name for {@link #representativeTreeName}: its tab title (what the user sees,
+     * typically the file name for a loaded tree), preferred over the often-empty internal {@code phy.getName()}.
+     * The {@code [N]} placeholder that an unnamed tree's tab gets is treated as no name. Returns {@code null}
+     * when neither is usable (the caller then falls back to {@code tree}).
+     */
+    static String resolveParentTreeName(final String phylogeny_name, final String tab_title) {
+        if (!ForesterUtil.isEmpty(tab_title) && !tab_title.matches("\\[\\d+\\]")) {
+            return tab_title;
+        }
+        if (!ForesterUtil.isEmpty(phylogeny_name)) {
+            return phylogeny_name;
+        }
+        return null;
+    }
+
+    /**
+     * Strips a trailing file-type suffix -- a dot plus 1 to 5 non-dot characters, e.g. {@code .xml},
+     * {@code .nwk}, {@code .nexus} -- from a tree name, so the extracted tree reads {@code mammals_233reps}
+     * rather than {@code mammals.xml_233reps}. Only the last such suffix is removed; a name without one (or
+     * with a longer suffix) is returned unchanged. {@code null} in, {@code null} out.
+     */
+    static String stripShortExtension(final String name) {
+        if (name == null) {
+            return null;
+        }
+        return name.replaceFirst("\\.[^.]{1,5}$", "");
+    }
+
+    /**
+     * Name for the tree extracted by "Select Representative Tips": the parent tree's name (with any file
+     * extension stripped) followed by the representative count, e.g. {@code mammals_233reps} (singular
+     * {@code _1rep}). Underscore-joined so it stays clean as an export filename; falls back to {@code tree}
+     * when the parent has no name.
+     */
+    static String representativeTreeName(final String parent_name, final int n_representatives) {
+        final String stripped = stripShortExtension(parent_name);
+        final String base = ForesterUtil.isEmpty(stripped) ? "tree" : stripped;
+        return base + "_" + n_representatives + (n_representatives == 1 ? "rep" : "reps");
+    }
+
+    /**
+     * Provenance sentence stored in the extracted tree's description, e.g. <i>Used the distance-cutoff
+     * (maximum distance 0.05, medoid representative) algorithm to select 233 representative tips from tree
+     * named "mammals" with 1000 tips.</i> Records the selection mode + its value, the representative-pick
+     * rule, how many tips were kept, and the parent tree's name and size.
+     */
+    static String representativeTreeDescription(final boolean by_cutoff, final double cutoff, final int target,
+                                                final RepresentativeTipSelector.RepresentativePick pick,
+                                                final int n_representatives, final String parent_name,
+                                                final int parent_tip_count) {
+        final String pick_desc = (pick == RepresentativeTipSelector.RepresentativePick.LONGEST_BRANCH)
+                ? "longest-branch" : "medoid";
+        final String algorithm = by_cutoff
+                ? "distance-cutoff (maximum distance " + cutoff + ", " + pick_desc + " representative)"
+                : "target-count (target " + target + ", " + pick_desc + " representative)";
+        final String base = ForesterUtil.isEmpty(parent_name) ? "tree" : parent_name;
+        return "Used the " + algorithm + " algorithm to select " + n_representatives + " representative "
+                + (n_representatives == 1 ? "tip" : "tips") + " from tree named \"" + base + "\" with "
+                + parent_tip_count + (parent_tip_count == 1 ? " tip." : " tips.");
     }
 
     private PhyloXmlParser createPhyloXmlParser() {
@@ -1323,12 +1471,13 @@ public final class MainFrameApplication extends MainFrame {
         customizeJMenuItem(_midpoint_root_item);
         _tools_menu.addSeparator();
         // Pruning
-        _tools_menu.add(_delete_selected_nodes_item = new JMenuItem("Delete Selected Nodes"));
+        _tools_menu.add(_delete_selected_nodes_item = new JMenuItem("Delete Selected Tips"));
         _delete_selected_nodes_item.setToolTipText("To delete all selected external nodes");
         customizeJMenuItem(_delete_selected_nodes_item);
-        _tools_menu.add(_delete_not_selected_nodes_item = new JMenuItem("Retain Selected Nodes"));
+        _tools_menu.add(_delete_not_selected_nodes_item = new JMenuItem("Retain Selected Tips"));
         _delete_not_selected_nodes_item.setToolTipText("To delete all not selected external nodes");
         customizeJMenuItem(_delete_not_selected_nodes_item);
+        _tools_menu.addSeparator();
         _tools_menu.add(_select_representative_tips_jmi = new JMenuItem("Select Representative Tips…"));
         customizeJMenuItem(_select_representative_tips_jmi);
         _select_representative_tips_jmi.setToolTipText(

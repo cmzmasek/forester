@@ -244,6 +244,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Algorithm references: ");
+        if (org.forester.archaeopteryx.AlgorithmReferencesTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Confidence label: ");
         if (org.forester.archaeopteryx.ConfidenceLabelTest.test()) {
             System.out.println("OK.");

@@ -20,7 +20,11 @@
 
 package org.forester.archaeopteryx;
 
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.GraphicsEnvironment;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -28,6 +32,7 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 
 import org.forester.archaeopteryx.tools.NodeDataExporter;
@@ -94,6 +99,128 @@ public final class RepresentativeTipsToolTest {
                     System.out.println( "  [RepresentativeTipsToolTest] protect checkbox should be enabled+on with a selection" );
                     ok[ 0 ] = false;
                 }
+                // The panel must be laid out compactly: a vertical BoxLayout so each row keeps its own height,
+                // NOT a GridLayout(0,1) that inflates every row (labels/spacers included) to the tallest child
+                // (the combo box) and made the dialog ~100px taller than needed -- clipping OK/Cancel off the
+                // bottom on smaller/scaled displays. Assert the panel is shorter than that grid equivalent.
+                final Component[] rows = with_sel._panel.getComponents();
+                int row_sum = 0;
+                int tallest = 0;
+                for ( final Component row : rows ) {
+                    final int h = row.getPreferredSize().height;
+                    row_sum += h;
+                    tallest = Math.max( tallest, h );
+                }
+                final int grid_equivalent = rows.length * tallest; // what GridLayout(0,1) would force
+                if ( with_sel._panel.getPreferredSize().height >= grid_equivalent ) {
+                    System.out.println( "  [RepresentativeTipsToolTest] input panel is not compact (rows all forced "
+                            + "to the tallest height, like the old GridLayout)" );
+                    ok[ 0 ] = false;
+                }
+                // fitToScreen: a form that already fits is returned unchanged (no scrollbar on normal displays).
+                if ( MainFrameApplication.fitToScreen( with_sel._panel, 2000 ) != with_sel._panel ) {
+                    System.out.println( "  [RepresentativeTipsToolTest] fitToScreen wrapped a form that already fits" );
+                    ok[ 0 ] = false;
+                }
+                // ...but a form taller than the given max is scroll-capped to it, so the surrounding dialog's
+                // OK/Cancel row can never be pushed off-screen. Use a deterministically over-tall stand-in.
+                final javax.swing.JPanel tall = new javax.swing.JPanel();
+                tall.setPreferredSize( new Dimension( 300, 1000 ) );
+                final Component capped = MainFrameApplication.fitToScreen( tall, 500 );
+                if ( capped == tall ) {
+                    System.out.println( "  [RepresentativeTipsToolTest] fitToScreen did not cap an over-tall form" );
+                    ok[ 0 ] = false;
+                }
+                else if ( !( capped instanceof JScrollPane ) ) {
+                    System.out.println( "  [RepresentativeTipsToolTest] fitToScreen should wrap in a JScrollPane" );
+                    ok[ 0 ] = false;
+                }
+                else if ( capped.getPreferredSize().height > 500 ) {
+                    System.out.println( "  [RepresentativeTipsToolTest] fitToScreen did not cap the form to the given "
+                            + "max height (OK/Cancel could still be clipped)" );
+                    ok[ 0 ] = false;
+                }
+                // clampFullyOnScreen pulls a window that would spill its bottom (under the Dock) back inside the
+                // usable area -- the real remaining cause of the clipped OK button -- without pushing it off top.
+                final Rectangle usable = new Rectangle( 0, 25, 1440, 850 );
+                final Point pulled_up = MainFrameApplication.clampFullyOnScreen( new Point( 200, 800 ),
+                                                                                 new Dimension( 400, 300 ), usable );
+                if ( ( ( pulled_up.y + 300 ) > ( usable.y + usable.height ) ) || ( pulled_up.y < usable.y )
+                        || ( pulled_up.x < usable.x ) || ( ( pulled_up.x + 400 ) > ( usable.x + usable.width ) ) ) {
+                    System.out.println( "  [RepresentativeTipsToolTest] clampFullyOnScreen left the window outside the "
+                            + "usable area (OK/Cancel could still be clipped): " + pulled_up );
+                    ok[ 0 ] = false;
+                }
+                final Point already_ok = MainFrameApplication.clampFullyOnScreen( new Point( 100, 100 ),
+                                                                                   new Dimension( 400, 300 ), usable );
+                if ( ( already_ok.x != 100 ) || ( already_ok.y != 100 ) ) {
+                    System.out.println( "  [RepresentativeTipsToolTest] clampFullyOnScreen moved a window that already "
+                            + "fits: " + already_ok );
+                    ok[ 0 ] = false;
+                }
+                // extracted-tree name: "<parent>_<N>reps", singular "_1rep", "tree" fallback when unnamed
+                if ( !"flaviviridae_247reps".equals( MainFrameApplication.representativeTreeName( "flaviviridae", 247 ) )
+                        || !"flaviviridae_1rep".equals( MainFrameApplication.representativeTreeName( "flaviviridae", 1 ) )
+                        || !"tree_3reps".equals( MainFrameApplication.representativeTreeName( "", 3 ) )
+                        || !"tree_3reps".equals( MainFrameApplication.representativeTreeName( null, 3 ) ) ) {
+                    System.out.println( "  [RepresentativeTipsToolTest] representativeTreeName format is wrong: "
+                            + MainFrameApplication.representativeTreeName( "flaviviridae", 247 ) );
+                    ok[ 0 ] = false;
+                }
+                // parent name comes from the DISPLAYED tab title ("mammals") when the internal name is empty, so
+                // the base is preserved: mammals -> mammals_233reps; the "[N]" placeholder tab is ignored
+                if ( !"mammals".equals( MainFrameApplication.resolveParentTreeName( "", "mammals" ) )                // tab title used when phy unnamed
+                        || !"mammals".equals( MainFrameApplication.resolveParentTreeName( "mammals", "mammals" ) )   // both agree
+                        || !"the_internal_name".equals( MainFrameApplication.resolveParentTreeName( "the_internal_name", null ) )
+                        || ( MainFrameApplication.resolveParentTreeName( null, "[2]" ) != null )                     // placeholder tab ignored
+                        || ( MainFrameApplication.resolveParentTreeName( "", "" ) != null ) ) {                      // nothing usable
+                    System.out.println( "  [RepresentativeTipsToolTest] resolveParentTreeName picked the wrong parent name" );
+                    ok[ 0 ] = false;
+                }
+                // end to end: unnamed phylogeny + "mammals" tab + 233 reps -> mammals_233reps
+                if ( !"mammals_233reps".equals( MainFrameApplication.representativeTreeName(
+                        MainFrameApplication.resolveParentTreeName( "", "mammals" ), 233 ) ) ) {
+                    System.out.println( "  [RepresentativeTipsToolTest] parent-name + count did not compose to mammals_233reps" );
+                    ok[ 0 ] = false;
+                }
+                // a file extension (dot + 1-5 chars) is stripped before "_Nreps"; longer/absent suffixes are kept
+                if ( !"mammals".equals( MainFrameApplication.stripShortExtension( "mammals.xml" ) )                  // 3-char ext
+                        || !"mammals".equals( MainFrameApplication.stripShortExtension( "mammals.nexus" ) )          // 5-char ext
+                        || !"mammals".equals( MainFrameApplication.stripShortExtension( "mammals.h" ) )              // 1-char ext
+                        || !"tree.v2".equals( MainFrameApplication.stripShortExtension( "tree.v2.xml" ) )            // only last suffix
+                        || !"mammals".equals( MainFrameApplication.stripShortExtension( "mammals" ) )                // no suffix -> unchanged
+                        || !"data.superlong".equals( MainFrameApplication.stripShortExtension( "data.superlong" ) ) // 9-char ext kept
+                        || ( MainFrameApplication.stripShortExtension( null ) != null ) ) {
+                    System.out.println( "  [RepresentativeTipsToolTest] stripShortExtension is wrong: "
+                            + MainFrameApplication.stripShortExtension( "mammals.xml" ) );
+                    ok[ 0 ] = false;
+                }
+                // and the whole name: "mammals.xml" -> "mammals_233reps"
+                if ( !"mammals_233reps".equals( MainFrameApplication.representativeTreeName( "mammals.xml", 233 ) ) ) {
+                    System.out.println( "  [RepresentativeTipsToolTest] representativeTreeName did not strip the .xml extension" );
+                    ok[ 0 ] = false;
+                }
+                // provenance description written to the extracted tree: mode + value + pick + counts + parent name
+                final String d_cut = MainFrameApplication.representativeTreeDescription( true, 0.05, 0,
+                        RepresentativePick.MEDOID, 233, "mammals", 1000 );
+                if ( !d_cut.equals( "Used the distance-cutoff (maximum distance 0.05, medoid representative) algorithm "
+                        + "to select 233 representative tips from tree named \"mammals\" with 1000 tips." ) ) {
+                    System.out.println( "  [RepresentativeTipsToolTest] cutoff-mode description is wrong: " + d_cut );
+                    ok[ 0 ] = false;
+                }
+                final String d_tgt = MainFrameApplication.representativeTreeDescription( false, 0.0, 50,
+                        RepresentativePick.LONGEST_BRANCH, 1, "mammals", 1 );
+                if ( !d_tgt.equals( "Used the target-count (target 50, longest-branch representative) algorithm to "
+                        + "select 1 representative tip from tree named \"mammals\" with 1 tip." ) ) {
+                    System.out.println( "  [RepresentativeTipsToolTest] target-mode/singular description is wrong: " + d_tgt );
+                    ok[ 0 ] = false;
+                }
+                // no parent name -> "tree"
+                if ( !MainFrameApplication.representativeTreeDescription( true, 0.1, 0, RepresentativePick.MEDOID, 5,
+                        null, 20 ).contains( "from tree named \"tree\" with 20 tips." ) ) {
+                    System.out.println( "  [RepresentativeTipsToolTest] unnamed-parent description did not fall back to \"tree\"" );
+                    ok[ 0 ] = false;
+                }
             } );
             SwingUtilities.invokeAndWait( () -> {
                 final MainPanel mp = mf[ 0 ].getMainPanel();
@@ -109,6 +236,16 @@ public final class RepresentativeTipsToolTest {
                 else if ( ( item.getToolTipText() == null )
                         || !item.getToolTipText().toLowerCase().contains( "representative" ) ) {
                     System.out.println( "  [RepresentativeTipsToolTest] menu item missing tooltip" );
+                    ok[ 0 ] = false;
+                }
+                // pruning items are labelled "...Tips" (renamed from "...Nodes"); guard against a regression
+                if ( ( toolsItem( mf[ 0 ].getJMenuBar(), "Delete Selected Tips" ) == null )
+                        || ( toolsItem( mf[ 0 ].getJMenuBar(), "Retain Selected Tips" ) == null ) ) {
+                    System.out.println( "  [RepresentativeTipsToolTest] \"Delete/Retain Selected Tips\" menu items not found" );
+                    ok[ 0 ] = false;
+                }
+                if ( toolsItem( mf[ 0 ].getJMenuBar(), "Selected Nodes" ) != null ) {
+                    System.out.println( "  [RepresentativeTipsToolTest] old \"...Selected Nodes\" menu label still present" );
                     ok[ 0 ] = false;
                 }
 

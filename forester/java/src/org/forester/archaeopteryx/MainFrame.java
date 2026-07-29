@@ -22,6 +22,7 @@ package org.forester.archaeopteryx;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Container;
 import java.awt.Font;
 import java.awt.GridLayout;
@@ -49,7 +50,10 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JList;
+import javax.swing.BorderFactory;
+import javax.swing.JDialog;
 import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -138,7 +142,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     final static GraphicsFileFilter graphicsfilefilter = new GraphicsFileFilter();
     final static DefaultFilter defaultfilter = new DefaultFilter();
     static final String USE_MOUSEWHEEL_SHIFT_TO_ROTATE = "rotate with mousewheel + Shift (or A and S), D toggles between horizontal and radial labels";
-    static final String PHYLOXML_REF_TOOL_TIP = AptxConstants.PHYLOXML_REFERENCE;                                                                                                                                                //TODO //FIXME
     static final String APTX_REF_TOOL_TIP = AptxConstants.APTX_REFERENCE;
     private static final long serialVersionUID = 3655000897845508358L;
     final static Font menu_font = new Font(Configuration.getDefaultFontFamilyName(),
@@ -297,7 +300,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem _help_item;
     JMenuItem _website_item;
     JMenuItem _aptxjs_website_item;
-    JMenuItem _phyloxml_ref_item;
+    JMenuItem _references_item;
 
     //
     File _current_dir;
@@ -493,6 +496,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             typeChanged(o);
         } else if (o == _about_item) {
             about();
+        } else if (o == _references_item) {
+            showReferences();
         } else if (o == _help_item) {
             try {
                 AptxUtil.openWebsite(AptxConstants.APTX_DOC_SITE);
@@ -508,12 +513,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         } else if (o == _aptxjs_website_item) {
             try {
                 AptxUtil.openWebsite(AptxConstants.APTX_JS_WEB_SITE);
-            } catch (final IOException e1) {
-                ForesterUtil.printErrorMessage(AptxConstants.PRG_NAME, e1.toString());
-            }
-        } else if (o == _phyloxml_ref_item) {
-            try {
-                AptxUtil.openWebsite(AptxConstants.PHYLOXML_REFERENCE_URL);
             } catch (final IOException e1) {
                 ForesterUtil.printErrorMessage(AptxConstants.PRG_NAME, e1.toString());
             }
@@ -892,15 +891,15 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _help_jmenu.addSeparator();
         _help_jmenu.add(_website_item = new JMenuItem("Archaeopteryx Home"));
         _help_jmenu.add(_aptxjs_website_item = new JMenuItem("Archaeopteryx online version: Archaeopteryx.js"));
-        _help_jmenu.add(_phyloxml_ref_item = new JMenuItem("phyloXML Reference"));
+        _help_jmenu.add(_references_item = new JMenuItem("References"));
         _help_jmenu.addSeparator();
         _help_jmenu.add(_about_item = new JMenuItem("About"));
         customizeJMenuItem(_help_item);
         customizeJMenuItem(_website_item);
         customizeJMenuItem(_aptxjs_website_item);
-        customizeJMenuItem(_phyloxml_ref_item);
+        customizeJMenuItem(_references_item);
         customizeJMenuItem(_about_item);
-        _phyloxml_ref_item.setToolTipText(PHYLOXML_REF_TOOL_TIP);
+        _references_item.setToolTipText("Main literature citations for the algorithms implemented in Archaeopteryx");
         _jmenubar.add(_help_jmenu);
     }
 
@@ -2078,6 +2077,32 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         about.append(AptxConstants.APTX_DOC_SITE + "\n");
         about.append("Comments: " + AptxConstants.AUTHOR_EMAIL);
         JOptionPane.showMessageDialog(null, about, AptxConstants.PRG_NAME, JOptionPane.PLAIN_MESSAGE);
+    }
+
+    /** Read-only, selectable, scrolling view of {@link AlgorithmReferences} -- extracted so it is testable. */
+    static JScrollPane buildReferencesView() {
+        final JTextArea ta = new JTextArea(AlgorithmReferences.asText());
+        ta.setEditable(false);
+        ta.setLineWrap(true);
+        ta.setWrapStyleWord(true);
+        ta.setCaretPosition(0);
+        ta.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
+        final JScrollPane scroller = new JScrollPane(ta, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        // A comfortable, conservative size (well within any usable screen); the dialog is resizable and the
+        // list scrolls, so citations are always reachable and copyable.
+        scroller.setPreferredSize(new Dimension(620,
+                Math.min(520, ta.getPreferredSize().height + 24)));
+        return scroller;
+    }
+
+    void showReferences() {
+        final JOptionPane pane = new JOptionPane(buildReferencesView(), JOptionPane.PLAIN_MESSAGE,
+                JOptionPane.DEFAULT_OPTION);
+        final JDialog dialog = pane.createDialog(this, "References");
+        dialog.setResizable(true);
+        dialog.setVisible(true);
+        dialog.dispose();
     }
 
     static JMenu createMenu(final String title, final Configuration conf) {
