@@ -317,6 +317,27 @@ public final class RepresentativeTipsToolTest {
                     ok[ 0 ] = false;
                 }
 
+                // A derived tree opened in a new tab inherits the SOURCE tab's phylogram/cladogram style
+                // (addDerivedPhylogenyInNewTab), rather than the config default -- so a phylogram parent's
+                // representative tree no longer surprises the user by showing up as a cladogram.
+                final MainFrameApplication app = (MainFrameApplication) mf[ 0 ];
+                // source shown as a phylogram -> derived tab is a phylogram too (it keeps the branch lengths)
+                mp.getControlPanel().setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM );
+                app.addDerivedPhylogenyInNewTab( phy.copy() );
+                if ( mp.getControlPanel().getTreeDisplayType() != Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM ) {
+                    System.out.println( "  [RepresentativeTipsToolTest] derived tab did not inherit the parent's "
+                            + "phylogram display type (got " + mp.getControlPanel().getTreeDisplayType() + ")" );
+                    ok[ 0 ] = false;
+                }
+                // source shown as a cladogram -> derived tab stays a cladogram
+                mp.getControlPanel().setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.CLADOGRAM );
+                app.addDerivedPhylogenyInNewTab( phy.copy() );
+                if ( mp.getControlPanel().getTreeDisplayType() != Options.PHYLOGENY_DISPLAY_TYPE.CLADOGRAM ) {
+                    System.out.println( "  [RepresentativeTipsToolTest] derived tab did not inherit the parent's "
+                            + "cladogram display type (got " + mp.getControlPanel().getTreeDisplayType() + ")" );
+                    ok[ 0 ] = false;
+                }
+
                 ( (JFrame) mf[ 0 ] ).dispose();
             } );
             return ok[ 0 ];

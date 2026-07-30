@@ -713,13 +713,33 @@ public final class MainFrameApplication extends MainFrame {
                 stripShortExtension(parent_display), phy.getNumberOfExternalNodes());
         final String existing_desc = copy.getDescription();
         copy.setDescription(ForesterUtil.isEmpty(existing_desc) ? provenance : existing_desc + " " + provenance);
-        _mainpanel.addPhylogenyInNewTab(copy, getConfiguration(), copy.getName(), null);
+        addDerivedPhylogenyInNewTab(copy);
         showWhole();
         getCurrentTreePanel().setEdited(true);
         JOptionPane.showMessageDialog(this,
                 "Created a new tab with " + copy.getNumberOfExternalNodes()
                         + (copy.getNumberOfExternalNodes() == 1 ? " tip." : " tips."),
                 "Representatives Extracted", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    /**
+     * Opens a tree derived from the currently displayed one (e.g. the representative-tips extraction) in a new
+     * tab, having the new tab inherit the source tab's phylogram/cladogram display type. Without this the new
+     * tab falls back to the global config default (see {@link ControlPanel#phylogenyAdded(Configuration)}),
+     * which shows the derived tree of a phylogram parent as a cladogram -- confusing, since the derived tree
+     * keeps the parent's branch lengths. A phylogram type is only honored when the derived tree actually carries
+     * branch lengths (otherwise a phylogram would be degenerate, so the cladogram default is kept). Must be
+     * called while the source tab is still the selected one. Package-visible for testing.
+     */
+    void addDerivedPhylogenyInNewTab(final Phylogeny derived) {
+        final Options.PHYLOGENY_DISPLAY_TYPE source_type = _mainpanel.getControlPanel().getTreeDisplayType();
+        _mainpanel.addPhylogenyInNewTab(derived, getConfiguration(), derived.getName(), null);
+        final boolean source_is_phylogram = (source_type == Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM)
+                || (source_type == Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM);
+        if (!source_is_phylogram || ((_mainpanel.getCurrentTreePanel() != null)
+                && _mainpanel.getCurrentTreePanel().isPhyHasBranchLengths())) {
+            _mainpanel.getControlPanel().setTreeDisplayType(source_type);
+        }
     }
 
     /** The input controls for the "Select Representative Tips" dialog, exposed so they can be unit-tested. */
