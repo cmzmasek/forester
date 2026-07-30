@@ -26,6 +26,8 @@ import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -94,16 +96,7 @@ public class MainPanel extends JPanel implements ComponentListener {
         getControlPanel().phylogenyAdded(config);
         treepanel.setControlPanel(getControlPanel());
         _treepanels.add(treepanel);
-        String name = "";
-        if (!ForesterUtil.isEmpty(phy.getName())) {
-            name = phy.getName();
-        } else if (phy.getIdentifier() != null) {
-            name = phy.getIdentifier().toString();
-        } else if (!ForesterUtil.isEmpty(default_name)) {
-            name = default_name;
-        } else {
-            name = "[" + (getTabbedPane().getTabCount() + 1) + "]";
-        }
+        final String name = tabTitleFor(phy, default_name, getTabbedPane().getTabCount() + 1);
         final JScrollPane treegraphic_scroll_pane = new JScrollPane(treepanel);
         treegraphic_scroll_pane.getHorizontalScrollBar().addAdjustmentListener(new AdjustmentListener() {
 
@@ -341,6 +334,22 @@ public class MainPanel extends JPanel implements ComponentListener {
         if (getConfiguration().isApplyCustomGuiColors()) {
             _tabbed_pane.setFont(ControlPanel.jcb_font);
         }
+        // A tab's title IS the tree name (save writes it back onto the tree). Double-clicking a tab opens the
+        // editor for that name and the tree description; the tab right-click menu offers the same item (see
+        // MainFrameApplication.createTabPopupMenu).
+        _tabbed_pane.addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mouseClicked(final MouseEvent e) {
+                if ((e.getClickCount() == 2) && (e.getButton() == MouseEvent.BUTTON1)) {
+                    final int i = _tabbed_pane.indexAtLocation(e.getX(), e.getY());
+                    if ((i >= 0) && (_mainframe != null)) {
+                        _tabbed_pane.setSelectedIndex(i);
+                        _mainframe.showTreeInfoDialog();
+                    }
+                }
+            }
+        });
         _tabbed_pane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
         add(_tabbed_pane, BorderLayout.CENTER);
     }
@@ -355,6 +364,25 @@ public class MainPanel extends JPanel implements ComponentListener {
         if (selected >= 0) {
             getTabbedPane().setTitleAt(selected, title);
         }
+    }
+
+    /**
+     * The label a tab carries for {@code phy}: its name, else its identifier, else {@code fallback} (e.g. the
+     * loaded file's base name), else a positional "[n]" placeholder. Shared by tab creation and by the
+     * undo/redo tab-title re-sync, so an unnamed tree always gets a stable, never-empty label -- never a stale
+     * one left over from a since-undone rename.
+     */
+    static String tabTitleFor(final Phylogeny phy, final String fallback, final int positional) {
+        if (!ForesterUtil.isEmpty(phy.getName())) {
+            return phy.getName();
+        }
+        if (phy.getIdentifier() != null) {
+            return phy.getIdentifier().toString();
+        }
+        if (!ForesterUtil.isEmpty(fallback)) {
+            return fallback;
+        }
+        return "[" + positional + "]";
     }
 
     void setTreeColorSet(final TreeColorSet colorset) {

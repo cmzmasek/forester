@@ -62,26 +62,36 @@ public final class TabContextMenuTest {
                     .createInstance( new Phylogeny[] { a, b }, conf, "tabs" ) );
             final boolean[] ok = { true };
             SwingUtilities.invokeAndWait( () -> {
-                final JTabbedPane tabs = mf[ 0 ].getMainPanel().getTabbedPane();
-                if ( tabs.getTabCount() != 2 ) {
-                    ok[ 0 ] = false;
+                try {
+                    final JTabbedPane tabs = mf[ 0 ].getMainPanel().getTabbedPane();
+                    if ( tabs.getTabCount() != 2 ) {
+                        ok[ 0 ] = false;
+                    }
+                    // the right-click popup for tab 0 is exactly: "Edit Tree Name and Description...", a separator,
+                    // then "Close Tab" -- pin the count, types and order so a stray/duplicate item is caught
+                    final JPopupMenu popup = ( (MainFrameApplication) mf[ 0 ] ).createTabPopupMenu( 0 );
+                    if ( ( popup.getComponentCount() != 3 ) || !( popup.getComponent( 0 ) instanceof JMenuItem )
+                            || !MainFrame.EDIT_TREE_INFO_LABEL
+                                    .equals( ( (JMenuItem) popup.getComponent( 0 ) ).getText() )
+                            || !( popup.getComponent( 1 ) instanceof javax.swing.JSeparator )
+                            || !( popup.getComponent( 2 ) instanceof JMenuItem )
+                            || !"Close Tab".equals( ( (JMenuItem) popup.getComponent( 2 ) ).getText() ) ) {
+                        ok[ 0 ] = false;
+                    }
+                    // invoking "Close Tab" must close the clicked tab
+                    ( (JMenuItem) popup.getComponent( 2 ) ).doClick();
+                    if ( tabs.getTabCount() != 1 ) {
+                        ok[ 0 ] = false;
+                    }
+                    // the clicked tab ("A") must be gone, leaving "B"
+                    final Phylogeny remaining = mf[ 0 ].getMainPanel().getCurrentTreePanel().getPhylogeny();
+                    if ( ( remaining == null ) || !"B".equals( remaining.getName() ) ) {
+                        ok[ 0 ] = false;
+                    }
                 }
-                // build the right-click popup for tab 0 and invoke its "Close Tab" item
-                final JPopupMenu popup = ( (MainFrameApplication) mf[ 0 ] ).createTabPopupMenu( 0 );
-                if ( ( popup.getComponentCount() != 1 ) || !( popup.getComponent( 0 ) instanceof JMenuItem )
-                        || !"Close Tab".equals( ( (JMenuItem) popup.getComponent( 0 ) ).getText() ) ) {
-                    ok[ 0 ] = false;
+                finally {
+                    ( (JFrame) mf[ 0 ] ).dispose(); // never leak the frame into the shared suite JVM
                 }
-                ( (JMenuItem) popup.getComponent( 0 ) ).doClick();
-                if ( tabs.getTabCount() != 1 ) {
-                    ok[ 0 ] = false;
-                }
-                // the clicked tab ("A") must be gone, leaving "B"
-                final Phylogeny remaining = mf[ 0 ].getMainPanel().getCurrentTreePanel().getPhylogeny();
-                if ( ( remaining == null ) || !"B".equals( remaining.getName() ) ) {
-                    ok[ 0 ] = false;
-                }
-                ( (JFrame) mf[ 0 ] ).dispose();
             } );
             return ok[ 0 ];
         }

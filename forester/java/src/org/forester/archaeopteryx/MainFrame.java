@@ -191,6 +191,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String USE_BRACKETS_FOR_CONF_IN_NH_LABEL = "Use Brackets for Confidence Values";
     static final String USE_INTERNAL_NAMES_FOR_CONF_IN_NH_LABEL = "Use Internal Node Names for Confidence Values";
     static final String SHOW_BASIC_TREE_INFORMATION_LABEL = "Basic Tree Information";
+    static final String EDIT_TREE_INFO_LABEL = "Edit Tree Name and Description...";
     static final String RIGHT_LINE_UP_DOMAINS = "Right-align Domain Architectures";
     static final String LINE_UP_RENDERABLE_DATA = "Line Up Diagrams (such as Domain Architectures)";
     static final String INFER_ANCESTOR_TAXONOMIES = "Infer Ancestor Taxonomies";
@@ -295,6 +296,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem _view_as_XML_item;
     JMenuItem _view_as_nexus_item;
     JMenuItem _display_basic_information_item;
+    JMenuItem _edit_tree_info_item;
     // help menu:
     JMenuItem _about_item;
     JMenuItem _help_item;
@@ -403,6 +405,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 return;
             }
             deleteSelectedNodes(false);
+        } else if (o == _edit_tree_info_item) {
+            showTreeInfoDialog();
         } else if (o == _display_basic_information_item) {
             if (getCurrentTreePanel() != null) {
                 displayBasicInformation(getCurrentTreePanel().getTreeFile());
@@ -932,11 +936,13 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     void buildViewMenu() {
         _view_jmenu = createMenu("View", getConfiguration());
         _view_jmenu.setToolTipText("Show tree information, or the tree as phyloXML, Newick, or Nexus");
+        _view_jmenu.add(_edit_tree_info_item = new JMenuItem(EDIT_TREE_INFO_LABEL));
         _view_jmenu.add(_display_basic_information_item = new JMenuItem(SHOW_BASIC_TREE_INFORMATION_LABEL));
         _view_jmenu.addSeparator();
         _view_jmenu.add(_view_as_XML_item = new JMenuItem("as phyloXML"));
         _view_jmenu.add(_view_as_NH_item = new JMenuItem("as Newick"));
         _view_jmenu.add(_view_as_nexus_item = new JMenuItem("as Nexus"));
+        customizeJMenuItem(_edit_tree_info_item);
         customizeJMenuItem(_display_basic_information_item);
         customizeJMenuItem(_view_as_NH_item);
         customizeJMenuItem(_view_as_XML_item);
@@ -1056,6 +1062,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     /** Undo the current tab's last tree edit, then refresh the view + the Edit menu. */
     void undo() {
         if ((getCurrentTreePanel() != null) && getCurrentTreePanel().undo()) {
+            syncSelectedTabTitleToTreeName();
             showWhole();
             getCurrentTreePanel().repaint();
             repaint();
@@ -1066,11 +1073,30 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     /** Re-apply the last undone edit, then refresh the view + the Edit menu. */
     void redo() {
         if ((getCurrentTreePanel() != null) && getCurrentTreePanel().redo()) {
+            syncSelectedTabTitleToTreeName();
             showWhole();
             getCurrentTreePanel().repaint();
             repaint();
         }
         updateEditMenu();
+    }
+
+    /**
+     * After an undo/redo restore, keep the selected tab's label in step with the (possibly reverted) tree name,
+     * so a "Edit Tree Name and Description" rename and its undo cannot leave the tab and the tree name drifted.
+     * When the restored name is empty (undoing the first naming of a previously-unnamed tree) the tab is
+     * re-derived to the same never-empty placeholder it had at load -- the tree file's base name, else "[n]" --
+     * rather than left showing the just-undone name (which the save-time backfill would otherwise persist).
+     */
+    private void syncSelectedTabTitleToTreeName() {
+        final TreePanel tp = getCurrentTreePanel();
+        if ((tp == null) || (tp.getPhylogeny() == null)) {
+            return;
+        }
+        final MainPanel mp = getMainPanel();
+        final String fallback = (tp.getTreeFile() != null) ? tp.getTreeFile().getName() : null;
+        mp.setTitleOfSelectedTab(MainPanel.tabTitleFor(tp.getPhylogeny(), fallback,
+                                                       mp.getTabbedPane().getSelectedIndex() + 1));
     }
 
     /** Syncs the Edit menu's enabled state + "Undo <op>"/"Redo <op>" labels to the current tab's history. */
@@ -1420,6 +1446,11 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             item.setSelected(is_selected);
             item.addActionListener(this);
         }
+    }
+
+    /** Opens the small modal editor for the current tree's name and description (View menu / tab menu). */
+    void showTreeInfoDialog() {
+        TreeInfoDialog.showFor(this);
     }
 
     void displayBasicInformation(final File treefile) {

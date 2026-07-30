@@ -408,6 +408,17 @@ public final class MainFrameApplication extends MainFrame {
     /** The context menu shown when right-clicking the tree tab at {@code index}. */
     JPopupMenu createTabPopupMenu(final int index) {
         final JPopupMenu popup = new JPopupMenu();
+        final JMenuItem edit = new JMenuItem(EDIT_TREE_INFO_LABEL);
+        edit.addActionListener(ae -> {
+            final JTabbedPane tabs = getMainPanel().getTabbedPane();
+            if ((tabs == null) || (index < 0) || (index >= tabs.getTabCount())) {
+                return; // the clicked tab was closed/moved since the popup opened -- don't edit the wrong tree
+            }
+            tabs.setSelectedIndex(index); // act on the clicked tab, then edit its (now current) tree
+            showTreeInfoDialog();
+        });
+        popup.add(edit);
+        popup.addSeparator();
         final JMenuItem close = new JMenuItem("Close Tab");
         close.addActionListener(ae -> closeTabAt(index));
         popup.add(close);
