@@ -161,7 +161,7 @@ public final class Configuration {
     private final boolean _internal_number_are_confidence_for_nh_parsing = false;
     private boolean _midpoint_root = false;
     private int _min_base_font_size = 2;
-    private double _min_confidence_value = Options.MIN_CONFIDENCE_DEFAULT;
+    private double _min_confidence_fraction = Options.MIN_CONFIDENCE_FRACTION_DEFAULT;
     private boolean _nh_parsing_replace_underscores = false;
     private NODE_LABEL_DIRECTION _node_label_direction = NODE_LABEL_DIRECTION.HORIZONTAL;
     private short _number_of_digits_after_comma_for_branch_length_values = AptxConstants.NUMBER_OF_DIGITS_AFTER_COMMA_FOR_BRANCH_LENGTH_VALUES_DEFAULT;
@@ -448,8 +448,8 @@ public final class Configuration {
         return _min_base_font_size;
     }
 
-    double getMinConfidenceValue() {
-        return _min_confidence_value;
+    double getMinConfidenceFraction() {
+        return _min_confidence_fraction;
     }
 
     NODE_LABEL_DIRECTION getNodeLabelDirection() {

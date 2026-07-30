@@ -51,7 +51,7 @@ public final class CollapsedCladeConfidenceTest {
 
     private static final int W = 800;
     private static final int H = 600;
-    // confidence values must clear Options.MIN_CONFIDENCE_DEFAULT (50) to be shown at all -- use bootstrap-style
+    // bootstrap-style support (scale 0-100 -> ceiling 100); both clear the default cutoff (fraction 0.5 -> 50)
     private static final double SUPPORT_AB = 95.0;
     private static final double SUPPORT_CD = 80.0;
 

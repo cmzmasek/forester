@@ -95,7 +95,12 @@ final public class Options {
         }
     }
 
-    static final double MIN_CONFIDENCE_DEFAULT = 50.0;
+    // The "Min. confidence shown" display filter is a FRACTION (0..1) of each tree's detected support scale,
+    // not an absolute value -- so one setting behaves correctly whatever the scale (0-1 posteriors, 0-100
+    // bootstrap, 0-1000). The effective cutoff is fraction * confidenceScaleMaxFor(tree). Default 0.5 hides
+    // support below half-scale (0.5 / 50 / 500), preserving the classic "hide weak support" declutter while
+    // no longer silently dropping every value on a non-percentage tree (the old fixed 50 did). 0 shows all.
+    static final double MIN_CONFIDENCE_FRACTION_DEFAULT = 0.5;
     // Default cutoff for THRESHOLD_MARKS, as a fraction (0..1) of the support scale -- 0.95 marks
     // the conventional "well-supported" node (>=95% bootstrap or >=0.95 posterior probability).
     static final double SUPPORT_THRESHOLD_DEFAULT = 0.95;
@@ -116,7 +121,7 @@ final public class Options {
     private boolean _inverse_search_result;
     private boolean _match_whole_terms_only;
     private boolean _search_with_regex;
-    private double _min_confidence_value;
+    private double _min_confidence_fraction;
     private SUPPORT_VISUALIZATION _support_visualization;
     private double _support_threshold;
     private NH_CONVERSION_SUPPORT_VALUE_STYLE _nh_conversion_support_value_style;
@@ -234,7 +239,7 @@ final public class Options {
         _show_default_node_shapes_for_marked_nodes = false;
         _color_all_found_nodes_when_coloring_subtree = false;
         _parse_beast_style_extended_nexus_tags = true;
-        _min_confidence_value = MIN_CONFIDENCE_DEFAULT;
+        _min_confidence_fraction = MIN_CONFIDENCE_FRACTION_DEFAULT;
         _support_visualization = SUPPORT_VISUALIZATION.NONE;
         _support_threshold = SUPPORT_THRESHOLD_DEFAULT;
         _print_black_and_white = false;
@@ -302,8 +307,8 @@ final public class Options {
         return _default_node_shape_size;
     }
 
-    final double getMinConfidenceValue() {
-        return _min_confidence_value;
+    final double getMinConfidenceFraction() {
+        return _min_confidence_fraction;
     }
 
     final SUPPORT_VISUALIZATION getSupportVisualization() {
@@ -543,8 +548,8 @@ final public class Options {
         _match_whole_terms_only = search_whole_words_only;
     }
 
-    final void setMinConfidenceValue(final double min_confidence_value) {
-        _min_confidence_value = min_confidence_value;
+    final void setMinConfidenceFraction(final double min_confidence_fraction) {
+        _min_confidence_fraction = min_confidence_fraction;
     }
 
     final void setSupportVisualization(final SUPPORT_VISUALIZATION support_visualization) {
@@ -661,8 +666,8 @@ final public class Options {
             instance.setColorLabelsSameAsParentBranch(configuration.isColorLabelsSameAsParentBranch());
             instance.setShowDomainLabels(configuration.isShowDomainLabels());
             instance.setAbbreviateScientificTaxonNames(configuration.isAbbreviateScientificTaxonNames());
-            if (configuration.getMinConfidenceValue() != MIN_CONFIDENCE_DEFAULT) {
-                instance.setMinConfidenceValue(configuration.getMinConfidenceValue());
+            if (configuration.getMinConfidenceFraction() != MIN_CONFIDENCE_FRACTION_DEFAULT) {
+                instance.setMinConfidenceFraction(configuration.getMinConfidenceFraction());
             }
             if (configuration.getBaseFontSize() > 0) {
                 instance.setBaseFont(instance.getBaseFont().deriveFont((float) configuration.getBaseFontSize()));

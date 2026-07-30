@@ -236,12 +236,16 @@ public class TreePanelUtil {
     // implies the 0..100 family) rather than normalizing to the max observed value, so a given
     // symbol size/threshold means the same thing across trees.
 
-    /** The support-scale ceiling implied by the largest value present: 100 if any value exceeds 1, else 1. */
+    /** The support-scale ceiling implied by the largest value present: 1 (0-1 posteriors/aLRT), 100 (bootstrap
+     *  / SH-aLRT), or 1000 -- the smallest of those that is >= the observed maximum. */
     final static double confidenceScaleMaxFor( final double observed_max ) {
+        if ( observed_max > 100.0 ) {
+            return 1000.0;
+        }
         return ( observed_max > 1.0 ) ? 100.0 : 1.0;
     }
 
-    /** Scans a tree's internal-node confidences and returns the implied scale ceiling (1 or 100). */
+    /** Scans a tree's internal-node confidences and returns the implied scale ceiling (1, 100, or 1000). */
     final static double detectConfidenceScaleMax( final Phylogeny tree ) {
         double max = 0.0;
         for( final PhylogenyNodeIterator it = tree.iteratorPreorder(); it.hasNext(); ) {

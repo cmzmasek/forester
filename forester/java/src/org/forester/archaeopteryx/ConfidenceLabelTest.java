@@ -70,6 +70,27 @@ public final class ConfidenceLabelTest {
         if ( !"30".equals( TreePanel.confidenceLabel( mad_low, false, 0.0, false, 0 ) ) ) {
             return fail( "threshold 0 shows the low bootstrap (30)" );
         }
+        // The "min. confidence shown" is a FRACTION of the tree's detected scale (paintConfidenceValues passes
+        // fraction * confidenceScaleMaxFor(tree) as the absolute threshold below). Default 0.5 = hide below
+        // half-scale, which is scale-correct where the old fixed 50 silently hid every 0-1 posterior value.
+        if ( Options.MIN_CONFIDENCE_FRACTION_DEFAULT != 0.5 ) {
+            return fail( "default min-confidence fraction should be 0.5, was " + Options.MIN_CONFIDENCE_FRACTION_DEFAULT );
+        }
+        final double frac = Options.MIN_CONFIDENCE_FRACTION_DEFAULT;
+        // bootstrap scale (0-100): ceiling 100 -> cutoff 50 -> hide 30, show 70 (unchanged from the old behavior)
+        final double boot_cut = frac * TreePanelUtil.confidenceScaleMaxFor( 90.0 );
+        if ( !"".equals( TreePanel.confidenceLabel( list( new Confidence( 30.0, "" ) ), false, boot_cut, false, 0 ) )
+                || !"70".equals( TreePanel.confidenceLabel( list( new Confidence( 70.0, "" ) ), false, boot_cut, false,
+                                                            0 ) ) ) {
+            return fail( "bootstrap default (cutoff 50) should hide 30 and show 70" );
+        }
+        // posterior scale (0-1): ceiling 1 -> cutoff 0.5 -> hide 0.3, show 0.9 (invisible under the old fixed 50)
+        final double post_cut = frac * TreePanelUtil.confidenceScaleMaxFor( 0.98 );
+        if ( !"".equals( TreePanel.confidenceLabel( list( new Confidence( 0.3, "" ) ), false, post_cut, false, 2 ) )
+                || !"0.9".equals( TreePanel.confidenceLabel( list( new Confidence( 0.9, "" ) ), false, post_cut, false,
+                                                             2 ) ) ) {
+            return fail( "posterior default (cutoff 0.5) should hide 0.3 and show 0.9" );
+        }
         return true;
     }
 

@@ -155,8 +155,12 @@ final class SettingsDialog extends JDialog {
         c.add( header( "Branches & Confidence" ) );
         add( c, labeled( "Branch width:", doubleSpinner( _mf.getOptions().getDefaultBranchWidth(), 0.5, 20, 0.5,
                                                          v -> { _mf.getOptions().setDefaultBranchWidth( v.floatValue() ); repaintTree(); } ) ) );
-        add( c, labeled( "Min. confidence shown:", doubleSpinner( _mf.getOptions().getMinConfidenceValue(), 0, 1.0E8, 0.1,
-                                                                  v -> { _mf.getOptions().setMinConfidenceValue( v ); repaintTree(); } ) ) );
+        add( c, labeled( "Min. support shown (fraction of scale):",
+                         // clamp the seed into [0,1]: SpinnerNumberModel THROWS (not clamps) on an out-of-range
+                         // value, so a legacy/persisted absolute value (e.g. 50) must not reach the constructor
+                         doubleSpinner( Math.max( 0.0, Math.min( 1.0, _mf.getOptions().getMinConfidenceFraction() ) ),
+                                        0, 1.0, 0.05,
+                                        v -> { _mf.getOptions().setMinConfidenceFraction( v ); repaintTree(); } ) ) );
         add( c, labeled( "Show support as:", enumCombo( SUPPORT_VISUALIZATION.values(),
                                                         _mf.getOptions().getSupportVisualization(),
                                                         v -> { _mf.getOptions().setSupportVisualization( v ); repaintTree(); } ) ) );

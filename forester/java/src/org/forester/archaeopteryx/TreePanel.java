@@ -2350,8 +2350,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                              final boolean to_graphics_file) {
         final List<Confidence> confidences = node.getBranchData().getConfidences();
         Collections.sort(confidences);
+        // "Min. confidence shown" is a fraction of the tree's detected support scale (computed once per paint in
+        // _confidence_scale_max), so the same setting means the same thing on 0-1 posterior and 0-100 bootstrap.
+        // Limitation: the scale is a single per-tree ceiling, so a node carrying confidences on TWO different
+        // scales at once (e.g. a 0-1 posterior AND a 0-100 bootstrap) filters both against the one ceiling.
+        final double min_confidence = getOptions().getMinConfidenceFraction() * _confidence_scale_max;
         final StringBuilder sb = new StringBuilder(confidenceLabel(confidences, getOptions().isShowMadConfidence(),
-                getOptions().getMinConfidenceValue(), getOptions().isShowConfidenceStddev(),
+                min_confidence, getOptions().isShowConfidenceStddev(),
                 getOptions().getNumberOfDigitsAfterCommaForConfidenceValues()));
         if (sb.length() > 0) {
             final float parent_x = node.getParent().getXcoord();
@@ -7206,9 +7211,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ((_phylogeny == null) || _phylogeny.isEmpty()) {
             return;
         }
-        _confidence_scale_max = (getOptions().getSupportVisualization() != Options.SUPPORT_VISUALIZATION.NONE)
-                ? TreePanelUtil.detectConfidenceScaleMax(_phylogeny)
-                : 1.0;
+        // The support scale ceiling (a single preorder scan) feeds both the support symbols and the "min.
+        // confidence shown" label filter (a fraction of this ceiling). Skip the scan -- keeping the cheap 1.0
+        // fallback -- when neither consumer is active (the default), so plain repaints on the hot hover/scroll/
+        // zoom path don't pay for it.
+        _confidence_scale_max = ((getOptions().getSupportVisualization() != Options.SUPPORT_VISUALIZATION.NONE)
+                || getControlPanel().isShowConfidenceValues())
+                        ? TreePanelUtil.detectConfidenceScaleMax(_phylogeny)
+                        : 1.0;
         if (_control_panel.isShowSequenceRelations()) {
             _query_sequence = _control_panel.getSelectedQuerySequence();
         }

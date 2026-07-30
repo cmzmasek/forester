@@ -716,6 +716,15 @@ public final class TreePanelUtilTest {
         if ( TreePanelUtil.confidenceScaleMaxFor( 70.0 ) != 100.0 ) {
             return fail( "max 70 (bootstrap) implies the 0..100 scale" );
         }
+        if ( TreePanelUtil.confidenceScaleMaxFor( 100.0 ) != 100.0 ) {
+            return fail( "max exactly 100 stays on the 0..100 scale" );
+        }
+        if ( TreePanelUtil.confidenceScaleMaxFor( 100.5 ) != 1000.0 ) {
+            return fail( "any value above 100 implies the 0..1000 scale" );
+        }
+        if ( TreePanelUtil.confidenceScaleMaxFor( 800.0 ) != 1000.0 ) {
+            return fail( "max 800 implies the 0..1000 scale" );
+        }
         // support fraction: clamped to 0..1, scale-relative
         if ( TreePanelUtil.supportFraction( 50.0, 100.0 ) != 0.5 ) {
             return fail( "50 on a 0..100 scale is fraction 0.5" );
