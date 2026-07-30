@@ -492,6 +492,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Collapsed clade confidence: ");
+        if (org.forester.archaeopteryx.CollapsedCladeConfidenceTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Found-branch PDF export: ");
         if (org.forester.archaeopteryx.FoundBranchExportTest.test()) {
             System.out.println("OK.");

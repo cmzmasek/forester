@@ -2376,6 +2376,21 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
+    /**
+     * Whether the support/confidence value on {@code node}'s incoming branch should be drawn: the toggle is on,
+     * the node is an internal, non-root node that carries a confidence, and the layout is one of the horizontal
+     * styles that place labels on branches. Shared by the regular-node and collapsed-clade paint paths so a
+     * collapsed subtree still shows the support of the branch leading to it (a collapsed clade is still an
+     * internal node).
+     */
+    final private boolean isShowConfidenceValuesForNode(final PhylogenyNode node) {
+        return getControlPanel().isShowConfidenceValues() && !node.isExternal() && !node.isRoot()
+                && ((getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.ROUNDED)
+                        || (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR)
+                        || (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE))
+                && node.getBranchData().isHasConfidences();
+    }
+
     final private void paintGainedAndLostCharacters(final Graphics2D g,
                                                     final PhylogenyNode node,
                                                     final String gained,
@@ -3307,6 +3322,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (node.isCollapse()) {
             if ((!node.isRoot() && !node.getParent().isCollapse())) {
                 paintCollapsedNode(g, node, to_graphics_file, to_pdf, is_in_found_nodes);
+                // A collapsed clade is still an internal node: show the support on the branch leading to it
+                // (the label sits on the incoming branch, left of the triangle's apex).
+                if (isShowConfidenceValuesForNode(node)) {
+                    paintConfidenceValues(g, node, to_pdf, to_graphics_file);
+                }
             }
             return;
         }
@@ -3314,11 +3334,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             ++_external_node_index;
         }
         // Confidence values
-        if (getControlPanel().isShowConfidenceValues() && !node.isExternal() && !node.isRoot()
-                && ((getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.ROUNDED)
-                || (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR)
-                || (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE))
-                && node.getBranchData().isHasConfidences()) {
+        if (isShowConfidenceValuesForNode(node)) {
             paintConfidenceValues(g, node, to_pdf, to_graphics_file);
         }
         // Draw a line to root:
