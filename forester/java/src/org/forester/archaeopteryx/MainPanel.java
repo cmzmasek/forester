@@ -22,8 +22,6 @@ package org.forester.archaeopteryx;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.event.AdjustmentEvent;
-import java.awt.event.AdjustmentListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseAdapter;
@@ -37,6 +35,7 @@ import java.util.Set;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JViewport;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -98,25 +97,15 @@ public class MainPanel extends JPanel implements ComponentListener {
         _treepanels.add(treepanel);
         final String name = tabTitleFor(phy, default_name, getTabbedPane().getTabCount() + 1);
         final JScrollPane treegraphic_scroll_pane = new JScrollPane(treepanel);
-        treegraphic_scroll_pane.getHorizontalScrollBar().addAdjustmentListener(new AdjustmentListener() {
-
-            @Override
-            public void adjustmentValueChanged(final AdjustmentEvent e) {
-                if (treepanel.isOvOn() || getOptions().isShowScale()) {
-                    treepanel.repaint();
-                }
-            }
-        });
-        treegraphic_scroll_pane.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
-
-            @Override
-            public void adjustmentValueChanged(final AdjustmentEvent e) {
-                if (treepanel.isOvOn() || getOptions().isShowScale()) {
-                    treepanel.repaint();
-                    //System.out.println( e.getValue() );
-                }
-            }
-        });
+        // The overview, scale and tree name are painted at getVisibleRect-relative (viewport-fixed) positions.
+        // With the default BLIT_SCROLL_MODE, dragging a scrollbar blits the existing pixels to a shifted
+        // position (carrying those fixed items to the wrong place) and only repaints the newly-exposed strip,
+        // so the stale overlay flickers for a frame before a full repaint corrects it -- the jitter seen only
+        // when scrolling via the scrollbars. SIMPLE_SCROLL_MODE repaints the whole (node-culled) visible area on
+        // every scroll instead, so the fixed items are always drawn at the right spot. No blit, no jitter.
+        treegraphic_scroll_pane.getViewport().setScrollMode(JViewport.SIMPLE_SCROLL_MODE);
+        // (No scrollbar AdjustmentListener repaints are needed: SIMPLE_SCROLL_MODE already repaints the whole
+        // visible area on every scroll, which keeps the viewport-fixed overview/scale/name in step.)
         treegraphic_scroll_pane.getHorizontalScrollBar().setUnitIncrement(10);
         treegraphic_scroll_pane.getHorizontalScrollBar().setBlockIncrement(200);
         treegraphic_scroll_pane.getVerticalScrollBar().setUnitIncrement(10);
