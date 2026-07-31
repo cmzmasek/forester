@@ -33,6 +33,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
@@ -1384,6 +1385,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final private void keyPressedCalls(final KeyEvent e) {
+        // Keys carrying the platform menu-shortcut modifier (Cmd on macOS, Ctrl elsewhere) belong to the menu
+        // accelerators (Save, Open, Close Tab, Copy Image, Undo/Redo, ...). This focused-canvas KeyListener must
+        // NOT handle or consume them, or it would shadow the accelerator entirely (Swing runs a focused
+        // component's KeyListeners before its WHEN_IN_FOCUSED_WINDOW menu accelerators, and skips the latter once
+        // the event is consumed) -- and, since the single-letter branches below match by key code alone, it would
+        // read e.g. Cmd+S as a bare 'S' (rotate) or Cmd+O as 'O' (cycle overview).
+        if ((e.getModifiersEx() & Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()) != 0) {
+            return;
+        }
         if (isOvOn() && (getMousePosition() != null) && (getMousePosition().getLocation() != null)) {
             if (inOvVirtualRectangle(getMousePosition().x, getMousePosition().y)) {
                 if (!isInOvRect()) {

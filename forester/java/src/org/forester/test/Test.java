@@ -570,6 +570,22 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Pan on press (not started until drag): ");
+        if (org.forester.archaeopteryx.PanOnPressTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("File menu keyboard accelerators: ");
+        if (org.forester.archaeopteryx.MenuAcceleratorTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Image selection (clipboard transferable): ");
         if (org.forester.archaeopteryx.ImageSelectionTest.test()) {
             System.out.println("OK.");

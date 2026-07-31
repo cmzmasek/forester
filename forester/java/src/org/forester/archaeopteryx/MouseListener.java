@@ -129,22 +129,16 @@ final class MouseListener extends MouseAdapter implements MouseMotionListener {
             _dragging_legend = true;
             _legend_press_point.setLocation( e.getX(), e.getY() );
             _treepanel.startLegendDrag( e );
-            return;
         }
-        //TODO is this a good idea? It is certainly not NEEDED.
-        if ( e.getModifiersEx() == InputEvent.BUTTON1_DOWN_MASK ) {
-            if ( !_being_dragged ) {
-                _being_dragged = true;
-                _treepanel.setLastMouseDragPointX( e.getX() );
-                _treepanel.setLastMouseDragPointY( e.getY() );
-            }
-            if ( !_treepanel.inOvRectangle( e ) ) {
-                _treepanel.mouseDragInBrowserPanel( e );
-            }
-            else {
-                _treepanel.mouseDragInOvRectangle( e );
-            }
-        }
+        // A pan/overview drag is NOT started here: it begins on the first mouseDragged (which initializes
+        // _being_dragged + the drag anchor), so a plain press stays a click. (A former press-time drag block here
+        // set the anchor at the press point and called the pan handler with a zero delta -- no visible scroll --
+        // which mouseDragged already does on the first move; removing it just anchors the pan one event later.)
+    }
+
+    /** Test hook: whether a browser-panel / overview pan drag is currently in progress. */
+    boolean isDraggingForTest() {
+        return _being_dragged;
     }
 
     @Override

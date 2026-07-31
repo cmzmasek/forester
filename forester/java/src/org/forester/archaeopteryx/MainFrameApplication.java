@@ -27,7 +27,10 @@ import java.awt.Font;
 import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.ComponentAdapter;
@@ -56,6 +59,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.KeyStroke;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButton;
 import javax.swing.JTabbedPane;
@@ -1351,6 +1355,18 @@ public final class MainFrameApplication extends MainFrame {
         customizeJMenuItem(_export_node_data_item);
         customizeJMenuItem(_import_node_data_item);
         customizeJMenuItem(_exit_item);
+        // Keyboard shortcuts for the common File actions. The platform menu-shortcut key is Cmd on macOS, Ctrl
+        // elsewhere. Copy Image uses Shift too, deliberately NOT plain Cmd-C, so it can't hijack text copy in the
+        // search field. Zoom already has +/- keys (TreePanel), so it needs none here.
+        final int shortcut = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
+        _open_item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, shortcut));
+        _save_item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, shortcut));
+        _close_item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, shortcut));
+        _copy_image_to_clipboard_item
+                .setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, shortcut | InputEvent.SHIFT_DOWN_MASK));
+        if (_new_item != null) {
+            _new_item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, shortcut));
+        }
         _jmenubar.add(_file_jmenu);
     }
 
