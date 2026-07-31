@@ -20,9 +20,12 @@
 
 package org.forester.archaeopteryx;
 
+import java.awt.Color;
 import java.awt.GraphicsEnvironment;
 import java.awt.image.BufferedImage;
+import java.io.File;
 
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
@@ -30,11 +33,11 @@ import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
 
 /**
- * Integration test for the "White Image Background" export option. With a DARK tree color scheme active, an
- * opaque raster render (the path shared by file export and Copy Image to Clipboard) must, when the option is on,
- * come out DOCUMENT-READY: a white background AND dark, legible ink (not just white-behind-light-ink, which would
- * be an invisible white-on-white figure). When off it must be WYSIWYG (the dark theme background). Also checks
- * the Settings checkbox drives the option through updateOptions. No-op when headless (needs FlatLaf).
+ * Integration test for the "White Image Background" document-ready export option, across raster AND vector. With
+ * a DARK tree color scheme active, an opaque raster render (shared by file export and Copy Image to Clipboard)
+ * must, when the option is on, produce a white background AND dark legible ink (not white-on-white). Vector
+ * (SVG/EPS/PDF) export must likewise get a white page (and the shared {@link ExportTheme} light-theme switch,
+ * restored afterwards). When off, everything is WYSIWYG. No-op when headless (needs FlatLaf via createInstance).
  */
 public final class ExportBackgroundTest {
 
@@ -56,66 +59,122 @@ public final class ExportBackgroundTest {
             final boolean[] ok = { true };
             SwingUtilities.invokeAndWait( () -> {
                 final MainFrame frame = mf[ 0 ];
-                final TreePanel tp = frame.getMainPanel().getCurrentTreePanel();
-                final Options opts = frame.getOptions();
-                final int w = 400, h = 300;
-                frame.showWhole();
-                tp.setSize( w, h );
+                try {
+                    final TreePanel tp = frame.getMainPanel().getCurrentTreePanel();
+                    final Options opts = frame.getOptions();
+                    final int w = 400, h = 300;
+                    frame.showWhole();
+                    tp.setSize( w, h );
 
-                // force the DARK scheme (branches/text are light) so the two cases are clearly distinguishable
-                tp.getTreeColorSet().setColorSchema( TreeColorSet.DARK_COLOR_SCHEME );
-                final int theme_bg = tp.getTreeColorSet().getBackgroundColor().getRGB() & 0xFFFFFF;
-                if ( theme_bg == 0xFFFFFF ) {
-                    fail( ok, "test setup: dark scheme background should not be white" );
-                }
-
-                // option ON -> white background AND dark, VISIBLE ink (document-ready), despite the dark theme
-                opts.setGraphicsExportWhiteBackground( true );
-                tp.getTreeColorSet().setColorSchema( TreeColorSet.DARK_COLOR_SCHEME );
-                tp.calcParametersForPainting( w, h );
-                final BufferedImage on = AptxUtil.renderPhylogenyToImage( w, h, tp, opts, false, 1, false );
-                if ( corner( on ) != 0xFFFFFF ) {
-                    fail( ok, "white-background ON must give a white background corner, got " + hex( corner( on ) ) );
-                }
-                if ( darkPixelCount( on ) < 15 ) {
-                    fail( ok, "white-background ON must keep the ink DARK/legible on white (light-on-white would be "
-                            + "invisible); dark pixels=" + darkPixelCount( on ) );
-                }
-                // the transient light theme must be RESTORED after the render (no lasting side effect on the panel)
-                if ( tp.getTreeColorSet().getCurrentColorScheme() != TreeColorSet.DARK_COLOR_SCHEME ) {
-                    fail( ok, "the export must restore the on-screen color scheme afterwards" );
-                }
-
-                // option OFF -> the (dark) theme background, NOT white (WYSIWYG)
-                opts.setGraphicsExportWhiteBackground( false );
-                tp.getTreeColorSet().setColorSchema( TreeColorSet.DARK_COLOR_SCHEME );
-                tp.calcParametersForPainting( w, h );
-                final int corner_off = corner( AptxUtil.renderPhylogenyToImage( w, h, tp, opts, false, 1, false ) );
-                if ( corner_off == 0xFFFFFF ) {
-                    fail( ok, "white-background OFF in a dark theme must NOT give a white corner (WYSIWYG expected)" );
-                }
-                if ( corner_off != theme_bg ) {
-                    fail( ok, "white-background OFF must use the theme background " + hex( theme_bg ) + ", got "
-                            + hex( corner_off ) );
-                }
-
-                // the Settings checkbox must drive the option through actionPerformed -> updateOptions
-                final javax.swing.JCheckBoxMenuItem cb = frame._graphics_export_white_background_cbmi;
-                if ( cb == null ) {
-                    fail( ok, "the White Image Background checkbox was not created" );
-                }
-                else {
-                    final boolean cb_before = cb.isSelected();
-                    cb.doClick();
-                    if ( cb.isSelected() == cb_before ) {
-                        fail( ok, "doClick should toggle the checkbox" );
+                    // force the DARK scheme (branches/text are light) so the two cases are clearly distinguishable
+                    tp.getTreeColorSet().setColorSchema( TreeColorSet.DARK_COLOR_SCHEME );
+                    final int theme_bg = tp.getTreeColorSet().getBackgroundColor().getRGB() & 0xFFFFFF;
+                    if ( theme_bg == 0xFFFFFF ) {
+                        fail( ok, "test setup: dark scheme background should not be white" );
                     }
-                    if ( frame.getOptions().isGraphicsExportWhiteBackground() != cb.isSelected() ) {
-                        fail( ok, "updateOptions must sync the option to the checkbox state" );
+
+                    // RASTER, option ON -> white background AND dark, VISIBLE ink (document-ready), despite dark theme
+                    opts.setGraphicsExportWhiteBackground( true );
+                    tp.getTreeColorSet().setColorSchema( TreeColorSet.DARK_COLOR_SCHEME );
+                    tp.calcParametersForPainting( w, h );
+                    final BufferedImage on = AptxUtil.renderPhylogenyToImage( w, h, tp, opts, false, 1, false );
+                    if ( corner( on ) != 0xFFFFFF ) {
+                        fail( ok, "white-background ON must give a white corner, got " + hex( corner( on ) ) );
+                    }
+                    if ( darkPixelCount( on ) < 15 ) {
+                        fail( ok, "white-background ON must keep the ink DARK/legible on white; dark pixels="
+                                + darkPixelCount( on ) );
+                    }
+                    if ( tp.getTreeColorSet().getCurrentColorScheme() != TreeColorSet.DARK_COLOR_SCHEME ) {
+                        fail( ok, "the export must restore the on-screen color scheme afterwards" );
+                    }
+
+                    // RASTER, option OFF -> the (dark) theme background, NOT white (WYSIWYG)
+                    opts.setGraphicsExportWhiteBackground( false );
+                    tp.getTreeColorSet().setColorSchema( TreeColorSet.DARK_COLOR_SCHEME );
+                    tp.calcParametersForPainting( w, h );
+                    final int corner_off = corner( AptxUtil.renderPhylogenyToImage( w, h, tp, opts, false, 1, false ) );
+                    if ( corner_off == 0xFFFFFF ) {
+                        fail( ok, "white-background OFF in a dark theme must NOT give a white corner" );
+                    }
+                    if ( corner_off != theme_bg ) {
+                        fail( ok, "white-background OFF must use the theme background " + hex( theme_bg ) + ", got "
+                                + hex( corner_off ) );
+                    }
+
+                    // ExportTheme (shared by raster AND vector): applyIf switches scheme + panel background, and
+                    // restore() puts BOTH back. Put the panel's Swing background genuinely dark first (the test
+                    // frame is light-theme by default), so applyIf's setBackground(white) actually changes it and
+                    // restore()'s must change it back -- otherwise the background-restore has nothing to detect.
+                    tp.getTreeColorSet().setColorSchema( TreeColorSet.DARK_COLOR_SCHEME );
+                    tp.setBackground( tp.getTreeColorSet().getBackgroundColor() );
+                    final Color bg_before = tp.getBackground();
+                    if ( ( bg_before.getRGB() & 0xFFFFFF ) == 0xFFFFFF ) {
+                        fail( ok, "test setup: panel background should be dark before the ExportTheme check" );
+                    }
+                    final ExportTheme applied = ExportTheme.applyIf( tp, true );
+                    if ( tp.getTreeColorSet().getCurrentColorScheme() != TreeColorSet.LIGHT_COLOR_SCHEME ) {
+                        fail( ok, "ExportTheme.applyIf(true) must switch a dark panel to the light scheme" );
+                    }
+                    if ( ( tp.getBackground().getRGB() & 0xFFFFFF ) != 0xFFFFFF ) {
+                        fail( ok, "ExportTheme.applyIf(true) must set a white panel background" );
+                    }
+                    applied.restore();
+                    if ( tp.getTreeColorSet().getCurrentColorScheme() != TreeColorSet.DARK_COLOR_SCHEME ) {
+                        fail( ok, "ExportTheme.restore() must put the scheme back" );
+                    }
+                    if ( !tp.getBackground().equals( bg_before ) ) {
+                        fail( ok, "ExportTheme.restore() must put the panel background back" );
+                    }
+                    ExportTheme.applyIf( tp, false ).restore(); // off = no-op
+                    if ( tp.getTreeColorSet().getCurrentColorScheme() != TreeColorSet.DARK_COLOR_SCHEME ) {
+                        fail( ok, "ExportTheme.applyIf(false) must not change the scheme" );
+                    }
+                    tp.getTreeColorSet().setColorSchema( TreeColorSet.LIGHT_COLOR_SCHEME );
+                    ExportTheme.applyIf( tp, true ).restore(); // already light -> no-op
+                    if ( tp.getTreeColorSet().getCurrentColorScheme() != TreeColorSet.LIGHT_COLOR_SCHEME ) {
+                        fail( ok, "ExportTheme.applyIf(true) on an already-light panel must leave it light" );
+                    }
+
+                    // VECTOR: the option gives SVG a white page, so a dark-theme SVG differs on vs off, it is
+                    // deterministic, and the scheme is restored. PDF export with the option on must produce output.
+                    tp.getTreeColorSet().setColorSchema( TreeColorSet.DARK_COLOR_SCHEME );
+                    final byte[] svg_on = svg( tp, true );
+                    if ( !java.util.Arrays.equals( svg_on, svg( tp, true ) ) ) {
+                        fail( ok, "SVG export should be deterministic for identical inputs" );
+                    }
+                    if ( java.util.Arrays.equals( svg_on, svg( tp, false ) ) ) {
+                        fail( ok, "white-background must change the vector (SVG) export (white page added)" );
+                    }
+                    if ( pdf( tp, true ) < 100 ) {
+                        fail( ok, "PDF export with white-background produced no output" );
+                    }
+                    if ( tp.getTreeColorSet().getCurrentColorScheme() != TreeColorSet.DARK_COLOR_SCHEME ) {
+                        fail( ok, "vector export must restore the on-screen color scheme afterwards" );
+                    }
+
+                    // the Settings checkbox must drive the option through actionPerformed -> updateOptions
+                    final JCheckBoxMenuItem cb = frame._graphics_export_white_background_cbmi;
+                    if ( cb == null ) {
+                        fail( ok, "the White Image Background checkbox was not created" );
+                    }
+                    else {
+                        final boolean cb_before = cb.isSelected();
+                        cb.doClick();
+                        if ( cb.isSelected() == cb_before ) {
+                            fail( ok, "doClick should toggle the checkbox" );
+                        }
+                        if ( frame.getOptions().isGraphicsExportWhiteBackground() != cb.isSelected() ) {
+                            fail( ok, "updateOptions must sync the option to the checkbox state" );
+                        }
                     }
                 }
-
-                ( (JFrame) frame ).dispose();
+                catch ( final Throwable t ) {
+                    fail( ok, "unexpected: " + t );
+                }
+                finally {
+                    ( (JFrame) frame ).dispose();
+                }
             } );
             return ok[ 0 ];
         }
@@ -154,6 +213,31 @@ public final class ExportBackgroundTest {
     private static void fail( final boolean[] ok, final String msg ) {
         System.out.println( "  [ExportBackgroundTest] " + msg );
         ok[ 0 ] = false;
+    }
+
+    /** Exports the panel to a temp SVG (with or without the white-background/light-theme option) and returns its bytes. */
+    private static byte[] svg( final TreePanel tp, final boolean white_bg ) throws Exception {
+        final File f = File.createTempFile( "aptx_bg_", ".svg" );
+        try {
+            VectorGraphicsExporter.writePhylogenyToVectorGraphicsFile( f.getAbsolutePath(), tp, tp.getWidth(),
+                    tp.getHeight(), VectorGraphicsExporter.Format.SVG, false, white_bg );
+            return java.nio.file.Files.readAllBytes( f.toPath() );
+        }
+        finally {
+            f.delete();
+        }
+    }
+
+    /** Exports the panel to a temp PDF and returns its byte length (0 if nothing written). */
+    private static long pdf( final TreePanel tp, final boolean white_bg ) throws Exception {
+        final File f = File.createTempFile( "aptx_bg_", ".pdf" );
+        try {
+            PdfExporter.writePhylogenyToPdf( f.getAbsolutePath(), tp, tp.getWidth(), tp.getHeight(), white_bg );
+            return f.length();
+        }
+        finally {
+            f.delete();
+        }
     }
 
     private static Phylogeny tree() {

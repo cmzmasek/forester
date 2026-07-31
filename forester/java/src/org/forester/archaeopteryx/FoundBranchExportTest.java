@@ -136,7 +136,7 @@ public final class FoundBranchExportTest {
         final File pdf = File.createTempFile( "aptx_found_export", ".pdf" );
         final File png = File.createTempFile( "aptx_found_export", ".png" );
         try {
-            PdfExporter.writePhylogenyToPdf( pdf.getAbsolutePath(), tp, tp.getWidth(), tp.getHeight() );
+            PdfExporter.writePhylogenyToPdf( pdf.getAbsolutePath(), tp, tp.getWidth(), tp.getHeight(), false );
             if ( !rasterize( pdf, png ) ) {
                 System.out.println( "  [FoundBranchExportTest] skipped: could not rasterize PDF (sips unavailable?)" );
                 return true;

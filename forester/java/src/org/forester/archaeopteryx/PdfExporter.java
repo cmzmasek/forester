@@ -48,7 +48,8 @@ final class PdfExporter {
         // Empty constructor.
     }
 
-    static String writePhylogenyToPdf( final String file_name, final TreePanel tree_panel, final int width, final int height )
+    static String writePhylogenyToPdf( final String file_name, final TreePanel tree_panel, final int width,
+                                       final int height, final boolean white_background )
             throws IOException {
         final int my_height;
         final int my_width;
@@ -95,14 +96,31 @@ final class PdfExporter {
         // bleed that the glyph-font path has in iText/OpenPDF.
         final PdfContentByte cb = writer.getDirectContent();
         final Graphics2D g2 = cb.createGraphicsShapes(my_width, my_height);
-    
+        // Document-ready (light theme) export when requested, so a dark-theme figure isn't light-on-white on
+        // the white PDF page; restored afterwards. Same behavior as raster/clipboard/SVG export. The paint
+        // exception (if any) is reported AFTER restore(), so its modal dialog never pumps the EDT while the
+        // transient light theme is applied.
+        final ExportTheme export_theme = ExportTheme.applyIf( tree_panel, white_background );
+        Exception paint_error = null;
         try {
+            if ( white_background ) {
+                g2.setColor( java.awt.Color.WHITE );
+                g2.fillRect( 0, 0, my_width, my_height );
+            }
             tree_panel.paintPhylogeny( g2, true, false, my_width, my_height, 0, 0 );
         }
         catch ( final Exception e ) {
-            AptxUtil.unexpectedException( e );
+            paint_error = e;
         }
         finally {
+            // restore() is guarded on its own so a (near-impossible) failure there cannot skip document.close(),
+            // which would leave a truncated/unreadable PDF and a leaked stream
+            try {
+                export_theme.restore();
+            }
+            catch ( final Exception e ) {
+                //Do nothing.
+            }
             try {
                 g2.dispose();
                 document.close();
@@ -110,6 +128,9 @@ final class PdfExporter {
             catch ( final Exception e ) {
                 //Do nothing.
             }
+        }
+        if ( paint_error != null ) {
+            AptxUtil.unexpectedException( paint_error );
         }
         final String msg = file.toString() +  " [size: " + my_width + ", " + my_height + "]";
         return msg;

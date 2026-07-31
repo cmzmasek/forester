@@ -188,7 +188,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String TRANSPARENT_BG_LABEL = "Transparent Background (PNG)";
     static final String TRANSPARENT_BG_TIP = "Export PNG with a transparent (alpha) background instead of the solid figure background. Ignored for formats that cannot carry transparency (JPG, etc.).";
     static final String WHITE_BG_LABEL = "White Image Background";
-    static final String WHITE_BG_TIP = "Render raster image exports (PNG/JPG/TIFF) and 'Copy Image to Clipboard' with the LIGHT theme -- white background and dark labels -- regardless of the on-screen theme, so a dark-theme figure is document-ready (no dark box, and not light-on-white). Turn off to export exactly what is on screen (WYSIWYG). Vector (SVG/EPS/PDF) and transparent-PNG are unaffected.";
+    static final String WHITE_BG_TIP = "Export with the LIGHT theme -- white background and dark, legible labels -- regardless of the on-screen light/dark theme, so a figure is document-ready (no dark box, and not light-on-white). Applies to raster images (PNG/JPG/TIFF), 'Copy Image to Clipboard', and vector (SVG/EPS/PDF). Turn off to export exactly what is on screen (WYSIWYG). Transparent-PNG is unaffected.";
     static final String SHOW_CONF_STDDEV_LABEL = "Confidence Standard Deviations";
     static final String SHOW_MAD_CONF_LABEL    = "MAD Confidence Values (MAD/regular)";
     static final String USE_BRACKETS_FOR_CONF_IN_NH_LABEL = "Use Brackets for Confidence Values";
@@ -2208,7 +2208,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         boolean error = false;
         try {
             if (opts.isPrintUsingActualSize()) {
-                pdf_written_to = PdfExporter.writePhylogenyToPdf(file_name, tp, tp.getWidth(), tp.getHeight());
+                pdf_written_to = PdfExporter.writePhylogenyToPdf(file_name, tp, tp.getWidth(), tp.getHeight(),
+                        opts.isGraphicsExportWhiteBackground());
             } else {
                 // Never false.
             }

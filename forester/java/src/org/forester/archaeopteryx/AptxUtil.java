@@ -1231,15 +1231,16 @@ public final class AptxUtil {
                                                      final Options options)
             throws IOException {
         if ((type == GraphicsExportType.SVG) || (type == GraphicsExportType.EPS)) {
-            // vector formats reuse the on-screen paint path through VectorGraphics2D (WYSIWYG);
-            // the raster setup below is skipped entirely.
+            // vector formats reuse the on-screen paint path through VectorGraphics2D; the raster setup below is
+            // skipped entirely. A document-ready (light theme) render is applied inside when requested.
             return VectorGraphicsExporter.writePhylogenyToVectorGraphicsFile(file_name,
                     tree_panel,
                     width,
                     height,
                     (type == GraphicsExportType.SVG) ? VectorGraphicsExporter.Format.SVG
                             : VectorGraphicsExporter.Format.EPS,
-                    options.isOutlineFontsInVectorExport());
+                    options.isOutlineFontsInVectorExport(),
+                    options.isGraphicsExportWhiteBackground());
         }
         final Phylogeny phylogeny = tree_panel.getPhylogeny();
         if ((phylogeny == null) || phylogeny.isEmpty()) {
@@ -1342,27 +1343,16 @@ public final class AptxUtil {
         }
         // A white-background export/copy must be document-ready, not just white behind the (theme-colored) ink:
         // a dark-theme figure painted on white would be light-on-white / invisible, and the legend box would keep
-        // its dark fill. So render the whole figure in the LIGHT theme -- exactly as a UI theme switch does
-        // (scheme + panel background, see MainFrame.updateTreeCanvasColors) -- and restore it afterwards. Not when
-        // transparent (there the user wants alpha + the on-screen ink).
-        final boolean force_light = !transparent && options.isGraphicsExportWhiteBackground();
-        final TreeColorSet color_set = tree_panel.getTreeColorSet();
-        final int prev_scheme = color_set.getCurrentColorScheme();
-        final Color prev_background = tree_panel.getBackground();
-        final boolean relit = force_light && (prev_scheme != TreeColorSet.LIGHT_COLOR_SCHEME);
-        if (relit) {
-            color_set.setColorSchema(TreeColorSet.LIGHT_COLOR_SCHEME);
-            tree_panel.setBackground(color_set.getBackgroundColor());
-        }
+        // its dark fill. So render the whole figure in the LIGHT theme (see ExportTheme). Not when transparent
+        // (there the user wants alpha + the on-screen ink).
+        final ExportTheme export_theme = ExportTheme.applyIf(tree_panel,
+                !transparent && options.isGraphicsExportWhiteBackground());
         tree_panel.setExportTransparentBackground(transparent);
         try {
             tree_panel.paintPhylogeny(g2d, false, true, width, height, x, y);
         } finally {
             tree_panel.setExportTransparentBackground(false);
-            if (relit) {
-                color_set.setColorSchema(prev_scheme);
-                tree_panel.setBackground(prev_background);
-            }
+            export_theme.restore();
             if (g2d != base_g2d) {
                 g2d.dispose();
             }

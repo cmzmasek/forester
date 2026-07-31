@@ -42,9 +42,10 @@ import de.erichseifert.vectorgraphics2d.util.PageSize;
  * <p>Like {@link PdfExporter}, this reuses the <em>exact</em> on-screen paint routine
  * ({@link TreePanel#paintPhylogeny}): a {@link VectorGraphics2D} (which is itself a
  * {@link Graphics2D} that records every Java2D call) is handed to {@code paintPhylogeny}, so the
- * vector file is produced from the same call stream that paints the screen == WYSIWYG. The
- * resulting figure is true vector output that scales losslessly and can be finished in
- * Illustrator / Inkscape -- which raster PNG/TIFF cannot.
+ * vector file is produced from the same call stream that paints the screen. The resulting figure is
+ * true vector output that scales losslessly and can be finished in Illustrator / Inkscape -- which
+ * raster PNG/TIFF cannot. WYSIWYG by default, except when {@code white_background} requests a
+ * document-ready (light theme, white page) render -- see {@link ExportTheme}.
  */
 final class VectorGraphicsExporter {
 
@@ -126,7 +127,8 @@ final class VectorGraphicsExporter {
                                                       final int width,
                                                       final int height,
                                                       final Format fmt,
-                                                      final boolean outline_text )
+                                                      final boolean outline_text,
+                                                      final boolean white_background )
             throws IOException {
         final Phylogeny phylogeny = tree_panel.getPhylogeny();
         if ( ( phylogeny == null ) || phylogeny.isEmpty() ) {
@@ -144,15 +146,33 @@ final class VectorGraphicsExporter {
         }
         final int my_width = ( width < WIDTH_LIMIT ? WIDTH_LIMIT : width ) + ( 2 * MARGIN_X );
         final int my_height = ( height < HEIGHT_LIMIT ? HEIGHT_LIMIT : height ) + ( 2 * MARGIN_Y );
+        // Document-ready (light theme) export when requested -- same behavior as raster/clipboard, so a
+        // dark-theme vector figure isn't light-on-(page-)white; restored afterwards. The paint exception (if any)
+        // is captured and reported AFTER restore(), so the modal error dialog never pumps the EDT while the
+        // transient light theme is applied (which would flash the on-screen tree white).
+        final ExportTheme export_theme = ExportTheme.applyIf( tree_panel, white_background );
+        final Exception[] paint_error = { null };
         try ( final OutputStream out = new BufferedOutputStream( new FileOutputStream( file ) ) ) {
             render( my_width, my_height, fmt, outline_text, g -> {
+                if ( white_background ) {
+                    // an explicit white page (SVG/EPS are otherwise transparent), so the figure reads on a
+                    // white document -- matching the raster/PDF background
+                    g.setColor( java.awt.Color.WHITE );
+                    g.fillRect( 0, 0, my_width, my_height );
+                }
                 try {
                     tree_panel.paintPhylogeny( g, true, false, my_width, my_height, 0, 0 );
                 }
                 catch ( final Exception e ) {
-                    AptxUtil.unexpectedException( e );
+                    paint_error[ 0 ] = e;
                 }
             }, out );
+        }
+        finally {
+            export_theme.restore();
+        }
+        if ( paint_error[ 0 ] != null ) {
+            AptxUtil.unexpectedException( paint_error[ 0 ] );
         }
         return file.toString() + " [size: " + my_width + ", " + my_height + "]";
     }

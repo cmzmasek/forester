@@ -119,7 +119,7 @@ public final class FontResourcesTest {
                     // PDF (outlines) and PNG (raster) share the identical paintPhylogeny path; just confirm they
                     // render non-trivially with the font registered (text is not inspectable by name there)
                     final File pdf = new File( dir, "aptx_font_tree.pdf" ); // PDF has its own exporter path
-                    PdfExporter.writePhylogenyToPdf( pdf.getAbsolutePath(), tp, tp.getWidth(), tp.getHeight() );
+                    PdfExporter.writePhylogenyToPdf( pdf.getAbsolutePath(), tp, tp.getWidth(), tp.getHeight(), false );
                     final File png = new File( dir, "aptx_font_tree.png" );
                     AptxUtil.writePhylogenyToGraphicsFile( png.getAbsolutePath(), tp.getWidth(), tp.getHeight(), tp,
                                                            mp.getControlPanel(), GraphicsExportType.PNG, mp.getOptions() );

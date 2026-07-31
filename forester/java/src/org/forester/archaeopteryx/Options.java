@@ -266,10 +266,10 @@ final public class Options {
         // figures so it can't blow up memory. Transparent background applies to PNG only.
         _raster_export_scale = 4;
         _transparent_export_background = false;
-        // Default ON: raster image exports and clipboard copies render with the LIGHT theme (white background,
-        // dark labels) regardless of the on-screen theme, so a dark-theme figure pasted into a document is
-        // document-ready -- no dark box, and not light-on-white/invisible. Off = WYSIWYG. See
-        // AptxUtil.renderPhylogenyToImage. Overridden by transparent-PNG; does not affect vector export.
+        // Default ON: image exports (raster, clipboard, AND vector SVG/EPS/PDF) render with the LIGHT theme
+        // (white background, dark labels) regardless of the on-screen theme, so a dark-theme figure is
+        // document-ready -- no dark box, and not light-on-white/invisible. Off = WYSIWYG. See ExportTheme.
+        // Overridden by transparent-PNG.
         _graphics_export_white_background = true;
         _taxonomy_extraction = TAXONOMY_EXTRACTION.NO;
         _cladogram_type = AptxConstants.CLADOGRAM_TYPE_DEFAULT;
