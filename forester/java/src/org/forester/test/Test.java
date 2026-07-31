@@ -516,6 +516,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Show-tree-name toggle render: ");
+        if (org.forester.archaeopteryx.ShowTreeNameRenderTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Found-branch PDF export: ");
         if (org.forester.archaeopteryx.FoundBranchExportTest.test()) {
             System.out.println("OK.");

@@ -3650,11 +3650,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final private void paintTreeName(final Graphics2D g,
-                                     int x1,
+                                     final int region_x,
+                                     final int region_width,
                                      int y1,
                                      final boolean to_pdf,
-                                     final boolean to_graphics_file) {
-        x1 += MOVE;
+                                     final boolean to_graphics_file,
+                                     final boolean align_right) {
         y1 -= 12;
         final int y3 = y1 - 4;
         g.setFont(getTreeFontSet().getSmallFont());
@@ -3665,10 +3666,19 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         final Stroke s = g.getStroke();
         g.setStroke(STROKE_1);
-
-        if (getScaleLabel() != null) {
-            g.drawString(getPhylogeny().getName(), (x1 + 2), y3 - 2);
-        }
+        final String name = getPhylogeny().getName();
+        // Lower-left by default; when the scale occupies the lower-left, right-align the name into the
+        // lower-right so the two never overlap. Whether to draw at all is the caller's decision (the
+        // isShowTreeName option) -- the old "getScaleLabel() != null" guard here was a copy-paste leftover from
+        // paintScale that made the tree name display depend on the scale-label computation.
+        final int left_x = region_x + MOVE + 2;
+        // right-align, but never left of the left margin: a name too long for the region -- or a zero-width
+        // print region (File > Print passes width 0) -- falls back to the left instead of running off-canvas
+        // or to a negative x
+        final int x = align_right
+                ? Math.max(left_x, region_x + region_width - g.getFontMetrics().stringWidth(name) - MOVE)
+                : left_x;
+        g.drawString(name, x, y3 - 2);
         g.setStroke(s);
     }
 
@@ -7287,7 +7297,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             paintAnnotationColumns(g); // tip-aligned columns (strip/heat map/bar/text), right of the labels
             paintCladeBands(g); // clade boxes/bars over the tree -- node coords are set by the loop above
             paintHoverPreview(g, !(to_pdf || to_graphics_file)); // translucent select/deselect hover preview
-            if (getOptions().isShowScale() && getControlPanel().isDrawPhylogram() && (getScaleDistance() > 0.0)) {
+            final boolean scale_shown = getOptions().isShowScale() && getControlPanel().isDrawPhylogram()
+                    && (getScaleDistance() > 0.0);
+            if (scale_shown) {
                 if (!(to_graphics_file || to_pdf)) {
                     paintScale(g,
                             getVisibleRect().x,
@@ -7298,15 +7310,20 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     paintScale(g, graphics_file_x, graphics_file_y + graphics_file_height, to_pdf, to_graphics_file);
                 }
             }
-            if (!getOptions().isShowScale() && !ForesterUtil.isEmpty(getPhylogeny().getName())) {
+            if (getOptions().isShowTreeName() && !ForesterUtil.isEmpty(getPhylogeny().getName())) {
+                // the name sits in the lower-left, but slides to the lower-right when the scale is shown there,
+                // so the two never overlap
                 if (!(to_graphics_file || to_pdf)) {
                     paintTreeName(g,
                             getVisibleRect().x,
+                            getVisibleRect().width,
                             getVisibleRect().y + getVisibleRect().height,
                             to_pdf,
-                            to_graphics_file);
+                            to_graphics_file,
+                            scale_shown);
                 } else {
-                    paintTreeName(g, graphics_file_x, graphics_file_y + graphics_file_height, to_pdf, to_graphics_file);
+                    paintTreeName(g, graphics_file_x, graphics_file_width, graphics_file_y + graphics_file_height,
+                            to_pdf, to_graphics_file, scale_shown);
                 }
             }
             if (getOptions().isShowOverview() && isOvOn() && !to_graphics_file && !to_pdf) {
