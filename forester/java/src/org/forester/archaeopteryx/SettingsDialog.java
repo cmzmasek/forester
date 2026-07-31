@@ -201,6 +201,7 @@ final class SettingsDialog extends JDialog {
                 + "very large figures are capped automatically.<br>Does not affect vector (SVG/EPS/PDF) export.</html>" );
         add( c, labeled( "Raster export scale (×):", raster_scale ) );
         add( c, cb( _mf._transparent_export_background_cbmi ) );
+        add( c, cb( _mf._graphics_export_white_background_cbmi ) );
         add( c, cb( _mf._outline_fonts_in_vector_export_cbmi ) );
         add( c, cb( _mf._antialias_print_cbmi ) );
         add( c, cb( _mf._print_black_and_white_cbmi ) );

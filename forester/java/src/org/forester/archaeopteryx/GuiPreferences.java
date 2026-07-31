@@ -55,7 +55,9 @@ final class GuiPreferences {
     static final String SETTINGS_FILE = "display-settings.properties";
 
     /** The persisted toggles: a stable string key plus the Options getter/setter it maps to. Add to this list
-     *  (never renumber existing keys) to remember more display options. */
+     *  (never renumber existing keys) to remember more display options. NOTE: graphics_export_white_background is
+     *  the one export-appearance toggle here; its interacting siblings (transparent-PNG, raster export scale) are
+     *  not persisted yet -- part of the deferred "persist all settings" goal. */
     private record Pref(String key, Function<Options, Boolean> getter, BiConsumer<Options, Boolean> setter) {
     }
 
@@ -68,7 +70,9 @@ final class GuiPreferences {
                       Options::setAbbreviateScientificTaxonNames ),
             new Pref( "use_italic_scientific_names", Options::isUseItalicScientificNames,
                       Options::setUseItalicScientificNames ),
-            new Pref( "antialias_print", Options::isAntialiasPrint, Options::setAntialiasPrint ) );
+            new Pref( "antialias_print", Options::isAntialiasPrint, Options::setAntialiasPrint ),
+            new Pref( "graphics_export_white_background", Options::isGraphicsExportWhiteBackground,
+                      Options::setGraphicsExportWhiteBackground ) );
 
     private final Path _file;
 

@@ -128,6 +128,7 @@ final public class Options {
     private boolean _nh_parsing_replace_underscores;
     private int _raster_export_scale;
     private boolean _transparent_export_background;
+    private boolean _graphics_export_white_background;
     private NODE_LABEL_DIRECTION _node_label_direction;
     private short _number_of_digits_after_comma_for_branch_length_values;
     private short _number_of_digits_after_comma_for_confidence_values;
@@ -265,6 +266,11 @@ final public class Options {
         // figures so it can't blow up memory. Transparent background applies to PNG only.
         _raster_export_scale = 4;
         _transparent_export_background = false;
+        // Default ON: raster image exports and clipboard copies render with the LIGHT theme (white background,
+        // dark labels) regardless of the on-screen theme, so a dark-theme figure pasted into a document is
+        // document-ready -- no dark box, and not light-on-white/invisible. Off = WYSIWYG. See
+        // AptxUtil.renderPhylogenyToImage. Overridden by transparent-PNG; does not affect vector export.
+        _graphics_export_white_background = true;
         _taxonomy_extraction = TAXONOMY_EXTRACTION.NO;
         _cladogram_type = AptxConstants.CLADOGRAM_TYPE_DEFAULT;
         _show_domain_labels = true;
@@ -432,6 +438,14 @@ final public class Options {
 
     final boolean isTransparentExportBackground() {
         return _transparent_export_background;
+    }
+
+    final boolean isGraphicsExportWhiteBackground() {
+        return _graphics_export_white_background;
+    }
+
+    final void setGraphicsExportWhiteBackground(final boolean graphics_export_white_background) {
+        _graphics_export_white_background = graphics_export_white_background;
     }
 
     final void setTransparentExportBackground(final boolean transparent_export_background) {

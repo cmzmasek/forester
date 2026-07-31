@@ -187,6 +187,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String OUTLINE_FONTS_VECTOR_TIP = "SVG/EPS export embeds no fonts; outlining renders text as vector shapes so viewers cannot substitute the figure font (recommended). Turn off to keep selectable/searchable text, at the risk of font substitution.";
     static final String TRANSPARENT_BG_LABEL = "Transparent Background (PNG)";
     static final String TRANSPARENT_BG_TIP = "Export PNG with a transparent (alpha) background instead of the solid figure background. Ignored for formats that cannot carry transparency (JPG, etc.).";
+    static final String WHITE_BG_LABEL = "White Image Background";
+    static final String WHITE_BG_TIP = "Render raster image exports (PNG/JPG/TIFF) and 'Copy Image to Clipboard' with the LIGHT theme -- white background and dark labels -- regardless of the on-screen theme, so a dark-theme figure is document-ready (no dark box, and not light-on-white). Turn off to export exactly what is on screen (WYSIWYG). Vector (SVG/EPS/PDF) and transparent-PNG are unaffected.";
     static final String SHOW_CONF_STDDEV_LABEL = "Confidence Standard Deviations";
     static final String SHOW_MAD_CONF_LABEL    = "MAD Confidence Values (MAD/regular)";
     static final String USE_BRACKETS_FOR_CONF_IN_NH_LABEL = "Use Brackets for Confidence Values";
@@ -258,6 +260,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JCheckBoxMenuItem _use_italic_scientific_names_cbmi;
     JCheckBoxMenuItem _outline_fonts_in_vector_export_cbmi;
     JCheckBoxMenuItem _transparent_export_background_cbmi;
+    JCheckBoxMenuItem _graphics_export_white_background_cbmi;
     JCheckBoxMenuItem _color_labels_same_as_parent_branch;
     JCheckBoxMenuItem _show_default_node_shapes_internal_cbmi;
     JRadioButtonMenuItem _internal_labels_above_branch_rbmi;
@@ -429,6 +432,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         } else if (o == _outline_fonts_in_vector_export_cbmi) {
             updateOptions(getOptions());
         } else if (o == _transparent_export_background_cbmi) {
+            updateOptions(getOptions());
+        } else if (o == _graphics_export_white_background_cbmi) {
             updateOptions(getOptions());
         } else if (o == _color_labels_same_as_parent_branch) {
             updateOptions(getOptions());
@@ -1950,6 +1955,11 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 && _outline_fonts_in_vector_export_cbmi.isSelected());
         options.setTransparentExportBackground((_transparent_export_background_cbmi != null)
                 && _transparent_export_background_cbmi.isSelected());
+        // guarded (not the `!= null && isSelected` pattern): defaults ON, so a null checkbox must keep the
+        // default/persisted value rather than clear it (cf. show_tree_name)
+        if (_graphics_export_white_background_cbmi != null) {
+            options.setGraphicsExportWhiteBackground(_graphics_export_white_background_cbmi.isSelected());
+        }
         options.setColorLabelsSameAsParentBranch((_color_labels_same_as_parent_branch != null)
                 && _color_labels_same_as_parent_branch.isSelected());
         options.setShowDefaultNodeShapesInternal((_show_default_node_shapes_internal_cbmi != null)

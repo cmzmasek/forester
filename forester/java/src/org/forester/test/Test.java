@@ -586,6 +586,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("White image background for export/clipboard: ");
+        if (org.forester.archaeopteryx.ExportBackgroundTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("GUI display preferences persistence: ");
         if (org.forester.archaeopteryx.GuiPreferencesTest.test()) {
             System.out.println("OK.");

@@ -54,6 +54,8 @@ public final class TreeColorSet {
     // FlatLaf light/dark UI theme and are selected by MainFrame.updateTreeCanvasColors (driven by the
     // Settings "Theme" Light/Dark control). There is no scheme chooser or cycling.
     static final String[]      SCHEME_NAMES               = { "Dark", "Light" };
+    static final int           DARK_COLOR_SCHEME          = 0;
+    static final int           LIGHT_COLOR_SCHEME         = 1;
     private int                _color_scheme;
     // Each row holds one Color per COLOR_FIELDS entry, in that order (see setColorSchema).
     // Package-private (not private) so TreeColorSchemeTest can assert the row-width invariant.

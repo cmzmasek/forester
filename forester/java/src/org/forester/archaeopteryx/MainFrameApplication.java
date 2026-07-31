@@ -1400,6 +1400,8 @@ public final class MainFrameApplication extends MainFrame {
         _outline_fonts_in_vector_export_cbmi.setToolTipText(MainFrame.OUTLINE_FONTS_VECTOR_TIP);
         _transparent_export_background_cbmi = new JCheckBoxMenuItem(MainFrame.TRANSPARENT_BG_LABEL);
         _transparent_export_background_cbmi.setToolTipText(MainFrame.TRANSPARENT_BG_TIP);
+        _graphics_export_white_background_cbmi = new JCheckBoxMenuItem(MainFrame.WHITE_BG_LABEL);
+        _graphics_export_white_background_cbmi.setToolTipText(MainFrame.WHITE_BG_TIP);
         _label_direction_cbmi = new JCheckBoxMenuItem(LABEL_DIRECTION_LABEL);
         _label_direction_cbmi.setToolTipText(LABEL_DIRECTION_TIP);
         _color_all_found_nodes_when_coloring_subtree_cbmi = new JCheckBoxMenuItem("Colorize All Found Nodes When Colorizing Subtree(s)");
@@ -1437,6 +1439,8 @@ public final class MainFrameApplication extends MainFrame {
                 getOptions().isOutlineFontsInVectorExport());
         customizeCheckBoxMenuItem(_transparent_export_background_cbmi,
                 getOptions().isTransparentExportBackground());
+        customizeCheckBoxMenuItem(_graphics_export_white_background_cbmi,
+                getOptions().isGraphicsExportWhiteBackground());
         customizeCheckBoxMenuItem(_show_scale_cbmi, getOptions().isShowScale());
         customizeCheckBoxMenuItem(_show_tree_name_cbmi, getOptions().isShowTreeName());
         customizeCheckBoxMenuItem(_show_scale_grid_cbmi, getOptions().isShowScaleGrid());
