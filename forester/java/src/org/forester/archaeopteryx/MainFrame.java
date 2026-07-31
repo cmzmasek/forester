@@ -58,6 +58,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import javax.swing.JMenu;
@@ -142,7 +143,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     final static GraphicsFileFilter graphicsfilefilter = new GraphicsFileFilter();
     final static DefaultFilter defaultfilter = new DefaultFilter();
     static final String USE_MOUSEWHEEL_SHIFT_TO_ROTATE = "rotate with mousewheel + Shift (or A and S), D toggles between horizontal and radial labels";
-    static final String APTX_REF_TOOL_TIP = AptxConstants.APTX_REFERENCE;
     private static final long serialVersionUID = 3655000897845508358L;
     final static Font menu_font = new Font(Configuration.getDefaultFontFamilyName(),
             Font.PLAIN,
@@ -220,6 +220,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem _write_to_jpg_item;
     JMenuItem _write_to_tif_item;
     JMenuItem _write_to_png_item;
+    JMenuItem _copy_image_to_clipboard_item;
     JMenuItem _write_to_svg_item;
     JMenuItem _write_to_eps_item;
     JMenuItem _export_seqs_fasta_item;
@@ -569,6 +570,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             if (new_dir != null) {
                 setCurrentDir(new_dir);
             }
+        } else if (o == _copy_image_to_clipboard_item) {
+            copyImageToClipboard();
         } else if (o == _write_to_svg_item) {
             final File new_dir = writeToGraphicsFile(_mainpanel.getCurrentPhylogeny(),
                     GraphicsExportType.SVG,
@@ -2297,6 +2300,56 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             }
         }
         contentpane.repaint();
+    }
+
+    /** Outcome of a Copy-Image-to-Clipboard attempt; kept UI-free so the decision logic is unit-testable. */
+    enum ClipboardCopyResult {
+        COPIED, NO_TREE, CLIPBOARD_UNAVAILABLE
+    }
+
+    /** Testable core of File -> Copy Image to Clipboard: renders the current tree onto {@code clipboard} and
+     *  reports what happened. No dialogs, no reference to the system clipboard, so a test can drive it with a
+     *  private clipboard. */
+    ClipboardCopyResult copyImageToClipboard(final Clipboard clipboard) {
+        final TreePanel tp = getCurrentTreePanel();
+        if ((tp == null) || (tp.getPhylogeny() == null) || tp.getPhylogeny().isEmpty()) {
+            return ClipboardCopyResult.NO_TREE;
+        }
+        try {
+            return AptxUtil.copyPhylogenyImageToClipboard(tp, getOptions(), clipboard, null)
+                    ? ClipboardCopyResult.COPIED : ClipboardCopyResult.NO_TREE;
+        } catch (final RuntimeException ex) {
+            // best-effort: clipboard busy/owned (IllegalStateException), headless/denied (Headless/Security), or
+            // an unexpected rendering failure -- never let it escape uncaught onto the EDT.
+            return ClipboardCopyResult.CLIPBOARD_UNAVAILABLE;
+        }
+    }
+
+    /** File -> Copy Image to Clipboard: render the current tree as an (opaque) image and put it on the system
+     *  clipboard, ready to paste into a document or slide. Silent on success (the paste is the feedback);
+     *  warns only when there is no tree or the clipboard is unavailable. */
+    void copyImageToClipboard() {
+        final Clipboard clipboard;
+        try {
+            clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        } catch (final RuntimeException ex) {
+            // getSystemClipboard can throw HeadlessException / SecurityException
+            JOptionPane.showMessageDialog(this, "The clipboard is currently unavailable; please try again.",
+                    "Copy Image", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        switch (copyImageToClipboard(clipboard)) {
+            case NO_TREE:
+                JOptionPane.showMessageDialog(this, "There is no tree to copy.", "Copy Image",
+                        JOptionPane.WARNING_MESSAGE);
+                break;
+            case CLIPBOARD_UNAVAILABLE:
+                JOptionPane.showMessageDialog(this, "The clipboard is currently unavailable; please try again.",
+                        "Copy Image", JOptionPane.WARNING_MESSAGE);
+                break;
+            case COPIED:
+                break; // silent success
+        }
     }
 
     /** File -> Export Sequences (FASTA): write the current tree's tip molecular sequences as FASTA. */

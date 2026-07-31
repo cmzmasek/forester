@@ -21,6 +21,8 @@
 package org.forester.archaeopteryx;
 
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.ClipboardOwner;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -1239,6 +1241,60 @@ public final class AptxUtil {
                             : VectorGraphicsExporter.Format.EPS,
                     options.isOutlineFontsInVectorExport());
         }
+        final Phylogeny phylogeny = tree_panel.getPhylogeny();
+        if ((phylogeny == null) || phylogeny.isEmpty()) {
+            return "";
+        }
+        final File file = new File(file_name);
+        if (file.isDirectory()) {
+            throw new IOException("\"" + file_name + "\" is a directory");
+        }
+        if (options.isGraphicsExportVisibleOnly()) {
+            final Rectangle visible = tree_panel.getVisibleRect();
+            width = visible.width;
+            height = visible.height;
+        }
+        // Transparent background only for PNG (the other raster formats can't carry an alpha channel).
+        final BufferedImage buffered_img = renderPhylogenyToImage(width, height, tree_panel, options,
+                type == GraphicsExportType.PNG, options.getRasterExportScale(),
+                options.isGraphicsExportVisibleOnly());
+        if (buffered_img == null) {
+            return "";
+        }
+        if (type == GraphicsExportType.TIFF) {
+            writeToTiff(file, buffered_img);
+        } else {
+            ImageIO.write(buffered_img, type.toString(), file);
+        }
+        System.gc();
+        String msg = file.toString();
+        if ((width > 0) && (height > 0)) {
+            msg += " [size: " + width + ", " + height + "]";
+        }
+        return msg;
+    }
+
+    /**
+     * Re-renders the tree into a raster image -- a true re-render at the same logical coordinates, not pixel
+     * doubling -- honoring the antialias option. {@code render_scale} multiplies the canvas (1 = screen
+     * resolution; the file export passes the user's raster-export scale, the clipboard passes 1); the effective
+     * scale is capped so a huge figure x a high multiplier can't blow up memory. {@code visible_only} renders
+     * just the current viewport rectangle instead of the whole figure. The image carries an alpha channel only
+     * when {@code allow_transparent} and the transparent-background option are both on (i.e. PNG export);
+     * otherwise it is opaque, which pastes and prints cleanly. Returns null when there is no tree to draw or the
+     * target size is empty. Shared by the raster file export and the "Copy Image to Clipboard" action.
+     */
+    final static BufferedImage renderPhylogenyToImage(int width,
+                                                      int height,
+                                                      final TreePanel tree_panel,
+                                                      final Options options,
+                                                      final boolean allow_transparent,
+                                                      final int render_scale,
+                                                      final boolean visible_only) {
+        final Phylogeny phylogeny = tree_panel.getPhylogeny();
+        if ((phylogeny == null) || phylogeny.isEmpty()) {
+            return null;
+        }
         final RenderingHints rendering_hints = new RenderingHints(RenderingHints.KEY_RENDERING,
                 RenderingHints.VALUE_RENDER_QUALITY);
         rendering_hints.put(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
@@ -1249,42 +1305,37 @@ public final class AptxUtil {
             rendering_hints.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
             rendering_hints.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
         }
-        final Phylogeny phylogeny = tree_panel.getPhylogeny();
-        if ((phylogeny == null) || phylogeny.isEmpty()) {
-            return "";
-        }
-        final File file = new File(file_name);
-        if (file.isDirectory()) {
-            throw new IOException("\"" + file_name + "\" is a directory");
-        }
         Rectangle visible = null;
-        if (options.isGraphicsExportVisibleOnly()) {
+        if (visible_only) {
             visible = tree_panel.getVisibleRect();
             width = visible.width;
             height = visible.height;
         }
-        // Higher-resolution export: re-render the figure onto a scale-times-larger canvas (a true
-        // re-render at the same logical coordinates, not pixel doubling), for crisp publication output.
+        if ((width <= 0) || (height <= 0)) {
+            return null; // nothing to draw into (e.g. an un-laid-out panel)
+        }
         // Cap the effective scale so a large figure x a high multiplier can't blow up memory (~100 MP /
         // 400 MB ceiling); normal-sized figures keep the requested scale.
-        int scale = options.getRasterExportScale();
+        int scale = (render_scale < 1) ? 1 : render_scale;
         final long max_export_pixels = 100_000_000L;
         while ((scale > 1) && ((((long) width * scale) * ((long) height * scale)) > max_export_pixels)) {
             --scale;
         }
-        // Transparent background only for PNG (the other raster formats can't carry an alpha channel).
-        final boolean transparent = options.isTransparentExportBackground() && (type == GraphicsExportType.PNG);
+        final boolean transparent = allow_transparent && options.isTransparentExportBackground();
         final BufferedImage buffered_img = new BufferedImage(width * scale, height * scale,
                 transparent ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB);
-        Graphics2D g2d = buffered_img.createGraphics();
-        g2d.setRenderingHints(rendering_hints);
+        // Keep the base context so BOTH it and any derived (translated) context are disposed -- even if
+        // paintPhylogeny throws -- otherwise the base Graphics2D leaks native resources on the visible-only path.
+        final Graphics2D base_g2d = buffered_img.createGraphics();
+        base_g2d.setRenderingHints(rendering_hints);
         if (scale != 1) {
-            g2d.scale(scale, scale);
+            base_g2d.scale(scale, scale);
         }
         int x = 0;
         int y = 0;
-        if (options.isGraphicsExportVisibleOnly()) {
-            g2d = (Graphics2D) g2d.create(-visible.x, -visible.y, visible.width, visible.height);
+        Graphics2D g2d = base_g2d;
+        if (visible != null) {
+            g2d = (Graphics2D) base_g2d.create(-visible.x, -visible.y, visible.width, visible.height);
             g2d.setClip(null);
             x = visible.x;
             y = visible.y;
@@ -1294,22 +1345,45 @@ public final class AptxUtil {
             tree_panel.paintPhylogeny(g2d, false, true, width, height, x, y);
         } finally {
             tree_panel.setExportTransparentBackground(false);
+            if (g2d != base_g2d) {
+                g2d.dispose();
+            }
+            base_g2d.dispose();
         }
-        if (type == GraphicsExportType.TIFF) {
-            writeToTiff(file, buffered_img);
-        } else {
-            ImageIO.write(buffered_img, type.toString(), file);
-        }
-        g2d.dispose();
-        System.gc();
         if (!options.isGraphicsExportUsingActualSize()) {
             tree_panel.getMainPanel().getControlPanel().showWhole();
         }
-        String msg = file.toString();
-        if ((width > 0) && (height > 0)) {
-            msg += " [size: " + width + ", " + height + "]";
+        return buffered_img;
+    }
+
+    /**
+     * Renders the current tree to an opaque raster image and puts it on {@code clipboard} as
+     * {@link java.awt.datatransfer.DataFlavor#imageFlavor}, ready to paste into a document or slide. Deliberately
+     * renders the WHOLE figure at screen resolution (scale 1, not the file-export scale) so a copy does not
+     * silently become a huge multi-hundred-MB bitmap, and ignores the visible-only export toggle so a copy is
+     * always the full tree. Opaque on purpose: a transparent clipboard image pastes with a black box in many
+     * applications. Returns false (nothing written) when there is no tree to copy or it has no drawable size.
+     */
+    final static boolean copyPhylogenyImageToClipboard(final TreePanel tree_panel,
+                                                       final Options options,
+                                                       final Clipboard clipboard,
+                                                       final ClipboardOwner owner) {
+        if (tree_panel == null) {
+            return false;
         }
-        return msg;
+        final Phylogeny phylogeny = tree_panel.getPhylogeny();
+        if ((phylogeny == null) || phylogeny.isEmpty()) {
+            return false;
+        }
+        tree_panel.calcParametersForPainting(tree_panel.getWidth(), tree_panel.getHeight());
+        // scale 1 + visible_only=false: a screen-resolution image of the whole tree, not the 4x publication export.
+        final BufferedImage img = renderPhylogenyToImage(tree_panel.getWidth(), tree_panel.getHeight(), tree_panel,
+                options, false, 1, false);
+        if (img == null) {
+            return false;
+        }
+        clipboard.setContents(new ImageSelection(img), owner);
+        return true;
     }
 
     final static void writeToTiff(final File file, final BufferedImage image) throws IOException {

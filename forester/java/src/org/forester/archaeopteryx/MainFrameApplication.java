@@ -117,7 +117,7 @@ public final class MainFrameApplication extends MainFrame {
             throw new IllegalArgumentException("configuration is null");
         }
         setVisible(false);
-        setOptions(Options.createInstance(_configuration));
+        setOptions(optionsWithSavedPreferences());
         _mainpanel = new MainPanel(_configuration, this);
         installTabContextMenu();
         _open_filechooser = null;
@@ -183,7 +183,7 @@ public final class MainFrameApplication extends MainFrame {
         }
         // hide until everything is ready
         setVisible(false);
-        setOptions(Options.createInstance(_configuration));
+        setOptions(optionsWithSavedPreferences());
         // set title
         setTitle(AptxConstants.PRG_NAME + " " + AptxConstants.VERSION + " (" + AptxConstants.PRG_DATE + ")");
         _mainpanel = new MainPanel(_configuration, this);
@@ -1310,6 +1310,9 @@ public final class MainFrameApplication extends MainFrame {
         }
         _file_jmenu.add(_write_to_png_item = new JMenuItem("Export to PNG file..."));
         _file_jmenu.add(_write_to_jpg_item = new JMenuItem("Export to JPG file..."));
+        _file_jmenu.add(_copy_image_to_clipboard_item = new JMenuItem("Copy Image to Clipboard"));
+        _copy_image_to_clipboard_item
+                .setToolTipText("Copy the current tree as an image, ready to paste into a document or slide");
         _file_jmenu.addSeparator();
         // Most users never read the manual, so the menu tooltips advertise how to narrow the export.
         final String scope_hint = "<br><i>Use sub-tree display, search, and/or node selection to restrict "
@@ -1342,6 +1345,7 @@ public final class MainFrameApplication extends MainFrame {
         customizeJMenuItem(_write_to_eps_item);
         customizeJMenuItem(_write_to_png_item);
         customizeJMenuItem(_write_to_jpg_item);
+        customizeJMenuItem(_copy_image_to_clipboard_item);
         customizeJMenuItem(_write_to_tif_item);
         customizeJMenuItem(_export_seqs_fasta_item);
         customizeJMenuItem(_export_node_data_item);
@@ -1579,7 +1583,16 @@ public final class MainFrameApplication extends MainFrame {
         exit();
     }
 
+    /** Fresh Options seeded from the configuration, then overlaid with the user's persisted display toggles
+     *  (so the view the user last chose is restored). Paired with the saveFrom(...) in {@link #exit()}. */
+    private Options optionsWithSavedPreferences() {
+        final Options options = Options.createInstance(_configuration);
+        new GuiPreferences().applyTo(options);
+        return options;
+    }
+
     void exit() {
+        new GuiPreferences().saveFrom(getOptions()); // persist the display toggles for the next session
         removeAllTextFrames();
         _mainpanel.terminate();
         _contentpane.removeAll();

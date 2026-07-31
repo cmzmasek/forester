@@ -34,7 +34,14 @@ final class MouseListener extends MouseAdapter implements MouseMotionListener {
     private final TreePanel _treepanel;
     private boolean         _being_dragged = false;
     private boolean         _dragging_legend = false;
+    // Whether the current legend gesture has moved the legend past LEGEND_DRAG_THRESHOLD. Set in mouseDragged,
+    // consulted (and cleared) by the trailing mouseClicked so a real drag is not ALSO read as a chip click.
+    private boolean         _legend_moved  = false;
     private final Point     _click_point   = new Point();
+    private final Point     _legend_press_point = new Point();
+    // Pixels the pointer must travel from the press point before a press on the legend counts as a drag rather
+    // than a click; below this, a tiny press+jitter on a chip stays a pure click and does not nudge the legend.
+    private static final int LEGEND_DRAG_THRESHOLD = 5;
 
     /**
      * Constructor.
@@ -48,6 +55,12 @@ final class MouseListener extends MouseAdapter implements MouseMotionListener {
      */
     @Override
     public void mouseClicked( final MouseEvent e ) {
+        if ( _legend_moved ) {
+            // this "click" is only the tail of a real legend drag (press + move + release); the legend was
+            // already repositioned, so do not ALSO treat it as a recolor/toggle click. See mouseDragged.
+            _legend_moved = false;
+            return;
+        }
         if ( _treepanel.isOnPropertyLegend( e ) ) {
             _treepanel.handleLegendClick( e ); // recolor a value row, or double-click to reset position
             return; // a click on the legend is not a node action
@@ -62,6 +75,14 @@ final class MouseListener extends MouseAdapter implements MouseMotionListener {
     @Override
     public void mouseDragged( final MouseEvent e ) {
         if ( _dragging_legend ) {
+            // sub-threshold jitter: keep treating the gesture as a click-in-progress and leave the legend put,
+            // so a click on a chip does not also nudge the legend. Once the pointer travels far enough the
+            // gesture becomes a drag (and _legend_moved swallows any trailing click).
+            if ( !_legend_moved && ( Math.abs( e.getX() - _legend_press_point.x ) < LEGEND_DRAG_THRESHOLD )
+                    && ( Math.abs( e.getY() - _legend_press_point.y ) < LEGEND_DRAG_THRESHOLD ) ) {
+                return;
+            }
+            _legend_moved = true;
             _treepanel.dragLegend( e );
             return;
         }
@@ -103,8 +124,10 @@ final class MouseListener extends MouseAdapter implements MouseMotionListener {
 
     @Override
     public void mousePressed( final MouseEvent e ) {
+        _legend_moved = false; // a fresh gesture: no legend drag has happened yet
         if ( ( e.getModifiersEx() == InputEvent.BUTTON1_DOWN_MASK ) && _treepanel.isOnPropertyLegend( e ) ) {
             _dragging_legend = true;
+            _legend_press_point.setLocation( e.getX(), e.getY() );
             _treepanel.startLegendDrag( e );
             return;
         }

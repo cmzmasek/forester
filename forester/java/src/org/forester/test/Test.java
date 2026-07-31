@@ -145,6 +145,20 @@ public final class Test {
                 + "]");
         Locale.setDefault(Locale.US);
         System.out.println("[Locale: " + Locale.getDefault() + "]");
+        // Isolate persisted app state (the taxonomy cache AND the GUI display-settings file, both under
+        // ~/.archaeopteryx) from the developer's real home directory: point the shared override property at a
+        // throwaway temp dir. Otherwise the headful GUI tests that construct MainFrameApplication would read the
+        // real display-settings.properties and inherit whatever toggles the developer last saved -- making
+        // pixel/geometry-sensitive tests depend on machine state. Only set it if the harness hasn't already.
+        if (System.getProperty("archaeopteryx.cache.dir") == null) {
+            try {
+                final java.nio.file.Path tmp = java.nio.file.Files.createTempDirectory("aptx-test-cache");
+                tmp.toFile().deleteOnExit();
+                System.setProperty("archaeopteryx.cache.dir", tmp.toString());
+            } catch (final Exception e) {
+                // best-effort: fall back to the real dir (tests still run, just not isolated)
+            }
+        }
         int failed = 0;
         int succeeded = 0;
         System.out.print("[Test if directory with files for testing exists/is readable: ");
@@ -542,6 +556,38 @@ public final class Test {
         }
         System.out.print("Legend drag: ");
         if (org.forester.archaeopteryx.LegendDragTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Legend click/drag discrimination: ");
+        if (org.forester.archaeopteryx.LegendClickDragTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Image selection (clipboard transferable): ");
+        if (org.forester.archaeopteryx.ImageSelectionTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Copy image to clipboard: ");
+        if (org.forester.archaeopteryx.ClipboardImageTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("GUI display preferences persistence: ");
+        if (org.forester.archaeopteryx.GuiPreferencesTest.test()) {
             System.out.println("OK.");
             succeeded++;
         } else {

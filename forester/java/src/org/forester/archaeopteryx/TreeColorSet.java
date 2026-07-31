@@ -142,9 +142,6 @@ public final class TreeColorSet {
     }
 
     Color getBinaryDomainCombinationsColor() {
-        if ( AptxConstants.SPECIAL_CUSTOM ) {
-            return new Color( 50, 50, 50 );
-        }
         return binary_domain_combinations_color;
     }
 

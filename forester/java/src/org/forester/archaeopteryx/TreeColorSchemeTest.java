@@ -70,6 +70,16 @@ public final class TreeColorSchemeTest {
                 || !Color.BLACK.equals( tcs.getSequenceColor() ) || !"Light".equals( tcs.getCurrentColorSchemeName() ) ) {
             return false;
         }
+        // the binary-domain-combinations color must come straight from the active scheme (the dead
+        // SPECIAL_CUSTOM override that returned a fixed gray was removed)
+        tcs.setColorSchema( 0 );
+        if ( !new Color( 65, 105, 255 ).equals( tcs.getBinaryDomainCombinationsColor() ) ) {
+            return false;
+        }
+        tcs.setColorSchema( 1 );
+        if ( !Color.BLACK.equals( tcs.getBinaryDomainCombinationsColor() ) ) {
+            return false;
+        }
         return true;
     }
 

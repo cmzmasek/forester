@@ -2405,9 +2405,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final float x = node.getXcoord();
             g.setFont(getTreeFontSet().getLargeFont());
             g.setColor(getTreeColorSet().getGainedCharactersColor());
-            if (AptxConstants.SPECIAL_CUSTOM) {
-                g.setColor(Color.BLUE);
-            }
             TreePanel.drawString(gained,
                     parent_x + ((x - parent_x
                             - getFontMetricsForLargeDefaultFont().stringWidth(gained)) / 2),

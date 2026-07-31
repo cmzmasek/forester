@@ -29,8 +29,8 @@ import org.forester.util.ForesterConstants;
 public final class AptxConstants {
 
     public final static String PRG_NAME = "Archaeopteryx";
-    final static String VERSION = "0.9.62";
-    final static String PRG_DATE = "2026-07-30";
+    final static String VERSION = "0.9.63";
+    final static String PRG_DATE = "2026-07-31";
     // The first three are bundled and registered at startup (see FontResources), so they are always
     // present and give identical, reproducible figure type across platforms; the rest are fallbacks.
     final static String[] DEFAULT_FONT_CHOICES = {
@@ -50,7 +50,6 @@ public final class AptxConstants {
     final static float WHEEL_ZOOM_OUT_FACTOR = 1 / AptxConstants.WHEEL_ZOOM_IN_FACTOR;
     final static float WHEEL_ZOOM_IN_X_CORRECTION_FACTOR = 1.085f;
     final static float WHEEL_ZOOM_OUT_X_CORRECTION_FACTOR = 1 / AptxConstants.WHEEL_ZOOM_IN_X_CORRECTION_FACTOR;
-    static final boolean SPECIAL_CUSTOM = false;                                                                             //TODO remove me
     static final double EXT_NODE_INFO_LENGTH_MAX_RATIO = 0.95;
     static final Dimension NODE_PANEL_SPLIT_MINIMUM_SIZE = new Dimension(100, 50);
     static final Dimension NODE_PANEL_SIZE = new Dimension(500, 540);
@@ -61,8 +60,6 @@ public final class AptxConstants {
     final static String APTX_JS_WEB_SITE = "https://sites.google.com/view/archaeopteryxjs";
     final static String APTX_DOC_SITE = "https://sites.google.com/view/cmzmasek/christian-zmasek/software/archaeopteryx/documentation";
     final static String PHYLOXML_REFERENCE_URL = "http://www.biomedcentral.com/1471-2105/10/356/";
-    final static String APTX_REFERENCE_URL = "http://www.biomedcentral.com/bmcbioinformatics/";
-    final static String APTX_REFERENCE = "Zmasek...";                                                                       //TODO
     final static String PHYLOXML_REFERENCE = ForesterConstants.PHYLO_XML_REFERENCE;
     final static String PHYLOXML_REFERENCE_SHORT = "Han MV and Zmasek CM (2009), BMC Bioinformatics, 10:356";
     final static short NUMBER_OF_DIGITS_AFTER_COMMA_FOR_BRANCH_LENGTH_VALUES_DEFAULT = 3;
