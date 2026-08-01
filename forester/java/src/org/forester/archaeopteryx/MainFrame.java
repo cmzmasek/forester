@@ -2310,9 +2310,12 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         try {
             return AptxUtil.copyPhylogenyImageToClipboard(tp, getOptions(), clipboard, null)
                     ? ClipboardCopyResult.COPIED : ClipboardCopyResult.NO_TREE;
-        } catch (final RuntimeException ex) {
-            // best-effort: clipboard busy/owned (IllegalStateException), headless/denied (Headless/Security), or
-            // an unexpected rendering failure -- never let it escape uncaught onto the EDT.
+        } catch (final RuntimeException | OutOfMemoryError ex) {
+            // best-effort: clipboard busy/owned (IllegalStateException), headless/denied (Headless/Security), an
+            // unexpected rendering failure, or an OutOfMemoryError -- rendering now uses the raster-export scale
+            // (default 4x), so a large tree can request a big bitmap (bounded by renderPhylogenyToImage's 100 MP
+            // cap) and OOM on a small heap. A single failed allocation is recoverable once dropped, so catch it too
+            // rather than let it escape onto the EDT; the oversized image is unreferenced on return.
             return ClipboardCopyResult.CLIPBOARD_UNAVAILABLE;
         }
     }
@@ -2336,7 +2339,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                         JOptionPane.WARNING_MESSAGE);
                 break;
             case CLIPBOARD_UNAVAILABLE:
-                JOptionPane.showMessageDialog(this, "The clipboard is currently unavailable; please try again.",
+                JOptionPane.showMessageDialog(this,
+                        "The image could not be copied; the clipboard may be busy, or the figure may be too large "
+                                + "to copy at the current export resolution (lower it in Options). Please try again.",
                         "Copy Image", JOptionPane.WARNING_MESSAGE);
                 break;
             case COPIED:

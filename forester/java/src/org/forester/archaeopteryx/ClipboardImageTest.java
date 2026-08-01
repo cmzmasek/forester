@@ -63,6 +63,7 @@ public final class ClipboardImageTest {
             final boolean[] ok = { true };
             SwingUtilities.invokeAndWait( () -> {
                 final MainFrame frame = mf[ 0 ];
+                try { // dispose the frame even if an assertion path throws (symmetry with the NO_TREE block below)
                 final TreePanel tp = frame.getMainPanel().getCurrentTreePanel();
                 final Options opts = frame.getOptions();
                 opts.setGraphicsExportVisibleOnly( false ); // deterministic: render the whole 800x600 canvas
@@ -111,8 +112,9 @@ public final class ClipboardImageTest {
                     }
                 }
 
-                // the clipboard render must stay SCREEN resolution (scale 1) even when the file-export scale is
-                // high -- a copy must not silently produce a 4x bitmap
+                // the clipboard render now honors the user's raster-export scale (publication quality), so a high
+                // export scale must produce a correspondingly larger bitmap -- NOT a screen-scale one. (cw x ch here
+                // is small, so cw*4 x ch*4 stays well under renderPhylogenyToImage's 100 MP cap; scale is not clamped.)
                 opts.setRasterExportScale( 4 );
                 final int cw = tp.getWidth();
                 final int ch = tp.getHeight();
@@ -124,9 +126,9 @@ public final class ClipboardImageTest {
                     try {
                         final BufferedImage cbi = (BufferedImage) scale_clip.getContents( null )
                                 .getTransferData( DataFlavor.imageFlavor );
-                        if ( ( cbi.getWidth() != cw ) || ( cbi.getHeight() != ch ) ) {
-                            fail( ok, "clipboard image must be screen-scale " + cw + "x" + ch
-                                    + " regardless of export scale, got " + cbi.getWidth() + "x" + cbi.getHeight() );
+                        if ( ( cbi.getWidth() != cw * 4 ) || ( cbi.getHeight() != ch * 4 ) ) {
+                            fail( ok, "clipboard image must honor the 4x export scale (" + ( cw * 4 ) + "x" + ( ch * 4 )
+                                    + "), got " + cbi.getWidth() + "x" + cbi.getHeight() );
                         }
                     }
                     catch ( final Exception e ) {
@@ -145,7 +147,10 @@ public final class ClipboardImageTest {
                     fail( ok, "copyImageToClipboard(core) did not put an image on the clipboard" );
                 }
 
-                ( (JFrame) frame ).dispose();
+                }
+                finally {
+                    ( (JFrame) frame ).dispose();
+                }
             } );
             // NO_TREE: a frame with an empty/absent current tree must report NO_TREE and write nothing
             SwingUtilities.invokeAndWait( () -> {

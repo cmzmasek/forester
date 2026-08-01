@@ -610,6 +610,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Taxonomy / node-name label overlap: ");
+        if (org.forester.archaeopteryx.TaxonomyNodeLabelOverlapTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("GUI display preferences persistence: ");
         if (org.forester.archaeopteryx.GuiPreferencesTest.test()) {
             System.out.println("OK.");

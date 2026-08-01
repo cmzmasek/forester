@@ -1278,8 +1278,9 @@ public final class AptxUtil {
     /**
      * Re-renders the tree into a raster image -- a true re-render at the same logical coordinates, not pixel
      * doubling -- honoring the antialias option. {@code render_scale} multiplies the canvas (1 = screen
-     * resolution; the file export passes the user's raster-export scale, the clipboard passes 1); the effective
-     * scale is capped so a huge figure x a high multiplier can't blow up memory. {@code visible_only} renders
+     * resolution; both the file export and the clipboard copy pass the user's raster-export scale); the effective
+     * scale is capped -- reduced toward 1 for a very large figure -- so a huge figure x a high multiplier can't
+     * blow up memory (so the actual output scale may be less than requested). {@code visible_only} renders
      * just the current viewport rectangle instead of the whole figure. The image carries an alpha channel only
      * when {@code allow_transparent} and the transparent-background option are both on (i.e. PNG export);
      * otherwise it is opaque, which pastes and prints cleanly. Returns null when there is no tree to draw or the
@@ -1366,11 +1367,13 @@ public final class AptxUtil {
 
     /**
      * Renders the current tree to an opaque raster image and puts it on {@code clipboard} as
-     * {@link java.awt.datatransfer.DataFlavor#imageFlavor}, ready to paste into a document or slide. Deliberately
-     * renders the WHOLE figure at screen resolution (scale 1, not the file-export scale) so a copy does not
-     * silently become a huge multi-hundred-MB bitmap, and ignores the visible-only export toggle so a copy is
-     * always the full tree. Opaque on purpose: a transparent clipboard image pastes with a black box in many
-     * applications. Returns false (nothing written) when there is no tree to copy or it has no drawable size.
+     * {@link java.awt.datatransfer.DataFlavor#imageFlavor}, ready to paste into a document or slide. Renders the
+     * WHOLE figure (ignores the visible-only export toggle so a copy is always the full tree) at the user's
+     * raster-export scale -- the same publication-quality knob the file export uses -- so a paste is crisp rather
+     * than screen-soft; the shared 100 MP cap in {@link #renderPhylogenyToImage} keeps a huge figure x a high
+     * multiplier from blowing up memory (a very large tree copies at a reduced scale, so it may not reach the full
+     * requested resolution). Opaque on purpose: a transparent clipboard image pastes with a black box
+     * in many applications. Returns false (nothing written) when there is no tree to copy or it has no drawable size.
      */
     final static boolean copyPhylogenyImageToClipboard(final TreePanel tree_panel,
                                                        final Options options,
@@ -1384,9 +1387,10 @@ public final class AptxUtil {
             return false;
         }
         tree_panel.calcParametersForPainting(tree_panel.getWidth(), tree_panel.getHeight());
-        // scale 1 + visible_only=false: a screen-resolution image of the whole tree, not the 4x publication export.
+        // raster-export scale + visible_only=false: a full-tree image at the user's publication export quality
+        // (not screen-soft scale 1); renderPhylogenyToImage's 100 MP cap protects memory for large figures.
         final BufferedImage img = renderPhylogenyToImage(tree_panel.getWidth(), tree_panel.getHeight(), tree_panel,
-                options, false, 1, false);
+                options, false, options.getRasterExportScale(), false);
         if (img == null) {
             return false;
         }

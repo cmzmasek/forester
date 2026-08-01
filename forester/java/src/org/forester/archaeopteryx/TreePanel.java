@@ -194,6 +194,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private static final float ANGLE_ROTATION_UNIT = (float) (Math.PI
             / 32);
     private final static int CONFIDENCE_LEFT_MARGIN = 4;
+    // Gap (px) between the node shape and the first label glyph. The taxonomy label and the node-data label that
+    // follows it MUST use the same value (via labelSegmentStartX) so the node data begins exactly where the
+    // taxonomy label ends. When the two differed (taxonomy 3, node data 2), the node data started a pixel inside
+    // the taxonomy box and an italic scientific name's right overhang overlapped the following node name.
+    private final static int LABEL_GAP_AFTER_NODE_SHAPE = 2;
     // Horizontal gap between the taxonomy and node-data segments of an above-the-branch internal label.
     private final static int INTERNAL_LABEL_SEGMENT_GAP = 5;
     // Smallest x an above-the-branch internal label may start at: a long label on an internal node near
@@ -2827,10 +2832,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         float pos_x;
         if ((getControlPanel().getTreeDisplayType() == Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM)
                 && (node.isExternal() || node.isCollapse())) {
-            pos_x = (float) ((getMaxDistanceToRoot() * getXcorrectionFactor())
-                    + (getOptions().getDefaultNodeShapeSize() / 2) + x + TreePanel.MOVE + getXdistance() + 2);
+            pos_x = labelSegmentStartX((float) ((getMaxDistanceToRoot() * getXcorrectionFactor()) + TreePanel.MOVE
+                    + getXdistance()), half_box_size, x);
         } else {
-            pos_x = node.getXcoord() + x + 2 + half_box_size;
+            pos_x = labelSegmentStartX(node.getXcoord(), half_box_size, x);
         }
         float pos_y;
         if (!using_visual_font) {
@@ -3710,12 +3715,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final Taxonomy taxonomy = node.getNodeData().getTaxonomy();
         final boolean using_visual_font = setFont(g, node);
         setColor(g, node, to_graphics_file, to_pdf, is_in_found_nodes, getTreeColorSet().getTaxonomyColor());
-        float start_x = node.getXcoord() + 3 + (getOptions().getDefaultNodeShapeSize() / 2) + x_shift;
+        float start_x = labelSegmentStartX(node.getXcoord(), getOptions().getDefaultNodeShapeSize() / 2, x_shift);
         if ((getControlPanel().getTreeDisplayType() == Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM)
                 && node.isExternal()) {
-            start_x = (float) ((getMaxDistanceToRoot() * getXcorrectionFactor())
-                    + (getOptions().getDefaultNodeShapeSize() / 2) + x_shift + TreePanel.MOVE + getXdistance()
-                    + 3);
+            start_x = labelSegmentStartX((float) ((getMaxDistanceToRoot() * getXcorrectionFactor()) + TreePanel.MOVE
+                    + getXdistance()), getOptions().getDefaultNodeShapeSize() / 2, x_shift);
         }
         float start_y;
         if (!using_visual_font) {
@@ -3789,6 +3793,21 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     /** Set by AptxUtil around a PNG export so paintPhylogeny leaves the background transparent. */
     void setExportTransparentBackground(final boolean transparent) {
         _export_transparent_background = transparent;
+    }
+
+    /**
+     * X at which a node label segment starts: an anchor ({@code base_x} -- the node's x, or the aligned-phylogram
+     * right margin) plus half the node-shape size, {@link #LABEL_GAP_AFTER_NODE_SHAPE}, and the total width of any
+     * label segment already laid out to its left ({@code prior_width}). The taxonomy label passes the x consumed so
+     * far; the node-data label passes that SAME x plus the taxonomy width, so when both segments share the same
+     * anchor the node data begins exactly where the taxonomy label ends, not a pixel inside it (which let an italic
+     * scientific name's right overhang overlap the following node name). NOTE this abutment holds only when the two
+     * segments pass the same base_x: for a collapsed node in aligned-phylogram mode the taxonomy uses the node's x
+     * while the node data uses the aligned right margin (pre-existing), so they do not abut there. Shared by the
+     * taxonomy and node-data segments; other label bits (e.g. paintSequenceRelation) still position independently.
+     */
+    static float labelSegmentStartX(final float base_x, final int half_box_size, final float prior_width) {
+        return base_x + half_box_size + LABEL_GAP_AFTER_NODE_SHAPE + prior_width;
     }
 
     /** The italic-derived variant of {@code base}, cached so repeated paints don't re-allocate the Font. */
