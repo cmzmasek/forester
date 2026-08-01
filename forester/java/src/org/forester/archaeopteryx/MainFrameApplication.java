@@ -22,6 +22,7 @@ package org.forester.archaeopteryx;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
@@ -122,6 +123,7 @@ public final class MainFrameApplication extends MainFrame {
         }
         setVisible(false);
         setOptions(optionsWithSavedPreferences());
+        registerMacOsQuitHandler();
         _mainpanel = new MainPanel(_configuration, this);
         installTabContextMenu();
         _open_filechooser = null;
@@ -188,6 +190,7 @@ public final class MainFrameApplication extends MainFrame {
         // hide until everything is ready
         setVisible(false);
         setOptions(optionsWithSavedPreferences());
+        registerMacOsQuitHandler();
         // set title
         setTitle(AptxConstants.PRG_NAME + " " + AptxConstants.VERSION + " (" + AptxConstants.PRG_DATE + ")");
         _mainpanel = new MainPanel(_configuration, this);
@@ -1287,7 +1290,6 @@ public final class MainFrameApplication extends MainFrame {
         }
     }
 
-    @Override
     void buildFileMenu() {
         _file_jmenu = MainFrame.createMenu("File", getConfiguration());
         _file_jmenu.setToolTipText("Read, save, and export trees; close tabs or exit");
@@ -1609,6 +1611,26 @@ public final class MainFrameApplication extends MainFrame {
         final Options options = Options.createInstance(_configuration);
         new GuiPreferences().applyTo(options);
         return options;
+    }
+
+    /** {@link #exit()} saves the display toggles on the normal window-close / File&gt;Exit paths. On macOS, Cmd-Q
+     *  and the app-menu Quit can bypass those, so route the app-quit request through {@link #close()} (same
+     *  unsaved-data confirmation; exit() then saves the settings). macOS-only and best-effort. Unlike a JVM
+     *  shutdown hook this fires ONLY on a real user quit -- never during (headless or standalone) test runs, and
+     *  it's a per-JVM singleton, so there is no concurrent-write race and no risk of overwriting the developer's
+     *  real ~/.archaeopteryx from a test. */
+    private void registerMacOsQuitHandler() {
+        try {
+            if (Desktop.isDesktopSupported()
+                    && Desktop.getDesktop().isSupported(Desktop.Action.APP_QUIT_HANDLER)) {
+                Desktop.getDesktop().setQuitHandler((event, response) -> {
+                    response.cancelQuit(); // we drive the quit ourselves via close() (which may prompt / dispose)
+                    close();
+                });
+            }
+        } catch (final Throwable t) {
+            // best-effort: exit()'s save still covers the normal window-close / File>Exit paths
+        }
     }
 
     void exit() {

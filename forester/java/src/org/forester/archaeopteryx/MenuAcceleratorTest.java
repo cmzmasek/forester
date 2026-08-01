@@ -76,6 +76,11 @@ public final class MenuAcceleratorTest {
                     if ( frame._new_item != null ) {
                         expect( ok, "New", frame._new_item, KeyStroke.getKeyStroke( KeyEvent.VK_N, sc ) );
                     }
+                    // View > Fit to Window = Cmd/Ctrl+0; invoking it must not throw (fits the tree)
+                    expect( ok, "Fit to Window", frame._fit_to_window_item, KeyStroke.getKeyStroke( KeyEvent.VK_0, sc ) );
+                    if ( frame._fit_to_window_item != null ) {
+                        frame._fit_to_window_item.doClick();
+                    }
 
                     // The focused-canvas key listener must NOT consume a menu-shortcut (Cmd/Ctrl) key -- otherwise
                     // it would shadow the accelerator entirely (a KeyListener runs before WHEN_IN_FOCUSED_WINDOW
@@ -91,12 +96,22 @@ public final class MenuAcceleratorTest {
                         fail( ok, "the canvas key listener must not consume a menu-shortcut key (it would shadow the "
                                 + "menu accelerator)" );
                     }
-                    final KeyEvent plain = new KeyEvent( tp, KeyEvent.KEY_PRESSED, when, 0, KeyEvent.VK_B, 'B' );
+                    // a plain key the canvas HANDLES (HOME = fit to window) is consumed...
+                    final KeyEvent handled_key = new KeyEvent( tp, KeyEvent.KEY_PRESSED, when, 0, KeyEvent.VK_HOME,
+                                                               KeyEvent.CHAR_UNDEFINED );
                     for( final KeyListener kl : tp.getKeyListeners() ) {
-                        kl.keyPressed( plain );
+                        kl.keyPressed( handled_key );
                     }
-                    if ( !plain.isConsumed() ) {
-                        fail( ok, "the canvas key listener must still consume a plain (non-shortcut) key" );
+                    if ( !handled_key.isConsumed() ) {
+                        fail( ok, "the canvas key listener must consume a plain key it handles (HOME)" );
+                    }
+                    // ...but a plain key it does NOT handle must propagate (not be swallowed)
+                    final KeyEvent unhandled_key = new KeyEvent( tp, KeyEvent.KEY_PRESSED, when, 0, KeyEvent.VK_B, 'B' );
+                    for( final KeyListener kl : tp.getKeyListeners() ) {
+                        kl.keyPressed( unhandled_key );
+                    }
+                    if ( unhandled_key.isConsumed() ) {
+                        fail( ok, "the canvas key listener must not consume a key it does not handle" );
                     }
                 }
                 catch ( final Throwable t ) {

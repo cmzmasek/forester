@@ -45,7 +45,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.font.FontRenderContext;
-import java.awt.font.TextAttribute;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Arc2D;
@@ -64,7 +63,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
-import java.text.AttributedString;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
@@ -350,7 +348,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private double _confidence_scale_max = 1.0;
     private int _length_of_longest_text;
     private int _longest_domain;
-    private Map<String, AttributedString> _attributed_string_map = null;
 
     static {
         final DecimalFormatSymbols dfs = new DecimalFormatSymbols();
@@ -1403,56 +1400,73 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 setInOvRect(false);
             }
         }
+        // Only keys this handler actually acts on are consumed; anything else propagates (so e.g. focus
+        // traversal and other bindings aren't silently swallowed by the focus-grabbing canvas).
+        boolean handled = false;
         if (e.isAltDown()) {
             if ((e.getKeyCode() == KeyEvent.VK_DELETE) || (e.getKeyCode() == KeyEvent.VK_HOME)
                     || (e.getKeyCode() == KeyEvent.VK_C) || (e.getKeyCode() == KeyEvent.VK_BACK_SPACE)) {
                 getControlPanel().showWhole();
+                handled = true;
             } else if (e.isShiftDown()
                     && ((e.getKeyCode() == KeyEvent.VK_SUBTRACT) || (e.getKeyCode() == KeyEvent.VK_MINUS))) {
                 getMainPanel().getTreeFontSet().decreaseUserFontSize();
                 getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged(true);
+                handled = true;
             } else if (e.isShiftDown() && plusPressed(e.getKeyCode())) {
                 getMainPanel().getTreeFontSet().increaseUserFontSize();
                 getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged(true);
+                handled = true;
             } else if (e.getKeyCode() == KeyEvent.VK_O) {
                 getControlPanel().orderPressed(this);
+                handled = true;
             } else if (e.getKeyCode() == KeyEvent.VK_R) {
                 if (e.isShiftDown()) {
                     getControlPanel().returnedToWholeTreePressed();
                 } else {
                     getControlPanel().returnedToSuperTreePressed();
                 }
+                handled = true;
             } else if (e.getKeyCode() == KeyEvent.VK_U) {
                 getControlPanel().uncollapseAll(this);
                 getControlPanel().displayedPhylogenyMightHaveChanged(false);
+                handled = true;
             } else if (e.getKeyCode() == KeyEvent.VK_E) {
                 getControlPanel().expandYToFitLabels();
+                handled = true;
             } else if (e.getKeyCode() == KeyEvent.VK_W) {
                 getControlPanel().fitWidth();
+                handled = true;
             } else if (e.getKeyCode() == KeyEvent.VK_UP) {
                 getMainPanel().getControlPanel().zoomInY(AptxConstants.WHEEL_ZOOM_IN_FACTOR);
                 getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged(false);
+                handled = true;
             } else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
                 getMainPanel().getControlPanel().zoomOutY(AptxConstants.WHEEL_ZOOM_OUT_FACTOR);
                 getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged(false);
+                handled = true;
             } else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
                 getMainPanel().getControlPanel().zoomOutX(AptxConstants.WHEEL_ZOOM_OUT_FACTOR,
                         AptxConstants.WHEEL_ZOOM_OUT_X_CORRECTION_FACTOR);
                 getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged(false);
+                handled = true;
             } else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
                 getMainPanel().getControlPanel().zoomInX(AptxConstants.WHEEL_ZOOM_IN_FACTOR,
                         AptxConstants.WHEEL_ZOOM_IN_FACTOR);
                 getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged(false);
+                handled = true;
             } else if ((e.getKeyCode() == KeyEvent.VK_SUBTRACT) || (e.getKeyCode() == KeyEvent.VK_MINUS)) {
                 getMainPanel().getControlPanel().zoomOutY(AptxConstants.WHEEL_ZOOM_OUT_FACTOR);
                 getMainPanel().getControlPanel().zoomOutX(AptxConstants.WHEEL_ZOOM_OUT_FACTOR,
                         AptxConstants.WHEEL_ZOOM_OUT_X_CORRECTION_FACTOR);
                 getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged(false);
+                handled = true;
             } else if (plusPressed(e.getKeyCode())) {
                 getMainPanel().getControlPanel().zoomInX(AptxConstants.WHEEL_ZOOM_IN_FACTOR,
                         AptxConstants.WHEEL_ZOOM_IN_FACTOR);
                 getMainPanel().getControlPanel().zoomInY(AptxConstants.WHEEL_ZOOM_IN_FACTOR);
                 getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged(false);
+                handled = true;
             }
         } else {
             if ((e.getKeyCode() == KeyEvent.VK_UP) || (e.getKeyCode() == KeyEvent.VK_DOWN)
@@ -1492,11 +1506,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 }
                 repaint();
                 getMainPanel().getCurrentScrollPane().getViewport().setViewPosition(scroll_position);
+                handled = true;
             } else if (e.getKeyCode() == KeyEvent.VK_S) {
                 if ((getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED)
                         || (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR)) {
                     setStartingAngle((getStartingAngle() % TWO_PI) + ANGLE_ROTATION_UNIT);
                     getControlPanel().displayedPhylogenyMightHaveChanged(false);
+                    handled = true;
                 }
             } else if (e.getKeyCode() == KeyEvent.VK_A) {
                 if ((getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED)
@@ -1506,6 +1522,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         setStartingAngle(TWO_PI + getStartingAngle());
                     }
                     getControlPanel().displayedPhylogenyMightHaveChanged(false);
+                    handled = true;
                 }
             } else if (e.getKeyCode() == KeyEvent.VK_D) {
                 boolean selected = false;
@@ -1517,28 +1534,38 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 }
                 getMainPanel().getMainFrame().getlabelDirectionCbmi().setSelected(selected);
                 repaint();
+                handled = true;
             } else if (e.getKeyCode() == KeyEvent.VK_X) {
                 switchDisplaygetPhylogenyGraphicsType();
                 repaint();
+                handled = true;
             } else if (getOptions().isShowOverview() && isOvOn() && (e.getKeyCode() == KeyEvent.VK_O)) {
                 MainFrame.cycleOverview(getOptions(), this);
                 repaint();
+                handled = true;
             } else if (getOptions().isShowOverview() && isOvOn() && (e.getKeyCode() == KeyEvent.VK_I)) {
                 increaseOvSize();
+                handled = true;
             } else if (getOptions().isShowOverview() && isOvOn() && (e.getKeyCode() == KeyEvent.VK_U)) {
                 decreaseOvSize();
+                handled = true;
             }
         }
         if ((e.getKeyCode() == KeyEvent.VK_HOME) || (e.getKeyCode() == KeyEvent.VK_ESCAPE)) {
             getControlPanel().showWhole();
+            handled = true;
         } else if (e.getKeyCode() == KeyEvent.VK_PAGE_UP) {
             getMainPanel().getTreeFontSet().increaseUserFontSize();
             getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged(true);
+            handled = true;
         } else if (e.getKeyCode() == KeyEvent.VK_PAGE_DOWN) {
             getMainPanel().getTreeFontSet().decreaseUserFontSize();
             getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged(true);
+            handled = true;
         }
-        e.consume();
+        if (handled) {
+            e.consume();
+        }
     }
 
     final private void makePopupMenus(final PhylogenyNode node) {
@@ -2826,11 +2853,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         // GUILHEM_END _____________
         if (sb_str.length() > 0) {
-            if (!isAllowAttributedStrings()) {
-                TreePanel.drawString(sb_str, pos_x, pos_y, g);
-            } else {
-                drawStringX(sb_str, pos_x, pos_y, g);
-            }
+            TreePanel.drawString(sb_str, pos_x, pos_y, g);
         }
         if (_sb.length() > 0) {
             x += labelStringWidth(g, _sb.toString(), using_visual_font, is_in_found_nodes, to_pdf) + 5;
@@ -3138,9 +3161,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return res;
     }
 
-    private final boolean isAllowAttributedStrings() {
-        return false;
-    }
 
     final private void paintNodeDataUnrootedCirc(final Graphics2D g,
                                                  final PhylogenyNode node,
@@ -7948,28 +7968,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     final private static void drawString(final String str, final float x, final float y, final Graphics2D g) {
         g.drawString(str, x, y);
-    }
-
-    final private void drawStringX(final String str, final float x, final float y, final Graphics2D g) {
-        //TODO
-        //FIXME
-        if (getAttributedStringMap() == null /*&& getAttributedStringMap().containsKey(str) */) {
-            final AttributedString as = new AttributedString(str);
-            //Font plainFont = new Font("Times New Roman", Font.PLAIN, 24);
-            as.addAttribute(TextAttribute.FONT, g.getFont());
-            as.addAttribute(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON, 1, 3);
-            as.addAttribute(TextAttribute.SUPERSCRIPT, TextAttribute.SUPERSCRIPT_SUPER, 3, 4);
-            as.addAttribute(TextAttribute.FOREGROUND, Color.BLUE, 1, 2);
-            as.addAttribute(TextAttribute.FOREGROUND, Color.PINK, 3, 5);
-            as.addAttribute(TextAttribute.STRIKETHROUGH, TextAttribute.STRIKETHROUGH_ON, 2, 4);
-            g.drawString(as.getIterator(), x, y);
-        } else {
-            g.drawString(str, x, y);
-        }
-    }
-
-    private final Map<String, AttributedString> getAttributedStringMap() {
-        return _attributed_string_map;
     }
 
     final private static boolean plusPressed(final int key_code) {

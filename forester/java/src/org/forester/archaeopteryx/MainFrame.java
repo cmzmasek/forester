@@ -303,6 +303,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem _view_as_nexus_item;
     JMenuItem _display_basic_information_item;
     JMenuItem _edit_tree_info_item;
+    JMenuItem _fit_to_window_item;
     // help menu:
     JMenuItem _about_item;
     JMenuItem _help_item;
@@ -423,6 +424,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             viewAsXML();
         } else if (o == _view_as_nexus_item) {
             viewAsNexus();
+        } else if (o == _fit_to_window_item) {
+            showWhole();
         } else if (o == _show_domain_labels) {
             updateOptions(getOptions());
         } else if (o == _abbreviate_scientific_names) {
@@ -872,34 +875,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
     }
 
-    void buildFileMenu() {
-        _file_jmenu = MainFrame.createMenu("File", getConfiguration());
-        _file_jmenu.add(_save_item = new JMenuItem("Save Tree As..."));
-        _file_jmenu.addSeparator();
-        _file_jmenu.add(_write_to_pdf_item = new JMenuItem("Export to PDF file ..."));
-        _file_jmenu.add(_write_to_svg_item = new JMenuItem("Export to SVG file..."));
-        _write_to_svg_item.setToolTipText("Scalable vector graphics for publication (edit in Illustrator/Inkscape)");
-        _file_jmenu.add(_write_to_eps_item = new JMenuItem("Export to EPS file..."));
-        _write_to_eps_item.setToolTipText("Encapsulated PostScript vector graphics for publication");
-        if (AptxUtil.canWriteFormat("tif") || AptxUtil.canWriteFormat("tiff") || AptxUtil.canWriteFormat("TIF")) {
-            _file_jmenu.add(_write_to_tif_item = new JMenuItem("Export to TIFF file..."));
-        }
-        _file_jmenu.add(_write_to_png_item = new JMenuItem("Export to PNG file..."));
-        _file_jmenu.add(_write_to_jpg_item = new JMenuItem("Export to JPG file..."));
-        _file_jmenu.addSeparator();
-
-        _file_jmenu.add(_exit_item = new JMenuItem("Exit"));
-        customizeJMenuItem(_save_item);
-        customizeJMenuItem(_write_to_pdf_item);
-        customizeJMenuItem(_write_to_svg_item);
-        customizeJMenuItem(_write_to_eps_item);
-        customizeJMenuItem(_write_to_png_item);
-        customizeJMenuItem(_write_to_jpg_item);
-        customizeJMenuItem(_write_to_tif_item);
-        customizeJMenuItem(_exit_item);
-        _jmenubar.add(_file_jmenu);
-    }
-
     void buildHelpMenu() {
         _help_jmenu = createMenu("Help", getConfiguration());
         _help_jmenu.setToolTipText("Documentation, web links, and program information");
@@ -954,11 +929,17 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _view_jmenu.add(_view_as_XML_item = new JMenuItem("as phyloXML"));
         _view_jmenu.add(_view_as_NH_item = new JMenuItem("as Newick"));
         _view_jmenu.add(_view_as_nexus_item = new JMenuItem("as Nexus"));
+        _view_jmenu.addSeparator();
+        _view_jmenu.add(_fit_to_window_item = new JMenuItem("Fit to Window"));
+        _fit_to_window_item.setToolTipText("Zoom the tree to fit the window (also HOME / ESC)");
+        _fit_to_window_item.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_0, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
         customizeJMenuItem(_edit_tree_info_item);
         customizeJMenuItem(_display_basic_information_item);
         customizeJMenuItem(_view_as_NH_item);
         customizeJMenuItem(_view_as_XML_item);
         customizeJMenuItem(_view_as_nexus_item);
+        customizeJMenuItem(_fit_to_window_item);
         _jmenubar.add(_view_jmenu);
     }
 
