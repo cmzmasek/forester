@@ -118,6 +118,8 @@ public final class Archaeopteryx {
             current_dir = new File( "." );
         }
         try {
+            // this JVM is the standalone Archaeopteryx app (not an embedded viewer), so exit() may force-quit it
+            MainFrameApplication.setLaunchedAsStandaloneApplication();
             MainFrameApplication.createInstance( phylogenies, conf, title, current_dir );
         }
         catch ( final OutOfMemoryError e ) {

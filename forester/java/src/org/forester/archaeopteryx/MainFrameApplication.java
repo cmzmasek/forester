@@ -1619,6 +1619,18 @@ public final class MainFrameApplication extends MainFrame {
      *  shutdown hook this fires ONLY on a real user quit -- never during (headless or standalone) test runs, and
      *  it's a per-JVM singleton, so there is no concurrent-write race and no risk of overwriting the developer's
      *  real ~/.archaeopteryx from a test. */
+    // Set true ONLY by Archaeopteryx.main -- i.e. when this JVM IS the standalone Archaeopteryx application, not
+    // an embedder (msa_compactor, forester_applications) that opens a tree view via Archaeopteryx.createApplication
+    // and keeps its own JVM working. Gates the System.exit(0) in exit(); also means a test (which never sets it)
+    // can never force-kill the suite JVM even if it reached exit().
+    private static boolean _launched_as_standalone_application = false;
+
+    /** Marks this JVM as running the standalone Archaeopteryx application; called only from
+     *  {@link Archaeopteryx#main(String[])}. Lets {@link #exit()} force-terminate the JVM on quit. */
+    static void setLaunchedAsStandaloneApplication() {
+        _launched_as_standalone_application = true;
+    }
+
     private void registerMacOsQuitHandler() {
         try {
             if (Desktop.isDesktopSupported()
@@ -1640,6 +1652,15 @@ public final class MainFrameApplication extends MainFrame {
         _contentpane.removeAll();
         setVisible(false);
         dispose();
+        if (_launched_as_standalone_application) {
+            // Standalone app only: force JVM termination. Disposing the frame is not enough -- a heavyweight
+            // rollover Popup (TreePanel/PopupFactory) leaves a cached, still-displayable native window, and the
+            // Fetch/Infer/taxonomy worker threads are NOT stopped by terminate(); both keep AWT's toolkit thread
+            // (and thus the JVM) alive, so relying on AWT auto-shutdown hangs. NOT done when embedded (a tree view
+            // opened via Archaeopteryx.createApplication, e.g. msa_compactor): there a host owns the JVM and
+            // closing a window must not kill it or its sibling windows. Runs after the prefs save above.
+            System.exit(0);
+        }
     }
 
 
