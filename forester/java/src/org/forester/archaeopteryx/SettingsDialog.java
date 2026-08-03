@@ -96,10 +96,17 @@ final class SettingsDialog extends JDialog {
             }
             refreshFontInfo(); // cheap; keep the "Current font" line in sync with any font change
         } );
+        final JButton reset = button( "Reset to Defaults…", this::confirmAndResetToDefaults );
+        reset.setToolTipText( "Restore all display settings, the theme, and tree colors to the built-in defaults" );
         final JButton close = new JButton( "Close" );
         close.addActionListener( e -> setVisible( false ) );
-        final JPanel south = new JPanel( new FlowLayout( FlowLayout.RIGHT ) );
-        south.add( close );
+        final JPanel south = new JPanel( new BorderLayout() );
+        final JPanel south_left = new JPanel( new FlowLayout( FlowLayout.LEFT ) );
+        south_left.add( reset );
+        final JPanel south_right = new JPanel( new FlowLayout( FlowLayout.RIGHT ) );
+        south_right.add( close );
+        south.add( south_left, BorderLayout.WEST );
+        south.add( south_right, BorderLayout.EAST );
         setLayout( new BorderLayout() );
         add( tabs, BorderLayout.CENTER );
         add( south, BorderLayout.SOUTH );
@@ -503,6 +510,24 @@ final class SettingsDialog extends JDialog {
         final JButton b = new JButton( label );
         b.addActionListener( e -> action.run() );
         return b;
+    }
+
+    /** "Reset to Defaults": confirm, then reset all display settings + theme + tree colors, and close the dialog
+     *  (its controls were built from the pre-reset options, so leaving it open would show stale values -- reopen
+     *  Settings to see the defaults). */
+    private void confirmAndResetToDefaults() {
+        final int choice = JOptionPane.showConfirmDialog( this,
+                "<html>Reset all display settings to their defaults?<br><br>"
+                        + "This also switches the theme to <b>Light</b>, resets the search options, and turns off "
+                        + "property-based <b>&quot;Color by&quot;</b> (back to the default palette) on "
+                        + "<b>all open trees</b>.<br>"
+                        + "Manually applied branch/clade colors and your loaded trees are not changed.</html>",
+                "Reset to Defaults", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE );
+        if ( choice == JOptionPane.OK_OPTION ) {
+            _mf.resetToDefaults();
+            setVisible( false );
+            dispose();
+        }
     }
 
     // ---- apply / layout helpers ----------------------------------------------------------------

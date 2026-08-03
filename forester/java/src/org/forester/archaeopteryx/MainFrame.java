@@ -2045,6 +2045,132 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     }
 
+    private static void setSelected(final JCheckBoxMenuItem item, final boolean selected) {
+        if (item != null) {
+            item.setSelected(selected);
+        }
+    }
+
+    /**
+     * The inverse of {@link #updateOptions(Options)}: pushes {@code options}'s values OUT to the menu
+     * checkboxes/radios so the controls reflect the options (updateOptions reads controls -&gt; options; this
+     * writes options -&gt; controls). Uses setSelected (not doClick), so no actions fire. Used by
+     * {@link #resetToDefaults()} so the controls match the reset Options instead of clobbering it on the next
+     * menu interaction. Must mirror updateOptions's control set exactly -- the reset test flips every control,
+     * resets, then runs updateOptions and asserts a default result, so a control missed here fails that test.
+     */
+    void applyOptionsToMenuStates(final Options options) {
+        setSelected(_show_domain_labels, options.isShowDomainLabels());
+        setSelected(_abbreviate_scientific_names, options.isAbbreviateScientificTaxonNames());
+        setSelected(_use_italic_scientific_names_cbmi, options.isUseItalicScientificNames());
+        setSelected(_outline_fonts_in_vector_export_cbmi, options.isOutlineFontsInVectorExport());
+        setSelected(_transparent_export_background_cbmi, options.isTransparentExportBackground());
+        setSelected(_graphics_export_white_background_cbmi, options.isGraphicsExportWhiteBackground());
+        setSelected(_color_labels_same_as_parent_branch, options.isColorLabelsSameAsParentBranch());
+        setSelected(_show_default_node_shapes_internal_cbmi, options.isShowDefaultNodeShapesInternal());
+        setSelected(_show_default_node_shapes_external_cbmi, options.isShowDefaultNodeShapesExternal());
+        setSelected(_show_default_node_shapes_for_marked_cbmi, options.isShowDefaultNodeShapesForMarkedNodes());
+        setSelected(_show_scale_grid_cbmi, options.isShowScaleGrid());
+        setSelected(_show_scale_cbmi, options.isShowScale());
+        setSelected(_show_tree_name_cbmi, options.isShowTreeName());
+        setSelected(_show_overview_cbmi, options.isShowOverview());
+        setSelected(_show_confidence_stddev_cbmi, options.isShowConfidenceStddev());
+        setSelected(_show_mad_confidence_cbmi, options.isShowMadConfidence());
+        setSelected(_antialias_print_cbmi, options.isAntialiasPrint());
+        setSelected(_print_black_and_white_cbmi, options.isPrintBlackAndWhite());
+        setSelected(_internal_number_are_confidence_for_nh_parsing_cbmi,
+                options.isInternalNumberAreConfidenceForNhParsing());
+        setSelected(_replace_underscores_cbmi, options.isReplaceUnderscoresInNhParsing());
+        setSelected(_allow_errors_in_distance_to_parent_cbmi, options.isAllowErrorsInDistanceToParent());
+        setSelected(_graphics_export_visible_only_cbmi, options.isGraphicsExportVisibleOnly());
+        setSelected(_right_line_up_domains_cbmi, options.isRightLineUpDomains());
+        setSelected(_line_up_renderable_data_cbmi, options.isLineUpRendarableNodeData());
+        setSelected(_color_all_found_nodes_when_coloring_subtree_cbmi,
+                options.isColorAllFoundNodesWhenColoringSubtree());
+        setSelected(_parse_beast_style_extended_nexus_tags_cbmi, options.isParseBeastStyleExtendedNexusTags());
+        setSelected(_collapsed_with_average_height_cbmi, options.isCollapsedWithAverageHeigh());
+        setSelected(_show_abbreviated_labels_for_collapsed_nodes_cbmi,
+                options.isShowAbbreviatedLabelsForCollapsedNodes());
+        setSelected(_label_direction_cbmi, options.getNodeLabelDirection() == NODE_LABEL_DIRECTION.RADIAL);
+        // radio groups / tri-states (not simple checkboxes)
+        if (_internal_labels_above_branch_rbmi != null) {
+            _internal_labels_above_branch_rbmi.setSelected(options.isInternalLabelsAboveBranch());
+        }
+        if (_internal_labels_right_of_node_rbmi != null) {
+            _internal_labels_right_of_node_rbmi.setSelected(!options.isInternalLabelsAboveBranch());
+        }
+        final boolean lined_up = options.getCladogramType() != CLADOGRAM_TYPE.NON_LINED_UP;
+        if (_ext_node_dependent_cladogram_rbmi != null) {
+            _ext_node_dependent_cladogram_rbmi.setSelected(lined_up);
+        }
+        if (_non_lined_up_cladograms_rbmi != null) {
+            _non_lined_up_cladograms_rbmi.setSelected(!lined_up);
+        }
+        final NH_CONVERSION_SUPPORT_VALUE_STYLE nh = options.getNhConversionSupportValueStyle();
+        setSelected(_use_brackets_for_conf_in_nh_export_cbmi,
+                nh == NH_CONVERSION_SUPPORT_VALUE_STYLE.IN_SQUARE_BRACKETS);
+        setSelected(_use_internal_names_for_conf_in_nh_export_cbmi,
+                nh == NH_CONVERSION_SUPPORT_VALUE_STYLE.AS_INTERNAL_NODE_NAMES);
+        // setSelectedTypeInTypeMenu -> setTypeMenuToAllUnselected dereferences the 8 type items unguarded; match the
+        // null-tolerance of the rest of this method (and updateOptions) so a frame without a Type menu can't NPE
+        if (_rectangular_type_cbmi != null) {
+            setSelectedTypeInTypeMenu(options.getPhylogenyGraphicsType());
+        }
+    }
+
+    /**
+     * Reset to Defaults: returns all display/UI settings to the built-in defaults, the theme to the shipped
+     * default (light), the search options and tree style to default, forgets the persisted settings file (so the
+     * reset survives a restart), and turns off property-based "Color by" (default palette) on every open tree.
+     * Does NOT reload the trees or strip manually applied branch/clade colors (those are tree data / Undo territory).
+     */
+    void resetToDefaults() {
+        // 1. settings: reset the LIVE Options in place against the frame's own configuration (== the baseline
+        //    createInstance produced at launch) -- each TreePanel caches this same reference, so an in-place reset
+        //    propagates everywhere without a swap
+        getOptions().resetToDefaults(getConfiguration());
+        // 2. push the defaults out to the menu controls, so a later updateOptions() reads defaults, not stale state
+        applyOptionsToMenuStates(getOptions());
+        // 3. forget the persisted settings so the reset survives the next launch
+        new GuiPreferences().deleteSettingsFile();
+        // 4. theme -> shipped default (FlatLaf light); re-inits the L&F and restyles every open window live
+        setDarkMode(false);
+        if (getMainPanel() != null) {
+            final Options.PHYLOGENY_GRAPHICS_TYPE type = getOptions().getPhylogenyGraphicsType();
+            // 5. per-tab: turn property "Color by" OFF (default palette) AND apply the reset tree style to the live
+            //    tree -- the TreePanel caches its own graphics type, so resetting Options alone would leave e.g. a
+            //    Circular tree still drawn circular
+            for (final TreePanel tp : getMainPanel().getTreePanels()) {
+                tp.resetColorStateToDefaults();
+                tp.setPhylogenyGraphicsType(type);
+            }
+            final ControlPanel cp = getMainPanel().getControlPanel();
+            if (cp != null) {
+                cp.setColorByPropertySelectionToNone();
+                // re-seed the always-visible control-panel controls (theme radios + search checkboxes) that hold
+                // their own state -- else they stay stale and the search checkboxes clobber the reset on next click
+                cp.resyncFromOptions();
+            }
+            final TreePanel current = getMainPanel().getCurrentTreePanel();
+            if ((current != null) && (cp != null)) {
+                // phylogram is available for the default (rectangular) style when the tree has branch lengths
+                cp.setDrawPhylogramEnabled(current.isPhyHasBranchLengths());
+            }
+            // 6. apply the reset options to the live view (base font + relayout + re-fit + repaint), mirroring
+            //    chooseFont()/typeChanged()
+            getMainPanel().getTreeFontSet().setBaseFont(getOptions().getBaseFont());
+            if (cp != null) {
+                cp.displayedPhylogenyMightHaveChanged(true);
+                cp.showWhole(); // re-fit: the tree style may have changed (e.g. Circular -> Rectangular)
+            }
+            if (current != null) {
+                current.resetPreferredSize();
+                current.updateOvSizes();
+            }
+        }
+        repaint();
+    }
+
     void updateTypeCheckboxes(final Options options, final Object o) {
         setTypeMenuToAllUnselected();
         ((JCheckBoxMenuItem) o).setSelected(true);

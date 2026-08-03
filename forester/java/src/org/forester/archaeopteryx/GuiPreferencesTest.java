@@ -269,6 +269,19 @@ public final class GuiPreferencesTest {
                 return fail( "a persisted EURO_STYLE must be restored, got " + eu.getPhylogenyGraphicsType() );
             }
 
+            // deleteSettingsFile removes the persisted file (so a "Reset to Defaults" survives a restart) and is a
+            // silent no-op when the file is already gone
+            final Path to_delete = dir.resolve( "to-delete.properties" );
+            new GuiPreferences( to_delete ).saveFrom( Options.createDefaultInstance() );
+            if ( !Files.exists( to_delete ) ) {
+                return fail( "saveFrom should have written the file to delete" );
+            }
+            new GuiPreferences( to_delete ).deleteSettingsFile();
+            if ( Files.exists( to_delete ) ) {
+                return fail( "deleteSettingsFile must remove the settings file" );
+            }
+            new GuiPreferences( to_delete ).deleteSettingsFile(); // second delete: silent no-op, must not throw
+
             // a missing file must be a silent no-op (defaults untouched, no exception)
             final Options m = Options.createDefaultInstance();
             final boolean m_name = m.isShowTreeName();

@@ -115,6 +115,19 @@ public final class SettingsDialogTest {
                         || ( findLabel( dlg.getContentPane(), "Data returned on copy:" ) != null ) ) {
                     ok[ 0 ] = false;
                 }
+                // the "Reset to Defaults" button must be present in the footer (its action is covered by
+                // ResetToDefaultsTest; the modal confirm can't be clicked through here)
+                boolean has_reset = false;
+                final List<javax.swing.JButton> buttons = new ArrayList<>();
+                collect( dlg.getContentPane(), javax.swing.JButton.class, buttons );
+                for ( final javax.swing.JButton b : buttons ) {
+                    if ( ( b.getText() != null ) && b.getText().startsWith( "Reset to Defaults" ) ) {
+                        has_reset = true;
+                    }
+                }
+                if ( !has_reset ) {
+                    ok[ 0 ] = false;
+                }
                 // a dialog checkbox must drive its backing menu item (the doClick binding)
                 final boolean before = mf[ 0 ]._show_scale_cbmi.isSelected();
                 final JCheckBox cb = findCheckBox( dlg.getContentPane(), mf[ 0 ]._show_scale_cbmi.getText() );

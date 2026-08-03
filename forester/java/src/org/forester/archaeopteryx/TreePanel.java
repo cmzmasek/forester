@@ -5135,6 +5135,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return _color_palette_name;
     }
 
+    /** Resets this panel's per-tab "Color by" state to a freshly-loaded default -- coloring OFF, default palette,
+     *  and no manual per-value color overrides -- for "Reset to Defaults". Sets the palette field directly (not via
+     *  setColorPaletteName) because the shared Options palette has already been reset to default by the caller. */
+    void resetColorStateToDefaults() {
+        _color_palette_name = PropertyColorScheme.DEFAULT_PALETTE_NAME;
+        _property_color_overrides.clear();
+        setColorByPropertyRef( null ); // turns coloring off and rebuilds the scheme (-> null)
+        repaint();
+    }
+
     /** Selects the categorical palette (see {@link PropertyColorScheme#paletteNames()}) and recolors. Also records
      *  the choice as the shared default (Options) so new tabs inherit it and it can be persisted. */
     void setColorPaletteName(final String name) {

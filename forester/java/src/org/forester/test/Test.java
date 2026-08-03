@@ -618,6 +618,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Reset to Defaults: ");
+        if (org.forester.archaeopteryx.ResetToDefaultsTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Keyboard shortcuts reference: ");
         if (org.forester.archaeopteryx.KeyboardShortcutsTest.test()) {
             System.out.println("OK.");

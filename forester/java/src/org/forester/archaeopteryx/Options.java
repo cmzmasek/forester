@@ -679,60 +679,76 @@ final public class Options {
 
     public final static Options createInstance(final Configuration configuration) {
         final Options instance = createDefaultInstance();
-        if (configuration != null) {
-            instance.setShowScale(configuration.isShowScale());
-            instance.setShowOverview(configuration.isShowOverview());
-            instance.setColorByTaxonomicGroup(configuration.isColorByTaxonomicGroup());
-            instance.setCladogramType(configuration.getCladogramType());
-            instance.setOvPlacement(configuration.getOvPlacement());
-            instance.setPrintLineWidth(configuration.getPrintLineWidth());
-            instance.setNodeLabelDirection(configuration.getNodeLabelDirection());
-            if (configuration.getNumberOfDigitsAfterCommaForBranchLengthValues() >= 0) {
-                instance.setNumberOfDigitsAfterCommaForBranchLength(configuration
-                        .getNumberOfDigitsAfterCommaForBranchLengthValues());
-            }
-            if (configuration.getNumberOfDigitsAfterCommaForConfidenceValues() >= 0) {
-                instance.setNumberOfDigitsAfterCommaForConfidenceValues(configuration
-                        .getNumberOfDigitsAfterCommaForConfidenceValues());
-            }
-            instance.setTaxonomyExtraction(configuration.getTaxonomyExtraction());
-            instance.setReplaceUnderscoresInNhParsing(configuration.isReplaceUnderscoresInNhParsing());
-            instance.setInternalNumberAreConfidenceForNhParsing(configuration
-                    .isInternalNumberAreConfidenceForNhParsing());
-            instance.setEditable(configuration.isEditable());
-            instance.setColorLabelsSameAsParentBranch(configuration.isColorLabelsSameAsParentBranch());
-            instance.setShowDomainLabels(configuration.isShowDomainLabels());
-            instance.setAbbreviateScientificTaxonNames(configuration.isAbbreviateScientificTaxonNames());
-            if (configuration.getMinConfidenceFraction() != MIN_CONFIDENCE_FRACTION_DEFAULT) {
-                instance.setMinConfidenceFraction(configuration.getMinConfidenceFraction());
-            }
-            if (configuration.getBaseFontSize() > 0) {
-                instance.setBaseFont(instance.getBaseFont().deriveFont((float) configuration.getBaseFontSize()));
-            }
-            if (!ForesterUtil.isEmpty(configuration.getBaseFontFamilyName())) {
-                instance.setBaseFont(new Font(configuration.getBaseFontFamilyName(), Font.PLAIN, instance
-                        .getBaseFont().getSize()));
-            }
-            if (configuration.getPhylogenyGraphicsType() != null) {
-                instance.setPhylogenyGraphicsType(configuration.getPhylogenyGraphicsType());
-            }
-            if (configuration.getDefaultNodeFill() != null) {
-                instance.setDefaultNodeFill(configuration.getDefaultNodeFill());
-            }
-            if (configuration.getDefaultNodeShape() != null) {
-                instance.setDefaultNodeShape(configuration.getDefaultNodeShape());
-            }
-            if (configuration.getDefaultNodeShapeSize() >= 0) {
-                instance.setDefaultNodeShapeSize(configuration.getDefaultNodeShapeSize());
-            }
-            instance.setShowDefaultNodeShapesInternal(configuration.isShowDefaultNodeShapesInternal());
-            instance.setShowDefaultNodeShapesExternal(configuration.isShowDefaultNodeShapesExternal());
-            instance.setShowDefaultNodeShapesForMarkedNodes(configuration.isShowDefaultNodeShapesForMarkedNodes());
-            instance.setRightLineUpDomains(configuration.isRightLineUpDomains());
-            instance.setLineUpRendarableNodeData(configuration.isLineUpRendarableNodeData());
-            instance.setAllowErrorsInDistanceToParent(false);
-        }
+        instance.applyConfiguration(configuration);
         return instance;
+    }
+
+    /**
+     * Resets this (LIVE) Options to the built-in defaults for {@code configuration} -- exactly the state
+     * {@link #createInstance(Configuration)} produces -- IN PLACE, so every holder of this instance (the
+     * MainFrame, and each TreePanel, which caches the reference) sees the reset without a swap. Backs
+     * "Reset to Defaults". Display/UI settings only; it does not touch loaded trees.
+     */
+    void resetToDefaults(final Configuration configuration) {
+        init();
+        applyConfiguration(configuration);
+    }
+
+    /** Overlays {@code configuration}'s values onto this instance (the built-in defaults already set by
+     *  {@link #init()}); shared by {@link #createInstance(Configuration)} and {@link #resetToDefaults}. */
+    private void applyConfiguration(final Configuration configuration) {
+        if (configuration == null) {
+            return;
+        }
+        setShowScale(configuration.isShowScale());
+        setShowOverview(configuration.isShowOverview());
+        setColorByTaxonomicGroup(configuration.isColorByTaxonomicGroup());
+        setCladogramType(configuration.getCladogramType());
+        setOvPlacement(configuration.getOvPlacement());
+        setPrintLineWidth(configuration.getPrintLineWidth());
+        setNodeLabelDirection(configuration.getNodeLabelDirection());
+        if (configuration.getNumberOfDigitsAfterCommaForBranchLengthValues() >= 0) {
+            setNumberOfDigitsAfterCommaForBranchLength(configuration
+                    .getNumberOfDigitsAfterCommaForBranchLengthValues());
+        }
+        if (configuration.getNumberOfDigitsAfterCommaForConfidenceValues() >= 0) {
+            setNumberOfDigitsAfterCommaForConfidenceValues(configuration
+                    .getNumberOfDigitsAfterCommaForConfidenceValues());
+        }
+        setTaxonomyExtraction(configuration.getTaxonomyExtraction());
+        setReplaceUnderscoresInNhParsing(configuration.isReplaceUnderscoresInNhParsing());
+        setInternalNumberAreConfidenceForNhParsing(configuration.isInternalNumberAreConfidenceForNhParsing());
+        setEditable(configuration.isEditable());
+        setColorLabelsSameAsParentBranch(configuration.isColorLabelsSameAsParentBranch());
+        setShowDomainLabels(configuration.isShowDomainLabels());
+        setAbbreviateScientificTaxonNames(configuration.isAbbreviateScientificTaxonNames());
+        if (configuration.getMinConfidenceFraction() != MIN_CONFIDENCE_FRACTION_DEFAULT) {
+            setMinConfidenceFraction(configuration.getMinConfidenceFraction());
+        }
+        if (configuration.getBaseFontSize() > 0) {
+            setBaseFont(getBaseFont().deriveFont((float) configuration.getBaseFontSize()));
+        }
+        if (!ForesterUtil.isEmpty(configuration.getBaseFontFamilyName())) {
+            setBaseFont(new Font(configuration.getBaseFontFamilyName(), Font.PLAIN, getBaseFont().getSize()));
+        }
+        if (configuration.getPhylogenyGraphicsType() != null) {
+            setPhylogenyGraphicsType(configuration.getPhylogenyGraphicsType());
+        }
+        if (configuration.getDefaultNodeFill() != null) {
+            setDefaultNodeFill(configuration.getDefaultNodeFill());
+        }
+        if (configuration.getDefaultNodeShape() != null) {
+            setDefaultNodeShape(configuration.getDefaultNodeShape());
+        }
+        if (configuration.getDefaultNodeShapeSize() >= 0) {
+            setDefaultNodeShapeSize(configuration.getDefaultNodeShapeSize());
+        }
+        setShowDefaultNodeShapesInternal(configuration.isShowDefaultNodeShapesInternal());
+        setShowDefaultNodeShapesExternal(configuration.isShowDefaultNodeShapesExternal());
+        setShowDefaultNodeShapesForMarkedNodes(configuration.isShowDefaultNodeShapesForMarkedNodes());
+        setRightLineUpDomains(configuration.isRightLineUpDomains());
+        setLineUpRendarableNodeData(configuration.isLineUpRendarableNodeData());
+        setAllowErrorsInDistanceToParent(false);
     }
 
     final static Options createDefaultInstance() {

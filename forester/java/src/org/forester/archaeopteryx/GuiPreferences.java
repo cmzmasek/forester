@@ -260,6 +260,17 @@ final class GuiPreferences {
         save( p );
     }
 
+    /** Best-effort delete of the persisted settings file so a "Reset to Defaults" survives the next launch (the
+     *  next startup then finds no file and uses the built-in defaults). Never throws; a missing file is fine. */
+    void deleteSettingsFile() {
+        try {
+            Files.deleteIfExists( _file );
+        }
+        catch ( final Exception e ) {
+            // best-effort: if it can't be removed, the reset still applied to the live session
+        }
+    }
+
     /** Best-effort read; returns an empty Properties on any problem (missing file, unreadable, corrupt). */
     private Properties load() {
         final Properties p = new Properties();

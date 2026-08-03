@@ -1528,6 +1528,44 @@ final class ControlPanel extends JPanel implements ActionListener {
         return (p != null) && p.isVisible();
     }
 
+    /** Re-seeds the always-visible control-panel controls that hold their OWN state (theme radios; the search-option
+     *  checkboxes) from the current Configuration/Options, for Reset to Defaults. Without this they stay stale after
+     *  a reset -- and worse, the search checkboxes write ALL their states back to Options on the next click, which
+     *  would silently clobber the reset. Uses setSelected (fires no ActionListener), so it triggers no side effects. */
+    void resyncFromOptions() {
+        if ( ( _light_mode_rb != null ) && ( _dark_mode_rb != null ) ) {
+            final boolean dark = getConfiguration().getUi() == Configuration.UI.FLAT_DARK;
+            _light_mode_rb.setSelected( !dark );
+            _dark_mode_rb.setSelected( dark );
+        }
+        final Options o = getOptions();
+        if ( o != null ) {
+            if ( _search_case_sensitive_cb != null ) {
+                _search_case_sensitive_cb.setSelected( o.isSearchCaseSensitive() );
+            }
+            if ( _search_whole_words_only_cb != null ) {
+                _search_whole_words_only_cb.setSelected( o.isMatchWholeTermsOnly() );
+            }
+            if ( _search_regex_cb != null ) {
+                _search_regex_cb.setSelected( o.isSearchWithRegex() );
+            }
+            if ( _search_inverse_cb != null ) {
+                _search_inverse_cb.setSelected( o.isInverseSearchResult() );
+            }
+            if ( _search_properties_cb != null ) {
+                _search_properties_cb.setSelected( o.isSearchProperties() );
+            }
+        }
+    }
+
+    /** Resets the "Color by" property dropdown to None (for Reset to Defaults). The per-tab coloring state is
+     *  cleared separately on each TreePanel; this just brings the shared dropdown back in line for the shown tab. */
+    void setColorByPropertySelectionToNone() {
+        if ( _color_by_property_cb != null ) {
+            _color_by_property_cb.setSelectedItem( COLOR_BY_PROPERTY_NONE );
+        }
+    }
+
     void displayedPhylogenyMightHaveChanged(final boolean recalc_longest_ext_node_info) {
         if ((_mainpanel != null)
                 && ((_mainpanel.getCurrentPhylogeny() != null) && !_mainpanel.getCurrentPhylogeny().isEmpty())) {
