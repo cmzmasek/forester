@@ -30,10 +30,13 @@ import java.util.Properties;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
+import org.forester.phylogeny.data.NodeVisualData.NodeShape;
+
 /**
- * Persists a curated set of boolean <em>display</em> toggles across restarts, so the view a user prefers
- * (tree name on/off, scale, italic species names, ...) is the view they get next time. Stored as a small
- * properties file at {@code ${user.home}/.archaeopteryx/display-settings.properties}.
+ * Persists a curated set of <em>display</em> settings across restarts, so the view a user prefers (tree name
+ * on/off, scale, italic species names, default node shape and size, ...) is the view they get next time. Each
+ * setting is stored as a string; booleans, enums (e.g. node shape) and numbers (e.g. node size) all round-trip
+ * through the same file at {@code ${user.home}/.archaeopteryx/display-settings.properties}.
  *
  * <p>The {@code .archaeopteryx} directory and the {@value #DIR_PROPERTY} override are shared, on purpose, with
  * the taxonomy disk cache: one well-known Archaeopteryx state directory, and one override that relocates ALL of
@@ -54,25 +57,83 @@ final class GuiPreferences {
     static final String DEFAULT_DIR   = ".archaeopteryx";
     static final String SETTINGS_FILE = "display-settings.properties";
 
-    /** The persisted toggles: a stable string key plus the Options getter/setter it maps to. Add to this list
-     *  (never renumber existing keys) to remember more display options. NOTE: graphics_export_white_background is
-     *  the one export-appearance toggle here; its interacting siblings (transparent-PNG, raster export scale) are
-     *  not persisted yet -- part of the deferred "persist all settings" goal. */
-    private record Pref(String key, Function<Options, Boolean> getter, BiConsumer<Options, Boolean> setter) {
+    /** One persisted setting: a stable string key plus a codec that reads it from / writes it to {@link Options}
+     *  as a string. {@code reader} turns the option's current value into the stored string; {@code writer} parses
+     *  a stored string back onto the option (and silently ignores an unparseable value, so a corrupt file never
+     *  breaks startup). Add to {@link #PREFS} via the typed factories below -- never renumber existing keys. */
+    private record Pref(String key, Function<Options, String> reader, BiConsumer<Options, String> writer) {
     }
 
     private static final List<Pref> PREFS = List.of(
-            new Pref( "show_tree_name", Options::isShowTreeName, Options::setShowTreeName ),
-            new Pref( "show_scale", Options::isShowScale, Options::setShowScale ),
-            new Pref( "show_scale_grid", Options::isShowScaleGrid, Options::setShowScaleGrid ),
-            new Pref( "show_overview", Options::isShowOverview, Options::setShowOverview ),
-            new Pref( "abbreviate_scientific_names", Options::isAbbreviateScientificTaxonNames,
+            boolPref( "show_tree_name", Options::isShowTreeName, Options::setShowTreeName ),
+            boolPref( "show_scale", Options::isShowScale, Options::setShowScale ),
+            boolPref( "show_scale_grid", Options::isShowScaleGrid, Options::setShowScaleGrid ),
+            boolPref( "show_overview", Options::isShowOverview, Options::setShowOverview ),
+            boolPref( "abbreviate_scientific_names", Options::isAbbreviateScientificTaxonNames,
                       Options::setAbbreviateScientificTaxonNames ),
-            new Pref( "use_italic_scientific_names", Options::isUseItalicScientificNames,
+            boolPref( "use_italic_scientific_names", Options::isUseItalicScientificNames,
                       Options::setUseItalicScientificNames ),
-            new Pref( "antialias_print", Options::isAntialiasPrint, Options::setAntialiasPrint ),
-            new Pref( "graphics_export_white_background", Options::isGraphicsExportWhiteBackground,
-                      Options::setGraphicsExportWhiteBackground ) );
+            boolPref( "antialias_print", Options::isAntialiasPrint, Options::setAntialiasPrint ),
+            boolPref( "graphics_export_white_background", Options::isGraphicsExportWhiteBackground,
+                      Options::setGraphicsExportWhiteBackground ),
+            enumPref( "default_node_shape", Options::getDefaultNodeShape, Options::setDefaultNodeShape,
+                      NodeShape::valueOf ),
+            shortPref( "default_node_shape_size", Options::getDefaultNodeShapeSize,
+                       Options::setDefaultNodeShapeSize ) );
+
+    /** A boolean setting, stored as {@code "true"}/{@code "false"}. */
+    private static Pref boolPref( final String key, final Function<Options, Boolean> getter,
+                                  final BiConsumer<Options, Boolean> setter ) {
+        return new Pref( key,
+                         o -> Boolean.toString( getter.apply( o ) ),
+                         ( o, v ) -> setter.accept( o, Boolean.parseBoolean( v ) ) );
+    }
+
+    /** An enum setting, stored as its {@link Enum#name()}. A value not in the enum (renamed/removed constant, or a
+     *  corrupt file) is ignored, so the option keeps its default. */
+    private static <E extends Enum<E>> Pref enumPref( final String key, final Function<Options, E> getter,
+                                                      final BiConsumer<Options, E> setter,
+                                                      final Function<String, E> parser ) {
+        return new Pref( key,
+                         o -> getter.apply( o ).name(),
+                         ( o, v ) -> {
+                             final E parsed = parseOrNull( parser, v );
+                             if ( parsed != null ) {
+                                 setter.accept( o, parsed );
+                             }
+                         } );
+    }
+
+    /** A short-integer setting (e.g. node size). A non-numeric stored value is ignored, keeping the default. */
+    private static Pref shortPref( final String key, final Function<Options, Short> getter,
+                                   final BiConsumer<Options, Short> setter ) {
+        return new Pref( key,
+                         o -> Short.toString( getter.apply( o ) ),
+                         ( o, v ) -> {
+                             final Short parsed = parseShortOrNull( v );
+                             if ( parsed != null ) {
+                                 setter.accept( o, parsed );
+                             }
+                         } );
+    }
+
+    private static <E> E parseOrNull( final Function<String, E> parser, final String v ) {
+        try {
+            return parser.apply( v );
+        }
+        catch ( final RuntimeException ex ) {
+            return null; // e.g. IllegalArgumentException for an unknown enum constant
+        }
+    }
+
+    private static Short parseShortOrNull( final String v ) {
+        try {
+            return Short.valueOf( v.trim() );
+        }
+        catch ( final RuntimeException ex ) {
+            return null;
+        }
+    }
 
     private final Path _file;
 
@@ -93,8 +154,8 @@ final class GuiPreferences {
         return Paths.get( System.getProperty( "user.home", "." ), DEFAULT_DIR );
     }
 
-    /** Overlays the persisted toggles onto {@code options}. Options whose key is not in the file are left as
-     *  they are (their config/built-in default stands). Never throws. */
+    /** Overlays the persisted settings onto {@code options}. Options whose key is not in the file (or whose stored
+     *  value does not parse) are left as they are (their config/built-in default stands). Never throws. */
     void applyTo( final Options options ) {
         if ( options == null ) {
             return;
@@ -103,19 +164,19 @@ final class GuiPreferences {
         for( final Pref pref : PREFS ) {
             final String v = p.getProperty( pref.key() );
             if ( v != null ) {
-                pref.setter().accept( options, Boolean.parseBoolean( v ) );
+                pref.writer().accept( options, v );
             }
         }
     }
 
-    /** Writes the current value of every persisted toggle from {@code options} to disk. Never throws. */
+    /** Writes the current value of every persisted setting from {@code options} to disk. Never throws. */
     void saveFrom( final Options options ) {
         if ( options == null ) {
             return;
         }
         final Properties p = new Properties();
         for( final Pref pref : PREFS ) {
-            p.setProperty( pref.key(), Boolean.toString( pref.getter().apply( options ) ) );
+            p.setProperty( pref.key(), pref.reader().apply( options ) );
         }
         save( p );
     }

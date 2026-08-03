@@ -144,7 +144,7 @@ public final class Configuration {
     private final CLADOGRAM_TYPE _cladogram_type = AptxConstants.CLADOGRAM_TYPE_DEFAULT;
     private boolean _color_labels_same_as_parent_branch = false;
     private NodeFill _default_node_fill = NodeFill.SOLID;
-    private NodeShape _default_node_shape = NodeShape.RECTANGLE;
+    private NodeShape _default_node_shape = NodeShape.CIRCLE;
     private short _default_node_shape_size = AptxConstants.DEFAULT_NODE_SHAPE_SIZE_DEFAULT;
     private SortedMap<String, Color> _display_colors = null;
     private boolean _display_sequence_relations = false;

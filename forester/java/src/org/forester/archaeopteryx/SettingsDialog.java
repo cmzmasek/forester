@@ -25,11 +25,14 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.util.Locale;
+import java.util.function.Function;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JCheckBoxMenuItem;
@@ -37,6 +40,7 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -146,11 +150,13 @@ final class SettingsDialog extends JDialog {
         add( c, cb( _mf._show_default_node_shapes_internal_cbmi ) );
         add( c, cb( _mf._show_default_node_shapes_for_marked_cbmi ) );
         add( c, labeled( "Node shape:", enumCombo( NodeShape.values(), _mf.getOptions().getDefaultNodeShape(),
-                                                   v -> { _mf.getOptions().setDefaultNodeShape( v ); repaintTree(); } ) ) );
+                                                   v -> { _mf.getOptions().setDefaultNodeShape( v ); repaintTree(); },
+                                                   SettingsDialog::prettyEnumName ) ) );
         // GRADIENT node fill is retired as a user choice (kept in the NodeFill enum only for phyloXML round-tripping).
         add( c, labeled( "Node fill:", enumCombo( new NodeFill[] { NodeFill.DEFAULT, NodeFill.NONE, NodeFill.SOLID },
                                                   _mf.getOptions().getDefaultNodeFill(),
-                                                  v -> { _mf.getOptions().setDefaultNodeFill( v ); repaintTree(); } ) ) );
+                                                  v -> { _mf.getOptions().setDefaultNodeFill( v ); repaintTree(); },
+                                                  SettingsDialog::prettyEnumName ) ) );
         add( c, labeled( "Node size:", intSpinner( _mf.getOptions().getDefaultNodeShapeSize(), 0, 100, 1,
                                                    v -> { _mf.getOptions().setDefaultNodeShapeSize( v.shortValue() ); repaintTree(); } ) ) );
         c.add( header( "Branches & Confidence" ) );
@@ -425,7 +431,34 @@ final class SettingsDialog extends JDialog {
     }
 
     private <T> JComboBox<T> enumCombo( final T[] values, final T current, final Setter<T> setter ) {
+        return enumCombo( values, current, setter, null );
+    }
+
+    /**
+     * A combo over {@code values}. When {@code labeller} is non-null it renders each item through it -- used for
+     * enums whose own name is ALL-CAPS (NodeShape, NodeFill) so the user sees "Rectangle", not "RECTANGLE". The
+     * model still holds the real enum constants, so selection and the setter are unaffected. Enums that already
+     * define a friendly {@code toString()} (e.g. OVERVIEW_PLACEMENT_TYPE) pass null and render via that.
+     */
+    private <T> JComboBox<T> enumCombo( final T[] values, final T current, final Setter<T> setter,
+                                        final Function<? super T, String> labeller ) {
         final JComboBox<T> combo = new JComboBox<>( values );
+        if ( labeller != null ) {
+            combo.setRenderer( new DefaultListCellRenderer() {
+                @Override
+                public Component getListCellRendererComponent( final JList<?> list, final Object value,
+                                                               final int index, final boolean isSelected,
+                                                               final boolean cellHasFocus ) {
+                    super.getListCellRendererComponent( list, value, index, isSelected, cellHasFocus );
+                    if ( value != null ) {
+                        @SuppressWarnings( "unchecked" )
+                        final T v = (T) value;
+                        setText( labeller.apply( v ) );
+                    }
+                    return this;
+                }
+            } );
+        }
         if ( current != null ) {
             combo.setSelectedItem( current );
         }
@@ -435,6 +468,21 @@ final class SettingsDialog extends JDialog {
             setter.set( v );
         } );
         return combo;
+    }
+
+    /** Display form of an ALL-CAPS enum constant: "RECTANGLE" -> "Rectangle", "LOWER_LEFT" -> "Lower Left". */
+    static String prettyEnumName( final Enum<?> value ) {
+        final StringBuilder sb = new StringBuilder();
+        for ( final String word : value.name().toLowerCase( Locale.ROOT ).split( "_" ) ) {
+            if ( word.isEmpty() ) {
+                continue;
+            }
+            if ( sb.length() > 0 ) {
+                sb.append( ' ' );
+            }
+            sb.append( Character.toUpperCase( word.charAt( 0 ) ) ).append( word.substring( 1 ) );
+        }
+        return sb.toString();
     }
 
     private JSpinner intSpinner( final int value, final int min, final int max, final int step,

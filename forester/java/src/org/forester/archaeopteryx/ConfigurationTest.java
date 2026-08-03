@@ -21,6 +21,7 @@
 package org.forester.archaeopteryx;
 
 import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
+import org.forester.phylogeny.data.NodeVisualData.NodeShape;
 
 /**
  * Unit tests for {@link Configuration}. Archaeopteryx no longer reads configuration files, so the
@@ -88,6 +89,13 @@ public final class ConfigurationTest {
             return false;
         }
         if ( c.getDefaultNodeShapeSize() != AptxConstants.DEFAULT_NODE_SHAPE_SIZE_DEFAULT ) {
+            return false;
+        }
+        // the requested out-of-the-box defaults: a small (5px) CIRCLE node shape
+        if ( c.getDefaultNodeShape() != NodeShape.CIRCLE ) {
+            return false;
+        }
+        if ( c.getDefaultNodeShapeSize() != 5 ) {
             return false;
         }
         if ( c.getTaxonomyExtraction() != TAXONOMY_EXTRACTION.NO ) {

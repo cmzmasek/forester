@@ -27,24 +27,34 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JTabbedPane;
+import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
 
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
+import org.forester.phylogeny.data.NodeVisualData.NodeFill;
+import org.forester.phylogeny.data.NodeVisualData.NodeShape;
 
 /**
  * Integration test for {@link SettingsDialog}: builds the dialog over a real {@link MainFrame} and checks
  * that it has the expected tabs and that a bound checkbox drives its backing menu item (the {@code doClick}
- * binding that all the apply logic depends on). Guarded to a no-op on a headless box (it needs a toolkit).
+ * binding that all the apply logic depends on). Also checks {@link SettingsDialog#prettyEnumName} (the
+ * Node-shape/Node-fill display fix: "RECTANGLE" -> "Rectangle") purely, plus -- headful -- that those combos
+ * actually render through it. The pure part runs everywhere; the GUI part is a no-op on a headless box.
  */
 public final class SettingsDialogTest {
 
     public static boolean test() {
+        if ( !prettyEnumNameOk() ) {
+            return false;
+        }
         if ( GraphicsEnvironment.isHeadless() ) {
             return true; // GUI integration test; nothing meaningful to do without a display toolkit
         }
@@ -117,6 +127,30 @@ public final class SettingsDialogTest {
                         ok[ 0 ] = false; // toggling the dialog control did not flip the menu item
                     }
                 }
+                // the Node-shape / Node-fill combos must render enum constants proper-cased, not ALL-CAPS: find
+                // the actual combos in the dialog and confirm their installed renderer turns RECTANGLE/SOLID into
+                // "Rectangle"/"Solid" (guards that the pretty renderer is really wired to these two combos)
+                final List<JComboBox> combos = new ArrayList<>();
+                collect( dlg.getContentPane(), JComboBox.class, combos );
+                boolean saw_shape = false;
+                boolean saw_fill = false;
+                for ( final JComboBox<?> combo : combos ) {
+                    if ( ( combo.getItemCount() > 0 ) && ( combo.getItemAt( 0 ) instanceof NodeShape ) ) {
+                        saw_shape = true;
+                        if ( !"Rectangle".equals( renderedText( combo, NodeShape.RECTANGLE ) ) ) {
+                            ok[ 0 ] = false;
+                        }
+                    }
+                    else if ( ( combo.getItemCount() > 0 ) && ( combo.getItemAt( 0 ) instanceof NodeFill ) ) {
+                        saw_fill = true;
+                        if ( !"Solid".equals( renderedText( combo, NodeFill.SOLID ) ) ) {
+                            ok[ 0 ] = false;
+                        }
+                    }
+                }
+                if ( !saw_shape || !saw_fill ) {
+                    ok[ 0 ] = false; // the combos we mean to check must actually be present
+                }
                 dlg.dispose();
                 ( (JFrame) mf[ 0 ] ).dispose();
             } );
@@ -126,6 +160,38 @@ public final class SettingsDialogTest {
             e.printStackTrace();
             return false;
         }
+    }
+
+    /** Pure check of {@link SettingsDialog#prettyEnumName}: single words are title-cased and underscores
+     *  become spaces. Runs even when headless -- the display-string logic needs no toolkit. */
+    private static boolean prettyEnumNameOk() {
+        boolean ok = true;
+        ok &= expectPretty( "Rectangle", SettingsDialog.prettyEnumName( NodeShape.RECTANGLE ) );
+        ok &= expectPretty( "Circle", SettingsDialog.prettyEnumName( NodeShape.CIRCLE ) );
+        ok &= expectPretty( "Default", SettingsDialog.prettyEnumName( NodeShape.DEFAULT ) );
+        ok &= expectPretty( "None", SettingsDialog.prettyEnumName( NodeFill.NONE ) );
+        ok &= expectPretty( "Solid", SettingsDialog.prettyEnumName( NodeFill.SOLID ) );
+        // multi-word (underscore) constant: each word title-cased, underscore -> space
+        ok &= expectPretty( "Lower Left",
+                            SettingsDialog.prettyEnumName( Options.OVERVIEW_PLACEMENT_TYPE.LOWER_LEFT ) );
+        return ok;
+    }
+
+    private static boolean expectPretty( final String expected, final String actual ) {
+        if ( !expected.equals( actual ) ) {
+            System.out.println( "  [SettingsDialogTest] prettyEnumName expected \"" + expected + "\", got \""
+                    + actual + "\"" );
+            return false;
+        }
+        return true;
+    }
+
+    /** The text the combo's installed renderer produces for {@code value} (how the item actually appears). */
+    @SuppressWarnings( { "unchecked", "rawtypes" } )
+    private static String renderedText( final JComboBox combo, final Object value ) {
+        final ListCellRenderer r = combo.getRenderer();
+        final Component c = r.getListCellRendererComponent( new JList(), value, -1, false, false );
+        return ( c instanceof JLabel ) ? ( (JLabel) c ).getText() : null;
     }
 
     @SuppressWarnings( "unchecked" )

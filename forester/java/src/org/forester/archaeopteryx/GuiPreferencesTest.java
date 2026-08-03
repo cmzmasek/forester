@@ -24,6 +24,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import org.forester.phylogeny.data.NodeVisualData.NodeShape;
+
 /**
  * Unit test for {@link GuiPreferences}: display toggles must round-trip through the settings file, a key
  * absent from the file must leave that option at its default (not clobber it), and a missing file must be a
@@ -52,11 +54,17 @@ public final class GuiPreferencesTest {
             final boolean italic = !src.isUseItalicScientificNames();
             final boolean antialias = !src.isAntialiasPrint();
             final boolean white_bg = !src.isGraphicsExportWhiteBackground(); // the only default-TRUE key -> flips to false
+            // non-boolean settings round-trip too: an enum (node shape) and a number (node size)
+            final NodeShape shape = ( src.getDefaultNodeShape() == NodeShape.RECTANGLE ) ? NodeShape.CIRCLE
+                    : NodeShape.RECTANGLE;
+            final short node_size = (short) ( src.getDefaultNodeShapeSize() + 3 );
             src.setShowTreeName( tree_name );
             src.setShowScale( scale );
             src.setUseItalicScientificNames( italic );
             src.setAntialiasPrint( antialias );
             src.setGraphicsExportWhiteBackground( white_bg );
+            src.setDefaultNodeShape( shape );
+            src.setDefaultNodeShapeSize( node_size );
             new GuiPreferences( file ).saveFrom( src );
             if ( !Files.exists( file ) ) {
                 return fail( "saveFrom did not write the settings file" );
@@ -78,6 +86,12 @@ public final class GuiPreferencesTest {
             if ( dst.isGraphicsExportWhiteBackground() != white_bg ) {
                 return fail( "graphics_export_white_background did not round-trip" );
             }
+            if ( dst.getDefaultNodeShape() != shape ) {
+                return fail( "default_node_shape did not round-trip" );
+            }
+            if ( dst.getDefaultNodeShapeSize() != node_size ) {
+                return fail( "default_node_shape_size did not round-trip" );
+            }
 
             // a key absent from the file must leave that option at its current (default) value
             final Path partial = dir.resolve( "partial.properties" );
@@ -87,6 +101,9 @@ public final class GuiPreferencesTest {
             // upgrade path: a file written by an older version has no graphics_export_white_background key; that
             // default-TRUE option must stay TRUE (not silently flip to false) when the key is absent
             final boolean white_default = e.isGraphicsExportWhiteBackground();
+            // the node shape/size keys are likewise absent -> must keep their built-in defaults
+            final NodeShape shape_default = e.getDefaultNodeShape();
+            final short size_default = e.getDefaultNodeShapeSize();
             new GuiPreferences( partial ).applyTo( e );
             if ( !e.isShowScale() ) {
                 return fail( "show_scale=true in the file should have been applied" );
@@ -96,6 +113,21 @@ public final class GuiPreferencesTest {
             }
             if ( e.isGraphicsExportWhiteBackground() != white_default ) {
                 return fail( "an absent default-TRUE key (upgrade path) must keep its default (TRUE)" );
+            }
+            if ( ( e.getDefaultNodeShape() != shape_default ) || ( e.getDefaultNodeShapeSize() != size_default ) ) {
+                return fail( "absent node shape/size keys must keep their defaults" );
+            }
+
+            // a corrupt/unknown stored value must be ignored (never throw), leaving the option at its default
+            final Path bad = dir.resolve( "bad.properties" );
+            Files.write( bad, "default_node_shape=NOT_A_SHAPE\ndefault_node_shape_size=xyz\n"
+                    .getBytes( StandardCharsets.UTF_8 ) );
+            final Options b = Options.createDefaultInstance();
+            final NodeShape b_shape = b.getDefaultNodeShape();
+            final short b_size = b.getDefaultNodeShapeSize();
+            new GuiPreferences( bad ).applyTo( b );
+            if ( ( b.getDefaultNodeShape() != b_shape ) || ( b.getDefaultNodeShapeSize() != b_size ) ) {
+                return fail( "a corrupt node shape/size value must be ignored (default kept)" );
             }
 
             // a missing file must be a silent no-op (defaults untouched, no exception)
