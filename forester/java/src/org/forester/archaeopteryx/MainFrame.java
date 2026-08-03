@@ -306,6 +306,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem _fit_to_window_item;
     // help menu:
     JMenuItem _about_item;
+    JMenuItem _keyboard_shortcuts_item;
     JMenuItem _help_item;
     JMenuItem _website_item;
     JMenuItem _aptxjs_website_item;
@@ -513,6 +514,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             typeChanged(o);
         } else if (o == _about_item) {
             about();
+        } else if (o == _keyboard_shortcuts_item) {
+            KeyboardShortcuts.show(this);
         } else if (o == _references_item) {
             showReferences();
         } else if (o == _help_item) {
@@ -884,12 +887,16 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _help_jmenu.add(_aptxjs_website_item = new JMenuItem("Archaeopteryx online version: Archaeopteryx.js"));
         _help_jmenu.add(_references_item = new JMenuItem("References"));
         _help_jmenu.addSeparator();
+        _help_jmenu.add(_keyboard_shortcuts_item = new JMenuItem("Keyboard Shortcuts"));
+        _help_jmenu.addSeparator();
         _help_jmenu.add(_about_item = new JMenuItem("About"));
         customizeJMenuItem(_help_item);
         customizeJMenuItem(_website_item);
         customizeJMenuItem(_aptxjs_website_item);
         customizeJMenuItem(_references_item);
+        customizeJMenuItem(_keyboard_shortcuts_item);
         customizeJMenuItem(_about_item);
+        _keyboard_shortcuts_item.setToolTipText("List the keyboard shortcuts for navigating and viewing trees");
         _references_item.setToolTipText("Main literature citations for the algorithms implemented in Archaeopteryx");
         _jmenubar.add(_help_jmenu);
     }

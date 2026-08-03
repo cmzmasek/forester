@@ -29,7 +29,12 @@ import java.util.List;
 import java.util.Properties;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
+import org.forester.archaeopteryx.Options.OVERVIEW_PLACEMENT_TYPE;
+import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
+import org.forester.archaeopteryx.Options.SUPPORT_VISUALIZATION;
+import org.forester.phylogeny.data.NodeVisualData.NodeFill;
 import org.forester.phylogeny.data.NodeVisualData.NodeShape;
 
 /**
@@ -78,60 +83,131 @@ final class GuiPreferences {
                       Options::setGraphicsExportWhiteBackground ),
             enumPref( "default_node_shape", Options::getDefaultNodeShape, Options::setDefaultNodeShape,
                       NodeShape::valueOf ),
+            // Numeric prefs pass the SAME [min,max] their Settings spinner enforces: a stored value is clamped into
+            // range on load, so a corrupt/older/hand-edited file can never seed a SpinnerNumberModel out of range
+            // (which THROWS) or feed a NaN/huge value into paint/export (NaN/±Infinity order outside any finite range,
+            // so they clamp to a bound too).
             shortPref( "default_node_shape_size", Options::getDefaultNodeShapeSize,
-                       Options::setDefaultNodeShapeSize ) );
+                       Options::setDefaultNodeShapeSize, (short) 0, (short) 100 ),
+            enumPref( "default_node_fill", Options::getDefaultNodeFill, Options::setDefaultNodeFill,
+                      NodeFill::valueOf ),
+            floatPref( "default_branch_width", Options::getDefaultBranchWidth, Options::setDefaultBranchWidth,
+                       0.5f, 20f ),
+            enumPref( "support_visualization", Options::getSupportVisualization, Options::setSupportVisualization,
+                      SUPPORT_VISUALIZATION::valueOf ),
+            doublePref( "support_threshold", Options::getSupportThreshold, Options::setSupportThreshold, 0.0, 1.0 ),
+            doublePref( "min_confidence_fraction", Options::getMinConfidenceFraction,
+                        Options::setMinConfidenceFraction, 0.0, 1.0 ),
+            // Display-tab layout: tree style + overview placement (both clean Options enums). Tree style deliberately
+            // does NOT restore the (alpha) CIRCULAR/UNROOTED radial modes: on load, the graphics-type-blind
+            // lookAtSomeTreePropertiesForAptxControlSettings would re-enable the phylogram axis for a branch-length
+            // tree, drawing a forbidden "circular phylogram". Restoring only the rectangular-family types avoids that;
+            // a session left in a radial mode simply reopens rectangular (radial parity is deferred anyway).
+            enumPref( "phylogeny_graphics_type", Options::getPhylogenyGraphicsType,
+                      Options::setPhylogenyGraphicsType, PHYLOGENY_GRAPHICS_TYPE::valueOf,
+                      t -> ( t != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR ) && ( t != PHYLOGENY_GRAPHICS_TYPE.UNROOTED ) ),
+            enumPref( "overview_placement", Options::getOvPlacement, Options::setOvPlacement,
+                      OVERVIEW_PLACEMENT_TYPE::valueOf ),
+            // "Color by" palette: only apply a stored name that is still a known palette (a renamed/removed
+            // palette is ignored, keeping the default) so a stale file can't select a non-existent palette
+            stringPref( "color_palette", Options::getColorPaletteName, Options::setColorPaletteName,
+                        v -> PropertyColorScheme.paletteNames().contains( v ) ),
+            // Export appearance: raster scale + the two background toggles (white background already persisted above)
+            intPref( "raster_export_scale", Options::getRasterExportScale, Options::setRasterExportScale, 1, 8 ),
+            boolPref( "transparent_export_background", Options::isTransparentExportBackground,
+                      Options::setTransparentExportBackground ),
+            boolPref( "graphics_export_visible_only", Options::isGraphicsExportVisibleOnly,
+                      Options::setGraphicsExportVisibleOnly ) );
 
-    /** A boolean setting, stored as {@code "true"}/{@code "false"}. */
+    /** A boolean setting, stored as {@code "true"}/{@code "false"}. Trimmed so a hand-edited {@code "true "} still
+     *  parses (Properties keeps trailing whitespace). */
     private static Pref boolPref( final String key, final Function<Options, Boolean> getter,
                                   final BiConsumer<Options, Boolean> setter ) {
         return new Pref( key,
                          o -> Boolean.toString( getter.apply( o ) ),
-                         ( o, v ) -> setter.accept( o, Boolean.parseBoolean( v ) ) );
+                         ( o, v ) -> setter.accept( o, Boolean.parseBoolean( v.trim() ) ) );
     }
 
-    /** An enum setting, stored as its {@link Enum#name()}. A value not in the enum (renamed/removed constant, or a
-     *  corrupt file) is ignored, so the option keeps its default. */
+    /** An enum setting, stored as its {@link Enum#name()}, applying every valid constant. */
     private static <E extends Enum<E>> Pref enumPref( final String key, final Function<Options, E> getter,
                                                       final BiConsumer<Options, E> setter,
                                                       final Function<String, E> parser ) {
+        return enumPref( key, getter, setter, parser, e -> true );
+    }
+
+    /** An enum setting, stored as its {@link Enum#name()}. A value not in the enum (renamed/removed constant, or a
+     *  corrupt file) OR one {@code accept} rejects is ignored, so the option keeps its default. */
+    private static <E extends Enum<E>> Pref enumPref( final String key, final Function<Options, E> getter,
+                                                      final BiConsumer<Options, E> setter,
+                                                      final Function<String, E> parser, final Predicate<E> accept ) {
         return new Pref( key,
                          o -> getter.apply( o ).name(),
                          ( o, v ) -> {
                              final E parsed = parseOrNull( parser, v );
-                             if ( parsed != null ) {
+                             if ( ( parsed != null ) && accept.test( parsed ) ) {
                                  setter.accept( o, parsed );
                              }
                          } );
     }
 
-    /** A short-integer setting (e.g. node size). A non-numeric stored value is ignored, keeping the default. */
+    /** A numeric setting parsed with {@code parser} then CLAMPED into [{@code min},{@code max}]. A non-parseable
+     *  value is ignored (default kept); a finite out-of-range value -- and NaN/±Infinity, which order outside any
+     *  finite range -- is clamped to the nearest bound. The single writer shared by all the numeric factories. */
+    private static <T extends Comparable<T>> Pref numericPref( final String key,
+            final Function<Options, String> reader, final BiConsumer<Options, T> setter,
+            final Function<String, T> parser, final T min, final T max ) {
+        return new Pref( key, reader, ( o, v ) -> {
+            final T parsed = parseOrNull( parser, v );
+            if ( parsed != null ) {
+                setter.accept( o, ( parsed.compareTo( min ) < 0 ) ? min : ( parsed.compareTo( max ) > 0 ) ? max : parsed );
+            }
+        } );
+    }
+
+    /** A short-integer setting (e.g. node size), clamped into [{@code min},{@code max}]. */
     private static Pref shortPref( final String key, final Function<Options, Short> getter,
-                                   final BiConsumer<Options, Short> setter ) {
+                                   final BiConsumer<Options, Short> setter, final short min, final short max ) {
+        return numericPref( key, o -> Short.toString( getter.apply( o ) ), setter, Short::valueOf, min, max );
+    }
+
+    /** A float setting (e.g. branch width), clamped into [{@code min},{@code max}]. */
+    private static Pref floatPref( final String key, final Function<Options, Float> getter,
+                                   final BiConsumer<Options, Float> setter, final float min, final float max ) {
+        return numericPref( key, o -> Float.toString( getter.apply( o ) ), setter, Float::valueOf, min, max );
+    }
+
+    /** An int setting (e.g. raster export scale), clamped into [{@code min},{@code max}]. */
+    private static Pref intPref( final String key, final Function<Options, Integer> getter,
+                                 final BiConsumer<Options, Integer> setter, final int min, final int max ) {
+        return numericPref( key, o -> Integer.toString( getter.apply( o ) ), setter, Integer::valueOf, min, max );
+    }
+
+    /** A double setting (e.g. support threshold), clamped into [{@code min},{@code max}]. */
+    private static Pref doublePref( final String key, final Function<Options, Double> getter,
+                                    final BiConsumer<Options, Double> setter, final double min, final double max ) {
+        return numericPref( key, o -> Double.toString( getter.apply( o ) ), setter, Double::valueOf, min, max );
+    }
+
+    /** A string setting, applied (trimmed) only when {@code valid} accepts it (so a stale/unknown value -- e.g. a
+     *  palette that no longer exists -- is ignored and the default stands). */
+    private static Pref stringPref( final String key, final Function<Options, String> getter,
+                                    final BiConsumer<Options, String> setter, final Predicate<String> valid ) {
         return new Pref( key,
-                         o -> Short.toString( getter.apply( o ) ),
+                         getter,
                          ( o, v ) -> {
-                             final Short parsed = parseShortOrNull( v );
-                             if ( parsed != null ) {
-                                 setter.accept( o, parsed );
+                             final String trimmed = v.trim();
+                             if ( valid.test( trimmed ) ) {
+                                 setter.accept( o, trimmed );
                              }
                          } );
     }
 
     private static <E> E parseOrNull( final Function<String, E> parser, final String v ) {
         try {
-            return parser.apply( v );
+            return parser.apply( v.trim() );
         }
         catch ( final RuntimeException ex ) {
-            return null; // e.g. IllegalArgumentException for an unknown enum constant
-        }
-    }
-
-    private static Short parseShortOrNull( final String v ) {
-        try {
-            return Short.valueOf( v.trim() );
-        }
-        catch ( final RuntimeException ex ) {
-            return null;
+            return null; // e.g. IllegalArgumentException for an unknown enum constant, NumberFormatException for a number
         }
     }
 
@@ -176,7 +252,10 @@ final class GuiPreferences {
         }
         final Properties p = new Properties();
         for( final Pref pref : PREFS ) {
-            p.setProperty( pref.key(), pref.reader().apply( options ) );
+            final String value = pref.reader().apply( options );
+            if ( value != null ) { // Properties forbids null values; skip rather than abort the whole save (never throw)
+                p.setProperty( pref.key(), value );
+            }
         }
         save( p );
     }

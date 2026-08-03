@@ -24,6 +24,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import org.forester.archaeopteryx.Options.OVERVIEW_PLACEMENT_TYPE;
+import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
+import org.forester.archaeopteryx.Options.SUPPORT_VISUALIZATION;
+import org.forester.phylogeny.data.NodeVisualData.NodeFill;
 import org.forester.phylogeny.data.NodeVisualData.NodeShape;
 
 /**
@@ -46,6 +50,12 @@ public final class GuiPreferencesTest {
             dir = Files.createTempDirectory( "aptx-guiprefs" );
             final Path file = dir.resolve( "display-settings.properties" );
 
+            // the palette round-trip below is only meaningful with >1 palette to switch between; guard so this
+            // test fails loudly (rather than silently going vacuous) if the palette set is ever reduced to one
+            if ( PropertyColorScheme.paletteNames().size() < 2 ) {
+                return fail( "expected at least 2 palettes for a meaningful color_palette round-trip" );
+            }
+
             // round-trip: flip a representative subset to the OPPOSITE of its default, save, reload into a
             // fresh default instance, and require the flipped values to come back
             final Options src = Options.createDefaultInstance();
@@ -54,10 +64,28 @@ public final class GuiPreferencesTest {
             final boolean italic = !src.isUseItalicScientificNames();
             final boolean antialias = !src.isAntialiasPrint();
             final boolean white_bg = !src.isGraphicsExportWhiteBackground(); // the only default-TRUE key -> flips to false
-            // non-boolean settings round-trip too: an enum (node shape) and a number (node size)
+            // non-boolean settings round-trip too: enums (node shape/fill, support viz), a short (node size),
+            // a float (branch width) and doubles (support threshold, min-confidence fraction)
             final NodeShape shape = ( src.getDefaultNodeShape() == NodeShape.RECTANGLE ) ? NodeShape.CIRCLE
                     : NodeShape.RECTANGLE;
+            final NodeFill fill = ( src.getDefaultNodeFill() == NodeFill.NONE ) ? NodeFill.SOLID : NodeFill.NONE;
+            final SUPPORT_VISUALIZATION support_viz = ( src.getSupportVisualization() == SUPPORT_VISUALIZATION.NONE )
+                    ? SUPPORT_VISUALIZATION.SIZE_SCALED : SUPPORT_VISUALIZATION.NONE;
             final short node_size = (short) ( src.getDefaultNodeShapeSize() + 3 );
+            // all numeric flips stay INSIDE the persisted [min,max] (branch width [0.5,20], support/min-conf [0,1],
+            // raster scale [1,8]) so they survive the clamp on load; out-of-range clamping is checked separately below
+            final float branch_width = src.getDefaultBranchWidth() + 2.5f; // 1 -> 3.5
+            final double support_threshold = ( src.getSupportThreshold() > 0.5 ) ? 0.25 : 0.75;
+            final double min_conf = ( src.getMinConfidenceFraction() > 0.5 ) ? 0.1 : 0.7;
+            // Display-tab layout + export settings: enums, an int, booleans and a validated string (palette)
+            final PHYLOGENY_GRAPHICS_TYPE gtype = ( src.getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE )
+                    ? PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR : PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE;
+            final OVERVIEW_PLACEMENT_TYPE ov = ( src.getOvPlacement() == OVERVIEW_PLACEMENT_TYPE.LOWER_RIGHT )
+                    ? OVERVIEW_PLACEMENT_TYPE.UPPER_LEFT : OVERVIEW_PLACEMENT_TYPE.LOWER_RIGHT;
+            final String palette = altPalette( src.getColorPaletteName() ); // a real, non-current palette name
+            final int raster_scale = src.getRasterExportScale() + 2;
+            final boolean transparent = !src.isTransparentExportBackground();
+            final boolean visible_only = !src.isGraphicsExportVisibleOnly();
             src.setShowTreeName( tree_name );
             src.setShowScale( scale );
             src.setUseItalicScientificNames( italic );
@@ -65,6 +93,17 @@ public final class GuiPreferencesTest {
             src.setGraphicsExportWhiteBackground( white_bg );
             src.setDefaultNodeShape( shape );
             src.setDefaultNodeShapeSize( node_size );
+            src.setDefaultNodeFill( fill );
+            src.setDefaultBranchWidth( branch_width );
+            src.setSupportVisualization( support_viz );
+            src.setSupportThreshold( support_threshold );
+            src.setMinConfidenceFraction( min_conf );
+            src.setPhylogenyGraphicsType( gtype );
+            src.setOvPlacement( ov );
+            src.setColorPaletteName( palette );
+            src.setRasterExportScale( raster_scale );
+            src.setTransparentExportBackground( transparent );
+            src.setGraphicsExportVisibleOnly( visible_only );
             new GuiPreferences( file ).saveFrom( src );
             if ( !Files.exists( file ) ) {
                 return fail( "saveFrom did not write the settings file" );
@@ -91,6 +130,39 @@ public final class GuiPreferencesTest {
             }
             if ( dst.getDefaultNodeShapeSize() != node_size ) {
                 return fail( "default_node_shape_size did not round-trip" );
+            }
+            if ( dst.getDefaultNodeFill() != fill ) {
+                return fail( "default_node_fill did not round-trip" );
+            }
+            if ( dst.getDefaultBranchWidth() != branch_width ) {
+                return fail( "default_branch_width did not round-trip" );
+            }
+            if ( dst.getSupportVisualization() != support_viz ) {
+                return fail( "support_visualization did not round-trip" );
+            }
+            if ( dst.getSupportThreshold() != support_threshold ) {
+                return fail( "support_threshold did not round-trip" );
+            }
+            if ( dst.getMinConfidenceFraction() != min_conf ) {
+                return fail( "min_confidence_fraction did not round-trip" );
+            }
+            if ( dst.getPhylogenyGraphicsType() != gtype ) {
+                return fail( "phylogeny_graphics_type did not round-trip" );
+            }
+            if ( dst.getOvPlacement() != ov ) {
+                return fail( "overview_placement did not round-trip" );
+            }
+            if ( !palette.equals( dst.getColorPaletteName() ) ) {
+                return fail( "color_palette did not round-trip" );
+            }
+            if ( dst.getRasterExportScale() != raster_scale ) {
+                return fail( "raster_export_scale did not round-trip" );
+            }
+            if ( dst.isTransparentExportBackground() != transparent ) {
+                return fail( "transparent_export_background did not round-trip" );
+            }
+            if ( dst.isGraphicsExportVisibleOnly() != visible_only ) {
+                return fail( "graphics_export_visible_only did not round-trip" );
             }
 
             // a key absent from the file must leave that option at its current (default) value
@@ -130,6 +202,73 @@ public final class GuiPreferencesTest {
                 return fail( "a corrupt node shape/size value must be ignored (default kept)" );
             }
 
+            // a stored palette name that is no longer a known palette must be ignored (validated stringPref),
+            // leaving the default palette rather than selecting a non-existent one
+            final Path stale = dir.resolve( "stale-palette.properties" );
+            Files.write( stale, "color_palette=NoSuchPalette\n".getBytes( StandardCharsets.UTF_8 ) );
+            final Options sp = Options.createDefaultInstance();
+            final String palette_default = sp.getColorPaletteName();
+            new GuiPreferences( stale ).applyTo( sp );
+            if ( !palette_default.equals( sp.getColorPaletteName() ) ) {
+                return fail( "an unknown palette name must be ignored (default kept)" );
+            }
+
+            // an OUT-OF-RANGE or non-finite numeric value must be CLAMPED to the setting's [min,max], never applied
+            // verbatim -- otherwise it would later throw when it seeds a range-limited SpinnerNumberModel, or feed
+            // NaN/huge values into paint/export. (branch width [0.5,20], support/min-conf [0,1], raster scale [1,8],
+            // node size [0,100].)
+            final Path oor = dir.resolve( "out-of-range.properties" );
+            Files.write( oor, ( "default_branch_width=1000\nsupport_threshold=5.0\nmin_confidence_fraction=-2\n"
+                    + "raster_export_scale=999\ndefault_node_shape_size=-7\nsupport_threshold_nan=ignored\n" )
+                    .getBytes( StandardCharsets.UTF_8 ) );
+            final Options c = Options.createDefaultInstance();
+            new GuiPreferences( oor ).applyTo( c );
+            if ( c.getDefaultBranchWidth() != 20f ) {
+                return fail( "branch width 1000 must clamp to 20, got " + c.getDefaultBranchWidth() );
+            }
+            if ( c.getSupportThreshold() != 1.0 ) {
+                return fail( "support threshold 5.0 must clamp to 1.0, got " + c.getSupportThreshold() );
+            }
+            if ( c.getMinConfidenceFraction() != 0.0 ) {
+                return fail( "min-confidence -2 must clamp to 0.0, got " + c.getMinConfidenceFraction() );
+            }
+            if ( c.getRasterExportScale() != 8 ) {
+                return fail( "raster scale 999 must clamp to 8, got " + c.getRasterExportScale() );
+            }
+            if ( c.getDefaultNodeShapeSize() != 0 ) {
+                return fail( "node size -7 must clamp to 0, got " + c.getDefaultNodeShapeSize() );
+            }
+            // NaN/Infinity must not reach Options either: they order outside any finite range, so they clamp to a bound
+            final Path nan = dir.resolve( "nan.properties" );
+            Files.write( nan, "support_threshold=NaN\ndefault_branch_width=Infinity\n"
+                    .getBytes( StandardCharsets.UTF_8 ) );
+            final Options n = Options.createDefaultInstance();
+            new GuiPreferences( nan ).applyTo( n );
+            if ( !Double.isFinite( n.getSupportThreshold() ) || !Float.isFinite( n.getDefaultBranchWidth() ) ) {
+                return fail( "NaN/Infinity must not reach Options: threshold=" + n.getSupportThreshold()
+                        + " branchWidth=" + n.getDefaultBranchWidth() );
+            }
+
+            // the (alpha) radial tree styles must NOT be restored (a persisted CIRCULAR would draw a forbidden
+            // circular-phylogram on load); a stored CIRCULAR/UNROOTED is ignored, keeping the default
+            final Path radial = dir.resolve( "radial.properties" );
+            Files.write( radial, "phylogeny_graphics_type=CIRCULAR\n".getBytes( StandardCharsets.UTF_8 ) );
+            final Options r = Options.createDefaultInstance();
+            final PHYLOGENY_GRAPHICS_TYPE type_default = r.getPhylogenyGraphicsType();
+            new GuiPreferences( radial ).applyTo( r );
+            if ( r.getPhylogenyGraphicsType() != type_default ) {
+                return fail( "a persisted CIRCULAR graphics type must be ignored, kept " + type_default + " got "
+                        + r.getPhylogenyGraphicsType() );
+            }
+            // ...but a rectangular-family style IS restored (sanity: the exclusion is not over-broad)
+            final Path euro = dir.resolve( "euro.properties" );
+            Files.write( euro, "phylogeny_graphics_type=EURO_STYLE\n".getBytes( StandardCharsets.UTF_8 ) );
+            final Options eu = Options.createDefaultInstance();
+            new GuiPreferences( euro ).applyTo( eu );
+            if ( eu.getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE ) {
+                return fail( "a persisted EURO_STYLE must be restored, got " + eu.getPhylogenyGraphicsType() );
+            }
+
             // a missing file must be a silent no-op (defaults untouched, no exception)
             final Options m = Options.createDefaultInstance();
             final boolean m_name = m.isShowTreeName();
@@ -146,6 +285,17 @@ public final class GuiPreferencesTest {
         finally {
             deleteQuietly( dir );
         }
+    }
+
+    /** A real palette name (see {@link PropertyColorScheme#paletteNames()}) different from {@code current}, so a
+     *  round-trip actually changes the value. Falls back to {@code current} if only one palette exists. */
+    private static String altPalette( final String current ) {
+        for ( final String n : PropertyColorScheme.paletteNames() ) {
+            if ( !n.equals( current ) ) {
+                return n;
+            }
+        }
+        return current;
     }
 
     private static boolean fail( final String msg ) {

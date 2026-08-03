@@ -27,6 +27,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
@@ -46,8 +48,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageTypeSpecifier;
+import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
+import javax.imageio.metadata.IIOMetadata;
+import javax.imageio.metadata.IIOMetadataNode;
+import javax.imageio.stream.ImageOutputStream;
 import javax.swing.JOptionPane;
 import javax.swing.text.MaskFormatter;
 
@@ -1264,6 +1272,14 @@ public final class AptxUtil {
         }
         if (type == GraphicsExportType.TIFF) {
             writeToTiff(file, buffered_img);
+        } else if (type == GraphicsExportType.PNG) {
+            // Embed physical resolution so the high-scale PNG drops into a document at its intended print size
+            // rather than at a nominal 72 DPI (which would place a 4x export four times too large). The figure is
+            // laid out in points (1 user-space unit = 1/72"), and the raster was rendered at N units-per-point,
+            // so N*72 DPI. Recover the ACTUAL N from the image vs the logical width (the memory cap may have
+            // reduced the requested scale), so the embedded DPI always matches the pixels actually written.
+            final int effective_scale = Math.max(1, buffered_img.getWidth() / Math.max(1, width));
+            writePngWithDpi(buffered_img, file, effective_scale * 72.0);
         } else {
             ImageIO.write(buffered_img, type.toString(), file);
         }
@@ -1400,6 +1416,55 @@ public final class AptxUtil {
 
     final static void writeToTiff(final File file, final BufferedImage image) throws IOException {
         ImageIO.write(image, "TIFF", file);
+    }
+
+    /**
+     * Writes {@code image} as a PNG carrying a physical resolution of {@code dpi} (a pHYs chunk), so it opens/pastes
+     * at the intended print size instead of a nominal 72 DPI. Best-effort about the metadata only: if the PNG writer
+     * cannot attach it, the image is still written (just without the resolution hint) rather than failing the export.
+     * Writes the NATIVE pHYs (pixels-per-meter) rather than the standard-format pixel size, whose standard-to-native
+     * conversion is unreliable across JDKs: pixels/meter = round(dpi / 0.0254).
+     */
+    static void writePngWithDpi(final BufferedImage image, final File file, final double dpi) throws IOException {
+        final Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("png");
+        if (!writers.hasNext()) {
+            ImageIO.write(image, "png", file); // no PNG writer available: write plain
+            return;
+        }
+        final ImageWriter writer = writers.next();
+        // Write through a TRUNCATING output stream (Files.newOutputStream truncates an existing file): unlike
+        // ImageIO.write(image, fmt, File) -- which deletes the target first -- ImageIO.createImageOutputStream(File)
+        // opens read/write WITHOUT truncating, so overwriting a larger PNG with a smaller one would leave stale
+        // trailing bytes and corrupt the file. Closing order (ios first, then out) flushes the image before the
+        // file is finalized.
+        try (final OutputStream out = Files.newOutputStream(file.toPath());
+                final ImageOutputStream ios = ImageIO.createImageOutputStream(out)) {
+            final ImageWriteParam param = writer.getDefaultWriteParam();
+            final IIOMetadata meta = writer
+                    .getDefaultImageMetadata(ImageTypeSpecifier.createFromRenderedImage(image), param);
+            IIOImage output = new IIOImage(image, null, meta);
+            final String format = (meta != null) ? meta.getNativeMetadataFormatName() : null;
+            if ((meta != null) && !meta.isReadOnly() && (format != null)) {
+                final int pixels_per_meter = (int) Math.round(dpi / 0.0254);
+                final IIOMetadataNode phys = new IIOMetadataNode("pHYs");
+                phys.setAttribute("pixelsPerUnitXAxis", Integer.toString(pixels_per_meter));
+                phys.setAttribute("pixelsPerUnitYAxis", Integer.toString(pixels_per_meter));
+                phys.setAttribute("unitSpecifier", "meter");
+                final IIOMetadataNode root = new IIOMetadataNode(format);
+                root.appendChild(phys);
+                try {
+                    meta.mergeTree(format, root);
+                }
+                catch (final Exception e) {
+                    output = new IIOImage(image, null, null); // metadata rejected: fall back to no resolution hint
+                }
+            }
+            writer.setOutput(ios);
+            writer.write(null, output, param);
+        }
+        finally {
+            writer.dispose();
+        }
     }
 
     final static Map<String, Integer> getRankCounts(final Phylogeny tree) {

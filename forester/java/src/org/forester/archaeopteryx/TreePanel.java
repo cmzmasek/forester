@@ -383,6 +383,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             throw new IllegalArgumentException("attempt to draw phylogeny which is null or empty");
         }
         _graphics_type = tjp.getOptions().getPhylogenyGraphicsType();
+        // seed the "Color by" palette from the shared default so a new tab inherits the last-chosen palette
+        if (!ForesterUtil.isEmpty(tjp.getOptions().getColorPaletteName())) {
+            _color_palette_name = tjp.getOptions().getColorPaletteName();
+        }
         _main_panel = tjp;
         _configuration = configuration;
         _phylogeny = t;
@@ -5131,10 +5135,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return _color_palette_name;
     }
 
-    /** Selects the categorical palette (see {@link PropertyColorScheme#paletteNames()}) and recolors. */
+    /** Selects the categorical palette (see {@link PropertyColorScheme#paletteNames()}) and recolors. Also records
+     *  the choice as the shared default (Options) so new tabs inherit it and it can be persisted. */
     void setColorPaletteName(final String name) {
         if (!ForesterUtil.isEmpty(name) && !name.equals(_color_palette_name)) {
             _color_palette_name = name;
+            getOptions().setColorPaletteName(name);
             rebuildPropertyColorScheme();
             repaint();
         }

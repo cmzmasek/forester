@@ -134,6 +134,9 @@ final public class Options {
     private short _number_of_digits_after_comma_for_confidence_values;
     private OVERVIEW_PLACEMENT_TYPE _ov_placement;
     private PHYLOGENY_GRAPHICS_TYPE _phylogeny_graphics_type;
+    // The default categorical palette for "Color by property". Held here (not just per TreePanel) so the last
+    // palette the user chose becomes the default for new tabs/sessions and can be persisted (see GuiPreferences).
+    private String _color_palette_name;
     private boolean _print_black_and_white;
     private float _print_line_width;
     private final boolean _print_using_actual_size = true;
@@ -247,6 +250,7 @@ final public class Options {
         _support_threshold = SUPPORT_THRESHOLD_DEFAULT;
         _print_black_and_white = false;
         _phylogeny_graphics_type = PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR;
+        _color_palette_name = PropertyColorScheme.DEFAULT_PALETTE_NAME;
         _base_font = new Font(Configuration.getDefaultFontFamilyName(), Font.PLAIN, AptxConstants.DEFAULT_TREE_FONT_SIZE);
         _match_whole_terms_only = false;
         _search_with_regex = false;
@@ -349,6 +353,15 @@ final public class Options {
 
     final PHYLOGENY_GRAPHICS_TYPE getPhylogenyGraphicsType() {
         return _phylogeny_graphics_type;
+    }
+
+    /** The default categorical palette for "Color by property" (see {@link PropertyColorScheme#paletteNames()}). */
+    final String getColorPaletteName() {
+        return _color_palette_name;
+    }
+
+    final void setColorPaletteName(final String color_palette_name) {
+        _color_palette_name = color_palette_name;
     }
 
     final float getPrintLineWidth() {
