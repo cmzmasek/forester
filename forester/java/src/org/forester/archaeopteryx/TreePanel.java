@@ -199,8 +199,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // taxonomy label ends. When the two differed (taxonomy 3, node data 2), the node data started a pixel inside
     // the taxonomy box and an italic scientific name's right overhang overlapped the following node name.
     private final static int LABEL_GAP_AFTER_NODE_SHAPE = 2;
-    // Horizontal gap between the taxonomy and node-data segments of an above-the-branch internal label.
-    private final static int INTERNAL_LABEL_SEGMENT_GAP = 5;
+    // Extra horizontal gap between the taxonomy and node-data segments of an above-the-branch internal label, ON
+    // TOP of the trailing space the taxonomy segment already carries (taxonomyLabel emits a trailing " "). Kept at
+    // 0 so an internal label's taxonomy->name spacing matches the external path (which separates the two with only
+    // that trailing space); a non-zero value here double-counts the gap and reads as too wide.
+    private final static int INTERNAL_LABEL_SEGMENT_GAP = 0;
     // Smallest x an above-the-branch internal label may start at: a long label on an internal node near
     // the root would otherwise grow leftward off-canvas and lose its leading characters, so it is shifted
     // right to keep its leftmost glyph visible at this margin instead of being clipped.

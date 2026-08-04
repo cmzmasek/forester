@@ -58,6 +58,7 @@ public final class TaxonomyNodeLabelOverlapTest {
         if ( !GraphicsEnvironment.isHeadless() ) {
             ok &= testNoRenderedOverlap( "Homo sapiens" );
             ok &= testNoRenderedOverlap( "Drosophila melanogasterf" ); // ends in an italic 'f': largest right overhang
+            ok &= testInternalGapMatchesExternal();
         }
         return ok;
     }
@@ -161,6 +162,137 @@ public final class TaxonomyNodeLabelOverlapTest {
             e.printStackTrace();
             return false;
         }
+    }
+
+    /**
+     * The taxonomy-&gt;node-data gap of an INTERNAL node's above-the-branch label must be no wider than an EXTERNAL
+     * node's, and must NOT overlap. The internal path once added INTERNAL_LABEL_SEGMENT_GAP on top of the trailing
+     * space the taxonomy already carries (a double gap), so internal labels read too spread out. Comparing internal
+     * TO external (same font, same name) cancels font/rasterizer differences, so the gap DIFFERENCE is the robust,
+     * platform-independent signal. Also run with the worst-case italic-'f' overhang, to confirm gap=0 did not tip
+     * the internal label into overlap (the 5px used to buffer it).
+     */
+    private static boolean testInternalGapMatchesExternal() {
+        FontResources.registerBundledFonts(); // pin the bundled font so glyph metrics are reproducible
+        boolean ok = internalGapOk( "Homo sapiens" );
+        ok &= internalGapOk( "Drosophila melanogasterf" ); // italic 'f': the largest right overhang
+        return ok;
+    }
+
+    private static boolean internalGapOk( final String sci ) {
+        try {
+            final Configuration conf = new Configuration();
+            conf.setDisplayTaxonomyScientificNames( true );
+            conf.setDisplaySequenceNames( true );
+            // root -> [ A(non-root internal) -> (C,D), B ]; every node carries a scientific name + a sequence name
+            final Phylogeny phy = new Phylogeny();
+            final PhylogenyNode root = new PhylogenyNode();
+            final PhylogenyNode a = withData( "Aint", sci );
+            final PhylogenyNode c = withData( "Cext", sci );
+            a.addAsChild( c );
+            a.addAsChild( withData( "Dext", sci ) );
+            root.addAsChild( a );
+            root.addAsChild( withData( "Bext", sci ) );
+            phy.setRoot( root );
+            phy.externalNodesHaveChanged();
+            final MainFrame[] mf = new MainFrame[ 1 ];
+            SwingUtilities.invokeAndWait(
+                    () -> mf[ 0 ] = MainFrameApplication.createInstance( new Phylogeny[] { phy }, conf, "gap" ) );
+            final boolean[] ok = { true };
+            SwingUtilities.invokeAndWait( () -> {
+                final MainFrame frame = mf[ 0 ];
+                try {
+                    final TreePanel tp = frame.getMainPanel().getCurrentTreePanel();
+                    final Options o = frame.getOptions();
+                    o.setAntialiasPrint( false );
+                    o.setUseItalicScientificNames( true );
+                    o.setGraphicsExportWhiteBackground( false );
+                    final int tax = 0xFF00FF, seq = 0x00FFFF;
+                    tp.getTreeColorSet().setColorforDefault( TreeColorSet.BACKGROUND, new Color( 255, 255, 255 ) );
+                    tp.getTreeColorSet().setColorforDefault( TreeColorSet.TAXONOMY, new Color( tax ) );
+                    tp.getTreeColorSet().setColorforDefault( TreeColorSet.SEQUENCE, new Color( seq ) );
+                    tp.getTreeColorSet().setColorSchema( 0 );
+                    frame.showWhole();
+                    final int w = 1100, h = 500;
+                    tp.setSize( w, h );
+                    tp.calcParametersForPainting( w, h );
+                    final BufferedImage img = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
+                    // band derived from the ACTUAL label-font height: the internal label sits ABOVE its node, so a
+                    // fixed symmetric band would clip its top on a large/HiDPI font and skew the measurement; a whole
+                    // font-height +margin above/below covers the label yet stays well inside the ~80px row spacing
+                    final int band = tp.getMainPanel().getTreeFontSet().getFontMetricsLarge().getHeight() + 4;
+                    final int internal_gap = columnGap( img, a.getYcoord(), band, tax, seq ); // A is the internal node
+                    final int external_gap = columnGap( img, c.getYcoord(), band, tax, seq ); // C is an external leaf
+                    if ( ( internal_gap == ABSENT ) || ( external_gap == ABSENT ) ) {
+                        fail( ok, "'" + sci + "': internal/external label not both drawn (internal=" + internal_gap
+                                + " external=" + external_gap + ")" );
+                    }
+                    else if ( internal_gap <= 0 ) {
+                        fail( ok, "'" + sci + "': internal taxonomy/name OVERLAP (gap=" + internal_gap + ")" );
+                    }
+                    // the internal gap must not exceed the external one by more than a couple px (the old bug added a
+                    // whole extra INTERNAL_LABEL_SEGMENT_GAP -> visibly too large)
+                    else if ( internal_gap > external_gap + 3 ) {
+                        fail( ok, "'" + sci + "': internal taxonomy->name gap (" + internal_gap
+                                + ") is too large vs external (" + external_gap + ")" );
+                    }
+                }
+                catch ( final Throwable t ) {
+                    fail( ok, "'" + sci + "': internal-gap unexpected " + t );
+                }
+                finally {
+                    ( (JFrame) frame ).dispose();
+                }
+            } );
+            return ok[ 0 ];
+        }
+        catch ( final Throwable e ) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /** Sentinel for {@link #columnGap}: one of the two colors was absent from the window. */
+    private static final int ABSENT = Integer.MIN_VALUE;
+
+    /**
+     * The horizontal gap (px) in a +/-{@code band}px window around {@code yc} between the rightmost taxonomy-colored
+     * ink (tax_max) and the GLOBAL leftmost node-data-colored ink (seq_min): {@code seq_min - tax_max}. For a
+     * [taxonomy][data] label the data is entirely right of the taxonomy, so a positive result is clear space and a
+     * result &lt;= 0 means the two segments OVERLAP (this is why seq_min is the global leftmost, not restricted to
+     * the right of tax_max -- otherwise an overlap could never be detected). Returns {@link #ABSENT} if either color
+     * is missing from the window.
+     */
+    private static int columnGap( final BufferedImage img, final float yc, final int band, final int tax,
+                                  final int seq ) {
+        final int y0 = Math.max( 0, (int) yc - band );
+        final int y1 = Math.min( img.getHeight(), (int) yc + band );
+        int tax_max = -1;
+        int seq_min = Integer.MAX_VALUE;
+        for( int y = y0; y < y1; ++y ) {
+            for( int x = 0; x < img.getWidth(); ++x ) {
+                final int p = img.getRGB( x, y ) & 0xFFFFFF;
+                if ( p == tax ) {
+                    tax_max = Math.max( tax_max, x );
+                }
+                else if ( p == seq ) {
+                    seq_min = Math.min( seq_min, x );
+                }
+            }
+        }
+        return ( ( tax_max < 0 ) || ( seq_min == Integer.MAX_VALUE ) ) ? ABSENT : ( seq_min - tax_max );
+    }
+
+    private static PhylogenyNode withData( final String name, final String sci ) {
+        final PhylogenyNode n = new PhylogenyNode();
+        n.setName( name );
+        final Taxonomy t = new Taxonomy();
+        t.setScientificName( sci );
+        n.getNodeData().setTaxonomy( t );
+        final Sequence s = new Sequence();
+        s.setName( "SEQ" );
+        n.getNodeData().addSequence( s );
+        return n;
     }
 
     /** Cladogram (tips aligned at one x) of leaves that each carry an italic scientific name and a node name. */
