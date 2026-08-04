@@ -61,7 +61,20 @@ public final class DemoTreesTest {
         // colorize by rank / clade bands: in-tree 'order' rank annotation so the demo works offline
         ok &= hasRank( "colorize-by-rank.xml", "order" );
         ok &= hasRank( "colorize-by-rank.xml", "species" );
+        // scale axis: a phylogram with real branch lengths (so the labeled distance axis has ticks)
+        ok &= hasBranchLengths( "scale-axis.xml" );
         return ok;
+    }
+
+    private static boolean hasBranchLengths( final String file_name ) {
+        final Phylogeny phy = load( file_name );
+        if ( phy == null ) {
+            return false;
+        }
+        if ( !( org.forester.phylogeny.PhylogenyMethods.calculateMaxDistanceToRoot( phy ) > 0.0 ) ) {
+            return note( file_name + " must carry branch lengths (a positive max distance to root) for a scale axis" );
+        }
+        return true;
     }
 
     /** Parses a demo file, asserting it is present, error-free and non-empty; null on any failure (with a message). */

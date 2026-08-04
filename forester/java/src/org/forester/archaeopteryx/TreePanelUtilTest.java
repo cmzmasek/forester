@@ -55,7 +55,57 @@ public final class TreePanelUtilTest {
         return testYDistanceToAvoidLabelOverlap() && testSupportSymbolMath() && testDetectConfidenceScaleMax()
                 && testRankTaxonCounts() && testTaxonomyLabel() && testRankColorization() && testTipQueryName()
                 && testCladeBands() && testRankColorizationViaSequenceIds() && testInternalLabelAboveBranchLayout()
-                && testAbbreviateScientificName() && testSupportColor() && testScaleGridLines();
+                && testAbbreviateScientificName() && testSupportColor() && testScaleGridLines()
+                && testScaleAxisTickValues() && testFormatCompactNumber();
+    }
+
+    /**
+     * Labeled-axis tick VALUES: 0 (the root) then stepping by spacing up to and including max_distance; degenerate
+     * inputs yield none. (Distinct from the grid lines, which skip 0.)
+     */
+    private static boolean testScaleAxisTickValues() {
+        final double[] a = TreePanelUtil.scaleAxisTickValues( 0.7, 0.1 );
+        if ( ( a.length != 8 ) || ( a[ 0 ] != 0.0 ) || ( Math.abs( a[ 1 ] - 0.1 ) > 1e-9 )
+                || ( Math.abs( a[ 7 ] - 0.7 ) > 1e-9 ) ) {
+            return fail( "expected ticks 0..0.7 (8 values incl. 0); got " + java.util.Arrays.toString( a ) );
+        }
+        // integer spacing, max exactly on a boundary
+        final double[] b = TreePanelUtil.scaleAxisTickValues( 30.0, 10.0 );
+        if ( ( b.length != 4 ) || ( b[ 0 ] != 0.0 ) || ( b[ 3 ] != 30.0 ) ) {
+            return fail( "expected ticks 0,10,20,30; got " + java.util.Arrays.toString( b ) );
+        }
+        // float tolerance: 3*0.1 = 0.30000000000000004, so max=0.3 must still include the 0.3 tick (not drop it)
+        if ( TreePanelUtil.scaleAxisTickValues( 0.3, 0.1 ).length != 4 ) {
+            return fail( "a tick whose value rounds to max_distance must be included despite float error" );
+        }
+        // degenerate: no depth / non-positive spacing -> no ticks
+        if ( ( TreePanelUtil.scaleAxisTickValues( 0.0, 0.1 ).length != 0 )
+                || ( TreePanelUtil.scaleAxisTickValues( 0.5, 0.0 ).length != 0 )
+                || ( TreePanelUtil.scaleAxisTickValues( 0.5, -1.0 ).length != 0 ) ) {
+            return fail( "zero-depth or non-positive spacing must yield no axis ticks" );
+        }
+        // pathological depth/spacing ratio (corrupt/raw-count branch lengths) -> NO axis, not a giant array / int
+        // overflow / hang. 1e12 / 100 = 1e10 ticks; well past the ceiling.
+        if ( TreePanelUtil.scaleAxisTickValues( 1.0e12, 100.0 ).length != 0 ) {
+            return fail( "an absurd tick count must yield no axis (guard against OOM / int overflow)" );
+        }
+        if ( TreePanelUtil.scaleAxisTickValues( 1.0e15, 1.0e-3 ).length != 0 ) { // would overflow int(n)
+            return fail( "a count that overflows int must yield no axis, not a NegativeArraySizeException" );
+        }
+        return true;
+    }
+
+    /** The shared compact figure-label formatter: whole numbers as integers, small magnitudes keep ~3 sig digits. */
+    private static boolean testFormatCompactNumber() {
+        if ( !"120".equals( TreePanelUtil.formatCompactNumber( 120.0 ) )
+                || !"0".equals( TreePanelUtil.formatCompactNumber( 0.0 ) )
+                || !"2016.5".equals( TreePanelUtil.formatCompactNumber( 2016.5 ) )
+                || !"0.3".equals( TreePanelUtil.formatCompactNumber( 0.30000000000000004 ) ) // float noise -> clean
+                || !"0.005".equals( TreePanelUtil.formatCompactNumber( 0.005 ) ) ) { // small magnitude kept legible
+            return fail( "formatCompactNumber: got " + TreePanelUtil.formatCompactNumber( 0.30000000000000004 ) + "/"
+                    + TreePanelUtil.formatCompactNumber( 0.005 ) );
+        }
+        return true;
     }
 
     /**

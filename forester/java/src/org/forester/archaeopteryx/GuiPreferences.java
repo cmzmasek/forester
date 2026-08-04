@@ -73,6 +73,7 @@ final class GuiPreferences {
             boolPref( "show_tree_name", Options::isShowTreeName, Options::setShowTreeName ),
             boolPref( "show_scale", Options::isShowScale, Options::setShowScale ),
             boolPref( "show_scale_grid", Options::isShowScaleGrid, Options::setShowScaleGrid ),
+            boolPref( "show_scale_axis", Options::isShowScaleAxis, Options::setShowScaleAxis ),
             boolPref( "show_overview", Options::isShowOverview, Options::setShowOverview ),
             boolPref( "abbreviate_scientific_names", Options::isAbbreviateScientificTaxonNames,
                       Options::setAbbreviateScientificTaxonNames ),

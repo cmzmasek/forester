@@ -1390,6 +1390,8 @@ public final class MainFrameApplication extends MainFrame {
         _show_tree_name_cbmi.setToolTipText("show the tree's name on the canvas (lower-left, or lower-right when the scale is shown)");
         _show_scale_grid_cbmi = new JCheckBoxMenuItem(MainFrame.DISPLAY_SCALE_GRID_LABEL);
         _show_scale_grid_cbmi.setToolTipText(MainFrame.DISPLAY_SCALE_GRID_TIP);
+        _show_scale_axis_cbmi = new JCheckBoxMenuItem(MainFrame.DISPLAY_SCALE_AXIS_LABEL);
+        _show_scale_axis_cbmi.setToolTipText(MainFrame.DISPLAY_SCALE_AXIS_TIP);
         _show_default_node_shapes_internal_cbmi = new JCheckBoxMenuItem(DISPLAY_NODE_BOXES_LABEL_INT);
         _internal_labels_above_branch_rbmi = new JRadioButtonMenuItem(MainFrame.INTERNAL_LABELS_ABOVE_BRANCH_LABEL);
         _internal_labels_above_branch_rbmi.setToolTipText(MainFrame.INTERNAL_LABELS_ABOVE_BRANCH_TIP);
@@ -1462,6 +1464,7 @@ public final class MainFrameApplication extends MainFrame {
         customizeCheckBoxMenuItem(_show_scale_cbmi, getOptions().isShowScale());
         customizeCheckBoxMenuItem(_show_tree_name_cbmi, getOptions().isShowTreeName());
         customizeCheckBoxMenuItem(_show_scale_grid_cbmi, getOptions().isShowScaleGrid());
+        customizeCheckBoxMenuItem(_show_scale_axis_cbmi, getOptions().isShowScaleAxis());
         customizeCheckBoxMenuItem(_collapsed_with_average_height_cbmi, getOptions().isCollapsedWithAverageHeigh());
         customizeCheckBoxMenuItem(_show_abbreviated_labels_for_collapsed_nodes_cbmi,
                 getOptions().isShowAbbreviatedLabelsForCollapsedNodes());

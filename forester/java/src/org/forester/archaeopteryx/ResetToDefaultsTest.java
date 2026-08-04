@@ -91,6 +91,7 @@ public final class ResetToDefaultsTest {
         o.setPhylogenyGraphicsType( PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE );
         o.setColorPaletteName( "Colorblind-friendly" );
         o.setShowScaleGrid( true );
+        o.setShowScaleAxis( true );
         o.setAbbreviateScientificTaxonNames( true );
         o.setSupportVisualization( SUPPORT_VISUALIZATION.SIZE_SCALED );
         // search options (reset by init, resynced onto the control-panel checkboxes by Reset to Defaults)
@@ -128,6 +129,7 @@ public final class ResetToDefaultsTest {
         ok &= eq( "graphicsType", o.getPhylogenyGraphicsType(), def.getPhylogenyGraphicsType() );
         ok &= eq( "palette", o.getColorPaletteName(), def.getColorPaletteName() );
         ok &= eq( "showScaleGrid", o.isShowScaleGrid(), def.isShowScaleGrid() );
+        ok &= eq( "showScaleAxis", o.isShowScaleAxis(), def.isShowScaleAxis() );
         ok &= eq( "abbreviateNames", o.isAbbreviateScientificTaxonNames(), def.isAbbreviateScientificTaxonNames() );
         ok &= eq( "supportViz", o.getSupportVisualization(), def.getSupportVisualization() );
         ok &= eq( "searchCase", o.isSearchCaseSensitive(), def.isSearchCaseSensitive() );
@@ -167,7 +169,8 @@ public final class ResetToDefaultsTest {
                           frame._transparent_export_background_cbmi, frame._graphics_export_white_background_cbmi,
                           frame._color_labels_same_as_parent_branch, frame._show_default_node_shapes_internal_cbmi,
                           frame._show_default_node_shapes_external_cbmi, frame._show_default_node_shapes_for_marked_cbmi,
-                          frame._show_scale_grid_cbmi, frame._show_scale_cbmi, frame._show_tree_name_cbmi,
+                          frame._show_scale_grid_cbmi, frame._show_scale_axis_cbmi, frame._show_scale_cbmi,
+                          frame._show_tree_name_cbmi,
                           frame._show_overview_cbmi, frame._show_confidence_stddev_cbmi, frame._show_mad_confidence_cbmi,
                           frame._antialias_print_cbmi, frame._print_black_and_white_cbmi,
                           frame._internal_number_are_confidence_for_nh_parsing_cbmi, frame._replace_underscores_cbmi,

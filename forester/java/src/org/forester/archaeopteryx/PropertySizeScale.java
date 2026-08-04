@@ -119,20 +119,7 @@ final class PropertySizeScale {
      * a figure is ever rendered off the EDT (the reproducible-figure CLI path).
      */
     static String formatValue( final double v ) {
-        if ( ( v == Math.rint( v ) ) && !Double.isInfinite( v ) && ( Math.abs( v ) < 1e15 ) ) {
-            return Long.toString( (long) v );
-        }
-        final double abs = Math.abs( v );
-        // >=1 -> 2 decimals; <1 -> shift right so ~3 significant digits survive (0.005 -> 5 decimals). Guarded.
-        int decimals = ( ( abs >= 1 ) || ( abs == 0 ) ) ? 2 : ( 2 - (int) Math.floor( Math.log10( abs ) ) );
-        decimals = Math.max( 0, Math.min( decimals, 10 ) );
-        final StringBuilder pattern = new StringBuilder( "0." );
-        for( int i = 0; i < decimals; ++i ) {
-            pattern.append( '#' ); // '#' drops trailing zeros
-        }
-        return new java.text.DecimalFormat( pattern.toString(),
-                                            java.text.DecimalFormatSymbols.getInstance( java.util.Locale.US ) )
-                .format( v );
+        return TreePanelUtil.formatCompactNumber( v ); // shared compact figure-label formatter (also the scale axis)
     }
 
     /** The node's value mapped to [0,1]; an all-equal range (no spread) maps to 0 (all at the base size). */

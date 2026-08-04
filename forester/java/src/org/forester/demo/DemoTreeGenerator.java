@@ -58,6 +58,7 @@ public final class DemoTreeGenerator {
         write( dir, "color-by-property.xml", colorByPropertyTree() );
         write( dir, "annotation-columns.xml", annotationColumnsTree() );
         write( dir, "colorize-by-rank.xml", colorizeByRankTree() );
+        write( dir, "scale-axis.xml", scaleAxisTree() );
         System.out.println( "Wrote demo trees to " + dir.getAbsolutePath() );
     }
 
@@ -181,6 +182,28 @@ public final class DemoTreeGenerator {
     private static PhylogenyNode species( final String scientific_name ) throws PhyloXmlDataFormatException {
         final PhylogenyNode n = leaf( scientific_name );
         taxon( n, scientific_name, "species" );
+        return n;
+    }
+
+    // ----- "Scale Axis": a phylogram whose branch lengths (substitutions/site) span a useful range, so the labeled
+    //       distance axis shows nice ticks. Load -> Settings > Display > Scale Axis.
+    private static Phylogeny scaleAxisTree() {
+        final PhylogenyNode root = clade( 0,
+                clade( 0.12, blLeaf( "Homo_sapiens", 0.20 ), blLeaf( "Pan_troglodytes", 0.35 ),
+                       clade( 0.18, blLeaf( "Mus_musculus", 0.30 ), blLeaf( "Rattus_norvegicus", 0.15 ) ) ),
+                clade( 0.10, blLeaf( "Gallus_gallus", 0.45 ), blLeaf( "Xenopus_laevis", 0.25 ),
+                       clade( 0.22, blLeaf( "Danio_rerio", 0.40 ), blLeaf( "Drosophila_melanogaster", 0.20 ) ) ) );
+        final Phylogeny phy = tree( root, "Scale axis (demo)",
+                "Synthetic gene-family phylogram with branch lengths in substitutions/site (max depth ~0.7). Turn on "
+                        + "Settings > Display > Scale Axis to read a labeled distance axis with ticks along the bottom." );
+        phy.setDistanceUnit( "substitutions/site" );
+        return phy;
+    }
+
+    private static PhylogenyNode blLeaf( final String name, final double branch_length ) {
+        final PhylogenyNode n = new PhylogenyNode();
+        n.setName( name );
+        n.setDistanceToParent( branch_length );
         return n;
     }
 

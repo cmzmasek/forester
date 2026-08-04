@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" branch_length_unit="substitutions/site" rerootable="true">
+  <name>Scale axis (demo)</name>
+  <description>Synthetic gene-family phylogram with branch lengths in substitutions/site (max depth ~0.7). Turn on Settings &gt; Display &gt; Scale Axis to read a labeled distance axis with ticks along the bottom.</description>
+  <clade>
+    <branch_length>0.0</branch_length>
+    <clade>
+      <branch_length>0.12</branch_length>
+      <clade>
+        <name>Homo_sapiens</name>
+        <branch_length>0.2</branch_length>
+      </clade>
+      <clade>
+        <name>Pan_troglodytes</name>
+        <branch_length>0.35</branch_length>
+      </clade>
+      <clade>
+        <branch_length>0.18</branch_length>
+        <clade>
+          <name>Mus_musculus</name>
+          <branch_length>0.3</branch_length>
+        </clade>
+        <clade>
+          <name>Rattus_norvegicus</name>
+          <branch_length>0.15</branch_length>
+        </clade>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.1</branch_length>
+      <clade>
+        <name>Gallus_gallus</name>
+        <branch_length>0.45</branch_length>
+      </clade>
+      <clade>
+        <name>Xenopus_laevis</name>
+        <branch_length>0.25</branch_length>
+      </clade>
+      <clade>
+        <branch_length>0.22</branch_length>
+        <clade>
+          <name>Danio_rerio</name>
+          <branch_length>0.4</branch_length>
+        </clade>
+        <clade>
+          <name>Drosophila_melanogaster</name>
+          <branch_length>0.2</branch_length>
+        </clade>
+      </clade>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>

@@ -325,6 +325,58 @@ public class TreePanelUtil {
         return xs;
     }
 
+    // A ceiling on the number of scale-axis ticks: on a pathological depth/spacing ratio (corrupt/raw-count branch
+    // lengths, e.g. a max distance of billions) draw NO axis rather than allocate a giant array / overflow the int
+    // count / hang the paint. Any real tree keeps depth/getScaleDistance() in the low tens.
+    private static final int MAX_AXIS_TICKS = 1000;
+
+    /**
+     * The distance VALUES at which the labeled scale axis places ticks: 0 (the root), then stepping by
+     * {@code spacing} up to and including {@code max_distance} (the deepest tip). Always includes 0 (the origin
+     * tick, which {@link #scaleGridLineXs} skips). Empty when {@code spacing} is non-positive, the tree has no
+     * depth, or the tick count would be absurd. Pure -- the caller maps each value to an x and a label.
+     */
+    final static double[] scaleAxisTickValues( final double max_distance, final double spacing ) {
+        if ( ( spacing <= 0.0 ) || ( max_distance <= 0.0 ) ) {
+            return new double[ 0 ];
+        }
+        // steps in units of spacing; +1e-9 tolerance (in steps) so a tick that lands on max_distance survives float
+        // error (e.g. 3*0.1 = 0.30000000000000004). Checked BEFORE the int cast so a huge ratio can't overflow.
+        final double steps = ( max_distance / spacing ) + 1.0e-9;
+        if ( steps > MAX_AXIS_TICKS ) {
+            return new double[ 0 ];
+        }
+        final int n = (int) Math.floor( steps );
+        final double[] values = new double[ n + 1 ]; // + the 0 tick
+        for ( int i = 0; i <= n; i++ ) {
+            values[ i ] = i * spacing;
+        }
+        return values;
+    }
+
+    /**
+     * Formats a number for a compact figure label (scale-axis ticks, size-legend samples): a whole number as an
+     * integer, otherwise with enough decimals to stay legible across magnitudes -- 2 decimals for values &gt;= 1
+     * (years, distances, counts) but MORE for small magnitudes, so a 0..1 property/distance does not collapse to
+     * "0"/duplicate labels. Trailing zeros dropped. US-locale (reproducible across locales; a fresh formatter per
+     * call -- DecimalFormat is not thread-safe, so a shared static would be an off-EDT hazard).
+     */
+    final static String formatCompactNumber( final double v ) {
+        if ( ( v == Math.rint( v ) ) && !Double.isInfinite( v ) && ( Math.abs( v ) < 1e15 ) ) {
+            return Long.toString( (long) v );
+        }
+        final double abs = Math.abs( v );
+        int decimals = ( ( abs >= 1 ) || ( abs == 0 ) ) ? 2 : ( 2 - (int) Math.floor( Math.log10( abs ) ) );
+        decimals = Math.max( 0, Math.min( decimals, 10 ) );
+        final StringBuilder pattern = new StringBuilder( "0." );
+        for ( int i = 0; i < decimals; ++i ) {
+            pattern.append( '#' ); // '#' drops trailing zeros
+        }
+        return new java.text.DecimalFormat( pattern.toString(),
+                                            java.text.DecimalFormatSymbols.getInstance( java.util.Locale.US ) )
+                .format( v );
+    }
+
     /** THRESHOLD_MARKS test: is the support at or above the cutoff (a fraction 0..1 of the scale)? */
     final static boolean isSupportAtOrAboveThreshold( final double confidence,
                                                       final double scale_max,

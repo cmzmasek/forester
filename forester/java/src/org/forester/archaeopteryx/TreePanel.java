@@ -259,6 +259,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private static final Color CONNECTOR_GUIDE_COLOR = new Color(200, 200, 200);
     // How far the (faint) scale-grid color is blended from the background toward the branch-length color.
     private static final double SCALE_GRID_BLEND = 0.18;
+    private static final int    SCALE_AXIS_TICK_LEN = 4;  // length (px) of the labeled scale-axis tick marks
+    private static final int    SCALE_AXIS_LABEL_GAP = 4; // min px between adjacent tick labels (else the label is decimated)
+    private static final int    SCALE_AXIS_UNIT_GAP = 5;  // gap before the trailing [unit] label
     private static final double TWO_PI = 2 * Math.PI;
     private final static int WIGGLE = 2;
     HashMap<Long, Short> _nodeid_dist_to_leaf = new HashMap<>();
@@ -3623,11 +3626,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final int y2 = y1 - 8;
         final int y3 = y1 - 4;
         g.setFont(getTreeFontSet().getSmallFont());
-        if ((to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite()) {
-            g.setColor(Color.BLACK);
-        } else {
-            g.setColor(getTreeColorSet().getBranchLengthColor());
-        }
+        g.setColor(scaleInkColor(to_pdf, to_graphics_file));
         final Stroke s = g.getStroke();
         g.setStroke(STROKE_1);
         drawLine(x1, y1, x1, y2, g);
@@ -3672,6 +3671,71 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.setStroke(saved_stroke);
     }
 
+    /**
+     * A labeled distance axis with tick marks along the bottom (phylograms only): a horizontal line spanning the
+     * tree's depth, a tick at each scale-distance interval, and a numeric label under each tick -- so branch lengths
+     * can be read off directly. Same distance unit and origin (the root = 0) as the scale bar / grid. Anchored to the
+     * TREE bottom (panel height / export extent, like paintScaleGrid), so screen and every export agree (WYSIWYG) and
+     * the scale bar + tree name are lifted clear of it. Labels are decimated so they never overlap on a dense tree.
+     */
+    final private void paintScaleAxis(final Graphics2D g, final boolean to_pdf, final boolean to_graphics_file,
+                                      final int graphics_file_y, final int graphics_file_height) {
+        final double corr = getXcorrectionFactor();
+        final float origin_x = _phylogeny.getRoot().getXcoord();
+        final double max_dist = getMaxDistanceToRoot();
+        final double[] ticks = TreePanelUtil.scaleAxisTickValues(max_dist, getScaleDistance());
+        if (ticks.length == 0) {
+            return;
+        }
+        final Font saved_font = g.getFont();
+        final Color saved_color = g.getColor();
+        final Stroke saved_stroke = g.getStroke();
+        g.setFont(getTreeFontSet().getSmallFont());
+        final FontMetrics fm = g.getFontMetrics();
+        final boolean use_export_extent = (to_pdf || to_graphics_file) && (graphics_file_height > 0);
+        final int bottom = use_export_extent ? (graphics_file_y + graphics_file_height) : getHeight();
+        final int axis_y = bottom - scaleAxisBandHeight();
+        final int label_baseline = axis_y + SCALE_AXIS_TICK_LEN + fm.getAscent() + 1;
+        g.setColor(scaleInkColor(to_pdf, to_graphics_file));
+        g.setStroke(STROKE_1);
+        final int x_end = (int) Math.round(origin_x + (max_dist * corr));
+        drawLine(Math.round(origin_x), axis_y, x_end, axis_y, g); // the axis line: root (0) -> deepest tip
+        int last_label_right = Integer.MIN_VALUE; // decimate labels (keep all ticks) so they never overlap
+        for (final double v : ticks) {
+            final int x = (int) Math.round(origin_x + (v * corr));
+            drawLine(x, axis_y, x, axis_y + SCALE_AXIS_TICK_LEN, g); // the tick mark (always drawn)
+            final String label = TreePanelUtil.formatCompactNumber(v);
+            final int half = fm.stringWidth(label) / 2;
+            if ((x - half) >= (last_label_right + SCALE_AXIS_LABEL_GAP)) {
+                g.drawString(label, x - half, label_baseline);
+                last_label_right = x + half;
+            }
+        }
+        // the distance unit once, at the right end -- only if it clears the last drawn tick label
+        if (!ForesterUtil.isEmpty(_phylogeny.getDistanceUnit())) {
+            final int unit_x = x_end + SCALE_AXIS_UNIT_GAP;
+            if (unit_x >= (last_label_right + SCALE_AXIS_LABEL_GAP)) {
+                g.drawString("[" + _phylogeny.getDistanceUnit() + "]", unit_x, label_baseline);
+            }
+        }
+        g.setFont(saved_font);
+        g.setColor(saved_color);
+        g.setStroke(saved_stroke);
+    }
+
+    /** Vertical space (px) the labeled scale axis occupies below its top (line + ticks + one label row). One source,
+     *  used to place the axis AND to lift the scale bar / tree name clear of it. */
+    private int scaleAxisBandHeight() {
+        return getFontMetrics(getTreeFontSet().getSmallFont()).getHeight() + SCALE_AXIS_TICK_LEN + 4;
+    }
+
+    /** Ink color shared by the scale bar / scale axis / tree name: black in a B&W export, else the branch-length color. */
+    private Color scaleInkColor(final boolean to_pdf, final boolean to_graphics_file) {
+        return ((to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite())
+                ? Color.BLACK
+                : getTreeColorSet().getBranchLengthColor();
+    }
+
     /** Faint, theme-aware color for the scale grid: the background nudged slightly toward the branch-length color. */
     private Color scaleGridColor(final boolean to_pdf, final boolean to_graphics_file) {
         if ((to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite()) {
@@ -3687,15 +3751,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                      int y1,
                                      final boolean to_pdf,
                                      final boolean to_graphics_file,
-                                     final boolean align_right) {
+                                     final boolean align_right,
+                                     final boolean raise_for_scale_axis) {
+        g.setFont(getTreeFontSet().getSmallFont());
+        if (raise_for_scale_axis) {
+            // the labeled scale axis occupies the bottom band -- lift the name clear above it (same band height the
+            // axis reserves, so the two can't drift), never past the top edge
+            y1 = Math.max(g.getFontMetrics().getHeight(), y1 - scaleAxisBandHeight());
+        }
         y1 -= 12;
         final int y3 = y1 - 4;
-        g.setFont(getTreeFontSet().getSmallFont());
-        if ((to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite()) {
-            g.setColor(Color.BLACK);
-        } else {
-            g.setColor(getTreeColorSet().getBranchLengthColor());
-        }
+        g.setColor(scaleInkColor(to_pdf, to_graphics_file));
         final Stroke s = g.getStroke();
         g.setStroke(STROKE_1);
         final String name = getPhylogeny().getName();
@@ -7539,20 +7605,29 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             paintHoverPreview(g, !(to_pdf || to_graphics_file)); // translucent select/deselect hover preview
             final boolean scale_shown = getOptions().isShowScale() && getControlPanel().isDrawPhylogram()
                     && (getScaleDistance() > 0.0);
+            final boolean axis_shown = getOptions().isShowScaleAxis() && getControlPanel().isDrawPhylogram()
+                    && (getScaleDistance() > 0.0);
+            // the scale axis owns the bottom band; lift the (viewport-fixed) scale bar clear above it (the tree name
+            // is likewise raised, inside paintTreeName) so the three bottom overlays never overprint each other
+            final int bottom_reserve = axis_shown ? scaleAxisBandHeight() : 0;
             if (scale_shown) {
                 if (!(to_graphics_file || to_pdf)) {
                     paintScale(g,
                             getVisibleRect().x,
-                            getVisibleRect().y + getVisibleRect().height,
+                            (getVisibleRect().y + getVisibleRect().height) - bottom_reserve,
                             to_pdf,
                             to_graphics_file);
                 } else {
-                    paintScale(g, graphics_file_x, graphics_file_y + graphics_file_height, to_pdf, to_graphics_file);
+                    paintScale(g, graphics_file_x, (graphics_file_y + graphics_file_height) - bottom_reserve, to_pdf,
+                            to_graphics_file);
                 }
             }
+            if (axis_shown) {
+                paintScaleAxis(g, to_pdf, to_graphics_file, graphics_file_y, graphics_file_height);
+            }
             if (getOptions().isShowTreeName() && !ForesterUtil.isEmpty(getPhylogeny().getName())) {
-                // the name sits in the lower-left, but slides to the lower-right when the scale is shown there,
-                // so the two never overlap
+                // the name sits in the lower-left, but slides to the lower-right when the scale is shown there, and
+                // is raised above the scale axis when that occupies the bottom strip -- so it never overlaps either
                 if (!(to_graphics_file || to_pdf)) {
                     paintTreeName(g,
                             getVisibleRect().x,
@@ -7560,10 +7635,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                             getVisibleRect().y + getVisibleRect().height,
                             to_pdf,
                             to_graphics_file,
-                            scale_shown);
+                            scale_shown,
+                            axis_shown);
                 } else {
                     paintTreeName(g, graphics_file_x, graphics_file_width, graphics_file_y + graphics_file_height,
-                            to_pdf, to_graphics_file, scale_shown);
+                            to_pdf, to_graphics_file, scale_shown, axis_shown);
                 }
             }
             if (getOptions().isShowOverview() && isOvOn() && !to_graphics_file && !to_pdf) {
