@@ -4756,6 +4756,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private Rectangle           _property_legend_bounds = null;
     private int                 _legend_grab_dx = 0;
     private int                 _legend_grab_dy = 0;
+    // A SECOND, independent legend for "Size by" (own draggable position + last-drawn bounds), so its size key can
+    // be shown ALONGSIDE the color/rank legend -- the combined color+size figure needs both keys visible at once.
+    private Point               _size_legend_offset = null;
+    private Rectangle           _size_legend_bounds = null;
+    private boolean             _dragging_size_legend = false; // which legend the active drag moves (shared grab dx/dy)
     // User-assigned per-value colors: ref -> (group key -> color); applied by the color scheme,
     // overriding the automatic palette color, and kept across scheme rebuilds (navigation).
     private final Map<String, Map<String, Color>> _property_color_overrides = new HashMap<>();
@@ -4837,25 +4842,52 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 && _property_legend_bounds.contains(e.getX(), e.getY());
     }
 
+    /** Whether {@code e} is over the (last-drawn) "Size by" legend box -- an independent, separately draggable key. */
+    final boolean isOnSizeLegend(final MouseEvent e) {
+        return isSizeByProperty() && (_size_legend_bounds != null)
+                && _size_legend_bounds.contains(e.getX(), e.getY());
+    }
+
+    /** Over either legend (color/rank/column or size) -- used to start a drag / show the move cursor. */
+    final boolean isOnAnyLegend(final MouseEvent e) {
+        return isOnPropertyLegend(e) || isOnSizeLegend(e);
+    }
+
     final void startLegendDrag(final MouseEvent e) {
-        if (_property_legend_bounds != null) {
-            _legend_grab_dx = e.getX() - _property_legend_bounds.x;
-            _legend_grab_dy = e.getY() - _property_legend_bounds.y;
+        // the size legend is drawn last (on top), so it wins if the two boxes overlap
+        _dragging_size_legend = isOnSizeLegend(e);
+        final Rectangle b = _dragging_size_legend ? _size_legend_bounds : _property_legend_bounds;
+        if (b != null) {
+            _legend_grab_dx = e.getX() - b.x;
+            _legend_grab_dy = e.getY() - b.y;
             setCursor(MOVE_CURSOR);
         }
     }
 
     final void dragLegend(final MouseEvent e) {
-        if (_property_legend_bounds == null) {
+        final Rectangle b = _dragging_size_legend ? _size_legend_bounds : _property_legend_bounds;
+        if (b == null) {
             return;
         }
         final Rectangle vp = getVisibleRect();
         int ox = (e.getX() - _legend_grab_dx) - vp.x;
         int oy = (e.getY() - _legend_grab_dy) - vp.y;
-        ox = Math.max(0, Math.min(ox, Math.max(0, vp.width - _property_legend_bounds.width)));
-        oy = Math.max(0, Math.min(oy, Math.max(0, vp.height - _property_legend_bounds.height)));
-        _legend_offset = new Point(ox, oy);
+        ox = Math.max(0, Math.min(ox, Math.max(0, vp.width - b.width)));
+        oy = Math.max(0, Math.min(oy, Math.max(0, vp.height - b.height)));
+        if (_dragging_size_legend) {
+            _size_legend_offset = new Point(ox, oy);
+        } else {
+            _legend_offset = new Point(ox, oy);
+        }
         repaint();
+    }
+
+    /** A click on the size legend: double-click returns it to its default corner (it has no recolorable rows). */
+    final void handleSizeLegendClick(final MouseEvent e) {
+        if (e.getClickCount() == 2) {
+            _size_legend_offset = null;
+            repaint();
+        }
     }
 
     final void endLegendDrag() {
@@ -4901,6 +4933,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         } else if (e.getClickCount() == 2) {
             resetLegendPosition(); // double-click off a value row returns the legend to its corner
         }
+    }
+
+    /** Test hook: the on-screen bounds of the last-drawn size legend (null if none). */
+    Rectangle getSizeLegendBounds() {
+        return _size_legend_bounds;
+    }
+
+    /** Test hook: draws the "Size by" legend into {@code g} at {@code bounds}. */
+    void drawSizeLegendForTest(final Graphics2D g, final Rectangle bounds, final boolean draggable) {
+        drawSizeLegend(g, bounds, draggable);
     }
 
     /** Test hook: draws the active legend into {@code g} at {@code bounds}, in on-screen ({@code draggable})
@@ -5150,7 +5192,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         _color_palette_name = PropertyColorScheme.DEFAULT_PALETTE_NAME;
         _property_color_overrides.clear();
         setColorByPropertyRef( null ); // turns coloring off and rebuilds the scheme (-> null)
-        setSizeByPropertyRef( null ); // turns sizing off and rebuilds the scale (-> null)
+        setSizeByPropertyRef( null ); // turns sizing off and rebuilds the scale (-> null), clears the size legend pos
+        _legend_offset = null; // also return the color/rank legend to its default corner
         repaint();
     }
 
@@ -5191,6 +5234,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     /** Selects the numeric property to SIZE tip symbols by (or null/empty to turn it off), and rebuilds the scale. */
     void setSizeByPropertyRef(final String ref) {
         _size_by_property_ref = ForesterUtil.isEmpty(ref) ? null : ref;
+        if (_size_by_property_ref == null) {
+            // turning Size-by OFF: forget the legend's dragged position + stale bounds, so re-enabling later shows
+            // it fresh at its default corner (not overlapping a color legend at the old spot)
+            _size_legend_offset = null;
+            _size_legend_bounds = null;
+        }
         rebuildPropertySizeScale();
         repaint();
     }
@@ -5226,6 +5275,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return (c != null) ? c : getTreeColorSet().getSequenceColor();
     }
 
+    /** Base tip-symbol diameter (px) that the property dots AND the "Size by" legend's sample dots both scale from --
+     *  one source, so the legend's key dots always match the tree's tip dots (see drawPropertyColorDot, drawSizeLegend). */
+    float baseDotSize() {
+        return getOptions().getDefaultNodeShapeSize() + 3;
+    }
+
     // The single tip symbol drawn for "Color by" and/or "Size by": its COLOR is the "Color by" value (a neutral
     // ink color when only sizing is on) and its DIAMETER is the "Size by" value (the default dot when only coloring
     // is on) -- so the two together make a color+size two-attribute figure on one dot.
@@ -5237,7 +5292,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (!size && (color == null)) {
             return; // nothing to draw
         }
-        final float base = getOptions().getDefaultNodeShapeSize() + 3;
+        final float base = baseDotSize();
         final int d = Math.max(1, Math.round(size ? _property_size_scale.diameterFor(node, base) : base));
         final Color saved = g.getColor();
         g.setColor((color != null) ? color : getTreeColorSet().getSequenceColor()); // neutral ink when size-only
@@ -5328,13 +5383,20 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     /**
      * Draws the shared legend chrome -- a constant-1px border around a background-filled box with the title on
-     * the first line -- and records the draggable on-screen bounds. The stroke is left as STROKE_1 for the
+     * the first line -- and records the draggable on-screen bounds into the caller's slot ({@code size_legend}
+     * selects _size_legend_bounds vs the shared _property_legend_bounds). The stroke is left as STROKE_1 for the
      * caller's own in-box drawing (the caller saves/restores it); returns the title baseline y.
      */
     private int drawLegendBox(final Graphics2D g, final int x, final int y, final int box_w, final int box_h,
-                              final int pad, final String title, final FontMetrics fm, final boolean draggable) {
+                              final int pad, final String title, final FontMetrics fm, final boolean draggable,
+                              final boolean size_legend) {
         if (draggable) {
-            _property_legend_bounds = new Rectangle(x, y, box_w, box_h);
+            final Rectangle b = new Rectangle(x, y, box_w, box_h);
+            if (size_legend) {
+                _size_legend_bounds = b;
+            } else {
+                _property_legend_bounds = b;
+            }
         }
         g.setStroke(STROKE_1);
         final Color fg = getTreeColorSet().getSequenceColor();
@@ -5445,7 +5507,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // so they are already stroke-independent
         final Stroke saved_stroke = g.getStroke();
         final Color fg = getTreeColorSet().getSequenceColor();
-        int baseline = drawLegendBox(g, x, y, box_w, box_h, pad, title, fm, draggable);
+        int baseline = drawLegendBox(g, x, y, box_w, box_h, pad, title, fm, draggable, false);
         g.setColor(fg);
         if (show_sort) { // sort toggle, right-aligned in the title row (on-screen only -> draggable)
             final int chip_w = fm.stringWidth(sort_chip);
@@ -5511,7 +5573,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // zoom level. (The legend font is likewise floored independent of the node-label font.)
         final Stroke saved_stroke = g.getStroke();
         final Color fg = getTreeColorSet().getSequenceColor();
-        final int baseline = drawLegendBox(g, x, y, box_w, box_h, pad, title, fm, draggable);
+        final int baseline = drawLegendBox(g, x, y, box_w, box_h, pad, title, fm, draggable, false);
         final int bar_x = x + pad;
         final int bar_y = baseline + 4;
         paintGradientBar(g, bar_x, bar_y, bar_w, bar_h + 1, t -> scheme.gradientColorAt(t));
@@ -5539,6 +5601,85 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             g.setColor(colorAt.apply(t));
             g.fillRect(x + i, y, 1, h);
         }
+    }
+
+    /**
+     * Draws the "Size by" legend/key: a boxed title plus sample dots (min / mid / max value) at their ACTUAL
+     * diameters -- the same area-proportional mapping as the tip dots -- each labeled with its value, so a reader
+     * (and a published figure) can decode the encoding. The dots are neutral-filled (the size axis is independent of
+     * color), so the key reads cleanly ALONGSIDE the "Color by" legend. Own draggable position (recorded on screen).
+     */
+    private void drawSizeLegend(final Graphics2D g, final Rectangle bounds, final boolean draggable) {
+        if (!isSizeByProperty()) {
+            return;
+        }
+        final int pad = 7;
+        final int gap = 6;        // between the dot column and the value label
+        final int row_gap = 4;    // between adjacent value rows
+        final int title_gap = 4;  // between the title row and the first value row
+        final int max_text = 200; // cap title/label width so a long ref or value can't overrun the figure
+        final float base = baseDotSize();
+        g.setFont(legendFont());
+        final FontMetrics fm = g.getFontMetrics();
+        final String title = clipToWidth(
+                "Size by: " + PropertyColorScheme.displayName(_property_size_scale.getRef()), fm, max_text);
+        final double[] samples = PropertySizeScale.sampleValues(_property_size_scale.getMinValue(),
+                _property_size_scale.getMaxValue());
+        // one pass: per-sample dot diameter + clipped label, reused for BOTH measuring and drawing (so the box can
+        // never be sized for a different dot than the one drawn)
+        final int[] diam = new int[samples.length];
+        final String[] labels = new String[samples.length];
+        int dot_col = 1, label_col = 0;
+        for (int i = 0; i < samples.length; ++i) {
+            diam[i] = Math.max(1, Math.round(_property_size_scale.diameterForValue(samples[i], base)));
+            labels[i] = clipToWidth(PropertySizeScale.formatValue(samples[i]), fm, max_text);
+            dot_col = Math.max(dot_col, diam[i]);
+            label_col = Math.max(label_col, fm.stringWidth(labels[i]));
+        }
+        final int content_w = dot_col + gap + label_col;
+        final int box_w = Math.max(fm.stringWidth(title), content_w) + (2 * pad);
+        int rows_h = 0;
+        for (int i = 0; i < diam.length; ++i) {
+            rows_h += Math.max(diam[i], fm.getHeight()) + ((i > 0) ? row_gap : 0); // gaps only BETWEEN rows
+        }
+        final int box_h = (2 * pad) + fm.getHeight() + title_gap + rows_h;
+        final Point tl = sizeLegendTopLeft(bounds, box_w, box_h);
+        final int x = tl.x;
+        final int y = tl.y;
+        // reuse the shared legend chrome (fill/border/title, records _size_legend_bounds when draggable); it leaves
+        // STROKE_1 set, so save/restore the branch stroke around it
+        final Stroke saved_stroke = g.getStroke();
+        drawLegendBox(g, x, y, box_w, box_h, pad, title, fm, draggable, true);
+        final Color fg = getTreeColorSet().getSequenceColor();
+        // sample dots (smallest at top -> largest at bottom), each labeled with its value
+        int row_y = y + pad + fm.getHeight() + title_gap;
+        final int dot_center_x = x + pad + (dot_col / 2);
+        for (int i = 0; i < samples.length; ++i) {
+            final int d = diam[i];
+            final int row_h = Math.max(d, fm.getHeight());
+            final int cy = row_y + (row_h / 2);
+            g.setColor(fg); // neutral fill: the size key is independent of the color-by hue
+            g.fillOval(dot_center_x - (d / 2), cy - (d / 2), d, d);
+            g.drawString(labels[i], x + pad + dot_col + gap, (cy - (fm.getHeight() / 2)) + fm.getAscent());
+            row_y += row_h + row_gap;
+        }
+        g.setStroke(saved_stroke);
+    }
+
+    /** Default position of the size legend: top-right when it is the only legend, else the BOTTOM-right -- clear of
+     *  the color/rank legend's top-right default so the two keys never collide by default. Once dragged,
+     *  _size_legend_offset maps fractionally like the color legend (so exports honor the moved position). */
+    private Point sizeLegendTopLeft(final Rectangle bounds, final int box_w, final int box_h) {
+        if (_size_legend_offset != null) {
+            return legendTopLeftFor(bounds, getVisibleRect(), _size_legend_offset, box_w, box_h);
+        }
+        final boolean color_legend_present = isColorByProperty() || hasRankLegend() || hasFocusedAnnotationColumn();
+        if (!color_legend_present) {
+            return legendTopLeftFor(bounds, getVisibleRect(), null, box_w, box_h); // the shared top-right default
+        }
+        // a color legend already holds the top-right default -> drop to the bottom-right so the two never collide
+        return new Point(Math.max(bounds.x, (bounds.x + bounds.width) - box_w - 10),
+                Math.max(bounds.y, (bounds.y + bounds.height) - box_h - 10));
     }
 
     private static String clipToWidth(final String s, final FontMetrics fm, final int max_px) {
@@ -6077,7 +6218,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         final Stroke saved_stroke = g.getStroke();
         final Color fg = getTreeColorSet().getSequenceColor();
-        final int baseline = drawLegendBox(g, x, y, box_w, box_h, pad, title, fm, draggable);
+        final int baseline = drawLegendBox(g, x, y, box_w, box_h, pad, title, fm, draggable, false);
         final int bar_x = x + pad;
         final int bar_y = baseline + 4;
         // right-growing wedge: empty (min) at the left, full (max) at the right, echoing the column's bars
@@ -7531,6 +7672,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             } else {
                 drawRankLegend(g, legend_bounds, to_screen);
             }
+        }
+        // "Size by" has its OWN legend (a separate, independently placed key), drawn last so it can appear
+        // ALONGSIDE the color/rank legend -- the whole point of the combined color+size figure.
+        if (isSizeByProperty()) {
+            final boolean to_screen = !(to_pdf || to_graphics_file);
+            final Rectangle legend_bounds = to_screen ? getVisibleRect()
+                    : new Rectangle(graphics_file_x, graphics_file_y, graphics_file_width, graphics_file_height);
+            drawSizeLegend(g, legend_bounds, to_screen);
         }
     }
 

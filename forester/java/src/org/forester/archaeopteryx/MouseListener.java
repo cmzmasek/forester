@@ -61,9 +61,16 @@ final class MouseListener extends MouseAdapter implements MouseMotionListener {
             _legend_moved = false;
             return;
         }
+        // The size legend is drawn LAST (on top), and startLegendDrag gives it drag priority in an overlap, so the
+        // click dispatch must check it FIRST too -- else a click on the visibly-top size legend would fall through
+        // to the color legend underneath (recolor/reset the wrong legend).
+        if ( _treepanel.isOnSizeLegend( e ) ) {
+            _treepanel.handleSizeLegendClick( e ); // double-click to reset the size legend's position
+            return; // a click on the legend is not a node action
+        }
         if ( _treepanel.isOnPropertyLegend( e ) ) {
             _treepanel.handleLegendClick( e ); // recolor a value row, or double-click to reset position
-            return; // a click on the legend is not a node action
+            return;
         }
         if ( _treepanel.handleAnnotationHeaderClick( e ) ) {
             return; // a click on a column header toggles that column's color legend
@@ -109,7 +116,7 @@ final class MouseListener extends MouseAdapter implements MouseMotionListener {
 
     @Override
     public void mouseMoved( final MouseEvent e ) {
-        if ( _treepanel.isOnPropertyLegend( e ) ) {
+        if ( _treepanel.isOnAnyLegend( e ) ) {
             _treepanel.setCursor( TreePanel.MOVE_CURSOR ); // hint that the legend can be dragged
             _treepanel.clearHoverPreview(); // don't leave a select/deselect preview on the tree behind the legend
             return;
@@ -125,10 +132,10 @@ final class MouseListener extends MouseAdapter implements MouseMotionListener {
     @Override
     public void mousePressed( final MouseEvent e ) {
         _legend_moved = false; // a fresh gesture: no legend drag has happened yet
-        if ( ( e.getModifiersEx() == InputEvent.BUTTON1_DOWN_MASK ) && _treepanel.isOnPropertyLegend( e ) ) {
+        if ( ( e.getModifiersEx() == InputEvent.BUTTON1_DOWN_MASK ) && _treepanel.isOnAnyLegend( e ) ) {
             _dragging_legend = true;
             _legend_press_point.setLocation( e.getX(), e.getY() );
-            _treepanel.startLegendDrag( e );
+            _treepanel.startLegendDrag( e ); // decides which legend (color/rank/column or size) this drag moves
         }
         // A pan/overview drag is NOT started here: it begins on the first mouseDragged (which initializes
         // _being_dragged + the drag anchor), so a plain press stays a click. (A former press-time drag block here

@@ -85,6 +85,56 @@ final class PropertySizeScale {
         return diameter( normalized( d ), base_size );
     }
 
+    /** The smallest / largest numeric value seen over the visible tips (for the size legend's sample values).
+     *  Meaningful only when {@link #isEmpty()} is false. */
+    double getMinValue() {
+        return _min;
+    }
+
+    double getMaxValue() {
+        return _max;
+    }
+
+    /** The diameter (px) a raw {@code value} maps to -- the SAME area-proportional mapping as the tip dots, so the
+     *  size legend/key can draw sample dots at chosen values that match the tree exactly. */
+    float diameterForValue( final double value, final float base_size ) {
+        return diameter( normalized( value ), base_size );
+    }
+
+    /** The sample values shown in the size legend: min, midpoint and max -- or just the single value when the
+     *  visible tips have no spread (every dot is the base size). Pure/testable. */
+    static double[] sampleValues( final double min, final double max ) {
+        if ( !( max > min ) ) {
+            return new double[] { min };
+        }
+        return new double[] { min, min + ( ( max - min ) / 2.0 ), max };
+    }
+
+    /**
+     * Formats a legend sample value: a whole number as an integer, otherwise with enough decimals to stay legible
+     * across magnitudes -- 2 decimals for values &gt;= 1 (years, loads, counts) but MORE for small magnitudes, so a
+     * 0..1 property (p-values, pident, posterior probabilities) does not collapse to "0"/duplicate labels. Trailing
+     * zeros are dropped. US-locale so it is reproducible across locales (cf. the FORMATTER_06 default-locale bug).
+     * A fresh formatter per call -- {@code DecimalFormat} is not thread-safe and a shared static would be a hazard if
+     * a figure is ever rendered off the EDT (the reproducible-figure CLI path).
+     */
+    static String formatValue( final double v ) {
+        if ( ( v == Math.rint( v ) ) && !Double.isInfinite( v ) && ( Math.abs( v ) < 1e15 ) ) {
+            return Long.toString( (long) v );
+        }
+        final double abs = Math.abs( v );
+        // >=1 -> 2 decimals; <1 -> shift right so ~3 significant digits survive (0.005 -> 5 decimals). Guarded.
+        int decimals = ( ( abs >= 1 ) || ( abs == 0 ) ) ? 2 : ( 2 - (int) Math.floor( Math.log10( abs ) ) );
+        decimals = Math.max( 0, Math.min( decimals, 10 ) );
+        final StringBuilder pattern = new StringBuilder( "0." );
+        for( int i = 0; i < decimals; ++i ) {
+            pattern.append( '#' ); // '#' drops trailing zeros
+        }
+        return new java.text.DecimalFormat( pattern.toString(),
+                                            java.text.DecimalFormatSymbols.getInstance( java.util.Locale.US ) )
+                .format( v );
+    }
+
     /** The node's value mapped to [0,1]; an all-equal range (no spread) maps to 0 (all at the base size). */
     double normalized( final double value ) {
         return ( _max > _min ) ? ( ( value - _min ) / ( _max - _min ) ) : 0.0;
