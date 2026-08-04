@@ -75,6 +75,7 @@ final class GuiPreferences {
             boolPref( "show_scale_grid", Options::isShowScaleGrid, Options::setShowScaleGrid ),
             boolPref( "show_scale_axis", Options::isShowScaleAxis, Options::setShowScaleAxis ),
             boolPref( "show_hpd_bars", Options::isShowHpdBars, Options::setShowHpdBars ),
+            boolPref( "show_zebra_stripes", Options::isShowZebraStripes, Options::setShowZebraStripes ),
             boolPref( "show_overview", Options::isShowOverview, Options::setShowOverview ),
             boolPref( "abbreviate_scientific_names", Options::isAbbreviateScientificTaxonNames,
                       Options::setAbbreviateScientificTaxonNames ),

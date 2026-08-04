@@ -66,7 +66,22 @@ public final class DemoTreesTest {
         // node age bars: internal nodes carry a phyloXML <date> with a min/max interval + branch lengths (dated tree)
         ok &= hasBranchLengths( "node-hpd-bars.xml" );
         ok &= hasInternalDateInterval( "node-hpd-bars.xml" );
+        // zebra stripes: enough tips for alternating row bands to be meaningful + a categorical + numeric column to track
+        ok &= hasAtLeastTips( "zebra-stripes.xml", 8 );
+        ok &= hasCategoricalRef( "zebra-stripes.xml", "data:host" );
+        ok &= hasNumericRef( "zebra-stripes.xml", "data:reads" );
         return ok;
+    }
+
+    private static boolean hasAtLeastTips( final String file_name, final int min_tips ) {
+        final Phylogeny phy = load( file_name );
+        if ( phy == null ) {
+            return false;
+        }
+        if ( phy.getNumberOfExternalNodes() < min_tips ) {
+            return note( file_name + " must have at least " + min_tips + " tips (for meaningful zebra row bands)" );
+        }
+        return true;
     }
 
     private static boolean hasInternalDateInterval( final String file_name ) {

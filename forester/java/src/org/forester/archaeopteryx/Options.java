@@ -156,6 +156,7 @@ final public class Options {
     private boolean _show_scale_grid;
     private boolean _show_scale_axis;
     private boolean _show_hpd_bars;
+    private boolean _show_zebra_stripes;
     private boolean _show_tree_name;
     private TAXONOMY_EXTRACTION _taxonomy_extraction;
     private boolean _line_up_renderable_node_data;
@@ -228,6 +229,7 @@ final public class Options {
         _show_scale_grid = false;
         _show_scale_axis = false;
         _show_hpd_bars = false;
+        _show_zebra_stripes = false;
         _show_tree_name = true; // show the tree's name in the lower-left of the canvas by default
         _antialias_print = true;
         _graphics_export_visible_only = false;
@@ -551,6 +553,14 @@ final public class Options {
 
     final void setShowHpdBars(final boolean show_hpd_bars) {
         _show_hpd_bars = show_hpd_bars;
+    }
+
+    final boolean isShowZebraStripes() {
+        return _show_zebra_stripes;
+    }
+
+    final void setShowZebraStripes(final boolean show_zebra_stripes) {
+        _show_zebra_stripes = show_zebra_stripes;
     }
 
     final void setAbbreviateScientificTaxonNames(final boolean abbreviate_scientific_names) {

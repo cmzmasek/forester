@@ -22,6 +22,7 @@ package org.forester.demo;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Locale;
 
 import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.writers.PhylogenyWriter;
@@ -60,6 +61,7 @@ public final class DemoTreeGenerator {
         write( dir, "colorize-by-rank.xml", colorizeByRankTree() );
         write( dir, "scale-axis.xml", scaleAxisTree() );
         write( dir, "node-hpd-bars.xml", hpdBarsTree() );
+        write( dir, "zebra-stripes.xml", zebraStripesTree() );
         System.out.println( "Wrote demo trees to " + dir.getAbsolutePath() );
     }
 
@@ -184,6 +186,31 @@ public final class DemoTreeGenerator {
         final PhylogenyNode n = leaf( scientific_name );
         taxon( n, scientific_name, "species" );
         return n;
+    }
+
+    // ----- "Zebra Stripes": a wider (16-tip) tree with a categorical 'host' + numeric 'reads' per tip, so the faint
+    //       alternating row bands help track a label across to its Annotation Columns. Load -> Settings > Display >
+    //       Zebra Stripes (optionally Tools > Annotation Columns).
+    private static Phylogeny zebraStripesTree() {
+        final String[] hosts = { "Human", "Avian", "Swine", "Bat" };
+        final PhylogenyNode[] clades = new PhylogenyNode[ 4 ];
+        int n = 1;
+        for( int c = 0; c < 4; c++ ) {
+            final PhylogenyNode[] leaves = new PhylogenyNode[ 4 ];
+            for( int i = 0; i < 4; i++, n++ ) {
+                final PhylogenyNode leaf = leaf( String.format( Locale.ROOT, "isolate_%02d", n ) );
+                cat( leaf, "data:host", hosts[ c ] );
+                num( leaf, "data:reads", Integer.toString( 100 * n ) );
+                leaves[ i ] = leaf;
+            }
+            clades[ c ] = clade( 0.05, leaves );
+        }
+        final PhylogenyNode root = clade( 0, clade( 0.04, clades[ 0 ], clades[ 1 ] ),
+                                          clade( 0.04, clades[ 2 ], clades[ 3 ] ) );
+        return tree( root, "Zebra stripes (demo)",
+                "Synthetic 16-tip tree with a categorical 'host' and numeric 'reads' per tip. Turn on Settings > "
+                        + "Display > Zebra Stripes -- faint alternating row bands make it easy to track a tip label "
+                        + "across to its Annotation Columns (Tools > Annotation Columns)." );
     }
 
     // ----- "Scale Axis": a phylogram whose branch lengths (substitutions/site) span a useful range, so the labeled

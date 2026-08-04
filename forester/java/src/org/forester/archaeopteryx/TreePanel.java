@@ -267,6 +267,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private static final int    HPD_BAR_HEIGHT = 7;
     private static final Color  HPD_BAR_COLOR = new Color(70, 130, 220, 90);  // translucent blue, FigTree-like
     private static final Color  HPD_BAR_COLOR_BW = new Color(90, 90, 90, 70); // translucent gray for B&W export
+    // Zebra row stripes: a faint translucent band, darkening a light background / lightening a dark one.
+    private static final Color  ZEBRA_STRIPE_ON_LIGHT = new Color(0, 0, 0, 16);
+    private static final Color  ZEBRA_STRIPE_ON_DARK = new Color(255, 255, 255, 20);
     private static final double TWO_PI = 2 * Math.PI;
     private final static int WIGGLE = 2;
     HashMap<Long, Short> _nodeid_dist_to_leaf = new HashMap<>();
@@ -6493,6 +6496,45 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     /**
+     * Zebra striping: a faint alternating background band behind every other visible tip row, spanning the full
+     * width, so a label is easy to track across a wide tree to its annotation columns (the iTOL row-shading aid).
+     * Theme-aware and translucent (branches/labels show through); drawn after the node loop (coords are set there).
+     * Rectangular layouts only (this is called from the rectangular paint branch). Collapsed-clade triangles count
+     * as one row; nodes hidden under a collapse are skipped so the alternation matches the DRAWN rows.
+     */
+    private void paintZebraStripes(final Graphics2D g, final boolean to_pdf, final boolean to_graphics_file,
+                                  final int graphics_file_x, final int graphics_file_width) {
+        if (!getOptions().isShowZebraStripes() || (_phylogeny == null) || _export_transparent_background) {
+            return; // suppressed on a transparent-PNG export: full-width bands would defeat the clean cut-out
+        }
+        final float row_h = 2f * getYdistance();
+        if (!(row_h > 0f)) { // also rejects a NaN pitch (NaN <= 0f is false), not just zero/negative
+            return;
+        }
+        final boolean use_export = (to_pdf || to_graphics_file) && (graphics_file_width > 0);
+        final int left = use_export ? graphics_file_x : 0;
+        final int width = use_export ? graphics_file_width : getWidth();
+        // the color scheme is the single source of truth for light/dark (ExportTheme flips it to LIGHT for a
+        // white-background export, so this is correct on every render path -- screen, WYSIWYG, and white-bg export)
+        final boolean dark = getTreeColorSet().getCurrentColorScheme() == TreeColorSet.DARK_COLOR_SCHEME;
+        final Color saved = g.getColor();
+        g.setColor(dark ? ZEBRA_STRIPE_ON_DARK : ZEBRA_STRIPE_ON_LIGHT); // faint translucent, theme-aware
+        int row = 0;
+        for (final PhylogenyNode node : _nodes_in_preorder) {
+            // only the drawn leaf-level rows (tips + collapsed-clade triangles), top to bottom; the cheap shape test
+            // first so the O(depth) hidden-under-collapse walk is skipped for the internal-node majority
+            if ((!node.isExternal() && !node.isCollapse()) || isHiddenUnderCollapse(node)) {
+                continue;
+            }
+            if ((row % 2) == 1) {
+                g.fillRect(left, Math.round(node.getYcoord() - (row_h / 2f)), width, Math.round(row_h));
+            }
+            row++;
+        }
+        g.setColor(saved);
+    }
+
+    /**
      * Node age (HPD) bars: on a dated phylogram, a translucent horizontal bar at each internal node spanning its age
      * uncertainty -- the FigTree "node bars" standard, showing divergence-time uncertainty. Reads the phyloXML native
      * {@code <date>} (value/min/max, the same model shown in the node popup and editor); the bar is anchored to the
@@ -7644,6 +7686,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         to_graphics_file,
                         disallow_shortcutting);
             }
+            // faint alternating row bands (drawn first among the overlays, so annotation columns etc. sit on top)
+            paintZebraStripes(g, to_pdf, to_graphics_file, graphics_file_x, graphics_file_width);
             paintHpdBars(g, to_pdf, to_graphics_file); // node-age HPD bars -- node coords are set by the loop above
             paintAnnotationColumns(g); // tip-aligned columns (strip/heat map/bar/text), right of the labels
             paintCladeBands(g); // clade boxes/bars over the tree -- node coords are set by the loop above
