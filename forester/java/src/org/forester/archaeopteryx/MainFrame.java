@@ -170,6 +170,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String DISPLAY_HPD_BARS_TIP = "On a dated (time-scaled) phylogram, draw a bar at each internal node spanning its age uncertainty (the node's phyloXML date min/max).";
     static final String DISPLAY_ZEBRA_STRIPES_LABEL = "Zebra Stripes";
     static final String DISPLAY_ZEBRA_STRIPES_TIP = "Shade every other tip row with a faint band, so a label is easy to track across a wide tree to its annotation columns.";
+    static final String DISPLAY_FLIP_VERTICALLY_LABEL = "Flip Vertically";
+    static final String DISPLAY_FLIP_VERTICALLY_TIP = "Reverse the tip order top-to-bottom (mirror the tree vertically). Rectangular layouts only.";
     static final String NON_LINED_UP_CLADOGRAMS_LABEL = "Non-Lined Up Cladogram";
     static final String LABEL_DIRECTION_LABEL = "Radial Labels";
     static final String LABEL_DIRECTION_TIP = "To use radial node labels in radial and unrooted display types";
@@ -263,6 +265,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JCheckBoxMenuItem _show_scale_axis_cbmi;
     JCheckBoxMenuItem _show_hpd_bars_cbmi;
     JCheckBoxMenuItem _show_zebra_stripes_cbmi;
+    JCheckBoxMenuItem _flip_vertically_cbmi;
     JCheckBoxMenuItem _show_overview_cbmi;
     JCheckBoxMenuItem _show_domain_labels;
     JCheckBoxMenuItem _abbreviate_scientific_names;
@@ -481,6 +484,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         } else if (o == _show_hpd_bars_cbmi) {
             updateOptions(getOptions());
         } else if (o == _show_zebra_stripes_cbmi) {
+            updateOptions(getOptions());
+        } else if (o == _flip_vertically_cbmi) {
             updateOptions(getOptions());
         } else if (o == _show_confidence_stddev_cbmi) {
             updateOptions(getOptions());
@@ -1985,6 +1990,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         options.setShowScaleAxis((_show_scale_axis_cbmi != null) && _show_scale_axis_cbmi.isSelected());
         options.setShowHpdBars((_show_hpd_bars_cbmi != null) && _show_hpd_bars_cbmi.isSelected());
         options.setShowZebraStripes((_show_zebra_stripes_cbmi != null) && _show_zebra_stripes_cbmi.isSelected());
+        options.setFlipVertically((_flip_vertically_cbmi != null) && _flip_vertically_cbmi.isSelected());
         if ((_show_scale_cbmi != null) && _show_scale_cbmi.isEnabled()) {
             options.setShowScale(_show_scale_cbmi.isSelected());
         }
@@ -2092,6 +2098,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         setSelected(_show_scale_axis_cbmi, options.isShowScaleAxis());
         setSelected(_show_hpd_bars_cbmi, options.isShowHpdBars());
         setSelected(_show_zebra_stripes_cbmi, options.isShowZebraStripes());
+        setSelected(_flip_vertically_cbmi, options.isFlipVertically());
         setSelected(_show_scale_cbmi, options.isShowScale());
         setSelected(_show_tree_name_cbmi, options.isShowTreeName());
         setSelected(_show_overview_cbmi, options.isShowOverview());

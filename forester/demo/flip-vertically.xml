@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" rerootable="true">
+  <name>Flip vertically (demo)</name>
+  <description>Synthetic 8-tip ladder tree with sequentially-numbered tips (tip_01 at the top). Turn on Settings &gt; Display &gt; Flip Vertically to reverse the tip order top-to-bottom -- the staircase inverts and tip_08 moves to the top. Display-only; the tree data is unchanged.</description>
+  <clade>
+    <branch_length>0.07</branch_length>
+    <clade>
+      <name>tip_01</name>
+      <branch_length>0.06</branch_length>
+    </clade>
+    <clade>
+      <branch_length>0.07</branch_length>
+      <clade>
+        <name>tip_02</name>
+        <branch_length>0.06</branch_length>
+      </clade>
+      <clade>
+        <branch_length>0.07</branch_length>
+        <clade>
+          <name>tip_03</name>
+          <branch_length>0.06</branch_length>
+        </clade>
+        <clade>
+          <branch_length>0.07</branch_length>
+          <clade>
+            <name>tip_04</name>
+            <branch_length>0.06</branch_length>
+          </clade>
+          <clade>
+            <branch_length>0.07</branch_length>
+            <clade>
+              <name>tip_05</name>
+              <branch_length>0.06</branch_length>
+            </clade>
+            <clade>
+              <branch_length>0.07</branch_length>
+              <clade>
+                <name>tip_06</name>
+                <branch_length>0.06</branch_length>
+              </clade>
+              <clade>
+                <branch_length>0.07</branch_length>
+                <clade>
+                  <name>tip_07</name>
+                  <branch_length>0.06</branch_length>
+                </clade>
+                <clade>
+                  <name>tip_08</name>
+                  <branch_length>0.06</branch_length>
+                </clade>
+              </clade>
+            </clade>
+          </clade>
+        </clade>
+      </clade>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>

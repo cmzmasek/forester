@@ -70,6 +70,8 @@ public final class DemoTreesTest {
         ok &= hasAtLeastTips( "zebra-stripes.xml", 8 );
         ok &= hasCategoricalRef( "zebra-stripes.xml", "data:host" );
         ok &= hasNumericRef( "zebra-stripes.xml", "data:reads" );
+        // flip vertically: a ladder with several ordered tips so the top<->bottom reversal is unmistakable
+        ok &= hasAtLeastTips( "flip-vertically.xml", 6 );
         return ok;
     }
 

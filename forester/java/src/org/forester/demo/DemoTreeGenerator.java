@@ -62,6 +62,7 @@ public final class DemoTreeGenerator {
         write( dir, "scale-axis.xml", scaleAxisTree() );
         write( dir, "node-hpd-bars.xml", hpdBarsTree() );
         write( dir, "zebra-stripes.xml", zebraStripesTree() );
+        write( dir, "flip-vertically.xml", flipVerticallyTree() );
         System.out.println( "Wrote demo trees to " + dir.getAbsolutePath() );
     }
 
@@ -211,6 +212,20 @@ public final class DemoTreeGenerator {
                 "Synthetic 16-tip tree with a categorical 'host' and numeric 'reads' per tip. Turn on Settings > "
                         + "Display > Zebra Stripes -- faint alternating row bands make it easy to track a tip label "
                         + "across to its Annotation Columns (Tools > Annotation Columns)." );
+    }
+
+    // ----- "Flip Vertically": an 8-tip ladder (caterpillar) tree with sequentially-numbered tips, so the tip order
+    //       (and the staircase) visibly inverts top<->bottom when flipped. Load -> Settings > Display > Flip Vertically.
+    private static Phylogeny flipVerticallyTree() {
+        // build the caterpillar bottom-up: tip_08/tip_07 at the deepest fork, then prepend tip_06..tip_01
+        PhylogenyNode n = clade( 0.07, blLeaf( "tip_07", 0.06 ), blLeaf( "tip_08", 0.06 ) );
+        for( int i = 6; i >= 1; i-- ) {
+            n = clade( 0.07, blLeaf( String.format( Locale.ROOT, "tip_%02d", i ), 0.06 ), n );
+        }
+        return tree( n, "Flip vertically (demo)",
+                "Synthetic 8-tip ladder tree with sequentially-numbered tips (tip_01 at the top). Turn on Settings > "
+                        + "Display > Flip Vertically to reverse the tip order top-to-bottom -- the staircase inverts "
+                        + "and tip_08 moves to the top. Display-only; the tree data is unchanged." );
     }
 
     // ----- "Scale Axis": a phylogram whose branch lengths (substitutions/site) span a useful range, so the labeled

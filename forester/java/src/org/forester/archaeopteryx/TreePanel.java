@@ -3335,8 +3335,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             boolean first_child = true;
             float y2 = 0.0f;
             //final int parent_max_branch_to_leaf = getMaxBranchesToLeaf( node );
-            for (int i = 0; i < node.getNumberOfDescendants(); ++i) {
-                final PhylogenyNode child_node = node.getChildNode(i);
+            // mirror the "Flip Vertically" reversal used by paintNodeRectangular, so the overview thumbnail stays
+            // consistent with the (flipped) main canvas -- the overview lays out its own YSecondary coords
+            final boolean flip = getOptions().isFlipVertically();
+            final int child_count = node.getNumberOfDescendants();
+            for (int i = 0; i < child_count; ++i) {
+                final PhylogenyNode child_node = node.getChildNode(flip ? ((child_count - 1) - i) : i);
                 final int factor_x = node.getNumberOfExternalNodes() - child_node.getNumberOfExternalNodes();
                 if (first_child) {
                     first_child = false;
@@ -3404,8 +3408,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (!node.isExternal() && !node.isCollapse()) {
             boolean first_child = true;
             float y2 = 0.0f;
-            for (int i = 0; i < node.getNumberOfDescendants(); ++i) {
-                final PhylogenyNode child_node = node.getChildNode(i);
+            // "Flip Vertically" is a DISPLAY-ONLY vertical mirror: process the children in REVERSE order so the
+            // top-to-bottom tip order reverses, without mutating the tree. The stored y-coords become the real
+            // flipped positions, so labels, overlays, hit-testing and every export follow for free (no transform).
+            final boolean flip = getOptions().isFlipVertically();
+            final int child_count = node.getNumberOfDescendants();
+            for (int i = 0; i < child_count; ++i) {
+                final PhylogenyNode child_node = node.getChildNode(flip ? ((child_count - 1) - i) : i);
                 final int factor_x = node.getNumberOfExternalNodes() - child_node.getNumberOfExternalNodes();
                 if (first_child) {
                     first_child = false;

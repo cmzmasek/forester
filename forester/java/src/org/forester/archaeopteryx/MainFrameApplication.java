@@ -1396,6 +1396,8 @@ public final class MainFrameApplication extends MainFrame {
         _show_hpd_bars_cbmi.setToolTipText(MainFrame.DISPLAY_HPD_BARS_TIP);
         _show_zebra_stripes_cbmi = new JCheckBoxMenuItem(MainFrame.DISPLAY_ZEBRA_STRIPES_LABEL);
         _show_zebra_stripes_cbmi.setToolTipText(MainFrame.DISPLAY_ZEBRA_STRIPES_TIP);
+        _flip_vertically_cbmi = new JCheckBoxMenuItem(MainFrame.DISPLAY_FLIP_VERTICALLY_LABEL);
+        _flip_vertically_cbmi.setToolTipText(MainFrame.DISPLAY_FLIP_VERTICALLY_TIP);
         _show_default_node_shapes_internal_cbmi = new JCheckBoxMenuItem(DISPLAY_NODE_BOXES_LABEL_INT);
         _internal_labels_above_branch_rbmi = new JRadioButtonMenuItem(MainFrame.INTERNAL_LABELS_ABOVE_BRANCH_LABEL);
         _internal_labels_above_branch_rbmi.setToolTipText(MainFrame.INTERNAL_LABELS_ABOVE_BRANCH_TIP);
@@ -1471,6 +1473,7 @@ public final class MainFrameApplication extends MainFrame {
         customizeCheckBoxMenuItem(_show_scale_axis_cbmi, getOptions().isShowScaleAxis());
         customizeCheckBoxMenuItem(_show_hpd_bars_cbmi, getOptions().isShowHpdBars());
         customizeCheckBoxMenuItem(_show_zebra_stripes_cbmi, getOptions().isShowZebraStripes());
+        customizeCheckBoxMenuItem(_flip_vertically_cbmi, getOptions().isFlipVertically());
         customizeCheckBoxMenuItem(_collapsed_with_average_height_cbmi, getOptions().isCollapsedWithAverageHeigh());
         customizeCheckBoxMenuItem(_show_abbreviated_labels_for_collapsed_nodes_cbmi,
                 getOptions().isShowAbbreviatedLabelsForCollapsedNodes());
