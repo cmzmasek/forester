@@ -135,6 +135,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     private int _uncollapse_all_cb_item;
     private int _order_subtree_cb_item;
     private JComboBox<String> _color_by_property_cb;
+    private JComboBox<String> _size_by_property_cb;
     private static final String COLOR_BY_PROPERTY_NONE = "None";
     private boolean _color_branches;
     private JCheckBox _use_visual_styles_cb;
@@ -315,6 +316,11 @@ final class ControlPanel extends JPanel implements ActionListener {
             if (e.getSource() == _color_by_property_cb) {
                 final Object sel = _color_by_property_cb.getSelectedItem();
                 tp.setColorByPropertyRef(
+                        ((sel == null) || COLOR_BY_PROPERTY_NONE.equals(sel)) ? null : sel.toString());
+                tp.repaint();
+            } else if (e.getSource() == _size_by_property_cb) {
+                final Object sel = _size_by_property_cb.getSelectedItem();
+                tp.setSizeByPropertyRef(
                         ((sel == null) || COLOR_BY_PROPERTY_NONE.equals(sel)) ? null : sel.toString());
                 tp.repaint();
             } else if (e.getSource() == _click_to_combobox) {
@@ -1277,6 +1283,15 @@ final class ControlPanel extends JPanel implements ActionListener {
         return (_font_size_slider == null) ? -1 : _font_size_slider.getValue();
     }
 
+    /** For tests: the "Size by" dropdown's selected item as a string ("None" when off / not built). */
+    String getSizeByPropertySelection() {
+        if (_size_by_property_cb == null) {
+            return COLOR_BY_PROPERTY_NONE;
+        }
+        final Object sel = _size_by_property_cb.getSelectedItem();
+        return (sel == null) ? COLOR_BY_PROPERTY_NONE : sel.toString();
+    }
+
     /** For tests: move the slider (fires the change listener, so it applies the size like a user drag-release). */
     void setFontSizeSliderValue(final int value) {
         if (_font_size_slider != null) {
@@ -1578,7 +1593,7 @@ final class ControlPanel extends JPanel implements ActionListener {
                 _mainpanel.getCurrentTreePanel().updateOvSizes();
             }
             _mainpanel.getCurrentTreePanel().recalculateMaxDistanceToRoot();
-            _mainpanel.getCurrentTreePanel().rebuildPropertyColorScheme();
+            _mainpanel.getCurrentTreePanel().rebuildPropertyDisplays();
             _mainpanel.getCurrentTreePanel().rebuildAnnotationColumns();
             setVisibilityOfDomainStrucureControls();
             updateDomainStructureEvaluethresholdDisplay();
@@ -2175,6 +2190,60 @@ final class ControlPanel extends JPanel implements ActionListener {
         add(_color_by_property_cb);
     }
 
+    /** The "Size by:" dropdown: scale each tip symbol by the value of a chosen NUMERIC phyloXML property (the size
+     *  counterpart of "Color by:"). Only numeric refs appear -- see {@link #populateSizeByPropertyBox()}. */
+    void setupSizeByProperty() {
+        final JLabel label = new JLabel("Size by:");
+        label.setFont(ControlPanel.jcb_font);
+        if (_configuration.isApplyCustomGuiColors()) {
+            label.setForeground(getConfiguration().getGuiCheckboxTextColor());
+        }
+        _size_by_property_cb = new JComboBox<String>();
+        _size_by_property_cb.setFont(ControlPanel.js_font);
+        _size_by_property_cb.setToolTipText("scale the tip symbols by the value of a numeric phyloXML property");
+        _size_by_property_cb.addItem(COLOR_BY_PROPERTY_NONE);
+        _size_by_property_cb.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(final JList<?> list, final Object value, final int index,
+                    final boolean is_selected, final boolean has_focus) {
+                super.getListCellRendererComponent(list, value, index, is_selected, has_focus);
+                if (value instanceof String) {
+                    setText(PropertyColorScheme.displayName((String) value));
+                }
+                return this;
+            }
+        });
+        _size_by_property_cb.addActionListener(this);
+        add(label);
+        add(_size_by_property_cb);
+    }
+
+    /** Repopulate the "Size by:" dropdown from the currently displayed tree's NUMERIC properties. */
+    void populateSizeByPropertyBox() {
+        if (_size_by_property_cb == null) {
+            return;
+        }
+        final TreePanel tp = getMainPanel().getCurrentTreePanel();
+        _size_by_property_cb.removeActionListener(this);
+        _size_by_property_cb.removeAllItems();
+        _size_by_property_cb.addItem(COLOR_BY_PROPERTY_NONE);
+        if ((tp != null) && (tp.getPhylogeny() != null)) {
+            for (final String ref : PropertyColorScheme.numericRefs(tp.getPhylogeny())) {
+                _size_by_property_cb.addItem(ref);
+            }
+            _size_by_property_cb.setSelectedItem(
+                    (tp.getPropertySizeScale() != null) ? tp.getPropertySizeScale().getRef() : COLOR_BY_PROPERTY_NONE);
+        }
+        _size_by_property_cb.addActionListener(this);
+    }
+
+    /** Resets the "Size by" dropdown to None (for Reset to Defaults); the per-tab scale is cleared on the TreePanel. */
+    void setSizeByPropertySelectionToNone() {
+        if (_size_by_property_cb != null) {
+            _size_by_property_cb.setSelectedItem(COLOR_BY_PROPERTY_NONE);
+        }
+    }
+
     /** Repopulate the "Color by:" dropdown from the currently displayed tree's properties. */
     void populateColorByPropertyBox() {
         if (_color_by_property_cb == null) {
@@ -2202,6 +2271,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         setupTreeDisplayTypeOptions();
         nextRowGap(SECTION_GAP); // more space between the P/A/C row and "Color by"
         setupColorByProperty();
+        setupSizeByProperty();
         setupDisplayCheckboxes();
         /* GUILHEM_BEG */
         // The sequence relation query selection combo-box
@@ -2824,6 +2894,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             getMainPanel().getControlPanel().updateDomainStructureEvaluethresholdDisplay();
             updateDataCheckboxVisibility(true);
             populateColorByPropertyBox();
+            populateSizeByPropertyBox();
             if (getMainPanel().getMainFrame() != null) {
                 getMainPanel().getMainFrame().updateEditMenu(); // undo history is per-tab
             }

@@ -760,7 +760,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             getCurrentTreePanel().resetNodeIdToDistToLeafMap();
             // pruning changes the visible tips, so recompute the display schemes that summarize them
             // (this path does not go through displayedPhylogenyMightHaveChanged)
-            getCurrentTreePanel().rebuildPropertyColorScheme();
+            getCurrentTreePanel().rebuildPropertyDisplays();
             getCurrentTreePanel().rebuildAnnotationColumns();
             getCurrentTreePanel().setEdited(true);
             repaint();
@@ -2147,6 +2147,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             final ControlPanel cp = getMainPanel().getControlPanel();
             if (cp != null) {
                 cp.setColorByPropertySelectionToNone();
+                cp.setSizeByPropertySelectionToNone();
                 // re-seed the always-visible control-panel controls (theme radios + search checkboxes) that hold
                 // their own state -- else they stay stale and the search checkboxes clobber the reset on next click
                 cp.resyncFromOptions();
@@ -2567,6 +2568,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 tp.pushUndoSnapshot(before, was_edited, "Import Node Data"); // now we know it changed the tree
                 tp.setTree(phy); // recompute the layout so the new labels/data show
                 tp.getControlPanel().populateColorByPropertyBox(); // surface any imported columns in "Color by:"
+                tp.getControlPanel().populateSizeByPropertyBox(); // and any numeric ones in "Size by:"
                 showWhole();
                 tp.setEdited(true);
             }

@@ -2752,7 +2752,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             x += add;
         }
         final int half_box_size = getOptions().getDefaultNodeShapeSize() / 2;
-        if (isColorByProperty() && (node.isExternal() || node.isCollapse())) {
+        if (((isColorByProperty() && (node.isExternal() || node.isCollapse())))
+                || (isSizeByProperty() && node.isExternal())) {
             drawPropertyColorDot(g, node);
         }
         if (usesAboveBranchInternalLabel(node)) {
@@ -4744,6 +4745,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // back on when the user returns to a super-tree even if it had no such values in a subtree.
     private String              _color_by_property_ref = null;
     private String              _color_palette_name = PropertyColorScheme.DEFAULT_PALETTE_NAME;
+    // "Size by": scale the tip symbol by the value of a chosen numeric phyloXML property (the size counterpart of
+    // Color by). Ref remembered separately from the scale so it rebuilds for the displayed (sub)tree, like above.
+    private PropertySizeScale   _property_size_scale = null;
+    private String              _size_by_property_ref = null;
     // The property-color legend can be dragged: _legend_offset is its top-left relative to the
     // visible area (null = the default top-right corner), so it stays put as the user scrolls.
     // _property_legend_bounds is where it was last drawn on screen (for hit-testing a drag).
@@ -5138,13 +5143,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return _color_palette_name;
     }
 
-    /** Resets this panel's per-tab "Color by" state to a freshly-loaded default -- coloring OFF, default palette,
-     *  and no manual per-value color overrides -- for "Reset to Defaults". Sets the palette field directly (not via
-     *  setColorPaletteName) because the shared Options palette has already been reset to default by the caller. */
+    /** Resets this panel's per-tab "Color by" AND "Size by" state to a freshly-loaded default -- coloring/sizing OFF,
+     *  default palette, and no manual per-value color overrides -- for "Reset to Defaults". Sets the palette field
+     *  directly (not via setColorPaletteName) because the shared Options palette has already been reset by the caller. */
     void resetColorStateToDefaults() {
         _color_palette_name = PropertyColorScheme.DEFAULT_PALETTE_NAME;
         _property_color_overrides.clear();
         setColorByPropertyRef( null ); // turns coloring off and rebuilds the scheme (-> null)
+        setSizeByPropertyRef( null ); // turns sizing off and rebuilds the scale (-> null)
         repaint();
     }
 
@@ -5182,19 +5188,59 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return _property_color_scheme;
     }
 
+    /** Selects the numeric property to SIZE tip symbols by (or null/empty to turn it off), and rebuilds the scale. */
+    void setSizeByPropertyRef(final String ref) {
+        _size_by_property_ref = ForesterUtil.isEmpty(ref) ? null : ref;
+        rebuildPropertySizeScale();
+        repaint();
+    }
+
+    /** (Re)builds the size scale from the currently displayed (visible) tree for the active "Size by" ref, if any --
+     *  so the size range tracks the on-screen (sub)tree exactly like {@link #rebuildPropertyColorScheme}. */
+    void rebuildPropertySizeScale() {
+        if ((_size_by_property_ref == null) || (_phylogeny == null) || _phylogeny.isEmpty()) {
+            _property_size_scale = null;
+        } else {
+            _property_size_scale = new PropertySizeScale(_phylogeny, _size_by_property_ref);
+        }
+    }
+
+    /** Rebuilds BOTH property-driven tip encodings ("Color by" and "Size by") from the currently displayed
+     *  (visible) tree. Call this at every site the visible tips change (navigation, prune) so the two encodings
+     *  can never drift out of lockstep -- one method means a call site cannot rebuild one but forget the other. */
+    void rebuildPropertyDisplays() {
+        rebuildPropertyColorScheme();
+        rebuildPropertySizeScale();
+    }
+
+    boolean isSizeByProperty() {
+        return (_property_size_scale != null) && !_property_size_scale.isEmpty();
+    }
+
+    PropertySizeScale getPropertySizeScale() {
+        return _property_size_scale;
+    }
+
     final Color getPropertyBasedColor(final PhylogenyNode node) {
         final Color c = (_property_color_scheme == null) ? null : _property_color_scheme.colorFor(node);
         return (c != null) ? c : getTreeColorSet().getSequenceColor();
     }
 
+    // The single tip symbol drawn for "Color by" and/or "Size by": its COLOR is the "Color by" value (a neutral
+    // ink color when only sizing is on) and its DIAMETER is the "Size by" value (the default dot when only coloring
+    // is on) -- so the two together make a color+size two-attribute figure on one dot.
     private void drawPropertyColorDot(final Graphics2D g, final PhylogenyNode node) {
-        final Color c = (_property_color_scheme == null) ? null : _property_color_scheme.colorFor(node);
-        if (c == null) {
-            return;
+        final Color color = (_property_color_scheme == null) ? null : _property_color_scheme.colorFor(node);
+        // size the dot by value only when this node actually HAS a size value; a value-less tip in size-only
+        // mode draws nothing (like Color-by), so "no data" stays distinct from the smallest value
+        final boolean size = isSizeByProperty() && node.isExternal() && _property_size_scale.hasValueFor(node);
+        if (!size && (color == null)) {
+            return; // nothing to draw
         }
-        final int d = getOptions().getDefaultNodeShapeSize() + 3;
+        final float base = getOptions().getDefaultNodeShapeSize() + 3;
+        final int d = Math.max(1, Math.round(size ? _property_size_scale.diameterFor(node, base) : base));
         final Color saved = g.getColor();
-        g.setColor(c);
+        g.setColor((color != null) ? color : getTreeColorSet().getSequenceColor()); // neutral ink when size-only
         g.fillOval((int) node.getXcoord() - (d / 2), (int) node.getYcoord() - (d / 2), d, d);
         g.setColor(saved);
     }
@@ -5829,7 +5875,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             recalculateMaxDistanceToRoot();
             resetPreferredSize();
             clearRankLegend(); // the branch rank-colorization legend is UI state, not in the snapshot -- drop it
-            rebuildPropertyColorScheme(); // display schemes summarize the tree -- recompute for the restored one
+            rebuildPropertyDisplays(); // color+size schemes summarize the tree -- recompute for the restored one
             rebuildAnnotationColumns();
             rebuildCladeBands();
             setEdited(s.isEdited());
@@ -7773,7 +7819,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             _phylogeny.externalNodesHaveChanged();
             _phylogeny.clearHashIdToNodeMap();
             _phylogeny.recalculateNumberOfExternalDescendants(true);
-            rebuildPropertyColorScheme();
+            rebuildPropertyDisplays(); // color+size schemes summarize the visible tree -- recompute for the subtree
             rebuildCladeBands(); // band roots referenced the old tree -- recompute for the subtree
             rebuildAnnotationColumns(); // rescale gradients / regroup categories to the subtree's visible tips
             // undo history is per displayed (sub)tree: clear it at a navigation boundary so an undo can never
@@ -7806,7 +7852,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         _phylogeny.externalNodesHaveChanged();
         _phylogeny.clearHashIdToNodeMap();
         _phylogeny.recalculateNumberOfExternalDescendants(true);
-        rebuildPropertyColorScheme();
+        rebuildPropertyDisplays(); // color+size schemes summarize the visible tree -- recompute for the restored tree
         rebuildCladeBands(); // band roots referenced the old (sub)tree -- recompute for the restored tree
         rebuildAnnotationColumns(); // recompute the columns' schemes for the restored tree
         _history.clear(); // navigation boundary -- see subTree()

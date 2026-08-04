@@ -350,7 +350,7 @@ final class PropertyColorScheme {
     /** Parses a value as a finite number, or {@code null} if empty, non-numeric, or non-finite (NaN/Infinity).
      * Rejecting non-finite values keeps the gradient min/max, the color, and the bar fraction well-defined
      * even when a column carries a "NaN"/"Infinity" sentinel or an overflowing number. */
-    private static Double parseNumber( final String s ) {
+    static Double parseNumber( final String s ) {
         if ( ForesterUtil.isEmpty( s ) ) {
             return null;
         }
@@ -374,7 +374,7 @@ final class PropertyColorScheme {
      * A few non-numeric sentinels ("n/a", "unknown") are tolerated -- they simply get no color -- while a
      * mostly-textual column with a stray number stays categorical.
      */
-    private static boolean shouldUseGradient( final List<PhylogenyNode> leaves, final String ref ) {
+    static boolean shouldUseGradient( final List<PhylogenyNode> leaves, final String ref ) {
         int total = 0;
         int numeric = 0;
         final Set<Double> distinct = new HashSet<Double>();
@@ -458,7 +458,7 @@ final class PropertyColorScheme {
      * and legend. A collapsed node is itself internal and carries no leaf value, so the
      * collapsed clade contributes nothing. A {@code null}/empty phylogeny yields no leaves.
      */
-    private static List<PhylogenyNode> visibleExternalNodes( final Phylogeny phylogeny ) {
+    static List<PhylogenyNode> visibleExternalNodes( final Phylogeny phylogeny ) {
         final List<PhylogenyNode> leaves = new ArrayList<PhylogenyNode>();
         if ( ( phylogeny == null ) || phylogeny.isEmpty() ) {
             return leaves;
@@ -479,7 +479,7 @@ final class PropertyColorScheme {
         return leaves;
     }
 
-    private static String valueFor( final PhylogenyNode node, final String ref ) {
+    static String valueFor( final PhylogenyNode node, final String ref ) {
         if ( ( node.getNodeData() == null ) || ( node.getNodeData().getProperties() == null ) ) {
             return null;
         }
@@ -539,6 +539,22 @@ final class PropertyColorScheme {
             // Drop per-leaf-unique CATEGORICAL columns (one color per tip is useless to color by); a numeric
             // column stays colorable even when every tip has a distinct value, because it renders as a gradient.
             if ( gradient || ( distinct < leaves ) ) {
+                refs.add( ref );
+            }
+        }
+        return refs;
+    }
+
+    /**
+     * The colorable refs whose (visible) values are predominantly numeric -- i.e. the ones that can be SIZED by
+     * ("Size by" scales a node symbol by the value). A subset of {@link #colorableRefs(Phylogeny)}; the same
+     * "predominantly numeric with a real range" test the gradient coloring uses.
+     */
+    static List<String> numericRefs( final Phylogeny phylogeny ) {
+        final List<PhylogenyNode> leaves = visibleExternalNodes( phylogeny );
+        final List<String> refs = new ArrayList<String>();
+        for( final String ref : colorableRefs( phylogeny ) ) {
+            if ( shouldUseGradient( leaves, ref ) ) {
                 refs.add( ref );
             }
         }

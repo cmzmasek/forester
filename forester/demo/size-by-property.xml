@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" rerootable="true">
+  <name>Size by property (demo)</name>
+  <description>Synthetic avian-influenza tree. Each tip carries a numeric &apos;read_count&apos; property. Try Size by: read_count -- the tip symbol AREA is proportional to the value.</description>
+  <clade>
+    <branch_length>0.0</branch_length>
+    <clade>
+      <branch_length>0.05</branch_length>
+      <clade>
+        <name>A/HongKong/1997</name>
+        <branch_length>0.02</branch_length>
+        <property ref="data:read_count" datatype="xsd:decimal" applies_to="node">120</property>
+      </clade>
+      <clade>
+        <name>A/goose/Guangdong/1996</name>
+        <branch_length>0.02</branch_length>
+        <property ref="data:read_count" datatype="xsd:decimal" applies_to="node">5200</property>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.04</branch_length>
+      <clade>
+        <branch_length>0.03</branch_length>
+        <clade>
+          <name>A/Thailand/2004</name>
+          <branch_length>0.02</branch_length>
+          <property ref="data:read_count" datatype="xsd:decimal" applies_to="node">450</property>
+        </clade>
+        <clade>
+          <name>A/Vietnam/2004</name>
+          <branch_length>0.02</branch_length>
+          <property ref="data:read_count" datatype="xsd:decimal" applies_to="node">1800</property>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>0.03</branch_length>
+        <clade>
+          <branch_length>0.02</branch_length>
+          <clade>
+            <name>A/duck/Hunan/2016</name>
+            <branch_length>0.02</branch_length>
+            <property ref="data:read_count" datatype="xsd:decimal" applies_to="node">9800</property>
+          </clade>
+          <clade>
+            <name>A/chicken/Jiangsu/2016</name>
+            <branch_length>0.02</branch_length>
+            <property ref="data:read_count" datatype="xsd:decimal" applies_to="node">24000</property>
+          </clade>
+        </clade>
+        <clade>
+          <branch_length>0.02</branch_length>
+          <clade>
+            <name>A/Shanghai/2013</name>
+            <branch_length>0.02</branch_length>
+            <property ref="data:read_count" datatype="xsd:decimal" applies_to="node">51000</property>
+          </clade>
+          <clade>
+            <name>A/Anhui/2013</name>
+            <branch_length>0.02</branch_length>
+            <property ref="data:read_count" datatype="xsd:decimal" applies_to="node">88000</property>
+          </clade>
+        </clade>
+      </clade>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>

@@ -37,6 +37,9 @@ import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.NodeVisualData.NodeFill;
 import org.forester.phylogeny.data.NodeVisualData.NodeShape;
+import org.forester.phylogeny.data.PropertiesList;
+import org.forester.phylogeny.data.Property;
+import org.forester.phylogeny.data.Property.AppliesTo;
 
 /**
  * Tests "Reset to Defaults". Headless: {@link Options#resetToDefaults} returns a mutated Options to exactly the
@@ -185,6 +188,15 @@ public final class ResetToDefaultsTest {
                     final TreePanel tp = frame.getMainPanel().getCurrentTreePanel();
                     tp.setPhylogenyGraphicsType( PHYLOGENY_GRAPHICS_TYPE.CIRCULAR ); // live tree drawn circular
                     tp.setColorPaletteName( "Colorblind-friendly" );
+                    tp.setSizeByPropertyRef( "data:sz" ); // turn "Size by" ON (a per-tab display setting)
+                    cp.populateSizeByPropertyBox(); // re-seed the dropdown from the tree, so it shows the active ref
+                    if ( !tp.isSizeByProperty() ) {
+                        fail( ok, "precondition: Size by should be active before reset" );
+                    }
+                    if ( !"data:sz".equals( cp.getSizeByPropertySelection() ) ) {
+                        fail( ok, "precondition: the 'Size by' dropdown should show data:sz before reset, got "
+                                + cp.getSizeByPropertySelection() );
+                    }
                     frame.setDarkMode( true );
                     //    (c) always-visible ControlPanel controls held STALE: the Dark theme radio + the Regex search
                     //        checkbox (plus its Options field), which would clobber the reset on the next click
@@ -245,9 +257,18 @@ public final class ResetToDefaultsTest {
                     if ( tp.getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR ) {
                         fail( ok, "the live tree style must reset to RECTANGULAR, got " + tp.getPhylogenyGraphicsType() );
                     }
-                    // 3f. per-tab palette reset
+                    // 3f. per-tab palette reset AND "Size by" turned off
                     if ( !PropertyColorScheme.DEFAULT_PALETTE_NAME.equals( tp.getColorPaletteName() ) ) {
                         fail( ok, "per-tab palette should reset to default, got " + tp.getColorPaletteName() );
+                    }
+                    if ( tp.isSizeByProperty() ) {
+                        fail( ok, "Size by must be turned off by reset" );
+                    }
+                    // the always-visible "Size by" dropdown control must be re-seeded to None too (else it stays
+                    // showing "data:sz" while the model is cleared -- the stale-control class this DoD guards against)
+                    if ( !"None".equals( cp.getSizeByPropertySelection() ) ) {
+                        fail( ok, "the 'Size by' dropdown must be re-seeded to None after reset, got "
+                                + cp.getSizeByPropertySelection() );
                     }
                     // 3g. persisted settings file deleted (so the reset survives a restart)
                     if ( Files.exists( settings ) ) {
@@ -323,6 +344,10 @@ public final class ResetToDefaultsTest {
         for ( int i = 0; i < 3; ++i ) {
             final PhylogenyNode leaf = new PhylogenyNode();
             leaf.setName( "t" + i );
+            // a numeric property (distinct values) so "Size by" can be turned on and its reset verified
+            final PropertiesList pl = new PropertiesList();
+            pl.addProperty( new Property( "data:sz", Integer.toString( i + 1 ), "", "xsd:string", AppliesTo.NODE ) );
+            leaf.getNodeData().setProperties( pl );
             root.addAsChild( leaf );
         }
         final Phylogeny phy = new Phylogeny();
