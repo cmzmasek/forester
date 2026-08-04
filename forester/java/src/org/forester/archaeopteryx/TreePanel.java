@@ -262,6 +262,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private static final int    SCALE_AXIS_TICK_LEN = 4;  // length (px) of the labeled scale-axis tick marks
     private static final int    SCALE_AXIS_LABEL_GAP = 4; // min px between adjacent tick labels (else the label is decimated)
     private static final int    SCALE_AXIS_UNIT_GAP = 5;  // gap before the trailing [unit] label
+    // Node age (HPD) bars: the bar thickness and its translucent fill (blue on screen/color export; a neutral gray in
+    // a black-and-white export so it is not the only colored element).
+    private static final int    HPD_BAR_HEIGHT = 7;
+    private static final Color  HPD_BAR_COLOR = new Color(70, 130, 220, 90);  // translucent blue, FigTree-like
+    private static final Color  HPD_BAR_COLOR_BW = new Color(90, 90, 90, 70); // translucent gray for B&W export
     private static final double TWO_PI = 2 * Math.PI;
     private final static int WIGGLE = 2;
     HashMap<Long, Short> _nodeid_dist_to_leaf = new HashMap<>();
@@ -6487,6 +6492,45 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return t + "…";
     }
 
+    /**
+     * Node age (HPD) bars: on a dated phylogram, a translucent horizontal bar at each internal node spanning its age
+     * uncertainty -- the FigTree "node bars" standard, showing divergence-time uncertainty. Reads the phyloXML native
+     * {@code <date>} (value/min/max, the same model shown in the node popup and editor); the bar is anchored to the
+     * node's OWN drawn x plus signed age deltas, so it stays centred on the node even if the tree is not strictly
+     * ultrametric or the root has a branch length. Drawn after the node loop (coords are set there), translucent so
+     * the branches show through; skips nodes hidden under a collapse. Phylograms only. Assumes the age unit matches
+     * the branch-length (time) unit -- the dated-tree use.
+     */
+    private void paintHpdBars(final Graphics2D g, final boolean to_pdf, final boolean to_graphics_file) {
+        if (!getOptions().isShowHpdBars() || !getControlPanel().isDrawPhylogram() || (_phylogeny == null)) {
+            return;
+        }
+        final double corr = getXcorrectionFactor();
+        if (corr <= 0) {
+            return; // no branch-length scale -> nothing meaningful to place
+        }
+        final Color saved = g.getColor();
+        g.setColor(((to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite()) ? HPD_BAR_COLOR_BW
+                : HPD_BAR_COLOR);
+        for (final PhylogenyNode node : _nodes_in_preorder) {
+            if (node.isExternal() || isHiddenUnderCollapse(node) || !node.getNodeData().isHasDate()) {
+                continue;
+            }
+            final org.forester.phylogeny.data.Date date = node.getNodeData().getDate();
+            if ((date.getMin() == null) || (date.getMax() == null)) {
+                continue; // need an interval to draw a bar
+            }
+            final double min = date.getMin().doubleValue();
+            final double max = date.getMax().doubleValue();
+            final double value = (date.getValue() != null) ? date.getValue().doubleValue() : ((min + max) / 2.0);
+            final float[] xr = TreePanelUtil.hpdBarXRange(node.getXcoord(), value, min, max, corr);
+            final int left = Math.round(Math.min(xr[0], xr[1])); // robust to swapped/degenerate bounds
+            final int w = Math.max(1, Math.round(Math.abs(xr[1] - xr[0])));
+            g.fillRect(left, Math.round(node.getYcoord()) - (HPD_BAR_HEIGHT / 2), w, HPD_BAR_HEIGHT);
+        }
+        g.setColor(saved);
+    }
+
     private void paintCladeBands(final Graphics2D g) {
         if (!hasCladeBands()) {
             return;
@@ -7600,6 +7644,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         to_graphics_file,
                         disallow_shortcutting);
             }
+            paintHpdBars(g, to_pdf, to_graphics_file); // node-age HPD bars -- node coords are set by the loop above
             paintAnnotationColumns(g); // tip-aligned columns (strip/heat map/bar/text), right of the labels
             paintCladeBands(g); // clade boxes/bars over the tree -- node coords are set by the loop above
             paintHoverPreview(g, !(to_pdf || to_graphics_file)); // translucent select/deselect hover preview

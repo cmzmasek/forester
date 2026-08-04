@@ -59,6 +59,7 @@ public final class DemoTreeGenerator {
         write( dir, "annotation-columns.xml", annotationColumnsTree() );
         write( dir, "colorize-by-rank.xml", colorizeByRankTree() );
         write( dir, "scale-axis.xml", scaleAxisTree() );
+        write( dir, "node-hpd-bars.xml", hpdBarsTree() );
         System.out.println( "Wrote demo trees to " + dir.getAbsolutePath() );
     }
 
@@ -198,6 +199,32 @@ public final class DemoTreeGenerator {
                         + "Settings > Display > Scale Axis to read a labeled distance axis with ticks along the bottom." );
         phy.setDistanceUnit( "substitutions/site" );
         return phy;
+    }
+
+    // ----- "Node Age Bars (HPD)": a dated (ultrametric) mammal phylogram, branch lengths = time (My). Each internal
+    //       node carries a phyloXML <date> (value = node age, min/max = its 95% interval), the native age model.
+    //       Load -> view as phylogram -> Settings > Display > Node Age Bars (HPD). Root age 90 My; every root-to-tip = 90.
+    private static Phylogeny hpdBarsTree() {
+        final PhylogenyNode homo_pan = hpdClade( 2, 7, 6, 9, blLeaf( "Homo_sapiens", 7 ), blLeaf( "Pan_troglodytes", 7 ) );
+        final PhylogenyNode homininae = hpdClade( 11, 9, 7, 12, blLeaf( "Gorilla_gorilla", 9 ), homo_pan );
+        final PhylogenyNode hominidae = hpdClade( 54, 20, 16, 25, blLeaf( "Pongo_abelii", 20 ), homininae );
+        final PhylogenyNode primates = hpdClade( 16, 74, 66, 80, blLeaf( "Macaca_mulatta", 74 ), hominidae );
+        final PhylogenyNode root = hpdClade( 0, 90, 82, 98, blLeaf( "Mus_musculus", 90 ), primates );
+        final Phylogeny phy = tree( root, "Node age HPD bars (demo)",
+                "Synthetic dated (ultrametric) mammal phylogram; branch lengths are time in millions of years. Each "
+                        + "internal node carries a phyloXML <date> (age + 95% interval). View as a phylogram and turn "
+                        + "on Settings > Display > Node Age Bars (HPD)." );
+        phy.setDistanceUnit( "My" );
+        return phy;
+    }
+
+    /** An internal clade node with a branch length (My) and a phyloXML date: point age + its 95% interval (My). */
+    private static PhylogenyNode hpdClade( final double branch_length, final int age, final int hpd_min,
+                                           final int hpd_max, final PhylogenyNode... kids ) {
+        final PhylogenyNode n = clade( branch_length, kids );
+        n.getNodeData().setDate( new org.forester.phylogeny.data.Date( "", java.math.BigDecimal.valueOf( age ),
+                java.math.BigDecimal.valueOf( hpd_min ), java.math.BigDecimal.valueOf( hpd_max ), "mya" ) );
+        return n;
     }
 
     private static PhylogenyNode blLeaf( final String name, final double branch_length ) {

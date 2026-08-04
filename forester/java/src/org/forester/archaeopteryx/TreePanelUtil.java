@@ -355,6 +355,21 @@ public class TreePanelUtil {
     }
 
     /**
+     * The horizontal x-range {@code [left, right]} of a node-age (HPD) bar, anchored to the node's OWN drawn x
+     * ({@code node_x}) and offset by the signed age deltas: an older bound ({@code max}) sits to the LEFT of the node,
+     * a younger bound ({@code min}) to the RIGHT, each scaled by {@code corr} (px per branch-length/time unit). Using
+     * the node's real position (not a tree-height-derived age->x map) keeps the bar centred on the node it annotates
+     * even when the tree is NOT strictly ultrametric or the root carries a branch length. {@code value} is the node's
+     * point age. Pure/testable.
+     */
+    final static float[] hpdBarXRange( final float node_x, final double value, final double min, final double max,
+                                       final double corr ) {
+        final float left = (float) ( node_x - ( ( max - value ) * corr ) );
+        final float right = (float) ( node_x + ( ( value - min ) * corr ) );
+        return new float[] { left, right };
+    }
+
+    /**
      * Formats a number for a compact figure label (scale-axis ticks, size-legend samples): a whole number as an
      * integer, otherwise with enough decimals to stay legible across magnitudes -- 2 decimals for values &gt;= 1
      * (years, distances, counts) but MORE for small magnitudes, so a 0..1 property/distance does not collapse to

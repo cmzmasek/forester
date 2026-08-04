@@ -63,7 +63,25 @@ public final class DemoTreesTest {
         ok &= hasRank( "colorize-by-rank.xml", "species" );
         // scale axis: a phylogram with real branch lengths (so the labeled distance axis has ticks)
         ok &= hasBranchLengths( "scale-axis.xml" );
+        // node age bars: internal nodes carry a phyloXML <date> with a min/max interval + branch lengths (dated tree)
+        ok &= hasBranchLengths( "node-hpd-bars.xml" );
+        ok &= hasInternalDateInterval( "node-hpd-bars.xml" );
         return ok;
+    }
+
+    private static boolean hasInternalDateInterval( final String file_name ) {
+        final Phylogeny phy = load( file_name );
+        if ( phy == null ) {
+            return false;
+        }
+        for( final java.util.Iterator<PhylogenyNode> it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if ( !n.isExternal() && n.getNodeData().isHasDate() && ( n.getNodeData().getDate().getMin() != null )
+                    && ( n.getNodeData().getDate().getMax() != null ) ) {
+                return true;
+            }
+        }
+        return note( file_name + " must carry an INTERNAL-node <date> with a min/max interval (for HPD age bars)" );
     }
 
     private static boolean hasBranchLengths( final String file_name ) {

@@ -56,7 +56,25 @@ public final class TreePanelUtilTest {
                 && testRankTaxonCounts() && testTaxonomyLabel() && testRankColorization() && testTipQueryName()
                 && testCladeBands() && testRankColorizationViaSequenceIds() && testInternalLabelAboveBranchLayout()
                 && testAbbreviateScientificName() && testSupportColor() && testScaleGridLines()
-                && testScaleAxisTickValues() && testFormatCompactNumber();
+                && testScaleAxisTickValues() && testFormatCompactNumber() && testHpdBarXRange();
+    }
+
+    /** A node-age HPD bar is anchored to the node's own x and offset by the age deltas (older->left, younger->right);
+     *  the bar always straddles the node's x -- independent of tree height / ultrametricity. */
+    private static boolean testHpdBarXRange() {
+        // node at x=100, age 90, interval [82,98], corr 2: left = 100-(98-90)*2 = 84, right = 100+(90-82)*2 = 116
+        final float[] r = TreePanelUtil.hpdBarXRange( 100f, 90.0, 82.0, 98.0, 2.0 );
+        if ( ( Math.abs( r[ 0 ] - 84f ) > 0.001f ) || ( Math.abs( r[ 1 ] - 116f ) > 0.001f ) ) {
+            return fail( "hpdBarXRange: expected [84,116], got " + java.util.Arrays.toString( r ) );
+        }
+        // it must STRADDLE the node's x (100), and doing so must NOT depend on any tree height: an asymmetric node
+        // (x=50, age 5 in [2,20]) still brackets x=50: left=50-(20-5)*2=20, right=50+(5-2)*2=56
+        final float[] a = TreePanelUtil.hpdBarXRange( 50f, 5.0, 2.0, 20.0, 2.0 );
+        if ( !( ( r[ 0 ] < 100f ) && ( 100f < r[ 1 ] ) && ( a[ 0 ] < 50f ) && ( 50f < a[ 1 ] ) ) ) {
+            return fail( "the bar must straddle the node's x: " + java.util.Arrays.toString( r ) + " / "
+                    + java.util.Arrays.toString( a ) );
+        }
+        return true;
     }
 
     /**

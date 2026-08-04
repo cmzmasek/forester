@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" branch_length_unit="My" rerootable="true">
+  <name>Node age HPD bars (demo)</name>
+  <description>Synthetic dated (ultrametric) mammal phylogram; branch lengths are time in millions of years. Each internal node carries a phyloXML &lt;date&gt; (age + 95% interval). View as a phylogram and turn on Settings &gt; Display &gt; Node Age Bars (HPD).</description>
+  <clade>
+    <branch_length>0.0</branch_length>
+    <date unit="mya">
+      <value>90</value>
+      <minimum>82</minimum>
+      <maximum>98</maximum>
+    </date>
+    <clade>
+      <name>Mus_musculus</name>
+      <branch_length>90.0</branch_length>
+    </clade>
+    <clade>
+      <branch_length>16.0</branch_length>
+      <date unit="mya">
+        <value>74</value>
+        <minimum>66</minimum>
+        <maximum>80</maximum>
+      </date>
+      <clade>
+        <name>Macaca_mulatta</name>
+        <branch_length>74.0</branch_length>
+      </clade>
+      <clade>
+        <branch_length>54.0</branch_length>
+        <date unit="mya">
+          <value>20</value>
+          <minimum>16</minimum>
+          <maximum>25</maximum>
+        </date>
+        <clade>
+          <name>Pongo_abelii</name>
+          <branch_length>20.0</branch_length>
+        </clade>
+        <clade>
+          <branch_length>11.0</branch_length>
+          <date unit="mya">
+            <value>9</value>
+            <minimum>7</minimum>
+            <maximum>12</maximum>
+          </date>
+          <clade>
+            <name>Gorilla_gorilla</name>
+            <branch_length>9.0</branch_length>
+          </clade>
+          <clade>
+            <branch_length>2.0</branch_length>
+            <date unit="mya">
+              <value>7</value>
+              <minimum>6</minimum>
+              <maximum>9</maximum>
+            </date>
+            <clade>
+              <name>Homo_sapiens</name>
+              <branch_length>7.0</branch_length>
+            </clade>
+            <clade>
+              <name>Pan_troglodytes</name>
+              <branch_length>7.0</branch_length>
+            </clade>
+          </clade>
+        </clade>
+      </clade>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>

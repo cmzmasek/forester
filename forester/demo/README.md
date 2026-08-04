@@ -14,6 +14,7 @@ stay in sync with the app.
 | [`annotation-columns.xml`](annotation-columns.xml) | **Annotation columns** | **Tools → Annotation Columns…** and add `host`/`segment` (color strips), `viral_load` (heat map or bar) and `clade` (text) as tip-aligned columns. |
 | [`colorize-by-rank.xml`](colorize-by-rank.xml) | **Colorize / annotate clades by taxonomic rank** | **Tools → Colorize Subtrees via Taxonomic Rank…** (or **Annotate Clades by Rank…**) at rank **order**. Each order's clade root is annotated in-tree, so it works with **no internet lookup**. |
 | [`scale-axis.xml`](scale-axis.xml) | **Scale axis** | **Settings → Display → Scale Axis**. A labeled distance axis with tick marks runs along the bottom (branch lengths in substitutions/site), so you can read a tip's distance off the axis directly. |
+| [`node-hpd-bars.xml`](node-hpd-bars.xml) | **Node age bars (HPD)** | View as a **phylogram**, then **Settings → Display → Node Age Bars (HPD)**. A dated (ultrametric) mammal tree (time in My); each internal node shows a translucent bar spanning its 95% age interval (`data:hpd_min`/`data:hpd_max`). |
 
 Combine features on one figure — e.g. open `color-by-property.xml`, then **Color by: `host`** *and* **Size by: `year`**
 for a two-attribute (color + size) figure on a single tip symbol.
