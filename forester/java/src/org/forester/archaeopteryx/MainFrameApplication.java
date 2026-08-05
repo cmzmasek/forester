@@ -1402,6 +1402,8 @@ public final class MainFrameApplication extends MainFrame {
         _bold_found_labels_cbmi.setToolTipText(MainFrame.DISPLAY_BOLD_FOUND_LABELS_TIP);
         _dim_non_matches_cbmi = new JCheckBoxMenuItem(MainFrame.DISPLAY_DIM_NON_MATCHES_LABEL);
         _dim_non_matches_cbmi.setToolTipText(MainFrame.DISPLAY_DIM_NON_MATCHES_TIP);
+        _pulse_found_nodes_cbmi = new JCheckBoxMenuItem(MainFrame.DISPLAY_PULSE_FOUND_NODES_LABEL);
+        _pulse_found_nodes_cbmi.setToolTipText(MainFrame.DISPLAY_PULSE_FOUND_NODES_TIP);
         _show_default_node_shapes_internal_cbmi = new JCheckBoxMenuItem(DISPLAY_NODE_BOXES_LABEL_INT);
         _internal_labels_above_branch_rbmi = new JRadioButtonMenuItem(MainFrame.INTERNAL_LABELS_ABOVE_BRANCH_LABEL);
         _internal_labels_above_branch_rbmi.setToolTipText(MainFrame.INTERNAL_LABELS_ABOVE_BRANCH_TIP);
@@ -1480,6 +1482,7 @@ public final class MainFrameApplication extends MainFrame {
         customizeCheckBoxMenuItem(_flip_vertically_cbmi, getOptions().isFlipVertically());
         customizeCheckBoxMenuItem(_bold_found_labels_cbmi, getOptions().isBoldFoundLabels());
         customizeCheckBoxMenuItem(_dim_non_matches_cbmi, getOptions().isDimNonMatches());
+        customizeCheckBoxMenuItem(_pulse_found_nodes_cbmi, getOptions().isPulseFoundNodes());
         customizeCheckBoxMenuItem(_collapsed_with_average_height_cbmi, getOptions().isCollapsedWithAverageHeigh());
         customizeCheckBoxMenuItem(_show_abbreviated_labels_for_collapsed_nodes_cbmi,
                 getOptions().isShowAbbreviatedLabelsForCollapsedNodes());

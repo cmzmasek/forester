@@ -176,6 +176,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String DISPLAY_BOLD_FOUND_LABELS_TIP = "Render the labels of found/selected nodes in bold, so search hits stand out. Works on screen and in exports.";
     static final String DISPLAY_DIM_NON_MATCHES_LABEL = "Dim Non-Matches";
     static final String DISPLAY_DIM_NON_MATCHES_TIP = "While a search or selection is active, fade non-matching labels toward the background so the hits stand out. Works on screen and in exports.";
+    static final String DISPLAY_PULSE_FOUND_NODES_LABEL = "Pulse Found Nodes";
+    static final String DISPLAY_PULSE_FOUND_NODES_TIP = "Draw a gently pulsing halo around found/selected nodes to draw the eye (a static glow in exports; not in black-and-white; rectangular layouts only).";
     static final String NON_LINED_UP_CLADOGRAMS_LABEL = "Non-Lined Up Cladogram";
     static final String LABEL_DIRECTION_LABEL = "Radial Labels";
     static final String LABEL_DIRECTION_TIP = "To use radial node labels in radial and unrooted display types";
@@ -272,6 +274,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JCheckBoxMenuItem _flip_vertically_cbmi;
     JCheckBoxMenuItem _bold_found_labels_cbmi;
     JCheckBoxMenuItem _dim_non_matches_cbmi;
+    JCheckBoxMenuItem _pulse_found_nodes_cbmi;
     JCheckBoxMenuItem _show_overview_cbmi;
     JCheckBoxMenuItem _show_domain_labels;
     JCheckBoxMenuItem _abbreviate_scientific_names;
@@ -496,6 +499,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         } else if (o == _bold_found_labels_cbmi) {
             updateOptions(getOptions());
         } else if (o == _dim_non_matches_cbmi) {
+            updateOptions(getOptions());
+        } else if (o == _pulse_found_nodes_cbmi) {
             updateOptions(getOptions());
         } else if (o == _show_confidence_stddev_cbmi) {
             updateOptions(getOptions());
@@ -2003,6 +2008,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         options.setFlipVertically((_flip_vertically_cbmi != null) && _flip_vertically_cbmi.isSelected());
         options.setBoldFoundLabels((_bold_found_labels_cbmi != null) && _bold_found_labels_cbmi.isSelected());
         options.setDimNonMatches((_dim_non_matches_cbmi != null) && _dim_non_matches_cbmi.isSelected());
+        options.setPulseFoundNodes((_pulse_found_nodes_cbmi != null) && _pulse_found_nodes_cbmi.isSelected());
         if ((_show_scale_cbmi != null) && _show_scale_cbmi.isEnabled()) {
             options.setShowScale(_show_scale_cbmi.isSelected());
         }
@@ -2113,6 +2119,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         setSelected(_flip_vertically_cbmi, options.isFlipVertically());
         setSelected(_bold_found_labels_cbmi, options.isBoldFoundLabels());
         setSelected(_dim_non_matches_cbmi, options.isDimNonMatches());
+        setSelected(_pulse_found_nodes_cbmi, options.isPulseFoundNodes());
         setSelected(_show_scale_cbmi, options.isShowScale());
         setSelected(_show_tree_name_cbmi, options.isShowTreeName());
         setSelected(_show_overview_cbmi, options.isShowOverview());

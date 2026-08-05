@@ -690,6 +690,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Pulse found nodes (halo render + anim + lifecycle): ");
+        if (org.forester.archaeopteryx.PulseFoundNodesRenderTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Color-by palette default (seed + write-back): ");
         if (org.forester.archaeopteryx.ColorPaletteDefaultTest.test()) {
             System.out.println("OK.");

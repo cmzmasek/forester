@@ -85,6 +85,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTextArea;
 import javax.swing.Popup;
 import javax.swing.PopupFactory;
+import javax.swing.Timer;
 import javax.swing.SwingUtilities;
 
 import org.forester.archaeopteryx.ControlPanel.NodeClickAction;
@@ -272,6 +273,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private static final Color  ZEBRA_STRIPE_ON_DARK = new Color(255, 255, 255, 20);
     // "Dim Non-Matches": how far a non-hit label is blended toward the background while a search is active.
     private static final double DIM_NON_MATCH_FRACTION = 0.72;
+    // "Pulse Found Nodes": a translucent found-color halo disc around each hit; on screen its radius+alpha breathe
+    // over PULSE_PERIOD_MS, in exports it renders once at peak (static glow). Repainted at ~PULSE_INTERVAL_MS.
+    private static final int    PULSE_INTERVAL_MS = 55;
+    private static final int    PULSE_PERIOD_MS = 1300;
+    private static final long   PULSE_PERIOD_NS = PULSE_PERIOD_MS * 1_000_000L; // monotonic clock base for the phase
+    private static final float  HALO_BASE_RADIUS = 4f;   // radius at the trough of the pulse
+    private static final float  HALO_AMP_RADIUS = 6f;    // added at the peak (so radius breathes 4 -> 10 px)
+    private static final int    HALO_MIN_ALPHA = 18;
+    private static final int    HALO_MAX_ALPHA = 70;
     private static final double TWO_PI = 2 * Math.PI;
     private final static int WIGGLE = 2;
     HashMap<Long, Short> _nodeid_dist_to_leaf = new HashMap<>();
@@ -358,6 +368,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // node is actually DRAWN (not all hidden under a collapse / absent from the displayed subtree), so the tree
     // never washes out with nothing emphasised. Read per-label in setColor.
     private boolean _has_visible_found_node = false;
+    // "Pulse Found Nodes": the EDT timer that drives the on-screen animation, the drawn halo bounds it repaints
+    // (only those small regions, not the whole canvas), and whether the last screen paint drew any halo.
+    private Timer   _pulse_timer;
+    private final List<Rectangle> _found_halo_bounds = new ArrayList<>();
+    private boolean _has_visible_found_halo = false;
     private double _scale_distance = 0.0;
     private String _scale_label = null;
     private DescriptiveStatistics _statistics_for_vector_data;
@@ -6573,6 +6588,97 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     /**
+     * "Pulse Found Nodes": a translucent found-color halo disc around each found/selected node that is actually
+     * drawn (skipping hits hidden under a collapse). On SCREEN the disc's radius + alpha breathe over
+     * PULSE_PERIOD_MS -- an EDT timer ({@link #updatePulseTimer}) repaints just the small halo regions (a CLIPPED
+     * repaint: the node walk still runs, but only those regions rasterize). In an EXPORT it renders once at peak
+     * phase (a static glow) so the figure still shows the emphasis; suppressed on a black-and-white export (it is
+     * inherently colored). Drawn after the node loop (needs the node coords). Rectangular-family layouts only.
+     * <p>The screen animation state ({@code _found_halo_bounds} / {@code _has_visible_found_halo}) is cleared at
+     * the TOP of {@code paintPhylogeny} and the timer reconciled at its END for EVERY layout -- so an export paint
+     * here never clobbers it, and a switch to a circular/unrooted view reliably STOPS the timer (no leak).
+     */
+    private void paintFoundNodeHalos(final Graphics2D g, final boolean to_pdf, final boolean to_graphics_file) {
+        final boolean to_screen = !to_pdf && !to_graphics_file;
+        final boolean bw = (to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite();
+        if (!getOptions().isPulseFoundNodes() || (_phylogeny == null) || bw || !hasFoundNodes()) {
+            return;
+        }
+        // phase in [0,1]: time-driven breathing on screen (monotonic clock), fixed peak (a static glow) in an export
+        final double sin = to_screen
+                ? (0.5 + (0.5 * Math.sin((TWO_PI * (System.nanoTime() % PULSE_PERIOD_NS)) / PULSE_PERIOD_NS)))
+                : 1.0;
+        final float radius = HALO_BASE_RADIUS + (HALO_AMP_RADIUS * (float) sin);
+        final int alpha = (int) Math.round(HALO_MIN_ALPHA + ((HALO_MAX_ALPHA - HALO_MIN_ALPHA) * sin));
+        final int max_r = Math.round(HALO_BASE_RADIUS + HALO_AMP_RADIUS); // repaint region uses the peak radius
+        final Color saved = g.getColor();
+        for (final PhylogenyNode node : _nodes_in_preorder) {
+            if (!isInFoundNodes(node) || isHiddenUnderCollapse(node)) {
+                continue;
+            }
+            final Color fc = getColorForFoundNode(node);
+            g.setColor(new Color(fc.getRed(), fc.getGreen(), fc.getBlue(), alpha));
+            final int x = Math.round(node.getXcoord()), y = Math.round(node.getYcoord());
+            final int r = Math.round(radius);
+            g.fillOval(x - r, y - r, 2 * r, 2 * r);
+            if (to_screen) {
+                _has_visible_found_halo = true; // screen-only: an export must not touch the animation state
+                _found_halo_bounds.add(new Rectangle(x - max_r - 1, y - max_r - 1, (2 * max_r) + 2, (2 * max_r) + 2));
+            }
+        }
+        g.setColor(saved);
+    }
+
+    /** Starts the pulse timer when there is a visible hit halo to animate on a showing panel, stops it otherwise.
+     *  Called at the END of every screen paint (all layouts). The tick also self-terminates, so a hidden tab
+     *  (which stops repainting) can't keep it running; and {@link #removeNotify()} stops it on detach. */
+    private void updatePulseTimer() {
+        if (shouldPulse()) {
+            if (_pulse_timer == null) {
+                _pulse_timer = new Timer(PULSE_INTERVAL_MS, e -> {
+                    if (shouldPulse()) {
+                        for (final Rectangle rect : _found_halo_bounds) {
+                            repaint(rect.x, rect.y, rect.width, rect.height);
+                        }
+                    } else {
+                        _pulse_timer.stop();
+                    }
+                });
+            }
+            if (!_pulse_timer.isRunning()) {
+                _pulse_timer.start();
+            }
+        } else if ((_pulse_timer != null) && _pulse_timer.isRunning()) {
+            _pulse_timer.stop();
+        }
+    }
+
+    /** Whether the found-node pulse should currently be animating: the option is on, at least one hit halo was
+     *  drawn on the last screen paint, and the panel is showing. */
+    private boolean shouldPulse() {
+        return getOptions().isPulseFoundNodes() && _has_visible_found_halo && isShowing();
+    }
+
+    @Override
+    public void removeNotify() {
+        if (_pulse_timer != null) {
+            _pulse_timer.stop(); // stop animating once the tab/window is gone (no lingering repaints)
+        }
+        super.removeNotify();
+    }
+
+    /** Test hook: whether the found-node pulse animation timer is currently running. */
+    boolean isPulseTimerRunning() {
+        return (_pulse_timer != null) && _pulse_timer.isRunning();
+    }
+
+    /** Test hook: number of found-node halo repaint regions recorded by the last screen paint (0 = nothing to
+     *  pulse, so the timer will stop -- e.g. after switching to a circular/unrooted layout). */
+    int getFoundHaloBoundsCountForTest() {
+        return _found_halo_bounds.size();
+    }
+
+    /**
      * Zebra striping: a faint alternating background band behind every other visible tip row, spanning the full
      * width, so a label is easy to track across a wide tree to its annotation columns (the iTOL row-shading aid).
      * Theme-aware and translucent (branches/labels show through); drawn after the node loop (coords are set there).
@@ -7701,6 +7807,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // "Dim Non-Matches": resolve once per paint whether any hit is actually visible (see anyVisibleFoundNode);
         // the scan is skipped entirely -- keeping the cheap false -- when the option is off (the default).
         _has_visible_found_node = getOptions().isDimNonMatches() && anyVisibleFoundNode();
+        // "Pulse Found Nodes": clear the screen halo state each paint (the rectangular branch repopulates it via
+        // paintFoundNodeHalos); the timer is reconciled at the END of this method for EVERY layout, so a switch to
+        // circular/unrooted (which doesn't repopulate) stops it. Screen-only, so an export never clobbers it.
+        if (!to_pdf && !to_graphics_file) {
+            _found_halo_bounds.clear();
+            _has_visible_found_halo = false;
+        }
         if (_control_panel.isShowSequenceRelations()) {
             _query_sequence = _control_panel.getSelectedQuerySequence();
         }
@@ -7772,6 +7885,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             paintAnnotationColumns(g); // tip-aligned columns (strip/heat map/bar/text), right of the labels
             paintCladeBands(g); // clade boxes/bars over the tree -- node coords are set by the loop above
             paintHoverPreview(g, !(to_pdf || to_graphics_file)); // translucent select/deselect hover preview
+            paintFoundNodeHalos(g, to_pdf, to_graphics_file); // pulsing (screen) / static-glow (export) hit halos
             final boolean scale_shown = getOptions().isShowScale() && getControlPanel().isDrawPhylogram()
                     && (getScaleDistance() > 0.0);
             final boolean axis_shown = getOptions().isShowScaleAxis() && getControlPanel().isDrawPhylogram()
@@ -7925,6 +8039,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final Rectangle legend_bounds = to_screen ? getVisibleRect()
                     : new Rectangle(graphics_file_x, graphics_file_y, graphics_file_width, graphics_file_height);
             drawSizeLegend(g, legend_bounds, to_screen);
+        }
+        // reconcile the "Pulse Found Nodes" animation timer after EVERY screen paint (all layouts): starts it when a
+        // hit halo was drawn on a rectangular tree, stops it when none was (option off / no hit / circular-unrooted).
+        if (!to_pdf && !to_graphics_file) {
+            updatePulseTimer();
         }
     }
 

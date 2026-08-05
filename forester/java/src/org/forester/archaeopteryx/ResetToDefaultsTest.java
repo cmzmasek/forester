@@ -97,6 +97,7 @@ public final class ResetToDefaultsTest {
         o.setFlipVertically( true );
         o.setBoldFoundLabels( true );
         o.setDimNonMatches( true );
+        o.setPulseFoundNodes( true );
         o.setAbbreviateScientificTaxonNames( true );
         o.setSupportVisualization( SUPPORT_VISUALIZATION.SIZE_SCALED );
         // search options (reset by init, resynced onto the control-panel checkboxes by Reset to Defaults)
@@ -140,6 +141,7 @@ public final class ResetToDefaultsTest {
         ok &= eq( "flipVertically", o.isFlipVertically(), def.isFlipVertically() );
         ok &= eq( "boldFoundLabels", o.isBoldFoundLabels(), def.isBoldFoundLabels() );
         ok &= eq( "dimNonMatches", o.isDimNonMatches(), def.isDimNonMatches() );
+        ok &= eq( "pulseFoundNodes", o.isPulseFoundNodes(), def.isPulseFoundNodes() );
         ok &= eq( "abbreviateNames", o.isAbbreviateScientificTaxonNames(), def.isAbbreviateScientificTaxonNames() );
         ok &= eq( "supportViz", o.getSupportVisualization(), def.getSupportVisualization() );
         ok &= eq( "searchCase", o.isSearchCaseSensitive(), def.isSearchCaseSensitive() );
@@ -181,8 +183,8 @@ public final class ResetToDefaultsTest {
                           frame._show_default_node_shapes_external_cbmi, frame._show_default_node_shapes_for_marked_cbmi,
                           frame._show_scale_grid_cbmi, frame._show_scale_axis_cbmi, frame._show_hpd_bars_cbmi,
                           frame._show_zebra_stripes_cbmi, frame._flip_vertically_cbmi,
-                          frame._bold_found_labels_cbmi, frame._dim_non_matches_cbmi, frame._show_scale_cbmi,
-                          frame._show_tree_name_cbmi,
+                          frame._bold_found_labels_cbmi, frame._dim_non_matches_cbmi, frame._pulse_found_nodes_cbmi,
+                          frame._show_scale_cbmi, frame._show_tree_name_cbmi,
                           frame._show_overview_cbmi, frame._show_confidence_stddev_cbmi, frame._show_mad_confidence_cbmi,
                           frame._antialias_print_cbmi, frame._print_black_and_white_cbmi,
                           frame._internal_number_are_confidence_for_nh_parsing_cbmi, frame._replace_underscores_cbmi,
