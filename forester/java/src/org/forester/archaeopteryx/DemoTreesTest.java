@@ -72,7 +72,44 @@ public final class DemoTreesTest {
         ok &= hasNumericRef( "zebra-stripes.xml", "data:reads" );
         // flip vertically: a ladder with several ordered tips so the top<->bottom reversal is unmistakable
         ok &= hasAtLeastTips( "flip-vertically.xml", 6 );
+        // search emphasis: enough tips + a searchable token shared by a subset (so a search highlights several) +
+        // internal confidence values (so "Dim Non-Matches" fading the support numbers too is demonstrable)
+        ok &= hasAtLeastTips( "search-emphasis.xml", 12 );
+        ok &= tipsContaining( "search-emphasis.xml", "kinase", 4 );
+        ok &= hasInternalConfidence( "search-emphasis.xml" );
         return ok;
+    }
+
+    private static boolean hasInternalConfidence( final String file_name ) {
+        final Phylogeny phy = load( file_name );
+        if ( phy == null ) {
+            return false;
+        }
+        for( final Iterator<PhylogenyNode> it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if ( !n.isExternal() && !n.getBranchData().getConfidences().isEmpty() ) {
+                return true;
+            }
+        }
+        return note( file_name + " must carry an internal-node confidence value (for the dim-the-numbers demo)" );
+    }
+
+    private static boolean tipsContaining( final String file_name, final String token, final int min_matches ) {
+        final Phylogeny phy = load( file_name );
+        if ( phy == null ) {
+            return false;
+        }
+        int matches = 0;
+        for( final PhylogenyNode leaf : phy.getExternalNodes() ) {
+            if ( ( leaf.getName() != null ) && leaf.getName().contains( token ) ) {
+                ++matches;
+            }
+        }
+        if ( matches < min_matches ) {
+            return note( file_name + " must have at least " + min_matches + " tips whose name contains '" + token
+                    + "' (a searchable subset for the emphasis demo), found " + matches );
+        }
+        return true;
     }
 
     private static boolean hasAtLeastTips( final String file_name, final int min_tips ) {

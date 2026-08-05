@@ -28,6 +28,7 @@ import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.writers.PhylogenyWriter;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
+import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.data.PropertiesList;
 import org.forester.phylogeny.data.Property;
 import org.forester.phylogeny.data.Property.AppliesTo;
@@ -63,6 +64,7 @@ public final class DemoTreeGenerator {
         write( dir, "node-hpd-bars.xml", hpdBarsTree() );
         write( dir, "zebra-stripes.xml", zebraStripesTree() );
         write( dir, "flip-vertically.xml", flipVerticallyTree() );
+        write( dir, "search-emphasis.xml", searchEmphasisTree() );
         System.out.println( "Wrote demo trees to " + dir.getAbsolutePath() );
     }
 
@@ -226,6 +228,30 @@ public final class DemoTreeGenerator {
                 "Synthetic 8-tip ladder tree with sequentially-numbered tips (tip_01 at the top). Turn on Settings > "
                         + "Display > Flip Vertically to reverse the tip order top-to-bottom -- the staircase inverts "
                         + "and tip_08 moves to the top. Display-only; the tree data is unchanged." );
+    }
+
+    // ----- "Search emphasis" (Bold Found Labels / Dim Non-Matches): 15 tips of which four are "*_kinase", scattered
+    //       across the tree, so searching "kinase" highlights a subset. Search box a for "kinase", then turn on
+    //       Settings > Display > Bold Found Labels and/or Dim Non-Matches.
+    private static Phylogeny searchEmphasisTree() {
+        final PhylogenyNode a = conf( clade( 0.05, leaf( "AKT1_kinase" ), leaf( "actin" ), leaf( "tubulin" ),
+                                             leaf( "MAPK1_kinase" ), leaf( "myosin" ) ), 88 );
+        final PhylogenyNode b = conf( clade( 0.05, leaf( "src_kinase" ), leaf( "collagen" ), leaf( "keratin" ),
+                                             leaf( "histone_H3" ), leaf( "ubiquitin" ) ), 92 );
+        final PhylogenyNode c = conf( clade( 0.05, leaf( "CDK2_kinase" ), leaf( "GAPDH" ), leaf( "beta_globin" ),
+                                             leaf( "insulin" ), leaf( "albumin" ) ), 76 );
+        final PhylogenyNode root = clade( 0, conf( clade( 0.04, a, b ), 95 ), c );
+        return tree( root, "Search emphasis (demo)",
+                "Synthetic 15-tip tree; four tips are '*_kinase', scattered across the tree, with branch lengths and "
+                        + "bootstrap support on the internal nodes. Search (box a) for \"kinase\", then turn on "
+                        + "Settings > Display > Bold Found Labels and/or Dim Non-Matches -- the four hits go bold "
+                        + "while the rest (names AND their support / branch-length numbers) fade toward the background." );
+    }
+
+    /** Adds a bootstrap confidence to a node's incoming branch (so the demo can show support values). */
+    private static PhylogenyNode conf( final PhylogenyNode node, final double value ) {
+        node.getBranchData().addConfidence( new Confidence( value, "bootstrap" ) );
+        return node;
     }
 
     // ----- "Scale Axis": a phylogram whose branch lengths (substitutions/site) span a useful range, so the labeled

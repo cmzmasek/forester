@@ -130,6 +130,8 @@ final class SettingsDialog extends JDialog {
         add( c, cb( _mf._show_hpd_bars_cbmi ) );
         add( c, cb( _mf._show_zebra_stripes_cbmi ) );
         add( c, cb( _mf._flip_vertically_cbmi ) );
+        add( c, cb( _mf._bold_found_labels_cbmi ) );
+        add( c, cb( _mf._dim_non_matches_cbmi ) );
         add( c, cb( _mf._show_tree_name_cbmi ) );
         add( c, cb( _mf._show_overview_cbmi ) );
         add( c, labeled( "Overview placement:", enumCombo( OVERVIEW_PLACEMENT_TYPE.values(),

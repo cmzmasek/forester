@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" rerootable="true">
+  <name>Search emphasis (demo)</name>
+  <description>Synthetic 15-tip tree; four tips are &apos;*_kinase&apos;, scattered across the tree, with branch lengths and bootstrap support on the internal nodes. Search (box a) for &quot;kinase&quot;, then turn on Settings &gt; Display &gt; Bold Found Labels and/or Dim Non-Matches -- the four hits go bold while the rest (names AND their support / branch-length numbers) fade toward the background.</description>
+  <clade>
+    <branch_length>0.0</branch_length>
+    <clade>
+      <branch_length>0.04</branch_length>
+      <confidence type="bootstrap">95</confidence>
+      <clade>
+        <branch_length>0.05</branch_length>
+        <confidence type="bootstrap">88</confidence>
+        <clade>
+          <name>AKT1_kinase</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+        <clade>
+          <name>actin</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+        <clade>
+          <name>tubulin</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+        <clade>
+          <name>MAPK1_kinase</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+        <clade>
+          <name>myosin</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>0.05</branch_length>
+        <confidence type="bootstrap">92</confidence>
+        <clade>
+          <name>src_kinase</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+        <clade>
+          <name>collagen</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+        <clade>
+          <name>keratin</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+        <clade>
+          <name>histone_H3</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+        <clade>
+          <name>ubiquitin</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.05</branch_length>
+      <confidence type="bootstrap">76</confidence>
+      <clade>
+        <name>CDK2_kinase</name>
+        <branch_length>0.02</branch_length>
+      </clade>
+      <clade>
+        <name>GAPDH</name>
+        <branch_length>0.02</branch_length>
+      </clade>
+      <clade>
+        <name>beta_globin</name>
+        <branch_length>0.02</branch_length>
+      </clade>
+      <clade>
+        <name>insulin</name>
+        <branch_length>0.02</branch_length>
+      </clade>
+      <clade>
+        <name>albumin</name>
+        <branch_length>0.02</branch_length>
+      </clade>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>

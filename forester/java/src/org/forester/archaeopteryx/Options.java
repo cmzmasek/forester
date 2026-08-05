@@ -158,6 +158,8 @@ final public class Options {
     private boolean _show_hpd_bars;
     private boolean _show_zebra_stripes;
     private boolean _flip_vertically;
+    private boolean _bold_found_labels;
+    private boolean _dim_non_matches;
     private boolean _show_tree_name;
     private TAXONOMY_EXTRACTION _taxonomy_extraction;
     private boolean _line_up_renderable_node_data;
@@ -232,6 +234,8 @@ final public class Options {
         _show_hpd_bars = false;
         _show_zebra_stripes = false;
         _flip_vertically = false;
+        _bold_found_labels = false;
+        _dim_non_matches = false;
         _show_tree_name = true; // show the tree's name in the lower-left of the canvas by default
         _antialias_print = true;
         _graphics_export_visible_only = false;
@@ -571,6 +575,22 @@ final public class Options {
 
     final void setFlipVertically(final boolean flip_vertically) {
         _flip_vertically = flip_vertically;
+    }
+
+    final boolean isBoldFoundLabels() {
+        return _bold_found_labels;
+    }
+
+    final void setBoldFoundLabels(final boolean bold_found_labels) {
+        _bold_found_labels = bold_found_labels;
+    }
+
+    final boolean isDimNonMatches() {
+        return _dim_non_matches;
+    }
+
+    final void setDimNonMatches(final boolean dim_non_matches) {
+        _dim_non_matches = dim_non_matches;
     }
 
     final void setAbbreviateScientificTaxonNames(final boolean abbreviate_scientific_names) {

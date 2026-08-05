@@ -270,6 +270,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // Zebra row stripes: a faint translucent band, darkening a light background / lightening a dark one.
     private static final Color  ZEBRA_STRIPE_ON_LIGHT = new Color(0, 0, 0, 16);
     private static final Color  ZEBRA_STRIPE_ON_DARK = new Color(255, 255, 255, 20);
+    // "Dim Non-Matches": how far a non-hit label is blended toward the background while a search is active.
+    private static final double DIM_NON_MATCH_FRACTION = 0.72;
     private static final double TWO_PI = 2 * Math.PI;
     private final static int WIGGLE = 2;
     HashMap<Long, Short> _nodeid_dist_to_leaf = new HashMap<>();
@@ -347,6 +349,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // per node per repaint, so re-derive only when the base font actually changes (see italicOf()).
     private Font _italic_base_font;
     private Font _italic_derived_font;
+    // Same cache for the bold-derived found-label font (see boldOf() / setFont). Also composes with italicOf (a
+    // found scientific name derives bold-italic); the italic cache's single slot still re-derives at each
+    // found<->non-found boundary, but that is bounded per-boundary, not per-label, and bold is off by default.
+    private Font _bold_base_font;
+    private Font _bold_derived_font;
+    // "Dim Non-Matches": computed once per paint -- true only when the dim option is on AND at least one found
+    // node is actually DRAWN (not all hidden under a collapse / absent from the displayed subtree), so the tree
+    // never washes out with nothing emphasised. Read per-label in setColor.
+    private boolean _has_visible_found_node = false;
     private double _scale_distance = 0.0;
     private String _scale_label = null;
     private DescriptiveStatistics _statistics_for_vector_data;
@@ -1374,6 +1385,31 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return isInFoundNodes0(n) || isInFoundNodes1(n);
     }
 
+    /** Whether a search/selection is currently active (either found set has at least one node). Deliberately
+     *  STRICTER than the bare {@code getFoundNodes0() != null} idiom used elsewhere: a 0-hit search can leave a
+     *  non-null empty set, and dimming must NOT engage then. */
+    private boolean hasFoundNodes() {
+        return ((getFoundNodes0() != null) && !getFoundNodes0().isEmpty())
+                || ((getFoundNodes1() != null) && !getFoundNodes1().isEmpty());
+    }
+
+    /** True iff at least one found node is currently DRAWN (in the displayed (sub)tree and not hidden under a
+     *  collapsed ancestor) -- the gate for the "Dim Non-Matches" wash, so the whole tree never fades with no hit
+     *  on screen (all hits collapsed, or navigated into a subtree that contains none). Early-terminates. */
+    private boolean anyVisibleFoundNode() {
+        if (!hasFoundNodes()) {
+            return false;
+        }
+        for (final PhylogenyNodeIterator it = _phylogeny.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            // cheap found-set lookup first, so the O(depth) hidden-under-collapse walk runs only for actual hits
+            if (isInFoundNodes(n) && !isHiddenUnderCollapse(n)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     final private boolean isInFoundNodes0(final PhylogenyNode node) {
         return ((getFoundNodes0() != null) && getFoundNodes0().contains(node.getId()));
     }
@@ -1989,11 +2025,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                          final boolean to_pdf,
                                          final boolean to_graphics_file) {
         g.setFont(getTreeFontSet().getSmallFont());
-        if (to_pdf || (to_graphics_file && getOptions().isPrintBlackAndWhite())) {
-            g.setColor(Color.BLACK);
-        } else {
-            g.setColor(getTreeColorSet().getBranchLengthColor());
-        }
+        final boolean bl_bw = (to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite();
+        // fade a non-hit's branch-length number too (same dimNonMatch wash as the name/taxonomy labels)
+        g.setColor(dimNonMatch(inkColor(to_pdf, to_graphics_file, getTreeColorSet().getBranchLengthColor()),
+                isInFoundNodes(node), bl_bw));
         if (!node.isRoot()) {
             if (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE) {
                 TreePanel.drawString(FORMATTER_BRANCH_LENGTH.format(node.getDistanceToParent()),
@@ -2419,11 +2454,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             } else if (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.ROUNDED) {
                 x += ROUNDED_D;
             }
-            if (to_pdf || (to_graphics_file && getOptions().isPrintBlackAndWhite())) {
-                g.setColor(Color.BLACK);
-            } else {
-                g.setColor(getTreeColorSet().getConfidenceColor());
-            }
+            final boolean conf_bw = (to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite();
+            // fade a non-hit's confidence value too (same dimNonMatch wash as the name/taxonomy labels)
+            g.setColor(dimNonMatch(inkColor(to_pdf, to_graphics_file, getTreeColorSet().getConfidenceColor()),
+                    isInFoundNodes(node), conf_bw));
             final String conf_str = sb.toString();
             TreePanel.drawString(conf_str,
                     parent_x + ((x - parent_x
@@ -3910,6 +3944,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return _italic_derived_font;
     }
 
+    // ADDS bold to the base font's existing style (so a visual-style italic becomes bold-italic, not plain bold),
+    // cached like italicOf so a large found-set doesn't allocate a Font per label per repaint.
+    private Font boldOf(final Font base) {
+        if (base != _bold_base_font) {
+            _bold_base_font = base;
+            _bold_derived_font = base.deriveFont(base.getStyle() | Font.BOLD);
+        }
+        return _bold_derived_font;
+    }
+
     final private void paintUnrooted(final PhylogenyNode n,
                                      final double low_angle,
                                      final double high_angle,
@@ -4117,23 +4161,43 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                           final boolean to_pdf,
                           final boolean is_in_found_nodes,
                           final Color default_color) {
-        if ((to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite()) {
-            g.setColor(Color.BLACK);
+        final boolean bw = (to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite();
+        Color c;
+        if (bw) {
+            c = Color.BLACK;
         } else if (is_in_found_nodes) {
-            g.setColor(getColorForFoundNode(node));
+            c = getColorForFoundNode(node);
         } else if (isColorByProperty()) {
-            g.setColor(getPropertyBasedColor(node));
+            c = getPropertyBasedColor(node);
         } else if (getControlPanel().isUseVisualStyles() && (node.getNodeData().getNodeVisualData() != null)
                 && (node.getNodeData().getNodeVisualData().getFontColor() != null)) {
-            g.setColor(node.getNodeData().getNodeVisualData().getFontColor());
+            c = node.getNodeData().getNodeVisualData().getFontColor();
         } else if (getOptions().isColorLabelsSameAsParentBranch() && getControlPanel().isUseVisualStyles()
                 && (PhylogenyMethods.getBranchColorValue(node) != null)) {
-            g.setColor(PhylogenyMethods.getBranchColorValue(node));
+            c = PhylogenyMethods.getBranchColorValue(node);
         } else if (to_pdf) {
-            g.setColor(Color.BLACK);
+            c = Color.BLACK;
         } else {
-            g.setColor(default_color);
+            c = default_color;
         }
+        g.setColor(dimNonMatch(c, is_in_found_nodes, bw));
+    }
+
+    // "Dim Non-Matches": while a search/selection with at least one VISIBLE hit is active (_has_visible_found_node,
+    // resolved once per paint -- also false when every hit is hidden under a collapse / outside the displayed
+    // subtree), fade a NON-hit's label/number toward the background so the hits stand out (WYSIWYG -- screen +
+    // exports). Hits and B&W export are never dimmed. Shared by name/taxonomy labels, confidence, and branch length.
+    private Color dimNonMatch(final Color c, final boolean is_in_found_nodes, final boolean bw) {
+        if (!is_in_found_nodes && !bw && _has_visible_found_node) {
+            return TreePanelUtil.blend(c, getTreeColorSet().getBackgroundColor(), DIM_NON_MATCH_FRACTION);
+        }
+        return c;
+    }
+
+    /** The ink color for a text element (branch-length / confidence number): BLACK on any PDF or on a B&W raster
+     *  export, else the given scheme color. Centralizes the pdf/black-and-white policy the two number sites share. */
+    private Color inkColor(final boolean to_pdf, final boolean to_graphics_file, final Color default_color) {
+        return (to_pdf || (to_graphics_file && getOptions().isPrintBlackAndWhite())) ? Color.BLACK : default_color;
     }
 
     final private void setCopiedAndPastedNodes(final Set<Long> nodeIds) {
@@ -4163,7 +4227,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         } else {
             g.setFont(getTreeFontSet().getLargeFont());
         }
-        // found/selected node labels are highlighted by COLOR only (no bold) -- see setColor / getColorForFoundNode
+        // "Bold Found Labels": found/selected node labels render bold (WYSIWYG; safe in PDF since text is drawn
+        // as glyph OUTLINES there, so no stroke-bleed). Off by default -- otherwise highlighting is by color only.
+        if (getOptions().isBoldFoundLabels() && isInFoundNodes(node)) {
+            g.setFont(boldOf(g.getFont()));
+        }
         return visual_font != null;
     }
 
@@ -7630,6 +7698,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 || getControlPanel().isShowConfidenceValues())
                         ? TreePanelUtil.detectConfidenceScaleMax(_phylogeny)
                         : 1.0;
+        // "Dim Non-Matches": resolve once per paint whether any hit is actually visible (see anyVisibleFoundNode);
+        // the scan is skipped entirely -- keeping the cheap false -- when the option is off (the default).
+        _has_visible_found_node = getOptions().isDimNonMatches() && anyVisibleFoundNode();
         if (_control_panel.isShowSequenceRelations()) {
             _query_sequence = _control_panel.getSelectedQuerySequence();
         }

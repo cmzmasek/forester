@@ -77,6 +77,8 @@ final class GuiPreferences {
             boolPref( "show_hpd_bars", Options::isShowHpdBars, Options::setShowHpdBars ),
             boolPref( "show_zebra_stripes", Options::isShowZebraStripes, Options::setShowZebraStripes ),
             boolPref( "flip_vertically", Options::isFlipVertically, Options::setFlipVertically ),
+            boolPref( "bold_found_labels", Options::isBoldFoundLabels, Options::setBoldFoundLabels ),
+            boolPref( "dim_non_matches", Options::isDimNonMatches, Options::setDimNonMatches ),
             boolPref( "show_overview", Options::isShowOverview, Options::setShowOverview ),
             boolPref( "abbreviate_scientific_names", Options::isAbbreviateScientificTaxonNames,
                       Options::setAbbreviateScientificTaxonNames ),
