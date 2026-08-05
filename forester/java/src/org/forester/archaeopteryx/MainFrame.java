@@ -325,6 +325,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem _display_basic_information_item;
     JMenuItem _edit_tree_info_item;
     JMenuItem _fit_to_window_item;
+    JMenuItem _find_next_hit_item;
+    JMenuItem _find_prev_hit_item;
     // help menu:
     JMenuItem _about_item;
     JMenuItem _keyboard_shortcuts_item;
@@ -448,6 +450,14 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             viewAsNexus();
         } else if (o == _fit_to_window_item) {
             showWhole();
+        } else if (o == _find_next_hit_item) {
+            if (getCurrentTreePanel() != null) {
+                getCurrentTreePanel().stepToFoundNode(1);
+            }
+        } else if (o == _find_prev_hit_item) {
+            if (getCurrentTreePanel() != null) {
+                getCurrentTreePanel().stepToFoundNode(-1);
+            }
         } else if (o == _show_domain_labels) {
             updateOptions(getOptions());
         } else if (o == _abbreviate_scientific_names) {
@@ -976,12 +986,23 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _fit_to_window_item.setToolTipText("Zoom the tree to fit the window (also HOME / ESC)");
         _fit_to_window_item.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_0, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
+        _view_jmenu.addSeparator();
+        _view_jmenu.add(_find_next_hit_item = new JMenuItem("Find Next"));
+        _find_next_hit_item.setToolTipText("Center the next search hit in the view");
+        _find_next_hit_item.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_G, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
+        _view_jmenu.add(_find_prev_hit_item = new JMenuItem("Find Previous"));
+        _find_prev_hit_item.setToolTipText("Center the previous search hit in the view");
+        _find_prev_hit_item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_G,
+                Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx() | InputEvent.SHIFT_DOWN_MASK));
         customizeJMenuItem(_edit_tree_info_item);
         customizeJMenuItem(_display_basic_information_item);
         customizeJMenuItem(_view_as_NH_item);
         customizeJMenuItem(_view_as_XML_item);
         customizeJMenuItem(_view_as_nexus_item);
         customizeJMenuItem(_fit_to_window_item);
+        customizeJMenuItem(_find_next_hit_item);
+        customizeJMenuItem(_find_prev_hit_item);
         _jmenubar.add(_view_jmenu);
     }
 
@@ -1710,6 +1731,16 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     TreePanel getCurrentTreePanel() {
         return getMainPanel().getCurrentTreePanel();
+    }
+
+    /** Test hook: the View-menu "Find Next" item (⌘G), so a test can doClick() its accelerator dispatch. */
+    JMenuItem getFindNextHitItemForTest() {
+        return _find_next_hit_item;
+    }
+
+    /** Test hook: the View-menu "Find Previous" item (⌘⇧G). */
+    JMenuItem getFindPreviousHitItemForTest() {
+        return _find_prev_hit_item;
     }
 
     JMenu getHelpMenu() {

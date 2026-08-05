@@ -179,6 +179,10 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JButton _search_reset_button_1;
     private JTextField _search_tf_0;
     private JTextField _search_tf_1;
+    private JButton _search_prev_button; // next/previous step-through of the search/selection hits
+    private JButton _search_next_button;
+    private JLabel _search_nav_label;    // "k / N"
+    private JPanel _search_nav_panel;    // whole row; hidden while there are no hits
     private int _select_nodes_item;
     private Sequence _selected_query_seq;
     private JCheckBox _seq_relation_confidence_switch;
@@ -744,10 +748,9 @@ final class ControlPanel extends JPanel implements ActionListener {
             nodes = retainDisplayedNodes(nodes, tree);
         }
         if ((nodes != null) && (nodes.size() > 0)) {
-            main_panel.getCurrentTreePanel().setFoundNodes0(new HashSet<Long>());
-            for (final Long node : nodes) {
-                main_panel.getCurrentTreePanel().getFoundNodes0().add(node);
-            }
+            // Hand the finished set to the panel in one call: setFoundNodes0 is the chokepoint that resets the
+            // step-through position (only when the hit set actually changed) and refreshes the "k / N" navigator.
+            main_panel.getCurrentTreePanel().setFoundNodes0(nodes);
             setSearchFoundCountsOnLabel0(nodes.size());
         } else {
             setSearchFoundCountsOnLabel0(0);
@@ -820,10 +823,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             nodes = retainDisplayedNodes(nodes, tree);
         }
         if ((nodes != null) && (nodes.size() > 0)) {
-            main_panel.getCurrentTreePanel().setFoundNodes1(new HashSet<Long>());
-            for (final Long node : nodes) {
-                main_panel.getCurrentTreePanel().getFoundNodes1().add(node);
-            }
+            main_panel.getCurrentTreePanel().setFoundNodes1(nodes); // see search0: single chokepoint for the reset+nav
             setSearchFoundCountsOnLabel1(nodes.size());
         } else {
             setSearchFoundCountsOnLabel1(0);
@@ -1605,6 +1605,9 @@ final class ControlPanel extends JPanel implements ActionListener {
             _mainpanel.getCurrentTreePanel().repaint();
             // _mainpanel.getCurrentTreePanel().setUpUrtFactor();
             updateFontSizeSlider(); // keep the slider in sync with keyboard/wheel nudges and the font dialog
+            // Safety net for the "k / N" navigator: a tree edit (prune/delete-subtree) can drop found nodes without
+            // touching the found-set objects, so the setFoundNodes0/1 chokepoint would miss the shrunk count.
+            updateSearchHitNavigation();
         }
     }
 
@@ -2291,6 +2294,8 @@ final class ControlPanel extends JPanel implements ActionListener {
         setupSearchTools0();
         nextRowGap(TIGHT_GAP); // less space between Search (A) and Search (B)
         setupSearchTools1();
+        nextRowGap(TIGHT_GAP);
+        setupSearchNavigation();
         addControlPanelGlue();
     }
 
@@ -2681,6 +2686,96 @@ final class ControlPanel extends JPanel implements ActionListener {
         addJTextField(_search_tf_1, s_panel_1);
         s_panel_2.add(_search_found_label_1);
         addJButton(_search_reset_button_1, s_panel_2);
+    }
+
+    /** The "◀  k / N  ▶" step-through row: jumps the viewport from hit to hit. Hidden until a search finds
+     *  something ({@link #updateSearchHitNavigation()} shows it). Mirrors the View-menu Find Next/Previous. */
+    void setupSearchNavigation() {
+        _search_prev_button = makeSearchNavButton("◀", "Center the previous search hit in the view (⌘⇧G)",
+                -1);
+        _search_next_button = makeSearchNavButton("▶", "Center the next search hit in the view (⌘G)", 1);
+        _search_nav_label = new JLabel("", javax.swing.SwingConstants.CENTER);
+        _search_nav_label.setFont(ControlPanel.jcb_bold_font);
+        _search_nav_label.setToolTipText("Position among the search hits");
+        if (getConfiguration().isApplyCustomGuiColors()) {
+            _search_nav_label.setForeground(getConfiguration().getGuiCheckboxTextColor());
+        }
+        _search_nav_panel = new JPanel(new BorderLayout());
+        _search_nav_panel.setBackground(getBackground());
+        _search_nav_panel.add(_search_prev_button, BorderLayout.WEST);
+        _search_nav_panel.add(_search_nav_label, BorderLayout.CENTER);
+        _search_nav_panel.add(_search_next_button, BorderLayout.EAST);
+        _search_nav_panel.setVisible(false);
+        add(_search_nav_panel);
+    }
+
+    private JButton makeSearchNavButton(final String glyph, final String tip, final int dir) {
+        final JButton b = new JButton(glyph);
+        b.setFocusPainted(false);
+        b.setFont(ControlPanel.jcb_bold_font);
+        b.setMargin(new Insets(2, 10, 2, 10)); // roomy enough to match the sibling zoom buttons' height
+        b.setToolTipText(tip);
+        if (getConfiguration().isApplyCustomGuiColors()) {
+            b.setBorder(BorderFactory.createLineBorder(getConfiguration().getGuiButtonBorderColor()));
+            b.setBackground(getConfiguration().getGuiButtonBackgroundColor());
+            b.setForeground(getConfiguration().getGuiButtonTextColor());
+        }
+        b.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(final ActionEvent e) {
+                stepSearchHit(dir);
+            }
+        });
+        return b;
+    }
+
+    /** Test hook: is the "k / N" step-through row currently shown? */
+    boolean isSearchNavVisibleForTest() {
+        return (_search_nav_panel != null) && _search_nav_panel.isVisible();
+    }
+
+    /** Test hook: the current "k / N" navigator text (empty string if the row was never built). */
+    String getSearchNavLabelForTest() {
+        return (_search_nav_label == null) ? "" : _search_nav_label.getText();
+    }
+
+    /** Test hook: the navigator row's laid-out height (0 when hidden/collapsed by the GridBag). Call after forcing
+     *  a layout pass -- the revalidate() in updateSearchHitNavigation is otherwise applied asynchronously. */
+    int getSearchNavPanelHeightForTest() {
+        return (_search_nav_panel == null) ? 0 : _search_nav_panel.getHeight();
+    }
+
+    /** Advances to the next (dir=+1) or previous (dir=-1) search hit and re-labels the navigator. */
+    void stepSearchHit(final int dir) {
+        final TreePanel tp = getCurrentTreePanel();
+        if (tp != null) {
+            tp.stepToFoundNode(dir);
+        }
+    }
+
+    /** Refreshes the "k / N" navigator (label text + row visibility) from the current tree's hit set. Cheap when
+     *  there is no active search (no hits -> row hidden). Revalidates only when the row actually appears/disappears
+     *  -- a bare setVisible() on this GridBag row would otherwise not be laid out until some later event (mirrors
+     *  updateDataCheckboxVisibility). */
+    void updateSearchHitNavigation() {
+        if (_search_nav_panel == null) {
+            return;
+        }
+        final TreePanel tp = getCurrentTreePanel();
+        final int count = (tp == null) ? 0 : tp.getSearchHitCount();
+        final boolean show = count > 0;
+        if (show) {
+            final int idx = tp.getSearchHitIndex();
+            // clamp: an out-of-band found-set shrink can leave the index past the end until the next step
+            final String pos = ((idx < 0) || (idx >= count)) ? "–" : String.valueOf(idx + 1);
+            _search_nav_label.setText(pos + " / " + count);
+        }
+        if (_search_nav_panel.isVisible() != show) {
+            _search_nav_panel.setVisible(show);
+            revalidate();
+            repaint();
+        }
     }
 
     void setVisibilityOfDomainStrucureCB() {

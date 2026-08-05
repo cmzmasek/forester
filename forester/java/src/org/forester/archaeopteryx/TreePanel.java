@@ -72,6 +72,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 
@@ -82,6 +83,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.Popup;
 import javax.swing.PopupFactory;
@@ -373,6 +375,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private Timer   _pulse_timer;
     private final List<Rectangle> _found_halo_bounds = new ArrayList<>();
     private boolean _has_visible_found_halo = false;
+    // Next/previous "step through search hits": the current position in the ordered hit list (-1 = not positioned)
+    // and the last node centered on (a collapsed hit's drawn triangle, else the hit itself) -- for tests.
+    private int          _search_hit_index = -1;
+    private PhylogenyNode _last_step_target;
     private double _scale_distance = 0.0;
     private String _scale_label = null;
     private DescriptiveStatistics _statistics_for_vector_data;
@@ -1423,6 +1429,87 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
         }
         return false;
+    }
+
+    /** All found (search box A + B, and manual selection) nodes in tree (preorder) order -- the step-through list. */
+    private List<PhylogenyNode> orderedFoundNodes() {
+        final List<PhylogenyNode> hits = new ArrayList<>();
+        if ((_phylogeny == null) || !hasFoundNodes()) {
+            return hits;
+        }
+        for (final PhylogenyNodeIterator it = _phylogeny.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if (isInFoundNodes(n)) {
+                hits.add(n);
+            }
+        }
+        return hits;
+    }
+
+    /** Centers the NEXT ({@code dir}=+1) or PREVIOUS ({@code dir}=-1) search/selection hit in the viewport, wrapping
+     *  around. A hit hidden under a collapse scrolls to its (drawn) collapsed-clade triangle instead. Updates the
+     *  left panel's "k / N" navigator. Called by the panel's arrow buttons and the View-menu Find Next/Previous. */
+    final void stepToFoundNode(final int dir) {
+        final List<PhylogenyNode> hits = orderedFoundNodes();
+        if (hits.isEmpty()) {
+            _search_hit_index = -1;
+            _last_step_target = null;
+            getControlPanel().updateSearchHitNavigation();
+            return;
+        }
+        int idx = _search_hit_index;
+        if (idx < 0) {
+            idx = (dir >= 0) ? 0 : (hits.size() - 1); // first step lands on the first (or last) hit
+        } else {
+            idx = ((((idx + dir) % hits.size()) + hits.size()) % hits.size()); // wrap in both directions
+        }
+        _search_hit_index = idx;
+        final PhylogenyNode hit = hits.get(idx);
+        _last_step_target = isHiddenUnderCollapse(hit) ? outermostCollapsedAncestor(hit) : hit;
+        centerOnNode(_last_step_target);
+        getControlPanel().updateSearchHitNavigation();
+    }
+
+    /** The outermost collapsed ancestor of {@code n} (the drawn triangle a hidden hit belongs to); {@code n} itself
+     *  if it is not hidden under any collapse. */
+    private static PhylogenyNode outermostCollapsedAncestor(final PhylogenyNode n) {
+        PhylogenyNode result = n;
+        for (PhylogenyNode p = n.getParent(); p != null; p = p.getParent()) {
+            if (p.isCollapse()) {
+                result = p;
+            }
+        }
+        return result;
+    }
+
+    /** Scrolls the tree's viewport so {@code node} is centered (clamped to the scrollable extent). */
+    private void centerOnNode(final PhylogenyNode node) {
+        final JScrollPane sp = getMainPanel().getCurrentScrollPane();
+        if (sp == null) {
+            return;
+        }
+        final Rectangle view = sp.getViewport().getViewRect();
+        int x = Math.round(node.getXcoord()) - (view.width / 2);
+        int y = Math.round(node.getYcoord()) - (view.height / 2);
+        x = Math.max(0, Math.min(x, Math.max(0, getWidth() - view.width)));
+        y = Math.max(0, Math.min(y, Math.max(0, getHeight() - view.height)));
+        sp.getViewport().setViewPosition(new Point(x, y));
+        repaint();
+    }
+
+    /** Number of search/selection hits (for the "k / N" navigator). */
+    final int getSearchHitCount() {
+        return orderedFoundNodes().size();
+    }
+
+    /** Current 0-based step-through position, or -1 if not positioned yet. */
+    final int getSearchHitIndex() {
+        return _search_hit_index;
+    }
+
+    /** Test hook: the node last centered on by {@link #stepToFoundNode(int)}. */
+    PhylogenyNode getLastStepTargetForTest() {
+        return _last_step_target;
     }
 
     final private boolean isInFoundNodes0(final PhylogenyNode node) {
@@ -8195,8 +8282,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final Set<Long> found = getFoundNodes0();
         final int n = (found == null) ? 0 : found.size();
         getControlPanel().setSearchFoundCountsOnLabel0(n);
+        _search_hit_index = -1; // a click that changed the manual selection restarts the step-through
         if (n < 1) {
-            getControlPanel().searchReset0();
+            getControlPanel().searchReset0(); // nulls the set -> setFoundNodes0 refreshes the navigator
+        }
+        else {
+            refreshSearchHitNavigation(); // in-place add/remove bypasses setFoundNodes0, so refresh here
         }
     }
 
@@ -8210,11 +8301,29 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final void setFoundNodes0(final Set<Long> found_nodes) {
+        // Only a CHANGED hit set restarts the step-through: re-running the same search (e.g. the search box's
+        // keyReleased re-fires while the user presses Cmd-G) must NOT snap the position back to the first hit.
+        if (!Objects.equals(_found_nodes_0, found_nodes)) {
+            _search_hit_index = -1;
+        }
         _found_nodes_0 = found_nodes;
+        refreshSearchHitNavigation(); // single chokepoint for every found-set-0 REPLACEMENT (search, reset, undo, ...)
     }
 
     final void setFoundNodes1(final Set<Long> found_nodes) {
+        if (!Objects.equals(_found_nodes_1, found_nodes)) {
+            _search_hit_index = -1;
+        }
         _found_nodes_1 = found_nodes;
+        refreshSearchHitNavigation();
+    }
+
+    /** Refreshes the left panel's "k / N" step-through navigator; null-safe during construction/teardown. */
+    private void refreshSearchHitNavigation() {
+        final ControlPanel cp = getControlPanel();
+        if (cp != null) {
+            cp.updateSearchHitNavigation();
+        }
     }
 
     final void setInOvRect(final boolean in_ov_rect) {

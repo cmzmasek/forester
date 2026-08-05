@@ -698,6 +698,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Search hit step-through (next/prev, wrap, collapsed target): ");
+        if (org.forester.archaeopteryx.SearchStepThroughTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Color-by palette default (seed + write-back): ");
         if (org.forester.archaeopteryx.ColorPaletteDefaultTest.test()) {
             System.out.println("OK.");
