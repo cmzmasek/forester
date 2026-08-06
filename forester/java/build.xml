@@ -102,6 +102,8 @@
     <property name="dist.dir" value="dist"/>
     <property name="jpackage.input.dir" value="${dist.dir}/jpackage-input"/>
     <property name="jpackage" value="${java.home}/bin/jpackage"/>
+    <!-- platform app icon (repo-root archaeopteryx_icon_assets/, relative to this basedir forester/java) -->
+    <property name="mac.icon" value="../../archaeopteryx_icon_assets/Archaeopteryx.icns"/>
 
     <!-- Single source of truth for the version: parsed out of AptxConstants.java so there is nothing to keep
          in sync. macOS/Windows reject a leading-zero major, so the bundle's CFBundleVersion strips a leading
@@ -136,6 +138,7 @@
             <arg value="--input"/>                  <arg value="${jpackage.input.dir}"/>
             <arg value="--main-jar"/>               <arg value="${forester_jar}"/>
             <arg value="--main-class"/>             <arg value="${app.mainclass}"/>
+            <arg value="--icon"/>                   <arg value="${mac.icon}"/>
             <arg value="--java-options"/>           <arg value="-Xmx2g"/>
             <arg value="--java-options"/>           <arg value="-Dapple.laf.useScreenMenuBar=true"/>
             <arg value="--mac-package-identifier"/> <arg value="${app.identifier}"/>
