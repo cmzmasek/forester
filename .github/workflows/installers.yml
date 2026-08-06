@@ -1,0 +1,105 @@
+# Cross-platform native installers for Archaeopteryx, built with jpackage.
+#
+# jpackage only produces an installer for the OS it runs on, so this fans out over a
+# macOS / Windows / Linux matrix. macOS reuses the committed `ant jpackage-dmg` target
+# (icon + version mapping + Info.plist fixup); Windows/Linux invoke jpackage directly
+# here because those bundlers have no Ant target yet.
+#
+# Trigger by pushing a version tag (e.g. 0.9.82) or manually via the Actions tab.
+# Artifacts (the .dmg / .msi / .deb) are attached to the run; they are NOT auto-published.
+name: installers
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - '*.*.*'          # version tags such as 0.9.82
+
+permissions:
+  contents: read
+
+concurrency:
+  group: installers-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: ${{ matrix.kind }} installer
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: macos-latest,   kind: mac }
+          - { os: windows-latest, kind: win }
+          - { os: ubuntu-latest,  kind: linux }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21 (Temurin — bundles jpackage)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Install Ant + fakeroot (Linux .deb)
+        if: matrix.kind == 'linux'
+        run: sudo apt-get update && sudo apt-get install -y ant fakeroot
+
+      - name: Ensure WiX 3 on PATH (Windows .msi)
+        if: matrix.kind == 'win'
+        shell: pwsh
+        run: |
+          $candle = Get-ChildItem 'C:\Program Files*\WiX Toolset*' -Recurse -Filter candle.exe -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $candle) {
+            choco install wixtoolset --no-progress -y
+            $candle = Get-ChildItem 'C:\Program Files*\WiX Toolset*' -Recurse -Filter candle.exe -ErrorAction SilentlyContinue | Select-Object -First 1
+          }
+          if (-not $candle) { throw 'WiX 3 (candle.exe) not found — jpackage needs it to build a .msi' }
+          Add-Content -Path $env:GITHUB_PATH -Value $candle.DirectoryName
+
+      - name: Build & package
+        shell: bash
+        working-directory: forester/java
+        run: |
+          set -euxo pipefail
+          if [ "${{ matrix.kind }}" = "mac" ]; then
+            # reuse the committed macOS target: fat jar + app-image + icon + Info.plist version fixup + .dmg
+            ant jpackage-dmg
+          else
+            ant all   # build the self-contained forester.jar
+            VERSION=$(grep 'VERSION =' src/org/forester/archaeopteryx/AptxConstants.java | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
+            mkdir -p dist/input
+            cp forester.jar dist/input/
+            COMMON=(--name Archaeopteryx
+                    --vendor "Christian M. Zmasek"
+                    --copyright "Copyright (C) 2026 Christian M. Zmasek"
+                    --input dist/input --main-jar forester.jar
+                    --main-class org.forester.archaeopteryx.Archaeopteryx
+                    --java-options -Xmx2g --dest dist)
+            if [ "${{ matrix.kind }}" = "win" ]; then
+              # Windows (like macOS) rejects a leading-zero major -> strip it (0.9.82 -> 9.82)
+              BUNDLE_VERSION=$(echo "$VERSION" | sed -E 's/^0\.//')
+              jpackage --type msi --app-version "$BUNDLE_VERSION" \
+                --icon ../../archaeopteryx_icon_assets/archaeopteryx-anime.ico \
+                --win-menu --win-shortcut --win-dir-chooser \
+                "${COMMON[@]}"
+            else
+              # Linux .deb accepts the real version as-is
+              jpackage --type deb --app-version "$VERSION" \
+                --icon ../../archaeopteryx_icon_assets/archaeopteryx-badge-512.png \
+                --linux-shortcut \
+                "${COMMON[@]}"
+            fi
+          fi
+          ls -la dist
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: Archaeopteryx-${{ matrix.kind }}
+          path: |
+            forester/java/dist/*.dmg
+            forester/java/dist/*.msi
+            forester/java/dist/*.deb
+          if-no-files-found: error
