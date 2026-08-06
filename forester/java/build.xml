@@ -89,5 +89,85 @@
     <target name="all" description="" depends="jar">
     </target>
 
+    <!-- ================= Native packaging (jpackage) =================
+         Builds a self-contained Archaeopteryx.app / .dmg with a bundled JRE from the fat forester.jar.
+         jpackage produces installers only for the HOST OS, so these mac targets must run on macOS;
+         Windows (.msi/.exe) and Linux (.deb/.rpm) are built by the same recipe on those platforms.
+         Output goes to dist/ (git-ignored). Requires a JDK (jpackage); run with JAVA_HOME pointing at a JDK. -->
+    <property name="app.name" value="Archaeopteryx"/>
+    <property name="app.vendor" value="Christian M. Zmasek"/>
+    <property name="app.copyright" value="Copyright (C) 2026 Christian M. Zmasek"/>
+    <property name="app.mainclass" value="org.forester.archaeopteryx.Archaeopteryx"/>
+    <property name="app.identifier" value="org.forester.archaeopteryx"/>
+    <property name="dist.dir" value="dist"/>
+    <property name="jpackage.input.dir" value="${dist.dir}/jpackage-input"/>
+    <property name="jpackage" value="${java.home}/bin/jpackage"/>
+
+    <!-- Single source of truth for the version: parsed out of AptxConstants.java so there is nothing to keep
+         in sync. macOS/Windows reject a leading-zero major, so the bundle's CFBundleVersion strips a leading
+         "0." (0.9.82 -> 9.82, still correctly ordered through 0.9.x/0.10.x); the true, user-visible version is
+         restored into CFBundleShortVersionString and the .dmg filename below. -->
+    <target name="-app-version">
+        <exec executable="/bin/sh" outputproperty="app.version" failonerror="true">
+            <arg value="-c"/>
+            <arg value="grep 'VERSION =' ${src.dir}/org/forester/archaeopteryx/AptxConstants.java | head -1 | sed -E 's/.*&quot;([^&quot;]+)&quot;.*/\1/'"/>
+        </exec>
+        <exec executable="/bin/sh" outputproperty="app.version.bundle" failonerror="true">
+            <arg value="-c"/>
+            <arg value="echo '${app.version}' | sed -E 's/^0\.//'"/>
+        </exec>
+        <echo message="Archaeopteryx ${app.version} (macOS CFBundleVersion ${app.version.bundle})"/>
+    </target>
+
+    <target name="jpackage-app-image" depends="all,-app-version"
+            description="Build the self-contained macOS Archaeopteryx.app (bundled JRE)">
+        <delete dir="${dist.dir}/${app.name}.app" failonerror="false"/>
+        <delete dir="${jpackage.input.dir}" failonerror="false"/>
+        <mkdir dir="${jpackage.input.dir}"/>
+        <!-- jpackage adds every jar in the input dir to the classpath; stage only the fat jar so nothing leaks in -->
+        <copy file="${forester_jar}" todir="${jpackage.input.dir}"/>
+        <mkdir dir="${dist.dir}"/>
+        <exec executable="${jpackage}" failonerror="true">
+            <arg value="--type"/>                   <arg value="app-image"/>
+            <arg value="--name"/>                   <arg value="${app.name}"/>
+            <arg value="--app-version"/>            <arg value="${app.version.bundle}"/>
+            <arg value="--vendor"/>                 <arg value="${app.vendor}"/>
+            <arg value="--copyright"/>              <arg value="${app.copyright}"/>
+            <arg value="--input"/>                  <arg value="${jpackage.input.dir}"/>
+            <arg value="--main-jar"/>               <arg value="${forester_jar}"/>
+            <arg value="--main-class"/>             <arg value="${app.mainclass}"/>
+            <arg value="--java-options"/>           <arg value="-Xmx2g"/>
+            <arg value="--java-options"/>           <arg value="-Dapple.laf.useScreenMenuBar=true"/>
+            <arg value="--mac-package-identifier"/> <arg value="${app.identifier}"/>
+            <arg value="--dest"/>                   <arg value="${dist.dir}"/>
+        </exec>
+        <!-- show the true 0.9.x version in Finder > Get Info (jpackage set the stripped bundle version for both) -->
+        <exec executable="/usr/libexec/PlistBuddy" failonerror="true">
+            <arg value="-c"/>
+            <arg value="Set :CFBundleShortVersionString ${app.version}"/>
+            <arg value="${dist.dir}/${app.name}.app/Contents/Info.plist"/>
+        </exec>
+        <echo message="Built ${dist.dir}/${app.name}.app (version ${app.version})"/>
+    </target>
+
+    <target name="jpackage-dmg" depends="jpackage-app-image"
+            description="Wrap Archaeopteryx.app into a distributable macOS .dmg">
+        <delete verbose="true">
+            <fileset dir="${dist.dir}" includes="${app.name}-*.dmg"/>
+        </delete>
+        <exec executable="${jpackage}" failonerror="true">
+            <arg value="--type"/>        <arg value="dmg"/>
+            <arg value="--name"/>        <arg value="${app.name}"/>
+            <arg value="--app-version"/> <arg value="${app.version.bundle}"/>
+            <arg value="--vendor"/>      <arg value="${app.vendor}"/>
+            <arg value="--copyright"/>   <arg value="${app.copyright}"/>
+            <arg value="--app-image"/>   <arg value="${dist.dir}/${app.name}.app"/>
+            <arg value="--dest"/>        <arg value="${dist.dir}"/>
+        </exec>
+        <!-- jpackage names it <app>-<bundleversion>.dmg; rename to the real version for a clean download name -->
+        <move file="${dist.dir}/${app.name}-${app.version.bundle}.dmg"
+              tofile="${dist.dir}/${app.name}-${app.version}.dmg" failonerror="false"/>
+        <echo message="Built ${dist.dir}/${app.name}-${app.version}.dmg"/>
+    </target>
 
 </project>

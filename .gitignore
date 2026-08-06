@@ -6,5 +6,10 @@
 bin/
 out/
 
+# Native-installer output from the jpackage Ant targets (large; regenerated on demand).
+**/dist/
+*.dmg
+*.pkg
+
 # Local working notes for Claude Code — never commit.
 CLAUDE.md
