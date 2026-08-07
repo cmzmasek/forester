@@ -7,13 +7,58 @@ part of the **forester** toolkit. It reads phyloXML, Newick/New Hampshire
 export to PDF, SVG, EPS, PNG, and other graphics formats.
 
 
-For Users
----------
+Download & Install
+------------------
+
+The easiest way to run Archaeopteryx is a **native installer**. Each one bundles
+its own Java 21 runtime, so there is **nothing else to install** — no separate
+Java needed.
+
+Download the installer for your platform from the latest release:
+
+**<https://github.com/cmzmasek/forester/releases>**
+
+> The apps are not code-signed or notarized yet, so each platform shows a
+> first-launch security prompt (steps below). Getting past it once is enough.
+
+### macOS (Apple Silicon)
+
+1. Download `Archaeopteryx-<version>.dmg` and open it.
+2. Drag **Archaeopteryx** into **Applications**.
+3. On the first launch, **right-click** (or Control-click) the app and choose
+   **Open**, then **Open** again — this clears macOS's "unidentified developer"
+   warning. After that, launch it normally.
+
+> **Intel Macs:** the `.dmg` is Apple-Silicon (arm64) only. On an Intel Mac,
+> use the [jar](#run-from-the-jar) below.
+
+### Windows
+
+1. Download `Archaeopteryx-<version>.msi` and run it. It adds a Start-menu entry
+   (and, optionally, a desktop shortcut) and lets you choose the install folder.
+2. Because the installer is unsigned, SmartScreen may warn — click
+   **More info → Run anyway**.
+
+### Linux (Debian / Ubuntu)
+
+```
+sudo apt install ./archaeopteryx_<version>_amd64.deb
+```
+
+(or `sudo dpkg -i archaeopteryx_<version>_amd64.deb`). Launch it from your
+applications menu, or by running `archaeopteryx`.
+
+
+Run From the Jar
+----------------
+
+If there is no installer for your platform (for example, an **Intel Mac**), or
+you prefer a single self-contained file, run the jar with your own Java.
 
 ### 1. Install Java
 
-Archaeopteryx needs **Java 21 or newer** (a Java runtime is enough to run it; a
-full JDK also works). Check what you already have:
+Running the jar needs **Java 21 or newer** (a Java runtime is enough; a full JDK
+also works). Check what you already have:
 
 ```
 java -version
@@ -44,7 +89,7 @@ Temurin, a free, well-supported OpenJDK build:
   or download a build from
   <https://adoptium.net/temurin/releases/?version=21>
 
-### 2. Download Archaeopteryx
+### 2. Download the jar
 
 Download the ready-to-run `forester.jar`:
 
@@ -74,93 +119,6 @@ For very large trees, give the JVM more memory with `-Xmx`:
 java -Xmx4g -jar forester.jar mytree.xml
 ```
 
-### 4. The Tools menu
-
-The **Tools** menu collects operations that root, prune, colorize, collapse, and
-annotate the current tree. In menu order:
-
-**Rooting**
-
-- **MAD-Root** — Minimal Ancestor Deviation rooting (Tria, Landan & Dagan,
-  *Nature Ecology & Evolution* 2017,
-  [doi:10.1038/s41559-017-0193](https://doi.org/10.1038/s41559-017-0193)). Chooses
-  the root that minimizes how far every pair of tips deviates from a clock-like
-  (equidistant-from-their-ancestor) expectation, and annotates each internal
-  branch with its MAD value — smaller means a better-supported root location. Turn
-  on **Confidence Values** in the left control panel to see them. Requires branch
-  lengths and at least three tips.
-- **Midpoint-Root** — places the root at the midpoint of the longest tip-to-tip
-  path. Fast, and works on any tree with branch lengths.
-
-**Pruning**
-
-- **Delete Selected Nodes** — removes the selected external nodes from the tree.
-  Select nodes first by clicking them, or via the **Search** field.
-- **Retain Selected Nodes** — the inverse: keeps the selected external nodes and
-  deletes all the others.
-
-**Coloring**
-
-- **Colorize Subtrees via Taxonomic Rank** — colors clades by their taxonomy at a
-  rank you choose (e.g. order, family, genus). The chooser lists only the ranks
-  actually present, with how many nodes carry each and the share of leaves it
-  would color; a movable legend mapping colors to taxa is drawn on the tree and
-  included in PDF/PNG exports. (This is distinct from **Color by:** in the control
-  panel — see below — which colors *leaves* by an arbitrary property.)
-
-**Clearing styles and colors**
-
-- **Delete All Visual Styles From Nodes** — removes every per-node visual style
-  (fonts, colors).
-- **Delete All Colors From Branches** — removes every branch color.
-
-**Collapsing branches** (the **Collapse Branches** submenu)
-
-- **Collapse Weakly-Supported Branches…** — permanently collapses internal
-  branches whose confidence is below a threshold you enter into polytomies
-  (multifurcations). Cannot be undone.
-- **Collapse Short Branches…** — permanently collapses internal branches shorter
-  than a branch-length threshold you enter. Cannot be undone.
-
-**Data retrieval**
-
-- **Fetch Sequence & Taxonomic Data** — looks up additional sequence information
-  and detailed taxonomy for the tree's nodes from UniProt / EMBL-GenBank and the
-  NCBI taxonomy. Looked-up taxonomy is cached on disk, so subsequent runs and
-  rank-coloring are fast.
-
-### 5. Coloring leaves by a property
-
-The **Color by:** dropdown in the left control panel colors the leaves on the
-fly by the value of a chosen phyloXML property (e.g. host, country, year). It
-recomputes for whatever (sub)tree is currently displayed, and the legend is
-included in PDF/PNG exports.
-
-When a property has more distinct values than the palette has colors, the colors
-are assigned **most-frequent-first**, so the most common values get the most
-distinct colors (cycling only affects the rarest values). The legend then lists
-the **most frequent** values — re-sorted alphabetically for readability — with a
-`… +N more` footer for the remainder. (A few properties are special-cased:
-`year` is shown as a continuous gradient, and `country`/`host` are grouped by the
-part before a `:` / `;` qualifier.)
-
-### 6. Other recent additions
-
-- **Settings dialog** — display, node/branch, font, export, and file options in
-  one live-apply dialog (replaces the old Options and Type menus).
-- **Bundled fonts** — ships three publication-quality fonts (**Source Sans 3**
-  default, plus **Liberation Sans** and **Noto Sans**), so figures render
-  identically on every machine. Set the tip-label size with the **font-size
-  slider** in the left control panel.
-- **Taxonomy cache** — taxonomy looked up from NCBI is cached on disk (30 days),
-  so re-opening trees of organisms you've already seen is instant. Manage it
-  under **Settings → Taxonomy Cache** (toggle, size, clear).
-- **Vector export** — true **SVG** and **EPS** output alongside PDF/PNG/TIFF/JPG,
-  for publication figures.
-- **Adaptive control panel** — "Display Data" checkboxes appear only for data the
-  tree actually has; node-symbol **support visualization** (threshold marks or
-  size-scaled).
-
 
 For Developers
 --------------
@@ -175,7 +133,8 @@ cd forester
 ### Prerequisites
 
 - **JDK 21 or newer** — the build targets `release 21`; an older JDK fails with
-  *"release version 21 not supported"*.
+  *"release version 21 not supported"*. (Building the installers needs a JDK, not
+  just a JRE, because it uses the JDK's `jpackage`.)
 - **Apache Ant**.
 
 All Java library dependencies (FlatLaf, OpenPDF, Apache Commons Codec, OpenChart,
@@ -209,16 +168,9 @@ on the classpath:
 java -Duser.dir="$(pwd)" -cp forester/java/classes org.forester.test.Test
 ```
 
-It prints `Failed tests: 0` on success. Numerically involved code is tested
-thoroughly: for example, MAD rooting is validated against an independent
-brute-force implementation — agreeing on the chosen root **and** every
-per-branch support value — across a wide variety of random tree shapes (binary,
-multifurcating, caterpillar, star) and sizes, so an accidental regression in the
-algorithm is caught.
-
-A handful of GUI integration tests need a display (and FlatLaf), so they are kept
-out of the headless suite (and out of the shipped jar) and run individually, for
-example:
+It prints `Failed tests: 0` on success. A handful of GUI integration tests need a
+display (and FlatLaf), so they are kept out of the headless suite (and out of the
+shipped jar) and run individually, for example:
 
 ```
 java -cp forester/java/classes org.forester.archaeopteryx.SubSuperTreeButtonsTest
@@ -227,66 +179,72 @@ java -cp forester/java/classes org.forester.archaeopteryx.SubSuperTreeButtonsTes
 New or changed code should come with tests — see the existing `*Test` classes for
 the established patterns.
 
+### Packaging and Continuous Integration
 
-Using Programs From Forester
-============================
+The native installers are produced with the JDK's **`jpackage`**, which bundles a
+trimmed Java runtime with the app.
 
+#### Building an installer locally
 
+`jpackage` only builds an installer for the **OS it runs on**, so on macOS you can
+build the mac artifacts locally, from `forester/java`:
 
-hmmscan_seq_extract
--------------------
 ```
-java -cp path/to/forester.jar org.forester.application.hmmscan_seq_extract
-
-hmmscan_seq_extract [options] <hmmscan output> <fasta file (used as input for hmmscan)> <output dir>
-
- options:
- ie: max (inclusive) iE-value
- mrel: min (inclusive) relative envelope length ratio
+ant jpackage-dmg          # -> dist/Archaeopteryx-<version>.dmg (via a self-contained .app)
+ant jpackage-app-image    # -> dist/Archaeopteryx.app only (no .dmg)
 ```
 
+Output goes to `forester/java/dist/` (git-ignored). The Ant targets:
 
-Cladinator3
------------
+- parse the version from `AptxConstants.java` (the single source of truth);
+- **map the version** for the bundle: macOS and Windows reject a leading-zero
+  major, so the bundle version strips a leading `0.` (`0.9.82` → `9.82`, still
+  correctly ordered across the `0.9.x` / `0.10.x` line). The real, user-visible
+  version is restored into the app's `Info.plist` (so Finder shows `0.9.82`) and
+  used for the `.dmg` / asset filenames;
+- embed the app icon (see `archaeopteryx_icon_assets/`).
+
+#### The CI workflow
+
+`.github/workflows/installers.yml` builds all three platforms' installers on
+GitHub-hosted runners.
+
+- **Triggers:** pushing a **version tag** (`*.*.*`, e.g. `0.9.83`), or a manual
+  run from the **Actions** tab (`workflow_dispatch`).
+- **Build matrix** (`fail-fast: false`, so each OS reports independently):
+
+  | Runner | Output | How |
+  |--------|--------|-----|
+  | `macos-latest` (Apple Silicon) | `.dmg` | reuses `ant jpackage-dmg` (the exact local target) |
+  | `windows-latest` | `.msi` | `ant all` + `jpackage --type msi`; a step puts **WiX 3** on `PATH` (jpackage needs it for `.msi`); the msi is renamed to the real version; Start-menu/desktop shortcuts + install-dir chooser |
+  | `ubuntu-latest` | `.deb` | `ant all` + `jpackage --type deb` (installs `fakeroot`); PNG icon |
+
+  Each leg uploads its installer as a **run artifact**.
+- **Release job** (`release`): runs **only on a tag push** (`needs: build`),
+  downloads the three artifacts, and creates/updates a **GitHub Release** for the
+  tag with them attached as assets. It is idempotent (`gh release upload
+  --clobber`), marked **prerelease** while the version is `0.x`, and writes notes
+  listing each file plus the unsigned-app caveat. Only this job is granted
+  `contents: write`; the build matrix stays read-only.
+- **App icons** live in `archaeopteryx_icon_assets/` — `.icns` (macOS), `.ico`
+  (Windows), `.png` (Linux); see that folder's README for regenerating the
+  `.icns` from the source SVG.
+
+Notes / current limitations:
+
+- Nothing is **code-signed or notarized** yet, hence the first-launch prompts
+  documented above.
+- There is **no Intel-Mac (`x86_64`) dmg**: GitHub has retired its Intel
+  (`macos-13`) hosted runners, and `jpackage` cannot cleanly cross-build an
+  x86_64 app on an arm64 runner. Intel users run the [jar](#run-from-the-jar).
+
+#### Cutting a release
+
 ```
-java -Xmx8048m path/to/forester.jar org.forester.application.cladinator3
-
-Usage:
-
-cladinator3 [options] <input tree(s) file> [output table file]
-
- options:
-  -s=<separator>     : the annotation-separator to be used (default: ".")
-  -m=<mapping table> : to map node names to appropriate annotations (tab-separated, two columns) (default: no mapping)
-  -x                 : to enable extra processing of annotations (e.g. "Q16611|A.1.1" becomes "A.1.1")
-  -xs=<separator>    : the separator for extra annotations (default: "|")
-  -xk                : to keep extra annotations (e.g. "Q16611|A.1.1" becomes "A.1.1.Q16611")
-  -S=<pattern>       : special processing with pattern (e.g. "(\d+)([a-z]+)_.+" for changing "6q_EF42" to "6.q")
-  -rs                : to remove the annotation-separator in the output (e.g. the ".")
-  --q=<pattern>      : expert option: the regular expression pattern for the query (default: "_#\d+_M=(.+)" for pplacer output)
-
-Examples:
-
- cladinator3 pp_out_tree.sing.tre result.tsv
- cladinator3 -s=. pp_out_tree.sing.tre result.tsv
- cladinator3 -s=_ -m=map.tsv pp_out_trees.sing.tre result.tsv
- cladinator3 -x -xs=& -xk pp_out_trees.sing.tre result.tsv
- cladinator3 -x -xs="|" pp_out_trees.sing.tre result.tsv
- cladinator3 -x -xk -m=map.tsv pp_out_trees.sing.tre result.tsv
- cladinator3 -m=map.tsv -S='(\d+)([a-z?]*)_.+' pp_out_trees.sing.tre result.tsv
+# 1. bump VERSION in forester/java/src/org/forester/archaeopteryx/AptxConstants.java, then commit
+# 2. tag and push:
+git tag 0.9.83 && git push origin 0.9.83
 ```
 
-Output example:
-```
-Input tree                 : clade_analysis_test_1_2_A.xml
-Annotation-separator       : .
-Query pattern              : _#\d+_M=(.+)
-Output table               : test
-Number of input trees      : 1
-Ext. nodes in input tree   : 28
-
-Results:
-
-#Tree # Query	Assignment Confidence	Brackets           Conclusion              Placement count
-1       Q	    A.3.1.2    1.0	       [A.3.1.2, A.3.1.2]	member of clade A.3.1.2	1
-```
+CI builds the macOS `.dmg`, Windows `.msi`, and Linux `.deb`, and publishes them
+to a GitHub Release for the tag.
