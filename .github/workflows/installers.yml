@@ -1,10 +1,9 @@
 # Cross-platform native installers for Archaeopteryx, built with jpackage.
 #
-# jpackage only produces an installer for the OS+arch it runs on, so this fans out over a
-# matrix: macOS arm64 (macos-latest) and Intel x86_64 (macos-13), Windows, and Linux. macOS
-# reuses the committed `ant jpackage-dmg` target (icon + version mapping + Info.plist fixup)
-# and tags each .dmg with its arch; Windows/Linux invoke jpackage directly here because those
-# bundlers have no Ant target yet.
+# jpackage only produces an installer for the OS it runs on, so this fans out over a
+# macOS / Windows / Linux matrix. macOS reuses the committed `ant jpackage-dmg` target
+# (icon + version mapping + Info.plist fixup); Windows/Linux invoke jpackage directly
+# here because those bundlers have no Ant target yet.
 #
 # Trigger by pushing a version tag (e.g. 0.9.82) or manually via the Actions tab.
 # The .dmg / .msi / .deb are always attached to the run as artifacts; on a version-TAG push the
@@ -26,15 +25,14 @@ concurrency:
 
 jobs:
   build:
-    name: ${{ matrix.label }} installer
+    name: ${{ matrix.kind }} installer
     strategy:
       fail-fast: false
       matrix:
         include:
-          - { os: macos-latest,   kind: mac,   arch: aarch64, label: mac-arm64 }  # Apple Silicon
-          - { os: macos-13,       kind: mac,   arch: x86_64,  label: mac-intel }  # Intel
-          - { os: windows-latest, kind: win,   label: win }
-          - { os: ubuntu-latest,  kind: linux, label: linux }
+          - { os: macos-latest,   kind: mac }
+          - { os: windows-latest, kind: win }
+          - { os: ubuntu-latest,  kind: linux }
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -69,9 +67,6 @@ jobs:
           if [ "${{ matrix.kind }}" = "mac" ]; then
             # reuse the committed macOS target: fat jar + app-image + icon + Info.plist version fixup + .dmg
             ant jpackage-dmg
-            VERSION=$(grep 'VERSION =' src/org/forester/archaeopteryx/AptxConstants.java | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
-            # tag the dmg with its arch so the Apple-Silicon and Intel builds don't collide as release assets
-            mv "dist/Archaeopteryx-$VERSION.dmg" "dist/Archaeopteryx-$VERSION-${{ matrix.arch }}.dmg"
           else
             ant all   # build the self-contained forester.jar
             VERSION=$(grep 'VERSION =' src/org/forester/archaeopteryx/AptxConstants.java | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
@@ -105,7 +100,7 @@ jobs:
       - name: Upload installer
         uses: actions/upload-artifact@v4
         with:
-          name: Archaeopteryx-${{ matrix.label }}
+          name: Archaeopteryx-${{ matrix.kind }}
           path: |
             forester/java/dist/*.dmg
             forester/java/dist/*.msi
@@ -144,8 +139,7 @@ jobs:
             echo
             echo "| Platform | File |"
             echo "|----------|------|"
-            echo "| macOS (Apple Silicon) | Archaeopteryx-$TAG-aarch64.dmg |"
-            echo "| macOS (Intel) | Archaeopteryx-$TAG-x86_64.dmg |"
+            echo "| macOS (Apple Silicon) | Archaeopteryx-$TAG.dmg |"
             echo "| Windows | Archaeopteryx-$TAG.msi |"
             echo "| Linux (Debian/Ubuntu) | archaeopteryx_${TAG}_amd64.deb |"
             echo
