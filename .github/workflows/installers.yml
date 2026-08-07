@@ -6,7 +6,8 @@
 # here because those bundlers have no Ant target yet.
 #
 # Trigger by pushing a version tag (e.g. 0.9.82) or manually via the Actions tab.
-# Artifacts (the .dmg / .msi / .deb) are attached to the run; they are NOT auto-published.
+# The .dmg / .msi / .deb are always attached to the run as artifacts; on a version-TAG push the
+# 'release' job additionally publishes them to a GitHub Release for that tag (prerelease while on 0.x).
 name: installers
 
 on:
@@ -84,6 +85,8 @@ jobs:
                 --icon ../../archaeopteryx_icon_assets/archaeopteryx-anime.ico \
                 --win-menu --win-shortcut --win-dir-chooser \
                 "${COMMON[@]}"
+              # jpackage names it Archaeopteryx-<bundle>.msi; use the real version for a clean asset name
+              mv dist/*.msi "dist/Archaeopteryx-$VERSION.msi"
             else
               # Linux .deb accepts the real version as-is
               jpackage --type deb --app-version "$VERSION" \
@@ -103,3 +106,49 @@ jobs:
             forester/java/dist/*.msi
             forester/java/dist/*.deb
           if-no-files-found: error
+
+  # On a version-tag push only, gather the three installers and publish them to a GitHub Release.
+  # Manual (workflow_dispatch) runs skip this and just leave the run artifacts.
+  release:
+    name: publish release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write            # create the release + upload assets (the build jobs stay read-only)
+    steps:
+      - name: Download built installers
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts         # each artifact lands under artifacts/<name>/
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euxo pipefail
+          TAG="$GITHUB_REF_NAME"
+          mkdir -p release
+          find artifacts -type f \( -name '*.dmg' -o -name '*.msi' -o -name '*.deb' \) -exec cp {} release/ \;
+          ls -la release
+          # prerelease while the project is on 0.x
+          PRE=""
+          case "$TAG" in 0.*) PRE="--prerelease" ;; esac
+          {
+            echo "Native installers for Archaeopteryx $TAG, built by CI from the tagged source."
+            echo
+            echo "| Platform | File |"
+            echo "|----------|------|"
+            echo "| macOS (Apple Silicon) | Archaeopteryx-$TAG.dmg |"
+            echo "| Windows | Archaeopteryx-$TAG.msi |"
+            echo "| Linux (Debian/Ubuntu) | archaeopteryx_${TAG}_amd64.deb |"
+            echo
+            echo "**Not code-signed or notarized yet:** on macOS you may see \"unidentified developer\" (right-click the app and choose Open the first time); on Windows, SmartScreen may prompt (More info -> Run anyway)."
+          } > notes.md
+          # idempotent: create the release if missing, else refresh its notes; then (re)upload the assets
+          if gh release view "$TAG" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release edit "$TAG" -R "$GITHUB_REPOSITORY" --notes-file notes.md $PRE
+          else
+            gh release create "$TAG" -R "$GITHUB_REPOSITORY" --title "Archaeopteryx $TAG" --notes-file notes.md $PRE
+          fi
+          gh release upload "$TAG" -R "$GITHUB_REPOSITORY" release/* --clobber
