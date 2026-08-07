@@ -185,8 +185,11 @@ public final class MainFrameApplication extends MainFrame {
         // platform default (e.g. the native macOS file dialog instead of FlatLaf).
         refreshFileChoosersLookAndFeel();
         if ((current_dir != null) && current_dir.canRead() && current_dir.isDirectory()) {
-            setCurrentDir(current_dir);
+            _startup_dir = current_dir; // a transient default for dialogs; NOT persisted (only user choices are)
         }
+        // restore each dialog's last-used directory from the previous session (a saved dir that no longer exists is
+        // ignored later, lazily, by getCurrentDir -- which then falls back to the startup dir / home).
+        new DirectoryPreferences().applyTo(_current_dirs);
         // hide until everything is ready
         setVisible(false);
         setOptions(optionsWithSavedPreferences());
@@ -1049,7 +1052,7 @@ public final class MainFrameApplication extends MainFrame {
         boolean exception = false;
         Phylogeny[] phys = null;
         // Set an initial directory if none set yet
-        final File my_dir = getCurrentDir();
+        final File my_dir = getCurrentDir(DirectoryPreferences.Category.OPEN);
         // Open file-open dialog and set current directory
         if (my_dir != null) {
             _open_filechooser.setCurrentDirectory(my_dir);
@@ -1057,7 +1060,7 @@ public final class MainFrameApplication extends MainFrame {
         final int result = _open_filechooser.showOpenDialog(_contentpane);
         // All done: get the file
         final File[] files = _open_filechooser.getSelectedFiles();
-        setCurrentDir(_open_filechooser.getCurrentDirectory());
+        setCurrentDir(DirectoryPreferences.Category.OPEN, _open_filechooser.getCurrentDirectory());
         boolean nhx_or_nexus = false;
         if ((files != null) && (files.length > 0) && (result == JFileChooser.APPROVE_OPTION)) {
             for (final File file : files) {
@@ -1175,7 +1178,7 @@ public final class MainFrameApplication extends MainFrame {
     private void readSpeciesTreeFromFile() {
         Phylogeny t = null;
         boolean exception = false;
-        final File my_dir = getCurrentDir();
+        final File my_dir = getCurrentDir(DirectoryPreferences.Category.OPEN);
         _open_filechooser_for_species_tree.setSelectedFile(new File(""));
         if (my_dir != null) {
             _open_filechooser_for_species_tree.setCurrentDirectory(my_dir);
@@ -1668,6 +1671,7 @@ public final class MainFrameApplication extends MainFrame {
 
     void exit() {
         new GuiPreferences().saveFrom(getOptions()); // persist the display toggles for the next session
+        new DirectoryPreferences().saveFrom(_current_dirs); // and each dialog's last-used directory
         removeAllTextFrames();
         _mainpanel.terminate();
         _contentpane.removeAll();

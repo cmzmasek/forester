@@ -706,6 +706,30 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Directory preferences (open/save/export round-trip): ");
+        if (org.forester.archaeopteryx.DirectoryPreferencesTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Persistent per-purpose directories (separation + fallback): ");
+        if (org.forester.archaeopteryx.PersistentDirectoriesTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("About/Help (trimmed sections, bundled logo, GitHub links): ");
+        if (org.forester.archaeopteryx.AboutDialogTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Color-by palette default (seed + write-back): ");
         if (org.forester.archaeopteryx.ColorPaletteDefaultTest.test()) {
             System.out.println("OK.");

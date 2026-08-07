@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -336,7 +337,14 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem _references_item;
 
     //
-    File _current_dir;
+    // Last-used file-dialog directory, kept separately per purpose (read / save / export) so each dialog reopens
+    // where it was last left. Persisted across restarts by DirectoryPreferences; a purpose with no chosen (or a
+    // no-longer-readable) directory falls back to the home/Desktop directory via getCurrentDir(...).
+    final EnumMap<DirectoryPreferences.Category, File> _current_dirs = new EnumMap<>(DirectoryPreferences.Category.class);
+    // A transient launch-time default (e.g. the working directory when opened from the command line with a tree):
+    // it seeds where dialogs open before the user has chosen anything, but is NEVER persisted -- only directories
+    // the user actually navigated to (stored in _current_dirs) are remembered across restarts.
+    File _startup_dir;
     JFileChooser _writetopdf_filechooser;
     JFileChooser _save_filechooser;
     JFileChooser _writetographics_filechooser;
@@ -585,11 +593,11 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             final File curr_dir = writeToPdf(_mainpanel.getCurrentPhylogeny(),
                     getMainPanel(),
                     _writetopdf_filechooser,
-                    _current_dir,
+                    getCurrentDir(DirectoryPreferences.Category.EXPORT),
                     getContentPane(),
                     this);
             if (curr_dir != null) {
-                setCurrentDir(curr_dir);
+                setCurrentDir(DirectoryPreferences.Category.EXPORT, curr_dir);
             }
         } else if (o == _save_all_item) {
             writeAllToFile();
@@ -600,9 +608,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                     _writetographics_filechooser,
                     this,
                     getContentPane(),
-                    _current_dir);
+                    getCurrentDir(DirectoryPreferences.Category.EXPORT));
             if (new_dir != null) {
-                setCurrentDir(new_dir);
+                setCurrentDir(DirectoryPreferences.Category.EXPORT, new_dir);
             }
         } else if (o == _write_to_tif_item) {
             final File new_dir = writeToGraphicsFile(_mainpanel.getCurrentPhylogeny(),
@@ -611,9 +619,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                     _writetographics_filechooser,
                     this,
                     getContentPane(),
-                    _current_dir);
+                    getCurrentDir(DirectoryPreferences.Category.EXPORT));
             if (new_dir != null) {
-                setCurrentDir(new_dir);
+                setCurrentDir(DirectoryPreferences.Category.EXPORT, new_dir);
             }
         } else if (o == _write_to_png_item) {
             final File new_dir = writeToGraphicsFile(_mainpanel.getCurrentPhylogeny(),
@@ -622,9 +630,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                     _writetographics_filechooser,
                     this,
                     getContentPane(),
-                    _current_dir);
+                    getCurrentDir(DirectoryPreferences.Category.EXPORT));
             if (new_dir != null) {
-                setCurrentDir(new_dir);
+                setCurrentDir(DirectoryPreferences.Category.EXPORT, new_dir);
             }
         } else if (o == _copy_image_to_clipboard_item) {
             copyImageToClipboard();
@@ -635,9 +643,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                     _writetographics_filechooser,
                     this,
                     getContentPane(),
-                    _current_dir);
+                    getCurrentDir(DirectoryPreferences.Category.EXPORT));
             if (new_dir != null) {
-                setCurrentDir(new_dir);
+                setCurrentDir(DirectoryPreferences.Category.EXPORT, new_dir);
             }
         } else if (o == _write_to_eps_item) {
             final File new_dir = writeToGraphicsFile(_mainpanel.getCurrentPhylogeny(),
@@ -646,9 +654,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                     _writetographics_filechooser,
                     this,
                     getContentPane(),
-                    _current_dir);
+                    getCurrentDir(DirectoryPreferences.Category.EXPORT));
             if (new_dir != null) {
-                setCurrentDir(new_dir);
+                setCurrentDir(DirectoryPreferences.Category.EXPORT, new_dir);
             }
         } else if (o == _export_seqs_fasta_item) {
             exportSequencesAsFasta();
@@ -660,11 +668,11 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             final File new_dir = writeToFile(_mainpanel.getCurrentPhylogeny(),
                     getMainPanel(),
                     _save_filechooser,
-                    _current_dir,
+                    getCurrentDir(DirectoryPreferences.Category.SAVE),
                     getContentPane(),
                     this);
             if (new_dir != null) {
-                setCurrentDir(new_dir);
+                setCurrentDir(DirectoryPreferences.Category.SAVE, new_dir);
             }
         } else if (o == _graphics_export_visible_only_cbmi) {
             updateOptions(getOptions());
@@ -864,14 +872,14 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if ((getMainPanel().getTabbedPane() == null) || (getMainPanel().getTabbedPane().getTabCount() < 1)) {
             return;
         }
-        final File my_dir = getCurrentDir();
+        final File my_dir = getCurrentDir(DirectoryPreferences.Category.SAVE);
         if (my_dir != null) {
             _save_filechooser.setCurrentDirectory(my_dir);
         }
         _save_filechooser.setSelectedFile(new File(""));
         final int result = _save_filechooser.showSaveDialog(_contentpane);
         final File file = _save_filechooser.getSelectedFile();
-        setCurrentDir(_save_filechooser.getCurrentDirectory());
+        setCurrentDir(DirectoryPreferences.Category.SAVE, _save_filechooser.getCurrentDirectory());
         if ((file != null) && (result == JFileChooser.APPROVE_OPTION)) {
             if (file.exists()) {
                 final int i = JOptionPane.showConfirmDialog(this,
@@ -1709,24 +1717,37 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         return getMainPanel().getControlPanel();
     }
 
-    File getCurrentDir() {
-        if ((_current_dir == null) || !_current_dir.canRead()) {
-            if (ForesterUtil.isWindows()) {
-                try {
-                    _current_dir = new File(WindowsUtils.getCurrentUserDesktopPath());
-                } catch (final Exception e) {
-                    _current_dir = null;
-                }
+    /** The directory the given dialog category should open in: the last one used for that purpose if it is still
+     *  readable, otherwise the home/Desktop fallback. The fallback is NOT stored, so only user-chosen directories
+     *  are ever remembered/persisted. */
+    File getCurrentDir(final DirectoryPreferences.Category cat) {
+        final File dir = _current_dirs.get(cat);
+        if ((dir != null) && dir.canRead()) { // a persisted / just-used dir that still resolves (validated here,
+            return dir;                       // lazily, not at startup -- so a stale network path can't hang launch)
+        }
+        if ((_startup_dir != null) && _startup_dir.canRead()) {
+            return _startup_dir; // transient launch default (never persisted)
+        }
+        return fallbackDir();
+    }
+
+    private static File fallbackDir() {
+        File dir = null;
+        if (ForesterUtil.isWindows()) {
+            try {
+                dir = new File(WindowsUtils.getCurrentUserDesktopPath());
+            } catch (final Exception e) {
+                dir = null;
             }
         }
-        if ((_current_dir == null) || !_current_dir.canRead()) {
+        if ((dir == null) || !dir.canRead()) {
             if (System.getProperty("user.home") != null) {
-                _current_dir = new File(System.getProperty("user.home"));
+                dir = new File(System.getProperty("user.home"));
             } else if (System.getProperty("user.dir") != null) {
-                _current_dir = new File(System.getProperty("user.dir"));
+                dir = new File(System.getProperty("user.dir"));
             }
         }
-        return _current_dir;
+        return dir;
     }
 
     TreePanel getCurrentTreePanel() {
@@ -1865,8 +1886,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _configuration = configuration;
     }
 
-    void setCurrentDir(final File current_dir) {
-        _current_dir = current_dir;
+    void setCurrentDir(final DirectoryPreferences.Category cat, final File current_dir) {
+        if (current_dir != null) {
+            _current_dirs.put(cat, current_dir);
+        }
     }
 
     void setOptions(final Options options) {
@@ -2294,13 +2317,19 @@ public abstract class MainFrame extends JFrame implements ActionListener {
      * Display the about box.
      */
     void about() {
-        final StringBuffer about = new StringBuffer("Archaeopteryx\nVersion " + AptxConstants.VERSION + "\n");
+        JOptionPane.showMessageDialog(null, buildAboutText(), AptxConstants.PRG_NAME, JOptionPane.PLAIN_MESSAGE,
+                aboutLogo());
+    }
+
+    /** The About-box text (program info, environment, and the main reference). Extracted so it is testable, and so
+     *  its content stays independent of the dialog chrome. */
+    static String buildAboutText() {
+        final StringBuilder about = new StringBuilder("Archaeopteryx\nVersion " + AptxConstants.VERSION + "\n");
         about.append("Copyright (C) 2026 Christian M Zmasek\n");
         about.append("All Rights Reserved\n");
         about.append("License: GNU General Public License version 3 (GPL3)\n");
         about.append("Last modified: " + AptxConstants.PRG_DATE + "\n");
         about.append("Based on: ").append(ForesterUtil.getForesterLibraryInformation()).append("\n");
-
         about.append("phyloXML version : " + ForesterConstants.PHYLO_XML_VERSION + "\n");
         about.append("phyloXML location: " + ForesterConstants.PHYLO_XML_LOCATION + "\n");
         if (!ForesterUtil.isEmpty(ForesterUtil.JAVA_VERSION) && !ForesterUtil.isEmpty(ForesterUtil.JAVA_VENDOR)) {
@@ -2317,12 +2346,34 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         about.append("[locale: ").append(Locale.getDefault()).append("]\n");
         about.append("References:\n");
         about.append(AptxConstants.PHYLOXML_REFERENCE_SHORT + "\n");
-        about.append("For more information & download:\n");
-        about.append(AptxConstants.APTX_WEB_SITE + "\n");
-        about.append("Documentation:\n");
-        about.append(AptxConstants.APTX_DOC_SITE + "\n");
         about.append("Comments: " + AptxConstants.AUTHOR_EMAIL);
-        JOptionPane.showMessageDialog(null, about, AptxConstants.PRG_NAME, JOptionPane.PLAIN_MESSAGE);
+        return about.toString();
+    }
+
+    /** The bundled Archaeopteryx logo for the About box, or {@code null} if the image is missing (best-effort: the
+     *  dialog then simply shows without it). Serves a HiDPI-aware image: the icon stays ~128pt but AWT picks the
+     *  @2x (256px) variant on a Retina/2x display, so it stays crisp. */
+    static javax.swing.Icon aboutLogo() {
+        try {
+            final java.awt.image.BufferedImage base = readImage("/resources/images/archaeopteryx-logo.png");
+            if (base == null) {
+                return null;
+            }
+            final java.awt.image.BufferedImage x2 = readImage("/resources/images/archaeopteryx-logo@2x.png");
+            final java.awt.Image image = (x2 != null)
+                    ? new java.awt.image.BaseMultiResolutionImage(base, x2) // base = logical (128pt) size; x2 on HiDPI
+                    : base;
+            return new javax.swing.ImageIcon(image);
+        }
+        catch (final Exception e) {
+            return null; // best-effort: the About box just shows without a logo
+        }
+    }
+
+    private static java.awt.image.BufferedImage readImage(final String resource) throws java.io.IOException {
+        try (final java.io.InputStream in = MainFrame.class.getResourceAsStream(resource)) {
+            return (in == null) ? null : javax.imageio.ImageIO.read(in);
+        }
     }
 
     /** Read-only, selectable, scrolling view of {@link AlgorithmReferences} -- extracted so it is testable. */
@@ -2608,8 +2659,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         final JFileChooser fc = new JFileChooser();
         fc.setMultiSelectionEnabled(false);
         fc.setDialogTitle("Import Node Data (TSV)");
-        if (getCurrentDir() != null) {
-            fc.setCurrentDirectory(getCurrentDir());
+        if (getCurrentDir(DirectoryPreferences.Category.OPEN) != null) {
+            fc.setCurrentDirectory(getCurrentDir(DirectoryPreferences.Category.OPEN));
         }
         if (fc.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
             return;
@@ -2618,7 +2669,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if (file == null) {
             return;
         }
-        setCurrentDir(fc.getCurrentDirectory());
+        setCurrentDir(DirectoryPreferences.Category.OPEN, fc.getCurrentDirectory());
         final String tsv;
         try {
             tsv = Files.readString(file.toPath());
@@ -2760,8 +2811,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         final JFileChooser fc = new JFileChooser();
         fc.setMultiSelectionEnabled(false);
-        if (getCurrentDir() != null) {
-            fc.setCurrentDirectory(getCurrentDir());
+        if (getCurrentDir(DirectoryPreferences.Category.EXPORT) != null) {
+            fc.setCurrentDirectory(getCurrentDir(DirectoryPreferences.Category.EXPORT));
         }
         if (!ForesterUtil.isEmpty(suggested_name)) {
             fc.setSelectedFile(new File(suggested_name));
@@ -2785,7 +2836,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                     "Write Failed", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        setCurrentDir(fc.getCurrentDirectory());
+        setCurrentDir(DirectoryPreferences.Category.EXPORT, fc.getCurrentDirectory());
         final String msg = "Wrote " + count + " " + what + " from " + scope_desc + " to:\n" + file
                 + (ForesterUtil.isEmpty(note) ? "" : "\n\n" + note);
         JOptionPane.showMessageDialog(this, msg, "Export Complete", JOptionPane.INFORMATION_MESSAGE);

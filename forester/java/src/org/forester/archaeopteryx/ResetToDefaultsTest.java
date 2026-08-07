@@ -96,8 +96,8 @@ public final class ResetToDefaultsTest {
         o.setShowZebraStripes( true );
         o.setFlipVertically( true );
         o.setBoldFoundLabels( true );
-        o.setDimNonMatches( true );
-        o.setPulseFoundNodes( true );
+        o.setDimNonMatches( false );   // default is ON, so drive to OFF to prove reset restores it
+        o.setPulseFoundNodes( false ); // default is ON, so drive to OFF to prove reset restores it
         o.setAbbreviateScientificTaxonNames( true );
         o.setSupportVisualization( SUPPORT_VISUALIZATION.SIZE_SCALED );
         // search options (reset by init, resynced onto the control-panel checkboxes by Reset to Defaults)
@@ -142,6 +142,10 @@ public final class ResetToDefaultsTest {
         ok &= eq( "boldFoundLabels", o.isBoldFoundLabels(), def.isBoldFoundLabels() );
         ok &= eq( "dimNonMatches", o.isDimNonMatches(), def.isDimNonMatches() );
         ok &= eq( "pulseFoundNodes", o.isPulseFoundNodes(), def.isPulseFoundNodes() );
+        // pin the shipped defaults so an accidental revert to OFF is caught (the reset comparison above only checks
+        // reset == fresh-default, which would still pass if BOTH flipped)
+        ok &= eq( "dimNonMatches default ON", def.isDimNonMatches(), true );
+        ok &= eq( "pulseFoundNodes default ON", def.isPulseFoundNodes(), true );
         ok &= eq( "abbreviateNames", o.isAbbreviateScientificTaxonNames(), def.isAbbreviateScientificTaxonNames() );
         ok &= eq( "supportViz", o.getSupportVisualization(), def.getSupportVisualization() );
         ok &= eq( "searchCase", o.isSearchCaseSensitive(), def.isSearchCaseSensitive() );

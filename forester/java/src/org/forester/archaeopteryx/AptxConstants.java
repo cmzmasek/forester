@@ -29,8 +29,8 @@ import org.forester.util.ForesterConstants;
 public final class AptxConstants {
 
     public final static String PRG_NAME = "Archaeopteryx";
-    final static String VERSION = "0.9.82";
-    final static String PRG_DATE = "2026-08-05";
+    final static String VERSION = "0.9.83";
+    final static String PRG_DATE = "2026-08-07";
     // The first three are bundled and registered at startup (see FontResources), so they are always
     // present and give identical, reproducible figure type across platforms; the rest are fallbacks.
     final static String[] DEFAULT_FONT_CHOICES = {
@@ -56,9 +56,11 @@ public final class AptxConstants {
     static final Dimension NODE_FRAME_SIZE = new Dimension(520, 640);
     static final int MAX_TREES_TO_LOAD = 100;
     final static float PDF_LINE_WIDTH_DEFAULT = 0.5f;
-    final static String APTX_WEB_SITE = "https://sites.google.com/view/archaeopteryx/home";
-    final static String APTX_JS_WEB_SITE = "https://sites.google.com/view/archaeopteryxjs";
-    final static String APTX_DOC_SITE = "https://sites.google.com/view/cmzmasek/christian-zmasek/software/archaeopteryx/documentation";
+    // "Archaeopteryx Home" and "Documentation" both point at the GitHub README for now (until a dedicated
+    // documentation site exists); the JS version points at its own repository.
+    final static String APTX_WEB_SITE = "https://github.com/cmzmasek/forester/tree/master?tab=readme-ov-file#archaeopteryx";
+    final static String APTX_JS_WEB_SITE = "https://github.com/cmzmasek/archaeopteryx-js";
+    final static String APTX_DOC_SITE = "https://github.com/cmzmasek/forester/tree/master?tab=readme-ov-file#archaeopteryx";
     final static String PHYLOXML_REFERENCE_URL = "http://www.biomedcentral.com/1471-2105/10/356/";
     final static String PHYLOXML_REFERENCE = ForesterConstants.PHYLO_XML_REFERENCE;
     final static String PHYLOXML_REFERENCE_SHORT = "Han MV and Zmasek CM (2009), BMC Bioinformatics, 10:356";
