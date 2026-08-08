@@ -84,6 +84,9 @@ public final class GuiPreferencesTest {
                     ? OVERVIEW_PLACEMENT_TYPE.UPPER_LEFT : OVERVIEW_PLACEMENT_TYPE.LOWER_RIGHT;
             final Options.TREE_ORIENTATION orient = ( src.getTreeOrientation() == Options.TREE_ORIENTATION.ROOT_TOP )
                     ? Options.TREE_ORIENTATION.ROOT_BOTTOM : Options.TREE_ORIENTATION.ROOT_TOP;
+            final Options.TIP_LABEL_DIRECTION tip_dir = ( src
+                    .getTipLabelDirection() == Options.TIP_LABEL_DIRECTION.VERTICAL )
+                            ? Options.TIP_LABEL_DIRECTION.ANGLED : Options.TIP_LABEL_DIRECTION.VERTICAL;
             final String palette = altPalette( src.getColorPaletteName() ); // a real, non-current palette name
             final int raster_scale = src.getRasterExportScale() + 2;
             final boolean transparent = !src.isTransparentExportBackground();
@@ -103,6 +106,7 @@ public final class GuiPreferencesTest {
             src.setPhylogenyGraphicsType( gtype );
             src.setOvPlacement( ov );
             src.setTreeOrientation( orient );
+            src.setTipLabelDirection( tip_dir );
             src.setColorPaletteName( palette );
             src.setRasterExportScale( raster_scale );
             src.setTransparentExportBackground( transparent );
@@ -154,6 +158,9 @@ public final class GuiPreferencesTest {
             }
             if ( dst.getOvPlacement() != ov ) {
                 return fail( "overview_placement did not round-trip" );
+            }
+            if ( dst.getTipLabelDirection() != tip_dir ) {
+                return fail( "tip_label_direction did not round-trip" );
             }
             if ( dst.getTreeOrientation() != orient ) {
                 return fail( "tree_orientation did not round-trip" );

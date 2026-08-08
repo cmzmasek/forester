@@ -83,6 +83,28 @@ public final class OrientationRenderTest {
                     }
                     final int w = 620, h = 520;
 
+                    // the "Tip label angle" setting drives the tip-label tilt (independent of the display type -- it was
+                    // auto before): VERTICAL -> +/-90deg, ANGLED -> +/-45deg, with the sign following the orientation so
+                    // the labels always extend AWAY from the tree.
+                    o.setTreeOrientation( TREE_ORIENTATION.ROOT_TOP );
+                    o.setTipLabelDirection( Options.TIP_LABEL_DIRECTION.VERTICAL );
+                    if ( Math.abs( tp.tipLabelAngleForTest() - ( Math.PI / 2.0 ) ) > 1e-6 ) {
+                        fail( ok, "VERTICAL tip labels must be 90deg in ROOT_TOP, got " + tp.tipLabelAngleForTest() );
+                    }
+                    o.setTipLabelDirection( Options.TIP_LABEL_DIRECTION.ANGLED );
+                    if ( Math.abs( tp.tipLabelAngleForTest() - ( Math.PI / 4.0 ) ) > 1e-6 ) {
+                        fail( ok, "ANGLED tip labels must be 45deg in ROOT_TOP, got " + tp.tipLabelAngleForTest() );
+                    }
+                    o.setTreeOrientation( TREE_ORIENTATION.ROOT_BOTTOM );
+                    if ( Math.abs( tp.tipLabelAngleForTest() - ( -Math.PI / 4.0 ) ) > 1e-6 ) {
+                        fail( ok, "ANGLED tip labels must be -45deg in ROOT_BOTTOM, got " + tp.tipLabelAngleForTest() );
+                    }
+                    o.setTipLabelDirection( Options.TIP_LABEL_DIRECTION.VERTICAL );
+                    if ( Math.abs( tp.tipLabelAngleForTest() - ( -Math.PI / 2.0 ) ) > 1e-6 ) {
+                        fail( ok, "VERTICAL tip labels must be -90deg in ROOT_BOTTOM, got " + tp.tipLabelAngleForTest() );
+                    }
+                    o.setTipLabelDirection( Options.TIP_LABEL_DIRECTION.VERTICAL ); // restore default for the rest
+
                     // ROOT_TOP: the root sits ABOVE every tip (smaller screen y), and the tips fan out HORIZONTALLY
                     layout( frame, tp, o, TREE_ORIENTATION.ROOT_TOP, w, h );
                     final double root_y_top = tp.screenPointFor( root ).y;

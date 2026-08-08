@@ -34,6 +34,7 @@ import java.util.function.Predicate;
 import org.forester.archaeopteryx.Options.OVERVIEW_PLACEMENT_TYPE;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
 import org.forester.archaeopteryx.Options.SUPPORT_VISUALIZATION;
+import org.forester.archaeopteryx.Options.TIP_LABEL_DIRECTION;
 import org.forester.archaeopteryx.Options.TREE_ORIENTATION;
 import org.forester.phylogeny.data.NodeVisualData.NodeFill;
 import org.forester.phylogeny.data.NodeVisualData.NodeShape;
@@ -121,6 +122,9 @@ final class GuiPreferences {
             // UNROOTED (the paint path gates it), so no exclusion predicate is needed.
             enumPref( "tree_orientation", Options::getTreeOrientation, Options::setTreeOrientation,
                       TREE_ORIENTATION::valueOf ),
+            // the vertical-orientation tip-label angle (45deg vs vertical); a no-op under any non-vertical layout
+            enumPref( "tip_label_direction", Options::getTipLabelDirection, Options::setTipLabelDirection,
+                      TIP_LABEL_DIRECTION::valueOf ),
             // "Color by" palette: only apply a stored name that is still a known palette (a renamed/removed
             // palette is ignored, keeping the default) so a stale file can't select a non-existent palette
             stringPref( "color_palette", Options::getColorPaletteName, Options::setColorPaletteName,

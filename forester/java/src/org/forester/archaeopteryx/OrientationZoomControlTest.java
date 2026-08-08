@@ -269,6 +269,32 @@ public final class OrientationZoomControlTest {
                         fail( ok, "vertical culling did not cull a node " + (int) far_dist
                                 + "px outside the viewport (optimization not engaging)" );
                     }
+
+                    // "F"/showWhole must FIT the tree to the window in a vertical orientation: the tip-label footprint
+                    // is reserved on the axis it actually extends along (depth for the vertical/45deg labels), so the
+                    // breadth does NOT overflow the viewport width. Long labels make the (old) breadth over-reservation
+                    // overflow clearly. Checked for both vertical orientations.
+                    for ( final org.forester.phylogeny.PhylogenyNode t : tips ) {
+                        t.setName( t.getName() + "_sapiens_longlabel" );
+                    }
+                    tp.getControlPanel().setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM );
+                    for ( final TREE_ORIENTATION orient : new TREE_ORIENTATION[] { TREE_ORIENTATION.ROOT_TOP,
+                            TREE_ORIENTATION.ROOT_BOTTOM } ) {
+                        o.setTreeOrientation( orient );
+                        frame.showWhole();
+                        frame.getMainPanel().getCurrentScrollPane().validate();
+                        final java.awt.Dimension vpz = frame.getMainPanel().getCurrentScrollPane().getViewport()
+                                .getExtentSize();
+                        final java.awt.Dimension pref = tp.getPreferredSize();
+                        if ( pref.width > ( vpz.width + 8 ) ) {
+                            fail( ok, orient + ": showWhole overflows the viewport width (pref " + pref.width + " > vp "
+                                    + vpz.width + ") -- breadth over-reserved" );
+                        }
+                        if ( pref.height < ( vpz.height * 0.7 ) ) {
+                            fail( ok, orient + ": showWhole under-fills the viewport height (pref " + pref.height
+                                    + " vs vp " + vpz.height + ") -- depth over-reserved" );
+                        }
+                    }
                 }
                 catch ( final Throwable t ) {
                     fail( ok, "unexpected: " + t );

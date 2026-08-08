@@ -4938,6 +4938,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 getControlPanel().updateFontSizeSlider();
             }
             _length_of_longest_text = calcLengthOfLongestText(); //~~~
+            // the tip-label footprint split by the label tilt: its reach along the depth axis (the x budget) and along
+            // the breadth axis (the y budget). In the horizontal orientation these are getLongestExtNodeInfo() and 0,
+            // so the fit below is unchanged; in a vertical orientation they let the fit reserve the label on the axis
+            // it actually extends along, so the breadth no longer overflows nor the depth over-reserve (see the F fit).
+            final int depth_label = depthLabelReserve();
+            final int breadth_label = breadthLabelReserve();
             int ext_nodes = _phylogeny.getRoot().getNumberOfExternalNodes();
             final int max_depth = PhylogenyMethods.calculateMaxDepthConsiderCollapsed(_phylogeny) + 1;
             if (ext_nodes == 1) {
@@ -4950,17 +4956,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             float xdist = 0;
             float ov_xdist = 0;
             if (!isNonLinedUpCladogram()) {
-                xdist = (float) ((x - getLongestExtNodeInfo() - rightMarginExtraWidth() - TreePanel.MOVE)
+                xdist = (float) ((x - depth_label - rightMarginExtraWidth() - TreePanel.MOVE)
                         / (ext_nodes + 3.0));
                 ov_xdist = (float) (getOvMaxWidth() / (ext_nodes + 3.0));
             } else {
-                xdist = ((x - getLongestExtNodeInfo() - rightMarginExtraWidth() - TreePanel.MOVE) / (max_depth + 1));
+                xdist = ((x - depth_label - rightMarginExtraWidth() - TreePanel.MOVE) / (max_depth + 1));
                 ov_xdist = (getOvMaxWidth() / (max_depth + 1));
             }
             // reserve space at the top for the rotated annotation-column headers so they don't overlap the top
             // cells; the tree is compressed into the remaining height and its origin shifted down (see below)
             final int top_reserve = annotationHeaderTopReserve();
-            float ydist = (float) ((y - TreePanel.MOVE - top_reserve) / (ext_nodes * 2.0));
+            float ydist = (float) ((y - TreePanel.MOVE - top_reserve - breadth_label) / (ext_nodes * 2.0));
             if (xdist < 0.0) {
                 xdist = 0.0f;
             }
@@ -4976,7 +4982,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final double height = _phylogeny.calculateHeight(!_options.isCollapsedWithAverageHeigh());
             //final double height = PhylogenyMethods.calculateMaxDepth( _phylogeny );
             if (height > 0) {
-                final float corr = (float) ((x - (2.0 * TreePanel.MOVE) - getLongestExtNodeInfo()
+                final float corr = (float) ((x - (2.0 * TreePanel.MOVE) - depth_label
                         - rightMarginExtraWidth() - getXdistance()) / height);
                 setXcorrectionFactor(corr > 0 ? corr : 0);
                 final float ov_corr = (float) ((getOvMaxWidth() - getOvXDistance()) / height);
@@ -8437,46 +8443,73 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final int w = ext[0]; // logical width  = depth (root->tip along Xcoord) + label column
         final int h = ext[1]; // logical height = breadth (tip spread along Ycoord)
         if (isVerticalOrientation()) {
-            // root-top/bottom: depth (w) becomes the vertical extent, breadth (h) the horizontal. Add a diagonal
-            // allowance so the 45-degree tip labels' sideways spread doesn't clip at the breadth edge.
-            final int label_diag = (int) Math.ceil(getLongestExtNodeInfo() / Math.sqrt(2.0));
-            setPreferredSize(new Dimension(h + label_diag, w));
+            // root-top/bottom: depth (w) becomes the vertical extent, breadth (h) the horizontal. w already includes the
+            // downward tip-label reach; the SIDEWAYS reach (breadthLabelReserve, the outermost tilted label extending
+            // past its tip) is added to the width here so the label is not clipped -- the fit reserved the same amount.
+            setPreferredSize(new Dimension(h + breadthLabelReserve(), w));
         } else {
             setPreferredSize(new Dimension(w, h));
         }
         invalidateOrientationTransform(); // the logical extents may have changed -> R must be rebuilt on the next paint
     }
 
+    /** The tip-label footprint reserved along the DEPTH axis (root-&gt;tip). In a vertical orientation the depth axis is
+     *  drawn vertically and the tip labels tilt, so only their vertical component reaches along it -- the full label
+     *  width L for a 90-degree (unaligned) label, L/sqrt(2) for a 45-degree (aligned) one. In the horizontal
+     *  orientation the label lies flat along the depth axis, so the full width is reserved (unchanged behavior). */
+    private int depthLabelReserve() {
+        if (!isVerticalOrientation()) {
+            return getLongestExtNodeInfo();
+        }
+        return (int) Math.ceil(getLongestExtNodeInfo() * Math.abs(Math.sin(tipLabelAngle())));
+    }
+
+    /** The tip-label footprint reserved along the BREADTH axis (tip spread), which exists only in a vertical
+     *  orientation: the labels' sideways component -- ~a line height for a 90-degree label, L/sqrt(2) (plus a line
+     *  height) for a 45-degree one -- so the edge tips' labels do not clip and the fit does not overflow the width.
+     *  Zero in the horizontal orientation, where tip labels do not extend along the breadth axis. */
+    private int breadthLabelReserve() {
+        if (!isVerticalOrientation()) {
+            return 0;
+        }
+        return (int) Math.ceil((getLongestExtNodeInfo() * Math.abs(Math.cos(tipLabelAngle())))
+                + getFontMetricsForLargeDefaultFont().getHeight());
+    }
+
     /** The tree's LOGICAL (root-on-left) extent {width, height}: width = depth + label column, height = tip
      *  spread. A single source of truth for both {@link #resetPreferredSize()} and the orientation transform R
-     *  (so the scroll extent and R's output box agree). Uses the same formulas the horizontal layout always did. */
+     *  (so the scroll extent and R's output box agree). In a vertical orientation the tip-label footprint is split
+     *  by the label tilt: its depth component grows the width, its breadth component grows the height. */
     private int[] logicalTreeExtent() {
         // include the annotation-header top reserve: paintPhylogeny shifts the whole tree down by it (see the
         // root Ycoord), so the scrollable height must grow by the same amount or the bottom tips/cells clip
+        // h is R's breadth translate (the tip-spread extent, WITHOUT the sideways tip-label reach): the tilted labels
+        // extend PAST the outermost tip, so their breadth reach is added to the preferred WIDTH / fitHeight budget (see
+        // resetPreferredSize / logicalBreadthExtent), not here -- otherwise R would push the outermost label off-canvas.
         final int h = TreePanel.MOVE + annotationHeaderTopReserve()
                 + ForesterUtil.roundToInt(getYdistance() * getPhylogeny().getRoot().getNumberOfExternalNodes() * 2);
         int w;
         if (getControlPanel().isDrawPhylogram()) {
-            w = TreePanel.MOVE + getLongestExtNodeInfo() + rightMarginExtraWidth()
+            w = TreePanel.MOVE + depthLabelReserve() + rightMarginExtraWidth()
                     + ForesterUtil.roundToInt((getXcorrectionFactor()
                     * getPhylogeny().calculateHeight(!_options.isCollapsedWithAverageHeigh()))
                     + getXdistance());
         } else if (!isNonLinedUpCladogram()) {
-            w = TreePanel.MOVE + getLongestExtNodeInfo() + rightMarginExtraWidth() + ForesterUtil
+            w = TreePanel.MOVE + depthLabelReserve() + rightMarginExtraWidth() + ForesterUtil
                     .roundToInt(getXdistance() * (getPhylogeny().getRoot().getNumberOfExternalNodes() + 2));
         } else {
-            w = TreePanel.MOVE + getLongestExtNodeInfo() + rightMarginExtraWidth() + ForesterUtil
+            w = TreePanel.MOVE + depthLabelReserve() + rightMarginExtraWidth() + ForesterUtil
                     .roundToInt(getXdistance() * (PhylogenyMethods.calculateMaxDepth(getPhylogeny()) + 1));
         }
         return new int[] { w, h };
     }
 
-    /** The tree's LOGICAL breadth (tip-spread) extent in px, WITHOUT the vertical-orientation tilted-label diagonal
-     *  allowance that resetPreferredSize adds to the preferred width. This is what fitHeight must keep as its budget
-     *  so the horizontal (breadth) zoom doesn't drift each press -- the analog of the diag-free preferred height that
-     *  fitWidth reads (getPreferredSize().width already includes label_diag in a vertical orientation). */
+    /** The tree's LOGICAL breadth (tip-spread) extent in px -- the logical height, which equals the vertical
+     *  orientation's preferred WIDTH (breadth axis). fitHeight keeps this as its breadth budget so the horizontal
+     *  (breadth) zoom doesn't drift each press: it includes the same breadth tip-label reserve the fit subtracts,
+     *  so feeding it back reproduces the current y-distance exactly (the fitHeight-idempotence property). */
     final int logicalBreadthExtent() {
-        return logicalTreeExtent()[1];
+        return logicalTreeExtent()[1] + breadthLabelReserve();
     }
 
     /** True when the tree is drawn in a vertical (root-top / root-bottom) orientation. Always false for the
@@ -8523,6 +8556,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return isNodeDataInvisible(node);
     }
 
+    /** Test hook: the resolved tip-label tilt (radians) for the current "Tip label angle" setting + orientation. */
+    double tipLabelAngleForTest() {
+        return tipLabelAngle();
+    }
+
     /** Test hook: a node's position in the (rotated) overview thumbnail, in VIEWPORT-relative coords (matching a
      *  {@code JViewport.printAll} image) -- the paint's {@code getVisibleRect()} translate and printAll's own
      *  {@code -visibleRect} translate cancel, so only the overview corner offset remains. */
@@ -8540,15 +8578,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return p;
     }
 
-    /** The tip-label tilt (radians) in a vertical orientation. UNALIGNED phylograms put tips at varying depths, so a
-     *  45deg label would cross neighboring branches -- there the only realistic label direction is VERTICAL (90deg).
-     *  Aligned phylograms / cladograms / ultrametric trees line the tips up along a clean baseline, so 45deg reads
-     *  better there. The sign follows the orientation so the label always extends AWAY from the tree (down for
-     *  root-top, up for root-bottom). */
+    /** The tip-label tilt (radians) in a vertical orientation, from the user's "Tip label angle" setting: VERTICAL
+     *  (90deg, never crosses neighboring branches -- best for unaligned phylograms with varying tip depths) or ANGLED
+     *  (45deg, reads better on aligned phylograms / cladograms / ultrametric trees whose tips line up on a baseline).
+     *  The sign follows the orientation so the label always extends AWAY from the tree (down for root-top, up for
+     *  root-bottom). */
     private double tipLabelAngle() {
-        final double base = (getControlPanel()
-                .getTreeDisplayType() == Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM) ? (Math.PI / 2.0)
-                        : (Math.PI / 4.0);
+        final double base = (getOptions().getTipLabelDirection() == Options.TIP_LABEL_DIRECTION.VERTICAL)
+                ? (Math.PI / 2.0) : (Math.PI / 4.0);
         return (getOptions().getTreeOrientation() == Options.TREE_ORIENTATION.ROOT_BOTTOM) ? -base : base;
     }
 

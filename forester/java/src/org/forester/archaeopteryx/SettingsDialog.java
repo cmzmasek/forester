@@ -121,12 +121,23 @@ final class SettingsDialog extends JDialog {
         c.add( header( "Theme" ) );
         addThemeControls( c );
         c.add( header( "Layout" ) );
+        // the tip-label angle applies only in a vertical (root-top/bottom) orientation, so grey it out otherwise
+        final JComboBox<Options.TIP_LABEL_DIRECTION> tipLabelCombo = enumCombo( Options.TIP_LABEL_DIRECTION.values(),
+                _mf.getOptions().getTipLabelDirection(),
+                v -> { _mf.getOptions().setTipLabelDirection( v ); reFitCurrentTree(); } );
         final JComboBox<Options.TREE_ORIENTATION> orientationCombo = enumCombo( Options.TREE_ORIENTATION.values(),
                 _mf.getOptions().getTreeOrientation(),
-                v -> { _mf.getOptions().setTreeOrientation( v ); reFitCurrentTree(); } );
+                v -> {
+                    _mf.getOptions().setTreeOrientation( v );
+                    tipLabelCombo.setEnabled( isVerticalOrientation( v ) && !isRadialStyleSelected() );
+                    reFitCurrentTree();
+                } );
         orientationCombo.setEnabled( !isRadialStyleSelected() );
+        tipLabelCombo.setEnabled( isVerticalOrientation( _mf.getOptions().getTreeOrientation() )
+                && !isRadialStyleSelected() );
         add( c, labeled( "Tree style:", treeStyleCombo( orientationCombo ) ) );
         add( c, labeled( "Orientation:", orientationCombo ) );
+        add( c, labeled( "Tip label angle:", tipLabelCombo ) );
         addRadioGroup( c, _mf._ext_node_dependent_cladogram_rbmi, _mf._non_lined_up_cladograms_rbmi );
         add( c, cb( _mf._label_direction_cbmi ) );
         add( c, cb( _mf._show_scale_cbmi ) );
@@ -435,6 +446,10 @@ final class SettingsDialog extends JDialog {
     private boolean isRadialStyleSelected() {
         return ( ( _mf._circular_type_cbmi != null ) && _mf._circular_type_cbmi.isSelected() )
                 || ( ( _mf._unrooted_type_cbmi != null ) && _mf._unrooted_type_cbmi.isSelected() );
+    }
+
+    private static boolean isVerticalOrientation( final Options.TREE_ORIENTATION o ) {
+        return ( o == Options.TREE_ORIENTATION.ROOT_TOP ) || ( o == Options.TREE_ORIENTATION.ROOT_BOTTOM );
     }
 
     /** Orientation swaps the layout's width and height, so re-fit the whole tree (recomputes the scaling constants

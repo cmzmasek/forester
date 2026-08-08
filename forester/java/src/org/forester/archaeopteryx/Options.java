@@ -68,6 +68,23 @@ final public class Options {
         }
     }
 
+    /** The angle of the external-node (tip) labels in a vertical (root-top/bottom) orientation. */
+    static enum TIP_LABEL_DIRECTION {
+        ANGLED("diagonal (45°)"),
+        VERTICAL("vertical (90°)");
+
+        private final String _name;
+
+        private TIP_LABEL_DIRECTION(final String name) {
+            _name = name;
+        }
+
+        @Override
+        public String toString() {
+            return _name;
+        }
+    }
+
     static enum PHYLOGENY_DISPLAY_TYPE {
         CLADOGRAM,
         ALIGNED_PHYLOGRAM,
@@ -156,6 +173,7 @@ final public class Options {
     private OVERVIEW_PLACEMENT_TYPE _ov_placement;
     private PHYLOGENY_GRAPHICS_TYPE _phylogeny_graphics_type;
     private TREE_ORIENTATION _tree_orientation;
+    private TIP_LABEL_DIRECTION _tip_label_direction;
     // The default categorical palette for "Color by property". Held here (not just per TreePanel) so the last
     // palette the user chose becomes the default for new tabs/sessions and can be persisted (see GuiPreferences).
     private String _color_palette_name;
@@ -287,6 +305,7 @@ final public class Options {
         _print_black_and_white = false;
         _phylogeny_graphics_type = PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR;
         _tree_orientation = TREE_ORIENTATION.ROOT_LEFT;
+        _tip_label_direction = TIP_LABEL_DIRECTION.VERTICAL;
         _color_palette_name = PropertyColorScheme.DEFAULT_PALETTE_NAME;
         _base_font = new Font(Configuration.getDefaultFontFamilyName(), Font.PLAIN, AptxConstants.DEFAULT_TREE_FONT_SIZE);
         _match_whole_terms_only = false;
@@ -394,6 +413,10 @@ final public class Options {
 
     final TREE_ORIENTATION getTreeOrientation() {
         return _tree_orientation;
+    }
+
+    final TIP_LABEL_DIRECTION getTipLabelDirection() {
+        return _tip_label_direction;
     }
 
     /** The default categorical palette for "Color by property" (see {@link PropertyColorScheme#paletteNames()}). */
@@ -712,6 +735,10 @@ final public class Options {
 
     final void setTreeOrientation(final TREE_ORIENTATION tree_orientation) {
         _tree_orientation = tree_orientation;
+    }
+
+    final void setTipLabelDirection(final TIP_LABEL_DIRECTION tip_label_direction) {
+        _tip_label_direction = tip_label_direction;
     }
 
     final void setPrintBlackAndWhite(final boolean print_black_and_white) {
