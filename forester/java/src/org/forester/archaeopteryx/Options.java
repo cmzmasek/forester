@@ -44,7 +44,28 @@ final public class Options {
     }
 
     public static enum PHYLOGENY_GRAPHICS_TYPE {
-        CIRCULAR, CONVEX, CURVED, EURO_STYLE, RECTANGULAR, ROUNDED, TRIANGULAR, UNROOTED;
+        CIRCULAR, EURO_STYLE, RECTANGULAR, ROUNDED, TRIANGULAR, UNROOTED;
+    }
+
+    // Where the root of a rectangular-family tree sits, i.e. the drawing orientation. ROOT_LEFT is the
+    // classic horizontal layout (tips to the right); ROOT_TOP / ROOT_BOTTOM are the 90-degree vertical
+    // orientations (root at top/bottom, tips along the bottom/top) for dendrogram-over-columns figures.
+    // A no-op for the radial CIRCULAR/UNROOTED layouts.
+    static enum TREE_ORIENTATION {
+        ROOT_LEFT("root at left"),
+        ROOT_TOP("root at top"),
+        ROOT_BOTTOM("root at bottom");
+
+        private final String _name;
+
+        private TREE_ORIENTATION(final String name) {
+            _name = name;
+        }
+
+        @Override
+        public String toString() {
+            return _name;
+        }
     }
 
     static enum PHYLOGENY_DISPLAY_TYPE {
@@ -134,6 +155,7 @@ final public class Options {
     private short _number_of_digits_after_comma_for_confidence_values;
     private OVERVIEW_PLACEMENT_TYPE _ov_placement;
     private PHYLOGENY_GRAPHICS_TYPE _phylogeny_graphics_type;
+    private TREE_ORIENTATION _tree_orientation;
     // The default categorical palette for "Color by property". Held here (not just per TreePanel) so the last
     // palette the user chose becomes the default for new tabs/sessions and can be persisted (see GuiPreferences).
     private String _color_palette_name;
@@ -264,6 +286,7 @@ final public class Options {
         _support_threshold = SUPPORT_THRESHOLD_DEFAULT;
         _print_black_and_white = false;
         _phylogeny_graphics_type = PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR;
+        _tree_orientation = TREE_ORIENTATION.ROOT_LEFT;
         _color_palette_name = PropertyColorScheme.DEFAULT_PALETTE_NAME;
         _base_font = new Font(Configuration.getDefaultFontFamilyName(), Font.PLAIN, AptxConstants.DEFAULT_TREE_FONT_SIZE);
         _match_whole_terms_only = false;
@@ -367,6 +390,10 @@ final public class Options {
 
     final PHYLOGENY_GRAPHICS_TYPE getPhylogenyGraphicsType() {
         return _phylogeny_graphics_type;
+    }
+
+    final TREE_ORIENTATION getTreeOrientation() {
+        return _tree_orientation;
     }
 
     /** The default categorical palette for "Color by property" (see {@link PropertyColorScheme#paletteNames()}). */
@@ -681,6 +708,10 @@ final public class Options {
 
     final void setPhylogenyGraphicsType(final PHYLOGENY_GRAPHICS_TYPE phylogeny_graphics_type) {
         _phylogeny_graphics_type = phylogeny_graphics_type;
+    }
+
+    final void setTreeOrientation(final TREE_ORIENTATION tree_orientation) {
+        _tree_orientation = tree_orientation;
     }
 
     final void setPrintBlackAndWhite(final boolean print_black_and_white) {

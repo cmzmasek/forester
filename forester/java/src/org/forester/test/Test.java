@@ -682,6 +682,30 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Root-on-top/bottom orientation (render + hit-test): ");
+        if (org.forester.archaeopteryx.OrientationRenderTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Root-on-top/bottom orientation (zoom controls): ");
+        if (org.forester.archaeopteryx.OrientationZoomControlTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Root-on-top/bottom orientation (overview thumbnail): ");
+        if (org.forester.archaeopteryx.OrientationOverviewTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Search emphasis (bold + dim render): ");
         if (org.forester.archaeopteryx.SearchEmphasisRenderTest.test()) {
             System.out.println("OK.");
@@ -724,6 +748,14 @@ public final class Test {
         }
         System.out.print("About/Help (trimmed sections, bundled logo, GitHub links): ");
         if (org.forester.archaeopteryx.AboutDialogTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Tree-style removal (Curved/Convex gone, stale value tolerated): ");
+        if (org.forester.archaeopteryx.TreeStyleRemovalTest.test()) {
             System.out.println("OK.");
             succeeded++;
         } else {

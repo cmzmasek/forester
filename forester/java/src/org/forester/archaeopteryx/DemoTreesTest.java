@@ -72,6 +72,11 @@ public final class DemoTreesTest {
         ok &= hasNumericRef( "zebra-stripes.xml", "data:reads" );
         // flip vertically: a ladder with several ordered tips so the top<->bottom reversal is unmistakable
         ok &= hasAtLeastTips( "flip-vertically.xml", 6 );
+        // root-on-top orientation: a phylogram with several tips + branch lengths + internal support, so the vertical
+        // dendrogram shows 45-degree tip labels and upright support/branch-length numbers
+        ok &= hasAtLeastTips( "root-on-top.xml", 8 );
+        ok &= hasBranchLengths( "root-on-top.xml" );
+        ok &= hasInternalConfidence( "root-on-top.xml" );
         // search emphasis: enough tips + a searchable token shared by a subset (so a search highlights several) +
         // internal confidence values (so "Dim Non-Matches" fading the support numbers too is demonstrable)
         ok &= hasAtLeastTips( "search-emphasis.xml", 12 );

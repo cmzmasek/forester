@@ -73,9 +73,6 @@ final class KeyboardShortcuts {
                 new Shortcut( ALT + "O", "Order (ladderize) the subtrees" ),
                 new Shortcut( ALT + "U", "Uncollapse all collapsed clades" ),
                 new Shortcut( ALT + "R  /  " + ALT + SHIFT + "R", "Return to the parent tree / to the whole tree" ) ) ) );
-        groups.add( new ShortcutGroup( "Display", List.of(
-                new Shortcut( "D", "Toggle label direction (horizontal / radial)" ),
-                new Shortcut( "X", "Switch the tree style" ) ) ) );
         groups.add( new ShortcutGroup( "Circular / unrooted style only", List.of(
                 new Shortcut( "S  /  A", "Rotate clockwise / counter-clockwise" ) ) ) );
         groups.add( new ShortcutGroup( "Overview (when shown)", List.of(

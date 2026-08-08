@@ -99,6 +99,7 @@ public final class ResetToDefaultsTest {
         o.setDimNonMatches( false );   // default is ON, so drive to OFF to prove reset restores it
         o.setPulseFoundNodes( false ); // default is ON, so drive to OFF to prove reset restores it
         o.setAbbreviateScientificTaxonNames( true );
+        o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP ); // default is ROOT_LEFT
         o.setSupportVisualization( SUPPORT_VISUALIZATION.SIZE_SCALED );
         // search options (reset by init, resynced onto the control-panel checkboxes by Reset to Defaults)
         o.setSearchCaseSensitive( true );
@@ -133,6 +134,7 @@ public final class ResetToDefaultsTest {
         ok &= eq( "nodeSize", o.getDefaultNodeShapeSize(), def.getDefaultNodeShapeSize() );
         ok &= eq( "ovPlacement", o.getOvPlacement(), def.getOvPlacement() );
         ok &= eq( "graphicsType", o.getPhylogenyGraphicsType(), def.getPhylogenyGraphicsType() );
+        ok &= eq( "treeOrientation", o.getTreeOrientation(), def.getTreeOrientation() );
         ok &= eq( "palette", o.getColorPaletteName(), def.getColorPaletteName() );
         ok &= eq( "showScaleGrid", o.isShowScaleGrid(), def.isShowScaleGrid() );
         ok &= eq( "showScaleAxis", o.isShowScaleAxis(), def.isShowScaleAxis() );
@@ -146,6 +148,7 @@ public final class ResetToDefaultsTest {
         // reset == fresh-default, which would still pass if BOTH flipped)
         ok &= eq( "dimNonMatches default ON", def.isDimNonMatches(), true );
         ok &= eq( "pulseFoundNodes default ON", def.isPulseFoundNodes(), true );
+        ok &= eq( "treeOrientation default LEFT", def.getTreeOrientation(), Options.TREE_ORIENTATION.ROOT_LEFT );
         ok &= eq( "abbreviateNames", o.isAbbreviateScientificTaxonNames(), def.isAbbreviateScientificTaxonNames() );
         ok &= eq( "supportViz", o.getSupportVisualization(), def.getSupportVisualization() );
         ok &= eq( "searchCase", o.isSearchCaseSensitive(), def.isSearchCaseSensitive() );

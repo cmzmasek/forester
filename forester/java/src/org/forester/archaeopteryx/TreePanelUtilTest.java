@@ -21,6 +21,8 @@
 package org.forester.archaeopteryx;
 
 import java.awt.Color;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -56,7 +58,89 @@ public final class TreePanelUtilTest {
                 && testRankTaxonCounts() && testTaxonomyLabel() && testRankColorization() && testTipQueryName()
                 && testCladeBands() && testRankColorizationViaSequenceIds() && testInternalLabelAboveBranchLayout()
                 && testAbbreviateScientificName() && testSupportColor() && testScaleGridLines()
-                && testScaleAxisTickValues() && testFormatCompactNumber() && testHpdBarXRange();
+                && testScaleAxisTickValues() && testFormatCompactNumber() && testHpdBarXRange()
+                && testOrientationTransform() && testInternalLabelAlignWidth();
+    }
+
+    /** The vertical internal-label right-alignment width: the taxonomy's trailing space is dropped only when the
+     *  taxonomy is the rightmost element (no node data), so a taxonomy-only label ends flush at the branch. */
+    private static boolean testInternalLabelAlignWidth() {
+        final int space = 4;
+        // taxonomy only -> drop the trailing space so it right-aligns flush at the branch
+        if ( TreePanelUtil.internalLabelAlignWidth( 30, 0, space, true, true ) != ( 30 - space ) ) {
+            System.out.println( "  internalLabelAlignWidth: taxonomy-only must drop the trailing space" );
+            return false;
+        }
+        // taxonomy + node data -> node data (no trailing space) is rightmost, so keep the full width
+        if ( TreePanelUtil.internalLabelAlignWidth( 30, 20, space, true, false ) != 50 ) {
+            System.out.println( "  internalLabelAlignWidth: taxonomy+data must keep the full width" );
+            return false;
+        }
+        // node data only (no taxonomy) -> nothing to drop
+        if ( TreePanelUtil.internalLabelAlignWidth( 0, 20, space, false, false ) != 20 ) {
+            System.out.println( "  internalLabelAlignWidth: data-only must keep the full width" );
+            return false;
+        }
+        // never negative (a taxonomy narrower than one space)
+        if ( TreePanelUtil.internalLabelAlignWidth( 2, 0, space, true, true ) != 0 ) {
+            System.out.println( "  internalLabelAlignWidth: must clamp to >= 0" );
+            return false;
+        }
+        return true;
+    }
+
+    /** The vertical-orientation rotation R: exact corner mappings, a pure rotation (determinant +1, no mirror), all
+     *  four logical corners landing in the positive quadrant, and an R^-1 round-trip. Pure math -> headless. */
+    private static boolean testOrientationTransform() {
+        final double w = 800; // logical depth extent (root x=0 .. tip x=w)
+        final double h = 300; // logical breadth/tip-spread extent (y=0 .. y=h)
+        if ( !TreePanelUtil.orientationTransformFor( Options.TREE_ORIENTATION.ROOT_LEFT, w, h ).isIdentity() ) {
+            return fail( "ROOT_LEFT transform should be the identity" );
+        }
+        // ROOT_TOP: (x,y) -> (h - y, x)
+        final AffineTransform top = TreePanelUtil.orientationTransformFor( Options.TREE_ORIENTATION.ROOT_TOP, w, h );
+        if ( !mapsTo( top, 0, 0, h, 0 ) || !mapsTo( top, w, 0, h, w ) || !mapsTo( top, 0, h, 0, 0 )
+                || !mapsTo( top, w, h, 0, w ) ) {
+            return fail( "ROOT_TOP corner mapping wrong" );
+        }
+        // ROOT_BOTTOM: (x,y) -> (y, w - x)
+        final AffineTransform bot = TreePanelUtil.orientationTransformFor( Options.TREE_ORIENTATION.ROOT_BOTTOM, w, h );
+        if ( !mapsTo( bot, 0, 0, 0, w ) || !mapsTo( bot, w, 0, 0, 0 ) || !mapsTo( bot, 0, h, h, w )
+                || !mapsTo( bot, w, h, h, 0 ) ) {
+            return fail( "ROOT_BOTTOM corner mapping wrong" );
+        }
+        for ( final AffineTransform r : new AffineTransform[] { top, bot } ) {
+            if ( Math.abs( r.getDeterminant() - 1.0 ) > 1.0e-9 ) {
+                return fail( "orientation transform must be a pure rotation (determinant +1)" );
+            }
+            for ( final double[] c : new double[][] { { 0, 0 }, { w, 0 }, { 0, h }, { w, h } } ) {
+                final Point2D.Double p = new Point2D.Double( c[ 0 ], c[ 1 ] );
+                r.transform( p, p );
+                if ( ( p.x < -1.0e-6 ) || ( p.y < -1.0e-6 ) ) {
+                    return fail( "orientation transform leaves a corner in a negative quadrant: " + p );
+                }
+            }
+            try {
+                final Point2D.Double p = new Point2D.Double( 123.5, 47.25 );
+                final Point2D.Double q = new Point2D.Double();
+                r.transform( p, q );
+                r.createInverse().transform( q, q );
+                if ( ( Math.abs( q.x - p.x ) > 1.0e-6 ) || ( Math.abs( q.y - p.y ) > 1.0e-6 ) ) {
+                    return fail( "R^-1(R(p)) != p" );
+                }
+            }
+            catch ( final java.awt.geom.NoninvertibleTransformException e ) {
+                return fail( "orientation transform should be invertible: " + e );
+            }
+        }
+        return true;
+    }
+
+    private static boolean mapsTo( final AffineTransform t, final double x, final double y, final double ex,
+                                   final double ey ) {
+        final Point2D.Double p = new Point2D.Double( x, y );
+        t.transform( p, p );
+        return ( Math.abs( p.x - ex ) < 1.0e-6 ) && ( Math.abs( p.y - ey ) < 1.0e-6 );
     }
 
     /** A node-age HPD bar is anchored to the node's own x and offset by the age deltas (older->left, younger->right);

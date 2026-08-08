@@ -365,17 +365,21 @@ final class ControlPanel extends JPanel implements ActionListener {
                     showWhole();
                 }
                 // Zoom buttons
+                // Zoom buttons are labeled by SCREEN direction (X = horizontal, Y = vertical); the screen-oriented
+                // helpers flip depth<->breadth automatically in a vertical orientation.
                 else if (e.getSource() == _zoom_in_x) {
-                    zoomInX(AptxConstants.BUTTON_ZOOM_IN_FACTOR, AptxConstants.BUTTON_ZOOM_IN_X_CORRECTION_FACTOR);
+                    zoomInScreenX(AptxConstants.BUTTON_ZOOM_IN_FACTOR, AptxConstants.BUTTON_ZOOM_IN_X_CORRECTION_FACTOR);
                     displayedPhylogenyMightHaveChanged(false);
                 } else if (e.getSource() == _zoom_in_y) {
-                    zoomInY(AptxConstants.BUTTON_ZOOM_IN_FACTOR);
+                    zoomInScreenY(AptxConstants.BUTTON_ZOOM_IN_FACTOR, AptxConstants.BUTTON_ZOOM_IN_X_CORRECTION_FACTOR);
                     displayedPhylogenyMightHaveChanged(false);
                 } else if (e.getSource() == _zoom_out_x) {
-                    zoomOutX(AptxConstants.BUTTON_ZOOM_OUT_FACTOR, AptxConstants.BUTTON_ZOOM_OUT_X_CORRECTION_FACTOR);
+                    zoomOutScreenX(AptxConstants.BUTTON_ZOOM_OUT_FACTOR,
+                            AptxConstants.BUTTON_ZOOM_OUT_X_CORRECTION_FACTOR);
                     displayedPhylogenyMightHaveChanged(false);
                 } else if (e.getSource() == _zoom_out_y) {
-                    zoomOutY(AptxConstants.BUTTON_ZOOM_OUT_FACTOR);
+                    zoomOutScreenY(AptxConstants.BUTTON_ZOOM_OUT_FACTOR,
+                            AptxConstants.BUTTON_ZOOM_OUT_X_CORRECTION_FACTOR);
                     displayedPhylogenyMightHaveChanged(false);
                 } else if (e.getSource() == _show_whole) {
                     displayedPhylogenyMightHaveChanged(true);
@@ -383,7 +387,11 @@ final class ControlPanel extends JPanel implements ActionListener {
                 } else if (e.getSource() == _expand_y) {
                     expandYToFitLabels();
                 } else if (e.getSource() == _fit_width) {
-                    fitWidth();
+                    if (isVerticalOrientation()) {
+                        fitHeight();
+                    } else {
+                        fitWidth();
+                    }
                 } else if (e.getSource() == _return_to_whole_tree) {
                     returnedToWholeTreePressed();
                 } else if (e.getSource() == _return_to_super_tree) {
@@ -2935,6 +2943,117 @@ final class ControlPanel extends JPanel implements ActionListener {
         tp.updateOvSizes();
     }
 
+    /** The vertical-orientation analog of {@link #fitWidth()}: fit the depth (branch-length) axis -- which is drawn
+     *  vertically in a root-top/bottom tree -- to the window HEIGHT, keeping the current horizontal (tip-spread)
+     *  zoom. (calcParametersForPainting swaps the depth/breadth budgets in a vertical orientation, so this is the
+     *  transpose of fitWidth.) */
+    void fitHeight() {
+        if ((_mainpanel.getCurrentScrollPane() == null)
+                || _mainpanel.getCurrentTreePanel().getPhylogeny().isEmpty()) {
+            return;
+        }
+        final TreePanel tp = getCurrentTreePanel();
+        tp.updateSetOfCollapsedExternalNodes();
+        displayedPhylogenyMightHaveChanged(true);
+        tp.updateOvSettings();
+        tp.validate();
+        _mainpanel.validate();
+        tp.resetPreferredSize();
+        // the current breadth (tip-spread) extent WITHOUT the tilted-label diagonal allowance that resetPreferredSize
+        // adds to the preferred width -- feeding the padded width back would grow the breadth zoom on every press
+        final int keep_width = tp.logicalBreadthExtent();
+        tp.calcParametersForPainting(keep_width, _mainpanel.getSizeOfViewport().height);
+        tp.resetPreferredSize();
+        _mainpanel.adjustJScrollPane();
+        tp.repaint();
+        tp.validate();
+        _mainpanel.validate();
+        // second pass: a horizontal scrollbar may have appeared/disappeared, changing the usable height
+        tp.calcParametersForPainting(keep_width, _mainpanel.getSizeOfViewport().height);
+        tp.resetPreferredSize();
+        _mainpanel.adjustJScrollPane();
+        tp.repaint();
+        tp.updateOvSizes();
+    }
+
+    private boolean isVerticalOrientation() {
+        return (getCurrentTreePanel() != null) && getCurrentTreePanel().isVerticalOrientation();
+    }
+
+    // A zoom re-centers the scroll bar of the SCREEN axis it changes. The depth (x) axis is drawn horizontally
+    // normally but VERTICALLY in a vertical orientation, and the breadth (y) axis is the other way round -- so the
+    // zoom methods must pick the scroll bar by orientation, else zooming re-centers the wrong axis (or not at all).
+    private JScrollBar depthScrollBar() {
+        return isVerticalOrientation() ? getMainPanel().getCurrentScrollPane().getVerticalScrollBar()
+                : getMainPanel().getCurrentScrollPane().getHorizontalScrollBar();
+    }
+
+    private JScrollBar breadthScrollBar() {
+        return isVerticalOrientation() ? getMainPanel().getCurrentScrollPane().getHorizontalScrollBar()
+                : getMainPanel().getCurrentScrollPane().getVerticalScrollBar();
+    }
+
+    // Screen-oriented zoom: the buttons/keyboard/wheel are labeled by SCREEN direction (X = horizontal, Y =
+    // vertical). In a vertical orientation the tree's depth/breadth axes are swapped on screen, so "screen X"
+    // (horizontal) drives the tip-spread (the zoomY methods) and "screen Y" (vertical) drives the depth (zoomX).
+    // The correction factor is only consumed by the depth (zoomX) path.
+    void zoomInScreenX(final float factor, final float x_correction_factor) {
+        if (isVerticalOrientation()) {
+            zoomInY(factor);
+        } else {
+            zoomInX(factor, x_correction_factor);
+        }
+    }
+
+    void zoomOutScreenX(final float factor, final float x_correction_factor) {
+        if (isVerticalOrientation()) {
+            zoomOutY(factor);
+        } else {
+            zoomOutX(factor, x_correction_factor);
+        }
+    }
+
+    void zoomInScreenY(final float factor, final float x_correction_factor) {
+        if (isVerticalOrientation()) {
+            zoomInX(factor, x_correction_factor);
+        } else {
+            zoomInY(factor);
+        }
+    }
+
+    void zoomOutScreenY(final float factor, final float x_correction_factor) {
+        if (isVerticalOrientation()) {
+            zoomOutX(factor, x_correction_factor);
+        } else {
+            zoomOutY(factor);
+        }
+    }
+
+    /** The current label of the fit-width/height button ("W" horizontal, "H" vertical). For tests. */
+    String getFitButtonText() {
+        return (_fit_width == null) ? null : _fit_width.getText();
+    }
+
+    /** Keeps the orientation-sensitive zoom controls in sync with the current orientation: in a vertical (root-top/
+     *  bottom) tree the "W" (fit-width) button becomes "H" (fit the now-vertical depth axis to the window height),
+     *  and the "E" (expand) tooltip describes the now-horizontal tip spacing. The X/Y zoom buttons keep their
+     *  screen-relative labels; only their actions flip (handled at click time). Call whenever the orientation may
+     *  have changed (panel build, Settings apply, Reset to Defaults). */
+    void updateZoomButtonsForOrientation() {
+        final boolean vertical = isVerticalOrientation();
+        if (_fit_width != null) {
+            _fit_width.setText(vertical ? "H" : "W");
+            _fit_width.setToolTipText(vertical
+                    ? "fit the tree to the window height, keeping the current horizontal zoom [Alt+W]"
+                    : "fit the tree to the window width, keeping the current vertical zoom [Alt+W]");
+        }
+        if (_expand_y != null) {
+            _expand_y.setToolTipText(vertical
+                    ? "expand the tree horizontally so labels do not overlap at the current font size [Alt+E]"
+                    : "expand the tree in vertical direction so labels do not overlap at the current font size [Alt+E]");
+        }
+    }
+
     void showWholeAll() {
         for (final TreePanel tree_panel : _mainpanel.getTreePanels()) {
             if (tree_panel != null) {
@@ -2982,6 +3101,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             }
             getMainPanel().getMainFrame()
                     .setSelectedTypeInTypeMenu(getMainPanel().getCurrentTreePanel().getPhylogenyGraphicsType());
+            updateZoomButtonsForOrientation(); // W/H label + E tooltip track the current (possibly persisted) orientation
             getMainPanel().getCurrentTreePanel().updateSubSuperTreeButton();
             getMainPanel().getCurrentTreePanel().updateButtonToUncollapseAll();
             getMainPanel().getControlPanel().search0();
@@ -3048,7 +3168,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     final void zoomInX(final float factor, final float x_correction_factor) {
-        final JScrollBar sb = getMainPanel().getCurrentScrollPane().getHorizontalScrollBar();
+        final JScrollBar sb = depthScrollBar();
         final TreePanel treepanel = getMainPanel().getCurrentTreePanel();
         treepanel.multiplyUrtFactor(1f);
         if ((treepanel.getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR)
@@ -3096,7 +3216,9 @@ final class ControlPanel extends JPanel implements ActionListener {
         if (treepanel.getYdistance() >= target) {
             return;
         }
-        final JScrollBar sb = getMainPanel().getCurrentScrollPane().getVerticalScrollBar();
+        // expand grows the tip-spread (breadth) axis, which is drawn HORIZONTALLY in a vertical orientation, so
+        // re-center the breadth scroll bar (vertical normally, horizontal when vertical) -- like the zoom methods
+        final JScrollBar sb = breadthScrollBar();
         final double center = (sb.getMaximum() - sb.getMinimum()) / (sb.getValue() + (sb.getVisibleAmount() / 2.0));
         treepanel.setYdistance(target);
         getMainPanel().adjustJScrollPane();
@@ -3112,7 +3234,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     final void zoomInY(final float factor) {
-        final JScrollBar sb = getMainPanel().getCurrentScrollPane().getVerticalScrollBar();
+        final JScrollBar sb = breadthScrollBar();
         final TreePanel treepanel = getMainPanel().getCurrentTreePanel();
         treepanel.multiplyUrtFactor(1.1f);
         final double x = (sb.getMaximum() - sb.getMinimum()) / (sb.getValue() + (sb.getVisibleAmount() / 2.0));
@@ -3130,7 +3252,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         final TreePanel treepanel = getMainPanel().getCurrentTreePanel();
         treepanel.multiplyUrtFactor(1f);
         if ((treepanel.getXdistance() * factor) > 0.0) {
-            final JScrollBar sb = getMainPanel().getCurrentScrollPane().getHorizontalScrollBar();
+            final JScrollBar sb = depthScrollBar();
             if ((treepanel.getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR)
                     || (treepanel.getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED)
                     || isDrawPhylogram(getMainPanel().getCurrentTabIndex())
@@ -3173,7 +3295,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         final TreePanel treepanel = getMainPanel().getCurrentTreePanel();
         treepanel.multiplyUrtFactor(0.9f);
         if ((treepanel.getYdistance() * factor) > 0.0) {
-            final JScrollBar sb = getMainPanel().getCurrentScrollPane().getVerticalScrollBar();
+            final JScrollBar sb = breadthScrollBar();
             final double x = (sb.getMaximum() - sb.getMinimum())
                     / (sb.getValue() + (sb.getVisibleAmount() / 2.0));
             treepanel.setYdistance((treepanel.getYdistance() * factor));

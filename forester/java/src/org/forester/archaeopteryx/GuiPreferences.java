@@ -34,6 +34,7 @@ import java.util.function.Predicate;
 import org.forester.archaeopteryx.Options.OVERVIEW_PLACEMENT_TYPE;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
 import org.forester.archaeopteryx.Options.SUPPORT_VISUALIZATION;
+import org.forester.archaeopteryx.Options.TREE_ORIENTATION;
 import org.forester.phylogeny.data.NodeVisualData.NodeFill;
 import org.forester.phylogeny.data.NodeVisualData.NodeShape;
 
@@ -115,6 +116,11 @@ final class GuiPreferences {
                       t -> ( t != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR ) && ( t != PHYLOGENY_GRAPHICS_TYPE.UNROOTED ) ),
             enumPref( "overview_placement", Options::getOvPlacement, Options::setOvPlacement,
                       OVERVIEW_PLACEMENT_TYPE::valueOf ),
+            // Root orientation (rectangular family): ROOT_LEFT / ROOT_TOP / ROOT_BOTTOM. All three are safe to
+            // restore -- unlike the radial graphics types above, orientation is simply a no-op under CIRCULAR/
+            // UNROOTED (the paint path gates it), so no exclusion predicate is needed.
+            enumPref( "tree_orientation", Options::getTreeOrientation, Options::setTreeOrientation,
+                      TREE_ORIENTATION::valueOf ),
             // "Color by" palette: only apply a stored name that is still a known palette (a renamed/removed
             // palette is ignored, keeping the default) so a stale file can't select a non-existent palette
             stringPref( "color_palette", Options::getColorPaletteName, Options::setColorPaletteName,

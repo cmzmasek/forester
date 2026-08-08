@@ -82,6 +82,8 @@ public final class GuiPreferencesTest {
                     ? PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR : PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE;
             final OVERVIEW_PLACEMENT_TYPE ov = ( src.getOvPlacement() == OVERVIEW_PLACEMENT_TYPE.LOWER_RIGHT )
                     ? OVERVIEW_PLACEMENT_TYPE.UPPER_LEFT : OVERVIEW_PLACEMENT_TYPE.LOWER_RIGHT;
+            final Options.TREE_ORIENTATION orient = ( src.getTreeOrientation() == Options.TREE_ORIENTATION.ROOT_TOP )
+                    ? Options.TREE_ORIENTATION.ROOT_BOTTOM : Options.TREE_ORIENTATION.ROOT_TOP;
             final String palette = altPalette( src.getColorPaletteName() ); // a real, non-current palette name
             final int raster_scale = src.getRasterExportScale() + 2;
             final boolean transparent = !src.isTransparentExportBackground();
@@ -100,6 +102,7 @@ public final class GuiPreferencesTest {
             src.setMinConfidenceFraction( min_conf );
             src.setPhylogenyGraphicsType( gtype );
             src.setOvPlacement( ov );
+            src.setTreeOrientation( orient );
             src.setColorPaletteName( palette );
             src.setRasterExportScale( raster_scale );
             src.setTransparentExportBackground( transparent );
@@ -151,6 +154,9 @@ public final class GuiPreferencesTest {
             }
             if ( dst.getOvPlacement() != ov ) {
                 return fail( "overview_placement did not round-trip" );
+            }
+            if ( dst.getTreeOrientation() != orient ) {
+                return fail( "tree_orientation did not round-trip" );
             }
             if ( !palette.equals( dst.getColorPaletteName() ) ) {
                 return fail( "color_palette did not round-trip" );

@@ -151,9 +151,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String TYPE_MENU_HEADER = "Type";
     static final String RECTANGULAR_TYPE_CBMI_LABEL = "Rectangular";
     static final String EURO_TYPE_CBMI_LABEL = "Euro Type";
-    static final String CURVED_TYPE_CBMI_LABEL = "Curved";
     static final String TRIANGULAR_TYPE_CBMI_LABEL = "Triangular";
-    static final String CONVEX_TYPE_CBMI_LABEL = "Convex";
     static final String ROUNDED_TYPE_CBMI_LABEL = "Rounded";
     static final String UNROOTED_TYPE_CBMI_LABEL = "Unrooted (alpha)";                                                                                                                                                          //TODO
     static final String CIRCULAR_TYPE_CBMI_LABEL = "Circular (alpha)";                                                                                                                                                          //TODO
@@ -313,8 +311,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenu _type_menu;
     JCheckBoxMenuItem _rectangular_type_cbmi;
     JCheckBoxMenuItem _triangular_type_cbmi;
-    JCheckBoxMenuItem _curved_type_cbmi;
-    JCheckBoxMenuItem _convex_type_cbmi;
     JCheckBoxMenuItem _euro_type_cbmi;
     JCheckBoxMenuItem _rounded_type_cbmi;
     JCheckBoxMenuItem _unrooted_type_cbmi;
@@ -561,8 +557,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 _line_up_renderable_data_cbmi.setSelected(true);
             }
             updateOptions(getOptions());
-        } else if ((o == _rectangular_type_cbmi) || (o == _triangular_type_cbmi) || (o == _curved_type_cbmi)
-                || (o == _convex_type_cbmi) || (o == _euro_type_cbmi) || (o == _rounded_type_cbmi)
+        } else if ((o == _rectangular_type_cbmi) || (o == _triangular_type_cbmi)
+                || (o == _euro_type_cbmi) || (o == _rounded_type_cbmi)
                 || (o == _unrooted_type_cbmi) || (o == _circular_type_cbmi)) {
             typeChanged(o);
         } else if (o == _about_item) {
@@ -959,21 +955,16 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _type_menu.add(_rectangular_type_cbmi = new JCheckBoxMenuItem(MainFrame.RECTANGULAR_TYPE_CBMI_LABEL));
         _type_menu.add(_euro_type_cbmi = new JCheckBoxMenuItem(MainFrame.EURO_TYPE_CBMI_LABEL));
         _type_menu.add(_rounded_type_cbmi = new JCheckBoxMenuItem(MainFrame.ROUNDED_TYPE_CBMI_LABEL));
-        _type_menu.add(_curved_type_cbmi = new JCheckBoxMenuItem(MainFrame.CURVED_TYPE_CBMI_LABEL));
         _type_menu.add(_triangular_type_cbmi = new JCheckBoxMenuItem(MainFrame.TRIANGULAR_TYPE_CBMI_LABEL));
-        _type_menu.add(_convex_type_cbmi = new JCheckBoxMenuItem(MainFrame.CONVEX_TYPE_CBMI_LABEL));
         _type_menu.add(_unrooted_type_cbmi = new JCheckBoxMenuItem(MainFrame.UNROOTED_TYPE_CBMI_LABEL));
         _type_menu.add(_circular_type_cbmi = new JCheckBoxMenuItem(MainFrame.CIRCULAR_TYPE_CBMI_LABEL));
         customizeCheckBoxMenuItem(_rectangular_type_cbmi, false);
         customizeCheckBoxMenuItem(_triangular_type_cbmi, false);
         customizeCheckBoxMenuItem(_euro_type_cbmi, false);
         customizeCheckBoxMenuItem(_rounded_type_cbmi, false);
-        customizeCheckBoxMenuItem(_curved_type_cbmi, false);
-        customizeCheckBoxMenuItem(_convex_type_cbmi, false);
         customizeCheckBoxMenuItem(_unrooted_type_cbmi, false);
         customizeCheckBoxMenuItem(_circular_type_cbmi, false);
         _triangular_type_cbmi.setToolTipText("not suitable for phylograms");
-        _curved_type_cbmi.setToolTipText("not suitable for phylograms");
         _unrooted_type_cbmi.setToolTipText(MainFrame.USE_MOUSEWHEEL_SHIFT_TO_ROTATE);
         _circular_type_cbmi.setToolTipText(MainFrame.USE_MOUSEWHEEL_SHIFT_TO_ROTATE);
         initializeTypeMenu(getOptions());
@@ -1768,9 +1759,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         return _help_jmenu;
     }
 
-    JCheckBoxMenuItem getlabelDirectionCbmi() {
-        return _label_direction_cbmi;
-    }
 
     final Phylogeny getSpeciesTree() {
         return _species_tree;
@@ -1779,12 +1767,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     void initializeTypeMenu(final Options options) {
         setTypeMenuToAllUnselected();
         switch (options.getPhylogenyGraphicsType()) {
-            case CONVEX:
-                _convex_type_cbmi.setSelected(true);
-                break;
-            case CURVED:
-                _curved_type_cbmi.setSelected(true);
-                break;
             case EURO_STYLE:
                 _euro_type_cbmi.setSelected(true);
                 break;
@@ -1902,12 +1884,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             case CIRCULAR:
                 _circular_type_cbmi.setSelected(true);
                 break;
-            case CONVEX:
-                _convex_type_cbmi.setSelected(true);
-                break;
-            case CURVED:
-                _curved_type_cbmi.setSelected(true);
-                break;
             case EURO_STYLE:
                 _euro_type_cbmi.setSelected(true);
                 break;
@@ -1933,8 +1909,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     }
 
     void setTypeMenuToAllUnselected() {
-        _convex_type_cbmi.setSelected(false);
-        _curved_type_cbmi.setSelected(false);
         _euro_type_cbmi.setSelected(false);
         _rounded_type_cbmi.setSelected(false);
         _triangular_type_cbmi.setSelected(false);
@@ -2107,10 +2081,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             options.setPhylogenyGraphicsType(PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR);
         } else if ((_triangular_type_cbmi != null) && _triangular_type_cbmi.isSelected()) {
             options.setPhylogenyGraphicsType(PHYLOGENY_GRAPHICS_TYPE.TRIANGULAR);
-        } else if ((_curved_type_cbmi != null) && _curved_type_cbmi.isSelected()) {
-            options.setPhylogenyGraphicsType(PHYLOGENY_GRAPHICS_TYPE.CURVED);
-        } else if ((_convex_type_cbmi != null) && _convex_type_cbmi.isSelected()) {
-            options.setPhylogenyGraphicsType(PHYLOGENY_GRAPHICS_TYPE.CONVEX);
         } else if ((_euro_type_cbmi != null) && _euro_type_cbmi.isSelected()) {
             options.setPhylogenyGraphicsType(PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE);
         } else if ((_rounded_type_cbmi != null) && _rounded_type_cbmi.isSelected()) {
@@ -2214,7 +2184,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 nh == NH_CONVERSION_SUPPORT_VALUE_STYLE.IN_SQUARE_BRACKETS);
         setSelected(_use_internal_names_for_conf_in_nh_export_cbmi,
                 nh == NH_CONVERSION_SUPPORT_VALUE_STYLE.AS_INTERNAL_NODE_NAMES);
-        // setSelectedTypeInTypeMenu -> setTypeMenuToAllUnselected dereferences the 8 type items unguarded; match the
+        // setSelectedTypeInTypeMenu -> setTypeMenuToAllUnselected dereferences the 6 type items unguarded; match the
         // null-tolerance of the rest of this method (and updateOptions) so a frame without a Type menu can't NPE
         if (_rectangular_type_cbmi != null) {
             setSelectedTypeInTypeMenu(options.getPhylogenyGraphicsType());
@@ -2254,6 +2224,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 // re-seed the always-visible control-panel controls (theme radios + search checkboxes) that hold
                 // their own state -- else they stay stale and the search checkboxes clobber the reset on next click
                 cp.resyncFromOptions();
+                cp.updateZoomButtonsForOrientation(); // orientation reset to ROOT_LEFT -> H reverts to W
             }
             final TreePanel current = getMainPanel().getCurrentTreePanel();
             if ((current != null) && (cp != null)) {

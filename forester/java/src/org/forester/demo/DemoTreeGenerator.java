@@ -64,6 +64,7 @@ public final class DemoTreeGenerator {
         write( dir, "node-hpd-bars.xml", hpdBarsTree() );
         write( dir, "zebra-stripes.xml", zebraStripesTree() );
         write( dir, "flip-vertically.xml", flipVerticallyTree() );
+        write( dir, "root-on-top.xml", rootOnTopTree() );
         write( dir, "search-emphasis.xml", searchEmphasisTree() );
         System.out.println( "Wrote demo trees to " + dir.getAbsolutePath() );
     }
@@ -252,6 +253,28 @@ public final class DemoTreeGenerator {
     private static PhylogenyNode conf( final PhylogenyNode node, final double value ) {
         node.getBranchData().addConfidence( new Confidence( value, "bootstrap" ) );
         return node;
+    }
+
+    // ----- "Root at top / bottom" orientation: a small balanced phylogram with branch lengths and bootstrap support,
+    //       so the vertical orientation shows a dendrogram with 45-degree tip labels and UPRIGHT support / branch-length
+    //       numbers. Load -> Settings > Display > Orientation: root at top. (Later: pairs with columns below the tips.)
+    private static Phylogeny rootOnTopTree() {
+        final PhylogenyNode mammals = conf( clade( 0.10,
+                conf( clade( 0.08, blLeaf( "Human", 0.06 ), blLeaf( "Chimp", 0.05 ), blLeaf( "Gorilla", 0.07 ) ), 96 ),
+                conf( clade( 0.09, blLeaf( "Mouse", 0.11 ), blLeaf( "Rat", 0.10 ) ), 88 ) ), 99 );
+        final PhylogenyNode birds = conf( clade( 0.12,
+                conf( clade( 0.07, blLeaf( "Chicken", 0.09 ), blLeaf( "Turkey", 0.08 ) ), 90 ),
+                conf( clade( 0.10, blLeaf( "Finch", 0.12 ), blLeaf( "Sparrow", 0.11 ) ), 84 ) ), 97 );
+        final PhylogenyNode fish = conf( clade( 0.14, blLeaf( "Zebrafish", 0.16 ), blLeaf( "Salmon", 0.15 ),
+                                                blLeaf( "Trout", 0.14 ) ), 91 );
+        final PhylogenyNode root = clade( 0, conf( clade( 0.06, mammals, birds ), 100 ), fish );
+        final Phylogeny phy = tree( root, "Root at top (demo)",
+                "Synthetic 12-tip vertebrate phylogram with branch lengths (substitutions/site) and bootstrap support "
+                        + "on the internal nodes. Set Settings > Display > Orientation to \"root at top\" (or \"root at "
+                        + "bottom\"): the tree becomes a vertical dendrogram with 45-degree tip labels, while the support "
+                        + "and branch-length numbers stay upright." );
+        phy.setDistanceUnit( "substitutions/site" );
+        return phy;
     }
 
     // ----- "Scale Axis": a phylogram whose branch lengths (substitutions/site) span a useful range, so the labeled

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" branch_length_unit="substitutions/site" rerootable="true">
+  <name>Root at top (demo)</name>
+  <description>Synthetic 12-tip vertebrate phylogram with branch lengths (substitutions/site) and bootstrap support on the internal nodes. Set Settings &gt; Display &gt; Orientation to &quot;root at top&quot; (or &quot;root at bottom&quot;): the tree becomes a vertical dendrogram with 45-degree tip labels, while the support and branch-length numbers stay upright.</description>
+  <clade>
+    <branch_length>0.0</branch_length>
+    <clade>
+      <branch_length>0.06</branch_length>
+      <confidence type="bootstrap">100</confidence>
+      <clade>
+        <branch_length>0.1</branch_length>
+        <confidence type="bootstrap">99</confidence>
+        <clade>
+          <branch_length>0.08</branch_length>
+          <confidence type="bootstrap">96</confidence>
+          <clade>
+            <name>Human</name>
+            <branch_length>0.06</branch_length>
+          </clade>
+          <clade>
+            <name>Chimp</name>
+            <branch_length>0.05</branch_length>
+          </clade>
+          <clade>
+            <name>Gorilla</name>
+            <branch_length>0.07</branch_length>
+          </clade>
+        </clade>
+        <clade>
+          <branch_length>0.09</branch_length>
+          <confidence type="bootstrap">88</confidence>
+          <clade>
+            <name>Mouse</name>
+            <branch_length>0.11</branch_length>
+          </clade>
+          <clade>
+            <name>Rat</name>
+            <branch_length>0.1</branch_length>
+          </clade>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>0.12</branch_length>
+        <confidence type="bootstrap">97</confidence>
+        <clade>
+          <branch_length>0.07</branch_length>
+          <confidence type="bootstrap">90</confidence>
+          <clade>
+            <name>Chicken</name>
+            <branch_length>0.09</branch_length>
+          </clade>
+          <clade>
+            <name>Turkey</name>
+            <branch_length>0.08</branch_length>
+          </clade>
+        </clade>
+        <clade>
+          <branch_length>0.1</branch_length>
+          <confidence type="bootstrap">84</confidence>
+          <clade>
+            <name>Finch</name>
+            <branch_length>0.12</branch_length>
+          </clade>
+          <clade>
+            <name>Sparrow</name>
+            <branch_length>0.11</branch_length>
+          </clade>
+        </clade>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.14</branch_length>
+      <confidence type="bootstrap">91</confidence>
+      <clade>
+        <name>Zebrafish</name>
+        <branch_length>0.16</branch_length>
+      </clade>
+      <clade>
+        <name>Salmon</name>
+        <branch_length>0.15</branch_length>
+      </clade>
+      <clade>
+        <name>Trout</name>
+        <branch_length>0.14</branch_length>
+      </clade>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>

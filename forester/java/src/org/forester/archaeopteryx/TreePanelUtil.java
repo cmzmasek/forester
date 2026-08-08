@@ -22,6 +22,7 @@ package org.forester.archaeopteryx;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.geom.AffineTransform;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -868,5 +869,53 @@ public class TreePanelUtil {
      */
     final static float yDistanceToAvoidLabelOverlap( final int label_height_px ) {
         return ( label_height_px / 2.0f ) * 1.1f;
+    }
+
+    /**
+     * The logical-&gt;screen rotation for a vertical (root-top / root-bottom) tree orientation, given the tree's
+     * LOGICAL width {@code w} (depth extent, root x=0 .. tip x=w) and height {@code h} (breadth/tip-spread extent,
+     * y=0 .. y=h). Pure rotations (determinant +1, so nothing mirrors); the translate keeps the rotated tree in the
+     * positive quadrant:
+     * <ul>
+     *   <li>ROOT_TOP turns the page 90&deg; clockwise: {@code (x,y) -> (h - y, x)} (root to the top, tips to bottom)</li>
+     *   <li>ROOT_BOTTOM turns it 90&deg; counter-clockwise: {@code (x,y) -> (y, w - x)} (root to the bottom)</li>
+     * </ul>
+     * Any other value (ROOT_LEFT) returns the identity. Pure math, no toolkit -&gt; headless-testable.
+     */
+    static AffineTransform orientationTransformFor( final Options.TREE_ORIENTATION orientation, final double w,
+                                                    final double h ) {
+        if ( orientation == Options.TREE_ORIENTATION.ROOT_TOP ) {
+            final AffineTransform r = AffineTransform.getTranslateInstance( h, 0 );
+            r.rotate( Math.PI / 2.0 );
+            return r;
+        }
+        if ( orientation == Options.TREE_ORIENTATION.ROOT_BOTTOM ) {
+            final AffineTransform r = AffineTransform.getTranslateInstance( 0, w );
+            r.rotate( -Math.PI / 2.0 );
+            return r;
+        }
+        return new AffineTransform(); // identity for ROOT_LEFT
+    }
+
+    /**
+     * The width to right-align a vertical-orientation internal-node label on. The label is drawn as an (optional)
+     * taxonomy segment followed by the node-data segment; the taxonomy label always ends with a trailing part-separator
+     * space, so when it is the RIGHTMOST drawn element (no node data follows) that trailing space is excluded from the
+     * alignment width -- otherwise the visible label would right-align one space-width left of the branch. Clamped to
+     * {@code >= 0}.
+     *
+     * @param tax_w        measured width of the taxonomy segment (includes its trailing space), 0 if none
+     * @param data_w       measured width of the node-data segment, 0 if none
+     * @param space_width  width of a space in the label font
+     * @param show_tax     whether a taxonomy segment is drawn
+     * @param data_empty   whether the node-data segment is empty
+     */
+    static int internalLabelAlignWidth( final int tax_w, final int data_w, final int space_width,
+                                        final boolean show_tax, final boolean data_empty ) {
+        final int total = tax_w + data_w;
+        if ( show_tax && data_empty ) {
+            return Math.max( 0, total - space_width );
+        }
+        return total;
     }
 }

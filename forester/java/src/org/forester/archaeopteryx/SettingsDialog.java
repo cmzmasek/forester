@@ -121,7 +121,12 @@ final class SettingsDialog extends JDialog {
         c.add( header( "Theme" ) );
         addThemeControls( c );
         c.add( header( "Layout" ) );
-        add( c, labeled( "Tree style:", treeStyleCombo() ) );
+        final JComboBox<Options.TREE_ORIENTATION> orientationCombo = enumCombo( Options.TREE_ORIENTATION.values(),
+                _mf.getOptions().getTreeOrientation(),
+                v -> { _mf.getOptions().setTreeOrientation( v ); reFitCurrentTree(); } );
+        orientationCombo.setEnabled( !isRadialStyleSelected() );
+        add( c, labeled( "Tree style:", treeStyleCombo( orientationCombo ) ) );
+        add( c, labeled( "Orientation:", orientationCombo ) );
         addRadioGroup( c, _mf._ext_node_dependent_cladogram_rbmi, _mf._non_lined_up_cladograms_rbmi );
         add( c, cb( _mf._label_direction_cbmi ) );
         add( c, cb( _mf._show_scale_cbmi ) );
@@ -401,10 +406,9 @@ final class SettingsDialog extends JDialog {
     }
 
     /** The tree-style dropdown (former "Type" menu); selecting an entry clicks its menu item. */
-    private JComboBox<String> treeStyleCombo() {
+    private JComboBox<String> treeStyleCombo( final JComboBox<?> orientation_combo ) {
         final JCheckBoxMenuItem[] items = { _mf._rectangular_type_cbmi, _mf._euro_type_cbmi, _mf._rounded_type_cbmi,
-                _mf._curved_type_cbmi, _mf._triangular_type_cbmi, _mf._convex_type_cbmi, _mf._circular_type_cbmi,
-                _mf._unrooted_type_cbmi };
+                _mf._triangular_type_cbmi, _mf._circular_type_cbmi, _mf._unrooted_type_cbmi };
         final String[] labels = new String[ items.length ];
         int selected = 0;
         for ( int i = 0; i < items.length; ++i ) {
@@ -420,8 +424,27 @@ final class SettingsDialog extends JDialog {
             if ( ( i >= 0 ) && ( items[ i ] != null ) && !items[ i ].isSelected() ) {
                 items[ i ].doClick();
             }
+            if ( orientation_combo != null ) {
+                // orientation is a no-op for the radial circular/unrooted layouts -- grey it out there
+                orientation_combo.setEnabled( !isRadialStyleSelected() );
+            }
         } );
         return combo;
+    }
+
+    private boolean isRadialStyleSelected() {
+        return ( ( _mf._circular_type_cbmi != null ) && _mf._circular_type_cbmi.isSelected() )
+                || ( ( _mf._unrooted_type_cbmi != null ) && _mf._unrooted_type_cbmi.isSelected() );
+    }
+
+    /** Orientation swaps the layout's width and height, so re-fit the whole tree (recomputes the scaling constants
+     *  and preferred size) before repainting -- a plain repaint would leave the old scroll extent. */
+    private void reFitCurrentTree() {
+        if ( _mf.getCurrentTreePanel() != null ) {
+            _mf.getMainPanel().getControlPanel().updateZoomButtonsForOrientation(); // W<->H label, E tooltip
+            _mf.getMainPanel().getControlPanel().showWhole();
+            _mf.getCurrentTreePanel().repaint();
+        }
     }
 
     // The categorical palette used by the "Color by:" feature for the current tree.

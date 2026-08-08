@@ -48,11 +48,10 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Arc2D;
-import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
-import java.awt.geom.QuadCurve2D;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.print.PageFormat;
 import java.awt.print.Printable;
@@ -289,12 +288,24 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     HashMap<Long, Short> _nodeid_dist_to_leaf = new HashMap<>();
     final private Arc2D _arc = new Arc2D.Double();
     private AffineTransform _at;
+    // Root-on-top / root-on-bottom orientation: the tree is laid out LOGICALLY (depth->Xcoord, breadth->Ycoord)
+    // exactly as always, then the whole rectangular canvas is rotated by _orientation_R (rebuilt each paint from
+    // the logical extents). Geometry rides R for free; text is re-anchored upright/45deg by withNodeTextFrame, and
+    // the viewport-fixed chrome is drawn after restoring _orientation_base_transform (the pre-rotation CTM).
+    // _orientation_R_inverse maps device points back to logical space for hit-testing. All null in ROOT_LEFT.
+    private AffineTransform _orientation_R;
+    private AffineTransform _orientation_R_inverse;
+    private AffineTransform _orientation_base_transform;
+    // R depends only on the orientation + the logical extents (a function of the layout params + tree structure); those
+    // change only via calcParametersForPainting / resetPreferredSize (never during a plain repaint), so R is cached and
+    // rebuilt lazily -- a hover/pulse/scroll repaint reuses it instead of re-walking the tree (calculateHeight) for R.
+    private boolean _orientation_transform_dirty = true;
+    private Options.TREE_ORIENTATION _orientation_R_built_for;
     private int _circ_max_depth;
     final private Set<Long> _collapsed_external_nodeid_set = new HashSet<>();
     private JColorChooser _color_chooser = null;
     private Configuration _configuration = null;
     private ControlPanel _control_panel = null;
-    private final CubicCurve2D _cubic_curve = new CubicCurve2D.Float();
     private int _domain_structure_e_value_thr_exp = AptxConstants.DOMAIN_STRUCTURE_E_VALUE_THR_DEFAULT_EXP;
     private double _domain_structure_width = AptxConstants.DOMAIN_STRUCTURE_DEFAULT_WIDTH;
     private int _dynamic_hiding_factor = 0;
@@ -346,7 +357,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private Phylogeny _phylogeny = null;
     private final Path2D.Float _polygon = new Path2D.Float();
     private final StringBuffer _popup_buffer = new StringBuffer();
-    private final QuadCurve2D _quad_curve = new QuadCurve2D.Float();
     private Sequence _query_sequence = null;
     private final Rectangle2D _rectangle = new Rectangle2D.Float();
     private final RenderingHints _rendering_hints = new RenderingHints(RenderingHints.KEY_RENDERING,
@@ -520,14 +530,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             updateOvSizes();
             repaint();
         } else if (e.isShiftDown() && e.isAltDown()) {
+            // horizontal-on-screen zoom (flips to the tip-spread in a vertical orientation)
             if (notches < 0) {
                 for (int i = 0; i < (-notches); ++i) {
-                    getControlPanel().zoomInX(AptxConstants.WHEEL_ZOOM_IN_FACTOR, AptxConstants.WHEEL_ZOOM_IN_FACTOR);
+                    getControlPanel().zoomInScreenX(AptxConstants.WHEEL_ZOOM_IN_FACTOR,
+                            AptxConstants.WHEEL_ZOOM_IN_FACTOR);
                     getControlPanel().displayedPhylogenyMightHaveChanged(false);
                 }
             } else {
                 for (int i = 0; i < notches; ++i) {
-                    getControlPanel().zoomOutX(AptxConstants.WHEEL_ZOOM_OUT_FACTOR,
+                    getControlPanel().zoomOutScreenX(AptxConstants.WHEEL_ZOOM_OUT_FACTOR,
                             AptxConstants.WHEEL_ZOOM_OUT_X_CORRECTION_FACTOR);
                     getControlPanel().displayedPhylogenyMightHaveChanged(false);
                 }
@@ -550,14 +562,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     }
                 }
             } else {
+                // vertical-on-screen zoom (flips to the depth axis in a vertical orientation)
                 if (notches < 0) {
                     for (int i = 0; i < (-notches); ++i) {
-                        getControlPanel().zoomInY(AptxConstants.WHEEL_ZOOM_IN_FACTOR);
+                        getControlPanel().zoomInScreenY(AptxConstants.WHEEL_ZOOM_IN_FACTOR,
+                                AptxConstants.WHEEL_ZOOM_IN_X_CORRECTION_FACTOR);
                         getControlPanel().displayedPhylogenyMightHaveChanged(false);
                     }
                 } else {
                     for (int i = 0; i < notches; ++i) {
-                        getControlPanel().zoomOutY(AptxConstants.WHEEL_ZOOM_OUT_FACTOR);
+                        getControlPanel().zoomOutScreenY(AptxConstants.WHEEL_ZOOM_OUT_FACTOR,
+                                AptxConstants.WHEEL_ZOOM_OUT_X_CORRECTION_FACTOR);
                         getControlPanel().displayedPhylogenyMightHaveChanged(false);
                     }
                 }
@@ -1489,8 +1504,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return;
         }
         final Rectangle view = sp.getViewport().getViewRect();
-        int x = Math.round(node.getXcoord()) - (view.width / 2);
-        int y = Math.round(node.getYcoord()) - (view.height / 2);
+        // use the node's ON-SCREEN position (rotated by R in a vertical orientation), not its logical coords
+        final Point2D.Double screen = screenPointFor(node);
+        int x = (int) Math.round(screen.x) - (view.width / 2);
+        int y = (int) Math.round(screen.y) - (view.height / 2);
         x = Math.max(0, Math.min(x, Math.max(0, getWidth() - view.width)));
         y = Math.max(0, Math.min(y, Math.max(0, getHeight() - view.height)));
         sp.getViewport().setViewPosition(new Point(x, y));
@@ -1512,6 +1529,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return _last_step_target;
     }
 
+    /** Test hook: center the viewport on a node (drives the orientation-aware {@link #centerOnNode}). */
+    void centerOnNodeForTest(final PhylogenyNode node) {
+        centerOnNode(node);
+    }
+
     final private boolean isInFoundNodes0(final PhylogenyNode node) {
         return ((getFoundNodes0() != null) && getFoundNodes0().contains(node.getId()));
     }
@@ -1525,10 +1547,24 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final private boolean isNodeDataInvisible(final PhylogenyNode node) {
-        int y_dist = 40;
-        return ((node.getYcoord() < (getVisibleRect().getMinY() - y_dist))
-                || (node.getYcoord() > (getVisibleRect().getMaxY() + y_dist))
-                || ((node.getParent() != null) && (node.getParent().getXcoord() > getVisibleRect().getMaxX())));
+        // work entirely in LOGICAL space (node coords are logical): map the viewport back through R once, then cull the
+        // node's incoming-branch elbow bounding box, grown by the label reach so a node whose (possibly tilted) label
+        // pokes into the viewport is never culled. Correct in EVERY orientation (vertical included -- see the disabled
+        // per-orientation special-case this replaced).
+        final Rectangle2D vis = logicalVisibleRect();
+        if (vis == null) {
+            return false; // no meaningful viewport -> draw everything (correct, just not thrifty)
+        }
+        double minx = node.getXcoord(), maxx = node.getXcoord(), miny = node.getYcoord(), maxy = node.getYcoord();
+        if (node.getParent() != null) {
+            minx = Math.min(minx, node.getParent().getXcoord());
+            maxx = Math.max(maxx, node.getParent().getXcoord());
+            miny = Math.min(miny, node.getParent().getYcoord());
+            maxy = Math.max(maxy, node.getParent().getYcoord());
+        }
+        final double margin = 40 + Math.ceil(getLongestExtNodeInfo() / Math.sqrt(2.0));
+        return ((maxx < (vis.getMinX() - margin)) || (minx > (vis.getMaxX() + margin))
+                || (maxy < (vis.getMinY() - margin)) || (miny > (vis.getMaxY() + margin)));
     }
 
     final private boolean isNodeDataInvisibleUnrootedCirc(final PhylogenyNode node) {
@@ -1596,23 +1632,29 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 getControlPanel().expandYToFitLabels();
                 handled = true;
             } else if (e.getKeyCode() == KeyEvent.VK_W) {
-                getControlPanel().fitWidth();
+                if (isVerticalOrientation()) {
+                    getControlPanel().fitHeight();
+                } else {
+                    getControlPanel().fitWidth();
+                }
                 handled = true;
             } else if (e.getKeyCode() == KeyEvent.VK_UP) {
-                getMainPanel().getControlPanel().zoomInY(AptxConstants.WHEEL_ZOOM_IN_FACTOR);
+                getMainPanel().getControlPanel().zoomInScreenY(AptxConstants.WHEEL_ZOOM_IN_FACTOR,
+                        AptxConstants.WHEEL_ZOOM_IN_X_CORRECTION_FACTOR);
                 getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged(false);
                 handled = true;
             } else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-                getMainPanel().getControlPanel().zoomOutY(AptxConstants.WHEEL_ZOOM_OUT_FACTOR);
+                getMainPanel().getControlPanel().zoomOutScreenY(AptxConstants.WHEEL_ZOOM_OUT_FACTOR,
+                        AptxConstants.WHEEL_ZOOM_OUT_X_CORRECTION_FACTOR);
                 getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged(false);
                 handled = true;
             } else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-                getMainPanel().getControlPanel().zoomOutX(AptxConstants.WHEEL_ZOOM_OUT_FACTOR,
+                getMainPanel().getControlPanel().zoomOutScreenX(AptxConstants.WHEEL_ZOOM_OUT_FACTOR,
                         AptxConstants.WHEEL_ZOOM_OUT_X_CORRECTION_FACTOR);
                 getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged(false);
                 handled = true;
             } else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-                getMainPanel().getControlPanel().zoomInX(AptxConstants.WHEEL_ZOOM_IN_FACTOR,
+                getMainPanel().getControlPanel().zoomInScreenX(AptxConstants.WHEEL_ZOOM_IN_FACTOR,
                         AptxConstants.WHEEL_ZOOM_IN_FACTOR);
                 getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged(false);
                 handled = true;
@@ -1685,21 +1727,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     getControlPanel().displayedPhylogenyMightHaveChanged(false);
                     handled = true;
                 }
-            } else if (e.getKeyCode() == KeyEvent.VK_D) {
-                boolean selected = false;
-                if (getOptions().getNodeLabelDirection() == NODE_LABEL_DIRECTION.HORIZONTAL) {
-                    getOptions().setNodeLabelDirection(NODE_LABEL_DIRECTION.RADIAL);
-                    selected = true;
-                } else {
-                    getOptions().setNodeLabelDirection(NODE_LABEL_DIRECTION.HORIZONTAL);
-                }
-                getMainPanel().getMainFrame().getlabelDirectionCbmi().setSelected(selected);
-                repaint();
-                handled = true;
-            } else if (e.getKeyCode() == KeyEvent.VK_X) {
-                switchDisplaygetPhylogenyGraphicsType();
-                repaint();
-                handled = true;
             } else if (getOptions().isShowOverview() && isOvOn() && (e.getKeyCode() == KeyEvent.VK_O)) {
                 MainFrame.cycleOverview(getOptions(), this);
                 repaint();
@@ -2165,21 +2192,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.setColor(getTreeColorSet().getOvColor());
         if (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.TRIANGULAR) {
             drawLine(x1, y1, x2, y2, g);
-        } else if (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CONVEX) {
-            _quad_curve.setCurve(x1, y1, x1, y2, x2, y2);
-            (g).draw(_quad_curve);
-        } else if (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CURVED) {
-            final float dx = x2 - x1;
-            final float dy = y2 - y1;
-            _cubic_curve.setCurve(x1,
-                    y1,
-                    x1 + (dx * 0.4f),
-                    y1 + (dy * 0.2f),
-                    x1 + (dx * 0.6f),
-                    y1 + (dy * 0.8f),
-                    x2,
-                    y2);
-            (g).draw(_cubic_curve);
         } else {
             final float x2a = x2;
             final float x1a = x1;
@@ -2206,33 +2218,20 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         assignGraphicsForBranchWithColorForParentBranch(node, false, g, to_pdf, to_graphics_file);
         if (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.TRIANGULAR) {
             drawLine(x1, y1, x2, y2, g);
-        } else if (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CONVEX) {
-            _quad_curve.setCurve(x1, y1, x1, y2, x2, y2);
-            g.draw(_quad_curve);
-        } else if (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CURVED) {
-            final float dx = x2 - x1;
-            final float dy = y2 - y1;
-            _cubic_curve.setCurve(x1,
-                    y1,
-                    x1 + (dx * 0.4f),
-                    y1 + (dy * 0.2f),
-                    x1 + (dx * 0.6f),
-                    y1 + (dy * 0.8f),
-                    x2,
-                    y2);
-            g.draw(_cubic_curve);
         } else {
             final float x2a = x2;
             final float x1a = x1;
+            // the drawn coords (x1/y1/x2/y2) are LOGICAL (the canvas is rotated by R), so cull against the viewport
+            // mapped back into logical space -- correct in a vertical orientation too (was skipped there before)
+            final Rectangle2D log_vis = (!to_graphics_file && !to_pdf) ? logicalVisibleRect() : null;
             float y2_r = 0;
             if (node.isFirstChildNode() || node.isLastChildNode()
                     || (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE)
                     || (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.ROUNDED)) {
-                if (!to_graphics_file && !to_pdf
-                        && (((y2 < (getVisibleRect().getMinY() - 20))
-                        && (y1 < (getVisibleRect().getMinY() - 20)))
-                        || ((y2 > (getVisibleRect().getMaxY() + 20))
-                        && (y1 > (getVisibleRect().getMaxY() + 20))))) {
+                // screen-cull the vertical connector by its y-extent (both endpoints off the same side of the viewport)
+                if ((log_vis != null)
+                        && (((y2 < (log_vis.getMinY() - 20)) && (y1 < (log_vis.getMinY() - 20)))
+                        || ((y2 > (log_vis.getMaxY() + 20)) && (y1 > (log_vis.getMaxY() + 20))))) {
                     // Do nothing.
                 } else {
                     if (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE) {
@@ -2260,9 +2259,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     }
                 }
             }
-            // draw the horizontal line
-            if (!to_graphics_file && !to_pdf && ((y2 < (getVisibleRect().getMinY() - 20))
-                    || (y2 > (getVisibleRect().getMaxY() + 20)))) {
+            // draw the horizontal line (cull it when its row is off the top/bottom of the logical-space viewport)
+            if ((log_vis != null)
+                    && ((y2 < (log_vis.getMinY() - 20)) || (y2 > (log_vis.getMaxY() + 20)))) {
                 return;
             }
             float x1_r = 0;
@@ -2483,7 +2482,18 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             g.draw(_polygon);
             g.setColor(saved);
         }
-        paintNodeData(g, node, to_graphics_file, to_pdf, is_in_found_nodes, s);
+        if (isVerticalOrientation()) {
+            // a collapsed clade reads as a tip: tilt its label 45deg, and (aligned mode) draw its leader as vertical
+            // geometry + pivot the label at the aligned column -- like the external-tip labels
+            final double sf = s; // capture for the lambda (s is reassigned above)
+            if (isAlignedTipLabel(node)) {
+                drawConnection(node.getXcoord(), labelTextStartX(node), node.getYcoord(), 5, 20, g);
+            }
+            withNodeTextFrame(g, labelTextStartX(node), node.getYcoord(), tipLabelAngle(),
+                    () -> paintNodeData(g, node, to_graphics_file, to_pdf, is_in_found_nodes, sf));
+        } else {
+            paintNodeData(g, node, to_graphics_file, to_pdf, is_in_found_nodes, s);
+        }
     }
 
     /**
@@ -2567,6 +2577,105 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     (node.getYcoord() + getTreeFontSet().getSmallMaxAscent()) - 1,
                     g);
         }
+    }
+
+    // gap (px) between a vertical-orientation branch and its support / branch-length labels drawn beside it
+    private static final float VERTICAL_BRANCH_LABEL_PAD = 3f;
+
+    /** Support and/or branch-length for a VERTICAL orientation: centered at the incoming branch's midpoint, to the
+     *  RIGHT of the (on-screen vertical) branch, drawn HORIZONTALLY as "support length" -- the support in the
+     *  confidence colour, a space, then the length in the branch-length colour (either alone when only one is shown).
+     *  Placed explicitly in the base frame; the horizontal-layout positions merely rotated would sit ON the branch. */
+    private void paintBranchDataRightVertical(final Graphics2D g, final PhylogenyNode node, final boolean to_pdf,
+                                              final boolean to_graphics_file) {
+        if (node.isRoot()) {
+            return;
+        }
+        String support = "";
+        if (isShowConfidenceValuesForNode(node)) {
+            final List<Confidence> confidences = node.getBranchData().getConfidences();
+            Collections.sort(confidences);
+            final double min_confidence = getOptions().getMinConfidenceFraction() * _confidence_scale_max;
+            support = confidenceLabel(confidences, getOptions().isShowMadConfidence(), min_confidence,
+                    getOptions().isShowConfidenceStddev(),
+                    getOptions().getNumberOfDigitsAfterCommaForConfidenceValues());
+        }
+        final String length = shouldWriteBranchLength(node)
+                ? FORMATTER_BRANCH_LENGTH.format(node.getDistanceToParent()) : "";
+        if (support.isEmpty() && length.isEmpty()) {
+            return;
+        }
+        final Point2D.Double mid = new Point2D.Double((node.getParent().getXcoord() + node.getXcoord()) / 2.0,
+                node.getYcoord());
+        _orientation_R.transform(mid, mid); // midpoint of the (vertically drawn) incoming branch
+        final AffineTransform saved = g.getTransform();
+        g.setTransform(_orientation_base_transform);
+        g.setFont(getTreeFontSet().getSmallFont());
+        final boolean bw = (to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite();
+        final boolean found = isInFoundNodes(node);
+        final float baseline = (float) (mid.y + (getTreeFontSet().getSmallMaxAscent() / 2.0) - 1);
+        float x = (float) (mid.x + VERTICAL_BRANCH_LABEL_PAD);
+        if (!support.isEmpty()) {
+            g.setColor(dimNonMatch(inkColor(to_pdf, to_graphics_file, getTreeColorSet().getConfidenceColor()), found, bw));
+            TreePanel.drawString(support, x, baseline, g);
+            x += getTreeFontSet().getFontMetricsSmall().stringWidth(support + " ");
+        }
+        if (!length.isEmpty()) {
+            g.setColor(dimNonMatch(inkColor(to_pdf, to_graphics_file, getTreeColorSet().getBranchLengthColor()), found,
+                    bw));
+            TreePanel.drawString(length, x, baseline, g);
+        }
+        g.setTransform(saved);
+    }
+
+    /** Internal-node label for a VERTICAL orientation: horizontal, RIGHT-ALIGNED so it ends just LEFT of the branch,
+     *  centered at the incoming branch's midpoint -- mirroring the support/length on the right. Draws the taxonomy
+     *  (its own italic/colour) then the node-data string. Tips are skipped (their 45deg/90deg label is drawn
+     *  elsewhere); a long label extends leftward toward the neighbouring subtree, as accepted. */
+    private void paintInternalLabelLeftVertical(final Graphics2D g, final PhylogenyNode node, final boolean to_pdf,
+                                                final boolean to_graphics_file) {
+        if (node.isRoot() || !getControlPanel().isShowInternalData()) {
+            return;
+        }
+        final boolean using_visual_font = setFont(g, node);
+        final boolean is_in_found_nodes = isInFoundNodes(node);
+        final Taxonomy taxonomy = node.getNodeData().isHasTaxonomy() ? node.getNodeData().getTaxonomy() : null;
+        final boolean show_tax = (taxonomy != null)
+                && (getControlPanel().isShowTaxonomyCode() || getControlPanel().isShowTaxonomyScientificNames()
+                        || getControlPanel().isShowTaxonomyCommonNames() || getControlPanel().isShowTaxonomyRank());
+        final StringBuilder sb = new StringBuilder();
+        nodeDataAsSB(node, sb);
+        final String data_str = sb.toString().trim();
+        final int tax_w = show_tax ? taxonomyLabel(g, taxonomy, 0, 0, to_pdf, false) : 0;
+        final int data_w = data_str.isEmpty() ? 0
+                : labelStringWidth(g, data_str, using_visual_font, is_in_found_nodes, to_pdf);
+        final int total = tax_w + data_w;
+        if (total == 0) {
+            return;
+        }
+        // the taxonomy label always ends with a trailing part-separator space; when it is the RIGHTMOST drawn element
+        // (no node-data follows) that space would push the visible label one space-width left of the branch, so
+        // right-align on the visible width instead (the invisible space then falls harmlessly into the branch gap)
+        final int align_total = TreePanelUtil.internalLabelAlignWidth(tax_w, data_w,
+                getFontMetrics(g.getFont()).charWidth(' '), show_tax, data_str.isEmpty());
+        final Point2D.Double mid = new Point2D.Double((node.getParent().getXcoord() + node.getXcoord()) / 2.0,
+                node.getYcoord());
+        _orientation_R.transform(mid, mid);
+        final AffineTransform saved = g.getTransform();
+        g.setTransform(_orientation_base_transform);
+        // right-aligned so it ends just left of the branch; clamp at the canvas left edge so a long label near the
+        // breadth edge crowds the branch (accepted) rather than clipping off-canvas at x<0 (unrecoverable)
+        final float start_x = Math.max(0f, (float) (mid.x - VERTICAL_BRANCH_LABEL_PAD - align_total));
+        final float baseline = (float) (mid.y + (getFontMetrics(g.getFont()).getAscent() / 2.0) - 1);
+        if (show_tax) {
+            setColor(g, node, to_graphics_file, to_pdf, is_in_found_nodes, getTreeColorSet().getTaxonomyColor());
+            taxonomyLabel(g, taxonomy, start_x, baseline, to_pdf, true);
+        }
+        if (!data_str.isEmpty()) {
+            setColor(g, node, to_graphics_file, to_pdf, is_in_found_nodes, getTreeColorSet().getSequenceColor());
+            TreePanel.drawString(data_str, start_x + tax_w, baseline, g);
+        }
+        g.setTransform(saved);
     }
 
     /**
@@ -2880,11 +2989,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (isNodeDataInvisible(node) && !to_graphics_file && !to_pdf) {
             return 0;
         }
-        if (getControlPanel().isWriteBranchLengthValues()
-                && ((getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR)
-                || (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.ROUNDED)
-                || (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE))
-                && (!node.isRoot()) && (node.getDistanceToParent() != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT)) {
+        // horizontal mode draws the branch-length value here; a vertical orientation draws it (with the support value)
+        // horizontally to the RIGHT of the branch instead, in paintNodeRectangular via paintBranchDataRightVertical
+        if (!isVerticalOrientation() && shouldWriteBranchLength(node)) {
             paintBranchLength(g, node, to_pdf, to_graphics_file);
         }
         if (!getControlPanel().isShowInternalData() && !node.isExternal() && !node.isCollapse()) {
@@ -3000,7 +3107,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         if ((getControlPanel().getTreeDisplayType() == Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM)
                 && (node.isExternal() || node.isCollapse())) {
-            drawConnection(node.getXcoord(), pos_x - x, node.getYcoord(), 5, 20, g);
+            // in a vertical orientation the leader is drawn separately as geometry (under R, so it renders vertical)
+            // by the caller -- drawing it here would slant it, since this text path runs in the tilted 45deg frame
+            if (!isVerticalOrientation()) {
+                drawConnection(node.getXcoord(), pos_x - x, node.getYcoord(), 5, 20, g);
+            }
             if (node.isCollapse()) {
                 pos_x -= add;
             }
@@ -3507,12 +3618,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                             final boolean to_graphics_file,
                                             final boolean disallow_shortcutting) {
         final boolean is_in_found_nodes = isInFoundNodes(node);
+        final boolean vertical = isVerticalOrientation();
         if (node.isCollapse()) {
             if ((!node.isRoot() && !node.getParent().isCollapse())) {
                 paintCollapsedNode(g, node, to_graphics_file, to_pdf, is_in_found_nodes);
-                // A collapsed clade is still an internal node: show the support on the branch leading to it
-                // (the label sits on the incoming branch, left of the triangle's apex).
-                if (isShowConfidenceValuesForNode(node)) {
+                // A collapsed clade is still an internal node: show the support (and length) on its incoming branch.
+                if (vertical) {
+                    paintBranchDataRightVertical(g, node, to_pdf, to_graphics_file);
+                } else if (isShowConfidenceValuesForNode(node)) {
                     paintConfidenceValues(g, node, to_pdf, to_graphics_file);
                 }
             }
@@ -3521,8 +3634,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (node.isExternal()) {
             ++_external_node_index;
         }
-        // Confidence values
-        if (isShowConfidenceValuesForNode(node)) {
+        // Support and/or branch-length: in a vertical orientation, horizontal, to the RIGHT of the branch as
+        // "support length"; in horizontal mode, confidence here and the branch length inside paintNodeData.
+        if (vertical) {
+            paintBranchDataRightVertical(g, node, to_pdf, to_graphics_file);
+        } else if (isShowConfidenceValuesForNode(node)) {
             paintConfidenceValues(g, node, to_pdf, to_graphics_file);
         }
         // Draw a line to root:
@@ -3583,10 +3699,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             paintNodeBox(node.getXcoord(), node.getYcoord(), node, g, to_pdf, to_graphics_file);
         }
-        if (getControlPanel().isShowMolSequences() && (node.getNodeData().isHasSequence())
+        if (!vertical && getControlPanel().isShowMolSequences() && (node.getNodeData().isHasSequence())
                 && (node.getNodeData().getSequence().isMolecularSequenceAligned())
                 && (!ForesterUtil.isEmpty(node.getNodeData().getSequence().getMolecularSequence()))) {
-            paintMolecularSequences(g, node, to_pdf);
+            paintMolecularSequences(g, node, to_pdf); // deferred in vertical orientation (increment 1)
         }
         if (dynamically_hide && ((node.isExternal() && ((_external_node_index % dynamic_hiding_factor) != 1))
                 || (!node.isExternal() && ((new_x_min < 20)
@@ -3594,8 +3710,29 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 .getHeight()))))) {
             return;
         }
-        final int x = paintNodeData(g, node, to_graphics_file, to_pdf, is_in_found_nodes, 0);
-        paintNodeWithRenderableData(x, g, node, to_graphics_file, to_pdf);
+        if (vertical) {
+            if (node.isExternal()) {
+                // tip label tilts 45deg / 90deg at the tip. Aligned phylogram: draw the tip->label leader as GEOMETRY
+                // (it rides R, so it renders vertical) rather than inside the tilted text frame (which would slant it),
+                // and pivot the tilted label at the aligned column so it sits on the leader's end.
+                if (isAlignedTipLabel(node)) {
+                    drawConnection(node.getXcoord(), labelTextStartX(node), node.getYcoord(), 5, 20, g);
+                }
+                withNodeTextFrame(g, labelTextStartX(node), node.getYcoord(), tipLabelAngle(),
+                        () -> paintNodeData(g, node, to_graphics_file, to_pdf, is_in_found_nodes, 0));
+            } else {
+                // internal-node label: horizontal, right-aligned, LEFT of the branch midpoint. This path deliberately
+                // does NOT route through paintNodeData, so the other node-data overlays it draws are DEFERRED for
+                // internal nodes in a vertical orientation (increment 1): renderable domains, molecular sequences,
+                // binary characters / counts, and sequence relations. They each need the rotated-frame re-anchoring
+                // the tip labels get; niche for root-top/bottom (focused on internal LABELS, small trees). External
+                // nodes still draw them via the tilted paintNodeData path above.
+                paintInternalLabelLeftVertical(g, node, to_pdf, to_graphics_file);
+            }
+        } else {
+            final int x = paintNodeData(g, node, to_graphics_file, to_pdf, is_in_found_nodes, 0);
+            paintNodeWithRenderableData(x, g, node, to_graphics_file, to_pdf);
+        }
     }
 
     final private void paintNodeWithRenderableData(final int x,
@@ -3739,6 +3876,68 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     /**
+     * The overview thumbnail for a VERTICAL orientation. Rather than lay out a separate horizontal mini-tree (which
+     * would not match the rotated main canvas), it draws the MAIN tree's branches (their logical coords) through one
+     * transform: rotate by R into main-screen space, then scale that whole screen extent down into the overview box.
+     * Because {@link #paintOvRectangle} maps the viewport into the box with the SAME main-screen->box scaling, the
+     * mini-tree and the navigator rectangle stay aligned automatically. The endpoints are transformed by hand (not
+     * via {@code g.transform}) so the thin overview stroke is not scaled down to nothing.
+     */
+    final private void paintPhylogenyLiteVertical(final Graphics2D g) {
+        if ((_nodes_in_preorder == null) || (_orientation_R == null)) {
+            return;
+        }
+        final int w_screen = getWidth();
+        final int h_screen = getHeight();
+        if ((w_screen <= 0) || (h_screen <= 0)) {
+            return;
+        }
+        final double sx = getOvMaxWidth() / (double) w_screen;
+        final double sy = getOvMaxHeight() / (double) h_screen;
+        final AffineTransform t = AffineTransform.getTranslateInstance(getVisibleRect().x + getOvXPosition(),
+                getVisibleRect().y + getOvYPosition());
+        t.scale(sx, sy);
+        t.concatenate(_orientation_R);
+        final Stroke s = g.getStroke();
+        g.setStroke(STROKE_05);
+        g.setColor(getTreeColorSet().getOvColor());
+        final Point2D.Float pa = new Point2D.Float();
+        final Point2D.Float pb = new Point2D.Float();
+        final Point2D.Float pc = new Point2D.Float();
+        for (final PhylogenyNode node : _nodes_in_preorder) {
+            // a COLLAPSED node still draws its OWN incoming branch (the elbow to the triangle apex) -- only its hidden
+            // descendants (isHiddenUnderCollapse) and the root (no parent) are skipped, matching the horizontal overview
+            if (node.isRoot() || isHiddenUnderCollapse(node)) {
+                continue;
+            }
+            final PhylogenyNode parent = node.getParent();
+            // rectangular elbow at the node's logical coords: vertical connector at parent x + horizontal leg at node y
+            pa.setLocation(parent.getXcoord(), parent.getYcoord());
+            pb.setLocation(parent.getXcoord(), node.getYcoord());
+            pc.setLocation(node.getXcoord(), node.getYcoord());
+            t.transform(pa, pa);
+            t.transform(pb, pb);
+            t.transform(pc, pc);
+            drawLine(pa.x, pa.y, pb.x, pb.y, g);
+            drawLine(pb.x, pb.y, pc.x, pc.y, g);
+        }
+        // mark found/selected nodes, like paintNodeLite
+        if ((getFoundNodes0() != null) || (getFoundNodes1() != null)) {
+            for (final PhylogenyNode node : _nodes_in_preorder) {
+                if (isInFoundNodes(node) && !node.isCollapse() && !isHiddenUnderCollapse(node)) {
+                    pa.setLocation(node.getXcoord(), node.getYcoord());
+                    t.transform(pa, pa);
+                    g.setColor(getColorForFoundNode(node));
+                    drawRectFilled(pa.x - OVERVIEW_FOUND_NODE_BOX_SIZE_HALF, pa.y - OVERVIEW_FOUND_NODE_BOX_SIZE_HALF,
+                            OVERVIEW_FOUND_NODE_BOX_SIZE, OVERVIEW_FOUND_NODE_BOX_SIZE, g);
+                }
+            }
+        }
+        g.setStroke(s);
+        paintOvRectangle(g);
+    }
+
+    /**
      * Paint the root branch. (Differs from others because it will always be a
      * single horizontal line).
      *
@@ -3773,6 +3972,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                   int y1,
                                   final boolean to_pdf,
                                   final boolean to_graphics_file) {
+        if (isVerticalOrientation()) {
+            paintScaleVertical(g, x1, y1, to_pdf, to_graphics_file);
+            return;
+        }
         x1 += MOVE;
         final double x2 = x1 + (getScaleDistance() * getXcorrectionFactor());
         y1 -= 12;
@@ -3787,6 +3990,29 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         drawLine(x1, y3, x2, y3, g);
         if (getScaleLabel() != null) {
             g.drawString(getScaleLabel(), (x1 + 2), y3 - 2);
+        }
+        g.setStroke(s);
+    }
+
+    /** The scale bar for a vertical (root-top/bottom) orientation: the depth axis runs vertically, so the bar is
+     *  drawn vertically (its pixel length is still distance * X-correction factor) near the bottom-left, with short
+     *  horizontal end ticks and the distance label beside it. */
+    final private void paintScaleVertical(final Graphics2D g, int x1, final int y1, final boolean to_pdf,
+                                          final boolean to_graphics_file) {
+        x1 += MOVE;
+        final int y_bottom = y1 - 12;
+        final int y_top = (int) Math.round(y_bottom - (getScaleDistance() * getXcorrectionFactor()));
+        final int x_tick = x1 + 8;
+        final int x_bar = x1 + 4;
+        g.setFont(getTreeFontSet().getSmallFont());
+        g.setColor(scaleInkColor(to_pdf, to_graphics_file));
+        final Stroke s = g.getStroke();
+        g.setStroke(STROKE_1);
+        drawLine(x1, y_bottom, x_tick, y_bottom, g);
+        drawLine(x1, y_top, x_tick, y_top, g);
+        drawLine(x_bar, y_bottom, x_bar, y_top, g);
+        if (getScaleLabel() != null) {
+            g.drawString(getScaleLabel(), x_tick + 3, (y_bottom + y_top) / 2);
         }
         g.setStroke(s);
     }
@@ -4672,58 +4898,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
-    final private void switchDisplaygetPhylogenyGraphicsType() {
-        switch (getPhylogenyGraphicsType()) {
-            case RECTANGULAR:
-                setPhylogenyGraphicsType(PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE);
-                getOptions().setPhylogenyGraphicsType(PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE);
-                break;
-            case EURO_STYLE:
-                setPhylogenyGraphicsType(PHYLOGENY_GRAPHICS_TYPE.ROUNDED);
-                getOptions().setPhylogenyGraphicsType(PHYLOGENY_GRAPHICS_TYPE.ROUNDED);
-                break;
-            case ROUNDED:
-                setPhylogenyGraphicsType(PHYLOGENY_GRAPHICS_TYPE.CURVED);
-                getOptions().setPhylogenyGraphicsType(PHYLOGENY_GRAPHICS_TYPE.CURVED);
-                break;
-            case CURVED:
-                setPhylogenyGraphicsType(PHYLOGENY_GRAPHICS_TYPE.TRIANGULAR);
-                getOptions().setPhylogenyGraphicsType(PHYLOGENY_GRAPHICS_TYPE.TRIANGULAR);
-                break;
-            case TRIANGULAR:
-                setPhylogenyGraphicsType(PHYLOGENY_GRAPHICS_TYPE.CONVEX);
-                getOptions().setPhylogenyGraphicsType(PHYLOGENY_GRAPHICS_TYPE.CONVEX);
-                break;
-            case CONVEX:
-                setPhylogenyGraphicsType(PHYLOGENY_GRAPHICS_TYPE.UNROOTED);
-                getOptions().setPhylogenyGraphicsType(PHYLOGENY_GRAPHICS_TYPE.UNROOTED);
-                break;
-            case UNROOTED:
-                setPhylogenyGraphicsType(PHYLOGENY_GRAPHICS_TYPE.CIRCULAR);
-                getOptions().setPhylogenyGraphicsType(PHYLOGENY_GRAPHICS_TYPE.CIRCULAR);
-                break;
-            case CIRCULAR:
-                setPhylogenyGraphicsType(PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR);
-                getOptions().setPhylogenyGraphicsType(PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR);
-                break;
-            default:
-                throw new RuntimeException("unkwnown display type: " + getPhylogenyGraphicsType());
-        }
-        if (getControlPanel().getDynamicallyHideData() != null) {
-            if (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED) {
-                getControlPanel().getDynamicallyHideData().setEnabled(false);
-            } else {
-                getControlPanel().getDynamicallyHideData().setEnabled(true);
-            }
-        }
-        if (isPhyHasBranchLengths() && (getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR)) {
-            getControlPanel().setDrawPhylogramEnabled(true);
-        } else {
-            getControlPanel().setDrawPhylogramEnabled(false);
-        }
-        getMainPanel().getMainFrame().setSelectedTypeInTypeMenu(getPhylogenyGraphicsType());
-    }
-
     final void calcMaxDepth() {
         if (_phylogeny != null) {
             _circ_max_depth = PhylogenyMethods.calculateMaxDepth(_phylogeny);
@@ -4733,7 +4907,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     /**
      * Set parameters for printing the displayed tree
      */
-    final void calcParametersForPainting(final int x, final int y) {
+    final void calcParametersForPainting(final int x_in, final int y_in) {
+        // Root-top/bottom: the depth axis (root->tip) is drawn VERTICALLY, so it must fit the viewport HEIGHT, and
+        // the breadth axis (tip spread) fits the WIDTH -- the opposite of the horizontal layout. Swapping the two
+        // viewport budgets here lets the whole body below (which derives the depth scale from x and the breadth
+        // spacing from y) stay unchanged; the paint-time transform R then rotates the logical layout into place.
+        final int x = isVerticalOrientation() ? y_in : x_in;
+        final int y = isVerticalOrientation() ? x_in : y_in;
         // updateStyle(); not needed?
         if ((_phylogeny != null) && !_phylogeny.isEmpty()) {
             initNodeData();
@@ -4827,6 +5007,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             //
         }
+        invalidateOrientationTransform(); // the layout params (ydistance/xcorrection/...) just changed -> R is stale
     }
 
     final void calculateLongestExtNodeInfo() {
@@ -6710,7 +6891,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             g.fillOval(x - r, y - r, 2 * r, 2 * r);
             if (to_screen) {
                 _has_visible_found_halo = true; // screen-only: an export must not touch the animation state
-                _found_halo_bounds.add(new Rectangle(x - max_r - 1, y - max_r - 1, (2 * max_r) + 2, (2 * max_r) + 2));
+                // the halo is drawn at logical (x,y) but g is rotated by R, so its on-screen centre is R(x,y); record
+                // the DEVICE region (the pulse timer repaints these rectangles in device space, not logical)
+                final Point2D.Double dev = screenPointFor(node);
+                final int dx = Math.round((float) dev.x), dy = Math.round((float) dev.y);
+                _found_halo_bounds.add(new Rectangle(dx - max_r - 1, dy - max_r - 1, (2 * max_r) + 2, (2 * max_r) + 2));
             }
         }
         g.setColor(saved);
@@ -6763,6 +6948,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  pulse, so the timer will stop -- e.g. after switching to a circular/unrooted layout). */
     int getFoundHaloBoundsCountForTest() {
         return _found_halo_bounds.size();
+    }
+
+    /** Test hook: does any recorded halo repaint region contain the DEVICE point (x,y)? The pulse timer repaints
+     *  these regions in device space, so in a vertical orientation they must be at the node's on-screen position. */
+    boolean foundHaloBoundContainsForTest(final int x, final int y) {
+        for (final Rectangle r : _found_halo_bounds) {
+            if (r.contains(x, y)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -7024,13 +7220,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return null;
         }
         final int half_box_size_plus_wiggle = (getOptions().getDefaultNodeShapeSize() / 2) + WIGGLE;
+        // in a vertical orientation the node coords are logical (un-rotated); map the device click back to that space
+        final Point2D.Double p = toLogicalPoint(x, y);
         for (final PhylogenyNodeIterator iter = _phylogeny.iteratorPostorder(); iter.hasNext(); ) {
             final PhylogenyNode node = iter.next();
             if ((_phylogeny.isRooted() || !node.isRoot() || (node.getNumberOfDescendants() > 2))
-                    && ((node.getXcoord() - half_box_size_plus_wiggle) <= x)
-                    && ((node.getXcoord() + half_box_size_plus_wiggle) >= x)
-                    && ((node.getYcoord() - half_box_size_plus_wiggle) <= y)
-                    && ((node.getYcoord() + half_box_size_plus_wiggle) >= y)
+                    && ((node.getXcoord() - half_box_size_plus_wiggle) <= p.x)
+                    && ((node.getXcoord() + half_box_size_plus_wiggle) >= p.x)
+                    && ((node.getYcoord() - half_box_size_plus_wiggle) <= p.y)
+                    && ((node.getYcoord() + half_box_size_plus_wiggle) >= p.y)
                     // skip nodes hidden under a collapsed ancestor: they keep stale pre-collapse coords, so a
                     // box hit there is a phantom. The collapsed clade-root itself is still returned (it is drawn
                     // as the triangle and IS selectable). Gated behind the cheap box test above (O(depth), rare).
@@ -7053,15 +7251,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // Only the layouts whose branch geometry reconstructs EXACTLY from the node coords are supported, so
         // the hit region matches what is drawn: RECTANGULAR (horizontal leg at the child's y + vertical fork
         // connector at the parent's x) and TRIANGULAR (a straight parent->child line). EURO_STYLE/ROUNDED offset
-        // the leg near the parent, and CONVEX/CURVED draw Bezier curves, so branch-click is a no-op there (and
-        // no hover cursor is shown) rather than a hit region that disagrees with the painted branch. Ditto the
-        // radial layouts (circular/unrooted).
+        // the leg near the parent, so branch-click is a no-op there (and no hover cursor is shown) rather than a
+        // hit region that disagrees with the painted branch. Ditto the radial layouts (circular/unrooted).
         final boolean diagonal = (gt == PHYLOGENY_GRAPHICS_TYPE.TRIANGULAR);
         final boolean rectangular = (gt == PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR);
         if ((_phylogeny == null) || _phylogeny.isEmpty() || !(rectangular || diagonal)) {
             return null;
         }
         final double tol = (getOptions().getDefaultNodeShapeSize() / 2.0) + WIGGLE;
+        // in a vertical orientation the node coords are logical (un-rotated); map the device click back to that space
+        final Point2D.Double click = toLogicalPoint(x, y);
         PhylogenyNode best = null;
         double best_dist = tol;
         for (final PhylogenyNodeIterator iter = _phylogeny.iteratorPostorder(); iter.hasNext(); ) {
@@ -7073,13 +7272,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             if (!n.isRoot()) { // the incoming branch: horizontal leg (at the child's y) or straight diagonal
                 final PhylogenyNode p = n.getParent();
                 final double a_y = diagonal ? p.getYcoord() : n.getYcoord();
-                d = Line2D.ptSegDist(p.getXcoord(), a_y, n.getXcoord(), n.getYcoord(), x, y);
+                d = Line2D.ptSegDist(p.getXcoord(), a_y, n.getXcoord(), n.getYcoord(), click.x, click.y);
             }
             if (rectangular && !n.isExternal()) {
                 // n's own vertical fork connector (at n's x, spanning its children) selects n's subtree -- this
                 // is also how the root becomes selectable (click its fork to select the whole tree's tips)
                 d = Math.min(d, Line2D.ptSegDist(n.getXcoord(), n.getFirstChildNode().getYcoord(), n.getXcoord(),
-                        n.getLastChildNode().getYcoord(), x, y));
+                        n.getLastChildNode().getYcoord(), click.x, click.y));
             }
             // the ancestor-collapse walk is O(depth), so gate it on the cheap distance test (near candidates only)
             if ((d < best_dist) && !isHiddenUnderCollapse(n)) {
@@ -7954,8 +8153,21 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final boolean disallow_shortcutting = (dynamic_hiding_factor < 40)
                     /* || getControlPanel().isUseVisualStyles() || getOptions().isShowDefaultNodeShapesForMarkedNodes()*/ //TODO check if this is really not needed.
                     || to_graphics_file || to_pdf;
-            if (getOptions().isShowScaleGrid() && getControlPanel().isDrawPhylogram() && (getScaleDistance() > 0.0)) {
+            final boolean vertical = isVerticalOrientation();
+            if (!vertical && getOptions().isShowScaleGrid() && getControlPanel().isDrawPhylogram()
+                    && (getScaleDistance() > 0.0)) {
                 paintScaleGrid(g, to_pdf, to_graphics_file, graphics_file_y, graphics_file_height);
+            }
+            // Root-top/bottom: the tree is laid out logically (above); now rotate the whole canvas for the geometry
+            // pass. Geometry (branches, boxes, triangles, halos) rides R for free; node TEXT is re-anchored upright
+            // or at 45deg by withNodeTextFrame inside paintNodeRectangular; the viewport-fixed chrome further below
+            // is drawn after the base transform is restored. COMPOSE (g.transform), never setTransform, so an
+            // export/print backend's own scale/translate survives.
+            final AffineTransform orientation_saved = g.getTransform();
+            if (vertical) {
+                rebuildOrientationTransform();
+                _orientation_base_transform = orientation_saved;
+                g.transform(_orientation_R);
             }
             for (final PhylogenyNode element : _nodes_in_preorder) {
                 paintNodeRectangular(g,
@@ -7966,17 +8178,27 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         to_graphics_file,
                         disallow_shortcutting);
             }
-            // faint alternating row bands (drawn first among the overlays, so annotation columns etc. sit on top)
-            paintZebraStripes(g, to_pdf, to_graphics_file, graphics_file_x, graphics_file_width);
-            paintHpdBars(g, to_pdf, to_graphics_file); // node-age HPD bars -- node coords are set by the loop above
-            paintAnnotationColumns(g); // tip-aligned columns (strip/heat map/bar/text), right of the labels
-            paintCladeBands(g); // clade boxes/bars over the tree -- node coords are set by the loop above
-            paintHoverPreview(g, !(to_pdf || to_graphics_file)); // translucent select/deselect hover preview
+            if (!vertical) {
+                // These tree-riding overlays are DEFERRED in the vertical orientation (increment 1): they hardcode a
+                // horizontal tip edge, so they are simply not drawn rather than drawn wrong (they will ride R in a
+                // later increment). faint alternating row bands first, so annotation columns etc. sit on top.
+                paintZebraStripes(g, to_pdf, to_graphics_file, graphics_file_x, graphics_file_width);
+                paintHpdBars(g, to_pdf, to_graphics_file); // node-age HPD bars -- node coords set by the loop above
+                paintAnnotationColumns(g); // tip-aligned columns (strip/heat map/bar/text), right of the labels
+                paintCladeBands(g); // clade boxes/bars over the tree -- node coords set by the loop above
+            }
+            paintHoverPreview(g, !(to_pdf || to_graphics_file)); // translucent select/deselect hover preview (rides R)
             paintFoundNodeHalos(g, to_pdf, to_graphics_file); // pulsing (screen) / static-glow (export) hit halos
+            // restore the upright base frame before the viewport-fixed chrome (scale bar, tree name, overview, legends)
+            if (vertical) {
+                g.setTransform(orientation_saved);
+            }
             final boolean scale_shown = getOptions().isShowScale() && getControlPanel().isDrawPhylogram()
                     && (getScaleDistance() > 0.0);
+            // the labeled scale AXIS is a deferred overlay in the vertical orientation (it hardcodes the horizontal
+            // depth axis along the bottom) -- gate it off, like the other tree-riding overlays (increment 1)
             final boolean axis_shown = getOptions().isShowScaleAxis() && getControlPanel().isDrawPhylogram()
-                    && (getScaleDistance() > 0.0);
+                    && (getScaleDistance() > 0.0) && !vertical;
             // the scale axis owns the bottom band; lift the (viewport-fixed) scale bar clear above it (the tree name
             // is likewise raised, inside paintTreeName) so the three bottom overlays never overprint each other
             final int bottom_reserve = axis_shown ? scaleAxisBandHeight() : 0;
@@ -8013,7 +8235,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 }
             }
             if (getOptions().isShowOverview() && isOvOn() && !to_graphics_file && !to_pdf) {
-                paintPhylogenyLite(g);
+                if (vertical) {
+                    paintPhylogenyLiteVertical(g); // rotated thumbnail (scales the main tree into the overview box)
+                } else {
+                    paintPhylogenyLite(g);
+                }
             }
         } else if (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED) {
             if (getControlPanel().getDynamicallyHideData() != null) {
@@ -8207,27 +8433,233 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ((getPhylogeny() == null) || getPhylogeny().isEmpty()) {
             return;
         }
-        int x = 0;
-        int y = 0;
+        final int[] ext = logicalTreeExtent();
+        final int w = ext[0]; // logical width  = depth (root->tip along Xcoord) + label column
+        final int h = ext[1]; // logical height = breadth (tip spread along Ycoord)
+        if (isVerticalOrientation()) {
+            // root-top/bottom: depth (w) becomes the vertical extent, breadth (h) the horizontal. Add a diagonal
+            // allowance so the 45-degree tip labels' sideways spread doesn't clip at the breadth edge.
+            final int label_diag = (int) Math.ceil(getLongestExtNodeInfo() / Math.sqrt(2.0));
+            setPreferredSize(new Dimension(h + label_diag, w));
+        } else {
+            setPreferredSize(new Dimension(w, h));
+        }
+        invalidateOrientationTransform(); // the logical extents may have changed -> R must be rebuilt on the next paint
+    }
+
+    /** The tree's LOGICAL (root-on-left) extent {width, height}: width = depth + label column, height = tip
+     *  spread. A single source of truth for both {@link #resetPreferredSize()} and the orientation transform R
+     *  (so the scroll extent and R's output box agree). Uses the same formulas the horizontal layout always did. */
+    private int[] logicalTreeExtent() {
         // include the annotation-header top reserve: paintPhylogeny shifts the whole tree down by it (see the
         // root Ycoord), so the scrollable height must grow by the same amount or the bottom tips/cells clip
-        y = TreePanel.MOVE + annotationHeaderTopReserve()
+        final int h = TreePanel.MOVE + annotationHeaderTopReserve()
                 + ForesterUtil.roundToInt(getYdistance() * getPhylogeny().getRoot().getNumberOfExternalNodes() * 2);
+        int w;
         if (getControlPanel().isDrawPhylogram()) {
-            x = TreePanel.MOVE + getLongestExtNodeInfo() + rightMarginExtraWidth()
+            w = TreePanel.MOVE + getLongestExtNodeInfo() + rightMarginExtraWidth()
                     + ForesterUtil.roundToInt((getXcorrectionFactor()
                     * getPhylogeny().calculateHeight(!_options.isCollapsedWithAverageHeigh()))
                     + getXdistance());
+        } else if (!isNonLinedUpCladogram()) {
+            w = TreePanel.MOVE + getLongestExtNodeInfo() + rightMarginExtraWidth() + ForesterUtil
+                    .roundToInt(getXdistance() * (getPhylogeny().getRoot().getNumberOfExternalNodes() + 2));
         } else {
-            if (!isNonLinedUpCladogram()) {
-                x = TreePanel.MOVE + getLongestExtNodeInfo() + rightMarginExtraWidth() + ForesterUtil
-                        .roundToInt(getXdistance() * (getPhylogeny().getRoot().getNumberOfExternalNodes() + 2));
-            } else {
-                x = TreePanel.MOVE + getLongestExtNodeInfo() + rightMarginExtraWidth() + ForesterUtil
-                        .roundToInt(getXdistance() * (PhylogenyMethods.calculateMaxDepth(getPhylogeny()) + 1));
-            }
+            w = TreePanel.MOVE + getLongestExtNodeInfo() + rightMarginExtraWidth() + ForesterUtil
+                    .roundToInt(getXdistance() * (PhylogenyMethods.calculateMaxDepth(getPhylogeny()) + 1));
         }
-        setPreferredSize(new Dimension(x, y));
+        return new int[] { w, h };
+    }
+
+    /** The tree's LOGICAL breadth (tip-spread) extent in px, WITHOUT the vertical-orientation tilted-label diagonal
+     *  allowance that resetPreferredSize adds to the preferred width. This is what fitHeight must keep as its budget
+     *  so the horizontal (breadth) zoom doesn't drift each press -- the analog of the diag-free preferred height that
+     *  fitWidth reads (getPreferredSize().width already includes label_diag in a vertical orientation). */
+    final int logicalBreadthExtent() {
+        return logicalTreeExtent()[1];
+    }
+
+    /** True when the tree is drawn in a vertical (root-top / root-bottom) orientation. Always false for the
+     *  radial CIRCULAR/UNROOTED layouts (orientation is a rectangular-family concept). */
+    final boolean isVerticalOrientation() {
+        final Options.TREE_ORIENTATION o = getOptions().getTreeOrientation();
+        return ((o == Options.TREE_ORIENTATION.ROOT_TOP) || (o == Options.TREE_ORIENTATION.ROOT_BOTTOM))
+                && (getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR)
+                && (getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.UNROOTED);
+    }
+
+    /** (Re)builds the logical->screen rotation R (and its inverse) for the current vertical orientation, from the
+     *  logical extents. Pure rotations (determinant +1, no mirror); the translate keeps the tree in the positive
+     *  quadrant. ROOT_TOP turns the page 90deg clockwise: (x,y)->(H-y, x); ROOT_BOTTOM 90deg CCW: (x,y)->(y, W-x). */
+    final void rebuildOrientationTransform() {
+        final Options.TREE_ORIENTATION current = getOptions().getTreeOrientation();
+        if (!_orientation_transform_dirty && (_orientation_R != null) && (_orientation_R_built_for == current)) {
+            return; // cached R is still valid -- no layout/structure change since it was last built
+        }
+        final int[] ext = logicalTreeExtent();
+        final AffineTransform r = TreePanelUtil.orientationTransformFor(current, ext[0], ext[1]);
+        _orientation_R = r;
+        try {
+            _orientation_R_inverse = r.createInverse();
+        } catch (final java.awt.geom.NoninvertibleTransformException e) {
+            _orientation_R_inverse = new AffineTransform(); // a pure rotation is always invertible; identity fallback
+        }
+        _orientation_R_built_for = current;
+        _orientation_transform_dirty = false;
+    }
+
+    /** Marks the cached orientation transform R stale; called from the layout chokepoints (never during a repaint). */
+    private void invalidateOrientationTransform() {
+        _orientation_transform_dirty = true;
+    }
+
+    /** Test hook: the current (possibly cached) orientation transform R -- object identity reveals a rebuild vs reuse. */
+    AffineTransform getOrientationRForTest() {
+        return _orientation_R;
+    }
+
+    /** Test hook: whether this node's data is screen-culled at the current viewport + orientation. */
+    boolean isNodeDataInvisibleForTest(final PhylogenyNode node) {
+        return isNodeDataInvisible(node);
+    }
+
+    /** Test hook: a node's position in the (rotated) overview thumbnail, in VIEWPORT-relative coords (matching a
+     *  {@code JViewport.printAll} image) -- the paint's {@code getVisibleRect()} translate and printAll's own
+     *  {@code -visibleRect} translate cancel, so only the overview corner offset remains. */
+    Point2D.Double overviewPointForTest(final PhylogenyNode node) {
+        if (_orientation_R == null) {
+            return null;
+        }
+        final double sx = getOvMaxWidth() / (double) getWidth();
+        final double sy = getOvMaxHeight() / (double) getHeight();
+        final AffineTransform t = AffineTransform.getTranslateInstance(getOvXPosition(), getOvYPosition());
+        t.scale(sx, sy);
+        t.concatenate(_orientation_R);
+        final Point2D.Double p = new Point2D.Double(node.getXcoord(), node.getYcoord());
+        t.transform(p, p);
+        return p;
+    }
+
+    /** The tip-label tilt (radians) in a vertical orientation. UNALIGNED phylograms put tips at varying depths, so a
+     *  45deg label would cross neighboring branches -- there the only realistic label direction is VERTICAL (90deg).
+     *  Aligned phylograms / cladograms / ultrametric trees line the tips up along a clean baseline, so 45deg reads
+     *  better there. The sign follows the orientation so the label always extends AWAY from the tree (down for
+     *  root-top, up for root-bottom). */
+    private double tipLabelAngle() {
+        final double base = (getControlPanel()
+                .getTreeDisplayType() == Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM) ? (Math.PI / 2.0)
+                        : (Math.PI / 4.0);
+        return (getOptions().getTreeOrientation() == Options.TREE_ORIENTATION.ROOT_BOTTOM) ? -base : base;
+    }
+
+
+    /** True for a tip whose label is lined up in the far-right aligned column (aligned-phylogram mode). */
+    private boolean isAlignedTipLabel(final PhylogenyNode node) {
+        return (getControlPanel().getTreeDisplayType() == Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM)
+                && (node.isExternal() || node.isCollapse());
+    }
+
+    /** The logical X of the far-right aligned label column (aligned-phylogram mode), where all tip labels line up. */
+    private float alignedLabelColumnX() {
+        return (float) ((getMaxDistanceToRoot() * getXcorrectionFactor()) + TreePanel.MOVE + getXdistance());
+    }
+
+    /** The logical X where a node's label text begins: the aligned column for an aligned tip, else just right of the
+     *  node. Serves as the vertical-mode tilt pivot AND the aligned leader's far endpoint, so the tilted label sits
+     *  on the end of its (vertical) leader instead of being pushed diagonally off it. Matches the label anchors in
+     *  {@link #paintNodeData} / {@link #paintTaxonomy}. */
+    private float labelTextStartX(final PhylogenyNode node) {
+        final int half_box = getOptions().getDefaultNodeShapeSize() / 2;
+        return labelSegmentStartX(isAlignedTipLabel(node) ? alignedLabelColumnX() : node.getXcoord(), half_box, 0);
+    }
+
+    /** Whether a branch-length value should be drawn for {@code node} -- the same gate {@link #paintNodeData} used
+     *  inline, factored out so the vertical-orientation path (which draws it separately) shares one condition. */
+    private boolean shouldWriteBranchLength(final PhylogenyNode node) {
+        return getControlPanel().isWriteBranchLengthValues()
+                && ((getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR)
+                        || (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.ROUNDED)
+                        || (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE))
+                && !node.isRoot() && (node.getDistanceToParent() != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT);
+    }
+
+    /** The device (screen) position of a node's logical coords under the current orientation -- the forward of
+     *  {@link #toLogicalPoint}. Returns the raw coords in the horizontal orientation. (Used by tests and any code
+     *  needing a node's on-screen position in a vertical orientation.) */
+    Point2D.Double screenPointFor(final PhylogenyNode node) {
+        return screenPoint(node.getXcoord(), node.getYcoord());
+    }
+
+    /** The device (screen) position of an arbitrary LOGICAL point under the current orientation. Raw in horizontal. */
+    Point2D.Double screenPoint(final double logical_x, final double logical_y) {
+        final Point2D.Double p = new Point2D.Double(logical_x, logical_y);
+        if (isVerticalOrientation() && (_orientation_R != null)) {
+            _orientation_R.transform(p, p);
+        }
+        return p;
+    }
+
+    /** Maps a device (mouse) point back to LOGICAL node-coordinate space via R inverse, for hit-testing in a
+     *  vertical orientation. A pass-through (returns the point as-is) in the horizontal orientation. */
+    private Point2D.Double toLogicalPoint(final int x, final int y) {
+        if (isVerticalOrientation() && (_orientation_R_inverse != null)) {
+            final Point2D.Double p = new Point2D.Double(x, y);
+            _orientation_R_inverse.transform(p, p);
+            return p;
+        }
+        return new Point2D.Double(x, y);
+    }
+
+    /** The viewport's visible rectangle expressed in LOGICAL (un-rotated) node-coordinate space, so the coord-based
+     *  screen-culls (which compare against node getXcoord()/getYcoord()) stay correct in EVERY orientation. In a
+     *  vertical orientation the device visible rect's corners are mapped back through R-inverse and their bounding box
+     *  returned (a 90-degree rotation keeps the box axis-aligned); a pass-through of getVisibleRect() in horizontal. */
+    private Rectangle2D.Double logicalVisibleRect() {
+        final Rectangle v = getVisibleRect();
+        if ((v.width <= 0) || (v.height <= 0)) {
+            return null; // no meaningful viewport (offscreen render / File>Print / not-yet-realized) -> never cull
+        }
+        if (!isVerticalOrientation() || (_orientation_R_inverse == null)) {
+            return new Rectangle2D.Double(v.x, v.y, v.width, v.height);
+        }
+        final Point2D.Double[] corners = { toLogicalPoint(v.x, v.y), toLogicalPoint(v.x + v.width, v.y),
+                toLogicalPoint(v.x, v.y + v.height), toLogicalPoint(v.x + v.width, v.y + v.height) };
+        double minx = corners[0].x, maxx = corners[0].x, miny = corners[0].y, maxy = corners[0].y;
+        for (final Point2D.Double p : corners) {
+            minx = Math.min(minx, p.x);
+            maxx = Math.max(maxx, p.x);
+            miny = Math.min(miny, p.y);
+            maxy = Math.max(maxy, p.y);
+        }
+        return new Rectangle2D.Double(minx, miny, maxx - minx, maxy - miny);
+    }
+
+    /** Draws node TEXT so it does NOT ride the tree-rotation transform R (which would render it sideways): it
+     *  re-anchors g to the upright base frame at the node's SCREEN position, rotates by {@code angle} (45deg for
+     *  tip labels, 0 for upright internal text), and translates back so the existing coord-based label painters
+     *  draw correctly with zero internal changes. A no-op (runs the painter directly) in horizontal orientation. */
+    private void withNodeTextFrame(final Graphics2D g, final PhylogenyNode node, final double angle,
+                                   final Runnable painter) {
+        withNodeTextFrame(g, node.getXcoord(), node.getYcoord(), angle, painter);
+    }
+
+    /** As above but pivoting the tilted frame at an explicit logical point (e.g. the aligned label column) rather
+     *  than the node -- so an aligned tip label lands on the end of its leader, not offset diagonally from the node. */
+    private void withNodeTextFrame(final Graphics2D g, final double pivot_x, final double pivot_y, final double angle,
+                                   final Runnable painter) {
+        if (!isVerticalOrientation() || (_orientation_R == null)) {
+            painter.run();
+            return;
+        }
+        final AffineTransform saved = g.getTransform();
+        final Point2D.Double screen = new Point2D.Double(pivot_x, pivot_y);
+        _orientation_R.transform(screen, screen);
+        g.setTransform(_orientation_base_transform);
+        g.translate(screen.x, screen.y);
+        g.rotate(angle);
+        g.translate(-pivot_x, -pivot_y);
+        painter.run();
+        g.setTransform(saved);
     }
 
     final void selectNode(final PhylogenyNode node) {

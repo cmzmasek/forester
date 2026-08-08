@@ -83,6 +83,11 @@ public final class KeyboardShortcutsTest {
                 || !html.contains( "Copy the tree image to the clipboard" ) ) {
             return fail( "toHtml is missing expected shortcut text" );
         }
+        // the clumsy keystroke-cycles for tree style (X) and label direction (D) were removed -- both settings live
+        // in the Settings dialog / menu now; guard that they do not creep back into the shortcut sheet
+        if ( html.contains( "Switch the tree style" ) || html.contains( "Toggle label direction" ) ) {
+            return fail( "the removed D/X display keystrokes must no longer be listed" );
+        }
         return true;
     }
 
