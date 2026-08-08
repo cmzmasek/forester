@@ -6532,6 +6532,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      * the rotated header is actually drawn (up to {@code anchor_y}), so a click on the visible header toggles
      * its legend even when there is no room above the first cell and the header is clamped down over it.
      */
+    /** Device center of an UPRIGHT vertical annotation-column header. Shifted a further half-header-width into the
+     *  reserved margin (past the first tip) so the WHOLE header sits before the first cell instead of overlapping it
+     *  (the horizontal path does the same by anchoring the rotated header a full text-length up). Shared by the paint,
+     *  the hit-test, and the test hook so the drawn header and its click box can't drift. */
+    private Point2D.Double verticalHeaderAnchor(final double col_center, final float min_tip_y, final int header_w) {
+        return screenPoint(col_center, min_tip_y - getYdistance() - 3.0 - (header_w / 2.0));
+    }
+
     private int annotationHeaderColumnAt(final int x, final int y) {
         if (!hasAnnotationColumns() || (y < 0)) {
             return -1;
@@ -6547,15 +6555,18 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final FontMetrics fm = getFontMetrics(getTreeFontSet().getSmallFont());
         float cx = labelsRightEdge() + ANN_COL_GAP;
         if (isVerticalOrientation()) {
-            // the header is drawn UPRIGHT, centered at screenPoint(col_center, min_tip_y - pad - 3) (see
-            // paintAnnotationColumnsVertical); hit-test that device box for each column
+            if (_orientation_R == null) {
+                return -1; // R is built during paint; before the first vertical paint screenPoint would return logical
+            }
+            // the header is drawn UPRIGHT in the reserved margin (see verticalHeaderAnchor / paintAnnotationColumnsVertical);
+            // hit-test that device box for each column
             final int hh = fm.getHeight();
             for (int i = 0; i < _annotation_columns.size(); ++i) {
                 final int w = annotationColumnWidth(i);
                 final String header = _annotation_columns.getColumn(i).getHeader();
                 if (header.length() > 0) {
                     final int tw = fm.stringWidth(header);
-                    final Point2D.Double hp = screenPoint(cx + (w / 2.0), min_tip_y - pad - 3.0);
+                    final Point2D.Double hp = verticalHeaderAnchor(cx + (w / 2.0), min_tip_y, tw);
                     if ((Math.abs(x - hp.x) <= ((tw / 2.0) + 2)) && (Math.abs(y - hp.y) <= ((hh / 2.0) + 2))) {
                         return i;
                     }
@@ -6621,12 +6632,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final int w = annotationColumnWidth(i);
             if (i == col) {
                 if (isVerticalOrientation()) {
-                    // the upright header's device center (matches paintAnnotationColumnsVertical / the vertical hit-test)
+                    // the upright header's device center (shared verticalHeaderAnchor -> matches the paint + hit-test)
                     float min_tip_y = Float.MAX_VALUE;
                     for (final PhylogenyNode t : visibleExternalTips()) {
                         min_tip_y = Math.min(min_tip_y, t.getYcoord());
                     }
-                    final Point2D.Double hp = screenPoint(cx + (w / 2.0), min_tip_y - getYdistance() - 3.0);
+                    if (min_tip_y == Float.MAX_VALUE) {
+                        return null; // no visible tips (all collapsed) -> no header to hit, like the production hit-test
+                    }
+                    final int tw = getFontMetrics(getTreeFontSet().getSmallFont())
+                            .stringWidth(_annotation_columns.getColumn(i).getHeader());
+                    final Point2D.Double hp = verticalHeaderAnchor(cx + (w / 2.0), min_tip_y, tw);
                     return new java.awt.Point((int) Math.round(hp.x), (int) Math.round(hp.y));
                 }
                 return new java.awt.Point(Math.round(cx + (w / 2.0f)), 1); // y=1 is within [0, anchor_y]
@@ -6881,8 +6897,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      * below the tips. Strip / heat-map / bar CELLS are axis-aligned rectangles, so they ride the rotation R for free
      * (a 90-degree rotation keeps them axis-aligned) -- a logical column (a vertical strip) rotates into a horizontal
      * band. TEXT cells and the column HEADERS are re-anchored to the upright base frame (drawing them under R would
-     * render them sideways): a TEXT cell reads vertically along its band like the tip labels, and the header sits
-     * upright just past the first tip in the reserved margin. Called while g is still rotated by R (paintPhylogeny).
+     * render them sideways): a TEXT cell always reads VERTICALLY (90deg) along its band (independent of the "Tip label
+     * angle" setting -- a 45deg cell would overrun the fixed band depth), and the header sits upright in the reserved
+     * margin just before the first cell. Called while g is still rotated by R (paintPhylogeny).
      */
     private void paintAnnotationColumnsVertical(final Graphics2D g) {
         if (!hasAnnotationColumns()) {
@@ -6898,6 +6915,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final Font saved_font = g.getFont();
         final AffineTransform withR = g.getTransform();
         final Font text_font = getTreeFontSet().getSmallFont();
+        final FontMetrics text_fm = getFontMetrics(text_font);
+        // TEXT cells always read VERTICALLY (90deg); the sign follows the orientation so the text is never upside-down
         final double text_angle = (getOptions().getTreeOrientation() == Options.TREE_ORIENTATION.ROOT_BOTTOM)
                 ? (-Math.PI / 2.0) : (Math.PI / 2.0);
         float min_tip_y = Float.MAX_VALUE;
@@ -6936,29 +6955,31 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     case TEXT: {
                         final String v = _annotation_columns.cellText(t, i);
                         if (v.length() > 0) {
-                            final String fitted = fitText(v, w, getFontMetrics(text_font));
+                            final String fitted = fitText(v, w, text_fm);
                             final float ty = t.getYcoord();
                             final float tx = x;
                             withNodeTextFrame(g, tx, ty, text_angle, () -> {
                                 g.setFont(text_font);
                                 g.setColor(fg);
-                                g.drawString(fitted, tx, ty + (getFontMetrics(text_font).getAscent() / 2.0f) - 1);
+                                g.drawString(fitted, tx, ty + (text_fm.getAscent() / 2.0f) - 1);
                             });
                         }
                         break;
                     }
                 }
             }
-            // column header: upright, just past the first tip in the reserved breadth margin
+            // column header: upright, in the reserved margin just BEFORE the first cell (verticalHeaderAnchor shifts
+            // it a half-width past the tip so it does not overlap the top cell). min_tip_y is always set (empty tips
+            // return early at the top of the method).
             final String header = _annotation_columns.getColumn(i).getHeader();
-            if ((header.length() > 0) && (min_tip_y < Float.MAX_VALUE)) {
-                g.setTransform(_orientation_base_transform);
+            if (header.length() > 0) {
                 g.setFont(text_font);
-                g.setColor(fg);
                 final FontMetrics hfm = g.getFontMetrics();
-                final Point2D.Double hp = screenPoint(col_center, min_tip_y - pad - 3.0);
-                g.drawString(header, (float) (hp.x - (hfm.stringWidth(header) / 2.0)),
-                        (float) (hp.y + (hfm.getAscent() / 2.0f)));
+                final int hw = hfm.stringWidth(header);
+                final Point2D.Double hp = verticalHeaderAnchor(col_center, min_tip_y, hw);
+                g.setTransform(_orientation_base_transform);
+                g.setColor(fg);
+                g.drawString(header, (float) (hp.x - (hw / 2.0)), (float) (hp.y + (hfm.getAscent() / 2.0f)));
                 g.setTransform(withR);
             }
             x += w + ANN_COL_GAP;
@@ -7270,7 +7291,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final float bar_x = cladeBandRightEdge() + CLADE_BAR_GAP;
         final float pad = getYdistance();
         final Font font = getTreeFontSet().getLargeFont();
-        final AffineTransform saved = g.getTransform();
         for (final CladeBand band : _clade_bands) {
             final float[] yr = cladeBandYRange(band.getRoot());
             if (yr == null) {
@@ -7279,17 +7299,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final int y = Math.round(yr[0] - pad);
             final int h = Math.max(1, Math.round((yr[1] - yr[0]) + (2 * pad)));
             g.setColor(band.getColor());
-            g.fillRect(Math.round(bar_x), y, CLADE_BAR_WIDTH, h);
-            // taxon label rotated 90 deg (reading bottom-to-top), centered on the bar, just to its right
+            g.fillRect(Math.round(bar_x), y, CLADE_BAR_WIDTH, h); // rides R -> a horizontal bar in a vertical orientation
+            // taxon label: rotated 90deg (reading bottom-to-top) beside the vertical bar in a horizontal layout;
+            // UPRIGHT (re-anchored to the base frame) beside the horizontal bar in a vertical orientation
             g.setFont(font);
             g.setColor(getTreeColorSet().getSequenceColor());
             final FontMetrics fm = g.getFontMetrics();
             final float label_x = bar_x + CLADE_BAR_WIDTH + 3;
             final float mid_y = (yr[0] + yr[1]) / 2.0f;
-            final int tw = fm.stringWidth(band.getTaxon());
-            g.rotate(-Math.PI / 2.0, label_x, mid_y);
-            g.drawString(band.getTaxon(), label_x - (tw / 2.0f), mid_y + fm.getAscent());
-            g.setTransform(saved);
+            drawCladeBandLabel(g, band.getTaxon(), label_x, mid_y, fm);
         }
     }
 
@@ -7302,7 +7320,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // (one "]" per clade) instead of merging into a single continuous line
         final float pad = getYdistance() * 0.3f;
         final Font font = getTreeFontSet().getLargeFont();
-        final AffineTransform saved_at = g.getTransform();
         final Stroke saved_stroke = g.getStroke();
         g.setStroke(new BasicStroke(CLADE_BRACKET_STROKE));
         g.setColor(getTreeColorSet().getSequenceColor());
@@ -7318,17 +7335,34 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             g.drawLine(x, y0, x, y1);
             g.drawLine(x, y0, x - CLADE_BRACKET_TICK, y0);
             g.drawLine(x, y1, x - CLADE_BRACKET_TICK, y1);
-            // taxon label rotated 90 deg (reading bottom-to-top), centered on the bracket, just to its right
+            // taxon label: rotated beside the vertical bracket (horizontal layout), UPRIGHT beside the horizontal
+            // bracket (vertical orientation) -- see drawCladeBandLabel
             g.setFont(font);
             final FontMetrics fm = g.getFontMetrics();
             final float label_x = spine_x + 4;
             final float mid_y = (yr[0] + yr[1]) / 2.0f;
-            final int tw = fm.stringWidth(band.getTaxon());
-            g.rotate(-Math.PI / 2.0, label_x, mid_y);
-            g.drawString(band.getTaxon(), label_x - (tw / 2.0f), mid_y + fm.getAscent());
-            g.setTransform(saved_at);
+            drawCladeBandLabel(g, band.getTaxon(), label_x, mid_y, fm);
         }
         g.setStroke(saved_stroke);
+    }
+
+    /** Draws a clade bar/bracket taxon label: rotated 90deg (reading bottom-to-top) beside the vertical mark in the
+     *  horizontal layout, or UPRIGHT (re-anchored to the base frame, centered on the clade's breadth) beside the
+     *  horizontal mark in a vertical orientation. Restores g's transform (R when vertical) before returning. */
+    private void drawCladeBandLabel(final Graphics2D g, final String taxon, final float label_x, final float mid_y,
+                                    final FontMetrics fm) {
+        final int tw = fm.stringWidth(taxon);
+        final AffineTransform saved = g.getTransform();
+        if (isVerticalOrientation()) {
+            final Point2D.Double lp = screenPoint(label_x, mid_y);
+            g.setTransform(_orientation_base_transform);
+            g.drawString(taxon, (float) (lp.x - (tw / 2.0)), (float) (lp.y + (fm.getAscent() / 2.0f)));
+        }
+        else {
+            g.rotate(-Math.PI / 2.0, label_x, mid_y);
+            g.drawString(taxon, label_x - (tw / 2.0f), mid_y + fm.getAscent());
+        }
+        g.setTransform(saved);
     }
 
     final void decreaseDomainStructureEvalueThresholdExp() {
@@ -8317,9 +8351,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 paintCladeBands(g); // clade boxes/bars over the tree -- node coords set by the loop above
             }
             else {
-                // vertical parity: the tip-aligned annotation columns become horizontal BANDS below the tips (cells
-                // ride R; text/headers re-anchored upright). The other overlays above follow in later increments.
+                // vertical parity: these overlays are drawn while g is rotated by R. Their geometry (annotation cells,
+                // clade boxes/bars/brackets) is axis-aligned rects + lines, so it rides R for free; the TEXT (annotation
+                // cells/headers, clade labels) is re-anchored upright inside the paint methods. The remaining overlays
+                // (zebra stripes, HPD bars, scale grid) follow in later increments.
                 paintAnnotationColumnsVertical(g);
+                paintCladeBands(g); // boxes ride R; bars/brackets draw the label upright (isVerticalOrientation branch)
             }
             paintHoverPreview(g, !(to_pdf || to_graphics_file)); // translucent select/deselect hover preview (rides R)
             paintFoundNodeHalos(g, to_pdf, to_graphics_file); // pulsing (screen) / static-glow (export) hit halos

@@ -102,6 +102,27 @@ public final class RankLegendTest {
                     ok[ 0 ] = false;
                     System.out.println( "  'automatic' did not revert the clade-band recolor" );
                 }
+                // VERTICAL PARITY: the clade boxes/bars/brackets must draw in a vertical orientation (geometry rides R,
+                // labels re-anchored upright). Render BOXES in ROOT_TOP and count TINTED pixels: the translucent box
+                // wash (~46 saturation) is distinct from the OPAQUE legend chips (~255) and the grayscale tree (~0), so
+                // this isolates the boxes from the legend -- a disabled vertical clade paint drops it to ~0.
+                tp.getOptions().setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP );
+                tp.setCladeBands( "order", TreePanel.CLADE_VIS.BOXES );
+                if ( cladeBoxTintedPixels( tp ) < 200 ) {
+                    ok[ 0 ] = false;
+                    System.out.println( "  vertical clade boxes drew (almost) no tinted pixels" );
+                }
+                // BARS mode exercises drawCladeBandLabel's vertical branch (upright taxon labels re-anchored to the base
+                // frame). The colored bars sit below the tips and the upright labels below the bars, so grayscale ink
+                // BELOW the deepest bar row is the labels; a broken label branch (absent / sideways / unrestored
+                // transform) leaves that region empty.
+                tp.setCladeBands( "order", TreePanel.CLADE_VIS.BARS );
+                if ( cladeBarLabelInk( tp ) < 30 ) {
+                    ok[ 0 ] = false;
+                    System.out.println( "  vertical clade BARS drew (almost) no upright taxon-label ink below the bars" );
+                }
+                tp.getOptions().setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                tp.setCladeBands( "order", TreePanel.CLADE_VIS.BOXES ); // restore for the checks below
                 // BRACKETS mode is monochrome -> it must NOT create a color legend
                 tp.setCladeBands( "order", TreePanel.CLADE_VIS.BRACKETS );
                 if ( tp.hasRankLegend() ) {
@@ -254,6 +275,78 @@ public final class RankLegendTest {
         final Graphics2D g = img.createGraphics();
         tp.paintPhylogeny( g, false, false, 0, 0, 0, 0 ); // on-screen path: records the legend bounds
         g.dispose();
+    }
+
+    /** Fits the tree to a fixed size, paints it, and counts TINTED pixels (a translucent clade-box wash, distinct
+     *  from the opaque legend chips and the grayscale tree). */
+    private static int cladeBoxTintedPixels( final TreePanel tp ) {
+        final int w = 640, h = 520;
+        tp.setSize( w, h );
+        tp.calcParametersForPainting( w, h );
+        tp.resetPreferredSize();
+        final BufferedImage img = new BufferedImage( w, h, BufferedImage.TYPE_INT_ARGB );
+        final Graphics2D g = img.createGraphics();
+        g.setColor( java.awt.Color.WHITE );
+        g.fillRect( 0, 0, w, h );
+        tp.paintPhylogeny( g, false, false, 0, 0, 0, 0 );
+        g.dispose();
+        int n = 0;
+        for( int x = 0; x < w; ++x ) {
+            for( int y = 0; y < h; ++y ) {
+                final int rgb = img.getRGB( x, y );
+                final int r = ( rgb >> 16 ) & 0xFF, gc = ( rgb >> 8 ) & 0xFF, b = rgb & 0xFF;
+                final int d = Math.max( r, Math.max( gc, b ) ) - Math.min( r, Math.min( gc, b ) );
+                if ( ( d > 25 ) && ( d < 120 ) ) {
+                    ++n;
+                }
+            }
+        }
+        return n;
+    }
+
+    /** Renders CLADE_VIS.BARS in a vertical orientation and counts GRAYSCALE non-white ink BELOW the deepest colored
+     *  bar row -- i.e. the upright taxon labels drawn by drawCladeBandLabel's vertical branch (the bars are saturated
+     *  and above; the tree/tip-labels are above the bars). Isolates the labels from the bars AND the legend. */
+    private static int cladeBarLabelInk( final TreePanel tp ) {
+        final int w = 640, h = 520;
+        tp.setSize( w, h );
+        tp.calcParametersForPainting( w, h );
+        tp.resetPreferredSize();
+        final BufferedImage img = new BufferedImage( w, h, BufferedImage.TYPE_INT_ARGB );
+        final Graphics2D g = img.createGraphics();
+        g.setColor( java.awt.Color.WHITE );
+        g.fillRect( 0, 0, w, h );
+        tp.paintPhylogeny( g, false, false, 0, 0, 0, 0 );
+        g.dispose();
+        int max_bar_y = -1; // deepest row that is mostly a colored BAR (many saturated px, unlike the small legend chips)
+        for( int y = 0; y < h; ++y ) {
+            int sat = 0;
+            for( int x = 0; x < w; ++x ) {
+                final int rgb = img.getRGB( x, y );
+                final int r = ( rgb >> 16 ) & 0xFF, gc = ( rgb >> 8 ) & 0xFF, b = rgb & 0xFF;
+                if ( ( Math.max( r, Math.max( gc, b ) ) - Math.min( r, Math.min( gc, b ) ) ) > 60 ) {
+                    ++sat;
+                }
+            }
+            if ( sat > 40 ) {
+                max_bar_y = y;
+            }
+        }
+        if ( max_bar_y < 0 ) {
+            return 0; // no bars found
+        }
+        int n = 0; // grayscale non-white ink below the bars = the upright taxon labels
+        for( int y = max_bar_y + 2; y < h; ++y ) {
+            for( int x = 0; x < w; ++x ) {
+                final int rgb = img.getRGB( x, y );
+                final int r = ( rgb >> 16 ) & 0xFF, gc = ( rgb >> 8 ) & 0xFF, b = rgb & 0xFF;
+                final boolean grayscale = ( Math.max( r, Math.max( gc, b ) ) - Math.min( r, Math.min( gc, b ) ) ) < 40;
+                if ( ( ( rgb & 0xFFFFFF ) != 0xFFFFFF ) && grayscale ) {
+                    ++n;
+                }
+            }
+        }
+        return n;
     }
 
     private static MouseEvent at( final TreePanel tp, final int x, final int y ) {
