@@ -190,6 +190,68 @@ public final class AnnotationColumnsToolTest {
                     ok[ 0 ] = false;
                 }
 
+                // VERTICAL PARITY: the tip-aligned columns become horizontal BANDS below the tips. Re-fit in a
+                // vertical orientation and verify (a) the columns paint (more ink than the bare vertical tree),
+                // (b) the header hit-test works, and (c) the focused-column legend still draws.
+                tp.setFocusedAnnotationColumn( -1 );
+                tp.getOptions().setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP );
+                tp.getControlPanel().updateZoomButtonsForOrientation();
+                // count SATURATED (colored) pixels: the tree/labels/bars/text are grayscale, so only the strip +
+                // heat-map CELLS produce colored pixels -- a check that is not confounded by the layout reservation
+                // (which compresses the tree even when the columns do not paint)
+                tp.clearAnnotationColumns();
+                tp.setSize( w, h );
+                tp.calcParametersForPainting( w, h ); // fit to the render size so the bands are within the image
+                tp.resetPreferredSize();
+                final int v_colored_without = coloredPixels( tp, w, h );
+                tp.setAnnotationColumns( specs );
+                tp.setSize( w, h );
+                tp.calcParametersForPainting( w, h );
+                tp.resetPreferredSize();
+                final int v_colored_with = coloredPixels( tp, w, h );
+                if ( v_colored_with <= ( v_colored_without + 50 ) ) {
+                    System.out.println( "  [AnnotationColumnsToolTest] vertical annotation cells drew no colored "
+                            + "pixels (" + v_colored_without + " -> " + v_colored_with + ")" );
+                    ok[ 0 ] = false;
+                }
+                final java.awt.Point vhp = tp.annotationHeaderMidpointForTest( 0 ); // COLOR_STRIP header, in device px
+                if ( vhp == null ) {
+                    System.out.println( "  [AnnotationColumnsToolTest] no vertical header hit-point for column 0" );
+                    ok[ 0 ] = false;
+                }
+                else {
+                    final MouseEvent vclick = new MouseEvent( tp, MouseEvent.MOUSE_CLICKED, System.currentTimeMillis(),
+                                                              0, vhp.x, vhp.y, 1, false );
+                    if ( !tp.handleAnnotationHeaderClick( vclick ) || !tp.hasFocusedAnnotationColumn() ) {
+                        System.out.println( "  [AnnotationColumnsToolTest] vertical header click did not open the legend" );
+                        ok[ 0 ] = false;
+                    }
+                    tp.handleAnnotationHeaderClick( vclick ); // second click toggles it off
+                    if ( tp.hasFocusedAnnotationColumn() ) {
+                        System.out.println( "  [AnnotationColumnsToolTest] vertical second header click did not close it" );
+                        ok[ 0 ] = false;
+                    }
+                }
+                tp.setFocusedAnnotationColumn( 0 ); // COLOR_STRIP -> a color key
+                renderOffscreen( tp, w, h );
+                if ( !tp.hasFocusedAnnotationColumn() || ( tp.getPropertyLegendBounds() == null ) ) {
+                    System.out.println( "  [AnnotationColumnsToolTest] vertical focused legend not drawn" );
+                    ok[ 0 ] = false;
+                }
+                // WYSIWYG: exports go through the same paintPhylogeny funnel, so the vertical bands must appear in an
+                // EXPORT render too (not just the screen path)
+                tp.setFocusedAnnotationColumn( -1 );
+                tp.setSize( w, h );
+                tp.calcParametersForPainting( w, h );
+                tp.resetPreferredSize();
+                final BufferedImage exp = AptxUtil.renderPhylogenyToImage( w, h, tp, tp.getOptions(), false, 1, false );
+                if ( countSaturated( exp ) <= 50 ) {
+                    System.out.println( "  [AnnotationColumnsToolTest] vertical annotation cells absent from the export" );
+                    ok[ 0 ] = false;
+                }
+                tp.getOptions().setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT ); // restore for the rest
+                mf[ 0 ].showWhole();
+
                 // a BAR column whose values are not a numeric gradient (categorical here; or a subtree that
                 // collapsed to a single value) must NOT focus a legend -- its min/max range would be degenerate
                 final List<AnnotationColumns.ColumnSpec> deg = new ArrayList<AnnotationColumns.ColumnSpec>();
@@ -233,6 +295,37 @@ public final class AnnotationColumnsToolTest {
         for( int x = 0; x < w; ++x ) {
             for( int y = 0; y < h; ++y ) {
                 if ( ( img.getRGB( x, y ) & 0x00FFFFFF ) != 0x00FFFFFF ) {
+                    ++n;
+                }
+            }
+        }
+        return n;
+    }
+
+    /** Renders the panel offscreen (screen path) and counts SATURATED (colored, non-grayscale) pixels -- the
+     *  tree/labels/bars/text are grayscale, so this isolates the strip/heat-map annotation CELLS. */
+    private static int coloredPixels( final TreePanel tp, final int w, final int h ) {
+        tp.setSize( w, h );
+        tp.validate();
+        tp.doLayout();
+        final BufferedImage img = new BufferedImage( w, h, BufferedImage.TYPE_INT_ARGB );
+        final Graphics2D g = img.createGraphics();
+        g.setColor( Color.WHITE );
+        g.fillRect( 0, 0, w, h );
+        tp.printAll( g );
+        g.dispose();
+        return countSaturated( img );
+    }
+
+    /** Colored (non-grayscale) pixels in an image -- the annotation strip/heat-map cells against a grayscale tree. */
+    private static int countSaturated( final BufferedImage img ) {
+        int n = 0;
+        for( int x = 0; x < img.getWidth(); ++x ) {
+            for( int y = 0; y < img.getHeight(); ++y ) {
+                final int rgb = img.getRGB( x, y );
+                final int r = ( rgb >> 16 ) & 0xFF, gc = ( rgb >> 8 ) & 0xFF, b = rgb & 0xFF;
+                final int mx = Math.max( r, Math.max( gc, b ) ), mn = Math.min( r, Math.min( gc, b ) );
+                if ( ( mx - mn ) > 40 ) {
                     ++n;
                 }
             }

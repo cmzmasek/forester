@@ -6546,6 +6546,24 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final float pad = getYdistance();
         final FontMetrics fm = getFontMetrics(getTreeFontSet().getSmallFont());
         float cx = labelsRightEdge() + ANN_COL_GAP;
+        if (isVerticalOrientation()) {
+            // the header is drawn UPRIGHT, centered at screenPoint(col_center, min_tip_y - pad - 3) (see
+            // paintAnnotationColumnsVertical); hit-test that device box for each column
+            final int hh = fm.getHeight();
+            for (int i = 0; i < _annotation_columns.size(); ++i) {
+                final int w = annotationColumnWidth(i);
+                final String header = _annotation_columns.getColumn(i).getHeader();
+                if (header.length() > 0) {
+                    final int tw = fm.stringWidth(header);
+                    final Point2D.Double hp = screenPoint(cx + (w / 2.0), min_tip_y - pad - 3.0);
+                    if ((Math.abs(x - hp.x) <= ((tw / 2.0) + 2)) && (Math.abs(y - hp.y) <= ((hh / 2.0) + 2))) {
+                        return i;
+                    }
+                }
+                cx += w + ANN_COL_GAP;
+            }
+            return -1;
+        }
         for (int i = 0; i < _annotation_columns.size(); ++i) {
             final int w = annotationColumnWidth(i);
             if ((x >= cx) && (x <= (cx + w))) {
@@ -6602,6 +6620,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         for (int i = 0; i < _annotation_columns.size(); ++i) {
             final int w = annotationColumnWidth(i);
             if (i == col) {
+                if (isVerticalOrientation()) {
+                    // the upright header's device center (matches paintAnnotationColumnsVertical / the vertical hit-test)
+                    float min_tip_y = Float.MAX_VALUE;
+                    for (final PhylogenyNode t : visibleExternalTips()) {
+                        min_tip_y = Math.min(min_tip_y, t.getYcoord());
+                    }
+                    final Point2D.Double hp = screenPoint(cx + (w / 2.0), min_tip_y - getYdistance() - 3.0);
+                    return new java.awt.Point((int) Math.round(hp.x), (int) Math.round(hp.y));
+                }
                 return new java.awt.Point(Math.round(cx + (w / 2.0f)), 1); // y=1 is within [0, anchor_y]
             }
             cx += w + ANN_COL_GAP;
@@ -6849,6 +6876,98 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.setTransform(saved_tx);
     }
 
+    /**
+     * Vertical-orientation twin of {@link #paintAnnotationColumns}: the tip-aligned columns become horizontal BANDS
+     * below the tips. Strip / heat-map / bar CELLS are axis-aligned rectangles, so they ride the rotation R for free
+     * (a 90-degree rotation keeps them axis-aligned) -- a logical column (a vertical strip) rotates into a horizontal
+     * band. TEXT cells and the column HEADERS are re-anchored to the upright base frame (drawing them under R would
+     * render them sideways): a TEXT cell reads vertically along its band like the tip labels, and the header sits
+     * upright just past the first tip in the reserved margin. Called while g is still rotated by R (paintPhylogeny).
+     */
+    private void paintAnnotationColumnsVertical(final Graphics2D g) {
+        if (!hasAnnotationColumns()) {
+            return;
+        }
+        final java.util.List<PhylogenyNode> tips = visibleExternalTips();
+        if (tips.isEmpty()) {
+            return;
+        }
+        final float pad = getYdistance();
+        final Color fg = getTreeColorSet().getSequenceColor();
+        final Color saved_color = g.getColor();
+        final Font saved_font = g.getFont();
+        final AffineTransform withR = g.getTransform();
+        final Font text_font = getTreeFontSet().getSmallFont();
+        final double text_angle = (getOptions().getTreeOrientation() == Options.TREE_ORIENTATION.ROOT_BOTTOM)
+                ? (-Math.PI / 2.0) : (Math.PI / 2.0);
+        float min_tip_y = Float.MAX_VALUE;
+        for (final PhylogenyNode t : tips) {
+            min_tip_y = Math.min(min_tip_y, t.getYcoord());
+        }
+        float x = labelsRightEdge() + ANN_COL_GAP;
+        for (int i = 0; i < _annotation_columns.size(); ++i) {
+            final int w = annotationColumnWidth(i);
+            final int xi = Math.round(x);
+            final float col_center = x + (w / 2.0f);
+            final AnnotationColumns.Type type = _annotation_columns.getColumn(i).getType();
+            for (final PhylogenyNode t : tips) {
+                // round each cell's near/far edge to the row boundaries so adjacent cells tile exactly (as the
+                // horizontal path does), then draw the rect in LOGICAL coords -- it rides R into a band cell
+                final int cy = Math.round(t.getYcoord() - pad);
+                final int cell_h = Math.max(1, Math.round(t.getYcoord() + pad) - cy);
+                switch (type) {
+                    case COLOR_STRIP:
+                    case HEATMAP: {
+                        final Color c = _annotation_columns.cellColor(t, i);
+                        if (c != null) {
+                            g.setColor(c);
+                            g.fillRect(xi, cy, w, cell_h);
+                        }
+                        break;
+                    }
+                    case BAR: {
+                        final double f = _annotation_columns.barFraction(t, i);
+                        if (!Double.isNaN(f)) {
+                            g.setColor(fg);
+                            g.fillRect(xi, cy, Math.max(1, (int) Math.round(f * w)), cell_h);
+                        }
+                        break;
+                    }
+                    case TEXT: {
+                        final String v = _annotation_columns.cellText(t, i);
+                        if (v.length() > 0) {
+                            final String fitted = fitText(v, w, getFontMetrics(text_font));
+                            final float ty = t.getYcoord();
+                            final float tx = x;
+                            withNodeTextFrame(g, tx, ty, text_angle, () -> {
+                                g.setFont(text_font);
+                                g.setColor(fg);
+                                g.drawString(fitted, tx, ty + (getFontMetrics(text_font).getAscent() / 2.0f) - 1);
+                            });
+                        }
+                        break;
+                    }
+                }
+            }
+            // column header: upright, just past the first tip in the reserved breadth margin
+            final String header = _annotation_columns.getColumn(i).getHeader();
+            if ((header.length() > 0) && (min_tip_y < Float.MAX_VALUE)) {
+                g.setTransform(_orientation_base_transform);
+                g.setFont(text_font);
+                g.setColor(fg);
+                final FontMetrics hfm = g.getFontMetrics();
+                final Point2D.Double hp = screenPoint(col_center, min_tip_y - pad - 3.0);
+                g.drawString(header, (float) (hp.x - (hfm.stringWidth(header) / 2.0)),
+                        (float) (hp.y + (hfm.getAscent() / 2.0f)));
+                g.setTransform(withR);
+            }
+            x += w + ANN_COL_GAP;
+        }
+        g.setTransform(withR);
+        g.setColor(saved_color);
+        g.setFont(saved_font);
+    }
+
     private static String fitText(final String s, final int max_w, final FontMetrics fm) {
         if (fm.stringWidth(s) <= max_w) {
             return s;
@@ -7070,7 +7189,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      * Data" off) they occupy no width, so annotations sit right after the tips.
      */
     private float labelsRightEdge() {
-        final float label_w = getControlPanel().isShowExternalData() ? getLongestExtNodeInfo() : 0;
+        // in a vertical orientation the tip labels are TILTED and extend along the DEPTH axis only by their depth
+        // component (full width for 90deg, L/sqrt(2) for 45deg), so the columns clear the labels using that reach --
+        // not the full horizontal label width, which would leave a large empty gap below the tips
+        final float label_w = getControlPanel().isShowExternalData()
+                ? (isVerticalOrientation() ? depthLabelReserve() : getLongestExtNodeInfo()) : 0;
         if (getControlPanel().isDrawPhylogram()) {
             return (float) ((getMaxDistanceToRoot() * getXcorrectionFactor())
                     + _phylogeny.getRoot().getXcoord() + label_w);
@@ -8192,6 +8315,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 paintHpdBars(g, to_pdf, to_graphics_file); // node-age HPD bars -- node coords set by the loop above
                 paintAnnotationColumns(g); // tip-aligned columns (strip/heat map/bar/text), right of the labels
                 paintCladeBands(g); // clade boxes/bars over the tree -- node coords set by the loop above
+            }
+            else {
+                // vertical parity: the tip-aligned annotation columns become horizontal BANDS below the tips (cells
+                // ride R; text/headers re-anchored upright). The other overlays above follow in later increments.
+                paintAnnotationColumnsVertical(g);
             }
             paintHoverPreview(g, !(to_pdf || to_graphics_file)); // translucent select/deselect hover preview (rides R)
             paintFoundNodeHalos(g, to_pdf, to_graphics_file); // pulsing (screen) / static-glow (export) hit halos
