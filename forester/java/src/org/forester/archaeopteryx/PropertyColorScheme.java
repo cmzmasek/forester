@@ -108,9 +108,13 @@ final class PropertyColorScheme {
     private final Color[]              _palette; // the categorical palette in use
     // Continuous mode (numeric properties such as "year"): a blue->red gradient spanning
     // [_min, _max] instead of distinct colors. _gradient is false for categorical refs.
-    private final boolean            _gradient;
-    private final double             _min;
-    private final double             _max;
+    // NOT final: a heat-map MATRIX column forces continuous mode on the range SHARED across the matrix
+    // (see setSharedRange), even when this column's own values would auto-detect as categorical.
+    private boolean                  _gradient;
+    // NOT final: a heat-map MATRIX column overrides its per-ref range with the range SHARED across the matrix
+    // (see setSharedRange), so every column of the matrix reads on the same color scale.
+    private double                   _min;
+    private double                   _max;
     // For refs whose value carries a trailing qualifier, the delimiter at which the value is
     // truncated before grouping: ':' for "country" (USA:CA == USA:IL), ';' for "host"
     // (Homo sapiens; male 35 == Homo sapiens; female old). 0 means keep the whole value.
@@ -345,6 +349,17 @@ final class PropertyColorScheme {
 
     String getGradientMaxLabel() {
         return formatNumber( _max );
+    }
+
+    /** Make this scheme a continuous gradient over the range SHARED across a heat-map matrix, so all of the
+     *  matrix's columns read on one color scale (and one gradient legend). A MATRIX column is by definition a
+     *  shared-range numeric gradient, so this FORCES continuous mode even when this column's own values happened
+     *  to auto-detect as categorical (e.g. after a collapse left it a single distinct value) -- otherwise that
+     *  one column would render on a categorical palette and break the shared scale. */
+    void setSharedRange( final double min, final double max ) {
+        _gradient = true;
+        _min = min;
+        _max = max;
     }
 
     /** Parses a value as a finite number, or {@code null} if empty, non-numeric, or non-finite (NaN/Infinity).

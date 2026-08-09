@@ -192,6 +192,10 @@ final public class Options {
     private boolean _use_italic_scientific_names;
     private boolean _outline_fonts_in_vector_export;
     private boolean _show_domain_labels;
+    // Clustergram layout: in a vertical (root-top/bottom) orientation with annotation columns, draw the tip labels
+    // BELOW the columns (at the bottom) instead of between the tree and the columns, so the dendrogram sits directly
+    // on the tip-aligned grid. Display-only; no-op in the horizontal orientation / without annotation columns.
+    private boolean _tip_labels_below_columns;
     private boolean _show_overview;
     private boolean _show_scale;
     private boolean _show_scale_grid;
@@ -242,6 +246,14 @@ final public class Options {
 
     public final boolean isShowDomainLabels() {
         return _show_domain_labels;
+    }
+
+    final boolean isTipLabelsBelowColumns() {
+        return _tip_labels_below_columns;
+    }
+
+    final void setTipLabelsBelowColumns(final boolean tip_labels_below_columns) {
+        _tip_labels_below_columns = tip_labels_below_columns;
     }
 
     public final void setAllowErrorsInDistanceToParent(final boolean allow_errors_in_distance_to_parent) {
@@ -335,6 +347,7 @@ final public class Options {
         _taxonomy_extraction = TAXONOMY_EXTRACTION.NO;
         _cladogram_type = AptxConstants.CLADOGRAM_TYPE_DEFAULT;
         _show_domain_labels = true;
+        _tip_labels_below_columns = false;
         setAbbreviateScientificTaxonNames(false);
         _color_labels_same_as_parent_branch = false;
         _show_confidence_stddev = false;

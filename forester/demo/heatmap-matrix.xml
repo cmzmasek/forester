@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" rerootable="true">
+  <name>Heat map matrix (demo)</name>
+  <description>Synthetic tree where each tip carries an abundance value across six samples (s1..s6). View as a phylogram, then Tools &gt; Annotation Columns and add s1..s6 as &quot;Heat map (matrix)&quot;: they render on ONE shared color scale (a clustergram grid), best in a vertical orientation with Tip Labels Below Columns.</description>
+  <clade>
+    <branch_length>0.0</branch_length>
+    <clade>
+      <branch_length>0.1</branch_length>
+      <clade>
+        <name>gene_A</name>
+        <branch_length>0.2</branch_length>
+        <property ref="data:s6" datatype="xsd:decimal" applies_to="node">1</property>
+        <property ref="data:s5" datatype="xsd:decimal" applies_to="node">3</property>
+        <property ref="data:s4" datatype="xsd:decimal" applies_to="node">0</property>
+        <property ref="data:s3" datatype="xsd:decimal" applies_to="node">1</property>
+        <property ref="data:s2" datatype="xsd:decimal" applies_to="node">2</property>
+        <property ref="data:s1" datatype="xsd:decimal" applies_to="node">8</property>
+      </clade>
+      <clade>
+        <name>gene_B</name>
+        <branch_length>0.25</branch_length>
+        <property ref="data:s6" datatype="xsd:decimal" applies_to="node">0</property>
+        <property ref="data:s5" datatype="xsd:decimal" applies_to="node">4</property>
+        <property ref="data:s4" datatype="xsd:decimal" applies_to="node">1</property>
+        <property ref="data:s3" datatype="xsd:decimal" applies_to="node">2</property>
+        <property ref="data:s2" datatype="xsd:decimal" applies_to="node">3</property>
+        <property ref="data:s1" datatype="xsd:decimal" applies_to="node">9</property>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.12</branch_length>
+      <clade>
+        <name>gene_C</name>
+        <branch_length>0.18</branch_length>
+        <property ref="data:s6" datatype="xsd:decimal" applies_to="node">1</property>
+        <property ref="data:s5" datatype="xsd:decimal" applies_to="node">0</property>
+        <property ref="data:s4" datatype="xsd:decimal" applies_to="node">2</property>
+        <property ref="data:s3" datatype="xsd:decimal" applies_to="node">8</property>
+        <property ref="data:s2" datatype="xsd:decimal" applies_to="node">7</property>
+        <property ref="data:s1" datatype="xsd:decimal" applies_to="node">1</property>
+      </clade>
+      <clade>
+        <branch_length>0.1</branch_length>
+        <clade>
+          <name>gene_D</name>
+          <branch_length>0.15</branch_length>
+          <property ref="data:s6" datatype="xsd:decimal" applies_to="node">2</property>
+          <property ref="data:s5" datatype="xsd:decimal" applies_to="node">1</property>
+          <property ref="data:s4" datatype="xsd:decimal" applies_to="node">3</property>
+          <property ref="data:s3" datatype="xsd:decimal" applies_to="node">9</property>
+          <property ref="data:s2" datatype="xsd:decimal" applies_to="node">6</property>
+          <property ref="data:s1" datatype="xsd:decimal" applies_to="node">0</property>
+        </clade>
+        <clade>
+          <name>gene_E</name>
+          <branch_length>0.2</branch_length>
+          <property ref="data:s6" datatype="xsd:decimal" applies_to="node">1</property>
+          <property ref="data:s5" datatype="xsd:decimal" applies_to="node">0</property>
+          <property ref="data:s4" datatype="xsd:decimal" applies_to="node">4</property>
+          <property ref="data:s3" datatype="xsd:decimal" applies_to="node">7</property>
+          <property ref="data:s2" datatype="xsd:decimal" applies_to="node">5</property>
+          <property ref="data:s1" datatype="xsd:decimal" applies_to="node">2</property>
+        </clade>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.15</branch_length>
+      <clade>
+        <name>gene_F</name>
+        <branch_length>0.22</branch_length>
+        <property ref="data:s6" datatype="xsd:decimal" applies_to="node">6</property>
+        <property ref="data:s5" datatype="xsd:decimal" applies_to="node">9</property>
+        <property ref="data:s4" datatype="xsd:decimal" applies_to="node">8</property>
+        <property ref="data:s3" datatype="xsd:decimal" applies_to="node">0</property>
+        <property ref="data:s2" datatype="xsd:decimal" applies_to="node">1</property>
+        <property ref="data:s1" datatype="xsd:decimal" applies_to="node">3</property>
+      </clade>
+      <clade>
+        <name>gene_G</name>
+        <branch_length>0.19</branch_length>
+        <property ref="data:s6" datatype="xsd:decimal" applies_to="node">9</property>
+        <property ref="data:s5" datatype="xsd:decimal" applies_to="node">8</property>
+        <property ref="data:s4" datatype="xsd:decimal" applies_to="node">7</property>
+        <property ref="data:s3" datatype="xsd:decimal" applies_to="node">1</property>
+        <property ref="data:s2" datatype="xsd:decimal" applies_to="node">0</property>
+        <property ref="data:s1" datatype="xsd:decimal" applies_to="node">2</property>
+      </clade>
+      <clade>
+        <name>gene_H</name>
+        <branch_length>0.21</branch_length>
+        <property ref="data:s6" datatype="xsd:decimal" applies_to="node">8</property>
+        <property ref="data:s5" datatype="xsd:decimal" applies_to="node">7</property>
+        <property ref="data:s4" datatype="xsd:decimal" applies_to="node">6</property>
+        <property ref="data:s3" datatype="xsd:decimal" applies_to="node">0</property>
+        <property ref="data:s2" datatype="xsd:decimal" applies_to="node">2</property>
+        <property ref="data:s1" datatype="xsd:decimal" applies_to="node">4</property>
+      </clade>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>

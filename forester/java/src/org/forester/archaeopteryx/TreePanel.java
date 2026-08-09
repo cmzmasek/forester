@@ -3096,7 +3096,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             down_shift_factor = 1;
         }
         float pos_x;
-        if ((getControlPanel().getTreeDisplayType() == Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM)
+        if (tipLabelsBelowColumns() && (node.isExternal() || node.isCollapse())) {
+            // clustergram "labels below columns": the label is drawn PAST the tip-aligned columns, at the SAME base
+            // (annotationColumnsEndX) that labelTextStartX feeds the rotated-frame pivot -- one shared method so the
+            // drawn position and the tilt pivot can never disagree (a mismatch mis-anchors the 45/90 deg label).
+            pos_x = labelSegmentStartX(annotationColumnsEndX(), half_box_size, x);
+        } else if ((getControlPanel().getTreeDisplayType() == Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM)
                 && (node.isExternal() || node.isCollapse())) {
             pos_x = labelSegmentStartX((float) ((getMaxDistanceToRoot() * getXcorrectionFactor()) + TreePanel.MOVE
                     + getXdistance()), half_box_size, x);
@@ -6691,7 +6696,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private boolean columnHasLegend(final int i) {
         final AnnotationColumns.Type t = _annotation_columns.getColumn(i).getType();
         return (t == AnnotationColumns.Type.COLOR_STRIP) || (t == AnnotationColumns.Type.HEATMAP)
-                || (t == AnnotationColumns.Type.BAR);
+                || (t == AnnotationColumns.Type.MATRIX) || (t == AnnotationColumns.Type.BAR);
     }
 
     boolean hasFocusedAnnotationColumn() {
@@ -6742,7 +6747,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         final float pad = getYdistance();
         final FontMetrics fm = getFontMetrics(getTreeFontSet().getSmallFont());
-        float cx = labelsRightEdge() + ANN_COL_GAP;
+        float cx = annotationColumnsStartX();
         if (isVerticalOrientation()) {
             if (_orientation_R == null) {
                 return -1; // R is built during paint; before the first vertical paint screenPoint would return logical
@@ -6760,7 +6765,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         return i;
                     }
                 }
-                cx += w + ANN_COL_GAP;
+                cx += w + annotationColumnGapAfter(i);
             }
             return -1;
         }
@@ -6774,7 +6779,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 final float anchor_y = Math.max(1.0f, (min_tip_y - pad) - 3.0f - tw);
                 return (y <= (anchor_y + tw)) ? i : -1;
             }
-            cx += w + ANN_COL_GAP;
+            cx += w + annotationColumnGapAfter(i);
         }
         return -1;
     }
@@ -6816,7 +6821,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (!hasAnnotationColumns() || (col < 0) || (col >= _annotation_columns.size())) {
             return null;
         }
-        float cx = labelsRightEdge() + ANN_COL_GAP;
+        float cx = annotationColumnsStartX();
         for (int i = 0; i < _annotation_columns.size(); ++i) {
             final int w = annotationColumnWidth(i);
             if (i == col) {
@@ -6836,7 +6841,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 }
                 return new java.awt.Point(Math.round(cx + (w / 2.0f)), 1); // y=1 is within [0, anchor_y]
             }
-            cx += w + ANN_COL_GAP;
+            cx += w + annotationColumnGapAfter(i);
         }
         return null;
     }
@@ -6912,7 +6917,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         int w = ANN_COL_GAP;
         for (int i = 0; i < _annotation_columns.size(); ++i) {
-            w += annotationColumnWidth(i) + ANN_COL_GAP;
+            w += annotationColumnWidth(i) + annotationColumnGapAfter(i);
         }
         return w;
     }
@@ -6935,6 +6940,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private int annotationColumnWidth(final int i) {
         ensureAnnotationColumnWidths();
         return _annotation_col_widths[i];
+    }
+
+    /** The gap (px) drawn AFTER annotation column {@code i}: 0 between two adjacent heat-map MATRIX columns (so the
+     *  matrix reads as one contiguous grid), else the normal {@link #ANN_COL_GAP}. */
+    private int annotationColumnGapAfter(final int i) {
+        if (((i + 1) < _annotation_columns.size())
+                && (_annotation_columns.getColumn(i).getType() == AnnotationColumns.Type.MATRIX)
+                && (_annotation_columns.getColumn(i + 1).getType() == AnnotationColumns.Type.MATRIX)) {
+            return 0;
+        }
+        return ANN_COL_GAP;
     }
 
     /**
@@ -7016,7 +7032,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         for (final PhylogenyNode t : tips) {
             min_tip_y = Math.min(min_tip_y, t.getYcoord());
         }
-        float x = labelsRightEdge() + ANN_COL_GAP;
+        float x = annotationColumnsStartX();
         for (int i = 0; i < _annotation_columns.size(); ++i) {
             final int w = annotationColumnWidth(i);
             final int xi = Math.round(x);
@@ -7028,7 +7044,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 final int cell_h = Math.max(1, Math.round(t.getYcoord() + pad) - cy);
                 switch (type) {
                     case COLOR_STRIP:
-                    case HEATMAP: {
+                    case HEATMAP:
+                    case MATRIX: {
                         final Color c = _annotation_columns.cellColor(t, i);
                         if (c != null) {
                             g.setColor(c);
@@ -7074,7 +7091,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 g.drawString(header, cx - tw, anchor_y + (hfm.getAscent() / 2.0f));
                 g.setTransform(saved_tx);
             }
-            x += w + ANN_COL_GAP;
+            x += w + annotationColumnGapAfter(i);
         }
         g.setColor(saved_color);
         g.setFont(saved_font);
@@ -7112,7 +7129,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         for (final PhylogenyNode t : tips) {
             min_tip_y = Math.min(min_tip_y, t.getYcoord());
         }
-        float x = labelsRightEdge() + ANN_COL_GAP;
+        float x = annotationColumnsStartX();
         for (int i = 0; i < _annotation_columns.size(); ++i) {
             final int w = annotationColumnWidth(i);
             final int xi = Math.round(x);
@@ -7125,7 +7142,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 final int cell_h = Math.max(1, Math.round(t.getYcoord() + pad) - cy);
                 switch (type) {
                     case COLOR_STRIP:
-                    case HEATMAP: {
+                    case HEATMAP:
+                    case MATRIX: {
                         final Color c = _annotation_columns.cellColor(t, i);
                         if (c != null) {
                             g.setColor(c);
@@ -7171,7 +7189,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 g.drawString(header, (float) (hp.x - (hw / 2.0)), (float) (hp.y + (hfm.getAscent() / 2.0f)));
                 g.setTransform(withR);
             }
-            x += w + ANN_COL_GAP;
+            x += w + annotationColumnGapAfter(i);
         }
         g.setTransform(withR);
         g.setColor(saved_color);
@@ -7407,11 +7425,36 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // not the full horizontal label width, which would leave a large empty gap below the tips
         final float label_w = getControlPanel().isShowExternalData()
                 ? (isVerticalOrientation() ? depthLabelReserve() : getLongestExtNodeInfo()) : 0;
+        return tipsDepthEdge() + label_w;
+    }
+
+    /** The depth (logical x) where the tip branches END -- the anchor for tip labels and tip-aligned columns, WITHOUT
+     *  the tip-label reach. (labelsRightEdge() adds the label reach; the clustergram "labels below columns" layout puts
+     *  the columns here, right past the tips, and the labels past the columns instead.) */
+    private float tipsDepthEdge() {
         if (getControlPanel().isDrawPhylogram()) {
-            return (float) ((getMaxDistanceToRoot() * getXcorrectionFactor())
-                    + _phylogeny.getRoot().getXcoord() + label_w);
+            return (float) ((getMaxDistanceToRoot() * getXcorrectionFactor()) + _phylogeny.getRoot().getXcoord());
         }
-        return getPhylogeny().getFirstExternalNode().getXcoord() + label_w;
+        return getPhylogeny().getFirstExternalNode().getXcoord();
+    }
+
+    /** Clustergram layout: in a vertical orientation with annotation columns, the tip labels are drawn BELOW the
+     *  columns (so the dendrogram sits directly on the tip-aligned grid) rather than between the tree and the columns.
+     *  No-op in the horizontal orientation / without annotation columns. */
+    boolean tipLabelsBelowColumns() {
+        return getOptions().isTipLabelsBelowColumns() && isVerticalOrientation() && hasAnnotationColumns();
+    }
+
+    /** The depth (logical x) where the tip-aligned annotation columns START: right past the tips in the clustergram
+     *  "labels below" layout, else past the tip labels. */
+    private float annotationColumnsStartX() {
+        return (tipLabelsBelowColumns() ? tipsDepthEdge() : labelsRightEdge()) + ANN_COL_GAP;
+    }
+
+    /** The depth (logical x) where the annotation columns END (one ANN_COL_GAP past the last column). Derived from
+     *  {@link #annotationColumnsStartX()} so the two share the one base-selection and can never disagree. */
+    private float annotationColumnsEndX() {
+        return (annotationColumnsStartX() - ANN_COL_GAP) + annotationColumnsWidth();
     }
 
     /** The x where clade bands/bars start: past the tip labels and any tip-aligned annotation columns. */
@@ -9027,6 +9070,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  {@link #paintNodeData} / {@link #paintTaxonomy}. */
     private float labelTextStartX(final PhylogenyNode node) {
         final int half_box = getOptions().getDefaultNodeShapeSize() / 2;
+        // clustergram "labels below columns": tip/collapsed labels are drawn past the tip-aligned columns (aligned at
+        // the far edge), so the dendrogram sits directly on the grid and the sample labels run along the bottom
+        if (tipLabelsBelowColumns() && (node.isExternal() || node.isCollapse())) {
+            return labelSegmentStartX(annotationColumnsEndX(), half_box, 0);
+        }
         return labelSegmentStartX(isAlignedTipLabel(node) ? alignedLabelColumnX() : node.getXcoord(), half_box, 0);
     }
 

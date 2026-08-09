@@ -44,7 +44,79 @@ public final class AnnotationColumnsTest {
     }
 
     public static boolean test() {
-        return testTypeSuggestion() && testCells() && testHeaders() && testLabels();
+        return testTypeSuggestion() && testCells() && testHeaders() && testLabels() && testMatrix();
+    }
+
+    // ---- heat-map MATRIX: all matrix columns share ONE color scale ----
+    private static boolean testMatrix() {
+        // two numeric columns with DIFFERENT per-column ranges: s1 in [0,10], s2 in [0,100].
+        final Phylogeny phy = matrixTree();
+        final List<AnnotationColumns.ColumnSpec> ms = new ArrayList<AnnotationColumns.ColumnSpec>();
+        ms.add( new AnnotationColumns.ColumnSpec( "data:s1", Type.MATRIX ) ); // 0
+        ms.add( new AnnotationColumns.ColumnSpec( "data:s2", Type.MATRIX ) ); // 1
+        final AnnotationColumns matrix = new AnnotationColumns( phy, ms );
+        // SHARED scale: the value 10 in s1 and the value 10 in s2 map to the SAME color (both 10 on the global 0..100)
+        final Color m_s1_10 = matrix.cellColor( tip( phy, "p" ), 0 );
+        final Color m_s2_10 = matrix.cellColor( tip( phy, "p" ), 1 );
+        if ( ( m_s1_10 == null ) || !m_s1_10.equals( m_s2_10 ) ) {
+            return fail( "MATRIX: equal values in different columns must share a color (shared scale): " + m_s1_10
+                    + " vs " + m_s2_10 );
+        }
+        // PER-COLUMN HEATMAP on the SAME data: 10 is the MAX of s1 (top of its scale) but low in s2 -> DIFFERENT colors
+        final List<AnnotationColumns.ColumnSpec> hs = new ArrayList<AnnotationColumns.ColumnSpec>();
+        hs.add( new AnnotationColumns.ColumnSpec( "data:s1", Type.HEATMAP ) );
+        hs.add( new AnnotationColumns.ColumnSpec( "data:s2", Type.HEATMAP ) );
+        final AnnotationColumns heat = new AnnotationColumns( phy, hs );
+        final Color h_s1_10 = heat.cellColor( tip( phy, "p" ), 0 );
+        final Color h_s2_10 = heat.cellColor( tip( phy, "p" ), 1 );
+        if ( ( h_s1_10 == null ) || h_s1_10.equals( h_s2_10 ) ) {
+            return fail( "per-column HEATMAP: the value 10 should color differently in s1 (its max) vs s2 (low): "
+                    + h_s1_10 + " vs " + h_s2_10 );
+        }
+        // a MATRIX column whose values are ALL identical would, ALONE, auto-detect as CATEGORICAL (one distinct
+        // value) -- it must STILL color on the shared gradient, not a categorical palette color, or that one column
+        // silently breaks the shared scale. Here s2 is constant (50) while s1 spans 0..100 (shared range [0,100]);
+        // the constant column's cell for 50 must match the SAME value's cell in the spanning column.
+        final Phylogeny phy2 = new Phylogeny();
+        final PhylogenyNode root2 = new PhylogenyNode();
+        root2.addAsChild( matrixLeaf( "a", "0", "50" ) );
+        root2.addAsChild( matrixLeaf( "b", "100", "50" ) );
+        root2.addAsChild( matrixLeaf( "c", "50", "50" ) );
+        phy2.setRoot( root2 );
+        phy2.externalNodesHaveChanged();
+        final List<AnnotationColumns.ColumnSpec> ds = new ArrayList<AnnotationColumns.ColumnSpec>();
+        ds.add( new AnnotationColumns.ColumnSpec( "data:s1", Type.MATRIX ) ); // spans 0..100
+        ds.add( new AnnotationColumns.ColumnSpec( "data:s2", Type.MATRIX ) ); // constant 50 -> categorical alone
+        final AnnotationColumns degen = new AnnotationColumns( phy2, ds );
+        final Color d_spanning_50 = degen.cellColor( tip( phy2, "c" ), 0 ); // 50 on the shared [0,100] gradient
+        final Color d_constant_50 = degen.cellColor( tip( phy2, "c" ), 1 ); // 50 in the all-equal column
+        if ( ( d_constant_50 == null ) || !d_constant_50.equals( d_spanning_50 ) ) {
+            return fail( "MATRIX: an all-equal column must still use the shared gradient (value 50 -> same color as "
+                    + "the spanning column), not a categorical palette color: " + d_constant_50 + " vs "
+                    + d_spanning_50 );
+        }
+        return true;
+    }
+
+    private static Phylogeny matrixTree() {
+        final Phylogeny phy = new Phylogeny();
+        final PhylogenyNode root = new PhylogenyNode();
+        root.addAsChild( matrixLeaf( "p", "10", "10" ) );
+        root.addAsChild( matrixLeaf( "q", "10", "100" ) );
+        root.addAsChild( matrixLeaf( "r", "0", "0" ) );
+        phy.setRoot( root );
+        phy.externalNodesHaveChanged();
+        return phy;
+    }
+
+    private static PhylogenyNode matrixLeaf( final String name, final String s1, final String s2 ) {
+        final PhylogenyNode n = new PhylogenyNode();
+        n.setName( name );
+        final PropertiesList pl = new PropertiesList();
+        pl.addProperty( new Property( "data:s1", s1, "", "xsd:string", AppliesTo.NODE ) );
+        pl.addProperty( new Property( "data:s2", s2, "", "xsd:string", AppliesTo.NODE ) );
+        n.getNodeData().setProperties( pl );
+        return n;
     }
 
     // ---- friendly render-type labels ----
@@ -73,10 +145,10 @@ public final class AnnotationColumnsTest {
             return fail( "a categorical field should allow only COLOR_STRIP + TEXT" );
         }
         final List<Type> score_types = AnnotationColumns.allowedTypes( phy, "data:score" );
-        if ( ( score_types.size() != 3 ) || !score_types.contains( Type.HEATMAP )
-                || !score_types.contains( Type.BAR ) || !score_types.contains( Type.TEXT )
-                || score_types.contains( Type.COLOR_STRIP ) ) {
-            return fail( "a numeric field should allow HEATMAP + BAR + TEXT" );
+        if ( ( score_types.size() != 4 ) || !score_types.contains( Type.HEATMAP )
+                || !score_types.contains( Type.MATRIX ) || !score_types.contains( Type.BAR )
+                || !score_types.contains( Type.TEXT ) || score_types.contains( Type.COLOR_STRIP ) ) {
+            return fail( "a numeric field should allow HEATMAP + MATRIX + BAR + TEXT" );
         }
         return true;
     }

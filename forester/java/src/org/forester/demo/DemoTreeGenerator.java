@@ -72,6 +72,7 @@ public final class DemoTreeGenerator {
         write( dir, "reverse-tip-order.xml", reverseTipOrderTree() );
         write( dir, "root-on-top.xml", rootOnTopTree() );
         write( dir, "domain-architectures.xml", domainArchitecturesTree() );
+        write( dir, "heatmap-matrix.xml", heatmapMatrixTree() );
         write( dir, "search-emphasis.xml", searchEmphasisTree() );
         System.out.println( "Wrote demo trees to " + dir.getAbsolutePath() );
     }
@@ -367,6 +368,34 @@ public final class DemoTreeGenerator {
     /** A protein domain with a strong (well below the default 1e-3 threshold) e-value so it is drawn. */
     private static ProteinDomain dom( final String name, final int from, final int to ) {
         return new ProteinDomain( name, from, to, 1e-6 );
+    }
+
+    // ----- "Heat map matrix": each tip carries a row of numeric values across six samples (s1..s6). Add s1..s6 as
+    //       "Heat map (matrix)" annotation columns -> ONE shared color scale across the whole grid (a clustergram).
+    private static Phylogeny heatmapMatrixTree() {
+        final PhylogenyNode root = clade( 0.0,
+                clade( 0.10, matrixLeaf( "gene_A", 0.20, 8, 2, 1, 0, 3, 1 ),
+                       matrixLeaf( "gene_B", 0.25, 9, 3, 2, 1, 4, 0 ) ),
+                clade( 0.12, matrixLeaf( "gene_C", 0.18, 1, 7, 8, 2, 0, 1 ),
+                       clade( 0.10, matrixLeaf( "gene_D", 0.15, 0, 6, 9, 3, 1, 2 ),
+                              matrixLeaf( "gene_E", 0.20, 2, 5, 7, 4, 0, 1 ) ) ),
+                clade( 0.15, matrixLeaf( "gene_F", 0.22, 3, 1, 0, 8, 9, 6 ),
+                       matrixLeaf( "gene_G", 0.19, 2, 0, 1, 7, 8, 9 ),
+                       matrixLeaf( "gene_H", 0.21, 4, 2, 0, 6, 7, 8 ) ) );
+        return tree( root, "Heat map matrix (demo)",
+                     "Synthetic tree where each tip carries an abundance value across six samples (s1..s6). View as a "
+                             + "phylogram, then Tools > Annotation Columns and add s1..s6 as \"Heat map (matrix)\": "
+                             + "they render on ONE shared color scale (a clustergram grid), best in a vertical "
+                             + "orientation with Tip Labels Below Columns." );
+    }
+
+    /** A leaf carrying numeric sample values s1..sN (as data:s1 .. data:sN properties). */
+    private static PhylogenyNode matrixLeaf( final String name, final double bl, final int... samples ) {
+        final PhylogenyNode n = blLeaf( name, bl );
+        for( int i = 0; i < samples.length; ++i ) {
+            num( n, "data:s" + ( i + 1 ), Integer.toString( samples[ i ] ) );
+        }
+        return n;
     }
 
     private static PhylogenyNode blLeaf( final String name, final double branch_length ) {

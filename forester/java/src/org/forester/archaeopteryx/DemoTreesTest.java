@@ -83,6 +83,10 @@ public final class DemoTreesTest {
         ok &= hasBranchLengths( "domain-architectures.xml" );
         ok &= hasDomainArchitectures( "domain-architectures.xml", 6 );
 
+        ok &= hasAtLeastTips( "heatmap-matrix.xml", 6 );
+        ok &= hasNumericRef( "heatmap-matrix.xml", "data:s1" );
+        ok &= hasNumericRef( "heatmap-matrix.xml", "data:s6" );
+
         ok &= hasAtLeastTips( "search-emphasis.xml", 12 );
         ok &= tipsContaining( "search-emphasis.xml", "kinase", 4 );
         ok &= hasInternalConfidence( "search-emphasis.xml" );

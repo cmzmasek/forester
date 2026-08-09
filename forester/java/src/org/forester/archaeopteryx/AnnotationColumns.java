@@ -48,6 +48,9 @@ final class AnnotationColumns {
         COLOR_STRIP,
         /** A filled cell colored by the value's position in the numeric gradient. */
         HEATMAP,
+        /** Like HEATMAP, but all MATRIX columns share ONE color scale (one min/max, one legend) and draw as a
+         *  contiguous grid -- the clustergram heat-map matrix (e.g. abundance across samples). */
+        MATRIX,
         /** A horizontal bar whose length is the value's fraction of the numeric range. */
         BAR,
         /** The raw value drawn as text. */
@@ -61,6 +64,8 @@ final class AnnotationColumns {
                 return "Color strip";
             case HEATMAP:
                 return "Heat map";
+            case MATRIX:
+                return "Heat map (matrix)";
             case BAR:
                 return "Bar";
             case TEXT:
@@ -117,6 +122,30 @@ final class AnnotationColumns {
             final PropertyColorScheme scheme = ( spec._type == Type.TEXT ) ? null
                     : new PropertyColorScheme( phylogeny, spec._ref );
             _columns.add( new Column( spec._ref, spec._type, scheme ) );
+        }
+        // heat-map MATRIX: one shared color scale across ALL matrix columns, so a cell's color is comparable across
+        // samples. Compute the range over every matrix ref's values and stamp it onto each matrix column's scheme.
+        // Deliberately over getExternalNodes() (ALL tips, incl. collapsed) rather than the visible tips a per-column
+        // HEATMAP uses: a shared matrix scale should stay STABLE as the user collapses clades (its whole point is
+        // cross-sample comparability), not rescale and change what a color means on every collapse.
+        double mmin = Double.POSITIVE_INFINITY, mmax = Double.NEGATIVE_INFINITY;
+        for( final Column c : _columns ) {
+            if ( c._type == Type.MATRIX ) {
+                for( final PhylogenyNode leaf : phylogeny.getExternalNodes() ) {
+                    final Double d = PropertyColorScheme.parseNumber( PropertyColorScheme.valueFor( leaf, c._ref ) );
+                    if ( d != null ) {
+                        mmin = Math.min( mmin, d );
+                        mmax = Math.max( mmax, d );
+                    }
+                }
+            }
+        }
+        if ( mmin <= mmax ) {
+            for( final Column c : _columns ) {
+                if ( ( c._type == Type.MATRIX ) && ( c._scheme != null ) ) {
+                    c._scheme.setSharedRange( mmin, mmax );
+                }
+            }
         }
     }
 
@@ -186,6 +215,7 @@ final class AnnotationColumns {
         final List<Type> types = new ArrayList<Type>();
         if ( new PropertyColorScheme( phylogeny, ref ).isGradient() ) {
             types.add( Type.HEATMAP );
+            types.add( Type.MATRIX );
             types.add( Type.BAR );
             types.add( Type.TEXT );
         }
