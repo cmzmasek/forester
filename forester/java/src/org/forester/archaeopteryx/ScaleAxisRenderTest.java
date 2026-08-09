@@ -99,6 +99,73 @@ public final class ScaleAxisRenderTest {
                     if ( below >= 40 ) {
                         fail( ok, "the tree name must be raised above the axis, not left below it (run " + below + "px)" );
                     }
+                    // VERTICAL PARITY (scale grid): the faint grid lines ride R into HORIZONTAL depth lines in a
+                    // root-top/bottom orientation. The grid is a FAINT magenta (the magenta branch-length color blended
+                    // over the white bg), distinct from the pure-magenta axis; count it on vs off (axis off).
+                    o.setShowScaleAxis( false );
+                    o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP );
+                    tp.calcParametersForPainting( w, h ); // re-fit for the vertical orientation (swapped depth/breadth)
+                    o.setShowScaleGrid( false );
+                    final int grid_off = countFaintMagenta( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1,
+                            false ) );
+                    o.setShowScaleGrid( true );
+                    final int grid_on = countFaintMagenta( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1,
+                            false ) );
+                    if ( grid_on <= ( grid_off + 150 ) ) {
+                        fail( ok, "the scale grid should draw faint depth lines in a vertical orientation (on=" + grid_on
+                                + " off=" + grid_off + ")" );
+                    }
+                    o.setShowScaleGrid( false );
+                    // VERTICAL PARITY (scale axis): the axis becomes a RULER down the breadth side -- a tall vertical
+                    // run of the (magenta) scale ink -- in BOTH vertical orientations (left ruler for root-top, right
+                    // for root-bottom). It reserves a breadth band, so toggling it must RE-FIT (calcParametersForPainting,
+                    // mimicking the interactive fitWidth) or the cached transform lacks the reserve and the ruler clips.
+                    for( final Options.TREE_ORIENTATION ori : new Options.TREE_ORIENTATION[] {
+                            Options.TREE_ORIENTATION.ROOT_TOP, Options.TREE_ORIENTATION.ROOT_BOTTOM } ) {
+                        o.setTreeOrientation( ori );
+                        o.setShowScaleAxis( false );
+                        tp.calcParametersForPainting( w, h );
+                        final int vaxis_off = tallestColumnRun( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1,
+                                false ), magenta );
+                        o.setShowScaleAxis( true );
+                        tp.calcParametersForPainting( w, h );
+                        final int vaxis_on = tallestColumnRun( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1,
+                                false ), magenta );
+                        if ( vaxis_on < ( h / 3 ) ) {
+                            fail( ok, "the vertical scale axis should draw a tall side ruler in " + ori + ", got "
+                                    + vaxis_on + "px" );
+                        }
+                        if ( vaxis_off >= ( h / 5 ) ) {
+                            fail( ok, "no tall magenta ruler should appear when Scale Axis is off in " + ori + ", got "
+                                    + vaxis_off + "px" );
+                        }
+                    }
+                    // TOGGLE RE-FIT: the axis reserves a breadth band, so turning it on must RE-FIT or the cached
+                    // transform keeps its pre-reserve extent and the ruler draws off the canvas edge. Reproduce the
+                    // interactive toggle: fit axis-OFF, paint (caches R at the axis-off box), then turn the axis on.
+                    // Without a re-fit the ruler must clip; getControlPanel().fitWidth() (exactly what the checkbox
+                    // handler calls in a vertical orientation) must re-apply the reserve and bring it back on-canvas.
+                    o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP );
+                    o.setShowScaleAxis( false );
+                    tp.calcParametersForPainting( w, h );
+                    AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ); // clears the transform-dirty flag
+                    o.setShowScaleAxis( true );
+                    final int stale = tallestColumnRun( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1,
+                            false ), magenta );
+                    tp.getControlPanel().fitWidth(); // the scale-axis toggle re-fit
+                    final int refit = tallestColumnRun( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1,
+                            false ), magenta );
+                    if ( refit < ( h / 3 ) ) {
+                        fail( ok, "the vertical scale-axis toggle re-fit (fitWidth) must bring the ruler on-canvas, got "
+                                + refit + "px" );
+                    }
+                    if ( stale >= ( h / 3 ) ) {
+                        fail( ok, "without the re-fit the vertical ruler must NOT be fully on-canvas (the re-fit is "
+                                + "required), got " + stale + "px" );
+                    }
+                    o.setShowScaleAxis( false );
+                    o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                    tp.calcParametersForPainting( w, h );
                 }
                 catch ( final Throwable t ) {
                     fail( ok, "unexpected: " + t );
@@ -113,6 +180,41 @@ public final class ScaleAxisRenderTest {
             e.printStackTrace();
             return false;
         }
+    }
+
+    /** Count FAINT-magenta pixels: the scale-grid blend of the magenta branch-length color over white. Excludes white
+     *  (g~255) and the pure-magenta axis / branch-length text (g~0), so it isolates the grid lines. */
+    private static int countFaintMagenta( final BufferedImage img ) {
+        int n = 0;
+        for( int y = 0; y < img.getHeight(); ++y ) {
+            for( int x = 0; x < img.getWidth(); ++x ) {
+                final int rgb = img.getRGB( x, y );
+                final int r = ( rgb >> 16 ) & 0xFF, g = ( rgb >> 8 ) & 0xFF, b = rgb & 0xFF;
+                if ( ( r > 235 ) && ( b > 235 ) && ( g > 170 ) && ( g < 235 ) ) {
+                    ++n;
+                }
+            }
+        }
+        return n;
+    }
+
+    /** Tallest vertical run (px) of {@code color} in any single column -- the vertical scale-axis ruler line. */
+    private static int tallestColumnRun( final BufferedImage img, final int color ) {
+        int best = 0;
+        for( int x = 0; x < img.getWidth(); ++x ) {
+            int run = 0;
+            for( int y = 0; y < img.getHeight(); ++y ) {
+                if ( ( img.getRGB( x, y ) & 0xFFFFFF ) == color ) {
+                    if ( ++run > best ) {
+                        best = run;
+                    }
+                }
+                else {
+                    run = 0;
+                }
+            }
+        }
+        return best;
     }
 
     /** Widest horizontal run (px) of {@code color} in the bottom ~28% of the image, where the axis line sits. */

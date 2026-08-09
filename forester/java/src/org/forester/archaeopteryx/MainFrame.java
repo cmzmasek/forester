@@ -504,6 +504,13 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             updateOptions(getOptions());
         } else if (o == _show_scale_axis_cbmi) {
             updateOptions(getOptions());
+            // in a vertical orientation the scale axis reserves a breadth band (TreePanel.verticalScaleAxisReserve);
+            // a plain repaint leaves the cached layout/transform without it (the ruler would draw past the edge), so
+            // re-fit the breadth -- like the domain / annotation-column width reserves. The horizontal axis reserves
+            // nothing, so it needs no re-fit (a plain repaint suffices, preserving the user's zoom).
+            if ((getCurrentTreePanel() != null) && getCurrentTreePanel().isVerticalOrientation()) {
+                getControlPanel().fitWidth();
+            }
         } else if (o == _show_hpd_bars_cbmi) {
             updateOptions(getOptions());
         } else if (o == _show_zebra_stripes_cbmi) {

@@ -4037,8 +4037,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // Use the export canvas extent only when it is real; the direct printer path (TreePanel.print)
         // passes to_pdf=true with height 0, so fall back to the panel height there as on screen.
         final boolean use_export_extent = (to_pdf || to_graphics_file) && (graphics_file_height > 0);
-        final int top = use_export_extent ? graphics_file_y : 0;
-        final int bottom = use_export_extent ? (graphics_file_y + graphics_file_height) : getHeight();
+        // the grid line spans the full CROSS-tree extent (all tips): the device height in a horizontal layout, but the
+        // logical breadth extent in a vertical orientation, where the line is drawn in logical coords and rides R into
+        // a horizontal grid line at that depth (spanning the tip breadth).
+        final int top = isVerticalOrientation() ? 0 : (use_export_extent ? graphics_file_y : 0);
+        final int bottom = isVerticalOrientation() ? treeBreadthExtent()
+                : (use_export_extent ? (graphics_file_y + graphics_file_height) : getHeight());
         final Color saved_color = g.getColor();
         final Stroke saved_stroke = g.getStroke();
         g.setColor(scaleGridColor(to_pdf, to_graphics_file));
@@ -4102,10 +4106,91 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.setStroke(saved_stroke);
     }
 
+    /** The labeled scale axis in a VERTICAL orientation: a ruler down one BREADTH side (the band just past the last
+     *  tip that {@link #verticalScaleAxisReserve()} reserves), with tick marks pointing toward the tree and UPRIGHT
+     *  numeric labels. Chrome -- drawn after the base frame is restored; each depth position maps to a device point
+     *  via {@link #screenPoint(double, double)} (which applies R), so the same distance scale the branches use places
+     *  the ticks. The ruler is on the left for ROOT_TOP / on the right for ROOT_BOTTOM (the tree's own handedness). */
+    private void paintScaleAxisVertical(final Graphics2D g, final boolean to_pdf, final boolean to_graphics_file) {
+        if (_orientation_R == null) {
+            return; // R is built during the geometry pass; before the first vertical paint screenPoint is logical
+        }
+        final double corr = getXcorrectionFactor();
+        if (corr <= 0.0) {
+            return;
+        }
+        final double max_dist = getMaxDistanceToRoot();
+        final double[] ticks = TreePanelUtil.scaleAxisTickValues(max_dist, getScaleDistance());
+        if (ticks.length == 0) {
+            return;
+        }
+        final float origin_x = _phylogeny.getRoot().getXcoord();
+        // the ruler sits at the OUTER edge of the reserved breadth band (2 px inside it). Deriving it from the breadth
+        // EXTENT -- not from max(visible tip Ycoord) -- keeps it robust to collapsed clades (a collapsed triangle is an
+        // internal row counted by treeBreadthExtent() but absent from visibleExternalTips()) and needs no tip walk.
+        final double ruler_ly = treeBreadthExtent() - 2.0;
+        final Font saved_font = g.getFont();
+        final Color saved_color = g.getColor();
+        final Stroke saved_stroke = g.getStroke();
+        g.setFont(getTreeFontSet().getSmallFont());
+        final FontMetrics fm = g.getFontMetrics();
+        g.setColor(scaleInkColor(to_pdf, to_graphics_file));
+        g.setStroke(STROKE_1);
+        // the ruler runs along the depth (device-y varies) at a constant device-x (the breadth); the ticks/labels
+        // point INWARD toward the tree -- derive that device-x sign from a point just inside the ruler (tip side)
+        final Point2D.Double r_root = screenPoint(origin_x, ruler_ly);
+        final Point2D.Double r_tip = screenPoint(origin_x + (max_dist * corr), ruler_ly);
+        final int ruler_x = (int) Math.round(r_root.x);
+        final int tip_side_x = (int) Math.round(screenPoint(origin_x, ruler_ly - 16.0).x);
+        final int in = (tip_side_x >= ruler_x) ? 1 : -1; // +1 = tree to the right of the ruler (ticks point right)
+        drawLine(ruler_x, (int) Math.round(r_root.y), ruler_x, (int) Math.round(r_tip.y), g); // the axis line
+        final int center = (fm.getAscent() - fm.getDescent()) / 2; // baseline offset to vertically centre on a tick
+        final int min_label_gap = fm.getHeight() + SCALE_AXIS_LABEL_GAP;
+        int last_label_y = Integer.MIN_VALUE; // decimate labels (keep every tick) so they never overlap along depth
+        for (final double v : ticks) {
+            final int ty = (int) Math.round(screenPoint(origin_x + (v * corr), ruler_ly).y);
+            drawLine(ruler_x, ty, ruler_x + (in * SCALE_AXIS_TICK_LEN), ty, g); // tick toward the tree
+            final String label = TreePanelUtil.formatCompactNumber(v);
+            if ((last_label_y == Integer.MIN_VALUE) || (Math.abs(ty - last_label_y) >= min_label_gap)) {
+                final int lx = (in > 0) ? (ruler_x + SCALE_AXIS_TICK_LEN + 2)
+                        : (ruler_x - SCALE_AXIS_TICK_LEN - 2 - fm.stringWidth(label));
+                g.drawString(label, lx, ty + center); // upright, vertically centred on the tick
+                last_label_y = ty;
+            }
+        }
+        // (The horizontal axis appends a "[unit]" label at its far end; the vertical ruler deliberately omits it -- the
+        // deepest-tip end is where the outermost tip label sits, and the flush side ruler leaves no clear room for it,
+        // so a long unit string would overprint the tip label. The numeric ticks convey the scale on their own.)
+        g.setFont(saved_font);
+        g.setColor(saved_color);
+        g.setStroke(saved_stroke);
+    }
+
     /** Vertical space (px) the labeled scale axis occupies below its top (line + ticks + one label row). One source,
      *  used to place the axis AND to lift the scale bar / tree name clear of it. */
     private int scaleAxisBandHeight() {
         return getFontMetrics(getTreeFontSet().getSmallFont()).getHeight() + SCALE_AXIS_TICK_LEN + 4;
+    }
+
+    /** Breadth (px) reserved for the VERTICAL scale-axis ruler (the tick + the widest tick number + padding), so the
+     *  vertical ruler + its upright labels sit clear of the tips just past the last tip. 0 unless the axis is shown in
+     *  a vertical orientation on a phylogram with a scale. Reserved in the breadth budget (calcParametersForPainting)
+     *  and the logical breadth extent (logicalTreeExtent), so paint, fit, and scroll all agree. */
+    private int verticalScaleAxisReserve() {
+        if (!isVerticalOrientation() || !getOptions().isShowScaleAxis() || !getControlPanel().isDrawPhylogram()
+                || (getScaleDistance() <= 0.0)) {
+            return 0;
+        }
+        final double[] ticks = TreePanelUtil.scaleAxisTickValues(getMaxDistanceToRoot(), getScaleDistance());
+        if (ticks.length == 0) {
+            return 0; // no ticks -> paintScaleAxisVertical draws nothing, so reserve nothing (gates stay in step)
+        }
+        final FontMetrics fm = getFontMetrics(getTreeFontSet().getSmallFont());
+        int max_label = 0;
+        for (final double v : ticks) {
+            max_label = Math.max(max_label, fm.stringWidth(TreePanelUtil.formatCompactNumber(v)));
+        }
+        return SCALE_AXIS_TICK_LEN + max_label + 8;
     }
 
     /** Ink color shared by the scale bar / scale axis / tree name: black in a B&W export, else the branch-length color. */
@@ -4966,7 +5051,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             // reserve space at the top for the rotated annotation-column headers so they don't overlap the top
             // cells; the tree is compressed into the remaining height and its origin shifted down (see below)
             final int top_reserve = annotationHeaderTopReserve();
-            float ydist = (float) ((y - TreePanel.MOVE - top_reserve - breadth_label) / (ext_nodes * 2.0));
+            // in a vertical orientation the labeled scale axis is a ruler down one breadth side: reserve its band so
+            // the tips are compressed clear of it (0 in the horizontal orientation / when the axis is off)
+            final int axis_reserve = verticalScaleAxisReserve();
+            float ydist = (float) ((y - TreePanel.MOVE - top_reserve - breadth_label - axis_reserve)
+                    / (ext_nodes * 2.0));
             if (xdist < 0.0) {
                 xdist = 0.0f;
             }
@@ -7123,9 +7212,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (!(row_h > 0f)) { // also rejects a NaN pitch (NaN <= 0f is false), not just zero/negative
             return;
         }
+        // the stripe spans the full CROSS-tree extent (perpendicular to the tip axis): the device width in a horizontal
+        // layout, but the device HEIGHT (the depth axis) in a vertical orientation, where the band rides R -> a vertical
+        // stripe over each alternate tip's column. left=0 in vertical (the band starts at the root/logical origin).
         final boolean use_export = (to_pdf || to_graphics_file) && (graphics_file_width > 0);
-        final int left = use_export ? graphics_file_x : 0;
-        final int width = use_export ? graphics_file_width : getWidth();
+        final int left = isVerticalOrientation() ? 0 : (use_export ? graphics_file_x : 0);
+        final int width = isVerticalOrientation() ? getHeight() : (use_export ? graphics_file_width : getWidth());
         // the color scheme is the single source of truth for light/dark (ExportTheme flips it to LIGHT for a
         // white-background export, so this is correct on every render path -- screen, WYSIWYG, and white-bg export)
         final boolean dark = getTreeColorSet().getCurrentColorScheme() == TreeColorSet.DARK_COLOR_SCHEME;
@@ -8317,8 +8409,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     /* || getControlPanel().isUseVisualStyles() || getOptions().isShowDefaultNodeShapesForMarkedNodes()*/ //TODO check if this is really not needed.
                     || to_graphics_file || to_pdf;
             final boolean vertical = isVerticalOrientation();
-            if (!vertical && getOptions().isShowScaleGrid() && getControlPanel().isDrawPhylogram()
-                    && (getScaleDistance() > 0.0)) {
+            final boolean scale_grid_shown = getOptions().isShowScaleGrid() && getControlPanel().isDrawPhylogram()
+                    && (getScaleDistance() > 0.0);
+            if (!vertical && scale_grid_shown) {
                 paintScaleGrid(g, to_pdf, to_graphics_file, graphics_file_y, graphics_file_height);
             }
             // Root-top/bottom: the tree is laid out logically (above); now rotate the whole canvas for the geometry
@@ -8331,6 +8424,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 rebuildOrientationTransform();
                 _orientation_base_transform = orientation_saved;
                 g.transform(_orientation_R);
+                // vertical parity: draw the scale grid INSIDE the R frame (before the node loop, behind the branches)
+                // so its logical vertical lines ride R into horizontal grid lines at each depth interval
+                if (scale_grid_shown) {
+                    paintScaleGrid(g, to_pdf, to_graphics_file, graphics_file_y, graphics_file_height);
+                }
             }
             for (final PhylogenyNode element : _nodes_in_preorder) {
                 paintNodeRectangular(g,
@@ -8351,10 +8449,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 paintCladeBands(g); // clade boxes/bars over the tree -- node coords set by the loop above
             }
             else {
-                // vertical parity: these overlays are drawn while g is rotated by R. Their geometry (annotation cells,
-                // clade boxes/bars/brackets) is axis-aligned rects + lines, so it rides R for free; the TEXT (annotation
-                // cells/headers, clade labels) is re-anchored upright inside the paint methods. The remaining overlays
-                // (zebra stripes, HPD bars, scale grid) follow in later increments.
+                // vertical parity: these overlays are drawn while g is rotated by R. Their geometry (zebra bands,
+                // annotation cells, clade boxes/bars/brackets, HPD bars) is axis-aligned rects + lines, so it rides R
+                // for free; the TEXT (annotation cells/headers, clade labels) is re-anchored upright inside the paint
+                // methods. The scale grid rides R inside the R block above; the labeled scale axis is a side ruler
+                // drawn as upright chrome after the base frame is restored (paintScaleAxisVertical, further below).
+                paintZebraStripes(g, to_pdf, to_graphics_file, graphics_file_x, graphics_file_width); // faint row bands, behind
+                paintHpdBars(g, to_pdf, to_graphics_file); // node-age HPD bars: a plain rect at each node -> rides R
                 paintAnnotationColumnsVertical(g);
                 paintCladeBands(g); // boxes ride R; bars/brackets draw the label upright (isVerticalOrientation branch)
             }
@@ -8366,13 +8467,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             final boolean scale_shown = getOptions().isShowScale() && getControlPanel().isDrawPhylogram()
                     && (getScaleDistance() > 0.0);
-            // the labeled scale AXIS is a deferred overlay in the vertical orientation (it hardcodes the horizontal
-            // depth axis along the bottom) -- gate it off, like the other tree-riding overlays (increment 1)
             final boolean axis_shown = getOptions().isShowScaleAxis() && getControlPanel().isDrawPhylogram()
-                    && (getScaleDistance() > 0.0) && !vertical;
+                    && (getScaleDistance() > 0.0);
+            // in a vertical orientation the axis is a ruler down one BREADTH side (in its own reserved band), not the
+            // bottom strip -- so the bottom-band reserve + tree-name raise apply only to the horizontal axis
+            final boolean axis_shown_horizontal = axis_shown && !vertical;
             // the scale axis owns the bottom band; lift the (viewport-fixed) scale bar clear above it (the tree name
             // is likewise raised, inside paintTreeName) so the three bottom overlays never overprint each other
-            final int bottom_reserve = axis_shown ? scaleAxisBandHeight() : 0;
+            final int bottom_reserve = axis_shown_horizontal ? scaleAxisBandHeight() : 0;
             if (scale_shown) {
                 if (!(to_graphics_file || to_pdf)) {
                     paintScale(g,
@@ -8386,7 +8488,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 }
             }
             if (axis_shown) {
-                paintScaleAxis(g, to_pdf, to_graphics_file, graphics_file_y, graphics_file_height);
+                if (vertical) {
+                    paintScaleAxisVertical(g, to_pdf, to_graphics_file); // ruler down the breadth side, upright labels
+                } else {
+                    paintScaleAxis(g, to_pdf, to_graphics_file, graphics_file_y, graphics_file_height);
+                }
             }
             if (getOptions().isShowTreeName() && !ForesterUtil.isEmpty(getPhylogeny().getName())) {
                 // the name sits in the lower-left, but slides to the lower-right when the scale is shown there, and
@@ -8399,10 +8505,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                             to_pdf,
                             to_graphics_file,
                             scale_shown,
-                            axis_shown);
+                            axis_shown_horizontal);
                 } else {
                     paintTreeName(g, graphics_file_x, graphics_file_width, graphics_file_y + graphics_file_height,
-                            to_pdf, to_graphics_file, scale_shown, axis_shown);
+                            to_pdf, to_graphics_file, scale_shown, axis_shown_horizontal);
                 }
             }
             if (getOptions().isShowOverview() && isOvOn() && !to_graphics_file && !to_pdf) {
@@ -8641,6 +8747,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 + getFontMetricsForLargeDefaultFont().getHeight());
     }
 
+    /** The logical breadth (tip-spread) extent -- the {@code h} element of {@link #logicalTreeExtent()}, but computed
+     *  WITHOUT the depth (so no {@code calculateHeight} tree walk). The vertical scale grid + scale-axis ruler paint
+     *  need only the breadth span, so they call this per repaint instead of the full extent. Grows by the vertical
+     *  scale-axis reserve so the ruler band is inside the canvas; the tree is shifted down by MOVE + the header reserve
+     *  (see the root Ycoord in paintPhylogeny), so the scroll/paint extents agree. */
+    private int treeBreadthExtent() {
+        return TreePanel.MOVE + annotationHeaderTopReserve() + verticalScaleAxisReserve()
+                + ForesterUtil.roundToInt(getYdistance() * getPhylogeny().getRoot().getNumberOfExternalNodes() * 2);
+    }
+
     /** The tree's LOGICAL (root-on-left) extent {width, height}: width = depth + label column, height = tip
      *  spread. A single source of truth for both {@link #resetPreferredSize()} and the orientation transform R
      *  (so the scroll extent and R's output box agree). In a vertical orientation the tip-label footprint is split
@@ -8651,8 +8767,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // h is R's breadth translate (the tip-spread extent, WITHOUT the sideways tip-label reach): the tilted labels
         // extend PAST the outermost tip, so their breadth reach is added to the preferred WIDTH / fitHeight budget (see
         // resetPreferredSize / logicalBreadthExtent), not here -- otherwise R would push the outermost label off-canvas.
-        final int h = TreePanel.MOVE + annotationHeaderTopReserve()
-                + ForesterUtil.roundToInt(getYdistance() * getPhylogeny().getRoot().getNumberOfExternalNodes() * 2);
+        final int h = treeBreadthExtent();
         int w;
         if (getControlPanel().isDrawPhylogram()) {
             w = TreePanel.MOVE + depthLabelReserve() + rightMarginExtraWidth()

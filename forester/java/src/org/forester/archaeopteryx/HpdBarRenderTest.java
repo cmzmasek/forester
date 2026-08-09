@@ -106,6 +106,16 @@ public final class HpdBarRenderTest {
                             fail( ok, "the HPD bar must straddle its node's x (" + nx + "," + ny + ")" );
                         }
                     }
+                    // VERTICAL PARITY: HPD bars are plain rects, so they ride the rotation R into vertical bars at the
+                    // internal nodes in a root-top/bottom orientation. Render in ROOT_TOP and confirm the blue draws.
+                    o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP );
+                    final int vertical_on = countBluish( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) );
+                    if ( vertical_on <= ( off + 300 ) ) {
+                        fail( ok, "Node Age Bars should draw in a vertical orientation (on=" + vertical_on + " off="
+                                + off + ")" );
+                    }
+                    o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+
                     // collapsing a clade must REMOVE its hidden internal descendants' bars (not draw them at stale
                     // coords): find a dated clade with an internal child, collapse it, and assert the blue drops
                     org.forester.phylogeny.PhylogenyNode clade = null;
