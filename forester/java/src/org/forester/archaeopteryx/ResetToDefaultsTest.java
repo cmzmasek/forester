@@ -94,13 +94,13 @@ public final class ResetToDefaultsTest {
         o.setShowScaleAxis( true );
         o.setShowHpdBars( true );
         o.setShowZebraStripes( true );
-        o.setFlipVertically( true );
+        o.setReverseTipOrder( true );
         o.setBoldFoundLabels( true );
         o.setDimNonMatches( false );   // default is ON, so drive to OFF to prove reset restores it
         o.setPulseFoundNodes( false ); // default is ON, so drive to OFF to prove reset restores it
         o.setAbbreviateScientificTaxonNames( true );
         o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP ); // default is ROOT_LEFT
-        o.setTipLabelDirection( Options.TIP_LABEL_DIRECTION.ANGLED ); // default is VERTICAL
+        o.setTipLabelDirection( Options.TIP_LABEL_DIRECTION.HORIZONTAL ); // default is VERTICAL
         o.setSupportVisualization( SUPPORT_VISUALIZATION.SIZE_SCALED );
         // search options (reset by init, resynced onto the control-panel checkboxes by Reset to Defaults)
         o.setSearchCaseSensitive( true );
@@ -142,7 +142,7 @@ public final class ResetToDefaultsTest {
         ok &= eq( "showScaleAxis", o.isShowScaleAxis(), def.isShowScaleAxis() );
         ok &= eq( "showHpdBars", o.isShowHpdBars(), def.isShowHpdBars() );
         ok &= eq( "showZebraStripes", o.isShowZebraStripes(), def.isShowZebraStripes() );
-        ok &= eq( "flipVertically", o.isFlipVertically(), def.isFlipVertically() );
+        ok &= eq( "reverseTipOrder", o.isReverseTipOrder(), def.isReverseTipOrder() );
         ok &= eq( "boldFoundLabels", o.isBoldFoundLabels(), def.isBoldFoundLabels() );
         ok &= eq( "dimNonMatches", o.isDimNonMatches(), def.isDimNonMatches() );
         ok &= eq( "pulseFoundNodes", o.isPulseFoundNodes(), def.isPulseFoundNodes() );
@@ -193,7 +193,7 @@ public final class ResetToDefaultsTest {
                           frame._color_labels_same_as_parent_branch, frame._show_default_node_shapes_internal_cbmi,
                           frame._show_default_node_shapes_external_cbmi, frame._show_default_node_shapes_for_marked_cbmi,
                           frame._show_scale_grid_cbmi, frame._show_scale_axis_cbmi, frame._show_hpd_bars_cbmi,
-                          frame._show_zebra_stripes_cbmi, frame._flip_vertically_cbmi,
+                          frame._show_zebra_stripes_cbmi, frame._reverse_tip_order_cbmi,
                           frame._bold_found_labels_cbmi, frame._dim_non_matches_cbmi, frame._pulse_found_nodes_cbmi,
                           frame._show_scale_cbmi, frame._show_tree_name_cbmi,
                           frame._show_overview_cbmi, frame._show_confidence_stddev_cbmi, frame._show_mad_confidence_cbmi,

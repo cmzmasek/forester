@@ -28,7 +28,13 @@ import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.writers.PhylogenyWriter;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
+import java.util.ArrayList;
+import java.util.List;
 import org.forester.phylogeny.data.Confidence;
+import org.forester.phylogeny.data.DomainArchitecture;
+import org.forester.phylogeny.data.PhylogenyData;
+import org.forester.phylogeny.data.ProteinDomain;
+import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.PropertiesList;
 import org.forester.phylogeny.data.Property;
 import org.forester.phylogeny.data.Property.AppliesTo;
@@ -63,8 +69,9 @@ public final class DemoTreeGenerator {
         write( dir, "scale-axis.xml", scaleAxisTree() );
         write( dir, "node-hpd-bars.xml", hpdBarsTree() );
         write( dir, "zebra-stripes.xml", zebraStripesTree() );
-        write( dir, "flip-vertically.xml", flipVerticallyTree() );
+        write( dir, "reverse-tip-order.xml", reverseTipOrderTree() );
         write( dir, "root-on-top.xml", rootOnTopTree() );
+        write( dir, "domain-architectures.xml", domainArchitecturesTree() );
         write( dir, "search-emphasis.xml", searchEmphasisTree() );
         System.out.println( "Wrote demo trees to " + dir.getAbsolutePath() );
     }
@@ -217,18 +224,18 @@ public final class DemoTreeGenerator {
                         + "across to its Annotation Columns (Tools > Annotation Columns)." );
     }
 
-    // ----- "Flip Vertically": an 8-tip ladder (caterpillar) tree with sequentially-numbered tips, so the tip order
-    //       (and the staircase) visibly inverts top<->bottom when flipped. Load -> Settings > Display > Flip Vertically.
-    private static Phylogeny flipVerticallyTree() {
+    // ----- "Reverse Tip Order": an 8-tip ladder (caterpillar) tree with sequentially-numbered tips, so the tip order
+    //       (and the staircase) visibly inverts when reversed. Load -> Settings > Display > Reverse Tip Order.
+    private static Phylogeny reverseTipOrderTree() {
         // build the caterpillar bottom-up: tip_08/tip_07 at the deepest fork, then prepend tip_06..tip_01
         PhylogenyNode n = clade( 0.07, blLeaf( "tip_07", 0.06 ), blLeaf( "tip_08", 0.06 ) );
         for( int i = 6; i >= 1; i-- ) {
             n = clade( 0.07, blLeaf( String.format( Locale.ROOT, "tip_%02d", i ), 0.06 ), n );
         }
-        return tree( n, "Flip vertically (demo)",
-                "Synthetic 8-tip ladder tree with sequentially-numbered tips (tip_01 at the top). Turn on Settings > "
-                        + "Display > Flip Vertically to reverse the tip order top-to-bottom -- the staircase inverts "
-                        + "and tip_08 moves to the top. Display-only; the tree data is unchanged." );
+        return tree( n, "Reverse tip order (demo)",
+                "Synthetic 8-tip ladder tree with sequentially-numbered tips (tip_01 first). Turn on Settings > "
+                        + "Display > Reverse Tip Order to reverse the tip order -- the staircase inverts and tip_08 "
+                        + "moves to the other end. Display-only; the tree data is unchanged." );
     }
 
     // ----- "Search emphasis" (Bold Found Labels / Dim Non-Matches): 15 tips of which four are "*_kinase", scattered
@@ -270,8 +277,8 @@ public final class DemoTreeGenerator {
         final PhylogenyNode root = clade( 0, conf( clade( 0.06, mammals, birds ), 100 ), fish );
         final Phylogeny phy = tree( root, "Root at top (demo)",
                 "Synthetic 12-tip vertebrate phylogram with branch lengths (substitutions/site) and bootstrap support "
-                        + "on the internal nodes. Set Settings > Display > Orientation to \"root at top\" (or \"root at "
-                        + "bottom\"): the tree becomes a vertical dendrogram with 45-degree tip labels, while the support "
+                        + "on the internal nodes. Set Settings > Display > Orientation to \"Root at Top\" (or \"Root at "
+                        + "Bottom\"): the tree becomes a vertical dendrogram with vertical tip labels, while the support "
                         + "and branch-length numbers stay upright." );
         phy.setDistanceUnit( "substitutions/site" );
         return phy;
@@ -316,6 +323,50 @@ public final class DemoTreeGenerator {
         n.getNodeData().setDate( new org.forester.phylogeny.data.Date( "", java.math.BigDecimal.valueOf( age ),
                 java.math.BigDecimal.valueOf( hpd_min ), java.math.BigDecimal.valueOf( hpd_max ), "mya" ) );
         return n;
+    }
+
+    // ----- "Domain Architectures": a small protein-family phylogram; each tip carries a sequence with a Pfam-style
+    //       domain architecture (colored boxes along the protein). Load -> view as phylogram -> Display Data: Domain
+    //       Architectures. Also works in a vertical orientation (root at top/bottom): each tip's architecture becomes a
+    //       vertical bar hanging off the tip.
+    private static Phylogeny domainArchitecturesTree() {
+        final PhylogenyNode root = clade( 0,
+                clade( 0.15,
+                       domainLeaf( "kinase_a", 0.22, 500, dom( "SH3", 10, 60 ), dom( "SH2", 75, 165 ),
+                                   dom( "Pkinase", 185, 445 ) ),
+                       domainLeaf( "kinase_b", 0.30, 450, dom( "SH2", 20, 110 ), dom( "Pkinase", 130, 400 ) ),
+                       domainLeaf( "kinase_c", 0.26, 470, dom( "PH", 15, 120 ), dom( "Pkinase", 145, 410 ) ) ),
+                clade( 0.12,
+                       domainLeaf( "adaptor_d", 0.18, 300, dom( "SH3", 5, 55 ), dom( "SH3", 70, 120 ),
+                                   dom( "SH2", 140, 235 ) ),
+                       domainLeaf( "kinase_e", 0.34, 430, dom( "Pkinase", 30, 300 ), dom( "SAM", 330, 400 ) ),
+                       domainLeaf( "receptor_f", 0.28, 650, dom( "Ig", 20, 110 ), dom( "Ig", 130, 220 ),
+                                   dom( "Pkinase", 360, 630 ) ) ) );
+        return tree( root, "Domain architectures (demo)",
+                     "Synthetic protein-family phylogram; each tip carries a sequence with a Pfam-style domain "
+                             + "architecture. View as a phylogram and turn on Display Data: Domain Architectures. Also "
+                             + "works in a vertical orientation (root at top/bottom), where each tip's architecture "
+                             + "becomes a vertical bar." );
+    }
+
+    /** A leaf carrying a sequence with a domain architecture of {@code total_length} amino acids. */
+    private static PhylogenyNode domainLeaf( final String name, final double bl, final int total_length,
+                                             final ProteinDomain... domains ) {
+        final PhylogenyNode n = blLeaf( name, bl );
+        final List<PhylogenyData> ds = new ArrayList<>();
+        for( final ProteinDomain d : domains ) {
+            ds.add( d );
+        }
+        final Sequence seq = new Sequence();
+        seq.setName( name );
+        seq.setDomainArchitecture( new DomainArchitecture( ds, total_length ) );
+        n.getNodeData().addSequence( seq );
+        return n;
+    }
+
+    /** A protein domain with a strong (well below the default 1e-3 threshold) e-value so it is drawn. */
+    private static ProteinDomain dom( final String name, final int from, final int to ) {
+        return new ProteinDomain( name, from, to, 1e-6 );
     }
 
     private static PhylogenyNode blLeaf( final String name, final double branch_length ) {

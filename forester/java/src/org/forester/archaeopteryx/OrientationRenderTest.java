@@ -103,6 +103,14 @@ public final class OrientationRenderTest {
                     if ( Math.abs( tp.tipLabelAngleForTest() - ( -Math.PI / 2.0 ) ) > 1e-6 ) {
                         fail( ok, "VERTICAL tip labels must be -90deg in ROOT_BOTTOM, got " + tp.tipLabelAngleForTest() );
                     }
+                    o.setTipLabelDirection( Options.TIP_LABEL_DIRECTION.HORIZONTAL ); // upright: 0deg in either orientation
+                    if ( Math.abs( tp.tipLabelAngleForTest() ) > 1e-6 ) {
+                        fail( ok, "HORIZONTAL tip labels must be 0deg, got " + tp.tipLabelAngleForTest() );
+                    }
+                    o.setTreeOrientation( TREE_ORIENTATION.ROOT_TOP );
+                    if ( Math.abs( tp.tipLabelAngleForTest() ) > 1e-6 ) {
+                        fail( ok, "HORIZONTAL tip labels must be 0deg in ROOT_TOP too, got " + tp.tipLabelAngleForTest() );
+                    }
                     o.setTipLabelDirection( Options.TIP_LABEL_DIRECTION.VERTICAL ); // restore default for the rest
 
                     // ROOT_TOP: the root sits ABOVE every tip (smaller screen y), and the tips fan out HORIZONTALLY
@@ -132,6 +140,73 @@ public final class OrientationRenderTest {
                         fail( ok, "ROOT_TOP: hit-testing must follow the rotation -- findNode returned "
                                 + ( hit == null ? "null" : hit.getName() ) + " (expected " + tip0.getName() + ")" );
                     }
+
+                    // HORIZONTAL (upright) tip labels: the label is drawn horizontally, CENTRED under each tip in
+                    // ROOT_TOP -- so its ink straddles the tip's device-x in the band just below the tip (a 45/90deg
+                    // label reads as a vertical column to one side, not centred). Use the longest-named interior tip so
+                    // its centred label reaches both sides.
+                    o.setTipLabelDirection( Options.TIP_LABEL_DIRECTION.HORIZONTAL );
+                    final BufferedImage himg = render( frame, tp, o, TREE_ORIENTATION.ROOT_TOP, w, h );
+                    PhylogenyNode probe = null;
+                    int best_len = -1;
+                    for ( final PhylogenyNode t : tips ) {
+                        final java.awt.geom.Point2D.Double p = tp.screenPointFor( t );
+                        final int nl = ( t.getName() == null ) ? 0 : t.getName().length();
+                        if ( ( nl > best_len ) && ( p.x > 90 ) && ( p.x < ( w - 90 ) ) && ( p.y > 20 )
+                                && ( p.y < ( h - 45 ) ) ) {
+                            best_len = nl;
+                            probe = t;
+                        }
+                    }
+                    if ( probe == null ) {
+                        fail( ok, "test setup: no interior tip for the horizontal-label check" );
+                    }
+                    else {
+                        final java.awt.geom.Point2D.Double pp = tp.screenPointFor( probe );
+                        final int px = (int) Math.round( pp.x ), py = (int) Math.round( pp.y );
+                        final int lft = darkInRegion( himg, px - 24, py + 3, px - 4, py + 22 );
+                        final int rgt = darkInRegion( himg, px + 4, py + 3, px + 24, py + 22 );
+                        if ( ( lft < 3 ) || ( rgt < 3 ) ) {
+                            fail( ok, "HORIZONTAL tip label must draw centred under the tip (ink both sides): left="
+                                    + lft + " right=" + rgt );
+                        }
+                    }
+                    // ROOT_BOTTOM: the upright label is centred ABOVE the tip (band just above py). Same probe tip.
+                    final BufferedImage himg_b = render( frame, tp, o, TREE_ORIENTATION.ROOT_BOTTOM, w, h );
+                    if ( probe != null ) {
+                        final java.awt.geom.Point2D.Double pb = tp.screenPointFor( probe );
+                        final int px = (int) Math.round( pb.x ), py = (int) Math.round( pb.y );
+                        final int lft = darkInRegion( himg_b, px - 24, py - 22, px - 4, py - 3 );
+                        final int rgt = darkInRegion( himg_b, px + 4, py - 22, px + 24, py - 3 );
+                        if ( ( lft < 3 ) || ( rgt < 3 ) ) {
+                            fail( ok, "ROOT_BOTTOM HORIZONTAL tip label must draw centred above the tip: left=" + lft
+                                    + " right=" + rgt );
+                        }
+                    }
+                    // NEAR-EDGE CLIP: a centred label reaches L/2 to BOTH breadth sides, so the reserve must be symmetric
+                    // (verticalBreadthPad), not one-sided (breadthLabelReserve). Give EVERY tip a long name so whichever
+                    // tip lands at a breadth extreme has a wide centred label; blank the tree name so the ONLY ink that
+                    // could reach the left/right edge columns is a clipped label. The extent = the paint clip, so a
+                    // one-sided reserve HARD-clips the edge tip's label -> ink at column 0 / w-1.
+                    final String[] saved_names = new String[ tips.length ];
+                    for ( int i = 0; i < tips.length; ++i ) {
+                        saved_names[ i ] = tips[ i ].getName();
+                        tips[ i ].setName( "Mmmmmmmmmmmmmm" ); // ~14 wide chars
+                    }
+                    final boolean saved_show_name = o.isShowTreeName();
+                    o.setShowTreeName( false );
+                    final BufferedImage wide = render( frame, tp, o, TREE_ORIENTATION.ROOT_TOP, w, h );
+                    final int left_edge = darkInRegion( wide, 0, ( h * 2 ) / 5, 1, h - 1 );
+                    final int right_edge = darkInRegion( wide, w - 2, ( h * 2 ) / 5, w - 1, h - 1 );
+                    if ( ( left_edge > 0 ) || ( right_edge > 0 ) ) {
+                        fail( ok, "wide HORIZONTAL tip labels must not clip at the canvas edge (edge ink left="
+                                + left_edge + " right=" + right_edge + ")" );
+                    }
+                    for ( int i = 0; i < tips.length; ++i ) {
+                        tips[ i ].setName( saved_names[ i ] );
+                    }
+                    o.setShowTreeName( saved_show_name );
+                    o.setTipLabelDirection( Options.TIP_LABEL_DIRECTION.VERTICAL ); // restore
 
                     // internal-node data placement: the internal label sits LEFT of the (vertical) branch and the
                     // support + length sit RIGHT of it. Toggling this text doesn't move the tip layout, so a data-on

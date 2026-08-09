@@ -70,8 +70,8 @@ public final class DemoTreesTest {
         ok &= hasAtLeastTips( "zebra-stripes.xml", 8 );
         ok &= hasCategoricalRef( "zebra-stripes.xml", "data:host" );
         ok &= hasNumericRef( "zebra-stripes.xml", "data:reads" );
-        // flip vertically: a ladder with several ordered tips so the top<->bottom reversal is unmistakable
-        ok &= hasAtLeastTips( "flip-vertically.xml", 6 );
+        // reverse tip order: a ladder with several ordered tips so the tip-order reversal is unmistakable
+        ok &= hasAtLeastTips( "reverse-tip-order.xml", 6 );
         // root-on-top orientation: a phylogram with several tips + branch lengths + internal support, so the vertical
         // dendrogram shows 45-degree tip labels and upright support/branch-length numbers
         ok &= hasAtLeastTips( "root-on-top.xml", 8 );
@@ -79,6 +79,10 @@ public final class DemoTreesTest {
         ok &= hasInternalConfidence( "root-on-top.xml" );
         // search emphasis: enough tips + a searchable token shared by a subset (so a search highlights several) +
         // internal confidence values (so "Dim Non-Matches" fading the support numbers too is demonstrable)
+        ok &= hasAtLeastTips( "domain-architectures.xml", 6 );
+        ok &= hasBranchLengths( "domain-architectures.xml" );
+        ok &= hasDomainArchitectures( "domain-architectures.xml", 6 );
+
         ok &= hasAtLeastTips( "search-emphasis.xml", 12 );
         ok &= tipsContaining( "search-emphasis.xml", "kinase", 4 );
         ok &= hasInternalConfidence( "search-emphasis.xml" );
@@ -141,6 +145,26 @@ public final class DemoTreesTest {
             }
         }
         return note( file_name + " must carry an INTERNAL-node <date> with a min/max interval (for HPD age bars)" );
+    }
+
+    /** At least {@code min_tips} external tips carry a sequence with a domain architecture of &ge;1 domain. */
+    private static boolean hasDomainArchitectures( final String file_name, final int min_tips ) {
+        final Phylogeny phy = load( file_name );
+        if ( phy == null ) {
+            return false;
+        }
+        int n = 0;
+        for( final PhylogenyNode tip : phy.getExternalNodes() ) {
+            if ( tip.getNodeData().isHasSequence()
+                    && ( tip.getNodeData().getSequence().getDomainArchitecture() != null )
+                    && ( tip.getNodeData().getSequence().getDomainArchitecture().getDomains().size() > 0 ) ) {
+                ++n;
+            }
+        }
+        if ( n < min_tips ) {
+            return note( file_name + " must carry domain architectures on >= " + min_tips + " tips, found " + n );
+        }
+        return true;
     }
 
     private static boolean hasBranchLengths( final String file_name ) {

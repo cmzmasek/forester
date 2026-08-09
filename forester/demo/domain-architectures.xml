@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" rerootable="true">
+  <name>Domain architectures (demo)</name>
+  <description>Synthetic protein-family phylogram; each tip carries a sequence with a Pfam-style domain architecture. View as a phylogram and turn on Display Data: Domain Architectures. Also works in a vertical orientation (root at top/bottom), where each tip&apos;s architecture becomes a vertical bar.</description>
+  <clade>
+    <branch_length>0.0</branch_length>
+    <clade>
+      <branch_length>0.15</branch_length>
+      <clade>
+        <name>kinase_a</name>
+        <branch_length>0.22</branch_length>
+        <sequence>
+          <name>kinase_a</name>
+          <domain_architecture length="500">
+            <domain from="10" to="60" confidence="1.0E-6">SH3</domain>
+            <domain from="75" to="165" confidence="1.0E-6">SH2</domain>
+            <domain from="185" to="445" confidence="1.0E-6">Pkinase</domain>
+          </domain_architecture>
+        </sequence>
+      </clade>
+      <clade>
+        <name>kinase_b</name>
+        <branch_length>0.3</branch_length>
+        <sequence>
+          <name>kinase_b</name>
+          <domain_architecture length="450">
+            <domain from="20" to="110" confidence="1.0E-6">SH2</domain>
+            <domain from="130" to="400" confidence="1.0E-6">Pkinase</domain>
+          </domain_architecture>
+        </sequence>
+      </clade>
+      <clade>
+        <name>kinase_c</name>
+        <branch_length>0.26</branch_length>
+        <sequence>
+          <name>kinase_c</name>
+          <domain_architecture length="470">
+            <domain from="15" to="120" confidence="1.0E-6">PH</domain>
+            <domain from="145" to="410" confidence="1.0E-6">Pkinase</domain>
+          </domain_architecture>
+        </sequence>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.12</branch_length>
+      <clade>
+        <name>adaptor_d</name>
+        <branch_length>0.18</branch_length>
+        <sequence>
+          <name>adaptor_d</name>
+          <domain_architecture length="300">
+            <domain from="5" to="55" confidence="1.0E-6">SH3</domain>
+            <domain from="70" to="120" confidence="1.0E-6">SH3</domain>
+            <domain from="140" to="235" confidence="1.0E-6">SH2</domain>
+          </domain_architecture>
+        </sequence>
+      </clade>
+      <clade>
+        <name>kinase_e</name>
+        <branch_length>0.34</branch_length>
+        <sequence>
+          <name>kinase_e</name>
+          <domain_architecture length="430">
+            <domain from="30" to="300" confidence="1.0E-6">Pkinase</domain>
+            <domain from="330" to="400" confidence="1.0E-6">SAM</domain>
+          </domain_architecture>
+        </sequence>
+      </clade>
+      <clade>
+        <name>receptor_f</name>
+        <branch_length>0.28</branch_length>
+        <sequence>
+          <name>receptor_f</name>
+          <domain_architecture length="650">
+            <domain from="20" to="110" confidence="1.0E-6">Ig</domain>
+            <domain from="130" to="220" confidence="1.0E-6">Ig</domain>
+            <domain from="360" to="630" confidence="1.0E-6">Pkinase</domain>
+          </domain_architecture>
+        </sequence>
+      </clade>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>

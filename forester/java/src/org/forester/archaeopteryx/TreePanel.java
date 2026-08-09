@@ -264,6 +264,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private static final int    SCALE_AXIS_TICK_LEN = 4;  // length (px) of the labeled scale-axis tick marks
     private static final int    SCALE_AXIS_LABEL_GAP = 4; // min px between adjacent tick labels (else the label is decimated)
     private static final int    SCALE_AXIS_UNIT_GAP = 5;  // gap before the trailing [unit] label
+    private static final int    VERTICAL_DOMAIN_GAP = 8;  // gap (px) between a tilted tip label and its domain track (vertical)
+    private static final int    VERTICAL_BREADTH_PAD = 12; // extra breadth margin (px) per side after fitting a vertical tree
     // Node age (HPD) bars: the bar thickness and its translucent fill (blue on screen/color export; a neutral gray in
     // a black-and-white export so it is not the only colored element).
     private static final int    HPD_BAR_HEIGHT = 7;
@@ -408,7 +410,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // support-scale ceiling (1 or 100) for node-symbol support visualization; recomputed per paint
     private double _confidence_scale_max = 1.0;
     private int _length_of_longest_text;
+    private int _length_of_longest_text_only; // longest tip TEXT label (name+taxonomy) only, excluding domain/vector tracks
     private int _longest_domain;
+    private double _longest_rendered_domain; // widest domain track in px (rendered width), for the vertical depth reserve
 
     static {
         final DecimalFormatSymbols dfs = new DecimalFormatSymbols();
@@ -3582,9 +3586,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             boolean first_child = true;
             float y2 = 0.0f;
             //final int parent_max_branch_to_leaf = getMaxBranchesToLeaf( node );
-            // mirror the "Flip Vertically" reversal used by paintNodeRectangular, so the overview thumbnail stays
+            // mirror the "Reverse Tip Order" reversal used by paintNodeRectangular, so the overview thumbnail stays
             // consistent with the (flipped) main canvas -- the overview lays out its own YSecondary coords
-            final boolean flip = getOptions().isFlipVertically();
+            final boolean flip = getOptions().isReverseTipOrder();
             final int child_count = node.getNumberOfDescendants();
             for (int i = 0; i < child_count; ++i) {
                 final PhylogenyNode child_node = node.getChildNode(flip ? ((child_count - 1) - i) : i);
@@ -3660,10 +3664,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (!node.isExternal() && !node.isCollapse()) {
             boolean first_child = true;
             float y2 = 0.0f;
-            // "Flip Vertically" is a DISPLAY-ONLY vertical mirror: process the children in REVERSE order so the
+            // "Reverse Tip Order" is a DISPLAY-ONLY vertical mirror: process the children in REVERSE order so the
             // top-to-bottom tip order reverses, without mutating the tree. The stored y-coords become the real
             // flipped positions, so labels, overlays, hit-testing and every export follow for free (no transform).
-            final boolean flip = getOptions().isFlipVertically();
+            final boolean flip = getOptions().isReverseTipOrder();
             final int child_count = node.getNumberOfDescendants();
             for (int i = 0; i < child_count; ++i) {
                 final PhylogenyNode child_node = node.getChildNode(flip ? ((child_count - 1) - i) : i);
@@ -3718,8 +3722,18 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 if (isAlignedTipLabel(node)) {
                     drawConnection(node.getXcoord(), labelTextStartX(node), node.getYcoord(), 5, 20, g);
                 }
-                withNodeTextFrame(g, labelTextStartX(node), node.getYcoord(), tipLabelAngle(),
-                        () -> paintNodeData(g, node, to_graphics_file, to_pdf, is_in_found_nodes, 0));
+                final int[] label_w = { 0 }; // capture the label's pixel width to place the domain track past it
+                if (getOptions().getTipLabelDirection() == Options.TIP_LABEL_DIRECTION.HORIZONTAL) {
+                    // UPRIGHT tip label, centred under (root-top) / over (root-bottom) the tip -- the cleanest look for
+                    // short names / sparse trees, and the one a rotated-bitmap export can't produce (its text tilts).
+                    label_w[0] = paintTipLabelHorizontal(g, node, to_graphics_file, to_pdf, is_in_found_nodes);
+                } else {
+                    withNodeTextFrame(g, labelTextStartX(node), node.getYcoord(), tipLabelAngle(),
+                            () -> label_w[0] = paintNodeData(g, node, to_graphics_file, to_pdf, is_in_found_nodes, 0));
+                }
+                // renderable domain architecture: a per-tip vertical bar just past the label (boxes ride R, no labels).
+                // The other renderable overlays (MSA, binary chars, vectors, sequence relations) stay deferred here.
+                paintDomainsVertical(g, node, label_w[0], to_pdf, to_graphics_file);
             } else {
                 // internal-node label: horizontal, right-aligned, LEFT of the branch midpoint. This path deliberately
                 // does NOT route through paintNodeData, so the other node-data overlays it draws are DEFERRED for
@@ -3733,6 +3747,83 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final int x = paintNodeData(g, node, to_graphics_file, to_pdf, is_in_found_nodes, 0);
             paintNodeWithRenderableData(x, g, node, to_graphics_file, to_pdf);
         }
+    }
+
+    /** Draws an external tip's renderable domain architecture in a VERTICAL orientation: the boxes ride the rotation R
+     *  into a thin vertical track just past the tilted tip label (domain-name labels suppressed -- they would collide
+     *  with neighbouring tips' tracks). Per tip at its own depth, so the track hangs off the tip. No-op unless domains
+     *  are shown, external data is shown, and the tip carries a renderable architecture. */
+    private void paintDomainsVertical(final Graphics2D g, final PhylogenyNode node, final int label_w,
+                                      final boolean to_pdf, final boolean to_graphics_file) {
+        if (!getControlPanel().isShowDomainArchitectures() || !getControlPanel().isShowExternalData()) {
+            return;
+        }
+        if (isNodeDataInvisible(node) && !(to_graphics_file || to_pdf)) {
+            return;
+        }
+        if (!node.getNodeData().isHasSequence() || (node.getNodeData().getSequence().getDomainArchitecture() == null)
+                || !(node.getNodeData().getSequence()
+                        .getDomainArchitecture() instanceof RenderableDomainArchitecture)) {
+            return;
+        }
+        final RenderableDomainArchitecture rds = (RenderableDomainArchitecture) node.getNodeData().getSequence()
+                .getDomainArchitecture();
+        final int default_height = 7;
+        float yd = getYdistance();
+        if (getControlPanel().isDynamicallyHideData()) {
+            yd = getTreeFontSet().getFontMetricsLarge().getHeight();
+        }
+        final int hgt = yd < default_height ? ForesterUtil.roundToInt(yd) : default_height;
+        rds.setRenderingHeight(hgt > 1 ? hgt : 2);
+        // start just past the label's DEPTH footprint -- the same bounding-box projection depthLabelReserve() reserves
+        // (label_w*|sin| + lineH*|cos|), so a tilted 45-degree label's track doesn't overlap the label's lower edge and
+        // an upright 0-degree label's track clears the one-line-tall label. Anchor at the label column (labelTextStartX),
+        // NOT the tip, so an ALIGNED phylogram's track sits past the lined-up labels. Rides R into a vertical bar.
+        final double a = tipLabelAngle();
+        final int line_h = getFontMetricsForLargeDefaultFont().getHeight();
+        final double depth_reach = (label_w * Math.abs(Math.sin(a))) + (line_h * Math.abs(Math.cos(a)));
+        final double start_x = labelTextStartX(node) + depth_reach + VERTICAL_DOMAIN_GAP;
+        rds.render((float) start_x, node.getYcoord() - (hgt / 2.0f), g, this, to_pdf, false);
+    }
+
+    /** Draws an external tip's label UPRIGHT (0 degrees), centred on the tip along the breadth and placed just past it
+     *  along the depth (below the tip for root-top, above for root-bottom) -- the horizontal tip-label direction in a
+     *  vertical orientation. Returns the label's pixel width (for the domain-track offset). Chrome-style: it re-anchors
+     *  to the upright base frame like {@link #withNodeTextFrame}, but centres instead of pivoting at the tip. */
+    private int paintTipLabelHorizontal(final Graphics2D g, final PhylogenyNode node, final boolean to_graphics_file,
+                                        final boolean to_pdf, final boolean is_in_found_nodes) {
+        final int lw = tipLabelTextWidth(node);
+        // anchor at the label START along the depth (past the tip dot, or at the aligned column for an aligned
+        // phylogram); its breadth is the tip's breadth, so the same point centres the label AND sets the depth
+        final Point2D.Double anchor = screenPoint(labelTextStartX(node), node.getYcoord());
+        final FontMetrics fm = getFontMetricsForLargeDefaultFont();
+        final boolean root_bottom = getOptions().getTreeOrientation() == Options.TREE_ORIENTATION.ROOT_BOTTOM;
+        final double gap = 5.0;
+        final double anchor_x = anchor.x - (lw / 2.0); // centre the label on the tip's breadth
+        // baseline just past the tip along the depth: below it (root-top) or above it (root-bottom)
+        final double anchor_y = root_bottom ? (anchor.y - gap - fm.getDescent()) : (anchor.y + gap + fm.getAscent());
+        final AffineTransform saved = g.getTransform();
+        g.setTransform(_orientation_base_transform);
+        g.translate(anchor_x, anchor_y);
+        g.translate(-labelTextStartX(node), -node.getYcoord()); // so paintNodeData's own logical start lands at the anchor
+        paintNodeData(g, node, to_graphics_file, to_pdf, is_in_found_nodes, 0);
+        g.setTransform(saved);
+        return lw;
+    }
+
+    /** The pixel width of an external tip's drawn text label (node data + taxonomy) at the large default font -- used
+     *  to centre an upright horizontal tip label. Measured the same (non-bold) way as {@code _length_of_longest_text_only}
+     *  (the breadth reserve), so the centring and the reserve agree. NOTE: like the reserve, it does not account for a
+     *  Bold-Found / visual-style font, so such a label centres a few px off (the documented non-bold-reservation class);
+     *  matching the reserve avoids centring a bold label WIDER than the space reserved for it (which would clip). */
+    private int tipLabelTextWidth(final PhylogenyNode node) {
+        final StringBuilder sb = new StringBuilder();
+        nodeDataAsSB(node, sb);
+        int w = getFontMetricsForLargeDefaultFont().stringWidth(sb.toString());
+        if (node.getNodeData().isHasTaxonomy()) {
+            w += taxonomyLabelWidth(node.getNodeData().getTaxonomy(), getTreeFontSet().getLargeFont());
+        }
+        return w;
     }
 
     final private void paintNodeWithRenderableData(final int x,
@@ -5054,8 +5145,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             // in a vertical orientation the labeled scale axis is a ruler down one breadth side: reserve its band so
             // the tips are compressed clear of it (0 in the horizontal orientation / when the axis is off)
             final int axis_reserve = verticalScaleAxisReserve();
-            float ydist = (float) ((y - TreePanel.MOVE - top_reserve - breadth_label - axis_reserve)
-                    / (ext_nodes * 2.0));
+            float ydist = (float) ((y - TreePanel.MOVE - (2 * verticalBreadthPad()) - top_reserve - breadth_label
+                    - axis_reserve) / (ext_nodes * 2.0));
             if (xdist < 0.0) {
                 xdist = 0.0f;
             }
@@ -5116,7 +5207,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         int longest = 30;
         int longest_txt = 0;
+        int longest_text_only = 0; // text label (name + taxonomy) width, WITHOUT the domain/vector track widths
         _longest_domain = 0;
+        _longest_rendered_domain = 0;
         PhylogenyNode longest_txt_node = _phylogeny.getFirstExternalNode();
         for (final PhylogenyNode node : _phylogeny.getExternalNodes()) {
             int sum = 0;
@@ -5149,6 +5242,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             if (has_tax) {
                 sum += taxonomyLabelWidth(node.getNodeData().getTaxonomy(), base);
             }
+            if (sum > longest_text_only) {
+                longest_text_only = sum; // capture BEFORE the domain/vector/binary track widths are added
+            }
             if (getControlPanel().isShowBinaryCharacters() && node.getNodeData().isHasBinaryCharacters()) {
                 sum += getFontMetricsForLargeDefaultFont().stringWidth(node.getNodeData().getBinaryCharacters()
                         .getGainedCharactersAsStringBuffer().toString());
@@ -5166,11 +5262,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 // FIXME
                 // TODO this might need some clean up
                 final DomainArchitecture d = node.getNodeData().getSequence().getDomainArchitecture();
-                sum += ((_domain_structure_width
-                        / ((RenderableDomainArchitecture) d).getOriginalSize().getWidth()) * d.getTotalLength())
-                        + 10;
+                final double rendered = (_domain_structure_width
+                        / ((RenderableDomainArchitecture) d).getOriginalSize().getWidth()) * d.getTotalLength();
+                sum += rendered + 10;
                 if (d.getTotalLength() > _longest_domain) {
                     _longest_domain = d.getTotalLength();
+                }
+                if (rendered > _longest_rendered_domain) {
+                    _longest_rendered_domain = rendered;
                 }
             }
             if (getControlPanel().isShowMolSequences() && (node.getNodeData().isHasSequence())
@@ -5188,6 +5287,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
         }
         _ext_node_with_longest_txt_info = longest_txt_node;
+        _length_of_longest_text_only = longest_text_only;
         if (longest >= max_possible_length) {
             _longest_ext_node_info = max_possible_length;
         } else {
@@ -8389,7 +8489,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             // Position starting Y of tree (shifted down by the same header reserve used in calcParametersForPainting)
             _phylogeny.getRoot().setYcoord((getYdistance() * _phylogeny.getRoot().getNumberOfExternalNodes())
-                    + (TreePanel.MOVE / 2.0f) + annotationHeaderTopReserve());
+                    + (TreePanel.MOVE / 2.0f) + verticalBreadthPad() + annotationHeaderTopReserve());
             final int dynamic_hiding_factor = calcDynamicHidingFactor();
             if (getControlPanel().isDynamicallyHideData()) {
                 if (dynamic_hiding_factor > 1) {
@@ -8724,15 +8824,33 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         invalidateOrientationTransform(); // the logical extents may have changed -> R must be rebuilt on the next paint
     }
 
-    /** The tip-label footprint reserved along the DEPTH axis (root-&gt;tip). In a vertical orientation the depth axis is
-     *  drawn vertically and the tip labels tilt, so only their vertical component reaches along it -- the full label
-     *  width L for a 90-degree (unaligned) label, L/sqrt(2) for a 45-degree (aligned) one. In the horizontal
-     *  orientation the label lies flat along the depth axis, so the full width is reserved (unchanged behavior). */
+    /** The tip-label footprint reserved along the DEPTH axis (root-&gt;tip). In a vertical orientation the tip labels
+     *  tilt, so the depth reach is the label bounding box's projection onto the depth: {@code L*|sin| + lineH*|cos|}
+     *  -- the full width L for a 90-degree label, L/sqrt(2)+ for a 45-degree one, and one line height for an upright
+     *  (0-degree) label sitting below/above the tip. In the horizontal orientation the label lies flat, so the full
+     *  width is reserved (unchanged behavior). */
     private int depthLabelReserve() {
         if (!isVerticalOrientation()) {
             return getLongestExtNodeInfo();
         }
-        return (int) Math.ceil(getLongestExtNodeInfo() * Math.abs(Math.sin(tipLabelAngle())));
+        final double a = tipLabelAngle();
+        final int line_h = getFontMetricsForLargeDefaultFont().getHeight();
+        // the TEXT label projected onto the depth (L_text*|sin| + lineH*|cos|) + the axis-aligned domain track past it.
+        // Uses the TEXT-ONLY longest (not getLongestExtNodeInfo, which already folds in the domain width -- using that
+        // here would count the domain twice, over-compressing the depth axis when domains are shown).
+        return (int) Math.ceil((_length_of_longest_text_only * Math.abs(Math.sin(a))) + (line_h * Math.abs(Math.cos(a))))
+                + verticalDomainReserve();
+    }
+
+    /** Extra depth (px) reserved past the tilted tip labels for the axis-aligned domain-architecture track that a
+     *  vertical orientation draws as a per-tip vertical bar (0 unless domains are shown). The label reserve above tilts
+     *  by sin(angle), but the domain boxes are axis-aligned (their FULL rendered width runs along the depth), so add
+     *  the widest rendered track + the label gap + the render's internal 20px lead-in. */
+    private int verticalDomainReserve() {
+        if (!isVerticalOrientation() || !getControlPanel().isShowDomainArchitectures()) {
+            return 0;
+        }
+        return (int) Math.ceil(_longest_rendered_domain) + VERTICAL_DOMAIN_GAP + 20;
     }
 
     /** The tip-label footprint reserved along the BREADTH axis (tip spread), which exists only in a vertical
@@ -8743,7 +8861,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (!isVerticalOrientation()) {
             return 0;
         }
-        return (int) Math.ceil((getLongestExtNodeInfo() * Math.abs(Math.cos(tipLabelAngle())))
+        if (getOptions().getTipLabelDirection() == Options.TIP_LABEL_DIRECTION.HORIZONTAL) {
+            return 0; // an upright label is CENTRED on its tip, so its L/2-per-side reach is reserved symmetrically by
+                      // verticalBreadthPad() (both edge tips fit), not one-sided here
+        }
+        return (int) Math.ceil((_length_of_longest_text_only * Math.abs(Math.cos(tipLabelAngle())))
                 + getFontMetricsForLargeDefaultFont().getHeight());
     }
 
@@ -8753,8 +8875,23 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  scale-axis reserve so the ruler band is inside the canvas; the tree is shifted down by MOVE + the header reserve
      *  (see the root Ycoord in paintPhylogeny), so the scroll/paint extents agree. */
     private int treeBreadthExtent() {
-        return TreePanel.MOVE + annotationHeaderTopReserve() + verticalScaleAxisReserve()
+        return TreePanel.MOVE + (2 * verticalBreadthPad()) + annotationHeaderTopReserve() + verticalScaleAxisReserve()
                 + ForesterUtil.roundToInt(getYdistance() * getPhylogeny().getRoot().getNumberOfExternalNodes() * 2);
+    }
+
+    /** The per-side breadth reserve for a fitted vertical (root-top/bottom) tree: a small aesthetic margin so the tree
+     *  is not flush against the left/right edges, PLUS -- for an upright (0-degree) tip label, which is CENTRED on its
+     *  tip and reaches L/2 to EACH breadth side -- that half-label, so both edge tips fit (tilted labels reach one side
+     *  and are handled by breadthLabelReserve). 0 in the horizontal orientation. Reserved symmetrically: {@code 2x} in
+     *  the breadth extent + the fit budget, and the tree origin shifted by {@code 1x} -- keep the three call sites in
+     *  step. */
+    private int verticalBreadthPad() {
+        if (!isVerticalOrientation()) {
+            return 0;
+        }
+        final int centred_half = (getOptions().getTipLabelDirection() == Options.TIP_LABEL_DIRECTION.HORIZONTAL)
+                ? ((_length_of_longest_text_only + 1) / 2) : 0;
+        return VERTICAL_BREADTH_PAD + centred_half;
     }
 
     /** The tree's LOGICAL (root-on-left) extent {width, height}: width = depth + label column, height = tip
@@ -8864,8 +9001,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  The sign follows the orientation so the label always extends AWAY from the tree (down for root-top, up for
      *  root-bottom). */
     private double tipLabelAngle() {
-        final double base = (getOptions().getTipLabelDirection() == Options.TIP_LABEL_DIRECTION.VERTICAL)
-                ? (Math.PI / 2.0) : (Math.PI / 4.0);
+        final Options.TIP_LABEL_DIRECTION dir = getOptions().getTipLabelDirection();
+        if (dir == Options.TIP_LABEL_DIRECTION.HORIZONTAL) {
+            return 0.0; // upright labels, centred under/over each tip (see paintTipLabelHorizontal)
+        }
+        final double base = (dir == Options.TIP_LABEL_DIRECTION.VERTICAL) ? (Math.PI / 2.0) : (Math.PI / 4.0);
         return (getOptions().getTreeOrientation() == Options.TREE_ORIENTATION.ROOT_BOTTOM) ? -base : base;
     }
 

@@ -145,7 +145,7 @@ final class SettingsDialog extends JDialog {
         add( c, cb( _mf._show_scale_axis_cbmi ) );
         add( c, cb( _mf._show_hpd_bars_cbmi ) );
         add( c, cb( _mf._show_zebra_stripes_cbmi ) );
-        add( c, cb( _mf._flip_vertically_cbmi ) );
+        add( c, cb( _mf._reverse_tip_order_cbmi ) );
         add( c, cb( _mf._bold_found_labels_cbmi ) );
         add( c, cb( _mf._dim_non_matches_cbmi ) );
         add( c, cb( _mf._pulse_found_nodes_cbmi ) );

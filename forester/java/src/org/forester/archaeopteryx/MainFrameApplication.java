@@ -1399,8 +1399,8 @@ public final class MainFrameApplication extends MainFrame {
         _show_hpd_bars_cbmi.setToolTipText(MainFrame.DISPLAY_HPD_BARS_TIP);
         _show_zebra_stripes_cbmi = new JCheckBoxMenuItem(MainFrame.DISPLAY_ZEBRA_STRIPES_LABEL);
         _show_zebra_stripes_cbmi.setToolTipText(MainFrame.DISPLAY_ZEBRA_STRIPES_TIP);
-        _flip_vertically_cbmi = new JCheckBoxMenuItem(MainFrame.DISPLAY_FLIP_VERTICALLY_LABEL);
-        _flip_vertically_cbmi.setToolTipText(MainFrame.DISPLAY_FLIP_VERTICALLY_TIP);
+        _reverse_tip_order_cbmi = new JCheckBoxMenuItem(MainFrame.DISPLAY_REVERSE_TIP_ORDER_LABEL);
+        _reverse_tip_order_cbmi.setToolTipText(MainFrame.DISPLAY_REVERSE_TIP_ORDER_TIP);
         _bold_found_labels_cbmi = new JCheckBoxMenuItem(MainFrame.DISPLAY_BOLD_FOUND_LABELS_LABEL);
         _bold_found_labels_cbmi.setToolTipText(MainFrame.DISPLAY_BOLD_FOUND_LABELS_TIP);
         _dim_non_matches_cbmi = new JCheckBoxMenuItem(MainFrame.DISPLAY_DIM_NON_MATCHES_LABEL);
@@ -1482,7 +1482,7 @@ public final class MainFrameApplication extends MainFrame {
         customizeCheckBoxMenuItem(_show_scale_axis_cbmi, getOptions().isShowScaleAxis());
         customizeCheckBoxMenuItem(_show_hpd_bars_cbmi, getOptions().isShowHpdBars());
         customizeCheckBoxMenuItem(_show_zebra_stripes_cbmi, getOptions().isShowZebraStripes());
-        customizeCheckBoxMenuItem(_flip_vertically_cbmi, getOptions().isFlipVertically());
+        customizeCheckBoxMenuItem(_reverse_tip_order_cbmi, getOptions().isReverseTipOrder());
         customizeCheckBoxMenuItem(_bold_found_labels_cbmi, getOptions().isBoldFoundLabels());
         customizeCheckBoxMenuItem(_dim_non_matches_cbmi, getOptions().isDimNonMatches());
         customizeCheckBoxMenuItem(_pulse_found_nodes_cbmi, getOptions().isPulseFoundNodes());

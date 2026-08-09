@@ -674,8 +674,16 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
-        System.out.print("Flip vertically (render + hit-test): ");
-        if (org.forester.archaeopteryx.FlipVerticallyRenderTest.test()) {
+        System.out.print("Domain architectures vertical (render): ");
+        if (org.forester.archaeopteryx.DomainArchitectureVerticalRenderTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Reverse tip order (render + hit-test): ");
+        if (org.forester.archaeopteryx.ReverseTipOrderRenderTest.test()) {
             System.out.println("OK.");
             succeeded++;
         } else {

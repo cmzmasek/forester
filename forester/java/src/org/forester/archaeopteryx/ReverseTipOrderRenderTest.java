@@ -32,16 +32,16 @@ import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 
 /**
- * Verifies "Flip Vertically" on the ladder demo (forester/demo/flip-vertically.xml): with the toggle off tip_01 is
+ * Verifies "Reverse Tip Order" on the ladder demo (forester/demo/reverse-tip-order.xml): with the toggle off tip_01 is
  * above tip_08; with it on their vertical order reverses (a true reflection about the tree centre), and -- crucially --
  * hit-testing follows, i.e. findNode at each tip's on-screen position still returns that tip. Headful; a green no-op
  * when headless. Dogfoods the demo.
  */
-public final class FlipVerticallyRenderTest {
+public final class ReverseTipOrderRenderTest {
 
     public static void main( final String[] args ) {
         final boolean ok = test();
-        System.out.println( "FlipVerticallyRender: " + ( ok ? "OK." : "FAILED." ) );
+        System.out.println( "ReverseTipOrderRender: " + ( ok ? "OK." : "FAILED." ) );
         System.exit( ok ? 0 : 1 );
     }
 
@@ -54,7 +54,7 @@ public final class FlipVerticallyRenderTest {
 
     private static boolean flipRendersOk() {
         try {
-            final File file = new File( System.getProperty( "user.dir" ), "forester/demo/flip-vertically.xml" );
+            final File file = new File( System.getProperty( "user.dir" ), "forester/demo/reverse-tip-order.xml" );
             if ( !file.exists() ) {
                 return fail( "demo tree missing: " + file.getAbsolutePath() );
             }
@@ -79,14 +79,14 @@ public final class FlipVerticallyRenderTest {
                     }
                     final int w = 560, h = 460;
                     // OFF: normal order -- tip_01 above tip_08
-                    o.setFlipVertically( false );
+                    o.setReverseTipOrder( false );
                     layout( frame, tp, o, w, h );
                     final float y1_off = t1.getYcoord(), y8_off = t8.getYcoord();
                     if ( !( y1_off < y8_off ) ) {
                         fail( ok, "without flip, tip_01 (" + y1_off + ") must be above tip_08 (" + y8_off + ")" );
                     }
                     // ON: reversed -- tip_01 below tip_08, and a true reflection (each swaps to the other's row)
-                    o.setFlipVertically( true );
+                    o.setReverseTipOrder( true );
                     layout( frame, tp, o, w, h );
                     final float y1_on = t1.getYcoord(), y8_on = t8.getYcoord();
                     if ( !( y1_on > y8_on ) ) {
@@ -139,7 +139,7 @@ public final class FlipVerticallyRenderTest {
      *  ({@code paintPhylogenyLite}) runs and assigns each tip's YSecondary; returns the given tip's YSecondary. */
     private static float overviewTipY( final TreePanel tp, final Options o, final PhylogenyNode tip,
                                        final boolean flip, final int w, final int h ) {
-        o.setFlipVertically( flip );
+        o.setReverseTipOrder( flip );
         tp.setSize( w, h );
         tp.calcParametersForPainting( w, h );
         tp.updateOvSizes(); // turns the overview on when the tree exceeds the viewport + computes its layout
@@ -173,15 +173,15 @@ public final class FlipVerticallyRenderTest {
     }
 
     private static boolean fail( final String msg ) {
-        System.out.println( "  [FlipVerticallyRenderTest] " + msg );
+        System.out.println( "  [ReverseTipOrderRenderTest] " + msg );
         return false;
     }
 
     private static void fail( final boolean[] ok, final String msg ) {
-        System.out.println( "  [FlipVerticallyRenderTest] " + msg );
+        System.out.println( "  [ReverseTipOrderRenderTest] " + msg );
         ok[ 0 ] = false;
     }
 
-    private FlipVerticallyRenderTest() {
+    private ReverseTipOrderRenderTest() {
     }
 }

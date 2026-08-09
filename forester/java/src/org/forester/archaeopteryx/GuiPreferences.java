@@ -78,7 +78,9 @@ final class GuiPreferences {
             boolPref( "show_scale_axis", Options::isShowScaleAxis, Options::setShowScaleAxis ),
             boolPref( "show_hpd_bars", Options::isShowHpdBars, Options::setShowHpdBars ),
             boolPref( "show_zebra_stripes", Options::isShowZebraStripes, Options::setShowZebraStripes ),
-            boolPref( "flip_vertically", Options::isFlipVertically, Options::setFlipVertically ),
+            // key kept as "flip_vertically" (its original name) so existing saved settings still load after the
+            // feature was renamed to "Reverse Tip Order"; do NOT rename the key.
+            boolPref( "flip_vertically", Options::isReverseTipOrder, Options::setReverseTipOrder ),
             boolPref( "bold_found_labels", Options::isBoldFoundLabels, Options::setBoldFoundLabels ),
             boolPref( "dim_non_matches", Options::isDimNonMatches, Options::setDimNonMatches ),
             boolPref( "pulse_found_nodes", Options::isPulseFoundNodes, Options::setPulseFoundNodes ),

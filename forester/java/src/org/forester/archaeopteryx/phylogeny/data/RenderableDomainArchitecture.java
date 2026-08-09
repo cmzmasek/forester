@@ -196,6 +196,20 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
                         final Graphics2D g,
                         final TreePanel tree_panel,
                         final boolean to_pdf ) {
+        render( x1, y1, g, tree_panel, to_pdf, true );
+    }
+
+    /**
+     * As {@link #render(float, float, Graphics2D, TreePanel, boolean)}, but {@code draw_labels} can suppress the
+     * per-domain name labels. Used by the vertical (root-top/bottom) orientation, where the architecture boxes ride
+     * the canvas rotation into a thin vertical track per tip and upright names would collide with neighbouring tips.
+     */
+    public void render( final float x1,
+                        final float y1,
+                        final Graphics2D g,
+                        final TreePanel tree_panel,
+                        final boolean to_pdf,
+                        final boolean draw_labels ) {
         final float f = getRenderingFactorWidth();
         final float y = y1 + ( _rendering_height / 2 );
         final float start = x1 + 20;
@@ -220,7 +234,7 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
                 }
                 final float xa = start + ( d.getFrom() * f );
                 final float xb = xa + ( d.getLength() * f );
-                if ( tree_panel.getMainPanel().getOptions().isShowDomainLabels()
+                if ( draw_labels && tree_panel.getMainPanel().getOptions().isShowDomainLabels()
                         && ( tree_panel.getMainPanel().getTreeFontSet().getFontMetricsSmall().getHeight() > 4 ) ) {
                     g.setFont( tree_panel.getMainPanel().getTreeFontSet().getSmallFont() );
                     if ( !to_pdf ) {

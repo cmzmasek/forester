@@ -52,9 +52,9 @@ final public class Options {
     // orientations (root at top/bottom, tips along the bottom/top) for dendrogram-over-columns figures.
     // A no-op for the radial CIRCULAR/UNROOTED layouts.
     static enum TREE_ORIENTATION {
-        ROOT_LEFT("root at left"),
-        ROOT_TOP("root at top"),
-        ROOT_BOTTOM("root at bottom");
+        ROOT_LEFT("Root at Left"),
+        ROOT_TOP("Root at Top"),
+        ROOT_BOTTOM("Root at Bottom");
 
         private final String _name;
 
@@ -70,8 +70,9 @@ final public class Options {
 
     /** The angle of the external-node (tip) labels in a vertical (root-top/bottom) orientation. */
     static enum TIP_LABEL_DIRECTION {
-        ANGLED("diagonal (45°)"),
-        VERTICAL("vertical (90°)");
+        HORIZONTAL("Horizontal (0°)"),
+        ANGLED("Diagonal (45°)"),
+        VERTICAL("Vertical (90°)");
 
         private final String _name;
 
@@ -197,7 +198,7 @@ final public class Options {
     private boolean _show_scale_axis;
     private boolean _show_hpd_bars;
     private boolean _show_zebra_stripes;
-    private boolean _flip_vertically;
+    private boolean _reverse_tip_order;
     private boolean _bold_found_labels;
     private boolean _dim_non_matches;
     private boolean _pulse_found_nodes;
@@ -274,7 +275,7 @@ final public class Options {
         _show_scale_axis = false;
         _show_hpd_bars = false;
         _show_zebra_stripes = false;
-        _flip_vertically = false;
+        _reverse_tip_order = false;
         _bold_found_labels = false;
         _dim_non_matches = true;   // on by default: fade non-matching labels/numbers so search hits stand out
         _pulse_found_nodes = true; // on by default: a gentle halo pulse around found/selected nodes
@@ -621,12 +622,12 @@ final public class Options {
         _show_zebra_stripes = show_zebra_stripes;
     }
 
-    final boolean isFlipVertically() {
-        return _flip_vertically;
+    final boolean isReverseTipOrder() {
+        return _reverse_tip_order;
     }
 
-    final void setFlipVertically(final boolean flip_vertically) {
-        _flip_vertically = flip_vertically;
+    final void setReverseTipOrder(final boolean reverse_tip_order) {
+        _reverse_tip_order = reverse_tip_order;
     }
 
     final boolean isBoldFoundLabels() {
