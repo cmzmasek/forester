@@ -1340,6 +1340,10 @@ public final class MainFrameApplication extends MainFrame {
         _file_jmenu.add(_import_annotations_url_item = new JMenuItem("Import Annotations from URL..."));
         _import_annotations_url_item.setToolTipText("<html>Fetch a CSV/TSV from a URL (e.g. a Google Sheet published "
                 + "to the web as CSV) and run the same import dialog.</html>");
+        _file_jmenu.add(_reimport_annotations_item = new JMenuItem("Re-import Annotations"));
+        _reimport_annotations_item.setToolTipText("<html>Re-fetch this tree's last annotation source (file or URL) and "
+                + "re-apply the same key column, match attribute, and column mapping with one click.<br><i>Edit your "
+                + "sheet/file, then pull the changes in without walking the dialog again.</i></html>");
         _file_jmenu.addSeparator();
         _file_jmenu.add(_close_item = new JMenuItem("Close Tab"));
         _close_item.setToolTipText("To close the current pane.");
@@ -1364,6 +1368,7 @@ public final class MainFrameApplication extends MainFrame {
         customizeJMenuItem(_export_node_data_item);
         customizeJMenuItem(_import_annotations_item);
         customizeJMenuItem(_import_annotations_url_item);
+        customizeJMenuItem(_reimport_annotations_item);
         customizeJMenuItem(_exit_item);
         // Keyboard shortcuts for the common File actions. The platform menu-shortcut key is Cmd on macOS, Ctrl
         // elsewhere. Copy Image uses Shift too, deliberately NOT plain Cmd-C, so it can't hijack text copy in the

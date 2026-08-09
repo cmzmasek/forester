@@ -585,6 +585,96 @@ public final class NodeDataImporter {
         }
     }
 
+    /**
+     * A remembered import, so it can be repeated with one click after the source (file or URL) changes -- the
+     * annotation "profile". Keyed by column HEADER NAME (not index) + the delimiter used, so a re-import survives
+     * the source gaining/reordering rows or columns: a new column is default-included, a missing key column falls
+     * back to the table's default.
+     */
+    public static final class ImportProfile {
+
+        private final String              _source;           // the file path or URL to re-fetch
+        private final boolean             _is_url;
+        private final Character           _delimiter;        // the delimiter that was used (reproduce the same parse)
+        private final MatchBy             _match_by;
+        private final String              _key_header;       // the key column's header name
+        private final Set<String>         _excluded_headers; // original headers the user unchecked
+        private final Map<String, String> _renames;          // original header -> effective (renamed) header
+
+        private ImportProfile( final String source, final boolean is_url, final Character delimiter,
+                final MatchBy match_by, final String key_header, final Set<String> excluded_headers,
+                final Map<String, String> renames ) {
+            _source = source;
+            _is_url = is_url;
+            _delimiter = delimiter;
+            _match_by = match_by;
+            _key_header = key_header;
+            _excluded_headers = excluded_headers;
+            _renames = renames;
+        }
+
+        /** Capture the profile from a completed import choice. */
+        public static ImportProfile from( final Table table, final int key_col, final MatchBy match_by,
+                final ColumnPlan plan, final String source, final boolean is_url ) {
+            final String[] headers = table.getHeaders();
+            final Set<String> excluded = new LinkedHashSet<>();
+            final Map<String, String> renames = new java.util.LinkedHashMap<>();
+            for( int c = 0; c < headers.length; c++ ) {
+                if ( c == key_col ) {
+                    continue;
+                }
+                if ( !plan.isIncluded( c ) ) {
+                    excluded.add( headers[ c ] );
+                }
+                else if ( !headers[ c ].equals( plan.header( c ) ) ) {
+                    renames.put( headers[ c ], plan.header( c ) );
+                }
+            }
+            return new ImportProfile( source, is_url, Character.valueOf( table.getDelimiter() ), match_by,
+                                      headers[ key_col ], excluded, renames );
+        }
+
+        public String getSource() {
+            return _source;
+        }
+
+        public boolean isUrl() {
+            return _is_url;
+        }
+
+        public Character getDelimiter() {
+            return _delimiter;
+        }
+
+        public MatchBy getMatchBy() {
+            return _match_by;
+        }
+
+        /** The key column index in {@code table} by the remembered header name, or the table's default if absent. */
+        public int keyColumn( final Table table ) {
+            final String[] headers = table.getHeaders();
+            for( int c = 0; c < headers.length; c++ ) {
+                if ( _key_header.equals( headers[ c ] ) ) {
+                    return c;
+                }
+            }
+            return table.defaultKeyColumn();
+        }
+
+        /** Rebuild the ColumnPlan against a freshly-parsed {@code table}: exclude the remembered headers, apply the
+         *  remembered renames, and default-include any NEW column. */
+        public ColumnPlan columnPlan( final Table table ) {
+            final ColumnPlan plan = ColumnPlan.importAll( table );
+            final int key_col = keyColumn( table );
+            final String[] headers = table.getHeaders();
+            for( int c = 0; c < headers.length; c++ ) {
+                plan.setIncluded( c, ( c != key_col ) && !_excluded_headers.contains( headers[ c ] ) );
+                plan.setHeader( c, _renames.getOrDefault( headers[ c ], headers[ c ] ) );
+            }
+            return plan;
+        }
+    }
+
     /** Apply the parsed {@code table} importing every non-key column (see {@link #apply(Phylogeny, Table, int, MatchBy, ColumnPlan)}). */
     public static ImportResult apply( final Phylogeny phy, final Table table, final int key_col, final MatchBy match_by ) {
         return apply( phy, table, key_col, match_by, ColumnPlan.importAll( table ) );

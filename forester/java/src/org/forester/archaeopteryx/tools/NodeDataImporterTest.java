@@ -56,7 +56,7 @@ public final class NodeDataImporterTest {
                     && csvParsing() && delimiterDetect() && matchByAccession() && matchByTaxonomy() && dryRunCounts()
                     && embeddedNewlineCsv() && explicitDelimiter() && columnPlan()
                     && nodeIdColumnSkipped() && leadingBlankLine() && emptyRenameSkipped() && dryRunValidatesKeyCol()
-                    && userMatchOptionsAndSummary() && defaultKeyPrefersName();
+                    && userMatchOptionsAndSummary() && defaultKeyPrefersName() && importProfile();
         }
         catch ( final Exception e ) {
             e.printStackTrace();
@@ -594,6 +594,56 @@ public final class NodeDataImporterTest {
     private static boolean defaultKeyPrefersName() throws Exception {
         if ( NodeDataImporter.parseTable( "node_id,name\n5,A\n" ).defaultKeyColumn() != 1 ) {
             return fail( "defaultKeyColumn should prefer the name column (1) over node_id (0)" );
+        }
+        return true;
+    }
+
+    /** An ImportProfile (the re-import "annotation profile") remembers the mapping by HEADER NAME, so re-resolving it
+     *  against a source with reordered / added columns keeps the right key, excludes, and renames. */
+    private static boolean importProfile() throws Exception {
+        final Table t = NodeDataImporter.parseTable( "name,host,country,reads\nA,cat,US,5\n" );
+        final NodeDataImporter.ColumnPlan plan = NodeDataImporter.ColumnPlan.importAll( t );
+        plan.setIncluded( 2, false ); // exclude "country"
+        plan.setHeader( 3, "depth" );  // rename "reads" -> data:depth
+        final NodeDataImporter.ImportProfile prof = NodeDataImporter.ImportProfile.from( t, 0, MatchBy.TIP_NAME, plan,
+                "/x/data.csv", false );
+        if ( prof.isUrl() || !"/x/data.csv".equals( prof.getSource() ) || ( prof.getMatchBy() != MatchBy.TIP_NAME )
+                || ( prof.getDelimiter() == null ) || ( prof.getDelimiter().charValue() != ',' ) ) {
+            return fail( "profile fields not captured: url=" + prof.isUrl() + " delim=" + prof.getDelimiter() );
+        }
+        // re-resolve against a source whose columns are REORDERED and gained a NEW column ("extra")
+        final Table t2 = NodeDataImporter.parseTable( "reads,name,host,country,extra\n9,B,dog,UK,new\n" );
+        if ( prof.keyColumn( t2 ) != 1 ) {
+            return fail( "keyColumn should resolve 'name' by header name to index 1, got " + prof.keyColumn( t2 ) );
+        }
+        final NodeDataImporter.ColumnPlan p2 = prof.columnPlan( t2 );
+        if ( p2.isIncluded( 1 ) ) {
+            return fail( "the key column must stay excluded after re-resolving" );
+        }
+        if ( !p2.isIncluded( 2 ) || !"host".equals( p2.header( 2 ) ) ) {
+            return fail( "host should stay included under its own header" );
+        }
+        if ( p2.isIncluded( 3 ) ) {
+            return fail( "country should stay excluded across a re-parse (remembered by name)" );
+        }
+        if ( !p2.isIncluded( 0 ) || !"depth".equals( p2.header( 0 ) ) ) {
+            return fail( "reads should stay renamed to depth across a re-parse" );
+        }
+        if ( !p2.isIncluded( 4 ) || !"extra".equals( p2.header( 4 ) ) ) {
+            return fail( "a NEW column not in the profile should default-include" );
+        }
+        // apply end-to-end (tip B) and confirm the resolved mapping wrote the expected properties
+        final Phylogeny phy = bareTree(); // A, B, C
+        NodeDataImporter.apply( phy, t2, prof.keyColumn( t2 ), prof.getMatchBy(), p2 );
+        final PhylogenyNode b = tip( phy, "B" );
+        if ( !"dog".equals( propertyValue( b, "data:host" ) ) || !"9".equals( propertyValue( b, "data:depth" ) )
+                || !"new".equals( propertyValue( b, "data:extra" ) ) || ( propertyValue( b, "data:country" ) != null ) ) {
+            return fail( "re-resolved profile wrote the wrong properties onto B" );
+        }
+        // a source that lost the key header falls back to the table's default key column
+        final Table t3 = NodeDataImporter.parseTable( "id,host\nZ,x\n" );
+        if ( prof.keyColumn( t3 ) != t3.defaultKeyColumn() ) {
+            return fail( "a missing key header should fall back to the default key column" );
         }
         return true;
     }

@@ -5456,6 +5456,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private Font                      _annotation_col_widths_font = null;                   // font they were computed for
     private int                       _annotation_header_top_reserve = 0;                   // cached rotated-header top reserve
     private int                       _focused_annotation_column = -1;                      // header-clicked -> its legend
+    private org.forester.archaeopteryx.tools.NodeDataImporter.ImportProfile _last_import_profile = null; // for one-click Re-import Annotations
     private final TreeHistory         _history = new TreeHistory();                         // snapshot-based undo/redo
     private boolean                   _restoring_snapshot = false;                          // guards setEdited during a restore
     private final static int          ANN_COL_GAP  = 5;                                     // gap around each column
@@ -6549,6 +6550,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 : new java.util.ArrayList<AnnotationColumns.ColumnSpec>(specs);
         _focused_annotation_column = -1;
         rebuildAnnotationColumns();
+    }
+
+    /** The last annotation import applied to this tree (its source + column mapping), for one-click Re-import, or null. */
+    org.forester.archaeopteryx.tools.NodeDataImporter.ImportProfile getLastImportProfile() {
+        return _last_import_profile;
+    }
+
+    void setLastImportProfile(final org.forester.archaeopteryx.tools.NodeDataImporter.ImportProfile profile) {
+        _last_import_profile = profile;
     }
 
     void clearAnnotationColumns() {

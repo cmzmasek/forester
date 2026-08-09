@@ -1256,6 +1256,35 @@ public final class ForesterUtil {
     }
 
     /**
+     * Reads the entire body at {@code url_str} as a single UTF-8 string, preserving ALL characters including the
+     * line breaks -- unlike {@link #readUrl(String)}, which splits into lines and so drops newlines embedded inside
+     * a quoted CSV field. Works for http/https and {@code file:} URLs.
+     */
+    public static String readUrlToString( final String url_str ) throws IOException {
+        final URLConnection urlc;
+        try {
+            urlc = new java.net.URI( url_str ).toURL().openConnection();
+        }
+        catch ( final java.net.URISyntaxException | IllegalArgumentException e ) {
+            throw new IOException( "malformed URL: " + url_str, e );
+        }
+        // bound the wait so an unresponsive host cannot hang the caller (import-from-URL runs on the Swing EDT) --
+        // the timeout-bounded GET the NCBI client (WsHttp) already uses, since a plain URLConnection has no timeout
+        urlc.setConnectTimeout( 10000 );
+        urlc.setReadTimeout( 20000 );
+        final StringBuilder sb = new StringBuilder();
+        try ( BufferedReader in = new BufferedReader(
+                new InputStreamReader( urlc.getInputStream(), java.nio.charset.StandardCharsets.UTF_8 ) ) ) {
+            final char[] buf = new char[ 8192 ];
+            int n;
+            while ( ( n = in.read( buf ) ) != -1 ) {
+                sb.append( buf, 0, n );
+            }
+        }
+        return sb.toString();
+    }
+
+    /**
      *
      * Example regarding engulfment: ------------0.1 ----------0.2 --0.3 =>
      * domain with 0.3 is ignored

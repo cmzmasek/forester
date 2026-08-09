@@ -566,9 +566,15 @@ final class PropertyColorScheme {
      * "predominantly numeric with a real range" test the gradient coloring uses.
      */
     static List<String> numericRefs( final Phylogeny phylogeny ) {
+        return numericRefs( phylogeny, colorableRefs( phylogeny ) );
+    }
+
+    /** As {@link #numericRefs(Phylogeny)} but reusing an already-computed {@code colorable} list, so a caller that
+     *  also needs {@link #colorableRefs(Phylogeny)} does not scan the whole tree's properties twice. */
+    static List<String> numericRefs( final Phylogeny phylogeny, final List<String> colorable ) {
         final List<PhylogenyNode> leaves = visibleExternalNodes( phylogeny );
         final List<String> refs = new ArrayList<String>();
-        for( final String ref : colorableRefs( phylogeny ) ) {
+        for( final String ref : colorable ) {
             if ( shouldUseGradient( leaves, ref ) ) {
                 refs.add( ref );
             }

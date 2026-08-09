@@ -249,6 +249,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem _export_node_data_item;
     JMenuItem _import_annotations_item;
     JMenuItem _import_annotations_url_item;
+    JMenuItem _reimport_annotations_item;
     // tools menu:
     JMenuItem _midpoint_root_item;
     JMenuItem _mad_root_item;
@@ -331,6 +332,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem _display_basic_information_item;
     JMenuItem _edit_tree_info_item;
     JMenuItem _fit_to_window_item;
+    JMenuItem _clustergram_item;
     JMenuItem _find_next_hit_item;
     JMenuItem _find_prev_hit_item;
     // help menu:
@@ -463,6 +465,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             viewAsNexus();
         } else if (o == _fit_to_window_item) {
             showWhole();
+        } else if (o == _clustergram_item) {
+            applyClustergramPreset();
         } else if (o == _find_next_hit_item) {
             if (getCurrentTreePanel() != null) {
                 getCurrentTreePanel().stepToFoundNode(1);
@@ -680,6 +684,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             importAnnotations();
         } else if (o == _import_annotations_url_item) {
             importAnnotationsFromUrl();
+        } else if (o == _reimport_annotations_item) {
+            reimportAnnotations();
         }  else if (o == _save_item) {
             final File new_dir = writeToFile(_mainpanel.getCurrentPhylogeny(),
                     getMainPanel(),
@@ -1005,6 +1011,12 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _fit_to_window_item.setToolTipText("Zoom the tree to fit the window (also HOME / ESC)");
         _fit_to_window_item.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_0, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
+        _view_jmenu.add(_clustergram_item = new JMenuItem("Clustergram"));
+        _clustergram_item.setToolTipText("<html>One click: turn the tree into a vertical dendrogram over a tip-aligned "
+                + "heat map — root at top, tips aligned, sample labels along the bottom, and each numeric per-tip "
+                + "field as a shared-scale heat-map column (categorical fields as color strips).<br><i>The figure iTOL "
+                + "does clunkily and FigTree/PearTree can't do at all. Import Annotations (CSV/TSV) first if the tree "
+                + "has no per-tip data yet.</i></html>");
         _view_jmenu.addSeparator();
         _view_jmenu.add(_find_next_hit_item = new JMenuItem("Find Next"));
         _find_next_hit_item.setToolTipText("Center the next search hit in the view");
@@ -1020,6 +1032,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         customizeJMenuItem(_view_as_XML_item);
         customizeJMenuItem(_view_as_nexus_item);
         customizeJMenuItem(_fit_to_window_item);
+        customizeJMenuItem(_clustergram_item);
         customizeJMenuItem(_find_next_hit_item);
         customizeJMenuItem(_find_prev_hit_item);
         _jmenubar.add(_view_jmenu);
@@ -2676,12 +2689,12 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                     JOptionPane.ERROR_MESSAGE);
             return;
         }
-        importAnnotationsFromText(phy, text, file.getName());
+        importAnnotationsFromText(phy, text, file.getName(), file.getAbsolutePath(), false);
     }
 
     /**
      * File -> Import Annotations from URL: fetch a CSV/TSV from a URL (e.g. a Google Sheet "published to the web as
-     * CSV") and run the same import dialog. Line-based fetch, so a quoted field may not span lines from a URL source.
+     * CSV") and run the same import dialog. Reads the whole body (so a quoted field may span lines).
      */
     void importAnnotationsFromUrl() {
         final Phylogeny phy = currentPhylogenyForExport();
@@ -2696,18 +2709,22 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         final String text;
         try {
-            text = String.join("\n", ForesterUtil.readUrl(url.trim()));
+            text = ForesterUtil.readUrlToString(url.trim()); // full body (preserves newlines inside quoted fields)
         }
         catch (final Exception e) {
             JOptionPane.showMessageDialog(this, "Failed to fetch " + url.trim() + ":\n" + e.getMessage(),
                     "Fetch Failed", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        importAnnotationsFromText(phy, text, url.trim());
+        importAnnotationsFromText(phy, text, url.trim(), url.trim(), true);
     }
 
-    /** Shared back-end for the file and URL import sources: validate, show the config dialog, apply, and report. */
-    private void importAnnotationsFromText(final Phylogeny phy, final String text, final String source_name) {
+    /**
+     * Shared back-end for the file and URL import sources: validate, show the config dialog, apply, report, and
+     * remember the import (source {@code reimport_locator} + column mapping) on the tree for one-click Re-import.
+     */
+    private void importAnnotationsFromText(final Phylogeny phy, final String text, final String display_name,
+            final String reimport_locator, final boolean is_url) {
         try {
             NodeDataImporter.parseTable(text); // validate up front so a bad source shows an error, not an empty dialog
         }
@@ -2721,10 +2738,146 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             return;
         }
         final NodeDataImporter.ImportResult result = importAnnotationsAndRefit(phy, choice._table, choice._key_col,
-                choice._match_by, choice._plan, source_name);
+                choice._match_by, choice._plan, display_name);
+        final TreePanel tp = getCurrentTreePanel();
+        if (tp != null) {
+            tp.setLastImportProfile(NodeDataImporter.ImportProfile.from(choice._table, choice._key_col,
+                    choice._match_by, choice._plan, reimport_locator, is_url)); // enable one-click Re-import
+        }
         final int type = result.getWarnings().isEmpty() ? JOptionPane.INFORMATION_MESSAGE : JOptionPane.WARNING_MESSAGE;
-        JOptionPane.showMessageDialog(this, "Imported from " + source_name + ":\n\n" + result.summary(),
+        JOptionPane.showMessageDialog(this, "Imported from " + display_name + ":\n\n" + result.summary(),
                 "Import Complete", type);
+    }
+
+    /**
+     * File -> Re-import Annotations: re-fetch the tree's last import source (file or URL) and re-apply the same key
+     * column, match attribute, and column include/rename mapping with one click -- so you can edit your sheet/file
+     * and pull the changes in without walking the dialog again. The mapping is keyed by header name, so it survives
+     * the source gaining or reordering rows/columns.
+     */
+    void reimportAnnotations() {
+        final Phylogeny phy = currentPhylogenyForExport();
+        if (phy == null) {
+            return;
+        }
+        final TreePanel tp = getCurrentTreePanel();
+        final NodeDataImporter.ImportProfile profile = (tp != null) ? tp.getLastImportProfile() : null;
+        if (profile == null) {
+            JOptionPane.showMessageDialog(this,
+                    "No annotation import to repeat for this tree.\nUse \"Import Annotations (CSV/TSV)…\" first.",
+                    "Nothing to Re-import", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        final NodeDataImporter.ImportResult result;
+        try {
+            result = reimportAnnotationsAndRefit(phy, profile);
+        }
+        catch (final IOException e) {
+            JOptionPane.showMessageDialog(this, "Failed to re-read " + profile.getSource() + ":\n" + e.getMessage(),
+                    "Re-import Failed", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        catch (final IllegalArgumentException e) {
+            JOptionPane.showMessageDialog(this, "The source is no longer a valid CSV/TSV table:\n" + e.getMessage(),
+                    "Re-import Failed", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        final String name = importSourceDisplayName(profile);
+        if (result.getTipsAnnotated() == 0) {
+            // a one-click re-import has no dialog/preview, so a 0-match (e.g. the edited source broke the key column)
+            // must not look like success -- the tree was left unchanged
+            JOptionPane.showMessageDialog(this,
+                    "Re-imported from " + name + ", but no rows matched a tip — the tree was not changed.\n\n"
+                            + "Check the key column / match attribute against the edited source (use \"Import "
+                            + "Annotations (CSV/TSV)…\" to reconfigure).\n\n" + result.summary(),
+                    "Re-import: Nothing Matched", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        final int type = result.getWarnings().isEmpty() ? JOptionPane.INFORMATION_MESSAGE : JOptionPane.WARNING_MESSAGE;
+        JOptionPane.showMessageDialog(this, "Re-imported from " + name + ":\n\n" + result.summary(),
+                "Re-import Complete", type);
+    }
+
+    /**
+     * UI-free re-import (so it is unit-testable without the dialogs): re-fetch the profile's source (file or URL),
+     * parse it with the remembered delimiter, resolve the profile's key column + column mapping against the fresh
+     * table (by header name), and apply.
+     *
+     * @throws IOException if the source cannot be re-read; {@code IllegalArgumentException} if it no longer parses
+     */
+    NodeDataImporter.ImportResult reimportAnnotationsAndRefit(final Phylogeny phy,
+            final NodeDataImporter.ImportProfile profile) throws IOException {
+        final String text = profile.isUrl() ? ForesterUtil.readUrlToString(profile.getSource())
+                : Files.readString(java.nio.file.Path.of(profile.getSource()));
+        final NodeDataImporter.Table table = NodeDataImporter.parseTable(text, profile.getDelimiter());
+        return importAnnotationsAndRefit(phy, table, profile.keyColumn(table), profile.getMatchBy(),
+                profile.columnPlan(table), importSourceDisplayName(profile));
+    }
+
+    /** A short display name for a profile's source: the URL as-is, or a file's base name. */
+    private static String importSourceDisplayName(final NodeDataImporter.ImportProfile profile) {
+        return profile.isUrl() ? profile.getSource() : new File(profile.getSource()).getName();
+    }
+
+    /**
+     * View -> Clustergram: one click to build the signature vertical-dendrogram-over-a-heat-map figure. Forces a
+     * rectangular, root-at-top, tip-aligned layout with the tip labels below the columns, and auto-builds the
+     * annotation columns from the tree's own per-tip data (every numeric field -> one shared-scale heat-map MATRIX;
+     * every categorical field -> a color strip). Display-only: Undo is N/A, and every setting it flips is already
+     * covered by Reset to Defaults (no new Options field).
+     */
+    void applyClustergramPreset() {
+        final TreePanel tp = getCurrentTreePanel();
+        if (tp == null) {
+            return;
+        }
+        final Phylogeny phy = tp.getPhylogeny();
+        if ((phy == null) || phy.isEmpty()) {
+            return;
+        }
+        final java.util.List<AnnotationColumns.ColumnSpec> specs = clustergramColumnSpecs(phy);
+        if (specs.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "This tree has no per-tip data to put in the heat map.\n\nUse File → Import Annotations (CSV/TSV) "
+                            + "to add columns, then run Clustergram again.",
+                    "Clustergram", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        tp.setAnnotationColumns(specs);
+        // a rectangular, root-at-top, tip-aligned tree with the sample labels below the columns = the clustergram
+        getOptions().setPhylogenyGraphicsType(PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR);
+        tp.setPhylogenyGraphicsType(PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR);
+        getOptions().setTreeOrientation(Options.TREE_ORIENTATION.ROOT_TOP);
+        getOptions().setTipLabelsBelowColumns(true);
+        applyOptionsToMenuStates(getOptions()); // reflect the labels-below toggle in the menu / Settings dialog
+        tp.getControlPanel().setTreeDisplayType(Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM); // align tips -> clean grid
+        // NB: display-only -- do NOT setEdited(true): nothing here is saved to the tree file, and setEdited would both
+        // pop a spurious save prompt and clear the redo stack (the undo safety net). Sibling display toggles don't either.
+        final ControlPanel cp = tp.getControlPanel();
+        cp.updateZoomButtonsForOrientation();
+        cp.displayedPhylogenyMightHaveChanged(true); // recompute the label/column extents for the swapped layout
+        cp.showWhole(); // re-fit for the vertical extent (a plain repaint would leave the old scroll extent)
+        tp.repaint();
+    }
+
+    /**
+     * The annotation columns a Clustergram builds from a tree's data: every numeric field as a shared-scale heat-map
+     * MATRIX (nearest the tips -> the dendrogram sits directly on the grid), then every categorical field as a color
+     * strip. Empty when the tree carries no color-able per-tip properties. Pure + testable.
+     */
+    static java.util.List<AnnotationColumns.ColumnSpec> clustergramColumnSpecs(final Phylogeny phy) {
+        final java.util.List<String> colorable = PropertyColorScheme.colorableRefs(phy); // scan the tree ONCE
+        final java.util.List<String> numeric = PropertyColorScheme.numericRefs(phy, colorable);
+        final java.util.List<AnnotationColumns.ColumnSpec> specs = new java.util.ArrayList<>();
+        for (final String ref : numeric) {
+            specs.add(new AnnotationColumns.ColumnSpec(ref, AnnotationColumns.Type.MATRIX));
+        }
+        for (final String ref : colorable) {
+            if (!numeric.contains(ref)) {
+                specs.add(new AnnotationColumns.ColumnSpec(ref, AnnotationColumns.Type.COLOR_STRIP));
+            }
+        }
+        return specs;
     }
 
     /** The user's choices from the import config dialog: which table (a given delimiter), key column, match attribute, and column plan. */

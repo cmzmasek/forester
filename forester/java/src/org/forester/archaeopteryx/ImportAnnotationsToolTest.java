@@ -50,7 +50,7 @@ public final class ImportAnnotationsToolTest {
     }
 
     public static boolean test() {
-        if ( !buildColumnPlanOk() || !provenanceOk() ) {
+        if ( !buildColumnPlanOk() || !provenanceOk() || !readUrlToStringOk() ) {
             return false; // pure, headless-safe checks
         }
         if ( GraphicsEnvironment.isHeadless() ) {
@@ -119,6 +119,29 @@ public final class ImportAnnotationsToolTest {
                     if ( ( desc == null ) || !desc.contains( "Imported annotations from table" ) ) {
                         fail( ok, "an import should append a provenance sentence: " + desc );
                     }
+                    // RE-IMPORT: a stored profile (source path + key/match + column mapping) re-applies with one click.
+                    // Rename reads -> a DISTINCT ref (coverage) so the re-import's own rename is isolated (the earlier
+                    // import wrote data:depth, so re-using "depth" would be masked by never-clobber).
+                    final NodeDataImporter.ColumnPlan prof_plan = NodeDataImporter.ColumnPlan.importAll( table );
+                    prof_plan.setHeader( 3, "coverage" ); // reads (col 3) -> data:coverage
+                    tp.setLastImportProfile( NodeDataImporter.ImportProfile.from( table, key_col,
+                            NodeDataImporter.MatchBy.TIP_NAME, prof_plan, csv_file.getAbsolutePath(), false ) );
+                    if ( tp.getLastImportProfile() == null ) {
+                        fail( ok, "the import profile should be stored on the tree for Re-import" );
+                    }
+                    try {
+                        final NodeDataImporter.ImportResult re = frame.reimportAnnotationsAndRefit( live,
+                                tp.getLastImportProfile() );
+                        if ( re.getTipsAnnotated() != 12 ) {
+                            fail( ok, "Re-import should re-annotate all 12 tips, got " + re.getTipsAnnotated() );
+                        }
+                        if ( !"1200".equals( propertyValue( tip( live, "isolate_01" ), "data:coverage" ) ) ) {
+                            fail( ok, "Re-import should re-read the file and honor the profile's rename (reads->data:coverage)" );
+                        }
+                    }
+                    catch ( final java.io.IOException e ) {
+                        fail( ok, "Re-import could not re-read the source: " + e );
+                    }
                 }
                 catch ( final Throwable t ) {
                     fail( ok, "unexpected: " + t );
@@ -167,6 +190,31 @@ public final class ImportAnnotationsToolTest {
             return fail( "importProvenance singular / no-columns case wrong: " + p1 );
         }
         return true;
+    }
+
+    /** Pure: ForesterUtil.readUrlToString reads a whole body (via a file: URL) preserving newlines inside a quoted
+     *  CSV field -- the raw URL fetch that the line-based readUrl loses. */
+    private static boolean readUrlToStringOk() {
+        try {
+            final File tmp = File.createTempFile( "aptx_import_probe", ".csv" );
+            tmp.deleteOnExit();
+            // an embedded-newline quoted field AND a non-ASCII value (readUrlToString reads exact UTF-8)
+            java.nio.file.Files.write( tmp.toPath(),
+                    "name,note,city\nA,\"line1\nline2\",Zürich\n".getBytes( java.nio.charset.StandardCharsets.UTF_8 ) );
+            final String body = org.forester.util.ForesterUtil.readUrlToString( tmp.toURI().toString() );
+            if ( !body.contains( "line1\nline2" ) || !body.contains( "Zürich" ) ) {
+                return fail( "readUrlToString should preserve an embedded newline + a UTF-8 value: " + body );
+            }
+            final NodeDataImporter.Table t = NodeDataImporter.parseTable( body );
+            if ( ( t.getRowCount() != 1 ) || !"line1\nline2".equals( t.getCell( 0, 1 ) )
+                    || !"Zürich".equals( t.getCell( 0, 2 ) ) ) {
+                return fail( "a fetched multi-line quoted field + UTF-8 value should parse as one row" );
+            }
+            return true;
+        }
+        catch ( final Exception e ) {
+            return fail( "readUrlToString: " + e );
+        }
     }
 
     private static PhylogenyNode tip( final Phylogeny phy, final String name ) {
