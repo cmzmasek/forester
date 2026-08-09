@@ -93,7 +93,7 @@ public final class MenuTooltipsTest {
                     }
                 }
                 // the import item must advertise that custom columns become color-able properties
-                final JMenuItem import_item = itemByText( file, "Import Node Data (TSV)..." );
+                final JMenuItem import_item = itemByText( file, "Import Annotations (CSV/TSV)..." );
                 if ( import_item == null ) {
                     System.out.println( "  [MenuTooltipsTest] import item not found" );
                     ok[ 0 ] = false;

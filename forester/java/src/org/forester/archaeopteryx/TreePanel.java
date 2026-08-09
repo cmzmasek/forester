@@ -5471,7 +5471,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  scheme): a non-null-but-EMPTY scheme -- e.g. after navigating into a subtree where no visible tip has
      *  the property -- draws NO legend, so its stale bounds/controls must not stay clickable. */
     final boolean isOnPropertyLegend(final MouseEvent e) {
-        return (isColorByProperty() || hasRankLegend() || hasFocusedAnnotationColumn())
+        return (isColorByProperty() || hasRankLegend() || hasAnnotationColumnLegend())
                 && (_property_legend_bounds != null)
                 && _property_legend_bounds.contains(e.getX(), e.getY());
     }
@@ -5582,7 +5582,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     /** Test hook: draws the active legend into {@code g} at {@code bounds}, in on-screen ({@code draggable})
      *  or static-export mode -- so a test can compare the two (exports omit the interactive chips). */
     void drawLegendForTest(final Graphics2D g, final Rectangle bounds, final boolean draggable) {
-        if (hasFocusedAnnotationColumn()) {
+        if (hasAnnotationColumnLegend()) {
             drawAnnotationColumnLegend(g, bounds, draggable);
         } else if (isColorByProperty()) {
             drawPropertyColorLegend(g, bounds, draggable);
@@ -5611,7 +5611,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // Clicking any categorical legend row recolors that value -- property-color, rank-colorize, or
     // clade-band legends all behave the same (the inconsistency was that only the property one did).
     private void chooseColorForValue(final String label) {
-        if (hasFocusedAnnotationColumn()) {
+        if (hasAnnotationColumnLegend()) {
             return; // a header-focused annotation-column legend is display-only (no per-value recolor)
         }
         if ((_property_color_scheme != null) && (_color_by_property_ref != null)) {
@@ -6307,7 +6307,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (_size_legend_offset != null) {
             return legendTopLeftFor(bounds, getVisibleRect(), _size_legend_offset, box_w, box_h);
         }
-        final boolean color_legend_present = isColorByProperty() || hasRankLegend() || hasFocusedAnnotationColumn();
+        final boolean color_legend_present = isColorByProperty() || hasRankLegend() || hasAnnotationColumnLegend();
         if (!color_legend_present) {
             return legendTopLeftFor(bounds, getVisibleRect(), null, box_w, box_h); // the shared top-right default
         }
@@ -6699,23 +6699,57 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 || (t == AnnotationColumns.Type.MATRIX) || (t == AnnotationColumns.Type.BAR);
     }
 
+    /** Whether the user has explicitly focused (clicked the header of) a legend-bearing annotation column. */
     boolean hasFocusedAnnotationColumn() {
-        if (!hasAnnotationColumns() || (_focused_annotation_column < 0)
-                || (_focused_annotation_column >= _annotation_columns.size())
-                || !columnHasLegend(_focused_annotation_column)) {
+        return (_focused_annotation_column >= 0) && columnLegendReady(_focused_annotation_column);
+    }
+
+    /** The annotation column whose legend occupies the shared legend slot: the column the user explicitly focused
+     *  (clicked its header) if it has a legend, else -- for the always-on clustergram heat-map legend -- the first
+     *  MATRIX column, else -1. So a heat-map matrix shows its shared-scale legend WITHOUT a click, while clicking any
+     *  other column's header still overrides to that column's own legend.
+     *  <p>The always-on matrix legend DEFERS to an active "Color by" / rank-colorize legend: those share the one
+     *  legend slot, and the user explicitly turned them on, so it would be wrong to silently hide them (and their
+     *  click-to-recolor) just because a matrix column is present. The matrix legend is still reachable by clicking
+     *  its header (an explicit focus, handled above). */
+    private int annotationLegendColumn() {
+        if (!hasAnnotationColumns()) {
+            return -1;
+        }
+        if ((_focused_annotation_column >= 0) && columnLegendReady(_focused_annotation_column)) {
+            return _focused_annotation_column;
+        }
+        if (isColorByProperty() || hasRankLegend()) {
+            return -1; // an active color/rank legend owns the slot; do not usurp it with the always-on matrix legend
+        }
+        for (int i = 0; i < _annotation_columns.size(); ++i) {
+            if ((_annotation_columns.getColumn(i).getType() == AnnotationColumns.Type.MATRIX) && columnLegendReady(i)) {
+                return i; // the shared matrix scale -> one always-on legend, drawn from the first matrix column
+            }
+        }
+        return -1;
+    }
+
+    /** Whether the shared legend slot should show an annotation-column legend: an explicit focus OR the always-on
+     *  matrix legend. */
+    boolean hasAnnotationColumnLegend() {
+        return annotationLegendColumn() >= 0;
+    }
+
+    /** A column has a drawable legend right now: a legend-bearing type whose scheme is present and non-empty (a
+     *  column whose visible values vanished after navigating into a subtree has an empty scheme and no legend to
+     *  show), and -- for a BAR, whose length key needs a real numeric range -- a gradient rather than a degenerate
+     *  single/non-numeric value (else a misleading full-length "0 -> 0" wedge). */
+    private boolean columnLegendReady(final int col) {
+        if (!hasAnnotationColumns() || (col < 0) || (col >= _annotation_columns.size()) || !columnHasLegend(col)) {
             return false;
         }
-        // a column whose visible values vanished (e.g. after navigating into a subtree) has an empty scheme
-        // and no legend to show -- do not let it hold the legend slot or leave stale drag bounds
-        final AnnotationColumns.Column col = _annotation_columns.getColumn(_focused_annotation_column);
-        final PropertyColorScheme s = col.getScheme();
+        final AnnotationColumns.Column c = _annotation_columns.getColumn(col);
+        final PropertyColorScheme s = c.getScheme();
         if ((s == null) || s.isEmpty()) {
             return false;
         }
-        // a bar legend labels the numeric min/max range, so it needs a real gradient: if the visible values
-        // collapsed to a single (or non-numeric) value the range is degenerate -- show no legend rather than a
-        // misleading full-length "0 -> 0" wedge
-        if (col.getType() == AnnotationColumns.Type.BAR) {
+        if (c.getType() == AnnotationColumns.Type.BAR) {
             return s.isGradient();
         }
         return true;
@@ -6847,25 +6881,30 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     private void drawAnnotationColumnLegend(final Graphics2D g, final Rectangle bounds, final boolean draggable) {
-        if (!hasFocusedAnnotationColumn()) {
+        final int col_i = annotationLegendColumn();
+        if (col_i < 0) {
             return;
         }
-        final AnnotationColumns.Column col = _annotation_columns.getColumn(_focused_annotation_column);
+        final AnnotationColumns.Column col = _annotation_columns.getColumn(col_i);
         final PropertyColorScheme scheme = col.getScheme();
         if ((scheme == null) || scheme.isEmpty()) {
             return;
         }
-        noteLegendSubject("col:" + col.getHeader());
+        // a MATRIX legend represents the WHOLE shared-scale grid, not one sample column, so title it generically
+        // ("Heat map") rather than with the first matrix column's ref (e.g. "s1"); other columns use their header.
+        final boolean is_matrix = (col.getType() == AnnotationColumns.Type.MATRIX);
+        final String title = is_matrix ? "Heat map" : col.getHeader();
+        noteLegendSubject(is_matrix ? "matrix" : ("col:" + col.getHeader()));
         if (col.getType() == AnnotationColumns.Type.BAR) {
             // a bar column encodes magnitude by length, not hue -> show a length wedge with min/max, not a
             // color gradient
-            drawAnnotationBarLegend(g, bounds, draggable, col.getHeader(), scheme);
+            drawAnnotationBarLegend(g, bounds, draggable, title, scheme);
         } else if (scheme.isGradient()) {
-            drawPropertyColorGradientLegend(g, bounds, draggable, col.getHeader(), scheme);
+            drawPropertyColorGradientLegend(g, bounds, draggable, title, scheme);
         } else {
             final Map<String, Integer> counts = scheme.getValueCounts();
             final Map<String, Color> values = orderedLegend(scheme.getValueColors(), counts);
-            drawCategoricalLegend(g, bounds, draggable, col.getHeader(), values, counts,
+            drawCategoricalLegend(g, bounds, draggable, title, values, counts,
                     scheme.numberOfValues() - values.size());
         }
     }
@@ -8750,14 +8789,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 paintOvRectangle(g);
             }
         }
-        if (hasFocusedAnnotationColumn() || isColorByProperty() || hasRankLegend()) {
+        if (hasAnnotationColumnLegend() || isColorByProperty() || hasRankLegend()) {
             final boolean to_screen = !(to_pdf || to_graphics_file);
             final Rectangle legend_bounds = to_screen
                     ? getVisibleRect()
                     : new Rectangle(graphics_file_x, graphics_file_y, graphics_file_width, graphics_file_height);
             // one legend slot; a header-focused annotation-column legend wins (the user just clicked it),
             // else the property-color legend, else the rank legend
-            if (hasFocusedAnnotationColumn()) {
+            if (hasAnnotationColumnLegend()) {
                 drawAnnotationColumnLegend(g, legend_bounds, to_screen);
             } else if (isColorByProperty()) {
                 drawPropertyColorLegend(g, legend_bounds, to_screen);

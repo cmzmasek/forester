@@ -98,11 +98,37 @@ public final class HeatmapMatrixRenderTest {
                         fail( ok, "the matrix should span cool (low) to warm (high) cells, warm=" + warm
                                 + " cool=" + cool );
                     }
-                    // the matrix legend must be reachable: focusing a matrix column exposes its shared-scale gradient
-                    // legend. Guards columnHasLegend() including Type.MATRIX -- without it the header click is a no-op.
+                    // ALWAYS-ON matrix legend: a heat-map matrix shows its shared-scale legend with NO header click.
+                    if ( tp.hasFocusedAnnotationColumn() ) {
+                        fail( ok, "no annotation column was focused yet" );
+                    }
+                    if ( !tp.hasAnnotationColumnLegend() ) {
+                        fail( ok, "a heat-map matrix must show its shared-scale legend WITHOUT a click (always-on)" );
+                    }
+                    // ...and it actually draws into the legend slot (records its draggable bounds + paints ink)
+                    final BufferedImage leg = new BufferedImage( w, h, BufferedImage.TYPE_INT_RGB );
+                    final java.awt.Graphics2D lg = leg.createGraphics();
+                    lg.setColor( java.awt.Color.WHITE );
+                    lg.fillRect( 0, 0, w, h );
+                    tp.drawLegendForTest( lg, new java.awt.Rectangle( 0, 0, w, h ), true );
+                    lg.dispose();
+                    if ( tp.getPropertyLegendBounds() == null ) {
+                        fail( ok, "the always-on matrix legend did not draw into the legend slot" );
+                    }
+                    // the always-on matrix legend DEFERS to an active "Color by" legend (they share the one slot, and
+                    // the user explicitly turned Color-by on) -- it must not silently usurp it
+                    tp.setColorByPropertyRef( "data:s1" );
+                    if ( tp.hasAnnotationColumnLegend() ) {
+                        fail( ok, "the matrix legend must defer to an active Color-by legend, not usurp the slot" );
+                    }
+                    tp.setColorByPropertyRef( null );
+                    if ( !tp.hasAnnotationColumnLegend() ) {
+                        fail( ok, "with Color-by off, the always-on matrix legend should return" );
+                    }
+                    // explicit focus still overrides to a specific column's legend (guards columnHasLegend(MATRIX))
                     tp.setFocusedAnnotationColumn( 0 );
                     if ( !tp.hasFocusedAnnotationColumn() ) {
-                        fail( ok, "a MATRIX column must expose its color-scale legend (hasFocusedAnnotationColumn was false)" );
+                        fail( ok, "focusing a MATRIX column header must expose its legend (columnHasLegend missing MATRIX)" );
                     }
                 }
                 catch ( final Throwable t ) {

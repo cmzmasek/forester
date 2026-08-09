@@ -23,6 +23,7 @@ package org.forester.archaeopteryx;
 import java.io.File;
 import java.util.Iterator;
 
+import org.forester.archaeopteryx.tools.NodeDataImporter;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
@@ -86,6 +87,10 @@ public final class DemoTreesTest {
         ok &= hasAtLeastTips( "heatmap-matrix.xml", 6 );
         ok &= hasNumericRef( "heatmap-matrix.xml", "data:s1" );
         ok &= hasNumericRef( "heatmap-matrix.xml", "data:s6" );
+
+        // import annotations: a plain-named tip tree + a companion CSV whose "name" column must join onto EVERY tip
+        ok &= hasAtLeastTips( "import-annotations.xml", 12 );
+        ok &= csvJoinMatchesAllTips( "import-annotations.xml", "import-annotations.csv" );
 
         ok &= hasAtLeastTips( "search-emphasis.xml", 12 );
         ok &= tipsContaining( "search-emphasis.xml", "kinase", 4 );
@@ -183,6 +188,34 @@ public final class DemoTreesTest {
     }
 
     /** Parses a demo file, asserting it is present, error-free and non-empty; null on any failure (with a message). */
+    /** The companion CSV parses and its key column joins onto every tip of the tree (no unmatched rows, no tip left out). */
+    private static boolean csvJoinMatchesAllTips( final String tree_file, final String csv_file ) {
+        final Phylogeny phy = load( tree_file );
+        if ( phy == null ) {
+            return false;
+        }
+        final File csv = new File( DEMO_DIR + csv_file );
+        if ( !csv.exists() ) {
+            return note( csv_file + " is missing from the demo gallery (" + csv.getAbsolutePath() + ")" );
+        }
+        try {
+            final NodeDataImporter.Table table = NodeDataImporter.parseTable( java.nio.file.Files.readString( csv.toPath() ) );
+            final NodeDataImporter.MatchReport rep = NodeDataImporter.dryRun( phy, table, table.defaultKeyColumn(),
+                    NodeDataImporter.MatchBy.TIP_NAME );
+            if ( ( rep.getTipsWithoutRow() != 0 ) || ( rep.getRowsUnmatched() != 0 ) ) {
+                return note( csv_file + " should join onto every tip of " + tree_file + " (tips without a row: "
+                        + rep.getTipsWithoutRow() + ", unmatched rows: " + rep.getRowsUnmatched() + ")" );
+            }
+            if ( !rep.getPropertyColumns().contains( "host" ) || !rep.getPropertyColumns().contains( "reads" ) ) {
+                return note( csv_file + " should import the host + reads columns: " + rep.getPropertyColumns() );
+            }
+            return true;
+        }
+        catch ( final Exception e ) {
+            return note( csv_file + " could not be read/joined: " + e.getMessage() );
+        }
+    }
+
     private static Phylogeny load( final String file_name ) {
         final File file = new File( DEMO_DIR + file_name );
         if ( !file.exists() ) {

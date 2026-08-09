@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" rerootable="true">
+  <name>Import annotations (demo)</name>
+  <description>A plain 12-tip tree (isolate_01..isolate_12) carrying NO per-tip data. Pair it with the companion import-annotations.csv: File &gt; Import Annotations, pick the CSV, match the &quot;name&quot; column against the tip name; the host/country/reads columns are joined onto the tips -- then Color by host, or show reads as an annotation column.</description>
+  <clade>
+    <branch_length>0.0</branch_length>
+    <clade>
+      <branch_length>0.05</branch_length>
+      <clade>
+        <name>isolate_01</name>
+        <branch_length>0.02</branch_length>
+      </clade>
+      <clade>
+        <name>isolate_02</name>
+        <branch_length>0.02</branch_length>
+      </clade>
+      <clade>
+        <name>isolate_03</name>
+        <branch_length>0.02</branch_length>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.06</branch_length>
+      <clade>
+        <name>isolate_04</name>
+        <branch_length>0.02</branch_length>
+      </clade>
+      <clade>
+        <name>isolate_05</name>
+        <branch_length>0.02</branch_length>
+      </clade>
+      <clade>
+        <name>isolate_06</name>
+        <branch_length>0.02</branch_length>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.05</branch_length>
+      <clade>
+        <name>isolate_07</name>
+        <branch_length>0.02</branch_length>
+      </clade>
+      <clade>
+        <name>isolate_08</name>
+        <branch_length>0.02</branch_length>
+      </clade>
+      <clade>
+        <branch_length>0.03</branch_length>
+        <clade>
+          <name>isolate_09</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+        <clade>
+          <name>isolate_10</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.06</branch_length>
+      <clade>
+        <name>isolate_11</name>
+        <branch_length>0.02</branch_length>
+      </clade>
+      <clade>
+        <name>isolate_12</name>
+        <branch_length>0.02</branch_length>
+      </clade>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>

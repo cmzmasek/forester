@@ -1332,10 +1332,14 @@ public final class MainFrameApplication extends MainFrame {
         _file_jmenu.add(_export_node_data_item = new JMenuItem("Export Node Data (TSV)..."));
         _export_node_data_item.setToolTipText("<html>Write the tip data (names, taxonomy, sequence, branch "
                 + "length, properties) to a tab-separated table." + scope_hint + "</html>");
-        _file_jmenu.add(_import_node_data_item = new JMenuItem("Import Node Data (TSV)..."));
-        _import_node_data_item.setToolTipText("<html>Read a tab-separated table keyed on the tip names and write "
-                + "its columns back onto the matching tips.<br><i>Recognized columns fill taxonomy/sequence fields; "
-                + "any other column becomes a node property you can color by.</i></html>");
+        _file_jmenu.add(_import_annotations_item = new JMenuItem("Import Annotations (CSV/TSV)..."));
+        _import_annotations_item.setToolTipText("<html>Read a CSV or TSV table and join its columns onto the tips: "
+                + "match a chosen key column against the tip name, sequence accession, or taxonomy, with a preview of "
+                + "the match before committing.<br><i>Recognized columns fill taxonomy/sequence fields; any other "
+                + "column becomes a node property you can color by or show as an annotation column.</i></html>");
+        _file_jmenu.add(_import_annotations_url_item = new JMenuItem("Import Annotations from URL..."));
+        _import_annotations_url_item.setToolTipText("<html>Fetch a CSV/TSV from a URL (e.g. a Google Sheet published "
+                + "to the web as CSV) and run the same import dialog.</html>");
         _file_jmenu.addSeparator();
         _file_jmenu.add(_close_item = new JMenuItem("Close Tab"));
         _close_item.setToolTipText("To close the current pane.");
@@ -1358,7 +1362,8 @@ public final class MainFrameApplication extends MainFrame {
         customizeJMenuItem(_write_to_tif_item);
         customizeJMenuItem(_export_seqs_fasta_item);
         customizeJMenuItem(_export_node_data_item);
-        customizeJMenuItem(_import_node_data_item);
+        customizeJMenuItem(_import_annotations_item);
+        customizeJMenuItem(_import_annotations_url_item);
         customizeJMenuItem(_exit_item);
         // Keyboard shortcuts for the common File actions. The platform menu-shortcut key is Cmd on macOS, Ctrl
         // elsewhere. Copy Image uses Shift too, deliberately NOT plain Cmd-C, so it can't hijack text copy in the

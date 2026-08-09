@@ -53,8 +53,13 @@ import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.BorderFactory;
 import javax.swing.JDialog;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -242,7 +247,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem _write_to_eps_item;
     JMenuItem _export_seqs_fasta_item;
     JMenuItem _export_node_data_item;
-    JMenuItem _import_node_data_item;
+    JMenuItem _import_annotations_item;
+    JMenuItem _import_annotations_url_item;
     // tools menu:
     JMenuItem _midpoint_root_item;
     JMenuItem _mad_root_item;
@@ -670,8 +676,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             exportSequencesAsFasta();
         } else if (o == _export_node_data_item) {
             exportNodeDataAsTsv();
-        } else if (o == _import_node_data_item) {
-            importNodeDataFromTsv();
+        } else if (o == _import_annotations_item) {
+            importAnnotations();
+        } else if (o == _import_annotations_url_item) {
+            importAnnotationsFromUrl();
         }  else if (o == _save_item) {
             final File new_dir = writeToFile(_mainpanel.getCurrentPhylogeny(),
                     getMainPanel(),
@@ -1197,7 +1205,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if (refs.isEmpty()) {
             JOptionPane.showMessageDialog(this,
                     "This tree has no annotation fields to show as columns.\n"
-                            + "Import a table (File → Import Node Data) or load a tree with node properties first.",
+                            + "Import a table (File → Import Annotations) or load a tree with node properties first.",
                     "No Annotation Fields", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
@@ -2633,18 +2641,21 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     }
 
     /**
-     * File -> Import Node Data (TSV): read a tab-separated, tip-keyed table (the round-trip of
-     * {@link #exportNodeDataAsTsv}) and write its columns onto the matching external nodes. Recognized columns
-     * fill the taxonomy/sequence fields; any other column becomes a node property usable for column coloring.
+     * File -> Import Annotations (CSV/TSV): read a tip-keyed CSV or TSV table and write its columns onto the
+     * matching external nodes. The user picks the key column and the tip attribute to match it against (tip name /
+     * sequence accession / taxonomy id / taxonomy scientific name), with a live dry-run preview of the join before
+     * committing. Recognized columns fill the taxonomy/sequence fields; any other column becomes a node property
+     * usable for column coloring / annotation columns.
      */
-    void importNodeDataFromTsv() {
+    void importAnnotations() {
         final Phylogeny phy = currentPhylogenyForExport();
         if (phy == null) {
             return;
         }
         final JFileChooser fc = new JFileChooser();
         fc.setMultiSelectionEnabled(false);
-        fc.setDialogTitle("Import Node Data (TSV)");
+        fc.setDialogTitle("Import Annotations (CSV/TSV)");
+        fc.setFileFilter(new FileNameExtensionFilter("Annotation tables (*.csv, *.tsv, *.txt)", "csv", "tsv", "txt"));
         if (getCurrentDir(DirectoryPreferences.Category.OPEN) != null) {
             fc.setCurrentDirectory(getCurrentDir(DirectoryPreferences.Category.OPEN));
         }
@@ -2656,43 +2667,300 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             return;
         }
         setCurrentDir(DirectoryPreferences.Category.OPEN, fc.getCurrentDirectory());
-        final String tsv;
+        final String text;
         try {
-            tsv = Files.readString(file.toPath());
+            text = Files.readString(file.toPath());
         }
         catch (final IOException e) {
             JOptionPane.showMessageDialog(this, "Failed to read " + file + ":\n" + e.getMessage(), "Read Failed",
                     JOptionPane.ERROR_MESSAGE);
             return;
         }
-        // capture the pre-import state up front, but only commit it as an undo checkpoint if the import
-        // actually annotates something (so a failed / no-match import leaves no spurious "Undo" entry)
-        final TreePanel current_tp = getCurrentTreePanel();
-        final Phylogeny before = (current_tp != null) ? phy.copy() : null;
-        final boolean was_edited = (current_tp != null) && current_tp.isEdited();
-        final NodeDataImporter.ImportResult result;
+        importAnnotationsFromText(phy, text, file.getName());
+    }
+
+    /**
+     * File -> Import Annotations from URL: fetch a CSV/TSV from a URL (e.g. a Google Sheet "published to the web as
+     * CSV") and run the same import dialog. Line-based fetch, so a quoted field may not span lines from a URL source.
+     */
+    void importAnnotationsFromUrl() {
+        final Phylogeny phy = currentPhylogenyForExport();
+        if (phy == null) {
+            return;
+        }
+        final String url = JOptionPane.showInputDialog(this,
+                "Enter a CSV/TSV URL (e.g. a Google Sheet published to the web as CSV):",
+                "Import Annotations from URL", JOptionPane.PLAIN_MESSAGE);
+        if (ForesterUtil.isEmpty(url)) {
+            return;
+        }
+        final String text;
         try {
-            result = NodeDataImporter.apply(phy, tsv);
+            text = String.join("\n", ForesterUtil.readUrl(url.trim()));
+        }
+        catch (final Exception e) {
+            JOptionPane.showMessageDialog(this, "Failed to fetch " + url.trim() + ":\n" + e.getMessage(),
+                    "Fetch Failed", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        importAnnotationsFromText(phy, text, url.trim());
+    }
+
+    /** Shared back-end for the file and URL import sources: validate, show the config dialog, apply, and report. */
+    private void importAnnotationsFromText(final Phylogeny phy, final String text, final String source_name) {
+        try {
+            NodeDataImporter.parseTable(text); // validate up front so a bad source shows an error, not an empty dialog
         }
         catch (final IllegalArgumentException e) {
-            JOptionPane.showMessageDialog(this, "This file cannot be read as a node-data table:\n" + e.getMessage(),
+            JOptionPane.showMessageDialog(this, "This does not look like a CSV/TSV table:\n" + e.getMessage(),
                     "Import Failed", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        if (result.getTipsAnnotated() > 0) {
-            final TreePanel tp = _mainpanel.getCurrentTreePanel();
-            if (tp != null) {
-                tp.pushUndoSnapshot(before, was_edited, "Import Node Data"); // now we know it changed the tree
-                tp.setTree(phy); // recompute the layout so the new labels/data show
-                tp.getControlPanel().populateColorByPropertyBox(); // surface any imported columns in "Color by:"
-                tp.getControlPanel().populateSizeByPropertyBox(); // and any numeric ones in "Size by:"
-                showWhole();
-                tp.setEdited(true);
-            }
+        final ImportChoice choice = showImportChoice(phy, text);
+        if (choice == null) {
+            return;
         }
+        final NodeDataImporter.ImportResult result = importAnnotationsAndRefit(phy, choice._table, choice._key_col,
+                choice._match_by, choice._plan, source_name);
         final int type = result.getWarnings().isEmpty() ? JOptionPane.INFORMATION_MESSAGE : JOptionPane.WARNING_MESSAGE;
-        JOptionPane.showMessageDialog(this, "Imported from " + file.getName() + ":\n\n" + result.summary(),
+        JOptionPane.showMessageDialog(this, "Imported from " + source_name + ":\n\n" + result.summary(),
                 "Import Complete", type);
+    }
+
+    /** The user's choices from the import config dialog: which table (a given delimiter), key column, match attribute, and column plan. */
+    private static final class ImportChoice {
+
+        private final NodeDataImporter.Table      _table;
+        private final int                         _key_col;
+        private final NodeDataImporter.MatchBy     _match_by;
+        private final NodeDataImporter.ColumnPlan _plan;
+
+        private ImportChoice(final NodeDataImporter.Table table, final int key_col,
+                final NodeDataImporter.MatchBy match_by, final NodeDataImporter.ColumnPlan plan) {
+            _table = table;
+            _key_col = key_col;
+            _match_by = match_by;
+            _plan = plan;
+        }
+    }
+
+    /**
+     * The import configuration dialog: a delimiter override (which re-parses), a preview, the key column + tip
+     * attribute to match, a per-column include/rename panel, and a live dry-run summary. Returns the user's choices,
+     * or {@code null} on cancel.
+     */
+    private ImportChoice showImportChoice(final Phylogeny phy, final String text) {
+        final javax.swing.JDialog dialog = new javax.swing.JDialog(this, "Import Annotations", true);
+        dialog.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE); // 'X' disposes (not just hides)
+        final ImportChoice[] result = { null };
+        final NodeDataImporter.Table[] cur_table = { null };
+        final int[] key_col = { 0 };
+        final NodeDataImporter.MatchBy[] match_by = { NodeDataImporter.MatchBy.TIP_NAME };
+        final List<JCheckBox> includes = new ArrayList<>();
+        final List<JTextField> renames = new ArrayList<>();
+
+        final JComboBox<String> delim_combo = new JComboBox<>(new String[] { "Auto", "Comma", "Tab" });
+        final JPanel content = new JPanel(new java.awt.BorderLayout());
+
+        final Runnable rebuild = () -> {
+            content.removeAll();
+            includes.clear();
+            renames.clear();
+            final Character forced = (delim_combo.getSelectedIndex() == 1) ? Character.valueOf(',')
+                    : ((delim_combo.getSelectedIndex() == 2) ? Character.valueOf('\t') : null);
+            final NodeDataImporter.Table table;
+            try {
+                table = NodeDataImporter.parseTable(text, forced);
+            }
+            catch (final IllegalArgumentException ex) {
+                cur_table[0] = null;
+                content.add(new JLabel("Cannot parse with this delimiter: " + ex.getMessage()),
+                        java.awt.BorderLayout.NORTH);
+                content.revalidate();
+                content.repaint();
+                return;
+            }
+            cur_table[0] = table;
+            key_col[0] = table.defaultKeyColumn();
+            final String[] headers = table.getHeaders();
+            final int rows_shown = Math.min(8, table.getRowCount());
+            final String[][] preview_data = new String[rows_shown][headers.length];
+            for (int r = 0; r < rows_shown; r++) {
+                for (int c = 0; c < headers.length; c++) {
+                    preview_data[r][c] = table.getCell(r, c);
+                }
+            }
+            final JTable preview = new JTable(preview_data, headers) {
+                @Override
+                public boolean isCellEditable(final int r, final int c) {
+                    return false;
+                }
+            };
+            preview.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+            final JScrollPane preview_scroll = new JScrollPane(preview);
+            preview_scroll.setPreferredSize(new Dimension(580, 130));
+            final JComboBox<String> key_combo = new JComboBox<>(headers);
+            key_combo.setSelectedIndex(key_col[0]);
+            final JComboBox<NodeDataImporter.MatchBy> match_combo = new JComboBox<>(NodeDataImporter.userMatchOptions());
+            match_combo.setSelectedItem(match_by[0]); // preserve the user's match attribute across a delimiter re-parse
+            final JLabel summary = new JLabel();
+            // one row per column: [include?] header -> [rename field]; the key column's row is disabled
+            final JPanel map = new JPanel(new GridLayout(0, 1, 0, 2));
+            for (int c = 0; c < headers.length; c++) {
+                final JCheckBox cb = new JCheckBox("", true);
+                final JTextField tf = new JTextField(headers[c], 14);
+                includes.add(cb);
+                renames.add(tf);
+                final JPanel row = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 4, 0));
+                row.add(cb);
+                row.add(new JLabel(headers[c] + "  →"));
+                row.add(tf);
+                map.add(row);
+            }
+            final JScrollPane map_scroll = new JScrollPane(map);
+            map_scroll.setPreferredSize(new Dimension(580, 120));
+            final Runnable refresh = () -> summary.setText(NodeDataImporter
+                    .dryRun(phy, table, key_col[0], match_by[0], planFromRows(table, key_col[0], includes, renames))
+                    .summaryLine());
+            final Runnable sync_key_row = () -> {
+                for (int c = 0; c < headers.length; c++) {
+                    includes.get(c).setEnabled(c != key_col[0]);
+                    renames.get(c).setEnabled(c != key_col[0]);
+                }
+            };
+            key_combo.addActionListener(e -> {
+                key_col[0] = key_combo.getSelectedIndex();
+                sync_key_row.run();
+                refresh.run();
+            });
+            match_combo.addActionListener(e -> {
+                match_by[0] = (NodeDataImporter.MatchBy) match_combo.getSelectedItem();
+                refresh.run();
+            });
+            for (final JCheckBox cb : includes) {
+                cb.addActionListener(e -> refresh.run());
+            }
+            sync_key_row.run();
+            refresh.run();
+            final JPanel controls = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 4, 0));
+            controls.add(new JLabel("Match table column:"));
+            controls.add(key_combo);
+            controls.add(new JLabel("against tip:"));
+            controls.add(match_combo);
+            final JPanel body = new JPanel();
+            body.setLayout(new BoxLayout(body, BoxLayout.Y_AXIS));
+            addLeft(body, new JLabel("Preview (first " + rows_shown + " of " + table.getRowCount() + " rows):"));
+            addLeft(body, preview_scroll);
+            addLeft(body, controls);
+            addLeft(body, new JLabel("Columns to import (uncheck to skip; edit a name to rename its property):"));
+            addLeft(body, map_scroll);
+            addLeft(body, summary);
+            content.add(body, java.awt.BorderLayout.CENTER);
+            content.revalidate();
+            content.repaint();
+            dialog.pack();
+        };
+        delim_combo.addActionListener(e -> rebuild.run());
+        rebuild.run();
+
+        final JButton ok = new JButton("Import");
+        final JButton cancel = new JButton("Cancel");
+        ok.addActionListener(e -> {
+            final NodeDataImporter.Table table = cur_table[0];
+            if (table != null) {
+                result[0] = new ImportChoice(table, key_col[0], match_by[0],
+                        planFromRows(table, key_col[0], includes, renames));
+            }
+            dialog.dispose();
+        });
+        cancel.addActionListener(e -> dialog.dispose());
+
+        final JPanel top = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 4, 0));
+        top.add(new JLabel("Delimiter:"));
+        top.add(delim_combo);
+        final JPanel buttons = new JPanel();
+        buttons.add(ok);
+        buttons.add(cancel);
+        dialog.getContentPane().setLayout(new java.awt.BorderLayout(8, 8));
+        dialog.getContentPane().add(top, java.awt.BorderLayout.NORTH);
+        dialog.getContentPane().add(content, java.awt.BorderLayout.CENTER);
+        dialog.getContentPane().add(buttons, java.awt.BorderLayout.SOUTH);
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true); // modal: blocks until OK/Cancel
+        return result[0];
+    }
+
+    /** Build a ColumnPlan from the dialog's per-column checkbox/rename rows (extracts the UI state, then delegates
+     *  to the pure {@link #buildColumnPlan}). One source of truth so the live dry-run preview and the committed
+     *  import can never disagree. */
+    private static NodeDataImporter.ColumnPlan planFromRows(final NodeDataImporter.Table table, final int key_col,
+            final List<JCheckBox> includes, final List<JTextField> renames) {
+        final boolean[] included = new boolean[table.getColumnCount()];
+        final String[] headers = new String[table.getColumnCount()];
+        for (int c = 0; c < table.getColumnCount(); c++) {
+            included[c] = includes.get(c).isSelected();
+            headers[c] = renames.get(c).getText();
+        }
+        return buildColumnPlan(table, key_col, included, headers);
+    }
+
+    /** Pure (testable) ColumnPlan assembly: the key column and any unchecked column are excluded from the import;
+     *  each column's effective header is its (possibly renamed) text. */
+    static NodeDataImporter.ColumnPlan buildColumnPlan(final NodeDataImporter.Table table, final int key_col,
+            final boolean[] included, final String[] headers) {
+        final NodeDataImporter.ColumnPlan plan = NodeDataImporter.ColumnPlan.importAll(table);
+        for (int c = 0; c < table.getColumnCount(); c++) {
+            plan.setIncluded(c, (c != key_col) && included[c]);
+            plan.setHeader(c, headers[c]);
+        }
+        return plan;
+    }
+
+    private static void addLeft(final JPanel box, final Component c) {
+        ((javax.swing.JComponent) c).setAlignmentX(Component.LEFT_ALIGNMENT);
+        box.add(c);
+    }
+
+    /**
+     * UI-free apply + refresh (so it is unit-testable without the modal chooser): applies the table under the given
+     * column plan, and -- only when it actually annotated something -- checkpoints undo, appends a provenance
+     * sentence, re-lays-out the tree, and refreshes the Color-by / Size-by dropdowns so the columns are usable.
+     */
+    NodeDataImporter.ImportResult importAnnotationsAndRefit(final Phylogeny phy, final NodeDataImporter.Table table,
+            final int key_col, final NodeDataImporter.MatchBy match_by, final NodeDataImporter.ColumnPlan plan,
+            final String source_name) {
+        final TreePanel tp = getCurrentTreePanel();
+        final Phylogeny before = (tp != null) ? phy.copy() : null;
+        final boolean was_edited = (tp != null) && tp.isEdited();
+        final int total_tips = phy.getNumberOfExternalNodes();
+        final NodeDataImporter.ImportResult result = NodeDataImporter.apply(phy, table, key_col, match_by, plan);
+        if ((result.getTipsAnnotated() > 0) && (tp != null)) {
+            tp.pushUndoSnapshot(before, was_edited, "Import Annotations"); // now we know it changed the tree
+            final String prov = importProvenance(result.getPropertyColumns(), result.getTipsAnnotated(), total_tips,
+                    source_name, match_by);
+            final String existing = phy.getDescription();
+            phy.setDescription(ForesterUtil.isEmpty(existing) ? prov : existing + " " + prov);
+            tp.setTree(phy); // recompute the layout so the new labels/data show
+            tp.getControlPanel().populateColorByPropertyBox(); // surface any imported columns in "Color by:"
+            tp.getControlPanel().populateSizeByPropertyBox(); // and any numeric ones in "Size by:"
+            showWhole();
+            tp.setEdited(true);
+        }
+        return result;
+    }
+
+    /** Pure provenance sentence appended to the tree description on an annotation import (per the repo rule). */
+    static String importProvenance(final List<String> property_columns, final int tips_annotated,
+            final int total_tips, final String source_name, final NodeDataImporter.MatchBy match_by) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("Imported annotations from table \"").append(source_name).append("\" onto ").append(tips_annotated)
+          .append(" of ").append(total_tips).append(total_tips == 1 ? " tip" : " tips").append(" (matched by ")
+          .append(match_by.toString().toLowerCase()).append(").");
+        if (!property_columns.isEmpty()) {
+            sb.append(" Columns: ").append(String.join(", ", property_columns)).append(".");
+        }
+        return sb.toString();
     }
 
     /**

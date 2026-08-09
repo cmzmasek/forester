@@ -73,6 +73,8 @@ public final class DemoTreeGenerator {
         write( dir, "root-on-top.xml", rootOnTopTree() );
         write( dir, "domain-architectures.xml", domainArchitecturesTree() );
         write( dir, "heatmap-matrix.xml", heatmapMatrixTree() );
+        write( dir, "import-annotations.xml", importAnnotationsTree() );
+        writeText( dir, "import-annotations.csv", importAnnotationsCsv() );
         write( dir, "search-emphasis.xml", searchEmphasisTree() );
         System.out.println( "Wrote demo trees to " + dir.getAbsolutePath() );
     }
@@ -80,6 +82,45 @@ public final class DemoTreeGenerator {
     private static void write( final File dir, final String file_name, final Phylogeny phy ) throws IOException {
         new PhylogenyWriter().toPhyloXML( phy, 0, new File( dir, file_name ) );
         System.out.println( "  " + file_name + " (" + phy.getNumberOfExternalNodes() + " tips)" );
+    }
+
+    /** Write a companion plain-text data file (e.g. a CSV to import onto a demo tree). */
+    private static void writeText( final File dir, final String file_name, final String content ) throws IOException {
+        java.nio.file.Files.writeString( new File( dir, file_name ).toPath(), content );
+        System.out.println( "  " + file_name + " (" + content.lines().count() + " lines)" );
+    }
+
+    // ----- "Import annotations": a plain-named tip tree with NO per-tip data, paired with a companion CSV to
+    //       import onto it (File > Import Annotations). Demonstrates the CSV/TSV keyed join.
+    private static Phylogeny importAnnotationsTree() {
+        final PhylogenyNode root = clade( 0.0,
+                clade( 0.05, leaf( "isolate_01" ), leaf( "isolate_02" ), leaf( "isolate_03" ) ),
+                clade( 0.06, leaf( "isolate_04" ), leaf( "isolate_05" ), leaf( "isolate_06" ) ),
+                clade( 0.05, leaf( "isolate_07" ), leaf( "isolate_08" ),
+                       clade( 0.03, leaf( "isolate_09" ), leaf( "isolate_10" ) ) ),
+                clade( 0.06, leaf( "isolate_11" ), leaf( "isolate_12" ) ) );
+        return tree( root, "Import annotations (demo)",
+                     "A plain 12-tip tree (isolate_01..isolate_12) carrying NO per-tip data. Pair it with the "
+                             + "companion import-annotations.csv: File > Import Annotations, pick the CSV, match the "
+                             + "\"name\" column against the tip name; the host/country/reads columns are joined onto "
+                             + "the tips -- then Color by host, or show reads as an annotation column." );
+    }
+
+    /** The companion table for {@link #importAnnotationsTree()} (one quoted field with an embedded comma, for CSV realism). */
+    private static String importAnnotationsCsv() {
+        return "name,host,country,reads\n"
+                + "isolate_01,mosquito,USA,1200\n"
+                + "isolate_02,mosquito,USA,980\n"
+                + "isolate_03,bat,China,1543\n"
+                + "isolate_04,bat,China,760\n"
+                + "isolate_05,pig,Vietnam,410\n"
+                + "isolate_06,pig,Vietnam,1330\n"
+                + "isolate_07,bird,\"Congo, DR\",275\n"
+                + "isolate_08,bird,Kenya,1890\n"
+                + "isolate_09,mosquito,Brazil,640\n"
+                + "isolate_10,mosquito,Brazil,1120\n"
+                + "isolate_11,pig,Vietnam,505\n"
+                + "isolate_12,bat,China,1450\n";
     }
 
     // ----- "Size by property": one numeric property (sequencing read count) spanning ~3 orders of magnitude, so the

@@ -1291,6 +1291,20 @@ final class ControlPanel extends JPanel implements ActionListener {
         return (_font_size_slider == null) ? -1 : _font_size_slider.getValue();
     }
 
+    /** For tests: the property refs offered in the "Color by" dropdown (excluding the "None" entry). */
+    java.util.List<String> colorByPropertyRefs() {
+        final java.util.List<String> refs = new java.util.ArrayList<>();
+        if (_color_by_property_cb != null) {
+            for (int i = 0; i < _color_by_property_cb.getItemCount(); ++i) {
+                final String item = _color_by_property_cb.getItemAt(i);
+                if (!COLOR_BY_PROPERTY_NONE.equals(item)) {
+                    refs.add(item);
+                }
+            }
+        }
+        return refs;
+    }
+
     /** For tests: the "Size by" dropdown's selected item as a string ("None" when off / not built). */
     String getSizeByPropertySelection() {
         if (_size_by_property_cb == null) {
