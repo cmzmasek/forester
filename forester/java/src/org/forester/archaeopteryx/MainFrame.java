@@ -86,6 +86,7 @@ import org.forester.archaeopteryx.AptxUtil.GraphicsExportType;
 import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
+import org.forester.analysis.AncestralTaxonomyInference;
 import org.forester.archaeopteryx.tools.AncestralTaxonomyInferrer;
 import org.forester.archaeopteryx.tools.LabelDataExtractor;
 import org.forester.archaeopteryx.tools.NodeDataExporter;
@@ -97,6 +98,8 @@ import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyMethods.DESCENDANT_SORT_PRIORITY;
 import org.forester.phylogeny.PhylogenyNode;
+import org.forester.ws.seqdb.TaxonLineage;
+import org.forester.ws.seqdb.TaxonomicLineageService;
 import org.forester.phylogeny.PhylogenyNode.NH_CONVERSION_SUPPORT_VALUE_STYLE;
 import org.forester.phylogeny.data.NodeDataField;
 import org.forester.phylogeny.data.NodeVisualData.NodeFill;
@@ -1719,11 +1722,70 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                     JOptionPane.ERROR_MESSAGE);
             return;
         }
-        final AncestralTaxonomyInferrer inferrer = new AncestralTaxonomyInferrer(this,
-                _mainpanel.getCurrentTreePanel(),
-                _mainpanel.getCurrentPhylogeny()
-                        .copy());
-        new Thread(inferrer).start();
+        final JCheckBox overwrite_cb = new JCheckBox("Overwrite existing internal-node taxonomies", false);
+        final Object[] message = {
+                "Assign each internal node the deepest taxon shared by all of its descendant tips.",
+                "By default, internal nodes that already carry a taxonomy are kept.",
+                overwrite_cb };
+        final int opt = JOptionPane.showConfirmDialog(this, message, "Infer Ancestor Taxonomies",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+        if (opt != JOptionPane.OK_OPTION) {
+            return;
+        }
+        final boolean overwrite = overwrite_cb.isSelected();
+        final TreePanel tp = _mainpanel.getCurrentTreePanel();
+        // Work on a copy: the pure engine mutates internal-node taxa, and the undo checkpoint (taken in
+        // AncestralTaxonomyInferrer.commit) snapshots the still-untouched LIVE tree before the copy is installed.
+        final Phylogeny phy = _mainpanel.getCurrentPhylogeny().copy();
+        final TaxonomicLineageService service = TreePanelUtil.getDefaultLineageService();
+        final SortedSet<String> unresolved = TreePanelUtil.tipsWithoutLineage(phy, service);
+        if (!unresolved.isEmpty()) {
+            final int choice = JOptionPane.showConfirmDialog(this,
+                    unresolved.size() + " tip " + ((unresolved.size() == 1) ? "taxon has" : "taxa have")
+                            + " no lineage in the tree itself.\n"
+                            + "Resolve their lineages online via the NCBI and UniProt databases so their ancestors"
+                            + " can be inferred?\n"
+                            + "Decline to infer only from the lineages the tree already carries."
+                            + " (Requires an internet connection.)",
+                    "Resolve Taxa Online?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+            if (choice == JOptionPane.YES_OPTION) {
+                new Thread(new OnlineTaxonResolver(this, "ancestral taxonomy", unresolved,
+                        err -> runAncestralInference(tp, phy, service, overwrite, err))).start();
+                return; // the background resolver infers and reports when done
+            }
+        }
+        runAncestralInference(tp, phy, service, overwrite, null);
+    }
+
+    /** EDT-only: build the tip lineages (cache + on-tree), run the pure inference engine on {@code phy}, and (when
+     *  anything was assigned) commit it undoably; then report. {@code fetch_error} is non-null if an online resolve
+     *  partially failed. */
+    private void runAncestralInference(final TreePanel tp,
+                                       final Phylogeny phy,
+                                       final TaxonomicLineageService service,
+                                       final boolean overwrite,
+                                       final String fetch_error) {
+        final Map<PhylogenyNode, TaxonLineage> tip_lineages = TreePanelUtil.tipLineages(phy, service);
+        final AncestralTaxonomyInference.InferenceResult result = AncestralTaxonomyInference
+                .inferInternalTaxonomies(phy, tip_lineages, overwrite);
+        if (result.getAssigned() > 0) {
+            new AncestralTaxonomyInferrer(this, tp, phy, overwrite).commit(result.getAssigned());
+        }
+        reportAncestralInference(result, fetch_error);
+    }
+
+    private void reportAncestralInference(final AncestralTaxonomyInference.InferenceResult result,
+                                          final String fetch_error) {
+        String msg = AncestralTaxonomyInferrer.inferenceSummary(result.getAssigned(), result.getSkippedExisting(),
+                result.getUnresolvedTips());
+        if (fetch_error != null) {
+            msg += "\n\nSome taxa could not be resolved online:\n" + fetch_error;
+            JOptionPane.showMessageDialog(this, msg, "Ancestral Taxonomy Inference", JOptionPane.WARNING_MESSAGE);
+        }
+        else {
+            JOptionPane.showMessageDialog(this, msg, "Ancestral Taxonomy Inference Completed",
+                    JOptionPane.INFORMATION_MESSAGE);
+        }
     }
 
     boolean GAndSDoHaveMoreThanOneSpeciesInComman(final Phylogeny gene_tree) {

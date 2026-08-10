@@ -100,6 +100,12 @@ public final class DemoTreesTest {
         ok &= hasAtLeastTips( "search-emphasis.xml", 12 );
         ok &= tipsContaining( "search-emphasis.xml", "kinase", 4 );
         ok &= hasInternalConfidence( "search-emphasis.xml" );
+
+        // infer ancestor taxonomies: six real-species tips (rank 'species'), NO taxonomy on the internal nodes,
+        // ready for Analysis > Infer Ancestor Taxonomies (which resolves the tips online and fills the internals)
+        ok &= hasAtLeastTips( "infer-ancestor-taxonomies.xml", 6 );
+        ok &= hasRank( "infer-ancestor-taxonomies.xml", "species" );
+        ok &= internalNodesHaveNoTaxonomy( "infer-ancestor-taxonomies.xml" );
         return ok;
     }
 
@@ -287,6 +293,21 @@ public final class DemoTreesTest {
             }
         }
         return note( file_name + " must carry an in-tree taxonomy at rank '" + rank + "' (offline colorize)" );
+    }
+
+    /** No internal node carries a taxonomy, so the tree is ready for "Infer Ancestor Taxonomies" to fill them. */
+    private static boolean internalNodesHaveNoTaxonomy( final String file_name ) {
+        final Phylogeny phy = load( file_name );
+        if ( phy == null ) {
+            return false;
+        }
+        for( final Iterator<PhylogenyNode> it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if ( !n.isExternal() && n.getNodeData().isHasTaxonomy() ) {
+                return note( file_name + " internal nodes must carry NO taxonomy (ready for ancestral inference)" );
+            }
+        }
+        return true;
     }
 
     /** Anti-rot guard for the colorize-by-rank demo: it colorizes OFFLINE (null service) at {@code rank} into

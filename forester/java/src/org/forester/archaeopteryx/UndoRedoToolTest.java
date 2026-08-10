@@ -84,10 +84,18 @@ public final class UndoRedoToolTest {
                 final MainFrame frame = mf[ 0 ];
                 final TreePanel tp = frame.getMainPanel().getCurrentTreePanel();
 
-                // Infer: commit() checkpoints "Infer Ancestor Taxonomies"
-                new AncestralTaxonomyInferrer( frame, tp, tp.getPhylogeny().copy() ).commit();
+                // Infer: commit(assigned) checkpoints "Infer Ancestor Taxonomies", stamps provenance, sets edited
+                new AncestralTaxonomyInferrer( frame, tp, tp.getPhylogeny().copy(), false ).commit( 3 );
                 if ( !tp.canUndo() || !"Infer Ancestor Taxonomies".equals( tp.undoLabel() ) ) {
                     fail( ok, "infer commit should checkpoint 'Infer Ancestor Taxonomies', got '" + tp.undoLabel() + "'" );
+                }
+                if ( !tp.isEdited() ) {
+                    fail( ok, "infer commit should mark the tree edited" );
+                }
+                final String infer_desc = tp.getPhylogeny().getDescription();
+                if ( ( infer_desc == null ) || !infer_desc.contains( "ancestral-taxonomy inference" )
+                        || !infer_desc.contains( "3 internal nodes" ) ) {
+                    fail( ok, "infer commit should append a provenance sentence, got: " + infer_desc );
                 }
 
                 final SequenceAndTaxonomyDataObtainer obtainer = new SequenceAndTaxonomyDataObtainer(

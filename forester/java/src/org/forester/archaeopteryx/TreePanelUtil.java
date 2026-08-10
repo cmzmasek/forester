@@ -786,6 +786,120 @@ public class TreePanelUtil {
     }
 
     /**
+     * Each external node mapped to its resolved {@link TaxonLineage} for ancestral-taxonomy inference: the tip's
+     * cached lineage from {@code service} when present, else a minimal lineage reconstructed from the tip's own
+     * stored {@link Taxonomy} (its scientific name / rank / NCBI id as the deepest level, plus any in-memory
+     * {@code getLineage()} names as ancestors). Tips with nothing usable map to {@link TaxonLineage#EMPTY}.
+     * Pure -- reads the tree + the lineage cache, no network.
+     */
+    final static Map<PhylogenyNode, TaxonLineage> tipLineages( final Phylogeny tree,
+                                                               final TaxonomicLineageService service ) {
+        final Map<PhylogenyNode, TaxonLineage> out = new HashMap<PhylogenyNode, TaxonLineage>();
+        if ( ( tree == null ) || tree.isEmpty() ) {
+            return out;
+        }
+        for( final PhylogenyNodeIterator it = tree.iteratorExternalForward(); it.hasNext(); ) {
+            final PhylogenyNode tip = it.next();
+            TaxonLineage tl = null;
+            if ( service != null ) {
+                final String q = tipQueryName( tip );
+                if ( !ForesterUtil.isEmpty( q ) ) {
+                    tl = service.lineageOf( q );
+                }
+            }
+            if ( ( tl == null ) || tl.isEmpty() ) {
+                tl = lineageFromStoredTaxonomy( tip );
+            }
+            out.put( tip, ( tl == null ) ? TaxonLineage.EMPTY : tl );
+        }
+        return out;
+    }
+
+    /** Reconstruct a minimal {@link TaxonLineage} from a tip's own stored {@link Taxonomy}. Per-ancestor ranks/ids
+     *  do not survive a phyloXML round-trip, so the ancestors (from the in-memory {@code getLineage()} names) carry
+     *  names only; the own taxon keeps its rank + NCBI id. {@link TaxonLineage#EMPTY} when nothing is usable. */
+    private final static TaxonLineage lineageFromStoredTaxonomy( final PhylogenyNode tip ) {
+        if ( !tip.getNodeData().isHasTaxonomy() ) {
+            return TaxonLineage.EMPTY;
+        }
+        final Taxonomy tax = tip.getNodeData().getTaxonomy();
+        final String own = taxonomyLabel( tax );
+        if ( ForesterUtil.isEmpty( own ) ) {
+            return TaxonLineage.EMPTY;
+        }
+        final List<TaxonLineage.Ancestor> anc = new ArrayList<TaxonLineage.Ancestor>();
+        if ( tax.getLineage() != null ) {
+            for( final String name : tax.getLineage() ) {
+                if ( !ForesterUtil.isEmpty( name ) && !name.equalsIgnoreCase( own ) ) {
+                    anc.add( new TaxonLineage.Ancestor( name, null, null ) );
+                }
+            }
+        }
+        return new TaxonLineage( ncbiId( tax ), tax.getRank(), own, null, anc );
+    }
+
+    /** The NCBI tax-id from a taxonomy's identifier (only the "ncbi" provider), or null. */
+    private final static String ncbiId( final Taxonomy tax ) {
+        if ( ( tax.getIdentifier() != null ) && !ForesterUtil.isEmpty( tax.getIdentifier().getValue() )
+                && "ncbi".equalsIgnoreCase( tax.getIdentifier().getProvider() ) ) {
+            return tax.getIdentifier().getValue();
+        }
+        return null;
+    }
+
+    /**
+     * The distinct query-names of tips that have NO usable lineage yet for ancestral-taxonomy inference -- i.e.
+     * exactly the names a caller must {@link TaxonomicLineageService#fetch} to place more internal nodes. A tip is
+     * excluded when it already carries a multi-level lineage in-tree (in-memory {@code getLineage()} names) or when
+     * its query-name is cached (refetching would not help), so a second call after a fetch pass returns an empty
+     * set (no repeated prompts). Rank-agnostic sibling of {@link #unresolvedTipTaxa}.
+     */
+    final static SortedSet<String> tipsWithoutLineage( final Phylogeny tree,
+                                                       final TaxonomicLineageService service ) {
+        final SortedSet<String> names = new TreeSet<String>();
+        if ( ( tree == null ) || tree.isEmpty() ) {
+            return names;
+        }
+        for( final PhylogenyNodeIterator it = tree.iteratorExternalForward(); it.hasNext(); ) {
+            final PhylogenyNode tip = it.next();
+            if ( hasStoredLineage( tip ) ) {
+                continue; // the tip already carries an ancestor lineage in-tree -- no fetch needed
+            }
+            final String q = tipQueryName( tip );
+            if ( ForesterUtil.isEmpty( q ) ) {
+                continue;
+            }
+            if ( ( service != null ) && ( service.lineageOf( q ) != null ) ) {
+                continue; // already attempted/cached
+            }
+            names.add( q );
+        }
+        return names;
+    }
+
+    /** True when a tip carries a usable ANCESTOR lineage in the tree itself: an in-memory {@code getLineage()} name
+     *  other than the tip's own taxon. An own taxon alone is NOT enough -- inference needs ancestors to intersect,
+     *  so it must fetch. Mirrors {@link #lineageFromStoredTaxonomy}, which strips own-name entries, so the two agree
+     *  on what counts as an ancestor (else an own-only lineage would be neither fetched nor usable). */
+    private final static boolean hasStoredLineage( final PhylogenyNode tip ) {
+        if ( !tip.getNodeData().isHasTaxonomy() ) {
+            return false;
+        }
+        final Taxonomy tax = tip.getNodeData().getTaxonomy();
+        final List<String> lineage = tax.getLineage();
+        if ( ( lineage == null ) || lineage.isEmpty() ) {
+            return false;
+        }
+        final String own = taxonomyLabel( tax );
+        for( final String name : lineage ) {
+            if ( !ForesterUtil.isEmpty( name ) && !name.equalsIgnoreCase( own ) ) {
+                return true; // a real ancestor (not just the tip's own taxon)
+            }
+        }
+        return false;
+    }
+
+    /**
      * Each node that roots a <i>maximal</i> clade whose external descendants all share one rank
      * taxon, mapped to that taxon. A node qualifies iff its whole subtree is uniform in
      * {@code assignment} and its parent's subtree is not the same taxon (so only the topmost such

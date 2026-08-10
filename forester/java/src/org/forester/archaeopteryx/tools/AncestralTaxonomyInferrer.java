@@ -20,86 +20,73 @@
 
 package org.forester.archaeopteryx.tools;
 
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
-
-import org.forester.analysis.AncestralTaxonomyInference;
-import org.forester.analysis.AncestralTaxonomyInferenceException;
 import org.forester.archaeopteryx.MainFrame;
 import org.forester.archaeopteryx.TreePanel;
 import org.forester.phylogeny.Phylogeny;
+import org.forester.util.ForesterUtil;
 
 /**
- * The Analysis-menu "Infer Ancestor Taxonomies" operation: assigns each internal node the deepest
- * common lineage of its descendants. This is a <b>local</b> computation (no network -- it intersects the
- * lineages already present on the descendants), run on a background thread; the result is committed to
- * the tree and reported on the EDT (Swing is not thread-safe).
+ * The undoable "install" half of the Analysis-menu "Infer Ancestor Taxonomies" operation. The taxa themselves
+ * are computed by the pure {@link org.forester.analysis.AncestralTaxonomyInference} engine (driven from
+ * {@code MainFrame.executeLineageInference}, which also handles the online resolve); this class just commits the
+ * enriched tree to the panel so the commit path stays testable in isolation, without running the (possibly
+ * online) resolve. EDT-only.
  */
-public class AncestralTaxonomyInferrer extends RunnableProcess {
+public final class AncestralTaxonomyInferrer {
 
-    private final Phylogeny _phy;
-    private final MainFrame _mf;
-    private final TreePanel _treepanel;
+    private final MainFrame  _mf;
+    private final TreePanel  _treepanel;
+    private final Phylogeny  _phy;
+    private final boolean    _overwrite;
 
-    public AncestralTaxonomyInferrer( final MainFrame mf, final TreePanel treepanel, final Phylogeny phy ) {
-        _phy = phy;
+    public AncestralTaxonomyInferrer( final MainFrame mf,
+                                      final TreePanel treepanel,
+                                      final Phylogeny phy,
+                                      final boolean overwrite ) {
         _mf = mf;
         _treepanel = treepanel;
-    }
-
-    private void inferTaxonomies() {
-        start( _mf, "ancestral taxonomy" );
-        String error = null;
-        try {
-            AncestralTaxonomyInference.inferTaxonomyFromDescendents( _phy );
-        }
-        catch ( final AncestralTaxonomyInferenceException e ) {
-            error = e.getMessage();
-        }
-        catch ( final Exception e ) {
-            e.printStackTrace();
-            error = e.toString();
-        }
-        catch ( final Error e ) {
-            error = e.toString();
-        }
-        finally {
-            end( _mf );
-        }
-        final String err = error;
-        // commit + report on the EDT
-        SwingUtilities.invokeLater( () -> {
-            if ( err != null ) {
-                JOptionPane.showMessageDialog( _mf, err, "Error during ancestral taxonomy inference",
-                                               JOptionPane.ERROR_MESSAGE );
-                return;
-            }
-            commit();
-            try {
-                JOptionPane.showMessageDialog( _mf, "Ancestral taxonomy inference successfully completed",
-                                               "Ancestral Taxonomy Inference Completed", JOptionPane.INFORMATION_MESSAGE );
-            }
-            catch ( final Exception e ) {
-                // not important if the dialog fails
-            }
-        } );
+        _phy = phy;
+        _overwrite = overwrite;
     }
 
     /**
-     * EDT-only: checkpoint the live (pre-inference) tree so the inferred taxonomies can be undone, then install
-     * the enriched tree. Package-visible so the undo checkpoint can be tested without running the (blocking)
-     * inference on a background thread.
+     * EDT-only: checkpoint the live (pre-inference) tree so the inferred taxonomies can be undone, append a
+     * provenance sentence to the description, then install the enriched tree. {@code assigned} is the number of
+     * internal nodes that received a taxonomy (for the provenance sentence).
      */
-    public void commit() {
+    public void commit( final int assigned ) {
         _treepanel.pushUndoCheckpoint( "Infer Ancestor Taxonomies" );
+        final String sentence = inferenceProvenance( _phy, assigned, _overwrite );
+        final String existing = _phy.getDescription();
+        _phy.setDescription( ForesterUtil.isEmpty( existing ) ? sentence : existing + " " + sentence );
         _phy.setRerootable( false );
         _treepanel.setTree( _phy );
         _mf.showWhole();
         _treepanel.setEdited( true );
     }
 
-    @Override
-    public void run() {
-        inferTaxonomies();
+    /** The user-facing completion summary (pure/testable). Grammatically singular/plural-correct. */
+    public static String inferenceSummary( final int assigned, final int skipped_existing, final int unresolved_tips ) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append( ( assigned == 1 ) ? "Assigned a taxonomy to 1 internal node."
+                : "Assigned taxonomies to " + assigned + " internal nodes." );
+        if ( skipped_existing > 0 ) {
+            sb.append( "\nKept " ).append( skipped_existing ).append( " existing internal-node taxonom" )
+                    .append( ( skipped_existing == 1 ) ? "y" : "ies" ).append( " (enable overwrite to replace)." );
+        }
+        if ( unresolved_tips > 0 ) {
+            sb.append( "\n" ).append( unresolved_tips ).append( " tip" ).append( ( unresolved_tips == 1 ) ? "" : "s" )
+                    .append( " had no ancestor lineage, so some internal nodes could not be inferred." );
+        }
+        return sb.toString();
+    }
+
+    /** The provenance sentence appended to the tree description (pure/testable). Append, never overwrite. */
+    public static String inferenceProvenance( final Phylogeny phy, final int assigned, final boolean overwrite ) {
+        final String name = ForesterUtil.isEmpty( phy.getName() ) ? "" : phy.getName();
+        return "Used ancestral-taxonomy inference (deepest shared descendant lineage"
+                + ( overwrite ? ", overwriting existing internal taxa" : "" ) + ") to assign taxonomies to "
+                + assigned + " internal node" + ( assigned == 1 ? "" : "s" ) + " in tree named \"" + name
+                + "\" with " + phy.getNumberOfExternalNodes() + " tips.";
     }
 }

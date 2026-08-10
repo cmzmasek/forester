@@ -66,6 +66,7 @@ public final class DemoTreeGenerator {
         write( dir, "color-by-property.xml", colorByPropertyTree() );
         write( dir, "annotation-columns.xml", annotationColumnsTree() );
         write( dir, "colorize-by-rank.xml", colorizeByRankTree() );
+        write( dir, "infer-ancestor-taxonomies.xml", inferAncestorTaxonomiesTree() );
         write( dir, "scale-axis.xml", scaleAxisTree() );
         write( dir, "node-hpd-bars.xml", hpdBarsTree() );
         write( dir, "zebra-stripes.xml", zebraStripesTree() );
@@ -245,6 +246,34 @@ public final class DemoTreeGenerator {
             throws PhyloXmlDataFormatException {
         final PhylogenyNode n = leaf( species_name );
         taxon( n, order, "order" );
+        return n;
+    }
+
+    // ----- "Infer Ancestor Taxonomies": real, well-known species at the tips, NO taxonomy on the internal nodes.
+    //       Run Analysis > Infer Ancestor Taxonomies and accept the online resolve -> each internal node is filled
+    //       with the deepest taxon its descendants share (rank + NCBI tax-id). Needs an internet connection for the
+    //       resolve (a tip's lineage is not stored in phyloXML, so this cannot be demonstrated offline).
+    private static Phylogeny inferAncestorTaxonomiesTree() throws PhyloXmlDataFormatException {
+        final PhylogenyNode primates = clade( 0.06, speciesTip( "Homo sapiens" ), speciesTip( "Pan troglodytes" ) );
+        final PhylogenyNode rodents = clade( 0.05, speciesTip( "Mus musculus" ), speciesTip( "Rattus norvegicus" ) );
+        final PhylogenyNode carnivores = clade( 0.05, speciesTip( "Felis catus" ), speciesTip( "Canis lupus" ) );
+        final PhylogenyNode root = clade( 0, primates, clade( 0.04, rodents, carnivores ) );
+        return tree( root, "Infer ancestral taxonomies (demo)",
+                     "Synthetic vertebrate tree whose six tips are real, well-known species (Homo sapiens, Pan "
+                             + "troglodytes, Mus musculus, Rattus norvegicus, Felis catus, Canis lupus) and whose "
+                             + "internal nodes carry NO taxonomy. Run Analysis > Infer Ancestor Taxonomies and accept "
+                             + "the online resolve: each internal node is filled with the deepest taxon its "
+                             + "descendants share (e.g. Murinae, Carnivora, Boreoeutheria), with ranks and NCBI "
+                             + "tax-ids where defined, so "
+                             + "you can then Colorize / Annotate Clades by Rank on the inferred internal taxa. Requires "
+                             + "an internet connection for the resolve." );
+    }
+
+    /** A tip carrying a real species scientific name (rank species), so the taxonomy service can resolve its lineage
+     *  online for ancestral-taxonomy inference. */
+    private static PhylogenyNode speciesTip( final String scientific_name ) throws PhyloXmlDataFormatException {
+        final PhylogenyNode n = leaf( scientific_name );
+        taxon( n, scientific_name, "species" );
         return n;
     }
 

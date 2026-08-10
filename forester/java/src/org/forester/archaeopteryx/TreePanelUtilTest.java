@@ -38,6 +38,8 @@ import org.forester.phylogeny.data.PropertiesList;
 import org.forester.phylogeny.data.Property;
 import org.forester.phylogeny.data.Property.AppliesTo;
 import org.forester.phylogeny.data.Taxonomy;
+import org.forester.archaeopteryx.tools.AncestralTaxonomyInferrer;
+import org.forester.phylogeny.data.Identifier;
 import org.forester.ws.seqdb.AccessionAwareLineageService;
 import org.forester.ws.seqdb.Organism;
 import org.forester.ws.seqdb.OrganismSource;
@@ -64,7 +66,105 @@ public final class TreePanelUtilTest {
                 && testAbbreviateScientificName() && testSupportColor() && testScaleGridLines()
                 && testScaleAxisTickValues() && testFormatCompactNumber() && testHpdBarXRange()
                 && testOrientationTransform() && testInternalLabelAlignWidth() && testAutoTipLabelDirection()
-                && testUserVisiblePropertiesText();
+                && testUserVisiblePropertiesText() && testTipLineagesAndUnresolved() && testInferenceStrings();
+    }
+
+    /**
+     * tipLineages resolves each tip from the cache (preferred) or a reconstruction of its stored taxonomy, and
+     * tipsWithoutLineage flags only the tips that carry no usable lineage in-tree and are not yet cached (the set
+     * to fetch online for ancestral-taxonomy inference).
+     */
+    private static boolean testTipLineagesAndUnresolved() {
+        final FakeLineageService svc = new FakeLineageService();
+        final PhylogenyNode felis = genusLeaf( "Felis" ); // resolved via the cache after a fetch
+        svc.know( "Felis", lineage( "order", "Carnivora", "genus", "Felis" ) );
+        svc.fetch( "Felis" );
+        final PhylogenyNode mus = genusLeaf( "Mus" ); // carries an in-memory getLineage() + an NCBI id (prior Fetch)
+        mus.getNodeData().getTaxonomy().setLineage( namesOf( "Eukaryota", "Rodentia", "Mus" ) );
+        mus.getNodeData().getTaxonomy().setIdentifier( new Identifier( "10090", "ncbi" ) );
+        final PhylogenyNode bos = genusLeaf( "Bos" ); // stored lineage but a NON-ncbi identifier (must be ignored)
+        bos.getNodeData().getTaxonomy().setLineage( namesOf( "Eukaryota", "Laurasiatheria", "Bos" ) );
+        bos.getNodeData().getTaxonomy().setIdentifier( new Identifier( "P0", "uniprot" ) );
+        final PhylogenyNode solo = genusLeaf( "Solo" ); // a stored lineage that is ONLY the tip's own taxon (no ancestor)
+        solo.getNodeData().getTaxonomy().setLineage( namesOf( "Solo" ) );
+        final PhylogenyNode plain = new PhylogenyNode(); // no taxonomy at all
+        plain.setName( "iso_1" );
+        final PhylogenyNode root = new PhylogenyNode();
+        root.addAsChild( felis );
+        root.addAsChild( mus );
+        root.addAsChild( bos );
+        root.addAsChild( solo );
+        root.addAsChild( plain );
+        final Phylogeny phy = new Phylogeny();
+        phy.setRoot( root );
+        phy.externalNodesHaveChanged();
+        // needs an online fetch: the plain tip AND 'Solo' (whose only stored lineage entry is its own taxon, so it
+        // has no ancestor to intersect) -- but NOT Felis (cached) or Mus/Bos (real stored ancestors)
+        final SortedSet<String> unresolved = TreePanelUtil.tipsWithoutLineage( phy, svc );
+        if ( ( unresolved.size() != 2 ) || !unresolved.contains( "iso_1" ) || !unresolved.contains( "Solo" ) ) {
+            return fail( "tipsWithoutLineage should be {Solo, iso_1}, got " + unresolved );
+        }
+        final Map<PhylogenyNode, TaxonLineage> map = TreePanelUtil.tipLineages( phy, svc );
+        if ( !"Carnivora".equals( map.get( felis ).at( "order" ) ) ) {
+            return fail( "Felis lineage should come from the cache (order Carnivora)" );
+        }
+        final TaxonLineage mus_l = map.get( mus );
+        if ( mus_l.isEmpty() || !mus_l.lineageNames().contains( "Rodentia" )
+                || !"Mus".equals( mus_l.getScientificName() ) ) {
+            return fail( "Mus lineage should be reconstructed from its stored taxonomy (ancestors incl. Rodentia)" );
+        }
+        if ( !"10090".equals( mus_l.getTaxId() ) ) {
+            return fail( "Mus reconstruction should carry its NCBI tax-id 10090, got " + mus_l.getTaxId() );
+        }
+        if ( map.get( bos ).getTaxId() != null ) {
+            return fail( "a non-'ncbi' identifier must be ignored (Bos tax-id should be null)" );
+        }
+        if ( !map.get( plain ).isEmpty() ) {
+            return fail( "a tip with no taxonomy should map to an EMPTY lineage" );
+        }
+        return true;
+    }
+
+    private static ArrayList<String> namesOf( final String... names ) {
+        final ArrayList<String> l = new ArrayList<String>();
+        for( final String n : names ) {
+            l.add( n );
+        }
+        return l;
+    }
+
+    /** The pure inference provenance + completion-summary strings are grammatically singular/plural-correct. */
+    private static boolean testInferenceStrings() {
+        final PhylogenyNode root = new PhylogenyNode();
+        root.addAsChild( genusLeaf( "A" ) );
+        root.addAsChild( genusLeaf( "B" ) );
+        final Phylogeny phy = new Phylogeny();
+        phy.setRoot( root );
+        phy.setName( "mytree" );
+        phy.externalNodesHaveChanged();
+        final String p1 = AncestralTaxonomyInferrer.inferenceProvenance( phy, 1, false );
+        if ( !p1.contains( "1 internal node in" ) || p1.contains( "overwriting" ) || !p1.contains( "\"mytree\"" )
+                || !p1.contains( "2 tips" ) ) {
+            return fail( "singular no-overwrite provenance is wrong: " + p1 );
+        }
+        final String p3 = AncestralTaxonomyInferrer.inferenceProvenance( phy, 3, true );
+        if ( !p3.contains( "3 internal nodes" ) || !p3.contains( "overwriting existing internal taxa" ) ) {
+            return fail( "plural overwrite provenance is wrong: " + p3 );
+        }
+        if ( !"Assigned a taxonomy to 1 internal node.".equals( AncestralTaxonomyInferrer.inferenceSummary( 1, 0, 0 ) ) ) {
+            return fail( "singular summary is wrong" );
+        }
+        final String s = AncestralTaxonomyInferrer.inferenceSummary( 3, 2, 1 );
+        if ( !s.contains( "Assigned taxonomies to 3 internal nodes." )
+                || !s.contains( "Kept 2 existing internal-node taxonomies" )
+                || !s.contains( "1 tip had no ancestor lineage" ) ) {
+            return fail( "plural summary is wrong: " + s );
+        }
+        final String s0 = AncestralTaxonomyInferrer.inferenceSummary( 0, 1, 2 );
+        if ( !s0.contains( "Kept 1 existing internal-node taxonomy " ) || !s0.contains( "2 tips had no ancestor" ) ) {
+            return fail( "mixed-count summary is wrong: " + s0 );
+        }
+        return true;
     }
 
     /** The node-data display text hides internal {@code aptx:*} metadata (the persisted Re-import profile) but keeps
