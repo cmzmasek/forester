@@ -1100,9 +1100,11 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 TreePanelUtil.getDefaultLineageService());
         if (!unresolved.isEmpty()) {
             final int choice = JOptionPane.showConfirmDialog(this,
-                    unresolved.size() + " tip " + ((unresolved.size() == 1) ? "taxon" : "taxa")
-                            + " could not be placed at rank \"" + r + "\" from the tree's own data.\n"
-                            + "Resolve online via the NCBI and UniProt databases? (requires an internet connection)",
+                    unresolved.size() + " tip " + ((unresolved.size() == 1) ? "taxon lacks" : "taxa lack")
+                            + " a \"" + r + "\"-rank identity in the tree itself.\n"
+                            + "Resolve online via the NCBI and UniProt databases so each tip's own identity sets its color"
+                            + " (overriding any internal-node annotation)?\n"
+                            + "Decline to colorize from the tree's existing annotations. (Requires an internet connection.)",
                     "Resolve Taxa Online?",
                     JOptionPane.YES_NO_OPTION,
                     JOptionPane.QUESTION_MESSAGE);
@@ -1329,9 +1331,11 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 TreePanelUtil.getDefaultLineageService());
         if (!unresolved.isEmpty()) {
             final int choice = JOptionPane.showConfirmDialog(this,
-                    unresolved.size() + " tip " + ((unresolved.size() == 1) ? "taxon" : "taxa")
-                            + " could not be placed at rank \"" + r + "\" from the tree's own data.\n"
-                            + "Resolve online via the NCBI and UniProt databases? (requires an internet connection)",
+                    unresolved.size() + " tip " + ((unresolved.size() == 1) ? "taxon lacks" : "taxa lack")
+                            + " a \"" + r + "\"-rank identity in the tree itself.\n"
+                            + "Resolve online via the NCBI and UniProt databases so each tip's own identity marks its clade"
+                            + " (overriding any internal-node annotation)?\n"
+                            + "Decline to annotate from the tree's existing annotations. (Requires an internet connection.)",
                     "Resolve Taxa Online?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
             if (choice == JOptionPane.YES_OPTION) {
                 new Thread(new OnlineTaxonResolver(this, "clade bands (" + r + ")", unresolved,

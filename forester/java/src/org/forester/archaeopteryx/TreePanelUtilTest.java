@@ -59,6 +59,7 @@ public final class TreePanelUtilTest {
     public static boolean test() {
         return testYDistanceToAvoidLabelOverlap() && testSupportSymbolMath() && testDetectConfidenceScaleMax()
                 && testRankTaxonCounts() && testTaxonomyLabel() && testRankColorization() && testTipQueryName()
+                && testTipIdentityWins()
                 && testCladeBands() && testRankColorizationViaSequenceIds() && testInternalLabelAboveBranchLayout()
                 && testAbbreviateScientificName() && testSupportColor() && testScaleGridLines()
                 && testScaleAxisTickValues() && testFormatCompactNumber() && testHpdBarXRange()
@@ -574,7 +575,8 @@ public final class TreePanelUtilTest {
         final PhylogenyNode felis = findLeaf( tree, "Felis" );
         final PhylogenyNode canis = findLeaf( tree, "Canis" );
 
-        // --- phase 1: cache empty, so only the in-tree-annotated Rodentia tips are placeable ---
+        // --- phase 1: cache empty, so only the Rodentia tips are placeable -- via the ancestor FALLBACK, since
+        //     Mus/Rattus are genus-annotated (not order) and unknown to the DB ---
         Map<PhylogenyNode, String> assignment = TreePanelUtil.assignTipsToRankTaxon( tree, "order", svc );
         if ( assignment.size() != 2 ) {
             return fail( "with an empty cache only the 2 Rodentia tips should be placeable, got " + assignment.size() );
@@ -583,6 +585,12 @@ public final class TreePanelUtilTest {
         // Felis, Canis, and the unknown tip's query name must all be flagged for fetching
         if ( !unresolved.contains( "Felis" ) || !unresolved.contains( "Canis" ) || !unresolved.contains( "Nonexistus" ) ) {
             return fail( "unresolved tip taxa must include Felis, Canis and Nonexistus; got " + unresolved );
+        }
+        // "tip identity wins": Mus/Rattus no longer self-resolve (they're genus-annotated, under the Rodentia
+        // ANCESTOR), so they too are now flagged for fetch -- an ancestor annotation no longer suppresses it
+        if ( ( unresolved.size() != 5 ) || !unresolved.contains( "Mus" ) || !unresolved.contains( "Rattus" ) ) {
+            return fail( "a tip under an annotated ancestor must be flagged for fetch (tip identity wins); got "
+                    + unresolved );
         }
 
         // --- background fetch (simulated): resolve every unresolved name once ---
@@ -645,6 +653,54 @@ public final class TreePanelUtilTest {
             return fail( "an unplaceable tip must be left uncolored, not swept into a neighbor's color" );
         }
         return true;
+    }
+
+    /**
+     * "Tip identity wins, internal annotations only fill gaps" (the fix for imperfect manual internal taxonomy):
+     * a tip that can resolve its OWN rank taxon overrides a wrong ancestor annotation; an unresolvable tip falls
+     * back to the ancestor annotation; and a tip under an annotated ancestor is still flagged for fetching so its
+     * own identity CAN be resolved (and thereby override the ancestor).
+     */
+    private static boolean testTipIdentityWins() {
+        // fixture: an internal node WRONGLY annotated order=Rodentia over a single cat tip (Felis)
+        final FakeLineageService svc = new FakeLineageService();
+        svc.know( "Felis", lineage( "order", "Carnivora", "genus", "Felis" ) );
+        Phylogeny tree = wrongAncestorTree();
+        PhylogenyNode felis = findLeaf( tree, "Felis" );
+        // (c) even under the annotated ancestor, the tip must be flagged for fetch (empty cache)
+        if ( !TreePanelUtil.unresolvedTipTaxa( tree, "order", svc ).contains( "Felis" ) ) {
+            return fail( "a tip under an annotated ancestor must still be flagged for fetch" );
+        }
+        try {
+            svc.fetch( "Felis" ); // warm the cache with the tip's own resolution
+        }
+        catch ( final Exception e ) {
+            return fail( "fake fetch must not throw: " + e );
+        }
+        // (a) tip identity wins: Felis resolves its OWN order (Carnivora) and is NOT overridden by the wrong ancestor
+        if ( !"Carnivora".equals( TreePanelUtil.assignTipsToRankTaxon( tree, "order", svc ).get( felis ) ) ) {
+            return fail( "a tip that resolves its own order must win over a wrong ancestor annotation" );
+        }
+        // (b) fallback: a tip that cannot resolve itself (unknown name, empty cache) uses the ancestor annotation
+        final FakeLineageService empty = new FakeLineageService();
+        tree = wrongAncestorTree();
+        felis = findLeaf( tree, "Felis" );
+        if ( !"Rodentia".equals( TreePanelUtil.assignTipsToRankTaxon( tree, "order", empty ).get( felis ) ) ) {
+            return fail( "an unresolvable tip must fall back to the nearest ancestor annotation" );
+        }
+        return true;
+    }
+
+    /** A cat tip (genus Felis) whose immediate ancestor is deliberately mis-annotated as order Rodentia. */
+    private static Phylogeny wrongAncestorTree() {
+        final PhylogenyNode wrong = internalOrder( "Rodentia" );
+        wrong.addAsChild( genusLeaf( "Felis" ) );
+        final PhylogenyNode root = new PhylogenyNode();
+        root.addAsChild( wrong );
+        final Phylogeny phy = new Phylogeny();
+        phy.setRoot( root );
+        phy.externalNodesHaveChanged();
+        return phy;
     }
 
     /** Clade bands reuse the same assignment as the colorizer: one band per maximal-monophyletic clade. */

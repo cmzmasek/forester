@@ -213,31 +213,38 @@ public final class DemoTreeGenerator {
     // ----- "Colorize Subtrees / Clade Bands by Taxonomic Rank": a mammal tree where each ORDER's clade root carries an
     //       in-tree rank annotation, so colorizing by 'order' works fully OFFLINE (no NCBI lookup needed for the demo).
     private static Phylogeny colorizeByRankTree() throws PhyloXmlDataFormatException {
-        final PhylogenyNode carnivora = orderClade( "Carnivora", 0.08,
-                                                     species( "Felis catus" ), species( "Panthera leo" ),
-                                                     species( "Canis lupus" ) );
-        final PhylogenyNode rodentia = orderClade( "Rodentia", 0.09,
-                                                   species( "Mus musculus" ), species( "Rattus norvegicus" ) );
-        final PhylogenyNode primates = orderClade( "Primates", 0.07,
-                                                   species( "Homo sapiens" ), species( "Pan troglodytes" ),
-                                                   species( "Macaca mulatta" ) );
+        // Each TIP carries its OWN 'order' taxonomy (self-resolvable), so the tool colorizes OFFLINE with no
+        // "resolve online?" prompt -- the species name is kept as the node name for identification.
+        final PhylogenyNode carnivora = clade( 0.08,
+                                               orderTip( "Felis catus", "Carnivora" ),
+                                               orderTip( "Panthera leo", "Carnivora" ),
+                                               orderTip( "Canis lupus", "Carnivora" ) );
+        // DELIBERATELY WRONG internal annotation on the cats' clade root: because each cat tip carries its OWN
+        // order, that self-identity is authoritative and the mis-annotation is IGNORED (the cats stay Carnivora) --
+        // an illustration that a tip's own taxonomy wins over a wrong/partial internal-node annotation.
+        taxon( carnivora, "Rodentia", "order" );
+        final PhylogenyNode rodentia = clade( 0.09,
+                                              orderTip( "Mus musculus", "Rodentia" ),
+                                              orderTip( "Rattus norvegicus", "Rodentia" ) );
+        final PhylogenyNode primates = clade( 0.07,
+                                              orderTip( "Homo sapiens", "Primates" ),
+                                              orderTip( "Pan troglodytes", "Primates" ),
+                                              orderTip( "Macaca mulatta", "Primates" ) );
         final PhylogenyNode root = clade( 0, clade( 0.04, carnivora, rodentia ), primates );
         return tree( root, "Colorize by taxonomic rank (demo)",
-                     "Synthetic mammal tree. Tips carry species taxonomy; each order's clade root is annotated with "
-                             + "rank 'order' (Carnivora, Rodentia, Primates), so Tools > Colorize Subtrees via "
-                             + "Taxonomic Rank -- and Annotate Clades by Rank -- work at 'order' with no online lookup." );
+                     "Synthetic mammal tree. Each TIP carries its order as an in-tree rank annotation (the species "
+                             + "is the node name), so Tools > Colorize Subtrees via Taxonomic Rank -- and Annotate "
+                             + "Clades by Rank -- work at 'order' (Carnivora, Rodentia, Primates) with NO online "
+                             + "lookup. The Carnivora clade root is deliberately MIS-annotated 'Rodentia' to show "
+                             + "that a tip's own identity wins over a wrong/partial internal annotation." );
     }
 
-    private static PhylogenyNode orderClade( final String order, final double bl, final PhylogenyNode... kids )
+    /** A tip named for its species but carrying its ORDER as an in-tree rank annotation, so it self-resolves the
+     *  colorization rank offline. */
+    private static PhylogenyNode orderTip( final String species_name, final String order )
             throws PhyloXmlDataFormatException {
-        final PhylogenyNode n = clade( bl, kids );
+        final PhylogenyNode n = leaf( species_name );
         taxon( n, order, "order" );
-        return n;
-    }
-
-    private static PhylogenyNode species( final String scientific_name ) throws PhyloXmlDataFormatException {
-        final PhylogenyNode n = leaf( scientific_name );
-        taxon( n, scientific_name, "species" );
         return n;
     }
 

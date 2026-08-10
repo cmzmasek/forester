@@ -651,9 +651,15 @@ public class TreePanelUtil {
 
     /**
      * Maps each external node to its taxon at {@code rank}, omitting tips that cannot be placed.
-     * Resolution order per tip: (a) the nearest self-or-ancestor node annotated with exactly that
-     * rank (free, in-tree); (b) the tip's cached {@link TaxonLineage} from {@code service} (no
-     * network here -- a cache miss simply leaves the tip unplaced).
+     * Resolution order per tip -- <i>tip identity wins, internal annotations only fill gaps</i>: (1) the tip's
+     * OWN taxonomy annotated at exactly that rank; else (2) the tip's cached {@link TaxonLineage} from
+     * {@code service} (no network here -- a cache miss just skips this step); else (3) the nearest
+     * PROPER-ancestor annotation at that rank -- a fallback only for tips that cannot resolve their own
+     * identity, so a wrong/partial internal-node annotation can no longer override a tip that resolves correctly.
+     * <p>
+     * Trade-off of this precedence: a wrong DB resolution of an ambiguous tip NAME (step 2) now beats a correct
+     * in-tree ANCESTOR annotation (step 3). The escape hatch is step 1 -- annotate the TIP itself at {@code rank}
+     * (its own taxonomy always wins), which is exactly how a curator overrides a bad DB hit.
      */
     final static Map<PhylogenyNode, String> assignTipsToRankTaxon( final Phylogeny tree,
                                                                    final String rank,
@@ -664,8 +670,10 @@ public class TreePanelUtil {
         }
         for( final PhylogenyNodeIterator it = tree.iteratorExternalForward(); it.hasNext(); ) {
             final PhylogenyNode tip = it.next();
-            String taxon = inTreeRankTaxon( tip, rank );
-            if ( ( taxon == null ) && ( service != null ) ) {
+            // (1) the tip's OWN taxonomy at this rank -- the most specific identity, always trusted
+            String taxon = selfRankTaxon( tip, rank );
+            // (2) else resolve the tip's OWN name against the (cached) lineage DB
+            if ( ForesterUtil.isEmpty( taxon ) && ( service != null ) ) {
                 final String q = tipQueryName( tip );
                 if ( !ForesterUtil.isEmpty( q ) ) {
                     final TaxonLineage rl = service.lineageOf( q );
@@ -674,6 +682,10 @@ public class TreePanelUtil {
                     }
                 }
             }
+            // (3) else fall back to the nearest ANCESTOR's manual annotation at this rank
+            if ( ForesterUtil.isEmpty( taxon ) ) {
+                taxon = ancestorRankTaxon( tip, rank );
+            }
             if ( !ForesterUtil.isEmpty( taxon ) ) {
                 assignment.put( tip, taxon );
             }
@@ -681,17 +693,28 @@ public class TreePanelUtil {
         return assignment;
     }
 
-    /** The taxon label on the nearest self-or-ancestor node carrying exactly {@code rank}, or null. */
-    final static String inTreeRankTaxon( final PhylogenyNode tip, final String rank ) {
-        for( PhylogenyNode n = tip; n != null; n = n.getParent() ) {
-            if ( n.getNodeData().isHasTaxonomy() ) {
-                final Taxonomy tax = n.getNodeData().getTaxonomy();
-                if ( !ForesterUtil.isEmpty( tax.getRank() ) && tax.getRank().equalsIgnoreCase( rank ) ) {
-                    final String label = taxonomyLabel( tax );
-                    if ( !ForesterUtil.isEmpty( label ) ) {
-                        return label;
-                    }
+    /** The taxon label of {@code node}'s OWN taxonomy iff its rank equals {@code rank} (case-insensitive) and the
+     *  label is non-empty, else null. The tip's own identity -- highest priority in {@link #assignTipsToRankTaxon}. */
+    final static String selfRankTaxon( final PhylogenyNode node, final String rank ) {
+        if ( node.getNodeData().isHasTaxonomy() ) {
+            final Taxonomy tax = node.getNodeData().getTaxonomy();
+            if ( !ForesterUtil.isEmpty( tax.getRank() ) && tax.getRank().equalsIgnoreCase( rank ) ) {
+                final String label = taxonomyLabel( tax );
+                if ( !ForesterUtil.isEmpty( label ) ) {
+                    return label;
                 }
+            }
+        }
+        return null;
+    }
+
+    /** The taxon label on the nearest PROPER ancestor carrying exactly {@code rank}, or null -- the fallback used
+     *  in {@link #assignTipsToRankTaxon} only for a tip that cannot resolve its own identity. */
+    final static String ancestorRankTaxon( final PhylogenyNode tip, final String rank ) {
+        for( PhylogenyNode n = tip.getParent(); n != null; n = n.getParent() ) {
+            final String label = selfRankTaxon( n, rank );
+            if ( !ForesterUtil.isEmpty( label ) ) {
+                return label;
             }
         }
         return null;
@@ -730,11 +753,13 @@ public class TreePanelUtil {
     }
 
     /**
-     * The distinct taxon query-names of tips that are neither placeable from in-tree rank annotations
-     * nor already in {@code service}'s cache -- i.e. exactly the names a caller must
-     * {@link TaxonomicLineageService#fetch} (off the EDT) to place more tips at {@code rank}. Taxa
-     * already in the cache are excluded even if the cache lacks {@code rank} (refetching would not
-     * help), so a second call after a fetch pass returns an empty set (no repeated prompts).
+     * The distinct taxon query-names of tips that cannot resolve their OWN identity at {@code rank} yet -- i.e.
+     * exactly the names a caller must {@link TaxonomicLineageService#fetch} (off the EDT) to place more tips.
+     * A tip is excluded only when it self-resolves (its own taxonomy is annotated at {@code rank}) or its
+     * query-name is already in the cache; an ANCESTOR annotation does NOT suppress the fetch, because under
+     * "tip identity wins" the tip's own DB resolution must be available to override a wrong/partial ancestor.
+     * Cache hits are excluded even when the cache lacks {@code rank} (refetching would not help), so a second
+     * call after a fetch pass returns an empty set (no repeated prompts).
      */
     final static SortedSet<String> unresolvedTipTaxa( final Phylogeny tree,
                                                       final String rank,
@@ -745,8 +770,8 @@ public class TreePanelUtil {
         }
         for( final PhylogenyNodeIterator it = tree.iteratorExternalForward(); it.hasNext(); ) {
             final PhylogenyNode tip = it.next();
-            if ( inTreeRankTaxon( tip, rank ) != null ) {
-                continue;
+            if ( selfRankTaxon( tip, rank ) != null ) {
+                continue; // the tip resolves its OWN identity in-tree; an ancestor annotation does NOT count here
             }
             final String q = tipQueryName( tip );
             if ( ForesterUtil.isEmpty( q ) ) {

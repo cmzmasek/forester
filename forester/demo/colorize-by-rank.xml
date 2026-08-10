@@ -2,7 +2,7 @@
 <phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
 <phylogeny rooted="true" rerootable="true">
   <name>Colorize by taxonomic rank (demo)</name>
-  <description>Synthetic mammal tree. Tips carry species taxonomy; each order&apos;s clade root is annotated with rank &apos;order&apos; (Carnivora, Rodentia, Primates), so Tools &gt; Colorize Subtrees via Taxonomic Rank -- and Annotate Clades by Rank -- work at &apos;order&apos; with no online lookup.</description>
+  <description>Synthetic mammal tree. Each TIP carries its order as an in-tree rank annotation (the species is the node name), so Tools &gt; Colorize Subtrees via Taxonomic Rank -- and Annotate Clades by Rank -- work at &apos;order&apos; (Carnivora, Rodentia, Primates) with NO online lookup. The Carnivora clade root is deliberately MIS-annotated &apos;Rodentia&apos; to show that a tip&apos;s own identity wins over a wrong/partial internal annotation.</description>
   <clade>
     <branch_length>0.0</branch_length>
     <clade>
@@ -10,86 +10,78 @@
       <clade>
         <branch_length>0.08</branch_length>
         <taxonomy>
-          <scientific_name>Carnivora</scientific_name>
+          <scientific_name>Rodentia</scientific_name>
           <rank>order</rank>
         </taxonomy>
         <clade>
           <name>Felis catus</name>
           <branch_length>0.02</branch_length>
           <taxonomy>
-            <scientific_name>Felis catus</scientific_name>
-            <rank>species</rank>
+            <scientific_name>Carnivora</scientific_name>
+            <rank>order</rank>
           </taxonomy>
         </clade>
         <clade>
           <name>Panthera leo</name>
           <branch_length>0.02</branch_length>
           <taxonomy>
-            <scientific_name>Panthera leo</scientific_name>
-            <rank>species</rank>
+            <scientific_name>Carnivora</scientific_name>
+            <rank>order</rank>
           </taxonomy>
         </clade>
         <clade>
           <name>Canis lupus</name>
           <branch_length>0.02</branch_length>
           <taxonomy>
-            <scientific_name>Canis lupus</scientific_name>
-            <rank>species</rank>
+            <scientific_name>Carnivora</scientific_name>
+            <rank>order</rank>
           </taxonomy>
         </clade>
       </clade>
       <clade>
         <branch_length>0.09</branch_length>
-        <taxonomy>
-          <scientific_name>Rodentia</scientific_name>
-          <rank>order</rank>
-        </taxonomy>
         <clade>
           <name>Mus musculus</name>
           <branch_length>0.02</branch_length>
           <taxonomy>
-            <scientific_name>Mus musculus</scientific_name>
-            <rank>species</rank>
+            <scientific_name>Rodentia</scientific_name>
+            <rank>order</rank>
           </taxonomy>
         </clade>
         <clade>
           <name>Rattus norvegicus</name>
           <branch_length>0.02</branch_length>
           <taxonomy>
-            <scientific_name>Rattus norvegicus</scientific_name>
-            <rank>species</rank>
+            <scientific_name>Rodentia</scientific_name>
+            <rank>order</rank>
           </taxonomy>
         </clade>
       </clade>
     </clade>
     <clade>
       <branch_length>0.07</branch_length>
-      <taxonomy>
-        <scientific_name>Primates</scientific_name>
-        <rank>order</rank>
-      </taxonomy>
       <clade>
         <name>Homo sapiens</name>
         <branch_length>0.02</branch_length>
         <taxonomy>
-          <scientific_name>Homo sapiens</scientific_name>
-          <rank>species</rank>
+          <scientific_name>Primates</scientific_name>
+          <rank>order</rank>
         </taxonomy>
       </clade>
       <clade>
         <name>Pan troglodytes</name>
         <branch_length>0.02</branch_length>
         <taxonomy>
-          <scientific_name>Pan troglodytes</scientific_name>
-          <rank>species</rank>
+          <scientific_name>Primates</scientific_name>
+          <rank>order</rank>
         </taxonomy>
       </clade>
       <clade>
         <name>Macaca mulatta</name>
         <branch_length>0.02</branch_length>
         <taxonomy>
-          <scientific_name>Macaca mulatta</scientific_name>
-          <rank>species</rank>
+          <scientific_name>Primates</scientific_name>
+          <rank>order</rank>
         </taxonomy>
       </clade>
     </clade>

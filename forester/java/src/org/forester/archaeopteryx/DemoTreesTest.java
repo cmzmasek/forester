@@ -20,8 +20,11 @@
 
 package org.forester.archaeopteryx;
 
+import java.awt.Color;
 import java.io.File;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.forester.archaeopteryx.tools.NodeDataImporter;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
@@ -59,9 +62,11 @@ public final class DemoTreesTest {
         ok &= hasCategoricalRef( "annotation-columns.xml", "data:host" );
         ok &= hasNumericRef( "annotation-columns.xml", "data:viral_load" );
         ok &= hasCategoricalRef( "annotation-columns.xml", "data:clade" );
-        // colorize by rank / clade bands: in-tree 'order' rank annotation so the demo works offline
+        // colorize by rank / clade bands: each TIP carries its 'order' in-tree, so it colorizes OFFLINE (no prompt)
+        // into 3 clades -- even though the Carnivora clade root is deliberately mis-annotated 'Rodentia' (a tip's
+        // own identity wins over the wrong internal annotation)
         ok &= hasRank( "colorize-by-rank.xml", "order" );
-        ok &= hasRank( "colorize-by-rank.xml", "species" );
+        ok &= colorizesOfflineInto( "colorize-by-rank.xml", "order", 3 );
         // scale axis: a phylogram with real branch lengths (so the labeled distance axis has ticks)
         ok &= hasBranchLengths( "scale-axis.xml" );
         // node age bars: internal nodes carry a phyloXML <date> with a min/max interval + branch lengths (dated tree)
@@ -282,6 +287,30 @@ public final class DemoTreesTest {
             }
         }
         return note( file_name + " must carry an in-tree taxonomy at rank '" + rank + "' (offline colorize)" );
+    }
+
+    /** Anti-rot guard for the colorize-by-rank demo: it colorizes OFFLINE (null service) at {@code rank} into
+     *  exactly {@code groups} maximal clades / {@code groups} distinct legend taxa, with NO tip needing an online
+     *  fetch (every tip self-resolves the rank in-tree). This does NOT exercise the Spine B "tip identity wins over
+     *  a wrong ancestor" fix -- that needs a DB, and the demo's tips self-resolve at step 1 (so pre-fix code would
+     *  pass this too); the fix guard is {@code TreePanelUtilTest.testTipIdentityWins}. */
+    private static boolean colorizesOfflineInto( final String file_name, final String rank, final int groups ) {
+        final Phylogeny phy = load( file_name );
+        if ( phy == null ) {
+            return false;
+        }
+        if ( !TreePanelUtil.unresolvedTipTaxa( phy, rank, null ).isEmpty() ) {
+            return note( file_name + " must colorize at '" + rank + "' OFFLINE (no tip should need an online fetch)" );
+        }
+        final Map<String, Color> legend = new HashMap<String, Color>();
+        final int colored = TreePanelUtil.colorPhylogenyAccordingToRanks( phy, rank, null, legend );
+        // groups maximal clades AND groups distinct legend taxa: each tip carries its own order, so each order
+        // forms exactly one clade. (An edit that dropped the tips' self-resolving order would change these counts.)
+        if ( ( colored != groups ) || ( legend.size() != groups ) ) {
+            return note( file_name + " must colorize into " + groups + " clades / " + groups + " distinct taxa at '"
+                    + rank + "', got " + colored + " clades / " + legend.size() + " taxa " + legend.keySet() );
+        }
+        return true;
     }
 
     /** null-returning failure note for the parse path (so load(...) can bail with a message). */
