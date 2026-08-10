@@ -99,6 +99,19 @@ public final class ScaleAxisRenderTest {
                     if ( below >= 40 ) {
                         fail( ok, "the tree name must be raised above the axis, not left below it (run " + below + "px)" );
                     }
+                    // HORIZONTAL bottom-band reserve: the axis reserves a band at the bottom that COMPRESSES the
+                    // tip-spread so the bottommost tip is not overlapped (the axis used to draw over the bottom tips on a
+                    // dense fit). The reserve shows as a strictly smaller y-distance when the axis is on, at the same fit.
+                    o.setShowScaleAxis( false );
+                    tp.calcParametersForPainting( w, h );
+                    final float yd_off = tp.getYdistance();
+                    o.setShowScaleAxis( true );
+                    tp.calcParametersForPainting( w, h );
+                    final float yd_on = tp.getYdistance();
+                    if ( !( yd_on < yd_off ) ) {
+                        fail( ok, "the horizontal scale axis must reserve a bottom band (compress the tip-spread): "
+                                + "y-distance off=" + yd_off + " on=" + yd_on );
+                    }
                     // VERTICAL PARITY (scale grid): the faint grid lines ride R into HORIZONTAL depth lines in a
                     // root-top/bottom orientation. The grid is a FAINT magenta (the magenta branch-length color blended
                     // over the white bg), distinct from the pure-magenta axis; count it on vs off (axis off).
@@ -143,8 +156,8 @@ public final class ScaleAxisRenderTest {
                     // TOGGLE RE-FIT: the axis reserves a breadth band, so turning it on must RE-FIT or the cached
                     // transform keeps its pre-reserve extent and the ruler draws off the canvas edge. Reproduce the
                     // interactive toggle: fit axis-OFF, paint (caches R at the axis-off box), then turn the axis on.
-                    // Without a re-fit the ruler must clip; getControlPanel().fitWidth() (exactly what the checkbox
-                    // handler calls in a vertical orientation) must re-apply the reserve and bring it back on-canvas.
+                    // Without a re-fit the ruler must clip; a re-fit (the checkbox handler does this via showWhole, i.e.
+                    // a fresh calcParametersForPainting) must re-apply the reserve and bring it back on-canvas.
                     o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP );
                     o.setShowScaleAxis( false );
                     tp.calcParametersForPainting( w, h );
@@ -152,11 +165,11 @@ public final class ScaleAxisRenderTest {
                     o.setShowScaleAxis( true );
                     final int stale = tallestColumnRun( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1,
                             false ), magenta );
-                    tp.getControlPanel().fitWidth(); // the scale-axis toggle re-fit
+                    tp.calcParametersForPainting( w, h ); // the scale-axis toggle re-fit (what showWhole does)
                     final int refit = tallestColumnRun( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1,
                             false ), magenta );
                     if ( refit < ( h / 3 ) ) {
-                        fail( ok, "the vertical scale-axis toggle re-fit (fitWidth) must bring the ruler on-canvas, got "
+                        fail( ok, "the vertical scale-axis toggle re-fit must bring the ruler on-canvas, got "
                                 + refit + "px" );
                     }
                     if ( stale >= ( h / 3 ) ) {
@@ -165,6 +178,53 @@ public final class ScaleAxisRenderTest {
                     }
                     o.setShowScaleAxis( false );
                     o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                    tp.calcParametersForPainting( w, h );
+
+                    // CIRCULAR / UNROOTED: the horizontal axis is never drawn in the radial layouts, so the reserve must
+                    // NOT engage -- toggling the axis there leaves the layout (ydist) untouched (no phantom compression,
+                    // no needless radial-zoom reset). Guards the scaleAxisAppliesToLayout() graphics-type gate.
+                    for ( final Options.PHYLOGENY_GRAPHICS_TYPE gt : new Options.PHYLOGENY_GRAPHICS_TYPE[] {
+                            Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR, Options.PHYLOGENY_GRAPHICS_TYPE.UNROOTED } ) {
+                        o.setPhylogenyGraphicsType( gt );
+                        tp.setPhylogenyGraphicsType( gt );
+                        if ( tp.scaleAxisAppliesToLayout() ) {
+                            fail( ok, "the scale axis must not apply to a " + gt + " layout (never drawn there)" );
+                        }
+                        o.setShowScaleAxis( false );
+                        tp.calcParametersForPainting( w, h );
+                        final float cyd_off = tp.getYdistance();
+                        o.setShowScaleAxis( true );
+                        tp.calcParametersForPainting( w, h );
+                        if ( tp.getYdistance() != cyd_off ) {
+                            fail( ok, "toggling the scale axis on a " + gt + " tree must not reserve/compress (ydist "
+                                    + cyd_off + " -> " + tp.getYdistance() + ")" );
+                        }
+                    }
+                    o.setShowScaleAxis( false );
+                    o.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
+                    tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
+                    o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+
+                    // NO DEPTH DRIFT: the horizontal toggle re-fits via showWhole (fit-to-viewport, no preferred-size
+                    // feedback), so repeatedly toggling the axis through the REAL checkbox handler leaves the depth
+                    // (branch-length) extent stable. A regression that fed the preferred width back (e.g. a horizontal
+                    // fitHeight) shrank it by MOVE (~20px) per toggle.
+                    if ( frame._show_scale_axis_cbmi != null ) {
+                        o.setShowScaleAxis( true );
+                        frame.showWhole();
+                        final int depth0 = tp.getPreferredSize().width;
+                        // toggle 4 times through the real handler; measure WITHOUT a normalizing re-fit afterwards, so an
+                        // accumulating drift (a preferred-size-feedback re-fit) is visible in the preferred width
+                        for ( int i = 0; i < 4; ++i ) {
+                            frame._show_scale_axis_cbmi.doClick(); // fires the real toggle handler (updateOptions + re-fit)
+                        }
+                        final int depth1 = tp.getPreferredSize().width;
+                        if ( Math.abs( depth1 - depth0 ) > 8 ) {
+                            fail( ok, "toggling the horizontal scale axis must not drift the depth zoom (prefW " + depth0
+                                    + " -> " + depth1 + " over 4 toggles)" );
+                        }
+                    }
+                    o.setShowScaleAxis( false );
                     tp.calcParametersForPainting( w, h );
                 }
                 catch ( final Throwable t ) {

@@ -517,12 +517,15 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             updateOptions(getOptions());
         } else if (o == _show_scale_axis_cbmi) {
             updateOptions(getOptions());
-            // in a vertical orientation the scale axis reserves a breadth band (TreePanel.verticalScaleAxisReserve);
-            // a plain repaint leaves the cached layout/transform without it (the ruler would draw past the edge), so
-            // re-fit the breadth -- like the domain / annotation-column width reserves. The horizontal axis reserves
-            // nothing, so it needs no re-fit (a plain repaint suffices, preserving the user's zoom).
-            if ((getCurrentTreePanel() != null) && getCurrentTreePanel().isVerticalOrientation()) {
-                getControlPanel().fitWidth();
+            // the scale axis reserves a tip-spread band (a side ruler in a vertical orientation, a bottom band in a
+            // horizontal one); toggling it must re-fit so the reserve is applied/reclaimed and the axis clears the
+            // tips -- but ONLY where the axis is actually drawn (a rectangular-family phylogram with a scale). For a
+            // cladogram or the radial circular/unrooted layouts the toggle is inert, so leave the view (and any radial
+            // zoom) untouched. showWhole re-fits to the viewport in BOTH orientations -- no preferred-size feedback,
+            // so no depth-zoom drift (a plain fitWidth/fitHeight feeds the extent back and creeps the zoom by MOVE).
+            final TreePanel tp = getCurrentTreePanel();
+            if ((tp != null) && tp.scaleAxisAppliesToLayout()) {
+                showWhole();
             }
         } else if (o == _show_hpd_bars_cbmi) {
             updateOptions(getOptions());

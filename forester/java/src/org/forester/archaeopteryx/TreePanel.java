@@ -4273,6 +4273,32 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return getFontMetrics(getTreeFontSet().getSmallFont()).getHeight() + SCALE_AXIS_TICK_LEN + 4;
     }
 
+    /** True when a labeled scale axis is applicable to the CURRENT layout: a rectangular-family PHYLOGRAM (not a
+     *  cladogram, not the radial CIRCULAR/UNROOTED layouts) with a positive scale distance that yields at least one
+     *  tick -- i.e. the axis is (or, if the toggle were on, would be) actually drawn and reserves tip-spread space.
+     *  Independent of the on/off state, so it also governs whether toggling "Scale Axis" needs a re-fit. */
+    boolean scaleAxisAppliesToLayout() {
+        if (!getControlPanel().isDrawPhylogram() || (getScaleDistance() <= 0.0)
+                || (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR)
+                || (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED)) {
+            return false;
+        }
+        return TreePanelUtil.scaleAxisTickValues(getMaxDistanceToRoot(), getScaleDistance()).length > 0;
+    }
+
+    /** Breadth (px) reserved at the BOTTOM for the HORIZONTAL scale-axis band (line + ticks + one label row), so the
+     *  bottommost tip is not overlapped by the axis on a fit-to-window dense tree. The horizontal-orientation analog of
+     *  {@link #verticalScaleAxisReserve()} (which reserves a side band); the two are mutually exclusive by orientation.
+     *  Reserved in the breadth budget (calcParametersForPainting) AND the breadth extent (treeBreadthExtent), so paint,
+     *  fit, and scroll agree and the ruler sits clear just below the last tip. 0 in a vertical orientation, and 0
+     *  wherever the axis is not drawn (cladogram / CIRCULAR / UNROOTED / no ticks) -- see scaleAxisAppliesToLayout. */
+    private int scaleAxisBottomReserve() {
+        if (isVerticalOrientation() || !getOptions().isShowScaleAxis() || !scaleAxisAppliesToLayout()) {
+            return 0;
+        }
+        return scaleAxisBandHeight();
+    }
+
     /** Breadth (px) reserved for the VERTICAL scale-axis ruler (the tick + the widest tick number + padding), so the
      *  vertical ruler + its upright labels sit clear of the tips just past the last tip. 0 unless the axis is shown in
      *  a vertical orientation on a phylogram with a scale. Reserved in the breadth budget (calcParametersForPainting)
@@ -5163,9 +5189,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             // reserve space at the top for the rotated annotation-column headers so they don't overlap the top
             // cells; the tree is compressed into the remaining height and its origin shifted down (see below)
             final int top_reserve = annotationHeaderTopReserve();
-            // in a vertical orientation the labeled scale axis is a ruler down one breadth side: reserve its band so
-            // the tips are compressed clear of it (0 in the horizontal orientation / when the axis is off)
-            final int axis_reserve = verticalScaleAxisReserve();
+            // the labeled scale axis eats into the tip-spread budget so the tips stay clear of it: a side ruler in a
+            // vertical orientation (verticalScaleAxisReserve), a bottom band in a horizontal one (scaleAxisBottomReserve)
+            // -- the two are mutually exclusive by orientation, and both are 0 when the axis is off. Reserving it here
+            // (and in treeBreadthExtent) is what keeps the axis from overlapping the bottommost tip on a dense fit.
+            final int axis_reserve = verticalScaleAxisReserve() + scaleAxisBottomReserve();
             float ydist = (float) ((y - TreePanel.MOVE - (2 * verticalBreadthPad()) - top_reserve - breadth_label
                     - axis_reserve) / (ext_nodes * 2.0));
             if (xdist < 0.0) {
@@ -8677,12 +8705,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     && (getScaleDistance() > 0.0);
             final boolean axis_shown = getOptions().isShowScaleAxis() && getControlPanel().isDrawPhylogram()
                     && (getScaleDistance() > 0.0);
-            // in a vertical orientation the axis is a ruler down one BREADTH side (in its own reserved band), not the
-            // bottom strip -- so the bottom-band reserve + tree-name raise apply only to the horizontal axis
-            final boolean axis_shown_horizontal = axis_shown && !vertical;
-            // the scale axis owns the bottom band; lift the (viewport-fixed) scale bar clear above it (the tree name
-            // is likewise raised, inside paintTreeName) so the three bottom overlays never overprint each other
-            final int bottom_reserve = axis_shown_horizontal ? scaleAxisBandHeight() : 0;
+            // the horizontal axis owns a reserved bottom band; lift the (viewport-fixed) scale bar clear above it (the
+            // tree name is likewise raised, inside paintTreeName) so the three bottom overlays never overprint. Derive
+            // both the lift AND the flag from the SAME layout reserve so they stay in lockstep with what is actually
+            // drawn/reserved -- 0 in a vertical orientation (side ruler), for a cladogram / circular / unrooted, or an
+            // unticked scale (never lift over a band that isn't there).
+            final int bottom_reserve = scaleAxisBottomReserve();
+            final boolean axis_shown_horizontal = bottom_reserve > 0;
             if (scale_shown) {
                 if (!(to_graphics_file || to_pdf)) {
                     paintScale(g,
@@ -8984,6 +9013,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  (see the root Ycoord in paintPhylogeny), so the scroll/paint extents agree. */
     private int treeBreadthExtent() {
         return TreePanel.MOVE + (2 * verticalBreadthPad()) + annotationHeaderTopReserve() + verticalScaleAxisReserve()
+                + scaleAxisBottomReserve() // horizontal-orientation bottom axis band (0 in vertical; mutually exclusive)
                 + ForesterUtil.roundToInt(getYdistance() * getPhylogeny().getRoot().getNumberOfExternalNodes() * 2);
     }
 
