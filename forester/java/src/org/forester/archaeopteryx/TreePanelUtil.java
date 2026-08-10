@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.function.Function;
 
 import javax.swing.JOptionPane;
 
@@ -495,6 +496,41 @@ public class TreePanelUtil {
             }
         }
         return "";
+    }
+
+    /**
+     * True when {@code node} is a non-root INTERNAL node whose <i>visible</i> taxonomy label equals that of the
+     * nearest ancestor with a visible label -- i.e. its label would just repeat an enclosing clade's. Used to
+     * suppress the redundant label at draw time (a clade is marked once, at its topmost node), which declutters
+     * nested same-taxon clades (common after ancestral-taxonomy inference, e.g. a Boreoeutheria node inside a
+     * Boreoeutheria node) WITHOUT mutating the tree. Tips, collapsed nodes and the root never qualify.
+     * <p>
+     * {@code labeler} yields the exact string the paint path would draw for a node (which depends on the active
+     * taxonomy checkboxes -- rank/code/scientific/common -- so two nodes sharing a scientific name but rendering a
+     * different code/rank are NOT judged equal). Ancestors that render an empty label are skipped so the walk
+     * reaches the nearest VISIBLE ancestor label.
+     */
+    final static boolean isDuplicateOfAncestorTaxon( final PhylogenyNode node,
+                                                     final Function<PhylogenyNode, String> labeler ) {
+        if ( ( node == null ) || node.isExternal() || node.isCollapse() || node.isRoot()
+                || !node.getNodeData().isHasTaxonomy() ) {
+            return false;
+        }
+        final String own = labeler.apply( node );
+        if ( ForesterUtil.isEmpty( own ) ) {
+            return false;
+        }
+        for( PhylogenyNode a = node.getParent(); a != null; a = a.getParent() ) {
+            if ( !a.getNodeData().isHasTaxonomy() ) {
+                continue;
+            }
+            final String anc = labeler.apply( a );
+            if ( !ForesterUtil.isEmpty( anc ) ) {
+                return own.equalsIgnoreCase( anc ); // nearest ancestor with a visible label
+            }
+            // an ancestor with a Taxonomy but no visible label (e.g. only a tax-id) -- keep walking
+        }
+        return false;
     }
 
     /** Sentinel for {@link #maximalMonochromaticRoots}: a subtree whose tips are not all one rank taxon. */

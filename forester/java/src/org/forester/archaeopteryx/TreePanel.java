@@ -2651,7 +2651,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final Taxonomy taxonomy = node.getNodeData().isHasTaxonomy() ? node.getNodeData().getTaxonomy() : null;
         final boolean show_tax = (taxonomy != null)
                 && (getControlPanel().isShowTaxonomyCode() || getControlPanel().isShowTaxonomyScientificNames()
-                        || getControlPanel().isShowTaxonomyCommonNames() || getControlPanel().isShowTaxonomyRank());
+                        || getControlPanel().isShowTaxonomyCommonNames() || getControlPanel().isShowTaxonomyRank())
+                && !TreePanelUtil.isDuplicateOfAncestorTaxon(node, this::internalTaxonomyLabelText);
         final StringBuilder sb = new StringBuilder();
         nodeDataAsSB(node, sb);
         final String data_str = sb.toString().trim();
@@ -3029,7 +3030,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         boolean saw_species = false;
         if ((getControlPanel().isShowTaxonomyCode() || getControlPanel().isShowTaxonomyScientificNames()
                 || getControlPanel().isShowTaxonomyCommonNames() || getControlPanel().isShowTaxonomyRank())
-                && node.getNodeData().isHasTaxonomy()) {
+                && node.getNodeData().isHasTaxonomy()
+                && !TreePanelUtil.isDuplicateOfAncestorTaxon(node, this::internalTaxonomyLabelText)) {
             final int taxonomy_width = paintTaxonomy(g, node, is_in_found_nodes, to_pdf, to_graphics_file, x);
             x += taxonomy_width;
             saw_species = taxonomy_width > 0;
@@ -3190,6 +3192,19 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      * rare legacy feature positioned to the right of the node) keep the old right-placement so nothing
      * is dropped.
      */
+    /** The exact taxonomy text the paint path would draw for {@code node} under the active taxonomy checkboxes
+     *  (rank/code/scientific/common), trimmed -- the label basis for {@link TreePanelUtil#isDuplicateOfAncestorTaxon}
+     *  so the redundancy test matches what is actually shown. Empty when the node has no taxonomy or none of its
+     *  parts are displayed. */
+    private String internalTaxonomyLabelText(final PhylogenyNode node) {
+        if (!node.getNodeData().isHasTaxonomy()) {
+            return "";
+        }
+        final StringBuilder sb = new StringBuilder();
+        nodeTaxonomyDataAsSB(node.getNodeData().getTaxonomy(), sb);
+        return sb.toString().trim();
+    }
+
     private boolean usesAboveBranchInternalLabel(final PhylogenyNode node) {
         if (!getOptions().isInternalLabelsAboveBranch() || node.isExternal() || node.isCollapse()
                 || node.isRoot()) {
@@ -3234,7 +3249,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         String taxo = "";
         if ((getControlPanel().isShowTaxonomyCode() || getControlPanel().isShowTaxonomyScientificNames()
                 || getControlPanel().isShowTaxonomyCommonNames() || getControlPanel().isShowTaxonomyRank())
-                && node.getNodeData().isHasTaxonomy()) {
+                && node.getNodeData().isHasTaxonomy()
+                && !TreePanelUtil.isDuplicateOfAncestorTaxon(node, this::internalTaxonomyLabelText)) {
             _sb.setLength(0);
             nodeTaxonomyDataAsSB(node.getNodeData().getTaxonomy(), _sb);
             taxo = _sb.toString().trim();

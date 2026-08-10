@@ -29,6 +29,7 @@ import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.SortedSet;
+import java.util.function.Function;
 
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
@@ -66,7 +67,121 @@ public final class TreePanelUtilTest {
                 && testAbbreviateScientificName() && testSupportColor() && testScaleGridLines()
                 && testScaleAxisTickValues() && testFormatCompactNumber() && testHpdBarXRange()
                 && testOrientationTransform() && testInternalLabelAlignWidth() && testAutoTipLabelDirection()
-                && testUserVisiblePropertiesText() && testTipLineagesAndUnresolved() && testInferenceStrings();
+                && testUserVisiblePropertiesText() && testTipLineagesAndUnresolved() && testInferenceStrings()
+                && testIsDuplicateOfAncestorTaxon();
+    }
+
+    /**
+     * isDuplicateOfAncestorTaxon flags a non-root internal node whose taxon matches its nearest annotated ancestor
+     * (so the redundant label can be suppressed at draw time), skipping un-annotated intermediates; tips, the root,
+     * and un-annotated nodes never qualify.
+     */
+    private static boolean testIsDuplicateOfAncestorTaxon() {
+        // the label the paint path would show; here = scientific name (what the default checkboxes render)
+        final Function<PhylogenyNode, String> sci = n -> TreePanelUtil.taxonomyLabel( n.getNodeData().getTaxonomy() );
+        // root(Carnivora) -> mid(Carnivora) -> {Felis, Panthera}; root -> Canis
+        final PhylogenyNode mid = taxInternal( "Carnivora" );
+        mid.addAsChild( genusLeaf( "Felis" ) );
+        mid.addAsChild( genusLeaf( "Panthera" ) );
+        final PhylogenyNode root = taxInternal( "Carnivora" );
+        root.addAsChild( mid );
+        root.addAsChild( genusLeaf( "Canis" ) );
+        if ( TreePanelUtil.isDuplicateOfAncestorTaxon( root, sci ) ) {
+            return fail( "the root can never be a duplicate" );
+        }
+        if ( !TreePanelUtil.isDuplicateOfAncestorTaxon( mid, sci ) ) {
+            return fail( "a Carnivora node inside a Carnivora node must be a duplicate" );
+        }
+        if ( TreePanelUtil.isDuplicateOfAncestorTaxon( mid.getChildNode( 0 ), sci ) ) {
+            return fail( "an external tip is never a duplicate" );
+        }
+        // a DIFFERENT taxon than the ancestor is not a duplicate
+        final PhylogenyNode fam = taxInternal( "Felidae" );
+        fam.addAsChild( genusLeaf( "Lynx" ) );
+        final PhylogenyNode root2 = taxInternal( "Carnivora" );
+        root2.addAsChild( fam );
+        if ( TreePanelUtil.isDuplicateOfAncestorTaxon( fam, sci ) ) {
+            return fail( "Felidae inside Carnivora is NOT a duplicate" );
+        }
+        // skip an un-annotated intermediate: A(Carnivora) -> B(no taxonomy) -> C(Carnivora) duplicates A
+        final PhylogenyNode c = taxInternal( "Carnivora" );
+        c.addAsChild( genusLeaf( "Felis" ) );
+        final PhylogenyNode b = new PhylogenyNode();
+        b.addAsChild( c );
+        final PhylogenyNode a = taxInternal( "Carnivora" );
+        a.addAsChild( b );
+        if ( TreePanelUtil.isDuplicateOfAncestorTaxon( b, sci ) ) {
+            return fail( "an internal node without a taxonomy is never a duplicate" );
+        }
+        if ( !TreePanelUtil.isDuplicateOfAncestorTaxon( c, sci ) ) {
+            return fail( "C(Carnivora) must duplicate A(Carnivora) across an un-annotated B" );
+        }
+        // ... and NOT when the nearest annotated ancestor differs
+        final PhylogenyNode c2 = taxInternal( "Rodentia" );
+        c2.addAsChild( genusLeaf( "Mus" ) );
+        final PhylogenyNode b2 = new PhylogenyNode();
+        b2.addAsChild( c2 );
+        final PhylogenyNode a2 = taxInternal( "Mammalia" );
+        a2.addAsChild( b2 );
+        if ( TreePanelUtil.isDuplicateOfAncestorTaxon( c2, sci ) ) {
+            return fail( "Rodentia inside Mammalia is NOT a duplicate" );
+        }
+        // the label BASIS is the caller's: two nodes sharing a scientific name but showing a different CODE are
+        // duplicates under the scientific-name labeler yet NOT under a code-showing labeler (the checkbox-aware fix)
+        final Function<PhylogenyNode, String> code = n -> {
+            final String cd = n.getNodeData().getTaxonomy().getTaxonomyCode();
+            return ( cd == null ) ? "" : cd;
+        };
+        final PhylogenyNode cc = taxWithCode( "Bacteria", "BBBBB" );
+        cc.addAsChild( genusLeaf( "x" ) );
+        final PhylogenyNode aa = taxWithCode( "Bacteria", "AAAAA" );
+        aa.addAsChild( cc );
+        if ( !TreePanelUtil.isDuplicateOfAncestorTaxon( cc, sci ) ) {
+            return fail( "same scientific name IS a duplicate under the scientific-name labeler" );
+        }
+        if ( TreePanelUtil.isDuplicateOfAncestorTaxon( cc, code ) ) {
+            return fail( "differing codes are NOT a duplicate under a code-showing labeler" );
+        }
+        // an ancestor whose label renders EMPTY (only a tax-id) is skipped: A(Carnivora) -> B(empty) -> C(Carnivora)
+        final PhylogenyNode c3 = taxInternal( "Carnivora" );
+        c3.addAsChild( genusLeaf( "Felis" ) );
+        final PhylogenyNode b3 = taxIdOnly();
+        b3.addAsChild( c3 );
+        final PhylogenyNode a3 = taxInternal( "Carnivora" );
+        a3.addAsChild( b3 );
+        if ( !TreePanelUtil.isDuplicateOfAncestorTaxon( c3, sci ) ) {
+            return fail( "C(Carnivora) must duplicate A(Carnivora) across an empty-label B" );
+        }
+        return true;
+    }
+
+    /** An internal node carrying a taxonomy with just a scientific name (no rank). */
+    private static PhylogenyNode taxInternal( final String sci ) {
+        final PhylogenyNode n = new PhylogenyNode();
+        final Taxonomy t = new Taxonomy();
+        t.setScientificName( sci );
+        n.getNodeData().setTaxonomy( t );
+        return n;
+    }
+
+    private static PhylogenyNode taxWithCode( final String sci, final String code ) {
+        final PhylogenyNode n = taxInternal( sci );
+        try {
+            n.getNodeData().getTaxonomy().setTaxonomyCode( code );
+        }
+        catch ( final Exception e ) {
+            throw new RuntimeException( e );
+        }
+        return n;
+    }
+
+    /** An internal node with a Taxonomy that renders NO visible label (only a tax-id). */
+    private static PhylogenyNode taxIdOnly() {
+        final PhylogenyNode n = new PhylogenyNode();
+        final Taxonomy t = new Taxonomy();
+        t.setIdentifier( new Identifier( "9999", "ncbi" ) );
+        n.getNodeData().setTaxonomy( t );
+        return n;
     }
 
     /**

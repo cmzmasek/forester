@@ -474,6 +474,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Internal taxonomy dedup: ");
+        if (org.forester.archaeopteryx.InternalTaxonomyDedupTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Italic scientific names: ");
         if (org.forester.archaeopteryx.ItalicScientificNamesTest.test()) {
             System.out.println("OK.");
