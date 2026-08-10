@@ -2740,9 +2740,14 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         final NodeDataImporter.ImportResult result = importAnnotationsAndRefit(phy, choice._table, choice._key_col,
                 choice._match_by, choice._plan, display_name);
         final TreePanel tp = getCurrentTreePanel();
-        if (tp != null) {
-            tp.setLastImportProfile(NodeDataImporter.ImportProfile.from(choice._table, choice._key_col,
-                    choice._match_by, choice._plan, reimport_locator, is_url)); // enable one-click Re-import
+        // Only remember/persist the profile when the import ACTUALLY annotated tips -- mirrors the undo + setEdited
+        // gating in importAnnotationsAndRefit. A confirmed 0-match import (wrong key/attribute) must not clobber a good
+        // prior profile (un-undoably, since no checkpoint was taken) nor mark the tree dirty for a no-op change.
+        if ((tp != null) && (result.getTipsAnnotated() > 0)) {
+            final NodeDataImporter.ImportProfile profile = NodeDataImporter.ImportProfile.from(choice._table,
+                    choice._key_col, choice._match_by, choice._plan, reimport_locator, is_url);
+            tp.setLastImportProfile(profile); // enable one-click Re-import this session
+            NodeDataImporter.writeProfileToTree(phy, profile); // ...and persist it with the tree (survives save/reload)
         }
         final int type = result.getWarnings().isEmpty() ? JOptionPane.INFORMATION_MESSAGE : JOptionPane.WARNING_MESSAGE;
         JOptionPane.showMessageDialog(this, "Imported from " + display_name + ":\n\n" + result.summary(),
@@ -2849,6 +2854,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         tp.setPhylogenyGraphicsType(PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR);
         getOptions().setTreeOrientation(Options.TREE_ORIENTATION.ROOT_TOP);
         getOptions().setTipLabelsBelowColumns(true);
+        getOptions().setTipLabelDirection(Options.TIP_LABEL_DIRECTION.AUTO); // upright short names, tilt as density rises
         applyOptionsToMenuStates(getOptions()); // reflect the labels-below toggle in the menu / Settings dialog
         tp.getControlPanel().setTreeDisplayType(Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM); // align tips -> clean grid
         // NB: display-only -- do NOT setEdited(true): nothing here is saved to the tree file, and setEdited would both

@@ -70,6 +70,7 @@ final public class Options {
 
     /** The angle of the external-node (tip) labels in a vertical (root-top/bottom) orientation. */
     static enum TIP_LABEL_DIRECTION {
+        AUTO("Auto (fit)"),
         HORIZONTAL("Horizontal (0°)"),
         ANGLED("Diagonal (45°)"),
         VERTICAL("Vertical (90°)");

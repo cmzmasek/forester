@@ -41,6 +41,8 @@ import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Accession;
 import org.forester.phylogeny.data.BranchColor;
+import org.forester.phylogeny.data.PropertiesList;
+import org.forester.phylogeny.data.Property;
 import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
@@ -917,5 +919,54 @@ public class TreePanelUtil {
             return Math.max( 0, total - space_width );
         }
         return total;
+    }
+
+    /**
+     * Auto-pick the tip-label angle for a vertical dendrogram from how much room each tip has: upright (0°) when the
+     * longest label fits between adjacent tips, else diagonal (45°) while its horizontal projection fits, else
+     * vertical (90°). {@code tip_spacing} is the distance between two adjacent tips along the breadth axis (i.e.
+     * {@code 2 * getYdistance()}); {@code longest_label_width} the widest tip label. A degenerate/absent layout
+     * (non-positive inputs) falls back to vertical (always fits). A centred horizontal label reaches ±width/2 per
+     * side, so it needs width ≤ spacing; a 45° label's horizontal footprint is ~width·cos45 = width/√2.
+     */
+    static Options.TIP_LABEL_DIRECTION autoTipLabelDirection( final double tip_spacing,
+                                                              final double longest_label_width ) {
+        if ( ( tip_spacing <= 0 ) || ( longest_label_width <= 0 ) ) {
+            return Options.TIP_LABEL_DIRECTION.VERTICAL;
+        }
+        if ( longest_label_width <= tip_spacing ) {
+            return Options.TIP_LABEL_DIRECTION.HORIZONTAL;
+        }
+        if ( ( longest_label_width * 0.70710678 ) <= tip_spacing ) {
+            return Options.TIP_LABEL_DIRECTION.ANGLED;
+        }
+        return Options.TIP_LABEL_DIRECTION.VERTICAL;
+    }
+
+    /** ref-namespace prefix for INTERNAL Aptx metadata properties (e.g. the persisted Re-import annotation profile on
+     *  the root). These are machinery for the save/reload round-trip, not user content, so they are hidden from the
+     *  user-facing node-data displays (rollover popup, Display Node Data) by {@link #userVisiblePropertiesText}. */
+    final static String INTERNAL_PROPERTY_REF_PREFIX = "aptx:";
+
+    static boolean isInternalPropertyRef( final String ref ) {
+        return ( ref != null ) && ref.startsWith( INTERNAL_PROPERTY_REF_PREFIX );
+    }
+
+    /** The property list as newline-joined display text, EXCLUDING internal {@code aptx:*} metadata -- mirrors
+     *  {@link PropertiesList#asSimpleText()} but drops the properties an end user should never see. */
+    static StringBuffer userVisiblePropertiesText( final PropertiesList props ) {
+        final StringBuffer sb = new StringBuffer();
+        if ( props != null ) {
+            for( final Property p : props.getProperties() ) {
+                if ( isInternalPropertyRef( p.getRef() ) ) {
+                    continue;
+                }
+                if ( sb.length() > 0 ) {
+                    sb.append( "\n" );
+                }
+                sb.append( p.asText() );
+            }
+        }
+        return sb;
     }
 }

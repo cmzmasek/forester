@@ -22,11 +22,15 @@ package org.forester.archaeopteryx.tools;
 
 import java.util.List;
 
+import org.forester.archaeopteryx.tools.NodeDataImporter.ImportProfile;
 import org.forester.archaeopteryx.tools.NodeDataImporter.ImportResult;
 import org.forester.archaeopteryx.tools.NodeDataImporter.MatchBy;
 import org.forester.archaeopteryx.tools.NodeDataImporter.MatchReport;
 import org.forester.archaeopteryx.tools.NodeDataImporter.Table;
+import org.forester.io.parsers.phyloxml.PhyloXmlParser;
+import org.forester.io.writers.PhylogenyWriter;
 import org.forester.phylogeny.Phylogeny;
+import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Accession;
 import org.forester.phylogeny.data.Identifier;
@@ -56,7 +60,8 @@ public final class NodeDataImporterTest {
                     && csvParsing() && delimiterDetect() && matchByAccession() && matchByTaxonomy() && dryRunCounts()
                     && embeddedNewlineCsv() && explicitDelimiter() && columnPlan()
                     && nodeIdColumnSkipped() && leadingBlankLine() && emptyRenameSkipped() && dryRunValidatesKeyCol()
-                    && userMatchOptionsAndSummary() && defaultKeyPrefersName() && importProfile();
+                    && userMatchOptionsAndSummary() && defaultKeyPrefersName() && importProfile()
+                    && importProfilePersistence();
         }
         catch ( final Exception e ) {
             e.printStackTrace();
@@ -644,6 +649,67 @@ public final class NodeDataImporterTest {
         final Table t3 = NodeDataImporter.parseTable( "id,host\nZ,x\n" );
         if ( prof.keyColumn( t3 ) != t3.defaultKeyColumn() ) {
             return fail( "a missing key header should fall back to the default key column" );
+        }
+        return true;
+    }
+
+    /** An ImportProfile serializes/deserializes losslessly (with nasty chars) AND survives a full phyloXML save+reload
+     *  as a root-node property (increment 3b: Re-import works across close/reopen). */
+    private static boolean importProfilePersistence() throws Exception {
+        // headers carrying every reserved separator (| ~ ;) and internal spaces, a rename with ; + a DOUBLE space,
+        // and a source with ; + a double space + a tab + a pipe -- exercises the whole escape table incl. \c and \_
+        // (a semicolon or multi-space must NOT corrupt the round-trip, incl. through XML whitespace normalization)
+        final Table t = NodeDataImporter.parseTable( "name\ta|b\tc~d;e\treads\nX\t1\t2\t3\n" );
+        final NodeDataImporter.ColumnPlan plan = NodeDataImporter.ColumnPlan.importAll( t );
+        plan.setIncluded( 2, false );             // exclude "c~d;e"
+        plan.setHeader( 3, "renamed|ref;  x" );   // rename "reads" -> a ref with a pipe, a semicolon, and two spaces
+        final ImportProfile prof = ImportProfile.from( t, 0, MatchBy.SEQUENCE_ACCESSION, plan,
+                "/data/case;  control\tand|pipe.csv", false );
+        // (1) serialize round-trip
+        final ImportProfile back = ImportProfile.deserialize( prof.serialize() );
+        if ( ( back == null ) || !prof.serialize().equals( back.serialize() ) ) {
+            return fail( "serialize/deserialize should round-trip losslessly" );
+        }
+        if ( !prof.getSource().equals( back.getSource() ) || back.isUrl()
+                || ( back.getMatchBy() != MatchBy.SEQUENCE_ACCESSION ) ) {
+            return fail( "profile fields not restored: source=" + back.getSource() );
+        }
+        // (2) malformed / unknown-version input deserializes to null, never a crash
+        if ( ( ImportProfile.deserialize( "garbage" ) != null ) || ( ImportProfile.deserialize( "v9\tx" ) != null )
+                || ( ImportProfile.deserialize( "" ) != null ) ) {
+            return fail( "malformed / unknown-version profile should deserialize to null" );
+        }
+        // (3) write onto a tree (root property) and read it back
+        final Phylogeny phy = bareTree();
+        NodeDataImporter.writeProfileToTree( phy, prof );
+        if ( ( NodeDataImporter.readProfileFromTree( phy ) == null )
+                || !prof.serialize().equals( NodeDataImporter.readProfileFromTree( phy ).serialize() ) ) {
+            return fail( "profile should read back from the tree it was written to" );
+        }
+        // (4) FULL phyloXML save + reload recovers the profile (the persistence guarantee)
+        final java.io.File tmp = java.io.File.createTempFile( "aptx_profile", ".xml" );
+        tmp.deleteOnExit();
+        new PhylogenyWriter().toPhyloXML( phy, 0, tmp );
+        final Phylogeny reloaded = ParserBasedPhylogenyFactory.getInstance()
+                .create( tmp, PhyloXmlParser.createPhyloXmlParser() )[ 0 ];
+        final ImportProfile persisted = NodeDataImporter.readProfileFromTree( reloaded );
+        if ( ( persisted == null ) || !prof.serialize().equals( persisted.serialize() ) ) {
+            return fail( "the profile did not survive a phyloXML save/reload" );
+        }
+        // and the reloaded profile still resolves the column mapping correctly
+        final NodeDataImporter.ColumnPlan p2 = persisted.columnPlan( t );
+        if ( p2.isIncluded( 2 ) || !"renamed|ref;  x".equals( p2.header( 3 ) ) ) {
+            return fail( "the reloaded profile lost its exclude/rename mapping (incl. the ;/double-space): "
+                    + p2.header( 3 ) );
+        }
+        if ( !"/data/case;  control\tand|pipe.csv".equals( persisted.getSource() ) ) {
+            return fail( "the reloaded source lost a semicolon / double space / tab through the XML round-trip: "
+                    + persisted.getSource() );
+        }
+        // (5) writeProfileToTree(null) clears it
+        NodeDataImporter.writeProfileToTree( phy, null );
+        if ( NodeDataImporter.readProfileFromTree( phy ) != null ) {
+            return fail( "writeProfileToTree(null) should clear the persisted profile" );
         }
         return true;
     }

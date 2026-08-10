@@ -206,6 +206,33 @@ public final class OrientationRenderTest {
                         tips[ i ].setName( saved_names[ i ] );
                     }
                     o.setShowTreeName( saved_show_name );
+
+                    // AUTO (fit) tip angle: resolves via the density heuristic through the REAL layout, and -- the point
+                    // of the per-pass cache -- the breadth reserve and the paint agree on that resolved direction (so an
+                    // AUTO layout inherits the fixed-direction no-clip guarantee proven just above). Wide window + short
+                    // names -> upright (0deg); the same spacing with long names -> vertical (90deg).
+                    o.setTipLabelDirection( Options.TIP_LABEL_DIRECTION.AUTO );
+                    final String[] pre_auto = new String[ tips.length ];
+                    for ( int i = 0; i < tips.length; ++i ) {
+                        pre_auto[ i ] = tips[ i ].getName();
+                        tips[ i ].setName( "t" + i ); // short: fits between tips
+                    }
+                    layout( frame, tp, o, TREE_ORIENTATION.ROOT_TOP, w, h );
+                    if ( Math.abs( tp.tipLabelAngleForTest() ) > 1e-6 ) {
+                        fail( ok, "AUTO with short names in a wide window should settle upright (0deg), got "
+                                + tp.tipLabelAngleForTest() );
+                    }
+                    for ( int i = 0; i < tips.length; ++i ) {
+                        tips[ i ].setName( "Mmmmmmmmmmmmmmmmmmmmmmmm" ); // long: cannot fit -> tilts to vertical
+                    }
+                    layout( frame, tp, o, TREE_ORIENTATION.ROOT_TOP, w, h );
+                    if ( Math.abs( Math.abs( tp.tipLabelAngleForTest() ) - ( Math.PI / 2.0 ) ) > 1e-6 ) {
+                        fail( ok, "AUTO with long names should settle vertical (90deg), got "
+                                + tp.tipLabelAngleForTest() );
+                    }
+                    for ( int i = 0; i < tips.length; ++i ) {
+                        tips[ i ].setName( pre_auto[ i ] );
+                    }
                     o.setTipLabelDirection( Options.TIP_LABEL_DIRECTION.VERTICAL ); // restore
 
                     // internal-node data placement: the internal label sits LEFT of the (vertical) branch and the

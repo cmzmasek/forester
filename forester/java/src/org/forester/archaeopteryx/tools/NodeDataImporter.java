@@ -673,6 +673,164 @@ public final class NodeDataImporter {
             }
             return plan;
         }
+
+        /** Serialize to a single escaped, versioned string (tab-separated fields; list/map items {@code |}- and
+         *  {@code ~}-separated) for persistence as a node property. Round-trips via {@link #deserialize}. */
+        public String serialize() {
+            // ';'-separated fields (NOT tab/newline -- XML text-content normalization would mangle whitespace);
+            // ';' | ~ are all escaped inside values, so they are unambiguous separators
+            final StringBuilder sb = new StringBuilder( "v1" );
+            sb.append( ';' ).append( esc( _source ) );
+            sb.append( ';' ).append( _is_url ? "1" : "0" );
+            sb.append( ';' ).append( _delimiter == null ? "" : esc( String.valueOf( _delimiter.charValue() ) ) );
+            sb.append( ';' ).append( _match_by.name() );
+            sb.append( ';' ).append( esc( _key_header ) );
+            sb.append( ';' );
+            boolean first = true;
+            for( final String h : _excluded_headers ) {
+                sb.append( first ? "" : "|" ).append( esc( h ) );
+                first = false;
+            }
+            sb.append( ';' );
+            first = true;
+            for( final Map.Entry<String, String> e : _renames.entrySet() ) {
+                sb.append( first ? "" : "|" ).append( esc( e.getKey() ) ).append( '~' ).append( esc( e.getValue() ) );
+                first = false;
+            }
+            return sb.toString();
+        }
+
+        /** Parse a {@link #serialize}d profile, or {@code null} if empty / malformed / a version we do not know. */
+        public static ImportProfile deserialize( final String s ) {
+            if ( ForesterUtil.isEmpty( s ) ) {
+                return null;
+            }
+            final String[] f = s.split( ";", -1 );
+            if ( ( f.length != 8 ) || !"v1".equals( f[ 0 ] ) ) {
+                return null;
+            }
+            try {
+                final Character delim = f[ 3 ].isEmpty() ? null : Character.valueOf( unesc( f[ 3 ] ).charAt( 0 ) );
+                final Set<String> excluded = new LinkedHashSet<>();
+                if ( !f[ 6 ].isEmpty() ) {
+                    for( final String it : f[ 6 ].split( "\\|", -1 ) ) {
+                        excluded.add( unesc( it ) );
+                    }
+                }
+                final Map<String, String> renames = new java.util.LinkedHashMap<>();
+                if ( !f[ 7 ].isEmpty() ) {
+                    for( final String e : f[ 7 ].split( "\\|", -1 ) ) {
+                        final int t = e.indexOf( '~' );
+                        if ( t >= 0 ) {
+                            renames.put( unesc( e.substring( 0, t ) ), unesc( e.substring( t + 1 ) ) );
+                        }
+                    }
+                }
+                return new ImportProfile( unesc( f[ 1 ] ), "1".equals( f[ 2 ] ), delim, MatchBy.valueOf( f[ 4 ] ),
+                                          unesc( f[ 5 ] ), excluded, renames );
+            }
+            catch ( final RuntimeException e ) {
+                return null; // a corrupt field (bad enum, empty delim char, ...) -> no profile, never a crash
+            }
+        }
+
+        private static String esc( final String s ) {
+            // escape ALL whitespace (incl. the space char) as well as the separators: the profile is stored as a
+            // phyloXML property value, and XmlElement.getValueAsString() collapses whitespace runs to one space +
+            // trims on reload, which would silently corrupt a value with a double/leading/trailing space
+            final StringBuilder b = new StringBuilder();
+            for( int i = 0; i < s.length(); i++ ) {
+                final char c = s.charAt( i );
+                switch ( c ) {
+                    case '\\': b.append( "\\\\" ); break;
+                    case '\t': b.append( "\\t" ); break;
+                    case '\n': b.append( "\\n" ); break;
+                    case '\r': b.append( "\\r" ); break;
+                    case ' ':  b.append( "\\_" ); break;
+                    case '|':  b.append( "\\p" ); break;
+                    case '~':  b.append( "\\s" ); break;
+                    case ';':  b.append( "\\c" ); break;
+                    default:   b.append( c );
+                }
+            }
+            return b.toString();
+        }
+
+        private static String unesc( final String s ) {
+            final StringBuilder b = new StringBuilder();
+            for( int i = 0; i < s.length(); i++ ) {
+                final char c = s.charAt( i );
+                if ( ( c == '\\' ) && ( ( i + 1 ) < s.length() ) ) {
+                    final char n = s.charAt( ++i );
+                    switch ( n ) {
+                        case 't': b.append( '\t' ); break;
+                        case 'n': b.append( '\n' ); break;
+                        case 'r': b.append( '\r' ); break;
+                        case '_': b.append( ' ' ); break;
+                        case 'p': b.append( '|' ); break;
+                        case 's': b.append( '~' ); break;
+                        case 'c': b.append( ';' ); break;
+                        default:  b.append( n ); // covers '\\' -> '\'
+                    }
+                }
+                else {
+                    b.append( c );
+                }
+            }
+            return b.toString();
+        }
+    }
+
+    /** phyloXML node-property ref under which an {@link ImportProfile} is persisted (on the ROOT node -- an internal
+     *  node, so it stays out of the tip-facing Color-by / Annotation-Column / export features). */
+    public static final String IMPORT_PROFILE_REF = "aptx:import_profile";
+
+    /** Persist {@code profile} onto {@code phy} (as a property on the root node, so it saves with the tree); any prior
+     *  profile property anywhere in the tree is removed first. A {@code null} profile just clears it. */
+    public static void writeProfileToTree( final Phylogeny phy, final ImportProfile profile ) {
+        if ( ( phy == null ) || phy.isEmpty() ) {
+            return;
+        }
+        for( final java.util.Iterator<PhylogenyNode> it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final PropertiesList pl = it.next().getNodeData().getProperties();
+            if ( pl != null ) {
+                final Iterator<Property> pi = pl.getProperties().iterator();
+                while ( pi.hasNext() ) {
+                    if ( IMPORT_PROFILE_REF.equals( pi.next().getRef() ) ) {
+                        pi.remove();
+                    }
+                }
+            }
+        }
+        if ( profile == null ) {
+            return;
+        }
+        final PhylogenyNode root = phy.getRoot();
+        PropertiesList pl = root.getNodeData().getProperties();
+        if ( pl == null ) {
+            pl = new PropertiesList();
+            root.getNodeData().setProperties( pl );
+        }
+        pl.addProperty( new Property( IMPORT_PROFILE_REF, profile.serialize(), "", "xsd:string", AppliesTo.NODE ) );
+    }
+
+    /** Read a persisted {@link ImportProfile} from {@code phy} (scans for the profile property, robust to a reroot),
+     *  or {@code null} if none / unparsable. */
+    public static ImportProfile readProfileFromTree( final Phylogeny phy ) {
+        if ( ( phy == null ) || phy.isEmpty() ) {
+            return null;
+        }
+        for( final java.util.Iterator<PhylogenyNode> it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final PropertiesList pl = it.next().getNodeData().getProperties();
+            if ( pl != null ) {
+                for( final Property p : pl.getProperties() ) {
+                    if ( IMPORT_PROFILE_REF.equals( p.getRef() ) ) {
+                        return ImportProfile.deserialize( p.getValue() );
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     /** Apply the parsed {@code table} importing every non-key column (see {@link #apply(Phylogeny, Table, int, MatchBy, ColumnPlan)}). */

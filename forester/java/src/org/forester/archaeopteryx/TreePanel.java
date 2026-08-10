@@ -411,6 +411,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private double _confidence_scale_max = 1.0;
     private int _length_of_longest_text;
     private int _length_of_longest_text_only; // longest tip TEXT label (name+taxonomy) only, excluding domain/vector tracks
+    // AUTO tip-label direction resolved ONCE per calcParametersForPainting pass (null = option is not AUTO). Caching it
+    // keeps the breadth RESERVES and the PAINT in agreement within a pass -- both read this instead of re-resolving AUTO
+    // against a y-distance that the reserves see stale (pre-setYdistance) but the paint sees fresh, which clipped the
+    // outermost upright labels when the fresh spacing flipped the resolved angle. See effectiveTipLabelDirection().
+    private Options.TIP_LABEL_DIRECTION _resolved_auto_tip_dir = null;
     private int _longest_domain;
     private double _longest_rendered_domain; // widest domain track in px (rendered width), for the vertical depth reserve
 
@@ -3728,7 +3733,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     drawConnection(node.getXcoord(), labelTextStartX(node), node.getYcoord(), 5, 20, g);
                 }
                 final int[] label_w = { 0 }; // capture the label's pixel width to place the domain track past it
-                if (getOptions().getTipLabelDirection() == Options.TIP_LABEL_DIRECTION.HORIZONTAL) {
+                if (effectiveTipLabelDirection() == Options.TIP_LABEL_DIRECTION.HORIZONTAL) {
                     // UPRIGHT tip label, centred under (root-top) / over (root-bottom) the tip -- the cleanest look for
                     // short names / sparse trees, and the one a rotated-bitmap export can't produce (its text tilts).
                     label_w[0] = paintTipLabelHorizontal(g, node, to_graphics_file, to_pdf, is_in_found_nodes);
@@ -4661,7 +4666,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     private final StringBuffer propertiesToString(final PhylogenyNode node) {
-        return node.getNodeData().getProperties().asText();
+        // hide internal aptx:* metadata (e.g. the persisted Re-import annotation profile on the root)
+        return TreePanelUtil.userVisiblePropertiesText(node.getNodeData().getProperties());
     }
 
     private void setColor(final Graphics2D g,
@@ -5021,10 +5027,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     }
                 }
                 if (node.getNodeData().isHasProperties()) {
-                    if (_popup_buffer.length() > 0) {
-                        _popup_buffer.append("\n");
+                    // hide internal aptx:* metadata (e.g. the persisted Re-import annotation profile on the root)
+                    final StringBuffer props = TreePanelUtil
+                            .userVisiblePropertiesText(node.getNodeData().getProperties());
+                    if (props.length() > 0) {
+                        if (_popup_buffer.length() > 0) {
+                            _popup_buffer.append("\n");
+                        }
+                        _popup_buffer.append(props);
                     }
-                    _popup_buffer.append(node.getNodeData().getProperties().asText());
                 }
                 if (_popup_buffer.length() > 0) {
                     // the rollover popup is a canvas overlay, so always match the tree color set
@@ -5119,6 +5130,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 getControlPanel().updateFontSizeSlider();
             }
             _length_of_longest_text = calcLengthOfLongestText(); //~~~
+            // resolve AUTO (fit) ONCE for this pass, BEFORE the breadth reserves below read it -- so the reserves and the
+            // later paint see the SAME direction (the reserves run pre-setYdistance and would otherwise resolve AUTO
+            // against a stale/zero y-distance while the paint resolves it against the fresh one -> clipped edge labels).
+            _resolved_auto_tip_dir = (getOptions().getTipLabelDirection() == Options.TIP_LABEL_DIRECTION.AUTO)
+                    ? TreePanelUtil.autoTipLabelDirection(2.0 * getYdistance(), _length_of_longest_text_only) : null;
             // the tip-label footprint split by the label tilt: its reach along the depth axis (the x budget) and along
             // the breadth axis (the y budget). In the horizontal orientation these are getLongestExtNodeInfo() and 0,
             // so the fit below is unchanged; in a vertical orientation they let the fit reserve the label on the axis
@@ -8953,7 +8969,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (!isVerticalOrientation()) {
             return 0;
         }
-        if (getOptions().getTipLabelDirection() == Options.TIP_LABEL_DIRECTION.HORIZONTAL) {
+        if (effectiveTipLabelDirection() == Options.TIP_LABEL_DIRECTION.HORIZONTAL) {
             return 0; // an upright label is CENTRED on its tip, so its L/2-per-side reach is reserved symmetrically by
                       // verticalBreadthPad() (both edge tips fit), not one-sided here
         }
@@ -8981,7 +8997,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (!isVerticalOrientation()) {
             return 0;
         }
-        final int centred_half = (getOptions().getTipLabelDirection() == Options.TIP_LABEL_DIRECTION.HORIZONTAL)
+        final int centred_half = (effectiveTipLabelDirection() == Options.TIP_LABEL_DIRECTION.HORIZONTAL)
                 ? ((_length_of_longest_text_only + 1) / 2) : 0;
         return VERTICAL_BREADTH_PAD + centred_half;
     }
@@ -9093,12 +9109,25 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  The sign follows the orientation so the label always extends AWAY from the tree (down for root-top, up for
      *  root-bottom). */
     private double tipLabelAngle() {
-        final Options.TIP_LABEL_DIRECTION dir = getOptions().getTipLabelDirection();
+        final Options.TIP_LABEL_DIRECTION dir = effectiveTipLabelDirection();
         if (dir == Options.TIP_LABEL_DIRECTION.HORIZONTAL) {
             return 0.0; // upright labels, centred under/over each tip (see paintTipLabelHorizontal)
         }
         final double base = (dir == Options.TIP_LABEL_DIRECTION.VERTICAL) ? (Math.PI / 2.0) : (Math.PI / 4.0);
         return (getOptions().getTreeOrientation() == Options.TREE_ORIENTATION.ROOT_BOTTOM) ? -base : base;
+    }
+
+    /** The concrete tip-label direction, resolving AUTO (fit) from the current tip spacing and longest tip label:
+     *  upright when labels fit between tips, else 45°, else 90° (see {@link TreePanelUtil#autoTipLabelDirection}). */
+    private Options.TIP_LABEL_DIRECTION effectiveTipLabelDirection() {
+        final Options.TIP_LABEL_DIRECTION dir = getOptions().getTipLabelDirection();
+        if (dir != Options.TIP_LABEL_DIRECTION.AUTO) {
+            return dir;
+        }
+        // use the value cached by the current calcParametersForPainting pass so a reserve and the paint agree; fall back
+        // to a live resolve only when no layout pass has run yet (e.g. a paint before the first layout).
+        return (_resolved_auto_tip_dir != null) ? _resolved_auto_tip_dir
+                : TreePanelUtil.autoTipLabelDirection(2.0 * getYdistance(), _length_of_longest_text_only);
     }
 
 

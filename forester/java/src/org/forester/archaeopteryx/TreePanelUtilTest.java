@@ -34,6 +34,9 @@ import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Accession;
 import org.forester.phylogeny.data.Confidence;
+import org.forester.phylogeny.data.PropertiesList;
+import org.forester.phylogeny.data.Property;
+import org.forester.phylogeny.data.Property.AppliesTo;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.ws.seqdb.AccessionAwareLineageService;
 import org.forester.ws.seqdb.Organism;
@@ -59,7 +62,68 @@ public final class TreePanelUtilTest {
                 && testCladeBands() && testRankColorizationViaSequenceIds() && testInternalLabelAboveBranchLayout()
                 && testAbbreviateScientificName() && testSupportColor() && testScaleGridLines()
                 && testScaleAxisTickValues() && testFormatCompactNumber() && testHpdBarXRange()
-                && testOrientationTransform() && testInternalLabelAlignWidth();
+                && testOrientationTransform() && testInternalLabelAlignWidth() && testAutoTipLabelDirection()
+                && testUserVisiblePropertiesText();
+    }
+
+    /** The node-data display text hides internal {@code aptx:*} metadata (the persisted Re-import profile) but keeps
+     *  real user properties -- so hovering / inspecting the root of an annotation-imported tree shows no machinery. */
+    private static boolean testUserVisiblePropertiesText() {
+        final PropertiesList props = new PropertiesList();
+        props.addProperty( new Property( "data:host", "cat", "", "xsd:string", AppliesTo.NODE ) );
+        props.addProperty( new Property( "aptx:import_profile", "v1;/data/x.csv;0;TIP_NAME;name", "", "xsd:string",
+                AppliesTo.NODE ) );
+        props.addProperty( new Property( "data:reads", "42", "", "xsd:decimal", AppliesTo.NODE ) );
+        final String text = TreePanelUtil.userVisiblePropertiesText( props ).toString();
+        if ( text.contains( "aptx:import_profile" ) || text.contains( "v1;" ) ) {
+            return fail( "the internal aptx:import_profile property must not surface in the node-data display: " + text );
+        }
+        if ( !text.contains( "data:host" ) || !text.contains( "cat" ) || !text.contains( "data:reads" )
+                || !text.contains( "42" ) ) {
+            return fail( "real user properties must still be shown: " + text );
+        }
+        // the two kept rows are newline-joined, with NO blank line where the internal row was skipped (order is the
+        // list's own ref-sorted order, so assert the clean-join shape rather than a fixed order)
+        if ( text.startsWith( "\n" ) || text.endsWith( "\n" ) || text.contains( "\n\n" ) ) {
+            return fail( "filtered text must not leave a blank line where the internal row was skipped: [" + text + "]" );
+        }
+        if ( text.split( "\n", -1 ).length != 2 ) {
+            return fail( "filtered text should be exactly the two visible rows: [" + text + "]" );
+        }
+        if ( TreePanelUtil.userVisiblePropertiesText( null ).length() != 0 ) {
+            return fail( "a null property list should yield empty text" );
+        }
+        if ( !TreePanelUtil.isInternalPropertyRef( "aptx:import_profile" )
+                || TreePanelUtil.isInternalPropertyRef( "data:host" )
+                || TreePanelUtil.isInternalPropertyRef( null ) ) {
+            return fail( "isInternalPropertyRef must match only the aptx: namespace" );
+        }
+        return true;
+    }
+
+    /** Auto tip-label angle: upright when labels fit the tip spacing, 45° while their diagonal fits, else vertical. */
+    private static boolean testAutoTipLabelDirection() {
+        // longest label 40px wide
+        if ( TreePanelUtil.autoTipLabelDirection( 50.0, 40.0 ) != Options.TIP_LABEL_DIRECTION.HORIZONTAL ) {
+            return fail( "a label narrower than the tip spacing should stay upright (0°)" );
+        }
+        if ( TreePanelUtil.autoTipLabelDirection( 40.0, 40.0 ) != Options.TIP_LABEL_DIRECTION.HORIZONTAL ) {
+            return fail( "a label exactly at the tip spacing should still be upright" );
+        }
+        // 40px label, spacing 35: too wide for upright, but 40*0.707=28.3 <= 35 -> diagonal
+        if ( TreePanelUtil.autoTipLabelDirection( 35.0, 40.0 ) != Options.TIP_LABEL_DIRECTION.ANGLED ) {
+            return fail( "a label whose diagonal projection fits should be 45°" );
+        }
+        // 40px label, spacing 20: even the diagonal (28.3) overflows -> vertical
+        if ( TreePanelUtil.autoTipLabelDirection( 20.0, 40.0 ) != Options.TIP_LABEL_DIRECTION.VERTICAL ) {
+            return fail( "a dense layout should fall back to vertical (90°)" );
+        }
+        // degenerate (no layout yet) -> vertical, no divide-by-zero
+        if ( ( TreePanelUtil.autoTipLabelDirection( 0.0, 40.0 ) != Options.TIP_LABEL_DIRECTION.VERTICAL )
+                || ( TreePanelUtil.autoTipLabelDirection( 50.0, 0.0 ) != Options.TIP_LABEL_DIRECTION.VERTICAL ) ) {
+            return fail( "a non-positive spacing/width should fall back to vertical" );
+        }
+        return true;
     }
 
     /** The vertical internal-label right-alignment width: the taxonomy's trailing space is dropped only when the

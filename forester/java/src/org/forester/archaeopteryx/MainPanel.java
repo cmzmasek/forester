@@ -92,6 +92,9 @@ public class MainPanel extends JPanel implements ComponentListener {
                                      final String default_name,
                                      final String full_path) {
         final TreePanel treepanel = new TreePanel(phy, config, this);
+        // if this tree was saved after an annotation import, restore the remembered profile so File -> Re-import works
+        // across a save/reload (the profile rides along as a property on the root node)
+        treepanel.setLastImportProfile(org.forester.archaeopteryx.tools.NodeDataImporter.readProfileFromTree(phy));
         getControlPanel().phylogenyAdded(config);
         treepanel.setControlPanel(getControlPanel());
         _treepanels.add(treepanel);

@@ -56,6 +56,9 @@ public final class ImportAnnotationsToolTest {
         if ( GraphicsEnvironment.isHeadless() ) {
             return true;
         }
+        if ( !loadHookRestoresProfileOk() ) {
+            return false;
+        }
         try {
             final File dir = new File( System.getProperty( "user.dir" ), "forester/demo" );
             final File tree_file = new File( dir, "import-annotations.xml" );
@@ -155,6 +158,54 @@ public final class ImportAnnotationsToolTest {
         catch ( final Throwable e ) {
             e.printStackTrace();
             return false;
+        }
+    }
+
+    /** LOAD HOOK: opening a tree that CARRIES a persisted import profile (written on the root by a prior import)
+     *  restores the session's one-click Re-import state -- MainPanel.addPhylogenyInNewTab reads it back on every new
+     *  tab. Drives the real createInstance load path and asserts getLastImportProfile() comes back intact. Headful. */
+    private static boolean loadHookRestoresProfileOk() {
+        try {
+            final Phylogeny carrier = new Phylogeny();
+            final PhylogenyNode root = new PhylogenyNode();
+            final PhylogenyNode a = new PhylogenyNode();
+            a.setName( "A" );
+            final PhylogenyNode b = new PhylogenyNode();
+            b.setName( "B" );
+            root.addAsChild( a );
+            root.addAsChild( b );
+            carrier.setRoot( root );
+            carrier.setRooted( true );
+            carrier.externalNodesHaveChanged();
+            final NodeDataImporter.Table table = NodeDataImporter.parseTable( "name,host\nA,cat\nB,dog\n" );
+            final NodeDataImporter.ImportProfile profile = NodeDataImporter.ImportProfile.from( table, 0,
+                    NodeDataImporter.MatchBy.TIP_NAME, NodeDataImporter.ColumnPlan.importAll( table ),
+                    "/data/hosts.csv", false );
+            NodeDataImporter.writeProfileToTree( carrier, profile ); // persist it on the root, as a real import would
+            final Configuration conf = new Configuration();
+            final MainFrame[] mf = new MainFrame[ 1 ];
+            SwingUtilities.invokeAndWait( () -> mf[ 0 ] = MainFrameApplication
+                    .createInstance( new Phylogeny[] { carrier }, conf, "carrier" ) );
+            final boolean[] ok = { true };
+            SwingUtilities.invokeAndWait( () -> {
+                try {
+                    final NodeDataImporter.ImportProfile restored = mf[ 0 ].getMainPanel().getCurrentTreePanel()
+                            .getLastImportProfile();
+                    if ( restored == null ) {
+                        fail( ok, "opening a profile-carrying tree should restore the Re-import profile on the tab" );
+                    }
+                    else if ( !profile.serialize().equals( restored.serialize() ) ) {
+                        fail( ok, "the restored profile should equal the persisted one: " + restored.serialize() );
+                    }
+                }
+                finally {
+                    ( (JFrame) mf[ 0 ] ).dispose();
+                }
+            } );
+            return ok[ 0 ];
+        }
+        catch ( final Throwable t ) {
+            return fail( "loadHookRestoresProfileOk: " + t );
         }
     }
 
