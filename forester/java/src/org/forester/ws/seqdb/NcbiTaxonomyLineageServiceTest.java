@@ -77,11 +77,12 @@ public final class NcbiTaxonomyLineageServiceTest {
             return fail( "empty esearch must yield no id" );
         }
 
-        // efetch ranked-lineage extraction (the core of the colorize-by-rank fix: Felis -> order Carnivora)
-        final RankedLineage rl = NcbiTaxonomyLineageService.parseEfetchTaxonomyXml( EFETCH_FELIS );
+        // efetch extraction -> ONE TaxonLineage serving every consumer (colorizer + Fetch tool)
+        final TaxonLineage rl = NcbiTaxonomyLineageService.parseEfetchFull( EFETCH_FELIS );
         if ( ( rl == null ) || rl.isEmpty() ) {
             return fail( "Felis lineage did not parse (was external DTD fetched?)" );
         }
+        // rank -> name lookup (the core of the colorize-by-rank fix: Felis -> order Carnivora)
         if ( !"Carnivora".equals( rl.at( "order" ) ) ) {
             return fail( "expected order Carnivora, got " + rl.at( "order" ) );
         }
@@ -99,49 +100,43 @@ public final class NcbiTaxonomyLineageServiceTest {
             return fail( "Felis has no species rank in this lineage" );
         }
         // the "no rank" cellular-organisms entry must be skipped, not stored under some rank
-        if ( rl.asMap().containsValue( "cellular organisms" ) ) {
+        if ( rl.namesByRank().containsValue( "cellular organisms" ) ) {
             return fail( "'no rank' entry should have been skipped" );
         }
-        // domain<->superkingdom alias: NCBI labels the domain level "superkingdom", so at("domain") must
-        // resolve via the superkingdom entry (Eukaryota), and vice versa
-        if ( !"Eukaryota".equals( rl.at( "domain" ) ) ) {
-            return fail( "at(\"domain\") must alias to the superkingdom entry; got " + rl.at( "domain" ) );
+        // rank -> tax-id lookup (Spine A's new capability): ancestors' ids, the taxon's OWN id, and the alias
+        if ( !"33554".equals( rl.taxIdAt( "order" ) ) || !"40674".equals( rl.taxIdAt( "class" ) )
+                || !"9682".equals( rl.taxIdAt( "genus" ) ) ) { // 9682 is Felis's own id
+            return fail( "per-rank tax-ids not plumbed: order=" + rl.taxIdAt( "order" ) + " genus="
+                    + rl.taxIdAt( "genus" ) );
         }
-        final java.util.Map<String, String> dm = new java.util.LinkedHashMap<String, String>();
-        dm.put( "domain", "Bacteria" );
-        if ( !"Bacteria".equals( new RankedLineage( dm ).at( "superkingdom" ) ) ) {
+        // domain<->superkingdom alias: NCBI labels the domain level "superkingdom", so a "domain" query must
+        // resolve via the superkingdom entry (Eukaryota / 2759) for BOTH name and tax-id, and vice versa
+        if ( !"Eukaryota".equals( rl.at( "domain" ) ) || !"2759".equals( rl.taxIdAt( "domain" ) ) ) {
+            return fail( "at/taxIdAt(\"domain\") must alias to the superkingdom entry; got " + rl.at( "domain" ) );
+        }
+        final TaxonLineage domain_only = new TaxonLineage( null, null, null, null,
+                java.util.Collections.singletonList( new TaxonLineage.Ancestor( "Bacteria", "domain", "2" ) ) );
+        if ( !"Bacteria".equals( domain_only.at( "superkingdom" ) ) || !"2".equals( domain_only.taxIdAt( "superkingdom" ) ) ) {
             return fail( "at(\"superkingdom\") must alias to a domain entry when present" );
         }
 
-        // edge cases
-        if ( !NcbiTaxonomyLineageService.parseEfetchTaxonomyXml( "" ).isEmpty() ) {
-            return fail( "empty efetch must yield empty lineage" );
+        // Fetch-tool facet on the SAME object: own scientific name/rank/tax-id/common + the COMPLETE lineage of
+        // scientific names (incl. the no-rank ancestor), ending in the taxon itself
+        if ( !"Felis".equals( rl.getScientificName() ) || !"genus".equals( rl.ownRankOrNull() )
+                || !"9682".equals( rl.getTaxId() ) || !"cats".equals( rl.getCommonName() ) ) {
+            return fail( "own-taxon detail fields wrong: " + rl );
         }
-        if ( !NcbiTaxonomyLineageService.parseEfetchTaxonomyXml( "<TaxaSet></TaxaSet>" ).isEmpty() ) {
-            return fail( "efetch with no Taxon must yield empty lineage" );
-        }
-        if ( !NcbiTaxonomyLineageService.parseEfetchTaxonomyXml( "<broken" ).isEmpty() ) {
-            return fail( "malformed efetch must yield empty lineage, not throw" );
+        if ( !rl.lineageNames().contains( "Carnivora" )
+                || !"Felis".equals( rl.lineageNames().get( rl.lineageNames().size() - 1 ) )
+                || !rl.lineageNames().contains( "cellular organisms" ) ) {
+            return fail( "lineageNames must be the full name path ending in Felis; got " + rl.lineageNames() );
         }
 
-        // full taxonomy detail (the "Fetch Sequence & Taxonomic Data" path): scientific name, rank,
-        // tax-id, common name, and the COMPLETE lineage of scientific names (incl. the no-rank ancestor)
-        final ResolvedTaxonomy rt = NcbiTaxonomyLineageService.parseEfetchTaxonomyDetail( EFETCH_FELIS );
-        if ( ( rt == null ) || rt.isEmpty() ) {
-            return fail( "Felis detail did not parse" );
-        }
-        if ( !"Felis".equals( rt.getScientificName() ) || !"genus".equals( rt.getRank() )
-                || !"9682".equals( rt.getTaxId() ) || !"cats".equals( rt.getCommonName() ) ) {
-            return fail( "detail fields wrong: " + rt );
-        }
-        if ( !rt.getLineage().contains( "Carnivora" )
-                || !"Felis".equals( rt.getLineage().get( rt.getLineage().size() - 1 ) )
-                || !rt.getLineage().contains( "cellular organisms" ) ) {
-            return fail( "detail lineage must be the full name path ending in Felis; got " + rt.getLineage() );
-        }
-        if ( !NcbiTaxonomyLineageService.parseEfetchTaxonomyDetail( "" ).isEmpty()
-                || !NcbiTaxonomyLineageService.parseEfetchTaxonomyDetail( "<broken" ).isEmpty() ) {
-            return fail( "empty/malformed efetch detail must yield an empty ResolvedTaxonomy, not throw" );
+        // edge cases: empty / no-Taxon / malformed efetch all yield an empty TaxonLineage, never throw
+        if ( !NcbiTaxonomyLineageService.parseEfetchFull( "" ).isEmpty()
+                || !NcbiTaxonomyLineageService.parseEfetchFull( "<TaxaSet></TaxaSet>" ).isEmpty()
+                || !NcbiTaxonomyLineageService.parseEfetchFull( "<broken" ).isEmpty() ) {
+            return fail( "empty/no-Taxon/malformed efetch must yield an empty TaxonLineage, not throw" );
         }
 
         // request throttling (keeps the clients under NCBI's ~3 req/sec limit -> avoids HTTP 429)

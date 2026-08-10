@@ -346,6 +346,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Taxon lineage: ");
+        if (org.forester.ws.seqdb.TaxonLineageTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("UniProtKB client: ");
         if (org.forester.ws.seqdb.UniProtKbClientTest.test()) {
             System.out.println("OK.");

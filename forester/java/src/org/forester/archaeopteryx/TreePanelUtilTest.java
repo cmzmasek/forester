@@ -41,7 +41,7 @@ import org.forester.phylogeny.data.Taxonomy;
 import org.forester.ws.seqdb.AccessionAwareLineageService;
 import org.forester.ws.seqdb.Organism;
 import org.forester.ws.seqdb.OrganismSource;
-import org.forester.ws.seqdb.RankedLineage;
+import org.forester.ws.seqdb.TaxonLineage;
 import org.forester.ws.seqdb.TaxonomicLineageService;
 
 /**
@@ -826,22 +826,28 @@ public final class TreePanelUtilTest {
     /** In-memory {@link TaxonomicLineageService}: {@code lineageOf} is cache-only; {@code fetch} copies from the "DB". */
     private static final class FakeLineageService implements TaxonomicLineageService {
 
-        private final Map<String, RankedLineage> _db    = new HashMap<String, RankedLineage>();
-        private final Map<String, RankedLineage> _cache = new HashMap<String, RankedLineage>();
+        private final Map<String, TaxonLineage> _db    = new HashMap<String, TaxonLineage>();
+        private final Map<String, TaxonLineage> _cache = new HashMap<String, TaxonLineage>();
 
         void know( final String name, final Map<String, String> rank_to_name ) {
-            _db.put( name.toLowerCase( Locale.ROOT ), new RankedLineage( rank_to_name ) );
+            // model a resolved lineage as rank-carrying ancestors (own taxon left blank); TaxonLineage.at(rank)
+            // then returns the name, exactly as the old RankedLineage did
+            final ArrayList<TaxonLineage.Ancestor> anc = new ArrayList<TaxonLineage.Ancestor>();
+            for( final Map.Entry<String, String> e : rank_to_name.entrySet() ) {
+                anc.add( new TaxonLineage.Ancestor( e.getValue(), e.getKey(), null ) );
+            }
+            _db.put( name.toLowerCase( Locale.ROOT ), new TaxonLineage( null, null, null, null, anc ) );
         }
 
         @Override
-        public RankedLineage lineageOf( final String taxon ) {
+        public TaxonLineage lineageOf( final String taxon ) {
             return ( taxon == null ) ? null : _cache.get( taxon.toLowerCase( Locale.ROOT ) );
         }
 
         @Override
-        public RankedLineage fetch( final String taxon ) {
+        public TaxonLineage fetch( final String taxon ) {
             final String k = taxon.toLowerCase( Locale.ROOT );
-            final RankedLineage rl = _db.containsKey( k ) ? _db.get( k ) : RankedLineage.EMPTY;
+            final TaxonLineage rl = _db.containsKey( k ) ? _db.get( k ) : TaxonLineage.EMPTY;
             _cache.put( k, rl );
             return rl;
         }

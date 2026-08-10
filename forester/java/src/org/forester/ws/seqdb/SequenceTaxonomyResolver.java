@@ -43,7 +43,7 @@ import org.forester.util.SequenceAccessionTools;
 
 /**
  * Enriches a phylogeny's nodes from sequence + taxonomy databases via clean, timeout/cancel-aware
- * clients ({@link SequenceFetcher} + {@link TaxonomyResolver}).
+ * clients ({@link SequenceFetcher} + {@link TaxonomicLineageService}).
  *
  * <p>Per node it (1) fetches the sequence entry for the node's accession and writes the sequence +
  * organism fields + source-feature properties, then (2) resolves detailed taxonomy (rank, common name,
@@ -98,10 +98,10 @@ public final class SequenceTaxonomyResolver {
         }
     }
 
-    private final SequenceFetcher   _seq_fetcher;
-    private final TaxonomyResolver  _tax_resolver;
+    private final SequenceFetcher          _seq_fetcher;
+    private final TaxonomicLineageService  _tax_resolver;
 
-    public SequenceTaxonomyResolver( final SequenceFetcher seq_fetcher, final TaxonomyResolver tax_resolver ) {
+    public SequenceTaxonomyResolver( final SequenceFetcher seq_fetcher, final TaxonomicLineageService tax_resolver ) {
         _seq_fetcher = seq_fetcher;
         _tax_resolver = tax_resolver;
     }
@@ -144,7 +144,7 @@ public final class SequenceTaxonomyResolver {
                 // node's scientific name / node name.
                 final String query = !ForesterUtil.isEmpty( entry_tax_id ) ? entry_tax_id : taxonomyQuery( node );
                 if ( !ForesterUtil.isEmpty( query ) ) {
-                    final ResolvedTaxonomy rt = _tax_resolver.resolveTaxonomy( query );
+                    final TaxonLineage rt = _tax_resolver.fetch( query );
                     if ( ( rt != null ) && !rt.isEmpty() ) {
                         writeTaxonomyDetail( node, rt );
                         ++tax_written;
@@ -272,7 +272,7 @@ public final class SequenceTaxonomyResolver {
         }
     }
 
-    static void writeTaxonomyDetail( final PhylogenyNode node, final ResolvedTaxonomy rt ) {
+    static void writeTaxonomyDetail( final PhylogenyNode node, final TaxonLineage rt ) {
         final boolean had_tax = node.getNodeData().isHasTaxonomy();
         final Taxonomy tax = had_tax ? node.getNodeData().getTaxonomy() : new Taxonomy();
         if ( !ForesterUtil.isEmpty( rt.getScientificName() ) ) {
@@ -281,16 +281,16 @@ public final class SequenceTaxonomyResolver {
         if ( !ForesterUtil.isEmpty( rt.getCommonName() ) ) {
             tax.setCommonName( rt.getCommonName() );
         }
-        if ( !ForesterUtil.isEmpty( rt.getRank() ) ) {
+        if ( !ForesterUtil.isEmpty( rt.ownRankOrNull() ) ) {
             try {
-                tax.setRank( rt.getRank().toLowerCase( Locale.ROOT ) );
+                tax.setRank( rt.ownRankOrNull().toLowerCase( Locale.ROOT ) );
             }
             catch ( final PhyloXmlDataFormatException e ) {
                 // a rank outside the phyloXML vocabulary -- leave it unset
             }
         }
-        if ( !rt.getLineage().isEmpty() ) {
-            tax.setLineage( new ArrayList<String>( rt.getLineage() ) );
+        if ( !rt.lineageNames().isEmpty() ) {
+            tax.setLineage( new ArrayList<String>( rt.lineageNames() ) );
         }
         if ( !ForesterUtil.isEmpty( rt.getTaxId() ) ) {
             tax.setIdentifier( new Identifier( rt.getTaxId(), "ncbi" ) );

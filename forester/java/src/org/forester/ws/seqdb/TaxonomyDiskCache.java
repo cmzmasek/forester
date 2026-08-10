@@ -35,7 +35,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
- * A small, best-effort persistent cache for resolved NCBI taxonomy ({@link CachedTaxon}). It lets the
+ * A small, best-effort persistent cache for resolved NCBI taxonomy ({@link TaxonLineage}). It lets the
  * rank colorizer and the "Fetch Sequence &amp; Taxonomic Data" tool remember taxa <i>between</i>
  * sessions, so re-opening trees of an organism group you have already seen does not re-query NCBI.
  *
@@ -130,11 +130,11 @@ final class TaxonomyDiskCache {
 
     /**
      * Reads the cache, dropping expired entries and keeping the last line per key, then compacts the
-     * file to that surviving set. Returns the surviving {@code key -> CachedTaxon} map (empty if the
+     * file to that surviving set. Returns the surviving {@code key -> TaxonLineage} map (empty if the
      * cache is disabled or unavailable). Does disk I/O -- call off the EDT where possible.
      */
-    synchronized Map<String, CachedTaxon> load() {
-        final Map<String, CachedTaxon> result = new LinkedHashMap<String, CachedTaxon>();
+    synchronized Map<String, TaxonLineage> load() {
+        final Map<String, TaxonLineage> result = new LinkedHashMap<String, TaxonLineage>();
         if ( !isEnabled() ) {
             return result;
         }
@@ -166,7 +166,7 @@ final class TaxonomyDiskCache {
     }
 
     /** Appends one positive entry. No-op when disabled, unavailable, or the record is empty. */
-    synchronized void put( final String key, final CachedTaxon taxon ) {
+    synchronized void put( final String key, final TaxonLineage taxon ) {
         if ( !isEnabled() || ( key == null ) || ( taxon == null ) || taxon.isEmpty() || !probe() ) {
             return;
         }
@@ -305,14 +305,19 @@ final class TaxonomyDiskCache {
 
     // ---- serialization (pure; package-static for unit testing) ---------------------------------
 
-    static String toLine( final String key, final CachedTaxon t, final long epoch_ms ) {
+    static String toLine( final String key, final TaxonLineage t, final long epoch_ms ) {
         final StringBuilder anc = new StringBuilder();
-        final List<String[]> ancestors = t.getAncestors();
+        final List<TaxonLineage.Ancestor> ancestors = t.getAncestors();
         for( int i = 0; i < ancestors.size(); ++i ) {
             if ( i > 0 ) {
                 anc.append( '|' );
             }
-            anc.append( esc( ancestors.get( i )[ 0 ] ) ).append( '~' ).append( esc( ancestors.get( i )[ 1 ] ) );
+            // name~rank~taxId. THIS build's parseLine reads all three (and tolerates an old 2-field line -> taxId
+            // null). A DOWNGRADE to a pre-tax-id binary (indexOf('~')) would fold "rank~taxId" into the rank and
+            // misplace those cached ancestors -- acceptable: the cache is best-effort, never a dependency, TTL-bounded,
+            // and a bogus rank just falls back to a re-fetch.
+            anc.append( esc( ancestors.get( i ).getName() ) ).append( '~' ).append( esc( ancestors.get( i ).getRank() ) )
+               .append( '~' ).append( esc( ancestors.get( i ).getTaxId() ) );
         }
         return esc( key ) + "\t" + epoch_ms + "\t" + esc( t.getTaxId() ) + "\t" + esc( t.getRank() ) + "\t"
                 + esc( t.getScientificName() ) + "\t" + esc( t.getCommonName() ) + "\t" + anc;
@@ -337,19 +342,19 @@ final class TaxonomyDiskCache {
         if ( key.isEmpty() ) {
             return null;
         }
-        final List<String[]> ancestors = new ArrayList<String[]>();
+        final List<TaxonLineage.Ancestor> ancestors = new ArrayList<TaxonLineage.Ancestor>();
         if ( !f[ 6 ].isEmpty() ) {
             for( final String pair : f[ 6 ].split( "\\|", -1 ) ) {
-                final int sep = pair.indexOf( '~' ); // the only literal '~' is the separator (real ones are escaped)
-                if ( sep < 0 ) {
-                    ancestors.add( new String[] { unesc( pair ), "" } );
-                }
-                else {
-                    ancestors.add( new String[] { unesc( pair.substring( 0, sep ) ), unesc( pair.substring( sep + 1 ) ) } );
-                }
+                // sub-fields name~rank~taxId; the only literal '~' are separators (real ones are escaped). Tolerant of
+                // an OLD 2-field pair (name~rank -> taxId null) so pre-tax-id cache files still load.
+                final String[] p = pair.split( "~", -1 );
+                final String name = unesc( p[ 0 ] );
+                final String rank = ( p.length > 1 ) ? unesc( p[ 1 ] ) : "";
+                final String tax_id = ( p.length > 2 ) ? emptyToNull( unesc( p[ 2 ] ) ) : null;
+                ancestors.add( new TaxonLineage.Ancestor( name, rank, tax_id ) );
             }
         }
-        final CachedTaxon taxon = new CachedTaxon( emptyToNull( unesc( f[ 2 ] ) ), emptyToNull( unesc( f[ 3 ] ) ),
+        final TaxonLineage taxon = new TaxonLineage( emptyToNull( unesc( f[ 2 ] ) ), emptyToNull( unesc( f[ 3 ] ) ),
                                                    emptyToNull( unesc( f[ 4 ] ) ), emptyToNull( unesc( f[ 5 ] ) ),
                                                    ancestors );
         return new Parsed( key, epoch, taxon );
@@ -437,9 +442,9 @@ final class TaxonomyDiskCache {
 
         final String      _key;
         final long        _epoch_ms;
-        final CachedTaxon _taxon;
+        final TaxonLineage _taxon;
 
-        Parsed( final String key, final long epoch_ms, final CachedTaxon taxon ) {
+        Parsed( final String key, final long epoch_ms, final TaxonLineage taxon ) {
             _key = key;
             _epoch_ms = epoch_ms;
             _taxon = taxon;

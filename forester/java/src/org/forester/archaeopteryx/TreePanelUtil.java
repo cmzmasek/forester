@@ -52,7 +52,7 @@ import org.forester.util.ForesterUtil;
 import org.forester.util.SequenceAccessionTools;
 import org.forester.ws.seqdb.AccessionAwareLineageService;
 import org.forester.ws.seqdb.NcbiTaxonomyLineageService;
-import org.forester.ws.seqdb.RankedLineage;
+import org.forester.ws.seqdb.TaxonLineage;
 import org.forester.ws.seqdb.TaxonomicLineageService;
 import org.forester.ws.seqdb.WebOrganismSource;
 
@@ -652,7 +652,7 @@ public class TreePanelUtil {
     /**
      * Maps each external node to its taxon at {@code rank}, omitting tips that cannot be placed.
      * Resolution order per tip: (a) the nearest self-or-ancestor node annotated with exactly that
-     * rank (free, in-tree); (b) the tip's cached {@link RankedLineage} from {@code service} (no
+     * rank (free, in-tree); (b) the tip's cached {@link TaxonLineage} from {@code service} (no
      * network here -- a cache miss simply leaves the tip unplaced).
      */
     final static Map<PhylogenyNode, String> assignTipsToRankTaxon( final Phylogeny tree,
@@ -668,7 +668,7 @@ public class TreePanelUtil {
             if ( ( taxon == null ) && ( service != null ) ) {
                 final String q = tipQueryName( tip );
                 if ( !ForesterUtil.isEmpty( q ) ) {
-                    final RankedLineage rl = service.lineageOf( q );
+                    final TaxonLineage rl = service.lineageOf( q );
                     if ( rl != null ) {
                         taxon = rl.at( rank );
                     }

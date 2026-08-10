@@ -23,15 +23,19 @@ package org.forester.ws.seqdb;
 import java.io.IOException;
 
 /**
- * Resolves a taxon's full {@link RankedLineage} from a taxonomy database, with a clean split
+ * Resolves a taxon's full {@link TaxonLineage} from a taxonomy database, with a clean split
  * between a <b>blocking</b> {@link #fetch(String)} (does network I/O; call off the EDT) and a
  * <b>non-blocking</b> {@link #lineageOf(String)} (cache-only; safe on the EDT). This lets a GUI
  * resolve everything it can from the cache instantly, then fetch only the misses in the background
  * and re-read the cache -- never blocking the event thread on the network.
  *
+ * <p>The returned {@link TaxonLineage} is the single representation every consumer uses: the rank
+ * colorizer / clade-bands ({@link TaxonLineage#at}), Spine B ({@link TaxonLineage#taxIdAt}), and the
+ * "Fetch Sequence &amp; Taxonomic Data" tool (the taxon's own fields + {@link TaxonLineage#lineageNames}).
+ *
  * <p>Implementations cache results (including negatives) so repeated questions about the same taxon
- * cost nothing. This interface is the seam that lets the colorizer be unit-tested with an in-memory
- * fake instead of the network.
+ * cost nothing. This interface is the seam that lets consumers be unit-tested with an in-memory fake
+ * instead of the network.
  */
 public interface TaxonomicLineageService {
 
@@ -39,15 +43,15 @@ public interface TaxonomicLineageService {
      * The cached lineage for {@code taxon}, or {@code null} if it has not been {@link #fetch fetched}
      * yet (or was fetched and not found). Never does network I/O -- safe to call on the EDT.
      */
-    RankedLineage lineageOf( String taxon );
+    TaxonLineage lineageOf( String taxon );
 
     /**
      * Resolves {@code taxon} against the database (network I/O) and caches the result, returning it.
-     * Returns {@link RankedLineage#EMPTY} (cached) when the taxon cannot be resolved, so it is not
+     * Returns {@link TaxonLineage#EMPTY} (cached) when the taxon cannot be resolved, so it is not
      * re-queried. Call off the EDT.
      *
      * @throws IOException on a connection/transport failure (a genuinely-not-found taxon is not an
-     *             error -- it returns {@link RankedLineage#EMPTY}).
+     *             error -- it returns {@link TaxonLineage#EMPTY}).
      */
-    RankedLineage fetch( String taxon ) throws IOException;
+    TaxonLineage fetch( String taxon ) throws IOException;
 }

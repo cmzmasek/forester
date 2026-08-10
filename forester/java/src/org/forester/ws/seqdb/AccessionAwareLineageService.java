@@ -56,8 +56,8 @@ public final class AccessionAwareLineageService implements TaxonomicLineageServi
     // accession query string -> ranked lineage (including EMPTY negatives), so a later cache-only
     // lineageOf(accession) hits and the accession is never re-fetched. The lineage is all we cache --
     // never the protein record the organism was read from.
-    private final Map<String, RankedLineage>         _alias = Collections
-            .synchronizedMap( new HashMap<String, RankedLineage>() );
+    private final Map<String, TaxonLineage>         _alias = Collections
+            .synchronizedMap( new HashMap<String, TaxonLineage>() );
 
     public AccessionAwareLineageService( final TaxonomicLineageService delegate, final OrganismSource organisms ) {
         _delegate = delegate;
@@ -65,11 +65,11 @@ public final class AccessionAwareLineageService implements TaxonomicLineageServi
     }
 
     @Override
-    public RankedLineage lineageOf( final String taxon ) {
+    public TaxonLineage lineageOf( final String taxon ) {
         if ( ForesterUtil.isEmpty( taxon ) ) {
             return null;
         }
-        final RankedLineage rl = _delegate.lineageOf( taxon );
+        final TaxonLineage rl = _delegate.lineageOf( taxon );
         if ( rl != null ) {
             return rl; // a plain name already resolved through the delegate
         }
@@ -77,11 +77,11 @@ public final class AccessionAwareLineageService implements TaxonomicLineageServi
     }
 
     @Override
-    public RankedLineage fetch( final String taxon ) throws IOException {
+    public TaxonLineage fetch( final String taxon ) throws IOException {
         if ( ForesterUtil.isEmpty( taxon ) ) {
-            return RankedLineage.EMPTY;
+            return TaxonLineage.EMPTY;
         }
-        final RankedLineage cached = lineageOf( taxon );
+        final TaxonLineage cached = lineageOf( taxon );
         if ( cached != null ) {
             return cached;
         }
@@ -100,9 +100,9 @@ public final class AccessionAwareLineageService implements TaxonomicLineageServi
      * cached as a negative so the accession is not re-fetched (and the user is not re-prompted); a
      * transport failure propagates so the caller can stop the run cleanly.
      */
-    private RankedLineage fetchViaAccession( final String query, final Accession acc ) throws IOException {
+    private TaxonLineage fetchViaAccession( final String query, final Accession acc ) throws IOException {
         final Organism org = _organisms.organismOf( acc );
-        RankedLineage rl = RankedLineage.EMPTY;
+        TaxonLineage rl = TaxonLineage.EMPTY;
         if ( ( org != null ) && !org.isEmpty() ) {
             if ( !ForesterUtil.isEmpty( org.getTaxId() ) ) {
                 rl = _delegate.fetch( org.getTaxId() ); // exact efetch by NCBI tax-id
@@ -112,7 +112,7 @@ public final class AccessionAwareLineageService implements TaxonomicLineageServi
             }
         }
         if ( rl == null ) {
-            rl = RankedLineage.EMPTY;
+            rl = TaxonLineage.EMPTY;
         }
         _alias.put( key( query ), rl );
         return rl;

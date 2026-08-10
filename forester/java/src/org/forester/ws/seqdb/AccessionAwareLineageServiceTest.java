@@ -22,7 +22,6 @@ package org.forester.ws.seqdb;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -87,7 +86,7 @@ public final class AccessionAwareLineageServiceTest {
 
             // (5) a not-found accession caches a negative: lineageOf returns EMPTY (non-null) and a re-fetch
             //     does not hit the organism source again
-            final RankedLineage miss = svc.fetch( "P99988" );
+            final TaxonLineage miss = svc.fetch( "P99988" );
             if ( ( miss == null ) || !miss.isEmpty() ) {
                 return fail( "an unresolvable accession must return an empty (not null) lineage" );
             }
@@ -101,7 +100,7 @@ public final class AccessionAwareLineageServiceTest {
             }
 
             // (6) empty / blank queries are safe
-            if ( ( svc.fetch( "" ) != RankedLineage.EMPTY ) || ( svc.lineageOf( null ) != null ) ) {
+            if ( ( svc.fetch( "" ) != TaxonLineage.EMPTY ) || ( svc.lineageOf( null ) != null ) ) {
                 return fail( "empty/blank queries must be handled without a fetch" );
             }
         }
@@ -119,24 +118,23 @@ public final class AccessionAwareLineageServiceTest {
     /** In-memory taxonomy delegate: {@code lineageOf} is cache-only; {@code fetch} copies from the "DB". */
     private static final class FakeDelegate implements TaxonomicLineageService {
 
-        private final Map<String, RankedLineage> _db    = new HashMap<String, RankedLineage>();
-        private final Map<String, RankedLineage> _cache = new HashMap<String, RankedLineage>();
+        private final Map<String, TaxonLineage> _db    = new HashMap<String, TaxonLineage>();
+        private final Map<String, TaxonLineage> _cache = new HashMap<String, TaxonLineage>();
 
         void know( final String key, final String rank, final String name ) {
-            final Map<String, String> m = new LinkedHashMap<String, String>();
-            m.put( rank, name );
-            _db.put( key.toLowerCase( Locale.ROOT ), new RankedLineage( m ) );
+            // the delegate resolves this taxon as its own rank/name (no ancestors); TaxonLineage.at(rank) -> name
+            _db.put( key.toLowerCase( Locale.ROOT ), new TaxonLineage( null, rank, name, null, null ) );
         }
 
         @Override
-        public RankedLineage lineageOf( final String taxon ) {
+        public TaxonLineage lineageOf( final String taxon ) {
             return ( taxon == null ) ? null : _cache.get( taxon.trim().toLowerCase( Locale.ROOT ) );
         }
 
         @Override
-        public RankedLineage fetch( final String taxon ) {
+        public TaxonLineage fetch( final String taxon ) {
             final String k = taxon.trim().toLowerCase( Locale.ROOT );
-            final RankedLineage rl = _db.containsKey( k ) ? _db.get( k ) : RankedLineage.EMPTY;
+            final TaxonLineage rl = _db.containsKey( k ) ? _db.get( k ) : TaxonLineage.EMPTY;
             _cache.put( k, rl );
             return rl;
         }

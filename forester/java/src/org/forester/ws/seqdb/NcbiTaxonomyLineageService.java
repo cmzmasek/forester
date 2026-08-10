@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -37,28 +36,23 @@ import org.w3c.dom.NodeList;
 /**
  * A clean {@link TaxonomicLineageService} backed by NCBI Taxonomy via the E-utilities REST API:
  * one <i>esearch</i> maps a scientific name to a tax-id, one <i>efetch</i> returns the full
- * lineage in a single XML response (so we never resolve ranks one ancestor at a time). It serves both
- * the rank colorizer ({@link #fetch}/{@link #lineageOf} &rarr; {@link RankedLineage}) and the
- * "Fetch Sequence &amp; Taxonomic Data" tool ({@link #resolveTaxonomy} &rarr; full
- * {@link ResolvedTaxonomy}). Results -- including "not found" -- are cached for the life of the process.
+ * lineage in a single XML response (so we never resolve ranks one ancestor at a time). It serves every
+ * consumer -- the rank colorizer / clade-bands ({@link #lineageOf}/{@link #fetch} &rarr;
+ * {@link TaxonLineage#at}) and the "Fetch Sequence &amp; Taxonomic Data" tool (the taxon's own fields +
+ * {@link TaxonLineage#lineageNames}) -- from one {@link TaxonLineage} per taxon. Results -- including
+ * "not found" -- are cached for the life of the process.
  *
  * <p>Intentionally new, self-contained code: HTTP/throttle/timeout/XML plumbing comes from
- * {@link WsHttp}, not the legacy taxonomy classes. The XML parsers are split from the network call so
- * they can be unit-tested from captured fixtures.
+ * {@link WsHttp}, not the legacy taxonomy classes. The XML parser is split from the network call so it
+ * can be unit-tested from captured fixtures.
  */
-public final class NcbiTaxonomyLineageService implements TaxonomicLineageService, TaxonomyResolver {
+public final class NcbiTaxonomyLineageService implements TaxonomicLineageService {
 
     private static final String                  ESEARCH = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=taxonomy&tool=Archaeopteryx&term=";
     private static final String                  EFETCH  = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=taxonomy&tool=Archaeopteryx&retmode=xml&id=";
-    // NCBI ranks that are not Linnaean levels a colorization can key on; skipped when building a ranked lineage.
-    private static final String                  NO_RANK = "no rank";
-    private static final String                  CLADE   = "clade";
-    private static final CachedTaxon            EMPTY_TAXON   = new CachedTaxon( null, null, null, null, null );
-    // null-valued entries double as a negative cache (taxon was queried, nothing found).
-    private final Map<String, RankedLineage>     _cache        = Collections
-            .synchronizedMap( new HashMap<String, RankedLineage>() );
-    private final Map<String, ResolvedTaxonomy>  _detail_cache = Collections
-            .synchronizedMap( new HashMap<String, ResolvedTaxonomy>() );
+    // EMPTY entries double as a negative cache (taxon was queried, nothing found).
+    private final Map<String, TaxonLineage>      _cache        = Collections
+            .synchronizedMap( new HashMap<String, TaxonLineage>() );
     // persistent (cross-session) cache of positive resolutions; best-effort, never a dependency.
     private final TaxonomyDiskCache              _disk         = new TaxonomyDiskCache();
     private volatile boolean                     _loaded;
@@ -77,7 +71,7 @@ public final class NcbiTaxonomyLineageService implements TaxonomicLineageService
     }
 
     @Override
-    public RankedLineage lineageOf( final String taxon ) {
+    public TaxonLineage lineageOf( final String taxon ) {
         if ( ForesterUtil.isEmpty( taxon ) ) {
             return null;
         }
@@ -106,7 +100,7 @@ public final class NcbiTaxonomyLineageService implements TaxonomicLineageService
         t.start();
     }
 
-    /** Seeds the in-memory caches from disk exactly once (lazily, on first use). */
+    /** Seeds the in-memory cache from disk exactly once (lazily, on first use). */
     private void ensureLoaded() {
         if ( _loaded ) {
             return;
@@ -115,14 +109,9 @@ public final class NcbiTaxonomyLineageService implements TaxonomicLineageService
             if ( _loaded ) {
                 return;
             }
-            for( final Map.Entry<String, CachedTaxon> e : _disk.load().entrySet() ) {
-                final RankedLineage rl = toRankedLineage( e.getValue() );
-                if ( !rl.isEmpty() ) {
-                    _cache.put( e.getKey(), rl );
-                }
-                final ResolvedTaxonomy rt = toResolvedTaxonomy( e.getValue() );
-                if ( !rt.isEmpty() ) {
-                    _detail_cache.put( e.getKey(), rt );
+            for( final Map.Entry<String, TaxonLineage> e : _disk.load().entrySet() ) {
+                if ( !e.getValue().isEmpty() ) {
+                    _cache.put( e.getKey(), e.getValue() );
                 }
             }
             _loaded = true;
@@ -136,11 +125,10 @@ public final class NcbiTaxonomyLineageService implements TaxonomicLineageService
         return _disk.status();
     }
 
-    /** Deletes the on-disk cache and clears the in-memory caches. */
+    /** Deletes the on-disk cache and clears the in-memory cache. */
     public synchronized void clearPersistentCache() {
         _disk.clear();
         _cache.clear();
-        _detail_cache.clear();
     }
 
     public boolean isPersistentCacheEnabled() {
@@ -157,9 +145,9 @@ public final class NcbiTaxonomyLineageService implements TaxonomicLineageService
     }
 
     @Override
-    public RankedLineage fetch( final String taxon ) throws IOException {
+    public TaxonLineage fetch( final String taxon ) throws IOException {
         if ( ForesterUtil.isEmpty( taxon ) ) {
-            return RankedLineage.EMPTY;
+            return TaxonLineage.EMPTY;
         }
         ensureLoaded();
         final String k = key( taxon );
@@ -179,62 +167,23 @@ public final class NcbiTaxonomyLineageService implements TaxonomicLineageService
         }
         if ( ForesterUtil.isEmpty( id ) ) {
             // esearch found nothing -- a definitive negative; cache it (in memory only) so we never re-query.
-            _cache.put( k, RankedLineage.EMPTY );
-            return RankedLineage.EMPTY;
+            _cache.put( k, TaxonLineage.EMPTY );
+            return TaxonLineage.EMPTY;
         }
-        final CachedTaxon ct = parseEfetchFull( WsHttp.httpGet( EFETCH + WsHttp.encode( id ) ) );
-        final RankedLineage parsed = toRankedLineage( ct );
+        final TaxonLineage parsed = parseEfetchFull( WsHttp.httpGet( EFETCH + WsHttp.encode( id ) ) );
+        // "usable" = TaxonLineage.isEmpty() is false: a scientific name OR any ancestors. This is deliberately more
+        // lenient than the pre-Spine-A colorizer gate ("has a Linnaean rank"): a genuinely rank-less taxon (a
+        // top-level taxon, or one NCBI has no Linnaean ranks for) is now cached positive instead of re-prompted /
+        // re-fetched forever -- a net win. Trade-off: a well-formed-but-partial efetch (name, no ranks) is also
+        // cached (till the 30-day TTL); truncation usually yields malformed XML -> empty -> uncached, so this is rare.
         if ( ( parsed != null ) && !parsed.isEmpty() ) {
             _cache.put( k, parsed );
-            _disk.put( k, ct );
+            _disk.put( k, parsed );
             return parsed;
         }
-        // esearch found the taxon but efetch returned no usable ranked lineage -- possibly a
-        // truncated/transient response. Do NOT cache this as a negative, so a later attempt can retry.
-        return RankedLineage.EMPTY;
-    }
-
-    /**
-     * Resolves the full taxonomy detail (scientific name, rank, NCBI tax-id, common name, lineage) for
-     * {@code query} (a scientific name, code, or tax-id), caching the result. Returns
-     * {@link ResolvedTaxonomy#EMPTY} (cached) when esearch finds nothing; an esearch-hit whose efetch
-     * yields nothing usable is NOT cached (likely transient) so a later attempt can retry. Does network
-     * I/O -- call off the EDT.
-     *
-     * @throws IOException on a connection/transport failure.
-     */
-    public ResolvedTaxonomy resolveTaxonomy( final String query ) throws IOException {
-        if ( ForesterUtil.isEmpty( query ) ) {
-            return ResolvedTaxonomy.EMPTY;
-        }
-        ensureLoaded();
-        final String k = key( query );
-        synchronized ( _detail_cache ) {
-            if ( _detail_cache.containsKey( k ) ) {
-                return _detail_cache.get( k );
-            }
-        }
-        // A bare NCBI tax-id is the authoritative key: efetch it directly (skip esearch), which also avoids
-        // the name-ambiguity clobber when the caller already has the organism's tax-id from a sequence entry.
-        final String id;
-        if ( isTaxId( query ) ) {
-            id = query.trim();
-        }
-        else {
-            id = parseEsearchFirstId( WsHttp.httpGet( ESEARCH + WsHttp.encode( query ) ) );
-        }
-        if ( ForesterUtil.isEmpty( id ) ) {
-            _detail_cache.put( k, ResolvedTaxonomy.EMPTY );
-            return ResolvedTaxonomy.EMPTY;
-        }
-        final CachedTaxon ct = parseEfetchFull( WsHttp.httpGet( EFETCH + WsHttp.encode( id ) ) );
-        final ResolvedTaxonomy detail = toResolvedTaxonomy( ct );
-        if ( ( detail != null ) && !detail.isEmpty() ) {
-            _detail_cache.put( k, detail );
-            _disk.put( k, ct );
-            return detail;
-        }
-        return ResolvedTaxonomy.EMPTY;
+        // esearch found the taxon but efetch returned nothing usable (empty) -- possibly a truncated/transient
+        // response. Do NOT cache, so a later attempt can retry.
+        return TaxonLineage.EMPTY;
     }
 
     /** True if {@code s} is a non-empty run of digits (an NCBI tax-id). */
@@ -270,37 +219,20 @@ public final class NcbiTaxonomyLineageService implements TaxonomicLineageService
     }
 
     /**
-     * Builds a {@link RankedLineage} (rank&rarr;name) for the rank colorizer. Thin derivation of
-     * {@link #parseEfetchFull}: entries with a non-Linnaean rank ("no rank"/"clade"/empty) are
-     * skipped. Pure -- no I/O.
+     * Parses an NCBI efetch taxonomy XML response into a {@link TaxonLineage}: the queried taxon's
+     * scientific name, rank, tax-id and common name, plus its ancestors ({@code <LineageEx>}
+     * root&rarr;parent) each as {@code {name, rank, tax-id}} (ranks kept verbatim, including "no
+     * rank"/"clade"; the ranked lookup maps are derived inside {@link TaxonLineage}). Pure -- no I/O;
+     * never throws.
      */
-    static RankedLineage parseEfetchTaxonomyXml( final String xml ) {
-        return toRankedLineage( parseEfetchFull( xml ) );
-    }
-
-    /**
-     * Builds a full {@link ResolvedTaxonomy} (scientific name, rank, tax-id, common name, full name
-     * lineage) for the "Fetch Sequence &amp; Taxonomic Data" tool. Thin derivation of
-     * {@link #parseEfetchFull}. Pure -- no I/O.
-     */
-    static ResolvedTaxonomy parseEfetchTaxonomyDetail( final String xml ) {
-        return toResolvedTaxonomy( parseEfetchFull( xml ) );
-    }
-
-    /**
-     * Parses an NCBI efetch taxonomy XML response into the single, raw {@link CachedTaxon} shape that
-     * feeds both consumers (and the disk cache): the queried taxon's scientific name, rank, tax-id and
-     * common name, plus its ancestors ({@code <LineageEx>} root&rarr;parent) as {@code {name, rank}}
-     * pairs (ranks kept verbatim, including "no rank"/"clade"). Pure -- no I/O; never throws.
-     */
-    static CachedTaxon parseEfetchFull( final String xml ) {
+    static TaxonLineage parseEfetchFull( final String xml ) {
         final Document doc = WsHttp.parseXml( xml );
         if ( doc == null ) {
-            return EMPTY_TAXON;
+            return TaxonLineage.EMPTY;
         }
         final Element taxon = WsHttp.firstChildElement( doc.getDocumentElement(), "Taxon" );
         if ( taxon == null ) {
-            return EMPTY_TAXON;
+            return TaxonLineage.EMPTY;
         }
         final String sci = trimOrNull( WsHttp.text( WsHttp.firstChildElement( taxon, "ScientificName" ) ) );
         final String tax_id = trimOrNull( WsHttp.text( WsHttp.firstChildElement( taxon, "TaxId" ) ) );
@@ -314,61 +246,19 @@ public final class NcbiTaxonomyLineageService implements TaxonomicLineageService
                 common = trimOrNull( WsHttp.text( WsHttp.firstChildElement( other, "CommonName" ) ) );
             }
         }
-        final List<String[]> ancestors = new ArrayList<String[]>();
+        final List<TaxonLineage.Ancestor> ancestors = new ArrayList<TaxonLineage.Ancestor>();
         final Element lineage_ex = WsHttp.firstChildElement( taxon, "LineageEx" );
         if ( lineage_ex != null ) {
             for( final Element anc : WsHttp.childElements( lineage_ex, "Taxon" ) ) {
                 final String n = trimOrNull( WsHttp.text( WsHttp.firstChildElement( anc, "ScientificName" ) ) );
                 if ( n != null ) {
                     final String r = trimOrNull( WsHttp.text( WsHttp.firstChildElement( anc, "Rank" ) ) );
-                    ancestors.add( new String[] { n, ( r == null ) ? "" : r } );
+                    final String id = trimOrNull( WsHttp.text( WsHttp.firstChildElement( anc, "TaxId" ) ) );
+                    ancestors.add( new TaxonLineage.Ancestor( n, ( r == null ) ? "" : r, id ) );
                 }
             }
         }
-        return new CachedTaxon( tax_id, rank, sci, common, ancestors );
-    }
-
-    /** Derives the rank colorizer's {@link RankedLineage} from a {@link CachedTaxon}. Pure. */
-    static RankedLineage toRankedLineage( final CachedTaxon ct ) {
-        if ( ( ct == null ) || ct.isEmpty() ) {
-            return RankedLineage.EMPTY;
-        }
-        final Map<String, String> rank_to_name = new LinkedHashMap<String, String>();
-        for( final String[] a : ct.getAncestors() ) {
-            addRankedEntry( rank_to_name, a[ 1 ], a[ 0 ] );
-        }
-        // the queried taxon itself (its own rank/name -- e.g. genus "Felis" for a Felis query)
-        addRankedEntry( rank_to_name, ct.getRank(), ct.getScientificName() );
-        return rank_to_name.isEmpty() ? RankedLineage.EMPTY : new RankedLineage( rank_to_name );
-    }
-
-    private static void addRankedEntry( final Map<String, String> rank_to_name, final String rank, final String name ) {
-        if ( !ForesterUtil.isEmpty( rank ) && !ForesterUtil.isEmpty( name ) && !NO_RANK.equalsIgnoreCase( rank )
-                && !CLADE.equalsIgnoreCase( rank ) ) {
-            rank_to_name.put( rank, name );
-        }
-    }
-
-    /** Derives the Fetch tool's {@link ResolvedTaxonomy} from a {@link CachedTaxon}. Pure. */
-    static ResolvedTaxonomy toResolvedTaxonomy( final CachedTaxon ct ) {
-        if ( ( ct == null ) || ct.isEmpty() ) {
-            return ResolvedTaxonomy.EMPTY;
-        }
-        String rank = ct.getRank();
-        if ( ( rank != null ) && ( NO_RANK.equalsIgnoreCase( rank ) || CLADE.equalsIgnoreCase( rank ) ) ) {
-            rank = null;
-        }
-        // full lineage of scientific names (all ancestors, including no-rank ones), then the taxon itself
-        final List<String> lineage = new ArrayList<String>();
-        for( final String[] a : ct.getAncestors() ) {
-            lineage.add( a[ 0 ] );
-        }
-        if ( ct.getScientificName() != null ) {
-            lineage.add( ct.getScientificName() );
-        }
-        final ResolvedTaxonomy result = new ResolvedTaxonomy( ct.getScientificName(), rank, ct.getTaxId(),
-                                                              ct.getCommonName(), lineage );
-        return result.isEmpty() ? ResolvedTaxonomy.EMPTY : result;
+        return new TaxonLineage( tax_id, rank, sci, common, ancestors );
     }
 
     private static String trimOrNull( final String s ) {

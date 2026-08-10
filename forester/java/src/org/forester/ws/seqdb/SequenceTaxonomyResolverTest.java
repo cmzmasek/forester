@@ -43,7 +43,7 @@ public final class SequenceTaxonomyResolverTest {
 
     public static boolean test() {
         // node "P99999" is a valid UniProt accession -> resolvable; "leaf_two" is not
-        final SequenceTaxonomyResolver r = new SequenceTaxonomyResolver( new FakeSeqFetcher(), new FakeTaxResolver() );
+        final SequenceTaxonomyResolver r = new SequenceTaxonomyResolver( new FakeSeqFetcher(), new FakeLineageService() );
         final Phylogeny tree = twoLeafTree();
         final SequenceTaxonomyResolver.Result res = r.resolve( tree, CancelFlag.NEVER );
         if ( res.wasCancelled() || ( res.getError() != null ) ) {
@@ -110,7 +110,7 @@ public final class SequenceTaxonomyResolverTest {
             public SequenceEntry fetch( final Accession acc ) throws IOException {
                 throw new IOException( "connection reset" );
             }
-        }, new FakeTaxResolver() );
+        }, new FakeLineageService() );
         final SequenceTaxonomyResolver.Result err = erroring.resolve( twoLeafTree(), CancelFlag.NEVER );
         if ( err.getError() == null ) {
             return fail( "a transport failure must surface as an error, aborting the walk" );
@@ -148,16 +148,22 @@ public final class SequenceTaxonomyResolverTest {
         }
     }
 
-    private static final class FakeTaxResolver implements TaxonomyResolver {
+    private static final class FakeLineageService implements TaxonomicLineageService {
 
         @Override
-        public ResolvedTaxonomy resolveTaxonomy( final String query ) {
+        public TaxonLineage lineageOf( final String taxon ) {
+            return null; // cache-only; the resolver uses fetch()
+        }
+
+        @Override
+        public TaxonLineage fetch( final String query ) {
             // the resolver now prefers the entry's authoritative tax-id ("9606") over the name
             if ( "9606".equals( query ) || "Homo sapiens".equals( query ) ) {
-                return new ResolvedTaxonomy( "Homo sapiens", "species", "9606", "human",
-                                             Arrays.asList( "Eukaryota", "Metazoa", "Homo sapiens" ) );
+                return new TaxonLineage( "9606", "species", "Homo sapiens", "human",
+                                         Arrays.asList( new TaxonLineage.Ancestor( "Eukaryota", "superkingdom", null ),
+                                                        new TaxonLineage.Ancestor( "Metazoa", "kingdom", null ) ) );
             }
-            return ResolvedTaxonomy.EMPTY;
+            return TaxonLineage.EMPTY;
         }
     }
 
