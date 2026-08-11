@@ -31,6 +31,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.forester.archaeopteryx.AptxUtil.GraphicsExportType;
+import java.math.BigDecimal;
+
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
@@ -38,6 +40,7 @@ import org.forester.phylogeny.data.Accession;
 import org.forester.phylogeny.data.BranchColor;
 import org.forester.phylogeny.data.BranchWidth;
 import org.forester.phylogeny.data.Confidence;
+import org.forester.phylogeny.data.Date;
 import org.forester.phylogeny.data.DomainArchitecture;
 import org.forester.phylogeny.data.Event;
 import org.forester.phylogeny.data.PhylogenyData;
@@ -63,7 +66,43 @@ public final class AptxUtilTest {
                 && testRankCounts() && testRankCoverageCounts() && testNodePruningOutcome()
                 && testBranchesToCollapse() && testConfigFileOption() && testScanForDataPresence()
                 && testAssignDistinctColors() && testShortenLabel()
-                && testInternalNamesLookLikeConfidenceValues();
+                && testInternalNamesLookLikeConfidenceValues() && testInternalNodeDateInterval();
+    }
+
+    /**
+     * The load-time detector that auto-enables Node Age Bars (HPD): true only when an INTERNAL node carries a
+     * {@code <date>} with both a min and a max (an HPD interval). A date without both bounds, or an interval on an
+     * external tip, does not count.
+     */
+    private static boolean testInternalNodeDateInterval() {
+        final Phylogeny phy = new Phylogeny();
+        final PhylogenyNode root = new PhylogenyNode();
+        final PhylogenyNode a = new PhylogenyNode();
+        a.setName( "A" );
+        final PhylogenyNode b = new PhylogenyNode();
+        b.setName( "B" );
+        root.addAsChild( a );
+        root.addAsChild( b );
+        phy.setRoot( root );
+        phy.externalNodesHaveChanged();
+        if ( AptxUtil.isHasAtLeastOneInternalNodeWithDateInterval( phy ) ) {
+            return fail( "a tree with no dates must not be detected as having HPD intervals" );
+        }
+        root.getNodeData().setDate( new Date( "", new BigDecimal( "1.5" ), null, null, "" ) );
+        if ( AptxUtil.isHasAtLeastOneInternalNodeWithDateInterval( phy ) ) {
+            return fail( "a date with a value but no min/max is not an HPD interval" );
+        }
+        a.getNodeData().setDate( new Date( "", new BigDecimal( "0.0" ), new BigDecimal( "0.0" ), new BigDecimal( "0.1" ),
+                                           "" ) );
+        if ( AptxUtil.isHasAtLeastOneInternalNodeWithDateInterval( phy ) ) {
+            return fail( "an interval on an EXTERNAL tip must not count (bars are internal-only)" );
+        }
+        root.getNodeData().setDate( new Date( "", new BigDecimal( "1.5" ), new BigDecimal( "1.2" ),
+                                              new BigDecimal( "1.8" ), "" ) );
+        if ( !AptxUtil.isHasAtLeastOneInternalNodeWithDateInterval( phy ) ) {
+            return fail( "an internal node with a min+max date interval must be detected" );
+        }
+        return true;
     }
 
     /**

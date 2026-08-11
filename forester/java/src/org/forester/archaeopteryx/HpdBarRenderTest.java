@@ -68,6 +68,17 @@ public final class HpdBarRenderTest {
                 try {
                     final TreePanel tp = frame.getMainPanel().getCurrentTreePanel();
                     final Options o = frame.getOptions();
+                    // node-hpd-bars.xml has internal-node date intervals, so loading it must AUTO-ENABLE "Node Age
+                    // Bars (HPD)" -- both the Option and its (kept-in-sync) menu item -- so the bars show without the
+                    // user hunting for the toggle. Assert this before the test overrides the option below.
+                    if ( !o.isShowHpdBars() ) {
+                        ok[ 0 ] = false;
+                        System.out.println( "  HPD bars must auto-enable when the loaded tree has date intervals" );
+                    }
+                    if ( ( frame._show_hpd_bars_cbmi != null ) && !frame._show_hpd_bars_cbmi.isSelected() ) {
+                        ok[ 0 ] = false;
+                        System.out.println( "  the HPD-bars menu item must be checked after the auto-enable" );
+                    }
                     o.setGraphicsExportWhiteBackground( true ); // predictable white background for the blue composite
                     tp.getControlPanel().setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM );
                     final int w = 900, h = 460;

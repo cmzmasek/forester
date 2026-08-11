@@ -281,6 +281,20 @@ public final class AptxUtil {
         return false;
     }
 
+    /** True when at least one INTERNAL node carries a node-age {@code <date>} with both a minimum and a maximum --
+     *  i.e. an HPD interval to draw as a Node Age Bar (as produced by BEAST/TreeAnnotator height_95%_HPD, or a
+     *  dated phyloXML). */
+    final static public boolean isHasAtLeastOneInternalNodeWithDateInterval(final Phylogeny phy) {
+        for (final PhylogenyNodeIterator it = phy.iteratorPostorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if (!n.isExternal() && n.getNodeData().isHasDate() && (n.getNodeData().getDate().getMin() != null)
+                    && (n.getNodeData().getDate().getMax() != null)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     // The number of distinct "Display Data" option constants scanForDataPresence can report (kept in
     // sync by hand with the present.add(...) calls below); used to short-circuit the scan once every
     // flag has been found.
@@ -1149,6 +1163,20 @@ public final class AptxUtil {
             // so the domains are shown right away (most users would not find the checkbox otherwise).
             if (AptxUtil.isHasAtLeastOneNodeWithDomainArchitecture(t)) {
                 cp.showDomainArchitecturesFitted();
+            }
+            // A dated phylogram with node-age HPD intervals (e.g. BEAST / BEAST X / TreeAnnotator output): switch
+            // "Node Age Bars (HPD)" on so the intervals show right away. HPD bars is an Options toggle mirrored by a
+            // menu item, so set BOTH -- the Option drives the paint, and the checked menu item keeps the next
+            // updateOptions() from clearing it. Only turns it ON (like the domain auto-enable); harmless if a later
+            // undated tree has no dates to draw.
+            if (has_bl && AptxUtil.isHasAtLeastOneInternalNodeWithDateInterval(t) && (cp.getMainPanel() != null)) {
+                if (cp.getMainPanel().getOptions() != null) {
+                    cp.getMainPanel().getOptions().setShowHpdBars(true);
+                }
+                final MainFrame mf = cp.getMainPanel().getMainFrame();
+                if ((mf != null) && (mf._show_hpd_bars_cbmi != null)) {
+                    mf._show_hpd_bars_cbmi.setSelected(true);
+                }
             }
             // Show only the Display Data checkboxes for which this tree actually has data.
             cp.updateDataCheckboxVisibility(true);

@@ -76,7 +76,9 @@ final class GuiPreferences {
             boolPref( "show_scale", Options::isShowScale, Options::setShowScale ),
             boolPref( "show_scale_grid", Options::isShowScaleGrid, Options::setShowScaleGrid ),
             boolPref( "show_scale_axis", Options::isShowScaleAxis, Options::setShowScaleAxis ),
-            boolPref( "show_hpd_bars", Options::isShowHpdBars, Options::setShowHpdBars ),
+            // NOTE: "show_hpd_bars" is deliberately NOT persisted -- it is now DATA-DRIVEN (auto-enabled at load for
+            // a dated phylogram with node-age HPD intervals; see AptxUtil.lookAtSomeTreePropertiesForAptxControlSettings).
+            // Persisting it would let a one-time BEAST/dated-tree load flip the global default ON for every later launch.
             boolPref( "show_zebra_stripes", Options::isShowZebraStripes, Options::setShowZebraStripes ),
             boolPref( "tip_labels_below_columns", Options::isTipLabelsBelowColumns, Options::setTipLabelsBelowColumns ),
             // key kept as "flip_vertically" (its original name) so existing saved settings still load after the
