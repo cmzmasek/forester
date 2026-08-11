@@ -77,12 +77,28 @@ public final class DemoTreeGenerator {
         write( dir, "import-annotations.xml", importAnnotationsTree() );
         writeText( dir, "import-annotations.csv", importAnnotationsCsv() );
         write( dir, "search-emphasis.xml", searchEmphasisTree() );
+        writeText( dir, "beast-annotations.nex", beastAnnotationsNexus() );
         System.out.println( "Wrote demo trees to " + dir.getAbsolutePath() );
     }
 
     private static void write( final File dir, final String file_name, final Phylogeny phy ) throws IOException {
         new PhylogenyWriter().toPhyloXML( phy, 0, new File( dir, file_name ) );
         System.out.println( "  " + file_name + " (" + phy.getNumberOfExternalNodes() + " tips)" );
+    }
+
+    // ----- "BEAST / BEAST X output": a small time-calibrated NEXUS tree with FigTree-style [&...] annotations
+    //       (posterior support, node height + 95% HPD interval, per-branch rate). Open it to see the annotations
+    //       parsed into HPD bars, posterior support, and a Color-by 'beast:rate' gradient. Hand-authored NEXUS
+    //       (not phyloXML), written verbatim -- an ultrametric 5-tip tree (tip heights 0, root height 2.1).
+    private static String beastAnnotationsNexus() {
+        return "#NEXUS\n" + "BEGIN TREES;\n" + "\tTREE beast_demo = [&R] ("
+                + "(isolate_A[&height=0.0,rate=0.0031]:1.2,isolate_B[&height=0.0,rate=0.0028]:1.2)"
+                + "[&posterior=0.99,height=1.2,height_95%_HPD={0.95,1.5},rate=0.0030]:0.9,"
+                + "(isolate_C[&height=0.0,rate=0.0026]:0.8,"
+                + "(isolate_D[&height=0.0,rate=0.0035]:0.5,isolate_E[&height=0.0,rate=0.0033]:0.5)"
+                + "[&posterior=0.92,height=0.5,height_95%_HPD={0.35,0.7},rate=0.0034]:0.3)"
+                + "[&posterior=0.81,height=0.8,height_95%_HPD={0.6,1.1},rate=0.0029]:1.3)"
+                + "[&posterior=1.0,height=2.1,height_95%_HPD={1.8,2.5},rate=0.0030];\n" + "END;\n";
     }
 
     /** Write a companion plain-text data file (e.g. a CSV to import onto a demo tree). */

@@ -572,12 +572,23 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                 }
                 if (s.indexOf("&&NHX") == (ob + 1)) {
                     b = s.substring(ob + 6, cb);
+                    // A general BEAST/TreeAnnotator blob: starts with "&", is not NHX, and is not the MrBayes
+                    // (prob), FigTree colour (!colo), or bootstrap sub-cases handled below. (A blob merely LED by a
+                    // "length" field is a normal BEAST branch annotation and is handled here -- only the special
+                    // prob/boot/!colo leads route elsewhere.)
                 } else if (s.indexOf("&") == (ob + 1) && s.indexOf("[&prob") == -1 &&
                         s.indexOf("[&boot") == -1 &&
-                        s.indexOf("[&!colo") == -1 &&
-                        s.indexOf("[&length") == -1) {
+                        s.indexOf("[&!colo") == -1) {
                     final String bracketed = s.substring(ob + 1, cb);
-                    b = ":" + NHXtags.COMMENT + bracketed;
+                    if (parse_beast_style_extended_tags) {
+                        // structured BEAST / BEAST X / TreeAnnotator parse: posterior -> confidence,
+                        // height + height_95%_HPD -> <date> (Node Age Bars), rate/traits -> beast: properties.
+                        // Runs BEFORE the ":"-tokenizer, so {lo,hi} sets are safe; no opaque comment is left behind.
+                        BeastAnnotationParser.apply(bracketed, node_to_annotate);
+                        b = "";
+                    } else {
+                        b = ":" + NHXtags.COMMENT + bracketed; // keep the raw comment when the option is off
+                    }
                     final Matcher ewn_matcher = ENDS_WITH_NUMBER_PATTERN.matcher(s);
                     if (ewn_matcher.find()) {
                         b = b + ewn_matcher.group(1);

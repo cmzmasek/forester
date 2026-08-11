@@ -1146,6 +1146,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("BEAST annotation parsing: ");
+        if (org.forester.io.parsers.nhx.BeastAnnotationParserTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Nexus tree parsing (translating): ");
         if (Test.testNexusTreeParsingTranslating()) {
             System.out.println("OK.");

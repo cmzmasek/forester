@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.forester.archaeopteryx.tools.NodeDataImporter;
+import org.forester.io.parsers.nexus.NexusPhylogeniesParser;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
@@ -106,6 +107,10 @@ public final class DemoTreesTest {
         ok &= hasAtLeastTips( "infer-ancestor-taxonomies.xml", 6 );
         ok &= hasRank( "infer-ancestor-taxonomies.xml", "species" );
         ok &= internalNodesHaveNoTaxonomy( "infer-ancestor-taxonomies.xml" );
+
+        // BEAST / BEAST X output: a NEXUS tree whose [&...] annotations parse into HPD date intervals (Node Age
+        // Bars), posterior confidences (support), and a numeric beast:rate property (Color-by)
+        ok &= beastAnnotationsOk( "beast-annotations.nex" );
         return ok;
     }
 
@@ -293,6 +298,62 @@ public final class DemoTreesTest {
             }
         }
         return note( file_name + " must carry an in-tree taxonomy at rank '" + rank + "' (offline colorize)" );
+    }
+
+    /** The BEAST NEXUS demo parses its [&...] annotations into structured data: internal-node HPD date intervals,
+     *  posterior confidences, and a numeric beast:rate property on every node. */
+    private static boolean beastAnnotationsOk( final String file_name ) {
+        final Phylogeny phy = loadNexusBeast( file_name );
+        if ( phy == null ) {
+            return false;
+        }
+        int intervals = 0;
+        int posteriors = 0;
+        int rates = 0;
+        for( final Iterator<PhylogenyNode> it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if ( !n.isExternal() && n.getNodeData().isHasDate() && ( n.getNodeData().getDate().getMin() != null )
+                    && ( n.getNodeData().getDate().getMax() != null ) ) {
+                intervals++;
+            }
+            if ( !n.isExternal() && n.getBranchData().isHasConfidences() ) {
+                posteriors++;
+            }
+            if ( ( n.getNodeData().getProperties() != null )
+                    && !n.getNodeData().getProperties().getProperties( "beast:rate" ).isEmpty() ) {
+                rates++;
+            }
+        }
+        if ( intervals < 3 ) {
+            return note( file_name + " internal nodes must carry HPD date intervals (height_95%_HPD), got " + intervals );
+        }
+        if ( posteriors < 3 ) {
+            return note( file_name + " internal nodes must carry posterior confidences, got " + posteriors );
+        }
+        if ( rates < 5 ) {
+            return note( file_name + " nodes must carry a numeric beast:rate property, got " + rates );
+        }
+        return true;
+    }
+
+    /** Load a NEXUS demo file with BEAST-style annotation parsing on (the phyloXML {@link #load} helper is XML-only). */
+    private static Phylogeny loadNexusBeast( final String file_name ) {
+        final File file = new File( DEMO_DIR + file_name );
+        if ( !file.exists() ) {
+            return fail( file_name + " is missing from the demo gallery (" + file.getAbsolutePath() + ")" );
+        }
+        try {
+            final NexusPhylogeniesParser parser = new NexusPhylogeniesParser();
+            parser.setParseBeastStyleExtendedTags( true );
+            final Phylogeny[] phys = ParserBasedPhylogenyFactory.getInstance().create( file, parser );
+            if ( ( phys == null ) || ( phys.length != 1 ) || ( phys[ 0 ] == null ) || phys[ 0 ].isEmpty() ) {
+                return fail( file_name + " did not yield exactly one non-empty tree" );
+            }
+            return phys[ 0 ];
+        }
+        catch ( final Exception e ) {
+            return fail( file_name + " could not be read: " + e.getMessage() );
+        }
     }
 
     /** No internal node carries a taxonomy, so the tree is ready for "Infer Ancestor Taxonomies" to fill them. */
