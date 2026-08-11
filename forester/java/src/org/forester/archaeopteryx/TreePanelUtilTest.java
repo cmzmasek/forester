@@ -68,7 +68,40 @@ public final class TreePanelUtilTest {
                 && testScaleAxisTickValues() && testFormatCompactNumber() && testHpdBarXRange()
                 && testOrientationTransform() && testInternalLabelAlignWidth() && testAutoTipLabelDirection()
                 && testUserVisiblePropertiesText() && testTipLineagesAndUnresolved() && testInferenceStrings()
-                && testIsDuplicateOfAncestorTaxon();
+                && testIsDuplicateOfAncestorTaxon() && testScaleAxisFloating();
+    }
+
+    /**
+     * The scale axis FLOATS at the viewport bottom / breadth edge on screen (so it never scrolls out of view when
+     * zoomed), but stays anchored to the tree/export extent for a file export (WYSIWYG) and to the whole canvas for
+     * the direct File&gt;Print path.
+     */
+    private static boolean testScaleAxisFloating() {
+        // horizontal: screen -> viewport bottom (ignores the taller canvas); export -> extent; print(height 0) -> canvas
+        if ( TreePanelUtil.scaleAxisFloatingBottom( false, false, 0, 0, 1000, 300 ) != 300 ) {
+            return fail( "screen axis must float at the viewport bottom (300), not the canvas bottom" );
+        }
+        if ( TreePanelUtil.scaleAxisFloatingBottom( false, true, 10, 500, 1000, 300 ) != 510 ) {
+            return fail( "a file export must anchor the axis to the export extent (graphics_file_y + height = 510)" );
+        }
+        if ( TreePanelUtil.scaleAxisFloatingBottom( true, false, 0, 400, 1000, 300 ) != 400 ) {
+            return fail( "a PDF export with a real height must anchor to that extent (400)" );
+        }
+        if ( TreePanelUtil.scaleAxisFloatingBottom( true, false, 0, 0, 1000, 300 ) != 1000 ) {
+            return fail( "File>Print (export flag, height 0) must anchor to the whole canvas (1000)" );
+        }
+        // vertical ruler: screen -> viewport edge on the ruler's side (opposite the tree); export -> tree-anchored x
+        if ( TreePanelUtil.scaleAxisRulerX( false, false, 700, 1, 50, 400 ) != 51 ) {
+            return fail( "screen ruler with the tree to the right must float to the LEFT viewport edge (viewport_x+1)" );
+        }
+        if ( TreePanelUtil.scaleAxisRulerX( false, false, 700, -1, 50, 400 ) != 449 ) {
+            return fail( "screen ruler with the tree to the left must float to the RIGHT viewport edge (x+width-1)" );
+        }
+        if ( ( TreePanelUtil.scaleAxisRulerX( false, true, 700, 1, 50, 400 ) != 700 )
+                || ( TreePanelUtil.scaleAxisRulerX( true, false, 700, -1, 50, 400 ) != 700 ) ) {
+            return fail( "an export must keep the tree-anchored breadth position (700)" );
+        }
+        return true;
     }
 
     /**

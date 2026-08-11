@@ -359,6 +359,43 @@ public class TreePanelUtil {
     }
 
     /**
+     * The device-y the horizontal scale axis line is drawn at (its top). On SCREEN the axis FLOATS at the viewport
+     * bottom so it never scrolls out of view when zoomed in (PearTree-style), exactly like the viewport-fixed scale
+     * bar. A FILE export stays anchored to the tree/export extent bottom so figures remain WYSIWYG; the direct
+     * File&gt;Print path (an export flag set but {@code graphics_file_height == 0}) anchors to the whole canvas.
+     */
+    final static int scaleAxisFloatingBottom( final boolean to_pdf,
+                                              final boolean to_graphics_file,
+                                              final int graphics_file_y,
+                                              final int graphics_file_height,
+                                              final int canvas_height,
+                                              final int viewport_bottom ) {
+        if ( to_pdf || to_graphics_file ) {
+            return ( graphics_file_height > 0 ) ? ( graphics_file_y + graphics_file_height ) : canvas_height;
+        }
+        return viewport_bottom;
+    }
+
+    /**
+     * The device-x the VERTICAL-orientation scale ruler is pinned to. On SCREEN the ruler FLOATS to the viewport
+     * breadth EDGE on its own side -- the side AWAY from the tree, given by {@code in} (&gt;0 = tree to the right, so
+     * the ruler sits at the left edge; &lt;=0 = tree to the left, ruler at the right edge) -- so it stays visible when
+     * the breadth is zoomed/scrolled. A FILE export or File&gt;Print keeps the tree-anchored breadth position so
+     * figures remain WYSIWYG.
+     */
+    final static int scaleAxisRulerX( final boolean to_pdf,
+                                      final boolean to_graphics_file,
+                                      final int tree_anchored_x,
+                                      final int in,
+                                      final int viewport_x,
+                                      final int viewport_width ) {
+        if ( to_pdf || to_graphics_file ) {
+            return tree_anchored_x;
+        }
+        return ( in > 0 ) ? ( viewport_x + 1 ) : ( ( viewport_x + viewport_width ) - 1 );
+    }
+
+    /**
      * The horizontal x-range {@code [left, right]} of a node-age (HPD) bar, anchored to the node's OWN drawn x
      * ({@code node_x}) and offset by the signed age deltas: an older bound ({@code max}) sits to the LEFT of the node,
      * a younger bound ({@code min}) to the RIGHT, each scaled by {@code corr} (px per branch-length/time unit). Using

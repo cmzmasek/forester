@@ -4192,8 +4192,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final Stroke saved_stroke = g.getStroke();
         g.setFont(getTreeFontSet().getSmallFont());
         final FontMetrics fm = g.getFontMetrics();
-        final boolean use_export_extent = (to_pdf || to_graphics_file) && (graphics_file_height > 0);
-        final int bottom = use_export_extent ? (graphics_file_y + graphics_file_height) : getHeight();
+        // Screen: FLOAT the axis at the viewport bottom so it never scrolls out of view when zoomed in (PearTree-
+        // style), exactly like the viewport-fixed scale bar. A file export stays anchored to the tree/export bottom
+        // so figures remain WYSIWYG; File>Print (to_pdf with height 0) anchors to the whole canvas.
+        final Rectangle vr = getVisibleRect();
+        final int bottom = TreePanelUtil.scaleAxisFloatingBottom(to_pdf, to_graphics_file, graphics_file_y,
+                graphics_file_height, getHeight(), vr.y + vr.height);
         final int axis_y = bottom - scaleAxisBandHeight();
         final int label_baseline = axis_y + SCALE_AXIS_TICK_LEN + fm.getAscent() + 1;
         g.setColor(scaleInkColor(to_pdf, to_graphics_file));
@@ -4257,9 +4261,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // point INWARD toward the tree -- derive that device-x sign from a point just inside the ruler (tip side)
         final Point2D.Double r_root = screenPoint(origin_x, ruler_ly);
         final Point2D.Double r_tip = screenPoint(origin_x + (max_dist * corr), ruler_ly);
-        final int ruler_x = (int) Math.round(r_root.x);
+        final int anchored_x = (int) Math.round(r_root.x); // the tree-anchored breadth position (used for exports)
         final int tip_side_x = (int) Math.round(screenPoint(origin_x, ruler_ly - 16.0).x);
-        final int in = (tip_side_x >= ruler_x) ? 1 : -1; // +1 = tree to the right of the ruler (ticks point right)
+        final int in = (tip_side_x >= anchored_x) ? 1 : -1; // +1 = tree to the right of the ruler (ticks point right)
+        // Screen: FLOAT the ruler to the viewport breadth EDGE on its own side (away from the tree) so it stays
+        // visible when zoomed/scrolled along the breadth (PearTree-style); every export keeps the tree-anchored
+        // breadth position (treeBreadthExtent) so figures remain WYSIWYG. The tick DEPTH positions (device-y from
+        // screenPoint) are unchanged, so they stay aligned with the branches.
+        final Rectangle vr = getVisibleRect();
+        final int ruler_x = TreePanelUtil.scaleAxisRulerX(to_pdf, to_graphics_file, anchored_x, in, vr.x, vr.width);
         drawLine(ruler_x, (int) Math.round(r_root.y), ruler_x, (int) Math.round(r_tip.y), g); // the axis line
         final int center = (fm.getAscent() - fm.getDescent()) / 2; // baseline offset to vertically centre on a tick
         final int min_label_gap = fm.getHeight() + SCALE_AXIS_LABEL_GAP;
