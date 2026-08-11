@@ -111,7 +111,31 @@ public final class DemoTreesTest {
         // BEAST / BEAST X output: a NEXUS tree whose [&...] annotations parse into HPD date intervals (Node Age
         // Bars), posterior confidences (support), and a numeric beast:rate property (Color-by)
         ok &= beastAnnotationsOk( "beast-annotations.nex" );
+
+        // ancestral-state pie charts: a discrete-trait posterior (beast:location_set + _set_prob) on the internal
+        // nodes, so the pie feature has a trait with a parseable multi-state distribution
+        ok &= hasAncestralStateTrait( "ancestral-pie-charts.xml", "location" );
         return ok;
+    }
+
+    /** The ancestral-pie demo offers {@code trait} (a beast:&lt;trait&gt;_set_prob property) AND at least one internal
+     *  node has a real multi-state (&ge;2) distribution, so a pie with several wedges is demonstrable. */
+    private static boolean hasAncestralStateTrait( final String file_name, final String trait ) {
+        final Phylogeny phy = load( file_name );
+        if ( phy == null ) {
+            return false;
+        }
+        if ( !TreePanelUtil.ancestralStateTraits( phy ).contains( trait ) ) {
+            return note( file_name + " must offer ancestral-state trait '" + trait + "' (beast:" + trait
+                    + "_set_prob on the internal nodes)" );
+        }
+        for( final Iterator<PhylogenyNode> it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if ( !n.isExternal() && ( TreePanelUtil.stateDistribution( n, trait ).size() >= 2 ) ) {
+                return true;
+            }
+        }
+        return note( file_name + " must have an internal node with a >=2-state distribution for '" + trait + "'" );
     }
 
     private static boolean hasInternalConfidence( final String file_name ) {

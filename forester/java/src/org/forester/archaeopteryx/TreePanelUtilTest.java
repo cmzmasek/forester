@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.List;
 import java.util.SortedSet;
 import java.util.function.Function;
 
@@ -68,7 +69,131 @@ public final class TreePanelUtilTest {
                 && testScaleAxisTickValues() && testFormatCompactNumber() && testHpdBarXRange()
                 && testOrientationTransform() && testInternalLabelAlignWidth() && testAutoTipLabelDirection()
                 && testUserVisiblePropertiesText() && testTipLineagesAndUnresolved() && testInferenceStrings()
-                && testIsDuplicateOfAncestorTaxon() && testScaleAxisFloating();
+                && testIsDuplicateOfAncestorTaxon() && testScaleAxisFloating() && testAncestralPieData();
+    }
+
+    /**
+     * The ancestral-state pie data layer: parseBraceList (top-level commas, quotes, braces), ancestralStateTraits
+     * (detect beast:<trait>_set + _set_prob), stateDistribution (zip + normalize; tip single state; length mismatch
+     * / malformed -> empty), and collectAncestralStates.
+     */
+    private static boolean testAncestralPieData() {
+        final List<String> l = TreePanelUtil.parseBraceList( "{Africa,Europe,Asia}" );
+        if ( ( l.size() != 3 ) || !l.get( 0 ).equals( "Africa" ) || !l.get( 2 ).equals( "Asia" ) ) {
+            return fail( "parseBraceList must split {a,b,c} into 3 elements, got " + l );
+        }
+        final List<String> q = TreePanelUtil.parseBraceList( "{ \"x,y\" , z }" );
+        if ( ( q.size() != 2 ) || !q.get( 0 ).equals( "x,y" ) || !q.get( 1 ).equals( "z" ) ) {
+            return fail( "parseBraceList must keep a quoted comma and trim, got " + q );
+        }
+        if ( !TreePanelUtil.parseBraceList( "{}" ).isEmpty() || !TreePanelUtil.parseBraceList( "" ).isEmpty() ) {
+            return fail( "parseBraceList must be empty for {} / empty input" );
+        }
+        // root(location distribution) -> { tipA(location=Africa), tipB(location=Europe) }
+        final PhylogenyNode root = new PhylogenyNode();
+        withProp( root, "beast:location_set", "{Africa,Europe,Asia}" );
+        withProp( root, "beast:location_set_prob", "{0.5,0.3,0.2}" );
+        final PhylogenyNode tipA = new PhylogenyNode();
+        tipA.setName( "A" );
+        withProp( tipA, "beast:location", "Africa" );
+        final PhylogenyNode tipB = new PhylogenyNode();
+        tipB.setName( "B" );
+        withProp( tipB, "beast:location", "Europe" );
+        root.addAsChild( tipA );
+        root.addAsChild( tipB );
+        final Phylogeny phy = new Phylogeny();
+        phy.setRoot( root );
+        phy.externalNodesHaveChanged();
+        if ( ( TreePanelUtil.ancestralStateTraits( phy ).size() != 1 )
+                || !TreePanelUtil.ancestralStateTraits( phy ).contains( "location" ) ) {
+            return fail( "ancestralStateTraits must detect the 'location' distribution trait" );
+        }
+        final List<TreePanelUtil.StateProbability> d = TreePanelUtil.stateDistribution( root, "location" );
+        double sum = 0.0;
+        for( final TreePanelUtil.StateProbability sp : d ) {
+            sum += sp.getProbability();
+        }
+        if ( ( d.size() != 3 ) || ( Math.abs( sum - 1.0 ) > 1e-9 ) || !d.get( 0 ).getState().equals( "Africa" )
+                || ( Math.abs( d.get( 0 ).getProbability() - 0.5 ) > 1e-9 ) ) {
+            return fail( "internal-node distribution must be 3 states summing to 1 with Africa=0.5" );
+        }
+        final List<TreePanelUtil.StateProbability> t = TreePanelUtil.stateDistribution( tipA, "location" );
+        if ( ( t.size() != 1 ) || !t.get( 0 ).getState().equals( "Africa" ) || ( t.get( 0 ).getProbability() != 1.0 ) ) {
+            return fail( "a tip's single observed state must be one full-probability wedge" );
+        }
+        // unnormalized probabilities normalize
+        final PhylogenyNode n2 = new PhylogenyNode();
+        withProp( n2, "beast:host_set", "{Bat,Human}" );
+        withProp( n2, "beast:host_set_prob", "{3,1}" );
+        final List<TreePanelUtil.StateProbability> d2 = TreePanelUtil.stateDistribution( n2, "host" );
+        if ( ( d2.size() != 2 ) || ( Math.abs( d2.get( 0 ).getProbability() - 0.75 ) > 1e-9 ) ) {
+            return fail( "unnormalized {3,1} must normalize to {0.75,0.25}" );
+        }
+        // set/prob length mismatch -> no distribution
+        final PhylogenyNode n3 = new PhylogenyNode();
+        withProp( n3, "beast:x_set", "{A,B}" );
+        withProp( n3, "beast:x_set_prob", "{0.5}" );
+        if ( !TreePanelUtil.stateDistribution( n3, "x" ).isEmpty() ) {
+            return fail( "a set/prob length mismatch must yield no distribution" );
+        }
+        // malformed probability -> no distribution
+        final PhylogenyNode n4 = new PhylogenyNode();
+        withProp( n4, "beast:y_set", "{A,B}" );
+        withProp( n4, "beast:y_set_prob", "{0.5,bad}" );
+        if ( !TreePanelUtil.stateDistribution( n4, "y" ).isEmpty() ) {
+            return fail( "a malformed probability must yield no distribution" );
+        }
+        final SortedSet<String> all = TreePanelUtil.collectAncestralStates( phy, "location" );
+        if ( ( all.size() != 3 ) || !all.contains( "Africa" ) || !all.contains( "Asia" ) || !all.contains( "Europe" ) ) {
+            return fail( "collectAncestralStates must gather all distinct states, got " + all );
+        }
+        // parseBraceList also strips [..] brackets and splits only TOP-LEVEL commas (a nested list stays one element)
+        final List<String> br = TreePanelUtil.parseBraceList( "[a,b]" );
+        if ( ( br.size() != 2 ) || !br.get( 1 ).equals( "b" ) ) {
+            return fail( "parseBraceList must strip [..] brackets, got " + br );
+        }
+        final List<String> nested = TreePanelUtil.parseBraceList( "{a,{b,c},d}" );
+        if ( ( nested.size() != 3 ) || !nested.get( 1 ).equals( "{b,c}" ) ) {
+            return fail( "parseBraceList must split only top-level commas (nested stays one element), got " + nested );
+        }
+        // an apostrophe in a state name must NOT swallow the rest (real place names: Xi'an, Cote d'Ivoire)
+        final List<String> apos = TreePanelUtil.parseBraceList( "{Xi'an,Beijing}" );
+        if ( ( apos.size() != 2 ) || !apos.get( 0 ).equals( "Xi'an" ) || !apos.get( 1 ).equals( "Beijing" ) ) {
+            return fail( "parseBraceList must treat an apostrophe as literal, got " + apos );
+        }
+        // grayShade (B&W wedge/legend ramp): distinct grays for distinct indices; a single element is mid-gray
+        if ( TreePanelUtil.grayShade( 0, 3 ).equals( TreePanelUtil.grayShade( 2, 3 ) ) ) {
+            return fail( "grayShade must give distinct grays for distinct wedge indices" );
+        }
+        if ( TreePanelUtil.grayShade( 0, 1 ).getRed() != 128 ) {
+            return fail( "grayShade of a single element must be a neutral mid-gray" );
+        }
+        // a NEGATIVE probability is rejected like NaN (no plausible-but-wrong pie from corrupt data)
+        final PhylogenyNode n5 = new PhylogenyNode();
+        withProp( n5, "beast:z_set", "{A,B,C}" );
+        withProp( n5, "beast:z_set_prob", "{0.9,-0.4,0.5}" );
+        if ( !TreePanelUtil.stateDistribution( n5, "z" ).isEmpty() ) {
+            return fail( "a negative probability must yield no distribution" );
+        }
+        // a MALFORMED distribution must NOT fall through to the bare single-state disc (which would overstate an
+        // uncertain internal node as a confident 100%): a length-mismatched set + a bare beast:trait -> NO pie
+        final PhylogenyNode n6 = new PhylogenyNode();
+        withProp( n6, "beast:w_set", "{A,B}" );
+        withProp( n6, "beast:w_set_prob", "{0.5}" );
+        withProp( n6, "beast:w", "A" );
+        if ( !TreePanelUtil.stateDistribution( n6, "w" ).isEmpty() ) {
+            return fail( "a malformed distribution must not fall through to a misleading single-state disc" );
+        }
+        return true;
+    }
+
+    private static void withProp( final PhylogenyNode node, final String ref, final String value ) {
+        PropertiesList pl = node.getNodeData().getProperties();
+        if ( pl == null ) {
+            pl = new PropertiesList();
+            node.getNodeData().setProperties( pl );
+        }
+        pl.addProperty( new Property( ref, value, "", "xsd:string", AppliesTo.NODE ) );
     }
 
     /**

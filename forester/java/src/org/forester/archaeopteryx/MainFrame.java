@@ -2319,13 +2319,14 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             //    tree -- the TreePanel caches its own graphics type, so resetting Options alone would leave e.g. a
             //    Circular tree still drawn circular
             for (final TreePanel tp : getMainPanel().getTreePanels()) {
-                tp.resetColorStateToDefaults();
+                tp.resetColorStateToDefaults(); // also turns ancestral-state pies OFF (per-tab)
                 tp.setPhylogenyGraphicsType(type);
             }
             final ControlPanel cp = getMainPanel().getControlPanel();
             if (cp != null) {
                 cp.setColorByPropertySelectionToNone();
                 cp.setSizeByPropertySelectionToNone();
+                cp.setAncestralPieSelectionToNone();
                 // re-seed the always-visible control-panel controls (theme radios + search checkboxes) that hold
                 // their own state -- else they stay stale and the search checkboxes clobber the reset on next click
                 cp.resyncFromOptions();
@@ -3172,6 +3173,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             tp.setTree(phy); // recompute the layout so the new labels/data show
             tp.getControlPanel().populateColorByPropertyBox(); // surface any imported columns in "Color by:"
             tp.getControlPanel().populateSizeByPropertyBox(); // and any numeric ones in "Size by:"
+            tp.getControlPanel().populateAncestralPieBox(); // and any discrete-trait ones in "Ancestral pie:"
             showWhole();
             tp.setEdited(true);
         }

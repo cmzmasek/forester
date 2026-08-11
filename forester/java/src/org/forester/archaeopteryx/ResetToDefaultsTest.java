@@ -228,6 +228,15 @@ public final class ResetToDefaultsTest {
                         fail( ok, "precondition: the 'Size by' dropdown should show data:sz before reset, got "
                                 + cp.getSizeByPropertySelection() );
                     }
+                    tp.setAncestralPieTrait( "location" ); // turn ancestral-state pies ON (a per-tab display setting)
+                    cp.populateAncestralPieBox(); // re-seed the dropdown from the tree, so it shows the active trait
+                    if ( !tp.isShowAncestralPies() ) {
+                        fail( ok, "precondition: ancestral pies should be active before reset" );
+                    }
+                    if ( !"location".equals( cp.getAncestralPieSelection() ) ) {
+                        fail( ok, "precondition: the 'Ancestral pie' dropdown should show location before reset, got "
+                                + cp.getAncestralPieSelection() );
+                    }
                     frame.setDarkMode( true );
                     //    (c) always-visible ControlPanel controls held STALE: the Dark theme radio + the Regex search
                     //        checkbox (plus its Options field), which would clobber the reset on the next click
@@ -300,6 +309,14 @@ public final class ResetToDefaultsTest {
                     if ( !"None".equals( cp.getSizeByPropertySelection() ) ) {
                         fail( ok, "the 'Size by' dropdown must be re-seeded to None after reset, got "
                                 + cp.getSizeByPropertySelection() );
+                    }
+                    // 3f-bis. per-tab ancestral pies turned off AND the dropdown re-seeded to None
+                    if ( tp.isShowAncestralPies() ) {
+                        fail( ok, "ancestral pies must be turned off by reset" );
+                    }
+                    if ( !"None".equals( cp.getAncestralPieSelection() ) ) {
+                        fail( ok, "the 'Ancestral pie' dropdown must be re-seeded to None after reset, got "
+                                + cp.getAncestralPieSelection() );
                     }
                     // 3g. persisted settings file deleted (so the reset survives a restart)
                     if ( Files.exists( settings ) ) {
@@ -381,6 +398,13 @@ public final class ResetToDefaultsTest {
             leaf.getNodeData().setProperties( pl );
             root.addAsChild( leaf );
         }
+        // a BEAST discrete-trait distribution on the internal root, so the "Ancestral pie" control has a trait
+        final PropertiesList root_pl = new PropertiesList();
+        root_pl.addProperty(
+                new Property( "beast:location_set", "{Africa,Europe,Asia}", "", "xsd:string", AppliesTo.NODE ) );
+        root_pl.addProperty(
+                new Property( "beast:location_set_prob", "{0.5,0.3,0.2}", "", "xsd:string", AppliesTo.NODE ) );
+        root.getNodeData().setProperties( root_pl );
         final Phylogeny phy = new Phylogeny();
         phy.setRoot( root );
         phy.externalNodesHaveChanged();

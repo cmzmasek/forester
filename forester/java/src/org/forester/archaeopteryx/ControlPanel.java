@@ -136,6 +136,10 @@ final class ControlPanel extends JPanel implements ActionListener {
     private int _order_subtree_cb_item;
     private JComboBox<String> _color_by_property_cb;
     private JComboBox<String> _size_by_property_cb;
+    // "Ancestral pie:" -- shown adaptively (label + combo hidden together) only when the tree carries BEAST
+    // discrete/geographic traits (a `beast:<trait>_set_prob` property); see populateAncestralPieBox().
+    private JComboBox<String> _ancestral_pie_property_cb;
+    private JLabel            _ancestral_pie_label;
     private static final String COLOR_BY_PROPERTY_NONE = "None";
     private boolean _color_branches;
     private JCheckBox _use_visual_styles_cb;
@@ -325,6 +329,11 @@ final class ControlPanel extends JPanel implements ActionListener {
             } else if (e.getSource() == _size_by_property_cb) {
                 final Object sel = _size_by_property_cb.getSelectedItem();
                 tp.setSizeByPropertyRef(
+                        ((sel == null) || COLOR_BY_PROPERTY_NONE.equals(sel)) ? null : sel.toString());
+                tp.repaint();
+            } else if (e.getSource() == _ancestral_pie_property_cb) {
+                final Object sel = _ancestral_pie_property_cb.getSelectedItem();
+                tp.setAncestralPieTrait(
                         ((sel == null) || COLOR_BY_PROPERTY_NONE.equals(sel)) ? null : sel.toString());
                 tp.repaint();
             } else if (e.getSource() == _click_to_combobox) {
@@ -2269,6 +2278,91 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
     }
 
+    /** The "Ancestral pie:" dropdown: draw an ancestral-state pie chart at each node for a chosen BEAST discrete/
+     *  geographic trait. Only appears for trees that carry such traits -- see {@link #populateAncestralPieBox()}. */
+    void setupAncestralPieProperty() {
+        _ancestral_pie_label = new JLabel("Ancestral pie:");
+        _ancestral_pie_label.setFont(ControlPanel.jcb_font);
+        if (_configuration.isApplyCustomGuiColors()) {
+            _ancestral_pie_label.setForeground(getConfiguration().getGuiCheckboxTextColor());
+        }
+        _ancestral_pie_property_cb = new JComboBox<String>();
+        _ancestral_pie_property_cb.setFont(ControlPanel.js_font);
+        _ancestral_pie_property_cb
+                .setToolTipText("show an ancestral-state pie chart at each node for a discrete/geographic trait");
+        _ancestral_pie_property_cb.addItem(COLOR_BY_PROPERTY_NONE);
+        _ancestral_pie_property_cb.addActionListener(this);
+        add(_ancestral_pie_label);
+        add(_ancestral_pie_property_cb);
+        // start hidden: no tree is loaded yet, and most trees carry no discrete-trait data (populate reveals it)
+        _ancestral_pie_label.setVisible(false);
+        _ancestral_pie_property_cb.setVisible(false);
+    }
+
+    /** Repopulate the "Ancestral pie:" dropdown from the displayed tree's discrete-trait properties, and show/hide
+     *  the whole control (label + combo, so the row collapses) depending on whether the tree has any such trait. */
+    void populateAncestralPieBox() {
+        if (_ancestral_pie_property_cb == null) {
+            return;
+        }
+        final TreePanel tp = getMainPanel().getCurrentTreePanel();
+        _ancestral_pie_property_cb.removeActionListener(this);
+        _ancestral_pie_property_cb.removeAllItems();
+        _ancestral_pie_property_cb.addItem(COLOR_BY_PROPERTY_NONE);
+        boolean has_traits = false;
+        if ((tp != null) && (tp.getPhylogeny() != null)) {
+            for (final String trait : TreePanelUtil.ancestralStateTraits(tp.getPhylogeny())) {
+                _ancestral_pie_property_cb.addItem(trait);
+                has_traits = true;
+            }
+            _ancestral_pie_property_cb.setSelectedItem(
+                    (tp.getAncestralPieTrait() != null) ? tp.getAncestralPieTrait() : COLOR_BY_PROPERTY_NONE);
+        }
+        _ancestral_pie_property_cb.addActionListener(this);
+        final boolean changed = _ancestral_pie_label.isVisible() != has_traits;
+        _ancestral_pie_label.setVisible(has_traits);
+        _ancestral_pie_property_cb.setVisible(has_traits);
+        if (changed) {
+            revalidate();
+            repaint();
+        }
+    }
+
+    /** Resets the "Ancestral pie" dropdown to None (for Reset to Defaults); the per-tab trait is cleared on the TreePanel. */
+    void setAncestralPieSelectionToNone() {
+        if (_ancestral_pie_property_cb != null) {
+            _ancestral_pie_property_cb.setSelectedItem(COLOR_BY_PROPERTY_NONE);
+        }
+    }
+
+    /** Test hook: the trait refs currently offered by the "Ancestral pie:" dropdown (excluding the "None" entry). */
+    java.util.List<String> ancestralPieTraitRefs() {
+        final java.util.List<String> refs = new java.util.ArrayList<>();
+        if (_ancestral_pie_property_cb != null) {
+            for (int i = 0; i < _ancestral_pie_property_cb.getItemCount(); ++i) {
+                final String item = _ancestral_pie_property_cb.getItemAt(i);
+                if (!COLOR_BY_PROPERTY_NONE.equals(item)) {
+                    refs.add(item);
+                }
+            }
+        }
+        return refs;
+    }
+
+    /** Test hook: whether the "Ancestral pie:" control (dropdown) is currently visible. */
+    boolean isAncestralPieControlVisible() {
+        return (_ancestral_pie_property_cb != null) && _ancestral_pie_property_cb.isVisible();
+    }
+
+    /** For tests: the "Ancestral pie" dropdown's selected item as a string ("None" when off / not built). */
+    String getAncestralPieSelection() {
+        if (_ancestral_pie_property_cb == null) {
+            return COLOR_BY_PROPERTY_NONE;
+        }
+        final Object sel = _ancestral_pie_property_cb.getSelectedItem();
+        return (sel == null) ? COLOR_BY_PROPERTY_NONE : sel.toString();
+    }
+
     /** Repopulate the "Color by:" dropdown from the currently displayed tree's properties. */
     void populateColorByPropertyBox() {
         if (_color_by_property_cb == null) {
@@ -2297,6 +2391,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         nextRowGap(SECTION_GAP); // more space between the P/A/C row and "Color by"
         setupColorByProperty();
         setupSizeByProperty();
+        setupAncestralPieProperty();
         setupDisplayCheckboxes();
         /* GUILHEM_BEG */
         // The sequence relation query selection combo-box
@@ -3124,6 +3219,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             updateDataCheckboxVisibility(true);
             populateColorByPropertyBox();
             populateSizeByPropertyBox();
+            populateAncestralPieBox();
             if (getMainPanel().getMainFrame() != null) {
                 getMainPanel().getMainFrame().updateEditMenu(); // undo history is per-tab
             }

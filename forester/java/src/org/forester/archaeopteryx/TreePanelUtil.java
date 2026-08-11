@@ -570,6 +570,207 @@ public class TreePanelUtil {
         return false;
     }
 
+    // ===== Ancestral-state pie charts (BEAST discrete/geographic traits) =====
+
+    private final static String BEAST_PREFIX    = "beast:";
+    private final static String SET_SUFFIX      = "_set";
+    private final static String SET_PROB_SUFFIX = "_set_prob";
+
+    /** A discrete state and its posterior probability at a node (a wedge of the ancestral-state pie). Immutable. */
+    public final static class StateProbability {
+
+        private final String _state;
+        private final double _probability;
+
+        StateProbability( final String state, final double probability ) {
+            _state = state;
+            _probability = probability;
+        }
+
+        public String getState() {
+            return _state;
+        }
+
+        public double getProbability() {
+            return _probability;
+        }
+    }
+
+    /** The discrete-trait names for which the tree carries an ancestral-state DISTRIBUTION -- a node with both a
+     *  {@code beast:<trait>_set} and a {@code beast:<trait>_set_prob} property (BEAST/TreeAnnotator). These are the
+     *  traits offerable as ancestral-state pies. */
+    final static SortedSet<String> ancestralStateTraits( final Phylogeny tree ) {
+        final SortedSet<String> traits = new TreeSet<String>();
+        if ( ( tree == null ) || tree.isEmpty() ) {
+            return traits;
+        }
+        for( final PhylogenyNodeIterator it = tree.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if ( n.getNodeData().getProperties() == null ) {
+                continue;
+            }
+            for( final Property p : n.getNodeData().getProperties().getProperties() ) {
+                final String ref = p.getRef();
+                if ( ref.startsWith( BEAST_PREFIX ) && ref.endsWith( SET_PROB_SUFFIX ) ) {
+                    final String trait = ref.substring( BEAST_PREFIX.length(),
+                                                        ref.length() - SET_PROB_SUFFIX.length() );
+                    if ( !ForesterUtil.isEmpty( trait )
+                            && !firstProperty( n, BEAST_PREFIX + trait + SET_SUFFIX ).isEmpty() ) {
+                        traits.add( trait ); // require the matching states list too (a distribution is set + set_prob)
+                    }
+                }
+            }
+        }
+        return traits;
+    }
+
+    /** The ordered {@code {state, probability}} distribution of {@code trait} at {@code node}: from
+     *  {@code beast:<trait>_set} + {@code beast:<trait>_set_prob} (zipped, probabilities normalized to sum 1), or a
+     *  single {@code {state, 1.0}} from {@code beast:<trait>} (a tip's observed state), or empty. Pure. */
+    final static List<StateProbability> stateDistribution( final PhylogenyNode node, final String trait ) {
+        final List<StateProbability> out = new ArrayList<StateProbability>();
+        if ( ( node == null ) || ForesterUtil.isEmpty( trait ) || ( node.getNodeData().getProperties() == null ) ) {
+            return out;
+        }
+        final String set_raw = firstProperty( node, BEAST_PREFIX + trait + SET_SUFFIX );
+        final String prob_raw = firstProperty( node, BEAST_PREFIX + trait + SET_PROB_SUFFIX );
+        // If the node carries EITHER set property it is MEANT to have a distribution: require a well-formed
+        // (equal-length, all-finite, all-non-negative) pair, else return empty (no pie) -- never fall through to
+        // the single-state disc below, which would misrepresent an uncertain distribution as a confident 100%.
+        if ( !set_raw.isEmpty() || !prob_raw.isEmpty() ) {
+            final List<String> states = parseBraceList( set_raw );
+            final List<String> probs = parseBraceList( prob_raw );
+            if ( states.isEmpty() || ( states.size() != probs.size() ) ) {
+                return out; // malformed / length-mismatched -> no pie (never half-drawn, never overstated)
+            }
+            final double[] p = new double[ probs.size() ];
+            double sum = 0.0;
+            for( int i = 0; i < probs.size(); i++ ) {
+                final Double d = parseFinite( probs.get( i ) );
+                if ( ( d == null ) || ( d.doubleValue() < 0.0 ) ) {
+                    return out; // non-numeric / NaN / Infinity / negative probability -> no pie
+                }
+                p[ i ] = d.doubleValue();
+                sum += p[ i ];
+            }
+            if ( sum <= 0.0 ) {
+                return out;
+            }
+            for( int i = 0; i < states.size(); i++ ) {
+                if ( p[ i ] > 0.0 ) {
+                    out.add( new StateProbability( states.get( i ), p[ i ] / sum ) );
+                }
+            }
+            return out;
+        }
+        final String single = firstProperty( node, BEAST_PREFIX + trait ); // a tip's single observed state
+        if ( !ForesterUtil.isEmpty( single ) ) {
+            out.add( new StateProbability( single, 1.0 ) );
+        }
+        return out;
+    }
+
+    /** Every distinct state of {@code trait} across the tree (from the per-node distributions + single states), for a
+     *  stable state&rarr;color assignment shared by all pies and the legend. */
+    final static SortedSet<String> collectAncestralStates( final Phylogeny tree, final String trait ) {
+        final SortedSet<String> states = new TreeSet<String>();
+        if ( ( tree == null ) || tree.isEmpty() || ForesterUtil.isEmpty( trait ) ) {
+            return states;
+        }
+        for( final PhylogenyNodeIterator it = tree.iteratorPreorder(); it.hasNext(); ) {
+            for( final StateProbability sp : stateDistribution( it.next(), trait ) ) {
+                states.add( sp.getState() );
+            }
+        }
+        return states;
+    }
+
+    /** Split a BEAST {@code {a,b,c}} (or {@code [a,b,c]}) list into trimmed, unquoted elements -- top-level commas
+     *  only (a nested brace/bracket or a DOUBLE-quoted value is not split). A single-quote/apostrophe is treated as a
+     *  LITERAL character (not a delimiter), so a state name like {@code Xi'an} or {@code Côte d'Ivoire} -- quoted by
+     *  BEAST with double quotes, or unquoted -- is not swallowed. Empty for a non-list / empty input. */
+    final static List<String> parseBraceList( final String raw ) {
+        final List<String> out = new ArrayList<String>();
+        if ( ForesterUtil.isEmpty( raw ) ) {
+            return out;
+        }
+        String s = raw.trim();
+        if ( ( s.length() >= 2 ) && ( ( s.charAt( 0 ) == '{' ) || ( s.charAt( 0 ) == '[' ) )
+                && ( ( s.charAt( s.length() - 1 ) == '}' ) || ( s.charAt( s.length() - 1 ) == ']' ) ) ) {
+            s = s.substring( 1, s.length() - 1 );
+        }
+        int depth = 0;
+        boolean in_dq = false;
+        final StringBuilder cur = new StringBuilder();
+        for( int i = 0; i < s.length(); i++ ) {
+            final char c = s.charAt( i );
+            if ( in_dq ) {
+                if ( c == '"' ) {
+                    in_dq = false;
+                }
+                else {
+                    cur.append( c );
+                }
+            }
+            else if ( c == '"' ) {
+                in_dq = true;
+            }
+            else if ( ( c == '{' ) || ( c == '[' ) ) {
+                depth++;
+                cur.append( c );
+            }
+            else if ( ( c == '}' ) || ( c == ']' ) ) {
+                if ( depth > 0 ) {
+                    depth--;
+                }
+                cur.append( c );
+            }
+            else if ( ( c == ',' ) && ( depth == 0 ) ) {
+                addTrimmed( out, cur );
+                cur.setLength( 0 );
+            }
+            else {
+                cur.append( c );
+            }
+        }
+        addTrimmed( out, cur );
+        return out;
+    }
+
+    private final static void addTrimmed( final List<String> out, final StringBuilder sb ) {
+        final String v = sb.toString().trim();
+        if ( !v.isEmpty() ) {
+            out.add( v );
+        }
+    }
+
+    /** The value of the first node property with ref {@code ref}, or "". */
+    private final static String firstProperty( final PhylogenyNode node, final String ref ) {
+        if ( node.getNodeData().getProperties() == null ) {
+            return "";
+        }
+        final List<Property> ps = node.getNodeData().getProperties().getProperties( ref );
+        return ps.isEmpty() ? "" : ps.get( 0 ).getValue();
+    }
+
+    private final static Double parseFinite( final String s ) {
+        try {
+            final double d = Double.parseDouble( s );
+            return ( Double.isNaN( d ) || Double.isInfinite( d ) ) ? null : Double.valueOf( d );
+        }
+        catch ( final NumberFormatException e ) {
+            return null;
+        }
+    }
+
+    /** An evenly-spaced gray for element {@code i} of {@code n} (0-based), for a monochrome (black-and-white export)
+     *  rendering of a categorical color set -- e.g. ancestral-pie wedges + their legend swatches -- so the elements
+     *  stay distinguishable and the two match. A single element (or n&le;1) is a neutral mid-gray. */
+    final static Color grayShade( final int i, final int n ) {
+        final int shade = ( n <= 1 ) ? 128 : ( 40 + Math.round( ( i / (float) ( n - 1 ) ) * 180f ) );
+        return new Color( shade, shade, shade );
+    }
+
     /** Sentinel for {@link #maximalMonochromaticRoots}: a subtree whose tips are not all one rank taxon. */
     private final static String MIXED_TAXON = "<<MIXED>>";
 

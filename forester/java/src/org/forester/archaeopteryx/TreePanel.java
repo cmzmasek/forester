@@ -3016,8 +3016,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             x += add;
         }
         final int half_box_size = getOptions().getDefaultNodeShapeSize() / 2;
-        if (((isColorByProperty() && (node.isExternal() || node.isCollapse())))
-                || (isSizeByProperty() && node.isExternal())) {
+        final boolean want_dot = (isColorByProperty() && (node.isExternal() || node.isCollapse()))
+                || (isSizeByProperty() && node.isExternal());
+        // at a pie node the pie IS the marker, so suppress the plain color/size dot (which the later-drawn pie
+        // would otherwise sit on top of -- and a large Size-by dot could peek out from behind the smaller pie).
+        // Reads the per-node distribution CACHE (built in rebuildAncestralPieColors), so this is an O(1) lookup.
+        if (want_dot && !(isShowAncestralPies() && (_ancestral_pie_dist != null)
+                && _ancestral_pie_dist.containsKey(node))) {
             drawPropertyColorDot(g, node);
         }
         if (usesAboveBranchInternalLabel(node)) {
@@ -5453,6 +5458,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // Color by). Ref remembered separately from the scale so it rebuilds for the displayed (sub)tree, like above.
     private PropertySizeScale   _property_size_scale = null;
     private String              _size_by_property_ref = null;
+    // Ancestral-state pie charts: the selected discrete/geographic trait (null = off) and the stable state->color
+    // map (all distinct states in the displayed tree) shared by every pie AND the legend, so a state keeps its
+    // color across nodes. See TreePanelUtil.ancestralStateTraits / stateDistribution / collectAncestralStates.
+    private String              _ancestral_pie_trait = null;
+    private Map<String, Color>  _ancestral_pie_colors = null;
+    // Per-node distribution cache (node identity -> its {state,prob} list), rebuilt with the color map on every
+    // navigation/prune, so the per-frame paint + the dot-suppression guard do a map lookup instead of re-parsing
+    // the BEAST brace strings on every repaint.
+    private Map<PhylogenyNode, List<TreePanelUtil.StateProbability>> _ancestral_pie_dist = null;
     // The property-color legend can be dragged: _legend_offset is its top-left relative to the
     // visible area (null = the default top-right corner), so it stays put as the user scrolls.
     // _property_legend_bounds is where it was last drawn on screen (for hit-testing a drag).
@@ -5464,7 +5478,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // be shown ALONGSIDE the color/rank legend -- the combined color+size figure needs both keys visible at once.
     private Point               _size_legend_offset = null;
     private Rectangle           _size_legend_bounds = null;
-    private boolean             _dragging_size_legend = false; // which legend the active drag moves (shared grab dx/dy)
+    // A THIRD, independent legend for the ancestral-state pie charts (own draggable position + last-drawn bounds):
+    // the state->color key for the pie wedges, shown alongside any color/rank/size legend.
+    private Point               _ancestral_pie_legend_offset = null;
+    private Rectangle           _ancestral_pie_legend_bounds = null;
+    // Which legend the active drag moves (they share _legend_grab_dx/dy). Generalized from a single "size?" boolean
+    // once a third (pie) draggable legend was added.
+    enum DRAGGED_LEGEND {
+        PROPERTY, SIZE, ANCESTRAL_PIE
+    }
+    private DRAGGED_LEGEND      _dragged_legend = DRAGGED_LEGEND.PROPERTY;
     // User-assigned per-value colors: ref -> (group key -> color); applied by the color scheme,
     // overriding the automatic palette color, and kept across scheme rebuilds (navigation).
     private final Map<String, Map<String, Color>> _property_color_overrides = new HashMap<>();
@@ -5553,15 +5576,41 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 && _size_legend_bounds.contains(e.getX(), e.getY());
     }
 
-    /** Over either legend (color/rank/column or size) -- used to start a drag / show the move cursor. */
+    /** Over the ancestral-state pie legend -- guarded by isShowAncestralPies AND the layout gate (so a stale bounds
+     *  from a prior rectangular paint is not clickable once the tree is switched to circular/unrooted, where the
+     *  legend is not drawn). */
+    final boolean isOnAncestralPieLegend(final MouseEvent e) {
+        return isShowAncestralPies() && ancestralPiesApplyToCurrentLayout() && (_ancestral_pie_legend_bounds != null)
+                && _ancestral_pie_legend_bounds.contains(e.getX(), e.getY());
+    }
+
+    /** Over any legend (color/rank/column, size, or ancestral pie) -- used to start a drag / show the move cursor. */
     final boolean isOnAnyLegend(final MouseEvent e) {
-        return isOnPropertyLegend(e) || isOnSizeLegend(e);
+        return isOnPropertyLegend(e) || isOnSizeLegend(e) || isOnAncestralPieLegend(e);
+    }
+
+    private Rectangle draggedLegendBounds() {
+        switch (_dragged_legend) {
+            case ANCESTRAL_PIE:
+                return _ancestral_pie_legend_bounds;
+            case SIZE:
+                return _size_legend_bounds;
+            default:
+                return _property_legend_bounds;
+        }
     }
 
     final void startLegendDrag(final MouseEvent e) {
-        // the size legend is drawn last (on top), so it wins if the two boxes overlap
-        _dragging_size_legend = isOnSizeLegend(e);
-        final Rectangle b = _dragging_size_legend ? _size_legend_bounds : _property_legend_bounds;
+        // the legends are drawn color/rank -> size -> pie (pie on top), so an overlap grab must hit-test in
+        // reverse draw order and give the top-most legend priority
+        if (isOnAncestralPieLegend(e)) {
+            _dragged_legend = DRAGGED_LEGEND.ANCESTRAL_PIE;
+        } else if (isOnSizeLegend(e)) {
+            _dragged_legend = DRAGGED_LEGEND.SIZE;
+        } else {
+            _dragged_legend = DRAGGED_LEGEND.PROPERTY;
+        }
+        final Rectangle b = draggedLegendBounds();
         if (b != null) {
             _legend_grab_dx = e.getX() - b.x;
             _legend_grab_dy = e.getY() - b.y;
@@ -5570,7 +5619,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final void dragLegend(final MouseEvent e) {
-        final Rectangle b = _dragging_size_legend ? _size_legend_bounds : _property_legend_bounds;
+        final Rectangle b = draggedLegendBounds();
         if (b == null) {
             return;
         }
@@ -5579,10 +5628,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         int oy = (e.getY() - _legend_grab_dy) - vp.y;
         ox = Math.max(0, Math.min(ox, Math.max(0, vp.width - b.width)));
         oy = Math.max(0, Math.min(oy, Math.max(0, vp.height - b.height)));
-        if (_dragging_size_legend) {
-            _size_legend_offset = new Point(ox, oy);
-        } else {
-            _legend_offset = new Point(ox, oy);
+        switch (_dragged_legend) {
+            case ANCESTRAL_PIE:
+                _ancestral_pie_legend_offset = new Point(ox, oy);
+                break;
+            case SIZE:
+                _size_legend_offset = new Point(ox, oy);
+                break;
+            default:
+                _legend_offset = new Point(ox, oy);
+                break;
         }
         repaint();
     }
@@ -5591,6 +5646,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     final void handleSizeLegendClick(final MouseEvent e) {
         if (e.getClickCount() == 2) {
             _size_legend_offset = null;
+            repaint();
+        }
+    }
+
+    /** A click on the ancestral-pie legend: double-click returns it to its default corner (no recolorable rows). */
+    final void handleAncestralPieLegendClick(final MouseEvent e) {
+        if (e.getClickCount() == 2) {
+            _ancestral_pie_legend_offset = null;
             repaint();
         }
     }
@@ -5898,6 +5961,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         _property_color_overrides.clear();
         setColorByPropertyRef( null ); // turns coloring off and rebuilds the scheme (-> null)
         setSizeByPropertyRef( null ); // turns sizing off and rebuilds the scale (-> null), clears the size legend pos
+        setAncestralPieTrait( null ); // turns ancestral-state pies off, clears the pie legend pos
         _legend_offset = null; // also return the color/rank legend to its default corner
         repaint();
     }
@@ -5959,12 +6023,88 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
-    /** Rebuilds BOTH property-driven tip encodings ("Color by" and "Size by") from the currently displayed
-     *  (visible) tree. Call this at every site the visible tips change (navigation, prune) so the two encodings
-     *  can never drift out of lockstep -- one method means a call site cannot rebuild one but forget the other. */
+    /** Rebuilds the property-driven displays ("Color by", "Size by", ancestral-pie colors) from the currently
+     *  displayed (visible) tree. Call this at every site the visible tips change (navigation, prune) so the
+     *  encodings can never drift out of lockstep -- one method means a call site cannot rebuild one but forget
+     *  another. */
     void rebuildPropertyDisplays() {
         rebuildPropertyColorScheme();
         rebuildPropertySizeScale();
+        rebuildAncestralPieColors();
+    }
+
+    /** Show ancestral-state pie charts for the given discrete/geographic trait, or turn them off when
+     *  {@code trait} is empty. Rebuilds the stable state->color map over the displayed tree. */
+    void setAncestralPieTrait(final String trait) {
+        _ancestral_pie_trait = ForesterUtil.isEmpty(trait) ? null : trait;
+        if (_ancestral_pie_trait == null) {
+            // turning pies OFF: forget the legend's dragged position + stale bounds so re-enabling shows it fresh
+            _ancestral_pie_legend_offset = null;
+            _ancestral_pie_legend_bounds = null;
+        }
+        rebuildAncestralPieColors();
+        repaint();
+    }
+
+    String getAncestralPieTrait() {
+        return _ancestral_pie_trait;
+    }
+
+    /** Recompute the ancestral-pie state->color map AND the per-node distribution cache for the currently displayed
+     *  (visible) tree, so a state keeps a distinct color across every node; recomputed on navigation like the other
+     *  property-driven encodings. */
+    void rebuildAncestralPieColors() {
+        if ((_ancestral_pie_trait == null) || (_phylogeny == null) || _phylogeny.isEmpty()) {
+            _ancestral_pie_colors = null;
+            _ancestral_pie_dist = null;
+            return;
+        }
+        _ancestral_pie_colors = AptxUtil
+                .assignDistinctColors(TreePanelUtil.collectAncestralStates(_phylogeny, _ancestral_pie_trait));
+        // cache each node's distribution once, so the hot paint path does not re-parse the brace strings per frame
+        final Map<PhylogenyNode, List<TreePanelUtil.StateProbability>> dist = new java.util.IdentityHashMap<>();
+        for (final PhylogenyNodeIterator it = _phylogeny.iteratorPreorder(); it.hasNext();) {
+            final PhylogenyNode n = it.next();
+            final List<TreePanelUtil.StateProbability> d = TreePanelUtil.stateDistribution(n, _ancestral_pie_trait);
+            if (!d.isEmpty()) {
+                dist.put(n, d);
+            }
+        }
+        _ancestral_pie_dist = dist;
+    }
+
+    /** Whether ancestral-state pie charts are currently shown (a trait is selected and it yields >=1 state). */
+    boolean isShowAncestralPies() {
+        return (_ancestral_pie_trait != null) && (_ancestral_pie_colors != null) && !_ancestral_pie_colors.isEmpty();
+    }
+
+    /** The ancestral pies (and their legend) render only in the rectangular family; circular/unrooted are the
+     *  deferred radial-parity track, so the overlay + its legend must not appear there. */
+    private boolean ancestralPiesApplyToCurrentLayout() {
+        return (getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.UNROOTED)
+                && (getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR);
+    }
+
+    /** Test hook: the assigned color for a pie state, or null when pies are off / the state is unknown. */
+    Color ancestralPieColor(final String state) {
+        return (_ancestral_pie_colors == null) ? null : _ancestral_pie_colors.get(state);
+    }
+
+    /** Test hook: the last-drawn ancestral-pie legend bounds (for drag/click hit-testing), or null. */
+    Rectangle getAncestralPieLegendBounds() {
+        return _ancestral_pie_legend_bounds;
+    }
+
+    /** Test hook: the ancestral-pie diameter (px) so a render test knows how big a region to sample around a node. */
+    double ancestralPieDiameterForTest() {
+        return ancestralPieDiameter();
+    }
+
+    /** Test hook: draws the ancestral-pie legend into {@code g} at {@code bounds} (draggable records its bounds; bw
+     *  grays the swatches). */
+    void drawAncestralPieLegendForTest(final Graphics2D g, final Rectangle bounds, final boolean draggable,
+                                       final boolean bw) {
+        drawAncestralPieLegend(g, bounds, draggable, bw);
     }
 
     boolean isSizeByProperty() {
@@ -6385,6 +6525,87 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // a color legend already holds the top-right default -> drop to the bottom-right so the two never collide
         return new Point(Math.max(bounds.x, (bounds.x + bounds.width) - box_w - 10),
                 Math.max(bounds.y, (bounds.y + bounds.height) - box_h - 10));
+    }
+
+    /**
+     * Draws the ancestral-state pie legend: a boxed "Ancestral state: &lt;trait&gt;" title over one swatch+label row
+     * per state, colored from the same stable {@link #_ancestral_pie_colors} map the wedges use (grayed by the same
+     * {@link TreePanelUtil#grayShade} ramp when {@code bw}, so the key matches a black-and-white figure's wedges).
+     * Modeled on the size legend (own draggable position, reuses the shared {@link #drawLegendBox} chrome); its rows
+     * are not recolorable (auto-assigned palette), so it needs no sort/expand controls -- but it caps at
+     * {@link #DEFAULT_LEGEND_MAX_ENTRIES} rows with a "+N more" line so a many-state trait can't run off the canvas.
+     */
+    private void drawAncestralPieLegend(final Graphics2D g, final Rectangle bounds, final boolean draggable,
+                                        final boolean bw) {
+        if (!isShowAncestralPies()) {
+            return;
+        }
+        final int pad = 7;
+        final int swatch = 10;
+        final int gap = 5;
+        final int max_text = 200;
+        g.setFont(legendFont());
+        final FontMetrics fm = g.getFontMetrics();
+        final int row_h = fm.getHeight() + 2;
+        final int n = _ancestral_pie_colors.size();
+        final int shown = Math.min(n, DEFAULT_LEGEND_MAX_ENTRIES);
+        final int more = n - shown;
+        final String title = clipToWidth("Ancestral state: " + _ancestral_pie_trait, fm, max_text);
+        final String more_text = "… +" + more + " more";
+        int text_w = fm.stringWidth(title);
+        for (final String state : _ancestral_pie_colors.keySet()) {
+            text_w = Math.max(text_w, swatch + gap + fm.stringWidth(clipToWidth(state, fm, max_text)));
+        }
+        if (more > 0) {
+            text_w = Math.max(text_w, fm.stringWidth(more_text));
+        }
+        final int box_w = text_w + (2 * pad) + 4;
+        final int box_h = ((1 + shown + ((more > 0) ? 1 : 0)) * row_h) + (2 * pad);
+        final Point tl = ancestralPieLegendTopLeft(bounds, box_w, box_h);
+        final int x = tl.x;
+        final int y = tl.y;
+        if (draggable) {
+            _ancestral_pie_legend_bounds = new Rectangle(x, y, box_w, box_h);
+        }
+        final Stroke saved_stroke = g.getStroke();
+        final Color fg = getTreeColorSet().getSequenceColor();
+        // draggable=false here: this legend records its OWN bounds (above), not the property/size slot drawLegendBox
+        // would otherwise write
+        int baseline = drawLegendBox(g, x, y, box_w, box_h, pad, title, fm, false, false);
+        int i = 0;
+        for (final Map.Entry<String, Color> e : _ancestral_pie_colors.entrySet()) {
+            if (i >= shown) {
+                break;
+            }
+            baseline += row_h;
+            // swatch by GLOBAL index so it matches the wedge (color, or the gray ramp in B&W)
+            g.setColor(bw ? TreePanelUtil.grayShade(i, n) : e.getValue());
+            g.fillRect(x + pad, baseline - fm.getAscent() + ((fm.getAscent() - swatch) / 2) + 1, swatch, swatch);
+            g.setColor(fg);
+            g.drawString(clipToWidth(e.getKey(), fm, max_text), x + pad + swatch + gap, baseline);
+            ++i;
+        }
+        if (more > 0) {
+            baseline += row_h;
+            g.setColor(fg);
+            g.drawString(more_text, x + pad, baseline);
+        }
+        g.setStroke(saved_stroke);
+    }
+
+    /** Default position of the ancestral-pie legend: TOP-RIGHT (the shared primary-legend corner) -- clear of the
+     *  overview thumbnail (top-left by default) and the tree name + scale (bottom-left). If a color/rank/annotation
+     *  legend already holds the top-right slot, drop to the BOTTOM-LEFT so the two don't collide. Once dragged,
+     *  _ancestral_pie_legend_offset maps fractionally like the other legends (so exports honor the moved position). */
+    private Point ancestralPieLegendTopLeft(final Rectangle bounds, final int box_w, final int box_h) {
+        if (_ancestral_pie_legend_offset != null) {
+            return legendTopLeftFor(bounds, getVisibleRect(), _ancestral_pie_legend_offset, box_w, box_h);
+        }
+        if (isColorByProperty() || hasRankLegend() || hasAnnotationColumnLegend()) {
+            return new Point(Math.max(bounds.x, bounds.x + 10),
+                    Math.max(bounds.y, (bounds.y + bounds.height) - box_h - 10)); // bottom-left
+        }
+        return legendTopLeftFor(bounds, getVisibleRect(), null, box_w, box_h); // top-right
     }
 
     private static String clipToWidth(final String s, final FontMetrics fm, final int max_px) {
@@ -7512,6 +7733,76 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             g.fillRect(left, Math.round(node.getYcoord()) - (HPD_BAR_HEIGHT / 2), w, HPD_BAR_HEIGHT);
         }
         g.setColor(saved);
+    }
+
+    /** Diameter (px, tree/device space) of an ancestral-state pie: ~2.5x the node dot, floored at 10px so the
+     *  wedges stay legible even at a tiny node-shape size. */
+    private double ancestralPieDiameter() {
+        return Math.max(10.0, 2.5 * getOptions().getDefaultNodeShapeSize());
+    }
+
+    /**
+     * Draws an ancestral-state pie at each drawn node: wedges sized by the node's posterior state probabilities and
+     * colored from the stable state->color map ({@link #_ancestral_pie_colors}). Tips with a single observed state
+     * render as one full-circle wedge (a solid state-colored disc). Drawn AFTER the node-paint loop (which sets the
+     * coords), alongside the other tree-riding overlays; the pie replaces the plain node dot at pie nodes (see the
+     * suppression guard at the drawPropertyColorDot call site). Rectangular family; in the root-top/bottom
+     * orientations it rides the rotated frame (the disc stays a disc; the wedge orientation rotates with the tree).
+     */
+    private void paintAncestralPies(final Graphics2D g, final boolean to_pdf, final boolean to_graphics_file) {
+        if (!isShowAncestralPies() || (_ancestral_pie_dist == null)) {
+            return;
+        }
+        final boolean bw = (to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite();
+        final int n = _ancestral_pie_colors.size();
+        final double d = ancestralPieDiameter();
+        final double r = d / 2.0;
+        final Color saved = g.getColor();
+        final Stroke saved_stroke = g.getStroke();
+        g.setStroke(STROKE_05);
+        final Color outline = bw ? Color.BLACK : getTreeColorSet().getBranchColor();
+        for (final PhylogenyNode node : _nodes_in_preorder) {
+            if (isHiddenUnderCollapse(node)) {
+                continue; // a node hidden under a collapsed clade keeps stale/zero coords -> would draw a phantom pie
+            }
+            final List<TreePanelUtil.StateProbability> dist = _ancestral_pie_dist.get(node); // cached, no per-frame parse
+            if ((dist == null) || dist.isEmpty()) {
+                continue; // this node carries no distribution for the trait
+            }
+            drawAncestralPie(g, node.getXcoord(), node.getYcoord(), r, d, dist, n, outline, bw);
+        }
+        g.setStroke(saved_stroke);
+        g.setColor(saved);
+    }
+
+    /** Fills the wedges of one pie in GLOBAL state order (iterating {@code _ancestral_pie_colors}, so a state occupies
+     *  a comparable arc + color across every node), then strokes a thin outline circle. In B&W export the wedges map
+     *  to the same evenly-spaced gray ramp the legend uses (by global index). Allocation-free: the small per-node
+     *  {@code dist} list is scanned directly (no per-node map). */
+    private void drawAncestralPie(final Graphics2D g, final double cx, final double cy, final double r,
+                                  final double d, final List<TreePanelUtil.StateProbability> dist, final int n,
+                                  final Color outline, final boolean bw) {
+        double start = 90.0; // begin at 12 o'clock and sweep clockwise (negative arc angle)
+        int i = 0;
+        for (final Map.Entry<String, Color> e : _ancestral_pie_colors.entrySet()) {
+            double prob = 0.0;
+            for (final TreePanelUtil.StateProbability sp : dist) { // dist is tiny (2-5 states); sum defends a dup state
+                if (e.getKey().equals(sp.getState())) {
+                    prob += sp.getProbability();
+                }
+            }
+            if (prob > 0.0) {
+                final double sweep = 360.0 * prob;
+                g.setColor(bw ? TreePanelUtil.grayShade(i, n) : e.getValue());
+                _arc.setArc(cx - r, cy - r, d, d, start, -sweep, Arc2D.PIE);
+                g.fill(_arc);
+                start -= sweep;
+            }
+            ++i;
+        }
+        g.setColor(outline);
+        _ellipse.setFrame(cx - r, cy - r, d, d);
+        g.draw(_ellipse);
     }
 
     private void paintCladeBands(final Graphics2D g) {
@@ -8709,6 +9000,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 paintHpdBars(g, to_pdf, to_graphics_file); // node-age HPD bars -- node coords set by the loop above
                 paintAnnotationColumns(g); // tip-aligned columns (strip/heat map/bar/text), right of the labels
                 paintCladeBands(g); // clade boxes/bars over the tree -- node coords set by the loop above
+                paintAncestralPies(g, to_pdf, to_graphics_file); // per-node state pies, on top -- coords set above
             }
             else {
                 // vertical parity: these overlays are drawn while g is rotated by R. Their geometry (zebra bands,
@@ -8720,6 +9012,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 paintHpdBars(g, to_pdf, to_graphics_file); // node-age HPD bars: a plain rect at each node -> rides R
                 paintAnnotationColumnsVertical(g);
                 paintCladeBands(g); // boxes ride R; bars/brackets draw the label upright (isVerticalOrientation branch)
+                paintAncestralPies(g, to_pdf, to_graphics_file); // pies ride R: the disc stays a disc, wedges rotate
             }
             paintHoverPreview(g, !(to_pdf || to_graphics_file)); // translucent select/deselect hover preview (rides R)
             paintFoundNodeHalos(g, to_pdf, to_graphics_file); // pulsing (screen) / static-glow (export) hit halos
@@ -8892,6 +9185,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final Rectangle legend_bounds = to_screen ? getVisibleRect()
                     : new Rectangle(graphics_file_x, graphics_file_y, graphics_file_width, graphics_file_height);
             drawSizeLegend(g, legend_bounds, to_screen);
+        }
+        // ancestral-state pies have their OWN key (state -> color), drawn last so it can appear alongside the others.
+        // Gated on the layout too (like the pies themselves), so it never orphans over a circular/unrooted tree that
+        // draws no pies.
+        if (isShowAncestralPies() && ancestralPiesApplyToCurrentLayout()) {
+            final boolean to_screen = !(to_pdf || to_graphics_file);
+            final Rectangle legend_bounds = to_screen ? getVisibleRect()
+                    : new Rectangle(graphics_file_x, graphics_file_y, graphics_file_width, graphics_file_height);
+            drawAncestralPieLegend(g, legend_bounds, to_screen,
+                    (to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite());
         }
         // reconcile the "Pulse Found Nodes" animation timer after EVERY screen paint (all layouts): starts it when a
         // hit halo was drawn on a rectangular tree, stops it when none was (option off / no hit / circular-unrooted).

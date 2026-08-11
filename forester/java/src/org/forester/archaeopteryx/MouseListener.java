@@ -61,9 +61,13 @@ final class MouseListener extends MouseAdapter implements MouseMotionListener {
             _legend_moved = false;
             return;
         }
-        // The size legend is drawn LAST (on top), and startLegendDrag gives it drag priority in an overlap, so the
-        // click dispatch must check it FIRST too -- else a click on the visibly-top size legend would fall through
-        // to the color legend underneath (recolor/reset the wrong legend).
+        // Legends are drawn color/rank -> size -> pie (pie on top), and startLegendDrag gives the top-most drag
+        // priority in an overlap, so the click dispatch must hit-test in the same reverse order -- else a click on
+        // a visibly-top legend would fall through to the one underneath (recolor/reset the wrong legend).
+        if ( _treepanel.isOnAncestralPieLegend( e ) ) {
+            _treepanel.handleAncestralPieLegendClick( e ); // double-click to reset the pie legend's position
+            return; // a click on the legend is not a node action
+        }
         if ( _treepanel.isOnSizeLegend( e ) ) {
             _treepanel.handleSizeLegendClick( e ); // double-click to reset the size legend's position
             return; // a click on the legend is not a node action

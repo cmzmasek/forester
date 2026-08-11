@@ -78,6 +78,7 @@ public final class DemoTreeGenerator {
         writeText( dir, "import-annotations.csv", importAnnotationsCsv() );
         write( dir, "search-emphasis.xml", searchEmphasisTree() );
         writeText( dir, "beast-annotations.nex", beastAnnotationsNexus() );
+        write( dir, "ancestral-pie-charts.xml", ancestralPieChartsTree() );
         System.out.println( "Wrote demo trees to " + dir.getAbsolutePath() );
     }
 
@@ -99,6 +100,52 @@ public final class DemoTreeGenerator {
                 + "[&posterior=0.92,height=0.5,height_95%_HPD={0.35,0.7},rate=0.0034]:0.3)"
                 + "[&posterior=0.81,height=0.8,height_95%_HPD={0.6,1.1},rate=0.0029]:1.3)"
                 + "[&posterior=1.0,height=2.1,height_95%_HPD={1.8,2.5},rate=0.0030];\n" + "END;\n";
+    }
+
+    // ----- "Ancestral-state pie charts": a BEAST-style phylogeography tree. Each TIP carries its single sampled
+    //       location (beast:location); each INTERNAL node carries a posterior distribution over locations
+    //       (beast:location_set + beast:location_set_prob), as a BEAST discrete-trait analysis produces. Load ->
+    //       "Ancestral pie: location" to draw a per-node pie (wedges = state probabilities; tips = solid discs).
+    private static Phylogeny ancestralPieChartsTree() {
+        // three-tip regional clades; each internal node a posterior over {Africa, Americas, Asia, Europe}
+        final PhylogenyNode africa = pieInternal( 0.05, "{Africa,Europe}", "{0.9,0.1}",
+                locTip( "EPI_ISL_401", "Africa" ), locTip( "EPI_ISL_402", "Africa" ), locTip( "EPI_ISL_403", "Africa" ) );
+        final PhylogenyNode europe = pieInternal( 0.05, "{Europe,Africa,Asia}", "{0.7,0.2,0.1}",
+                locTip( "EPI_ISL_511", "Europe" ), locTip( "EPI_ISL_512", "Europe" ), locTip( "EPI_ISL_513", "Europe" ) );
+        final PhylogenyNode asia = pieInternal( 0.05, "{Asia,Europe}", "{0.8,0.2}",
+                locTip( "EPI_ISL_621", "Asia" ), locTip( "EPI_ISL_622", "Asia" ), locTip( "EPI_ISL_623", "Asia" ) );
+        final PhylogenyNode americas = pieInternal( 0.05, "{Americas,Europe,Asia}", "{0.6,0.3,0.1}",
+                locTip( "EPI_ISL_731", "Americas" ), locTip( "EPI_ISL_732", "Americas" ),
+                locTip( "EPI_ISL_733", "Americas" ) );
+        // deeper internal nodes: increasingly mixed toward the (African) root
+        final PhylogenyNode eurasia = pieInternal( 0.04, "{Europe,Asia,Africa}", "{0.45,0.35,0.2}", europe, asia );
+        final PhylogenyNode old_world = pieInternal( 0.04, "{Africa,Europe,Asia}", "{0.55,0.3,0.15}", africa, eurasia );
+        final PhylogenyNode root = pieInternal( 0.0, "{Africa,Europe,Asia,Americas}", "{0.5,0.25,0.15,0.1}",
+                old_world, americas );
+        return tree( root, "Ancestral-state pie charts (demo)",
+                     "Synthetic BEAST phylogeography tree. Each TIP carries its single sampled location "
+                             + "(beast:location); each INTERNAL node carries a posterior distribution over locations "
+                             + "(beast:location_set + beast:location_set_prob), as a BEAST discrete-trait / "
+                             + "phylogeography analysis produces. Pick \"Ancestral pie: location\" to draw an "
+                             + "ancestral-state pie at each node -- wedges sized by state probability, tips as solid "
+                             + "single-state discs -- with a state->color legend." );
+    }
+
+    /** An internal node with a branch length and a BEAST discrete-trait posterior: a brace-wrapped state set + a
+     *  matching probability set (as BEAST writes them), under beast:&lt;trait&gt;_set / beast:&lt;trait&gt;_set_prob. */
+    private static PhylogenyNode pieInternal( final double bl, final String state_set, final String prob_set,
+                                              final PhylogenyNode... kids ) {
+        final PhylogenyNode n = clade( bl, kids );
+        cat( n, "beast:location_set", state_set );
+        cat( n, "beast:location_set_prob", prob_set );
+        return n;
+    }
+
+    /** A tip carrying a single observed location (beast:location), rendered as a solid single-state pie disc. */
+    private static PhylogenyNode locTip( final String name, final String location ) {
+        final PhylogenyNode n = leaf( name );
+        cat( n, "beast:location", location );
+        return n;
     }
 
     /** Write a companion plain-text data file (e.g. a CSV to import onto a demo tree). */
