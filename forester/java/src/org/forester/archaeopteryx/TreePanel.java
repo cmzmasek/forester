@@ -227,6 +227,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private final static int MAX_SUBTREES = 100;
     private final static int MIN_ROOT_LENGTH = 3;
     private final static int MOVE = 20;
+    // In a radial (circular/unrooted) layout the tip labels radiate OUTWARD, so their reach is reserved from the
+    // radius. Cap that reservation at this fraction of the available radius, so a tree whose labels are long relative
+    // to the canvas still draws a real circle/fan (the labels then extend past the canvas edge -- zoom out or use
+    // "Shorten Labels" to see them) instead of collapsing the whole tree onto the centre point.
+    private final static double RADIAL_LABEL_MAX_RATIO = 0.5;
     private final static String NODE_POPMENU_NODE_CLIENT_PROPERTY = "node";
     private static final float ONEHALF_PI = (float) (1.5
             * Math.PI);
@@ -5171,10 +5176,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // radial: scale the unrooted spread by the radial-zoom diameter (reserving the label margin on both sides so
         // the outermost labels fit the square), so it grows/shrinks in lockstep with the circular radius. Non-radial:
         // the urt factor is unused, keep the old viewport-based value.
-        final int d = isRadialLayout()
-                ? Math.max(MIN_RADIAL_DIAMETER, radialDiameter() - (2 * (MOVE + getLongestExtNodeInfo())))
-                : (getVisibleRect().width < getVisibleRect().height ? getVisibleRect().width
-                        : getVisibleRect().height);
+        final int d;
+        if (isRadialLayout()) {
+            // reserve the label margin on both sides, but CAP it (like the circular radius) so a tree with long
+            // labels relative to the canvas still fans out instead of collapsing to a tiny region
+            final int per_side = (int) Math.min(MOVE + getLongestExtNodeInfo(),
+                    (radialDiameter() / 2.0) * RADIAL_LABEL_MAX_RATIO);
+            d = Math.max(MIN_RADIAL_DIAMETER, radialDiameter() - (2 * per_side));
+        } else {
+            d = getVisibleRect().width < getVisibleRect().height ? getVisibleRect().width : getVisibleRect().height;
+        }
         if (isPhyHasBranchLengths() && getControlPanel().isDrawPhylogram()) {
             setUrtFactor((float) (d / (2 * getMaxDistanceToRoot())));
         } else {
@@ -8553,6 +8564,21 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return sumAnnotationColumnWidths();
     }
 
+    /**
+     * The circular tip-ring radius for a canvas of {@code pref_w} x {@code pref_h}: the available half-canvas minus
+     * the fixed margins (MOVE + clade-band + annotation-ring reserves) minus the tip-label reach -- but the label
+     * reach is CAPPED at {@link #RADIAL_LABEL_MAX_RATIO} of the available radius, so a tree whose labels are long
+     * relative to the canvas still draws a real circle (the labels then extend past the canvas edge) instead of the
+     * radius going negative and collapsing every tip onto the centre. Never negative. Shared by the paint + the
+     * ring-click hit-test so they agree.
+     */
+    private int circularRadius(final double pref_w, final double pref_h) {
+        final double avail = Math.max(0, (Math.min(pref_w, pref_h) / 2.0) - MOVE - circularCladeBandReserve()
+                - circularAnnotationRingsReserve());
+        final int label = (int) Math.min(getLongestExtNodeInfo(), avail * RADIAL_LABEL_MAX_RATIO);
+        return (int) (avail - label);
+    }
+
     /** The radius (px from the ring centre) where the annotation-column rings START: just past the tips + labels. */
     private double circularAnnotationRingStart(final int radius) {
         return radius + getLongestExtNodeInfo() + ANN_COL_GAP;
@@ -8636,8 +8662,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return -1;
         }
         final double pref_w = getPreferredSize().getWidth(), pref_h = getPreferredSize().getHeight();
-        final int radius = (int) ((Math.min(pref_w, pref_h) / 2)
-                - (MOVE + getLongestExtNodeInfo() + circularCladeBandReserve() + circularAnnotationRingsReserve()));
+        final int radius = circularRadius(pref_w, pref_h); // MUST match the paint (capped) radius so clicks hit the rings
         if (radius <= 0) {
             return -1;
         }
@@ -10122,8 +10147,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             // radial preferred size is the rectangular tip-spread extent), which pushed the circle into a corner.
             final double pref_w = getPreferredSize().getWidth();
             final double pref_h = getPreferredSize().getHeight();
-            final int radius = (int) ((Math.min(pref_w, pref_h) / 2)
-                    - (MOVE + getLongestExtNodeInfo() + circularCladeBandReserve() + circularAnnotationRingsReserve()));
+            final int radius = circularRadius(pref_w, pref_h);
             final int center_x = (int) (pref_w / 2);
             final int center_y = (int) (pref_h / 2);
             _dynamic_hiding_factor = 0;
@@ -10170,8 +10194,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 paintCircularLite(_phylogeny,
                         x_pos + radius_ov,
                         y_pos + radius_ov,
-                        (int) (radius_ov - (getLongestExtNodeInfo()
-                                / (getVisibleRect().width / getOvRectangle().getWidth()))),
+                        // cap the (thumbnail-scaled) label reach like the main circle, so a long-label tree's overview
+                        // thumbnail still draws a real circle instead of collapsing
+                        (int) (radius_ov - Math.min(
+                                getLongestExtNodeInfo() / (getVisibleRect().width / getOvRectangle().getWidth()),
+                                radius_ov * RADIAL_LABEL_MAX_RATIO)),
                         g);
                 g.setTransform(_at);
                 paintOvRectangle(g);

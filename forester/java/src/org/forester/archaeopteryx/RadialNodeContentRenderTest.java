@@ -52,7 +52,43 @@ public final class RadialNodeContentRenderTest {
         return labelsOk() && dotsOk() && numbersOk() && collapseOk() && collapseMarkerOk() && collapseOverviewOk()
                 && circularCenteredOk() && circularPhylogramOk() && overviewCollapseLayoutOk()
                 && circularCladeBandsOk() && circularAnnotationRingsOk() && circularZebraWedgesOk()
-                && circularHpdBarsOk();
+                && circularHpdBarsOk() && circularLongLabelsOk();
+    }
+
+    /** A tree whose tip labels are LONG relative to the canvas must still fan out as a real circle -- the tip-label
+     *  reach reservation is CAPPED so the radius can't go negative and collapse every tip onto the centre point (the
+     *  pre-0.11.18 bug: a 191-tip tree with full species names rendered as a single horizontal line). */
+    private static boolean circularLongLabelsOk() {
+        final boolean[] ok = { true };
+        withFrame( "colorize-by-rank.xml", ( frame, tp, o ) -> {
+            // make every tip label far longer than the radius on a modest canvas
+            for ( final org.forester.phylogeny.iterators.PhylogenyNodeIterator it = tp.getPhylogeny()
+                    .iteratorExternalForward(); it.hasNext(); ) {
+                it.next().setName( "a_very_long_taxon_label_that_far_exceeds_the_circle_radius_0000000000" );
+            }
+            final int w = 480, h = 480;
+            o.setGraphicsExportWhiteBackground( true );
+            o.setShowOverview( false );
+            tp.setOvOn( false );
+            tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
+            tp.setPreferredSize( new java.awt.Dimension( w, h ) );
+            tp.setSize( w, h );
+            tp.calcParametersForPainting( w, h );
+            AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
+            // the tips must sit on a ring of real radius about the centre, NOT collapsed onto it
+            final org.forester.phylogeny.PhylogenyNode root = tp.getPhylogeny().getRoot();
+            double max_r = 0;
+            for ( final org.forester.phylogeny.iterators.PhylogenyNodeIterator it = tp.getPhylogeny()
+                    .iteratorExternalForward(); it.hasNext(); ) {
+                final org.forester.phylogeny.PhylogenyNode n = it.next();
+                max_r = Math.max( max_r, Math.hypot( n.getXcoord() - root.getXcoord(), n.getYcoord() - root.getYcoord() ) );
+            }
+            if ( max_r < 30 ) {
+                fail( ok, "circular tips must fan out (real radius) even when labels exceed the canvas; max tip radius = "
+                        + max_r );
+            }
+        }, ok );
+        return ok[ 0 ];
     }
 
     /** Node age (HPD) bars render as RADIAL age-range segments in the circular phylogram (the radial analogue of the
