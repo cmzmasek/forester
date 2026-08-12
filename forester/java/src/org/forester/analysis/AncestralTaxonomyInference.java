@@ -126,6 +126,60 @@ public final class AncestralTaxonomyInference {
         return new InferenceResult( assigned, skipped_existing, resolved_tips, unresolved_tips );
     }
 
+    /**
+     * The DEEPEST taxon shared by ALL of {@code node}'s descendant tips, or {@code null} when they share none or any
+     * tip is unresolved -- a pure, non-mutating label for a collapsed clade's common taxon (no write to the tree).
+     * {@code tip_lineages} is the same tip&rarr;lineage map {@link #inferInternalTaxonomies} consumes, but this matches
+     * levels by tax-id/name (a SET intersection), NOT by position like inference's aligned {@link #commonPrefix}, so it
+     * is robust to lineages of different depths/sources -- at the cost of not building an aligned lineage path.
+     */
+    public static Ancestor commonTaxonOf( final PhylogenyNode node,
+                                          final Map<PhylogenyNode, TaxonLineage> tip_lineages ) {
+        if ( ( node == null ) || ( tip_lineages == null ) ) {
+            return null;
+        }
+        // collect each tip's root->deepest path; any unresolved tip means there is no shared taxon to show
+        final List<List<Ancestor>> paths = new ArrayList<List<Ancestor>>();
+        for( final PhylogenyNode tip : node.getAllExternalDescendants() ) {
+            final List<Ancestor> path = tipPath( tip_lineages.get( tip ) );
+            if ( path.isEmpty() ) {
+                return null;
+            }
+            paths.add( path );
+        }
+        if ( paths.isEmpty() ) {
+            return null;
+        }
+        // The DEEPEST taxon PRESENT IN EVERY tip's lineage (matched by tax-id/name, not by position) -- robust to
+        // lineages of different depths/sources (a full NCBI lineage vs a partial stored one don't align by position,
+        // so an aligned-prefix intersection would spuriously find nothing). Scan the first tip's path deepest->root.
+        final List<Ancestor> first = paths.get( 0 );
+        for( int i = first.size() - 1; i >= 0; i-- ) {
+            final Ancestor candidate = first.get( i );
+            boolean in_all = true;
+            for( int j = 1; j < paths.size(); j++ ) {
+                if ( !containsLevel( paths.get( j ), candidate ) ) {
+                    in_all = false;
+                    break;
+                }
+            }
+            if ( in_all ) {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
+    /** Whether {@code path} contains a level that is the same taxon as {@code taxon} (by {@link #sameLevel}). */
+    private static boolean containsLevel( final List<Ancestor> path, final Ancestor taxon ) {
+        for( final Ancestor a : path ) {
+            if ( sameLevel( a, taxon ) ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** A tip's lineage as an ordered root&rarr;deepest path: its ancestors (root&rarr;parent) then its own taxon. */
     private static List<Ancestor> tipPath( final TaxonLineage tl ) {
         final List<Ancestor> path = new ArrayList<Ancestor>();

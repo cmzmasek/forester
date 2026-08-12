@@ -3246,9 +3246,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 if (getOptions().isShowAbbreviatedLabelsForCollapsedNodes()
                         && (getControlPanel().isShowTaxonomyCode() || getControlPanel().isShowTaxonomyScientificNames()
                         || getControlPanel().isShowSeqNames() || getControlPanel().isShowNodeNames())) {
+                    // prefer the clade's COMMON taxon (deepest shared among its tips) when taxonomy is shown -- more
+                    // informative than the boundary tip names; falls back to first...last when none is derivable
+                    final String common = (getControlPanel().isShowTaxonomyScientificNames()
+                            || getControlPanel().isShowTaxonomyCode()) ? collapsedCommonTaxon(node) : "";
                     final PhylogenyNode first = PhylogenyMethods.getFirstExternalNode(node);
                     final PhylogenyNode last = PhylogenyMethods.getLastExternalNode(node);
-                    if (getControlPanel().isShowTaxonomyCode() && first.getNodeData().isHasTaxonomy()
+                    if (!ForesterUtil.isEmpty(common)) {
+                        addLabelForCollapsedCommonTaxon(common, node.getAllExternalDescendants().size(), node);
+                    } else if (getControlPanel().isShowTaxonomyCode() && first.getNodeData().isHasTaxonomy()
                             && last.getNodeData().isHasTaxonomy()
                             && !ForesterUtil.isEmpty(first.getNodeData().getTaxonomy().getTaxonomyCode())
                             && !ForesterUtil.isEmpty(last.getNodeData().getTaxonomy().getTaxonomyCode())) {
@@ -3595,6 +3601,55 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      */
     static Color connectorColor() {
         return CONNECTOR_GUIDE_COLOR;
+    }
+
+    // collapsed-clade common-taxon labels: the deepest taxon shared by a collapsed clade's tips (from their cached /
+    // stored lineages). _tip_lineages is the whole-tree tip->lineage map (cache-only, built lazily); both caches are
+    // rebuilt whenever _phylogeny is REPLACED (identity change -- covers setTree/subTree/superTree/paste/restore in
+    // one place, no per-call-site clearing). Keyed by node identity.
+    private Map<PhylogenyNode, org.forester.ws.seqdb.TaxonLineage> _tip_lineages          = null;
+    private Phylogeny                                              _tip_lineages_for      = null;
+    private final Map<PhylogenyNode, String>                       _collapsed_taxon_cache = new java.util.IdentityHashMap<>();
+
+    /**
+     * The clade's COMMON taxon (the deepest taxon shared by ALL its tips, from their cached / stored lineages) for a
+     * collapsed-node label, or "" when none is derivable. Cached per node; the whole-tree tip lineages are built
+     * lazily and cache-only (no network at paint) and rebuilt when the displayed tree is replaced. A collapse /
+     * uncollapse does not change a node's tips, so the per-node cache stays valid across those.
+     */
+    private String collapsedCommonTaxon(final PhylogenyNode node) {
+        if ((_tip_lineages == null) || (_tip_lineages_for != _phylogeny)) {
+            _tip_lineages = TreePanelUtil.tipLineages(_phylogeny, TreePanelUtil.getDefaultLineageService());
+            _tip_lineages_for = _phylogeny;
+            _collapsed_taxon_cache.clear();
+        }
+        final String cached = _collapsed_taxon_cache.get(node);
+        if (cached != null) {
+            return cached;
+        }
+        final org.forester.ws.seqdb.TaxonLineage.Ancestor a = org.forester.analysis.AncestralTaxonomyInference
+                .commonTaxonOf(node, _tip_lineages);
+        final String label = (a == null) ? "" : a.getName();
+        _collapsed_taxon_cache.put(node, label);
+        return label;
+    }
+
+    /** Test hook: the computed common-taxon label for a collapsed clade rooted at {@code node} (see
+     *  {@link #collapsedCommonTaxon}), "" when none is derivable. */
+    String collapsedCommonTaxonForTest(final PhylogenyNode node) {
+        return collapsedCommonTaxon(node);
+    }
+
+    /** Appends a collapsed-clade label built from its COMMON taxon: e.g. "Carnivora (23)" + the found-count suffix. */
+    private void addLabelForCollapsedCommonTaxon(final String taxon, final int size, final PhylogenyNode node) {
+        _sb.append(taxon);
+        _sb.append(" (" + size + ")");
+        if ((_found_nodes_0 != null) || (_found_nodes_1 != null)) {
+            final int[] res = calcFoundNodesInSubtree(node);
+            if (res[0] > 0) {
+                _sb.append(" [" + res[0] + "/" + res[1] + "]");
+            }
+        }
     }
 
     private final void addLabelForCollapsed(final String first,

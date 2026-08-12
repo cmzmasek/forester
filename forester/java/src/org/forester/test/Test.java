@@ -466,6 +466,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Collapsed common taxon: ");
+        if (org.forester.archaeopteryx.CollapsedCommonTaxonRenderTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Internal label placement: ");
         if (org.forester.archaeopteryx.InternalLabelPlacementTest.test()) {
             System.out.println("OK.");

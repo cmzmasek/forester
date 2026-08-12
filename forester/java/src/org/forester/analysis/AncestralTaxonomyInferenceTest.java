@@ -39,7 +39,39 @@ public final class AncestralTaxonomyInferenceTest {
 
     public static boolean test() {
         return testMultifurcationAndTaxId() && testPreserveVsOverwrite() && testUnresolvedDescendant()
-                && testNameOnly() && testCopyUpAndEdges();
+                && testNameOnly() && testCopyUpAndEdges() && testCommonTaxon();
+    }
+
+    /** {@code commonTaxonOf} = the deepest taxon shared by ALL a clade's tips, matched by tax-id/name (NOT by
+     *  position), so it is robust to lineages of different depths (a full NCBI lineage vs a shallow stored one); an
+     *  unresolved tip makes it null. Used to label a collapsed clade with its common taxon. */
+    private static boolean testCommonTaxon() {
+        final Map<PhylogenyNode, TaxonLineage> map = new HashMap<PhylogenyNode, TaxonLineage>();
+        final PhylogenyNode felis = leaf( "Felis" );
+        map.put( felis, lin( "class", "Mammalia", "40674", "order", "Carnivora", "33554", "family", "Felidae", "9681",
+                             "genus", "Felis", "9682" ) );
+        final PhylogenyNode canis = leaf( "Canis" );
+        // a SHALLOW lineage (own = order Carnivora, no ancestors) -- different depth than Felis; a position-aligned
+        // intersection would spuriously find nothing, but the set-based deepest-shared must still return Carnivora
+        map.put( canis, lin( "order", "Carnivora", "33554" ) );
+        final PhylogenyNode clade = internal( felis, canis );
+        treeOf( clade );
+        final TaxonLineage.Ancestor common = AncestralTaxonomyInference.commonTaxonOf( clade, map );
+        if ( ( common == null ) || !"Carnivora".equals( common.getName() ) ) {
+            return fail( "commonTaxonOf must find the deepest shared taxon across MISALIGNED lineages (Carnivora), got "
+                    + ( common == null ? "null" : common.getName() ) );
+        }
+        // an unresolved descendant tip (absent from the map) -> no shared taxon (conservative)
+        final PhylogenyNode felis2 = leaf( "Felis2" );
+        final PhylogenyNode mystery = leaf( "Mystery" );
+        final Map<PhylogenyNode, TaxonLineage> map2 = new HashMap<PhylogenyNode, TaxonLineage>();
+        map2.put( felis2, lin( "order", "Carnivora", "33554", "genus", "Felis", "9682" ) );
+        final PhylogenyNode clade2 = internal( felis2, mystery );
+        treeOf( clade2 );
+        if ( AncestralTaxonomyInference.commonTaxonOf( clade2, map2 ) != null ) {
+            return fail( "an unresolved tip must make the common taxon null (conservative)" );
+        }
+        return true;
     }
 
     /** A 3-way multifurcation must infer the deepest level ALL three tips share (not just the first two), and the
