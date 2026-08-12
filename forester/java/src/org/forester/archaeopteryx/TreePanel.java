@@ -7958,6 +7958,42 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.setColor(saved);
     }
 
+    /** Zebra striping for the CIRCULAR layout -- the polar analogue of {@link #paintZebraStripes}: a faint translucent
+     *  angular WEDGE (a full pie slice, centre out past the tips + labels + rings) behind every other displayed tip's
+     *  angular slice, so a tip is easy to track outward to its annotation ring. Iterates the DISPLAYED leaf-level rows
+     *  in tree (= angle) order via iteratorPreorder (NOT _nodes_in_preorder, which is built only in the rectangular
+     *  branch), collapsed-clade roots counting as one row; drawn over the tree but under the rings (translucent). */
+    private void paintZebraStripesCircular(final Graphics2D g, final int cx, final int cy, final int radius) {
+        if (!getOptions().isShowZebraStripes() || (_phylogeny == null) || _export_transparent_background
+                || (radius <= 0)) {
+            return; // suppressed on a transparent-PNG export, like the rectangular path
+        }
+        final int displayed = countCircularDisplayedTips(_phylogeny.getRoot());
+        if (displayed <= 0) {
+            return;
+        }
+        final double half_step = Math.PI / displayed; // half a tip's angular slice
+        final double r_outer = radius + getLongestExtNodeInfo() + circularAnnotationRingsReserve() + CLADE_BAND_RIGHT_PAD;
+        final boolean dark = getTreeColorSet().getCurrentColorScheme() == TreeColorSet.DARK_COLOR_SCHEME;
+        final Color saved = g.getColor();
+        g.setColor(dark ? ZEBRA_STRIPE_ON_DARK : ZEBRA_STRIPE_ON_LIGHT); // faint translucent, theme-aware
+        int row = 0;
+        for (final java.util.Iterator<PhylogenyNode> it = _phylogeny.iteratorPreorder(); it.hasNext();) {
+            final PhylogenyNode node = it.next();
+            if ((!node.isExternal() && !node.isCollapse()) || isHiddenUnderCollapse(node)) {
+                continue; // only the DRAWN leaf-level rows (tips + collapsed-clade triangles), in angle order
+            }
+            if ((row % 2) == 1) {
+                final Double a = _urt_nodeid_angle_map.get(node.getId());
+                if (a != null) {
+                    g.fill(annularSector(cx, cy, 0, r_outer, a - half_step, a + half_step)); // full pie wedge
+                }
+            }
+            row++;
+        }
+        g.setColor(saved);
+    }
+
     /**
      * Node age (HPD) bars: on a dated phylogram, a translucent horizontal bar at each internal node spanning its age
      * uncertainty -- the FigTree "node bars" standard, showing divergence-time uncertainty. Reads the phyloXML native
@@ -9886,6 +9922,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             paintCircularScaleRings(g, center_x, center_y, radius > 0 ? radius : 0, to_pdf, to_graphics_file);
             paintCircular(_phylogeny, getStartingAngle(), center_x, center_y, radius > 0 ? radius : 0, g, to_pdf,
                     to_graphics_file);
+            // faint alternating angular wedges (row-tracking aid), over the tree but UNDER the rings/clade bands
+            paintZebraStripesCircular(g, center_x, center_y, radius > 0 ? radius : 0);
             // tip-aligned annotation columns as concentric rings (strip/heat-map/bar/text), just past the tips + labels
             paintAnnotationColumnsCircular(g, center_x, center_y, radius > 0 ? radius : 0);
             // clade bands as polar sectors/arcs, over the tree (coords set above), like the rectangular wash

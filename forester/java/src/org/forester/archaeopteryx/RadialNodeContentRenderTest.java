@@ -51,7 +51,52 @@ public final class RadialNodeContentRenderTest {
         }
         return labelsOk() && dotsOk() && numbersOk() && collapseOk() && collapseMarkerOk() && collapseOverviewOk()
                 && circularCenteredOk() && circularPhylogramOk() && overviewCollapseLayoutOk()
-                && circularCladeBandsOk() && circularAnnotationRingsOk();
+                && circularCladeBandsOk() && circularAnnotationRingsOk() && circularZebraWedgesOk();
+    }
+
+    /** Zebra stripes render as alternating angular WEDGES in the circular layout (the radial analogue of the
+     *  rectangular alternating row bands): turning zebra on shades every other tip's slice a faint grey, so a lot of
+     *  faint-grey pixels appear over the (otherwise white) figure. */
+    private static boolean circularZebraWedgesOk() {
+        final boolean[] ok = { true };
+        withFrame( "zebra-stripes.xml", ( frame, tp, o ) -> {
+            final int w = 820, h = 820;
+            o.setGraphicsExportWhiteBackground( true );
+            o.setShowOverview( false );
+            tp.setOvOn( false );
+            frame.showWhole();
+            tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
+            tp.setPreferredSize( new java.awt.Dimension( w, h ) );
+            tp.setSize( w, h );
+            o.setShowZebraStripes( false );
+            tp.calcParametersForPainting( w, h );
+            final int off = countFaintGray( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) );
+            o.setShowZebraStripes( true );
+            tp.calcParametersForPainting( w, h );
+            final int on = countFaintGray( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) );
+            if ( on <= ( off + 5000 ) ) {
+                fail( ok, "circular zebra wedges must add faint shaded wedges (faint-grey on " + on + " vs off " + off
+                        + ")" );
+            }
+            o.setShowZebraStripes( false );
+        }, ok );
+        return ok[ 0 ];
+    }
+
+    /** Count of very-light near-neutral GREY pixels (all channels in [230,248] and near-equal) -- the faint
+     *  zebra-over-white shade (~239); pure white (255) and darker branch/label ink fall outside the band. */
+    private static int countFaintGray( final BufferedImage img ) {
+        int n = 0;
+        for( int y = 0; y < img.getHeight(); ++y ) {
+            for( int x = 0; x < img.getWidth(); ++x ) {
+                final int rgb = img.getRGB( x, y );
+                final int r = ( rgb >> 16 ) & 0xFF, g = ( rgb >> 8 ) & 0xFF, b = rgb & 0xFF;
+                if ( ( r >= 230 ) && ( r <= 248 ) && ( Math.abs( r - g ) <= 4 ) && ( Math.abs( g - b ) <= 4 ) ) {
+                    ++n;
+                }
+            }
+        }
+        return n;
     }
 
     /** Annotation columns render as concentric RINGS in the circular layout (the radial analogue of the rectangular
