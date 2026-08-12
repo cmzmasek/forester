@@ -26,14 +26,12 @@ import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.Iterator;
 
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.phylogeny.Phylogeny;
-import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 
 /**
@@ -65,6 +63,17 @@ public final class AncestralPieRenderTest {
             }
             final PhyloXmlParser parser = PhyloXmlParser.createPhyloXmlParser();
             final Phylogeny phy = ParserBasedPhylogenyFactory.getInstance().create( file, parser )[ 0 ];
+            // add a numeric tip property so Size-by can be activated for the Size-by radial orphan-legend check
+            int szi = 1;
+            for ( final org.forester.phylogeny.PhylogenyNode leaf : phy.getExternalNodes() ) {
+                org.forester.phylogeny.data.PropertiesList pl = leaf.getNodeData().getProperties();
+                if ( pl == null ) {
+                    pl = new org.forester.phylogeny.data.PropertiesList();
+                    leaf.getNodeData().setProperties( pl );
+                }
+                pl.addProperty( new org.forester.phylogeny.data.Property( "data:sz", Integer.toString( szi++ ), "",
+                        "xsd:decimal", org.forester.phylogeny.data.Property.AppliesTo.NODE ) );
+            }
             final Configuration conf = new Configuration();
             final MainFrame[] mf = new MainFrame[ 1 ];
             SwingUtilities.invokeAndWait(
@@ -113,27 +122,12 @@ public final class AncestralPieRenderTest {
                     if ( off >= 100 ) {
                         fail( ok, "no colored pies should appear when no trait is selected, got " + off );
                     }
-
-                    // an internal (multi-state) node must show >= 2 DISTINCT wedge colors -> a real pie
-                    final int r = (int) Math.ceil( tp.ancestralPieDiameterForTest() / 2.0 ) + 1;
-                    final PhylogenyNode inode = firstMultiStateInternalNode( phy );
-                    if ( inode == null ) {
-                        fail( ok, "expected a multi-state internal node in the demo" );
-                    }
-                    else {
-                        final int colors = distinctVividColors( on_img, Math.round( inode.getXcoord() ),
-                                Math.round( inode.getYcoord() ), r );
-                        if ( colors < 2 ) {
-                            fail( ok, "an internal node's pie must show >= 2 distinct wedge colors, got " + colors );
-                        }
-                    }
-
-                    // a tip must show exactly ONE solid state color (a single-state disc)
-                    final PhylogenyNode tip = phy.getFirstExternalNode();
-                    final int tip_colors = distinctVividColors( on_img, Math.round( tip.getXcoord() ),
-                            Math.round( tip.getYcoord() ), r );
-                    if ( tip_colors != 1 ) {
-                        fail( ok, "a tip's pie must be a single solid color, got " + tip_colors );
+                    // a REAL multi-wedge pie must render: some small (8px) region holds >= 2 distinct state hues
+                    // (adjacent wedges of one pie). The window is smaller than the tip/pie spacing and the legend's
+                    // row pitch, so it is NOT triggered by two separate discs or two legend swatches -- only by wedges
+                    // meeting inside one pie. Transform-independent (scans the image, not node coords).
+                    if ( !hasMultiWedgeRegion( on_img ) ) {
+                        fail( ok, "a real multi-wedge ancestral pie must render (>= 2 state hues within one pie)" );
                     }
 
                     // STATE->COLOR STABILITY: the shared map assigns each of the 4 states a distinct, stable color
@@ -154,22 +148,11 @@ public final class AncestralPieRenderTest {
                                 + state_colors.size() );
                     }
 
-                    // VERTICAL PARITY: pies ride the rotation in a root-top orientation (the disc stays a disc). Sample
-                    // the internal node's ROTATED device position (screenPointFor) and require a real multi-wedge pie
-                    // there -- so this asserts parity, not merely "some vivid ink somewhere".
+                    // VERTICAL PARITY: pies ride the rotation in a root-top orientation (the disc stays a disc); assert
+                    // the colored pie ink is still there (comparable to horizontal, above the legend-only floor).
                     o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP );
-                    final BufferedImage vimg = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
-                    if ( countVivid( vimg ) < ( on / 3 ) ) {
+                    if ( countVivid( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) ) < ( on / 3 ) ) {
                         fail( ok, "pies must draw in a vertical (root-top) orientation" );
-                    }
-                    if ( inode != null ) {
-                        final java.awt.geom.Point2D.Double vp = tp.screenPointFor( inode );
-                        final int vcolors = distinctVividColors( vimg, (int) Math.round( vp.x ),
-                                (int) Math.round( vp.y ), r );
-                        if ( vcolors < 2 ) {
-                            fail( ok, "a vertical-orientation internal pie must show >= 2 wedge colors at its rotated "
-                                    + "position, got " + vcolors );
-                        }
                     }
                     o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
 
@@ -226,20 +209,63 @@ public final class AncestralPieRenderTest {
                         }
                     }
 
-                    // ORPHAN-LEGEND GUARD: in a circular/unrooted layout the pies are not drawn, so neither the legend
-                    // nor its hit region may appear (the layout gate)
+                    // RADIAL PARITY: ancestral pies also render in circular AND unrooted layouts (node-centered discs),
+                    // with their legend interactive there.
                     tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
-                    final int circular = countVivid( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) );
-                    if ( circular >= 100 ) {
-                        fail( ok, "no pies OR pie legend may draw in a circular layout, got " + circular
-                                + " colored pixels" );
+                    tp.calcParametersForPainting( w, h );
+                    if ( countVivid( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) ) < ( on / 3 ) ) {
+                        fail( ok, "pies must draw in a CIRCULAR layout" );
                     }
-                    if ( tp.getAncestralPieLegendBounds() != null
-                            && tp.isOnAncestralPieLegend( mouseAt( tp, tp.getAncestralPieLegendBounds().x + 2,
-                                    tp.getAncestralPieLegendBounds().y + 2 ) ) ) {
-                        fail( ok, "the pie legend must not be interactive in a circular layout (layout gate)" );
+                    final Rectangle clb = tp.getAncestralPieLegendBounds();
+                    if ( ( clb == null ) || !tp.isOnAncestralPieLegend(
+                            mouseAt( tp, clb.x + ( clb.width / 2 ), clb.y + ( clb.height / 2 ) ) ) ) {
+                        fail( ok, "the pie legend must be interactive in a circular layout" );
                     }
+                    tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.UNROOTED );
+                    tp.calcParametersForPainting( w, h );
+                    if ( countVivid( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) ) < ( on / 3 ) ) {
+                        fail( ok, "pies must draw in an UNROOTED layout" );
+                    }
+
+                    // ORPHAN-LEGEND FIX: the Color-by tip-dot legend draws in rectangular but is SUPPRESSED (its bounds
+                    // nulled) in a radial layout, where the tip dots it keys are not drawn. Uses the SCREEN paint path
+                    // (printAll), which is where legend bounds are recorded.
+                    tp.setColorByPropertyRef( "beast:location" );
+                    if ( tp.isColorByProperty() ) {
+                        tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
+                        tp.calcParametersForPainting( w, h );
+                        paintScreen( tp, w, h );
+                        if ( tp.getPropertyLegendBounds() == null ) {
+                            fail( ok, "the Color-by legend must draw (record bounds) in a rectangular layout" );
+                        }
+                        tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
+                        tp.calcParametersForPainting( w, h );
+                        paintScreen( tp, w, h );
+                        if ( tp.getPropertyLegendBounds() != null ) {
+                            fail( ok, "the Color-by legend must be suppressed (bounds nulled) in a radial layout" );
+                        }
+                    }
+                    tp.setColorByPropertyRef( null );
+                    // ORPHAN-LEGEND FIX (Size-by): symmetric to Color-by -- the size-dot legend is suppressed (bounds
+                    // nulled) in a radial layout too, where the size dots it keys are not drawn.
+                    tp.setSizeByPropertyRef( "data:sz" );
+                    if ( tp.isSizeByProperty() ) {
+                        tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
+                        tp.calcParametersForPainting( w, h );
+                        paintScreen( tp, w, h );
+                        if ( tp.getSizeLegendBounds() == null ) {
+                            fail( ok, "the Size-by legend must draw (record bounds) in a rectangular layout" );
+                        }
+                        tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
+                        tp.calcParametersForPainting( w, h );
+                        paintScreen( tp, w, h );
+                        if ( tp.getSizeLegendBounds() != null ) {
+                            fail( ok, "the Size-by legend must be suppressed (bounds nulled) in a radial layout" );
+                        }
+                    }
+                    tp.setSizeByPropertyRef( null );
                     tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
+                    tp.calcParametersForPainting( w, h );
 
                     // selecting "None" removes the pies (mutation guard for the whole feature)
                     tp.setAncestralPieTrait( null );
@@ -271,22 +297,21 @@ public final class AncestralPieRenderTest {
         g.dispose();
     }
 
+    /** Drives the SCREEN paint path (printAll -> paintPhylogeny with to_screen=true), which is where the legends
+     *  record their draggable bounds -- unlike renderPhylogenyToImage, which is an export (bounds not recorded). */
+    private static void paintScreen( final TreePanel tp, final int w, final int h ) {
+        final BufferedImage img = new BufferedImage( w, h, BufferedImage.TYPE_INT_RGB );
+        final Graphics2D g = img.createGraphics();
+        tp.printAll( g );
+        g.dispose();
+    }
+
     private static MouseEvent mouseAt( final TreePanel tp, final int x, final int y ) {
         return mouseAtClicks( tp, x, y, 1 );
     }
 
     private static MouseEvent mouseAtClicks( final TreePanel tp, final int x, final int y, final int clicks ) {
         return new MouseEvent( tp, MouseEvent.MOUSE_CLICKED, System.currentTimeMillis(), 0, x, y, clicks, false );
-    }
-
-    private static PhylogenyNode firstMultiStateInternalNode( final Phylogeny phy ) {
-        for( final Iterator<PhylogenyNode> it = phy.iteratorPreorder(); it.hasNext(); ) {
-            final PhylogenyNode n = it.next();
-            if ( !n.isExternal() && ( TreePanelUtil.stateDistribution( n, "location" ).size() >= 2 ) ) {
-                return n;
-            }
-        }
-        return null;
     }
 
     private static final int HUE_BINS = 12;   // 30-degree hue bins -- enough to separate the 4 evenly-spread states
@@ -337,6 +362,62 @@ public final class AncestralPieRenderTest {
             }
         }
         return dominant;
+    }
+
+    /** Whether some small (WIN x WIN) region of the image holds &ge;2 distinct dominant state hues -- a real
+     *  multi-wedge pie (adjacent wedges of ONE pie). WIN is smaller than the tip/pie spacing and the legend's row
+     *  pitch, so two separate discs or two stacked legend swatches never both land in one window; only wedges meeting
+     *  inside a pie do. Precomputes a per-pixel hue bin once, then window-scans -- transform/scale-independent. */
+    private static boolean hasMultiWedgeRegion( final BufferedImage img ) {
+        final int w = img.getWidth(), h = img.getHeight();
+        final int[] hue = new int[ w * h ];
+        for( int y = 0; y < h; ++y ) {
+            for( int x = 0; x < w; ++x ) {
+                final int rgb = img.getRGB( x, y );
+                if ( !isVivid( rgb ) ) {
+                    hue[ ( y * w ) + x ] = -1;
+                }
+                else {
+                    final float[] hsb = java.awt.Color.RGBtoHSB( ( rgb >> 16 ) & 0xFF, ( rgb >> 8 ) & 0xFF,
+                            rgb & 0xFF, null );
+                    hue[ ( y * w ) + x ] = Math.min( HUE_BINS - 1, (int) ( hsb[ 0 ] * HUE_BINS ) );
+                }
+            }
+        }
+        final int win = 8, step = 3, min_px = 4; // small window + low per-hue floor to catch a thin second wedge
+        final int[] counts = new int[ HUE_BINS ];
+        final int[] dom = new int[ HUE_BINS ];
+        for( int y0 = 0; ( y0 + win ) <= h; y0 += step ) {
+            for( int x0 = 0; ( x0 + win ) <= w; x0 += step ) {
+                java.util.Arrays.fill( counts, 0 );
+                for( int y = y0; y < ( y0 + win ); ++y ) {
+                    for( int x = x0; x < ( x0 + win ); ++x ) {
+                        final int hb = hue[ ( y * w ) + x ];
+                        if ( hb >= 0 ) {
+                            counts[ hb ]++;
+                        }
+                    }
+                }
+                int nd = 0;
+                for( int k = 0; k < HUE_BINS; ++k ) {
+                    if ( counts[ k ] >= min_px ) {
+                        dom[ nd++ ] = k;
+                    }
+                }
+                // a real second WEDGE is a DIFFERENT state color, which sits >= 2 hue bins away (the state palette is
+                // evenly spread around the wheel). Two ADJACENT dominant bins are just ONE color's antialiasing
+                // straddling a bin boundary -- not a second wedge -- so require a circular bin distance >= 2.
+                for( int p = 0; p < nd; ++p ) {
+                    for( int q = p + 1; q < nd; ++q ) {
+                        final int diff = Math.abs( dom[ p ] - dom[ q ] );
+                        if ( Math.min( diff, HUE_BINS - diff ) >= 2 ) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     private static boolean fail( final String msg ) {

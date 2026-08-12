@@ -5576,11 +5576,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 && _size_legend_bounds.contains(e.getX(), e.getY());
     }
 
-    /** Over the ancestral-state pie legend -- guarded by isShowAncestralPies AND the layout gate (so a stale bounds
-     *  from a prior rectangular paint is not clickable once the tree is switched to circular/unrooted, where the
-     *  legend is not drawn). */
+    /** Over the ancestral-state pie legend -- guarded by isShowAncestralPies (pies + their legend draw in every
+     *  layout, so no layout gate is needed). */
     final boolean isOnAncestralPieLegend(final MouseEvent e) {
-        return isShowAncestralPies() && ancestralPiesApplyToCurrentLayout() && (_ancestral_pie_legend_bounds != null)
+        return isShowAncestralPies() && (_ancestral_pie_legend_bounds != null)
                 && _ancestral_pie_legend_bounds.contains(e.getX(), e.getY());
     }
 
@@ -6078,11 +6077,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return (_ancestral_pie_trait != null) && (_ancestral_pie_colors != null) && !_ancestral_pie_colors.isEmpty();
     }
 
-    /** The ancestral pies (and their legend) render only in the rectangular family; circular/unrooted are the
-     *  deferred radial-parity track, so the overlay + its legend must not appear there. */
-    private boolean ancestralPiesApplyToCurrentLayout() {
-        return (getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.UNROOTED)
-                && (getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR);
+    /** Whether the current layout is a radial one (circular or unrooted), as opposed to the rectangular family.
+     *  Used to suppress tip-mark legends (Color-by / Size-by dots, annotation columns) whose marks are not drawn
+     *  radially. */
+    private boolean isRadialLayout() {
+        return (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED)
+                || (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR);
     }
 
     /** Test hook: the assigned color for a pie state, or null when pies are off / the state is unknown. */
@@ -6093,11 +6093,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     /** Test hook: the last-drawn ancestral-pie legend bounds (for drag/click hit-testing), or null. */
     Rectangle getAncestralPieLegendBounds() {
         return _ancestral_pie_legend_bounds;
-    }
-
-    /** Test hook: the ancestral-pie diameter (px) so a render test knows how big a region to sample around a node. */
-    double ancestralPieDiameterForTest() {
-        return ancestralPieDiameter();
     }
 
     /** Test hook: draws the ancestral-pie legend into {@code g} at {@code bounds} (draggable records its bounds; bw
@@ -6601,7 +6596,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (_ancestral_pie_legend_offset != null) {
             return legendTopLeftFor(bounds, getVisibleRect(), _ancestral_pie_legend_offset, box_w, box_h);
         }
-        if (isColorByProperty() || hasRankLegend() || hasAnnotationColumnLegend()) {
+        // which legend actually holds the top-right slot: the color/annotation legends are SUPPRESSED radially (see
+        // the legend tail), so only the rank legend (which draws in every layout) occupies it there
+        final boolean top_right_taken = hasRankLegend()
+                || (!isRadialLayout() && (isColorByProperty() || hasAnnotationColumnLegend()));
+        if (top_right_taken) {
             return new Point(Math.max(bounds.x, bounds.x + 10),
                     Math.max(bounds.y, (bounds.y + bounds.height) - box_h - 10)); // bottom-left
         }
@@ -7757,17 +7756,26 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final int n = _ancestral_pie_colors.size();
         final double d = ancestralPieDiameter();
         final double r = d / 2.0;
+        final boolean radial = isRadialLayout();
         final Color saved = g.getColor();
         final Stroke saved_stroke = g.getStroke();
         g.setStroke(STROKE_05);
         final Color outline = bw ? Color.BLACK : getTreeColorSet().getBranchColor();
-        for (final PhylogenyNode node : _nodes_in_preorder) {
-            if (isHiddenUnderCollapse(node)) {
-                continue; // a node hidden under a collapsed clade keeps stale/zero coords -> would draw a phantom pie
+        // Walk the tree in DETERMINISTIC preorder (not the per-node cache's IdentityHashMap address-order, which
+        // varies run to run) and look up each node's cached distribution -- so overlapping-pie z-order is reproducible
+        // in exports. Works in every layout: each node's device coords are set by whichever layout ran (the cache is
+        // used only to avoid re-parsing, NOT for iteration; _nodes_in_preorder is built only in the rectangular branch).
+        for (final PhylogenyNodeIterator it = _phylogeny.iteratorPreorder(); it.hasNext();) {
+            final PhylogenyNode node = it.next();
+            final List<TreePanelUtil.StateProbability> dist = _ancestral_pie_dist.get(node);
+            if (dist == null) {
+                continue; // no distribution for this node
             }
-            final List<TreePanelUtil.StateProbability> dist = _ancestral_pie_dist.get(node); // cached, no per-frame parse
-            if ((dist == null) || dist.isEmpty()) {
-                continue; // this node carries no distribution for the trait
+            // skip nodes whose device coords are not validly set: any node hidden under a collapse, plus a collapsed
+            // clade-ROOT in a radial layout -- paintCirculars/paintUnrooted don't position collapsed nodes (unlike the
+            // rectangular layout, which does), so it would otherwise draw a phantom pie at stale coords
+            if (isHiddenUnderCollapse(node) || (radial && node.isCollapse())) {
+                continue;
             }
             drawAncestralPie(g, node.getXcoord(), node.getYcoord(), r, d, dist, n, outline, bw);
         }
@@ -9099,6 +9107,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     g,
                     to_pdf,
                     to_graphics_file);
+            paintAncestralPies(g, to_pdf, to_graphics_file); // per-node state pies -- coords set by the recursion above
             if (getOptions().isShowScale()) {
                 if (!(to_graphics_file || to_pdf)) {
                     paintScale(g,
@@ -9136,6 +9145,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 }
             }
             paintCircular(_phylogeny, getStartingAngle(), d, d, radius > 0 ? radius : 0, g, to_pdf, to_graphics_file);
+            paintAncestralPies(g, to_pdf, to_graphics_file); // per-node state pies -- coords set by paintCircular above
             if (getOptions().isShowOverview() && isOvOn() && !to_graphics_file && !to_pdf) {
                 final int radius_ov = (int) (getOvMaxHeight() < getOvMaxWidth() ? getOvMaxHeight() / 2
                         : getOvMaxWidth() / 2);
@@ -9163,33 +9173,44 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 paintOvRectangle(g);
             }
         }
-        if (hasAnnotationColumnLegend() || isColorByProperty() || hasRankLegend()) {
+        // In a circular/unrooted (radial) layout the tip-level marks these legends key -- the Color-by / Size-by tip
+        // DOTS and the tip-aligned annotation COLUMNS -- are not drawn, so their legends would orphan. Suppress them
+        // radially (and null their bounds so a stale hit region from a prior rectangular paint isn't clickable). The
+        // RANK legend keys BRANCH colors, which DO render radially, so it stays.
+        final boolean radial = isRadialLayout();
+        final boolean draw_annotation_legend = hasAnnotationColumnLegend() && !radial;
+        final boolean draw_color_legend = isColorByProperty() && !radial;
+        if (draw_annotation_legend || draw_color_legend || hasRankLegend()) {
             final boolean to_screen = !(to_pdf || to_graphics_file);
             final Rectangle legend_bounds = to_screen
                     ? getVisibleRect()
                     : new Rectangle(graphics_file_x, graphics_file_y, graphics_file_width, graphics_file_height);
             // one legend slot; a header-focused annotation-column legend wins (the user just clicked it),
             // else the property-color legend, else the rank legend
-            if (hasAnnotationColumnLegend()) {
+            if (draw_annotation_legend) {
                 drawAnnotationColumnLegend(g, legend_bounds, to_screen);
-            } else if (isColorByProperty()) {
+            } else if (draw_color_legend) {
                 drawPropertyColorLegend(g, legend_bounds, to_screen);
             } else {
                 drawRankLegend(g, legend_bounds, to_screen);
             }
+        } else {
+            _property_legend_bounds = null; // nothing in the shared slot -> no stale hit region
         }
         // "Size by" has its OWN legend (a separate, independently placed key), drawn last so it can appear
-        // ALONGSIDE the color/rank legend -- the whole point of the combined color+size figure.
-        if (isSizeByProperty()) {
+        // ALONGSIDE the color/rank legend -- the whole point of the combined color+size figure. Suppressed radially
+        // (its size dots are not drawn there).
+        if (isSizeByProperty() && !radial) {
             final boolean to_screen = !(to_pdf || to_graphics_file);
             final Rectangle legend_bounds = to_screen ? getVisibleRect()
                     : new Rectangle(graphics_file_x, graphics_file_y, graphics_file_width, graphics_file_height);
             drawSizeLegend(g, legend_bounds, to_screen);
+        } else if (isSizeByProperty()) {
+            _size_legend_bounds = null; // size legend suppressed in radial -> no stale hit region
         }
         // ancestral-state pies have their OWN key (state -> color), drawn last so it can appear alongside the others.
-        // Gated on the layout too (like the pies themselves), so it never orphans over a circular/unrooted tree that
-        // draws no pies.
-        if (isShowAncestralPies() && ancestralPiesApplyToCurrentLayout()) {
+        // Pies draw in EVERY layout (rectangular family + circular/unrooted), so the legend is never orphaned.
+        if (isShowAncestralPies()) {
             final boolean to_screen = !(to_pdf || to_graphics_file);
             final Rectangle legend_bounds = to_screen ? getVisibleRect()
                     : new Rectangle(graphics_file_x, graphics_file_y, graphics_file_width, graphics_file_height);
