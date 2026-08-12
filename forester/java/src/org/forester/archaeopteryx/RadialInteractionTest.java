@@ -58,7 +58,99 @@ public final class RadialInteractionTest {
         if ( GraphicsEnvironment.isHeadless() ) {
             return true;
         }
-        return findBranchOk() && haloOk() && radialZoomOk() && displayTypeControlOk();
+        return findBranchOk() && haloOk() && radialZoomOk() && displayTypeControlOk()
+                && persistedLayoutAppliedOnLoadOk();
+    }
+
+    /** The persisted graphics type AND P/A/C display type must be APPLIED when a tree is opened, so a restart
+     *  restores the layout (the user-reported gap). Exercises the real load path: with an Options as restored from
+     *  GuiPreferences (circular + aligned phylogram), AptxUtil.addPhylogeniesToTabs must open the next branch-length
+     *  tree CIRCULAR (a new TreePanel reads the graphics type at construction) AND ALIGNED (the display-type
+     *  auto-detect lookAtSomeTreePropertiesForAptxControlSettings now reads the persisted preference); a persisted
+     *  CLADOGRAM preference must open it as a cladogram (not the old hardcoded phylogram). The circular tree must
+     *  also render without collapsing/throwing when its type comes from Options at construction. */
+    private static boolean persistedLayoutAppliedOnLoadOk() {
+        final boolean[] ok = { true };
+        withFrame( "scale-axis.xml", ( frame, tp0, o ) -> {
+            final MainPanel mp = frame.getMainPanel();
+            final ControlPanel cp = mp.getControlPanel();
+            final Configuration conf = frame.getConfiguration();
+            // (1) Options as restored from preferences: circular + aligned phylogram
+            o.setPhylogenyGraphicsType( PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
+            o.setPhylogenyDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM );
+            AptxUtil.addPhylogeniesToTabs( new Phylogeny[] { freshDemo( "scale-axis.xml" ) }, "a", "a", conf, mp );
+            final TreePanel tpa = mp.getCurrentTreePanel();
+            if ( tpa.getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR ) {
+                fail( ok, "a persisted CIRCULAR graphics type must be applied to a newly opened tree (got "
+                        + tpa.getPhylogenyGraphicsType() + ")" );
+            }
+            if ( cp.getTreeDisplayType() != Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM ) {
+                fail( ok, "a persisted ALIGNED_PHYLOGRAM (A) choice must be applied to a newly opened branch-length "
+                        + "tree (got " + cp.getTreeDisplayType() + ")" );
+            }
+            // the circular tree must actually FAN OUT to a real radius (not radius-collapse to a line at the centre,
+            // the 0.11.18 bug) when its type comes from Options at construction
+            final int w = 500, h = 500;
+            tpa.setSize( w, h );
+            tpa.calcParametersForPainting( w, h );
+            tpa.paintPhylogeny( new BufferedImage( w, h, BufferedImage.TYPE_INT_ARGB ).createGraphics(), false, false,
+                    w, h, 0, 0 );
+            if ( maxTipRadius( tpa ) < 30 ) {
+                fail( ok, "a circular tree opened from a persisted CIRCULAR type must fan out to a real radius, not "
+                        + "collapse to the centre (max tip radius " + maxTipRadius( tpa ) + ")" );
+            }
+            // (2) the P/A/C write-back is confined to a real user CLICK: a doClick updates the persisted Options
+            // default, but an INTERNAL setTreeDisplayType (as the load/tab/reset paths use) must NOT -- else an
+            // auto-detect on the next tree would silently overwrite the saved preference
+            cp.getDisplayAsUnalignedPhylogramRb().doClick();
+            if ( o.getPhylogenyDisplayType() != Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM ) {
+                fail( ok, "a P/A/C radio CLICK must update the persisted Options default (got "
+                        + o.getPhylogenyDisplayType() + ")" );
+            }
+            cp.setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.CLADOGRAM ); // internal call (no user gesture)
+            if ( o.getPhylogenyDisplayType() != Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM ) {
+                fail( ok, "an INTERNAL setTreeDisplayType must NOT change the persisted default (only a click does); "
+                        + "got " + o.getPhylogenyDisplayType() );
+            }
+            // (3) the node-edit re-detect path (lookAtRealBranchLengthsForAptxControlSettings) also honors the
+            // persisted preference for a fully-branch-lengthed tree
+            o.setPhylogenyDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM );
+            AptxUtil.lookAtRealBranchLengthsForAptxControlSettings( tpa.getPhylogeny(), cp );
+            if ( cp.getTreeDisplayType() != Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM ) {
+                fail( ok, "the node-edit branch-length re-detect must honor the persisted P/A/C preference (got "
+                        + cp.getTreeDisplayType() + ")" );
+            }
+            // (4) a persisted UNROOTED graphics type + CLADOGRAM preference opens a branch-length tree unrooted AND
+            // as a cladogram (was: forced UNALIGNED phylogram, and UNROOTED never persisted at all)
+            o.setPhylogenyGraphicsType( PHYLOGENY_GRAPHICS_TYPE.UNROOTED );
+            o.setPhylogenyDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.CLADOGRAM );
+            AptxUtil.addPhylogeniesToTabs( new Phylogeny[] { freshDemo( "scale-axis.xml" ) }, "c", "c", conf, mp );
+            if ( mp.getCurrentTreePanel().getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.UNROOTED ) {
+                fail( ok, "a persisted UNROOTED graphics type must be applied to a newly opened tree (got "
+                        + mp.getCurrentTreePanel().getPhylogenyGraphicsType() + ")" );
+            }
+            if ( cp.getTreeDisplayType() != Options.PHYLOGENY_DISPLAY_TYPE.CLADOGRAM ) {
+                fail( ok, "a persisted CLADOGRAM (C) choice must open a branch-length tree as a cladogram (got "
+                        + cp.getTreeDisplayType() + ")" );
+            }
+        }, ok );
+        return ok[ 0 ];
+    }
+
+    /** Max external-tip distance from the root after a radial paint -- 0 (collapsed to the centre) vs a real radius. */
+    private static double maxTipRadius( final TreePanel tp ) {
+        final PhylogenyNode root = tp.getPhylogeny().getRoot();
+        double max = 0;
+        for ( final PhylogenyNodeIterator it = tp.getPhylogeny().iteratorExternalForward(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            max = Math.max( max, Math.hypot( n.getXcoord() - root.getXcoord(), n.getYcoord() - root.getYcoord() ) );
+        }
+        return max;
+    }
+
+    private static Phylogeny freshDemo( final String demo ) throws Exception {
+        final File file = new File( System.getProperty( "user.dir" ), "forester/demo/" + demo );
+        return ParserBasedPhylogenyFactory.getInstance().create( file, PhyloXmlParser.createPhyloXmlParser() )[ 0 ];
     }
 
     /** The phylogram/cladogram (P/A/C) radios must WORK in CIRCULAR and UNROOTED, not just rectangular: for a

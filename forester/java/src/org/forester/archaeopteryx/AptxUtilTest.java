@@ -66,7 +66,36 @@ public final class AptxUtilTest {
                 && testRankCounts() && testRankCoverageCounts() && testNodePruningOutcome()
                 && testBranchesToCollapse() && testConfigFileOption() && testScanForDataPresence()
                 && testAssignDistinctColors() && testShortenLabel()
-                && testInternalNamesLookLikeConfidenceValues() && testInternalNodeDateInterval();
+                && testInternalNamesLookLikeConfidenceValues() && testInternalNodeDateInterval()
+                && testPreferredDisplayTypeForBranchLengthTree();
+    }
+
+    /**
+     * The load-time P/A/C policy for a branch-length tree: a mostly-branch-lengthed tree opens in the user's
+     * persisted preference (so a saved "A"/"P" is honored), an explicit CLADOGRAM preference always wins, and a
+     * near-length-less tree is never opened as a phylogram. This is what makes the P/A/C choice survive a restart.
+     */
+    private static boolean testPreferredDisplayTypeForBranchLengthTree() {
+        // mostly branch-lengthed: the persisted phylogram preference is honored verbatim
+        if ( AptxUtil.preferredDisplayTypeForBranchLengthTree( true,
+                Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM ) != Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM ) {
+            return fail( "mostly-bl + UNALIGNED preference must open UNALIGNED_PHYLOGRAM" );
+        }
+        if ( AptxUtil.preferredDisplayTypeForBranchLengthTree( true,
+                Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM ) != Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM ) {
+            return fail( "mostly-bl + ALIGNED preference must open ALIGNED_PHYLOGRAM (the persisted 'A' choice)" );
+        }
+        // an explicit cladogram preference wins even for a branch-length tree
+        if ( AptxUtil.preferredDisplayTypeForBranchLengthTree( true,
+                Options.PHYLOGENY_DISPLAY_TYPE.CLADOGRAM ) != Options.PHYLOGENY_DISPLAY_TYPE.CLADOGRAM ) {
+            return fail( "mostly-bl + CLADOGRAM preference must open CLADOGRAM" );
+        }
+        // near-length-less: a phylogram preference is NOT honored (a phylogram is meaningless) -> cladogram
+        if ( AptxUtil.preferredDisplayTypeForBranchLengthTree( false,
+                Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM ) != Options.PHYLOGENY_DISPLAY_TYPE.CLADOGRAM ) {
+            return fail( "sparse-bl must open CLADOGRAM regardless of a phylogram preference" );
+        }
+        return true;
     }
 
     /**

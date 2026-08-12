@@ -31,6 +31,7 @@ import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
 import org.forester.archaeopteryx.Options.OVERVIEW_PLACEMENT_TYPE;
+import org.forester.archaeopteryx.Options.PHYLOGENY_DISPLAY_TYPE;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
 import org.forester.archaeopteryx.Options.SUPPORT_VISUALIZATION;
 import org.forester.phylogeny.Phylogeny;
@@ -89,6 +90,7 @@ public final class ResetToDefaultsTest {
         o.setDefaultNodeShapeSize( (short) 42 );
         o.setOvPlacement( OVERVIEW_PLACEMENT_TYPE.LOWER_RIGHT );
         o.setPhylogenyGraphicsType( PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE );
+        o.setPhylogenyDisplayType( PHYLOGENY_DISPLAY_TYPE.CLADOGRAM ); // default is UNALIGNED_PHYLOGRAM
         o.setColorPaletteName( "Colorblind-friendly" );
         o.setShowScaleGrid( true );
         o.setShowScaleAxis( true );
@@ -137,6 +139,7 @@ public final class ResetToDefaultsTest {
         ok &= eq( "nodeSize", o.getDefaultNodeShapeSize(), def.getDefaultNodeShapeSize() );
         ok &= eq( "ovPlacement", o.getOvPlacement(), def.getOvPlacement() );
         ok &= eq( "graphicsType", o.getPhylogenyGraphicsType(), def.getPhylogenyGraphicsType() );
+        ok &= eq( "displayType", o.getPhylogenyDisplayType(), def.getPhylogenyDisplayType() );
         ok &= eq( "treeOrientation", o.getTreeOrientation(), def.getTreeOrientation() );
         ok &= eq( "tipLabelDirection", o.getTipLabelDirection(), def.getTipLabelDirection() );
         ok &= eq( "palette", o.getColorPaletteName(), def.getColorPaletteName() );
@@ -220,6 +223,7 @@ public final class ResetToDefaultsTest {
                     o.setDefaultNodeShape( NodeShape.RECTANGLE );
                     final TreePanel tp = frame.getMainPanel().getCurrentTreePanel();
                     tp.setPhylogenyGraphicsType( PHYLOGENY_GRAPHICS_TYPE.CIRCULAR ); // live tree drawn circular
+                    cp.setTreeDisplayType( PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM ); // drive P/A/C off the default
                     tp.setColorPaletteName( "Colorblind-friendly" );
                     tp.setSizeByPropertyRef( "data:sz" ); // turn "Size by" ON (a per-tab display setting)
                     cp.populateSizeByPropertyBox(); // re-seed the dropdown from the tree, so it shows the active ref
@@ -298,6 +302,13 @@ public final class ResetToDefaultsTest {
                     // 3e. the LIVE tree's graphics type was reset (a circular tree must not stay circular)
                     if ( tp.getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR ) {
                         fail( ok, "the live tree style must reset to RECTANGULAR, got " + tp.getPhylogenyGraphicsType() );
+                    }
+                    // 3e-bis. the LIVE P/A/C display type was reset too: this (mostly-branch-lengthed) tree resets to
+                    // the default UNALIGNED_PHYLOGRAM via the same preferredDisplayTypeForBranchLengthTree policy the
+                    // load path uses -- the ALIGNED drive above must not survive
+                    if ( cp.getTreeDisplayType() != PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM ) {
+                        fail( ok, "the live P/A/C display type must reset to UNALIGNED_PHYLOGRAM for a branch-length "
+                                + "tree, got " + cp.getTreeDisplayType() );
                     }
                     // 3f. per-tab palette reset AND "Size by" turned off
                     if ( !PropertyColorScheme.DEFAULT_PALETTE_NAME.equals( tp.getColorPaletteName() ) ) {
@@ -394,6 +405,8 @@ public final class ResetToDefaultsTest {
         for ( int i = 0; i < 3; ++i ) {
             final PhylogenyNode leaf = new PhylogenyNode();
             leaf.setName( "t" + i );
+            leaf.setDistanceToParent( 0.1 * ( i + 1 ) ); // branch lengths -> a phylogram, so the reset exercises the
+                                                         // branch-length (helper) path of the P/A/C display reset
             // a numeric property (distinct values) so "Size by" can be turned on and its reset verified
             final PropertiesList pl = new PropertiesList();
             pl.addProperty( new Property( "data:sz", Integer.toString( i + 1 ), "", "xsd:string", AppliesTo.NODE ) );

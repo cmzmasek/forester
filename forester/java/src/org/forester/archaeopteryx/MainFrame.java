@@ -2367,8 +2367,21 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             }
             final TreePanel current = getMainPanel().getCurrentTreePanel();
             if ((current != null) && (cp != null)) {
-                // phylogram is available for the default (rectangular) style when the tree has branch lengths
-                cp.setDrawPhylogramEnabled(current.isPhyHasBranchLengths());
+                // phylogram is available for the default (rectangular) style when the tree has branch lengths; also
+                // reset the P/A/C display type to the (now-default) preference for a branch-length tree, else to
+                // cladogram -- mirroring the load-time auto-detect so Reset returns the tree shape to a fresh install
+                if (current.isPhyHasBranchLengths()) {
+                    cp.setDrawPhylogramEnabled(true);
+                    // use the SAME preference-aware policy as the load-time auto-detect, so a SPARSE-branch-length
+                    // tree resets to a cladogram (not a degenerate phylogram) exactly as a fresh load would
+                    cp.setTreeDisplayType(AptxUtil.preferredDisplayTypeForBranchLengthTree(
+                            AptxUtil.isHasAtLeast50PercentBranchLengthLargerThanZero(current.getPhylogeny()),
+                            getOptions().getPhylogenyDisplayType()));
+                }
+                else {
+                    cp.setDrawPhylogramEnabled(false);
+                    cp.setTreeDisplayType(Options.PHYLOGENY_DISPLAY_TYPE.CLADOGRAM);
+                }
             }
             // 6. apply the reset options to the live view (base font + relayout + re-fit + repaint), mirroring
             //    chooseFont()/typeChanged()

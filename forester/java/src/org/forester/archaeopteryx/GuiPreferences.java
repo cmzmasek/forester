@@ -32,6 +32,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.forester.archaeopteryx.Options.OVERVIEW_PLACEMENT_TYPE;
+import org.forester.archaeopteryx.Options.PHYLOGENY_DISPLAY_TYPE;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
 import org.forester.archaeopteryx.Options.SUPPORT_VISUALIZATION;
 import org.forester.archaeopteryx.Options.TIP_LABEL_DIRECTION;
@@ -114,14 +115,20 @@ final class GuiPreferences {
             doublePref( "support_threshold", Options::getSupportThreshold, Options::setSupportThreshold, 0.0, 1.0 ),
             doublePref( "min_confidence_fraction", Options::getMinConfidenceFraction,
                         Options::setMinConfidenceFraction, 0.0, 1.0 ),
-            // Display-tab layout: tree style + overview placement (both clean Options enums). Tree style deliberately
-            // does NOT restore the (alpha) CIRCULAR/UNROOTED radial modes: on load, the graphics-type-blind
-            // lookAtSomeTreePropertiesForAptxControlSettings would re-enable the phylogram axis for a branch-length
-            // tree, drawing a forbidden "circular phylogram". Restoring only the rectangular-family types avoids that;
-            // a session left in a radial mode simply reopens rectangular (radial parity is deferred anyway).
+            // Display-tab layout: tree style + overview placement (both clean Options enums). EVERY tree style is
+            // restored, including the CIRCULAR/UNROOTED radial modes: since 0.11.7 the circular layout renders a real
+            // branch-length phylogram (TreePanel.isCircularPhylogram), so a restored CIRCULAR is no longer a
+            // "forbidden" figure -- it is exactly the layout the user left the session in. A new tab reads the type
+            // at construction (TreePanel: _graphics_type = options.getPhylogenyGraphicsType()).
             enumPref( "phylogeny_graphics_type", Options::getPhylogenyGraphicsType,
-                      Options::setPhylogenyGraphicsType, PHYLOGENY_GRAPHICS_TYPE::valueOf,
-                      t -> ( t != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR ) && ( t != PHYLOGENY_GRAPHICS_TYPE.UNROOTED ) ),
+                      Options::setPhylogenyGraphicsType, PHYLOGENY_GRAPHICS_TYPE::valueOf ),
+            // The P/A/C tree-shape choice (phylogram / aligned phylogram / cladogram), stored as the per-session
+            // DEFAULT: a user's last P/A/C click writes it back to Options (ControlPanel), and the load-time
+            // auto-detect (AptxUtil.lookAtSomeTreePropertiesForAptxControlSettings) opens each branch-length tree in
+            // this preferred type. A tree with no branch lengths is still forced to CLADOGRAM (a phylogram needs
+            // lengths), so a persisted phylogram preference never produces a degenerate figure.
+            enumPref( "phylogeny_display_type", Options::getPhylogenyDisplayType,
+                      Options::setPhylogenyDisplayType, PHYLOGENY_DISPLAY_TYPE::valueOf ),
             enumPref( "overview_placement", Options::getOvPlacement, Options::setOvPlacement,
                       OVERVIEW_PLACEMENT_TYPE::valueOf ),
             // Root orientation (rectangular family): ROOT_LEFT / ROOT_TOP / ROOT_BOTTOM. All three are safe to

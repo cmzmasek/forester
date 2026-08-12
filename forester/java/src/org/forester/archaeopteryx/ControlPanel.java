@@ -361,16 +361,23 @@ final class ControlPanel extends JPanel implements ActionListener {
                     displayedPhylogenyMightHaveChanged(true);
                 }
             } else if ((tp != null) && (tp.getPhylogeny() != null)) {
+                // A user P/A/C click both sets the current tab's display type AND records it as the persisted global
+                // DEFAULT (so it survives a restart and opens future branch-length trees the same way). This runs
+                // only for a real click -- setTreeDisplayType's setSelected(true) does not fire actionPerformed --
+                // so the internal callers (load auto-detect / tabChanged / reset) can't clobber the saved preference.
                 if (e.getSource() == getDisplayAsUnalignedPhylogramRb()) {
                     setTreeDisplayType(Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM);
+                    getOptions().setPhylogenyDisplayType(Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM);
                     showWhole();
                 }
                 if (e.getSource() == getDisplayAsAlignedPhylogramRb()) {
                     setTreeDisplayType(Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM);
+                    getOptions().setPhylogenyDisplayType(Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM);
                     showWhole();
                 }
                 if (e.getSource() == getDisplayAsCladogramRb()) {
                     setTreeDisplayType(Options.PHYLOGENY_DISPLAY_TYPE.CLADOGRAM);
+                    getOptions().setPhylogenyDisplayType(Options.PHYLOGENY_DISPLAY_TYPE.CLADOGRAM);
                     showWhole();
                 }
                 // Zoom buttons

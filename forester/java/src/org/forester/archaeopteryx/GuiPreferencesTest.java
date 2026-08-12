@@ -25,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.forester.archaeopteryx.Options.OVERVIEW_PLACEMENT_TYPE;
+import org.forester.archaeopteryx.Options.PHYLOGENY_DISPLAY_TYPE;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
 import org.forester.archaeopteryx.Options.SUPPORT_VISUALIZATION;
 import org.forester.phylogeny.data.NodeVisualData.NodeFill;
@@ -80,6 +81,8 @@ public final class GuiPreferencesTest {
             // Display-tab layout + export settings: enums, an int, booleans and a validated string (palette)
             final PHYLOGENY_GRAPHICS_TYPE gtype = ( src.getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE )
                     ? PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR : PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE;
+            final PHYLOGENY_DISPLAY_TYPE dtype = ( src.getPhylogenyDisplayType() == PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM )
+                    ? PHYLOGENY_DISPLAY_TYPE.CLADOGRAM : PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM;
             final OVERVIEW_PLACEMENT_TYPE ov = ( src.getOvPlacement() == OVERVIEW_PLACEMENT_TYPE.LOWER_RIGHT )
                     ? OVERVIEW_PLACEMENT_TYPE.UPPER_LEFT : OVERVIEW_PLACEMENT_TYPE.LOWER_RIGHT;
             final Options.TREE_ORIENTATION orient = ( src.getTreeOrientation() == Options.TREE_ORIENTATION.ROOT_TOP )
@@ -104,6 +107,7 @@ public final class GuiPreferencesTest {
             src.setSupportThreshold( support_threshold );
             src.setMinConfidenceFraction( min_conf );
             src.setPhylogenyGraphicsType( gtype );
+            src.setPhylogenyDisplayType( dtype );
             src.setOvPlacement( ov );
             src.setTreeOrientation( orient );
             src.setTipLabelDirection( tip_dir );
@@ -155,6 +159,9 @@ public final class GuiPreferencesTest {
             }
             if ( dst.getPhylogenyGraphicsType() != gtype ) {
                 return fail( "phylogeny_graphics_type did not round-trip" );
+            }
+            if ( dst.getPhylogenyDisplayType() != dtype ) {
+                return fail( "phylogeny_display_type did not round-trip" );
             }
             if ( dst.getOvPlacement() != ov ) {
                 return fail( "overview_placement did not round-trip" );
@@ -262,18 +269,25 @@ public final class GuiPreferencesTest {
                         + " branchWidth=" + n.getDefaultBranchWidth() );
             }
 
-            // the (alpha) radial tree styles must NOT be restored (a persisted CIRCULAR would draw a forbidden
-            // circular-phylogram on load); a stored CIRCULAR/UNROOTED is ignored, keeping the default
+            // the radial tree styles ARE restored now: since 0.11.7 a circular branch-length tree is a real
+            // circular phylogram, so a persisted CIRCULAR (or UNROOTED) reopens exactly as the user left it
             final Path radial = dir.resolve( "radial.properties" );
             Files.write( radial, "phylogeny_graphics_type=CIRCULAR\n".getBytes( StandardCharsets.UTF_8 ) );
             final Options r = Options.createDefaultInstance();
-            final PHYLOGENY_GRAPHICS_TYPE type_default = r.getPhylogenyGraphicsType();
             new GuiPreferences( radial ).applyTo( r );
-            if ( r.getPhylogenyGraphicsType() != type_default ) {
-                return fail( "a persisted CIRCULAR graphics type must be ignored, kept " + type_default + " got "
+            if ( r.getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR ) {
+                return fail( "a persisted CIRCULAR graphics type must be restored, got "
                         + r.getPhylogenyGraphicsType() );
             }
-            // ...but a rectangular-family style IS restored (sanity: the exclusion is not over-broad)
+            final Path unrooted = dir.resolve( "unrooted.properties" );
+            Files.write( unrooted, "phylogeny_graphics_type=UNROOTED\n".getBytes( StandardCharsets.UTF_8 ) );
+            final Options ur = Options.createDefaultInstance();
+            new GuiPreferences( unrooted ).applyTo( ur );
+            if ( ur.getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.UNROOTED ) {
+                return fail( "a persisted UNROOTED graphics type must be restored, got "
+                        + ur.getPhylogenyGraphicsType() );
+            }
+            // ...as is a rectangular-family style
             final Path euro = dir.resolve( "euro.properties" );
             Files.write( euro, "phylogeny_graphics_type=EURO_STYLE\n".getBytes( StandardCharsets.UTF_8 ) );
             final Options eu = Options.createDefaultInstance();

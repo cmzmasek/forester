@@ -174,6 +174,10 @@ final public class Options {
     private short _number_of_digits_after_comma_for_confidence_values;
     private OVERVIEW_PLACEMENT_TYPE _ov_placement;
     private PHYLOGENY_GRAPHICS_TYPE _phylogeny_graphics_type;
+    // The persisted DEFAULT P/A/C tree shape (phylogram / aligned phylogram / cladogram). Unlike the per-tab
+    // display type (ControlPanel._tree_display_types), this is a single global preference: a user's last P/A/C
+    // click writes it here, it persists, and the load-time auto-detect opens each branch-length tree in it.
+    private PHYLOGENY_DISPLAY_TYPE _phylogeny_display_type;
     private TREE_ORIENTATION _tree_orientation;
     private TIP_LABEL_DIRECTION _tip_label_direction;
     // The default categorical palette for "Color by property". Held here (not just per TreePanel) so the last
@@ -320,6 +324,7 @@ final public class Options {
         _support_threshold = SUPPORT_THRESHOLD_DEFAULT;
         _print_black_and_white = false;
         _phylogeny_graphics_type = PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR;
+        _phylogeny_display_type = PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM;
         _tree_orientation = TREE_ORIENTATION.ROOT_LEFT;
         _tip_label_direction = TIP_LABEL_DIRECTION.VERTICAL;
         _color_palette_name = PropertyColorScheme.DEFAULT_PALETTE_NAME;
@@ -426,6 +431,10 @@ final public class Options {
 
     final PHYLOGENY_GRAPHICS_TYPE getPhylogenyGraphicsType() {
         return _phylogeny_graphics_type;
+    }
+
+    final PHYLOGENY_DISPLAY_TYPE getPhylogenyDisplayType() {
+        return _phylogeny_display_type;
     }
 
     final TREE_ORIENTATION getTreeOrientation() {
@@ -756,6 +765,10 @@ final public class Options {
 
     final void setPhylogenyGraphicsType(final PHYLOGENY_GRAPHICS_TYPE phylogeny_graphics_type) {
         _phylogeny_graphics_type = phylogeny_graphics_type;
+    }
+
+    final void setPhylogenyDisplayType(final PHYLOGENY_DISPLAY_TYPE phylogeny_display_type) {
+        _phylogeny_display_type = phylogeny_display_type;
     }
 
     final void setTreeOrientation(final TREE_ORIENTATION tree_orientation) {

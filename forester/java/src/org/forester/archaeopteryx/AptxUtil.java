@@ -1091,6 +1091,21 @@ public final class AptxUtil {
     }
 
 
+    /**
+     * The P/A/C display type to open a BRANCH-LENGTH tree in, honoring the user's persisted preference
+     * ({@code preferred}, default UNALIGNED_PHYLOGRAM) while respecting the data: a phylogram type is used only
+     * when the tree is mostly branch-lengthed; a near-length-less tree (or an explicit CLADOGRAM preference) opens
+     * as a cladogram. Callers gate this on the tree actually having branch lengths (a length-less tree is always a
+     * cladogram -- a phylogram is meaningless without lengths). Pure, so it is headless-testable.
+     */
+    final static Options.PHYLOGENY_DISPLAY_TYPE preferredDisplayTypeForBranchLengthTree(final boolean has_mostly_bl,
+            final Options.PHYLOGENY_DISPLAY_TYPE preferred) {
+        if (has_mostly_bl && (preferred != Options.PHYLOGENY_DISPLAY_TYPE.CLADOGRAM)) {
+            return preferred;
+        }
+        return Options.PHYLOGENY_DISPLAY_TYPE.CLADOGRAM;
+    }
+
     final static void lookAtRealBranchLengthsForAptxControlSettings(final Phylogeny t, final ControlPanel cp) {
         if ((t != null) && !t.isEmpty()) {
             final boolean has_bl = AptxUtil.isHasAtLeastOneBranchLengthLargerThanZero(t);
@@ -1100,7 +1115,8 @@ public final class AptxUtil {
             } else {
                 final boolean has_all_bl = AptxUtil.isHasNoBranchLengthSmallerThanZero(t);
                 if (has_all_bl) {
-                    cp.setTreeDisplayType(Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM);
+                    // now fully branch-lengthed (e.g. after a node edit): open in the persisted P/A/C preference
+                    cp.setTreeDisplayType(cp.getOptions().getPhylogenyDisplayType());
                 }
                 if (cp.getDisplayAsUnalignedPhylogramRb() != null) {
                     cp.setDrawPhylogramEnabled(true);
@@ -1131,10 +1147,11 @@ public final class AptxUtil {
             if (configuration.doGuessCheckOption(Configuration.display_as_phylogram)) {
                 if (cp.getDisplayAsAlignedPhylogramRb() != null) {
                     if (has_bl) {
-                        final boolean has_mostly_bl = AptxUtil.isHasAtLeast50PercentBranchLengthLargerThanZero(t);
-                        if (has_mostly_bl) {
-                            cp.setTreeDisplayType(Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM);
-                        }
+                        // open the tree in the user's persisted P/A/C preference (default UNALIGNED_PHYLOGRAM), gated
+                        // on the branch lengths -- so a restored "A"/"C" choice survives a restart
+                        cp.setTreeDisplayType(AptxUtil.preferredDisplayTypeForBranchLengthTree(
+                                AptxUtil.isHasAtLeast50PercentBranchLengthLargerThanZero(t),
+                                cp.getOptions().getPhylogenyDisplayType()));
                         cp.setDrawPhylogramEnabled(true);
                     } else {
                         cp.setTreeDisplayType(Options.PHYLOGENY_DISPLAY_TYPE.CLADOGRAM);
