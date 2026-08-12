@@ -48,6 +48,7 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Arc2D;
+import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
@@ -8109,6 +8110,164 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
+    /** Radial space (px) reserved OUTSIDE the tip labels for the circular clade BARS/BRACKETS (the arc itself; a long
+     *  taxon label riding the spoke past it may still overflow -- a known limitation, like the rectangular label reach).
+     *  0 for the BOXES mode (annular sectors sit within the labels) or when no clade bands are shown. */
+    private int circularCladeBandReserve() {
+        if ((getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR) || !hasCladeBands()
+                || (_clade_bands_mode == CLADE_VIS.BOXES)) {
+            return 0;
+        }
+        return CLADE_BAR_GAP + CLADE_BAR_WIDTH + 4;
+    }
+
+    /** The angular extent {@code {a0, a1}} (radians, a0<=a1 in tree order = increasing angle) of a clade's DISPLAYED
+     *  tips in the circular layout, or null if none. Walks the DISPLAYED tips -- a visible external, OR a collapsed
+     *  clade-root (one angular slot; the walk stops there) -- exactly like assignCircularDisplayedTipAngles, so a band
+     *  containing a collapsed sub-clade still covers that sub-clade's slot. */
+    private double[] circularCladeAngleRange(final PhylogenyNode clade_root) {
+        final Double[] first_last = new Double[2];
+        collectCircularDisplayedTipAngles(clade_root, first_last);
+        return (first_last[0] == null) ? null : new double[] { first_last[0], first_last[1] };
+    }
+
+    /** Records the FIRST and LAST displayed-tip angle under {@code node} (tree order) into {@code first_last}. Stops at
+     *  a visible external or a collapsed clade-root (its hidden descendants are not displayed). */
+    private void collectCircularDisplayedTipAngles(final PhylogenyNode node, final Double[] first_last) {
+        if (node.isExternal() || node.isCollapse()) {
+            final Double a = _urt_nodeid_angle_map.get(node.getId());
+            if (a != null) {
+                if (first_last[0] == null) {
+                    first_last[0] = a;
+                }
+                first_last[1] = a;
+            }
+            return;
+        }
+        for (int i = 0; i < node.getNumberOfDescendants(); ++i) {
+            collectCircularDisplayedTipAngles(node.getChildNode(i), first_last);
+        }
+    }
+
+    /** Clade bands for the CIRCULAR layout -- the polar analogue of paintCladeBands. BOXES become translucent ANNULAR
+     *  SECTORS spanning each clade's angular extent (clade-root radius out past the tips + labels); BARS a solid colour
+     *  arc at that outer radius with a radial taxon label; BRACKETS a thin arc + radial end-ticks + label. cx/cy = the
+     *  ring centre, radius = the tip ring radius. */
+    private void paintCladeBandsCircular(final Graphics2D g, final int cx, final int cy, final int radius) {
+        if (!hasCladeBands() || (radius <= 0)) {
+            return;
+        }
+        final double r_outer = radius + getLongestExtNodeInfo() + CLADE_BAND_RIGHT_PAD; // just past the tips + labels
+        final int displayed = countCircularDisplayedTips(_phylogeny.getRoot());
+        final double half_step = (displayed > 0) ? (Math.PI / displayed) : 0; // half a tip's angular slice
+        for (final CladeBand band : _clade_bands) {
+            final double[] ar = circularCladeAngleRange(band.getRoot());
+            if (ar == null) {
+                continue;
+            }
+            final double a0 = ar[0] - half_step, a1 = ar[1] + half_step; // cover the outer tips fully
+            switch (_clade_bands_mode) {
+                case BARS:
+                    drawCircularCladeArc(g, cx, cy, r_outer, a0, a1, band);
+                    break;
+                case BRACKETS:
+                    drawCircularCladeBracket(g, cx, cy, r_outer, a0, a1, band);
+                    break;
+                default:
+                    drawCircularCladeSector(g, cx, cy, band, a0, a1, r_outer);
+                    break;
+            }
+        }
+    }
+
+    /** A translucent annular SECTOR (the circular "clade box"): from the clade root's radius out to r_outer over the
+     *  clade's angular span, built as the outer PIE minus the inner PIE so the tree shows through. */
+    private void drawCircularCladeSector(final Graphics2D g, final int cx, final int cy, final CladeBand band,
+                                         final double a0, final double a1, final double r_outer) {
+        final PhylogenyNode root = band.getRoot();
+        final double r_inner = Math.hypot(root.getXcoord() - cx, root.getYcoord() - cy);
+        if ((r_outer - r_inner) < 1) {
+            return;
+        }
+        final Area sector = annularSector(cx, cy, r_inner, r_outer, a0, a1);
+        final Color c = band.getColor();
+        final Color saved = g.getColor();
+        g.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), CLADE_BOX_ALPHA));
+        g.fill(sector);
+        g.setColor(saved);
+    }
+
+    /** A solid colour ARC (the circular "clade bar") just past r_outer, a CLADE_BAR_WIDTH-thick annular sector over the
+     *  clade's angular span, plus the taxon label riding the spoke at the mid-angle beyond it. */
+    private void drawCircularCladeArc(final Graphics2D g, final int cx, final int cy, final double r_outer,
+                                      final double a0, final double a1, final CladeBand band) {
+        final double r0 = r_outer + CLADE_BAR_GAP;
+        final Area arc = annularSector(cx, cy, r0, r0 + CLADE_BAR_WIDTH, a0, a1);
+        final Color saved = g.getColor();
+        g.setColor(band.getColor());
+        g.fill(arc);
+        g.setColor(getTreeColorSet().getSequenceColor());
+        drawRadialTextCentered(g, band.getTaxon(), cx, cy, r0 + CLADE_BAR_WIDTH + 3, (a0 + a1) / 2.0);
+        g.setColor(saved);
+    }
+
+    /** A thin arc BRACKET (the circular monochrome "]" clade mark) just past r_outer with short radial end-ticks + label. */
+    private void drawCircularCladeBracket(final Graphics2D g, final int cx, final int cy, final double r_outer,
+                                          final double a0, final double a1, final CladeBand band) {
+        final double r = r_outer + CLADE_BAR_GAP;
+        final Stroke saved_stroke = g.getStroke();
+        final Color saved = g.getColor();
+        g.setStroke(new BasicStroke(CLADE_BRACKET_STROKE));
+        g.setColor(getTreeColorSet().getSequenceColor());
+        drawArc(cx - r, cy - r, 2 * r, 2 * r, -a0, -(a1 - a0), g); // the spine arc (drawArc takes radians)
+        for (final double a : new double[] { a0, a1 }) { // short radial end-ticks pointing inward toward the tips
+            final double cos = Math.cos(a), sin = Math.sin(a);
+            drawLine(cx + (r * cos), cy + (r * sin), cx + ((r - CLADE_BRACKET_TICK) * cos),
+                    cy + ((r - CLADE_BRACKET_TICK) * sin), g);
+        }
+        drawRadialTextCentered(g, band.getTaxon(), cx, cy, r + 4, (a0 + a1) / 2.0);
+        g.setStroke(saved_stroke);
+        g.setColor(saved);
+    }
+
+    /** An annular-sector {@link Area} (outer PIE minus inner PIE) spanning device angles a0..a1 (radians, y-down).
+     *  Arc2D angles are CCW in a y-up frame; device space is y-down, so a device angle theta maps to Arc2D angle -theta. */
+    private Area annularSector(final int cx, final int cy, final double r_inner, final double r_outer, final double a0,
+                               final double a1) {
+        final double start_deg = -Math.toDegrees(a0);
+        final double extent_deg = -Math.toDegrees(a1 - a0);
+        final Area outer = new Area(new Arc2D.Double(cx - r_outer, cy - r_outer, 2 * r_outer, 2 * r_outer, start_deg,
+                extent_deg, Arc2D.PIE));
+        outer.subtract(new Area(new Arc2D.Double(cx - r_inner, cy - r_inner, 2 * r_inner, 2 * r_inner, start_deg,
+                extent_deg, Arc2D.PIE)));
+        return outer;
+    }
+
+    /** Draws {@code text} centred on the point at radius {@code r} and device angle {@code angle} from (cx,cy), rotated
+     *  to ride the spoke and kept upright on the far half of the fan (the radial-label convention). */
+    private void drawRadialTextCentered(final Graphics2D g, final String text, final int cx, final int cy,
+                                        final double r, final double angle) {
+        if (ForesterUtil.isEmpty(text)) {
+            return;
+        }
+        g.setFont(getTreeFontSet().getSmallFont());
+        final FontMetrics fm = getTreeFontSet().getFontMetricsSmall();
+        double m = angle % TWO_PI;
+        if (m < 0) {
+            m += TWO_PI;
+        }
+        if ((m > HALF_PI) && (m < ONEHALF_PI)) {
+            m -= PI; // upright on the far half of the fan
+        }
+        final double ar = r + (fm.stringWidth(text) / 2.0); // centre it a half-width out so its NEAR edge sits at r
+        final double lx = cx + (ar * Math.cos(angle)), ly = cy + (ar * Math.sin(angle));
+        final AffineTransform saved = g.getTransform();
+        g.rotate(m, lx, ly);
+        TreePanel.drawString(text, (float) (lx - (fm.stringWidth(text) / 2.0)),
+                (float) (ly + (fm.getAscent() / 2.0) - (fm.getDescent() / 2.0)), g);
+        g.setTransform(saved);
+    }
+
     /**
      * The x just past the end of the longest currently shown tip label (all text fields plus any aligned
      * domain/vector/MSA columns, via {@link #getLongestExtNodeInfo()}). Mirrors the tree's own label-end
@@ -9554,7 +9713,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             // radial preferred size is the rectangular tip-spread extent), which pushed the circle into a corner.
             final double pref_w = getPreferredSize().getWidth();
             final double pref_h = getPreferredSize().getHeight();
-            final int radius = (int) ((Math.min(pref_w, pref_h) / 2) - (MOVE + getLongestExtNodeInfo()));
+            final int radius = (int) ((Math.min(pref_w, pref_h) / 2)
+                    - (MOVE + getLongestExtNodeInfo() + circularCladeBandReserve()));
             final int center_x = (int) (pref_w / 2);
             final int center_y = (int) (pref_h / 2);
             _dynamic_hiding_factor = 0;
@@ -9573,6 +9733,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             paintCircularScaleRings(g, center_x, center_y, radius > 0 ? radius : 0, to_pdf, to_graphics_file);
             paintCircular(_phylogeny, getStartingAngle(), center_x, center_y, radius > 0 ? radius : 0, g, to_pdf,
                     to_graphics_file);
+            // clade bands as polar sectors/arcs, over the tree (coords set above), like the rectangular wash
+            paintCladeBandsCircular(g, center_x, center_y, radius > 0 ? radius : 0);
             paintRadialOverlays(g, to_pdf, to_graphics_file); // dots + pies + hover preview + halos (coords set above)
             if (getOptions().isShowOverview() && isOvOn() && !to_graphics_file && !to_pdf) {
                 final int radius_ov = (int) (getOvMaxHeight() < getOvMaxWidth() ? getOvMaxHeight() / 2

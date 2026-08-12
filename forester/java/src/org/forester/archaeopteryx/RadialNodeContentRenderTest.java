@@ -50,7 +50,41 @@ public final class RadialNodeContentRenderTest {
             return true;
         }
         return labelsOk() && dotsOk() && numbersOk() && collapseOk() && collapseMarkerOk() && collapseOverviewOk()
-                && circularCenteredOk() && circularPhylogramOk() && overviewCollapseLayoutOk();
+                && circularCenteredOk() && circularPhylogramOk() && overviewCollapseLayoutOk()
+                && circularCladeBandsOk();
+    }
+
+    /** Clade bands render as POLAR arcs/sectors in the circular layout (the radial analogue of the rectangular clade
+     *  wash). Uses the BARS mode (solid clade colours = a robust vivid-ink signal): turning the bands on adds a lot of
+     *  coloured ink over the bands-off baseline. */
+    private static boolean circularCladeBandsOk() {
+        final boolean[] ok = { true };
+        withFrame( "colorize-by-rank.xml", ( frame, tp, o ) -> {
+            final int w = 820, h = 820;
+            o.setGraphicsExportWhiteBackground( true );
+            o.setShowOverview( false );
+            tp.setOvOn( false );
+            frame.showWhole();
+            tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
+            tp.setPreferredSize( new java.awt.Dimension( w, h ) );
+            tp.setSize( w, h );
+            tp.clearCladeBands();
+            tp.calcParametersForPainting( w, h );
+            final int v_off = countVivid( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) );
+            final int n = tp.setCladeBands( "order", TreePanel.CLADE_VIS.BARS );
+            if ( n < 2 ) {
+                fail( ok, "precondition: expected >= 2 clade bands for rank 'order' (got " + n + ")" );
+                return;
+            }
+            tp.calcParametersForPainting( w, h );
+            final int v_on = countVivid( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) );
+            if ( v_on <= ( v_off + 800 ) ) {
+                fail( ok, "circular clade bands (bars) must add coloured arcs (vivid ink on " + v_on + " vs off "
+                        + v_off + ")" );
+            }
+            tp.clearCladeBands();
+        }, ok );
+        return ok[ 0 ];
     }
 
     /** The circular OVERVIEW thumbnail HONORS collapse: it reuses the main paint's displayed-tip angles and SKIPS tips
