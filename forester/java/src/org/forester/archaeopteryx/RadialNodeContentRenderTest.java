@@ -51,7 +51,53 @@ public final class RadialNodeContentRenderTest {
         }
         return labelsOk() && dotsOk() && numbersOk() && collapseOk() && collapseMarkerOk() && collapseOverviewOk()
                 && circularCenteredOk() && circularPhylogramOk() && overviewCollapseLayoutOk()
-                && circularCladeBandsOk() && circularAnnotationRingsOk() && circularZebraWedgesOk();
+                && circularCladeBandsOk() && circularAnnotationRingsOk() && circularZebraWedgesOk()
+                && circularHpdBarsOk();
+    }
+
+    /** Node age (HPD) bars render as RADIAL age-range segments in the circular phylogram (the radial analogue of the
+     *  rectangular horizontal bars): each dated internal node gets a translucent blue segment along its spoke, so
+     *  turning them on adds bluish pixels over the (black/grey/white) baseline. */
+    private static boolean circularHpdBarsOk() {
+        final boolean[] ok = { true };
+        withFrame( "node-hpd-bars.xml", ( frame, tp, o ) -> {
+            final int w = 820, h = 820;
+            o.setGraphicsExportWhiteBackground( true );
+            o.setShowOverview( false );
+            tp.setOvOn( false );
+            frame.showWhole();
+            tp.getControlPanel().setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM ); // Draw Phylogram
+            tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
+            tp.setPreferredSize( new java.awt.Dimension( w, h ) );
+            tp.setSize( w, h );
+            o.setShowHpdBars( false );
+            tp.calcParametersForPainting( w, h );
+            final int off = countBluish( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) );
+            o.setShowHpdBars( true );
+            tp.calcParametersForPainting( w, h );
+            final int on = countBluish( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) );
+            if ( on <= ( off + 200 ) ) {
+                fail( ok, "circular HPD bars must add blue radial segments (bluish on " + on + " vs off " + off + ")" );
+            }
+            o.setShowHpdBars( false );
+        }, ok );
+        return ok[ 0 ];
+    }
+
+    /** Count of translucent-blue pixels (blue clearly above red, blue high) -- the HPD age-bar colour over any
+     *  background; the black/grey tree + neutral distance rings have b ~= r and are excluded. */
+    private static int countBluish( final BufferedImage img ) {
+        int n = 0;
+        for( int y = 0; y < img.getHeight(); ++y ) {
+            for( int x = 0; x < img.getWidth(); ++x ) {
+                final int rgb = img.getRGB( x, y );
+                final int r = ( rgb >> 16 ) & 0xFF, g = ( rgb >> 8 ) & 0xFF, b = rgb & 0xFF;
+                if ( ( ( b - r ) >= 20 ) && ( b >= 150 ) && ( b > g ) ) {
+                    ++n;
+                }
+            }
+        }
+        return n;
     }
 
     /** Zebra stripes render as alternating angular WEDGES in the circular layout (the radial analogue of the

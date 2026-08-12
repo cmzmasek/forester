@@ -7994,6 +7994,56 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.setColor(saved);
     }
 
+    /** Node age (HPD) bars for the CIRCULAR PHYLOGRAM -- the polar analogue of {@link #paintHpdBars}: a translucent
+     *  RADIAL segment along each dated internal node's spoke, spanning its age interval (the radius encodes
+     *  distance-from-root = time, so an age range is a radial range). The older bound sits at a SMALLER radius (toward
+     *  the root), the younger at a larger one; the segment is anchored to the node's OWN drawn radius plus signed age
+     *  deltas (like the rectangular bar's x-anchor), scaled by radius/maxDistanceToRoot -- the same scale the phylogram
+     *  draws the node radius with. A thick round-capped stroke gives a constant pixel width at any radius. Circular
+     *  phylograms only (the radius must encode distance); skips nodes hidden under a collapse. */
+    private void paintHpdBarsCircular(final Graphics2D g, final int cx, final int cy, final int radius,
+                                      final boolean to_pdf, final boolean to_graphics_file) {
+        if (!getOptions().isShowHpdBars() || !isCircularPhylogram() || (_phylogeny == null) || (radius <= 0)) {
+            return;
+        }
+        final double max_dist = getMaxDistanceToRoot();
+        if (max_dist <= 0) {
+            return;
+        }
+        final double radial_corr = radius / max_dist; // px per distance/time unit along the spoke (== the phylogram scale)
+        final Color saved = g.getColor();
+        final Stroke saved_stroke = g.getStroke();
+        g.setColor(((to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite()) ? HPD_BAR_COLOR_BW
+                : HPD_BAR_COLOR);
+        g.setStroke(new BasicStroke(HPD_BAR_HEIGHT, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        for (final java.util.Iterator<PhylogenyNode> it = _phylogeny.iteratorPreorder(); it.hasNext();) {
+            final PhylogenyNode node = it.next();
+            if (node.isExternal() || isHiddenUnderCollapse(node) || !node.getNodeData().isHasDate()) {
+                continue;
+            }
+            final org.forester.phylogeny.data.Date date = node.getNodeData().getDate();
+            if ((date.getMin() == null) || (date.getMax() == null)) {
+                continue; // need an interval to draw a bar
+            }
+            final Double ang = _urt_nodeid_angle_map.get(node.getId());
+            if (ang == null) {
+                continue; // no circular angle (e.g. hidden) -> nothing to place
+            }
+            final double min = date.getMin().doubleValue();
+            final double max = date.getMax().doubleValue();
+            final double value = (date.getValue() != null) ? date.getValue().doubleValue() : ((min + max) / 2.0);
+            final double r_node = circularRadiusFraction(node) * radius;
+            double r_low = r_node - ((max - value) * radial_corr);  // older bound -> smaller radius (toward the root)
+            double r_high = r_node + ((value - min) * radial_corr); // younger bound -> larger radius (toward the tips)
+            r_low = Math.max(0, Math.min(r_low, r_high)); // robust to swapped/degenerate bounds; never past the centre
+            r_high = Math.max(r_low + 1, r_high); // >= 1px floor so a dated node always shows a mark (rectangular parity)
+            final double cos = Math.cos(ang), sin = Math.sin(ang);
+            drawLine(cx + (r_low * cos), cy + (r_low * sin), cx + (r_high * cos), cy + (r_high * sin), g);
+        }
+        g.setColor(saved);
+        g.setStroke(saved_stroke);
+    }
+
     /**
      * Node age (HPD) bars: on a dated phylogram, a translucent horizontal bar at each internal node spanning its age
      * uncertainty -- the FigTree "node bars" standard, showing divergence-time uncertainty. Reads the phyloXML native
@@ -9924,6 +9974,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     to_graphics_file);
             // faint alternating angular wedges (row-tracking aid), over the tree but UNDER the rings/clade bands
             paintZebraStripesCircular(g, center_x, center_y, radius > 0 ? radius : 0);
+            // node-age (HPD) bars as radial age-range segments (circular phylogram only), over the tree
+            paintHpdBarsCircular(g, center_x, center_y, radius > 0 ? radius : 0, to_pdf, to_graphics_file);
             // tip-aligned annotation columns as concentric rings (strip/heat-map/bar/text), just past the tips + labels
             paintAnnotationColumnsCircular(g, center_x, center_y, radius > 0 ? radius : 0);
             // clade bands as polar sectors/arcs, over the tree (coords set above), like the rectangular wash
