@@ -2370,21 +2370,37 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                           final Graphics2D g) {
         if (n.isExternal()) {
             return;
-        } else {
-            final List<PhylogenyNode> descs = n.getDescendants();
-            for (final PhylogenyNode desc : descs) {
-                paintCircularsLite(desc, phy, center_x, center_y, radius, g);
+        }
+        if (n.isCollapse()) {
+            // do NOT recurse into a collapsed clade's hidden descendants: hidden INTERNAL nodes have no
+            // _urt_nodeid_angle_map entry, so recursing autounboxed a null angle at the theta lookup below -> NPE on a
+            // circular tree with the overview shown (the overview counterpart of the 0.11.3 main-path collapse fix).
+            // Position the collapsed root at its ring slot from its (main-paint) angle so its branch still draws.
+            // NOTE: this stops the crash; the overview tip loop (paintCircularLite) still spaces the VISIBLE tips by
+            // the full external count, so a collapsed thumbnail is slightly out of scale -- a cosmetic, screen-only
+            // follow-up (the whole *Lite overview path doesn't honor collapse for layout).
+            final Double a = _urt_nodeid_angle_map.get(n.getId());
+            if (a != null) {
+                final float r = n.isRoot() ? 0
+                        : 1 - (((float) _circ_max_depth - n.calculateDepth()) / _circ_max_depth);
+                n.setXSecondary((float) (center_x + (radius * r * Math.cos(a))));
+                n.setYSecondary((float) (center_y + (radius * r * Math.sin(a))));
             }
-            float r = 0;
-            if (!n.isRoot()) {
-                r = 1 - (((float) _circ_max_depth - n.calculateDepth()) / _circ_max_depth);
-            }
-            final double theta = _urt_nodeid_angle_map.get(n.getId());
-            n.setXSecondary((float) (center_x + (radius * r * Math.cos(theta))));
-            n.setYSecondary((float) (center_y + (radius * r * Math.sin(theta))));
-            for (final PhylogenyNode desc : descs) {
-                paintBranchCircularLite(n, desc, g);
-            }
+            return;
+        }
+        final List<PhylogenyNode> descs = n.getDescendants();
+        for (final PhylogenyNode desc : descs) {
+            paintCircularsLite(desc, phy, center_x, center_y, radius, g);
+        }
+        float r = 0;
+        if (!n.isRoot()) {
+            r = 1 - (((float) _circ_max_depth - n.calculateDepth()) / _circ_max_depth);
+        }
+        final double theta = _urt_nodeid_angle_map.get(n.getId());
+        n.setXSecondary((float) (center_x + (radius * r * Math.cos(theta))));
+        n.setYSecondary((float) (center_y + (radius * r * Math.sin(theta))));
+        for (final PhylogenyNode desc : descs) {
+            paintBranchCircularLite(n, desc, g);
         }
     }
 
@@ -2701,6 +2717,104 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             TreePanel.drawString(length, x, baseline, g);
         }
         g.setTransform(saved);
+    }
+
+    /** Draws a collapse marker for a collapsed clade-root in a radial (CIRCULAR/UNROOTED) layout: a filled triangle
+     *  whose apex is AT the node and which opens OUTWARD along {@code out_angle} (the radial/branch direction, away
+     *  from the root), plus the hidden-tip count "(N)" riding the branch just beyond it -- the radial analogue of the
+     *  rectangular collapsed-clade triangle ({@link #paintCollapsedNode}). The node box is skipped for collapsed nodes
+     *  ({@link #paintNodeBox}), so this IS the marker. Fill + found-state coloring mirror paintCollapsedNode: filled in
+     *  the found colour when EVERY hidden tip is selected, outlined when only some are. The triangle's size grows with
+     *  the tip count on a log scale, like the rectangular triangle. */
+    private void paintRadialCollapsedMarker(final Graphics2D g, final PhylogenyNode node, final double out_angle,
+                                            final boolean to_pdf, final boolean to_graphics_file) {
+        final boolean bw = (to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite();
+        final int[] fc = collapsedCladeFoundCounts(node); // {hits set 0, hits set 1, tips hit, total tips}
+        Color found_c = null;
+        if (!bw && (fc[2] > 0)) {
+            found_c = ((fc[0] > 0) && (fc[1] > 0)) ? getTreeColorSet().getFoundColor0and1()
+                    : (fc[0] > 0) ? getTreeColorSet().getFoundColor0() : getTreeColorSet().getFoundColor1();
+        }
+        final boolean all_tips_found = (found_c != null) && (fc[2] == fc[3]);
+        final Color fill;
+        if (bw) {
+            fill = Color.BLACK;
+        } else if (all_tips_found) {
+            fill = found_c; // the whole collapsed clade is selected -> paint the triangle in the found colour
+        } else if (getOptions().isColorLabelsSameAsParentBranch() && getControlPanel().isUseVisualStyles()
+                && (PhylogenyMethods.getBranchColorValue(node) != null)) {
+            fill = PhylogenyMethods.getBranchColorValue(node);
+        } else if (to_pdf) {
+            fill = getTreeColorSet().getBranchColorForPdf();
+        } else {
+            fill = getTreeColorSet().getCollapseFillColor();
+        }
+        // triangle: apex AT the node, opening OUTWARD; depth (and base half-width) grow gently with the hidden-tip
+        // count on a log scale (as in paintCollapsedNode), with a visible floor and a cap so a huge clade stays sane
+        final int tips = Math.max(fc[3], 2);
+        final float base = getOptions().getDefaultNodeShapeSize() + 2f;
+        double depth = base * (2.2 + Math.log10(tips));
+        final double cap = base * 5.0;
+        if (depth > cap) {
+            depth = cap;
+        }
+        final double half_w = depth * 0.45;
+        final double cos = Math.cos(out_angle), sin = Math.sin(out_angle);
+        final double px = node.getXcoord(), py = node.getYcoord();
+        final double bx = px + (cos * depth), by = py + (sin * depth); // base centre, outward along the branch
+        final double perp_x = -sin, perp_y = cos; // unit perpendicular to the branch
+        _polygon.reset();
+        _polygon.moveTo((float) px, (float) py); // apex at the node (toward the root)
+        _polygon.lineTo((float) (bx + (perp_x * half_w)), (float) (by + (perp_y * half_w)));
+        _polygon.lineTo((float) (bx - (perp_x * half_w)), (float) (by - (perp_y * half_w)));
+        _polygon.closePath();
+        final Color saved = g.getColor();
+        // fill respecting the node-fill mode, mirroring paintCollapsedNode: SOLID = fill; NONE = fill the background
+        // first (cut out any branches showing through), then outline; GRADIENT = background->fill along the branch
+        final NodeVisualData.NodeFill node_fill = getOptions().getDefaultNodeFill();
+        if (node_fill == NodeVisualData.NodeFill.NONE) {
+            g.setColor(getBackground());
+            g.fill(_polygon);
+            g.setColor(fill);
+            g.draw(_polygon);
+        } else if (node_fill == NodeVisualData.NodeFill.GRADIENT) {
+            g.setPaint(new GradientPaint((float) px, (float) py, getBackground(), (float) bx, (float) by, fill, false));
+            g.fill(_polygon);
+            g.setPaint(fill);
+            g.draw(_polygon);
+        } else {
+            g.setColor(fill);
+            g.fill(_polygon);
+        }
+        if ((found_c != null) && !all_tips_found) {
+            // only SOME tips selected -> outline in the found colour (partial hint; matches paintCollapsedNode)
+            g.setColor(found_c);
+            g.draw(_polygon);
+        }
+        // the "(N)" hidden-tip count, centred on a point just beyond the base and riding the branch (rotated upright
+        // on both halves of the fan -- centring on the anchor keeps the position flip-independent)
+        final String label = "(" + fc[3] + ")";
+        g.setFont(getTreeFontSet().getSmallFont());
+        final FontMetrics fm = getTreeFontSet().getFontMetricsSmall();
+        final double anchor = depth + 3 + (fm.stringWidth(label) / 2.0); // near text edge clears the base
+        final double lx = px + (cos * anchor), ly = py + (sin * anchor);
+        double m = out_angle % TWO_PI;
+        if (m < 0) {
+            m += TWO_PI;
+        }
+        if ((m > HALF_PI) && (m < ONEHALF_PI)) {
+            m -= PI; // keep the count upright on the far half of the fan
+        }
+        final AffineTransform saved_t = g.getTransform();
+        g.rotate(m, lx, ly);
+        // dim the count only when the clade holds NO hit -- a hit-containing collapsed clade keeps its count vivid
+        // (tip-based, matching the triangle's found fill; the collapsed ROOT is never itself in the found set)
+        g.setColor(dimNonMatch(inkColor(to_pdf, to_graphics_file, getTreeColorSet().getSequenceColor()),
+                fc[2] > 0, bw));
+        TreePanel.drawString(label, (float) (lx - (fm.stringWidth(label) / 2.0)),
+                (float) (ly + (fm.getAscent() / 2.0) - (fm.getDescent() / 2.0)), g);
+        g.setTransform(saved_t);
+        g.setColor(saved);
     }
 
     /** Internal-node label for a VERTICAL orientation: horizontal, RIGHT-ALIGNED so it ends just LEFT of the branch,
@@ -4639,6 +4753,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             // support + branch-length numbers ride the middle of this branch, rotated to its direction (mid_angle)
             paintBranchDataRadial(g, desc, (x + new_x) / 2.0, (y + new_y) / 2.0, mid_angle, to_pdf, to_graphics_file);
             paintNodeBox(new_x, new_y, desc, g, to_pdf, to_graphics_file);
+            if (desc.isCollapse()) {
+                // collapsed clade-root stub (paintUnrooted returned early for it -> no subtree): draw its collapse
+                // marker (triangle + count) opening outward along this branch's direction (mid_angle)
+                paintRadialCollapsedMarker(g, desc, mid_angle, to_pdf, to_graphics_file);
+            }
         }
         if (n.isRoot()) {
             paintNodeBox(n.getXcoord(), n.getYcoord(), n, g, to_pdf, to_graphics_file);
@@ -8904,6 +9023,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         paintBranchDataRadial(g, c, (c.getXcoord() + inward_x) / 2.0, (c.getYcoord() + inward_y) / 2.0, angle, to_pdf,
                 to_graphics_file);
         paintNodeBox(c.getXcoord(), c.getYcoord(), c, g, to_pdf, to_graphics_file);
+        if (c.isCollapse()) {
+            // a collapsed clade-root is a stub here (no box/subtree); draw its collapse marker (triangle + count),
+            // opening outward along the node's ring angle. paintNodeDataUnrootedCirc below returns early for it.
+            paintRadialCollapsedMarker(g, c, angle, to_pdf, to_graphics_file);
+        }
         final boolean is_in_found_nodes = isInFoundNodes0(c) || isInFoundNodes1(c);
         if (c.isExternal()) {
             if ((_dynamic_hiding_factor > 1) && !is_in_found_nodes

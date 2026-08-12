@@ -49,7 +49,123 @@ public final class RadialNodeContentRenderTest {
         if ( GraphicsEnvironment.isHeadless() ) {
             return true;
         }
-        return labelsOk() && dotsOk() && numbersOk() && collapseOk();
+        return labelsOk() && dotsOk() && numbersOk() && collapseOk() && collapseMarkerOk() && collapseOverviewOk();
+    }
+
+    /** Collapsing a clade in CIRCULAR with the OVERVIEW shown must not crash the on-screen paint: the overview's
+     *  paintCircularsLite recursed into a collapsed clade's hidden INTERNAL nodes, which have no angle -> NPE (the
+     *  overview counterpart of the 0.11.3 main-path fix). The export render path skips the overview, so this drives
+     *  the SCREEN paint (paintComponent) with a tp larger than its viewport (so updateOvSizes turns the overview on).
+     *  CIRCULAR-only: the fix is entirely in paintCircularsLite; the unrooted overview (paintUnrootedLite) never had
+     *  this NPE. The collapsed clade is required to hold a hidden INTERNAL node, which is what actually triggers the
+     *  recursion into the null-angle lookup -- a cherry of all-leaves would not exercise the fix. */
+    private static boolean collapseOverviewOk() {
+        final boolean[] ok = { true };
+        withFrame( "colorize-by-rank.xml", ( frame, tp, o ) -> {
+            final int w = 1200, h = 1200;
+            o.setShowOverview( true );
+            frame.showWhole();
+            tp.setSize( w, h ); // larger than the frame viewport -> updateOvSizes() sets the overview on
+            // largest non-root internal clade that CONTAINS a hidden internal node (so the NPE path is exercised)
+            org.forester.phylogeny.PhylogenyNode target = null;
+            for ( final java.util.Iterator<org.forester.phylogeny.PhylogenyNode> it =
+                    tp.getPhylogeny().iteratorPreorder(); it.hasNext(); ) {
+                final org.forester.phylogeny.PhylogenyNode n = it.next();
+                if ( n.isExternal() || n.isRoot() || ( n.getNumberOfExternalNodes() < 2 ) || !hasInternalDescendant( n )
+                        || ( ( target != null )
+                                && ( n.getNumberOfExternalNodes() <= target.getNumberOfExternalNodes() ) ) ) {
+                    continue;
+                }
+                target = n;
+            }
+            if ( target == null ) {
+                fail( ok, "precondition: expected an internal clade with a hidden internal node to collapse" );
+                return;
+            }
+            tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
+            tp.calcParametersForPainting( w, h );
+            tp.collapse( target ); // calls updateOvSizes() -> overview on (tree bigger than viewport)
+            if ( !tp.isOvOn() ) {
+                fail( ok, "precondition: the overview must be ON so the collapsed-circular overview paint is exercised" );
+                return;
+            }
+            // a SCREEN paint draws the overview; the withFrame wrapper turns the old NPE into a failure
+            tp.calcParametersForPainting( w, h );
+            final BufferedImage img = new BufferedImage( w, h, BufferedImage.TYPE_INT_RGB );
+            final java.awt.Graphics2D g = img.createGraphics();
+            try {
+                tp.paintComponent( g );
+            }
+            finally {
+                g.dispose();
+            }
+        }, ok );
+        return ok[ 0 ];
+    }
+
+    /** True if {@code node}'s subtree contains an internal (non-external) node other than {@code node} itself. */
+    private static boolean hasInternalDescendant( final org.forester.phylogeny.PhylogenyNode node ) {
+        for ( final org.forester.phylogeny.PhylogenyNode d : org.forester.phylogeny.PhylogenyMethods
+                .getAllDescendants( node ) ) {
+            if ( !d.isExternal() ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** A collapsed clade draws a COLLAPSE MARKER (a filled triangle + "(N)" count) in circular AND unrooted -- the
+     *  radial analogue of the rectangular collapsed-clade triangle, replacing the bare branch stub. The collapse-fill
+     *  colour equals the branch/ink colour, so the triangle can't be isolated by colour directly. Instead the clade is
+     *  rendered twice in the LIGHT theme: UNSELECTED (triangle in the black collapse-fill = dark ink) vs ALL TIPS
+     *  SELECTED (triangle in the red found colour = NOT dark). The unselected render must carry MORE dark ink -- the
+     *  triangle's fill -- which exercises the everyday collapse-fill path AND the found-fill response, and fails if the
+     *  marker is gone (both renders then match). */
+    private static boolean collapseMarkerOk() {
+        final boolean[] ok = { true };
+        withFrame( "colorize-by-rank.xml", ( frame, tp, o ) -> {
+            final int w = 760, h = 760;
+            o.setGraphicsExportWhiteBackground( true ); // LIGHT theme: collapse-fill = black (dark), found = red (not dark)
+            o.setPulseFoundNodes( false );
+            frame.showWhole();
+            tp.setSize( w, h );
+            org.forester.phylogeny.PhylogenyNode target = null;
+            for ( final java.util.Iterator<org.forester.phylogeny.PhylogenyNode> it =
+                    tp.getPhylogeny().iteratorPreorder(); it.hasNext(); ) {
+                final org.forester.phylogeny.PhylogenyNode n = it.next();
+                if ( !n.isExternal() && !n.isRoot() && ( n.getNumberOfExternalNodes() >= 2 ) && ( ( target == null )
+                        || ( n.getNumberOfExternalNodes() > target.getNumberOfExternalNodes() ) ) ) {
+                    target = n;
+                }
+            }
+            if ( target == null ) {
+                fail( ok, "precondition: expected an internal clade to collapse" );
+                return;
+            }
+            final java.util.Set<Long> found = new java.util.HashSet<Long>();
+            for ( final org.forester.phylogeny.PhylogenyNode t : target.getAllExternalDescendants() ) {
+                found.add( t.getId() );
+            }
+            // collapse must be done in a non-unrooted layout (the app refuses it in unrooted)
+            tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
+            tp.calcParametersForPainting( w, h );
+            tp.collapse( target );
+            for ( final Options.PHYLOGENY_GRAPHICS_TYPE gt : new Options.PHYLOGENY_GRAPHICS_TYPE[] {
+                    Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR, Options.PHYLOGENY_GRAPHICS_TYPE.UNROOTED } ) {
+                tp.setPhylogenyGraphicsType( gt );
+                tp.calcParametersForPainting( w, h );
+                tp.setFoundNodes0( null );
+                final int d_unsel = countDark( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) );
+                tp.setFoundNodes0( found );
+                final int d_found = countDark( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) );
+                tp.setFoundNodes0( null );
+                if ( d_unsel <= ( d_found + 20 ) ) {
+                    fail( ok, "the collapse-marker triangle must render (dark collapse-fill when unselected, found "
+                            + "colour when selected) in " + gt + " (dark unsel=" + d_unsel + " found=" + d_found + ")" );
+                }
+            }
+        }, ok );
+        return ok[ 0 ];
     }
 
     /** A collapsed clade renders in circular AND unrooted WITHOUT crashing (collapsed clade-roots are given a ring
