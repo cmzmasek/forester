@@ -2105,11 +2105,11 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                     || ((previous_type != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR) && (new_type == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR))) {
                 getCurrentTreePanel().getControlPanel().showWhole();
             }
-            if (getCurrentTreePanel().isPhyHasBranchLengths() && (new_type != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR)) {
-                getCurrentTreePanel().getControlPanel().setDrawPhylogramEnabled(true);
-            } else {
-                getCurrentTreePanel().getControlPanel().setDrawPhylogramEnabled(false);
-            }
+            // The phylogram/cladogram (P/A/C) radios apply in EVERY layout that can honor branch lengths -- since
+            // 0.11.7 the CIRCULAR layout renders a real phylogram (isCircularPhylogram) and UNROOTED always has, so the
+            // radios are enabled purely on branch-length presence (the old "&& new_type != CIRCULAR" force-disable was a
+            // pre-0.11.7 leftover that greyed the radios out in circular even though the paint now responds to them).
+            getCurrentTreePanel().getControlPanel().setDrawPhylogramEnabled(getCurrentTreePanel().isPhyHasBranchLengths());
             getCurrentTreePanel().setPhylogenyGraphicsType(getOptions().getPhylogenyGraphicsType());
             if ((new_type == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR) || (new_type == PHYLOGENY_GRAPHICS_TYPE.UNROOTED)) {
                 // the showWhole above ran while the panel was still the OLD (rectangular) type, so it laid out a

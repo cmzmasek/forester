@@ -3210,8 +3210,11 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     void tabChanged() {
         if (getMainPanel().getTabbedPane().getTabCount() > 0) {
-            if (getCurrentTreePanel().isPhyHasBranchLengths()
-                    && (getCurrentTreePanel().getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR)) {
+            // P/A/C (phylogram/cladogram) apply in every layout that can honor branch lengths -- CIRCULAR renders a
+            // real phylogram since 0.11.7 (isCircularPhylogram), UNROOTED always has -- so enable on branch-length
+            // presence alone and PRESERVE the tab's chosen display type (the old "&& != CIRCULAR" branch force-disabled
+            // the radios AND silently forced CLADOGRAM whenever a branch-length tree was viewed circular).
+            if (getCurrentTreePanel().isPhyHasBranchLengths()) {
                 setDrawPhylogramEnabled(true);
                 setTreeDisplayType(getTreeDisplayType(getMainPanel().getCurrentTabIndex()));
             } else {

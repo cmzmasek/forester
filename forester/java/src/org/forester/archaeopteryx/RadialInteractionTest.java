@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.swing.JFrame;
+import javax.swing.JRadioButton;
 import javax.swing.SwingUtilities;
 
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
@@ -34,13 +35,16 @@ import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
+import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 
 /**
  * Radial (circular/unrooted) interaction parity, increment 2: asserts that branch-click clade selection works radially
  * ({@link TreePanel#findBranch} now hit-tests the radial branch geometry), that selecting off a found radial branch
  * populates the selection, and that the "Pulse Found Nodes" halo now renders in circular AND unrooted. The findBranch
  * checks compute a point ON a node's drawn branch from that node's coords and hit-test against the same coords, so they
- * are independent of the display-density-dependent node->device transform. Headful; a green no-op when headless.
+ * are independent of the display-density-dependent node->device transform. Also (displayTypeControlOk) asserts the
+ * phylogram/cladogram P/A/C radios are ENABLED and drive the layout in circular AND unrooted (not just rectangular).
+ * Headful; a green no-op when headless.
  */
 public final class RadialInteractionTest {
 
@@ -54,7 +58,83 @@ public final class RadialInteractionTest {
         if ( GraphicsEnvironment.isHeadless() ) {
             return true;
         }
-        return findBranchOk() && haloOk() && radialZoomOk();
+        return findBranchOk() && haloOk() && radialZoomOk() && displayTypeControlOk();
+    }
+
+    /** The phylogram/cladogram (P/A/C) radios must WORK in CIRCULAR and UNROOTED, not just rectangular: for a
+     *  branch-length tree they must be ENABLED in every radial layout (the pre-0.11.7 "&& != CIRCULAR" force-disable
+     *  greyed them out in circular even though the paint responds). Both enable-logic sites are exercised: the Type-menu
+     *  path (MainFrame.typeChanged) AND the tab-switch path (ControlPanel.tabChanged) -- reverting either gate greys the
+     *  radios out and is caught. Driving the radios (a real doClick gesture) must then CHANGE the radial layout:
+     *  cladogram lays tips ~uniformly, phylogram lays them by root-distance -> the min/max tip-radius spread (a
+     *  scale-independent ratio) DIFFERS between the two (abs-difference, not "clado > phylo", so it is robust across
+     *  circular/unrooted and to the demo's exact branch lengths). */
+    private static boolean displayTypeControlOk() {
+        final boolean[] ok = { true };
+        withFrame( "scale-axis.xml", ( frame, tp, o ) -> {
+            final ControlPanel cp = tp.getControlPanel();
+            for ( final PHYLOGENY_GRAPHICS_TYPE gt : new PHYLOGENY_GRAPHICS_TYPE[] { PHYLOGENY_GRAPHICS_TYPE.CIRCULAR,
+                    PHYLOGENY_GRAPHICS_TYPE.UNROOTED } ) {
+                // (1) the Type-menu path (the primary user route): drive the real MainFrame.typeChanged via the layout's
+                // checkbox item -> it must ENABLE the radios in the target radial layout.
+                frame.typeChanged( gt == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR ? frame._circular_type_cbmi
+                        : frame._unrooted_type_cbmi );
+                if ( !allPacRadiosEnabled( cp ) ) {
+                    fail( ok, "P/A/C radios must be enabled in " + gt + " via the Type menu (typeChanged): "
+                            + pacRadioState( cp ) );
+                    continue;
+                }
+                // (2) the tab-switch path: ControlPanel.tabChanged must ALSO keep them enabled for this layout.
+                tp.setPhylogenyGraphicsType( gt );
+                cp.tabChanged();
+                if ( !allPacRadiosEnabled( cp ) ) {
+                    fail( ok, "P/A/C radios must be enabled in " + gt + " via a tab switch (tabChanged): "
+                            + pacRadioState( cp ) );
+                    continue;
+                }
+                // (3) driving them must change the radial layout (else the radios are inert in this layout)
+                final double clado = tipRadiusSpread( tp, cp.getDisplayAsCladogramRb() );
+                final double phylo = tipRadiusSpread( tp, cp.getDisplayAsUnalignedPhylogramRb() );
+                if ( Math.abs( clado - phylo ) <= 0.05 ) {
+                    fail( ok, "driving the P/C radios must change the " + gt + " layout (cladogram tip-radius spread "
+                            + clado + " vs phylogram spread " + phylo + ")" );
+                }
+            }
+        }, ok );
+        return ok[ 0 ];
+    }
+
+    private static boolean allPacRadiosEnabled( final ControlPanel cp ) {
+        return cp.getDisplayAsUnalignedPhylogramRb().isEnabled() && cp.getDisplayAsAlignedPhylogramRb().isEnabled()
+                && cp.getDisplayAsCladogramRb().isEnabled();
+    }
+
+    private static String pacRadioState( final ControlPanel cp ) {
+        return "P=" + cp.getDisplayAsUnalignedPhylogramRb().isEnabled() + " A="
+                + cp.getDisplayAsAlignedPhylogramRb().isEnabled() + " C=" + cp.getDisplayAsCladogramRb().isEnabled();
+    }
+
+    /** doClick the given display-type radio (the real user gesture: setTreeDisplayType + showWhole), paint the radial
+     *  canvas at its (square) preferred size so node coords are live device pixels, and return the external-tip
+     *  min/max radius ratio about the root (1 = all tips on one ring, &lt;1 = spread by distance). */
+    private static double tipRadiusSpread( final TreePanel tp, final JRadioButton display_type_rb ) {
+        display_type_rb.doClick();
+        final java.awt.Dimension pref = tp.getPreferredSize();
+        final int w = Math.max( 50, pref.width );
+        final int h = Math.max( 50, pref.height );
+        tp.setSize( w, h );
+        final BufferedImage img = new BufferedImage( w, h, BufferedImage.TYPE_INT_ARGB );
+        tp.paintPhylogeny( img.createGraphics(), false, false, w, h, 0, 0 );
+        final PhylogenyNode root = tp.getPhylogeny().getRoot();
+        double min = Double.MAX_VALUE;
+        double max = 0;
+        for ( final PhylogenyNodeIterator it = tp.getPhylogeny().iteratorExternalForward(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            final double r = Math.hypot( n.getXcoord() - root.getXcoord(), n.getYcoord() - root.getYcoord() );
+            min = Math.min( min, r );
+            max = Math.max( max, r );
+        }
+        return ( max > 0 ) ? ( min / max ) : 1;
     }
 
     /** Radial zoom is decoupled from the rectangular x/y-distance: ONE square-canvas diameter is the single knob.
