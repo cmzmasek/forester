@@ -2637,6 +2637,72 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.setTransform(saved);
     }
 
+    /**
+     * Support (confidence) + branch-length NUMBERS for a RADIAL (circular/unrooted) layout: drawn at the incoming
+     * branch's midpoint, ROTATED to ride the branch (like the radial labels), centred on the midpoint and offset just
+     * off the line -- the support in the confidence colour, then a space, then the length in the branch-length colour.
+     * The rectangular layout draws these in paintConfidenceValues / paintBranchLength (which are horizontal-branch
+     * only, gated by isShowConfidenceValuesForNode / shouldWriteBranchLength); this is the radial equivalent, with the
+     * gate inlined (no layout term -- this method is only called from the radial paths). {@code branch_angle} is the
+     * direction of the node's incoming branch; {@code (mid_x,mid_y)} its device midpoint.
+     */
+    private void paintBranchDataRadial(final Graphics2D g, final PhylogenyNode node, final double mid_x,
+                                       final double mid_y, final double branch_angle, final boolean to_pdf,
+                                       final boolean to_graphics_file) {
+        if (node.isRoot()) {
+            return;
+        }
+        String support = "";
+        if (getControlPanel().isShowConfidenceValues() && !node.isExternal()
+                && node.getBranchData().isHasConfidences()) {
+            final List<Confidence> confidences = node.getBranchData().getConfidences();
+            Collections.sort(confidences);
+            final double min_confidence = getOptions().getMinConfidenceFraction() * _confidence_scale_max;
+            support = confidenceLabel(confidences, getOptions().isShowMadConfidence(), min_confidence,
+                    getOptions().isShowConfidenceStddev(),
+                    getOptions().getNumberOfDigitsAfterCommaForConfidenceValues());
+        }
+        final String length = (getControlPanel().isWriteBranchLengthValues()
+                && (node.getDistanceToParent() != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT))
+                        ? FORMATTER_BRANCH_LENGTH.format(node.getDistanceToParent()) : "";
+        if (support.isEmpty() && length.isEmpty()) {
+            return;
+        }
+        g.setFont(getTreeFontSet().getSmallFont());
+        final FontMetrics fm = getTreeFontSet().getFontMetricsSmall();
+        final int gap_w = (support.isEmpty() || length.isEmpty()) ? 0 : fm.stringWidth(" ");
+        final int total_w = fm.stringWidth(support) + gap_w + fm.stringWidth(length);
+        final boolean bw = (to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite();
+        final boolean found = isInFoundNodes(node);
+        double m = branch_angle % TWO_PI;
+        if (m < 0) {
+            m += TWO_PI;
+        }
+        boolean flipped = false;
+        if ((m > HALF_PI) && (m < ONEHALF_PI)) {
+            m -= PI; // keep the numbers upright on the far half of the fan
+            flipped = true;
+        }
+        final AffineTransform saved = g.getTransform();
+        g.rotate(m, mid_x, mid_y);
+        float x = (float) (mid_x - (total_w / 2.0)); // centre the "support length" on the branch midpoint
+        // sit just off the branch line, not on it; flip the perpendicular offset when the frame was flipped so the
+        // numbers stay on the SAME visual side of the branch across both halves of the fan
+        final float baseline = (float) (mid_y + (flipped ? 2.0 : -2.0));
+        if (!support.isEmpty()) {
+            g.setColor(dimNonMatch(inkColor(to_pdf, to_graphics_file, getTreeColorSet().getConfidenceColor()), found,
+                    bw));
+            TreePanel.drawString(support, x, baseline, g);
+            x += fm.stringWidth(support) + gap_w;
+        }
+        if (!length.isEmpty()) {
+            g.setColor(dimNonMatch(inkColor(to_pdf, to_graphics_file, getTreeColorSet().getBranchLengthColor()), found,
+                    bw));
+            TreePanel.drawString(length, x, baseline, g);
+        }
+        g.setTransform(saved);
+    }
+
     /** Internal-node label for a VERTICAL orientation: horizontal, RIGHT-ALIGNED so it ends just LEFT of the branch,
      *  centered at the incoming branch's midpoint -- mirroring the support/length on the right. Draws the taxonomy
      *  (its own italic/colour) then the node-data string. Tips are skipped (their 45deg/90deg label is drawn
@@ -3478,10 +3544,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (isNodeDataInvisibleUnrootedCirc(node) && !to_graphics_file && !to_pdf) {
             return;
         }
-        // A collapsed clade-ROOT is not positioned by paintCirculars/paintUnrooted (they skip collapsed nodes), so
-        // its device coords are stale -- drawing its label there would put it at a wrong/phantom position (the same
-        // reason the ancestral pies skip collapsed roots radially). This path is radial-only, so isCollapse() here is
-        // always an internal collapsed node; leave it label-less (as it was before internal labels were enabled).
+        // Leave a collapsed clade-ROOT label-less radially (as before internal labels were enabled). Its coords ARE
+        // valid now (circular positions it in assignCircularDisplayedTipAngles; unrooted via the recursion), but a
+        // radial collapse indicator (marker + count) is a deliberate follow-up, so we don't draw a bare label here.
         if (node.isCollapse()) {
             return;
         }
@@ -4563,6 +4628,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             current_angle += arc_size;
             assignGraphicsForBranchWithColorForParentBranch(desc, false, g, to_pdf, to_graphics_file);
             drawLine(x, y, new_x, new_y, g);
+            // support + branch-length numbers ride the middle of this branch, rotated to its direction (mid_angle)
+            paintBranchDataRadial(g, desc, (x + new_x) / 2.0, (y + new_y) / 2.0, mid_angle, to_pdf, to_graphics_file);
             paintNodeBox(new_x, new_y, desc, g, to_pdf, to_graphics_file);
         }
         if (n.isRoot()) {
@@ -8792,11 +8859,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final double r2 = 2.0 * parent_radius;
             drawArc(root_x - parent_radius, root_y - parent_radius, r2, r2, (-angle - arc), arc, g);
         }
-        drawLine(c.getXcoord(),
-                c.getYcoord(),
-                root_x + (Math.cos(angle) * parent_radius),
-                root_y + (Math.sin(angle) * parent_radius),
-                g);
+        final double inward_x = root_x + (Math.cos(angle) * parent_radius);
+        final double inward_y = root_y + (Math.sin(angle) * parent_radius);
+        drawLine(c.getXcoord(), c.getYcoord(), inward_x, inward_y, g);
+        // support + branch-length numbers ride the middle of this radial leg (rectangular draws them via
+        // paintConfidenceValues/paintBranchLength, which are horizontal-branch only)
+        paintBranchDataRadial(g, c, (c.getXcoord() + inward_x) / 2.0, (c.getYcoord() + inward_y) / 2.0, angle, to_pdf,
+                to_graphics_file);
         paintNodeBox(c.getXcoord(), c.getYcoord(), c, g, to_pdf, to_graphics_file);
         final boolean is_in_found_nodes = isInFoundNodes0(c) || isInFoundNodes1(c);
         if (c.isExternal()) {
@@ -8850,25 +8919,66 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                              final Graphics2D g,
                              final boolean to_pdf,
                              final boolean to_graphics_file) {
-        final int circ_num_ext_nodes = phy.getNumberOfExternalNodes() - _collapsed_external_nodeid_set.size();
         _root = phy.getRoot();
         _root.setXcoord(center_x);
         _root.setYcoord(center_y);
         final boolean radial_labels = getOptions().getNodeLabelDirection() == NODE_LABEL_DIRECTION.RADIAL;
-        double current_angle = starting_angle;
-        int i = 0;
-        for (final PhylogenyNodeIterator it = phy.iteratorExternalForward(); it.hasNext(); ) {
-            final PhylogenyNode n = it.next();
-            if (!n.isCollapse()) {
-                n.setXcoord((float) (center_x + (radius * Math.cos(current_angle))));
-                n.setYcoord((float) (center_y + (radius * Math.sin(current_angle))));
-                _urt_nodeid_angle_map.put(n.getId(), current_angle);
-                _urt_nodeid_index_map.put(n.getId(), i++);
-                current_angle += (TWO_PI / circ_num_ext_nodes);
-            }
-        }
+        // Assign each DISPLAYED tip an angle around the ring: a visible external OR a collapsed clade-ROOT (one
+        // pseudo-tip each). A collapsed root MUST get an explicit angle + coords here because it is INTERNAL and so
+        // is skipped by the paintCirculars pass below -- without it, reading its angle later NPE'd (the long-standing
+        // circular-collapse crash). Hidden externals under a collapse are never reached (the walk stops at the
+        // collapsed root), so they get no angle, as intended.
+        final int num_tips = countCircularDisplayedTips(_root);
+        final double angle_increment = (num_tips > 0) ? (TWO_PI / num_tips) : TWO_PI;
+        assignCircularDisplayedTipAngles(_root, center_x, center_y, radius, angle_increment,
+                new double[] { starting_angle }, new int[] { 0 });
         paintCirculars(phy.getRoot(), phy, center_x, center_y, radius, radial_labels, g, to_pdf, to_graphics_file);
         paintNodeBox(_root.getXcoord(), _root.getYcoord(), _root, g, to_pdf, to_graphics_file);
+    }
+
+    /** Number of DISPLAYED tips in a circular layout: a visible external, or a collapsed clade-root (a pseudo-tip;
+     *  the walk stops there, so its hidden descendants are not counted). */
+    private int countCircularDisplayedTips(final PhylogenyNode node) {
+        if (node.isCollapse() || node.isExternal()) {
+            return 1;
+        }
+        int n = 0;
+        for (int i = 0; i < node.getNumberOfDescendants(); ++i) {
+            n += countCircularDisplayedTips(node.getChildNode(i));
+        }
+        return n;
+    }
+
+    /** Assigns each displayed tip its ring angle (advancing {@code angle[0]} by {@code angle_inc}), in tree order:
+     *  a visible external goes on the outer ring; a collapsed clade-root is positioned at its own depth radius (its
+     *  incoming branch ends there). NB no collapse triangle/marker is drawn radially yet (paintNodeBox and the
+     *  radial label painter both skip collapsed nodes) -- a collapsed clade currently shows as a bare branch stub; a
+     *  radial collapse marker is a follow-up. {@code index[0]} is the external ordinal used for dynamic-hiding. */
+    private void assignCircularDisplayedTipAngles(final PhylogenyNode node, final int cx, final int cy,
+                                                  final int radius, final double angle_inc, final double[] angle,
+                                                  final int[] index) {
+        if (node.isCollapse()) {
+            final double m = angle[0];
+            final double r = node.isRoot() ? 0
+                    : (1 - (((double) _circ_max_depth - node.calculateDepth()) / _circ_max_depth));
+            node.setXcoord((float) (cx + (r * radius * Math.cos(m))));
+            node.setYcoord((float) (cy + (r * radius * Math.sin(m))));
+            _urt_nodeid_angle_map.put(node.getId(), m);
+            angle[0] += angle_inc;
+        }
+        else if (node.isExternal()) {
+            final double m = angle[0];
+            node.setXcoord((float) (cx + (radius * Math.cos(m))));
+            node.setYcoord((float) (cy + (radius * Math.sin(m))));
+            _urt_nodeid_angle_map.put(node.getId(), m);
+            _urt_nodeid_index_map.put(node.getId(), index[0]++);
+            angle[0] += angle_inc;
+        }
+        else {
+            for (int i = 0; i < node.getNumberOfDescendants(); ++i) {
+                assignCircularDisplayedTipAngles(node.getChildNode(i), cx, cy, radius, angle_inc, angle, index);
+            }
+        }
     }
 
     final void paintCircularLite(final Phylogeny phy,

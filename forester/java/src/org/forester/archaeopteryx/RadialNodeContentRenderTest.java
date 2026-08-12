@@ -49,7 +49,74 @@ public final class RadialNodeContentRenderTest {
         if ( GraphicsEnvironment.isHeadless() ) {
             return true;
         }
-        return labelsOk() && dotsOk();
+        return labelsOk() && dotsOk() && numbersOk() && collapseOk();
+    }
+
+    /** A collapsed clade renders in circular AND unrooted WITHOUT crashing -- collapsed clade-roots are now given a
+     *  ring angle + coords (they are internal, so paintCirculars skips them; reading their absent angle used to NPE). */
+    private static boolean collapseOk() {
+        final boolean[] ok = { true };
+        withFrame( "colorize-by-rank.xml", ( frame, tp, o ) -> {
+            final int w = 760, h = 760;
+            o.setGraphicsExportWhiteBackground( true );
+            frame.showWhole();
+            tp.setSize( w, h );
+            org.forester.phylogeny.PhylogenyNode target = null;
+            for ( final java.util.Iterator<org.forester.phylogeny.PhylogenyNode> it =
+                    tp.getPhylogeny().iteratorPreorder(); it.hasNext(); ) {
+                final org.forester.phylogeny.PhylogenyNode n = it.next();
+                if ( !n.isExternal() && !n.isRoot() && ( n.getNumberOfExternalNodes() >= 2 ) ) {
+                    target = n;
+                    break;
+                }
+            }
+            if ( target == null ) {
+                fail( ok, "precondition: expected an internal clade to collapse" );
+                return;
+            }
+            tp.collapse( target );
+            // renders (the withFrame wrapper turns any thrown exception -- e.g. the old NPE -- into a failure), and the
+            // tree still draws content
+            for ( final Options.PHYLOGENY_GRAPHICS_TYPE gt : new Options.PHYLOGENY_GRAPHICS_TYPE[] {
+                    Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR, Options.PHYLOGENY_GRAPHICS_TYPE.UNROOTED } ) {
+                tp.setPhylogenyGraphicsType( gt );
+                tp.calcParametersForPainting( w, h );
+                if ( countDark( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) ) < 200 ) {
+                    fail( ok, "a collapsed-clade tree must still render its branches/labels in " + gt );
+                }
+            }
+        }, ok );
+        return ok[ 0 ];
+    }
+
+    /** Support (confidence) + branch-length NUMBERS render on the branches in circular AND unrooted layouts
+     *  (root-on-top.xml carries bootstrap support on internals + branch lengths on every branch). */
+    private static boolean numbersOk() {
+        final boolean[] ok = { true };
+        withFrame( "root-on-top.xml", ( frame, tp, o ) -> {
+            final ControlPanel cp = tp.getControlPanel();
+            final int w = 840, h = 840;
+            o.setGraphicsExportWhiteBackground( true );
+            frame.showWhole();
+            tp.setSize( w, h );
+            for ( final Options.PHYLOGENY_GRAPHICS_TYPE gt : new Options.PHYLOGENY_GRAPHICS_TYPE[] {
+                    Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR, Options.PHYLOGENY_GRAPHICS_TYPE.UNROOTED } ) {
+                tp.setPhylogenyGraphicsType( gt );
+                cp.setCheckbox( Configuration.write_confidence_values, false );
+                cp.setCheckbox( Configuration.write_branch_length_values, false );
+                tp.calcParametersForPainting( w, h );
+                final int no_num = countDark( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) );
+                cp.setCheckbox( Configuration.write_confidence_values, true );
+                cp.setCheckbox( Configuration.write_branch_length_values, true );
+                tp.calcParametersForPainting( w, h );
+                final int with_num = countDark( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) );
+                if ( with_num <= ( no_num + 150 ) ) {
+                    fail( ok, "support + branch-length numbers must render on the branches in " + gt + " (dark ink "
+                            + with_num + " vs " + no_num + ")" );
+                }
+            }
+        }, ok );
+        return ok[ 0 ];
     }
 
     /** Internal-node labels + enriched tip labels render in a circular layout (colorize-by-rank.xml: tips carry an
