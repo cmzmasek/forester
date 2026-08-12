@@ -706,6 +706,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Radial node content (render): ");
+        if (org.forester.archaeopteryx.RadialNodeContentRenderTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Zebra stripes (render): ");
         if (org.forester.archaeopteryx.ZebraStripeRenderTest.test()) {
             System.out.println("OK.");

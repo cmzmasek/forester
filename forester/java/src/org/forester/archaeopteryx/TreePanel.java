@@ -3478,59 +3478,35 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (isNodeDataInvisibleUnrootedCirc(node) && !to_graphics_file && !to_pdf) {
             return;
         }
-        _sb.setLength(0);
-        _sb.append(" ");
-        if (node.getNodeData().isHasTaxonomy()
+        // A collapsed clade-ROOT is not positioned by paintCirculars/paintUnrooted (they skip collapsed nodes), so
+        // its device coords are stale -- drawing its label there would put it at a wrong/phantom position (the same
+        // reason the ancestral pies skip collapsed roots radially). This path is radial-only, so isCollapse() here is
+        // always an internal collapsed node; leave it label-less (as it was before internal labels were enabled).
+        if (node.isCollapse()) {
+            return;
+        }
+        // show-internal / show-external gates (mirror the rectangular paintNodeData) -- previously moot because this
+        // was called for external nodes only; now internal-node labels ride the branch radially too
+        if (!getControlPanel().isShowInternalData() && !node.isExternal()) {
+            return; // (collapsed nodes already returned above)
+        }
+        if (!getControlPanel().isShowExternalData() && node.isExternal()) {
+            return;
+        }
+        // The TAXONOMY label is drawn via the shared taxonomyLabel part-walker (so the scientific-name part is italic,
+        // the rank is included, and the "Abbreviate Scientific Names" option applies) -- matching the rectangular
+        // layout. The trailing node name / sequence text is built into _sb and drawn after it.
+        final boolean show_tax = node.getNodeData().isHasTaxonomy()
                 && (getControlPanel().isShowTaxonomyCode() || getControlPanel().isShowTaxonomyScientificNames()
-                || getControlPanel().isShowTaxonomyCommonNames())) {
-            final Taxonomy taxonomy = node.getNodeData().getTaxonomy();
-            if (_control_panel.isShowTaxonomyCode() && !ForesterUtil.isEmpty(taxonomy.getTaxonomyCode())) {
-                _sb.append(taxonomy.getTaxonomyCode());
-                _sb.append(" ");
-            }
-            if (_control_panel.isShowTaxonomyScientificNames() && _control_panel.isShowTaxonomyCommonNames()) {
-                if (!ForesterUtil.isEmpty(taxonomy.getScientificName())
-                        && !ForesterUtil.isEmpty(taxonomy.getCommonName())) {
-                    _sb.append(taxonomy.getScientificName());
-                    _sb.append(" (");
-                    _sb.append(taxonomy.getCommonName());
-                    _sb.append(") ");
-                } else if (!ForesterUtil.isEmpty(taxonomy.getScientificName())) {
-                    _sb.append(taxonomy.getScientificName());
-                    _sb.append(" ");
-                } else if (!ForesterUtil.isEmpty(taxonomy.getCommonName())) {
-                    _sb.append(taxonomy.getCommonName());
-                    _sb.append(" ");
-                }
-            } else if (_control_panel.isShowTaxonomyScientificNames()) {
-                if (!ForesterUtil.isEmpty(taxonomy.getScientificName())) {
-                    _sb.append(taxonomy.getScientificName());
-                    _sb.append(" ");
-                }
-            } else if (_control_panel.isShowTaxonomyCommonNames()) {
-                if (!ForesterUtil.isEmpty(taxonomy.getCommonName())) {
-                    _sb.append(taxonomy.getCommonName());
-                    _sb.append(" ");
-                }
-            }
-        }
-        if (node.isCollapse() && ((!node.isRoot() && !node.getParent().isCollapse()) || node.isRoot())) {
-            _sb.append(" [");
-            _sb.append(node.getAllExternalDescendants().size());
-            _sb.append("]");
-        }
+                        || getControlPanel().isShowTaxonomyCommonNames() || getControlPanel().isShowTaxonomyRank());
+        _sb.setLength(0);
         if (getControlPanel().isShowNodeNames() && (node.getName().length() > 0)) {
-            if (_sb.length() > 0) {
-                _sb.append(" ");
-            }
+            _sb.append(" ");
             _sb.append(node.getName());
         }
         if (node.getNodeData().isHasSequence()) {
-            if (getControlPanel().isShowSequenceAcc()
-                    && (node.getNodeData().getSequence().getAccession() != null)) {
-                if (_sb.length() > 0) {
-                    _sb.append(" ");
-                }
+            if (getControlPanel().isShowSequenceAcc() && (node.getNodeData().getSequence().getAccession() != null)) {
+                _sb.append(" ");
                 if (!ForesterUtil.isEmpty(node.getNodeData().getSequence().getAccession().getSource())) {
                     _sb.append(node.getNodeData().getSequence().getAccession().getSource());
                     _sb.append(":");
@@ -3538,65 +3514,55 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 _sb.append(node.getNodeData().getSequence().getAccession().getValue());
             }
             if (getControlPanel().isShowSeqNames() && (node.getNodeData().getSequence().getName().length() > 0)) {
-                if (_sb.length() > 0) {
-                    _sb.append(" ");
-                }
+                _sb.append(" ");
                 _sb.append(node.getNodeData().getSequence().getName());
             }
         }
-        //g.setFont( getTreeFontSet().getLargeFont() );
-        //if ( is_in_found_nodes ) {
-        //    g.setFont( getTreeFontSet().getLargeFont().deriveFont( Font.BOLD ) );
-        // }
-        if (_sb.length() > 1) {
-            setColor(g, node, to_graphics_file, to_pdf, is_in_found_nodes, getTreeColorSet().getSequenceColor());
-            final boolean using_visual_font = setFont(g, node);
-            final String sb_str = _sb.toString();
-            double m = 0;
-            if (_graphics_type == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR) {
-                m = _urt_nodeid_angle_map.get(node.getId()) % TWO_PI;
-            } else {
-                m = (float) (ur_angle % TWO_PI);
+        final String rest = _sb.toString();
+        if (!show_tax && (rest.length() < 1)) {
+            return; // nothing to draw
+        }
+        setColor(g, node, to_graphics_file, to_pdf, is_in_found_nodes, getTreeColorSet().getSequenceColor());
+        setFont(g, node);
+        final Font base_font = g.getFont();
+        final float gap = (getOptions().getDefaultNodeShapeSize() / 2f) + 3f; // start the label just off the node box
+        final int tax_w = show_tax ? taxonomyLabelWidth(node.getNodeData().getTaxonomy(), base_font) : 0;
+        final int rest_w = getFontMetrics(base_font).stringWidth(rest);
+        final double total_w = gap + tax_w + rest_w; // full extent from the node, for the left-half flip
+        double m = (_graphics_type == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR)
+                ? (_urt_nodeid_angle_map.get(node.getId()) % TWO_PI) : (ur_angle % TWO_PI);
+        _at = g.getTransform();
+        boolean need_to_reset = false;
+        final float x_coord = node.getXcoord();
+        final float y_coord = node.getYcoord() + (getFontMetrics(base_font).getAscent() / 3.0f);
+        // On the left half of the fan the label is flipped so it still reads left-to-right; translating by
+        // total_w + gap (rather than just total_w) keeps the SAME small clearance from the node on both halves
+        // (otherwise the flipped label butts right up against the node box).
+        if (radial_labels) {
+            need_to_reset = true;
+            boolean left = false;
+            if ((m > HALF_PI) && (m < ONEHALF_PI)) {
+                m -= PI;
+                left = true;
             }
-            _at = g.getTransform();
-            boolean need_to_reset = false;
-            final float x_coord = node.getXcoord();
-            float y_coord;
-            if (!using_visual_font) {
-                y_coord = node.getYcoord() + (getFontMetricsForLargeDefaultFont().getAscent() / 3.0f);
-            } else {
-                y_coord = node.getYcoord() + (getFontMetrics(g.getFont()).getAscent() / 3.0f);
+            g.rotate(m, x_coord, node.getYcoord());
+            if (left) {
+                g.translate(-(total_w + gap), 0);
             }
-            if (radial_labels) {
-                need_to_reset = true;
-                boolean left = false;
-                if ((m > HALF_PI) && (m < ONEHALF_PI)) {
-                    m -= PI;
-                    left = true;
-                }
-                g.rotate(m, x_coord, node.getYcoord());
-                if (left) {
-                    if (!using_visual_font) {
-                        g.translate(-(getFontMetricsForLargeDefaultFont().getStringBounds(sb_str, g).getWidth()),
-                                0);
-                    } else {
-                        g.translate(-(getFontMetrics(g.getFont()).getStringBounds(sb_str, g).getWidth()), 0);
-                    }
-                }
-            } else {
-                if ((m > HALF_PI) && (m < ONEHALF_PI)) {
-                    need_to_reset = true;
-                    if (!using_visual_font) {
-                        g.translate(-getFontMetricsForLargeDefaultFont().getStringBounds(sb_str, g).getWidth(), 0);
-                    } else {
-                        g.translate(-getFontMetrics(g.getFont()).getStringBounds(sb_str, g).getWidth(), 0);
-                    }
-                }
-            }
-            TreePanel.drawString(sb_str, x_coord, y_coord, g);
-            if (need_to_reset) {
-                g.setTransform(_at);
-            }
+        } else if ((m > HALF_PI) && (m < ONEHALF_PI)) {
+            need_to_reset = true;
+            g.translate(-(total_w + gap), 0);
+        }
+        float x = x_coord + gap;
+        if (show_tax) {
+            x += taxonomyLabel(g, node.getNodeData().getTaxonomy(), x, y_coord, to_pdf, true);
+        }
+        if (rest.length() > 0) {
+            g.setFont(base_font);
+            TreePanel.drawString(rest, x, y_coord, g);
+        }
+        if (need_to_reset) {
+            g.setTransform(_at);
         }
     }
 
@@ -4545,6 +4511,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     (high_angle + low_angle) / 2,
                     isInFoundNodes(n));
             return;
+        }
+        // internal-node label (clade names, node/seq names) rides the branch radially, rotated to this node's own
+        // wedge midpoint (= the direction of its incoming branch). The root sits at the canvas centre, too cramped
+        // for a label, so it is skipped. Gated on "Show Internal Data" inside the method (not dynamic-hiding-culled,
+        // matching the rectangular layout).
+        if (!n.isRoot()) {
+            paintNodeDataUnrootedCirc(g, n, to_pdf, to_graphics_file, radial_labels, (high_angle + low_angle) / 2,
+                    isInFoundNodes(n));
         }
         final float num_enclosed = n.getNumberOfExternalNodes();
         final float x = n.getXcoord();
@@ -7813,6 +7787,30 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.draw(_ellipse);
     }
 
+    /** Draws the Color-by / Size-by tip dot at each node in a RADIAL (circular/unrooted) layout -- the rectangular
+     *  path draws it inside paintNodeData, which the radial paths don't use. Mirrors the rectangular gate exactly:
+     *  Color-by covers external + collapsed nodes, Size-by covers external nodes; both require "Show External Data";
+     *  and a pie node is skipped (the pie IS the marker there). Dispatched after the radial recursion has set coords. */
+    private void paintRadialPropertyDots(final Graphics2D g) {
+        if ((!isColorByProperty() && !isSizeByProperty()) || !getControlPanel().isShowExternalData()) {
+            return;
+        }
+        for (final PhylogenyNodeIterator it = _phylogeny.iteratorPreorder(); it.hasNext();) {
+            final PhylogenyNode node = it.next();
+            // skip nodes hidden under a collapse AND collapsed clade-roots themselves: radial layouts don't position
+            // collapsed nodes, so a dot there would be a phantom at stale coords
+            if (isHiddenUnderCollapse(node) || node.isCollapse()) {
+                continue;
+            }
+            final boolean want_dot = (isColorByProperty() && node.isExternal())
+                    || (isSizeByProperty() && node.isExternal());
+            if (want_dot && !(isShowAncestralPies() && (_ancestral_pie_dist != null)
+                    && _ancestral_pie_dist.containsKey(node))) {
+                drawPropertyColorDot(g, node);
+            }
+        }
+    }
+
     private void paintCladeBands(final Graphics2D g) {
         if (!hasCladeBands()) {
             return;
@@ -8800,12 +8798,18 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 root_y + (Math.sin(angle) * parent_radius),
                 g);
         paintNodeBox(c.getXcoord(), c.getYcoord(), c, g, to_pdf, to_graphics_file);
+        final boolean is_in_found_nodes = isInFoundNodes0(c) || isInFoundNodes1(c);
         if (c.isExternal()) {
-            final boolean is_in_found_nodes = isInFoundNodes0(c) || isInFoundNodes1(c);
             if ((_dynamic_hiding_factor > 1) && !is_in_found_nodes
                     && ((_urt_nodeid_index_map.get(c.getId()) % _dynamic_hiding_factor) != 1)) {
                 return;
             }
+            paintNodeDataUnrootedCirc(g, c, to_pdf, to_graphics_file, radial_labels, 0, is_in_found_nodes);
+        } else {
+            // internal-node label (clade names from rank annotation, node/seq names) rides the branch radially; the
+            // node's angle is read from _urt_nodeid_angle_map inside. Gated on "Show Internal Data" inside the method.
+            // Not dynamic-hiding-culled -- same as the rectangular layout, which also draws every internal label (a
+            // shared, deferred perf/clutter concern on very large trees; zoom to declutter).
             paintNodeDataUnrootedCirc(g, c, to_pdf, to_graphics_file, radial_labels, 0, is_in_found_nodes);
         }
     }
@@ -9107,6 +9111,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     g,
                     to_pdf,
                     to_graphics_file);
+            paintRadialPropertyDots(g); // Color-by / Size-by tip dots (rectangular draws them in the node loop)
             paintAncestralPies(g, to_pdf, to_graphics_file); // per-node state pies -- coords set by the recursion above
             if (getOptions().isShowScale()) {
                 if (!(to_graphics_file || to_pdf)) {
@@ -9145,6 +9150,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 }
             }
             paintCircular(_phylogeny, getStartingAngle(), d, d, radius > 0 ? radius : 0, g, to_pdf, to_graphics_file);
+            paintRadialPropertyDots(g); // Color-by / Size-by tip dots (rectangular draws them in the node loop)
             paintAncestralPies(g, to_pdf, to_graphics_file); // per-node state pies -- coords set by paintCircular above
             if (getOptions().isShowOverview() && isOvOn() && !to_graphics_file && !to_pdf) {
                 final int radius_ov = (int) (getOvMaxHeight() < getOvMaxWidth() ? getOvMaxHeight() / 2
@@ -9173,13 +9179,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 paintOvRectangle(g);
             }
         }
-        // In a circular/unrooted (radial) layout the tip-level marks these legends key -- the Color-by / Size-by tip
-        // DOTS and the tip-aligned annotation COLUMNS -- are not drawn, so their legends would orphan. Suppress them
-        // radially (and null their bounds so a stale hit region from a prior rectangular paint isn't clickable). The
-        // RANK legend keys BRANCH colors, which DO render radially, so it stays.
+        // The Color-by / Size-by tip DOTS now render in radial layouts too (paintRadialPropertyDots), so their legends
+        // are keyed and shown in every layout. Only the tip-aligned annotation COLUMNS are still not drawn radially,
+        // so ONLY the annotation-column legend is suppressed there (its bounds nulled so a stale hit region from a
+        // prior rectangular paint isn't clickable). The RANK legend keys BRANCH colors, which also render radially.
         final boolean radial = isRadialLayout();
         final boolean draw_annotation_legend = hasAnnotationColumnLegend() && !radial;
-        final boolean draw_color_legend = isColorByProperty() && !radial;
+        final boolean draw_color_legend = isColorByProperty();
         if (draw_annotation_legend || draw_color_legend || hasRankLegend()) {
             final boolean to_screen = !(to_pdf || to_graphics_file);
             final Rectangle legend_bounds = to_screen
@@ -9198,15 +9204,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             _property_legend_bounds = null; // nothing in the shared slot -> no stale hit region
         }
         // "Size by" has its OWN legend (a separate, independently placed key), drawn last so it can appear
-        // ALONGSIDE the color/rank legend -- the whole point of the combined color+size figure. Suppressed radially
-        // (its size dots are not drawn there).
-        if (isSizeByProperty() && !radial) {
+        // ALONGSIDE the color/rank legend -- the whole point of the combined color+size figure. Its size dots now
+        // render in every layout, so the legend shows in every layout too.
+        if (isSizeByProperty()) {
             final boolean to_screen = !(to_pdf || to_graphics_file);
             final Rectangle legend_bounds = to_screen ? getVisibleRect()
                     : new Rectangle(graphics_file_x, graphics_file_y, graphics_file_width, graphics_file_height);
             drawSizeLegend(g, legend_bounds, to_screen);
-        } else if (isSizeByProperty()) {
-            _size_legend_bounds = null; // size legend suppressed in radial -> no stale hit region
         }
         // ancestral-state pies have their OWN key (state -> color), drawn last so it can appear alongside the others.
         // Pies draw in EVERY layout (rectangular family + circular/unrooted), so the legend is never orphaned.

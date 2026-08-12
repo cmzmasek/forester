@@ -227,40 +227,36 @@ public final class AncestralPieRenderTest {
                         fail( ok, "pies must draw in an UNROOTED layout" );
                     }
 
-                    // ORPHAN-LEGEND FIX: the Color-by tip-dot legend draws in rectangular but is SUPPRESSED (its bounds
-                    // nulled) in a radial layout, where the tip dots it keys are not drawn. Uses the SCREEN paint path
-                    // (printAll), which is where legend bounds are recorded.
+                    // RADIAL PARITY: the Color-by / Size-by tip-dot legends draw in EVERY layout now (their dots
+                    // render radially too -- paintRadialPropertyDots), so their bounds are recorded in circular as
+                    // well as rectangular. Uses the SCREEN paint path (printAll), which is where legend bounds are
+                    // recorded. (The annotation-column legend is the only one still suppressed radially -- columns
+                    // aren't drawn there -- but the pie demo carries no annotation columns to exercise it here.)
                     tp.setColorByPropertyRef( "beast:location" );
                     if ( tp.isColorByProperty() ) {
-                        tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
-                        tp.calcParametersForPainting( w, h );
-                        paintScreen( tp, w, h );
-                        if ( tp.getPropertyLegendBounds() == null ) {
-                            fail( ok, "the Color-by legend must draw (record bounds) in a rectangular layout" );
-                        }
-                        tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
-                        tp.calcParametersForPainting( w, h );
-                        paintScreen( tp, w, h );
-                        if ( tp.getPropertyLegendBounds() != null ) {
-                            fail( ok, "the Color-by legend must be suppressed (bounds nulled) in a radial layout" );
+                        for ( final Options.PHYLOGENY_GRAPHICS_TYPE gt : new Options.PHYLOGENY_GRAPHICS_TYPE[] {
+                                Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR,
+                                Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR } ) {
+                            tp.setPhylogenyGraphicsType( gt );
+                            tp.calcParametersForPainting( w, h );
+                            paintScreen( tp, w, h );
+                            if ( tp.getPropertyLegendBounds() == null ) {
+                                fail( ok, "the Color-by legend must draw (record bounds) in " + gt );
+                            }
                         }
                     }
                     tp.setColorByPropertyRef( null );
-                    // ORPHAN-LEGEND FIX (Size-by): symmetric to Color-by -- the size-dot legend is suppressed (bounds
-                    // nulled) in a radial layout too, where the size dots it keys are not drawn.
                     tp.setSizeByPropertyRef( "data:sz" );
                     if ( tp.isSizeByProperty() ) {
-                        tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
-                        tp.calcParametersForPainting( w, h );
-                        paintScreen( tp, w, h );
-                        if ( tp.getSizeLegendBounds() == null ) {
-                            fail( ok, "the Size-by legend must draw (record bounds) in a rectangular layout" );
-                        }
-                        tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
-                        tp.calcParametersForPainting( w, h );
-                        paintScreen( tp, w, h );
-                        if ( tp.getSizeLegendBounds() != null ) {
-                            fail( ok, "the Size-by legend must be suppressed (bounds nulled) in a radial layout" );
+                        for ( final Options.PHYLOGENY_GRAPHICS_TYPE gt : new Options.PHYLOGENY_GRAPHICS_TYPE[] {
+                                Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR,
+                                Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR } ) {
+                            tp.setPhylogenyGraphicsType( gt );
+                            tp.calcParametersForPainting( w, h );
+                            paintScreen( tp, w, h );
+                            if ( tp.getSizeLegendBounds() == null ) {
+                                fail( ok, "the Size-by legend must draw (record bounds) in " + gt );
+                            }
                         }
                     }
                     tp.setSizeByPropertyRef( null );
