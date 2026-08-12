@@ -24,16 +24,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
-import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
-import org.forester.phylogeny.data.Identifier;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.util.ForesterUtil;
+import org.forester.util.TaxonomyUtil;
 import org.forester.ws.seqdb.TaxonLineage;
 import org.forester.ws.seqdb.TaxonLineage.Ancestor;
 
@@ -170,19 +168,8 @@ public final class AncestralTaxonomyInference {
     /** Build the internal-node taxonomy from the DEEPEST shared level (+ the full shared path as its lineage). */
     private static Taxonomy toTaxonomy( final List<Ancestor> path ) {
         final Ancestor deepest = path.get( path.size() - 1 );
-        final Taxonomy tax = new Taxonomy();
-        tax.setScientificName( deepest.getName() );
-        if ( !ForesterUtil.isEmpty( deepest.getRank() ) ) {
-            try {
-                tax.setRank( deepest.getRank().toLowerCase( Locale.ROOT ) );
-            }
-            catch ( final PhyloXmlDataFormatException e ) {
-                // a non-Linnaean rank ("no rank" / "clade" / unknown) -- keep the name, leave the rank unset
-            }
-        }
-        if ( !ForesterUtil.isEmpty( deepest.getTaxId() ) ) {
-            tax.setIdentifier( new Identifier( deepest.getTaxId(), "ncbi" ) );
-        }
+        // shared with "Annotate Clades by Rank" so the two internal-taxa writers agree on name+rank+tax-id
+        final Taxonomy tax = TaxonomyUtil.buildNcbiTaxonomy( deepest.getName(), deepest.getRank(), deepest.getTaxId() );
         final List<String> names = new ArrayList<String>();
         for( final Ancestor a : path ) {
             names.add( a.getName() );

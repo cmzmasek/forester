@@ -1307,6 +1307,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         bg.add(boxes_rb);
         bg.add(bars_rb);
         bg.add(brackets_rb);
+        final JCheckBox write_cb = new JCheckBox("Also write the clade taxa into the tree (rank + NCBI id; undoable)",
+                false);
+        final JCheckBox overwrite_cb = new JCheckBox("    ...overwriting existing internal-node taxonomies", false);
         final JPanel panel = new JPanel(new GridLayout(0, 1, 0, 2));
         panel.add(new JLabel("Annotate clades by rank:"));
         panel.add(rank_box);
@@ -1315,10 +1318,15 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         panel.add(boxes_rb);
         panel.add(bars_rb);
         panel.add(brackets_rb);
+        panel.add(new JLabel(" "));
+        panel.add(write_cb);
+        panel.add(overwrite_cb);
         if (JOptionPane.showConfirmDialog(this, panel, "Annotate Clades by Rank", JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE) != JOptionPane.OK_OPTION) {
             return;
         }
+        final boolean write = write_cb.isSelected();
+        final boolean overwrite = write && overwrite_cb.isSelected();
         String rank = (String) rank_box.getSelectedItem();
         if (ForesterUtil.isEmpty(rank)) {
             return;
@@ -1342,11 +1350,11 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                     "Resolve Taxa Online?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
             if (choice == JOptionPane.YES_OPTION) {
                 new Thread(new OnlineTaxonResolver(this, "clade bands (" + r + ")", unresolved,
-                        err -> reportCladeBands(tp, r, mode, err))).start();
+                        err -> reportCladeBands(tp, r, mode, write, overwrite, err))).start();
                 return;
             }
         }
-        reportCladeBands(tp, r, mode, null);
+        reportCladeBands(tp, r, mode, write, overwrite, null);
     }
 
     /**
@@ -1362,7 +1370,12 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     }
 
     private void reportCladeBands(final TreePanel tp, final String rank, final TreePanel.CLADE_VIS mode,
-                                  final String error) {
+                                  final boolean write, final boolean overwrite, final String error) {
+        int wrote = 0;
+        if (write) {
+            tp.pushUndoCheckpoint("Annotate Clade Taxa"); // a tree-data mutation -> checkpoint before writing
+            wrote = tp.writeCladeTaxonomiesByRank(rank, overwrite);
+        }
         final int n = tp.setCladeBands(rank, mode);
         if (n > 0) {
             tp.setEdited(true);
@@ -1374,13 +1387,19 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         final String kind = (mode == TreePanel.CLADE_VIS.BARS) ? "bar(s)"
                 : (mode == TreePanel.CLADE_VIS.BRACKETS) ? "bracket(s)" : "box(es)";
+        final StringBuilder msg = new StringBuilder("Drew ").append(n).append(" clade ").append(kind)
+                .append(" at rank \"").append(rank).append("\".");
+        if (write) {
+            msg.append("\nWrote a taxonomy onto ").append(wrote).append(" internal clade node")
+                    .append(wrote == 1 ? "" : "s").append(" (rank + NCBI id; saved with the tree).");
+        }
         if (error != null) {
-            JOptionPane.showMessageDialog(this, "Drew " + n + " clade " + kind + " at rank \"" + rank
-                    + "\", but some taxa could not be resolved:\n" + error, "Annotate Clades by Rank (" + rank + ")",
+            msg.append("\nSome taxa could not be resolved:\n").append(error);
+            JOptionPane.showMessageDialog(this, msg.toString(), "Annotate Clades by Rank (" + rank + ")",
                     JOptionPane.WARNING_MESSAGE);
-        } else if (n > 0) {
-            JOptionPane.showMessageDialog(this, "Drew " + n + " clade " + kind + " at rank \"" + rank + "\".",
-                    "Annotate Clades by Rank (" + rank + ")", JOptionPane.INFORMATION_MESSAGE);
+        } else if ((n > 0) || (wrote > 0)) {
+            JOptionPane.showMessageDialog(this, msg.toString(), "Annotate Clades by Rank (" + rank + ")",
+                    JOptionPane.INFORMATION_MESSAGE);
         } else {
             JOptionPane.showMessageDialog(this, "Could not place any tip at rank \"" + rank + "\".\n"
                     + "Try a different rank, or check that the tips carry resolvable taxonomic names.",

@@ -52,6 +52,7 @@ import org.forester.phylogeny.iterators.PreorderTreeIterator;
 import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
 import org.forester.util.SequenceAccessionTools;
+import org.forester.util.TaxonomyUtil;
 import org.forester.ws.seqdb.AccessionAwareLineageService;
 import org.forester.ws.seqdb.NcbiTaxonomyLineageService;
 import org.forester.ws.seqdb.TaxonLineage;
@@ -977,6 +978,46 @@ public class TreePanelUtil {
         }
         countTipsPerTaxon( assignment, counts_out );
         return bands;
+    }
+
+    /**
+     * WRITES each maximal-monochromatic clade's taxon at {@code rank} onto that clade root's internal {@code
+     * <taxonomy>} (scientific name + rank + NCBI tax-id) -- a real tree enrichment that round-trips to phyloXML,
+     * the persistent counterpart of the display-only {@link #cladeBands}. Uses the SAME assignment + grouping (Spine
+     * B), so it annotates exactly the clades the bands would draw. Only INTERNAL clade roots are written (a tip that
+     * is its own clade keeps its more specific own taxonomy); a root that already carries a taxonomy is left in place
+     * unless {@code overwrite}. Network-pure (cache-only via {@code service}). Returns the number of nodes written.
+     */
+    final static int writeCladeTaxonomies( final Phylogeny tree, final String rank,
+                                           final TaxonomicLineageService service, final boolean overwrite ) {
+        if ( ( tree == null ) || tree.isEmpty() || ForesterUtil.isEmpty( rank ) ) {
+            return 0;
+        }
+        final Map<PhylogenyNode, RankTaxon> assignment = assignNodesToRankTaxon( tree, rank, service );
+        int written = 0;
+        for( final Entry<PhylogenyNode, RankTaxon> e : maximalMonochromaticRoots( tree, assignment ).entrySet() ) {
+            final PhylogenyNode root = e.getKey();
+            if ( root.isExternal() ) {
+                continue; // a single-tip clade keeps its own (more specific) taxonomy -- never downgrade a tip
+            }
+            if ( root.getNodeData().isHasTaxonomy() && !overwrite ) {
+                continue; // preserve a hand-curated / previously-inferred internal taxon unless overwriting
+            }
+            final RankTaxon rt = e.getValue();
+            root.getNodeData().setTaxonomy( TaxonomyUtil.buildNcbiTaxonomy( rt.getName(), rank, rt.getId() ) );
+            written++;
+        }
+        return written;
+    }
+
+    /** The provenance sentence for "Annotate Clades by Rank -&gt; write into the tree" (pure/testable; the caller
+     *  APPENDS it to the description, never overwrites). */
+    final static String cladeTaxonomyProvenance( final Phylogeny phy, final String rank, final int count,
+                                                 final boolean overwrite ) {
+        final String name = ForesterUtil.isEmpty( phy.getName() ) ? "" : phy.getName();
+        return "Used annotate-clades-by-rank (rank " + rank + ( overwrite ? ", overwriting existing internal taxa" : "" )
+                + ") to write a taxonomy onto " + count + " internal clade node" + ( count == 1 ? "" : "s" )
+                + " in tree named \"" + name + "\" with " + phy.getNumberOfExternalNodes() + " tips.";
     }
 
     /** Replaces the auto-assigned color with the user's override for each taxon that has one. */

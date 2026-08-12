@@ -24,10 +24,38 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
+import org.forester.phylogeny.data.Identifier;
+import org.forester.phylogeny.data.Taxonomy;
+
 public final class TaxonomyUtil {
+
+    /**
+     * Builds a {@link Taxonomy} from an inferred / assigned taxon: its scientific name, its Linnaean {@code rank}
+     * (a non-Linnaean rank -- "no rank" / "clade" / unknown -- is silently left unset, keeping the name), and, when
+     * known, its NCBI {@code tax_id}. Shared by ancestral-taxonomy inference and "Annotate Clades by Rank" so the two
+     * internal-node-taxonomy writers produce identical {@code <taxonomy>} shapes.
+     */
+    public static Taxonomy buildNcbiTaxonomy( final String scientific_name, final String rank, final String tax_id ) {
+        final Taxonomy tax = new Taxonomy();
+        tax.setScientificName( scientific_name );
+        if ( !ForesterUtil.isEmpty( rank ) ) {
+            try {
+                tax.setRank( rank.toLowerCase( Locale.ROOT ) );
+            }
+            catch ( final PhyloXmlDataFormatException e ) {
+                // a non-Linnaean rank: keep the name, leave the rank unset
+            }
+        }
+        if ( !ForesterUtil.isEmpty( tax_id ) ) {
+            tax.setIdentifier( new Identifier( tax_id, "ncbi" ) );
+        }
+        return tax;
+    }
 
     public static String getTaxGroupByTaxCode( final String code ) {
         return _default_taxcode_taxgroup_map.get( code );

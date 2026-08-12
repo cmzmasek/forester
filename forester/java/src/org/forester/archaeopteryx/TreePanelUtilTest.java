@@ -65,6 +65,7 @@ public final class TreePanelUtilTest {
                 && testRankTaxonCounts() && testTaxonomyLabel() && testRankColorization() && testTipQueryName()
                 && testTipIdentityWins() && testRankColorizationTaxIdKeying() && testInternalTaxonGapFill()
                 && testRankResolutionIdThenNameCache() && testNamelessTaxonomyTipResolvesByNodeName()
+                && testInferenceFeedsRankAssignment() && testWriteCladeTaxonomies()
                 && testCladeBands() && testRankColorizationViaSequenceIds() && testInternalLabelAboveBranchLayout()
                 && testAbbreviateScientificName() && testSupportColor() && testScaleGridLines()
                 && testScaleAxisTickValues() && testFormatCompactNumber() && testHpdBarXRange()
@@ -1261,6 +1262,96 @@ public final class TreePanelUtilTest {
         final TreePanelUtil.RankTaxon rt = TreePanelUtil.assignNodesToRankTaxon( tree, "order", svc ).get( tip );
         if ( ( rt == null ) || !"Rodentia".equals( rt.getName() ) ) {
             return fail( "a tip with a nameless taxonomy must still resolve by its node name" );
+        }
+        return true;
+    }
+
+    /**
+     * The full A-&gt;B-&gt;C loop: ancestral-taxonomy INFERENCE (Spine C) writes a rank-annotated internal
+     * {@code <taxonomy>}, and the node-&gt;taxon ASSIGNMENT (Spine B) reads it -- so an inferred internal taxon FEEDS
+     * the rank colorize / clade bands. This is the payoff of the internal-node-taxonomy overhaul, guarded end-to-end.
+     */
+    private static boolean testInferenceFeedsRankAssignment() {
+        final FakeLineageService svc = new FakeLineageService();
+        svc.know( "Homo", lineage( "class", "Mammalia", "order", "Primates", "genus", "Homo" ) );
+        svc.know( "Pan", lineage( "class", "Mammalia", "order", "Primates", "genus", "Pan" ) );
+        try {
+            svc.fetch( "Homo" );
+            svc.fetch( "Pan" );
+        }
+        catch ( final Exception e ) {
+            return fail( "fake fetch must not throw: " + e );
+        }
+        // two bare-named primate tips under one internal node; NO internal taxonomy yet
+        final PhylogenyNode mrca = node( bareLeaf( "Homo" ), bareLeaf( "Pan" ) );
+        final Phylogeny tree = phylogeny( mrca );
+        // (C) infer: the tips resolve to the same order, so the MRCA is assigned order=Primates
+        final Map<PhylogenyNode, TaxonLineage> tl = TreePanelUtil.tipLineages( tree, svc );
+        final org.forester.analysis.AncestralTaxonomyInference.InferenceResult r = org.forester.analysis.AncestralTaxonomyInference
+                .inferInternalTaxonomies( tree, tl, false );
+        if ( r.getAssigned() < 1 ) {
+            return fail( "inference must assign the shared order to the internal node; assigned=" + r.getAssigned() );
+        }
+        if ( !mrca.getNodeData().isHasTaxonomy() || !"order".equalsIgnoreCase( mrca.getNodeData().getTaxonomy().getRank() )
+                || !"Primates".equals( mrca.getNodeData().getTaxonomy().getScientificName() ) ) {
+            return fail( "the inferred internal taxonomy must carry rank=order, name=Primates" );
+        }
+        // (B) the node->taxon assignment READS that inferred internal taxon -- inference now feeds colorize
+        final TreePanelUtil.RankTaxon rt = TreePanelUtil.assignNodesToRankTaxon( tree, "order", svc ).get( mrca );
+        if ( ( rt == null ) || !"Primates".equals( rt.getName() ) ) {
+            return fail( "the node->taxon assignment must read the inferred internal taxon at its rank" );
+        }
+        return true;
+    }
+
+    /**
+     * "Annotate Clades by Rank -&gt; write into the tree": each maximal-monochromatic clade's taxon at the rank is
+     * WRITTEN onto that clade's INTERNAL root {@code <taxonomy>} (name + rank + NCBI id), a tip keeps its own (more
+     * specific) taxonomy, and an already-annotated root is preserved unless overwrite.
+     */
+    private static boolean testWriteCladeTaxonomies() {
+        // a plain internal clade of two order-Carnivora tips (tax-id 33554); a SPECIES-level outgroup tip whose order
+        // (Rodentia) comes from the service -- so if a tip were wrongly written, its species would be DOWNGRADED
+        final FakeLineageService svc = new FakeLineageService();
+        svc.know( "Rattus", lineage( "order", "Rodentia", "genus", "Rattus" ) );
+        try {
+            svc.fetch( "Rattus" );
+        }
+        catch ( final Exception e ) {
+            return fail( "fake fetch must not throw: " + e );
+        }
+        final PhylogenyNode carn = node( orderLeaf( "felis", "Carnivora", "33554" ),
+                                         orderLeaf( "panthera", "Carnivora", "33554" ) );
+        final PhylogenyNode rat = rankLeaf( "rat", "Rattus", "species", null ); // species-level; order via the service
+        final Phylogeny tree = phylogeny( node( carn, rat ) );
+        final int wrote = TreePanelUtil.writeCladeTaxonomies( tree, "order", svc, false );
+        if ( wrote != 1 ) {
+            return fail( "write should annotate exactly the 1 internal clade root, got " + wrote );
+        }
+        if ( !carn.getNodeData().isHasTaxonomy() || !"order".equalsIgnoreCase( carn.getNodeData().getTaxonomy().getRank() )
+                || !"Carnivora".equals( carn.getNodeData().getTaxonomy().getScientificName() ) ) {
+            return fail( "the internal clade root must be written with rank=order, name=Carnivora" );
+        }
+        final Identifier id = carn.getNodeData().getTaxonomy().getIdentifier();
+        if ( ( id == null ) || !"33554".equals( id.getValue() ) || !"ncbi".equalsIgnoreCase( id.getProvider() ) ) {
+            return fail( "the written taxonomy must carry the NCBI tax-id 33554, got " + id );
+        }
+        if ( !"Rattus".equals( rat.getNodeData().getTaxonomy().getScientificName() )
+                || !"species".equalsIgnoreCase( rat.getNodeData().getTaxonomy().getRank() ) ) {
+            return fail( "a tip's own (species) taxonomy must NOT be downgraded to its order by the clade write" );
+        }
+        // preserve: an already-annotated clade root is left alone unless overwrite
+        if ( TreePanelUtil.writeCladeTaxonomies( tree, "order", svc, false ) != 0 ) {
+            return fail( "an already-annotated clade root must be preserved when overwrite is off" );
+        }
+        if ( TreePanelUtil.writeCladeTaxonomies( tree, "order", svc, true ) != 1 ) {
+            return fail( "overwrite must re-write the clade root" );
+        }
+        // provenance sentence (pure; the caller APPENDS it)
+        tree.setName( "mammals" );
+        final String prov = TreePanelUtil.cladeTaxonomyProvenance( tree, "order", 1, false );
+        if ( !prov.contains( "rank order" ) || !prov.contains( "1 internal clade node" ) || !prov.contains( "mammals" ) ) {
+            return fail( "provenance sentence malformed: " + prov );
         }
         return true;
     }

@@ -7003,6 +7003,24 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return (_clade_bands == null) ? 0 : _clade_bands.size();
     }
 
+    /**
+     * WRITES each clade's taxon at {@code rank} into the tree's internal {@code <taxonomy>} (the persistent
+     * counterpart of {@link #setCladeBands}; see {@link TreePanelUtil#writeCladeTaxonomies}), appends a provenance
+     * sentence, and marks the tree edited when anything was written. A tree-data MUTATION: the caller must
+     * {@link #pushUndoCheckpoint} first (mirrors {@link #colorByRank}). Returns the number of nodes written.
+     */
+    final int writeCladeTaxonomiesByRank(final String rank, final boolean overwrite) {
+        final int n = TreePanelUtil.writeCladeTaxonomies(_phylogeny, rank, TreePanelUtil.getDefaultLineageService(),
+                overwrite);
+        if (n > 0) {
+            final String sentence = TreePanelUtil.cladeTaxonomyProvenance(_phylogeny, rank, n, overwrite);
+            final String existing = _phylogeny.getDescription();
+            _phylogeny.setDescription(ForesterUtil.isEmpty(existing) ? sentence : existing + " " + sentence);
+            setEdited(true);
+        }
+        return n;
+    }
+
     final void clearCladeBands() {
         _clade_bands = null;
         _clade_bands_rank = null;
