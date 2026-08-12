@@ -1020,6 +1020,68 @@ public class TreePanelUtil {
                 + " in tree named \"" + name + "\" with " + phy.getNumberOfExternalNodes() + " tips.";
     }
 
+    /** Canonical Linnaean rank order for the internal-taxonomy key (ranks not listed are appended alphabetically). */
+    private static final String[] CANONICAL_RANKS = { "domain", "superkingdom", "kingdom", "subkingdom",
+            "superphylum", "phylum", "subphylum", "superclass", "class", "subclass", "infraclass", "superorder",
+            "order", "suborder", "infraorder", "parvorder", "superfamily", "family", "subfamily", "tribe", "subtribe",
+            "genus", "subgenus", "species group", "species", "subspecies", "varietas", "forma" };
+
+    /**
+     * The DISTINCT internal-node taxa {@code phy} carries, grouped by rank &rarr; (taxon name &rarr; count of internal
+     * nodes carrying it), with the ranks in canonical Linnaean order (unknown ranks appended) and the taxa within a
+     * rank by count-desc then name. Only INTERNAL nodes with a rank + name are counted (the tips are the source data,
+     * excluded). Feeds the draggable "Internal Taxonomy Key" -- the taxonomic backbone an inference / curation /
+     * clade-annotation left on the tree.
+     */
+    final static LinkedHashMap<String, LinkedHashMap<String, Integer>> internalTaxaByRank( final Phylogeny phy ) {
+        final LinkedHashMap<String, LinkedHashMap<String, Integer>> out = new LinkedHashMap<String, LinkedHashMap<String, Integer>>();
+        if ( ( phy == null ) || phy.isEmpty() ) {
+            return out;
+        }
+        final Map<String, Map<String, Integer>> by_rank = new HashMap<String, Map<String, Integer>>();
+        for( final org.forester.phylogeny.iterators.PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if ( n.isExternal() || !n.getNodeData().isHasTaxonomy() ) {
+                continue;
+            }
+            final Taxonomy tax = n.getNodeData().getTaxonomy();
+            final String rank = tax.getRank();
+            final String name = taxonomyLabel( tax );
+            if ( ForesterUtil.isEmpty( rank ) || ForesterUtil.isEmpty( name ) ) {
+                continue;
+            }
+            by_rank.computeIfAbsent( rank.toLowerCase( Locale.ROOT ), k -> new HashMap<String, Integer>() )
+                    .merge( name, 1, Integer::sum );
+        }
+        final List<String> ranks = new ArrayList<String>();
+        for( final String r : CANONICAL_RANKS ) {
+            if ( by_rank.containsKey( r ) ) {
+                ranks.add( r );
+            }
+        }
+        final SortedSet<String> extra = new TreeSet<String>( by_rank.keySet() );
+        extra.removeAll( ranks );
+        ranks.addAll( extra ); // any non-canonical ranks, alphabetically
+        for( final String r : ranks ) {
+            out.put( r, sortTaxaByCountThenName( by_rank.get( r ) ) );
+        }
+        return out;
+    }
+
+    /** {@code taxon -> count} ordered by count DESC then name ASC (case-insensitive), into a {@link LinkedHashMap}. */
+    private static LinkedHashMap<String, Integer> sortTaxaByCountThenName( final Map<String, Integer> m ) {
+        final List<Entry<String, Integer>> es = new ArrayList<Entry<String, Integer>>( m.entrySet() );
+        es.sort( ( a, b ) -> {
+            final int c = b.getValue().compareTo( a.getValue() );
+            return ( c != 0 ) ? c : a.getKey().compareToIgnoreCase( b.getKey() );
+        } );
+        final LinkedHashMap<String, Integer> out = new LinkedHashMap<String, Integer>();
+        for( final Entry<String, Integer> e : es ) {
+            out.put( e.getKey(), e.getValue() );
+        }
+        return out;
+    }
+
     /** Replaces the auto-assigned color with the user's override for each taxon that has one. */
     private static void applyColorOverrides( final Map<String, Color> colors, final Map<String, Color> overrides ) {
         if ( ( colors == null ) || ( overrides == null ) || overrides.isEmpty() ) {

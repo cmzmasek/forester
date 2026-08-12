@@ -1409,6 +1409,8 @@ public final class MainFrameApplication extends MainFrame {
         _show_hpd_bars_cbmi.setToolTipText(MainFrame.DISPLAY_HPD_BARS_TIP);
         _show_zebra_stripes_cbmi = new JCheckBoxMenuItem(MainFrame.DISPLAY_ZEBRA_STRIPES_LABEL);
         _show_zebra_stripes_cbmi.setToolTipText(MainFrame.DISPLAY_ZEBRA_STRIPES_TIP);
+        _show_internal_taxonomy_key_cbmi = new JCheckBoxMenuItem(MainFrame.DISPLAY_INTERNAL_TAXONOMY_KEY_LABEL);
+        _show_internal_taxonomy_key_cbmi.setToolTipText(MainFrame.DISPLAY_INTERNAL_TAXONOMY_KEY_TIP);
         _tip_labels_below_columns_cbmi = new JCheckBoxMenuItem(MainFrame.DISPLAY_TIP_LABELS_BELOW_COLUMNS_LABEL);
         _tip_labels_below_columns_cbmi.setToolTipText(MainFrame.DISPLAY_TIP_LABELS_BELOW_COLUMNS_TIP);
         _reverse_tip_order_cbmi = new JCheckBoxMenuItem(MainFrame.DISPLAY_REVERSE_TIP_ORDER_LABEL);
@@ -1494,6 +1496,7 @@ public final class MainFrameApplication extends MainFrame {
         customizeCheckBoxMenuItem(_show_scale_axis_cbmi, getOptions().isShowScaleAxis());
         customizeCheckBoxMenuItem(_show_hpd_bars_cbmi, getOptions().isShowHpdBars());
         customizeCheckBoxMenuItem(_show_zebra_stripes_cbmi, getOptions().isShowZebraStripes());
+        customizeCheckBoxMenuItem(_show_internal_taxonomy_key_cbmi, getOptions().isShowInternalTaxonomyKey());
         customizeCheckBoxMenuItem(_tip_labels_below_columns_cbmi, getOptions().isTipLabelsBelowColumns());
         customizeCheckBoxMenuItem(_reverse_tip_order_cbmi, getOptions().isReverseTipOrder());
         customizeCheckBoxMenuItem(_bold_found_labels_cbmi, getOptions().isBoldFoundLabels());

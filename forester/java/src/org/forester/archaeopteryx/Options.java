@@ -203,6 +203,7 @@ final public class Options {
     private boolean _show_scale_axis;
     private boolean _show_hpd_bars;
     private boolean _show_zebra_stripes;
+    private boolean _show_internal_taxonomy_key;
     private boolean _reverse_tip_order;
     private boolean _bold_found_labels;
     private boolean _dim_non_matches;
@@ -288,6 +289,7 @@ final public class Options {
         _show_scale_axis = false;
         _show_hpd_bars = false;
         _show_zebra_stripes = false;
+        _show_internal_taxonomy_key = false;
         _reverse_tip_order = false;
         _bold_found_labels = false;
         _dim_non_matches = true;   // on by default: fade non-matching labels/numbers so search hits stand out
@@ -634,6 +636,14 @@ final public class Options {
 
     final void setShowZebraStripes(final boolean show_zebra_stripes) {
         _show_zebra_stripes = show_zebra_stripes;
+    }
+
+    final boolean isShowInternalTaxonomyKey() {
+        return _show_internal_taxonomy_key;
+    }
+
+    final void setShowInternalTaxonomyKey(final boolean show_internal_taxonomy_key) {
+        _show_internal_taxonomy_key = show_internal_taxonomy_key;
     }
 
     final boolean isReverseTipOrder() {

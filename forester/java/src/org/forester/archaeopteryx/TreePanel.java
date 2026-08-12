@@ -5778,10 +5778,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // the state->color key for the pie wedges, shown alongside any color/rank/size legend.
     private Point               _ancestral_pie_legend_offset = null;
     private Rectangle           _ancestral_pie_legend_bounds = null;
+    // A FOURTH, independent legend: the "Internal Taxonomy Key" -- a text key of the distinct internal-node taxa by
+    // rank (no colors), shown alongside any other legend when isShowInternalTaxonomyKey() and the tree carries them.
+    private Point               _internal_taxa_key_offset = null;
+    private Rectangle           _internal_taxa_key_bounds = null;
     // Which legend the active drag moves (they share _legend_grab_dx/dy). Generalized from a single "size?" boolean
     // once a third (pie) draggable legend was added.
     enum DRAGGED_LEGEND {
-        PROPERTY, SIZE, ANCESTRAL_PIE
+        PROPERTY, SIZE, ANCESTRAL_PIE, INTERNAL_TAXA
     }
     private DRAGGED_LEGEND      _dragged_legend = DRAGGED_LEGEND.PROPERTY;
     // User-assigned per-value colors: ref -> (group key -> color); applied by the color scheme,
@@ -5879,13 +5883,21 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 && _ancestral_pie_legend_bounds.contains(e.getX(), e.getY());
     }
 
-    /** Over any legend (color/rank/column, size, or ancestral pie) -- used to start a drag / show the move cursor. */
+    /** Over the internal-taxonomy key -- guarded by the option; the recorded bounds mean it was drawn (has content). */
+    final boolean isOnInternalTaxaKey(final MouseEvent e) {
+        return getOptions().isShowInternalTaxonomyKey() && (_internal_taxa_key_bounds != null)
+                && _internal_taxa_key_bounds.contains(e.getX(), e.getY());
+    }
+
+    /** Over any legend (color/rank/column, size, ancestral pie, or internal-taxonomy key) -- to start a drag / cursor. */
     final boolean isOnAnyLegend(final MouseEvent e) {
-        return isOnPropertyLegend(e) || isOnSizeLegend(e) || isOnAncestralPieLegend(e);
+        return isOnPropertyLegend(e) || isOnSizeLegend(e) || isOnAncestralPieLegend(e) || isOnInternalTaxaKey(e);
     }
 
     private Rectangle draggedLegendBounds() {
         switch (_dragged_legend) {
+            case INTERNAL_TAXA:
+                return _internal_taxa_key_bounds;
             case ANCESTRAL_PIE:
                 return _ancestral_pie_legend_bounds;
             case SIZE:
@@ -5896,9 +5908,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final void startLegendDrag(final MouseEvent e) {
-        // the legends are drawn color/rank -> size -> pie (pie on top), so an overlap grab must hit-test in
-        // reverse draw order and give the top-most legend priority
-        if (isOnAncestralPieLegend(e)) {
+        // the legends are drawn color/rank -> size -> pie -> internal-taxa (last on top), so an overlap grab must
+        // hit-test in reverse draw order and give the top-most legend priority
+        if (isOnInternalTaxaKey(e)) {
+            _dragged_legend = DRAGGED_LEGEND.INTERNAL_TAXA;
+        } else if (isOnAncestralPieLegend(e)) {
             _dragged_legend = DRAGGED_LEGEND.ANCESTRAL_PIE;
         } else if (isOnSizeLegend(e)) {
             _dragged_legend = DRAGGED_LEGEND.SIZE;
@@ -5924,6 +5938,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         ox = Math.max(0, Math.min(ox, Math.max(0, vp.width - b.width)));
         oy = Math.max(0, Math.min(oy, Math.max(0, vp.height - b.height)));
         switch (_dragged_legend) {
+            case INTERNAL_TAXA:
+                _internal_taxa_key_offset = new Point(ox, oy);
+                break;
             case ANCESTRAL_PIE:
                 _ancestral_pie_legend_offset = new Point(ox, oy);
                 break;
@@ -5949,6 +5966,19 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     final void handleAncestralPieLegendClick(final MouseEvent e) {
         if (e.getClickCount() == 2) {
             _ancestral_pie_legend_offset = null;
+            repaint();
+        }
+    }
+
+    /** Test hook: the last-drawn internal-taxonomy key bounds (null when it was not drawn / had no content). */
+    Rectangle getInternalTaxaKeyBoundsForTest() {
+        return _internal_taxa_key_bounds;
+    }
+
+    /** A click on the internal-taxonomy key: double-click returns it to its default corner (no recolorable rows). */
+    final void handleInternalTaxaKeyClick(final MouseEvent e) {
+        if (e.getClickCount() == 2) {
+            _internal_taxa_key_offset = null;
             repaint();
         }
     }
@@ -6901,6 +6931,73 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     Math.max(bounds.y, (bounds.y + bounds.height) - box_h - 10)); // bottom-left
         }
         return legendTopLeftFor(bounds, getVisibleRect(), null, box_w, box_h); // top-right
+    }
+
+    /**
+     * Draws the "Internal Taxonomy Key": a boxed title over one row per RANK listing the distinct internal-node taxa
+     * at that rank with counts, e.g. {@code order: Carnivora (3)  Rodentia (2)  Primates (1)}. A TEXT key (no colors,
+     * so it does not duplicate the rank color legend); own draggable position, reusing {@link #drawLegendBox} chrome.
+     * A no-op when the option is off or the tree carries no internal taxa (bounds nulled so there's no stale hit box).
+     */
+    private void drawInternalTaxonomyKey(final Graphics2D g, final Rectangle bounds, final boolean draggable) {
+        if (!getOptions().isShowInternalTaxonomyKey() || (_phylogeny == null)) {
+            return;
+        }
+        final java.util.LinkedHashMap<String, java.util.LinkedHashMap<String, Integer>> by_rank = TreePanelUtil
+                .internalTaxaByRank(_phylogeny);
+        if (by_rank.isEmpty()) {
+            _internal_taxa_key_bounds = null;
+            return;
+        }
+        final int pad = 7;
+        final int max_text = 340;
+        g.setFont(legendFont());
+        final FontMetrics fm = g.getFontMetrics();
+        final int row_h = fm.getHeight() + 2;
+        final String title = "Internal taxa";
+        final java.util.List<String> rows = new java.util.ArrayList<>();
+        for (final Map.Entry<String, java.util.LinkedHashMap<String, Integer>> e : by_rank.entrySet()) {
+            final StringBuilder sb = new StringBuilder(e.getKey()).append(": ");
+            boolean first = true;
+            for (final Map.Entry<String, Integer> t : e.getValue().entrySet()) {
+                if (!first) {
+                    sb.append("  ");
+                }
+                sb.append(t.getKey()).append(" (").append(t.getValue()).append(")");
+                first = false;
+            }
+            rows.add(clipToWidth(sb.toString(), fm, max_text));
+        }
+        int text_w = fm.stringWidth(title);
+        for (final String r : rows) {
+            text_w = Math.max(text_w, fm.stringWidth(r));
+        }
+        final int box_w = text_w + (2 * pad) + 4;
+        final int box_h = ((1 + rows.size()) * row_h) + (2 * pad);
+        final Point tl = internalTaxaKeyTopLeft(bounds, box_w, box_h);
+        final int x = tl.x;
+        final int y = tl.y;
+        if (draggable) {
+            _internal_taxa_key_bounds = new Rectangle(x, y, box_w, box_h);
+        }
+        final Stroke saved_stroke = g.getStroke();
+        int baseline = drawLegendBox(g, x, y, box_w, box_h, pad, title, fm, false, false);
+        g.setColor(getTreeColorSet().getSequenceColor());
+        for (final String r : rows) {
+            baseline += row_h;
+            g.drawString(r, x + pad, baseline);
+        }
+        g.setStroke(saved_stroke);
+    }
+
+    /** Default position of the internal-taxonomy key: BOTTOM-RIGHT (clear of the top-right primary legends, the
+     *  top-left overview, and the bottom-left tree name / scale); once dragged, maps fractionally like the others. */
+    private Point internalTaxaKeyTopLeft(final Rectangle bounds, final int box_w, final int box_h) {
+        if (_internal_taxa_key_offset != null) {
+            return legendTopLeftFor(bounds, getVisibleRect(), _internal_taxa_key_offset, box_w, box_h);
+        }
+        return new Point(Math.max(bounds.x, (bounds.x + bounds.width) - box_w - 10),
+                Math.max(bounds.y, (bounds.y + bounds.height) - box_h - 10));
     }
 
     private static String clipToWidth(final String s, final FontMetrics fm, final int max_px) {
@@ -10121,6 +10218,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     : new Rectangle(graphics_file_x, graphics_file_y, graphics_file_width, graphics_file_height);
             drawAncestralPieLegend(g, legend_bounds, to_screen,
                     (to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite());
+        }
+        // the internal-taxonomy key has its OWN text key (taxa by rank), drawn last (on top) so it can appear
+        // alongside the others; a no-op unless the option is on AND the tree carries internal taxa.
+        if (getOptions().isShowInternalTaxonomyKey()) {
+            final boolean to_screen = !(to_pdf || to_graphics_file);
+            final Rectangle legend_bounds = to_screen ? getVisibleRect()
+                    : new Rectangle(graphics_file_x, graphics_file_y, graphics_file_width, graphics_file_height);
+            drawInternalTaxonomyKey(g, legend_bounds, to_screen);
         }
         // reconcile the "Pulse Found Nodes" animation timer after EVERY screen paint (all layouts): starts it when a
         // hit halo was drawn (rectangular OR radial), stops it when none was (option off / no hit).

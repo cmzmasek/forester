@@ -65,7 +65,7 @@ public final class TreePanelUtilTest {
                 && testRankTaxonCounts() && testTaxonomyLabel() && testRankColorization() && testTipQueryName()
                 && testTipIdentityWins() && testRankColorizationTaxIdKeying() && testInternalTaxonGapFill()
                 && testRankResolutionIdThenNameCache() && testNamelessTaxonomyTipResolvesByNodeName()
-                && testInferenceFeedsRankAssignment() && testWriteCladeTaxonomies()
+                && testInferenceFeedsRankAssignment() && testWriteCladeTaxonomies() && testInternalTaxaByRank()
                 && testCladeBands() && testRankColorizationViaSequenceIds() && testInternalLabelAboveBranchLayout()
                 && testAbbreviateScientificName() && testSupportColor() && testScaleGridLines()
                 && testScaleAxisTickValues() && testFormatCompactNumber() && testHpdBarXRange()
@@ -1354,6 +1354,56 @@ public final class TreePanelUtilTest {
             return fail( "provenance sentence malformed: " + prov );
         }
         return true;
+    }
+
+    /**
+     * {@code internalTaxaByRank} groups the DISTINCT internal-node taxa by rank (canonical Linnaean order), counts the
+     * internal nodes per taxon, orders taxa by count-desc, and EXCLUDES the tips -- the data for the internal-taxonomy
+     * backbone key.
+     */
+    private static boolean testInternalTaxaByRank() {
+        final PhylogenyNode carn1 = internalTax( "order", "Carnivora" );
+        carn1.addAsChild( bareLeaf( "felis" ) );
+        final PhylogenyNode carn2 = internalTax( "order", "Carnivora" ); // Carnivora on a SECOND internal node -> count 2
+        carn2.addAsChild( bareLeaf( "canis" ) );
+        final PhylogenyNode fel = internalTax( "family", "Felidae" );
+        fel.addAsChild( bareLeaf( "panthera" ) );
+        final PhylogenyNode rod = internalTax( "order", "Rodentia" );
+        rod.addAsChild( orderLeaf( "mus", "Rodentia", null ) ); // a TIP annotated at order -> excluded from the key
+        final Phylogeny tree = phylogeny( node( node( carn1, carn2, fel ), rod ) );
+        final java.util.LinkedHashMap<String, java.util.LinkedHashMap<String, Integer>> m = TreePanelUtil
+                .internalTaxaByRank( tree );
+        final java.util.List<String> ranks = new java.util.ArrayList<>( m.keySet() );
+        if ( ( ranks.size() != 2 ) || !"order".equals( ranks.get( 0 ) ) || !"family".equals( ranks.get( 1 ) ) ) {
+            return fail( "internalTaxaByRank must group by rank in canonical order (order, family); got " + ranks );
+        }
+        final java.util.LinkedHashMap<String, Integer> orders = m.get( "order" );
+        if ( !Integer.valueOf( 2 ).equals( orders.get( "Carnivora" ) )
+                || !Integer.valueOf( 1 ).equals( orders.get( "Rodentia" ) ) ) {
+            return fail( "Carnivora must count 2 internal nodes, Rodentia 1; got " + orders );
+        }
+        if ( !"Carnivora".equals( orders.keySet().iterator().next() ) ) {
+            return fail( "taxa within a rank must be ordered by count desc (Carnivora first)" );
+        }
+        if ( ( m.get( "family" ).size() != 1 ) || !m.get( "family" ).containsKey( "Felidae" ) ) {
+            return fail( "the family rank must list exactly Felidae; got " + m.get( "family" ) );
+        }
+        return true;
+    }
+
+    /** An INTERNAL node with own {@code <taxonomy>} = {sci, rank}. */
+    private static PhylogenyNode internalTax( final String rank, final String sci ) {
+        final PhylogenyNode n = new PhylogenyNode();
+        final Taxonomy t = new Taxonomy();
+        t.setScientificName( sci );
+        try {
+            t.setRank( rank );
+        }
+        catch ( final Exception e ) {
+            throw new RuntimeException( e );
+        }
+        n.getNodeData().setTaxonomy( t );
+        return n;
     }
 
     /** A leaf whose node name is {@code node_name} and whose {@code <taxonomy>} is present but NAMELESS (rank only). */

@@ -80,6 +80,8 @@ final class GuiPreferences {
             // a dated phylogram with node-age HPD intervals; see AptxUtil.lookAtSomeTreePropertiesForAptxControlSettings).
             // Persisting it would let a one-time BEAST/dated-tree load flip the global default ON for every later launch.
             boolPref( "show_zebra_stripes", Options::isShowZebraStripes, Options::setShowZebraStripes ),
+            boolPref( "show_internal_taxonomy_key", Options::isShowInternalTaxonomyKey,
+                      Options::setShowInternalTaxonomyKey ),
             boolPref( "tip_labels_below_columns", Options::isTipLabelsBelowColumns, Options::setTipLabelsBelowColumns ),
             // key kept as "flip_vertically" (its original name) so existing saved settings still load after the
             // feature was renamed to "Reverse Tip Order"; do NOT rename the key.

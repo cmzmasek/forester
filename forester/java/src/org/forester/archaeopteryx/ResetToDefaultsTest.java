@@ -94,6 +94,7 @@ public final class ResetToDefaultsTest {
         o.setShowScaleAxis( true );
         o.setShowHpdBars( true );
         o.setShowZebraStripes( true );
+        o.setShowInternalTaxonomyKey( true );
         o.setTipLabelsBelowColumns( true );
         o.setReverseTipOrder( true );
         o.setBoldFoundLabels( true );
@@ -143,6 +144,7 @@ public final class ResetToDefaultsTest {
         ok &= eq( "showScaleAxis", o.isShowScaleAxis(), def.isShowScaleAxis() );
         ok &= eq( "showHpdBars", o.isShowHpdBars(), def.isShowHpdBars() );
         ok &= eq( "showZebraStripes", o.isShowZebraStripes(), def.isShowZebraStripes() );
+        ok &= eq( "showInternalTaxonomyKey", o.isShowInternalTaxonomyKey(), def.isShowInternalTaxonomyKey() );
         ok &= eq( "tipLabelsBelowColumns", o.isTipLabelsBelowColumns(), def.isTipLabelsBelowColumns() );
         ok &= eq( "reverseTipOrder", o.isReverseTipOrder(), def.isReverseTipOrder() );
         ok &= eq( "boldFoundLabels", o.isBoldFoundLabels(), def.isBoldFoundLabels() );

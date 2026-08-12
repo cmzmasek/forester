@@ -177,6 +177,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String DISPLAY_HPD_BARS_TIP = "On a dated (time-scaled) phylogram, draw a bar at each internal node spanning its age uncertainty (the node's phyloXML date min/max).";
     static final String DISPLAY_ZEBRA_STRIPES_LABEL = "Zebra Stripes";
     static final String DISPLAY_ZEBRA_STRIPES_TIP = "Shade every other tip row with a faint band, so a label is easy to track across a wide tree to its annotation columns.";
+    static final String DISPLAY_INTERNAL_TAXONOMY_KEY_LABEL = "Internal Taxonomy Key";
+    static final String DISPLAY_INTERNAL_TAXONOMY_KEY_TIP = "Show a draggable key of the distinct internal-node taxa (from inference / curation / clade annotation), grouped by rank with counts.";
     static final String DISPLAY_REVERSE_TIP_ORDER_LABEL = "Reverse Tip Order";
     static final String DISPLAY_REVERSE_TIP_ORDER_TIP = "Reverse the order of the tips (mirror the tree across the tip axis). In a root-top/bottom orientation the tips run sideways, so this flips them left-to-right. Rectangular layouts only.";
     static final String DISPLAY_TIP_LABELS_BELOW_COLUMNS_LABEL = "Tip Labels Below Columns";
@@ -282,6 +284,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JCheckBoxMenuItem _show_scale_axis_cbmi;
     JCheckBoxMenuItem _show_hpd_bars_cbmi;
     JCheckBoxMenuItem _show_zebra_stripes_cbmi;
+    JCheckBoxMenuItem _show_internal_taxonomy_key_cbmi;
     JCheckBoxMenuItem _tip_labels_below_columns_cbmi;
     JCheckBoxMenuItem _reverse_tip_order_cbmi;
     JCheckBoxMenuItem _bold_found_labels_cbmi;
@@ -533,6 +536,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         } else if (o == _show_hpd_bars_cbmi) {
             updateOptions(getOptions());
         } else if (o == _show_zebra_stripes_cbmi) {
+            updateOptions(getOptions());
+        } else if (o == _show_internal_taxonomy_key_cbmi) {
             updateOptions(getOptions());
         } else if (o == _tip_labels_below_columns_cbmi) {
             updateOptions(getOptions());
@@ -2160,6 +2165,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         options.setShowScaleAxis((_show_scale_axis_cbmi != null) && _show_scale_axis_cbmi.isSelected());
         options.setShowHpdBars((_show_hpd_bars_cbmi != null) && _show_hpd_bars_cbmi.isSelected());
         options.setShowZebraStripes((_show_zebra_stripes_cbmi != null) && _show_zebra_stripes_cbmi.isSelected());
+        options.setShowInternalTaxonomyKey(
+                (_show_internal_taxonomy_key_cbmi != null) && _show_internal_taxonomy_key_cbmi.isSelected());
         options.setTipLabelsBelowColumns((_tip_labels_below_columns_cbmi != null)
                 && _tip_labels_below_columns_cbmi.isSelected());
         options.setReverseTipOrder((_reverse_tip_order_cbmi != null) && _reverse_tip_order_cbmi.isSelected());
@@ -2269,6 +2276,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         setSelected(_show_scale_axis_cbmi, options.isShowScaleAxis());
         setSelected(_show_hpd_bars_cbmi, options.isShowHpdBars());
         setSelected(_show_zebra_stripes_cbmi, options.isShowZebraStripes());
+        setSelected(_show_internal_taxonomy_key_cbmi, options.isShowInternalTaxonomyKey());
         setSelected(_tip_labels_below_columns_cbmi, options.isTipLabelsBelowColumns());
         setSelected(_reverse_tip_order_cbmi, options.isReverseTipOrder());
         setSelected(_bold_found_labels_cbmi, options.isBoldFoundLabels());

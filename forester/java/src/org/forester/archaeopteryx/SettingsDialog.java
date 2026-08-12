@@ -145,6 +145,7 @@ final class SettingsDialog extends JDialog {
         add( c, cb( _mf._show_scale_axis_cbmi ) );
         add( c, cb( _mf._show_hpd_bars_cbmi ) );
         add( c, cb( _mf._show_zebra_stripes_cbmi ) );
+        add( c, cb( _mf._show_internal_taxonomy_key_cbmi ) );
         add( c, cb( _mf._tip_labels_below_columns_cbmi ) );
         add( c, cb( _mf._reverse_tip_order_cbmi ) );
         add( c, cb( _mf._bold_found_labels_cbmi ) );
