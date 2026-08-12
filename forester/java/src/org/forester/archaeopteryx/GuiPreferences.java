@@ -31,6 +31,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
 import org.forester.archaeopteryx.Options.OVERVIEW_PLACEMENT_TYPE;
 import org.forester.archaeopteryx.Options.PHYLOGENY_DISPLAY_TYPE;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
@@ -139,6 +140,10 @@ final class GuiPreferences {
             // the vertical-orientation tip-label angle (45deg vs vertical); a no-op under any non-vertical layout
             enumPref( "tip_label_direction", Options::getTipLabelDirection, Options::setTipLabelDirection,
                       TIP_LABEL_DIRECTION::valueOf ),
+            // "Radial Labels": the node-label direction in the radial (circular/unrooted) layouts -- RADIAL rides the
+            // spoke, HORIZONTAL keeps labels upright; a no-op in the rectangular family
+            enumPref( "node_label_direction", Options::getNodeLabelDirection, Options::setNodeLabelDirection,
+                      NODE_LABEL_DIRECTION::valueOf ),
             // "Color by" palette: only apply a stored name that is still a known palette (a renamed/removed
             // palette is ignored, keeping the default) so a stale file can't select a non-existent palette
             stringPref( "color_palette", Options::getColorPaletteName, Options::setColorPaletteName,

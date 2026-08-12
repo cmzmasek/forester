@@ -90,6 +90,9 @@ public final class GuiPreferencesTest {
             final Options.TIP_LABEL_DIRECTION tip_dir = ( src
                     .getTipLabelDirection() == Options.TIP_LABEL_DIRECTION.VERTICAL )
                             ? Options.TIP_LABEL_DIRECTION.ANGLED : Options.TIP_LABEL_DIRECTION.VERTICAL;
+            final Options.NODE_LABEL_DIRECTION node_dir = ( src
+                    .getNodeLabelDirection() == Options.NODE_LABEL_DIRECTION.HORIZONTAL )
+                            ? Options.NODE_LABEL_DIRECTION.RADIAL : Options.NODE_LABEL_DIRECTION.HORIZONTAL;
             final String palette = altPalette( src.getColorPaletteName() ); // a real, non-current palette name
             final int raster_scale = src.getRasterExportScale() + 2;
             final boolean transparent = !src.isTransparentExportBackground();
@@ -111,6 +114,7 @@ public final class GuiPreferencesTest {
             src.setOvPlacement( ov );
             src.setTreeOrientation( orient );
             src.setTipLabelDirection( tip_dir );
+            src.setNodeLabelDirection( node_dir );
             src.setColorPaletteName( palette );
             src.setRasterExportScale( raster_scale );
             src.setTransparentExportBackground( transparent );
@@ -168,6 +172,9 @@ public final class GuiPreferencesTest {
             }
             if ( dst.getTipLabelDirection() != tip_dir ) {
                 return fail( "tip_label_direction did not round-trip" );
+            }
+            if ( dst.getNodeLabelDirection() != node_dir ) {
+                return fail( "node_label_direction did not round-trip" );
             }
             if ( dst.getTreeOrientation() != orient ) {
                 return fail( "tree_orientation did not round-trip" );

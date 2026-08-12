@@ -105,6 +105,7 @@ public final class ResetToDefaultsTest {
         o.setAbbreviateScientificTaxonNames( true );
         o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP ); // default is ROOT_LEFT
         o.setTipLabelDirection( Options.TIP_LABEL_DIRECTION.HORIZONTAL ); // default is VERTICAL
+        o.setNodeLabelDirection( Options.NODE_LABEL_DIRECTION.RADIAL ); // "Radial Labels"; default is HORIZONTAL
         o.setSupportVisualization( SUPPORT_VISUALIZATION.SIZE_SCALED );
         // search options (reset by init, resynced onto the control-panel checkboxes by Reset to Defaults)
         o.setSearchCaseSensitive( true );
@@ -142,6 +143,7 @@ public final class ResetToDefaultsTest {
         ok &= eq( "displayType", o.getPhylogenyDisplayType(), def.getPhylogenyDisplayType() );
         ok &= eq( "treeOrientation", o.getTreeOrientation(), def.getTreeOrientation() );
         ok &= eq( "tipLabelDirection", o.getTipLabelDirection(), def.getTipLabelDirection() );
+        ok &= eq( "nodeLabelDirection", o.getNodeLabelDirection(), def.getNodeLabelDirection() );
         ok &= eq( "palette", o.getColorPaletteName(), def.getColorPaletteName() );
         ok &= eq( "showScaleGrid", o.isShowScaleGrid(), def.isShowScaleGrid() );
         ok &= eq( "showScaleAxis", o.isShowScaleAxis(), def.isShowScaleAxis() );
