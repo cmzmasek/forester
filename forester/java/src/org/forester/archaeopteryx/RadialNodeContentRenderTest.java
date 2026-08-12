@@ -50,7 +50,71 @@ public final class RadialNodeContentRenderTest {
             return true;
         }
         return labelsOk() && dotsOk() && numbersOk() && collapseOk() && collapseMarkerOk() && collapseOverviewOk()
-                && circularCenteredOk();
+                && circularCenteredOk() && circularPhylogramOk();
+    }
+
+    /** A circular PHYLOGRAM (Draw Phylogram + branch lengths) positions each tip by its DISTANCE-to-root (not all on
+     *  one outer ring like a cladogram), and draws concentric distance RINGS. Checked transform-independently: a tip's
+     *  distance from the ring centre (root) must scale with its distance-to-root; and the faint light-grey ring circles
+     *  must be present on the white theme. */
+    private static boolean circularPhylogramOk() {
+        final boolean[] ok = { true };
+        withFrame( "scale-axis.xml", ( frame, tp, o ) -> {
+            final int w = 820, h = 820;
+            o.setGraphicsExportWhiteBackground( true ); // light theme: rings = light grey on white
+            o.setShowOverview( false );
+            tp.setOvOn( false );
+            tp.getControlPanel().setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM ); // Draw Phylogram
+            frame.showWhole();
+            tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
+            tp.setPreferredSize( new java.awt.Dimension( w, h ) );
+            tp.setSize( w, h );
+            // render the phylogram with the SCALE OFF (no rings) -- positions the tips + the rings-off reference
+            o.setShowScale( false );
+            tp.calcParametersForPainting( w, h );
+            final BufferedImage no_rings = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
+            final org.forester.phylogeny.PhylogenyNode root = tp.getPhylogeny().getRoot();
+            // (1) tips are placed by distance-to-root: find the farthest tip and a clearly-closer one, and assert
+            // their radii-from-centre are in the same ratio as their distances-to-root (a cladogram would put both
+            // on the outer ring -> ratio 1).
+            org.forester.phylogeny.PhylogenyNode far = null, near = null;
+            for ( final org.forester.phylogeny.PhylogenyNode n : tp.getPhylogeny().getExternalNodes() ) {
+                if ( ( far == null ) || ( n.calculateDistanceToRoot() > far.calculateDistanceToRoot() ) ) {
+                    far = n;
+                }
+            }
+            for ( final org.forester.phylogeny.PhylogenyNode n : tp.getPhylogeny().getExternalNodes() ) {
+                if ( ( n.calculateDistanceToRoot() < ( 0.7 * far.calculateDistanceToRoot() ) )
+                        && ( ( near == null ) || ( n.calculateDistanceToRoot() < near.calculateDistanceToRoot() ) ) ) {
+                    near = n;
+                }
+            }
+            if ( ( near == null ) || ( near.calculateDistanceToRoot() <= 0 ) ) {
+                fail( ok, "precondition: need tips at clearly different distances-to-root" );
+                return;
+            }
+            final double r_far = Math.hypot( far.getXcoord() - root.getXcoord(), far.getYcoord() - root.getYcoord() );
+            final double r_near = Math.hypot( near.getXcoord() - root.getXcoord(), near.getYcoord() - root.getYcoord() );
+            final double expected = far.calculateDistanceToRoot() / near.calculateDistanceToRoot();
+            final double actual = r_near > 0 ? ( r_far / r_near ) : 0;
+            if ( Math.abs( actual - expected ) > ( 0.2 * expected ) ) {
+                fail( ok, "circular phylogram tip radius must scale with distance-to-root (radius ratio " + actual
+                        + " vs distance ratio " + expected + ")" );
+            }
+            // (2) turning the SCALE on adds the concentric distance rings on the SAME phylogram layout, so the grey
+            // anti-aliasing ink from branches/labels cancels and the delta is PURELY the rings -- platform-robust
+            // (no absolute threshold). The rings are gated on the "Scale" option, like the rectangular scale bar.
+            o.setShowScale( true );
+            tp.calcParametersForPainting( w, h );
+            final BufferedImage with_rings = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
+            final int g_off = countGrayRings( no_rings );
+            final int g_on = countGrayRings( with_rings );
+            if ( g_on <= ( g_off + 1500 ) ) {
+                fail( ok, "a circular phylogram must draw concentric distance rings when the scale is shown (grey px "
+                        + g_on + " with vs " + g_off + " without)" );
+            }
+        }, ok );
+        return ok[ 0 ];
     }
 
     /** The CIRCULAR ring is centred in the drawing area (so an export/view is centred + fills the canvas, not pushed
@@ -408,6 +472,23 @@ public final class RadialNodeContentRenderTest {
                 final int rgb = img.getRGB( x, y );
                 if ( ( ( ( rgb >> 16 ) & 0xFF ) < 90 ) && ( ( ( rgb >> 8 ) & 0xFF ) < 90 )
                         && ( ( rgb & 0xFF ) < 90 ) ) {
+                    ++n;
+                }
+            }
+        }
+        return n;
+    }
+
+    /** Count of light-medium GREY pixels (all channels in [175,235] and near-equal) -- the faint distance-ring
+     *  circles on a white theme; branches/labels (near-black) and the white background fall outside the band. */
+    private static int countGrayRings( final BufferedImage img ) {
+        int n = 0;
+        for( int y = 0; y < img.getHeight(); ++y ) {
+            for( int x = 0; x < img.getWidth(); ++x ) {
+                final int rgb = img.getRGB( x, y );
+                final int r = ( rgb >> 16 ) & 0xFF, g = ( rgb >> 8 ) & 0xFF, b = rgb & 0xFF;
+                if ( ( r >= 175 ) && ( r <= 235 ) && ( g >= 175 ) && ( g <= 235 ) && ( b >= 175 ) && ( b <= 235 )
+                        && ( Math.abs( r - g ) <= 8 ) && ( Math.abs( g - b ) <= 8 ) ) {
                     ++n;
                 }
             }

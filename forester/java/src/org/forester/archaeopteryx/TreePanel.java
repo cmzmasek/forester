@@ -2347,10 +2347,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         to_pdf,
                         to_graphics_file);
             }
-            double r = 0;
-            if (!n.isRoot()) {
-                r = 1 - (((double) _circ_max_depth - n.calculateDepth()) / _circ_max_depth);
-            }
+            final double r = circularRadiusFraction(n); // depth-based (cladogram) or distance-based (phylogram)
             final double theta = sum / descs.size();
             n.setXcoord((float) (center_x + (r * radius * Math.cos(theta))));
             n.setYcoord((float) (center_y + (r * radius * Math.sin(theta))));
@@ -2381,8 +2378,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             // follow-up (the whole *Lite overview path doesn't honor collapse for layout).
             final Double a = _urt_nodeid_angle_map.get(n.getId());
             if (a != null) {
-                final float r = n.isRoot() ? 0
-                        : 1 - (((float) _circ_max_depth - n.calculateDepth()) / _circ_max_depth);
+                final double r = circularRadiusFraction(n);
                 n.setXSecondary((float) (center_x + (radius * r * Math.cos(a))));
                 n.setYSecondary((float) (center_y + (radius * r * Math.sin(a))));
             }
@@ -2392,10 +2388,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         for (final PhylogenyNode desc : descs) {
             paintCircularsLite(desc, phy, center_x, center_y, radius, g);
         }
-        float r = 0;
-        if (!n.isRoot()) {
-            r = 1 - (((float) _circ_max_depth - n.calculateDepth()) / _circ_max_depth);
-        }
+        final double r = circularRadiusFraction(n);
         final double theta = _urt_nodeid_angle_map.get(n.getId());
         n.setXSecondary((float) (center_x + (radius * r * Math.cos(theta))));
         n.setYSecondary((float) (center_y + (radius * r * Math.sin(theta))));
@@ -4510,6 +4503,54 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         return TreePanelUtil.blend(getTreeColorSet().getBackgroundColor(),
                 getTreeColorSet().getBranchLengthColor(), SCALE_GRID_BLEND);
+    }
+
+    /** Concentric distance RINGS for a circular PHYLOGRAM: faint circles at scale-distance intervals from the ring
+     *  centre, each labelled with its distance value at 12 o'clock, so distance-from-root reads off at any angle (the
+     *  radial analogue of the rectangular scale grid). Drawn BEHIND the tree; a no-op unless the circular layout is a
+     *  phylogram. Labels are decimated so they never stack when the rings are dense. */
+    private void paintCircularScaleRings(final Graphics2D g, final int cx, final int cy, final int radius,
+                                         final boolean to_pdf, final boolean to_graphics_file) {
+        // the rings ARE the circular scale, so they follow the same "Scale" option that draws the bottom bar in the
+        // rectangular/unrooted layouts (the circular phylogram POSITIONS by branch length regardless; only the scale
+        // overlay is gated). Off unless it is a circular phylogram with the scale shown.
+        if (!isCircularPhylogram() || !getOptions().isShowScale() || (radius <= 0)) {
+            return;
+        }
+        final double spacing = getScaleDistance();
+        final double max = getMaxDistanceToRoot();
+        if ((spacing <= 0) || (max <= 0)) {
+            return;
+        }
+        final Color saved = g.getColor();
+        final Stroke saved_stroke = g.getStroke();
+        final Font saved_font = g.getFont();
+        g.setStroke(STROKE_05);
+        g.setFont(getTreeFontSet().getSmallFont());
+        final FontMetrics fm = getTreeFontSet().getFontMetricsSmall();
+        final int line_h = fm.getHeight();
+        final Color ring_c = scaleGridColor(to_pdf, to_graphics_file);
+        final Color label_c = scaleInkColor(to_pdf, to_graphics_file);
+        int last_label_y = Integer.MAX_VALUE; // rings go inner->outer, so labels move UP the top spoke
+        int k = 1;
+        for (double d = spacing; (d <= (max + 1e-9)) && (k <= 1000); d += spacing, ++k) {
+            final int rr = (int) Math.round((d / max) * radius);
+            if (rr <= 0) {
+                continue;
+            }
+            g.setColor(ring_c);
+            g.drawOval(cx - rr, cy - rr, 2 * rr, 2 * rr);
+            final int ly = (cy - rr) + fm.getAscent() + 1; // just inside the ring at the top
+            if ((last_label_y - ly) >= line_h) { // enough vertical gap since the last drawn label
+                final String label = TreePanelUtil.formatCompactNumber(d);
+                g.setColor(label_c);
+                g.drawString(label, cx - (fm.stringWidth(label) / 2f), ly);
+                last_label_y = ly;
+            }
+        }
+        g.setColor(saved);
+        g.setStroke(saved_stroke);
+        g.setFont(saved_font);
     }
 
     final private void paintTreeName(final Graphics2D g,
@@ -9110,6 +9151,31 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return n;
     }
 
+    /** Whether the CIRCULAR layout is drawn as a PHYLOGRAM: a node's ring RADIUS then encodes its distance-from-root
+     *  (branch lengths), like the unrooted layout, instead of topological depth. Requires "Draw Phylogram" on, branch
+     *  lengths present, and a positive tree height. */
+    private boolean isCircularPhylogram() {
+        return (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR) && getControlPanel().isDrawPhylogram()
+                && isPhyHasBranchLengths() && (getMaxDistanceToRoot() > 0);
+    }
+
+    /** A node's fraction [0,1] of the ring RADIUS in the circular layout: the root at the centre (0); in a PHYLOGRAM
+     *  its distance-to-root over the tree height (branch-length scaled); in a CLADOGRAM the tips on the outer ring (1)
+     *  and internal/collapsed nodes by topological depth. Used by the main paint AND the overview so both agree. */
+    private double circularRadiusFraction(final PhylogenyNode node) {
+        if (node.isRoot()) {
+            return 0;
+        }
+        if (isCircularPhylogram()) {
+            final double f = node.calculateDistanceToRoot() / getMaxDistanceToRoot();
+            return (f < 0) ? 0 : ((f > 1) ? 1 : f); // clamp a root-branch / rounding overshoot onto the ring
+        }
+        if (node.isExternal()) {
+            return 1.0; // cladogram: all tips on the outer ring
+        }
+        return 1 - (((double) _circ_max_depth - node.calculateDepth()) / _circ_max_depth);
+    }
+
     /** Assigns each displayed tip its ring angle (advancing {@code angle[0]} by {@code angle_inc}), in tree order:
      *  a visible external goes on the outer ring; a collapsed clade-root is positioned at its own depth radius (its
      *  incoming branch ends there). NB no collapse triangle/marker is drawn radially yet (paintNodeBox and the
@@ -9120,8 +9186,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                                   final int[] index) {
         if (node.isCollapse()) {
             final double m = angle[0];
-            final double r = node.isRoot() ? 0
-                    : (1 - (((double) _circ_max_depth - node.calculateDepth()) / _circ_max_depth));
+            final double r = circularRadiusFraction(node); // collapsed clade-root at its depth/distance radius
             node.setXcoord((float) (cx + (r * radius * Math.cos(m))));
             node.setYcoord((float) (cy + (r * radius * Math.sin(m))));
             _urt_nodeid_angle_map.put(node.getId(), m);
@@ -9129,8 +9194,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         else if (node.isExternal()) {
             final double m = angle[0];
-            node.setXcoord((float) (cx + (radius * Math.cos(m))));
-            node.setYcoord((float) (cy + (radius * Math.sin(m))));
+            final double r = circularRadiusFraction(node); // cladogram: outer ring (1); phylogram: distance-to-root
+            node.setXcoord((float) (cx + (r * radius * Math.cos(m))));
+            node.setYcoord((float) (cy + (r * radius * Math.sin(m))));
             _urt_nodeid_angle_map.put(node.getId(), m);
             _urt_nodeid_index_map.put(node.getId(), index[0]++);
             angle[0] += angle_inc;
@@ -9155,8 +9221,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         double current_angle = starting_angle;
         for (final PhylogenyNodeIterator it = phy.iteratorExternalForward(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
-            n.setXSecondary((float) (center_x + (radius * Math.cos(current_angle))));
-            n.setYSecondary((float) (center_y + (radius * Math.sin(current_angle))));
+            final double r = circularRadiusFraction(n); // outer ring (cladogram) or distance-to-root (phylogram)
+            n.setXSecondary((float) (center_x + (r * radius * Math.cos(current_angle))));
+            n.setYSecondary((float) (center_y + (r * radius * Math.sin(current_angle))));
             _urt_nodeid_angle_map.put(n.getId(), current_angle);
             current_angle += (TWO_PI / circ_num_ext_nodes);
         }
@@ -9425,6 +9492,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     getControlPanel().setDynamicHidingIsOn(false);
                 }
             }
+            // concentric distance rings behind the tree (a no-op unless this is a circular PHYLOGRAM)
+            paintCircularScaleRings(g, center_x, center_y, radius > 0 ? radius : 0, to_pdf, to_graphics_file);
             paintCircular(_phylogeny, getStartingAngle(), center_x, center_y, radius > 0 ? radius : 0, g, to_pdf,
                     to_graphics_file);
             paintRadialOverlays(g, to_pdf, to_graphics_file); // dots + pies + hover preview + halos (coords set above)
