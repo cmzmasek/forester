@@ -3,8 +3,10 @@ Archaeopteryx
 
 Archaeopteryx is an interactive viewer and editor for phylogenetic trees, and is
 part of the **forester** toolkit. It reads phyloXML, Newick/New Hampshire
-(NH/NHX), and Nexus trees, and supports rich annotation, on-the-fly coloring, and
-export to PDF, SVG, EPS, PNG, and other graphics formats.
+(NH/NHX), and Nexus trees — including annotated
+[**BEAST / BEAST X** output](#beast-and-beast-x-output) — and supports rich
+annotation, on-the-fly coloring, and export to PDF, SVG, EPS, PNG, and other
+graphics formats.
 
 
 Download & Install
@@ -118,6 +120,38 @@ For very large trees, give the JVM more memory with `-Xmx`:
 ```
 java -Xmx4g -jar forester.jar mytree.xml
 ```
+
+
+BEAST and BEAST X Output
+------------------------
+
+Archaeopteryx reads the annotated trees produced by **BEAST**, **BEAST 2**, and
+**BEAST X** (the current BEAST 2 release line), including **TreeAnnotator**
+maximum-clade-credibility (MCC) summaries. Both output shapes are supported:
+
+- annotated **Nexus** (TreeAnnotator's `.tree` / `.trees` output), and
+- annotated **Newick / NHX** with FigTree-style `[&key=value, ...]` comment
+  blocks on nodes and branches.
+
+Just open the file — parsing of these tags is **on by default** (toggle under
+**Settings → File Reading → "Parse BEAST-style extended Newick/Nexus tags"**).
+Each annotation is mapped onto the viewer's existing display features:
+
+| BEAST annotation | Becomes | Turn it on with |
+| --- | --- | --- |
+| `posterior` | Branch support (confidence) | **Confidence Values**; support coloring / symbols |
+| node age `height` / `height_median` / `height_mean` + `height_95%_HPD={lo,hi}` (or `height_range`) | Node age with a 95% HPD interval | **Node Age Bars (HPD)** — auto-enabled on load for a dated tree with HPD intervals |
+| discrete / geographic traits (e.g. a phylogeographic `location`) with posterior state sets | **Ancestral-state pie charts** | the **"Ancestral pie:"** dropdown (appears automatically when the tree carries such a trait) |
+| any other field (`rate`, `length_*`, custom traits, …) | A node property `beast:<key>` | **Color by**, **Size by**, and **Annotation Columns** (numeric traits render as gradients / bars) |
+
+Nothing is discarded: recognized fields become native structures (support, node
+dates, pies), and every remaining field is preserved as a `beast:*` property you
+can color, size, or tabulate. A malformed field is skipped rather than aborting
+the load, so real-world TreeAnnotator files open cleanly.
+
+To turn a dated MCC tree into a time tree, display it as a **phylogram** (the
+`P`/`A` buttons) with **Node Age Bars (HPD)** on; add the **Scale Axis** for a
+labeled time axis.
 
 
 For Developers
