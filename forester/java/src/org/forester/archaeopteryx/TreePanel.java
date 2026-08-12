@@ -6840,7 +6840,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // which legend actually holds the top-right slot: the color/annotation legends are SUPPRESSED radially (see
         // the legend tail), so only the rank legend (which draws in every layout) occupies it there
         final boolean top_right_taken = hasRankLegend()
-                || (!isRadialLayout() && (isColorByProperty() || hasAnnotationColumnLegend()));
+                || (!isRadialLayout() && isColorByProperty()) || annotationLegendVisible();
         if (top_right_taken) {
             return new Point(Math.max(bounds.x, bounds.x + 10),
                     Math.max(bounds.y, (bounds.y + bounds.height) - box_h - 10)); // bottom-left
@@ -7277,6 +7277,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return annotationLegendColumn() >= 0;
     }
 
+    /** Whether the annotation-column legend is actually drawn in the current layout: the columns render as tip-aligned
+     *  columns (rectangular family) OR concentric rings (circular), so the legend is shown in both; it is suppressed in
+     *  the UNROOTED layout, where the columns/rings aren't drawn. */
+    private boolean annotationLegendVisible() {
+        return hasAnnotationColumnLegend()
+                && (!isRadialLayout() || (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR));
+    }
+
     /** A column has a drawable legend right now: a legend-bearing type whose scheme is present and non-empty (a
      *  column whose visible values vanished after navigating into a subtree has an empty scheme and no legend to
      *  show), and -- for a BAR, whose length key needs a real numeric range -- a gradient rather than a degenerate
@@ -7359,9 +7367,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return -1;
     }
 
-    /** Toggles the color key (legend) for the annotation column whose header was clicked. */
+    /** Toggles the color key (legend) for the annotation column whose header (rectangular) or ring (circular) was
+     *  clicked. */
     final boolean handleAnnotationHeaderClick(final MouseEvent e) {
-        final int col = annotationHeaderColumnAt(e.getX(), e.getY());
+        final int col = (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR)
+                ? circularAnnotationRingAt(e.getX(), e.getY())
+                : annotationHeaderColumnAt(e.getX(), e.getY());
         if (col < 0) {
             return false;
         }
@@ -7495,6 +7506,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 || (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED)) {
             return 0;
         }
+        return sumAnnotationColumnWidths();
+    }
+
+    /** The total depth (px) of the annotation-column stack: a leading gap plus each column's width and trailing gap.
+     *  Layout-agnostic (callers gate on layout); shared by the rectangular {@link #annotationColumnsWidth()} and the
+     *  circular {@link #circularAnnotationRingsReserve()} so the two can never disagree on the stack size. */
+    private int sumAnnotationColumnWidths() {
         int w = ANN_COL_GAP;
         for (int i = 0; i < _annotation_columns.size(); ++i) {
             w += annotationColumnWidth(i) + annotationColumnGapAfter(i);
@@ -8157,7 +8175,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (!hasCladeBands() || (radius <= 0)) {
             return;
         }
-        final double r_outer = radius + getLongestExtNodeInfo() + CLADE_BAND_RIGHT_PAD; // just past the tips + labels
+        // just past the tips + labels AND any annotation rings (so the clade marks sit outside the ring stack)
+        final double r_outer = radius + getLongestExtNodeInfo() + circularAnnotationRingsReserve() + CLADE_BAND_RIGHT_PAD;
         final int displayed = countCircularDisplayedTips(_phylogeny.getRoot());
         final double half_step = (displayed > 0) ? (Math.PI / displayed) : 0; // half a tip's angular slice
         for (final CladeBand band : _clade_bands) {
@@ -8265,6 +8284,140 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.rotate(m, lx, ly);
         TreePanel.drawString(text, (float) (lx - (fm.stringWidth(text) / 2.0)),
                 (float) (ly + (fm.getAscent() / 2.0) - (fm.getDescent() / 2.0)), g);
+        g.setTransform(saved);
+    }
+
+    /** Radial space (px) reserved OUTSIDE the tip labels for the concentric annotation-column RINGS in the circular
+     *  layout: the leading gap plus each ring's width and inter-ring gap (the polar analogue of the horizontal column
+     *  stack the rectangular layout reserves). 0 when not circular or no annotation columns are shown. */
+    private int circularAnnotationRingsReserve() {
+        if ((getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR) || !hasAnnotationColumns()) {
+            return 0;
+        }
+        return sumAnnotationColumnWidths();
+    }
+
+    /** The radius (px from the ring centre) where the annotation-column rings START: just past the tips + labels. */
+    private double circularAnnotationRingStart(final int radius) {
+        return radius + getLongestExtNodeInfo() + ANN_COL_GAP;
+    }
+
+    /** Annotation columns for the CIRCULAR layout -- the polar analogue of {@link #paintAnnotationColumns}: each column
+     *  becomes a concentric RING outside the tips + labels, each tip's cell an arc segment over that tip's angular slice
+     *  (colour strip / heat-map / matrix = a filled sector; bar = a sector grown radially by the value; text = a radial
+     *  label). Each ring carries its field-name header as a tangential label at the fan seam. cx/cy = the ring centre,
+     *  radius = the tip ring radius. */
+    private void paintAnnotationColumnsCircular(final Graphics2D g, final int cx, final int cy, final int radius) {
+        if (!hasAnnotationColumns() || (radius <= 0)) {
+            return;
+        }
+        final java.util.List<PhylogenyNode> tips = visibleExternalTips();
+        final int displayed = countCircularDisplayedTips(_phylogeny.getRoot());
+        final double half_step = (displayed > 0) ? (Math.PI / displayed) : 0; // half a tip's angular slice
+        final Color fg = getTreeColorSet().getSequenceColor();
+        final Color saved_color = g.getColor();
+        final Font saved_font = g.getFont();
+        double r = circularAnnotationRingStart(radius);
+        for (int i = 0; i < _annotation_columns.size(); ++i) {
+            final int w = annotationColumnWidth(i);
+            final double r0 = r, r1 = r + w;
+            final AnnotationColumns.Type type = _annotation_columns.getColumn(i).getType();
+            for (final PhylogenyNode t : tips) {
+                final Double a = _urt_nodeid_angle_map.get(t.getId());
+                if (a == null) {
+                    continue; // a tip with no circular angle (hidden under a collapse) has no cell
+                }
+                final double a0 = a - half_step, a1 = a + half_step;
+                switch (type) {
+                    case COLOR_STRIP:
+                    case HEATMAP:
+                    case MATRIX: {
+                        final Color c = _annotation_columns.cellColor(t, i);
+                        if (c != null) {
+                            g.setColor(c);
+                            g.fill(annularSector(cx, cy, r0, r1, a0, a1));
+                        }
+                        break;
+                    }
+                    case BAR: {
+                        // a present value always fills at least a 1px-thick stub (so the minimum value is visible and
+                        // distinct from a missing value, which is NaN and fills nothing); the bar grows RADIALLY outward
+                        final double f = _annotation_columns.barFraction(t, i);
+                        if (!Double.isNaN(f)) {
+                            g.setColor(fg);
+                            g.fill(annularSector(cx, cy, r0, Math.max(r0 + 1, r0 + (f * w)), a0, a1));
+                        }
+                        break;
+                    }
+                    case TEXT: {
+                        final String v = _annotation_columns.cellText(t, i);
+                        if (v.length() > 0) {
+                            g.setColor(fg);
+                            drawRadialTextCentered(g, v, cx, cy, r0, a); // rides the spoke outward from the ring's inner edge
+                        }
+                        break;
+                    }
+                }
+            }
+            // the field-name header: a horizontal label centred over the tree at the TOP (12 o'clock), at the ring's
+            // own radius so the stack reads top-to-bottom by ring -- legible and within its band (unlike a tangential
+            // label at the seam, whose chord crosses neighbouring thin rings)
+            final String header = _annotation_columns.getColumn(i).getHeader();
+            if (header.length() > 0) {
+                g.setColor(fg);
+                drawTangentialText(g, header, cx, cy, (r0 + r1) / 2.0, -HALF_PI);
+            }
+            r = r1 + annotationColumnGapAfter(i);
+        }
+        g.setColor(saved_color);
+        g.setFont(saved_font);
+    }
+
+    /** The annotation column whose RING band contains the click (circular layout), or -1. Lets a click anywhere on a
+     *  ring focus that column's colour key -- the polar analogue of clicking a rectangular column header. */
+    private int circularAnnotationRingAt(final int x, final int y) {
+        if (!hasAnnotationColumns() || (getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR)) {
+            return -1;
+        }
+        final double pref_w = getPreferredSize().getWidth(), pref_h = getPreferredSize().getHeight();
+        final int radius = (int) ((Math.min(pref_w, pref_h) / 2)
+                - (MOVE + getLongestExtNodeInfo() + circularCladeBandReserve() + circularAnnotationRingsReserve()));
+        if (radius <= 0) {
+            return -1;
+        }
+        final double rr = Math.hypot(x - (pref_w / 2), y - (pref_h / 2));
+        double r = circularAnnotationRingStart(radius);
+        for (int i = 0; i < _annotation_columns.size(); ++i) {
+            final int w = annotationColumnWidth(i);
+            if ((rr >= r) && (rr <= (r + w))) {
+                return i;
+            }
+            r += w + annotationColumnGapAfter(i);
+        }
+        return -1;
+    }
+
+    /** Draws {@code text} centred on the point at radius {@code r} / device angle {@code angle}, rotated TANGENTIALLY
+     *  (reading along the ring, perpendicular to the spoke) and kept upright. Used for the circular ring headers. */
+    private void drawTangentialText(final Graphics2D g, final String text, final int cx, final int cy, final double r,
+                                    final double angle) {
+        if (ForesterUtil.isEmpty(text)) {
+            return;
+        }
+        g.setFont(getTreeFontSet().getSmallFont());
+        final FontMetrics fm = getTreeFontSet().getFontMetricsSmall();
+        double m = (angle + HALF_PI) % TWO_PI; // the tangent direction
+        if (m < 0) {
+            m += TWO_PI;
+        }
+        if ((m > HALF_PI) && (m < ONEHALF_PI)) {
+            m -= PI; // keep upright
+        }
+        final double px = cx + (r * Math.cos(angle)), py = cy + (r * Math.sin(angle));
+        final AffineTransform saved = g.getTransform();
+        g.rotate(m, px, py);
+        TreePanel.drawString(text, (float) (px - (fm.stringWidth(text) / 2.0)),
+                (float) (py + (fm.getAscent() / 2.0) - (fm.getDescent() / 2.0)), g);
         g.setTransform(saved);
     }
 
@@ -9714,7 +9867,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final double pref_w = getPreferredSize().getWidth();
             final double pref_h = getPreferredSize().getHeight();
             final int radius = (int) ((Math.min(pref_w, pref_h) / 2)
-                    - (MOVE + getLongestExtNodeInfo() + circularCladeBandReserve()));
+                    - (MOVE + getLongestExtNodeInfo() + circularCladeBandReserve() + circularAnnotationRingsReserve()));
             final int center_x = (int) (pref_w / 2);
             final int center_y = (int) (pref_h / 2);
             _dynamic_hiding_factor = 0;
@@ -9733,6 +9886,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             paintCircularScaleRings(g, center_x, center_y, radius > 0 ? radius : 0, to_pdf, to_graphics_file);
             paintCircular(_phylogeny, getStartingAngle(), center_x, center_y, radius > 0 ? radius : 0, g, to_pdf,
                     to_graphics_file);
+            // tip-aligned annotation columns as concentric rings (strip/heat-map/bar/text), just past the tips + labels
+            paintAnnotationColumnsCircular(g, center_x, center_y, radius > 0 ? radius : 0);
             // clade bands as polar sectors/arcs, over the tree (coords set above), like the rectangular wash
             paintCladeBandsCircular(g, center_x, center_y, radius > 0 ? radius : 0);
             paintRadialOverlays(g, to_pdf, to_graphics_file); // dots + pies + hover preview + halos (coords set above)
@@ -9762,12 +9917,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 paintOvRectangle(g);
             }
         }
-        // The Color-by / Size-by tip DOTS now render in radial layouts too (paintRadialPropertyDots), so their legends
-        // are keyed and shown in every layout. Only the tip-aligned annotation COLUMNS are still not drawn radially,
-        // so ONLY the annotation-column legend is suppressed there (its bounds nulled so a stale hit region from a
-        // prior rectangular paint isn't clickable). The RANK legend keys BRANCH colors, which also render radially.
-        final boolean radial = isRadialLayout();
-        final boolean draw_annotation_legend = hasAnnotationColumnLegend() && !radial;
+        // The Color-by / Size-by tip DOTS render in every layout (paintRadialPropertyDots), so their legends are keyed
+        // and shown everywhere. The annotation COLUMNS render as tip-aligned columns (rectangular) or concentric RINGS
+        // (circular), so their legend is shown there too and suppressed ONLY in the UNROOTED layout, where the columns
+        // aren't drawn (its bounds nulled so a stale hit region from a prior paint isn't clickable). The RANK legend
+        // keys BRANCH colors, which render in every layout.
+        final boolean draw_annotation_legend = annotationLegendVisible();
         final boolean draw_color_legend = isColorByProperty();
         if (draw_annotation_legend || draw_color_legend || hasRankLegend()) {
             final boolean to_screen = !(to_pdf || to_graphics_file);

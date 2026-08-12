@@ -51,7 +51,54 @@ public final class RadialNodeContentRenderTest {
         }
         return labelsOk() && dotsOk() && numbersOk() && collapseOk() && collapseMarkerOk() && collapseOverviewOk()
                 && circularCenteredOk() && circularPhylogramOk() && overviewCollapseLayoutOk()
-                && circularCladeBandsOk();
+                && circularCladeBandsOk() && circularAnnotationRingsOk();
+    }
+
+    /** Annotation columns render as concentric RINGS in the circular layout (the radial analogue of the rectangular
+     *  tip-aligned columns): adding colour-strip + heat-map columns adds a lot of coloured ink over the columns-off
+     *  baseline, AND a click on a ring focuses that column's colour key (the polar analogue of a header click). */
+    private static boolean circularAnnotationRingsOk() {
+        final boolean[] ok = { true };
+        withFrame( "annotation-columns.xml", ( frame, tp, o ) -> {
+            final int w = 900, h = 900;
+            o.setGraphicsExportWhiteBackground( true );
+            o.setShowOverview( false );
+            tp.setOvOn( false );
+            frame.showWhole();
+            tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
+            tp.setPreferredSize( new java.awt.Dimension( w, h ) );
+            tp.setSize( w, h );
+            tp.clearAnnotationColumns();
+            tp.calcParametersForPainting( w, h );
+            final int v_off = countVivid( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) );
+            final java.util.List<AnnotationColumns.ColumnSpec> specs = new java.util.ArrayList<>();
+            specs.add( new AnnotationColumns.ColumnSpec( "data:host", AnnotationColumns.Type.COLOR_STRIP ) );
+            specs.add( new AnnotationColumns.ColumnSpec( "data:segment", AnnotationColumns.Type.COLOR_STRIP ) );
+            specs.add( new AnnotationColumns.ColumnSpec( "data:viral_load", AnnotationColumns.Type.HEATMAP ) );
+            tp.setAnnotationColumns( specs );
+            tp.calcParametersForPainting( w, h );
+            final int v_on = countVivid( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) );
+            if ( v_on <= ( v_off + 2000 ) ) {
+                fail( ok, "circular annotation rings must add coloured ink (vivid on " + v_on + " vs off " + v_off
+                        + ")" );
+            }
+            // a click ON a ring focuses that column's legend -- sweep the 3-o'clock spoke outward until one lands in a
+            // legend-bearing ring band (radius-only hit test, so any tip angle works); exercises circularAnnotationRingAt
+            boolean focused = false;
+            for ( int r = 1; r < ( Math.min( w, h ) / 2 ); r += 2 ) {
+                final java.awt.event.MouseEvent click = new java.awt.event.MouseEvent( tp,
+                        java.awt.event.MouseEvent.MOUSE_CLICKED, 0L, 0, ( w / 2 ) + r, h / 2, 1, false );
+                if ( tp.handleAnnotationHeaderClick( click ) && tp.hasFocusedAnnotationColumn() ) {
+                    focused = true;
+                    break;
+                }
+            }
+            if ( !focused ) {
+                fail( ok, "a click on an annotation ring must focus that column's legend (circular)" );
+            }
+            tp.clearAnnotationColumns();
+        }, ok );
+        return ok[ 0 ];
     }
 
     /** Clade bands render as POLAR arcs/sectors in the circular layout (the radial analogue of the rectangular clade
