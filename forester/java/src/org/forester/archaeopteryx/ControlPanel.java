@@ -3005,6 +3005,12 @@ final class ControlPanel extends JPanel implements ActionListener {
         _mainpanel.validate();
         _mainpanel.getCurrentTreePanel().calcParametersForPainting(_mainpanel.getSizeOfViewport().width,
                 _mainpanel.getSizeOfViewport().height);
+        // radial "fit to window": re-fit the square radial canvas to the viewport (zoom back to whole)
+        final PHYLOGENY_GRAPHICS_TYPE gt = _mainpanel.getCurrentTreePanel().getPhylogenyGraphicsType();
+        if ((gt == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR) || (gt == PHYLOGENY_GRAPHICS_TYPE.UNROOTED)) {
+            _mainpanel.getCurrentTreePanel().fitRadialTo(_mainpanel.getSizeOfViewport().width,
+                    _mainpanel.getSizeOfViewport().height);
+        }
         _mainpanel.getCurrentTreePanel().resetPreferredSize();
         _mainpanel.adjustJScrollPane();
         _mainpanel.getCurrentTreePanel().repaint();
@@ -3012,6 +3018,10 @@ final class ControlPanel extends JPanel implements ActionListener {
         _mainpanel.validate();
         _mainpanel.getCurrentTreePanel().calcParametersForPainting(_mainpanel.getSizeOfViewport().width,
                 _mainpanel.getSizeOfViewport().height);
+        if ((gt == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR) || (gt == PHYLOGENY_GRAPHICS_TYPE.UNROOTED)) {
+            _mainpanel.getCurrentTreePanel().fitRadialTo(_mainpanel.getSizeOfViewport().width,
+                    _mainpanel.getSizeOfViewport().height);
+        }
         _mainpanel.getCurrentTreePanel().resetPreferredSize();
         _mainpanel.adjustJScrollPane();
         _mainpanel.getCurrentTreePanel().repaint();
@@ -3277,9 +3287,41 @@ final class ControlPanel extends JPanel implements ActionListener {
         return sb.toString();
     }
 
+    /** Radial zoom: scale the single radial-canvas diameter (decoupled from the rectangular x/y-distance), keeping the
+     *  relative scroll position on both axes so the zoom stays roughly centred. Returns true when it handled a radial
+     *  layout (so the caller returns), false otherwise. Every radial zoom gesture (X/Y buttons + wheel) routes here. */
+    private boolean zoomRadial(final TreePanel tp, final float factor) {
+        final PHYLOGENY_GRAPHICS_TYPE t = tp.getPhylogenyGraphicsType();
+        if ((t != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR) && (t != PHYLOGENY_GRAPHICS_TYPE.UNROOTED)) {
+            return false;
+        }
+        final JScrollBar hsb = getMainPanel().getCurrentScrollPane().getHorizontalScrollBar();
+        final JScrollBar vsb = getMainPanel().getCurrentScrollPane().getVerticalScrollBar();
+        final double hc = (hsb.getMaximum() - hsb.getMinimum()) / (hsb.getValue() + (hsb.getVisibleAmount() / 2.0));
+        final double vc = (vsb.getMaximum() - vsb.getMinimum()) / (vsb.getValue() + (vsb.getVisibleAmount() / 2.0));
+        tp.multiplyRadialDiameter(factor);
+        getMainPanel().adjustJScrollPane();
+        tp.resetPreferredSize();
+        getMainPanel().getCurrentScrollPane().getViewport().validate();
+        if (hc > 0) {
+            hsb.setValue(ForesterUtil.roundToInt(((hsb.getMaximum() - hsb.getMinimum()) / hc)
+                    - (hsb.getVisibleAmount() / 2.0)));
+        }
+        if (vc > 0) {
+            vsb.setValue(ForesterUtil.roundToInt(((vsb.getMaximum() - vsb.getMinimum()) / vc)
+                    - (vsb.getVisibleAmount() / 2.0)));
+        }
+        tp.resetPreferredSize();
+        tp.updateOvSizes();
+        return true;
+    }
+
     final void zoomInX(final float factor, final float x_correction_factor) {
         final JScrollBar sb = depthScrollBar();
         final TreePanel treepanel = getMainPanel().getCurrentTreePanel();
+        if (zoomRadial(treepanel, factor)) {
+            return;
+        }
         treepanel.multiplyUrtFactor(1f);
         if ((treepanel.getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR)
                 || (treepanel.getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED)
@@ -3346,6 +3388,9 @@ final class ControlPanel extends JPanel implements ActionListener {
     final void zoomInY(final float factor) {
         final JScrollBar sb = breadthScrollBar();
         final TreePanel treepanel = getMainPanel().getCurrentTreePanel();
+        if (zoomRadial(treepanel, factor)) {
+            return;
+        }
         treepanel.multiplyUrtFactor(1.1f);
         final double x = (sb.getMaximum() - sb.getMinimum()) / (sb.getValue() + (sb.getVisibleAmount() / 2.0));
         treepanel.setYdistance((treepanel.getYdistance() * factor));
@@ -3360,6 +3405,9 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     final void zoomOutX(final float factor, final float x_correction_factor) {
         final TreePanel treepanel = getMainPanel().getCurrentTreePanel();
+        if (zoomRadial(treepanel, factor)) {
+            return;
+        }
         treepanel.multiplyUrtFactor(1f);
         if ((treepanel.getXdistance() * factor) > 0.0) {
             final JScrollBar sb = depthScrollBar();
@@ -3403,6 +3451,9 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     final void zoomOutY(final float factor) {
         final TreePanel treepanel = getMainPanel().getCurrentTreePanel();
+        if (zoomRadial(treepanel, factor)) {
+            return;
+        }
         treepanel.multiplyUrtFactor(0.9f);
         if ((treepanel.getYdistance() * factor) > 0.0) {
             final JScrollBar sb = breadthScrollBar();

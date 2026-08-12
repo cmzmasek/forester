@@ -2087,6 +2087,12 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 getCurrentTreePanel().getControlPanel().setDrawPhylogramEnabled(false);
             }
             getCurrentTreePanel().setPhylogenyGraphicsType(getOptions().getPhylogenyGraphicsType());
+            if ((new_type == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR) || (new_type == PHYLOGENY_GRAPHICS_TYPE.UNROOTED)) {
+                // the showWhole above ran while the panel was still the OLD (rectangular) type, so it laid out a
+                // non-square preferred size; now that the panel IS radial, re-fit its SQUARE canvas to the viewport
+                // (otherwise the first radial frame draws in the stale rectangular canvas -- off-centre until a re-fit).
+                getCurrentTreePanel().getControlPanel().showWhole();
+            }
             updateScreenTextAntialias(getMainPanel().getTreePanels());
             if (getCurrentTreePanel().getControlPanel().getDynamicallyHideData() != null) {
                 if (new_type == PHYLOGENY_GRAPHICS_TYPE.UNROOTED) {

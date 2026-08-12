@@ -244,6 +244,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private static final BasicStroke STROKE_05 = new BasicStroke(0.5f);
     private static final BasicStroke STROKE_075 = new BasicStroke(0.75f);
     private static final BasicStroke STROKE_1 = new BasicStroke(1f);
+    // radial (circular/unrooted) square-canvas side bounds (px): a floor so it never vanishes, a cap so an extreme
+    // zoom can't blow up the preferred size, and a fallback for when the viewport isn't measurable yet.
+    private static final int MIN_RADIAL_DIAMETER = 80;
+    private static final int MAX_RADIAL_DIAMETER = 20000;
+    private static final int DEFAULT_RADIAL_DIAMETER = 600;
     private static final BasicStroke STROKE_2 = new BasicStroke(2f);
 
 
@@ -400,6 +405,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private File _treefile = null;
     private float _urt_factor = 1;
     private float _urt_factor_ov = 1;
+    // the radial (circular/unrooted) layout is drawn in a SQUARE canvas of this side (px); it is the single knob for
+    // radial size -- set to fit the viewport by showWhole, scaled by radial zoom -- decoupled from the rectangular
+    // x/y-distance machinery. 0 = not yet initialised (lazy-fit on first use). See resetPreferredSize/setUpUrtFactor.
+    private int _radial_diameter = 0;
     final private HashMap<Long, Double> _urt_nodeid_angle_map = new HashMap<>();
     final private HashMap<Long, Integer> _urt_nodeid_index_map = new HashMap<>();
     private double _urt_starting_angle = (float) (Math.PI
@@ -587,16 +596,24 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 }
             }
         } else {
+            // a radial layout has ONE uniform zoom (the square canvas), so a plain wheel notch scales it ONCE via
+            // zoomInX/zoomOutX -- calling zoomInY/zoomOutY too would double it; the rectangular layout zooms both axes.
+            final boolean radial = (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR)
+                    || (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED);
             if (notches < 0) {
                 for (int i = 0; i < (-notches); ++i) {
                     getControlPanel().zoomInX(AptxConstants.WHEEL_ZOOM_IN_FACTOR,
                             AptxConstants.WHEEL_ZOOM_IN_X_CORRECTION_FACTOR);
-                    getControlPanel().zoomInY(AptxConstants.WHEEL_ZOOM_IN_FACTOR);
+                    if (!radial) {
+                        getControlPanel().zoomInY(AptxConstants.WHEEL_ZOOM_IN_FACTOR);
+                    }
                     getControlPanel().displayedPhylogenyMightHaveChanged(false);
                 }
             } else {
                 for (int i = 0; i < notches; ++i) {
-                    getControlPanel().zoomOutY(AptxConstants.WHEEL_ZOOM_OUT_FACTOR);
+                    if (!radial) {
+                        getControlPanel().zoomOutY(AptxConstants.WHEEL_ZOOM_OUT_FACTOR);
+                    }
                     getControlPanel().zoomOutX(AptxConstants.WHEEL_ZOOM_OUT_FACTOR,
                             AptxConstants.WHEEL_ZOOM_OUT_X_CORRECTION_FACTOR);
                     getControlPanel().displayedPhylogenyMightHaveChanged(false);
@@ -1668,7 +1685,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged(false);
                 handled = true;
             } else if ((e.getKeyCode() == KeyEvent.VK_SUBTRACT) || (e.getKeyCode() == KeyEvent.VK_MINUS)) {
-                getMainPanel().getControlPanel().zoomOutY(AptxConstants.WHEEL_ZOOM_OUT_FACTOR);
+                // a radial layout has ONE uniform zoom, so scale it ONCE (zoomOutX) -- calling zoomOutY too would
+                // double it (same reason the wheel plain-zoom is gated); the rectangular layout zooms both axes
+                if (!isRadialLayout()) {
+                    getMainPanel().getControlPanel().zoomOutY(AptxConstants.WHEEL_ZOOM_OUT_FACTOR);
+                }
                 getMainPanel().getControlPanel().zoomOutX(AptxConstants.WHEEL_ZOOM_OUT_FACTOR,
                         AptxConstants.WHEEL_ZOOM_OUT_X_CORRECTION_FACTOR);
                 getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged(false);
@@ -1676,7 +1697,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             } else if (plusPressed(e.getKeyCode())) {
                 getMainPanel().getControlPanel().zoomInX(AptxConstants.WHEEL_ZOOM_IN_FACTOR,
                         AptxConstants.WHEEL_ZOOM_IN_FACTOR);
-                getMainPanel().getControlPanel().zoomInY(AptxConstants.WHEEL_ZOOM_IN_FACTOR);
+                if (!isRadialLayout()) {
+                    getMainPanel().getControlPanel().zoomInY(AptxConstants.WHEEL_ZOOM_IN_FACTOR);
+                }
                 getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged(false);
                 handled = true;
             }
@@ -5089,8 +5112,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final private void setUpUrtFactor() {
-        final int d = getVisibleRect().width < getVisibleRect().height ? getVisibleRect().width
-                : getVisibleRect().height;
+        // radial: scale the unrooted spread by the radial-zoom diameter (reserving the label margin on both sides so
+        // the outermost labels fit the square), so it grows/shrinks in lockstep with the circular radius. Non-radial:
+        // the urt factor is unused, keep the old viewport-based value.
+        final int d = isRadialLayout()
+                ? Math.max(MIN_RADIAL_DIAMETER, radialDiameter() - (2 * (MOVE + getLongestExtNodeInfo())))
+                : (getVisibleRect().width < getVisibleRect().height ? getVisibleRect().width
+                        : getVisibleRect().height);
         if (isPhyHasBranchLengths() && getControlPanel().isDrawPhylogram()) {
             setUrtFactor((float) (d / (2 * getMaxDistanceToRoot())));
         } else {
@@ -9040,6 +9068,46 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         _urt_factor *= f;
     }
 
+    /** The radial square-canvas side (px) that fits the current viewport at zoom 1: the smaller viewport dimension,
+     *  with a floor so a tiny/again-hidden panel still yields a sane value. */
+    private int radialFitDiameter() {
+        final int d = Math.min(getVisibleRect().width, getVisibleRect().height);
+        return (d >= MIN_RADIAL_DIAMETER) ? d : DEFAULT_RADIAL_DIAMETER;
+    }
+
+    /** The current radial canvas side, lazily initialised to the fit diameter (so a freshly-shown radial tree fits). */
+    final int radialDiameter() {
+        if (_radial_diameter <= 0) {
+            _radial_diameter = radialFitDiameter();
+        }
+        return _radial_diameter;
+    }
+
+    /** Re-fit the radial layout to an explicit viewport size (used by showWhole, where getVisibleRect may lag). */
+    final void fitRadialTo(final int viewport_w, final int viewport_h) {
+        final int d = Math.min(viewport_w, viewport_h);
+        _radial_diameter = (d >= MIN_RADIAL_DIAMETER) ? d : DEFAULT_RADIAL_DIAMETER;
+    }
+
+    /** Scale the radial canvas -- the single radial zoom -- clamped so it can neither vanish nor blow up the preferred
+     *  size. Both layouts follow: the circular radius is half the (square) preferred size, the unrooted spread is
+     *  scaled by an urt-factor derived from it (see setUpUrtFactor). */
+    final void multiplyRadialDiameter(final float f) {
+        long d = Math.round(radialDiameter() * (double) f);
+        if (d < MIN_RADIAL_DIAMETER) {
+            d = MIN_RADIAL_DIAMETER;
+        }
+        if (d > MAX_RADIAL_DIAMETER) {
+            d = MAX_RADIAL_DIAMETER;
+        }
+        _radial_diameter = (int) d;
+    }
+
+    /** Mark the radial canvas for a lazy re-fit on the next paint (used when switching TO a radial layout). */
+    final void invalidateRadialDiameter() {
+        _radial_diameter = 0;
+    }
+
     final void paintBranchCircular(final PhylogenyNode p,
                                    final PhylogenyNode c,
                                    final Graphics2D g,
@@ -9654,6 +9722,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ((getPhylogeny() == null) || getPhylogeny().isEmpty()) {
             return;
         }
+        if (isRadialLayout()) {
+            // radial layouts use a SQUARE canvas of _radial_diameter (the single radial-zoom knob), decoupled from the
+            // rectangular x/y-distance extent -- the circle then centres + fills it (see the CIRCULAR paint block), and
+            // the unrooted spread is scaled by an urt-factor derived from the same diameter.
+            final int d = radialDiameter();
+            setPreferredSize(new Dimension(d, d));
+            invalidateOrientationTransform();
+            return;
+        }
         final int[] ext = logicalTreeExtent();
         final int w = ext[0]; // logical width  = depth (root->tip along Xcoord) + label column
         final int h = ext[1]; // logical height = breadth (tip spread along Ycoord)
@@ -10107,6 +10184,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // a hover-preview target from the previous layout would otherwise draw a spurious select preview in the new
         // one (the pointer isn't over that branch there); it self-corrects on the next mouse move, but clear it now
         clearHoverPreview();
+        if (isRadialLayout()) {
+            invalidateRadialDiameter(); // switching TO a radial layout re-fits the square canvas to the viewport
+        }
         setTextAntialias();
     }
 

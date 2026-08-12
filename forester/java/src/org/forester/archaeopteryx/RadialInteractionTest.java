@@ -54,7 +54,57 @@ public final class RadialInteractionTest {
         if ( GraphicsEnvironment.isHeadless() ) {
             return true;
         }
-        return findBranchOk() && haloOk();
+        return findBranchOk() && haloOk() && radialZoomOk();
+    }
+
+    /** Radial zoom is decoupled from the rectangular x/y-distance: ONE square-canvas diameter is the single knob.
+     *  showWhole fits it to the viewport; BOTH the X and the Y zoom scale that same diameter (symmetric, not the old
+     *  asymmetric min(w,h) behaviour); zoom-out shrinks it back. Checked via TreePanel.radialDiameter(). */
+    private static boolean radialZoomOk() {
+        final boolean[] ok = { true };
+        withFrame( "scale-axis.xml", ( frame, tp, o ) -> {
+            final ControlPanel cp = tp.getControlPanel();
+            for ( final PHYLOGENY_GRAPHICS_TYPE gt : new PHYLOGENY_GRAPHICS_TYPE[] { PHYLOGENY_GRAPHICS_TYPE.CIRCULAR,
+                    PHYLOGENY_GRAPHICS_TYPE.UNROOTED } ) {
+                tp.setPhylogenyGraphicsType( gt );
+                cp.showWhole();
+                final int fit = tp.radialDiameter();
+                if ( fit < 50 ) {
+                    fail( ok, "precondition: a sane fit diameter in " + gt + " (got " + fit + ")" );
+                    return;
+                }
+                // fit == min(viewport), and the preferred size is a SQUARE of that diameter (the core of the decouple)
+                final int vmin = Math.min( frame.getMainPanel().getSizeOfViewport().width,
+                        frame.getMainPanel().getSizeOfViewport().height );
+                if ( Math.abs( fit - vmin ) > 2 ) {
+                    fail( ok, "showWhole must fit the radial canvas to min(viewport) in " + gt + " (fit " + fit
+                            + " vs " + vmin + ")" );
+                }
+                final java.awt.Dimension pref = tp.getPreferredSize();
+                if ( ( pref.width != fit ) || ( pref.height != fit ) ) {
+                    fail( ok, "the radial preferred size must be a square of the diameter in " + gt + " (" + pref.width
+                            + "x" + pref.height + " vs " + fit + ")" );
+                }
+                cp.zoomInX( 1.25f, 1.2f );
+                final int in_x = tp.radialDiameter();
+                cp.zoomInY( 1.25f );
+                final int in_y = tp.radialDiameter();
+                cp.zoomOutX( 0.8f, 0.83f );
+                cp.zoomOutY( 0.8f );
+                final int out = tp.radialDiameter();
+                if ( Math.abs( in_x - ( fit * 1.25 ) ) > 3 ) {
+                    fail( ok, "zoomInX must scale the radial diameter in " + gt + " (" + fit + " -> " + in_x + ")" );
+                }
+                if ( Math.abs( in_y - ( in_x * 1.25 ) ) > 3 ) {
+                    fail( ok, "zoomInY must ALSO scale the radial diameter (symmetric) in " + gt + " (" + in_x + " -> "
+                            + in_y + ")" );
+                }
+                if ( Math.abs( out - ( in_y * 0.64 ) ) > 3 ) {
+                    fail( ok, "zoom out must shrink the radial diameter in " + gt + " (" + in_y + " -> " + out + ")" );
+                }
+            }
+        }, ok );
+        return ok[ 0 ];
     }
 
     /** findBranch returns the node whose incoming branch is under a point placed ON that branch -- for a LEAF and an
