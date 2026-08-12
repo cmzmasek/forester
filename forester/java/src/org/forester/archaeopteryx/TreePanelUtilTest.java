@@ -63,7 +63,8 @@ public final class TreePanelUtilTest {
     public static boolean test() {
         return testYDistanceToAvoidLabelOverlap() && testSupportSymbolMath() && testDetectConfidenceScaleMax()
                 && testRankTaxonCounts() && testTaxonomyLabel() && testRankColorization() && testTipQueryName()
-                && testTipIdentityWins()
+                && testTipIdentityWins() && testRankColorizationTaxIdKeying() && testInternalTaxonGapFill()
+                && testRankResolutionIdThenNameCache() && testNamelessTaxonomyTipResolvesByNodeName()
                 && testCladeBands() && testRankColorizationViaSequenceIds() && testInternalLabelAboveBranchLayout()
                 && testAbbreviateScientificName() && testSupportColor() && testScaleGridLines()
                 && testScaleAxisTickValues() && testFormatCompactNumber() && testHpdBarXRange()
@@ -990,13 +991,14 @@ public final class TreePanelUtilTest {
         }
 
         // maximal roots: the Rodentia clade + Felis + Canis (paraphyletic Carnivora -> two roots, one taxon)
-        final Map<PhylogenyNode, String> roots = TreePanelUtil.maximalMonochromaticRoots( tree, assignment );
+        final Map<PhylogenyNode, TreePanelUtil.RankTaxon> roots = TreePanelUtil
+                .maximalMonochromaticRoots( tree, TreePanelUtil.assignNodesToRankTaxon( tree, "order", svc ) );
         if ( roots.size() != 3 ) {
             return fail( "expected 3 maximal monochromatic roots (Rodentia clade, Felis, Canis), got " + roots.size() );
         }
         int carnivora_roots = 0;
-        for( final String t : roots.values() ) {
-            if ( "Carnivora".equals( t ) ) {
+        for( final TreePanelUtil.RankTaxon t : roots.values() ) {
+            if ( "Carnivora".equals( t.getName() ) ) {
                 ++carnivora_roots;
             }
         }
@@ -1074,6 +1076,208 @@ public final class TreePanelUtilTest {
         phy.setRoot( root );
         phy.externalNodesHaveChanged();
         return phy;
+    }
+
+    /**
+     * Spine B tax-id keying: HOMONYMS (two distinct taxa sharing a scientific name at a rank) are NOT merged into
+     * one clade, while a SYNONYM (two names sharing a tax-id) groups as one -- the grouping keys on the NCBI tax-id
+     * ({@link TaxonLineage#taxIdAt}), read here straight off each tip's own {@code <taxonomy>} identifier.
+     */
+    private static boolean testRankColorizationTaxIdKeying() {
+        // homonym: two "Drosophila" tips (fly genus 7215 vs a homonymous genus 999999), one in each child clade.
+        // Name-keying would make the parent uniform ("Drosophila") = ONE merged clade; tax-id keying keeps them apart.
+        final PhylogenyNode da = genusLeafId( "da", "Drosophila", "7215" );
+        final PhylogenyNode db = genusLeafId( "db", "Drosophila", "999999" );
+        final PhylogenyNode root_h = node( da, db );
+        final Phylogeny homonyms = phylogeny( root_h );
+        final Map<PhylogenyNode, TreePanelUtil.RankTaxon> h_roots = TreePanelUtil
+                .maximalMonochromaticRoots( homonyms, TreePanelUtil.assignNodesToRankTaxon( homonyms, "genus", null ) );
+        if ( ( h_roots.size() != 2 ) || h_roots.containsKey( root_h ) ) {
+            return fail( "homonyms (same name, different tax-id) must NOT merge: expected 2 roots and no merged parent, "
+                    + "got " + h_roots.size() + " roots (parent merged: " + h_roots.containsKey( root_h ) + ")" );
+        }
+
+        // synonym: two names ("Drosophila" / "Sophophora") sharing tax-id 7215 group as ONE clade at their parent
+        final PhylogenyNode root_s = node( genusLeafId( "sa", "Drosophila", "7215" ),
+                                           genusLeafId( "sb", "Sophophora", "7215" ) );
+        final Phylogeny synonyms = phylogeny( root_s );
+        final Map<PhylogenyNode, TreePanelUtil.RankTaxon> s_roots = TreePanelUtil
+                .maximalMonochromaticRoots( synonyms, TreePanelUtil.assignNodesToRankTaxon( synonyms, "genus", null ) );
+        if ( ( s_roots.size() != 1 ) || !s_roots.containsKey( root_s ) ) {
+            return fail( "a synonym (different names, same tax-id) must group as ONE clade at the parent; got "
+                    + s_roots.size() + " roots" );
+        }
+        return true;
+    }
+
+    /**
+     * Spine B internal-node assignment + gap-fill (what the tip-only, ancestor-fallback path could not do): an
+     * INTERNAL node resolved to the coloring rank -- here a GENUS-annotated node whose ORDER comes from the service,
+     * so the tips' ancestor-fallback (which keys on the exact coloring rank) misses it -- (a) colors a clade of
+     * otherwise-unresolvable tips, and (c) sweeps an unplaced sibling into its taxon; (b) without such an authorizing
+     * ancestor an unplaced tip still breaks the clade ("unplaced tips aren't silently swept").
+     */
+    private static boolean testInternalTaxonGapFill() {
+        final FakeLineageService svc = new FakeLineageService();
+        svc.know( "Felis", lineage( "order", "Carnivora", "genus", "Felis" ) );
+        try {
+            svc.fetch( "Felis" ); // warm the cache-only lineageOf
+        }
+        catch ( final Exception e ) {
+            return fail( "fake fetch must not throw: " + e );
+        }
+
+        // (a) a GENUS-annotated internal node (order comes from the service) gap-fills a clade of unresolvable tips
+        final PhylogenyNode felis_clade = genusInternal( "Felis" );
+        felis_clade.addAsChild( bareLeaf( "unknown_a" ) );
+        felis_clade.addAsChild( bareLeaf( "unknown_b" ) );
+        final Phylogeny gap = phylogeny( node( felis_clade, orderLeaf( "rat", "Rodentia", null ) ) );
+        final Map<PhylogenyNode, TreePanelUtil.RankTaxon> g_roots = TreePanelUtil
+                .maximalMonochromaticRoots( gap, TreePanelUtil.assignNodesToRankTaxon( gap, "order", svc ) );
+        if ( ( g_roots.get( felis_clade ) == null ) || !"Carnivora".equals( g_roots.get( felis_clade ).getName() ) ) {
+            return fail( "an internal node resolved to the rank must gap-fill a clade of unresolvable tips" );
+        }
+
+        // (b) an unplaced tip with NO authorizing ancestor still breaks the clade -- only the placed tip is a root
+        final PhylogenyNode felis1 = orderLeaf( "felis1", "Carnivora", null );
+        final PhylogenyNode plain = node( felis1, bareLeaf( "u1" ) ); // a plain, UN-annotated internal node
+        final Phylogeny broken = phylogeny( node( plain, orderLeaf( "rat1", "Rodentia", null ) ) );
+        final Map<PhylogenyNode, TreePanelUtil.RankTaxon> b_roots = TreePanelUtil
+                .maximalMonochromaticRoots( broken, TreePanelUtil.assignNodesToRankTaxon( broken, "order", svc ) );
+        if ( b_roots.containsKey( plain ) || ( b_roots.get( felis1 ) == null ) ) {
+            return fail( "an unplaced tip with no authorizing ancestor must break the clade (only the placed tip is a root)" );
+        }
+
+        // (c) the same shape, but the clade IS resolved to Carnivora (genus Felis -> order via service) -> the
+        //     unplaced sibling is swept in: one Carnivora root at the clade, the placed tip is not its own root
+        final PhylogenyNode felis2 = orderLeaf( "felis2", "Carnivora", null );
+        final PhylogenyNode auth = genusInternal( "Felis" );
+        auth.addAsChild( felis2 );
+        auth.addAsChild( bareLeaf( "swept" ) );
+        final Phylogeny fill = phylogeny( node( auth, orderLeaf( "rat2", "Rodentia", null ) ) );
+        final Map<PhylogenyNode, TreePanelUtil.RankTaxon> c_roots = TreePanelUtil
+                .maximalMonochromaticRoots( fill, TreePanelUtil.assignNodesToRankTaxon( fill, "order", svc ) );
+        if ( ( c_roots.get( auth ) == null ) || !"Carnivora".equals( c_roots.get( auth ).getName() )
+                || c_roots.containsKey( felis2 ) ) {
+            return fail( "an authorizing ancestor (resolved to the rank) must sweep an unplaced tip into its taxon" );
+        }
+        return true;
+    }
+
+    /** A leaf with own {@code <taxonomy>} = {sci, rank=genus, ncbi:tax_id}. */
+    private static PhylogenyNode genusLeafId( final String node_name, final String sci, final String tax_id ) {
+        return rankLeaf( node_name, sci, "genus", tax_id );
+    }
+
+    /** A leaf with own {@code <taxonomy>} = {sci, rank=order, optional ncbi:tax_id}. */
+    private static PhylogenyNode orderLeaf( final String node_name, final String sci, final String tax_id ) {
+        return rankLeaf( node_name, sci, "order", tax_id );
+    }
+
+    private static PhylogenyNode rankLeaf( final String node_name, final String sci, final String rank,
+                                           final String tax_id ) {
+        final PhylogenyNode n = namedLeaf( node_name, sci );
+        try {
+            n.getNodeData().getTaxonomy().setRank( rank );
+        }
+        catch ( final Exception e ) {
+            throw new RuntimeException( e );
+        }
+        if ( tax_id != null ) {
+            n.getNodeData().getTaxonomy().setIdentifier( new Identifier( tax_id, "ncbi" ) );
+        }
+        return n;
+    }
+
+    /** An INTERNAL node with own {@code <taxonomy>} = {sci, rank=genus} (its order comes from the service). */
+    private static PhylogenyNode genusInternal( final String sci ) {
+        final PhylogenyNode n = new PhylogenyNode();
+        final Taxonomy t = new Taxonomy();
+        t.setScientificName( sci );
+        try {
+            t.setRank( "genus" );
+        }
+        catch ( final Exception e ) {
+            throw new RuntimeException( e );
+        }
+        n.getNodeData().setTaxonomy( t );
+        return n;
+    }
+
+    private static PhylogenyNode node( final PhylogenyNode... children ) {
+        final PhylogenyNode n = new PhylogenyNode();
+        for( final PhylogenyNode c : children ) {
+            n.addAsChild( c );
+        }
+        return n;
+    }
+
+    private static Phylogeny phylogeny( final PhylogenyNode root ) {
+        final Phylogeny phy = new Phylogeny();
+        phy.setRoot( root );
+        phy.externalNodesHaveChanged();
+        return phy;
+    }
+
+    /**
+     * Regression: a tip annotated below the coloring rank WITH an NCBI id must still colorize when the lineage cache
+     * was primed by NAME (as the colorize fetch flow does) -- the id lookup misses the name-keyed cache, so resolution
+     * must fall back to the name (id-then-name), else id-bearing tips silently go uncolored.
+     */
+    private static boolean testRankResolutionIdThenNameCache() {
+        final FakeLineageService svc = new FakeLineageService();
+        svc.know( "Felis catus", lineage( "order", "Carnivora", "species", "Felis catus" ) );
+        try {
+            svc.fetch( "Felis catus" ); // primes the cache under the NAME, like unresolvedTipTaxa/fetch
+        }
+        catch ( final Exception e ) {
+            return fail( "fake fetch must not throw: " + e );
+        }
+        final PhylogenyNode cat = rankLeaf( "cat", "Felis catus", "species", "9685" ); // species + NCBI id
+        final Phylogeny tree = phylogeny( node( cat, orderLeaf( "rat", "Rodentia", null ) ) );
+        final TreePanelUtil.RankTaxon rt = TreePanelUtil.assignNodesToRankTaxon( tree, "order", svc ).get( cat );
+        if ( ( rt == null ) || !"Carnivora".equals( rt.getName() ) ) {
+            return fail( "an id-annotated tip must resolve via the name-keyed cache (id lookup falls back to name)" );
+        }
+        return true;
+    }
+
+    /**
+     * Regression: a tip carrying an effectively NAMELESS {@code <taxonomy>} (rank-only, no sci/code/common, no NCBI
+     * id) but whose NODE NAME is the resolvable organism must still be placed by its node name -- the has-taxonomy
+     * path finds no own name, so the node-name fallback (tipQueryName) must not be gated away.
+     */
+    private static boolean testNamelessTaxonomyTipResolvesByNodeName() {
+        final FakeLineageService svc = new FakeLineageService();
+        svc.know( "Mus", lineage( "order", "Rodentia", "genus", "Mus" ) );
+        try {
+            svc.fetch( "Mus" );
+        }
+        catch ( final Exception e ) {
+            return fail( "fake fetch must not throw: " + e );
+        }
+        final PhylogenyNode tip = namelessTaxonomyLeaf( "Mus" ); // node name "Mus"; taxonomy present but nameless
+        final Phylogeny tree = phylogeny( node( tip, orderLeaf( "felis", "Carnivora", null ) ) );
+        final TreePanelUtil.RankTaxon rt = TreePanelUtil.assignNodesToRankTaxon( tree, "order", svc ).get( tip );
+        if ( ( rt == null ) || !"Rodentia".equals( rt.getName() ) ) {
+            return fail( "a tip with a nameless taxonomy must still resolve by its node name" );
+        }
+        return true;
+    }
+
+    /** A leaf whose node name is {@code node_name} and whose {@code <taxonomy>} is present but NAMELESS (rank only). */
+    private static PhylogenyNode namelessTaxonomyLeaf( final String node_name ) {
+        final PhylogenyNode n = new PhylogenyNode();
+        n.setName( node_name );
+        final Taxonomy t = new Taxonomy();
+        try {
+            t.setRank( "genus" );
+        }
+        catch ( final Exception e ) {
+            throw new RuntimeException( e );
+        }
+        n.getNodeData().setTaxonomy( t );
+        return n;
     }
 
     /** Clade bands reuse the same assignment as the colorizer: one band per maximal-monophyletic clade. */

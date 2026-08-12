@@ -28,6 +28,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -771,8 +772,56 @@ public class TreePanelUtil {
         return new Color( shade, shade, shade );
     }
 
-    /** Sentinel for {@link #maximalMonochromaticRoots}: a subtree whose tips are not all one rank taxon. */
-    private final static String MIXED_TAXON = "<<MIXED>>";
+    /**
+     * A taxon at a rank, identified by its NCBI tax-id when available (else by name) -- the grouping key (Spine B)
+     * shared by the rank branch-colorizer and the clade bands. Keying on the tax-id (Spine A's
+     * {@link TaxonLineage#taxIdAt}) rather than the scientific name distinguishes HOMONYMS (two distinct taxa that
+     * share a name at a rank), while an id-less source (a name-only tree, or a resolver that supplies no id) falls
+     * back to name equality -- the pre-Spine-B behavior. The {@link #getName() name} is always kept for display, so
+     * the legend / color / override chain stays name-keyed.
+     */
+    final static class RankTaxon {
+
+        private final String _id;   // NCBI tax-id, or null
+        private final String _name; // display name (non-empty for a real taxon)
+
+        RankTaxon( final String id, final String name ) {
+            _id = ForesterUtil.isEmpty( id ) ? null : id;
+            _name = ( name == null ) ? "" : name;
+        }
+
+        String getId() {
+            return _id;
+        }
+
+        String getName() {
+            return _name;
+        }
+
+        /** The equality / grouping key: the tax-id when present, else the lower-cased name. */
+        private String key() {
+            return ( _id != null ) ? ( "id:" + _id ) : ( "nm:" + _name.toLowerCase( Locale.ROOT ) );
+        }
+
+        @Override
+        public boolean equals( final Object o ) {
+            return ( o instanceof RankTaxon ) && key().equals( ( (RankTaxon) o ).key() );
+        }
+
+        @Override
+        public int hashCode() {
+            return key().hashCode();
+        }
+
+        @Override
+        public String toString() {
+            return _name + ( ( _id != null ) ? ( " [" + _id + "]" ) : "" );
+        }
+    }
+
+    /** Sentinel for {@link #maximalMonochromaticRoots}: a subtree whose descendants are not all one rank taxon
+     *  (compared by reference identity, never equal to a real {@link RankTaxon}). */
+    private final static RankTaxon MIXED = new RankTaxon( null, " MIXED" );
 
     private static TaxonomicLineageService _default_lineage_service;
 
@@ -832,14 +881,13 @@ public class TreePanelUtil {
                                                      final Map<String, Color> legend_out,
                                                      final Map<String, Color> overrides,
                                                      final Map<String, Integer> counts_out ) {
-        final Map<PhylogenyNode, String> assignment = assignTipsToRankTaxon( tree, rank, service );
-        final SortedSet<String> taxa = new TreeSet<String>( assignment.values() );
-        final Map<String, Color> colors = AptxUtil.assignDistinctColors( taxa );
+        final Map<PhylogenyNode, RankTaxon> assignment = assignNodesToRankTaxon( tree, rank, service );
+        final Map<PhylogenyNode, RankTaxon> roots = maximalMonochromaticRoots( tree, assignment );
+        final Map<String, Color> colors = AptxUtil.assignDistinctColors( legendTaxa( assignment, roots ) );
         applyColorOverrides( colors, overrides );
-        final Map<PhylogenyNode, String> roots = maximalMonochromaticRoots( tree, assignment );
         int colorizations = 0;
-        for( final Entry<PhylogenyNode, String> e : roots.entrySet() ) {
-            final Color c = colors.get( e.getValue() );
+        for( final Entry<PhylogenyNode, RankTaxon> e : roots.entrySet() ) {
+            final Color c = colors.get( e.getValue().getName() );
             if ( c != null ) {
                 TreePanelUtil.colorizeSubtree( e.getKey(), new BranchColor( c ) );
                 ++colorizations;
@@ -852,14 +900,33 @@ public class TreePanelUtil {
         return colorizations;
     }
 
-    /** Fills {@code counts_out} (when non-null) with the number of tips assigned to each taxon. */
-    private static void countTipsPerTaxon( final Map<PhylogenyNode, String> assignment,
+    /** The distinct taxon NAMES for the legend / color domain: every TIP's taxon (so the key shows what is present,
+     *  as before Spine B) PLUS every colored ROOT's taxon (so a gap-filled internal-only clade still gets a color). */
+    private static SortedSet<String> legendTaxa( final Map<PhylogenyNode, RankTaxon> assignment,
+                                                 final Map<PhylogenyNode, RankTaxon> roots ) {
+        final SortedSet<String> taxa = new TreeSet<String>();
+        for( final Entry<PhylogenyNode, RankTaxon> e : assignment.entrySet() ) {
+            if ( e.getKey().isExternal() ) {
+                taxa.add( e.getValue().getName() );
+            }
+        }
+        for( final RankTaxon rt : roots.values() ) {
+            taxa.add( rt.getName() );
+        }
+        return taxa;
+    }
+
+    /** Fills {@code counts_out} (when non-null) with the number of TIPS assigned to each taxon name (internal-node
+     *  assignments feed the grouping, not the tip count, so the legend "(N)" is unchanged). */
+    private static void countTipsPerTaxon( final Map<PhylogenyNode, RankTaxon> assignment,
                                            final Map<String, Integer> counts_out ) {
         if ( counts_out == null ) {
             return;
         }
-        for( final String taxon : assignment.values() ) {
-            counts_out.merge( taxon, 1, Integer::sum );
+        for( final Entry<PhylogenyNode, RankTaxon> e : assignment.entrySet() ) {
+            if ( e.getKey().isExternal() ) {
+                counts_out.merge( e.getValue().getName(), 1, Integer::sum );
+            }
         }
     }
 
@@ -897,13 +964,15 @@ public class TreePanelUtil {
         if ( ( tree == null ) || tree.isEmpty() || ForesterUtil.isEmpty( rank ) ) {
             return bands;
         }
-        final Map<PhylogenyNode, String> assignment = assignTipsToRankTaxon( tree, rank, service );
-        final Map<String, Color> colors = AptxUtil.assignDistinctColors( new TreeSet<String>( assignment.values() ) );
+        final Map<PhylogenyNode, RankTaxon> assignment = assignNodesToRankTaxon( tree, rank, service );
+        final Map<PhylogenyNode, RankTaxon> roots = maximalMonochromaticRoots( tree, assignment );
+        final Map<String, Color> colors = AptxUtil.assignDistinctColors( legendTaxa( assignment, roots ) );
         applyColorOverrides( colors, overrides );
-        for( final Entry<PhylogenyNode, String> e : maximalMonochromaticRoots( tree, assignment ).entrySet() ) {
-            final Color c = colors.get( e.getValue() );
+        for( final Entry<PhylogenyNode, RankTaxon> e : roots.entrySet() ) {
+            final String taxon = e.getValue().getName();
+            final Color c = colors.get( taxon );
             if ( c != null ) {
-                bands.add( new CladeBand( e.getValue(), c, e.getKey() ) );
+                bands.add( new CladeBand( taxon, c, e.getKey() ) );
             }
         }
         countTipsPerTaxon( assignment, counts_out );
@@ -924,71 +993,186 @@ public class TreePanelUtil {
     }
 
     /**
-     * Maps each external node to its taxon at {@code rank}, omitting tips that cannot be placed.
-     * Resolution order per tip -- <i>tip identity wins, internal annotations only fill gaps</i>: (1) the tip's
-     * OWN taxonomy annotated at exactly that rank; else (2) the tip's cached {@link TaxonLineage} from
-     * {@code service} (no network here -- a cache miss just skips this step); else (3) the nearest
-     * PROPER-ancestor annotation at that rank -- a fallback only for tips that cannot resolve their own
-     * identity, so a wrong/partial internal-node annotation can no longer override a tip that resolves correctly.
+     * Every node -- tip AND internal -- mapped to its OWN taxon at {@code rank} (absent when it has none): the one
+     * node&rarr;taxon assignment (Spine B) that both the branch colorizer and the clade bands read. A node's own
+     * taxon is resolved, in order: (1) its own {@code <taxonomy>} annotated at exactly {@code rank}; else (2) its
+     * own taxon resolved to a lineage via the cache-only {@code service} (looked up by its NCBI tax-id and/or name);
+     * else -- for a TIP only -- (3) the nearest PROPER-ancestor annotation at
+     * {@code rank}. An INTERNAL node stops at (2): it contributes its OWN identity (so a curated / inferred internal
+     * taxon becomes visible to the visualization) but never an ancestor's.
      * <p>
-     * Trade-off of this precedence: a wrong DB resolution of an ambiguous tip NAME (step 2) now beats a correct
-     * in-tree ANCESTOR annotation (step 3). The escape hatch is step 1 -- annotate the TIP itself at {@code rank}
-     * (its own taxonomy always wins), which is exactly how a curator overrides a bad DB hit.
+     * Values are keyed by tax-id where available ({@link RankTaxon}), so HOMONYMS do not merge; a closing pass
+     * ({@link #canonicalizeTaxonIds}) rewrites an id-less entry to a same-named id-bearing one, so the SAME taxon
+     * arriving from mixed sources (some with an id, some without) stays ONE group. Network-pure (cache-only).
+     * <p>
+     * "Tip identity wins" still holds: this per-node own taxon feeds {@link #maximalMonochromaticRoots}, which lets a
+     * clade's resolvable tips win over a conflicting ancestor annotation and uses an internal annotation only to fill
+     * gaps. The escape hatch to override a bad DB hit is to annotate the node itself at {@code rank}.
      */
-    final static Map<PhylogenyNode, String> assignTipsToRankTaxon( final Phylogeny tree,
-                                                                   final String rank,
-                                                                   final TaxonomicLineageService service ) {
-        final Map<PhylogenyNode, String> assignment = new HashMap<PhylogenyNode, String>();
+    final static Map<PhylogenyNode, RankTaxon> assignNodesToRankTaxon( final Phylogeny tree,
+                                                                       final String rank,
+                                                                       final TaxonomicLineageService service ) {
+        final Map<PhylogenyNode, RankTaxon> assignment = new HashMap<PhylogenyNode, RankTaxon>();
         if ( ( tree == null ) || tree.isEmpty() || ForesterUtil.isEmpty( rank ) ) {
             return assignment;
         }
-        for( final PhylogenyNodeIterator it = tree.iteratorExternalForward(); it.hasNext(); ) {
-            final PhylogenyNode tip = it.next();
-            // (1) the tip's OWN taxonomy at this rank -- the most specific identity, always trusted
-            String taxon = selfRankTaxon( tip, rank );
-            // (2) else resolve the tip's OWN name against the (cached) lineage DB
-            if ( ForesterUtil.isEmpty( taxon ) && ( service != null ) ) {
-                final String q = tipQueryName( tip );
-                if ( !ForesterUtil.isEmpty( q ) ) {
-                    final TaxonLineage rl = service.lineageOf( q );
-                    if ( rl != null ) {
-                        taxon = rl.at( rank );
-                    }
-                }
-            }
-            // (3) else fall back to the nearest ANCESTOR's manual annotation at this rank
-            if ( ForesterUtil.isEmpty( taxon ) ) {
-                taxon = ancestorRankTaxon( tip, rank );
-            }
-            if ( !ForesterUtil.isEmpty( taxon ) ) {
-                assignment.put( tip, taxon );
+        for( final PhylogenyNodeIterator it = tree.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode node = it.next();
+            final RankTaxon rt = node.isExternal() ? tipRankTaxon( node, rank, service )
+                                                   : ownRankTaxon( node, rank, service );
+            if ( rt != null ) {
+                assignment.put( node, rt );
             }
         }
+        canonicalizeTaxonIds( assignment );
         return assignment;
     }
 
-    /** The taxon label of {@code node}'s OWN taxonomy iff its rank equals {@code rank} (case-insensitive) and the
-     *  label is non-empty, else null. The tip's own identity -- highest priority in {@link #assignTipsToRankTaxon}. */
-    final static String selfRankTaxon( final PhylogenyNode node, final String rank ) {
+    /** Backward-compatible tip-only, NAME-valued view of {@link #assignNodesToRankTaxon} (each {@link RankTaxon}
+     *  projected to its display name) -- the historical signature the tests read. */
+    final static Map<PhylogenyNode, String> assignTipsToRankTaxon( final Phylogeny tree,
+                                                                   final String rank,
+                                                                   final TaxonomicLineageService service ) {
+        final Map<PhylogenyNode, String> out = new HashMap<PhylogenyNode, String>();
+        for( final Entry<PhylogenyNode, RankTaxon> e : assignNodesToRankTaxon( tree, rank, service ).entrySet() ) {
+            if ( e.getKey().isExternal() ) {
+                out.put( e.getKey(), e.getValue().getName() );
+            }
+        }
+        return out;
+    }
+
+    /** A node's OWN taxon at {@code rank}: (1) its own {@code <taxonomy>} annotated at exactly {@code rank}; else
+     *  (2) its own taxon resolved to a cached lineage, tax-id first then name. No ancestor / node-name fallback. */
+    final static RankTaxon ownRankTaxon( final PhylogenyNode node, final String rank,
+                                         final TaxonomicLineageService service ) {
+        // (1) own taxonomy annotated at exactly this rank -- the most specific identity, no network
+        final RankTaxon self = selfRankTaxonRT( node, rank );
+        if ( self != null ) {
+            return self;
+        }
+        // (2) resolve the own taxon's lineage (cache-only): try the NCBI tax-id AND the own name -- either may be the
+        // key the cache was primed under (the colorize fetch flow primes by NAME via unresolvedTipTaxa/tipQueryName,
+        // while a Fetch-tool run primes by tax-id), so an id-only lookup would miss a name-primed cache
+        if ( ( service != null ) && node.getNodeData().isHasTaxonomy() ) {
+            final Taxonomy tax = node.getNodeData().getTaxonomy();
+            return resolveRankViaService( service, rank, ncbiId( tax ), ownTaxonName( tax ) );
+        }
+        return null;
+    }
+
+    /** Reads {@code rank} off the lineage the cache-only {@code service} holds for a taxon, trying the NCBI tax-id
+     *  first and then the name (either may be the key the cache was primed under), or null. The {@link RankTaxon}
+     *  carries the per-rank tax-id ({@link TaxonLineage#taxIdAt}) whichever key resolved it. */
+    private static RankTaxon resolveRankViaService( final TaxonomicLineageService service, final String rank,
+                                                    final String id, final String name ) {
+        if ( service == null ) {
+            return null;
+        }
+        TaxonLineage rl = null;
+        if ( !ForesterUtil.isEmpty( id ) ) {
+            rl = service.lineageOf( id );
+        }
+        if ( ( rl == null ) && !ForesterUtil.isEmpty( name ) ) {
+            rl = service.lineageOf( name );
+        }
+        if ( rl != null ) {
+            final String at = rl.at( rank );
+            if ( !ForesterUtil.isEmpty( at ) ) {
+                return new RankTaxon( rl.taxIdAt( rank ), at );
+            }
+        }
+        return null;
+    }
+
+    /** A TIP's taxon at {@code rank}: {@link #ownRankTaxon}, else (2b) resolve by the tip's node NAME (a bare-named
+     *  tip with no {@code <taxonomy>}; {@link #tipQueryName} also walks to an ancestor scientific name -- the
+     *  long-standing tip behavior), else (3) the nearest PROPER-ancestor annotation at {@code rank}. */
+    private final static RankTaxon tipRankTaxon( final PhylogenyNode tip, final String rank,
+                                                 final TaxonomicLineageService service ) {
+        final RankTaxon own = ownRankTaxon( tip, rank, service );
+        if ( own != null ) {
+            return own;
+        }
+        // (2b) resolve by the tip's query name -- its own name, else the NODE name, else an ancestor scientific name
+        // (tipQueryName): the long-standing tip fallback. NOT gated on isHasTaxonomy, so a tip carrying an effectively
+        // nameless taxonomy (rank-only / a non-NCBI id) is still resolved by its node name, as before Spine B.
+        final RankTaxon by_name = resolveRankViaService( service, rank, null, tipQueryName( tip ) );
+        if ( by_name != null ) {
+            return by_name;
+        }
+        // (3) nearest ancestor annotation at rank
+        return ancestorRankTaxonRT( tip, rank );
+    }
+
+    /** The queryable NAME of a taxon's OWN identity (scientific &rarr; code &rarr; common), matching
+     *  {@link #tipQueryName}'s own-identity order; null when it carries none. */
+    private final static String ownTaxonName( final Taxonomy tax ) {
+        if ( !ForesterUtil.isEmpty( tax.getScientificName() ) ) {
+            return tax.getScientificName();
+        }
+        if ( !ForesterUtil.isEmpty( tax.getTaxonomyCode() ) ) {
+            return tax.getTaxonomyCode();
+        }
+        if ( !ForesterUtil.isEmpty( tax.getCommonName() ) ) {
+            return tax.getCommonName();
+        }
+        return null;
+    }
+
+    /** Canonicalizes an assignment so the SAME taxon from mixed sources is one group: when a taxon NAME appears
+     *  WITH an NCBI id in some entry and id-less in another, the id-less entries adopt that id. A clean homonym
+     *  (one name, two DIFFERENT ids) is left split -- the whole point of tax-id keying. */
+    private static void canonicalizeTaxonIds( final Map<PhylogenyNode, RankTaxon> assignment ) {
+        final Map<String, String> name_to_id = new HashMap<String, String>();
+        for( final RankTaxon rt : assignment.values() ) {
+            if ( rt.getId() != null ) {
+                name_to_id.putIfAbsent( rt.getName().toLowerCase( Locale.ROOT ), rt.getId() );
+            }
+        }
+        if ( name_to_id.isEmpty() ) {
+            return;
+        }
+        for( final Entry<PhylogenyNode, RankTaxon> e : assignment.entrySet() ) {
+            final RankTaxon rt = e.getValue();
+            if ( rt.getId() == null ) {
+                final String id = name_to_id.get( rt.getName().toLowerCase( Locale.ROOT ) );
+                if ( id != null ) {
+                    e.setValue( new RankTaxon( id, rt.getName() ) );
+                }
+            }
+        }
+    }
+
+    /** The node's OWN {@code <taxonomy>} as a {@link RankTaxon} (name + NCBI id) iff its rank equals {@code rank}
+     *  (case-insensitive) and the label is non-empty, else null. */
+    final static RankTaxon selfRankTaxonRT( final PhylogenyNode node, final String rank ) {
         if ( node.getNodeData().isHasTaxonomy() ) {
             final Taxonomy tax = node.getNodeData().getTaxonomy();
             if ( !ForesterUtil.isEmpty( tax.getRank() ) && tax.getRank().equalsIgnoreCase( rank ) ) {
                 final String label = taxonomyLabel( tax );
                 if ( !ForesterUtil.isEmpty( label ) ) {
-                    return label;
+                    return new RankTaxon( ncbiId( tax ), label );
                 }
             }
         }
         return null;
     }
 
-    /** The taxon label on the nearest PROPER ancestor carrying exactly {@code rank}, or null -- the fallback used
-     *  in {@link #assignTipsToRankTaxon} only for a tip that cannot resolve its own identity. */
-    final static String ancestorRankTaxon( final PhylogenyNode tip, final String rank ) {
+    /** The taxon label of {@code node}'s OWN taxonomy iff its rank equals {@code rank}, else null -- used by
+     *  {@link #unresolvedTipTaxa} as the "the tip resolves its own identity in-tree" test. */
+    final static String selfRankTaxon( final PhylogenyNode node, final String rank ) {
+        final RankTaxon rt = selfRankTaxonRT( node, rank );
+        return ( rt == null ) ? null : rt.getName();
+    }
+
+    /** The nearest PROPER ancestor's own {@code <taxonomy>} at exactly {@code rank} as a {@link RankTaxon}, or null
+     *  -- the tip fallback in {@link #tipRankTaxon} for a tip that cannot resolve its own identity. */
+    private final static RankTaxon ancestorRankTaxonRT( final PhylogenyNode tip, final String rank ) {
         for( PhylogenyNode n = tip.getParent(); n != null; n = n.getParent() ) {
-            final String label = selfRankTaxon( n, rank );
-            if ( !ForesterUtil.isEmpty( label ) ) {
-                return label;
+            final RankTaxon rt = selfRankTaxonRT( n, rank );
+            if ( rt != null ) {
+                return rt;
             }
         }
         return null;
@@ -1174,52 +1358,75 @@ public class TreePanelUtil {
     }
 
     /**
-     * Each node that roots a <i>maximal</i> clade whose external descendants all share one rank
-     * taxon, mapped to that taxon. A node qualifies iff its whole subtree is uniform in
-     * {@code assignment} and its parent's subtree is not the same taxon (so only the topmost such
-     * node is returned). Handles paraphyly: a taxon split across the tree yields several roots, all
-     * mapping to the same taxon (hence the same color). A tip with no assignment breaks uniformity,
-     * so an unplaced tip is never swept into a neighboring clade's color.
+     * Each node that roots a <i>maximal</i> clade resolving to one rank taxon, mapped to that taxon (Spine B:
+     * tax-id-aware, respecting internal annotations as gap-fillers). Per node the subtree taxon is reconciled from
+     * the children and the node's OWN {@code assignment} entry:
+     * <ul>
+     * <li>children genuinely CONFLICT (&ge;2 distinct placed child taxa, or a mixed child) &rarr; mixed (never
+     *     filled; the node's own annotation is ignored here);</li>
+     * <li>the placed children AGREE on a taxon T &rarr; T (so a clade's resolvable tips WIN over a differing
+     *     ancestor annotation -- "tip identity wins"); an UNPLACED sibling is swept into T only when the node's own
+     *     annotation authorizes that same T (else the unplaced tip forces mixed, as before);</li>
+     * <li>ALL children unplaced &rarr; the node's OWN annotation fills the gap (defines the clade), else unplaced.</li>
+     * </ul>
+     * Then the maximal (topmost) node of each taxon is returned. Paraphyly yields several same-taxon roots.
+     * Equality is tax-id-aware ({@link RankTaxon}), so homonyms are not merged into one clade.
      */
-    final static Map<PhylogenyNode, String> maximalMonochromaticRoots( final Phylogeny tree,
-                                                                       final Map<PhylogenyNode, String> assignment ) {
-        final Map<PhylogenyNode, String> subtree = new HashMap<PhylogenyNode, String>();
-        final Map<PhylogenyNode, String> roots = new LinkedHashMap<PhylogenyNode, String>();
+    final static Map<PhylogenyNode, RankTaxon> maximalMonochromaticRoots( final Phylogeny tree,
+                                                                          final Map<PhylogenyNode, RankTaxon> assignment ) {
+        final Map<PhylogenyNode, RankTaxon> subtree = new HashMap<PhylogenyNode, RankTaxon>();
+        final Map<PhylogenyNode, RankTaxon> roots = new LinkedHashMap<PhylogenyNode, RankTaxon>();
         if ( ( tree == null ) || tree.isEmpty() ) {
             return roots;
         }
         for( final PhylogenyNodeIterator it = tree.iteratorPostorder(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
+            final RankTaxon own = assignment.get( n ); // the node's OWN taxon (null when it has none)
             if ( n.isExternal() ) {
-                final String t = assignment.get( n );
-                subtree.put( n, ( t != null ) ? t : MIXED_TAXON );
+                subtree.put( n, own ); // a placed tip, or null (unplaced); the leaf never "conflicts"
+                continue;
+            }
+            RankTaxon consensus = null;   // the single taxon the PLACED children agree on
+            boolean conflict = false;     // >= 2 distinct placed child taxa, or a mixed child
+            boolean any_unplaced = false; // a child whose subtree pins no taxon
+            for( final PhylogenyNode c : n.getDescendants() ) {
+                final RankTaxon cs = subtree.get( c );
+                if ( cs == MIXED ) {
+                    conflict = true;
+                    break;
+                }
+                if ( cs == null ) {
+                    any_unplaced = true;
+                }
+                else if ( consensus == null ) {
+                    consensus = cs;
+                }
+                else if ( !consensus.equals( cs ) ) {
+                    conflict = true;
+                    break;
+                }
+            }
+            final RankTaxon result;
+            if ( conflict ) {
+                result = MIXED;
+            }
+            else if ( consensus != null ) {
+                // placed children agree on `consensus`; an unplaced sibling is swept in only if the node's own
+                // annotation names that same taxon (authorizing the fill), else the unplaced tip keeps it mixed
+                result = ( !any_unplaced || consensus.equals( own ) ) ? consensus : MIXED;
             }
             else {
-                String uniform = null;
-                boolean mixed = false;
-                for( final PhylogenyNode c : n.getDescendants() ) {
-                    final String cs = subtree.get( c );
-                    if ( ( cs == null ) || cs.equals( MIXED_TAXON ) ) {
-                        mixed = true;
-                        break;
-                    }
-                    if ( uniform == null ) {
-                        uniform = cs;
-                    }
-                    else if ( !uniform.equals( cs ) ) {
-                        mixed = true;
-                        break;
-                    }
-                }
-                subtree.put( n, ( !mixed && ( uniform != null ) ) ? uniform : MIXED_TAXON );
+                result = own; // all children unplaced -> the node's own annotation fills the gap (may be null)
             }
+            subtree.put( n, result );
         }
         for( final PhylogenyNodeIterator it = tree.iteratorPostorder(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
-            final String t = subtree.get( n );
-            if ( ( t != null ) && !t.equals( MIXED_TAXON ) ) {
+            final RankTaxon t = subtree.get( n );
+            if ( ( t != null ) && ( t != MIXED ) ) {
                 final PhylogenyNode p = n.getParent();
-                if ( ( p == null ) || !t.equals( subtree.get( p ) ) ) {
+                final RankTaxon pt = ( p == null ) ? null : subtree.get( p );
+                if ( ( pt == null ) || ( pt == MIXED ) || !t.equals( pt ) ) {
                     roots.put( n, t );
                 }
             }
