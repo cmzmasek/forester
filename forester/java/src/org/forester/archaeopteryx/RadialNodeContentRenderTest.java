@@ -50,7 +50,84 @@ public final class RadialNodeContentRenderTest {
             return true;
         }
         return labelsOk() && dotsOk() && numbersOk() && collapseOk() && collapseMarkerOk() && collapseOverviewOk()
-                && circularCenteredOk() && circularPhylogramOk();
+                && circularCenteredOk() && circularPhylogramOk() && overviewCollapseLayoutOk();
+    }
+
+    /** The circular OVERVIEW thumbnail HONORS collapse: it reuses the main paint's displayed-tip angles and SKIPS tips
+     *  hidden under a collapse, instead of spreading every structural tip by the full external count (which left a
+     *  collapsed thumbnail out of scale). Checked via coord-stability: a hidden tip's thumbnail coords must not be
+     *  re-laid-out after its clade is collapsed. */
+    private static boolean overviewCollapseLayoutOk() {
+        final boolean[] ok = { true };
+        withFrame( "colorize-by-rank.xml", ( frame, tp, o ) -> {
+            final int w = 1200, h = 1200;
+            o.setShowOverview( true );
+            frame.showWhole();
+            tp.setSize( w, h ); // larger than the frame viewport -> the overview turns on
+            org.forester.phylogeny.PhylogenyNode target = null;
+            for ( final java.util.Iterator<org.forester.phylogeny.PhylogenyNode> it =
+                    tp.getPhylogeny().iteratorPreorder(); it.hasNext(); ) {
+                final org.forester.phylogeny.PhylogenyNode n = it.next();
+                if ( !n.isExternal() && !n.isRoot() && ( n.getNumberOfExternalNodes() >= 2 ) && ( ( target == null )
+                        || ( n.getNumberOfExternalNodes() > target.getNumberOfExternalNodes() ) ) ) {
+                    target = n;
+                }
+            }
+            if ( ( target == null ) || target.getAllExternalDescendants().isEmpty() ) {
+                fail( ok, "precondition: expected an internal clade with tips to collapse" );
+                return;
+            }
+            // a VISIBLE tip -- one NOT under the collapsed clade
+            final java.util.List<org.forester.phylogeny.PhylogenyNode> hidden_tips = target.getAllExternalDescendants();
+            org.forester.phylogeny.PhylogenyNode vis = null;
+            for ( final org.forester.phylogeny.PhylogenyNode n : tp.getPhylogeny().getExternalNodes() ) {
+                if ( !hidden_tips.contains( n ) ) {
+                    vis = n;
+                    break;
+                }
+            }
+            if ( vis == null ) {
+                fail( ok, "precondition: need a tip outside the collapsed clade" );
+                return;
+            }
+            tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
+            tp.collapse( target );
+            tp.calcParametersForPainting( w, h );
+            paintScreen( tp, w, h ); // main circular paint + the overview thumbnail
+            if ( !tp.isOvOn() ) {
+                fail( ok, "precondition: the overview must be ON so the thumbnail layout is exercised" );
+                return;
+            }
+            // the overview reuses the main paint's DISPLAYED-tip angles, so a visible tip sits at the SAME angle in the
+            // thumbnail as in the main tree. The old full-external-count spacing would put it at a different angle once
+            // a clade is collapsed (displayed count < full count), leaving the thumbnail out of scale.
+            final org.forester.phylogeny.PhylogenyNode root = tp.getPhylogeny().getRoot();
+            final double main_angle = Math.atan2( vis.getYcoord() - root.getYcoord(), vis.getXcoord() - root.getXcoord() );
+            final double ov_angle = Math.atan2( vis.getYSecondary() - root.getYSecondary(),
+                    vis.getXSecondary() - root.getXSecondary() );
+            double d = Math.abs( main_angle - ov_angle ) % ( 2 * Math.PI );
+            if ( d > Math.PI ) {
+                d = ( 2 * Math.PI ) - d;
+            }
+            if ( d > 0.05 ) {
+                fail( ok, "the circular overview must place a visible tip at the SAME angle as the main tree once a "
+                        + "clade is collapsed (main " + main_angle + " vs overview " + ov_angle + " rad)" );
+            }
+        }, ok );
+        return ok[ 0 ];
+    }
+
+    /** Paint the panel through its SCREEN path (paintComponent), which -- unlike the export path -- draws the overview
+     *  thumbnail. Discards the image; used to exercise the overview layout. */
+    private static void paintScreen( final TreePanel tp, final int w, final int h ) {
+        final BufferedImage img = new BufferedImage( w, h, BufferedImage.TYPE_INT_RGB );
+        final java.awt.Graphics2D g = img.createGraphics();
+        try {
+            tp.paintComponent( g );
+        }
+        finally {
+            g.dispose();
+        }
     }
 
     /** A circular PHYLOGRAM (Draw Phylogram + branch lengths) positions each tip by its DISTANCE-to-root (not all on

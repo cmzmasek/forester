@@ -4819,6 +4819,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (n.isExternal()) {
             return;
         }
+        if (n.isCollapse()) {
+            return; // honor collapse in the thumbnail too: draw the clade as a stub, matching the main paintUnrooted
+        }
         final float num_enclosed = n.getNumberOfExternalNodes();
         final float x = n.getXSecondary();
         final float y = n.getYSecondary();
@@ -9177,10 +9180,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     /** Assigns each displayed tip its ring angle (advancing {@code angle[0]} by {@code angle_inc}), in tree order:
-     *  a visible external goes on the outer ring; a collapsed clade-root is positioned at its own depth radius (its
-     *  incoming branch ends there). NB no collapse triangle/marker is drawn radially yet (paintNodeBox and the
-     *  radial label painter both skip collapsed nodes) -- a collapsed clade currently shows as a bare branch stub; a
-     *  radial collapse marker is a follow-up. {@code index[0]} is the external ordinal used for dynamic-hiding. */
+     *  a visible external goes on the outer ring (or its distance radius in a phylogram); a collapsed clade-root is
+     *  positioned at its own depth/distance radius (its incoming branch ends there, where its collapse marker is
+     *  drawn -- see {@link #paintRadialCollapsedMarker}). {@code index[0]} is the external ordinal used for
+     *  dynamic-hiding. */
     private void assignCircularDisplayedTipAngles(final PhylogenyNode node, final int cx, final int cy,
                                                   final int radius, final double angle_inc, final double[] angle,
                                                   final int[] index) {
@@ -9209,23 +9212,29 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final void paintCircularLite(final Phylogeny phy,
-                                 final double starting_angle,
                                  final int center_x,
                                  final int center_y,
                                  final int radius,
                                  final Graphics2D g) {
-        final int circ_num_ext_nodes = phy.getNumberOfExternalNodes();
         _root = phy.getRoot();
         _root.setXSecondary(center_x);
         _root.setYSecondary(center_y);
-        double current_angle = starting_angle;
+        // reuse the main paint's DISPLAYED-tip angles (collapse-aware; _urt_nodeid_angle_map was just populated by
+        // paintCircular, which also folds in the starting angle) and skip tips hidden under a collapse -- so the
+        // thumbnail's tip spacing MATCHES the main tree, instead of the old full-external-count spacing (which spread
+        // every structural tip, including the ones hidden under a collapse, leaving a collapsed thumbnail out of scale).
         for (final PhylogenyNodeIterator it = phy.iteratorExternalForward(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
+            if (isHiddenUnderCollapse(n)) {
+                continue;
+            }
+            final Double angle = _urt_nodeid_angle_map.get(n.getId());
+            if (angle == null) {
+                continue;
+            }
             final double r = circularRadiusFraction(n); // outer ring (cladogram) or distance-to-root (phylogram)
-            n.setXSecondary((float) (center_x + (r * radius * Math.cos(current_angle))));
-            n.setYSecondary((float) (center_y + (r * radius * Math.sin(current_angle))));
-            _urt_nodeid_angle_map.put(n.getId(), current_angle);
-            current_angle += (TWO_PI / circ_num_ext_nodes);
+            n.setXSecondary((float) (center_x + (r * radius * Math.cos(angle))));
+            n.setYSecondary((float) (center_y + (r * radius * Math.sin(angle))));
         }
         paintCircularsLite(phy.getRoot(), phy, center_x, center_y, radius, g);
     }
@@ -9514,7 +9523,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 _at = g.getTransform();
                 g.scale(x_scale, y_scale);
                 paintCircularLite(_phylogeny,
-                        getStartingAngle(),
                         x_pos + radius_ov,
                         y_pos + radius_ov,
                         (int) (radius_ov - (getLongestExtNodeInfo()
