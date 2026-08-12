@@ -52,7 +52,67 @@ public final class RadialNodeContentRenderTest {
         return labelsOk() && dotsOk() && numbersOk() && collapseOk() && collapseMarkerOk() && collapseOverviewOk()
                 && circularCenteredOk() && circularPhylogramOk() && overviewCollapseLayoutOk()
                 && circularCladeBandsOk() && circularAnnotationRingsOk() && circularZebraWedgesOk()
-                && circularHpdBarsOk() && circularLongLabelsOk();
+                && circularHpdBarsOk() && circularLongLabelsOk() && circularAlignedTipsOk();
+    }
+
+    /** The CIRCULAR ALIGNED phylogram (the "A" button) pins every external tip LABEL to a common outer circle (the iTOL
+     *  aligned-tips look) with a dotted radial leader bridging each tip's branch-length radius to the ring; the
+     *  UNALIGNED ("P") phylogram keeps labels at each tip's own radius. Checked transform-independently via the shared
+     *  circularLabelAnchor: aligned tip-label anchors all share ONE radius (spread ~0), unaligned anchors vary; and the
+     *  aligned render adds light-grey leader ink (scale OFF, so no distance rings compete) the unaligned render lacks. */
+    private static boolean circularAlignedTipsOk() {
+        final boolean[] ok = { true };
+        withFrame( "scale-axis.xml", ( frame, tp, o ) -> {
+            final int w = 820, h = 820;
+            o.setGraphicsExportWhiteBackground( true );
+            o.setShowOverview( false );
+            tp.setOvOn( false );
+            o.setShowScale( false ); // no distance rings -> the only light-grey ink is the aligned leaders
+            tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
+            tp.setPreferredSize( new java.awt.Dimension( w, h ) );
+            tp.setSize( w, h );
+            // UNALIGNED phylogram: labels at each tip's branch-length radius (ragged), no leaders
+            tp.getControlPanel().setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM );
+            tp.calcParametersForPainting( w, h );
+            final BufferedImage unaligned = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
+            final double un_spread = anchorRadiusSpread( tp, w, h );
+            final int gray_unaligned = countGrayRings( unaligned );
+            // ALIGNED phylogram: all tip labels pinned to ONE outer ring + dotted radial leaders
+            tp.getControlPanel().setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM );
+            tp.calcParametersForPainting( w, h );
+            final BufferedImage aligned = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
+            final double al_spread = anchorRadiusSpread( tp, w, h );
+            final int gray_aligned = countGrayRings( aligned );
+            if ( un_spread < 20 ) {
+                fail( ok, "precondition: unaligned circular phylogram tip-label anchors must vary by radius (spread "
+                        + un_spread + ")" );
+            }
+            if ( al_spread > 1.5 ) {
+                fail( ok, "aligned circular phylogram must pin ALL tip labels to ONE ring (anchor radius spread "
+                        + al_spread + ")" );
+            }
+            if ( gray_aligned <= ( gray_unaligned + 150 ) ) {
+                fail( ok, "aligned circular phylogram must draw dotted tip->ring leaders (light-grey px " + gray_aligned
+                        + " aligned vs " + gray_unaligned + " unaligned)" );
+            }
+        }, ok );
+        return ok[ 0 ];
+    }
+
+    /** max-min of the external tips' circular label-anchor radii about the ring centre (w/2, h/2): ~0 when aligned
+     *  (all labels on one ring), clearly positive when unaligned (labels at each tip's branch-length radius). */
+    private static double anchorRadiusSpread( final TreePanel tp, final int w, final int h ) {
+        final double cx = (int) ( w / 2 );
+        final double cy = (int) ( h / 2 );
+        double min = Double.MAX_VALUE;
+        double max = 0;
+        for ( final org.forester.phylogeny.PhylogenyNode n : tp.getPhylogeny().getExternalNodes() ) {
+            final java.awt.geom.Point2D.Double a = tp.circularLabelAnchorForTest( n );
+            final double r = Math.hypot( a.x - cx, a.y - cy );
+            min = Math.min( min, r );
+            max = Math.max( max, r );
+        }
+        return max - min;
     }
 
     /** A tree whose tip labels are LONG relative to the canvas must still fan out as a real circle -- the tip-label

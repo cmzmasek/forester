@@ -1599,11 +1599,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 || (maxy < (vis.getMinY() - margin)) || (miny > (vis.getMaxY() + margin)));
     }
 
-    final private boolean isNodeDataInvisibleUnrootedCirc(final PhylogenyNode node) {
-        return ((node.getYcoord() < (getVisibleRect().getMinY() - 20))
-                || (node.getYcoord() > (getVisibleRect().getMaxY() + 20))
-                || (node.getXcoord() < (getVisibleRect().getMinX() - 20))
-                || (node.getXcoord() > (getVisibleRect().getMaxX() + 20)));
+    /** Whether a radial LABEL anchored at (x,y) is off-screen (device coords, 20px slop). Takes the point rather than
+     *  the node so the aligned circular phylogram can cull on the tip's LABEL position (the outer ring), not the node's
+     *  branch-length position -- else a short-branch tip whose node is off-screen but whose ring label is visible would
+     *  be wrongly culled (and its leader would dangle to nothing). */
+    private boolean isRadialLabelPointInvisible(final double x, final double y) {
+        return ((y < (getVisibleRect().getMinY() - 20)) || (y > (getVisibleRect().getMaxY() + 20))
+                || (x < (getVisibleRect().getMinX() - 20)) || (x > (getVisibleRect().getMaxX() + 20)));
     }
 
     final private boolean isNonLinedUpCladogram() {
@@ -3732,7 +3734,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                                  final boolean radial_labels,
                                                  final double ur_angle,
                                                  final boolean is_in_found_nodes) {
-        if (isNodeDataInvisibleUnrootedCirc(node) && !to_graphics_file && !to_pdf) {
+        // Where this node's label is anchored: its own point, EXCEPT an external tip in the aligned circular phylogram,
+        // whose label is pinned to the common outer ring (circularLabelAnchor). Cull on the ANCHOR (the label position),
+        // and reuse it for the label placement + the aligned leader below.
+        final Point2D.Double anchor = circularLabelAnchor(node);
+        if (isRadialLabelPointInvisible(anchor.x, anchor.y) && !to_graphics_file && !to_pdf) {
             return;
         }
         // Leave a collapsed clade-ROOT label-less radially (as before internal labels were enabled). Its coords ARE
@@ -3789,8 +3795,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 ? (_urt_nodeid_angle_map.get(node.getId()) % TWO_PI) : (ur_angle % TWO_PI);
         _at = g.getTransform();
         boolean need_to_reset = false;
-        final float x_coord = node.getXcoord();
-        final float y_coord = node.getYcoord() + (getFontMetrics(base_font).getAscent() / 3.0f);
+        // The label is anchored at `anchor` (computed at the top): the node, or the outer ring in the aligned circular
+        // phylogram. All the rotation/flip logic below is reused verbatim -- only the pivot/start point moves to the ring.
+        final float x_coord = (float) anchor.x;
+        final float y_coord = (float) anchor.y + (getFontMetrics(base_font).getAscent() / 3.0f);
         // On the left half of the fan the label is flipped so it still reads left-to-right; translating by
         // total_w + gap (rather than just total_w) keeps the SAME small clearance from the node on both halves
         // (otherwise the flipped label butts right up against the node box).
@@ -3801,7 +3809,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 m -= PI;
                 left = true;
             }
-            g.rotate(m, x_coord, node.getYcoord());
+            g.rotate(m, x_coord, (float) anchor.y);
             if (left) {
                 g.translate(-(total_w + gap), 0);
             }
@@ -3819,6 +3827,24 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         if (need_to_reset) {
             g.setTransform(_at);
+        }
+        // Aligned circular phylogram: a faint dotted radial leader from the tip (branch-length radius) OUT to its label
+        // on the ring -- drawn HERE (transform restored to device space), so it appears EXACTLY when a label was drawn
+        // (past the collapse/content/dynamic-hiding/off-screen returns above) and its endpoint IS the label anchor, so it
+        // can never dangle to an empty ring point. Reuses LEADER_STROKE + connectorColor like the rectangular aligned
+        // tip->label connector. Skipped for a deepest tip already at the ring (leader length < 1px).
+        if (node.isExternal() && isAlignedCircularPhylogram()) {
+            final double dx = anchor.x - node.getXcoord();
+            final double dy = anchor.y - node.getYcoord();
+            if (((dx * dx) + (dy * dy)) >= 1.0) {
+                final Stroke leader_saved_stroke = g.getStroke();
+                final Color leader_saved_color = g.getColor();
+                g.setStroke(LEADER_STROKE);
+                g.setColor(connectorColor());
+                drawLine(node.getXcoord(), node.getYcoord(), anchor.x, anchor.y, g);
+                g.setStroke(leader_saved_stroke);
+                g.setColor(leader_saved_color);
+            }
         }
     }
 
@@ -9823,6 +9849,40 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 && isPhyHasBranchLengths() && (getMaxDistanceToRoot() > 0);
     }
 
+    /** The circular ALIGNED phylogram (the "A" tree-shape button in circular): a phylogram whose branches end at each
+     *  tip's branch-length radius, but whose external tip LABELS are all pinned to the common OUTER ring (radius) with a
+     *  dotted radial leader bridging the gap -- the iTOL aligned-tips signature look. The polar twin of the rectangular
+     *  ALIGNED_PHYLOGRAM (labels at a common right column + leader). UNALIGNED ("P") keeps labels at each tip's radius. */
+    private boolean isAlignedCircularPhylogram() {
+        return isCircularPhylogram()
+                && (getControlPanel().getTreeDisplayType() == Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM);
+    }
+
+    /** The device point where {@code node}'s circular tip label is anchored: the tip's OWN position, EXCEPT in the
+     *  aligned circular phylogram where an external tip's label is pinned to the common outer ring at the tip's angle
+     *  (radius = the tree ring), so all labels line up on a circle. The single source of the anchor shared by the label
+     *  paint + leader ({@link #paintNodeDataUnrootedCirc}) and the render test, so they can never drift. The centre +
+     *  radius are derived from {@link #getPreferredSize()} + {@link #circularRadius} -- IDENTICAL to how the enclosing
+     *  paintCircular set the node coords in the same pass, so anchor and drawn tree agree on screen and in exports. */
+    private Point2D.Double circularLabelAnchor(final PhylogenyNode node) {
+        if (node.isExternal() && (_graphics_type == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR) && isAlignedCircularPhylogram()) {
+            final Double a = _urt_nodeid_angle_map.get(node.getId());
+            if (a != null) {
+                final double m = a % TWO_PI;
+                final java.awt.Dimension pref = getPreferredSize();
+                final int radius = circularRadius(pref.getWidth(), pref.getHeight());
+                return new Point2D.Double((int) (pref.getWidth() / 2) + (radius * Math.cos(m)),
+                        (int) (pref.getHeight() / 2) + (radius * Math.sin(m)));
+            }
+        }
+        return new Point2D.Double(node.getXcoord(), node.getYcoord());
+    }
+
+    /** Test hook: the circular tip-label anchor point (see {@link #circularLabelAnchor}). */
+    Point2D.Double circularLabelAnchorForTest(final PhylogenyNode node) {
+        return circularLabelAnchor(node);
+    }
+
     /** A node's fraction [0,1] of the ring RADIUS in the circular layout: the root at the centre (0); in a PHYLOGRAM
      *  its distance-to-root over the tree height (branch-length scaled); in a CLADOGRAM the tips on the outer ring (1)
      *  and internal/collapsed nodes by topological depth. Used by the main paint AND the overview so both agree. */
@@ -10166,6 +10226,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             paintCircularScaleRings(g, center_x, center_y, radius > 0 ? radius : 0, to_pdf, to_graphics_file);
             paintCircular(_phylogeny, getStartingAngle(), center_x, center_y, radius > 0 ? radius : 0, g, to_pdf,
                     to_graphics_file);
+            // (aligned circular phylogram: the tip->ring leaders are drawn per-tip inside paintNodeDataUnrootedCirc,
+            // right where the label is, so a leader appears iff its label does)
             // faint alternating angular wedges (row-tracking aid), over the tree but UNDER the rings/clade bands
             paintZebraStripesCircular(g, center_x, center_y, radius > 0 ? radius : 0);
             // node-age (HPD) bars as radial age-range segments (circular phylogram only), over the tree
