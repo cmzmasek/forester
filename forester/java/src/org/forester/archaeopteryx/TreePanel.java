@@ -4577,6 +4577,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     isInFoundNodes(n));
             return;
         }
+        // honor collapse: a collapsed clade is a single stub here -- its incoming branch + node box are drawn by the
+        // PARENT's iteration (coords were set there), so we just stop, NOT recursing into the hidden subtree. Without
+        // this, unrooted drew collapsed clades fully EXPANDED (circular already honors collapse), which disagreed with
+        // hit-testing / halos / hover that treat the subtree as hidden. A bare stub for now (no label -- see
+        // paintNodeDataUnrootedCirc); a radial collapse marker + [N] count is a planned follow-up.
+        if (n.isCollapse()) {
+            return;
+        }
         // internal-node label (clade names, node/seq names) rides the branch radially, rotated to this node's own
         // wedge midpoint (= the direction of its incoming branch). The root sits at the canvas centre, too cramped
         // for a label, so it is skipped. Gated on "Show Internal Data" inside the method (not dynamic-hiding-culled,
@@ -7594,10 +7602,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      * PULSE_PERIOD_MS -- an EDT timer ({@link #updatePulseTimer}) repaints just the small halo regions (a CLIPPED
      * repaint: the node walk still runs, but only those regions rasterize). In an EXPORT it renders once at peak
      * phase (a static glow) so the figure still shows the emphasis; suppressed on a black-and-white export (it is
-     * inherently colored). Drawn after the node loop (needs the node coords). Rectangular-family layouts only.
+     * inherently colored). Drawn after the node loop (needs the node coords). Dispatched in EVERY layout
+     * (rectangular family + circular/unrooted) -- the halo rides the node's device coords, which are set radially too.
      * <p>The screen animation state ({@code _found_halo_bounds} / {@code _has_visible_found_halo}) is cleared at
      * the TOP of {@code paintPhylogeny} and the timer reconciled at its END for EVERY layout -- so an export paint
-     * here never clobbers it, and a switch to a circular/unrooted view reliably STOPS the timer (no leak).
+     * here never clobbers it, and turning the option off reliably STOPS the timer (no leak).
      */
     private void paintFoundNodeHalos(final Graphics2D g, final boolean to_pdf, final boolean to_graphics_file) {
         final boolean to_screen = !to_pdf && !to_graphics_file;
@@ -7613,7 +7622,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final int alpha = (int) Math.round(HALO_MIN_ALPHA + ((HALO_MAX_ALPHA - HALO_MIN_ALPHA) * sin));
         final int max_r = Math.round(HALO_BASE_RADIUS + HALO_AMP_RADIUS); // repaint region uses the peak radius
         final Color saved = g.getColor();
-        for (final PhylogenyNode node : _nodes_in_preorder) {
+        // iterate the phylogeny directly (not _nodes_in_preorder, which is built ONLY in the rectangular branch and
+        // is null for a tree opened straight into a radial layout) so the halos work in every layout
+        for (final PhylogenyNodeIterator it = _phylogeny.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode node = it.next();
             if (!isInFoundNodes(node) || isHiddenUnderCollapse(node)) {
                 continue;
             }
@@ -7878,6 +7890,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
+    /** The post-layout overlays for the radial (CIRCULAR/UNROOTED) branches, dispatched identically by both after the
+     *  tree geometry has set every node's device coords: Color-by/Size-by tip dots (the node loop draws them for the
+     *  rectangular family), ancestral-state pies, the translucent hover preview, and the pulsing found-node halos.
+     *  Kept as one method so a future radial overlay is added once, not in two places that can drift apart. */
+    private void paintRadialOverlays(final Graphics2D g, final boolean to_pdf, final boolean to_graphics_file) {
+        paintRadialPropertyDots(g); // Color-by / Size-by tip dots (rectangular draws them in the node loop)
+        paintAncestralPies(g, to_pdf, to_graphics_file); // per-node state pies
+        paintHoverPreview(g, !(to_pdf || to_graphics_file)); // translucent select/deselect hover preview
+        paintFoundNodeHalos(g, to_pdf, to_graphics_file); // pulsing (screen) / static-glow (export) hit halos
+    }
+
     private void paintCladeBands(final Graphics2D g) {
         if (!hasCladeBands()) {
             return;
@@ -8122,26 +8145,30 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     /**
      * The child node whose incoming branch is under ({@code x},{@code y}), or null -- for branch-click clade
-     * selection. Picks the nearest branch within a small tolerance (same forgiveness as {@link #findNode}).
-     * The rectangular family hit-tests the horizontal leg (at the child's y); the diagonal styles
-     * (triangular/convex/curved) hit-test the straight parent-&gt;child line. No-op for circular/unrooted
-     * (radial branches). Only branches actually on screen (not hidden under a collapsed ancestor) are tested.
+     * selection. Picks the nearest branch within a small tolerance (same forgiveness as {@link #findNode}). Each
+     * layout hit-tests the branch geometry it actually DRAWS: RECTANGULAR the horizontal leg (at the child's y) plus
+     * the vertical fork connector; TRIANGULAR / UNROOTED the straight parent-&gt;child line; CIRCULAR the radial leg
+     * from the child to the point on the parent's radius at the child's angle. EURO_STYLE/ROUNDED offset the leg near
+     * the parent, so branch-click stays a no-op there rather than a hit region that disagrees with the painted branch.
+     * Only branches actually on screen (not hidden under a collapsed ancestor) are tested.
      */
     final PhylogenyNode findBranch(final int x, final int y) {
         final PHYLOGENY_GRAPHICS_TYPE gt = getPhylogenyGraphicsType();
-        // Only the layouts whose branch geometry reconstructs EXACTLY from the node coords are supported, so
-        // the hit region matches what is drawn: RECTANGULAR (horizontal leg at the child's y + vertical fork
-        // connector at the parent's x) and TRIANGULAR (a straight parent->child line). EURO_STYLE/ROUNDED offset
-        // the leg near the parent, so branch-click is a no-op there (and no hover cursor is shown) rather than a
-        // hit region that disagrees with the painted branch. Ditto the radial layouts (circular/unrooted).
-        final boolean diagonal = (gt == PHYLOGENY_GRAPHICS_TYPE.TRIANGULAR);
+        final boolean unrooted = (gt == PHYLOGENY_GRAPHICS_TYPE.UNROOTED);
+        final boolean circular = (gt == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR);
+        // "diagonal" = a straight parent->child line: TRIANGULAR and UNROOTED draw exactly that
+        final boolean diagonal = (gt == PHYLOGENY_GRAPHICS_TYPE.TRIANGULAR) || unrooted;
         final boolean rectangular = (gt == PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR);
-        if ((_phylogeny == null) || _phylogeny.isEmpty() || !(rectangular || diagonal)) {
+        if ((_phylogeny == null) || _phylogeny.isEmpty() || !(rectangular || diagonal || circular)) {
             return null;
         }
         final double tol = (getOptions().getDefaultNodeShapeSize() / 2.0) + WIGGLE;
         // in a vertical orientation the node coords are logical (un-rotated); map the device click back to that space
         final Point2D.Double click = toLogicalPoint(x, y);
+        // circular: the root is at the ring centre; each node's angle is derivable from its coords (atan2), so the
+        // radial leg reconstructs from coords WITHOUT the fragile _urt_nodeid_angle_map global
+        final double root_x = circular ? _phylogeny.getRoot().getXcoord() : 0;
+        final double root_y = circular ? _phylogeny.getRoot().getYcoord() : 0;
         PhylogenyNode best = null;
         double best_dist = tol;
         for (final PhylogenyNodeIterator iter = _phylogeny.iteratorPostorder(); iter.hasNext(); ) {
@@ -8150,10 +8177,20 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 continue; // a collapsed clade's tips are hidden (not individually selectable)
             }
             double d = Double.MAX_VALUE;
-            if (!n.isRoot()) { // the incoming branch: horizontal leg (at the child's y) or straight diagonal
+            if (!n.isRoot()) {
                 final PhylogenyNode p = n.getParent();
-                final double a_y = diagonal ? p.getYcoord() : n.getYcoord();
-                d = Line2D.ptSegDist(p.getXcoord(), a_y, n.getXcoord(), n.getYcoord(), click.x, click.y);
+                if (circular) {
+                    // radial leg: from n out to the point on the PARENT's radius at n's angle (what paintBranchCircular draws)
+                    final double angle = Math.atan2(n.getYcoord() - root_y, n.getXcoord() - root_x);
+                    final double pdx = p.getXcoord() - root_x, pdy = p.getYcoord() - root_y;
+                    final double parent_radius = Math.sqrt((pdx * pdx) + (pdy * pdy));
+                    d = Line2D.ptSegDist(n.getXcoord(), n.getYcoord(), root_x + (Math.cos(angle) * parent_radius),
+                            root_y + (Math.sin(angle) * parent_radius), click.x, click.y);
+                }
+                else { // horizontal leg (at the child's y) or straight parent->child diagonal
+                    final double a_y = diagonal ? p.getYcoord() : n.getYcoord();
+                    d = Line2D.ptSegDist(p.getXcoord(), a_y, n.getXcoord(), n.getYcoord(), click.x, click.y);
+                }
             }
             if (rectangular && !n.isExternal()) {
                 // n's own vertical fork connector (at n's x, spanning its children) selects n's subtree -- this
@@ -9221,8 +9258,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     g,
                     to_pdf,
                     to_graphics_file);
-            paintRadialPropertyDots(g); // Color-by / Size-by tip dots (rectangular draws them in the node loop)
-            paintAncestralPies(g, to_pdf, to_graphics_file); // per-node state pies -- coords set by the recursion above
+            paintRadialOverlays(g, to_pdf, to_graphics_file); // dots + pies + hover preview + halos (coords set above)
             if (getOptions().isShowScale()) {
                 if (!(to_graphics_file || to_pdf)) {
                     paintScale(g,
@@ -9260,8 +9296,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 }
             }
             paintCircular(_phylogeny, getStartingAngle(), d, d, radius > 0 ? radius : 0, g, to_pdf, to_graphics_file);
-            paintRadialPropertyDots(g); // Color-by / Size-by tip dots (rectangular draws them in the node loop)
-            paintAncestralPies(g, to_pdf, to_graphics_file); // per-node state pies -- coords set by paintCircular above
+            paintRadialOverlays(g, to_pdf, to_graphics_file); // dots + pies + hover preview + halos (coords set above)
             if (getOptions().isShowOverview() && isOvOn() && !to_graphics_file && !to_pdf) {
                 final int radius_ov = (int) (getOvMaxHeight() < getOvMaxWidth() ? getOvMaxHeight() / 2
                         : getOvMaxWidth() / 2);
@@ -9332,7 +9367,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     (to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite());
         }
         // reconcile the "Pulse Found Nodes" animation timer after EVERY screen paint (all layouts): starts it when a
-        // hit halo was drawn on a rectangular tree, stops it when none was (option off / no hit / circular-unrooted).
+        // hit halo was drawn (rectangular OR radial), stops it when none was (option off / no hit).
         if (!to_pdf && !to_graphics_file) {
             updatePulseTimer();
         }
@@ -9861,6 +9896,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     final void setPhylogenyGraphicsType(final PHYLOGENY_GRAPHICS_TYPE graphics_type) {
         _graphics_type = graphics_type;
+        // a hover-preview target from the previous layout would otherwise draw a spurious select preview in the new
+        // one (the pointer isn't over that branch there); it self-corrects on the next mouse move, but clear it now
+        clearHoverPreview();
         setTextAntialias();
     }
 

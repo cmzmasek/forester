@@ -128,11 +128,14 @@ public final class PulseFoundNodesRenderTest {
                 fail( ok, "the on-screen halo must breathe across phases (counts " + counts[ 0 ] + "," + counts[ 1 ]
                         + "," + counts[ 2 ] + ")" );
             }
-            // (3) LEAK-FIX: a rectangular screen paint records halo repaint regions (the timer would run); switching
-            // to a CIRCULAR layout clears the halo state on the next paint, so the timer reconciles to stopped --
-            // the fix for the "timer keeps ticking on stale regions after a layout switch" bug.
+            // (3) LEAK-FIX + radial parity: the halo animation state is a pure function of the LAST paint (cleared at
+            // the top of paintPhylogeny, reconciled at its end). A rectangular paint with hits records repaint regions;
+            // switching to a CIRCULAR layout STILL records them (the pulse now renders radially too -- interaction
+            // parity); turning the option OFF then clears them on the next paint, so the timer reconciles to stopped --
+            // the fix for the "timer keeps ticking on stale regions" bug (a genuine nothing-to-pulse trigger).
             SwingUtilities.invokeAndWait( () -> {
                 final TreePanel tp = mf[ 0 ].getMainPanel().getCurrentTreePanel();
+                final Options o = mf[ 0 ].getOptions();
                 tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
                 tp.calcParametersForPainting( W, H );
                 paint( tp );
@@ -141,20 +144,32 @@ public final class PulseFoundNodesRenderTest {
                 tp.calcParametersForPainting( W, H );
                 paint( tp );
                 final int circ_bounds = tp.getFoundHaloBoundsCountForTest();
+                o.setPulseFoundNodes( false );
+                paint( tp );
+                final int off_bounds = tp.getFoundHaloBoundsCountForTest();
+                o.setPulseFoundNodes( true ); // restore
                 if ( rect_bounds <= 0 ) {
                     fail( ok, "a rectangular paint should record found-node halo regions, got " + rect_bounds );
                 }
-                if ( circ_bounds != 0 ) {
-                    fail( ok, "switching to a circular layout must clear the halo state so the pulse timer stops "
-                            + "(leftover regions=" + circ_bounds + ")" );
+                if ( circ_bounds <= 0 ) {
+                    fail( ok, "a circular paint should ALSO record halo regions (the pulse renders radially now), got "
+                            + circ_bounds );
+                }
+                if ( off_bounds != 0 ) {
+                    fail( ok, "turning Pulse Found Nodes off must clear the halo state so the timer stops "
+                            + "(leftover regions=" + off_bounds + ")" );
                 }
             } );
-            // (4) LIFECYCLE smoke: after the panel is disposed the animation timer must not be running (no leak)
+            // (4) LIFECYCLE: dispose must STOP a running animation timer (no leak). Block 3 left the pulse ON, so a
+            // fresh pulse-on paint with hits arms the timer (when the panel is showing); then dispose -> removeNotify()
+            // must stop it. Guarded on was_running so it's a no-op (not a false failure) if the env never armed it.
             SwingUtilities.invokeAndWait( () -> {
                 final TreePanel tp = mf[ 0 ].getMainPanel().getCurrentTreePanel();
+                paint( tp );
+                final boolean was_running = tp.isPulseTimerRunning();
                 ( (JFrame) mf[ 0 ] ).dispose(); // -> removeNotify() stops the timer
-                if ( tp.isPulseTimerRunning() ) {
-                    fail( ok, "the pulse timer must be stopped once the panel/window is disposed" );
+                if ( was_running && tp.isPulseTimerRunning() ) {
+                    fail( ok, "removeNotify() must stop a RUNNING pulse timer once the panel/window is disposed" );
                 }
             } );
         }

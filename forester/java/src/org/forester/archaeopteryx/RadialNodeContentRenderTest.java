@@ -52,8 +52,9 @@ public final class RadialNodeContentRenderTest {
         return labelsOk() && dotsOk() && numbersOk() && collapseOk();
     }
 
-    /** A collapsed clade renders in circular AND unrooted WITHOUT crashing -- collapsed clade-roots are now given a
-     *  ring angle + coords (they are internal, so paintCirculars skips them; reading their absent angle used to NPE). */
+    /** A collapsed clade renders in circular AND unrooted WITHOUT crashing (collapsed clade-roots are given a ring
+     *  angle + coords -- reading their absent angle used to NPE in circular), AND unrooted now HONORS collapse (its
+     *  hidden subtree is not drawn -- paintUnrooted used to recurse through collapsed clades, drawing them expanded). */
     private static boolean collapseOk() {
         final boolean[] ok = { true };
         withFrame( "colorize-by-rank.xml", ( frame, tp, o ) -> {
@@ -61,22 +62,33 @@ public final class RadialNodeContentRenderTest {
             o.setGraphicsExportWhiteBackground( true );
             frame.showWhole();
             tp.setSize( w, h );
+            // pick the LARGEST non-root internal clade so hiding it produces an unambiguous ink drop
             org.forester.phylogeny.PhylogenyNode target = null;
             for ( final java.util.Iterator<org.forester.phylogeny.PhylogenyNode> it =
                     tp.getPhylogeny().iteratorPreorder(); it.hasNext(); ) {
                 final org.forester.phylogeny.PhylogenyNode n = it.next();
-                if ( !n.isExternal() && !n.isRoot() && ( n.getNumberOfExternalNodes() >= 2 ) ) {
+                if ( !n.isExternal() && !n.isRoot() && ( n.getNumberOfExternalNodes() >= 2 )
+                        && ( ( target == null ) || ( n.getNumberOfExternalNodes() > target.getNumberOfExternalNodes() ) ) ) {
                     target = n;
-                    break;
                 }
             }
-            if ( target == null ) {
+            if ( ( target == null ) || target.getAllExternalDescendants().isEmpty() ) {
                 fail( ok, "precondition: expected an internal clade to collapse" );
                 return;
             }
+            // lay the tree out UNROOTED with the clade EXPANDED, and capture a hidden-to-be descendant's coords
+            final org.forester.phylogeny.PhylogenyNode hidden = target.getAllExternalDescendants().get( 0 );
+            tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.UNROOTED );
+            tp.calcParametersForPainting( w, h );
+            AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
+            final float hx = hidden.getXcoord(), hy = hidden.getYcoord();
+            // collapse must be done in a NON-unrooted layout (the app refuses "Cannot collapse in unrooted display
+            // type"); the user collapses in rectangular/circular, then VIEWS unrooted
+            tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
+            tp.calcParametersForPainting( w, h );
             tp.collapse( target );
-            // renders (the withFrame wrapper turns any thrown exception -- e.g. the old NPE -- into a failure), and the
-            // tree still draws content
+            // renders in both radial layouts (the withFrame wrapper turns any thrown exception -- e.g. the old circular
+            // collapse NPE -- into a failure) and still draws content
             for ( final Options.PHYLOGENY_GRAPHICS_TYPE gt : new Options.PHYLOGENY_GRAPHICS_TYPE[] {
                     Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR, Options.PHYLOGENY_GRAPHICS_TYPE.UNROOTED } ) {
                 tp.setPhylogenyGraphicsType( gt );
@@ -84,6 +96,16 @@ public final class RadialNodeContentRenderTest {
                 if ( countDark( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) ) < 200 ) {
                     fail( ok, "a collapsed-clade tree must still render its branches/labels in " + gt );
                 }
+            }
+            // UNROOTED now HONORS collapse: paintUnrooted stops at the collapsed clade, so its hidden descendants are
+            // NOT re-laid-out -- the hidden leaf keeps its pre-collapse coords (without the fix it recurses and
+            // re-positions them for the reflowed layout).
+            tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.UNROOTED );
+            tp.calcParametersForPainting( w, h );
+            AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
+            if ( ( hidden.getXcoord() != hx ) || ( hidden.getYcoord() != hy ) ) {
+                fail( ok, "unrooted must not lay out a collapsed clade's hidden descendants (leaf moved from (" + hx
+                        + "," + hy + ") to (" + hidden.getXcoord() + "," + hidden.getYcoord() + "))" );
             }
         }, ok );
         return ok[ 0 ];
