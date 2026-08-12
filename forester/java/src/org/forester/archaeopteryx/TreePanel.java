@@ -9404,9 +9404,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 paintOvRectangle(g);
             }
         } else if (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR) {
-            final int radius = (int) ((Math.min(getPreferredSize().getWidth(), getPreferredSize().getHeight())
-                    / 2) - (MOVE + getLongestExtNodeInfo()));
-            final int d = radius + MOVE + getLongestExtNodeInfo();
+            // centre the ring in the drawing area (the viewport on screen, the export canvas on export -- both are the
+            // tp's own width/height) so the circle is CENTRED and fills it, like the unrooted layout already does. The
+            // old code placed the centre at min(w,h)/2, i.e. top-left-biased whenever the canvas is not square (the
+            // radial preferred size is the rectangular tip-spread extent), which pushed the circle into a corner.
+            final double pref_w = getPreferredSize().getWidth();
+            final double pref_h = getPreferredSize().getHeight();
+            final int radius = (int) ((Math.min(pref_w, pref_h) / 2) - (MOVE + getLongestExtNodeInfo()));
+            final int center_x = (int) (pref_w / 2);
+            final int center_y = (int) (pref_h / 2);
             _dynamic_hiding_factor = 0;
             if (getControlPanel().isDynamicallyHideData() && (radius > 0)) {
                 _dynamic_hiding_factor = (int) ((getFontMetricsForLargeDefaultFont().getHeight() * 1.5
@@ -9419,7 +9425,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     getControlPanel().setDynamicHidingIsOn(false);
                 }
             }
-            paintCircular(_phylogeny, getStartingAngle(), d, d, radius > 0 ? radius : 0, g, to_pdf, to_graphics_file);
+            paintCircular(_phylogeny, getStartingAngle(), center_x, center_y, radius > 0 ? radius : 0, g, to_pdf,
+                    to_graphics_file);
             paintRadialOverlays(g, to_pdf, to_graphics_file); // dots + pies + hover preview + halos (coords set above)
             if (getOptions().isShowOverview() && isOvOn() && !to_graphics_file && !to_pdf) {
                 final int radius_ov = (int) (getOvMaxHeight() < getOvMaxWidth() ? getOvMaxHeight() / 2

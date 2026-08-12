@@ -49,7 +49,31 @@ public final class RadialNodeContentRenderTest {
         if ( GraphicsEnvironment.isHeadless() ) {
             return true;
         }
-        return labelsOk() && dotsOk() && numbersOk() && collapseOk() && collapseMarkerOk() && collapseOverviewOk();
+        return labelsOk() && dotsOk() && numbersOk() && collapseOk() && collapseMarkerOk() && collapseOverviewOk()
+                && circularCenteredOk();
+    }
+
+    /** The CIRCULAR ring is centred in the drawing area (so an export/view is centred + fills the canvas, not pushed
+     *  into a corner). paintCircular puts the ROOT at the ring centre; on a deliberately NON-square canvas the centre
+     *  must be (width/2, height/2), not the old min(w,h)/2 (which biased it toward the top-left). */
+    private static boolean circularCenteredOk() {
+        final boolean[] ok = { true };
+        withFrame( "colorize-by-rank.xml", ( frame, tp, o ) -> {
+            final int w = 1000, h = 640; // non-square on purpose: min/2 = 320 vs width/2 = 500
+            o.setGraphicsExportWhiteBackground( true );
+            frame.showWhole();
+            tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
+            tp.setPreferredSize( new java.awt.Dimension( w, h ) ); // the circle sizes/centres from the preferred size
+            tp.setSize( w, h );
+            tp.calcParametersForPainting( w, h );
+            AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
+            final org.forester.phylogeny.PhylogenyNode root = tp.getPhylogeny().getRoot();
+            if ( ( Math.abs( root.getXcoord() - ( w / 2.0 ) ) > 5 ) || ( Math.abs( root.getYcoord() - ( h / 2.0 ) ) > 5 ) ) {
+                fail( ok, "the circular ring must be centred in the canvas: root (centre) at (" + root.getXcoord() + ","
+                        + root.getYcoord() + "), expected ~(" + ( w / 2 ) + "," + ( h / 2 ) + ")" );
+            }
+        }, ok );
+        return ok[ 0 ];
     }
 
     /** Collapsing a clade in CIRCULAR with the OVERVIEW shown must not crash the on-screen paint: the overview's
