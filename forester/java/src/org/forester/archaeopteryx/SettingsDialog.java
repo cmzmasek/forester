@@ -458,7 +458,7 @@ final class SettingsDialog extends JDialog {
      *  and preferred size) before repainting -- a plain repaint would leave the old scroll extent. */
     private void reFitCurrentTree() {
         if ( _mf.getCurrentTreePanel() != null ) {
-            _mf.getMainPanel().getControlPanel().updateZoomButtonsForOrientation(); // W<->H label, E tooltip
+            _mf.getMainPanel().getControlPanel().updateZoomButtonsForLayout(); // relabel the zoom cluster for the layout
             _mf.getMainPanel().getControlPanel().showWhole();
             _mf.getCurrentTreePanel().repaint();
         }

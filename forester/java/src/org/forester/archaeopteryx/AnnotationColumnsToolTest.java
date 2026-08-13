@@ -195,7 +195,7 @@ public final class AnnotationColumnsToolTest {
                 // (b) the header hit-test works, and (c) the focused-column legend still draws.
                 tp.setFocusedAnnotationColumn( -1 );
                 tp.getOptions().setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP );
-                tp.getControlPanel().updateZoomButtonsForOrientation();
+                tp.getControlPanel().updateZoomButtonsForLayout();
                 // count SATURATED (colored) pixels: the tree/labels/bars/text are grayscale, so only the strip +
                 // heat-map CELLS produce colored pixels -- a check that is not confounded by the layout reservation
                 // (which compresses the tree even when the columns do not paint)

@@ -573,16 +573,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     || (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR)) {
                 if (notches < 0) {
                     for (int i = 0; i < (-notches); ++i) {
-                        setStartingAngle((getStartingAngle() % TWO_PI) + ANGLE_ROTATION_UNIT);
-                        getControlPanel().displayedPhylogenyMightHaveChanged(false);
+                        rotateRadial(true);
                     }
                 } else {
                     for (int i = 0; i < notches; ++i) {
-                        setStartingAngle((getStartingAngle() % TWO_PI) - ANGLE_ROTATION_UNIT);
-                        if (getStartingAngle() < 0) {
-                            setStartingAngle(TWO_PI + getStartingAngle());
-                        }
-                        getControlPanel().displayedPhylogenyMightHaveChanged(false);
+                        rotateRadial(false);
                     }
                 }
             } else {
@@ -1666,7 +1661,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 getControlPanel().expandYToFitLabels();
                 handled = true;
             } else if (e.getKeyCode() == KeyEvent.VK_W) {
-                if (isVerticalOrientation()) {
+                if (isRadialLayout()) {
+                    // "W" is the node-label-direction flip ("L") in a radial layout -- keep Alt+W matching the button.
+                    getControlPanel().toggleNodeLabelDirection();
+                } else if (isVerticalOrientation()) {
                     getControlPanel().fitHeight();
                 } else {
                     getControlPanel().fitWidth();
@@ -1751,20 +1749,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 getMainPanel().getCurrentScrollPane().getViewport().setViewPosition(scroll_position);
                 handled = true;
             } else if (e.getKeyCode() == KeyEvent.VK_S) {
-                if ((getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED)
-                        || (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR)) {
-                    setStartingAngle((getStartingAngle() % TWO_PI) + ANGLE_ROTATION_UNIT);
-                    getControlPanel().displayedPhylogenyMightHaveChanged(false);
+                if (isRadialLayout()) {
+                    rotateRadial(true);
                     handled = true;
                 }
             } else if (e.getKeyCode() == KeyEvent.VK_A) {
-                if ((getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED)
-                        || (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR)) {
-                    setStartingAngle((getStartingAngle() % TWO_PI) - ANGLE_ROTATION_UNIT);
-                    if (getStartingAngle() < 0) {
-                        setStartingAngle(TWO_PI + getStartingAngle());
-                    }
-                    getControlPanel().displayedPhylogenyMightHaveChanged(false);
+                if (isRadialLayout()) {
+                    rotateRadial(false);
                     handled = true;
                 }
             } else if (getOptions().isShowOverview() && isOvOn() && (e.getKeyCode() == KeyEvent.VK_O)) {
@@ -6443,9 +6434,30 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     /** Whether the current layout is a radial one (circular or unrooted), as opposed to the rectangular family.
      *  Used to suppress tip-mark legends (Color-by / Size-by dots, annotation columns) whose marks are not drawn
      *  radially. */
-    private boolean isRadialLayout() {
+    boolean isRadialLayout() {
         return (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED)
                 || (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR);
+    }
+
+    /** Rotates the radial (circular/unrooted) layout by one step: clockwise increments the starting angle (screen y
+     *  points down, so a larger angle sweeps the fan clockwise), counter-clockwise decrements it (wrapped into
+     *  [0,2pi)). The single rotate seam behind the S/A keys, the Shift+mouse-wheel, and the X-/X+ zoom-cluster
+     *  buttons (which become rotate controls in a radial layout, since X/Y zoom both drive the one radial diameter).
+     *  A no-op outside a radial layout. */
+    void rotateRadial(final boolean clockwise) {
+        if (!isRadialLayout()) {
+            return;
+        }
+        if (clockwise) {
+            setStartingAngle((getStartingAngle() % TWO_PI) + ANGLE_ROTATION_UNIT);
+        }
+        else {
+            setStartingAngle((getStartingAngle() % TWO_PI) - ANGLE_ROTATION_UNIT);
+            if (getStartingAngle() < 0) {
+                setStartingAngle(TWO_PI + getStartingAngle());
+            }
+        }
+        getControlPanel().displayedPhylogenyMightHaveChanged(false);
     }
 
     /** Test hook: the assigned color for a pie state, or null when pies are off / the state is unknown. */

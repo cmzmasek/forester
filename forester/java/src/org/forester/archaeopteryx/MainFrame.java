@@ -2117,6 +2117,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 // (otherwise the first radial frame draws in the stale rectangular canvas -- off-centre until a re-fit).
                 getCurrentTreePanel().getControlPanel().showWhole();
             }
+            // Relabel the zoom cluster for the new layout (rectangular <-> radial): the X-/X+ zoom buttons become
+            // rotate controls, Y+/Y- become a plain +/- zoom, E greys out, and W becomes the label-direction flip.
+            getCurrentTreePanel().getControlPanel().updateZoomButtonsForLayout();
             updateScreenTextAntialias(getMainPanel().getTreePanels());
             if (getCurrentTreePanel().getControlPanel().getDynamicallyHideData() != null) {
                 if (new_type == PHYLOGENY_GRAPHICS_TYPE.UNROOTED) {
@@ -2124,6 +2127,21 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 } else {
                     getCurrentTreePanel().getControlPanel().getDynamicallyHideData().setEnabled(true);
                 }
+            }
+        }
+    }
+
+    /** Flips the node-label direction (horizontal &lt;-&gt; radial) from the radial "L" zoom-cluster button. Drives
+     *  the SAME "Radial Labels" checkbox path a Settings toggle uses -- flip the checkbox, then {@code updateOptions}
+     *  writes {@code Options._node_label_direction} -- so the option, its menu/dialog state, GuiPreferences
+     *  persistence and Reset-to-Defaults all stay consistent (setSelected does not fire the item's action, hence the
+     *  explicit updateOptions). Then repaints the current tree. */
+    void toggleRadialLabelDirection() {
+        if (_label_direction_cbmi != null) {
+            _label_direction_cbmi.setSelected(!_label_direction_cbmi.isSelected());
+            updateOptions(getOptions());
+            if (getCurrentTreePanel() != null) {
+                getCurrentTreePanel().repaint();
             }
         }
     }
@@ -2363,7 +2381,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 // re-seed the always-visible control-panel controls (theme radios + search checkboxes) that hold
                 // their own state -- else they stay stale and the search checkboxes clobber the reset on next click
                 cp.resyncFromOptions();
-                cp.updateZoomButtonsForOrientation(); // orientation reset to ROOT_LEFT -> H reverts to W
+                cp.updateZoomButtonsForLayout(); // layout reset to RECTANGULAR/ROOT_LEFT -> H reverts to W, radial labels revert
             }
             final TreePanel current = getMainPanel().getCurrentTreePanel();
             if ((current != null) && (cp != null)) {
@@ -2976,7 +2994,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         // NB: display-only -- do NOT setEdited(true): nothing here is saved to the tree file, and setEdited would both
         // pop a spurious save prompt and clear the redo stack (the undo safety net). Sibling display toggles don't either.
         final ControlPanel cp = tp.getControlPanel();
-        cp.updateZoomButtonsForOrientation();
+        cp.updateZoomButtonsForLayout();
         cp.displayedPhylogenyMightHaveChanged(true); // recompute the label/column extents for the swapped layout
         cp.showWhole(); // re-fit for the vertical extent (a plain repaint would leave the old scroll extent)
         tp.repaint();

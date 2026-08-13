@@ -76,12 +76,12 @@ public final class OrientationZoomControlTest {
 
                     // fit button label tracks the orientation: W horizontal, H vertical
                     o.setTreeOrientation( TREE_ORIENTATION.ROOT_LEFT );
-                    cp.updateZoomButtonsForOrientation();
+                    cp.updateZoomButtonsForLayout();
                     if ( !"W".equals( cp.getFitButtonText() ) ) {
                         fail( ok, "ROOT_LEFT fit button should read W, got " + cp.getFitButtonText() );
                     }
                     o.setTreeOrientation( TREE_ORIENTATION.ROOT_TOP );
-                    cp.updateZoomButtonsForOrientation();
+                    cp.updateZoomButtonsForLayout();
                     if ( !"H".equals( cp.getFitButtonText() ) ) {
                         fail( ok, "ROOT_TOP fit button should read H, got " + cp.getFitButtonText() );
                     }

@@ -115,6 +115,15 @@ final class ControlPanel extends JPanel implements ActionListener {
     // "R1" moves up by a single level to the immediate super-tree.
     private static final String RETURN_TO_WHOLE_TREE_TEXT  = "R";
     private static final String RETURN_UP_ONE_LEVEL_TEXT   = "R1";
+    // Radial (circular/unrooted) re-labels of the X-/X+ zoom buttons (rotate) and the "W" fit button (label flip).
+    // Unicode circular arrows; swap here for a plain-text fallback if a platform's button font lacks the glyphs.
+    static final String ROTATE_CCW_LABEL                   = "↺"; // anticlockwise open circle arrow
+    static final String ROTATE_CW_LABEL                    = "↻"; // clockwise open circle arrow
+    // Plain-text fallback used when the actual button font cannot display the circular-arrow glyph (never on
+    // macOS/Windows/mainstream Linux fonts, but keeps a minimal-font platform from showing a missing-glyph box).
+    static final String ROTATE_CCW_FALLBACK                = "CCW";
+    static final String ROTATE_CW_FALLBACK                 = "CW";
+    static final String LABEL_DIRECTION_BUTTON_LABEL       = "L";
     // The zoom cross (Y+, X-, F, E, X+, Y-) holds commonly-used functions, so give those buttons a
     // taller click target than the other small control-panel buttons.
     private static final int    ZOOM_BUTTON_HEIGHT        = 24;
@@ -384,15 +393,27 @@ final class ControlPanel extends JPanel implements ActionListener {
                 // Zoom buttons are labeled by SCREEN direction (X = horizontal, Y = vertical); the screen-oriented
                 // helpers flip depth<->breadth automatically in a vertical orientation.
                 else if (e.getSource() == _zoom_in_x) {
-                    zoomInScreenX(AptxConstants.BUTTON_ZOOM_IN_FACTOR, AptxConstants.BUTTON_ZOOM_IN_X_CORRECTION_FACTOR);
-                    displayedPhylogenyMightHaveChanged(false);
+                    // In a radial layout X+ becomes "rotate clockwise" (X/Y zoom both drive the one radial diameter,
+                    // so the second axis is free); otherwise it is the horizontal zoom-in.
+                    if (isRadialLayout()) {
+                        tp.rotateRadial(true);
+                    } else {
+                        zoomInScreenX(AptxConstants.BUTTON_ZOOM_IN_FACTOR,
+                                AptxConstants.BUTTON_ZOOM_IN_X_CORRECTION_FACTOR);
+                        displayedPhylogenyMightHaveChanged(false);
+                    }
                 } else if (e.getSource() == _zoom_in_y) {
                     zoomInScreenY(AptxConstants.BUTTON_ZOOM_IN_FACTOR, AptxConstants.BUTTON_ZOOM_IN_X_CORRECTION_FACTOR);
                     displayedPhylogenyMightHaveChanged(false);
                 } else if (e.getSource() == _zoom_out_x) {
-                    zoomOutScreenX(AptxConstants.BUTTON_ZOOM_OUT_FACTOR,
-                            AptxConstants.BUTTON_ZOOM_OUT_X_CORRECTION_FACTOR);
-                    displayedPhylogenyMightHaveChanged(false);
+                    // In a radial layout X- becomes "rotate counter-clockwise" (see _zoom_in_x above).
+                    if (isRadialLayout()) {
+                        tp.rotateRadial(false);
+                    } else {
+                        zoomOutScreenX(AptxConstants.BUTTON_ZOOM_OUT_FACTOR,
+                                AptxConstants.BUTTON_ZOOM_OUT_X_CORRECTION_FACTOR);
+                        displayedPhylogenyMightHaveChanged(false);
+                    }
                 } else if (e.getSource() == _zoom_out_y) {
                     zoomOutScreenY(AptxConstants.BUTTON_ZOOM_OUT_FACTOR,
                             AptxConstants.BUTTON_ZOOM_OUT_X_CORRECTION_FACTOR);
@@ -403,7 +424,11 @@ final class ControlPanel extends JPanel implements ActionListener {
                 } else if (e.getSource() == _expand_y) {
                     expandYToFitLabels();
                 } else if (e.getSource() == _fit_width) {
-                    if (isVerticalOrientation()) {
+                    // "W" is fit-width in a horizontal rectangular tree, fit-height ("H") in a vertical one, and the
+                    // node-label-direction flip ("L") in a radial layout (where fit-width duplicates "F").
+                    if (isRadialLayout()) {
+                        toggleNodeLabelDirection();
+                    } else if (isVerticalOrientation()) {
                         fitHeight();
                     } else {
                         fitWidth();
@@ -3106,6 +3131,10 @@ final class ControlPanel extends JPanel implements ActionListener {
         return (getCurrentTreePanel() != null) && getCurrentTreePanel().isVerticalOrientation();
     }
 
+    private boolean isRadialLayout() {
+        return (getCurrentTreePanel() != null) && getCurrentTreePanel().isRadialLayout();
+    }
+
     // A zoom re-centers the scroll bar of the SCREEN axis it changes. The depth (x) axis is drawn horizontally
     // normally but VERTICALLY in a vertical orientation, and the breadth (y) axis is the other way round -- so the
     // zoom methods must pick the scroll bar by orientation, else zooming re-centers the wrong axis (or not at all).
@@ -3160,24 +3189,97 @@ final class ControlPanel extends JPanel implements ActionListener {
         return (_fit_width == null) ? null : _fit_width.getText();
     }
 
-    /** Keeps the orientation-sensitive zoom controls in sync with the current orientation: in a vertical (root-top/
-     *  bottom) tree the "W" (fit-width) button becomes "H" (fit the now-vertical depth axis to the window height),
-     *  and the "E" (expand) tooltip describes the now-horizontal tip spacing. The X/Y zoom buttons keep their
-     *  screen-relative labels; only their actions flip (handled at click time). Call whenever the orientation may
-     *  have changed (panel build, Settings apply, Reset to Defaults). */
-    void updateZoomButtonsForOrientation() {
+    // Test hooks for the layout-aware zoom-cluster relabeling (see updateZoomButtonsForLayout): expose the buttons
+    // so a test can read their text/enabled state and drive a real doClick gesture through actionPerformed.
+    JButton getZoomInXButtonForTest()  { return _zoom_in_x; }
+    JButton getZoomOutXButtonForTest() { return _zoom_out_x; }
+    JButton getZoomInYButtonForTest()  { return _zoom_in_y; }
+    JButton getZoomOutYButtonForTest() { return _zoom_out_y; }
+    JButton getExpandButtonForTest()   { return _expand_y; }
+    JButton getFitWidthButtonForTest() { return _fit_width; }
+
+    /** Keeps the zoom-cluster buttons in sync with the current LAYOUT. Three cases:
+     *  <ul>
+     *  <li><b>Radial</b> (circular/unrooted): the two zoom axes collapse to one (both drive the single radial
+     *  diameter since 0.11.9), so Y+/Y- become a plain +/- zoom and the now-redundant X-/X+ become rotate
+     *  counter-clockwise / clockwise (the same {@code setStartingAngle} path as the S/A keys). "E" (vertical
+     *  label spacing) does nothing in a fan so it is greyed out, and "W" (fit-width) -- redundant with "F" (fit
+     *  &amp; center) radially -- becomes a node-label-direction flip (horizontal &lt;-&gt; radial, the "Radial
+     *  Labels" setting).</li>
+     *  <li><b>Vertical</b> (root-top/bottom rectangular): "W" becomes "H" (fit-height) and the E tooltip
+     *  describes the now-horizontal tip spacing; the X/Y labels stay screen-relative (their actions flip at
+     *  click time via the screen-oriented zoom helpers).</li>
+     *  <li><b>Horizontal</b> (default rectangular): the plain X+/X-/Y+/Y-/E/W labels.</li>
+     *  </ul>
+     *  Call whenever the layout may have changed (panel build, tab change, Type change, Settings apply, Reset). */
+    void updateZoomButtonsForLayout() {
+        final boolean radial = isRadialLayout();
         final boolean vertical = isVerticalOrientation();
-        if (_fit_width != null) {
-            _fit_width.setText(vertical ? "H" : "W");
-            _fit_width.setToolTipText(vertical
-                    ? "fit the tree to the window height, keeping the current horizontal zoom [Alt+W]"
-                    : "fit the tree to the window width, keeping the current vertical zoom [Alt+W]");
+        final boolean native_ui = getConfiguration().isUseNativeUI();
+        if (_zoom_in_y != null) {
+            _zoom_in_y.setText(radial ? "+" : "Y+");
+            _zoom_in_y.setToolTipText(radial ? "zoom in [mouse wheel, +, or Alt+Up]"
+                    : "zoom in vertically [Alt+Up or Shift+mousewheel]");
+        }
+        if (_zoom_out_y != null) {
+            _zoom_out_y.setText(radial ? "-" : "Y-");
+            _zoom_out_y.setToolTipText(radial ? "zoom out [mouse wheel, -, or Alt+Down]"
+                    : "zoom out vertically [Alt+Down or Shift+mousewheel]");
+        }
+        if (_zoom_in_x != null) {
+            _zoom_in_x.setText(radial ? rotateLabel(_zoom_in_x, ROTATE_CW_LABEL, ROTATE_CW_FALLBACK)
+                    : (native_ui ? "+" : "X+"));
+            _zoom_in_x.setToolTipText(radial ? "rotate clockwise [S or Shift+mousewheel]"
+                    : "zoom in horizontally [Alt+Right or Shift+Alt+mousewheel]");
+        }
+        if (_zoom_out_x != null) {
+            _zoom_out_x.setText(radial ? rotateLabel(_zoom_out_x, ROTATE_CCW_LABEL, ROTATE_CCW_FALLBACK)
+                    : (native_ui ? "-" : "X-"));
+            _zoom_out_x.setToolTipText(radial ? "rotate counter-clockwise [A or Shift+mousewheel]"
+                    : "zoom out horizontally [Alt+Left or Shift+Alt+mousewheel]");
         }
         if (_expand_y != null) {
-            _expand_y.setToolTipText(vertical
-                    ? "expand the tree horizontally so labels do not overlap at the current font size [Alt+E]"
-                    : "expand the tree in vertical direction so labels do not overlap at the current font size [Alt+E]");
+            _expand_y.setEnabled(!radial);
+            _expand_y.setToolTipText(radial
+                    ? "expand to fit labels -- not available in radial (circular/unrooted) display"
+                    : (vertical
+                            ? "expand the tree horizontally so labels do not overlap at the current font size [Alt+E]"
+                            : "expand the tree in vertical direction so labels do not overlap at the current font size [Alt+E]"));
         }
+        if (_fit_width != null) {
+            if (radial) {
+                _fit_width.setText(LABEL_DIRECTION_BUTTON_LABEL);
+                _fit_width.setToolTipText(labelDirectionButtonTooltip());
+            }
+            else {
+                _fit_width.setText(vertical ? "H" : "W");
+                _fit_width.setToolTipText(vertical
+                        ? "fit the tree to the window height, keeping the current horizontal zoom [Alt+W]"
+                        : "fit the tree to the window width, keeping the current vertical zoom [Alt+W]");
+            }
+        }
+    }
+
+    /** The circular-arrow glyph if the button's font can render it, else a plain-text fallback (so a minimal-font
+     *  platform never shows a missing-glyph box for the radial rotate buttons). */
+    private static String rotateLabel(final JButton button, final String glyph, final String fallback) {
+        return ((button.getFont() != null) && button.getFont().canDisplay(glyph.charAt(0))) ? glyph : fallback;
+    }
+
+    /** The state-reflecting tooltip for the radial "L" (label-direction flip) button. */
+    private String labelDirectionButtonTooltip() {
+        final boolean radial_labels = getOptions()
+                .getNodeLabelDirection() == Options.NODE_LABEL_DIRECTION.RADIAL;
+        return "node labels: " + (radial_labels ? "radial" : "horizontal") + " -- click to flip [Alt+W]";
+    }
+
+    /** Flips the node-label direction (horizontal &lt;-&gt; radial) from the radial "L" button, reusing the same
+     *  Settings-checkbox path so the option, its menu/dialog state, persistence and Reset stay in sync, then
+     *  refreshes the button's state tooltip. Package-visible so the Alt+W keyboard shortcut (TreePanel) drives the
+     *  same flip in a radial layout, matching the button. */
+    void toggleNodeLabelDirection() {
+        getMainPanel().getMainFrame().toggleRadialLabelDirection();
+        updateZoomButtonsForLayout();
     }
 
     void showWholeAll() {
@@ -3230,7 +3332,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             }
             getMainPanel().getMainFrame()
                     .setSelectedTypeInTypeMenu(getMainPanel().getCurrentTreePanel().getPhylogenyGraphicsType());
-            updateZoomButtonsForOrientation(); // W/H label + E tooltip track the current (possibly persisted) orientation
+            updateZoomButtonsForLayout(); // relabel the zoom cluster for the current (possibly persisted) layout
             getMainPanel().getCurrentTreePanel().updateSubSuperTreeButton();
             getMainPanel().getCurrentTreePanel().updateButtonToUncollapseAll();
             getMainPanel().getControlPanel().search0();

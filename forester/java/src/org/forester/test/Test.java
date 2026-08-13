@@ -738,6 +738,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Radial zoom-cluster controls: ");
+        if (org.forester.archaeopteryx.RadialZoomControlTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Zebra stripes (render): ");
         if (org.forester.archaeopteryx.ZebraStripeRenderTest.test()) {
             System.out.println("OK.");
