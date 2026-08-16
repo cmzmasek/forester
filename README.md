@@ -154,6 +154,39 @@ To turn a dated MCC tree into a time tree, display it as a **phylogram** (the
 labeled time axis.
 
 
+Tanglegrams
+-----------
+
+A **tanglegram** compares two trees side by side with connectors linking their
+matching tips — the standard way to see how congruent two phylogenies are (a gene
+tree vs. a species tree, host vs. parasite, two reconstruction methods, …). With
+two or more trees open, choose **Analysis → Create Tanglegram…**, pick the two
+trees and the field to link their tips on (node name, taxonomy, or sequence), and
+the tanglegram opens in its own window (the second tree mirrored). It reports the
+number of **crossing** connectors — a rough measure of incongruence.
+
+To untangle it, **click a clade's vertical bar** to flip it (a topology-preserving
+rotation), or press **Auto-untangle** to have Archaeopteryx do it for both trees;
+both are undoable.
+
+**Auto-untangle heuristic.** Auto-untangle reorders the two trees by rotating
+clades (reversing the child order at internal nodes — a topology-preserving
+operation) to reduce the number of crossing connectors between their matched tips.
+Archaeopteryx uses a barycentre heuristic — each clade's children are ordered by
+the mean vertical position of the tips they link to in the other tree — applied
+alternately to both trees and iterated to convergence, combined with random
+restarts, keeping the arrangement with the fewest crossings (it never increases
+the crossing count). Minimising the crossings of a tanglegram is NP-hard, so this
+is a heuristic. Foundational references:
+
+- Barycentre crossing-reduction heuristic: Sugiyama K, Tagawa S, Toda M (1981):
+  "Methods for visual understanding of hierarchical system structures", *IEEE
+  Transactions on Systems, Man, and Cybernetics* 11(2):109–125.
+- Tanglegram layout and crossing minimisation: Scornavacca C, Zickmann F, Huson
+  DH (2011): "Tanglegrams for rooted phylogenetic trees and networks",
+  *Bioinformatics* 27(13):i248–i256.
+
+
 For Developers
 --------------
 
