@@ -21,7 +21,12 @@
 package org.forester.archaeopteryx;
 
 import java.awt.GraphicsEnvironment;
+import java.awt.Toolkit;
+import java.awt.event.KeyEvent;
 import java.util.Arrays;
+
+import javax.swing.JComponent;
+import javax.swing.KeyStroke;
 
 import org.forester.archaeopteryx.TanglegramLinker.LinkField;
 import org.forester.phylogeny.Phylogeny;
@@ -47,7 +52,7 @@ public final class TanglegramToolTest {
         if ( GraphicsEnvironment.isHeadless() ) {
             return true;
         }
-        return frameOk();
+        return frameOk() && frameWiringOk();
     }
 
     private static boolean selectionLogicOk() {
@@ -79,6 +84,41 @@ public final class TanglegramToolTest {
             }
             if ( !frame.getTitle().contains( "leftTree" ) || !frame.getTitle().contains( "rightTree" ) ) {
                 return fail( "the frame title should name both trees, was: " + frame.getTitle() );
+            }
+            return true;
+        }
+        finally {
+            frame.dispose();
+        }
+    }
+
+    private static boolean frameWiringOk() {
+        final TanglegramFrame frame = new TanglegramFrame( treeABC(), treeCBA(), LinkField.NODE_NAME, "L", "R" );
+        try {
+            if ( frame.isUndoButtonEnabledForTest() || frame.isRedoButtonEnabledForTest() ) {
+                return fail( "undo/redo buttons should start disabled" );
+            }
+            final TanglegramPanel panel = frame.getTanglegramPanel();
+            panel.rotateLeftRootForTest(); // fires the change listener -> frame.refresh()
+            if ( !frame.isUndoButtonEnabledForTest() || frame.isRedoButtonEnabledForTest() ) {
+                return fail( "after a flip: undo enabled, redo disabled" );
+            }
+            if ( !frame.summaryTextForTest().contains( panel.getCrossingCount() + " crossings" ) ) {
+                return fail( "summary should show the live crossing count, was: " + frame.summaryTextForTest() );
+            }
+            frame.clickUndoForTest(); // undo via the toolbar button
+            if ( frame.isUndoButtonEnabledForTest() || !frame.isRedoButtonEnabledForTest() ) {
+                return fail( "after the undo button: redo enabled, undo disabled" );
+            }
+            frame.clickRedoForTest();
+            if ( !frame.isUndoButtonEnabledForTest() ) {
+                return fail( "after the redo button: undo should be enabled again" );
+            }
+            final int mask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
+            final Object undo_key = frame.getRootPane().getInputMap( JComponent.WHEN_IN_FOCUSED_WINDOW )
+                    .get( KeyStroke.getKeyStroke( KeyEvent.VK_Z, mask ) );
+            if ( !"tangle-undo".equals( undo_key ) ) {
+                return fail( "Cmd/Ctrl+Z should be bound to undo, was: " + undo_key );
             }
             return true;
         }

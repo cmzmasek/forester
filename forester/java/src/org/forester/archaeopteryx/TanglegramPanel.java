@@ -22,6 +22,7 @@ package org.forester.archaeopteryx;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
@@ -29,9 +30,14 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -51,8 +57,10 @@ import org.forester.phylogeny.PhylogenyNode;
  * simple lined-up cladogram layout (tips flush at the facing edge, internal node = midpoint of its first/last child),
  * and draws matched-tip connectors from {@link TanglegramLinker}. Unmatched tips are greyed and get no connector.
  *
- * <p>This is NOT a {@link TreePanel}: it intentionally lacks domains/MSA/annotations and every editing tool -- a
- * tanglegram is a read-only comparison view. Interactive rotation / auto-untangle are deferred to a later increment.
+ * <p>This is NOT a {@link TreePanel}: it intentionally lacks domains/MSA/annotations and every editing tool. Clicking
+ * a clade's vertical bar reverses its child order (a topology-preserving flip) to untangle, with in-window undo/redo
+ * -- and this mutates ONLY the panel's own copies, never the source tabs. Auto-untangle is deferred to a later
+ * increment.
  */
 final class TanglegramPanel extends JPanel implements Scrollable {
 
@@ -67,16 +75,21 @@ final class TanglegramPanel extends JPanel implements Scrollable {
     private static final double ZOOM_STEP           = 1.25;
     private static final double MIN_ZOOM            = 0.2;
     private static final double MAX_ZOOM            = 20.0;
-    private final Phylogeny                _left;
-    private final Phylogeny                _right;
-    private final List<PhylogenyNode>      _left_tips;
-    private final List<PhylogenyNode>      _right_tips;
-    private final TanglegramLinker.Result  _result;
-    private final Set<PhylogenyNode>       _unmatched;
-    private final int                      _crossings;
-    private double                         _zoom       = 1.0;
-    private int                            _laid_out_w = -1;
-    private int                            _laid_out_h = -1;
+    private static final int    HIT_TOLERANCE       = 6;
+    private final Phylogeny                 _left;
+    private final Phylogeny                 _right;
+    private final TanglegramLinker.Result   _result;
+    private final Set<PhylogenyNode>        _unmatched;
+    private final Deque<PhylogenyNode>      _undo       = new ArrayDeque<>();
+    private final Deque<PhylogenyNode>      _redo       = new ArrayDeque<>();
+    private List<PhylogenyNode>             _left_tips;
+    private List<PhylogenyNode>             _right_tips;
+    private int                             _crossings;
+    private Runnable                        _change_listener;
+    private double                          _zoom       = 1.0;
+    private int                             _laid_out_w = -1;
+    private int                             _laid_out_h = -1;
+    private double                          _laid_out_tree_w;
 
     TanglegramPanel( final Phylogeny left_source, final Phylogeny right_source, final TanglegramLinker.LinkField field ) {
         _left = left_source.copy();
@@ -89,6 +102,26 @@ final class TanglegramPanel extends JPanel implements Scrollable {
         _unmatched.addAll( _result.getUnmatchedB() );
         _crossings = computeCrossings();
         setOpaque( true );
+        setToolTipText( "Click a clade's vertical bar to flip it (to untangle the connectors)" );
+        final MouseAdapter mouse = new MouseAdapter() {
+
+            @Override
+            public void mouseClicked( final MouseEvent e ) {
+                final PhylogenyNode node = rotatableNodeAt( e.getX(), e.getY() );
+                if ( node != null ) {
+                    rotate( node );
+                }
+            }
+
+            @Override
+            public void mouseMoved( final MouseEvent e ) {
+                final int cursor = ( rotatableNodeAt( e.getX(), e.getY() ) != null ) ? Cursor.HAND_CURSOR
+                        : Cursor.DEFAULT_CURSOR;
+                setCursor( Cursor.getPredefinedCursor( cursor ) );
+            }
+        };
+        addMouseListener( mouse );
+        addMouseMotionListener( mouse );
     }
 
     TanglegramLinker.Result getResult() {
@@ -155,6 +188,134 @@ final class TanglegramPanel extends JPanel implements Scrollable {
         }
     }
 
+    // ---- interactive rotation (in-window, on the panel's own copies -- the source trees are never touched) --------
+
+    /** Reverses a node's child order (a topology-preserving flip that can raise OR lower the crossing count -- the
+     *  user flips to untangle), then re-derives the tip order, crossing count and layout, and pushes onto the local
+     *  undo stack. DoD: this mutates only the panel's throwaway copy (never a loaded tree tab, never saved/exported),
+     *  so the app's Undo/Redo + provenance rules are N/A here -- the window's own undo/redo covers it, like the
+     *  display-only "Flip Vertically" toggle. */
+    void rotate( final PhylogenyNode node ) {
+        reverseChildren( node );
+        _undo.push( node );
+        _redo.clear();
+        onTopologyChanged();
+    }
+
+    void undo() {
+        if ( !_undo.isEmpty() ) {
+            final PhylogenyNode node = _undo.pop();
+            reverseChildren( node );
+            _redo.push( node );
+            onTopologyChanged();
+        }
+    }
+
+    void redo() {
+        if ( !_redo.isEmpty() ) {
+            final PhylogenyNode node = _redo.pop();
+            reverseChildren( node );
+            _undo.push( node );
+            onTopologyChanged();
+        }
+    }
+
+    boolean canUndo() {
+        return !_undo.isEmpty();
+    }
+
+    boolean canRedo() {
+        return !_redo.isEmpty();
+    }
+
+    /** Runs after each rotation; the frame uses it to refresh the crossing-count summary and undo/redo state. */
+    void setChangeListener( final Runnable listener ) {
+        _change_listener = listener;
+    }
+
+    /** Reverses the node's children in place. Its own inverse (reversing twice restores the original order), which is
+     *  what makes undo/redo trivial. Works for any node arity (unlike {@code swapChildren}, which requires exactly 2). */
+    private static void reverseChildren( final PhylogenyNode node ) {
+        final List<PhylogenyNode> children = node.getDescendants();
+        final int n = children.size();
+        final PhylogenyNode[] snapshot = children.toArray( new PhylogenyNode[ 0 ] );
+        for( int i = 0; i < n; i++ ) {
+            node.setChildNode( i, snapshot[ n - 1 - i ] );
+        }
+    }
+
+    private void onTopologyChanged() {
+        _left_tips = TanglegramLinker.externalTipsInDisplayOrder( _left );
+        _right_tips = TanglegramLinker.externalTipsInDisplayOrder( _right );
+        _crossings = computeCrossings();
+        _laid_out_w = -1; // force a re-layout on the next paint
+        _laid_out_h = -1;
+        revalidate();
+        repaint();
+        if ( _change_listener != null ) {
+            _change_listener.run();
+        }
+    }
+
+    /** The innermost internal node whose vertical connector bar is under the point, or null. Left tree bars sit in the
+     *  left half, right tree bars (mirrored) in the right half, so at most one side is ever hit. */
+    private PhylogenyNode rotatableNodeAt( final int mx, final int my ) {
+        if ( _laid_out_w <= 0 ) {
+            return null;
+        }
+        // internal bars sit only within each tree's x-band; skip the O(n) scan for the central label/connector zone
+        final boolean in_left = ( mx >= ( MARGIN - HIT_TOLERANCE ) )
+                && ( mx <= ( MARGIN + _laid_out_tree_w + HIT_TOLERANCE ) );
+        final boolean in_right = ( mx >= ( _laid_out_w - MARGIN - _laid_out_tree_w - HIT_TOLERANCE ) )
+                && ( mx <= ( _laid_out_w - MARGIN + HIT_TOLERANCE ) );
+        if ( in_left ) {
+            final PhylogenyNode left_hit = pickInternal( _left, MARGIN, false, mx, my );
+            if ( left_hit != null ) {
+                return left_hit;
+            }
+        }
+        return in_right ? pickInternal( _right, _laid_out_w - MARGIN, true, mx, my ) : null;
+    }
+
+    private static PhylogenyNode pickInternal( final Phylogeny phy, final double root_screen_x, final boolean mirror,
+                                               final int mx, final int my ) {
+        PhylogenyNode best = null;
+        double best_span = Double.MAX_VALUE;
+        for( final Iterator<PhylogenyNode> it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode node = it.next();
+            if ( node.isExternal() ) {
+                continue;
+            }
+            if ( Math.abs( mx - screenX( node, root_screen_x, mirror ) ) > HIT_TOLERANCE ) {
+                continue;
+            }
+            final double[] bar = barExtent( node );
+            if ( ( my < ( bar[ 0 ] - HIT_TOLERANCE ) ) || ( my > ( bar[ 1 ] + HIT_TOLERANCE ) ) ) {
+                continue;
+            }
+            final double span = bar[ 1 ] - bar[ 0 ];
+            if ( span < best_span ) {
+                best_span = span;
+                best = node;
+            }
+        }
+        return best;
+    }
+
+    // ---- test hooks --------------------------------------------------------------------------------------------
+
+    void rotateLeftRootForTest() {
+        rotate( _left.getRoot() );
+    }
+
+    PhylogenyNode rotatableNodeAtForTest( final int mx, final int my ) {
+        return rotatableNodeAt( mx, my );
+    }
+
+    int[] leftRootBarPointForTest() {
+        return new int[] { MARGIN, Math.round( _left.getRoot().getYcoord() ) };
+    }
+
     private int computeCrossings() {
         final Map<PhylogenyNode, Integer> left_index = indexOf( _left_tips );
         final Map<PhylogenyNode, Integer> right_index = indexOf( _right_tips );
@@ -197,6 +358,7 @@ final class TanglegramPanel extends JPanel implements Scrollable {
             final double w_left = Math.min( maxLabelWidth( _left_tips, fm ), label_cap );
             final double w_right = Math.min( maxLabelWidth( _right_tips, fm ), label_cap );
             final double tree_w = Math.max( MIN_TREE_WIDTH, ( avail - w_left - w_right - MIN_CONNECTOR_GAP ) / 2.0 );
+            _laid_out_tree_w = tree_w; // remembered so the mouse hit-test can skip the central (bar-free) zone
             final double avail_h = h - ( 2.0 * TOP_PAD );
             // the layout (topology, tip spacing, depth) is a pure function of the panel size, so recompute it only
             // when the size changes -- a plain scroll (SIMPLE_SCROLL_MODE repaints the viewport) reuses the coords
@@ -296,16 +458,23 @@ final class TanglegramPanel extends JPanel implements Scrollable {
                 g2.drawLine( round( px ), round( sy ), round( sx ), round( sy ) );
             }
             if ( !node.isExternal() ) {
-                final List<PhylogenyNode> children = node.getDescendants();
-                final double y_first = children.get( 0 ).getYcoord();
-                final double y_last = children.get( children.size() - 1 ).getYcoord();
-                g2.drawLine( round( sx ), round( y_first ), round( sx ), round( y_last ) );
+                final double[] bar = barExtent( node );
+                g2.drawLine( round( sx ), round( bar[ 0 ] ), round( sx ), round( bar[ 1 ] ) );
             }
         }
     }
 
     private static double screenX( final PhylogenyNode node, final double root_screen_x, final boolean mirror ) {
         return mirror ? ( root_screen_x - node.getXcoord() ) : ( root_screen_x + node.getXcoord() );
+    }
+
+    /** The y-range [min,max] of an internal node's vertical connector bar (its first & last child's y = the clade's
+     *  drawn tip span). Shared by {@link #drawTree} and the hit-test so the two can never drift apart. */
+    private static double[] barExtent( final PhylogenyNode node ) {
+        final List<PhylogenyNode> children = node.getDescendants();
+        final double y0 = children.get( 0 ).getYcoord();
+        final double y1 = children.get( children.size() - 1 ).getYcoord();
+        return new double[] { Math.min( y0, y1 ), Math.max( y0, y1 ) };
     }
 
     private void drawTipLabels( final Graphics2D g2, final List<PhylogenyNode> tips, final double edge_x,

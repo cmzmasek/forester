@@ -21,37 +21,55 @@
 package org.forester.archaeopteryx;
 
 import java.awt.BorderLayout;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 
+import javax.swing.AbstractAction;
 import javax.swing.Box;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.JViewport;
+import javax.swing.KeyStroke;
 
 import org.forester.phylogeny.Phylogeny;
 
 /**
  * A stand-alone window hosting a {@link TanglegramPanel}. Deliberately a separate top-level frame (not a tab): the
  * main workspace's tab machinery is index-coupled to {@code TreePanel}, so a non-{@code TreePanel} tab would desync
- * it. A separate window also fits a read-only comparison view -- it carries only a minimal zoom/fit toolbar plus a
- * summary of the link (field, connectors, crossings, unmatched), and none of the tree-editing control panel.
+ * it. A separate window also fits a comparison view -- it carries only a minimal toolbar (undo/redo of rotations,
+ * zoom/fit) plus a live summary of the link (field, connectors, crossings, unmatched), and none of the tree-editing
+ * control panel. Clicking a clade's vertical bar flips it to untangle; the crossing count updates live.
  */
 final class TanglegramFrame extends JFrame {
 
     private static final long     serialVersionUID = 1L;
     private final TanglegramPanel _panel;
+    private final String          _left_name;
+    private final String          _right_name;
+    private final JLabel          _summary         = new JLabel();
+    private final JButton         _undo_button     = new JButton( "Undo" );
+    private final JButton         _redo_button     = new JButton( "Redo" );
 
     TanglegramFrame( final Phylogeny left, final Phylogeny right, final TanglegramLinker.LinkField field,
                      final String left_name, final String right_name ) {
         super( "Tanglegram: " + left_name + "  ↔  " + right_name );
+        _left_name = left_name;
+        _right_name = right_name;
         _panel = new TanglegramPanel( left, right, field );
+        _panel.setChangeListener( this::refresh );
         final JScrollPane scroll = new JScrollPane( _panel );
         scroll.getViewport().setScrollMode( JViewport.SIMPLE_SCROLL_MODE );
         setLayout( new BorderLayout() );
-        add( buildToolbar( _panel, left_name, right_name ), BorderLayout.NORTH );
+        add( buildToolbar(), BorderLayout.NORTH );
         add( scroll, BorderLayout.CENTER );
+        installUndoRedoKeys();
+        refresh();
         setDefaultCloseOperation( DISPOSE_ON_CLOSE );
         setSize( 1000, 700 );
         setLocationRelativeTo( null );
@@ -61,29 +79,86 @@ final class TanglegramFrame extends JFrame {
         return _panel;
     }
 
-    private static JToolBar buildToolbar( final TanglegramPanel panel, final String left_name,
-                                          final String right_name ) {
+    // ---- test hooks --------------------------------------------------------------------------------------------
+
+    boolean isUndoButtonEnabledForTest() {
+        return _undo_button.isEnabled();
+    }
+
+    boolean isRedoButtonEnabledForTest() {
+        return _redo_button.isEnabled();
+    }
+
+    String summaryTextForTest() {
+        return _summary.getText();
+    }
+
+    void clickUndoForTest() {
+        _undo_button.doClick();
+    }
+
+    void clickRedoForTest() {
+        _redo_button.doClick();
+    }
+
+    private JToolBar buildToolbar() {
         final JToolBar bar = new JToolBar();
         bar.setFloatable( false );
+        _undo_button.setToolTipText( "Undo the last clade flip" );
+        _redo_button.setToolTipText( "Redo" );
+        _undo_button.addActionListener( e -> _panel.undo() );
+        _redo_button.addActionListener( e -> _panel.redo() );
         final JButton zoom_in = new JButton( "Zoom In" );
         final JButton zoom_out = new JButton( "Zoom Out" );
         final JButton fit = new JButton( "Fit" );
-        zoom_in.addActionListener( e -> panel.zoomIn() );
-        zoom_out.addActionListener( e -> panel.zoomOut() );
-        fit.addActionListener( e -> panel.fit() );
+        zoom_in.addActionListener( e -> _panel.zoomIn() );
+        zoom_out.addActionListener( e -> _panel.zoomOut() );
+        fit.addActionListener( e -> _panel.fit() );
+        bar.add( _undo_button );
+        bar.add( _redo_button );
+        bar.addSeparator();
         bar.add( zoom_in );
         bar.add( zoom_out );
         bar.add( fit );
         bar.addSeparator();
-        bar.add( new JLabel( summary( panel, left_name, right_name ) ) );
+        bar.add( _summary );
         bar.add( Box.createHorizontalGlue() );
         return bar;
     }
 
-    private static String summary( final TanglegramPanel panel, final String left_name, final String right_name ) {
-        return "Link: " + panel.getField().label() + "   •   " + panel.getResult().getLinks().size()
-                + " connectors, " + panel.getCrossingCount() + " crossings   •   " + left_name + " ("
-                + panel.getLeftTipCount() + " tips) ↔ " + right_name + " (" + panel.getRightTipCount()
-                + " tips)   •   " + panel.getUnmatchedCount() + " unmatched";
+    private void installUndoRedoKeys() {
+        final int mod = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
+        final int wifw = JComponent.WHEN_IN_FOCUSED_WINDOW;
+        getRootPane().getInputMap( wifw ).put( KeyStroke.getKeyStroke( KeyEvent.VK_Z, mod ), "tangle-undo" );
+        getRootPane().getInputMap( wifw )
+                .put( KeyStroke.getKeyStroke( KeyEvent.VK_Z, mod | InputEvent.SHIFT_DOWN_MASK ), "tangle-redo" );
+        getRootPane().getActionMap().put( "tangle-undo", new AbstractAction() {
+
+            @Override
+            public void actionPerformed( final ActionEvent e ) {
+                _panel.undo();
+            }
+        } );
+        getRootPane().getActionMap().put( "tangle-redo", new AbstractAction() {
+
+            @Override
+            public void actionPerformed( final ActionEvent e ) {
+                _panel.redo();
+            }
+        } );
+    }
+
+    /** Refreshes the summary text (crossings change on each flip) and the undo/redo button state. */
+    private void refresh() {
+        _summary.setText( summary() );
+        _undo_button.setEnabled( _panel.canUndo() );
+        _redo_button.setEnabled( _panel.canRedo() );
+    }
+
+    private String summary() {
+        return "Link: " + _panel.getField().label() + "   •   " + _panel.getResult().getLinks().size()
+                + " connectors, " + _panel.getCrossingCount() + " crossings   •   " + _left_name + " ("
+                + _panel.getLeftTipCount() + " tips) ↔ " + _right_name + " (" + _panel.getRightTipCount()
+                + " tips)   •   " + _panel.getUnmatchedCount() + " unmatched";
     }
 }

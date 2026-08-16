@@ -45,14 +45,73 @@ public final class TanglegramPanelRenderTest {
     }
 
     public static boolean test() {
-        // constructing a panel does not paint, so the count / label checks are headless-safe; only renderOk paints
-        if ( !countsOk() || !labelFallbackOk() ) {
+        // constructing / rotating a panel does not paint, so those checks are headless-safe; only renderOk / hitTestOk paint
+        if ( !countsOk() || !labelFallbackOk() || !rotationOk() ) {
             return false;
         }
         if ( GraphicsEnvironment.isHeadless() ) {
             return true;
         }
-        return renderOk();
+        return renderOk() && hitTestOk();
+    }
+
+    private static boolean rotationOk() {
+        // two IDENTICAL balanced trees ((A,B),(C,D)) -> 0 crossings, tips A,B,C,D
+        final TanglegramPanel panel = new TanglegramPanel( balancedABCD(), balancedABCD(), LinkField.NODE_NAME );
+        if ( ( panel.getCrossingCount() != 0 ) || !"A".equals( panel.leftTipLabelForTest( 0 ) ) ) {
+            return fail( "identical trees should start at 0 crossings with first tip A, got " + panel.getCrossingCount()
+                    + "/" + panel.leftTipLabelForTest( 0 ) );
+        }
+        if ( panel.canUndo() ) {
+            return fail( "no undo should be available before any rotation" );
+        }
+        // flip the left root -> the two halves swap -> first left tip becomes C, crossings jump to 4
+        panel.rotateLeftRootForTest();
+        if ( ( panel.getCrossingCount() != 4 ) || !"C".equals( panel.leftTipLabelForTest( 0 ) ) ) {
+            return fail( "after flipping the left root, expected 4 crossings and first tip C, got "
+                    + panel.getCrossingCount() + "/" + panel.leftTipLabelForTest( 0 ) );
+        }
+        if ( !panel.canUndo() || panel.canRedo() ) {
+            return fail( "after a rotation, undo should be available and redo not" );
+        }
+        panel.undo();
+        if ( ( panel.getCrossingCount() != 0 ) || !"A".equals( panel.leftTipLabelForTest( 0 ) ) ) {
+            return fail( "undo should restore 0 crossings and first tip A, got " + panel.getCrossingCount() + "/"
+                    + panel.leftTipLabelForTest( 0 ) );
+        }
+        if ( panel.canUndo() || !panel.canRedo() ) {
+            return fail( "after undo, redo should be available and undo not" );
+        }
+        panel.redo();
+        if ( panel.getCrossingCount() != 4 ) {
+            return fail( "redo should re-apply the flip -> 4 crossings, got " + panel.getCrossingCount() );
+        }
+        return true;
+    }
+
+    private static boolean hitTestOk() {
+        final TanglegramPanel panel = new TanglegramPanel( balancedABCD(), balancedABCD(), LinkField.NODE_NAME );
+        panel.setBackground( Color.WHITE );
+        panel.setForeground( Color.BLACK );
+        panel.setFont( new Font( "SansSerif", Font.PLAIN, 12 ) );
+        panel.setSize( 800, 400 );
+        final BufferedImage img = new BufferedImage( 800, 400, BufferedImage.TYPE_INT_RGB );
+        final Graphics2D g = img.createGraphics();
+        try {
+            panel.printAll( g );
+        }
+        finally {
+            g.dispose();
+        }
+        final int[] pt = panel.leftRootBarPointForTest();
+        final PhylogenyNode hit = panel.rotatableNodeAtForTest( pt[ 0 ], pt[ 1 ] );
+        if ( ( hit == null ) || hit.isExternal() ) {
+            return fail( "clicking the left root's vertical bar should hit an internal (rotatable) node" );
+        }
+        if ( panel.rotatableNodeAtForTest( -50, -50 ) != null ) {
+            return fail( "clicking well outside any bar should hit nothing" );
+        }
+        return true;
     }
 
     private static boolean labelFallbackOk() {
@@ -138,6 +197,11 @@ public final class TanglegramPanelRenderTest {
 
     private static Phylogeny treeABCD() {
         return tree( clade( leaf( "A" ), leaf( "B" ), leaf( "C" ), leaf( "D" ) ) );
+    }
+
+    /** A balanced binary tree ((A,B),(C,D)) -- flipping its root cleanly swaps the two halves. */
+    private static Phylogeny balancedABCD() {
+        return tree( clade( clade( leaf( "A" ), leaf( "B" ) ), clade( leaf( "C" ), leaf( "D" ) ) ) );
     }
 
     private static Phylogeny treeDCBA() {
