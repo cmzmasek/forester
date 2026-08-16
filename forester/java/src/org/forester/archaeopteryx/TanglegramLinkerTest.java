@@ -22,6 +22,7 @@ package org.forester.archaeopteryx;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import org.forester.archaeopteryx.TanglegramLinker.LinkField;
 import org.forester.archaeopteryx.TanglegramLinker.Result;
@@ -42,7 +43,36 @@ public final class TanglegramLinkerTest {
     }
 
     public static boolean test() {
-        return nodeNameMatchingOk() && manyToManyOk() && unmatchedOk() && scientificNameOk() && crossingsOk();
+        return nodeNameMatchingOk() && manyToManyOk() && unmatchedOk() && scientificNameOk() && crossingsOk()
+                && crossingsMatchBruteForceOk();
+    }
+
+    /** The O(n log n) inversion-count crossings must equal the O(n^2) definition on random pair-lists, including
+     *  duplicate indices (a tip linked to several partners -- shared indices must NOT count as a crossing). */
+    private static boolean crossingsMatchBruteForceOk() {
+        final Random rng = new Random( 3 );
+        for( int trial = 0; trial < 60; trial++ ) {
+            final int n = rng.nextInt( 40 );
+            final List<int[]> pairs = new ArrayList<>();
+            for( int i = 0; i < n; i++ ) {
+                pairs.add( new int[] { rng.nextInt( 12 ), rng.nextInt( 12 ) } ); // small range -> forces duplicates
+            }
+            int brute = 0;
+            for( int i = 0; i < pairs.size(); i++ ) {
+                for( int j = i + 1; j < pairs.size(); j++ ) {
+                    final int[] p = pairs.get( i );
+                    final int[] q = pairs.get( j );
+                    if ( ( ( p[ 0 ] - q[ 0 ] ) * ( p[ 1 ] - q[ 1 ] ) ) < 0 ) {
+                        brute++;
+                    }
+                }
+            }
+            final int fast = TanglegramLinker.countCrossings( pairs );
+            if ( fast != brute ) {
+                return fail( "trial " + trial + " (n=" + n + "): inversion count " + fast + " != brute-force " + brute );
+            }
+        }
+        return true;
     }
 
     private static boolean nodeNameMatchingOk() {

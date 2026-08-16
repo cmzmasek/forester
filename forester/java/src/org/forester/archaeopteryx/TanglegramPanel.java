@@ -58,9 +58,9 @@ import org.forester.phylogeny.PhylogenyNode;
  * and draws matched-tip connectors from {@link TanglegramLinker}. Unmatched tips are greyed and get no connector.
  *
  * <p>This is NOT a {@link TreePanel}: it intentionally lacks domains/MSA/annotations and every editing tool. Clicking
- * a clade's vertical bar reverses its child order (a topology-preserving flip) to untangle, with in-window undo/redo
- * -- and this mutates ONLY the panel's own copies, never the source tabs. Auto-untangle is deferred to a later
- * increment.
+ * a clade's vertical bar reverses its child order (a topology-preserving flip) to untangle, an Auto-untangle action
+ * flips clades in both trees to minimise crossings, and both support in-window undo/redo -- and all of this mutates
+ * ONLY the panel's own copies, never the source tabs.
  */
 final class TanglegramPanel extends JPanel implements Scrollable {
 
@@ -80,8 +80,8 @@ final class TanglegramPanel extends JPanel implements Scrollable {
     private final Phylogeny                 _right;
     private final TanglegramLinker.Result   _result;
     private final Set<PhylogenyNode>        _unmatched;
-    private final Deque<PhylogenyNode>      _undo       = new ArrayDeque<>();
-    private final Deque<PhylogenyNode>      _redo       = new ArrayDeque<>();
+    private final Deque<List<PhylogenyNode>> _undo      = new ArrayDeque<>();
+    private final Deque<List<PhylogenyNode>> _redo      = new ArrayDeque<>();
     private List<PhylogenyNode>             _left_tips;
     private List<PhylogenyNode>             _right_tips;
     private int                             _crossings;
@@ -196,26 +196,40 @@ final class TanglegramPanel extends JPanel implements Scrollable {
      *  so the app's Undo/Redo + provenance rules are N/A here -- the window's own undo/redo covers it, like the
      *  display-only "Flip Vertically" toggle. */
     void rotate( final PhylogenyNode node ) {
-        reverseChildren( node );
-        _undo.push( node );
+        TanglegramUntangler.reverse( node );
+        recordAction( Collections.singletonList( node ) );
+    }
+
+    /** Auto-untangle: reorders both trees (flips only) to reduce crossings, recorded as ONE undoable action. */
+    void autoUntangle() {
+        recordAction( TanglegramUntangler.untangle( _left, _right, _result.getLinks() ) );
+    }
+
+    /** Records an already-applied flip set as a single undo action (a manual rotation is a one-node set, an
+     *  auto-untangle the whole flip set). A no-op for an empty set (nothing changed). */
+    private void recordAction( final List<PhylogenyNode> nodes ) {
+        if ( ( nodes == null ) || nodes.isEmpty() ) {
+            return;
+        }
+        _undo.push( nodes );
         _redo.clear();
         onTopologyChanged();
     }
 
     void undo() {
         if ( !_undo.isEmpty() ) {
-            final PhylogenyNode node = _undo.pop();
-            reverseChildren( node );
-            _redo.push( node );
+            final List<PhylogenyNode> action = _undo.pop();
+            reverseAll( action );
+            _redo.push( action );
             onTopologyChanged();
         }
     }
 
     void redo() {
         if ( !_redo.isEmpty() ) {
-            final PhylogenyNode node = _redo.pop();
-            reverseChildren( node );
-            _undo.push( node );
+            final List<PhylogenyNode> action = _redo.pop();
+            reverseAll( action );
+            _undo.push( action );
             onTopologyChanged();
         }
     }
@@ -228,19 +242,16 @@ final class TanglegramPanel extends JPanel implements Scrollable {
         return !_redo.isEmpty();
     }
 
-    /** Runs after each rotation; the frame uses it to refresh the crossing-count summary and undo/redo state. */
+    /** Runs after each change; the frame uses it to refresh the crossing-count summary and undo/redo state. */
     void setChangeListener( final Runnable listener ) {
         _change_listener = listener;
     }
 
-    /** Reverses the node's children in place. Its own inverse (reversing twice restores the original order), which is
-     *  what makes undo/redo trivial. Works for any node arity (unlike {@code swapChildren}, which requires exactly 2). */
-    private static void reverseChildren( final PhylogenyNode node ) {
-        final List<PhylogenyNode> children = node.getDescendants();
-        final int n = children.size();
-        final PhylogenyNode[] snapshot = children.toArray( new PhylogenyNode[ 0 ] );
-        for( int i = 0; i < n; i++ ) {
-            node.setChildNode( i, snapshot[ n - 1 - i ] );
+    /** Re-applies (or, since each flip is its own inverse, un-applies) an action's flips. Reversing a set of distinct
+     *  nodes is order-independent, so undo/redo can replay the set as-is. */
+    private static void reverseAll( final List<PhylogenyNode> nodes ) {
+        for( final PhylogenyNode node : nodes ) {
+            TanglegramUntangler.reverse( node );
         }
     }
 

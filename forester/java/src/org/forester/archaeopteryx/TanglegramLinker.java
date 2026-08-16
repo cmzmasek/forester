@@ -21,6 +21,7 @@
 package org.forester.archaeopteryx;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -204,21 +205,54 @@ final class TanglegramLinker {
 
     /**
      * Number of connector crossings for the given {left-tip index, right-tip index} pairs: two connectors cross
-     * exactly when their left and right endpoints are in the opposite vertical order. O(n^2) over the connectors --
-     * fine at the tanglegram's scale, and the count is a rough congruence measure (0 == perfectly concordant).
+     * exactly when their left and right endpoints are in the opposite vertical order (a rough congruence measure --
+     * 0 == perfectly concordant). Computed as an inversion count in O(n log n): sort by (left asc, right asc) -- so
+     * two connectors sharing a left index never count -- then count inversions of the right-index sequence. The
+     * auto-untangler evaluates this hundreds of times, so the sub-quadratic cost matters on large trees.
      */
     static int countCrossings( final List<int[]> pairs ) {
-        int crossings = 0;
-        for( int i = 0; i < pairs.size(); i++ ) {
-            final int[] p = pairs.get( i );
-            for( int j = i + 1; j < pairs.size(); j++ ) {
-                final int[] q = pairs.get( j );
-                if ( ( ( p[ 0 ] - q[ 0 ] ) * ( p[ 1 ] - q[ 1 ] ) ) < 0 ) {
-                    crossings++;
-                }
+        final int n = pairs.size();
+        if ( n < 2 ) {
+            return 0;
+        }
+        final int[][] sorted = pairs.toArray( new int[ 0 ][] );
+        Arrays.sort( sorted, ( a, b ) -> ( a[ 0 ] != b[ 0 ] ) ? Integer.compare( a[ 0 ], b[ 0 ] )
+                : Integer.compare( a[ 1 ], b[ 1 ] ) );
+        final int[] right = new int[ n ];
+        for( int i = 0; i < n; i++ ) {
+            right[ i ] = sorted[ i ][ 1 ];
+        }
+        final long inversions = countInversions( right, new int[ n ], 0, n - 1 );
+        return (int) Math.min( inversions, Integer.MAX_VALUE );
+    }
+
+    /** Inversions in a[lo..hi] (pairs i&lt;j with a[i] &gt; a[j]) via a counting merge sort; sorts a[lo..hi] in place. */
+    private static long countInversions( final int[] a, final int[] tmp, final int lo, final int hi ) {
+        if ( lo >= hi ) {
+            return 0;
+        }
+        final int mid = ( lo + hi ) >>> 1;
+        long inv = countInversions( a, tmp, lo, mid ) + countInversions( a, tmp, mid + 1, hi );
+        int i = lo;
+        int j = mid + 1;
+        int k = lo;
+        while ( ( i <= mid ) && ( j <= hi ) ) {
+            if ( a[ i ] <= a[ j ] ) {
+                tmp[ k++ ] = a[ i++ ];
+            }
+            else {
+                tmp[ k++ ] = a[ j++ ];
+                inv += ( mid - i + 1 ); // a[i..mid] are all > a[j]
             }
         }
-        return crossings;
+        while ( i <= mid ) {
+            tmp[ k++ ] = a[ i++ ];
+        }
+        while ( j <= hi ) {
+            tmp[ k++ ] = a[ j++ ];
+        }
+        System.arraycopy( tmp, lo, a, lo, ( hi - lo ) + 1 );
+        return inv;
     }
 
     private TanglegramLinker() {

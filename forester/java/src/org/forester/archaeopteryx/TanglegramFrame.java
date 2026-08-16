@@ -108,12 +108,17 @@ final class TanglegramFrame extends JFrame {
         _redo_button.setToolTipText( "Redo" );
         _undo_button.addActionListener( e -> _panel.undo() );
         _redo_button.addActionListener( e -> _panel.redo() );
+        final JButton untangle = new JButton( "Auto-untangle" );
+        untangle.setToolTipText( "Flip clades in both trees to reduce connector crossings" );
+        untangle.addActionListener( e -> _panel.autoUntangle() );
         final JButton zoom_in = new JButton( "Zoom In" );
         final JButton zoom_out = new JButton( "Zoom Out" );
         final JButton fit = new JButton( "Fit" );
         zoom_in.addActionListener( e -> _panel.zoomIn() );
         zoom_out.addActionListener( e -> _panel.zoomOut() );
         fit.addActionListener( e -> _panel.fit() );
+        bar.add( untangle );
+        bar.addSeparator();
         bar.add( _undo_button );
         bar.add( _redo_button );
         bar.addSeparator();

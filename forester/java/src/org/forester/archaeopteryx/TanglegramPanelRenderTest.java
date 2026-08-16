@@ -46,7 +46,7 @@ public final class TanglegramPanelRenderTest {
 
     public static boolean test() {
         // constructing / rotating a panel does not paint, so those checks are headless-safe; only renderOk / hitTestOk paint
-        if ( !countsOk() || !labelFallbackOk() || !rotationOk() ) {
+        if ( !countsOk() || !labelFallbackOk() || !rotationOk() || !autoUntangleOk() ) {
             return false;
         }
         if ( GraphicsEnvironment.isHeadless() ) {
@@ -85,6 +85,31 @@ public final class TanglegramPanelRenderTest {
         panel.redo();
         if ( panel.getCrossingCount() != 4 ) {
             return fail( "redo should re-apply the flip -> 4 crossings, got " + panel.getCrossingCount() );
+        }
+        return true;
+    }
+
+    private static boolean autoUntangleOk() {
+        // ((A,B),(C,D)) vs ((C,D),(A,B)) -> 4 crossings; auto-untangle reaches 0 and is ONE undoable action
+        final TanglegramPanel panel = new TanglegramPanel( balancedABCD(), balancedCDAB(), LinkField.NODE_NAME );
+        if ( panel.getCrossingCount() != 4 ) {
+            return fail( "the tangled pair should start at 4 crossings, got " + panel.getCrossingCount() );
+        }
+        panel.autoUntangle();
+        if ( panel.getCrossingCount() != 0 ) {
+            return fail( "auto-untangle should reach 0 crossings, got " + panel.getCrossingCount() );
+        }
+        if ( !panel.canUndo() || panel.canRedo() ) {
+            return fail( "after auto-untangle: undo available, redo not" );
+        }
+        panel.undo();
+        if ( panel.getCrossingCount() != 4 ) {
+            return fail( "undo should revert the WHOLE untangle in one step (back to 4 crossings), got "
+                    + panel.getCrossingCount() );
+        }
+        panel.redo();
+        if ( panel.getCrossingCount() != 0 ) {
+            return fail( "redo should re-apply the untangle -> 0 crossings, got " + panel.getCrossingCount() );
         }
         return true;
     }
@@ -202,6 +227,11 @@ public final class TanglegramPanelRenderTest {
     /** A balanced binary tree ((A,B),(C,D)) -- flipping its root cleanly swaps the two halves. */
     private static Phylogeny balancedABCD() {
         return tree( clade( clade( leaf( "A" ), leaf( "B" ) ), clade( leaf( "C" ), leaf( "D" ) ) ) );
+    }
+
+    /** ((C,D),(A,B)) -- the same unordered topology as balancedABCD but with the two halves swapped (4 crossings). */
+    private static Phylogeny balancedCDAB() {
+        return tree( clade( clade( leaf( "C" ), leaf( "D" ) ), clade( leaf( "A" ), leaf( "B" ) ) ) );
     }
 
     private static Phylogeny treeDCBA() {
