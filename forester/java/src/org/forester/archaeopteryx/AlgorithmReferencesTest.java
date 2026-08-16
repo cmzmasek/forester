@@ -83,6 +83,12 @@ public final class AlgorithmReferencesTest {
             System.out.println( "  [AlgorithmReferencesTest] MAD-rooting citation is missing" );
             ok = false;
         }
+        // the tanglegram auto-untangle heuristic must be described, with its barycentre + tanglegram citations
+        if ( !text.contains( "Auto-untangle" ) || !text.contains( "barycentre" ) || !text.contains( "Sugiyama" )
+                || !text.contains( "Tanglegrams for rooted phylogenetic trees" ) ) {
+            System.out.println( "  [AlgorithmReferencesTest] tanglegram auto-untangle reference/citation is missing" );
+            ok = false;
+        }
         boolean phyloxml_present = false;
         for ( final AlgorithmReferences.Reference r : all ) {
             if ( ForesterConstants.PHYLO_XML_REFERENCE.equals( r.citation() ) ) {

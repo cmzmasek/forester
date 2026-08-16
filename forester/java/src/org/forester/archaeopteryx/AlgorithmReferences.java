@@ -55,6 +55,19 @@ final class AlgorithmReferences {
                         + "representative per group, either within a distance cutoff or down to a target count. The "
                         + "representative kept is the group's medoid (most central) or longest-branch (most divergent) "
                         + "tip, and selected or found tips can be protected from removal (implemented in Archaeopteryx)." ) );
+        refs.add( new Reference( "Tanglegram auto-untangle / crossing minimisation (Analysis → Create Tanglegram → Auto-untangle)",
+                "Reorders the two trees of a tanglegram by rotating clades (reversing the child order at internal "
+                        + "nodes -- a topology-preserving operation) to reduce the number of crossing connectors "
+                        + "between their matched tips. Archaeopteryx uses a barycentre heuristic -- each clade's "
+                        + "children are ordered by the mean vertical position of the tips they link to in the other "
+                        + "tree -- applied alternately to both trees and iterated to convergence, combined with random "
+                        + "restarts, keeping the arrangement with the fewest crossings (it never increases the "
+                        + "crossing count). Minimising the crossings of a tanglegram is NP-hard, so this is a heuristic "
+                        + "(implemented in Archaeopteryx). Barycentre crossing-reduction heuristic: Sugiyama K, Tagawa "
+                        + "S, Toda M (1981): \"Methods for visual understanding of hierarchical system structures\", "
+                        + "IEEE Transactions on Systems, Man, and Cybernetics 11(2):109–125. Tanglegram layout and "
+                        + "crossing minimisation: Scornavacca C, Zickmann F, Huson DH (2011): \"Tanglegrams for rooted "
+                        + "phylogenetic trees and networks\", Bioinformatics 27(13):i248–i256." ) );
         refs.add( new Reference( "phyloXML (file format)", ForesterConstants.PHYLO_XML_REFERENCE ) );
         return refs;
     }
