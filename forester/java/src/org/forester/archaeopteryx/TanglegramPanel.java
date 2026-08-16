@@ -76,6 +76,16 @@ final class TanglegramPanel extends JPanel implements Scrollable {
     private static final double MIN_ZOOM            = 0.2;
     private static final double MAX_ZOOM            = 20.0;
     private static final int    HIT_TOLERANCE       = 6;
+    // a theme-independent warning colour for crossing connectors (reads on both light and dark backgrounds)
+    private static final Color  CROSSING_COLOR      = new Color( 220, 50, 50 );
+
+    /** How the connectors are coloured. */
+    enum ConnectorColorMode {
+        UNIFORM,
+        CROSSINGS,
+        FIELD
+    }
+
     private final Phylogeny                 _left;
     private final Phylogeny                 _right;
     private final TanglegramLinker.Result   _result;
@@ -90,6 +100,16 @@ final class TanglegramPanel extends JPanel implements Scrollable {
     private int                             _laid_out_w = -1;
     private int                             _laid_out_h = -1;
     private double                          _laid_out_tree_w;
+    private ConnectorColorMode              _color_mode = ConnectorColorMode.UNIFORM;
+    private TanglegramColoring.Field        _color_field;   // when _color_mode == FIELD
+    private Map<String, Color>              _color_map;     // when _color_mode == FIELD: value -> colour
+    private boolean[]                       _crossing_flags; // when _color_mode == CROSSINGS (lazy; per link)
+    private int                             _legend_dx;      // legend drag offset from its default top-left position
+    private int                             _legend_dy;
+    private Rectangle                       _legend_bounds;  // last-drawn legend box (device coords), null if none
+    private boolean                         _dragging_legend;
+    private int                             _drag_prev_x;
+    private int                             _drag_prev_y;
 
     TanglegramPanel( final Phylogeny left_source, final Phylogeny right_source, final TanglegramLinker.LinkField field ) {
         _left = left_source.copy();
@@ -106,7 +126,38 @@ final class TanglegramPanel extends JPanel implements Scrollable {
         final MouseAdapter mouse = new MouseAdapter() {
 
             @Override
+            public void mousePressed( final MouseEvent e ) {
+                _dragging_legend = onLegend( e.getX(), e.getY() );
+                _drag_prev_x = e.getX();
+                _drag_prev_y = e.getY();
+            }
+
+            @Override
+            public void mouseReleased( final MouseEvent e ) {
+                _dragging_legend = false;
+            }
+
+            @Override
+            public void mouseDragged( final MouseEvent e ) {
+                if ( _dragging_legend ) {
+                    _legend_dx += e.getX() - _drag_prev_x;
+                    _legend_dy += e.getY() - _drag_prev_y;
+                    _drag_prev_x = e.getX();
+                    _drag_prev_y = e.getY();
+                    repaint();
+                }
+            }
+
+            @Override
             public void mouseClicked( final MouseEvent e ) {
+                if ( onLegend( e.getX(), e.getY() ) ) {
+                    if ( e.getClickCount() == 2 ) { // double-click the legend to reset its position
+                        _legend_dx = 0;
+                        _legend_dy = 0;
+                        repaint();
+                    }
+                    return; // a click on the legend never rotates the clade behind it
+                }
                 final PhylogenyNode node = rotatableNodeAt( e.getX(), e.getY() );
                 if ( node != null ) {
                     rotate( node );
@@ -115,8 +166,14 @@ final class TanglegramPanel extends JPanel implements Scrollable {
 
             @Override
             public void mouseMoved( final MouseEvent e ) {
-                final int cursor = ( rotatableNodeAt( e.getX(), e.getY() ) != null ) ? Cursor.HAND_CURSOR
-                        : Cursor.DEFAULT_CURSOR;
+                final int cursor;
+                if ( onLegend( e.getX(), e.getY() ) ) {
+                    cursor = Cursor.MOVE_CURSOR;
+                }
+                else {
+                    cursor = ( rotatableNodeAt( e.getX(), e.getY() ) != null ) ? Cursor.HAND_CURSOR
+                            : Cursor.DEFAULT_CURSOR;
+                }
                 setCursor( Cursor.getPredefinedCursor( cursor ) );
             }
         };
@@ -259,6 +316,7 @@ final class TanglegramPanel extends JPanel implements Scrollable {
         _left_tips = TanglegramLinker.externalTipsInDisplayOrder( _left );
         _right_tips = TanglegramLinker.externalTipsInDisplayOrder( _right );
         _crossings = computeCrossings();
+        _crossing_flags = null; // which connectors cross depends on tip order -> recompute after a rotation
         _laid_out_w = -1; // force a re-layout on the next paint
         _laid_out_h = -1;
         revalidate();
@@ -328,17 +386,77 @@ final class TanglegramPanel extends JPanel implements Scrollable {
     }
 
     private int computeCrossings() {
+        return TanglegramLinker.countCrossings( connectorPairs() );
+    }
+
+    /** {leftIndex, rightIndex} for each connector, aligned one-to-one with {@code _result.getLinks()} (every link's
+     *  tips are external nodes of the two trees, so both indices are always present). */
+    private List<int[]> connectorPairs() {
         final Map<PhylogenyNode, Integer> left_index = indexOf( _left_tips );
         final Map<PhylogenyNode, Integer> right_index = indexOf( _right_tips );
         final List<int[]> pairs = new ArrayList<>();
         for( final TanglegramLinker.Link link : _result.getLinks() ) {
             final Integer a = left_index.get( link.getA() );
             final Integer b = right_index.get( link.getB() );
-            if ( ( a != null ) && ( b != null ) ) {
-                pairs.add( new int[] { a, b } );
-            }
+            pairs.add( new int[] { ( a == null ) ? 0 : a, ( b == null ) ? 0 : b } );
         }
-        return TanglegramLinker.countCrossings( pairs );
+        return pairs;
+    }
+
+    // ---- connector colouring ------------------------------------------------------------------------------------
+
+    void setUniformColoring() {
+        _color_mode = ConnectorColorMode.UNIFORM;
+        _color_field = null;
+        _color_map = null;
+        repaint();
+    }
+
+    void setCrossingColoring() {
+        _color_mode = ConnectorColorMode.CROSSINGS;
+        _color_field = null;
+        _color_map = null;
+        repaint();
+    }
+
+    void setFieldColoring( final TanglegramColoring.Field field ) {
+        _color_mode = ConnectorColorMode.FIELD;
+        _color_field = field;
+        _color_map = TanglegramColoring.colorMap( _result.getLinks(), field ); // by value, so stable across rotations
+        repaint();
+    }
+
+    /** The categorical fields the connectors can be coloured by (from the left tree's tips). */
+    List<TanglegramColoring.Field> availableColorFields() {
+        return TanglegramColoring.availableFields( _left );
+    }
+
+    /** The colour drawn for the i-th connector under the current mode. */
+    private Color connectorColor( final int i, final boolean[] flags, final Color uniform, final Color muted ) {
+        switch ( _color_mode ) {
+            case CROSSINGS:
+                return flags[ i ] ? CROSSING_COLOR : muted;
+            case FIELD: {
+                final String value = _color_field.valueFor( _result.getLinks().get( i ).getA() );
+                final Color c = value.isEmpty() ? null : _color_map.get( value );
+                return ( c == null ) ? muted : withAlpha( c, 220 );
+            }
+            default:
+                return uniform;
+        }
+    }
+
+    /** Test hook: the current connector colour mode. */
+    ConnectorColorMode colorModeForTest() {
+        return _color_mode;
+    }
+
+    /** Test hook: the colour the i-th connector is drawn in under the current mode. */
+    Color connectorColorForTest( final int i ) {
+        final boolean[] flags = ( _color_mode == ConnectorColorMode.CROSSINGS )
+                ? TanglegramLinker.crossingConnectors( connectorPairs() ) : null;
+        return connectorColor( i, flags, withAlpha( getForeground(), 120 ),
+                               blend( getForeground(), getBackground(), 0.6 ) );
     }
 
     private static Map<PhylogenyNode, Integer> indexOf( final List<PhylogenyNode> tips ) {
@@ -386,13 +504,13 @@ final class TanglegramPanel extends JPanel implements Scrollable {
             final double right_tips_x = w - MARGIN - tree_w;
             final double right_label_start = right_tips_x - w_right;
             final Color branch_color = getForeground();
-            final Color connector_color = withAlpha( branch_color, 120 );
             final Color unmatched_color = blend( branch_color, getBackground(), 0.55 );
             drawTree( g2, _left, left_root_x, false, branch_color );
             drawTree( g2, _right, right_root_x, true, branch_color );
             drawTipLabels( g2, _left_tips, left_tips_x + LABEL_GAP, false, w_left, fm, branch_color, unmatched_color );
             drawTipLabels( g2, _right_tips, right_tips_x - LABEL_GAP, true, w_right, fm, branch_color, unmatched_color );
-            drawConnectors( g2, left_label_end, right_label_start, connector_color );
+            drawConnectors( g2, left_label_end, right_label_start );
+            drawColorLegend( g2, fm );
         }
         finally {
             g2.dispose();
@@ -505,15 +623,81 @@ final class TanglegramPanel extends JPanel implements Scrollable {
         }
     }
 
-    private void drawConnectors( final Graphics2D g2, final double left_x, final double right_x, final Color color ) {
-        g2.setColor( color );
+    private void drawConnectors( final Graphics2D g2, final double left_x, final double right_x ) {
+        final List<TanglegramLinker.Link> links = _result.getLinks();
+        boolean[] flags = null;
+        if ( _color_mode == ConnectorColorMode.CROSSINGS ) {
+            if ( _crossing_flags == null ) {
+                _crossing_flags = TanglegramLinker.crossingConnectors( connectorPairs() );
+            }
+            flags = _crossing_flags;
+        }
+        final Color uniform = withAlpha( getForeground(), 120 );
+        final Color muted = blend( getForeground(), getBackground(), 0.6 );
         final Stroke old = g2.getStroke();
-        g2.setStroke( new BasicStroke( 1.2f ) );
-        for( final TanglegramLinker.Link link : _result.getLinks() ) {
+        final Stroke plain = new BasicStroke( 1.2f );
+        final Stroke bold = new BasicStroke( 1.8f );
+        for( int i = 0; i < links.size(); i++ ) {
+            final TanglegramLinker.Link link = links.get( i );
+            final boolean crossing = ( flags != null ) && flags[ i ];
+            g2.setStroke( crossing ? bold : plain );
+            g2.setColor( connectorColor( i, flags, uniform, muted ) );
             g2.drawLine( round( left_x ), round( link.getA().getYcoord() ), round( right_x ),
                          round( link.getB().getYcoord() ) );
         }
         g2.setStroke( old );
+    }
+
+    private boolean onLegend( final int x, final int y ) {
+        return ( _legend_bounds != null ) && _legend_bounds.contains( x, y );
+    }
+
+    /** A small colour key for the FIELD mode (value -> swatch), a draggable semi-opaque box (double-click to reset). */
+    private void drawColorLegend( final Graphics2D g2, final FontMetrics fm ) {
+        if ( ( _color_mode != ConnectorColorMode.FIELD ) || ( _color_map == null ) || _color_map.isEmpty() ) {
+            _legend_bounds = null;
+            return;
+        }
+        final int max_rows = 12;
+        final List<Map.Entry<String, Color>> entries = new ArrayList<>( _color_map.entrySet() );
+        final int shown = Math.min( entries.size(), max_rows );
+        final boolean more = entries.size() > shown;
+        final String more_label = more ? ( "+" + ( entries.size() - shown ) + " more" ) : null;
+        final int row_h = fm.getHeight();
+        final int swatch = row_h - 4;
+        int text_w = fm.stringWidth( _color_field.label() );
+        for( int i = 0; i < shown; i++ ) {
+            text_w = Math.max( text_w, swatch + 4 + fm.stringWidth( entries.get( i ).getKey() ) );
+        }
+        if ( more ) {
+            text_w = Math.max( text_w, fm.stringWidth( more_label ) );
+        }
+        final int pad = 6;
+        final int box_w = pad + text_w + pad;
+        final int box_h = pad + ( ( shown + ( more ? 1 : 0 ) + 1 ) * row_h ) + pad;
+        final int x = MARGIN + _legend_dx;
+        final int y = TOP_PAD + _legend_dy;
+        _legend_bounds = new Rectangle( x, y, box_w, box_h );
+        g2.setColor( withAlpha( getBackground(), 235 ) );
+        g2.fillRect( x, y, box_w, box_h );
+        g2.setColor( blend( getForeground(), getBackground(), 0.5 ) );
+        g2.drawRect( x, y, box_w, box_h );
+        int ty = y + pad + fm.getAscent();
+        g2.setColor( getForeground() );
+        g2.drawString( _color_field.label(), x + pad, ty );
+        ty += row_h;
+        for( int i = 0; i < shown; i++ ) {
+            final Map.Entry<String, Color> e = entries.get( i );
+            g2.setColor( e.getValue() );
+            g2.fillRect( x + pad, ( ty - swatch ) + 1, swatch, swatch );
+            g2.setColor( getForeground() );
+            g2.drawString( e.getKey(), x + pad + swatch + 4, ty );
+            ty += row_h;
+        }
+        if ( more ) {
+            g2.setColor( getForeground() );
+            g2.drawString( more_label, x + pad, ty );
+        }
     }
 
     private static double maxLabelWidth( final List<PhylogenyNode> tips, final FontMetrics fm ) {

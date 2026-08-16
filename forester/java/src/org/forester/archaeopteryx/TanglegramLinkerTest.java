@@ -44,7 +44,24 @@ public final class TanglegramLinkerTest {
 
     public static boolean test() {
         return nodeNameMatchingOk() && manyToManyOk() && unmatchedOk() && scientificNameOk() && crossingsOk()
-                && crossingsMatchBruteForceOk();
+                && crossingsMatchBruteForceOk() && crossingConnectorsOk();
+    }
+
+    private static boolean crossingConnectorsOk() {
+        // {0,0} and {3,3} cross nobody; {1,2} and {2,1} cross each other
+        final List<int[]> pairs = new ArrayList<>();
+        pairs.add( new int[] { 0, 0 } );
+        pairs.add( new int[] { 1, 2 } );
+        pairs.add( new int[] { 2, 1 } );
+        pairs.add( new int[] { 3, 3 } );
+        final boolean[] flags = TanglegramLinker.crossingConnectors( pairs );
+        final boolean[] expected = { false, true, true, false };
+        for( int i = 0; i < expected.length; i++ ) {
+            if ( flags[ i ] != expected[ i ] ) {
+                return fail( "crossingConnectors[" + i + "] = " + flags[ i ] + ", expected " + expected[ i ] );
+            }
+        }
+        return true;
     }
 
     /** The O(n log n) inversion-count crossings must equal the O(n^2) definition on random pair-lists, including

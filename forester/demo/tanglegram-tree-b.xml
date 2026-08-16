@@ -2,7 +2,7 @@
 <phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
 <phylogeny rooted="true" rerootable="true">
   <name>Tanglegram tree B</name>
-  <description>The companion of &apos;tanglegram-tree-a.xml&apos; for Analysis &gt; Create Tanglegram: the same eight species in a different topology, so the linked connectors cross. Open both files and link on Node Name or Taxonomy: Scientific Name.</description>
+  <description>The companion of &apos;tanglegram-tree-a.xml&apos; for Analysis &gt; Create Tanglegram: the same eight species in a different topology, so the linked connectors cross. Open both files and link on Node Name or Taxonomy: Scientific Name; set Colour: clade in the tanglegram window to colour the connectors by clade.</description>
   <clade>
     <branch_length>0.0</branch_length>
     <clade>
@@ -16,6 +16,7 @@
             <scientific_name>Homo sapiens</scientific_name>
             <rank>species</rank>
           </taxonomy>
+          <property ref="data:clade" datatype="xsd:string" applies_to="node">Primates</property>
         </clade>
         <clade>
           <name>Mus musculus</name>
@@ -24,6 +25,7 @@
             <scientific_name>Mus musculus</scientific_name>
             <rank>species</rank>
           </taxonomy>
+          <property ref="data:clade" datatype="xsd:string" applies_to="node">Rodentia</property>
         </clade>
       </clade>
       <clade>
@@ -35,6 +37,7 @@
             <scientific_name>Pan troglodytes</scientific_name>
             <rank>species</rank>
           </taxonomy>
+          <property ref="data:clade" datatype="xsd:string" applies_to="node">Primates</property>
         </clade>
         <clade>
           <name>Felis catus</name>
@@ -43,6 +46,7 @@
             <scientific_name>Felis catus</scientific_name>
             <rank>species</rank>
           </taxonomy>
+          <property ref="data:clade" datatype="xsd:string" applies_to="node">Carnivora</property>
         </clade>
       </clade>
     </clade>
@@ -57,6 +61,7 @@
             <scientific_name>Rattus norvegicus</scientific_name>
             <rank>species</rank>
           </taxonomy>
+          <property ref="data:clade" datatype="xsd:string" applies_to="node">Rodentia</property>
         </clade>
         <clade>
           <name>Canis lupus</name>
@@ -65,6 +70,7 @@
             <scientific_name>Canis lupus</scientific_name>
             <rank>species</rank>
           </taxonomy>
+          <property ref="data:clade" datatype="xsd:string" applies_to="node">Carnivora</property>
         </clade>
       </clade>
       <clade>
@@ -76,6 +82,7 @@
             <scientific_name>Danio rerio</scientific_name>
             <rank>species</rank>
           </taxonomy>
+          <property ref="data:clade" datatype="xsd:string" applies_to="node">Actinopterygii</property>
         </clade>
         <clade>
           <name>Gallus gallus</name>
@@ -84,6 +91,7 @@
             <scientific_name>Gallus gallus</scientific_name>
             <rank>species</rank>
           </taxonomy>
+          <property ref="data:clade" datatype="xsd:string" applies_to="node">Aves</property>
         </clade>
       </clade>
     </clade>

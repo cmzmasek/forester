@@ -344,44 +344,55 @@ public final class DemoTreeGenerator {
 
     // ----- "Create Tanglegram": a linked PAIR of trees over the SAME eight taxa but with DIFFERENT topologies, so
     //       Analysis > Create Tanglegram draws crossing tip-to-tip connectors. Each tip's name IS its scientific
-    //       name, so the pair links on either 'Node Name' or 'Taxonomy: Scientific Name'. Open BOTH files, then run
-    //       Analysis > Create Tanglegram.
+    //       name, so the pair links on either 'Node Name' or 'Taxonomy: Scientific Name'; each tip also carries a
+    //       categorical 'clade' group, so the tanglegram's connectors can be coloured by clade. Open BOTH files.
     private static Phylogeny tanglegramTreeA() throws PhyloXmlDataFormatException {
         final PhylogenyNode root = clade( 0,
                                           clade( 0.05,
-                                                 clade( 0.04, speciesTip( "Homo sapiens" ),
-                                                        speciesTip( "Pan troglodytes" ) ),
-                                                 clade( 0.04, speciesTip( "Mus musculus" ),
-                                                        speciesTip( "Rattus norvegicus" ) ) ),
+                                                 clade( 0.04, cladeTip( "Homo sapiens", "Primates" ),
+                                                        cladeTip( "Pan troglodytes", "Primates" ) ),
+                                                 clade( 0.04, cladeTip( "Mus musculus", "Rodentia" ),
+                                                        cladeTip( "Rattus norvegicus", "Rodentia" ) ) ),
                                           clade( 0.05,
-                                                 clade( 0.04, speciesTip( "Felis catus" ),
-                                                        speciesTip( "Canis lupus" ) ),
-                                                 clade( 0.04, speciesTip( "Gallus gallus" ),
-                                                        speciesTip( "Danio rerio" ) ) ) );
+                                                 clade( 0.04, cladeTip( "Felis catus", "Carnivora" ),
+                                                        cladeTip( "Canis lupus", "Carnivora" ) ),
+                                                 clade( 0.04, cladeTip( "Gallus gallus", "Aves" ),
+                                                        cladeTip( "Danio rerio", "Actinopterygii" ) ) ) );
         return tree( root, "Tanglegram tree A",
                      "One of a linked PAIR of demo trees for Analysis > Create Tanglegram. Its eight tips are the "
                              + "same eight species as 'tanglegram-tree-b.xml' but arranged in a different topology, "
                              + "so the tanglegram's tip-to-tip connectors cross. Open BOTH tanglegram-tree files, "
                              + "then run Analysis > Create Tanglegram and link on Node Name or Taxonomy: Scientific "
-                             + "Name." );
+                             + "Name. Each tip also carries a categorical 'clade' group, so in the tanglegram window "
+                             + "you can set Colour: clade to colour the connectors by clade." );
     }
 
     private static Phylogeny tanglegramTreeB() throws PhyloXmlDataFormatException {
         final PhylogenyNode root = clade( 0,
                                           clade( 0.05,
-                                                 clade( 0.04, speciesTip( "Homo sapiens" ),
-                                                        speciesTip( "Mus musculus" ) ),
-                                                 clade( 0.04, speciesTip( "Pan troglodytes" ),
-                                                        speciesTip( "Felis catus" ) ) ),
+                                                 clade( 0.04, cladeTip( "Homo sapiens", "Primates" ),
+                                                        cladeTip( "Mus musculus", "Rodentia" ) ),
+                                                 clade( 0.04, cladeTip( "Pan troglodytes", "Primates" ),
+                                                        cladeTip( "Felis catus", "Carnivora" ) ) ),
                                           clade( 0.05,
-                                                 clade( 0.04, speciesTip( "Rattus norvegicus" ),
-                                                        speciesTip( "Canis lupus" ) ),
-                                                 clade( 0.04, speciesTip( "Danio rerio" ),
-                                                        speciesTip( "Gallus gallus" ) ) ) );
+                                                 clade( 0.04, cladeTip( "Rattus norvegicus", "Rodentia" ),
+                                                        cladeTip( "Canis lupus", "Carnivora" ) ),
+                                                 clade( 0.04, cladeTip( "Danio rerio", "Actinopterygii" ),
+                                                        cladeTip( "Gallus gallus", "Aves" ) ) ) );
         return tree( root, "Tanglegram tree B",
                      "The companion of 'tanglegram-tree-a.xml' for Analysis > Create Tanglegram: the same eight "
                              + "species in a different topology, so the linked connectors cross. Open both files "
-                             + "and link on Node Name or Taxonomy: Scientific Name." );
+                             + "and link on Node Name or Taxonomy: Scientific Name; set Colour: clade in the "
+                             + "tanglegram window to colour the connectors by clade." );
+    }
+
+    /** A tanglegram tip: a species (name + taxonomy) plus a categorical 'clade' group, so a tanglegram's connectors
+     *  can be coloured by clade. */
+    private static PhylogenyNode cladeTip( final String scientific_name, final String clade )
+            throws PhyloXmlDataFormatException {
+        final PhylogenyNode n = speciesTip( scientific_name );
+        cat( n, "data:clade", clade );
+        return n;
     }
 
     // ----- "Zebra Stripes": a wider (16-tip) tree with a categorical 'host' + numeric 'reads' per tip, so the faint

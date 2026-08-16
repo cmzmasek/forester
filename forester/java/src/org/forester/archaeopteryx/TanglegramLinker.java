@@ -255,6 +255,28 @@ final class TanglegramLinker {
         return inv;
     }
 
+    /**
+     * For each connector (in the input order), whether it crosses at least one other connector. Two connectors cross
+     * when their left and right endpoints are in the opposite vertical order (the same test as {@link #countCrossings}).
+     * O(n^2), computed on demand (not per frame) -- used only to colour the crossing connectors.
+     */
+    static boolean[] crossingConnectors( final List<int[]> pairs ) {
+        final int n = pairs.size();
+        final boolean[] crossing = new boolean[ n ];
+        for( int i = 0; i < n; i++ ) {
+            final int[] p = pairs.get( i );
+            for( int j = i + 1; j < n; j++ ) {
+                final int[] q = pairs.get( j );
+                // long product: index differences can each exceed 46k on a huge tanglegram, overflowing an int
+                if ( ( (long) ( p[ 0 ] - q[ 0 ] ) * ( p[ 1 ] - q[ 1 ] ) ) < 0 ) {
+                    crossing[ i ] = true;
+                    crossing[ j ] = true;
+                }
+            }
+        }
+        return crossing;
+    }
+
     private TanglegramLinker() {
     }
 }

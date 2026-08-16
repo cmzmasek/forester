@@ -29,8 +29,10 @@ import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 
 import org.forester.archaeopteryx.TanglegramLinker.LinkField;
+import org.forester.archaeopteryx.TanglegramPanel.ConnectorColorMode;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
+import org.forester.phylogeny.data.Taxonomy;
 
 /**
  * Tests the tanglegram GUI glue: the tree-index selection logic ({@link MainFrameApplication#tanglegramTreeIndices},
@@ -52,7 +54,46 @@ public final class TanglegramToolTest {
         if ( GraphicsEnvironment.isHeadless() ) {
             return true;
         }
-        return frameOk() && frameWiringOk();
+        return frameOk() && frameWiringOk() && colorSelectorOk();
+    }
+
+    private static boolean colorSelectorOk() {
+        final TanglegramFrame frame = new TanglegramFrame( taxonTree(), taxonTree(), LinkField.SCIENTIFIC_NAME, "L",
+                                                           "R" );
+        try {
+            if ( frame.colorItemCountForTest() != 3 ) { // Uniform, Crossings, Taxonomy: Scientific Name
+                return fail( "the colour selector should have 3 items, got " + frame.colorItemCountForTest() );
+            }
+            final TanglegramPanel panel = frame.getTanglegramPanel();
+            frame.selectColorForTest( 1 );
+            if ( panel.colorModeForTest() != ConnectorColorMode.CROSSINGS ) {
+                return fail( "selector index 1 should set CROSSINGS mode" );
+            }
+            frame.selectColorForTest( 2 );
+            if ( panel.colorModeForTest() != ConnectorColorMode.FIELD ) {
+                return fail( "selector index 2 should set a FIELD mode" );
+            }
+            frame.selectColorForTest( 0 );
+            if ( panel.colorModeForTest() != ConnectorColorMode.UNIFORM ) {
+                return fail( "selector index 0 should set UNIFORM mode" );
+            }
+            return true;
+        }
+        finally {
+            frame.dispose();
+        }
+    }
+
+    private static Phylogeny taxonTree() {
+        return tree( clade( taxonLeaf( "Homo sapiens" ), taxonLeaf( "Mus musculus" ) ) );
+    }
+
+    private static PhylogenyNode taxonLeaf( final String scientific_name ) {
+        final PhylogenyNode n = leaf( scientific_name );
+        final Taxonomy t = new Taxonomy();
+        t.setScientificName( scientific_name );
+        n.getNodeData().setTaxonomy( t );
+        return n;
     }
 
     private static boolean selectionLogicOk() {

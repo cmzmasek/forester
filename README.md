@@ -167,7 +167,9 @@ number of **crossing** connectors — a rough measure of incongruence.
 
 To untangle it, **click a clade's vertical bar** to flip it (a topology-preserving
 rotation), or press **Auto-untangle** to have Archaeopteryx do it for both trees;
-both are undoable.
+both are undoable. The **Colour** selector recolours the connectors — uniform,
+**Crossings** (the crossing connectors highlighted in red), or by a tip attribute
+(taxonomy or an imported category, with a legend).
 
 **Auto-untangle heuristic.** Auto-untangle reorders the two trees by rotating
 clades (reversing the child order at internal nodes — a topology-preserving

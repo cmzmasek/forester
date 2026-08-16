@@ -121,6 +121,8 @@ public final class DemoTreesTest {
         ok &= hasAtLeastTips( "tanglegram-tree-a.xml", 8 );
         ok &= hasAtLeastTips( "tanglegram-tree-b.xml", 8 );
         ok &= tanglegramPairLinks( "tanglegram-tree-a.xml", "tanglegram-tree-b.xml" );
+        // a categorical 'clade' group per tip, so the tanglegram's connectors can be coloured by clade
+        ok &= hasCategoricalRef( "tanglegram-tree-a.xml", "data:clade" );
         return ok;
     }
 

@@ -25,7 +25,9 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
 import java.awt.image.BufferedImage;
+import java.util.List;
 
+import org.forester.archaeopteryx.TanglegramColoring.Field;
 import org.forester.archaeopteryx.TanglegramLinker.LinkField;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
@@ -46,13 +48,142 @@ public final class TanglegramPanelRenderTest {
 
     public static boolean test() {
         // constructing / rotating a panel does not paint, so those checks are headless-safe; only renderOk / hitTestOk paint
-        if ( !countsOk() || !labelFallbackOk() || !rotationOk() || !autoUntangleOk() ) {
+        if ( !countsOk() || !labelFallbackOk() || !rotationOk() || !autoUntangleOk() || !colorModesOk() ) {
             return false;
         }
         if ( GraphicsEnvironment.isHeadless() ) {
             return true;
         }
-        return renderOk() && hitTestOk();
+        return renderOk() && hitTestOk() && colorRenderOk();
+    }
+
+    private static boolean colorModesOk() {
+        final Color warn = new Color( 220, 50, 50 );
+        // a fully tangled pair: all 4 connectors cross
+        final TanglegramPanel tangled = new TanglegramPanel( balancedABCD(), balancedCDAB(), LinkField.NODE_NAME );
+        final Color uniform0 = tangled.connectorColorForTest( 0 );
+        for( int i = 1; i < 4; i++ ) {
+            if ( !uniform0.equals( tangled.connectorColorForTest( i ) ) ) {
+                return fail( "uniform mode should colour every connector the same" );
+            }
+        }
+        tangled.setCrossingColoring();
+        for( int i = 0; i < 4; i++ ) {
+            if ( !warn.equals( tangled.connectorColorForTest( i ) ) ) {
+                return fail( "in a fully tangled pair, every connector should be the crossing colour" );
+            }
+        }
+        // a concordant pair: no connector crosses -> none is the crossing colour
+        final TanglegramPanel clean = new TanglegramPanel( balancedABCD(), balancedABCD(), LinkField.NODE_NAME );
+        clean.setCrossingColoring();
+        for( int i = 0; i < 4; i++ ) {
+            if ( warn.equals( clean.connectorColorForTest( i ) ) ) {
+                return fail( "with no crossings, no connector should be coloured as crossing" );
+            }
+        }
+        // FIELD (taxonomy): connectors of different species get different colours
+        final TanglegramPanel taxo = new TanglegramPanel( taxonTree(), taxonTree(), LinkField.SCIENTIFIC_NAME );
+        final Field sci = fieldNamed( taxo, "Taxonomy: Scientific Name" );
+        if ( sci == null ) {
+            return fail( "expected a scientific-name colour field" );
+        }
+        taxo.setFieldColoring( sci );
+        if ( taxo.connectorColorForTest( 0 ).equals( taxo.connectorColorForTest( 1 ) ) ) {
+            return fail( "different species should give different connector colours" );
+        }
+        return true;
+    }
+
+    private static boolean colorRenderOk() {
+        // CROSSINGS mode must actually paint the crossing connectors red
+        final TanglegramPanel tangled = new TanglegramPanel( balancedABCD(), balancedCDAB(), LinkField.NODE_NAME );
+        tangled.setCrossingColoring();
+        if ( countReddish( renderPanel( tangled, 800, 400 ) ) <= 0 ) {
+            return fail( "crossing connectors did not render in red" );
+        }
+        // after untangling the crossings away, the crossing highlights must recompute (no stale red)
+        tangled.autoUntangle();
+        if ( countReddish( renderPanel( tangled, 800, 400 ) ) != 0 ) {
+            return fail( "crossing highlights should clear once the crossings are untangled" );
+        }
+        // FIELD mode draws a colour legend (coloured swatches) in the top-left corner
+        final TanglegramPanel taxo = new TanglegramPanel( taxonTree(), taxonTree(), LinkField.SCIENTIFIC_NAME );
+        taxo.setFieldColoring( fieldNamed( taxo, "Taxonomy: Scientific Name" ) );
+        if ( countSaturated( renderPanel( taxo, 800, 400 ), 0, 0, 160, 160 ) <= 0 ) {
+            return fail( "the field-colour legend did not render coloured swatches" );
+        }
+        return true;
+    }
+
+    private static Field fieldNamed( final TanglegramPanel panel, final String label ) {
+        for( final Field f : panel.availableColorFields() ) {
+            if ( label.equals( f.label() ) ) {
+                return f;
+            }
+        }
+        return null;
+    }
+
+    private static BufferedImage renderPanel( final TanglegramPanel panel, final int w, final int h ) {
+        panel.setBackground( Color.WHITE );
+        panel.setForeground( Color.BLACK );
+        panel.setFont( new Font( "SansSerif", Font.PLAIN, 12 ) );
+        panel.setSize( w, h );
+        final BufferedImage img = new BufferedImage( w, h, BufferedImage.TYPE_INT_RGB );
+        final Graphics2D g = img.createGraphics();
+        try {
+            panel.printAll( g );
+        }
+        finally {
+            g.dispose();
+        }
+        return img;
+    }
+
+    private static int countReddish( final BufferedImage img ) {
+        int count = 0;
+        for( int x = 0; x < img.getWidth(); x++ ) {
+            for( int y = 0; y < img.getHeight(); y++ ) {
+                final int rgb = img.getRGB( x, y );
+                final int r = ( rgb >> 16 ) & 0xFF;
+                final int gg = ( rgb >> 8 ) & 0xFF;
+                final int b = rgb & 0xFF;
+                if ( ( r > 150 ) && ( gg < 110 ) && ( b < 110 ) ) {
+                    ++count;
+                }
+            }
+        }
+        return count;
+    }
+
+    /** Coloured (saturated, not grey/black/white) pixels in the region [x0,x1) x [y0,y1). */
+    private static int countSaturated( final BufferedImage img, final int x0, final int y0, final int x1,
+                                       final int y1 ) {
+        int count = 0;
+        for( int x = Math.max( 0, x0 ); x < Math.min( img.getWidth(), x1 ); x++ ) {
+            for( int y = Math.max( 0, y0 ); y < Math.min( img.getHeight(), y1 ); y++ ) {
+                final int rgb = img.getRGB( x, y );
+                final int r = ( rgb >> 16 ) & 0xFF;
+                final int g = ( rgb >> 8 ) & 0xFF;
+                final int b = rgb & 0xFF;
+                if ( ( Math.max( r, Math.max( g, b ) ) - Math.min( r, Math.min( g, b ) ) ) > 60 ) {
+                    ++count;
+                }
+            }
+        }
+        return count;
+    }
+
+    private static Phylogeny taxonTree() {
+        return tree( clade( taxonLeaf( "Homo sapiens" ), taxonLeaf( "Mus musculus" ) ) );
+    }
+
+    private static PhylogenyNode taxonLeaf( final String scientific_name ) {
+        final PhylogenyNode n = leaf( scientific_name );
+        final Taxonomy t = new Taxonomy();
+        t.setScientificName( scientific_name );
+        n.getNodeData().setTaxonomy( t );
+        return n;
     }
 
     private static boolean rotationOk() {

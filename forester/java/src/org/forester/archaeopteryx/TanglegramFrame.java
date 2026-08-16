@@ -27,8 +27,11 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 
 import javax.swing.AbstractAction;
+import java.util.List;
+
 import javax.swing.Box;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -55,6 +58,7 @@ final class TanglegramFrame extends JFrame {
     private final JLabel          _summary         = new JLabel();
     private final JButton         _undo_button     = new JButton( "Undo" );
     private final JButton         _redo_button     = new JButton( "Redo" );
+    private JComboBox<String>     _color_selector;
 
     TanglegramFrame( final Phylogeny left, final Phylogeny right, final TanglegramLinker.LinkField field,
                      final String left_name, final String right_name ) {
@@ -101,6 +105,14 @@ final class TanglegramFrame extends JFrame {
         _redo_button.doClick();
     }
 
+    int colorItemCountForTest() {
+        return _color_selector.getItemCount();
+    }
+
+    void selectColorForTest( final int index ) {
+        _color_selector.setSelectedIndex( index );
+    }
+
     private JToolBar buildToolbar() {
         final JToolBar bar = new JToolBar();
         bar.setFloatable( false );
@@ -126,9 +138,39 @@ final class TanglegramFrame extends JFrame {
         bar.add( zoom_out );
         bar.add( fit );
         bar.addSeparator();
+        bar.add( new JLabel( "Colour: " ) );
+        bar.add( buildColorSelector() );
+        bar.addSeparator();
         bar.add( _summary );
         bar.add( Box.createHorizontalGlue() );
         return bar;
+    }
+
+    /** The "Colour connectors by:" selector: Uniform, Crossings, then one entry per available tip attribute. */
+    private JComboBox<String> buildColorSelector() {
+        final List<TanglegramColoring.Field> fields = _panel.availableColorFields();
+        _color_selector = new JComboBox<>();
+        _color_selector.addItem( "Uniform" );
+        _color_selector.addItem( "Crossings" );
+        for( final TanglegramColoring.Field field : fields ) {
+            _color_selector.addItem( field.label() );
+        }
+        _color_selector
+                .setToolTipText( "Colour the connectors uniformly, highlight the crossings, or colour by a tip attribute" );
+        _color_selector.setMaximumSize( _color_selector.getPreferredSize() ); // don't let the toolbar stretch it
+        _color_selector.addActionListener( e -> {
+            final int index = _color_selector.getSelectedIndex();
+            if ( index <= 0 ) {
+                _panel.setUniformColoring();
+            }
+            else if ( index == 1 ) {
+                _panel.setCrossingColoring();
+            }
+            else {
+                _panel.setFieldColoring( fields.get( index - 2 ) );
+            }
+        } );
+        return _color_selector;
     }
 
     private void installUndoRedoKeys() {
