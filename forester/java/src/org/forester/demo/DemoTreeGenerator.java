@@ -79,6 +79,8 @@ public final class DemoTreeGenerator {
         write( dir, "search-emphasis.xml", searchEmphasisTree() );
         writeText( dir, "beast-annotations.nex", beastAnnotationsNexus() );
         write( dir, "ancestral-pie-charts.xml", ancestralPieChartsTree() );
+        write( dir, "tanglegram-tree-a.xml", tanglegramTreeA() );
+        write( dir, "tanglegram-tree-b.xml", tanglegramTreeB() );
         System.out.println( "Wrote demo trees to " + dir.getAbsolutePath() );
     }
 
@@ -338,6 +340,48 @@ public final class DemoTreeGenerator {
         final PhylogenyNode n = leaf( scientific_name );
         taxon( n, scientific_name, "species" );
         return n;
+    }
+
+    // ----- "Create Tanglegram": a linked PAIR of trees over the SAME eight taxa but with DIFFERENT topologies, so
+    //       Analysis > Create Tanglegram draws crossing tip-to-tip connectors. Each tip's name IS its scientific
+    //       name, so the pair links on either 'Node Name' or 'Taxonomy: Scientific Name'. Open BOTH files, then run
+    //       Analysis > Create Tanglegram.
+    private static Phylogeny tanglegramTreeA() throws PhyloXmlDataFormatException {
+        final PhylogenyNode root = clade( 0,
+                                          clade( 0.05,
+                                                 clade( 0.04, speciesTip( "Homo sapiens" ),
+                                                        speciesTip( "Pan troglodytes" ) ),
+                                                 clade( 0.04, speciesTip( "Mus musculus" ),
+                                                        speciesTip( "Rattus norvegicus" ) ) ),
+                                          clade( 0.05,
+                                                 clade( 0.04, speciesTip( "Felis catus" ),
+                                                        speciesTip( "Canis lupus" ) ),
+                                                 clade( 0.04, speciesTip( "Gallus gallus" ),
+                                                        speciesTip( "Danio rerio" ) ) ) );
+        return tree( root, "Tanglegram tree A",
+                     "One of a linked PAIR of demo trees for Analysis > Create Tanglegram. Its eight tips are the "
+                             + "same eight species as 'tanglegram-tree-b.xml' but arranged in a different topology, "
+                             + "so the tanglegram's tip-to-tip connectors cross. Open BOTH tanglegram-tree files, "
+                             + "then run Analysis > Create Tanglegram and link on Node Name or Taxonomy: Scientific "
+                             + "Name." );
+    }
+
+    private static Phylogeny tanglegramTreeB() throws PhyloXmlDataFormatException {
+        final PhylogenyNode root = clade( 0,
+                                          clade( 0.05,
+                                                 clade( 0.04, speciesTip( "Homo sapiens" ),
+                                                        speciesTip( "Mus musculus" ) ),
+                                                 clade( 0.04, speciesTip( "Pan troglodytes" ),
+                                                        speciesTip( "Felis catus" ) ) ),
+                                          clade( 0.05,
+                                                 clade( 0.04, speciesTip( "Rattus norvegicus" ),
+                                                        speciesTip( "Canis lupus" ) ),
+                                                 clade( 0.04, speciesTip( "Danio rerio" ),
+                                                        speciesTip( "Gallus gallus" ) ) ) );
+        return tree( root, "Tanglegram tree B",
+                     "The companion of 'tanglegram-tree-a.xml' for Analysis > Create Tanglegram: the same eight "
+                             + "species in a different topology, so the linked connectors cross. Open both files "
+                             + "and link on Node Name or Taxonomy: Scientific Name." );
     }
 
     // ----- "Zebra Stripes": a wider (16-tip) tree with a categorical 'host' + numeric 'reads' per tip, so the faint

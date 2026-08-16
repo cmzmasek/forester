@@ -746,6 +746,30 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Tanglegram linker: ");
+        if (org.forester.archaeopteryx.TanglegramLinkerTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Tanglegram panel (render): ");
+        if (org.forester.archaeopteryx.TanglegramPanelRenderTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Tanglegram tool: ");
+        if (org.forester.archaeopteryx.TanglegramToolTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Zebra stripes (render): ");
         if (org.forester.archaeopteryx.ZebraStripeRenderTest.test()) {
             System.out.println("OK.");

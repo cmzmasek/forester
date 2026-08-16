@@ -115,7 +115,33 @@ public final class DemoTreesTest {
         // ancestral-state pie charts: a discrete-trait posterior (beast:location_set + _set_prob) on the internal
         // nodes, so the pie feature has a trait with a parseable multi-state distribution
         ok &= hasAncestralStateTrait( "ancestral-pie-charts.xml", "location" );
+
+        // create tanglegram: a linked PAIR of trees over the same eight taxa (different topologies) -- every tip of
+        // one must link to a tip of the other on the scientific-name key (a fully-connected, crossing tanglegram)
+        ok &= hasAtLeastTips( "tanglegram-tree-a.xml", 8 );
+        ok &= hasAtLeastTips( "tanglegram-tree-b.xml", 8 );
+        ok &= tanglegramPairLinks( "tanglegram-tree-a.xml", "tanglegram-tree-b.xml" );
         return ok;
+    }
+
+    /** Every tip of one tanglegram demo tree links to a tip of the other on the scientific-name key (no tip left
+     *  unmatched), so the Create Tanglegram demo shows a fully-connected, crossing tanglegram. */
+    private static boolean tanglegramPairLinks( final String a_file, final String b_file ) {
+        final Phylogeny a = load( a_file );
+        final Phylogeny b = load( b_file );
+        if ( ( a == null ) || ( b == null ) ) {
+            return false;
+        }
+        final TanglegramLinker.Result r = TanglegramLinker.link( a, b, TanglegramLinker.LinkField.SCIENTIFIC_NAME );
+        if ( r.getLinks().size() < 8 ) {
+            return note( a_file + " and " + b_file + " should share >= 8 scientific-name links, found "
+                    + r.getLinks().size() );
+        }
+        if ( !r.getUnmatchedA().isEmpty() || !r.getUnmatchedB().isEmpty() ) {
+            return note( "tanglegram demo pair should leave no tip unmatched (a: " + r.getUnmatchedA().size()
+                    + ", b: " + r.getUnmatchedB().size() + ")" );
+        }
+        return true;
     }
 
     /** The ancestral-pie demo offers {@code trait} (a beast:&lt;trait&gt;_set_prob property) AND at least one internal

@@ -235,6 +235,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem _load_species_tree_item;
     JMenuItem _gsdi_item;
     JMenuItem _gsdir_item;
+    JMenuItem _create_tanglegram_item;
     JMenuItem _lineage_inference;
     // file menu:
     JMenuItem _open_item;
@@ -957,10 +958,12 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     }
 
     void activateSaveAllIfNeeded() {
-        if ((getMainPanel().getTabbedPane() != null) && (getMainPanel().getTabbedPane().getTabCount() > 1)) {
-            _save_all_item.setEnabled(true);
-        } else {
-            _save_all_item.setEnabled(false);
+        final boolean multiple_trees = (getMainPanel().getTabbedPane() != null)
+                && (getMainPanel().getTabbedPane().getTabCount() > 1);
+        _save_all_item.setEnabled(multiple_trees);
+        // a tanglegram compares two trees, so the item is only enabled once at least two are loaded
+        if (_create_tanglegram_item != null) {
+            _create_tanglegram_item.setEnabled(multiple_trees);
         }
     }
 

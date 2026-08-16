@@ -347,6 +347,8 @@ public final class MainFrameApplication extends MainFrame {
                 collapseBelowBranchLengthThreshold();
             } else if (o == _select_representative_tips_jmi) {
                 selectRepresentativeTips();
+            } else if (o == _create_tanglegram_item) {
+                createTanglegram();
             }
             _contentpane.repaint();
         } catch (final Exception ex) {
@@ -761,6 +763,79 @@ public final class MainFrameApplication extends MainFrame {
                 && _mainpanel.getCurrentTreePanel().isPhyHasBranchLengths())) {
             _mainpanel.getControlPanel().setTreeDisplayType(source_type);
         }
+    }
+
+    /**
+     * Opens the two-tree tanglegram builder: choose which two loaded trees to compare (the tree pickers are omitted
+     * when exactly two are loaded) and the tip attribute to link on, then show the tanglegram in its own window. It
+     * is read-only -- the panel deep-copies the source trees, so the loaded tabs are never mutated.
+     */
+    void createTanglegram() {
+        final JTabbedPane tabs = getMainPanel().getTabbedPane();
+        if ((tabs == null) || (tabs.getTabCount() < 2)) {
+            JOptionPane.showMessageDialog(this, "Load at least two trees to create a tanglegram.",
+                    "Create Tanglegram", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        final int count = tabs.getTabCount();
+        final String[] names = new String[count];
+        final String[] titles = new String[count];
+        for (int i = 0; i < count; i++) {
+            names[i] = tabs.getTitleAt(i);
+            titles[i] = (i + 1) + ": " + names[i];
+        }
+        final JComboBox<String> tree_a = new JComboBox<>(titles);
+        final JComboBox<String> tree_b = new JComboBox<>(titles);
+        tree_a.setSelectedIndex(0);
+        tree_b.setSelectedIndex(1);
+        final TanglegramLinker.LinkField[] fields = TanglegramLinker.LinkField.values();
+        final String[] field_labels = new String[fields.length];
+        for (int i = 0; i < fields.length; i++) {
+            field_labels[i] = fields[i].label();
+        }
+        final JComboBox<String> link_field = new JComboBox<>(field_labels);
+        final JPanel form = new JPanel(new java.awt.GridLayout(0, 2, 8, 6));
+        if (count > 2) {
+            form.add(new JLabel("First tree:"));
+            form.add(tree_a);
+            form.add(new JLabel("Second tree:"));
+            form.add(tree_b);
+        }
+        form.add(new JLabel("Link tips by:"));
+        form.add(link_field);
+        final int choice = JOptionPane.showConfirmDialog(this, form, "Create Tanglegram",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        if (choice != JOptionPane.OK_OPTION) {
+            return;
+        }
+        final int[] indices = tanglegramTreeIndices(count, tree_a.getSelectedIndex(), tree_b.getSelectedIndex());
+        if (indices == null) {
+            JOptionPane.showMessageDialog(this, "Please choose two different trees.", "Create Tanglegram",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        final int index_a = indices[0];
+        final int index_b = indices[1];
+        final Phylogeny phy_a = getMainPanel().getPhylogeny(index_a);
+        final Phylogeny phy_b = getMainPanel().getPhylogeny(index_b);
+        if ((phy_a == null) || (phy_b == null) || phy_a.isEmpty() || phy_b.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Could not read the selected trees.", "Create Tanglegram",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        final TanglegramLinker.LinkField field = fields[link_field.getSelectedIndex()];
+        new TanglegramFrame(phy_a, phy_b, field, names[index_a], names[index_b]).setVisible(true);
+    }
+
+    /**
+     * Resolves the two tree indices for a tanglegram from the chooser selections. When only two trees are loaded the
+     * tree pickers are omitted, so trees 0 and 1 are used; otherwise the user's picks are used. Returns null when the
+     * two picks are the same tree (an invalid selection). Package-visible + static so it is unit-testable.
+     */
+    static int[] tanglegramTreeIndices(final int tree_count, final int selected_a, final int selected_b) {
+        final int a = (tree_count > 2) ? selected_a : 0;
+        final int b = (tree_count > 2) ? selected_b : 1;
+        return (a == b) ? null : new int[] { a, b };
     }
 
     /** The input controls for the "Select Representative Tips" dialog, exposed so they can be unit-tested. */
@@ -1274,6 +1349,10 @@ public final class MainFrameApplication extends MainFrame {
         customizeJMenuItem(_gsdi_item);
         customizeJMenuItem(_gsdir_item);
         customizeJMenuItem(_load_species_tree_item);
+        _analysis_menu.add(_create_tanglegram_item = new JMenuItem("Create Tanglegram..."));
+        customizeJMenuItem(_create_tanglegram_item);
+        _create_tanglegram_item.setToolTipText("Compare two loaded trees side by side, linking their matching tips");
+        _create_tanglegram_item.setEnabled(false);
         _analysis_menu.addSeparator();
         _analysis_menu.add(_lineage_inference = new JMenuItem(INFER_ANCESTOR_TAXONOMIES));
         customizeJMenuItem(_lineage_inference);

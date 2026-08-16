@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" rerootable="true">
+  <name>Tanglegram tree A</name>
+  <description>One of a linked PAIR of demo trees for Analysis &gt; Create Tanglegram. Its eight tips are the same eight species as &apos;tanglegram-tree-b.xml&apos; but arranged in a different topology, so the tanglegram&apos;s tip-to-tip connectors cross. Open BOTH tanglegram-tree files, then run Analysis &gt; Create Tanglegram and link on Node Name or Taxonomy: Scientific Name.</description>
+  <clade>
+    <branch_length>0.0</branch_length>
+    <clade>
+      <branch_length>0.05</branch_length>
+      <clade>
+        <branch_length>0.04</branch_length>
+        <clade>
+          <name>Homo sapiens</name>
+          <branch_length>0.02</branch_length>
+          <taxonomy>
+            <scientific_name>Homo sapiens</scientific_name>
+            <rank>species</rank>
+          </taxonomy>
+        </clade>
+        <clade>
+          <name>Pan troglodytes</name>
+          <branch_length>0.02</branch_length>
+          <taxonomy>
+            <scientific_name>Pan troglodytes</scientific_name>
+            <rank>species</rank>
+          </taxonomy>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>0.04</branch_length>
+        <clade>
+          <name>Mus musculus</name>
+          <branch_length>0.02</branch_length>
+          <taxonomy>
+            <scientific_name>Mus musculus</scientific_name>
+            <rank>species</rank>
+          </taxonomy>
+        </clade>
+        <clade>
+          <name>Rattus norvegicus</name>
+          <branch_length>0.02</branch_length>
+          <taxonomy>
+            <scientific_name>Rattus norvegicus</scientific_name>
+            <rank>species</rank>
+          </taxonomy>
+        </clade>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.05</branch_length>
+      <clade>
+        <branch_length>0.04</branch_length>
+        <clade>
+          <name>Felis catus</name>
+          <branch_length>0.02</branch_length>
+          <taxonomy>
+            <scientific_name>Felis catus</scientific_name>
+            <rank>species</rank>
+          </taxonomy>
+        </clade>
+        <clade>
+          <name>Canis lupus</name>
+          <branch_length>0.02</branch_length>
+          <taxonomy>
+            <scientific_name>Canis lupus</scientific_name>
+            <rank>species</rank>
+          </taxonomy>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>0.04</branch_length>
+        <clade>
+          <name>Gallus gallus</name>
+          <branch_length>0.02</branch_length>
+          <taxonomy>
+            <scientific_name>Gallus gallus</scientific_name>
+            <rank>species</rank>
+          </taxonomy>
+        </clade>
+        <clade>
+          <name>Danio rerio</name>
+          <branch_length>0.02</branch_length>
+          <taxonomy>
+            <scientific_name>Danio rerio</scientific_name>
+            <rank>species</rank>
+          </taxonomy>
+        </clade>
+      </clade>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>
