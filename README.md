@@ -122,6 +122,40 @@ java -Xmx4g -jar forester.jar mytree.xml
 ```
 
 
+Searching Trees
+---------------
+
+Two independent **search boxes** on the left control panel (**A** and **B**) find
+and highlight matching nodes; a node matched by A, by B, or by both is shown in a
+distinct colour, so two searches can be compared at a glance.
+
+Each box has two dropdowns — **what** to search and **how** to match — above its
+query field:
+
+- **Field** — the node data to search. The list is tailored to the loaded tree, so
+  you only see fields it actually has. **Any text field** (the default) searches
+  every text field at once; or pick a specific one — node name, a taxonomy field
+  (scientific / common name, code, rank, …), a sequence field (name, gene,
+  accession, …), annotations, domains, or **any custom phyloXML property** by its
+  reference (e.g. `aptx:host`). Numeric fields — **Branch length**, **Support /
+  confidence**, and numeric properties — are offered as well.
+- **Match** — how the query is compared. For a text field: **contains** (the
+  default), **starts with**, **ends with**, **whole word**, or **regular
+  expression**. For a numeric field the operators switch to **=, ≠, <, ≤, >, ≥** and
+  **range** (which reveals a second box for the upper bound).
+
+Two shared options sit above the boxes: **Match Case** and **Inverse** (select the
+nodes that do *not* match). Within a text query, `,` is a logical **OR** and `+` a
+logical **AND** (e.g. `kinase, phosphatase`, or `human + receptor`); both are treated
+literally in a regular-expression search. Your field and match choices are remembered
+as you work, so switching fields or navigating between trees doesn't reset them.
+
+Step through the hits with the **◀ / ▶** buttons beside the boxes, or **View → Find
+Next / Find Previous** (**⌘G / ⌘⇧G**) — each jump centres the next match in the view.
+Under **Settings → Display**, **Bold Found Labels**, **Dim Non-Matches**, and **Pulse
+Found Nodes** make the matches stand out further.
+
+
 BEAST and BEAST X Output
 ------------------------
 
