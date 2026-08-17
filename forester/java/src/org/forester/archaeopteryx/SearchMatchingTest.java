@@ -59,6 +59,7 @@ public final class SearchMatchingTest {
             specValidation();
             parseDouble();
             wholeTreeSearch();
+            availableFieldsScan();
             return true;
         }
         catch ( final AssertionError e ) {
@@ -181,9 +182,13 @@ public final class SearchMatchingTest {
         ck( SearchField.datatypeIsNumeric( "xsd:decimal" ), "xsd:decimal is numeric" );
         ck( SearchField.datatypeIsNumeric( "xsd:integer" ), "xsd:integer is numeric" );
         ck( SearchField.datatypeIsNumeric( "xsd:double" ), "xsd:double is numeric" );
+        ck( SearchField.datatypeIsNumeric( "xsd:long" ), "xsd:long is numeric" );
         ck( !SearchField.datatypeIsNumeric( "xsd:string" ), "xsd:string is not numeric" );
         ck( !SearchField.datatypeIsNumeric( null ), "a null datatype is not numeric" );
         ck( !SearchField.datatypeIsNumeric( "" ), "an empty datatype is not numeric" );
+        // a custom datatype whose local name merely CONTAINS a numeric-type substring must not be misclassified
+        ck( !SearchField.datatypeIsNumeric( "x:footprint" ), "x:footprint (contains 'int') is not numeric" );
+        ck( !SearchField.datatypeIsNumeric( "data:print" ), "data:print (contains 'int') is not numeric" );
     }
 
     // ---- inverse --------------------------------------------------------------------------------------------
@@ -241,6 +246,54 @@ public final class SearchMatchingTest {
                 .search( new SearchSpec( any, SearchMode.CONTAINS, "catus", null, false, true ), phy );
         ck( ( inv.size() == 2 ) && inv.contains( root.getId() ) && inv.contains( leaf1.getId() )
                 && !inv.contains( leaf2.getId() ), "inverse whole-tree search should return the complement" );
+    }
+
+    // ---- available (per-tree) field discovery ---------------------------------------------------------------
+
+    private static void availableFieldsScan() {
+        final PhylogenyNode root = new PhylogenyNode();
+        final PhylogenyNode leaf = new PhylogenyNode();
+        leaf.setName( "leaf1" );
+        leaf.getNodeData().setTaxonomy( sci( "Homo sapiens" ) );
+        leaf.setDistanceToParent( 0.5 );
+        PhylogenyMethods.setConfidence( leaf, 95 );
+        addProp( leaf, "aptx:host", "human", "xsd:string" );
+        addProp( leaf, "data:reads", "1000", "xsd:decimal" );
+        addProp( leaf, "x:num", "5", "" );   // no datatype, value parses -> numeric
+        addProp( leaf, "x:txt", "abc", "" ); // no datatype, value does not parse -> string
+        root.addAsChild( leaf );
+        final Phylogeny phy = new Phylogeny();
+        phy.setRoot( root );
+        phy.setRooted( true );
+        phy.externalNodesHaveChanged();
+
+        final List<SearchField> fields = SearchField.availableFields( phy );
+        ck( byLabel( fields, "Any text field" ) != null, "availableFields should always include Any text" );
+        ck( byLabel( fields, "Node name" ) != null, "availableFields should always include Node name" );
+        ck( byLabel( fields, "Taxonomy: scientific name" ) != null, "a present scientific name should be offered" );
+        ck( byLabel( fields, "Branch length" ) != null, "a present branch length should be offered" );
+        ck( byLabel( fields, "Support / confidence" ) != null, "a present confidence should be offered" );
+        ck( byLabel( fields, "Gene name" ) == null, "an absent gene name should not be offered" );
+        ck( byLabel( fields, "Domain" ) == null, "an absent domain should not be offered" );
+        final SearchField host = byLabel( fields, "aptx:host" );
+        final SearchField reads = byLabel( fields, "data:reads" );
+        final SearchField x_num = byLabel( fields, "x:num" );
+        final SearchField x_txt = byLabel( fields, "x:txt" );
+        ck( ( host != null ) && !host.isNumeric(), "aptx:host (xsd:string) should be a string field" );
+        ck( ( reads != null ) && reads.isNumeric(), "data:reads (xsd:decimal) should be a numeric field" );
+        ck( ( x_num != null ) && x_num.isNumeric(), "x:num (no datatype, numeric values) should be numeric" );
+        ck( ( x_txt != null ) && !x_txt.isNumeric(), "x:txt (no datatype, non-numeric value) should be string" );
+        ck( SearchField.availableFields( new Phylogeny() ).size() == 2,
+            "an empty tree should offer only Any text + Node name" );
+    }
+
+    private static SearchField byLabel( final List<SearchField> fields, final String label ) {
+        for ( final SearchField f : fields ) {
+            if ( f.label().equals( label ) ) {
+                return f;
+            }
+        }
+        return null;
     }
 
     // ---- helpers --------------------------------------------------------------------------------------------

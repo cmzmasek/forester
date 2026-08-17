@@ -21,9 +21,17 @@
 package org.forester.archaeopteryx;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
+import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods.NDF;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Accession;
@@ -32,8 +40,7 @@ import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.data.DomainArchitecture;
 import org.forester.phylogeny.data.PhylogenyDataUtil;
 import org.forester.phylogeny.data.Property;
-import org.forester.phylogeny.data.Sequence;
-import org.forester.phylogeny.data.Taxonomy;
+import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.util.ForesterUtil;
 
 /**
@@ -116,6 +123,128 @@ final class SearchField {
                 ofNdf( NDF.GeneName ), ofNdf( NDF.SequenceSymbol ), ofNdf( NDF.SequenceAccession ), ofNdf( NDF.Domain ),
                 ofNdf( NDF.Annotation ), ofNdf( NDF.CrossRef ), ofNdf( NDF.BinaryCharacter ),
                 ofNdf( NDF.MolecularSequence ), ofNdf( NDF.Properties ) };
+    }
+
+    /** The canonical order of the (non-node-name) text fields in the field selector. */
+    private static final NDF[] TEXT_MENU_ORDER = { NDF.TaxonomyScientificName, NDF.TaxonomyCommonName,
+            NDF.TaxonomyCode, NDF.TaxonomyIdentifier, NDF.TaxonomySynonym, NDF.TaxonomicLineage, NDF.SequenceName,
+            NDF.GeneName, NDF.SequenceSymbol, NDF.SequenceAccession, NDF.Domain, NDF.Annotation, NDF.CrossRef,
+            NDF.BinaryCharacter, NDF.MolecularSequence };
+
+    /**
+     * The fields to offer for {@code phy}, tailored to what the tree actually carries (one preorder pass): always
+     * "Any text field" + "Node name"; then each text field present; then the numeric built-ins Branch length /
+     * Support (when present); then one entry per distinct custom-property {@code ref}, typed numeric-or-string by
+     * its {@code datatype} (falling back to "do all its values parse as numbers?" when the datatype is absent). This
+     * is what makes the selector self-documenting -- the user sees exactly what is searchable in this tree.
+     */
+    static List<SearchField> availableFields( final Phylogeny phy ) {
+        final List<SearchField> out = new ArrayList<>();
+        out.add( anyText() );
+        out.add( ofNdf( NDF.NodeName ) );
+        if ( ( phy == null ) || phy.isEmpty() ) {
+            return out;
+        }
+        final EnumSet<NDF> pending = EnumSet.noneOf( NDF.class );
+        for ( final NDF n : TEXT_MENU_ORDER ) {
+            pending.add( n );
+        }
+        final EnumSet<NDF> present = EnumSet.noneOf( NDF.class );
+        boolean has_branch_length = false;
+        boolean has_confidence = false;
+        // per property ref: [saw non-numeric datatype, saw numeric datatype, saw a value, all values numeric so far]
+        final Map<String, boolean[]> prop_stats = new LinkedHashMap<>();
+        final List<String> tmp = new ArrayList<>();
+        for ( final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode node = it.next();
+            if ( !pending.isEmpty() ) {
+                for ( final Iterator<NDF> pit = pending.iterator(); pit.hasNext(); ) {
+                    final NDF n = pit.next();
+                    tmp.clear();
+                    collectNdfStrings( node, n, tmp );
+                    if ( anyNonBlank( tmp ) ) {
+                        present.add( n );
+                        pit.remove();
+                    }
+                }
+            }
+            if ( !has_branch_length && ( node.getDistanceToParent() != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT ) ) {
+                has_branch_length = true;
+            }
+            if ( !has_confidence && hasRealConfidence( node ) ) {
+                has_confidence = true;
+            }
+            if ( node.getNodeData().getProperties() != null ) {
+                for ( final Property p : node.getNodeData().getProperties().getProperties() ) {
+                    if ( ( p == null ) || ForesterUtil.isEmpty( p.getRef() ) ) {
+                        continue;
+                    }
+                    final boolean[] st = prop_stats.computeIfAbsent( p.getRef(),
+                                                                     k -> new boolean[] { false, false, false, true } );
+                    if ( !ForesterUtil.isEmpty( p.getDataType() ) ) {
+                        if ( datatypeIsNumeric( p.getDataType() ) ) {
+                            st[ 1 ] = true;
+                        }
+                        else {
+                            st[ 0 ] = true;
+                        }
+                    }
+                    if ( !ForesterUtil.isEmpty( p.getValue() ) ) {
+                        st[ 2 ] = true;
+                        if ( SearchMatcher.parseFiniteDouble( p.getValue() ) == null ) {
+                            st[ 3 ] = false;
+                        }
+                    }
+                }
+            }
+        }
+        for ( final NDF n : TEXT_MENU_ORDER ) {
+            if ( present.contains( n ) ) {
+                out.add( ofNdf( n ) );
+            }
+        }
+        if ( has_branch_length ) {
+            out.add( branchLength() );
+        }
+        if ( has_confidence ) {
+            out.add( confidence() );
+        }
+        for ( final Map.Entry<String, boolean[]> e : prop_stats.entrySet() ) {
+            final boolean[] st = e.getValue();
+            final boolean numeric;
+            if ( st[ 0 ] ) {
+                numeric = false;                 // a non-numeric datatype was declared -> string (wins over numeric)
+            }
+            else if ( st[ 1 ] ) {
+                numeric = true;                  // a numeric datatype was declared
+            }
+            else {
+                numeric = st[ 2 ] && st[ 3 ];    // no datatype hint -> numeric only if every value parses as a number
+            }
+            out.add( property( e.getKey(), numeric ) );
+        }
+        return out;
+    }
+
+    private static boolean anyNonBlank( final List<String> values ) {
+        for ( final String s : values ) {
+            if ( !ForesterUtil.isEmpty( s ) && !s.trim().isEmpty() ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean hasRealConfidence( final PhylogenyNode node ) {
+        if ( ( node.getBranchData() == null ) || !node.getBranchData().isHasConfidences() ) {
+            return false;
+        }
+        for ( final Confidence c : node.getBranchData().getConfidences() ) {
+            if ( ( c != null ) && ( c.getValue() != Confidence.CONFIDENCE_DEFAULT_VALUE ) ) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // ---- description ----------------------------------------------------------------------------------------
@@ -367,16 +496,23 @@ final class SearchField {
         return a;
     }
 
+    /** The local names of the numeric XSD datatypes (the part after the namespace colon), lower-cased. */
+    private static final Set<String> NUMERIC_XSD_TYPES = new HashSet<>( Arrays.asList( "decimal", "double", "float",
+            "integer", "int", "long", "short", "byte", "unsignedint", "unsignedlong", "unsignedshort", "unsignedbyte",
+            "nonnegativeinteger", "nonpositiveinteger", "negativeinteger", "positiveinteger" ) );
+
     /** Whether a phyloXML property {@code datatype} (e.g. {@code xsd:decimal}, {@code xsd:integer}) denotes a
-     *  number -- used to offer numeric operators for a numeric custom-property field. An empty/unknown datatype
-     *  is treated as non-numeric (the caller may still fall back to inspecting the actual values). */
+     *  number -- used to offer numeric operators for a numeric custom-property field. Matches the datatype's local
+     *  name against the known numeric XSD types (so a custom datatype that merely CONTAINS "int" etc., such as
+     *  {@code x:footprint}, is NOT misclassified). An empty/unknown datatype is non-numeric (the caller may still
+     *  fall back to inspecting the actual values). */
     static boolean datatypeIsNumeric( final String datatype ) {
         if ( ForesterUtil.isEmpty( datatype ) ) {
             return false;
         }
         final String d = datatype.toLowerCase( Locale.ROOT );
-        return d.contains( "decimal" ) || d.contains( "double" ) || d.contains( "float" ) || d.contains( "integer" )
-                || d.contains( "long" ) || d.contains( "int" ) || d.contains( "short" ) || d.contains( "byte" );
+        final int colon = d.lastIndexOf( ':' );
+        return NUMERIC_XSD_TYPES.contains( ( colon >= 0 ) ? d.substring( colon + 1 ) : d );
     }
 
     private static String labelForNdf( final NDF ndf ) {

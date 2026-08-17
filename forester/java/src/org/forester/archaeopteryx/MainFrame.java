@@ -3238,6 +3238,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             tp.getControlPanel().populateColorByPropertyBox(); // surface any imported columns in "Color by:"
             tp.getControlPanel().populateSizeByPropertyBox(); // and any numeric ones in "Size by:"
             tp.getControlPanel().populateAncestralPieBox(); // and any discrete-trait ones in "Ancestral pie:"
+            tp.getControlPanel().rebuildSearchFields(true); // and as searchable fields (forced: same tree, new data)
             showWhole();
             tp.setEdited(true);
         }

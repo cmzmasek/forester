@@ -729,8 +729,8 @@ final class ControlPanel extends JPanel implements ActionListener {
         getSearchFoundCountsLabel0().setVisible(true);
         getSearchResetButton0().setEnabled(true);
         getSearchResetButton0().setVisible(true);
-        final Set<Long> nodes = runSearch(tree, query_str, (SearchField) _search_field_0.getSelectedItem(),
-                (SearchMode) _search_mode_0.getSelectedItem());
+        final Set<Long> nodes = runSearch(tree, (SearchField) _search_field_0.getSelectedItem(),
+                (SearchMode) _search_mode_0.getSelectedItem(), query_str, _search_range_tf_0.getText());
         if ((nodes != null) && !nodes.isEmpty()) {
             // Hand the finished set to the panel in one call: setFoundNodes0 is the chokepoint that resets the
             // step-through position (only when the hit set actually changed) and refreshes the "k / N" navigator.
@@ -746,8 +746,8 @@ final class ControlPanel extends JPanel implements ActionListener {
         getSearchFoundCountsLabel1().setVisible(true);
         getSearchResetButton1().setEnabled(true);
         getSearchResetButton1().setVisible(true);
-        final Set<Long> nodes = runSearch(tree, query_str, (SearchField) _search_field_1.getSelectedItem(),
-                (SearchMode) _search_mode_1.getSelectedItem());
+        final Set<Long> nodes = runSearch(tree, (SearchField) _search_field_1.getSelectedItem(),
+                (SearchMode) _search_mode_1.getSelectedItem(), query_str, _search_range_tf_1.getText());
         if ((nodes != null) && !nodes.isEmpty()) {
             main_panel.getCurrentTreePanel().setFoundNodes1(nodes); // see search0: single chokepoint for the reset+nav
             setSearchFoundCountsOnLabel1(nodes.size());
@@ -759,42 +759,55 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     /**
      * Runs one search box against {@code tree} using its chosen {@link SearchField} and {@link SearchMode} plus
-     * the two shared modifiers (Match Case, Inverse). For text modes (all but regex) the legacy multi-term
-     * combinators still apply: ',' = OR (union of terms) and '+' = AND (a node must match every '+'-separated
-     * term). Inverse is applied ONCE at the end as the complement over data-bearing nodes (the legacy "select the
-     * nodes that do NOT match" semantics), never per term.
+     * the two shared modifiers (Match Case, Inverse). For a NUMERIC field, {@code value} is the operand (the low
+     * bound for {@link SearchMode#RANGE}) and {@code range_high} the range upper bound. For a TEXT field the
+     * legacy multi-term combinators apply to {@code value}: ',' = OR and '+' = AND. Inverse is applied ONCE at the
+     * end as the complement over data-bearing nodes, but only for an actual query (a separator-only text query or
+     * an incomplete range produces no terms and resets, rather than selecting the whole tree).
      */
-    private Set<Long> runSearch(final Phylogeny tree, String query_str, final SearchField field,
-                                final SearchMode mode) {
+    private Set<Long> runSearch(final Phylogeny tree, final SearchField field, final SearchMode mode, String value,
+                                final String range_high) {
         if ((field == null) || (mode == null)) {
             return null;
         }
-        final boolean case_sensitive = (_search_case_sensitive_cb != null) && _search_case_sensitive_cb.isSelected();
         final boolean inverse = (_search_inverse_cb != null) && _search_inverse_cb.isSelected();
-        query_str = query_str.replaceAll("\\s+", " ").trim();
-        // ',' OR and '+' AND only apply to plain text matching, not to regular expressions (which can contain
-        // those characters), consistent with the legacy behaviour.
-        final boolean splittable = (mode != SearchMode.REGEX);
+        value = (value == null) ? "" : value.replaceAll("\\s+", " ").trim();
         final Set<Long> nodes = new HashSet<>();
-        final String[] or_terms = (splittable && (query_str.indexOf(',') >= 0)) ? query_str.split(",+")
-                : new String[] { query_str };
-        boolean any_term = false; // whether at least one non-empty term was actually searched
-        for (String or_term : or_terms) {
-            or_term = or_term.trim();
-            if (ForesterUtil.isEmpty(or_term)) {
-                continue;
+        boolean any_term = false; // whether an actual query was run (so Inverse selects the complement, not all)
+        if (field.isNumeric()) {
+            final String hi = (range_high == null) ? "" : range_high.trim();
+            final Double lo_num = SearchMatcher.parseFiniteDouble(value);
+            final Double hi_num = SearchMatcher.parseFiniteDouble(hi);
+            // an actual numeric query needs a PARSEABLE operand (both bounds for a range); an unparseable operand
+            // is a no-op that must reset -- with Inverse on it must NOT select the whole tree (the Phase-2 rule).
+            any_term = (mode == SearchMode.RANGE) ? ((lo_num != null) && (hi_num != null)) : (lo_num != null);
+            if (any_term) {
+                nodes.addAll(SearchMatcher.search(
+                        new SearchSpec(field, mode, value, hi.isEmpty() ? null : hi, false, false), tree));
             }
-            any_term = true;
-            if (splittable && (or_term.indexOf('+') > 0)) {
-                nodes.addAll(searchLogicalAnd(tree, field, mode, or_term.split("\\++"), case_sensitive));
-            } else {
-                nodes.addAll(
-                        SearchMatcher.search(new SearchSpec(field, mode, or_term, null, case_sensitive, false), tree));
+        } else {
+            final boolean case_sensitive = (_search_case_sensitive_cb != null)
+                    && _search_case_sensitive_cb.isSelected();
+            // ',' OR and '+' AND only apply to plain text matching, not to regular expressions (which can contain
+            // those characters), consistent with the legacy behaviour.
+            final boolean splittable = (mode != SearchMode.REGEX);
+            final String[] or_terms = (splittable && (value.indexOf(',') >= 0)) ? value.split(",+")
+                    : new String[] { value };
+            for (String or_term : or_terms) {
+                or_term = or_term.trim();
+                if (ForesterUtil.isEmpty(or_term)) {
+                    continue;
+                }
+                any_term = true;
+                if (splittable && (or_term.indexOf('+') > 0)) {
+                    nodes.addAll(searchLogicalAnd(tree, field, mode, or_term.split("\\++"), case_sensitive));
+                } else {
+                    nodes.addAll(SearchMatcher
+                            .search(new SearchSpec(field, mode, or_term, null, case_sensitive, false), tree));
+                }
             }
         }
-        // Inverse selects the complement, but only for an actual query -- a separator-only query (e.g. ",")
-        // produces no terms and must reset the search (as the legacy code did), not select the whole tree.
-        return (inverse && any_term) ? complementDataBearing(tree, nodes) : nodes;
+        return (inverse && any_term) ? complement(tree, field, nodes) : nodes;
     }
 
     /** The nodes matching EVERY '+'-separated term (positive) -- the intersection of the per-term matches. */
@@ -817,11 +830,17 @@ final class ControlPanel extends JPanel implements ActionListener {
         return (acc == null) ? new HashSet<>() : acc;
     }
 
-    /** The complement of {@code matched} over the data-bearing nodes of {@code tree} (the "Inverse" modifier). */
-    private static Set<Long> complementDataBearing(final Phylogeny tree, final Set<Long> matched) {
+    /** The complement of {@code matched} over the nodes that CARRY {@code field} (the "Inverse" modifier): for a
+     *  numeric field the nodes that actually have a value for it (branch length / support / a numeric property live
+     *  outside node data), for a text field any data-bearing node (the legacy behaviour). */
+    private static Set<Long> complement(final Phylogeny tree, final SearchField field, final Set<Long> matched) {
         final Set<Long> out = new HashSet<>();
         for (final PhylogenyNode n : PhylogenyMethods.obtainAllNodesAsList(tree)) {
-            if (!matched.contains(n.getId()) && n.isHasNodeData()) {
+            if (matched.contains(n.getId())) {
+                continue;
+            }
+            final boolean carries = field.isNumeric() ? (field.numericValues(n).length > 0) : n.isHasNodeData();
+            if (carries) {
                 out.add(n.getId());
             }
         }
@@ -1546,6 +1565,9 @@ final class ControlPanel extends JPanel implements ActionListener {
             revalidate();
             repaint();
         }
+        // tailor the search field selectors to this tree (identity-guarded: a no-op when it hasn't changed, so
+        // the per-search repaint path pays nothing).
+        rebuildSearchFields(false);
     }
 
     // For tests: whether the "Display Data" checkbox row for the given option constant is showing.
@@ -1577,15 +1599,29 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
         _search_controls_adjusting = true;
         try {
-            for ( final JComboBox<SearchField> fc : new JComboBox[] { _search_field_0, _search_field_1 } ) {
-                if ( ( fc != null ) && ( fc.getItemCount() > 0 ) ) {
-                    fc.setSelectedIndex( 0 ); // "Any text field"
-                }
+            if ( ( _search_field_0 != null ) && ( _search_field_0.getItemCount() > 0 ) ) {
+                _search_field_0.setSelectedIndex( 0 ); // "Any text field"
             }
-            for ( final JComboBox<SearchMode> mc : new JComboBox[] { _search_mode_0, _search_mode_1 } ) {
-                if ( ( mc != null ) && ( mc.getItemCount() > 0 ) ) {
-                    mc.setSelectedIndex( 0 ); // "contains"
-                }
+            if ( ( _search_field_1 != null ) && ( _search_field_1.getItemCount() > 0 ) ) {
+                _search_field_1.setSelectedIndex( 0 );
+            }
+            // Any text is a string field, so make sure the mode combos hold the string set, then default them to
+            // "contains" and hide the range fields.
+            reconcileModeCombo( true );
+            reconcileModeCombo( false );
+            if ( ( _search_mode_0 != null ) && ( _search_mode_0.getItemCount() > 0 ) ) {
+                _search_mode_0.setSelectedIndex( 0 );
+            }
+            if ( ( _search_mode_1 != null ) && ( _search_mode_1.getItemCount() > 0 ) ) {
+                _search_mode_1.setSelectedIndex( 0 );
+            }
+            updateRangeFieldVisibility( true );
+            updateRangeFieldVisibility( false );
+            if ( _search_range_tf_0 != null ) {
+                _search_range_tf_0.setText( "" );
+            }
+            if ( _search_range_tf_1 != null ) {
+                _search_range_tf_1.setText( "" );
             }
         }
         finally {
@@ -2417,8 +2453,14 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JComboBox<SearchField> _search_field_1;
     private JComboBox<SearchMode> _search_mode_0;
     private JComboBox<SearchMode> _search_mode_1;
-    // set while re-seeding the search combos programmatically (e.g. Reset to Defaults), so their listeners
-    // don't fire a spurious search mid-reset.
+    private JTextField _search_range_tf_0;    // the RANGE upper bound; shown only in range mode
+    private JTextField _search_range_tf_1;
+    private JPanel _search_range_panel_0;     // wraps the range field so it collapses to no space when hidden
+    private JPanel _search_range_panel_1;
+    private Phylogeny _search_fields_tree;    // identity guard: the tree the field lists were last built for
+    private List<String> _search_fields_sig;  // last-built field signatures (label + numeric-ness), to skip a no-op
+    // set while re-seeding the search combos programmatically (e.g. Reset to Defaults / per-tree rebuild), so
+    // their listeners don't fire a spurious search mid-adjust.
     private boolean _search_controls_adjusting;
 
     void setupSearchOptions() {
@@ -2457,8 +2499,9 @@ final class ControlPanel extends JPanel implements ActionListener {
         add(searchOptionsRow(_search_case_sensitive_cb, _search_inverse_cb));
     }
 
-    /** A field selector (what a query is matched against) for one search box, populated with the static text
-     *  fields; "Any text field" (index 0) is the default = today's search-everything behaviour. */
+    /** A field selector (what a query is matched against) for one search box. Seeded with the static text fields;
+     *  {@link #rebuildSearchFields(boolean)} then tailors it to the loaded tree (only present fields + one entry per
+     *  custom property + numeric built-ins). "Any text field" (index 0) is the default = search-everything. */
     private JComboBox<SearchField> makeSearchFieldCombo(final boolean box_a) {
         final JComboBox<SearchField> combo = new JComboBox<>(SearchField.stringMenuFields());
         combo.setSelectedIndex(0); // "Any text field"
@@ -2466,27 +2509,173 @@ final class ControlPanel extends JPanel implements ActionListener {
         styleSearchCombo(combo);
         combo.addActionListener(e -> {
             if (!_search_controls_adjusting) {
-                if (box_a) {
-                    search0();
-                }
-                else {
-                    search1();
-                }
-                displayedPhylogenyMightHaveChanged(true);
+                onSearchFieldChanged(box_a);
             }
         });
         return combo;
     }
 
-    /** A match-mode selector (how a query is compared) for one search box, populated with the string modes;
-     *  "contains" (index 0) is the default. */
+    /** A match-mode selector (how a query is compared) for one search box. Holds the string modes or the numeric
+     *  operators depending on the selected field's type (see {@link #reconcileModeCombo(boolean)}); the default is
+     *  the first entry ("contains" for text, "=" for numbers). */
     private JComboBox<SearchMode> makeSearchModeCombo(final boolean box_a) {
         final JComboBox<SearchMode> combo = new JComboBox<>(SearchMode.stringModes());
         combo.setSelectedIndex(0); // "contains"
-        combo.setToolTipText("how to match: contains / starts with / ends with / whole word / regular expression");
+        combo.setToolTipText("how to match");
         styleSearchCombo(combo);
         combo.addActionListener(e -> {
             if (!_search_controls_adjusting) {
+                onSearchModeChanged(box_a);
+            }
+        });
+        return combo;
+    }
+
+    /** Reacts to a field-selector change: switch the mode set to match the field's type, show/hide the range
+     *  field, then re-run that box's search. */
+    private void onSearchFieldChanged(final boolean box_a) {
+        reconcileModeCombo(box_a);
+        updateRangeFieldVisibility(box_a);
+        if (box_a) {
+            search0();
+        }
+        else {
+            search1();
+        }
+        displayedPhylogenyMightHaveChanged(true);
+    }
+
+    /** Reacts to a mode-selector change: show/hide the range field, then re-run that box's search. */
+    private void onSearchModeChanged(final boolean box_a) {
+        updateRangeFieldVisibility(box_a);
+        if (box_a) {
+            search0();
+        }
+        else {
+            search1();
+        }
+        displayedPhylogenyMightHaveChanged(true);
+    }
+
+    /** Makes the box's mode combo hold the numeric operators when its field is numeric, else the string modes --
+     *  repopulating (and resetting to the first mode) only when the kind actually flips. Runs under the adjusting
+     *  guard so it fires no search. */
+    private void reconcileModeCombo(final boolean box_a) {
+        final JComboBox<SearchField> fc = box_a ? _search_field_0 : _search_field_1;
+        final JComboBox<SearchMode> mc = box_a ? _search_mode_0 : _search_mode_1;
+        if ((fc == null) || (mc == null)) {
+            return;
+        }
+        final SearchField f = (SearchField) fc.getSelectedItem();
+        if (f == null) {
+            return;
+        }
+        final SearchMode current = (SearchMode) mc.getSelectedItem();
+        final boolean is_numeric_now = (current != null) && current.isNumeric();
+        if ((mc.getItemCount() > 0) && (f.isNumeric() == is_numeric_now)) {
+            return; // already the right set
+        }
+        final boolean was_adjusting = _search_controls_adjusting;
+        _search_controls_adjusting = true;
+        try {
+            mc.removeAllItems();
+            for (final SearchMode m : (f.isNumeric() ? SearchMode.numericModes() : SearchMode.stringModes())) {
+                mc.addItem(m);
+            }
+            mc.setSelectedIndex(0);
+        }
+        finally {
+            _search_controls_adjusting = was_adjusting;
+        }
+    }
+
+    /** Shows the box's range upper-bound field only when its mode is {@link SearchMode#RANGE}. */
+    private void updateRangeFieldVisibility(final boolean box_a) {
+        final JComboBox<SearchMode> mc = box_a ? _search_mode_0 : _search_mode_1;
+        final JPanel panel = box_a ? _search_range_panel_0 : _search_range_panel_1;
+        if ((mc == null) || (panel == null)) {
+            return;
+        }
+        final boolean show = (mc.getSelectedItem() == SearchMode.RANGE);
+        if (panel.isVisible() != show) {
+            panel.setVisible(show);
+            revalidate();
+            repaint();
+        }
+    }
+
+    /**
+     * Tailors the two field selectors to the currently displayed tree (see {@link SearchField#availableFields}).
+     * Identity-guarded: a {@code false} force is a no-op when the tree hasn't changed (so it costs nothing on the
+     * per-search repaint path); pass {@code true} after a data edit on the SAME tree (e.g. importing annotations).
+     * Preserves the user's selection by label, and only repopulates the combos when the field list actually
+     * differs -- runs under the adjusting guard so it launches no search.
+     */
+    void rebuildSearchFields(final boolean force) {
+        if ((_search_field_0 == null) || (_search_field_1 == null) || (_mainpanel == null)) {
+            return;
+        }
+        final Phylogeny phy = _mainpanel.getCurrentPhylogeny();
+        if (!force && (phy == _search_fields_tree)) {
+            return;
+        }
+        final List<SearchField> fields = SearchField.availableFields(phy);
+        // the signature includes each field's KIND (numeric vs string), not just its label, so a custom property
+        // that flips numeric<->string (e.g. re-import changes its values) repopulates rather than keeping a stale
+        // field of the wrong kind.
+        final List<String> sig = new ArrayList<String>();
+        for (final SearchField f : fields) {
+            sig.add(f.label() + "\t" + f.isNumeric());
+        }
+        _search_fields_tree = phy;
+        if (sig.equals(_search_fields_sig)) {
+            return; // same fields (label AND kind) -> keep the current selection untouched
+        }
+        _search_fields_sig = sig;
+        _search_controls_adjusting = true;
+        try {
+            repopulateFieldCombo(_search_field_0, fields, true);
+            repopulateFieldCombo(_search_field_1, fields, false);
+        }
+        finally {
+            _search_controls_adjusting = false;
+        }
+    }
+
+    private void repopulateFieldCombo(final JComboBox<SearchField> combo, final List<SearchField> fields,
+                                      final boolean box_a) {
+        final SearchField prev = (SearchField) combo.getSelectedItem();
+        final String prev_label = (prev != null) ? prev.label() : null;
+        combo.removeAllItems();
+        int select = 0;
+        for (int i = 0; i < fields.size(); i++) {
+            combo.addItem(fields.get(i));
+            if (fields.get(i).label().equals(prev_label)) {
+                select = i;
+            }
+        }
+        if (combo.getItemCount() > 0) {
+            combo.setSelectedIndex(select);
+        }
+        reconcileModeCombo(box_a);          // the (re)selected field may be a different kind than before
+        updateRangeFieldVisibility(box_a);
+    }
+
+    /** The range upper-bound text field for a box; typing in it re-runs that box's (numeric range) search. */
+    private JTextField makeRangeField(final boolean box_a) {
+        final JTextField tf = new JTextField(3);
+        tf.setFont(ControlPanel.jcb_font);
+        tf.setToolTipText("range upper bound");
+        installTextUndo(tf);
+        if (getConfiguration().isApplyCustomGuiColors()) {
+            tf.setForeground(getConfiguration().getGuiMenuBackgroundColor());
+            tf.setBackground(getConfiguration().getGuiCheckboxTextColor());
+            tf.setBorder(null);
+        }
+        tf.addKeyListener(new KeyAdapter() {
+
+            @Override
+            public void keyReleased(final KeyEvent e) {
                 if (box_a) {
                     search0();
                 }
@@ -2496,7 +2685,22 @@ final class ControlPanel extends JPanel implements ActionListener {
                 displayedPhylogenyMightHaveChanged(true);
             }
         });
-        return combo;
+        return tf;
+    }
+
+    /** Wraps a range field with a "to" label; the whole row is hidden (and takes no space) unless in range mode. */
+    private JPanel makeRangePanel(final JTextField range_tf) {
+        final JPanel p = new JPanel(new BorderLayout(2, 0));
+        p.setBackground(getBackground());
+        final JLabel to = new JLabel("to ");
+        to.setFont(ControlPanel.jcb_font);
+        if (getConfiguration().isApplyCustomGuiColors()) {
+            to.setForeground(getConfiguration().getGuiCheckboxTextColor());
+        }
+        p.add(to, BorderLayout.WEST);
+        p.add(range_tf, BorderLayout.CENTER);
+        p.setVisible(false);
+        return p;
     }
 
     /** Shared styling for the search field/mode combos: the small control-panel font, a label renderer (so the
@@ -2566,10 +2770,49 @@ final class ControlPanel extends JPanel implements ActionListener {
         _search_controls_adjusting = true;
         try {
             ( box_a ? _search_mode_0 : _search_mode_1 ).setSelectedItem( mode );
+            updateRangeFieldVisibility( box_a );
         }
         finally {
             _search_controls_adjusting = false;
         }
+    }
+
+    List<String> searchFieldLabelsForTest(final boolean box_a) {
+        final JComboBox<SearchField> c = box_a ? _search_field_0 : _search_field_1;
+        final List<String> out = new ArrayList<String>();
+        for ( int i = 0; i < c.getItemCount(); i++ ) {
+            out.add( c.getItemAt( i ).label() );
+        }
+        return out;
+    }
+
+    /** Selects a field by its label and reconciles the mode combo to its type (numeric vs string), without firing
+     *  a search -- the test then sets the mode + value and calls search0()/search1() itself. */
+    void setSearchFieldByLabelForTest(final boolean box_a, final String label) {
+        final JComboBox<SearchField> c = box_a ? _search_field_0 : _search_field_1;
+        _search_controls_adjusting = true;
+        try {
+            for ( int i = 0; i < c.getItemCount(); i++ ) {
+                if ( c.getItemAt( i ).label().equals( label ) ) {
+                    c.setSelectedIndex( i );
+                    break;
+                }
+            }
+            reconcileModeCombo( box_a );
+            updateRangeFieldVisibility( box_a );
+        }
+        finally {
+            _search_controls_adjusting = false;
+        }
+    }
+
+    boolean rangeFieldVisibleForTest(final boolean box_a) {
+        final JPanel p = box_a ? _search_range_panel_0 : _search_range_panel_1;
+        return ( p != null ) && p.isVisible();
+    }
+
+    void setRangeHighForTest(final boolean box_a, final String text) {
+        ( box_a ? _search_range_tf_0 : _search_range_tf_1 ).setText( text );
     }
 
     void setSearchCaseSensitiveForTest(final boolean b) {
@@ -2737,10 +2980,13 @@ final class ControlPanel extends JPanel implements ActionListener {
         getSearchResetButton0().setText("Reset");
         getSearchResetButton0().setEnabled(false);
         getSearchResetButton0().setVisible(false);
+        _search_range_tf_0 = makeRangeField(true);
+        _search_range_panel_0 = makeRangePanel(_search_range_tf_0);
         final JPanel s_panel_1 = new JPanel(new BorderLayout());
         final JPanel s_panel_2 = new JPanel(new GridLayout(1, 2, 0, 0));
         s_panel_1.setBackground(getBackground());
         add(s_panel_1);
+        add(_search_range_panel_0); // hidden unless the mode is "range"
         s_panel_2.setBackground(getBackground());
         add(s_panel_2);
         final KeyAdapter key_adapter = new KeyAdapter() {
@@ -2759,6 +3005,7 @@ final class ControlPanel extends JPanel implements ActionListener {
                 setSearchFoundCountsOnLabel0(0);
                 getSearchFoundCountsLabel0().setVisible(false);
                 getSearchTextField0().setText("");
+                _search_range_tf_0.setText("");
                 getSearchResetButton0().setEnabled(false);
                 getSearchResetButton0().setVisible(false);
                 displayedPhylogenyMightHaveChanged(true);
@@ -2803,10 +3050,13 @@ final class ControlPanel extends JPanel implements ActionListener {
         getSearchResetButton1().setText("Reset");
         getSearchResetButton1().setEnabled(false);
         getSearchResetButton1().setVisible(false);
+        _search_range_tf_1 = makeRangeField(false);
+        _search_range_panel_1 = makeRangePanel(_search_range_tf_1);
         final JPanel s_panel_1 = new JPanel(new BorderLayout());
         final JPanel s_panel_2 = new JPanel(new GridLayout(1, 2, 0, 0));
         s_panel_1.setBackground(getBackground());
         add(s_panel_1);
+        add(_search_range_panel_1); // hidden unless the mode is "range"
         s_panel_2.setBackground(getBackground());
         add(s_panel_2);
         final KeyAdapter key_adapter = new KeyAdapter() {
@@ -2825,6 +3075,7 @@ final class ControlPanel extends JPanel implements ActionListener {
                 setSearchFoundCountsOnLabel1(0);
                 getSearchFoundCountsLabel1().setVisible(false);
                 getSearchTextField1().setText("");
+                _search_range_tf_1.setText("");
                 getSearchResetButton1().setEnabled(false);
                 getSearchResetButton1().setVisible(false);
                 displayedPhylogenyMightHaveChanged(true);
