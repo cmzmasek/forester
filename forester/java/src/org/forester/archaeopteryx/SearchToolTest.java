@@ -179,6 +179,28 @@ public final class SearchToolTest {
                         "A ('catus') and B ('musculus') should hold independent found sets" );
                     ck( ok, same( nonNull( tp.getFoundNodes0() ), b ), "running B must not disturb A's found set" );
 
+                    // --- remember-last (in-session): a chosen mode survives a field-KIND switch ---
+                    cp.userSelectFieldForTest( true, NODE );
+                    cp.userSelectModeForTest( true, SearchMode.STARTS_WITH );
+                    cp.userSelectFieldForTest( true, BL );   // numeric detour repopulates the mode combo
+                    cp.userSelectFieldForTest( true, NODE ); // back to a string field
+                    ck( ok, cp.getSearchModeForTest( true ) == SearchMode.STARTS_WITH,
+                        "the string mode should be remembered across a numeric-field detour" );
+                    cp.userSelectFieldForTest( true, BL );
+                    cp.userSelectModeForTest( true, SearchMode.GT );
+                    cp.userSelectFieldForTest( true, NODE );
+                    cp.userSelectFieldForTest( true, BL );
+                    ck( ok, cp.getSearchModeForTest( true ) == SearchMode.GT,
+                        "the numeric mode should be remembered across a string-field detour" );
+                    // Reset clears the remembered modes back to the defaults
+                    cp.userSelectFieldForTest( true, NODE );
+                    cp.userSelectModeForTest( true, SearchMode.ENDS_WITH );
+                    cp.resyncFromOptions();
+                    cp.userSelectFieldForTest( true, BL );
+                    cp.userSelectFieldForTest( true, NODE );
+                    ck( ok, cp.getSearchModeForTest( true ) == SearchMode.CONTAINS,
+                        "Reset should clear the remembered mode (contains, not the pre-reset ends-with)" );
+
                     ( (javax.swing.JFrame) mf[ 0 ] ).dispose();
                 }
                 catch ( final Throwable t ) {

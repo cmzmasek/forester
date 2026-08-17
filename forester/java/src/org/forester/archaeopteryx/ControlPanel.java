@@ -1599,6 +1599,13 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
         _search_controls_adjusting = true;
         try {
+            // clear the remember-last state so the reset really returns to the defaults (Any text / contains / =)
+            _last_field_label_0 = null;
+            _last_field_label_1 = null;
+            _last_string_mode_0 = SearchMode.CONTAINS;
+            _last_string_mode_1 = SearchMode.CONTAINS;
+            _last_numeric_mode_0 = SearchMode.EQ;
+            _last_numeric_mode_1 = SearchMode.EQ;
             if ( ( _search_field_0 != null ) && ( _search_field_0.getItemCount() > 0 ) ) {
                 _search_field_0.setSelectedIndex( 0 ); // "Any text field"
             }
@@ -2462,6 +2469,14 @@ final class ControlPanel extends JPanel implements ActionListener {
     // set while re-seeding the search combos programmatically (e.g. Reset to Defaults / per-tree rebuild), so
     // their listeners don't fire a spurious search mid-adjust.
     private boolean _search_controls_adjusting;
+    // remember-last (in-session): each box keeps its chosen field + its last string / numeric mode, so switching
+    // field KIND (which repopulates the mode combo) or navigating to another tree doesn't reset the user's choice.
+    private String _last_field_label_0;
+    private String _last_field_label_1;
+    private SearchMode _last_string_mode_0 = SearchMode.CONTAINS;
+    private SearchMode _last_string_mode_1 = SearchMode.CONTAINS;
+    private SearchMode _last_numeric_mode_0 = SearchMode.EQ;
+    private SearchMode _last_numeric_mode_1 = SearchMode.EQ;
 
     void setupSearchOptions() {
         final JLabel header = new JLabel("Search Options:");
@@ -2534,6 +2549,15 @@ final class ControlPanel extends JPanel implements ActionListener {
     /** Reacts to a field-selector change: switch the mode set to match the field's type, show/hide the range
      *  field, then re-run that box's search. */
     private void onSearchFieldChanged(final boolean box_a) {
+        final SearchField f = (SearchField) (box_a ? _search_field_0 : _search_field_1).getSelectedItem();
+        if (f != null) { // remember this box's field so a later per-tree rebuild re-selects it when available
+            if (box_a) {
+                _last_field_label_0 = f.label();
+            }
+            else {
+                _last_field_label_1 = f.label();
+            }
+        }
         reconcileModeCombo(box_a);
         updateRangeFieldVisibility(box_a);
         if (box_a) {
@@ -2545,8 +2569,13 @@ final class ControlPanel extends JPanel implements ActionListener {
         displayedPhylogenyMightHaveChanged(true);
     }
 
-    /** Reacts to a mode-selector change: show/hide the range field, then re-run that box's search. */
+    /** Reacts to a mode-selector change: remember it (per box, per kind), show/hide the range field, re-run. */
     private void onSearchModeChanged(final boolean box_a) {
+        final SearchField f = (SearchField) (box_a ? _search_field_0 : _search_field_1).getSelectedItem();
+        final SearchMode m = (SearchMode) (box_a ? _search_mode_0 : _search_mode_1).getSelectedItem();
+        if ((f != null) && (m != null)) {
+            rememberMode(box_a, f.isNumeric(), m);
+        }
         updateRangeFieldVisibility(box_a);
         if (box_a) {
             search0();
@@ -2555,6 +2584,30 @@ final class ControlPanel extends JPanel implements ActionListener {
             search1();
         }
         displayedPhylogenyMightHaveChanged(true);
+    }
+
+    private SearchMode rememberedMode(final boolean box_a, final boolean numeric) {
+        if (box_a) {
+            return numeric ? _last_numeric_mode_0 : _last_string_mode_0;
+        }
+        return numeric ? _last_numeric_mode_1 : _last_string_mode_1;
+    }
+
+    private void rememberMode(final boolean box_a, final boolean numeric, final SearchMode m) {
+        if (box_a) {
+            if (numeric) {
+                _last_numeric_mode_0 = m;
+            }
+            else {
+                _last_string_mode_0 = m;
+            }
+        }
+        else if (numeric) {
+            _last_numeric_mode_1 = m;
+        }
+        else {
+            _last_string_mode_1 = m;
+        }
     }
 
     /** Makes the box's mode combo hold the numeric operators when its field is numeric, else the string modes --
@@ -2582,7 +2635,8 @@ final class ControlPanel extends JPanel implements ActionListener {
             for (final SearchMode m : (f.isNumeric() ? SearchMode.numericModes() : SearchMode.stringModes())) {
                 mc.addItem(m);
             }
-            mc.setSelectedIndex(0);
+            // restore this box's last-used mode of the new kind (remember-last), not always the first entry
+            mc.setSelectedItem(rememberedMode(box_a, f.isNumeric()));
         }
         finally {
             _search_controls_adjusting = was_adjusting;
@@ -2644,13 +2698,18 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     private void repopulateFieldCombo(final JComboBox<SearchField> combo, final List<SearchField> fields,
                                       final boolean box_a) {
+        // prefer this box's remembered field (remember-last), falling back to the current selection; so switching
+        // to a tree that lacks it and back restores it rather than sticking at "Any text".
         final SearchField prev = (SearchField) combo.getSelectedItem();
-        final String prev_label = (prev != null) ? prev.label() : null;
+        String want_label = box_a ? _last_field_label_0 : _last_field_label_1;
+        if ((want_label == null) && (prev != null)) {
+            want_label = prev.label();
+        }
         combo.removeAllItems();
         int select = 0;
         for (int i = 0; i < fields.size(); i++) {
             combo.addItem(fields.get(i));
-            if (fields.get(i).label().equals(prev_label)) {
+            if (fields.get(i).label().equals(want_label)) {
                 select = i;
             }
         }
@@ -2792,11 +2851,16 @@ final class ControlPanel extends JPanel implements ActionListener {
         final JComboBox<SearchField> c = box_a ? _search_field_0 : _search_field_1;
         _search_controls_adjusting = true;
         try {
+            boolean found = false;
             for ( int i = 0; i < c.getItemCount(); i++ ) {
                 if ( c.getItemAt( i ).label().equals( label ) ) {
                     c.setSelectedIndex( i );
+                    found = true;
                     break;
                 }
+            }
+            if ( !found ) {
+                throw new IllegalArgumentException( "no such search field: " + label );
             }
             reconcileModeCombo( box_a );
             updateRangeFieldVisibility( box_a );
@@ -2813,6 +2877,23 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     void setRangeHighForTest(final boolean box_a, final String text) {
         ( box_a ? _search_range_tf_0 : _search_range_tf_1 ).setText( text );
+    }
+
+    /** Simulates a USER field selection (fires the real listener, so remember-last records it), for tests. */
+    void userSelectFieldForTest(final boolean box_a, final String label) {
+        final JComboBox<SearchField> c = box_a ? _search_field_0 : _search_field_1;
+        for ( int i = 0; i < c.getItemCount(); i++ ) {
+            if ( c.getItemAt( i ).label().equals( label ) ) {
+                c.setSelectedIndex( i );
+                return;
+            }
+        }
+        throw new IllegalArgumentException( "no such search field: " + label );
+    }
+
+    /** Simulates a USER mode selection (fires the real listener, so remember-last records it), for tests. */
+    void userSelectModeForTest(final boolean box_a, final SearchMode m) {
+        ( box_a ? _search_mode_0 : _search_mode_1 ).setSelectedItem( m );
     }
 
     void setSearchCaseSensitiveForTest(final boolean b) {
