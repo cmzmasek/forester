@@ -33,6 +33,7 @@ import java.util.Map;
 
 import javax.swing.AbstractAction;
 import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -41,10 +42,13 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
 import javax.swing.JToolBar;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -68,6 +72,8 @@ final class TanglegramFrame extends JFrame {
     private final JButton         _redo_button     = new JButton( "Redo" );
     private final JCheckBox       _phylogram_cb    = new JCheckBox( "Branch lengths" );
     private JComboBox<String>     _color_selector;
+    private JSpinner              _font_spinner;
+    private JComponent            _toolbar;
 
     TanglegramFrame( final Phylogeny left, final Phylogeny right, final TanglegramLinker.LinkField field,
                      final String left_name, final String right_name ) {
@@ -93,7 +99,8 @@ final class TanglegramFrame extends JFrame {
         final JScrollPane scroll = new JScrollPane( _panel );
         scroll.getViewport().setScrollMode( JViewport.SIMPLE_SCROLL_MODE );
         setLayout( new BorderLayout() );
-        add( buildToolbar(), BorderLayout.NORTH );
+        _toolbar = buildToolbar();
+        add( _toolbar, BorderLayout.NORTH );
         add( scroll, BorderLayout.CENTER );
         installUndoRedoKeys();
         refresh();
@@ -144,9 +151,24 @@ final class TanglegramFrame extends JFrame {
         _phylogram_cb.doClick();
     }
 
-    private JToolBar buildToolbar() {
-        final JToolBar bar = new JToolBar();
-        bar.setFloatable( false );
+    void setFontSizeForTest( final int points ) {
+        _font_spinner.setValue( points );
+    }
+
+    /** The number of toolbar rows (JToolBars) in the top toolbar -- 2 since the single row grew too wide. */
+    int toolbarRowCountForTest() {
+        int rows = 0;
+        for( final java.awt.Component c : ( (java.awt.Container) _toolbar ).getComponents() ) {
+            if ( c instanceof JToolBar ) {
+                rows++;
+            }
+        }
+        return rows;
+    }
+
+    /** A two-row toolbar (the single row grew too wide): row 1 = view/edit actions, row 2 = figure options + the
+     *  live link summary. */
+    private JComponent buildToolbar() {
         _undo_button.setToolTipText( "Undo the last clade flip" );
         _redo_button.setToolTipText( "Redo" );
         _undo_button.addActionListener( e -> _panel.undo() );
@@ -169,23 +191,50 @@ final class TanglegramFrame extends JFrame {
         final JButton export = new JButton( "Export..." );
         export.setToolTipText( "Export the tanglegram figure as PDF, SVG, EPS, or PNG" );
         export.addActionListener( e -> exportFigure() );
-        bar.add( untangle );
-        bar.addSeparator();
-        bar.add( _undo_button );
-        bar.add( _redo_button );
-        bar.addSeparator();
-        bar.add( zoom_in );
-        bar.add( zoom_out );
-        bar.add( fit );
-        bar.add( _phylogram_cb );
-        bar.add( export );
-        bar.addSeparator();
-        bar.add( new JLabel( "Colour: " ) );
-        bar.add( buildColorSelector() );
-        bar.addSeparator();
-        bar.add( _summary );
-        bar.add( Box.createHorizontalGlue() );
-        return bar;
+
+        final JToolBar row1 = new JToolBar();
+        row1.setFloatable( false );
+        row1.add( untangle );
+        row1.addSeparator();
+        row1.add( _undo_button );
+        row1.add( _redo_button );
+        row1.addSeparator();
+        row1.add( zoom_in );
+        row1.add( zoom_out );
+        row1.add( fit );
+        row1.add( _phylogram_cb );
+        row1.addSeparator();
+        row1.add( new JLabel( "Font: " ) );
+        row1.add( buildFontSpinner() );
+
+        final JToolBar row2 = new JToolBar();
+        row2.setFloatable( false );
+        row2.add( new JLabel( "Colour: " ) );
+        row2.add( buildColorSelector() );
+        row2.addSeparator();
+        row2.add( export );
+        row2.addSeparator();
+        row2.add( _summary );
+        row2.add( Box.createHorizontalGlue() );
+
+        final JPanel bars = new JPanel();
+        bars.setLayout( new BoxLayout( bars, BoxLayout.PAGE_AXIS ) );
+        row1.setAlignmentX( LEFT_ALIGNMENT );
+        row2.setAlignmentX( LEFT_ALIGNMENT );
+        bars.add( row1 );
+        bars.add( row2 );
+        return bars;
+    }
+
+    /** A compact spinner (6-36 pt) that resizes the tip-label font live, for figure prep. */
+    private JSpinner buildFontSpinner() {
+        final int current = Math.max( 6, Math.min( 36, _panel.getLabelFontSize() ) );
+        _panel.setLabelFontSize( current ); // reconcile the panel to the clamped value so spinner and labels agree
+        _font_spinner = new JSpinner( new SpinnerNumberModel( current, 6, 36, 1 ) );
+        _font_spinner.setToolTipText( "Tip-label font size" );
+        _font_spinner.setMaximumSize( _font_spinner.getPreferredSize() ); // don't let the toolbar stretch it
+        _font_spinner.addChangeListener( e -> _panel.setLabelFontSize( (Integer) _font_spinner.getValue() ) );
+        return _font_spinner;
     }
 
     /** The "Colour connectors by:" selector: Uniform, Crossings, then one entry per available tip attribute. */

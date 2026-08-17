@@ -891,6 +891,17 @@ public final class MainFrameApplication extends MainFrame {
             frame.getTanglegramPanel().applyThemeColors(colorset.getBackgroundColor(), colorset.getBranchColor());
         }
         frame.setVisible(true);
+        // no connectors almost always means a user error (wrong field per tree, reversed association columns, or the
+        // trees share no tips) -- warn, but only AFTER showing the window so the (empty) tanglegram it refers to is
+        // visible behind the dialog
+        if (frame.getTanglegramPanel().getResult().getLinks().isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "No tips could be linked between the two trees, so the tanglegram has no connectors.\n\n"
+                            + "This usually means a link field was chosen that the tips do not share, the association "
+                            + "file's two columns are reversed (the FIRST tree supplies the left column), or the trees "
+                            + "genuinely have no matching tips.",
+                    "Create Tanglegram", JOptionPane.WARNING_MESSAGE);
+        }
     }
 
     /**

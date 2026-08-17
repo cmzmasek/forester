@@ -46,7 +46,65 @@ public final class TanglegramUntanglerTest {
     }
 
     public static boolean test() {
-        return tangledToZeroOk() && alreadyCleanOk() && eightTipUntangleOk() && undoRestoresOk() && reachesOptimumOk();
+        return tangledToZeroOk() && alreadyCleanOk() && eightTipUntangleOk() && undoRestoresOk() && reachesOptimumOk()
+                && largeTreeUntangleOk();
+    }
+
+    /** Performance / scale: a large (300-tip) heavily-scrambled SAME-topology pair (so a flip-reachable 0 exists) must
+     *  untangle to 0 crossings, quickly. Guards the O(n log n) crossing count + barycentre passes against a
+     *  re-quadratic regression -- the untangler evaluates the crossing count hundreds of times, so this is where a
+     *  regression would bite. Deterministic (fixed seeds + the untangler's own fixed seed). */
+    private static boolean largeTreeUntangleOk() {
+        final Random rng = new Random( 99 );
+        final int n = 300;
+        final Phylogeny left = tree( randomBinary( n, rng ) );
+        final Phylogeny right = left.copy(); // same unordered topology -> untangle can reach exactly 0 by flips
+        for( final PhylogenyNode node : internalNodes( right ) ) {
+            if ( rng.nextBoolean() ) {
+                TanglegramUntangler.reverse( node );
+            }
+        }
+        final List<Link> links = links( left, right );
+        if ( links.size() != n ) {
+            return fail( "expected " + n + " 1:1 links on the large pair, got " + links.size() );
+        }
+        final int before = crossings( left, right, links );
+        if ( before < 100 ) {
+            return fail( "the scrambled " + n + "-tip pair should start heavily tangled, got " + before );
+        }
+        final long t0 = System.nanoTime();
+        TanglegramUntangler.untangle( left, right, links );
+        final long ms = ( System.nanoTime() - t0 ) / 1_000_000L;
+        final int after = crossings( left, right, links );
+        if ( after != 0 ) {
+            return fail( "untangle should reach 0 on the flip-reachable " + n + "-tip pair, got " + after + " (was "
+                    + before + ")" );
+        }
+        // very generous bound: this runs in a few ms; it only trips on a catastrophic (e.g. O(n^2)) regression
+        if ( ms > 10_000 ) {
+            return fail( "untangle took " + ms + " ms on " + n + " tips -- likely a performance regression" );
+        }
+        // the HARDER, realistic case: two INDEPENDENT large topologies (the random restarts + net-parity flips
+        // genuinely engage here, so this is the true performance path). Untangle must never worsen, must reduce, and
+        // stay fast even with all the restarts running.
+        final Random rng2 = new Random( 7 );
+        final Phylogeny l2 = tree( randomBinary( n, rng2 ) );
+        final Phylogeny r2 = tree( randomBinary( n, rng2 ) );
+        final List<Link> links2 = links( l2, r2 );
+        final int before2 = crossings( l2, r2, links2 );
+        final long t2 = System.nanoTime();
+        TanglegramUntangler.untangle( l2, r2, links2 );
+        final long ms2 = ( System.nanoTime() - t2 ) / 1_000_000L;
+        final int after2 = crossings( l2, r2, links2 );
+        if ( after2 >= before2 ) { // never-worse guarantees after2 <= before2, so this means "did not reduce"
+            return fail( "untangle should reduce (and never worsen) the " + n + "-tip different-topology pair, before="
+                    + before2 + " after=" + after2 );
+        }
+        if ( ms2 > 10_000 ) {
+            return fail( "untangle (with restarts) took " + ms2 + " ms on " + n + " different-topology tips -- "
+                    + "likely a performance regression" );
+        }
+        return true;
     }
 
     private static boolean reachesOptimumOk() {

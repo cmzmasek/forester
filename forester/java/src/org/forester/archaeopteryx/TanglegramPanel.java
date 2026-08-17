@@ -306,6 +306,23 @@ final class TanglegramPanel extends JPanel implements Scrollable {
         }
     }
 
+    /** The current label font size (points). */
+    int getLabelFontSize() {
+        return getFont().getSize();
+    }
+
+    /** Sets the label font size (points), re-deriving from the current font family/style. The tip-label column widths
+     *  depend on the font, so this invalidates the layout cache before repainting. */
+    void setLabelFontSize( final int points ) {
+        if ( points != getFont().getSize() ) {
+            setFont( getFont().deriveFont( (float) points ) );
+            _laid_out_w = -1; // label widths (hence tree width) change -> force a re-layout on the next paint
+            _laid_out_h = -1;
+            revalidate();
+            repaint();
+        }
+    }
+
     /** Test hook: the label that would be drawn for the i-th left tip (exercises the identity-field fallback). */
     String leftTipLabelForTest( final int i ) {
         return labelFor( _left_tips.get( i ) );

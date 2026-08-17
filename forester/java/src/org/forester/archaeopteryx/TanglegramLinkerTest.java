@@ -49,7 +49,56 @@ public final class TanglegramLinkerTest {
     public static boolean test() {
         return nodeNameMatchingOk() && manyToManyOk() && unmatchedOk() && scientificNameOk() && crossFieldLinkOk()
                 && crossingsOk() && crossingsMatchBruteForceOk() && crossingConnectorsOk() && associationLinkOk()
-                && entanglementOk();
+                && entanglementOk() && entanglementAtScaleOk();
+    }
+
+    /** Performance / scale for the crossing-count + entanglement measure: on a large random permutation the O(n log n)
+     *  count is near-instant and the entanglement is a valid [0,1] value matching its definition (a random
+     *  permutation averages ~half the maximum crossings, so it clusters tightly at ~0.5; a fully reversed one is 1.0).
+     *  Guards against an accidental O(n^2) regression in countCrossings. */
+    private static boolean entanglementAtScaleOk() {
+        final Random rng = new Random( 11 );
+        final int n = 5000;
+        final int[] perm = new int[ n ];
+        for( int i = 0; i < n; i++ ) {
+            perm[ i ] = i;
+        }
+        for( int i = n - 1; i > 0; i-- ) { // Fisher-Yates -> a random permutation (distinct indices on both sides)
+            final int j = rng.nextInt( i + 1 );
+            final int t = perm[ i ];
+            perm[ i ] = perm[ j ];
+            perm[ j ] = t;
+        }
+        final List<int[]> pairs = new ArrayList<>();
+        for( int i = 0; i < n; i++ ) {
+            pairs.add( new int[] { i, perm[ i ] } );
+        }
+        final long t0 = System.nanoTime();
+        final int crossings = TanglegramLinker.countCrossings( pairs );
+        final double e = TanglegramLinker.entanglement( crossings, n );
+        final long ms = ( System.nanoTime() - t0 ) / 1_000_000L;
+        if ( ( e < 0.0 ) || ( e > 1.0 ) ) {
+            return fail( "entanglement out of [0,1]: " + e );
+        }
+        final double expected = crossings / ( ( (double) n * ( n - 1 ) ) / 2.0 );
+        if ( Math.abs( e - expected ) > 1e-9 ) {
+            return fail( "entanglement must equal crossings/max: " + e + " vs " + expected );
+        }
+        if ( ( e < 0.3 ) || ( e > 0.7 ) ) {
+            return fail( "a random " + n + "-element permutation should give entanglement ~0.5, got " + e );
+        }
+        // O(n log n): 5000 elements are near-instant; a large time would signal an accidental O(n^2)
+        if ( ms > 3_000 ) {
+            return fail( "countCrossings on " + n + " pairs took " + ms + " ms -- possible O(n^2) regression" );
+        }
+        final List<int[]> reversed = new ArrayList<>(); // the maximum -> entanglement exactly 1.0
+        for( int i = 0; i < n; i++ ) {
+            reversed.add( new int[] { i, n - 1 - i } );
+        }
+        if ( Math.abs( TanglegramLinker.entanglement( TanglegramLinker.countCrossings( reversed ), n ) - 1.0 ) > 1e-9 ) {
+            return fail( "a fully reversed " + n + "-element mapping should give entanglement 1.0" );
+        }
+        return true;
     }
 
     /** An external association table links tips whose names DIFFER on the two trees (parasite-vs-host), many:many,

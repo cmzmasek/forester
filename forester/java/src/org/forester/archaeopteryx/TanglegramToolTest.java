@@ -58,7 +58,32 @@ public final class TanglegramToolTest {
             return true;
         }
         return frameOk() && frameWiringOk() && colorSelectorOk() && crossFieldFrameOk() && associationFrameOk()
-                && phylogramToggleOk();
+                && phylogramToggleOk() && fontControlOk();
+    }
+
+    /** The toolbar splits into two rows (was too wide), and its font spinner resizes the panel's tip-label font live. */
+    private static boolean fontControlOk() {
+        final TanglegramFrame frame = new TanglegramFrame( treeABC(), treeCBA(), LinkField.NODE_NAME, "L", "R" );
+        try {
+            final TanglegramPanel panel = frame.getTanglegramPanel();
+            if ( frame.toolbarRowCountForTest() != 2 ) {
+                return fail( "the toolbar should have 2 rows, got " + frame.toolbarRowCountForTest() );
+            }
+            frame.setFontSizeForTest( 22 );
+            if ( panel.getLabelFontSize() != 22 ) {
+                return fail( "the font spinner should resize the panel label font to 22, got "
+                        + panel.getLabelFontSize() );
+            }
+            frame.setFontSizeForTest( 9 );
+            if ( panel.getLabelFontSize() != 9 ) {
+                return fail( "the font spinner should update the panel font again to 9, got "
+                        + panel.getLabelFontSize() );
+            }
+            return true;
+        }
+        finally {
+            frame.dispose();
+        }
     }
 
     /** A frame built with an association table links differently-named host/parasite trees, marks the panel as
