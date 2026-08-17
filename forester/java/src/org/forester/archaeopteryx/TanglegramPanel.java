@@ -498,49 +498,83 @@ final class TanglegramPanel extends JPanel implements Scrollable {
         super.paintComponent( g );
         final Graphics2D g2 = (Graphics2D) g.create();
         try {
-            g2.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
-            g2.setRenderingHint( RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON );
-            g2.setFont( getFont() );
-            final int w = getWidth();
-            final int h = getHeight();
-            if ( ( w <= 0 ) || ( h <= 0 ) || _left_tips.isEmpty() || _right_tips.isEmpty() ) {
-                return;
-            }
-            final FontMetrics fm = g2.getFontMetrics();
-            final double avail = w - ( 2.0 * MARGIN );
-            // reserve space for tip labels, but never let them starve the two trees or the central connector gap
-            final double label_cap = Math.max( 0.0, ( avail - ( 2.0 * MIN_TREE_WIDTH ) - MIN_CONNECTOR_GAP ) / 2.0 );
-            final double w_left = Math.min( maxLabelWidth( _left_tips, fm ), label_cap );
-            final double w_right = Math.min( maxLabelWidth( _right_tips, fm ), label_cap );
-            final double tree_w = Math.max( MIN_TREE_WIDTH, ( avail - w_left - w_right - MIN_CONNECTOR_GAP ) / 2.0 );
-            _laid_out_tree_w = tree_w; // remembered so the mouse hit-test can skip the central (bar-free) zone
-            final double avail_h = h - ( 2.0 * TOP_PAD );
-            // the layout (topology, tip spacing, depth) is a pure function of the panel size, so recompute it only
-            // when the size changes -- a plain scroll (SIMPLE_SCROLL_MODE repaints the viewport) reuses the coords
-            if ( ( w != _laid_out_w ) || ( h != _laid_out_h ) ) {
-                layoutTree( _left, _left_tips, tree_w, avail_h );
-                layoutTree( _right, _right_tips, tree_w, avail_h );
-                _laid_out_w = w;
-                _laid_out_h = h;
-            }
-            final double left_root_x = MARGIN;
-            final double left_tips_x = MARGIN + tree_w;
-            final double left_label_end = left_tips_x + w_left;
-            final double right_root_x = w - MARGIN;
-            final double right_tips_x = w - MARGIN - tree_w;
-            final double right_label_start = right_tips_x - w_right;
-            final Color branch_color = getForeground();
-            final Color unmatched_color = blend( branch_color, getBackground(), 0.55 );
-            drawTree( g2, _left, left_root_x, false, branch_color );
-            drawTree( g2, _right, right_root_x, true, branch_color );
-            drawTipLabels( g2, _left_tips, left_tips_x + LABEL_GAP, false, w_left, fm, branch_color, unmatched_color );
-            drawTipLabels( g2, _right_tips, right_tips_x - LABEL_GAP, true, w_right, fm, branch_color, unmatched_color );
-            drawConnectors( g2, left_label_end, right_label_start );
-            drawColorLegend( g2, fm );
+            renderTanglegram( g2, getWidth(), getHeight(), true );
         }
         finally {
             g2.dispose();
         }
+    }
+
+    /** The size to export the whole tanglegram at -- the panel's current (zoomed) size, floored so a tiny window
+     *  still produces a usable figure. */
+    Dimension exportSize() {
+        return new Dimension( Math.max( getWidth(), 600 ), Math.max( getHeight(), 400 ) );
+    }
+
+    /** Paints the whole tanglegram into {@code g2} at (w,h) with a WHITE background and BLACK ink (document-ready) for
+     *  an export -- WYSIWYG for the connector colouring / labels / legend, independent of the on-screen theme/size.
+     *  The painting reads getForeground()/getBackground(), so the colours are forced here and restored afterwards. */
+    void paintForExport( final Graphics2D g2, final int w, final int h ) {
+        final Color fg = getForeground();
+        final Color bg = getBackground();
+        try {
+            setForeground( Color.BLACK );
+            setBackground( Color.WHITE );
+            renderTanglegram( g2, w, h, false );
+        }
+        finally {
+            setForeground( fg );
+            setBackground( bg );
+            _laid_out_w = -1; // laid out at the export size -> force the screen to re-lay-out on the next paint
+            repaint();
+        }
+    }
+
+    /** Lays out (respecting the size cache only for the screen) and draws the whole tanglegram into {@code g2} at
+     *  (w,h). Shared by the screen paint and exports. */
+    private void renderTanglegram( final Graphics2D g2, final int w, final int h, final boolean use_cache ) {
+        g2.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
+        g2.setRenderingHint( RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON );
+        g2.setFont( getFont() );
+        if ( !use_cache ) {
+            // export (no super.paintComponent): paint the background. On screen the opaque panel is already filled.
+            g2.setColor( getBackground() );
+            g2.fillRect( 0, 0, w, h );
+        }
+        if ( ( w <= 0 ) || ( h <= 0 ) || _left_tips.isEmpty() || _right_tips.isEmpty() ) {
+            return;
+        }
+        final FontMetrics fm = g2.getFontMetrics();
+        final double avail = w - ( 2.0 * MARGIN );
+        // reserve space for tip labels, but never let them starve the two trees or the central connector gap
+        final double label_cap = Math.max( 0.0, ( avail - ( 2.0 * MIN_TREE_WIDTH ) - MIN_CONNECTOR_GAP ) / 2.0 );
+        final double w_left = Math.min( maxLabelWidth( _left_tips, fm ), label_cap );
+        final double w_right = Math.min( maxLabelWidth( _right_tips, fm ), label_cap );
+        final double tree_w = Math.max( MIN_TREE_WIDTH, ( avail - w_left - w_right - MIN_CONNECTOR_GAP ) / 2.0 );
+        _laid_out_tree_w = tree_w; // remembered so the mouse hit-test can skip the central (bar-free) zone
+        final double avail_h = h - ( 2.0 * TOP_PAD );
+        // the layout (topology, tip spacing, depth) is a pure function of the panel size, so on screen recompute it
+        // only when the size changes -- a plain scroll (SIMPLE_SCROLL_MODE repaints the viewport) reuses the coords
+        if ( !use_cache || ( w != _laid_out_w ) || ( h != _laid_out_h ) ) {
+            layoutTree( _left, _left_tips, tree_w, avail_h );
+            layoutTree( _right, _right_tips, tree_w, avail_h );
+            _laid_out_w = use_cache ? w : -1;
+            _laid_out_h = use_cache ? h : -1;
+        }
+        final double left_root_x = MARGIN;
+        final double left_tips_x = MARGIN + tree_w;
+        final double left_label_end = left_tips_x + w_left;
+        final double right_root_x = w - MARGIN;
+        final double right_tips_x = w - MARGIN - tree_w;
+        final double right_label_start = right_tips_x - w_right;
+        final Color branch_color = getForeground();
+        final Color unmatched_color = blend( branch_color, getBackground(), 0.55 );
+        drawTree( g2, _left, left_root_x, false, branch_color );
+        drawTree( g2, _right, right_root_x, true, branch_color );
+        drawTipLabels( g2, _left_tips, left_tips_x + LABEL_GAP, false, w_left, fm, branch_color, unmatched_color );
+        drawTipLabels( g2, _right_tips, right_tips_x - LABEL_GAP, true, w_right, fm, branch_color, unmatched_color );
+        drawConnectors( g2, left_label_end, right_label_start );
+        drawColorLegend( g2, fm );
     }
 
     // ---- layout ------------------------------------------------------------------------------------------------

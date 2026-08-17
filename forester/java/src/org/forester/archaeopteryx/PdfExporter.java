@@ -24,6 +24,7 @@ import java.awt.Graphics2D;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.function.Consumer;
 
 import org.forester.phylogeny.Phylogeny;
 
@@ -46,6 +47,59 @@ final class PdfExporter {
     
     private PdfExporter() {
         // Empty constructor.
+    }
+
+    /**
+     * Generic vector PDF export for any figure (not just a TreePanel): hands the {@code painter} a shape-based
+     * (outline-text, so no font embedding) {@link Graphics2D} sized (w x h) to draw into. The painter is responsible
+     * for its own background fill. Text is drawn as vector outlines via {@code createGraphicsShapes}, exactly as the
+     * TreePanel PDF path, so the figure is fully portable.
+     */
+    static String writeToPdf( final String file_name, final int width, final int height,
+                              final Consumer<Graphics2D> painter )
+            throws IOException {
+        final int my_width = Math.max( width, WIDTH_LIMIT );
+        final int my_height = Math.max( height, HEIGHT_LIMIT );
+        final File file = new File( file_name );
+        if ( file.isDirectory() ) {
+            throw new IOException( "[" + file_name + "] is a directory" );
+        }
+        final Document document = new Document();
+        document.setPageSize( new Rectangle( my_width, my_height ) );
+        document.setMargins( 0, 0, 0, 0 ); // the figure supplies its own margins
+        PdfWriter writer;
+        try {
+            writer = PdfWriter.getInstance( document, new FileOutputStream( file_name ) );
+        }
+        catch ( final DocumentException e ) {
+            throw new IOException( e );
+        }
+        document.open();
+        final PdfContentByte cb = writer.getDirectContent();
+        final Graphics2D g2 = cb.createGraphicsShapes( my_width, my_height );
+        Exception paint_error = null;
+        try {
+            painter.accept( g2 );
+        }
+        catch ( final Exception e ) {
+            paint_error = e;
+        }
+        finally {
+            try {
+                g2.dispose();
+                document.close();
+            }
+            catch ( final Exception e ) {
+                // Do nothing.
+            }
+        }
+        // Unlike the TreePanel path (which reports via a dialog), propagate to the caller so it reports ONE clean
+        // failure -- and don't leave a truncated PDF behind.
+        if ( paint_error != null ) {
+            file.delete();
+            throw new IOException( "PDF rendering failed", paint_error );
+        }
+        return file.toString() + " [size: " + my_width + ", " + my_height + "]";
     }
 
     static String writePhylogenyToPdf( final String file_name, final TreePanel tree_panel, final int width,

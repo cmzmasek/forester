@@ -21,24 +21,31 @@
 package org.forester.archaeopteryx;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.io.File;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.swing.AbstractAction;
-import java.util.List;
-
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.forester.phylogeny.Phylogeny;
 
@@ -129,6 +136,9 @@ final class TanglegramFrame extends JFrame {
         zoom_in.addActionListener( e -> _panel.zoomIn() );
         zoom_out.addActionListener( e -> _panel.zoomOut() );
         fit.addActionListener( e -> _panel.fit() );
+        final JButton export = new JButton( "Export..." );
+        export.setToolTipText( "Export the tanglegram figure as PDF, SVG, EPS, or PNG" );
+        export.addActionListener( e -> exportFigure() );
         bar.add( untangle );
         bar.addSeparator();
         bar.add( _undo_button );
@@ -137,6 +147,7 @@ final class TanglegramFrame extends JFrame {
         bar.add( zoom_in );
         bar.add( zoom_out );
         bar.add( fit );
+        bar.add( export );
         bar.addSeparator();
         bar.add( new JLabel( "Colour: " ) );
         bar.add( buildColorSelector() );
@@ -171,6 +182,45 @@ final class TanglegramFrame extends JFrame {
             }
         } );
         return _color_selector;
+    }
+
+    /** Save the tanglegram as PDF / SVG / EPS / PNG via a file chooser (the format follows the chosen filter). */
+    private void exportFigure() {
+        final JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle( "Export Tanglegram" );
+        chooser.setAcceptAllFileFilterUsed( false );
+        final Map<FileFilter, TanglegramExporter.Format> by_filter = new LinkedHashMap<>();
+        for( final TanglegramExporter.Format format : TanglegramExporter.Format.values() ) {
+            final FileNameExtensionFilter filter = new FileNameExtensionFilter( format.label(), format.extension() );
+            chooser.addChoosableFileFilter( filter );
+            by_filter.put( filter, format );
+        }
+        if ( chooser.showSaveDialog( this ) != JFileChooser.APPROVE_OPTION ) {
+            return;
+        }
+        final TanglegramExporter.Format format = by_filter.getOrDefault( chooser.getFileFilter(),
+                                                                         TanglegramExporter.Format.PDF );
+        File file = chooser.getSelectedFile();
+        if ( !file.getName().toLowerCase().endsWith( "." + format.extension() ) ) {
+            file = new File( file.getParentFile(), file.getName() + "." + format.extension() );
+        }
+        if ( file.exists() && ( JOptionPane.showConfirmDialog( this, file.getName() + " already exists. Overwrite?",
+                                                              "Export Tanglegram",
+                                                              JOptionPane.YES_NO_OPTION ) != JOptionPane.YES_OPTION ) ) {
+            return;
+        }
+        final Dimension size = _panel.exportSize();
+        try {
+            final String msg = TanglegramExporter.write( file, format, _panel, size.width, size.height );
+            JOptionPane.showMessageDialog( this, "Wrote " + msg, "Export Tanglegram",
+                                           JOptionPane.INFORMATION_MESSAGE );
+        }
+        catch ( final Throwable ex ) {
+            // Throwable, not Exception: a large export can throw OutOfMemoryError (an Error), which must not escape
+            // onto the EDT -- report it instead.
+            JOptionPane.showMessageDialog( this, "Could not export the tanglegram: " + ex.getMessage(),
+                                           "Export Tanglegram", JOptionPane.ERROR_MESSAGE );
+        }
     }
 
     private void installUndoRedoKeys() {

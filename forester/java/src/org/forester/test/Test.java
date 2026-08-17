@@ -786,6 +786,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Tanglegram export: ");
+        if (org.forester.archaeopteryx.TanglegramExporterTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Zebra stripes (render): ");
         if (org.forester.archaeopteryx.ZebraStripeRenderTest.test()) {
             System.out.println("OK.");
