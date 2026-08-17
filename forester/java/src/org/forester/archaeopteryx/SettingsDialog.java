@@ -221,8 +221,9 @@ final class SettingsDialog extends JDialog {
         c.add( header( "Search & Selection" ) );
         add( c, cb( _mf._color_all_found_nodes_when_coloring_subtree_cbmi ) );
         c.add( Box.createVerticalStrut( 4 ) );
-        final JLabel note = new JLabel( "<html><i>The per-search options (Match Case, Words, Regex, Inverse,"
-                + " Properties, Visible) are on the left control panel, next to the search boxes.</i></html>" );
+        final JLabel note = new JLabel( "<html><i>Each search box on the left control panel has its own field"
+                + " selector (what to search) and match-mode selector (contains / starts with / ends with / whole"
+                + " word / regular expression), plus the shared Match Case and Inverse options.</i></html>" );
         note.setAlignmentX( Component.LEFT_ALIGNMENT );
         c.add( note );
         return c;

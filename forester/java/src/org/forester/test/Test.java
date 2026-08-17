@@ -274,6 +274,22 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Search matching: ");
+        if (org.forester.archaeopteryx.SearchMatchingTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Search tool: ");
+        if (org.forester.archaeopteryx.SearchToolTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Confidence label: ");
         if (org.forester.archaeopteryx.ConfidenceLabelTest.test()) {
             System.out.println("OK.");

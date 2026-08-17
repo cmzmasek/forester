@@ -246,19 +246,19 @@ public final class ResetToDefaultsTest {
                                 + cp.getAncestralPieSelection() );
                     }
                     frame.setDarkMode( true );
-                    //    (c) always-visible ControlPanel controls held STALE: the Dark theme radio + the Regex search
-                    //        checkbox (plus its Options field), which would clobber the reset on the next click
+                    //    (c) always-visible ControlPanel controls held STALE: the Dark theme radio + the Inverse
+                    //        search checkbox (plus its Options field), which would clobber the reset on the next click
                     final javax.swing.AbstractButton dark_rb = findButton( cp, "Dark" );
                     final javax.swing.AbstractButton light_rb = findButton( cp, "Light" );
-                    final javax.swing.AbstractButton regex_cb = findButton( cp, MainFrame.SEARCH_REGEX_LABEL );
-                    if ( ( dark_rb == null ) || ( light_rb == null ) || ( regex_cb == null ) ) {
-                        fail( ok, "could not find the control-panel theme radios / regex checkbox" );
+                    final javax.swing.AbstractButton inverse_cb = findButton( cp, MainFrame.INVERSE_SEARCH_RESULT_LABEL );
+                    if ( ( dark_rb == null ) || ( light_rb == null ) || ( inverse_cb == null ) ) {
+                        fail( ok, "could not find the control-panel theme radios / inverse search checkbox" );
                     }
                     else {
                         dark_rb.setSelected( true );
                         light_rb.setSelected( false );
-                        regex_cb.setSelected( true );
-                        o.setSearchWithRegex( true );
+                        inverse_cb.setSelected( true );
+                        o.setInverseSearchResult( true );
                     }
                     // a settings file exists (so we can prove reset deletes it)
                     new GuiPreferences().saveFrom( o );
@@ -294,12 +294,12 @@ public final class ResetToDefaultsTest {
                     if ( ( light_rb != null ) && !light_rb.isSelected() ) {
                         fail( ok, "the control-panel 'Light' theme radio must be selected after reset" );
                     }
-                    // 3d. the always-visible Regex search checkbox was re-seeded (else the next click re-applies regex)
-                    if ( ( regex_cb != null ) && regex_cb.isSelected() ) {
-                        fail( ok, "the 'Regex' search checkbox must be cleared after reset" );
+                    // 3d. the always-visible Inverse search checkbox was re-seeded (else the next click re-applies it)
+                    if ( ( inverse_cb != null ) && inverse_cb.isSelected() ) {
+                        fail( ok, "the 'Inverse' search checkbox must be cleared after reset" );
                     }
-                    if ( o.isSearchWithRegex() ) {
-                        fail( ok, "Options.searchWithRegex must reset to false" );
+                    if ( o.isInverseSearchResult() ) {
+                        fail( ok, "Options.inverseSearchResult must reset to false" );
                     }
                     // 3e. the LIVE tree's graphics type was reset (a circular tree must not stay circular)
                     if ( tp.getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR ) {

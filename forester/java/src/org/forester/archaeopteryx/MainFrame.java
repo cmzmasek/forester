@@ -163,8 +163,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String ROUNDED_TYPE_CBMI_LABEL = "Rounded";
     static final String UNROOTED_TYPE_CBMI_LABEL = "Unrooted (alpha)";                                                                                                                                                          //TODO
     static final String CIRCULAR_TYPE_CBMI_LABEL = "Circular (alpha)";                                                                                                                                                          //TODO
-    static final String SEARCH_TERMS_ONLY_LABEL = "Words";
-    static final String SEARCH_REGEX_LABEL = "Regex";
     static final String SEARCH_CASE_SENSITIVE_LABEL = "Match Case";
     static final String INVERSE_SEARCH_RESULT_LABEL = "Inverse";
     static final String DISPLAY_SCALE_LABEL = "Scale";
@@ -192,7 +190,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String NON_LINED_UP_CLADOGRAMS_LABEL = "Non-Lined Up Cladogram";
     static final String LABEL_DIRECTION_LABEL = "Radial Labels";
     static final String LABEL_DIRECTION_TIP = "To use radial node labels in radial and unrooted display types";
-    static final String SEARCH_WITH_REGEX_TIP = "To search using regular expressions (~Java/Perl syntax). For example, use \"^B.+\\d{2,}$\" to search for everything starting with a B and ending with at least two digits.";
     static final String COLOR_LABELS_LABEL = "Colorize Labels Same as Parent Branch";
     static final String DISPLAY_NODE_BOXES_LABEL_EXT = "Shapes for External Nodes";
     static final String DISPLAY_NODE_BOXES_LABEL_INT = "Shapes for Internal Nodes";

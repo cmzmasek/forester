@@ -44,7 +44,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -470,12 +469,6 @@ final class ControlPanel extends JPanel implements ActionListener {
                     displayedPhylogenyMightHaveChanged(true);
                 } else {
                     displayedPhylogenyMightHaveChanged(true);
-                    // A Display Data checkbox (or similar) changed. If the "Visible" search option is on,
-                    // the set of searched fields changed too, so re-run both searches to reflect it.
-                    if ((_search_visible_cb != null) && _search_visible_cb.isSelected()) {
-                        search0();
-                        search1();
-                    }
                 }
             }
             tp.requestFocus();
@@ -732,71 +725,13 @@ final class ControlPanel extends JPanel implements ActionListener {
         return getTreeDisplayTypes().get(index);
     }
 
-    private void search0(final MainPanel main_panel, final Phylogeny tree, String query_str) {
+    private void search0(final MainPanel main_panel, final Phylogeny tree, final String query_str) {
         getSearchFoundCountsLabel0().setVisible(true);
         getSearchResetButton0().setEnabled(true);
         getSearchResetButton0().setVisible(true);
-        String[] queries = null;
-        Set<Long> nodes = null;
-        // "Visible" search option: restrict the search to the currently displayed node-data fields.
-        final Set<PhylogenyMethods.NDF> restrict = visibleSearchFields();
-        final boolean search_props = (restrict != null) ? restrict.contains(PhylogenyMethods.NDF.Properties)
-                : getOptions().isSearchProperties();
-        query_str = query_str.replaceAll("\\s+", " ");
-        if ((query_str.indexOf(',') >= 0) && !getOptions().isSearchWithRegex()) {
-            queries = query_str.split(",+");
-        } else {
-            queries = new String[1];
-            queries[0] = query_str.trim();
-        }
-        if ((queries != null) && (queries.length > 0)) {
-            nodes = new HashSet<Long>();
-            for (String query : queries) {
-                if (ForesterUtil.isEmpty(query)) {
-                    continue;
-                }
-                query = query.trim();
-                final TreePanel tp = getMainPanel().getCurrentTreePanel();
-                if ((query.indexOf('+') > 0) && !getOptions().isSearchWithRegex()) {
-                    nodes.addAll(PhylogenyMethods.searchDataLogicalAnd(query.split("\\++"),
-                            tree,
-                            search_props,
-                            getOptions().isSearchCaseSensitive(),
-                            !getOptions().isMatchWholeTermsOnly(),
-                            isShowDomainArchitectures(),
-                            tp != null
-                                    ? Math.pow(10,
-                                    tp.getDomainStructureEvalueThresholdExp())
-                                    : 0,
-                            restrict));
-                } else {
-                    nodes.addAll(PhylogenyMethods
-                            .searchData(query,
-                                    tree,
-                                    search_props,
-                                    getOptions().isSearchCaseSensitive(),
-                                    !getOptions().isMatchWholeTermsOnly(),
-                                    getOptions().isSearchWithRegex(),
-                                    isShowDomainArchitectures(),
-                                    tp != null ? Math.pow(10, tp.getDomainStructureEvalueThresholdExp()) : 0,
-                                    restrict));
-                }
-            }
-            if (getOptions().isInverseSearchResult()) {
-                final List<PhylogenyNode> all = PhylogenyMethods.obtainAllNodesAsList(tree);
-                final Set<Long> temp_nodes = nodes;
-                nodes = new HashSet<Long>();
-                for (final PhylogenyNode n : all) {
-                    if ((!temp_nodes.contains(n.getId())) && n.isHasNodeData()) {
-                        nodes.add(n.getId());
-                    }
-                }
-            }
-        }
-        if (restrict != null) { // "Visible": keep only nodes whose data is currently displayed
-            nodes = retainDisplayedNodes(nodes, tree);
-        }
-        if ((nodes != null) && (nodes.size() > 0)) {
+        final Set<Long> nodes = runSearch(tree, query_str, (SearchField) _search_field_0.getSelectedItem(),
+                (SearchMode) _search_mode_0.getSelectedItem());
+        if ((nodes != null) && !nodes.isEmpty()) {
             // Hand the finished set to the panel in one call: setFoundNodes0 is the chokepoint that resets the
             // step-through position (only when the hit set actually changed) and refreshes the "k / N" navigator.
             main_panel.getCurrentTreePanel().setFoundNodes0(nodes);
@@ -807,77 +742,90 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
     }
 
-    private void search1(final MainPanel main_panel, final Phylogeny tree, String query_str) {
+    private void search1(final MainPanel main_panel, final Phylogeny tree, final String query_str) {
         getSearchFoundCountsLabel1().setVisible(true);
         getSearchResetButton1().setEnabled(true);
         getSearchResetButton1().setVisible(true);
-        String[] queries = null;
-        Set<Long> nodes = null;
-        // "Visible" search option: restrict the search to the currently displayed node-data fields.
-        final Set<PhylogenyMethods.NDF> restrict = visibleSearchFields();
-        final boolean search_props = (restrict != null) ? restrict.contains(PhylogenyMethods.NDF.Properties)
-                : getOptions().isSearchProperties();
-        query_str = query_str.replaceAll("\\s+", " ");
-        if ((query_str.indexOf(',') >= 0) && !getOptions().isSearchWithRegex()) {
-            queries = query_str.split(",+");
-        } else {
-            queries = new String[1];
-            queries[0] = query_str.trim();
-        }
-        if ((queries != null) && (queries.length > 0)) {
-            nodes = new HashSet<Long>();
-            for (String query : queries) {
-                if (ForesterUtil.isEmpty(query)) {
-                    continue;
-                }
-                query = query.trim();
-                final TreePanel tp = getMainPanel().getCurrentTreePanel();
-                if ((query.indexOf('+') > 0) && !getOptions().isSearchWithRegex()) {
-                    nodes.addAll(PhylogenyMethods.searchDataLogicalAnd(query.split("\\++"),
-                            tree,
-                            search_props,
-                            getOptions().isSearchCaseSensitive(),
-                            !getOptions().isMatchWholeTermsOnly(),
-                            isShowDomainArchitectures(),
-                            tp != null
-                                    ? Math.pow(10,
-                                    tp.getDomainStructureEvalueThresholdExp())
-                                    : 0,
-                            restrict));
-                } else {
-                    nodes.addAll(PhylogenyMethods
-                            .searchData(query,
-                                    tree,
-                                    search_props,
-                                    getOptions().isSearchCaseSensitive(),
-                                    !getOptions().isMatchWholeTermsOnly(),
-                                    getOptions().isSearchWithRegex(),
-                                    isShowDomainArchitectures(),
-                                    tp != null ? Math.pow(10, tp.getDomainStructureEvalueThresholdExp()) : 0,
-                                    restrict));
-                }
-            }
-            if (getOptions().isInverseSearchResult()) {
-                final List<PhylogenyNode> all = PhylogenyMethods.obtainAllNodesAsList(tree);
-                final Set<Long> temp_nodes = nodes;
-                nodes = new HashSet<Long>();
-                for (final PhylogenyNode n : all) {
-                    if ((!temp_nodes.contains(n.getId())) && n.isHasNodeData()) {
-                        nodes.add(n.getId());
-                    }
-                }
-            }
-        }
-        if (restrict != null) { // "Visible": keep only nodes whose data is currently displayed
-            nodes = retainDisplayedNodes(nodes, tree);
-        }
-        if ((nodes != null) && (nodes.size() > 0)) {
+        final Set<Long> nodes = runSearch(tree, query_str, (SearchField) _search_field_1.getSelectedItem(),
+                (SearchMode) _search_mode_1.getSelectedItem());
+        if ((nodes != null) && !nodes.isEmpty()) {
             main_panel.getCurrentTreePanel().setFoundNodes1(nodes); // see search0: single chokepoint for the reset+nav
             setSearchFoundCountsOnLabel1(nodes.size());
         } else {
             setSearchFoundCountsOnLabel1(0);
             searchReset1();
         }
+    }
+
+    /**
+     * Runs one search box against {@code tree} using its chosen {@link SearchField} and {@link SearchMode} plus
+     * the two shared modifiers (Match Case, Inverse). For text modes (all but regex) the legacy multi-term
+     * combinators still apply: ',' = OR (union of terms) and '+' = AND (a node must match every '+'-separated
+     * term). Inverse is applied ONCE at the end as the complement over data-bearing nodes (the legacy "select the
+     * nodes that do NOT match" semantics), never per term.
+     */
+    private Set<Long> runSearch(final Phylogeny tree, String query_str, final SearchField field,
+                                final SearchMode mode) {
+        if ((field == null) || (mode == null)) {
+            return null;
+        }
+        final boolean case_sensitive = (_search_case_sensitive_cb != null) && _search_case_sensitive_cb.isSelected();
+        final boolean inverse = (_search_inverse_cb != null) && _search_inverse_cb.isSelected();
+        query_str = query_str.replaceAll("\\s+", " ").trim();
+        // ',' OR and '+' AND only apply to plain text matching, not to regular expressions (which can contain
+        // those characters), consistent with the legacy behaviour.
+        final boolean splittable = (mode != SearchMode.REGEX);
+        final Set<Long> nodes = new HashSet<>();
+        final String[] or_terms = (splittable && (query_str.indexOf(',') >= 0)) ? query_str.split(",+")
+                : new String[] { query_str };
+        boolean any_term = false; // whether at least one non-empty term was actually searched
+        for (String or_term : or_terms) {
+            or_term = or_term.trim();
+            if (ForesterUtil.isEmpty(or_term)) {
+                continue;
+            }
+            any_term = true;
+            if (splittable && (or_term.indexOf('+') > 0)) {
+                nodes.addAll(searchLogicalAnd(tree, field, mode, or_term.split("\\++"), case_sensitive));
+            } else {
+                nodes.addAll(
+                        SearchMatcher.search(new SearchSpec(field, mode, or_term, null, case_sensitive, false), tree));
+            }
+        }
+        // Inverse selects the complement, but only for an actual query -- a separator-only query (e.g. ",")
+        // produces no terms and must reset the search (as the legacy code did), not select the whole tree.
+        return (inverse && any_term) ? complementDataBearing(tree, nodes) : nodes;
+    }
+
+    /** The nodes matching EVERY '+'-separated term (positive) -- the intersection of the per-term matches. */
+    private static Set<Long> searchLogicalAnd(final Phylogeny tree, final SearchField field, final SearchMode mode,
+                                              final String[] and_terms, final boolean case_sensitive) {
+        Set<Long> acc = null;
+        for (String term : and_terms) {
+            term = term.trim();
+            if (ForesterUtil.isEmpty(term)) {
+                continue;
+            }
+            final Set<Long> matches = new HashSet<>(
+                    SearchMatcher.search(new SearchSpec(field, mode, term, null, case_sensitive, false), tree));
+            if (acc == null) {
+                acc = matches;
+            } else {
+                acc.retainAll(matches);
+            }
+        }
+        return (acc == null) ? new HashSet<>() : acc;
+    }
+
+    /** The complement of {@code matched} over the data-bearing nodes of {@code tree} (the "Inverse" modifier). */
+    private static Set<Long> complementDataBearing(final Phylogeny tree, final Set<Long> matched) {
+        final Set<Long> out = new HashSet<>();
+        for (final PhylogenyNode n : PhylogenyMethods.obtainAllNodesAsList(tree)) {
+            if (!matched.contains(n.getId()) && n.isHasNodeData()) {
+                out.add(n.getId());
+            }
+        }
+        return out;
     }
 
     private void setTreeDisplayType(final int index, final Options.PHYLOGENY_DISPLAY_TYPE t) {
@@ -1606,10 +1554,12 @@ final class ControlPanel extends JPanel implements ActionListener {
         return (p != null) && p.isVisible();
     }
 
-    /** Re-seeds the always-visible control-panel controls that hold their OWN state (theme radios; the search-option
-     *  checkboxes) from the current Configuration/Options, for Reset to Defaults. Without this they stay stale after
-     *  a reset -- and worse, the search checkboxes write ALL their states back to Options on the next click, which
-     *  would silently clobber the reset. Uses setSelected (fires no ActionListener), so it triggers no side effects. */
+    /** Re-seeds the always-visible control-panel controls that hold their OWN state (theme radios; the two search
+     *  modifier checkboxes; the per-box field/mode selectors) from the current Configuration/Options, for Reset to
+     *  Defaults. Without this they stay stale after a reset -- and worse, the search checkboxes write their state
+     *  back to Options on the next click, which would silently clobber the reset. Uses setSelected (fires no
+     *  ActionListener) for the checkboxes; the combos are re-seeded under the _search_controls_adjusting guard so
+     *  their ActionListeners don't launch a search mid-reset. */
     void resyncFromOptions() {
         if ( ( _light_mode_rb != null ) && ( _dark_mode_rb != null ) ) {
             final boolean dark = getConfiguration().getUi() == Configuration.UI.FLAT_DARK;
@@ -1621,18 +1571,25 @@ final class ControlPanel extends JPanel implements ActionListener {
             if ( _search_case_sensitive_cb != null ) {
                 _search_case_sensitive_cb.setSelected( o.isSearchCaseSensitive() );
             }
-            if ( _search_whole_words_only_cb != null ) {
-                _search_whole_words_only_cb.setSelected( o.isMatchWholeTermsOnly() );
-            }
-            if ( _search_regex_cb != null ) {
-                _search_regex_cb.setSelected( o.isSearchWithRegex() );
-            }
             if ( _search_inverse_cb != null ) {
                 _search_inverse_cb.setSelected( o.isInverseSearchResult() );
             }
-            if ( _search_properties_cb != null ) {
-                _search_properties_cb.setSelected( o.isSearchProperties() );
+        }
+        _search_controls_adjusting = true;
+        try {
+            for ( final JComboBox<SearchField> fc : new JComboBox[] { _search_field_0, _search_field_1 } ) {
+                if ( ( fc != null ) && ( fc.getItemCount() > 0 ) ) {
+                    fc.setSelectedIndex( 0 ); // "Any text field"
+                }
             }
+            for ( final JComboBox<SearchMode> mc : new JComboBox[] { _search_mode_0, _search_mode_1 } ) {
+                if ( ( mc != null ) && ( mc.getItemCount() > 0 ) ) {
+                    mc.setSelectedIndex( 0 ); // "contains"
+                }
+            }
+        }
+        finally {
+            _search_controls_adjusting = false;
         }
     }
 
@@ -2449,15 +2406,20 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     // ---- Search options ---------------------------------------------------------------------
-    // These five used to live in the Options menu, where users rarely noticed them and then
-    // wondered why search behaved unexpectedly; they now sit right above the search boxes. They
-    // drive the same Options state that search0()/search1() read.
+    // The redesigned search tool: each search box (A/B) has its own FIELD selector (what to look at) and
+    // MODE selector (how to compare) -- see setupSearchTools0/1. Only two modifiers stay as checkboxes here,
+    // because they apply to BOTH boxes and are orthogonal to any field/mode: "Match Case" and "Inverse".
+    // (The old "Words"/"Regex" folded into the mode selector; "Properties" into per-property field entries;
+    // "Visible" was retired.) The two checkboxes drive the Options state that the searches read.
     private JCheckBox _search_case_sensitive_cb;
-    private JCheckBox _search_whole_words_only_cb;
-    private JCheckBox _search_regex_cb;
     private JCheckBox _search_inverse_cb;
-    private JCheckBox _search_properties_cb;
-    private JCheckBox _search_visible_cb;
+    private JComboBox<SearchField> _search_field_0;
+    private JComboBox<SearchField> _search_field_1;
+    private JComboBox<SearchMode> _search_mode_0;
+    private JComboBox<SearchMode> _search_mode_1;
+    // set while re-seeding the search combos programmatically (e.g. Reset to Defaults), so their listeners
+    // don't fire a spurious search mid-reset.
+    private boolean _search_controls_adjusting;
 
     void setupSearchOptions() {
         final JLabel header = new JLabel("Search Options:");
@@ -2467,33 +2429,21 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
         add(header);
         _search_case_sensitive_cb = new JCheckBox(MainFrame.SEARCH_CASE_SENSITIVE_LABEL);
-        _search_whole_words_only_cb = new JCheckBox(MainFrame.SEARCH_TERMS_ONLY_LABEL);
-        _search_regex_cb = new JCheckBox(MainFrame.SEARCH_REGEX_LABEL);
         _search_inverse_cb = new JCheckBox(MainFrame.INVERSE_SEARCH_RESULT_LABEL);
-        _search_properties_cb = new JCheckBox("Properties");
-        _search_visible_cb = new JCheckBox("Visible");
         _search_case_sensitive_cb.setToolTipText("search is case sensitive");
-        _search_whole_words_only_cb.setToolTipText("match complete words/terms only");
-        _search_regex_cb.setToolTipText(MainFrame.SEARCH_WITH_REGEX_TIP);
         _search_inverse_cb.setToolTipText("select the nodes that do NOT match");
-        _search_properties_cb.setToolTipText("also search in (phyloXML) properties");
-        _search_visible_cb.setToolTipText("search only the data that is currently displayed (per the Display Data checkboxes)");
         final Options o = getOptions();
         if (o != null) {
             _search_case_sensitive_cb.setSelected(o.isSearchCaseSensitive());
-            _search_whole_words_only_cb.setSelected(o.isMatchWholeTermsOnly());
-            _search_regex_cb.setSelected(o.isSearchWithRegex());
             _search_inverse_cb.setSelected(o.isInverseSearchResult());
-            _search_properties_cb.setSelected(o.isSearchProperties());
         }
         final ActionListener l = new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent e) {
-                searchOptionChanged((JCheckBox) e.getSource());
+                searchOptionChanged();
             }
         };
-        for (final JCheckBox cb : new JCheckBox[] { _search_case_sensitive_cb, _search_whole_words_only_cb,
-                _search_regex_cb, _search_inverse_cb, _search_properties_cb, _search_visible_cb }) {
+        for (final JCheckBox cb : new JCheckBox[] { _search_case_sensitive_cb, _search_inverse_cb }) {
             cb.setFocusPainted(false);
             cb.setFont(ControlPanel.jcb_font);
             cb.setMargin(new Insets(0, 0, 0, 0)); // trim vertical padding so the checkboxes pack tightly
@@ -2504,75 +2454,130 @@ final class ControlPanel extends JPanel implements ActionListener {
             cb.addActionListener(l);
         }
         nextRowGap(CHECKBOX_GAP);
-        add(searchOptionsRow(_search_case_sensitive_cb, _search_whole_words_only_cb));
-        nextRowGap(CHECKBOX_GAP);
-        add(searchOptionsRow(_search_regex_cb, _search_inverse_cb));
-        nextRowGap(CHECKBOX_GAP);
-        add(searchOptionsRow(_search_properties_cb, _search_visible_cb));
+        add(searchOptionsRow(_search_case_sensitive_cb, _search_inverse_cb));
     }
 
-    /**
-     * When the "Visible" search option is on, the set of node-data fields that are currently displayed (per the
-     * Display Data checkboxes), so the search is limited to them; {@code null} when "Visible" is off (search all
-     * fields). Fields with no Display Data checkbox (taxonomy synonyms/lineage/identifier, annotations, etc.)
-     * are never searched in "Visible" mode.
-     */
-    private Set<PhylogenyMethods.NDF> visibleSearchFields() {
-        if ((_search_visible_cb == null) || !_search_visible_cb.isSelected()) {
-            return null;
-        }
-        final EnumSet<PhylogenyMethods.NDF> fields = EnumSet.noneOf(PhylogenyMethods.NDF.class);
-        if (isShowNodeNames()) {
-            fields.add(PhylogenyMethods.NDF.NodeName);
-        }
-        if (isShowTaxonomyCode()) {
-            fields.add(PhylogenyMethods.NDF.TaxonomyCode);
-        }
-        if (isShowTaxonomyScientificNames()) {
-            fields.add(PhylogenyMethods.NDF.TaxonomyScientificName);
-        }
-        if (isShowTaxonomyCommonNames()) {
-            fields.add(PhylogenyMethods.NDF.TaxonomyCommonName);
-        }
-        if (isShowSeqNames()) {
-            fields.add(PhylogenyMethods.NDF.SequenceName);
-        }
-        if (isShowGeneNames()) {
-            fields.add(PhylogenyMethods.NDF.GeneName);
-        }
-        if (isShowSeqSymbols()) {
-            fields.add(PhylogenyMethods.NDF.SequenceSymbol);
-        }
-        if (isShowSequenceAcc()) {
-            fields.add(PhylogenyMethods.NDF.SequenceAccession);
-        }
-        if (isShowDomainArchitectures()) {
-            fields.add(PhylogenyMethods.NDF.Domain);
-        }
-        if (isShowProperties()) {
-            fields.add(PhylogenyMethods.NDF.Properties);
-        }
-        return fields;
+    /** A field selector (what a query is matched against) for one search box, populated with the static text
+     *  fields; "Any text field" (index 0) is the default = today's search-everything behaviour. */
+    private JComboBox<SearchField> makeSearchFieldCombo(final boolean box_a) {
+        final JComboBox<SearchField> combo = new JComboBox<>(SearchField.stringMenuFields());
+        combo.setSelectedIndex(0); // "Any text field"
+        combo.setToolTipText("which node data to search");
+        styleSearchCombo(combo);
+        combo.addActionListener(e -> {
+            if (!_search_controls_adjusting) {
+                if (box_a) {
+                    search0();
+                }
+                else {
+                    search1();
+                }
+                displayedPhylogenyMightHaveChanged(true);
+            }
+        });
+        return combo;
     }
 
-    /**
-     * For the "Visible" search option: keep only those found nodes whose data is currently displayed --
-     * external (leaf) nodes only when "Show External Data" is on, internal nodes only when "Show Internal
-     * Data" is on -- so the search never matches data that is not on screen.
-     */
-    private Set<Long> retainDisplayedNodes(final Set<Long> ids, final Phylogeny tree) {
-        final boolean show_external = isShowExternalData();
-        final boolean show_internal = isShowInternalData();
-        if ((ids == null) || ids.isEmpty() || (show_external && show_internal)) {
-            return ids;
+    /** A match-mode selector (how a query is compared) for one search box, populated with the string modes;
+     *  "contains" (index 0) is the default. */
+    private JComboBox<SearchMode> makeSearchModeCombo(final boolean box_a) {
+        final JComboBox<SearchMode> combo = new JComboBox<>(SearchMode.stringModes());
+        combo.setSelectedIndex(0); // "contains"
+        combo.setToolTipText("how to match: contains / starts with / ends with / whole word / regular expression");
+        styleSearchCombo(combo);
+        combo.addActionListener(e -> {
+            if (!_search_controls_adjusting) {
+                if (box_a) {
+                    search0();
+                }
+                else {
+                    search1();
+                }
+                displayedPhylogenyMightHaveChanged(true);
+            }
+        });
+        return combo;
+    }
+
+    /** Shared styling for the search field/mode combos: the small control-panel font, a label renderer (so the
+     *  combo shows each field's/mode's friendly label), and a tiny preferred width so the full-width GridBag row
+     *  stretches them without the widest item forcing the whole panel wider. */
+    private void styleSearchCombo(final JComboBox<?> combo) {
+        combo.setFont(ControlPanel.jcb_font);
+        combo.setRenderer(SEARCH_LABEL_RENDERER);
+        if (_configuration.isApplyCustomGuiColors()) {
+            // match the other control-panel combos (Click-on / sequence-relation / color-by), not the text fields
+            combo.setBackground(getConfiguration().getGuiButtonBackgroundColor());
+            combo.setForeground(getConfiguration().getGuiButtonTextColor());
         }
-        final Set<Long> kept = new HashSet<Long>();
-        for (final PhylogenyNode n : PhylogenyMethods.obtainAllNodesAsList(tree)) {
-            if (ids.contains(n.getId()) && (n.isExternal() ? show_external : show_internal)) {
-                kept.add(n.getId());
+        combo.setPreferredSize(new Dimension(10, combo.getPreferredSize().height));
+    }
+
+    /** Renders a {@link SearchField}/{@link SearchMode} combo entry by its friendly {@code label()}. */
+    private static final DefaultListCellRenderer SEARCH_LABEL_RENDERER = new DefaultListCellRenderer() {
+
+        @Override
+        public Component getListCellRendererComponent(final JList<?> list, final Object value, final int index,
+                                                      final boolean is_selected, final boolean has_focus) {
+            final Object text = (value instanceof SearchField) ? ((SearchField) value).label()
+                    : (value instanceof SearchMode) ? ((SearchMode) value).label() : value;
+            return super.getListCellRendererComponent(list, text, index, is_selected, has_focus);
+        }
+    };
+
+    // ---- test hooks for the search tool -------------------------------------------------------
+    int searchFieldCountForTest() {
+        return ( _search_field_0 != null ) ? _search_field_0.getItemCount() : 0;
+    }
+
+    int searchModeCountForTest() {
+        return ( _search_mode_0 != null ) ? _search_mode_0.getItemCount() : 0;
+    }
+
+    SearchField getSearchFieldForTest(final boolean box_a) {
+        return (SearchField) ( box_a ? _search_field_0 : _search_field_1 ).getSelectedItem();
+    }
+
+    SearchMode getSearchModeForTest(final boolean box_a) {
+        return (SearchMode) ( box_a ? _search_mode_0 : _search_mode_1 ).getSelectedItem();
+    }
+
+    /** Selects the field whose backing NDF equals {@code ndf} (or the "Any text" field when {@code ndf} is null),
+     *  without firing a search (guarded), so a test can set field + text + then call search0()/search1() itself. */
+    void setSearchFieldForTest(final boolean box_a, final PhylogenyMethods.NDF ndf) {
+        final JComboBox<SearchField> combo = box_a ? _search_field_0 : _search_field_1;
+        _search_controls_adjusting = true;
+        try {
+            for ( int i = 0; i < combo.getItemCount(); i++ ) {
+                final SearchField f = combo.getItemAt( i );
+                final boolean match = ( ndf == null ) ? ( f.kind() == SearchField.Kind.ANY_TEXT ) : ( f.ndf() == ndf );
+                if ( match ) {
+                    combo.setSelectedIndex( i );
+                    return;
+                }
             }
         }
-        return kept;
+        finally {
+            _search_controls_adjusting = false;
+        }
+    }
+
+    void setSearchModeForTest(final boolean box_a, final SearchMode mode) {
+        _search_controls_adjusting = true;
+        try {
+            ( box_a ? _search_mode_0 : _search_mode_1 ).setSelectedItem( mode );
+        }
+        finally {
+            _search_controls_adjusting = false;
+        }
+    }
+
+    void setSearchCaseSensitiveForTest(final boolean b) {
+        _search_case_sensitive_cb.setSelected( b );
+    }
+
+    void setSearchInverseForTest(final boolean b) {
+        _search_inverse_cb.setSelected( b );
     }
 
     private JPanel searchOptionsRow(final JCheckBox a, final JCheckBox b) {
@@ -2586,29 +2591,16 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     /**
-     * Pushes the search-option checkboxes into {@link Options} (which search0()/search1() read), then
-     * re-runs BOTH searches and repaints so the changed options are reflected immediately. "Regex" is
-     * mutually exclusive with "Match Case"/"Words", as in the old menu.
+     * Pushes the two shared search modifiers (Match Case, Inverse) into {@link Options}, then re-runs BOTH
+     * searches and repaints so the change is reflected immediately (the old menu got the repaint for free when
+     * it closed). The field/mode selectors are per-box and re-run only their own box from their own listeners.
      */
-    private void searchOptionChanged(final JCheckBox source) {
-        if ((source == _search_regex_cb) && _search_regex_cb.isSelected()) {
-            _search_case_sensitive_cb.setSelected(false);
-            _search_whole_words_only_cb.setSelected(false);
-        } else if (((source == _search_case_sensitive_cb) || (source == _search_whole_words_only_cb))
-                && source.isSelected()) {
-            _search_regex_cb.setSelected(false);
-        }
+    private void searchOptionChanged() {
         final Options o = getOptions();
         o.setSearchCaseSensitive(_search_case_sensitive_cb.isSelected());
-        o.setMatchWholeTermsOnly(_search_whole_words_only_cb.isSelected());
-        o.setSearchWithRegex(_search_regex_cb.isSelected());
         o.setInverseSearchResult(_search_inverse_cb.isSelected());
-        o.setSearchProperties(_search_properties_cb.isSelected());
         search0();
         search1();
-        // re-run alone only updates the found-node sets and count labels; repaint so the tree's
-        // highlighting reflects the new options right away (the old menu got this for free when the
-        // menu closed and repainted the canvas).
         displayedPhylogenyMightHaveChanged(true);
     }
 
@@ -2721,6 +2713,10 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
         add(search_label);
         search_label.setToolTipText(SEARCH_TIP_TEXT);
+        _search_field_0 = makeSearchFieldCombo(true);
+        _search_mode_0 = makeSearchModeCombo(true);
+        add(_search_field_0);
+        add(_search_mode_0);
         _search_found_label_0 = new JLabel();
         getSearchFoundCountsLabel0().setVisible(false);
         _search_found_label_0.setFont(ControlPanel.jcb_bold_font);
@@ -2783,6 +2779,10 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
         add(search_label);
         search_label.setToolTipText(SEARCH_TIP_TEXT);
+        _search_field_1 = makeSearchFieldCombo(false);
+        _search_mode_1 = makeSearchModeCombo(false);
+        add(_search_field_1);
+        add(_search_mode_1);
         _search_found_label_1 = new JLabel();
         getSearchFoundCountsLabel1().setVisible(false);
         _search_found_label_1.setFont(ControlPanel.jcb_bold_font);
