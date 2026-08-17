@@ -1,4 +1,4 @@
-re="(.+)_mafft_1000_l\.fasta$"
+re="(.+)_mafft.fasta$"
 
 MSA_PRO="/Users/czmasek/IdeaProjects/forester/forester/ruby/evoruby/exe/msa_pro.rb"
 
@@ -19,7 +19,7 @@ for i in $indir/*; do
     if [[ $i =~ $re ]]; then
       name=${BASH_REMATCH[1]}
       echo $name
-      ruby $MSA_PRO -i=f -o=p -d -c $i ${name}_mafft_1000_l
+      ruby $MSA_PRO -i=f -o=p -d -c -rr=0.5 $i ${name}_mafft_05
       rc=$?
       if [[ $rc != 0 ]]; then
         exit $rc

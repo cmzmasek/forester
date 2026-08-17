@@ -1,5 +1,5 @@
-re="(.+)_ni\.fasta$"
-#re="(.+)\.fasta$"
+#re="(.+)_ni\.fasta$"
+re="(.+)\.fasta$"
 MAFFT="/Users/czmasek/anaconda3/bin/mafft"
 
 if [ "$#" -ne 1 ]; then
@@ -23,7 +23,8 @@ for i in $indir/*; do
       count=$(grep -c '>' $i)
       echo $count
       if [ $count -gt $cutoff ]; then
-        $MAFFT --maxiterate 1000 --localpair --thread 8 $i >${name}_mafft_1000_l.fasta
+        #$MAFFT --auto --thread -1 $i >${name}_mafft.fasta
+        $MAFFT --maxiterate 1000 --localpair --thread -1 $i >${name}_mafft.fasta
         rc=$?
         if [[ $rc != 0 ]]; then
           exit $rc
