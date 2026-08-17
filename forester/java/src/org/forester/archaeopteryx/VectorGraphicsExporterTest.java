@@ -111,21 +111,27 @@ public final class VectorGraphicsExporterTest {
                 return fail( "eps: bounding-box width " + bbox_w + " pt should be ~300 (1 px -> 1 pt)" );
             }
 
-            // ---- EPS content must FIT the page: the drawing commands, after the EPS mm->pt page
-            // scale, must stay within the bounding box. Regression guard for the "too zoomed in" bug --
-            // the pixel-valued commands used to be ~2.83x too big for the mm-sized page, so only a
-            // top-left corner of the figure appeared in the file. Draw to the far corner so BOTH axes
-            // overflow if the px->mm pre-scale is dropped. ----
+            // ---- EPS content must FIT the page. Regression guard for the "too zoomed in" bug: the
+            // pixel-valued commands used to be ~2.83x too big for the mm-sized page, so only a top-left
+            // corner of the figure appeared. The fix makes the NET CTM scale (VG2D's mm->pt page scale
+            // composed with our px->mm pre-scale) exactly 1.0 -- a pixel coordinate then lands at the same
+            // number of points, and since the page is sized to the pixel dimensions in points (the bbox
+            // check above), EVERY drawn coordinate stays within the page, regardless of glyph shape. Assert
+            // that invariant (the robust guarantee), plus a concrete "the corner content lands on the page"
+            // check. A line-only painter keeps exactly the two expected scale operators (no per-glyph
+            // scales), so the net-scale product is unambiguous. Without the pre-scale the net scale is ~2.83
+            // and the figure overflows. ----
             final int fw = 400;
             final int fh = 200;
             final String eps_fit = new String( VectorGraphicsExporter.render( fw, fh, Format.EPS, true, g -> {
                 g.setColor( Color.BLACK );
-                g.drawLine( 0, 0, fw - 1, fh - 1 );
-                // mid-page text so glyph outlines are part of the fit check: the px->mm pre-scale also
-                // scales text, and mid-page glyphs would land at ~2.83x (past the page edge) if it regressed.
-                g.setFont( new Font( "SansSerif", Font.PLAIN, 12 ) );
-                g.drawString( "FIT", fw / 2, fh / 2 );
+                g.drawLine( 0, 0, fw - 1, fh - 1 ); // reaches the far corner
             } ), StandardCharsets.ISO_8859_1 );
+            final double net_scale = epsCumulativeScale( eps_fit );
+            if ( Math.abs( net_scale - 1.0 ) > 0.01 ) {
+                return fail( "eps: net CTM scale should be ~1.0 (px->pt identity) so the whole figure fits; got "
+                        + net_scale + " (the drawing would be that many times too big for the page)" );
+            }
             final double[] max_pt = epsMaxContentPoint( eps_fit );
             if ( ( max_pt[ 0 ] > ( fw + 2 ) ) || ( max_pt[ 1 ] > ( fh + 2 ) ) ) {
                 return fail( "eps: drawing overflows the page (content " + Math.round( max_pt[ 0 ] ) + "x"
@@ -222,22 +228,31 @@ public final class VectorGraphicsExporterTest {
     }
 
     /**
-     * The furthest drawing-command coordinate, in PostScript points: {@code max|M/L coord| * cumulative
-     * page scale}, per axis. VectorGraphics2D emits the drawing in one user space and the EPS processor
-     * prepends the mm-&gt;pt page scale (and our px-&gt;mm pre-scale) as {@code scale} operators; multiplying
-     * the raw command coordinate by their product gives where it actually lands on the page. The x and y
-     * scale factors are accumulated independently (the page scale's y is negative for the y-flip), so this
-     * stays correct even if a scale op ever differs between axes.
+     * The net CTM scale VectorGraphics2D applies to drawing coordinates = the product of the |x| factors of
+     * every {@code scale} operator. VG2D's EPS processor prepends the mm-&gt;pt page scale and (post-fix) our
+     * px-&gt;mm pre-scale; their product is ~1.0 by design, so a pixel coordinate lands at the same number of
+     * points. Callers should use a line-only render (no per-glyph {@code scale} ops) so the product is exactly
+     * the page+pre scales. The x factor suffices -- the two scales are uniform (|x| == |y|).
      */
-    private static double[] epsMaxContentPoint( final String eps ) {
-        double scale_x = 1;
-        double scale_y = 1;
+    private static double epsCumulativeScale( final String eps ) {
+        double scale = 1;
         final java.util.regex.Matcher sc = java.util.regex.Pattern.compile( "([-0-9.]+)\\s+([-0-9.]+)\\s+scale" )
                 .matcher( eps );
         while ( sc.find() ) {
-            scale_x *= Math.abs( Double.parseDouble( sc.group( 1 ) ) );
-            scale_y *= Math.abs( Double.parseDouble( sc.group( 2 ) ) );
+            scale *= Math.abs( Double.parseDouble( sc.group( 1 ) ) );
         }
+        return scale;
+    }
+
+    /**
+     * The furthest drawing-command coordinate, in PostScript points: {@code max|M/L coord| * net scale}
+     * (see {@link #epsCumulativeScale}), per axis. Multiplying the raw command coordinate by the net scale
+     * gives where it actually lands on the page. Intended for a line-only render, whose extent is straight
+     * moveto/lineto (M/L); it is not a full path parser (it ignores curveto control points), so the
+     * page-fit guarantee for arbitrary glyphs rests on the net-scale-1.0 invariant, not on this scan.
+     */
+    private static double[] epsMaxContentPoint( final String eps ) {
+        final double scale = epsCumulativeScale( eps );
         double max_x = 0;
         double max_y = 0;
         // M and L are this EPS's aliases for moveto/lineto (see the prologue "/M /moveto load def").
@@ -247,7 +262,7 @@ public final class VectorGraphicsExporterTest {
             max_x = Math.max( max_x, Math.abs( Double.parseDouble( cmd.group( 1 ) ) ) );
             max_y = Math.max( max_y, Math.abs( Double.parseDouble( cmd.group( 2 ) ) ) );
         }
-        return new double[] { max_x * scale_x, max_y * scale_y };
+        return new double[] { max_x * scale, max_y * scale };
     }
 
     private static int epsBoundingBoxWidth( final String eps ) {

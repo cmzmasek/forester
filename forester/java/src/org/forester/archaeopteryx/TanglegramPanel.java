@@ -202,6 +202,24 @@ final class TanglegramPanel extends JPanel implements Scrollable {
         addMouseMotionListener( mouse );
     }
 
+    /**
+     * Sets the on-screen background and ink to a tree panel's colour scheme, so a tanglegram window matches the
+     * regular tree canvas (white/black in the light theme, dark grey/white in dark) instead of the default panel
+     * grey. The renderer derives every muted/blend colour from {@link #getBackground()}/{@link #getForeground()},
+     * so setting both keeps the whole tanglegram consistent with the tree in either theme. Null args are ignored
+     * (keep the current colour). This is a snapshot at creation -- an open tanglegram does not re-theme if the
+     * main window's theme is later toggled (its trees are copies too). Export always forces its own black-on-white.
+     */
+    void applyThemeColors( final Color background, final Color foreground ) {
+        if ( background != null ) {
+            setBackground( background );
+        }
+        if ( foreground != null ) {
+            setForeground( foreground );
+        }
+        repaint();
+    }
+
     TanglegramLinker.Result getResult() {
         return _result;
     }

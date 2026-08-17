@@ -824,7 +824,14 @@ public final class MainFrameApplication extends MainFrame {
             return;
         }
         final TanglegramLinker.LinkField field = fields[link_field.getSelectedIndex()];
-        new TanglegramFrame(phy_a, phy_b, field, names[index_a], names[index_b]).setVisible(true);
+        final TanglegramFrame frame = new TanglegramFrame(phy_a, phy_b, field, names[index_a], names[index_b]);
+        // give the tanglegram the tree canvas's colours (white/black in light, dark grey/white in dark) so it
+        // matches the regular tree panels instead of the default (slightly darker) panel grey
+        final TreeColorSet colorset = getMainPanel().getTreeColorSet();
+        if (colorset != null) {
+            frame.getTanglegramPanel().applyThemeColors(colorset.getBackgroundColor(), colorset.getBranchColor());
+        }
+        frame.setVisible(true);
     }
 
     /**

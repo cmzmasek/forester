@@ -56,13 +56,55 @@ public final class TanglegramPanelRenderTest {
 
     public static boolean test() {
         // constructing / rotating a panel does not paint, so those checks are headless-safe; only renderOk / hitTestOk paint
-        if ( !countsOk() || !labelFallbackOk() || !rotationOk() || !autoUntangleOk() || !colorModesOk() ) {
+        if ( !countsOk() || !labelFallbackOk() || !rotationOk() || !autoUntangleOk() || !colorModesOk()
+                || !themeColorsOk() ) {
             return false;
         }
         if ( GraphicsEnvironment.isHeadless() ) {
             return true;
         }
-        return renderOk() && hitTestOk() && colorRenderOk() && panOk();
+        return renderOk() && hitTestOk() && colorRenderOk() && panOk() && themeBackgroundRendersOk();
+    }
+
+    /** applyThemeColors sets the panel's background + ink (matching the tree canvas) and ignores null args. */
+    private static boolean themeColorsOk() {
+        final TanglegramPanel panel = new TanglegramPanel( balancedABCD(), balancedABCD(), LinkField.NODE_NAME );
+        panel.applyThemeColors( Color.WHITE, Color.BLACK );
+        if ( !Color.WHITE.equals( panel.getBackground() ) || !Color.BLACK.equals( panel.getForeground() ) ) {
+            return fail( "applyThemeColors should set the panel background/foreground" );
+        }
+        // a null keeps the current colour (must not clear it)
+        panel.applyThemeColors( null, null );
+        if ( !Color.WHITE.equals( panel.getBackground() ) || !Color.BLACK.equals( panel.getForeground() ) ) {
+            return fail( "applyThemeColors(null,null) must not change the colours" );
+        }
+        return true;
+    }
+
+    /** The applied theme background must actually FILL the opaque panel (so a light-mode tanglegram is white, not
+     *  the default panel grey) -- render with a distinctive background and sample a margin pixel. */
+    private static boolean themeBackgroundRendersOk() {
+        final TanglegramPanel panel = new TanglegramPanel( balancedABCD(), balancedABCD(), LinkField.NODE_NAME );
+        final Color bg = new Color( 201, 211, 221 ); // distinctive, not white/black/red so it can't be tree ink
+        panel.applyThemeColors( bg, Color.BLACK );
+        panel.setFont( new Font( "SansSerif", Font.PLAIN, 12 ) );
+        final int w = 400;
+        final int h = 200;
+        panel.setSize( w, h );
+        final BufferedImage img = new BufferedImage( w, h, BufferedImage.TYPE_INT_RGB );
+        final Graphics2D g = img.createGraphics();
+        try {
+            panel.printAll( g );
+        }
+        finally {
+            g.dispose();
+        }
+        final int corner = img.getRGB( 1, 1 ) & 0xFFFFFF;
+        if ( corner != ( bg.getRGB() & 0xFFFFFF ) ) {
+            return fail( "the panel background should fill the canvas; corner=#" + Integer.toHexString( corner )
+                    + " expected #" + Integer.toHexString( bg.getRGB() & 0xFFFFFF ) );
+        }
+        return true;
     }
 
     private static boolean panOk() {
