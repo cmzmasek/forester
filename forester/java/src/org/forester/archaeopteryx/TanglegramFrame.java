@@ -34,6 +34,7 @@ import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Box;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -65,20 +66,29 @@ final class TanglegramFrame extends JFrame {
     private final JLabel          _summary         = new JLabel();
     private final JButton         _undo_button     = new JButton( "Undo" );
     private final JButton         _redo_button     = new JButton( "Redo" );
+    private final JCheckBox       _phylogram_cb    = new JCheckBox( "Branch lengths" );
     private JComboBox<String>     _color_selector;
 
     TanglegramFrame( final Phylogeny left, final Phylogeny right, final TanglegramLinker.LinkField field,
                      final String left_name, final String right_name ) {
-        this( left, right, field, field, left_name, right_name );
+        this( left, right, field, field, null, left_name, right_name );
     }
 
     /** Link the two trees on possibly-DIFFERENT fields holding the same value (see {@link TanglegramLinker#link}). */
     TanglegramFrame( final Phylogeny left, final Phylogeny right, final TanglegramLinker.LinkField left_field,
                      final TanglegramLinker.LinkField right_field, final String left_name, final String right_name ) {
+        this( left, right, left_field, right_field, null, left_name, right_name );
+    }
+
+    /** Link the two trees through an external association table (different names per tree; see
+     *  {@link TanglegramLinker#linkByAssociation}); a null {@code associations} falls back to the value join. */
+    TanglegramFrame( final Phylogeny left, final Phylogeny right, final TanglegramLinker.LinkField left_field,
+                     final TanglegramLinker.LinkField right_field, final Map<String, List<String>> associations,
+                     final String left_name, final String right_name ) {
         super( "Tanglegram: " + left_name + "  ↔  " + right_name );
         _left_name = left_name;
         _right_name = right_name;
-        _panel = new TanglegramPanel( left, right, left_field, right_field );
+        _panel = new TanglegramPanel( left, right, left_field, right_field, associations );
         _panel.setChangeListener( this::refresh );
         final JScrollPane scroll = new JScrollPane( _panel );
         scroll.getViewport().setScrollMode( JViewport.SIMPLE_SCROLL_MODE );
@@ -126,6 +136,14 @@ final class TanglegramFrame extends JFrame {
         _color_selector.setSelectedIndex( index );
     }
 
+    boolean isPhylogramCheckboxEnabledForTest() {
+        return _phylogram_cb.isEnabled();
+    }
+
+    void clickPhylogramForTest() {
+        _phylogram_cb.doClick();
+    }
+
     private JToolBar buildToolbar() {
         final JToolBar bar = new JToolBar();
         bar.setFloatable( false );
@@ -142,6 +160,12 @@ final class TanglegramFrame extends JFrame {
         zoom_in.addActionListener( e -> _panel.zoomIn() );
         zoom_out.addActionListener( e -> _panel.zoomOut() );
         fit.addActionListener( e -> _panel.fit() );
+        // aligned-phylogram toggle: only meaningful when a tree carries branch lengths, else greyed out
+        _phylogram_cb.setToolTipText( _panel.hasBranchLengths()
+                ? "Draw the branches to scale (aligned phylogram) instead of a lined-up cladogram"
+                : "No branch lengths in these trees -- a cladogram is the only option" );
+        _phylogram_cb.setEnabled( _panel.hasBranchLengths() );
+        _phylogram_cb.addActionListener( e -> _panel.setPhylogram( _phylogram_cb.isSelected() ) );
         final JButton export = new JButton( "Export..." );
         export.setToolTipText( "Export the tanglegram figure as PDF, SVG, EPS, or PNG" );
         export.addActionListener( e -> exportFigure() );
@@ -153,6 +177,7 @@ final class TanglegramFrame extends JFrame {
         bar.add( zoom_in );
         bar.add( zoom_out );
         bar.add( fit );
+        bar.add( _phylogram_cb );
         bar.add( export );
         bar.addSeparator();
         bar.add( new JLabel( "Colour: " ) );
@@ -260,15 +285,18 @@ final class TanglegramFrame extends JFrame {
 
     private String summary() {
         return "Link: " + linkDescription() + "   •   " + _panel.getResult().getLinks().size()
-                + " connectors, " + _panel.getCrossingCount() + " crossings   •   " + _left_name + " ("
-                + _panel.getLeftTipCount() + " tips) ↔ " + _right_name + " (" + _panel.getRightTipCount()
+                + " connectors, " + _panel.getCrossingCount() + " crossings (entanglement "
+                + String.format( java.util.Locale.ROOT, "%.2f", _panel.getEntanglement() ) + ")   •   " + _left_name
+                + " (" + _panel.getLeftTipCount() + " tips) ↔ " + _right_name + " (" + _panel.getRightTipCount()
                 + " tips)   •   " + _panel.getUnmatchedCount() + " unmatched";
     }
 
-    /** One field label when both trees link on the same field, else "leftLabel ↔ rightLabel". */
+    /** One field label when both trees link on the same field, else "leftLabel ↔ rightLabel"; notes an association
+     *  file when the trees were linked through a mapping table rather than by equal value. */
     private String linkDescription() {
         final TanglegramLinker.LinkField left = _panel.getLeftField();
         final TanglegramLinker.LinkField right = _panel.getRightField();
-        return ( left == right ) ? left.label() : ( left.label() + " ↔ " + right.label() );
+        final String fields = ( left == right ) ? left.label() : ( left.label() + " ↔ " + right.label() );
+        return _panel.isAssociationLinked() ? ( fields + " via association file" ) : fields;
     }
 }

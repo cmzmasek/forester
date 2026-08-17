@@ -754,6 +754,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Tanglegram association: ");
+        if (org.forester.archaeopteryx.TanglegramAssociationTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Tanglegram panel (render): ");
         if (org.forester.archaeopteryx.TanglegramPanelRenderTest.test()) {
             System.out.println("OK.");

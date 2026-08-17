@@ -11,7 +11,7 @@
         <branch_length>0.04</branch_length>
         <clade>
           <name>Homo sapiens</name>
-          <branch_length>0.02</branch_length>
+          <branch_length>0.06</branch_length>
           <taxonomy>
             <scientific_name>Homo sapiens</scientific_name>
             <rank>species</rank>
@@ -32,7 +32,7 @@
         <branch_length>0.04</branch_length>
         <clade>
           <name>Mus musculus</name>
-          <branch_length>0.02</branch_length>
+          <branch_length>0.04</branch_length>
           <taxonomy>
             <scientific_name>Mus musculus</scientific_name>
             <rank>species</rank>
@@ -41,7 +41,7 @@
         </clade>
         <clade>
           <name>Rattus norvegicus</name>
-          <branch_length>0.02</branch_length>
+          <branch_length>0.03</branch_length>
           <taxonomy>
             <scientific_name>Rattus norvegicus</scientific_name>
             <rank>species</rank>
@@ -56,7 +56,7 @@
         <branch_length>0.04</branch_length>
         <clade>
           <name>Felis catus</name>
-          <branch_length>0.02</branch_length>
+          <branch_length>0.03</branch_length>
           <taxonomy>
             <scientific_name>Felis catus</scientific_name>
             <rank>species</rank>
@@ -65,7 +65,7 @@
         </clade>
         <clade>
           <name>Canis lupus</name>
-          <branch_length>0.02</branch_length>
+          <branch_length>0.05</branch_length>
           <taxonomy>
             <scientific_name>Canis lupus</scientific_name>
             <rank>species</rank>
@@ -77,7 +77,7 @@
         <branch_length>0.04</branch_length>
         <clade>
           <name>Gallus gallus</name>
-          <branch_length>0.02</branch_length>
+          <branch_length>0.01</branch_length>
           <taxonomy>
             <scientific_name>Gallus gallus</scientific_name>
             <rank>species</rank>
@@ -86,7 +86,7 @@
         </clade>
         <clade>
           <name>Danio rerio</name>
-          <branch_length>0.02</branch_length>
+          <branch_length>0.01</branch_length>
           <taxonomy>
             <scientific_name>Danio rerio</scientific_name>
             <rank>species</rank>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" rerootable="true">
+  <name>Tanglegram parasite tree (chewing lice)</name>
+  <description>A PARASITE tree (chewing lice) for Analysis &gt; Create Tanglegram, the companion of &apos;tanglegram-host-tree.xml&apos;. Its tips are louse names, unrelated to the host names, so the trees are linked through &apos;tanglegram-association.tsv&apos; (host&lt;TAB&gt;louse), not by value. See the host-tree description for the steps.</description>
+  <clade>
+    <branch_length>0.0</branch_length>
+    <clade>
+      <branch_length>0.05</branch_length>
+      <clade>
+        <name>Geomydoecus_actuosi</name>
+        <branch_length>0.02</branch_length>
+      </clade>
+      <clade>
+        <name>Geomydoecus_thomomyus</name>
+        <branch_length>0.02</branch_length>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.05</branch_length>
+      <clade>
+        <branch_length>0.04</branch_length>
+        <clade>
+          <name>Geomydoecus_panamensis</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+        <clade>
+          <name>Geomydoecus_trichopi</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>0.04</branch_length>
+        <clade>
+          <name>Geomydoecus_ewingi</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+        <clade>
+          <name>Geomydoecus_perotensis</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+      </clade>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>

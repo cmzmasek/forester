@@ -83,6 +83,9 @@ public final class DemoTreeGenerator {
         write( dir, "tanglegram-tree-b.xml", tanglegramTreeB() );
         write( dir, "tanglegram-gene-tree.xml", tanglegramGeneTree() );
         write( dir, "tanglegram-species-tree.xml", tanglegramSpeciesTree() );
+        write( dir, "tanglegram-host-tree.xml", tanglegramHostTree() );
+        write( dir, "tanglegram-parasite-tree.xml", tanglegramParasiteTree() );
+        writeText( dir, "tanglegram-association.tsv", tanglegramAssociationTsv() );
         System.out.println( "Wrote demo trees to " + dir.getAbsolutePath() );
     }
 
@@ -389,10 +392,13 @@ public final class DemoTreeGenerator {
     }
 
     /** A tanglegram tip: a species (name + taxonomy) plus a categorical 'clade' group, so a tanglegram's connectors
-     *  can be coloured by clade. */
+     *  can be coloured by clade. Its terminal branch length VARIES per species (deterministically, from the name) so
+     *  the pair is non-ultrametric -- the tanglegram window's "Branch lengths" (aligned-phylogram) toggle then draws
+     *  the branches to scale with dotted tip leaders, instead of a flat cladogram. */
     private static PhylogenyNode cladeTip( final String scientific_name, final String clade )
             throws PhyloXmlDataFormatException {
         final PhylogenyNode n = speciesTip( scientific_name );
+        n.setDistanceToParent( 0.01 + ( ( Math.abs( scientific_name.hashCode() ) % 7 ) * 0.01 ) ); // 0.01..0.07
         cat( n, "data:clade", clade );
         return n;
     }
@@ -443,6 +449,51 @@ public final class DemoTreeGenerator {
         final PhylogenyNode n = leaf( accession );
         taxon( n, scientific_name, "species" );
         return n;
+    }
+
+    // ----- "Create Tanglegram" with an ASSOCIATION FILE: a cophylogenetic HOST tree (pocket gophers) and PARASITE
+    //       tree (their chewing lice) whose tip names share NOTHING, linked through 'tanglegram-association.tsv'
+    //       (host<TAB>louse). No field value join can pair them -- this is the parasite-vs-host case. Open BOTH trees,
+    //       run Analysis > Create Tanglegram, link BOTH on Node Name, tick "Link by an association file" and choose
+    //       tanglegram-association.tsv. The two topologies differ (a host switch), so a few connectors cross.
+    private static Phylogeny tanglegramHostTree() {
+        final PhylogenyNode root = clade( 0,
+                                          clade( 0.05, leaf( "Thomomys_bottae" ), leaf( "Thomomys_talpoides" ) ),
+                                          clade( 0.05,
+                                                 clade( 0.04, leaf( "Geomys_bursarius" ),
+                                                        leaf( "Cratogeomys_merriami" ) ),
+                                                 clade( 0.04, leaf( "Orthogeomys_hispidus" ),
+                                                        leaf( "Zygogeomys_trichopus" ) ) ) );
+        return tree( root, "Tanglegram host tree (pocket gophers)",
+                     "A HOST tree (pocket gophers) for Analysis > Create Tanglegram, paired with "
+                             + "'tanglegram-parasite-tree.xml' (their chewing lice). The host and parasite tip names "
+                             + "share nothing, so they are linked through the two-column 'tanglegram-association.tsv' "
+                             + "(host<TAB>louse). Open BOTH trees, run Analysis > Create Tanglegram, link BOTH on "
+                             + "Node Name, tick \"Link by an association file\" and choose tanglegram-association.tsv. "
+                             + "The two topologies differ (a host switch), so some connectors cross." );
+    }
+
+    private static Phylogeny tanglegramParasiteTree() {
+        final PhylogenyNode root = clade( 0,
+                                          clade( 0.05, leaf( "Geomydoecus_actuosi" ), leaf( "Geomydoecus_thomomyus" ) ),
+                                          clade( 0.05,
+                                                 clade( 0.04, leaf( "Geomydoecus_panamensis" ),
+                                                        leaf( "Geomydoecus_trichopi" ) ),
+                                                 clade( 0.04, leaf( "Geomydoecus_ewingi" ),
+                                                        leaf( "Geomydoecus_perotensis" ) ) ) );
+        return tree( root, "Tanglegram parasite tree (chewing lice)",
+                     "A PARASITE tree (chewing lice) for Analysis > Create Tanglegram, the companion of "
+                             + "'tanglegram-host-tree.xml'. Its tips are louse names, unrelated to the host names, so "
+                             + "the trees are linked through 'tanglegram-association.tsv' (host<TAB>louse), not by "
+                             + "value. See the host-tree description for the steps." );
+    }
+
+    /** The two-column (host<TAB>louse) association table linking 'tanglegram-host-tree.xml' to
+     *  'tanglegram-parasite-tree.xml'. No header row: one association per line, tab-separated. */
+    private static String tanglegramAssociationTsv() {
+        return "Thomomys_bottae\tGeomydoecus_actuosi\n" + "Thomomys_talpoides\tGeomydoecus_thomomyus\n"
+                + "Geomys_bursarius\tGeomydoecus_ewingi\n" + "Cratogeomys_merriami\tGeomydoecus_perotensis\n"
+                + "Orthogeomys_hispidus\tGeomydoecus_panamensis\n" + "Zygogeomys_trichopus\tGeomydoecus_trichopi\n";
     }
 
     // ----- "Zebra Stripes": a wider (16-tip) tree with a categorical 'host' + numeric 'reads' per tip, so the faint

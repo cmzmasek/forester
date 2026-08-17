@@ -40,6 +40,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -48,6 +50,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
@@ -796,12 +799,12 @@ public final class MainFrameApplication extends MainFrame {
         final JComboBox<String> link_field_a = new JComboBox<>(field_labels);
         final JComboBox<String> link_field_b = new JComboBox<>(field_labels);
         final JPanel form = new JPanel(new java.awt.GridLayout(0, 2, 8, 6));
-        if (count > 2) {
-            form.add(new JLabel("First tree:"));
-            form.add(tree_a);
-            form.add(new JLabel("Second tree:"));
-            form.add(tree_b);
-        }
+        // always show the tree pickers: the association (and cross-field) linking is directional -- the FIRST tree
+        // supplies the association file's left column -- so the user must be able to choose/reorder which is first
+        form.add(new JLabel("First tree:"));
+        form.add(tree_a);
+        form.add(new JLabel("Second tree:"));
+        form.add(tree_b);
         // a link field PER tree, so two trees that store the same value in different fields can be linked
         // (e.g. a gene tree's "Taxonomy: Scientific Name" to a species tree's "Node Name"); leave them equal
         // for the usual same-field case
@@ -809,12 +812,58 @@ public final class MainFrameApplication extends MainFrame {
         form.add(link_field_a);
         form.add(new JLabel("Link second tree by:"));
         form.add(link_field_b);
+        // OPTIONAL association table: link tips whose VALUES differ on the two trees (parasite-vs-host etc.) via a
+        // two-column CSV/TSV mapping the first tree's value to the second's. When off, tips join on equal value.
+        final JCheckBox use_assoc = new JCheckBox("Link by an association file (different names on each tree)");
+        final JButton choose_assoc = new JButton("Choose file...");
+        final JLabel assoc_label = new JLabel("(none)");
+        final TanglegramAssociation[] assoc_holder = new TanglegramAssociation[1];
+        choose_assoc.addActionListener(ae -> {
+            final JFileChooser fc = new JFileChooser();
+            fc.setDialogTitle("Choose Association File (2-column CSV/TSV: first-tree value, second-tree value)");
+            if (getCurrentDir(DirectoryPreferences.Category.OPEN) != null) { // reopen where the user last read files
+                fc.setCurrentDirectory(getCurrentDir(DirectoryPreferences.Category.OPEN));
+            }
+            if (fc.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
+                return;
+            }
+            setCurrentDir(DirectoryPreferences.Category.OPEN, fc.getCurrentDirectory());
+            final File f = fc.getSelectedFile();
+            try {
+                final TanglegramAssociation a = TanglegramAssociation
+                        .parse(new String(Files.readAllBytes(f.toPath()), StandardCharsets.UTF_8));
+                if (a.pairCount() == 0) {
+                    clearAssociationChoice(assoc_holder, assoc_label, use_assoc); // don't leave a stale prior file
+                    JOptionPane.showMessageDialog(this, "No usable associations in " + f.getName()
+                            + " (expected two columns: first-tree value, second-tree value).", "Association File",
+                            JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                assoc_holder[0] = a;
+                assoc_label.setText(f.getName() + "  (" + a.pairCount() + " pairs)");
+                use_assoc.setSelected(true);
+            }
+            catch (final Exception ex) {
+                clearAssociationChoice(assoc_holder, assoc_label, use_assoc); // a failed re-pick must not keep the old file
+                JOptionPane.showMessageDialog(this, "Could not read the association file: " + ex.getMessage(),
+                        "Association File", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        form.add(use_assoc);
+        form.add(choose_assoc);
+        form.add(new JLabel("Association file:"));
+        form.add(assoc_label);
         final int choice = JOptionPane.showConfirmDialog(this, form, "Create Tanglegram",
                 JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
         if (choice != JOptionPane.OK_OPTION) {
             return;
         }
-        final int[] indices = tanglegramTreeIndices(count, tree_a.getSelectedIndex(), tree_b.getSelectedIndex());
+        if (use_assoc.isSelected() && (assoc_holder[0] == null)) {
+            JOptionPane.showMessageDialog(this, "Choose an association file, or uncheck \"Link by an association file\".",
+                    "Create Tanglegram", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        final int[] indices = tanglegramTreeIndices(tree_a.getSelectedIndex(), tree_b.getSelectedIndex());
         if (indices == null) {
             JOptionPane.showMessageDialog(this, "Please choose two different trees.", "Create Tanglegram",
                     JOptionPane.WARNING_MESSAGE);
@@ -831,7 +880,9 @@ public final class MainFrameApplication extends MainFrame {
         }
         final TanglegramLinker.LinkField field_a = fields[link_field_a.getSelectedIndex()];
         final TanglegramLinker.LinkField field_b = fields[link_field_b.getSelectedIndex()];
-        final TanglegramFrame frame = new TanglegramFrame(phy_a, phy_b, field_a, field_b, names[index_a],
+        final java.util.Map<String, List<String>> associations = (use_assoc.isSelected() && (assoc_holder[0] != null))
+                ? assoc_holder[0].leftToRight() : null;
+        final TanglegramFrame frame = new TanglegramFrame(phy_a, phy_b, field_a, field_b, associations, names[index_a],
                 names[index_b]);
         // give the tanglegram the tree canvas's colours (white/black in light, dark grey/white in dark) so it
         // matches the regular tree panels instead of the default (slightly darker) panel grey
@@ -843,14 +894,21 @@ public final class MainFrameApplication extends MainFrame {
     }
 
     /**
-     * Resolves the two tree indices for a tanglegram from the chooser selections. When only two trees are loaded the
-     * tree pickers are omitted, so trees 0 and 1 are used; otherwise the user's picks are used. Returns null when the
-     * two picks are the same tree (an invalid selection). Package-visible + static so it is unit-testable.
+     * Resolves the two tree indices for a tanglegram from the chooser selections (the FIRST is the association file's
+     * left column). Returns null when the two picks are the same tree (an invalid selection). Package-visible + static
+     * so it is unit-testable.
      */
-    static int[] tanglegramTreeIndices(final int tree_count, final int selected_a, final int selected_b) {
-        final int a = (tree_count > 2) ? selected_a : 0;
-        final int b = (tree_count > 2) ? selected_b : 1;
-        return (a == b) ? null : new int[] { a, b };
+    static int[] tanglegramTreeIndices(final int selected_a, final int selected_b) {
+        return (selected_a == selected_b) ? null : new int[] { selected_a, selected_b };
+    }
+
+    /** Resets a pending association-file choice (holder + label + checkbox) after a failed/empty pick, so an OK press
+     *  can't silently link with a previously chosen file. */
+    private static void clearAssociationChoice(final TanglegramAssociation[] holder, final JLabel label,
+                                               final JCheckBox checkbox) {
+        holder[0] = null;
+        label.setText("(none)");
+        checkbox.setSelected(false);
     }
 
     /** The input controls for the "Select Representative Tips" dialog, exposed so they can be unit-tested. */

@@ -23,9 +23,11 @@ package org.forester.archaeopteryx;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
@@ -207,6 +209,62 @@ final class TanglegramLinker {
         return new Result( links, unmatched_a, unmatched_b, left_field, right_field );
     }
 
+    /**
+     * Pair tips through an external ASSOCIATION table, for two trees whose linking tips carry DIFFERENT names/values
+     * (the classic parasite-vs-host or gene-vs-species-with-different-ids case that a value join cannot handle). A
+     * left tip {@code a} is linked to a right tip {@code b} when {@code associations} maps {@code left_field.keyFor(a)}
+     * to a key equal to {@code right_field.keyFor(b)}. The mapping is many:many (a left key may list several right
+     * keys, and several left keys may share a right key), so every implied cross pair is drawn. A tip is reported
+     * unmatched when it takes part in no link. This is the general form of {@link #link}: an identity value join is
+     * just the association where every value maps to itself.
+     */
+    static Result linkByAssociation( final Phylogeny left, final Phylogeny right, final LinkField left_field,
+                                     final LinkField right_field, final Map<String, List<String>> associations ) {
+        final List<PhylogenyNode> left_tips = externalTipsInDisplayOrder( left );
+        final List<PhylogenyNode> right_tips = externalTipsInDisplayOrder( right );
+        final Map<String, List<PhylogenyNode>> right_by_key = keyIndex( right_tips, right_field );
+        final List<Link> links = new ArrayList<>();
+        final Set<PhylogenyNode> matched_a = newIdentitySet();
+        final Set<PhylogenyNode> matched_b = newIdentitySet();
+        for( final PhylogenyNode a : left_tips ) {
+            final String key = left_field.keyFor( a );
+            if ( key.isEmpty() ) {
+                continue;
+            }
+            final List<String> right_keys = associations.get( key );
+            if ( right_keys == null ) {
+                continue;
+            }
+            for( final String right_key : right_keys ) {
+                final List<PhylogenyNode> matches = right_by_key.get( right_key );
+                if ( matches != null ) {
+                    for( final PhylogenyNode b : matches ) {
+                        links.add( new Link( a, b, key ) );
+                        matched_a.add( a );
+                        matched_b.add( b );
+                    }
+                }
+            }
+        }
+        final List<PhylogenyNode> unmatched_a = new ArrayList<>();
+        for( final PhylogenyNode a : left_tips ) {
+            if ( !matched_a.contains( a ) ) {
+                unmatched_a.add( a );
+            }
+        }
+        final List<PhylogenyNode> unmatched_b = new ArrayList<>();
+        for( final PhylogenyNode b : right_tips ) {
+            if ( !matched_b.contains( b ) ) {
+                unmatched_b.add( b );
+            }
+        }
+        return new Result( links, unmatched_a, unmatched_b, left_field, right_field );
+    }
+
+    private static Set<PhylogenyNode> newIdentitySet() {
+        return Collections.newSetFromMap( new IdentityHashMap<PhylogenyNode, Boolean>() );
+    }
+
     private static Map<String, List<PhylogenyNode>> keyIndex( final List<PhylogenyNode> tips, final LinkField field ) {
         final Map<String, List<PhylogenyNode>> index = new LinkedHashMap<>();
         for( final PhylogenyNode tip : tips ) {
@@ -250,6 +308,22 @@ final class TanglegramLinker {
         }
         final long inversions = countInversions( right, new int[ n ], 0, n - 1 );
         return (int) Math.min( inversions, Integer.MAX_VALUE );
+    }
+
+    /**
+     * A size-normalised "entanglement" score in [0,1] for the current tip ordering: the connector-crossing (inversion)
+     * count divided by the maximum possible for that many connectors ({@code n*(n-1)/2}). 0 == perfectly concordant
+     * (fully untangled), 1 == maximally discordant. Unlike the raw crossing count this is comparable across
+     * tanglegrams of different sizes -- the standard way to report topological (dis)agreement. Returns 0 for fewer
+     * than two connectors (nothing can cross). The crossing count is an inversion count, which never exceeds
+     * {@code n*(n-1)/2}, so the result is always in range (the clamp is defensive).
+     */
+    static double entanglement( final int crossings, final int connector_count ) {
+        if ( connector_count < 2 ) {
+            return 0.0;
+        }
+        final long max = ( (long) connector_count * ( connector_count - 1 ) ) / 2L;
+        return ( max <= 0 ) ? 0.0 : Math.min( 1.0, crossings / (double) max );
     }
 
     /** Inversions in a[lo..hi] (pairs i&lt;j with a[i] &gt; a[j]) via a counting merge sort; sorts a[lo..hi] in place. */

@@ -24,6 +24,9 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
@@ -54,7 +57,88 @@ public final class TanglegramToolTest {
         if ( GraphicsEnvironment.isHeadless() ) {
             return true;
         }
-        return frameOk() && frameWiringOk() && colorSelectorOk() && crossFieldFrameOk();
+        return frameOk() && frameWiringOk() && colorSelectorOk() && crossFieldFrameOk() && associationFrameOk()
+                && phylogramToggleOk();
+    }
+
+    /** A frame built with an association table links differently-named host/parasite trees, marks the panel as
+     *  association-linked, and notes it in the summary; a value join over the same trees links nothing. */
+    private static boolean associationFrameOk() {
+        final Phylogeny hosts = tree( clade( leaf( "gopherA" ), leaf( "gopherB" ) ) );
+        final Phylogeny lice = tree( clade( leaf( "louseB" ), leaf( "louseA" ) ) ); // reversed -> a crossing
+        final Map<String, List<String>> assoc = new LinkedHashMap<>();
+        assoc.put( "gopherA", Arrays.asList( "louseA" ) );
+        assoc.put( "gopherB", Arrays.asList( "louseB" ) );
+        final TanglegramFrame frame = new TanglegramFrame( hosts, lice, LinkField.NODE_NAME, LinkField.NODE_NAME, assoc,
+                                                           "hosts", "lice" );
+        try {
+            final TanglegramPanel panel = frame.getTanglegramPanel();
+            if ( !panel.isAssociationLinked() ) {
+                return fail( "an association-linked panel should report isAssociationLinked()" );
+            }
+            if ( ( panel.getResult().getLinks().size() != 2 ) || ( panel.getUnmatchedCount() != 0 ) ) {
+                return fail( "the association frame should link both pairs (2 links, 0 unmatched), got "
+                        + panel.getResult().getLinks().size() + " links, " + panel.getUnmatchedCount() + " unmatched" );
+            }
+            if ( !frame.summaryTextForTest().contains( "via association file" ) ) {
+                return fail( "the summary should note the association file, was: " + frame.summaryTextForTest() );
+            }
+        }
+        finally {
+            frame.dispose();
+        }
+        // the whole point: a value join over the same (differently-named) trees links nothing
+        final TanglegramFrame plain = new TanglegramFrame( hosts, lice, LinkField.NODE_NAME, "hosts", "lice" );
+        try {
+            if ( !plain.getTanglegramPanel().getResult().getLinks().isEmpty() ) {
+                return fail( "a value join must not link the differently-named trees" );
+            }
+        }
+        finally {
+            plain.dispose();
+        }
+        return true;
+    }
+
+    /** The aligned-phylogram checkbox is enabled only when a tree has branch lengths, and toggling it drives the panel. */
+    private static boolean phylogramToggleOk() {
+        final TanglegramFrame frame = new TanglegramFrame( branchLengthTree(), branchLengthTree(), LinkField.NODE_NAME,
+                                                           "L", "R" );
+        try {
+            final TanglegramPanel panel = frame.getTanglegramPanel();
+            if ( !frame.isPhylogramCheckboxEnabledForTest() ) {
+                return fail( "the phylogram checkbox should be enabled when the trees have branch lengths" );
+            }
+            if ( panel.isPhylogram() ) {
+                return fail( "the phylogram should start off (cladogram by default)" );
+            }
+            frame.clickPhylogramForTest();
+            if ( !panel.isPhylogram() ) {
+                return fail( "clicking the phylogram checkbox should turn the phylogram on" );
+            }
+        }
+        finally {
+            frame.dispose();
+        }
+        // length-less trees -> the toggle is greyed out (a cladogram is the only option)
+        final TanglegramFrame no_bl = new TanglegramFrame( treeABC(), treeCBA(), LinkField.NODE_NAME, "L", "R" );
+        try {
+            if ( no_bl.isPhylogramCheckboxEnabledForTest() ) {
+                return fail( "the phylogram checkbox should be disabled when there are no branch lengths" );
+            }
+        }
+        finally {
+            no_bl.dispose();
+        }
+        return true;
+    }
+
+    private static Phylogeny branchLengthTree() {
+        final PhylogenyNode a = leaf( "A" );
+        a.setDistanceToParent( 1.0 );
+        final PhylogenyNode b = leaf( "B" );
+        b.setDistanceToParent( 2.0 );
+        return tree( clade( a, b ) );
     }
 
     /** A frame built with a DIFFERENT link field per tree links two trees that store the same value in different
@@ -134,16 +218,19 @@ public final class TanglegramToolTest {
     }
 
     private static boolean selectionLogicOk() {
-        // exactly two trees loaded -> pickers omitted -> always trees 0 and 1, regardless of the (unused) selections
-        if ( !Arrays.equals( new int[] { 0, 1 }, MainFrameApplication.tanglegramTreeIndices( 2, 1, 1 ) ) ) {
-            return fail( "two trees should always resolve to {0,1}" );
+        // the picks are honoured directly (the pickers are always shown so a directional association can be reordered)
+        if ( !Arrays.equals( new int[] { 0, 1 }, MainFrameApplication.tanglegramTreeIndices( 0, 1 ) ) ) {
+            return fail( "picks (0,1) should resolve to {0,1}" );
         }
-        // more than two -> honor the picks
-        if ( !Arrays.equals( new int[] { 2, 3 }, MainFrameApplication.tanglegramTreeIndices( 4, 2, 3 ) ) ) {
-            return fail( "four trees, picks (2,3) should resolve to {2,3}" );
+        // reversible: the first tree drives the association's left column, so (1,0) must be distinct from (0,1)
+        if ( !Arrays.equals( new int[] { 1, 0 }, MainFrameApplication.tanglegramTreeIndices( 1, 0 ) ) ) {
+            return fail( "picks (1,0) should resolve to {1,0} (order is meaningful for association linking)" );
+        }
+        if ( !Arrays.equals( new int[] { 2, 3 }, MainFrameApplication.tanglegramTreeIndices( 2, 3 ) ) ) {
+            return fail( "picks (2,3) should resolve to {2,3}" );
         }
         // same tree picked twice -> invalid
-        if ( MainFrameApplication.tanglegramTreeIndices( 4, 1, 1 ) != null ) {
+        if ( MainFrameApplication.tanglegramTreeIndices( 1, 1 ) != null ) {
             return fail( "the same tree picked twice should be rejected (null)" );
         }
         return true;

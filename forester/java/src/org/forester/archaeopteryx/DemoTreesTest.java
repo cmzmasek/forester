@@ -128,7 +128,45 @@ public final class DemoTreesTest {
         ok &= hasAtLeastTips( "tanglegram-gene-tree.xml", 8 );
         ok &= hasAtLeastTips( "tanglegram-species-tree.xml", 8 );
         ok &= tanglegramCrossFieldLinks( "tanglegram-gene-tree.xml", "tanglegram-species-tree.xml" );
+        // association tanglegram: a host tree + a parasite tree whose tip names share NOTHING, linked through a
+        // two-column mapping file -- so linkByAssociation fully connects them while a value join links nothing
+        ok &= hasAtLeastTips( "tanglegram-host-tree.xml", 6 );
+        ok &= hasAtLeastTips( "tanglegram-parasite-tree.xml", 6 );
+        ok &= tanglegramAssociationLinks( "tanglegram-host-tree.xml", "tanglegram-parasite-tree.xml",
+                                          "tanglegram-association.tsv" );
         return ok;
+    }
+
+    /** The host/parasite demo trees (whose tip names share nothing) fully link through the association file, and a
+     *  plain value join links nothing -- exactly the parasite-vs-host case the association feature exists for. */
+    private static boolean tanglegramAssociationLinks( final String host_file, final String parasite_file,
+                                                       final String assoc_file ) {
+        final Phylogeny hosts = load( host_file );
+        final Phylogeny lice = load( parasite_file );
+        if ( ( hosts == null ) || ( lice == null ) ) {
+            return false;
+        }
+        final java.util.Map<String, java.util.List<String>> assoc;
+        try {
+            assoc = TanglegramAssociation
+                    .parse( java.nio.file.Files.readString( new File( DEMO_DIR + assoc_file ).toPath() ) ).leftToRight();
+        }
+        catch ( final Exception e ) {
+            return note( "could not read association file " + assoc_file + ": " + e.getMessage() );
+        }
+        final TanglegramLinker.Result r = TanglegramLinker.linkByAssociation( hosts, lice,
+                                                                              TanglegramLinker.LinkField.NODE_NAME,
+                                                                              TanglegramLinker.LinkField.NODE_NAME,
+                                                                              assoc );
+        if ( ( r.getLinks().size() < 6 ) || !r.getUnmatchedA().isEmpty() || !r.getUnmatchedB().isEmpty() ) {
+            return note( host_file + "/" + parasite_file + " should fully link through " + assoc_file + "; found "
+                    + r.getLinks().size() + " links, " + r.getUnmatchedA().size() + "/" + r.getUnmatchedB().size()
+                    + " unmatched" );
+        }
+        if ( !TanglegramLinker.link( hosts, lice, TanglegramLinker.LinkField.NODE_NAME ).getLinks().isEmpty() ) {
+            return note( "the host/parasite tip names should NOT value-join (the point of the association demo)" );
+        }
+        return true;
     }
 
     /** The gene/species demo pair links only when a field is chosen PER tree (gene tree's scientific name to species

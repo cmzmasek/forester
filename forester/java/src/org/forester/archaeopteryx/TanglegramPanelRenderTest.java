@@ -57,7 +57,7 @@ public final class TanglegramPanelRenderTest {
     public static boolean test() {
         // constructing / rotating a panel does not paint, so those checks are headless-safe; only renderOk / hitTestOk paint
         if ( !countsOk() || !labelFallbackOk() || !rotationOk() || !autoUntangleOk() || !colorModesOk()
-                || !themeColorsOk() ) {
+                || !themeColorsOk() || !phylogramLayoutOk() ) {
             return false;
         }
         if ( GraphicsEnvironment.isHeadless() ) {
@@ -453,9 +453,60 @@ public final class TanglegramPanelRenderTest {
         return count;
     }
 
+    /** The aligned-phylogram toggle draws branches to scale: a shallow tip ends left of a deeper tip (varying x),
+     *  whereas the default cladogram lines every tip up at the common column (equal x). Headless-safe (renders into a
+     *  scratch raster to populate coords). */
+    private static boolean phylogramLayoutOk() {
+        final TanglegramPanel panel = new TanglegramPanel( unevenDepthTree(), unevenDepthTree(), LinkField.NODE_NAME );
+        if ( !panel.hasBranchLengths() ) {
+            return fail( "the branch-length fixture should report hasBranchLengths()" );
+        }
+        final int w = 600;
+        final int h = 300;
+        // cladogram (default): tips 0 (shallow A) and 2 (deep C) share the common column -> equal x
+        panel.renderForTest( w, h );
+        if ( Math.abs( panel.leftTipXForTest( 0 ) - panel.leftTipXForTest( 2 ) ) > 0.5f ) {
+            return fail( "cladogram tips should line up at the common column, got " + panel.leftTipXForTest( 0 )
+                    + " vs " + panel.leftTipXForTest( 2 ) );
+        }
+        // phylogram: the shallow tip (distance 2 of 3) ends left of the deep tip (distance 3, flush at the column)
+        panel.setPhylogram( true );
+        panel.renderForTest( w, h );
+        final float shallow = panel.leftTipXForTest( 0 );
+        final float deep = panel.leftTipXForTest( 2 );
+        if ( !( shallow < ( deep - 1f ) ) ) {
+            return fail( "phylogram: the shallow tip x (" + shallow + ") should be left of the deep tip x (" + deep
+                    + ")" );
+        }
+        return true;
+    }
+
     private static boolean fail( final String message ) {
         System.out.println( "TanglegramPanelRender test failed: " + message );
         return false;
+    }
+
+    /** ((A:1,B:1):1, C:3): tips A and B sit at distance 2 from the root, C at distance 3 -- so a phylogram layout
+     *  gives them different depths while a cladogram lines them all up. */
+    private static Phylogeny unevenDepthTree() {
+        final PhylogenyNode ab = cladeBL( 1.0, leafBL( "A", 1.0 ), leafBL( "B", 1.0 ) );
+        return tree( cladeBL( 0.0, ab, leafBL( "C", 3.0 ) ) );
+    }
+
+    private static PhylogenyNode leafBL( final String name, final double bl ) {
+        final PhylogenyNode n = new PhylogenyNode();
+        n.setName( name );
+        n.setDistanceToParent( bl );
+        return n;
+    }
+
+    private static PhylogenyNode cladeBL( final double bl, final PhylogenyNode... children ) {
+        final PhylogenyNode n = new PhylogenyNode();
+        n.setDistanceToParent( bl );
+        for( final PhylogenyNode child : children ) {
+            n.addAsChild( child );
+        }
+        return n;
     }
 
     private static Phylogeny treeABCD() {

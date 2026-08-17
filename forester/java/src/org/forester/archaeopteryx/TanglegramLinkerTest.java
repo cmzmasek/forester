@@ -21,7 +21,10 @@
 package org.forester.archaeopteryx;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import org.forester.archaeopteryx.TanglegramLinker.LinkField;
@@ -45,7 +48,55 @@ public final class TanglegramLinkerTest {
 
     public static boolean test() {
         return nodeNameMatchingOk() && manyToManyOk() && unmatchedOk() && scientificNameOk() && crossFieldLinkOk()
-                && crossingsOk() && crossingsMatchBruteForceOk() && crossingConnectorsOk();
+                && crossingsOk() && crossingsMatchBruteForceOk() && crossingConnectorsOk() && associationLinkOk()
+                && entanglementOk();
+    }
+
+    /** An external association table links tips whose names DIFFER on the two trees (parasite-vs-host), many:many,
+     *  reporting the unmapped tips -- and a plain value join links nothing there. */
+    private static boolean associationLinkOk() {
+        final Phylogeny hosts = tree( clade( leaf( "gopherA" ), leaf( "gopherB" ), leaf( "gopherC" ) ) );
+        final Phylogeny lice = tree( clade( leaf( "louseA" ), leaf( "louseB" ) ) );
+        final Map<String, List<String>> assoc = new LinkedHashMap<>();
+        assoc.put( "gopherA", Arrays.asList( "louseA", "louseB" ) ); // many:many -- one host, two lice
+        assoc.put( "gopherB", Arrays.asList( "louseB" ) );
+        // gopherC is unmapped
+        final Result r = TanglegramLinker.linkByAssociation( hosts, lice, LinkField.NODE_NAME, LinkField.NODE_NAME,
+                                                             assoc );
+        if ( r.getLinks().size() != 3 ) {
+            return fail( "association link should give 3 links (gopherA->louseA, gopherA->louseB, gopherB->louseB), got "
+                    + r.getLinks().size() );
+        }
+        if ( ( r.getUnmatchedA().size() != 1 ) || !r.getUnmatchedB().isEmpty() ) {
+            return fail( "expected exactly gopherC unmatched on the left and nothing on the right, got a="
+                    + r.getUnmatchedA().size() + " b=" + r.getUnmatchedB().size() );
+        }
+        if ( !"gopherC".equals( r.getUnmatchedA().get( 0 ).getName() ) ) {
+            return fail( "the unmapped host should be gopherC" );
+        }
+        // the whole point: these names share nothing, so a plain value join links NOTHING
+        if ( !TanglegramLinker.link( hosts, lice, LinkField.NODE_NAME ).getLinks().isEmpty() ) {
+            return fail( "a value join must not link the differently-named host/parasite trees" );
+        }
+        return true;
+    }
+
+    /** The size-normalised entanglement: 0 for <2 or concordant, 1 for fully reversed, and proportional between. */
+    private static boolean entanglementOk() {
+        if ( ( TanglegramLinker.entanglement( 0, 0 ) != 0.0 ) || ( TanglegramLinker.entanglement( 5, 1 ) != 0.0 ) ) {
+            return fail( "entanglement must be 0 for fewer than two connectors" );
+        }
+        if ( TanglegramLinker.entanglement( 0, 4 ) != 0.0 ) {
+            return fail( "concordant (0 crossings) must give entanglement 0" );
+        }
+        if ( TanglegramLinker.entanglement( 6, 4 ) != 1.0 ) {
+            return fail( "a fully reversed 4-connector layout (6 of 6 crossings) must give entanglement 1.0" );
+        }
+        if ( Math.abs( TanglegramLinker.entanglement( 3, 4 ) - 0.5 ) > 1e-9 ) {
+            return fail( "3 of a max 6 crossings must give entanglement 0.5, got "
+                    + TanglegramLinker.entanglement( 3, 4 ) );
+        }
+        return true;
     }
 
     /** Two trees that store the same value in DIFFERENT fields link when a field is chosen per tree (e.g. a gene

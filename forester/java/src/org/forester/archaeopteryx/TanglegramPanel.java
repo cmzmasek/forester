@@ -80,6 +80,9 @@ final class TanglegramPanel extends JPanel implements Scrollable {
     private static final int    PAN_THRESHOLD       = 4;   // a left-drag past this (px) pans instead of rotating
     // a theme-independent warning colour for crossing connectors (reads on both light and dark backgrounds)
     private static final Color  CROSSING_COLOR      = new Color( 220, 50, 50 );
+    // a thin dotted stroke for the aligned-phylogram tip->column leaders (matches the tree canvas's aligned look)
+    private static final Stroke LEADER_STROKE       = new BasicStroke( 0.8f, BasicStroke.CAP_BUTT,
+            BasicStroke.JOIN_MITER, 10f, new float[] { 2f, 2f }, 0f );
 
     /** How the connectors are coloured. */
     enum ConnectorColorMode {
@@ -116,19 +119,34 @@ final class TanglegramPanel extends JPanel implements Scrollable {
     private int                             _press_y;
     private boolean                         _being_dragged;
     private boolean                         _panned;
+    private boolean                         _association_linked; // linked via an external mapping table (vs value join)
+    private boolean                         _phylogram;      // draw branches to scale (aligned-phylogram look) if lengths
 
     TanglegramPanel( final Phylogeny left_source, final Phylogeny right_source, final TanglegramLinker.LinkField field ) {
-        this( left_source, right_source, field, field );
+        this( left_source, right_source, field, field, null );
     }
 
     /** Link the two trees on possibly-DIFFERENT fields holding the same value (see {@link TanglegramLinker#link}). */
     TanglegramPanel( final Phylogeny left_source, final Phylogeny right_source,
                      final TanglegramLinker.LinkField left_field, final TanglegramLinker.LinkField right_field ) {
+        this( left_source, right_source, left_field, right_field, null );
+    }
+
+    /**
+     * Link the two trees through an external ASSOCIATION table (see {@link TanglegramLinker#linkByAssociation}) for
+     * trees whose linking tips carry DIFFERENT names (parasite-vs-host, etc.). {@code associations} maps a left-tree
+     * key to its right-tree key(s); when null, the trees are linked by equal field VALUE (the ordinary join).
+     */
+    TanglegramPanel( final Phylogeny left_source, final Phylogeny right_source,
+                     final TanglegramLinker.LinkField left_field, final TanglegramLinker.LinkField right_field,
+                     final Map<String, List<String>> associations ) {
         _left = left_source.copy();
         _right = right_source.copy();
+        _association_linked = ( associations != null );
         _left_tips = TanglegramLinker.externalTipsInDisplayOrder( _left );
         _right_tips = TanglegramLinker.externalTipsInDisplayOrder( _right );
-        _result = TanglegramLinker.link( _left, _right, left_field, right_field );
+        _result = ( associations == null ) ? TanglegramLinker.link( _left, _right, left_field, right_field )
+                : TanglegramLinker.linkByAssociation( _left, _right, left_field, right_field, associations );
         _unmatched = Collections.newSetFromMap( new IdentityHashMap<PhylogenyNode, Boolean>() );
         _unmatched.addAll( _result.getUnmatchedA() );
         _unmatched.addAll( _result.getUnmatchedB() );
@@ -252,6 +270,40 @@ final class TanglegramPanel extends JPanel implements Scrollable {
 
     TanglegramLinker.LinkField getRightField() {
         return _result.getRightField();
+    }
+
+    /** Whether the two trees were linked through an external association table rather than by equal field value. */
+    boolean isAssociationLinked() {
+        return _association_linked;
+    }
+
+    /** The size-normalised entanglement of the current layout in [0,1] (0 = fully untangled). See
+     *  {@link TanglegramLinker#entanglement}. */
+    double getEntanglement() {
+        return TanglegramLinker.entanglement( _crossings, _result.getLinks().size() );
+    }
+
+    /** Whether EITHER tree carries branch lengths, i.e. whether the aligned-phylogram toggle can do anything. */
+    boolean hasBranchLengths() {
+        return ( PhylogenyMethods.calculateMaxDistanceToRoot( _left ) > 0 )
+                || ( PhylogenyMethods.calculateMaxDistanceToRoot( _right ) > 0 );
+    }
+
+    boolean isPhylogram() {
+        return _phylogram;
+    }
+
+    /** Toggles the aligned-phylogram look: each tree that has branch lengths draws its branches to scale (node x =
+     *  distance from root), with a dotted leader bridging each tip's branch end to the common tip/label column that
+     *  the connectors still attach to; a tree without branch lengths stays a lined-up cladogram. Display-only. */
+    void setPhylogram( final boolean phylogram ) {
+        if ( phylogram != _phylogram ) {
+            _phylogram = phylogram;
+            _laid_out_w = -1; // the depth (x) layout changes -> force a re-layout on the next paint
+            _laid_out_h = -1;
+            revalidate();
+            repaint();
+        }
     }
 
     /** Test hook: the label that would be drawn for the i-th left tip (exercises the identity-field fallback). */
@@ -426,6 +478,24 @@ final class TanglegramPanel extends JPanel implements Scrollable {
         rotate( _left.getRoot() );
     }
 
+    /** Test hook: lay the trees out at (w,h) into a throwaway raster so node coords can be inspected off-screen. */
+    void renderForTest( final int w, final int h ) {
+        final java.awt.image.BufferedImage img = new java.awt.image.BufferedImage( Math.max( 1, w ), Math.max( 1, h ),
+                                                                                   java.awt.image.BufferedImage.TYPE_INT_RGB );
+        final Graphics2D g2 = img.createGraphics();
+        try {
+            renderTanglegram( g2, w, h, false );
+        }
+        finally {
+            g2.dispose();
+        }
+    }
+
+    /** Test hook: the laid-out local x of the i-th left tip (flush at tree_w in cladogram; varies by depth in phylogram). */
+    float leftTipXForTest( final int i ) {
+        return _left_tips.get( i ).getXcoord();
+    }
+
     PhylogenyNode rotatableNodeAtForTest( final int mx, final int my ) {
         return rotatableNodeAt( mx, my );
     }
@@ -583,9 +653,17 @@ final class TanglegramPanel extends JPanel implements Scrollable {
         final double avail_h = h - ( 2.0 * TOP_PAD );
         // the layout (topology, tip spacing, depth) is a pure function of the panel size, so on screen recompute it
         // only when the size changes -- a plain scroll (SIMPLE_SCROLL_MODE repaints the viewport) reuses the coords
+        // aligned-phylogram: a tree draws to scale only when the toggle is on AND it actually has branch lengths;
+        // a length-less tree stays a lined-up cladogram (tips flush at tree_w), so the two can differ per tree.
+        // Compute each tree's max distance-to-root ONCE here (0 = cladogram) -- it drives both the layout and the
+        // leaders, so it must not be recomputed per node/per call.
+        final double left_max = _phylogram ? PhylogenyMethods.calculateMaxDistanceToRoot( _left ) : 0;
+        final double right_max = _phylogram ? PhylogenyMethods.calculateMaxDistanceToRoot( _right ) : 0;
+        final boolean left_phylo = left_max > 0;
+        final boolean right_phylo = right_max > 0;
         if ( !use_cache || ( w != _laid_out_w ) || ( h != _laid_out_h ) ) {
-            layoutTree( _left, _left_tips, tree_w, avail_h );
-            layoutTree( _right, _right_tips, tree_w, avail_h );
+            layoutTree( _left, _left_tips, tree_w, avail_h, left_max );
+            layoutTree( _right, _right_tips, tree_w, avail_h, right_max );
             _laid_out_w = use_cache ? w : -1;
             _laid_out_h = use_cache ? h : -1;
         }
@@ -597,8 +675,11 @@ final class TanglegramPanel extends JPanel implements Scrollable {
         final double right_label_start = right_tips_x - w_right;
         final Color branch_color = getForeground();
         final Color unmatched_color = blend( branch_color, getBackground(), 0.55 );
-        drawTree( g2, _left, left_root_x, false, branch_color );
-        drawTree( g2, _right, right_root_x, true, branch_color );
+        // in phylogram mode a tip's branch may end short of the common tip column (tree_w); a dotted leader bridges
+        // the gap so the tip still lines up with its label + connector (the aligned-phylogram "A" look)
+        final Color leader_color = blend( branch_color, getBackground(), 0.6 );
+        drawTree( g2, _left, left_root_x, false, branch_color, left_phylo ? tree_w : -1, leader_color );
+        drawTree( g2, _right, right_root_x, true, branch_color, right_phylo ? tree_w : -1, leader_color );
         drawTipLabels( g2, _left_tips, left_tips_x + LABEL_GAP, false, w_left, fm, branch_color, unmatched_color );
         drawTipLabels( g2, _right_tips, right_tips_x - LABEL_GAP, true, w_right, fm, branch_color, unmatched_color );
         drawConnectors( g2, left_label_end, right_label_start );
@@ -607,10 +688,14 @@ final class TanglegramPanel extends JPanel implements Scrollable {
 
     // ---- layout ------------------------------------------------------------------------------------------------
 
-    /** Assigns each node an (x,y): x is a lined-up cladogram depth in [0, tree_w] (tips flush at tree_w); y is the
-     *  screen y filling the available height, tips evenly spaced and internal nodes at their child block's midpoint. */
+    /** Assigns each node an (x,y): y is the screen y filling the available height (tips evenly spaced, internal nodes
+     *  at their child block's midpoint). x is either a lined-up cladogram depth in [0, tree_w] (tips flush at tree_w)
+     *  or, when {@code max_dist > 0}, the node's distance-from-root scaled to [0, tree_w] (branches to scale; tips end
+     *  at their true depth, the deepest reaching tree_w). {@code max_dist} is the tree's precomputed maximum
+     *  distance-to-root (0 for a cladogram), passed in so it -- and the phylogram check -- are computed once per
+     *  render, not per call/per node. */
     private static void layoutTree( final Phylogeny phy, final List<PhylogenyNode> tips, final double tree_w,
-                                    final double avail_h ) {
+                                    final double avail_h, final double max_dist ) {
         final int n = tips.size();
         if ( n == 0 ) {
             return;
@@ -619,11 +704,19 @@ final class TanglegramPanel extends JPanel implements Scrollable {
         for( int i = 0; i < n; i++ ) {
             tips.get( i ).setYcoord( (float) ( TOP_PAD + ( ( ( 2 * i ) + 1 ) * half_pitch ) ) );
         }
-        final Map<PhylogenyNode, Integer> heights = new IdentityHashMap<>();
-        final int tree_height = computeHeight( phy.getRoot(), heights );
-        final double x_step = ( tree_height > 0 ) ? ( tree_w / tree_height ) : tree_w;
-        for( final PhylogenyNode node : heights.keySet() ) {
-            node.setXcoord( (float) ( ( tree_height - heights.get( node ) ) * x_step ) );
+        if ( max_dist > 0 ) {
+            for( final Iterator<PhylogenyNode> it = phy.iteratorPreorder(); it.hasNext(); ) {
+                final PhylogenyNode node = it.next();
+                node.setXcoord( (float) ( ( node.calculateDistanceToRoot() / max_dist ) * tree_w ) );
+            }
+        }
+        else {
+            final Map<PhylogenyNode, Integer> heights = new IdentityHashMap<>();
+            final int tree_height = computeHeight( phy.getRoot(), heights );
+            final double x_step = ( tree_height > 0 ) ? ( tree_w / tree_height ) : tree_w;
+            for( final PhylogenyNode node : heights.keySet() ) {
+                node.setXcoord( (float) ( ( tree_height - heights.get( node ) ) * x_step ) );
+            }
         }
         assignInternalY( phy.getRoot() );
     }
@@ -663,7 +756,8 @@ final class TanglegramPanel extends JPanel implements Scrollable {
     // ---- drawing -----------------------------------------------------------------------------------------------
 
     private static void drawTree( final Graphics2D g2, final Phylogeny phy, final double root_screen_x,
-                                  final boolean mirror, final Color color ) {
+                                  final boolean mirror, final Color color, final double aligned_local_x,
+                                  final Color leader_color ) {
         g2.setColor( color );
         g2.setStroke( new BasicStroke( 1f ) );
         for( final java.util.Iterator<PhylogenyNode> it = phy.iteratorPreorder(); it.hasNext(); ) {
@@ -678,6 +772,20 @@ final class TanglegramPanel extends JPanel implements Scrollable {
                 final double[] bar = barExtent( node );
                 g2.drawLine( round( sx ), round( bar[ 0 ] ), round( sx ), round( bar[ 1 ] ) );
             }
+        }
+        // aligned-phylogram dotted leaders: from each tip's branch end out to the common tip column (aligned_local_x),
+        // so a tip whose branch ends short still lines up with its label + connector (aligned_local_x < 0 disables)
+        if ( aligned_local_x >= 0 ) {
+            final double aligned_sx = mirror ? ( root_screen_x - aligned_local_x ) : ( root_screen_x + aligned_local_x );
+            g2.setColor( leader_color );
+            g2.setStroke( LEADER_STROKE );
+            for( final PhylogenyNode tip : phy.getExternalNodes() ) {
+                final double sx = screenX( tip, root_screen_x, mirror );
+                if ( Math.abs( aligned_sx - sx ) >= 2 ) { // skip a sub-pixel leader for the deepest (flush) tip
+                    g2.drawLine( round( sx ), round( tip.getYcoord() ), round( aligned_sx ), round( tip.getYcoord() ) );
+                }
+            }
+            g2.setStroke( new BasicStroke( 1f ) );
         }
     }
 

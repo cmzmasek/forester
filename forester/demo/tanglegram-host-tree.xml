@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" rerootable="true">
+  <name>Tanglegram host tree (pocket gophers)</name>
+  <description>A HOST tree (pocket gophers) for Analysis &gt; Create Tanglegram, paired with &apos;tanglegram-parasite-tree.xml&apos; (their chewing lice). The host and parasite tip names share nothing, so they are linked through the two-column &apos;tanglegram-association.tsv&apos; (host&lt;TAB&gt;louse). Open BOTH trees, run Analysis &gt; Create Tanglegram, link BOTH on Node Name, tick &quot;Link by an association file&quot; and choose tanglegram-association.tsv. The two topologies differ (a host switch), so some connectors cross.</description>
+  <clade>
+    <branch_length>0.0</branch_length>
+    <clade>
+      <branch_length>0.05</branch_length>
+      <clade>
+        <name>Thomomys_bottae</name>
+        <branch_length>0.02</branch_length>
+      </clade>
+      <clade>
+        <name>Thomomys_talpoides</name>
+        <branch_length>0.02</branch_length>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.05</branch_length>
+      <clade>
+        <branch_length>0.04</branch_length>
+        <clade>
+          <name>Geomys_bursarius</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+        <clade>
+          <name>Cratogeomys_merriami</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>0.04</branch_length>
+        <clade>
+          <name>Orthogeomys_hispidus</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+        <clade>
+          <name>Zygogeomys_trichopus</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+      </clade>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>
