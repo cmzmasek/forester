@@ -89,6 +89,12 @@ public final class AlgorithmReferencesTest {
             System.out.println( "  [AlgorithmReferencesTest] tanglegram auto-untangle reference/citation is missing" );
             ok = false;
         }
+        // the tanglegram entanglement / congruence score must be described, with its rank-correlation basis
+        if ( !text.contains( "entanglement" ) || !text.contains( "discordant" )
+                || !text.contains( "A New Measure of Rank Correlation" ) || !text.contains( "Kendall" ) ) {
+            System.out.println( "  [AlgorithmReferencesTest] tanglegram entanglement reference/citation is missing" );
+            ok = false;
+        }
         boolean phyloxml_present = false;
         for ( final AlgorithmReferences.Reference r : all ) {
             if ( ForesterConstants.PHYLO_XML_REFERENCE.equals( r.citation() ) ) {

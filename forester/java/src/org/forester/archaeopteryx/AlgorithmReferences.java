@@ -68,6 +68,21 @@ final class AlgorithmReferences {
                         + "IEEE Transactions on Systems, Man, and Cybernetics 11(2):109–125. Tanglegram layout and "
                         + "crossing minimisation: Scornavacca C, Zickmann F, Huson DH (2011): \"Tanglegrams for rooted "
                         + "phylogenetic trees and networks\", Bioinformatics 27(13):i248–i256." ) );
+        refs.add( new Reference( "Tanglegram entanglement / congruence score (Analysis → Create Tanglegram)",
+                "A size-normalised measure, in [0,1], of how tangled a tanglegram's tip-to-tip connectors are: 0 means "
+                        + "the two leaf orderings agree perfectly (no crossings), 1 means they are fully reversed. Two "
+                        + "connectors cross exactly when their matched tips are in the opposite vertical order in the two "
+                        + "trees, so the total number of crossings is the number of DISCORDANT tip pairs — an inversion "
+                        + "count, equal to the Kendall rank-correlation (tau) distance between the two leaf orderings. "
+                        + "Archaeopteryx divides this crossing count by the maximum possible number of pairs, n(n−1)/2, so "
+                        + "the score is comparable across trees of different sizes, and computes it in O(n log n) via a "
+                        + "counting merge sort (implemented in Archaeopteryx). Rank-correlation (concordant/discordant "
+                        + "pairs) basis: Kendall MG (1938): \"A New Measure of Rank Correlation\", Biometrika 30(1–2):81–93. "
+                        + "Tanglegram crossings as a measure of tree congruence: Scornavacca C, Zickmann F, Huson DH "
+                        + "(2011): \"Tanglegrams for rooted phylogenetic trees and networks\", Bioinformatics 27(13):i248–"
+                        + "i256. A related, leaf-position-based entanglement measure is implemented in the dendextend R "
+                        + "package: Galili T (2015): \"dendextend: an R package for visualizing, adjusting and comparing "
+                        + "trees of hierarchical clustering\", Bioinformatics 31(22):3718–3720." ) );
         refs.add( new Reference( "phyloXML (file format)", ForesterConstants.PHYLO_XML_REFERENCE ) );
         return refs;
     }

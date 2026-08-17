@@ -163,7 +163,8 @@ tree vs. a species tree, host vs. parasite, two reconstruction methods, …). Wi
 two or more trees open, choose **Analysis → Create Tanglegram…**, pick the two
 trees and the field to link their tips on (node name, taxonomy, or sequence), and
 the tanglegram opens in its own window (the second tree mirrored). It reports the
-number of **crossing** connectors — a rough measure of incongruence.
+number of **crossing** connectors and a size-normalised **entanglement** score
+(described below) — measures of how incongruent the two trees are.
 
 To untangle it, **click a clade's vertical bar** to flip it (a topology-preserving
 rotation), or press **Auto-untangle** to have Archaeopteryx do it for both trees;
@@ -189,6 +190,25 @@ is a heuristic. Foundational references:
 - Tanglegram layout and crossing minimisation: Scornavacca C, Zickmann F, Huson
   DH (2011): "Tanglegrams for rooted phylogenetic trees and networks",
   *Bioinformatics* 27(13):i248–i256.
+
+**Entanglement (congruence score).** Alongside the raw crossing count, the window
+reports a size-normalised **entanglement** in the range [0, 1]: **0** when the two
+leaf orderings agree perfectly (no crossings) and **1** when they are fully
+reversed. Two connectors cross exactly when their matched tips sit in the opposite
+vertical order in the two trees, so the total number of crossings is the number of
+**discordant** tip pairs — an inversion count, which is the Kendall rank-correlation
+(τ) distance between the two leaf orderings. Archaeopteryx divides that count by the
+maximum possible number of pairs, *n*(*n*−1)/2, so the score is comparable across
+trees of different sizes, and computes it in *O*(*n* log *n*) with a counting merge
+sort. This is a crossing-based (Kendall-τ) entanglement; it is a different, simpler
+definition from the leaf-position-based *entanglement* of the dendextend package.
+References:
+
+- Rank-correlation (concordant/discordant pairs) basis: Kendall MG (1938): "A New
+  Measure of Rank Correlation", *Biometrika* 30(1–2):81–93.
+- Related, leaf-position-based entanglement: Galili T (2015): "dendextend: an R
+  package for visualizing, adjusting and comparing trees of hierarchical
+  clustering", *Bioinformatics* 31(22):3718–3720.
 
 
 For Developers
