@@ -38,13 +38,14 @@ enum SearchMode {
     ENDS_WITH( "ends with", false ),
     WHOLE_WORD( "whole word", false ),
     REGEX( "regex", false ),
-    // numeric modes
-    EQ( "=", true ),
-    NE( "≠", true ),
-    LT( "<", true ),
-    LE( "≤", true ),
-    GT( ">", true ),
-    GE( "≥", true ),
+    // numeric modes -- spelled out (with the symbol as a hint) so they read clearly at small sizes / low
+    // resolution and match the word-based string modes above
+    EQ( "equals (=)", true ),
+    NE( "not equal (!=)", true ),
+    LT( "less than (<)", true ),
+    LE( "at most (<=)", true ),
+    GT( "greater than (>)", true ),
+    GE( "at least (>=)", true ),
     RANGE( "range", true );
 
     private final String  _label;

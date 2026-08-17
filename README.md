@@ -141,8 +141,10 @@ query field:
   confidence**, and numeric properties — are offered as well.
 - **Match** — how the query is compared. For a text field: **contains** (the
   default), **starts with**, **ends with**, **whole word**, or **regular
-  expression**. For a numeric field the operators switch to **=, ≠, <, ≤, >, ≥** and
-  **range** (which reveals a second box for the upper bound).
+  expression**. For a numeric field the operators switch to plain-language
+  comparisons — **equals**, **not equal**, **less than**, **at most (≤)**, **greater
+  than**, **at least (≥)** — and **range** (which reveals a second box for the upper
+  bound).
 
 Two shared options sit above the boxes: **Match Case** and **Inverse** (select the
 nodes that do *not* match). Within a text query, `,` is a logical **OR** and `+` a
