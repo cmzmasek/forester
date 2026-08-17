@@ -111,6 +111,33 @@ public final class VectorGraphicsExporterTest {
                 return fail( "eps: bounding-box width " + bbox_w + " pt should be ~300 (1 px -> 1 pt)" );
             }
 
+            // ---- EPS content must FIT the page: the drawing commands, after the EPS mm->pt page
+            // scale, must stay within the bounding box. Regression guard for the "too zoomed in" bug --
+            // the pixel-valued commands used to be ~2.83x too big for the mm-sized page, so only a
+            // top-left corner of the figure appeared in the file. Draw to the far corner so BOTH axes
+            // overflow if the px->mm pre-scale is dropped. ----
+            final int fw = 400;
+            final int fh = 200;
+            final String eps_fit = new String( VectorGraphicsExporter.render( fw, fh, Format.EPS, true, g -> {
+                g.setColor( Color.BLACK );
+                g.drawLine( 0, 0, fw - 1, fh - 1 );
+                // mid-page text so glyph outlines are part of the fit check: the px->mm pre-scale also
+                // scales text, and mid-page glyphs would land at ~2.83x (past the page edge) if it regressed.
+                g.setFont( new Font( "SansSerif", Font.PLAIN, 12 ) );
+                g.drawString( "FIT", fw / 2, fh / 2 );
+            } ), StandardCharsets.ISO_8859_1 );
+            final double[] max_pt = epsMaxContentPoint( eps_fit );
+            if ( ( max_pt[ 0 ] > ( fw + 2 ) ) || ( max_pt[ 1 ] > ( fh + 2 ) ) ) {
+                return fail( "eps: drawing overflows the page (content " + Math.round( max_pt[ 0 ] ) + "x"
+                        + Math.round( max_pt[ 1 ] ) + " pt vs page " + fw + "x" + fh
+                        + "): only part of the figure would be in the file" );
+            }
+            // and it must actually reach near the far corner, so a no-op/collapsed painter can't pass vacuously
+            if ( ( max_pt[ 0 ] < ( fw * 0.9 ) ) || ( max_pt[ 1 ] < ( fh * 0.9 ) ) ) {
+                return fail( "eps: content should span nearly the whole page; got " + Math.round( max_pt[ 0 ] ) + "x"
+                        + Math.round( max_pt[ 1 ] ) + " pt" );
+            }
+
             // ---- format ids line up with the AptxUtil export-type suffixes ----
             if ( !Format.SVG.id().equals( GraphicsExportType.SVG.toString() )
                     || !Format.EPS.id().equals( GraphicsExportType.EPS.toString() ) ) {
@@ -192,6 +219,35 @@ public final class VectorGraphicsExporterTest {
 
     private static int countPaths( final String svg ) {
         return svg.split( "<path", -1 ).length - 1;
+    }
+
+    /**
+     * The furthest drawing-command coordinate, in PostScript points: {@code max|M/L coord| * cumulative
+     * page scale}, per axis. VectorGraphics2D emits the drawing in one user space and the EPS processor
+     * prepends the mm-&gt;pt page scale (and our px-&gt;mm pre-scale) as {@code scale} operators; multiplying
+     * the raw command coordinate by their product gives where it actually lands on the page. The x and y
+     * scale factors are accumulated independently (the page scale's y is negative for the y-flip), so this
+     * stays correct even if a scale op ever differs between axes.
+     */
+    private static double[] epsMaxContentPoint( final String eps ) {
+        double scale_x = 1;
+        double scale_y = 1;
+        final java.util.regex.Matcher sc = java.util.regex.Pattern.compile( "([-0-9.]+)\\s+([-0-9.]+)\\s+scale" )
+                .matcher( eps );
+        while ( sc.find() ) {
+            scale_x *= Math.abs( Double.parseDouble( sc.group( 1 ) ) );
+            scale_y *= Math.abs( Double.parseDouble( sc.group( 2 ) ) );
+        }
+        double max_x = 0;
+        double max_y = 0;
+        // M and L are this EPS's aliases for moveto/lineto (see the prologue "/M /moveto load def").
+        final java.util.regex.Matcher cmd = java.util.regex.Pattern.compile( "([-0-9.]+)\\s+([-0-9.]+)\\s+[ML]\\b" )
+                .matcher( eps );
+        while ( cmd.find() ) {
+            max_x = Math.max( max_x, Math.abs( Double.parseDouble( cmd.group( 1 ) ) ) );
+            max_y = Math.max( max_y, Math.abs( Double.parseDouble( cmd.group( 2 ) ) ) );
+        }
+        return new double[] { max_x * scale_x, max_y * scale_y };
     }
 
     private static int epsBoundingBoxWidth( final String eps ) {

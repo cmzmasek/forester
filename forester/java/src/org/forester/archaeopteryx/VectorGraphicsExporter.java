@@ -69,10 +69,12 @@ final class VectorGraphicsExporter {
     private static final int    WIDTH_LIMIT  = 60;
     private static final int    MARGIN_X     = 20;
     private static final int    MARGIN_Y     = 10;
-    // VectorGraphics2D sizes a page in millimeters. SVG output uses the page numbers directly as the
-    // pixel viewBox, but the EPS/PDF processors convert mm -> PostScript points (1 mm = 72/25.4 pt).
-    // Converting pixels -> mm for those formats makes the point bounding box numerically equal to the
-    // pixel size, so 1 drawing-pixel maps to 1 point and the page tightly bounds the content.
+    // VectorGraphics2D sizes a page in millimetres and treats the DRAWING's coordinates as millimetres too,
+    // scaling them to PostScript points (1 mm = 72/25.4 pt) for EPS output. SVG uses the page numbers directly as
+    // the pixel viewBox (drawing maps 1:1), so it needs no conversion. For EPS we therefore both size the page in
+    // px->mm AND pre-scale the drawing px->mm (see render): that keeps the point bounding box numerically equal to
+    // the pixel size while the content still fills it. (Sizing the page alone -- the old approach -- left the
+    // pixel-valued drawing ~2.83x too big for the page, so only a corner of the figure appeared.)
     private static final double PX_TO_MM     = 25.4 / 72.0;
 
     private VectorGraphicsExporter() {
@@ -108,10 +110,17 @@ final class VectorGraphicsExporter {
         // fonts, so font-referenced text would be substituted by the viewer (EPS -> Times serif, SVG ->
         // generic sans, italics lost). See OutliningVectorGraphics2D. Off keeps selectable text.
         final VectorGraphics2D g = outline_text ? new OutliningVectorGraphics2D() : new VectorGraphics2D();
+        final PageSize page;
+        if ( fmt == Format.SVG ) {
+            page = new PageSize( width, height );
+        }
+        else {
+            // EPS: page in px->mm, AND draw in mm (pre-scale px->mm) so the mm-interpreted commands fill the mm page
+            page = new PageSize( width * PX_TO_MM, height * PX_TO_MM );
+            g.scale( PX_TO_MM, PX_TO_MM );
+        }
         painter.accept( g );
         final Processor processor = Processors.get( fmt.id() );
-        final PageSize page = ( fmt == Format.SVG ) ? new PageSize( width, height )
-                : new PageSize( width * PX_TO_MM, height * PX_TO_MM );
         processor.getDocument( g.getCommands(), page ).writeTo( out );
     }
 
