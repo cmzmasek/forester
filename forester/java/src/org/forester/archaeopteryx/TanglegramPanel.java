@@ -27,6 +27,7 @@ import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
@@ -76,6 +77,7 @@ final class TanglegramPanel extends JPanel implements Scrollable {
     private static final double MIN_ZOOM            = 0.2;
     private static final double MAX_ZOOM            = 20.0;
     private static final int    HIT_TOLERANCE       = 6;
+    private static final int    PAN_THRESHOLD       = 4;   // a left-drag past this (px) pans instead of rotating
     // a theme-independent warning colour for crossing connectors (reads on both light and dark backgrounds)
     private static final Color  CROSSING_COLOR      = new Color( 220, 50, 50 );
 
@@ -110,6 +112,10 @@ final class TanglegramPanel extends JPanel implements Scrollable {
     private boolean                         _dragging_legend;
     private int                             _drag_prev_x;
     private int                             _drag_prev_y;
+    private int                             _press_x;        // left-drag pan: press anchor + gesture state
+    private int                             _press_y;
+    private boolean                         _being_dragged;
+    private boolean                         _panned;
 
     TanglegramPanel( final Phylogeny left_source, final Phylogeny right_source, final TanglegramLinker.LinkField field ) {
         _left = left_source.copy();
@@ -127,14 +133,20 @@ final class TanglegramPanel extends JPanel implements Scrollable {
 
             @Override
             public void mousePressed( final MouseEvent e ) {
+                _panned = false;
+                _being_dragged = false;
                 _dragging_legend = onLegend( e.getX(), e.getY() );
                 _drag_prev_x = e.getX();
                 _drag_prev_y = e.getY();
+                _press_x = e.getX();
+                _press_y = e.getY();
             }
 
             @Override
             public void mouseReleased( final MouseEvent e ) {
                 _dragging_legend = false;
+                _being_dragged = false;
+                updateCursor( e.getX(), e.getY() ); // restore the cursor after a pan (don't wait for the next move)
             }
 
             @Override
@@ -145,11 +157,28 @@ final class TanglegramPanel extends JPanel implements Scrollable {
                     _drag_prev_x = e.getX();
                     _drag_prev_y = e.getY();
                     repaint();
+                    return;
+                }
+                // otherwise a drag pans the zoomed-in tanglegram (vertically -- the width always fits the window),
+                // once it clears a small threshold; _panned is set only if an actual scroll happened, so a jittery
+                // click on a tanglegram that already fits the window still rotates the clade under it
+                if ( !_being_dragged ) {
+                    if ( ( Math.abs( e.getX() - _press_x ) < PAN_THRESHOLD )
+                            && ( Math.abs( e.getY() - _press_y ) < PAN_THRESHOLD ) ) {
+                        return;
+                    }
+                    _being_dragged = true;
+                }
+                if ( panByDrag( e ) ) {
+                    _panned = true;
                 }
             }
 
             @Override
             public void mouseClicked( final MouseEvent e ) {
+                if ( _panned ) {
+                    return; // a pan gesture never rotates a clade
+                }
                 if ( onLegend( e.getX(), e.getY() ) ) {
                     if ( e.getClickCount() == 2 ) { // double-click the legend to reset its position
                         _legend_dx = 0;
@@ -166,15 +195,7 @@ final class TanglegramPanel extends JPanel implements Scrollable {
 
             @Override
             public void mouseMoved( final MouseEvent e ) {
-                final int cursor;
-                if ( onLegend( e.getX(), e.getY() ) ) {
-                    cursor = Cursor.MOVE_CURSOR;
-                }
-                else {
-                    cursor = ( rotatableNodeAt( e.getX(), e.getY() ) != null ) ? Cursor.HAND_CURSOR
-                            : Cursor.DEFAULT_CURSOR;
-                }
-                setCursor( Cursor.getPredefinedCursor( cursor ) );
+                updateCursor( e.getX(), e.getY() );
             }
         };
         addMouseListener( mouse );
@@ -451,6 +472,11 @@ final class TanglegramPanel extends JPanel implements Scrollable {
         return _color_mode;
     }
 
+    /** Test hook: whether the last gesture actually panned (and thus suppresses a click-to-rotate). */
+    boolean pannedForTest() {
+        return _panned;
+    }
+
     /** Test hook: the colour the i-th connector is drawn in under the current mode. */
     Color connectorColorForTest( final int i ) {
         final boolean[] flags = ( _color_mode == ConnectorColorMode.CROSSINGS )
@@ -650,6 +676,39 @@ final class TanglegramPanel extends JPanel implements Scrollable {
 
     private boolean onLegend( final int x, final int y ) {
         return ( _legend_bounds != null ) && _legend_bounds.contains( x, y );
+    }
+
+    private void updateCursor( final int x, final int y ) {
+        final int cursor;
+        if ( onLegend( x, y ) ) {
+            cursor = Cursor.MOVE_CURSOR;
+        }
+        else {
+            cursor = ( rotatableNodeAt( x, y ) != null ) ? Cursor.HAND_CURSOR : Cursor.DEFAULT_CURSOR;
+        }
+        setCursor( Cursor.getPredefinedCursor( cursor ) );
+    }
+
+    /** Left-drag pan: scroll the enclosing viewport by the delta from the press anchor (a fixed-anchor "grab",
+     *  clamped to the content), so a zoomed-in tanglegram pans like the regular tree display. Returns whether the
+     *  view actually moved (false when there is nothing to scroll, so the gesture can still fall through to a click). */
+    private boolean panByDrag( final MouseEvent e ) {
+        if ( !( getParent() instanceof JViewport ) ) {
+            return false;
+        }
+        final JViewport viewport = (JViewport) getParent();
+        final Point pos = viewport.getViewPosition();
+        final Point before = new Point( pos );
+        pos.x -= ( e.getX() - _press_x );
+        pos.y -= ( e.getY() - _press_y );
+        pos.x = Math.max( 0, Math.min( pos.x, Math.max( 0, getWidth() - viewport.getWidth() ) ) );
+        pos.y = Math.max( 0, Math.min( pos.y, Math.max( 0, getHeight() - viewport.getHeight() ) ) );
+        if ( pos.equals( before ) ) {
+            return false;
+        }
+        setCursor( Cursor.getPredefinedCursor( Cursor.MOVE_CURSOR ) );
+        viewport.setViewPosition( pos );
+        return true;
     }
 
     /** A small colour key for the FIELD mode (value -> swatch), a draggable semi-opaque box (double-click to reset). */

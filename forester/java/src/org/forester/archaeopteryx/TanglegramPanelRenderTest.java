@@ -24,8 +24,16 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
+import java.awt.Point;
+import java.awt.event.InputEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.util.List;
+
+import javax.swing.JScrollPane;
+import javax.swing.JViewport;
 
 import org.forester.archaeopteryx.TanglegramColoring.Field;
 import org.forester.archaeopteryx.TanglegramLinker.LinkField;
@@ -54,7 +62,64 @@ public final class TanglegramPanelRenderTest {
         if ( GraphicsEnvironment.isHeadless() ) {
             return true;
         }
-        return renderOk() && hitTestOk() && colorRenderOk();
+        return renderOk() && hitTestOk() && colorRenderOk() && panOk();
+    }
+
+    private static boolean panOk() {
+        final TanglegramPanel panel = new TanglegramPanel( balancedABCD(), balancedABCD(), LinkField.NODE_NAME );
+        final JScrollPane scroll = new JScrollPane( panel );
+        scroll.getViewport().setScrollMode( JViewport.SIMPLE_SCROLL_MODE );
+        scroll.setSize( 400, 140 );
+        scroll.doLayout();
+        scroll.getViewport().doLayout();
+        final JViewport vp = scroll.getViewport();
+        if ( panel.getHeight() <= vp.getHeight() ) {
+            return fail( "test setup: the panel is not taller than the viewport, so it cannot pan" );
+        }
+        // a left-drag upward past the threshold should scroll the content (viewport y increases)
+        press( panel, 100, 100 );
+        drag( panel, 100, 60 );
+        if ( vp.getViewPosition().y <= 0 ) {
+            return fail( "a left-drag did not pan the tanglegram (viewport y = " + vp.getViewPosition().y + ")" );
+        }
+        if ( !panel.pannedForTest() ) {
+            return fail( "a real pan should mark the gesture panned (so the trailing click does not rotate)" );
+        }
+        // a sub-threshold jitter must NOT pan (so a click can still rotate)
+        vp.setViewPosition( new Point( 0, 0 ) );
+        press( panel, 100, 100 );
+        drag( panel, 101, 102 );
+        if ( vp.getViewPosition().y != 0 ) {
+            return fail( "a sub-threshold drag should not pan the tanglegram" );
+        }
+        // a big drag on a tanglegram that FITS the viewport (nothing to scroll) must NOT suppress the click-to-rotate
+        final TanglegramPanel fits = new TanglegramPanel( balancedABCD(), balancedABCD(), LinkField.NODE_NAME );
+        final JScrollPane big = new JScrollPane( fits );
+        big.setSize( 400, 500 );
+        big.doLayout();
+        big.getViewport().doLayout();
+        press( fits, 100, 100 );
+        drag( fits, 100, 40 );
+        if ( fits.pannedForTest() ) {
+            return fail( "a drag that cannot scroll (tanglegram fits the window) must not suppress the click" );
+        }
+        return true;
+    }
+
+    private static void press( final TanglegramPanel panel, final int x, final int y ) {
+        final MouseEvent e = new MouseEvent( panel, MouseEvent.MOUSE_PRESSED, 0L, InputEvent.BUTTON1_DOWN_MASK, x, y, 1,
+                                             false, MouseEvent.BUTTON1 );
+        for( final MouseListener l : panel.getMouseListeners() ) {
+            l.mousePressed( e );
+        }
+    }
+
+    private static void drag( final TanglegramPanel panel, final int x, final int y ) {
+        final MouseEvent e = new MouseEvent( panel, MouseEvent.MOUSE_DRAGGED, 0L, InputEvent.BUTTON1_DOWN_MASK, x, y, 0,
+                                             false );
+        for( final MouseMotionListener l : panel.getMouseMotionListeners() ) {
+            l.mouseDragged( e );
+        }
     }
 
     private static boolean colorModesOk() {
