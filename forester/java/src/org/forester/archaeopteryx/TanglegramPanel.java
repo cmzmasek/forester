@@ -118,11 +118,17 @@ final class TanglegramPanel extends JPanel implements Scrollable {
     private boolean                         _panned;
 
     TanglegramPanel( final Phylogeny left_source, final Phylogeny right_source, final TanglegramLinker.LinkField field ) {
+        this( left_source, right_source, field, field );
+    }
+
+    /** Link the two trees on possibly-DIFFERENT fields holding the same value (see {@link TanglegramLinker#link}). */
+    TanglegramPanel( final Phylogeny left_source, final Phylogeny right_source,
+                     final TanglegramLinker.LinkField left_field, final TanglegramLinker.LinkField right_field ) {
         _left = left_source.copy();
         _right = right_source.copy();
         _left_tips = TanglegramLinker.externalTipsInDisplayOrder( _left );
         _right_tips = TanglegramLinker.externalTipsInDisplayOrder( _right );
-        _result = TanglegramLinker.link( _left, _right, field );
+        _result = TanglegramLinker.link( _left, _right, left_field, right_field );
         _unmatched = Collections.newSetFromMap( new IdentityHashMap<PhylogenyNode, Boolean>() );
         _unmatched.addAll( _result.getUnmatchedA() );
         _unmatched.addAll( _result.getUnmatchedB() );
@@ -240,8 +246,12 @@ final class TanglegramPanel extends JPanel implements Scrollable {
         return _unmatched.size();
     }
 
-    TanglegramLinker.LinkField getField() {
-        return _result.getField();
+    TanglegramLinker.LinkField getLeftField() {
+        return _result.getLeftField();
+    }
+
+    TanglegramLinker.LinkField getRightField() {
+        return _result.getRightField();
     }
 
     /** Test hook: the label that would be drawn for the i-th left tip (exercises the identity-field fallback). */

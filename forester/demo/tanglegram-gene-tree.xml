@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" rerootable="true">
+  <name>Tanglegram gene tree</name>
+  <description>A GENE tree for Analysis &gt; Create Tanglegram, paired with &apos;tanglegram-species-tree.xml&apos;. Its tip NAMES are gene accessions; each tip&apos;s species is in its Taxonomy (Scientific Name). The companion stores the same eight species as plain tip NAMES. Open BOTH files, run Analysis &gt; Create Tanglegram, and link the trees on DIFFERENT fields holding the same value: &apos;Link first tree by: Taxonomy: Scientific Name&apos; and &apos;Link second tree by: Node Name&apos;. (A single shared field links nothing here.)</description>
+  <clade>
+    <branch_length>0.0</branch_length>
+    <clade>
+      <branch_length>0.05</branch_length>
+      <clade>
+        <branch_length>0.04</branch_length>
+        <clade>
+          <name>ENSG001</name>
+          <branch_length>0.02</branch_length>
+          <taxonomy>
+            <scientific_name>Homo sapiens</scientific_name>
+            <rank>species</rank>
+          </taxonomy>
+        </clade>
+        <clade>
+          <name>ENSG002</name>
+          <branch_length>0.02</branch_length>
+          <taxonomy>
+            <scientific_name>Pan troglodytes</scientific_name>
+            <rank>species</rank>
+          </taxonomy>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>0.04</branch_length>
+        <clade>
+          <name>ENSG003</name>
+          <branch_length>0.02</branch_length>
+          <taxonomy>
+            <scientific_name>Mus musculus</scientific_name>
+            <rank>species</rank>
+          </taxonomy>
+        </clade>
+        <clade>
+          <name>ENSG004</name>
+          <branch_length>0.02</branch_length>
+          <taxonomy>
+            <scientific_name>Rattus norvegicus</scientific_name>
+            <rank>species</rank>
+          </taxonomy>
+        </clade>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.05</branch_length>
+      <clade>
+        <branch_length>0.04</branch_length>
+        <clade>
+          <name>ENSG005</name>
+          <branch_length>0.02</branch_length>
+          <taxonomy>
+            <scientific_name>Felis catus</scientific_name>
+            <rank>species</rank>
+          </taxonomy>
+        </clade>
+        <clade>
+          <name>ENSG006</name>
+          <branch_length>0.02</branch_length>
+          <taxonomy>
+            <scientific_name>Canis lupus</scientific_name>
+            <rank>species</rank>
+          </taxonomy>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>0.04</branch_length>
+        <clade>
+          <name>ENSG007</name>
+          <branch_length>0.02</branch_length>
+          <taxonomy>
+            <scientific_name>Gallus gallus</scientific_name>
+            <rank>species</rank>
+          </taxonomy>
+        </clade>
+        <clade>
+          <name>ENSG008</name>
+          <branch_length>0.02</branch_length>
+          <taxonomy>
+            <scientific_name>Danio rerio</scientific_name>
+            <rank>species</rank>
+          </taxonomy>
+        </clade>
+      </clade>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>

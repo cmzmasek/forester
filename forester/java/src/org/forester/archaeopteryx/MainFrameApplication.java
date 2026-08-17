@@ -793,7 +793,8 @@ public final class MainFrameApplication extends MainFrame {
         for (int i = 0; i < fields.length; i++) {
             field_labels[i] = fields[i].label();
         }
-        final JComboBox<String> link_field = new JComboBox<>(field_labels);
+        final JComboBox<String> link_field_a = new JComboBox<>(field_labels);
+        final JComboBox<String> link_field_b = new JComboBox<>(field_labels);
         final JPanel form = new JPanel(new java.awt.GridLayout(0, 2, 8, 6));
         if (count > 2) {
             form.add(new JLabel("First tree:"));
@@ -801,8 +802,13 @@ public final class MainFrameApplication extends MainFrame {
             form.add(new JLabel("Second tree:"));
             form.add(tree_b);
         }
-        form.add(new JLabel("Link tips by:"));
-        form.add(link_field);
+        // a link field PER tree, so two trees that store the same value in different fields can be linked
+        // (e.g. a gene tree's "Taxonomy: Scientific Name" to a species tree's "Node Name"); leave them equal
+        // for the usual same-field case
+        form.add(new JLabel("Link first tree by:"));
+        form.add(link_field_a);
+        form.add(new JLabel("Link second tree by:"));
+        form.add(link_field_b);
         final int choice = JOptionPane.showConfirmDialog(this, form, "Create Tanglegram",
                 JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
         if (choice != JOptionPane.OK_OPTION) {
@@ -823,8 +829,10 @@ public final class MainFrameApplication extends MainFrame {
                     JOptionPane.WARNING_MESSAGE);
             return;
         }
-        final TanglegramLinker.LinkField field = fields[link_field.getSelectedIndex()];
-        final TanglegramFrame frame = new TanglegramFrame(phy_a, phy_b, field, names[index_a], names[index_b]);
+        final TanglegramLinker.LinkField field_a = fields[link_field_a.getSelectedIndex()];
+        final TanglegramLinker.LinkField field_b = fields[link_field_b.getSelectedIndex()];
+        final TanglegramFrame frame = new TanglegramFrame(phy_a, phy_b, field_a, field_b, names[index_a],
+                names[index_b]);
         // give the tanglegram the tree canvas's colours (white/black in light, dark grey/white in dark) so it
         // matches the regular tree panels instead of the default (slightly darker) panel grey
         final TreeColorSet colorset = getMainPanel().getTreeColorSet();

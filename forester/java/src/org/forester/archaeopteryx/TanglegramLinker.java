@@ -112,20 +112,27 @@ final class TanglegramLinker {
         }
     }
 
-    /** The links + the tips each side could not match, for one field. All lists are unmodifiable. */
+    /**
+     * The links + the tips each side could not match. The two trees may be linked on DIFFERENT fields that hold the
+     * same information (e.g. a gene tree's {@code Taxonomy: Scientific Name} joined to a species tree's
+     * {@code Node Name}); {@link #getLeftField()}/{@link #getRightField()} are equal in the common single-field case.
+     * All lists are unmodifiable.
+     */
     static final class Result {
 
         private final List<Link>          _links;
         private final List<PhylogenyNode> _unmatched_a;
         private final List<PhylogenyNode> _unmatched_b;
-        private final LinkField           _field;
+        private final LinkField           _left_field;
+        private final LinkField           _right_field;
 
         Result( final List<Link> links, final List<PhylogenyNode> unmatched_a, final List<PhylogenyNode> unmatched_b,
-                final LinkField field ) {
+                final LinkField left_field, final LinkField right_field ) {
             _links = Collections.unmodifiableList( links );
             _unmatched_a = Collections.unmodifiableList( unmatched_a );
             _unmatched_b = Collections.unmodifiableList( unmatched_b );
-            _field = field;
+            _left_field = left_field;
+            _right_field = right_field;
         }
 
         List<Link> getLinks() {
@@ -140,20 +147,39 @@ final class TanglegramLinker {
             return _unmatched_b;
         }
 
-        LinkField getField() {
-            return _field;
+        /** The field the LEFT tree is linked on. */
+        LinkField getLeftField() {
+            return _left_field;
+        }
+
+        /** The field the RIGHT tree is linked on (equal to {@link #getLeftField()} in the single-field case). */
+        LinkField getRightField() {
+            return _right_field;
         }
     }
 
     /** Pair every left tip with every right tip that shares its non-empty {@code field} key (all matches). */
     static Result link( final Phylogeny left, final Phylogeny right, final LinkField field ) {
+        return link( left, right, field, field );
+    }
+
+    /**
+     * Pair every left tip with every right tip that shares its non-empty key, where the left tip's key comes from
+     * {@code left_field} and the right tip's from {@code right_field}. This links two trees that store the same
+     * information in DIFFERENT fields -- e.g. a gene tree carrying the species in {@code Taxonomy: Scientific Name}
+     * joined to a species tree carrying it as {@code Node Name}. When {@code left_field == right_field} this is the
+     * ordinary single-field link. The join is still on equal string VALUE, so both fields must hold the same value
+     * (this is not an external parasite-&gt;host mapping table).
+     */
+    static Result link( final Phylogeny left, final Phylogeny right, final LinkField left_field,
+                        final LinkField right_field ) {
         final List<PhylogenyNode> left_tips = externalTipsInDisplayOrder( left );
         final List<PhylogenyNode> right_tips = externalTipsInDisplayOrder( right );
-        final Map<String, List<PhylogenyNode>> right_by_key = keyIndex( right_tips, field );
-        final Map<String, List<PhylogenyNode>> left_by_key = keyIndex( left_tips, field );
+        final Map<String, List<PhylogenyNode>> right_by_key = keyIndex( right_tips, right_field );
+        final Map<String, List<PhylogenyNode>> left_by_key = keyIndex( left_tips, left_field );
         final List<Link> links = new ArrayList<>();
         for( final PhylogenyNode a : left_tips ) {
-            final String key = field.keyFor( a );
+            final String key = left_field.keyFor( a );
             if ( key.isEmpty() ) {
                 continue;
             }
@@ -166,19 +192,19 @@ final class TanglegramLinker {
         }
         final List<PhylogenyNode> unmatched_a = new ArrayList<>();
         for( final PhylogenyNode a : left_tips ) {
-            final String key = field.keyFor( a );
+            final String key = left_field.keyFor( a );
             if ( key.isEmpty() || !right_by_key.containsKey( key ) ) {
                 unmatched_a.add( a );
             }
         }
         final List<PhylogenyNode> unmatched_b = new ArrayList<>();
         for( final PhylogenyNode b : right_tips ) {
-            final String key = field.keyFor( b );
+            final String key = right_field.keyFor( b );
             if ( key.isEmpty() || !left_by_key.containsKey( key ) ) {
                 unmatched_b.add( b );
             }
         }
-        return new Result( links, unmatched_a, unmatched_b, field );
+        return new Result( links, unmatched_a, unmatched_b, left_field, right_field );
     }
 
     private static Map<String, List<PhylogenyNode>> keyIndex( final List<PhylogenyNode> tips, final LinkField field ) {

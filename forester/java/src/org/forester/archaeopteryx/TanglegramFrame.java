@@ -69,10 +69,16 @@ final class TanglegramFrame extends JFrame {
 
     TanglegramFrame( final Phylogeny left, final Phylogeny right, final TanglegramLinker.LinkField field,
                      final String left_name, final String right_name ) {
+        this( left, right, field, field, left_name, right_name );
+    }
+
+    /** Link the two trees on possibly-DIFFERENT fields holding the same value (see {@link TanglegramLinker#link}). */
+    TanglegramFrame( final Phylogeny left, final Phylogeny right, final TanglegramLinker.LinkField left_field,
+                     final TanglegramLinker.LinkField right_field, final String left_name, final String right_name ) {
         super( "Tanglegram: " + left_name + "  ↔  " + right_name );
         _left_name = left_name;
         _right_name = right_name;
-        _panel = new TanglegramPanel( left, right, field );
+        _panel = new TanglegramPanel( left, right, left_field, right_field );
         _panel.setChangeListener( this::refresh );
         final JScrollPane scroll = new JScrollPane( _panel );
         scroll.getViewport().setScrollMode( JViewport.SIMPLE_SCROLL_MODE );
@@ -253,9 +259,16 @@ final class TanglegramFrame extends JFrame {
     }
 
     private String summary() {
-        return "Link: " + _panel.getField().label() + "   •   " + _panel.getResult().getLinks().size()
+        return "Link: " + linkDescription() + "   •   " + _panel.getResult().getLinks().size()
                 + " connectors, " + _panel.getCrossingCount() + " crossings   •   " + _left_name + " ("
                 + _panel.getLeftTipCount() + " tips) ↔ " + _right_name + " (" + _panel.getRightTipCount()
                 + " tips)   •   " + _panel.getUnmatchedCount() + " unmatched";
+    }
+
+    /** One field label when both trees link on the same field, else "leftLabel ↔ rightLabel". */
+    private String linkDescription() {
+        final TanglegramLinker.LinkField left = _panel.getLeftField();
+        final TanglegramLinker.LinkField right = _panel.getRightField();
+        return ( left == right ) ? left.label() : ( left.label() + " ↔ " + right.label() );
     }
 }

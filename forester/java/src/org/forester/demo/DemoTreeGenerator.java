@@ -81,6 +81,8 @@ public final class DemoTreeGenerator {
         write( dir, "ancestral-pie-charts.xml", ancestralPieChartsTree() );
         write( dir, "tanglegram-tree-a.xml", tanglegramTreeA() );
         write( dir, "tanglegram-tree-b.xml", tanglegramTreeB() );
+        write( dir, "tanglegram-gene-tree.xml", tanglegramGeneTree() );
+        write( dir, "tanglegram-species-tree.xml", tanglegramSpeciesTree() );
         System.out.println( "Wrote demo trees to " + dir.getAbsolutePath() );
     }
 
@@ -392,6 +394,54 @@ public final class DemoTreeGenerator {
             throws PhyloXmlDataFormatException {
         final PhylogenyNode n = speciesTip( scientific_name );
         cat( n, "data:clade", clade );
+        return n;
+    }
+
+    // ----- "Create Tanglegram" with a link field PER tree: a GENE tree whose tips are gene accessions (the species
+    //       is in each tip's Taxonomy) paired with a SPECIES tree whose tips ARE the species names. The same species
+    //       live in DIFFERENT fields, so the two trees are linked on DIFFERENT fields: link the gene tree on
+    //       'Taxonomy: Scientific Name' and the species tree on 'Node Name'. A single shared field links nothing.
+    private static Phylogeny tanglegramGeneTree() throws PhyloXmlDataFormatException {
+        final PhylogenyNode root = clade( 0,
+                                          clade( 0.05,
+                                                 clade( 0.04, geneTip( "ENSG001", "Homo sapiens" ),
+                                                        geneTip( "ENSG002", "Pan troglodytes" ) ),
+                                                 clade( 0.04, geneTip( "ENSG003", "Mus musculus" ),
+                                                        geneTip( "ENSG004", "Rattus norvegicus" ) ) ),
+                                          clade( 0.05,
+                                                 clade( 0.04, geneTip( "ENSG005", "Felis catus" ),
+                                                        geneTip( "ENSG006", "Canis lupus" ) ),
+                                                 clade( 0.04, geneTip( "ENSG007", "Gallus gallus" ),
+                                                        geneTip( "ENSG008", "Danio rerio" ) ) ) );
+        return tree( root, "Tanglegram gene tree",
+                     "A GENE tree for Analysis > Create Tanglegram, paired with 'tanglegram-species-tree.xml'. Its "
+                             + "tip NAMES are gene accessions; each tip's species is in its Taxonomy (Scientific "
+                             + "Name). The companion stores the same eight species as plain tip NAMES. Open BOTH "
+                             + "files, run Analysis > Create Tanglegram, and link the trees on DIFFERENT fields "
+                             + "holding the same value: 'Link first tree by: Taxonomy: Scientific Name' and 'Link "
+                             + "second tree by: Node Name'. (A single shared field links nothing here.)" );
+    }
+
+    private static Phylogeny tanglegramSpeciesTree() {
+        final PhylogenyNode root = clade( 0,
+                                          clade( 0.05,
+                                                 clade( 0.04, leaf( "Homo sapiens" ), leaf( "Mus musculus" ) ),
+                                                 clade( 0.04, leaf( "Pan troglodytes" ), leaf( "Felis catus" ) ) ),
+                                          clade( 0.05,
+                                                 clade( 0.04, leaf( "Rattus norvegicus" ), leaf( "Canis lupus" ) ),
+                                                 clade( 0.04, leaf( "Danio rerio" ), leaf( "Gallus gallus" ) ) ) );
+        return tree( root, "Tanglegram species tree",
+                     "A SPECIES tree for Analysis > Create Tanglegram, paired with 'tanglegram-gene-tree.xml'. Its "
+                             + "tip NAMES are the species names. Link it on 'Node Name' while linking the gene tree "
+                             + "on 'Taxonomy: Scientific Name' -- the same species stored in different fields." );
+    }
+
+    /** A gene-tree tip for the cross-field tanglegram demo: an accession NODE NAME plus the species in the taxonomy
+     *  (Scientific Name), so the tip's node name and its species differ. */
+    private static PhylogenyNode geneTip( final String accession, final String scientific_name )
+            throws PhyloXmlDataFormatException {
+        final PhylogenyNode n = leaf( accession );
+        taxon( n, scientific_name, "species" );
         return n;
     }
 

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" rerootable="true">
+  <name>Tanglegram species tree</name>
+  <description>A SPECIES tree for Analysis &gt; Create Tanglegram, paired with &apos;tanglegram-gene-tree.xml&apos;. Its tip NAMES are the species names. Link it on &apos;Node Name&apos; while linking the gene tree on &apos;Taxonomy: Scientific Name&apos; -- the same species stored in different fields.</description>
+  <clade>
+    <branch_length>0.0</branch_length>
+    <clade>
+      <branch_length>0.05</branch_length>
+      <clade>
+        <branch_length>0.04</branch_length>
+        <clade>
+          <name>Homo sapiens</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+        <clade>
+          <name>Mus musculus</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>0.04</branch_length>
+        <clade>
+          <name>Pan troglodytes</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+        <clade>
+          <name>Felis catus</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.05</branch_length>
+      <clade>
+        <branch_length>0.04</branch_length>
+        <clade>
+          <name>Rattus norvegicus</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+        <clade>
+          <name>Canis lupus</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>0.04</branch_length>
+        <clade>
+          <name>Danio rerio</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+        <clade>
+          <name>Gallus gallus</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+      </clade>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>

@@ -54,7 +54,44 @@ public final class TanglegramToolTest {
         if ( GraphicsEnvironment.isHeadless() ) {
             return true;
         }
-        return frameOk() && frameWiringOk() && colorSelectorOk();
+        return frameOk() && frameWiringOk() && colorSelectorOk() && crossFieldFrameOk();
+    }
+
+    /** A frame built with a DIFFERENT link field per tree links two trees that store the same value in different
+     *  fields (gene tree's scientific name to species tree's node name), and its summary names both fields. */
+    private static boolean crossFieldFrameOk() {
+        // gene tree: node name = accession, species in the taxonomy scientific name; species tree: species = node name
+        final Phylogeny gene = tree( clade( geneLeaf( "acc1", "Homo sapiens" ), geneLeaf( "acc2", "Mus musculus" ) ) );
+        final Phylogeny species = tree( clade( leaf( "Mus musculus" ), leaf( "Homo sapiens" ) ) );
+        final TanglegramFrame frame = new TanglegramFrame( gene, species, LinkField.SCIENTIFIC_NAME,
+                                                           LinkField.NODE_NAME, "gene", "species" );
+        try {
+            final TanglegramPanel panel = frame.getTanglegramPanel();
+            if ( ( panel.getResult().getLinks().size() != 2 ) || ( panel.getUnmatchedCount() != 0 ) ) {
+                return fail( "the two-field frame should link both species (2 links, 0 unmatched), got "
+                        + panel.getResult().getLinks().size() + " links, " + panel.getUnmatchedCount() + " unmatched" );
+            }
+            if ( ( panel.getLeftField() != LinkField.SCIENTIFIC_NAME )
+                    || ( panel.getRightField() != LinkField.NODE_NAME ) ) {
+                return fail( "the panel should carry both link fields" );
+            }
+            final String summary = frame.summaryTextForTest();
+            if ( !summary.contains( LinkField.SCIENTIFIC_NAME.label() + " ↔ " + LinkField.NODE_NAME.label() ) ) {
+                return fail( "summary should name both link fields, was: " + summary );
+            }
+            return true;
+        }
+        finally {
+            frame.dispose();
+        }
+    }
+
+    private static PhylogenyNode geneLeaf( final String accession, final String scientific_name ) {
+        final PhylogenyNode n = leaf( accession ); // node name is the accession, distinct from the species
+        final Taxonomy t = new Taxonomy();
+        t.setScientificName( scientific_name );
+        n.getNodeData().setTaxonomy( t );
+        return n;
     }
 
     private static boolean colorSelectorOk() {

@@ -31,8 +31,9 @@ import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Taxonomy;
 
 /**
- * Headless tests for {@link TanglegramLinker}: node-name / scientific-name keying, all-matches (many:many) linking,
- * unmatched-tip accounting, and the crossing count.
+ * Headless tests for {@link TanglegramLinker}: node-name / scientific-name keying, per-tree link fields (linking two
+ * trees on different fields holding the same value), all-matches (many:many) linking, unmatched-tip accounting, and
+ * the crossing count.
  */
 public final class TanglegramLinkerTest {
 
@@ -43,8 +44,38 @@ public final class TanglegramLinkerTest {
     }
 
     public static boolean test() {
-        return nodeNameMatchingOk() && manyToManyOk() && unmatchedOk() && scientificNameOk() && crossingsOk()
-                && crossingsMatchBruteForceOk() && crossingConnectorsOk();
+        return nodeNameMatchingOk() && manyToManyOk() && unmatchedOk() && scientificNameOk() && crossFieldLinkOk()
+                && crossingsOk() && crossingsMatchBruteForceOk() && crossingConnectorsOk();
+    }
+
+    /** Two trees that store the same value in DIFFERENT fields link when a field is chosen per tree (e.g. a gene
+     *  tree's taxonomy scientific name joined to a species tree's node name), but not with one shared field. */
+    private static boolean crossFieldLinkOk() {
+        // gene tree: node name = accession, the species lives in the taxonomy scientific name
+        final Phylogeny gene = tree( clade( taxonLeaf( "acc1", "Felis catus" ), taxonLeaf( "acc2", "Canis lupus" ) ) );
+        // species tree: the species IS the node name
+        final Phylogeny species = tree( clade( leaf( "Canis lupus" ), leaf( "Felis catus" ) ) );
+        final Result r = TanglegramLinker.link( gene, species, LinkField.SCIENTIFIC_NAME, LinkField.NODE_NAME );
+        if ( ( r.getLinks().size() != 2 ) || !r.getUnmatchedA().isEmpty() || !r.getUnmatchedB().isEmpty() ) {
+            return fail( "cross-field link (sci-name <-> node-name) should match both species with none unmatched; got "
+                    + r.getLinks().size() + " links, " + r.getUnmatchedA().size() + "/" + r.getUnmatchedB().size()
+                    + " unmatched" );
+        }
+        if ( ( r.getLeftField() != LinkField.SCIENTIFIC_NAME ) || ( r.getRightField() != LinkField.NODE_NAME ) ) {
+            return fail( "the result should carry both link fields" );
+        }
+        // the same field on both sides must NOT link these trees -- which is exactly why per-tree fields are needed:
+        // node name (accession vs species) and scientific name (the species tree has no taxonomy) each match nothing
+        if ( !TanglegramLinker.link( gene, species, LinkField.NODE_NAME ).getLinks().isEmpty()
+                || !TanglegramLinker.link( gene, species, LinkField.SCIENTIFIC_NAME ).getLinks().isEmpty() ) {
+            return fail( "a single shared field must not link the accession/species trees" );
+        }
+        // the single-field overload reports the same field on both sides
+        final Result same = TanglegramLinker.link( gene, gene, LinkField.NODE_NAME );
+        if ( same.getLeftField() != same.getRightField() ) {
+            return fail( "single-field link should report equal left/right fields" );
+        }
+        return true;
     }
 
     private static boolean crossingConnectorsOk() {

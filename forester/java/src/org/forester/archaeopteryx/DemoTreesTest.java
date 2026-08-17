@@ -123,7 +123,38 @@ public final class DemoTreesTest {
         ok &= tanglegramPairLinks( "tanglegram-tree-a.xml", "tanglegram-tree-b.xml" );
         // a categorical 'clade' group per tip, so the tanglegram's connectors can be coloured by clade
         ok &= hasCategoricalRef( "tanglegram-tree-a.xml", "data:clade" );
+        // cross-field tanglegram: a gene tree (accession names, species in the taxonomy) + a species tree (species
+        // names) -- the same species in DIFFERENT fields, so they link only on per-tree fields (sci-name <-> node-name)
+        ok &= hasAtLeastTips( "tanglegram-gene-tree.xml", 8 );
+        ok &= hasAtLeastTips( "tanglegram-species-tree.xml", 8 );
+        ok &= tanglegramCrossFieldLinks( "tanglegram-gene-tree.xml", "tanglegram-species-tree.xml" );
         return ok;
+    }
+
+    /** The gene/species demo pair links only when a field is chosen PER tree (gene tree's scientific name to species
+     *  tree's node name): every tip matches with none unmatched, and NO single shared field links them. */
+    private static boolean tanglegramCrossFieldLinks( final String gene_file, final String species_file ) {
+        final Phylogeny gene = load( gene_file );
+        final Phylogeny species = load( species_file );
+        if ( ( gene == null ) || ( species == null ) ) {
+            return false;
+        }
+        final TanglegramLinker.Result r = TanglegramLinker.link( gene, species,
+                                                                 TanglegramLinker.LinkField.SCIENTIFIC_NAME,
+                                                                 TanglegramLinker.LinkField.NODE_NAME );
+        if ( ( r.getLinks().size() < 8 ) || !r.getUnmatchedA().isEmpty() || !r.getUnmatchedB().isEmpty() ) {
+            return note( gene_file + " and " + species_file
+                    + " should fully link on scientific-name <-> node-name; found " + r.getLinks().size() + " links, "
+                    + r.getUnmatchedA().size() + "/" + r.getUnmatchedB().size() + " unmatched" );
+        }
+        // the demo only makes sense if a single shared field does NOT link them (else per-tree fields aren't needed)
+        if ( !TanglegramLinker.link( gene, species, TanglegramLinker.LinkField.NODE_NAME ).getLinks().isEmpty()
+                || !TanglegramLinker.link( gene, species, TanglegramLinker.LinkField.SCIENTIFIC_NAME ).getLinks()
+                        .isEmpty() ) {
+            return note( gene_file + "/" + species_file + " should NOT link on any single shared field (the point of "
+                    + "the cross-field demo)" );
+        }
+        return true;
     }
 
     /** Every tip of one tanglegram demo tree links to a tip of the other on the scientific-name key (no tip left
