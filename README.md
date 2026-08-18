@@ -128,8 +128,8 @@ Searching Trees
 Two independent **search boxes** on the left control panel (**A** and **B**) find
 and highlight matching nodes; a node matched by A (**red**), by B, or by **both**
 (**teal**) is shown in a distinct colour, so two searches can be compared at a
-glance. Search B’s colour is chosen under **Settings → Display → Found/Selected
-Colors** — **Electric Violet** (default), **Neon Magenta**, or **Emerald Green** —
+glance. Search B’s colour is chosen under **Settings → Labels & Colors →
+Found/Selected Colors** — **Electric Violet** (default), **Neon Magenta**, or **Emerald Green** —
 each picked to stay legible on a white background, and the choice is remembered
 across restarts.
 
@@ -175,8 +175,8 @@ as you work, so switching fields or navigating between trees doesn't reset them.
 
 Step through the hits with the **◀ / ▶** buttons beside the boxes, or **View → Find
 Next / Find Previous** (**⌘G / ⌘⇧G**) — each jump centres the next match in the view.
-Under **Settings → Display**, **Bold Found Labels**, **Dim Non-Matches**, and **Pulse
-Found Nodes** make the matches stand out further.
+Under **Settings → Labels & Colors**, **Bold Found Labels**, **Dim Non-Matches**, and
+**Pulse Found Nodes** make the matches stand out further.
 
 Whenever any nodes are highlighted, a **Found / Selected: N** counter appears at the
 right of the menu bar. Search hits and manual selection are one and the same in

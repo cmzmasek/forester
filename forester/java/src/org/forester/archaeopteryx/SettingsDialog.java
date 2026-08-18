@@ -81,7 +81,10 @@ final class SettingsDialog extends JDialog {
         super( mf, "Settings", false );
         _mf = mf;
         final JTabbedPane tabs = new JTabbedPane();
-        tabs.addTab( "Display", scroll( displayTab() ) );
+        // the former single "Display" tab had grown too long, so it is split into three focused tabs
+        tabs.addTab( "Layout", scroll( layoutTab() ) );
+        tabs.addTab( "Labels & Colors", scroll( labelsColorsTab() ) );
+        tabs.addTab( "Overlays", scroll( overlaysTab() ) );
         tabs.addTab( "Fonts, Nodes and Branches", scroll( nodesTab() ) );
         tabs.addTab( "Search", scroll( searchTab() ) );
         tabs.addTab( "Export & Print", scroll( exportTab() ) );
@@ -116,7 +119,9 @@ final class SettingsDialog extends JDialog {
 
     // ---- tabs ----------------------------------------------------------------------------------
 
-    private JPanel displayTab() {
+    /** Tab 1 of the split former "Display" tab: theme, the tree's layout/orientation, and collapsed-subtree/domain
+     *  handling -- i.e. the tree's shape, not the decorations on it. */
+    private JPanel layoutTab() {
         final JPanel c = column();
         c.add( header( "Theme" ) );
         addThemeControls( c );
@@ -140,42 +145,61 @@ final class SettingsDialog extends JDialog {
         add( c, labeled( "Tip label angle:", tipLabelCombo ) );
         addRadioGroup( c, _mf._ext_node_dependent_cladogram_rbmi, _mf._non_lined_up_cladograms_rbmi );
         add( c, cb( _mf._label_direction_cbmi ) );
-        add( c, cb( _mf._show_scale_cbmi ) );
-        add( c, cb( _mf._show_scale_grid_cbmi ) );
-        add( c, cb( _mf._show_scale_axis_cbmi ) );
-        add( c, cb( _mf._show_hpd_bars_cbmi ) );
-        add( c, cb( _mf._show_zebra_stripes_cbmi ) );
-        add( c, cb( _mf._show_internal_taxonomy_key_cbmi ) );
-        add( c, cb( _mf._tip_labels_below_columns_cbmi ) );
         add( c, cb( _mf._reverse_tip_order_cbmi ) );
-        add( c, cb( _mf._bold_found_labels_cbmi ) );
-        add( c, cb( _mf._dim_non_matches_cbmi ) );
-        add( c, cb( _mf._pulse_found_nodes_cbmi ) );
-        add( c, cb( _mf._show_tree_name_cbmi ) );
-        add( c, cb( _mf._show_overview_cbmi ) );
-        add( c, labeled( "Overview placement:", enumCombo( OVERVIEW_PLACEMENT_TYPE.values(),
-                                                           _mf.getOptions().getOvPlacement(),
-                                                           v -> { _mf.getOptions().setOvPlacement( v );
-                                                                  updateOverview(); } ) ) );
-        c.add( header( "Labels & Colors" ) );
-        c.add( new JLabel( "Internal label placement:" ) );
-        addRadioGroup( c, _mf._internal_labels_above_branch_rbmi, _mf._internal_labels_right_of_node_rbmi );
-        add( c, cb( _mf._color_labels_same_as_parent_branch ) );
-        add( c, cb( _mf._use_italic_scientific_names_cbmi ) );
-        add( c, cb( _mf._abbreviate_scientific_names ) );
-        add( c, cb( _mf._show_confidence_stddev_cbmi ) );
-        add( c, cb( _mf._show_mad_confidence_cbmi ) );
-        add( c, labeled( "\"Color by\" palette:", paletteCombo() ) );
-        add( c, labeled( "Found/Selected colors:", enumCombo( Options.FOUND_COLOR.values(),
-                                                              _mf.getOptions().getFoundColor(),
-                                                              v -> { _mf.getOptions().setFoundColor( v );
-                                                                     applyFoundColor( v ); } ) ) );
         c.add( header( "Collapsed Subtrees & Domains" ) );
         add( c, cb( _mf._collapsed_with_average_height_cbmi ) );
         add( c, cb( _mf._show_abbreviated_labels_for_collapsed_nodes_cbmi ) );
         add( c, cb( _mf._line_up_renderable_data_cbmi ) );
         add( c, cb( _mf._right_line_up_domains_cbmi ) );
         add( c, cb( _mf._show_domain_labels ) );
+        return c;
+    }
+
+    /** Tab 2 of the split former "Display" tab: how node/label TEXT reads and its COLOR, including the
+     *  found/selected highlight colour + emphasis. */
+    private JPanel labelsColorsTab() {
+        final JPanel c = column();
+        c.add( header( "Labels" ) );
+        c.add( new JLabel( "Internal label placement:" ) );
+        addRadioGroup( c, _mf._internal_labels_above_branch_rbmi, _mf._internal_labels_right_of_node_rbmi );
+        add( c, cb( _mf._use_italic_scientific_names_cbmi ) );
+        add( c, cb( _mf._abbreviate_scientific_names ) );
+        add( c, cb( _mf._show_confidence_stddev_cbmi ) );
+        add( c, cb( _mf._show_mad_confidence_cbmi ) );
+        add( c, cb( _mf._tip_labels_below_columns_cbmi ) );
+        c.add( header( "Colors" ) );
+        add( c, cb( _mf._color_labels_same_as_parent_branch ) );
+        add( c, labeled( "\"Color by\" palette:", paletteCombo() ) );
+        c.add( header( "Found / Selected" ) );
+        add( c, labeled( "Found/Selected colors:", enumCombo( Options.FOUND_COLOR.values(),
+                                                              _mf.getOptions().getFoundColor(),
+                                                              v -> { _mf.getOptions().setFoundColor( v );
+                                                                     applyFoundColor( v ); } ) ) );
+        add( c, cb( _mf._bold_found_labels_cbmi ) );
+        add( c, cb( _mf._dim_non_matches_cbmi ) );
+        add( c, cb( _mf._pulse_found_nodes_cbmi ) );
+        return c;
+    }
+
+    /** Tab 3 of the split former "Display" tab: extra graphical elements drawn over/around the tree (scale,
+     *  data overlays) plus the viewport chrome (tree name, overview). */
+    private JPanel overlaysTab() {
+        final JPanel c = column();
+        c.add( header( "Scale & Grid" ) );
+        add( c, cb( _mf._show_scale_cbmi ) );
+        add( c, cb( _mf._show_scale_grid_cbmi ) );
+        add( c, cb( _mf._show_scale_axis_cbmi ) );
+        c.add( header( "Data Overlays" ) );
+        add( c, cb( _mf._show_hpd_bars_cbmi ) );
+        add( c, cb( _mf._show_zebra_stripes_cbmi ) );
+        add( c, cb( _mf._show_internal_taxonomy_key_cbmi ) );
+        c.add( header( "Tree Name & Overview" ) );
+        add( c, cb( _mf._show_tree_name_cbmi ) );
+        add( c, cb( _mf._show_overview_cbmi ) );
+        add( c, labeled( "Overview placement:", enumCombo( OVERVIEW_PLACEMENT_TYPE.values(),
+                                                           _mf.getOptions().getOvPlacement(),
+                                                           v -> { _mf.getOptions().setOvPlacement( v );
+                                                                  updateOverview(); } ) ) );
         return c;
     }
 
@@ -225,9 +249,12 @@ final class SettingsDialog extends JDialog {
         c.add( header( "Search & Selection" ) );
         add( c, cb( _mf._color_all_found_nodes_when_coloring_subtree_cbmi ) );
         c.add( Box.createVerticalStrut( 4 ) );
-        final JLabel note = new JLabel( "<html><i>Each search box on the left control panel has its own field"
-                + " selector (what to search) and match-mode selector (contains / starts with / ends with / whole"
-                + " word / regular expression), plus the shared Match Case and Inverse options.</i></html>" );
+        // constrain the HTML note's width so it WRAPS instead of laying out as one very long line -- an
+        // unconstrained single-line note was forcing the whole Settings dialog ~1340px wide
+        final JLabel note = new JLabel( "<html><body style='width: 340px'><i>Each search box on the left control panel"
+                + " has its own field selector (what to search) and match-mode selector (contains / starts with /"
+                + " ends with / whole word / regular expression), plus the shared Match Case and Inverse options."
+                + "</i></body></html>" );
         note.setAlignmentX( Component.LEFT_ALIGNMENT );
         c.add( note );
         return c;

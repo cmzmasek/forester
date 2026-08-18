@@ -94,18 +94,21 @@ public final class SettingsDialogTest {
                 dlg.pack();
                 final List<JTabbedPane> tabs = new ArrayList<>();
                 collect( dlg.getContentPane(), JTabbedPane.class, tabs );
-                if ( tabs.isEmpty() || ( tabs.get( 0 ).getTabCount() != 7 ) ) {
+                // the former single "Display" tab was split into "Layout" / "Labels & Colors" / "Overlays" -> 9 tabs
+                if ( tabs.isEmpty() || ( tabs.get( 0 ).getTabCount() != 9 ) ) {
                     ok[ 0 ] = false;
                 }
                 else {
-                    // the persistent-taxonomy-cache tab must be present, with its on/off checkbox
-                    boolean has_cache_tab = false;
+                    final List<String> titles = new ArrayList<>();
                     for ( int i = 0; i < tabs.get( 0 ).getTabCount(); ++i ) {
-                        if ( "Taxonomy Cache".equals( tabs.get( 0 ).getTitleAt( i ) ) ) {
-                            has_cache_tab = true;
-                        }
+                        titles.add( tabs.get( 0 ).getTitleAt( i ) );
                     }
-                    if ( !has_cache_tab || ( findCheckBox( dlg.getContentPane(), "Use persistent cache" ) == null ) ) {
+                    // the three split tabs are present, the retired combined "Display" tab is gone, and the
+                    // persistent-taxonomy-cache tab (with its on/off checkbox) is still there
+                    if ( !titles.contains( "Layout" ) || !titles.contains( "Labels & Colors" )
+                            || !titles.contains( "Overlays" ) || titles.contains( "Display" )
+                            || !titles.contains( "Taxonomy Cache" )
+                            || ( findCheckBox( dlg.getContentPane(), "Use persistent cache" ) == null ) ) {
                         ok[ 0 ] = false;
                     }
                 }
