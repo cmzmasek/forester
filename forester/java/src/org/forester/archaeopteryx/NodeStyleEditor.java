@@ -164,28 +164,6 @@ final class NodeStyleEditor {
         return n;
     }
 
-    /** A human-readable provenance sentence naming the attributes changed, for the tree description. */
-    static String provenance( final Spec spec, final int count ) {
-        final StringBuilder attrs = new StringBuilder();
-        appendAttr( attrs, spec.fontStyle() != null, "font style" );
-        appendAttr( attrs, spec.fontSize() != null, "font size" );
-        appendAttr( attrs, spec.fontColor() != null, "font color" );
-        appendAttr( attrs, spec.shape() != null, "node shape" );
-        appendAttr( attrs, spec.fill() != null, "node fill" );
-        appendAttr( attrs, spec.nodeSize() != null, "node size" );
-        appendAttr( attrs, spec.nodeColor() != null, "node color" );
-        return "Set the visual style (" + attrs + ") of " + count + ( count == 1 ? " node." : " nodes." );
-    }
-
-    private static void appendAttr( final StringBuilder sb, final boolean present, final String label ) {
-        if ( present ) {
-            if ( sb.length() > 0 ) {
-                sb.append( ", " );
-            }
-            sb.append( label );
-        }
-    }
-
     private NodeStyleEditor() {
     }
 }

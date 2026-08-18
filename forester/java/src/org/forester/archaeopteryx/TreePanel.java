@@ -870,8 +870,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     /**
      * Applies a per-node visual-style edit (from {@link NodeStyleDialog}) to {@code targets}: checkpoints undo,
      * writes only the spec's ticked attributes ({@link NodeStyleEditor}), turns on "Use Visual Styles" so the edit
-     * is visible, appends a provenance sentence, marks the tree edited and repaints. A tree-data MUTATION. Returns
-     * the number of nodes changed.
+     * is visible, marks the tree edited and repaints. A tree-data MUTATION (undoable, saved), but -- being a pure
+     * visual style -- it does NOT write a provenance sentence to the description (per the "font/color changes don't
+     * write provenance" rule). Returns the number of nodes changed.
      */
     final int applyNodeStyleEdit(final List<PhylogenyNode> targets, final NodeStyleEditor.Spec spec) {
         if ((targets == null) || targets.isEmpty() || (spec == null) || spec.isEmpty()) {
@@ -899,9 +900,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             if (getControlPanel().getUseVisualStylesCb() != null) {
                 getControlPanel().getUseVisualStylesCb().setSelected(true);
             }
-            final String sentence = NodeStyleEditor.provenance(spec, n);
-            final String existing = _phylogeny.getDescription();
-            _phylogeny.setDescription(ForesterUtil.isEmpty(existing) ? sentence : existing + " " + sentence);
             setEdited(true);
             repaint();
         }

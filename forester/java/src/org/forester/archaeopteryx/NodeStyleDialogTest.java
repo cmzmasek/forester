@@ -39,12 +39,14 @@ import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.NodeVisualData;
 import org.forester.phylogeny.data.NodeVisualData.NodeShape;
+import org.forester.util.ForesterUtil;
 
 /**
  * Headful integration test for {@link NodeStyleDialog} + {@link TreePanel#applyNodeStyleEdit}: a single-node edit
- * builds a spec from the ticked controls, writes exactly those attributes, turns on "Use Visual Styles", records
- * provenance, and is undoable; a bulk edit styles every target node; and opening the dialog on an already-styled
- * node PRE-fills (pre-ticks) that attribute. A no-op on a headless box (needs FlatLaf via {@code createInstance}).
+ * builds a spec from the ticked controls, writes exactly those attributes, turns on "Use Visual Styles", and is
+ * undoable (without writing provenance); a bulk edit styles every target node; and opening the dialog on an
+ * already-styled node PRE-fills (pre-ticks) that attribute. A no-op on a headless box (needs FlatLaf via
+ * {@code createInstance}).
  */
 public final class NodeStyleDialogTest {
 
@@ -65,7 +67,7 @@ public final class NodeStyleDialogTest {
                     final PhylogenyNode[] leaves = tp.getPhylogeny().getExternalNodes()
                             .toArray( new PhylogenyNode[ 0 ] );
 
-                    // ---- single node: build spec from ticked controls, apply, provenance, undo ----
+                    // ---- single node: build spec from ticked controls, apply, undo ----
                     final NodeStyleDialog d = new NodeStyleDialog( tp, Arrays.asList( leaves[ 0 ] ), true );
                     d.setApplyFontColorForTest( Color.RED );
                     d.setApplyShapeForTest( NodeShape.CIRCLE );
@@ -79,9 +81,9 @@ public final class NodeStyleDialogTest {
                     ck( ok, ( vis0 != null ) && Color.RED.equals( vis0.getFontColor() ), "node got the font color" );
                     ck( ok, ( vis0 != null ) && ( vis0.getShape() == NodeShape.CIRCLE ), "node got the shape" );
                     ck( ok, tp.getControlPanel().isUseVisualStyles(), "\"Use Visual Styles\" was turned on" );
-                    ck( ok, ( tp.getPhylogeny().getDescription() != null )
-                            && tp.getPhylogeny().getDescription().contains( "visual style" ),
-                        "provenance sentence appended" );
+                    // a visual-style edit is undoable but does NOT write provenance to the description
+                    ck( ok, ForesterUtil.isEmpty( tp.getPhylogeny().getDescription() ),
+                        "no provenance sentence written for a visual-style edit" );
                     // undo restores the pre-edit (un-styled) tree
                     mf[ 0 ].undo();
                     final NodeVisualData after_undo = tp.getPhylogeny().getExternalNodes().get( 0 ).getNodeData()

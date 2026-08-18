@@ -55,7 +55,7 @@ import org.forester.phylogeny.data.NodeVisualData.NodeShape;
  * a bulk edit over the selected/found set changes just the chosen attributes and leaves the rest of each node's
  * style untouched. Opened for ONE node from the "Node Style" click-to action (pre-filled from that node), or for
  * the whole selected/found set from Tools -> "Node Style for Selected Nodes" (all attributes start un-ticked). The
- * spec it builds is applied via {@link TreePanel#applyNodeStyleEdit(List, NodeStyleEditor.Spec)} (undo + provenance).
+ * spec it builds is applied via {@link TreePanel#applyNodeStyleEdit(List, NodeStyleEditor.Spec)} (undoable).
  */
 final class NodeStyleDialog extends JDialog {
 

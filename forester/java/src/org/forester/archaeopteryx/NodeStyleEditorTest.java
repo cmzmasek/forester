@@ -35,15 +35,14 @@ import org.forester.phylogeny.data.NodeVisualData.NodeShape;
 /**
  * Headless tests for {@link NodeStyleEditor}: the per-node visual-style applier writes ONLY the spec's ticked
  * attributes (so a bulk edit never clobbers the others), creates a {@link NodeVisualData} where absent, fills in a
- * font family + size when a per-node font is set (so it actually renders), and produces a sensible provenance
- * sentence.
+ * font family + size when a per-node font is set (so it actually renders).
  */
 public final class NodeStyleEditorTest {
 
     public static boolean test() {
         try {
             return perAttributeOk() && bulkOk() && leavesOthersOk() && fontFallbackOk() && keepsExistingSizeOk()
-                    && emptySpecOk() && provenanceOk();
+                    && emptySpecOk();
         }
         catch ( final Throwable e ) {
             e.printStackTrace();
@@ -144,19 +143,6 @@ public final class NodeStyleEditorTest {
                                              "Source Sans 3", 12 );
         ck( n == 0, "empty spec modifies nothing" );
         ck( node.getNodeData().getNodeVisualData() == null, "empty spec creates no visual data" );
-        return true;
-    }
-
-    private static boolean provenanceOk() {
-        final NodeStyleEditor.Spec spec = new NodeStyleEditor.Spec( null, null, Color.RED, NodeShape.CIRCLE, null,
-                                                                    null, null );
-        final String p = NodeStyleEditor.provenance( spec, 3 );
-        ck( p.contains( "font color" ) && p.contains( "node shape" ), "provenance names the changed attributes: " + p );
-        ck( p.contains( "3 nodes" ), "provenance has the plural count: " + p );
-        ck( !p.contains( "node size" ) && !p.contains( "node fill" ), "provenance omits un-changed attributes: " + p );
-        final String one = NodeStyleEditor.provenance(
-                new NodeStyleEditor.Spec( null, null, Color.RED, null, null, null, null ), 1 );
-        ck( one.contains( "1 node." ), "singular count: " + one );
         return true;
     }
 
