@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" rerootable="true">
+  <name>Node Style (demo)</name>
+  <description>A few tips carry a per-node visual style (font + node mark). Turn on &quot;Use Visual Styles&quot;, then click a node -&gt; &quot;Node Style&quot;, or select/search nodes and use Tools -&gt; &quot;Node Style for Selected Nodes...&quot;, to change the font (style/size/colour) and node mark (shape/fill/size/colour).</description>
+  <clade>
+    <branch_length>0.0</branch_length>
+    <clade>
+      <branch_length>0.05</branch_length>
+      <clade>
+        <branch_length>0.03</branch_length>
+        <clade>
+          <name>Homo sapiens</name>
+          <branch_length>0.02</branch_length>
+          <property ref="style:font" datatype="xsd:token" applies_to="node">Source Sans 3</property>
+          <property ref="style:font_size" datatype="xsd:unsignedByte" applies_to="node">18</property>
+          <property ref="style:font_style" datatype="xsd:token" applies_to="node">bold</property>
+          <property ref="style:font_color" datatype="xsd:token" applies_to="node">#d00000</property>
+          <property ref="style:node_shape" datatype="xsd:token" applies_to="node">circle</property>
+          <property ref="style:node_size" datatype="xsd:float" applies_to="node">14.0</property>
+          <property ref="style:node_color" datatype="xsd:token" applies_to="node">#d00000</property>
+          <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">solid</property>
+        </clade>
+        <clade>
+          <name>Pan troglodytes</name>
+          <branch_length>0.02</branch_length>
+          <property ref="style:font" datatype="xsd:token" applies_to="node">Source Sans 3</property>
+          <property ref="style:font_size" datatype="xsd:unsignedByte" applies_to="node">14</property>
+          <property ref="style:font_style" datatype="xsd:token" applies_to="node">italic</property>
+          <property ref="style:font_color" datatype="xsd:token" applies_to="node">#0066cc</property>
+          <property ref="style:node_shape" datatype="xsd:token" applies_to="node">rectangle</property>
+          <property ref="style:node_size" datatype="xsd:float" applies_to="node">10.0</property>
+          <property ref="style:node_color" datatype="xsd:token" applies_to="node">#0066cc</property>
+          <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">solid</property>
+        </clade>
+      </clade>
+      <clade>
+        <name>Gorilla gorilla</name>
+        <branch_length>0.02</branch_length>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.04</branch_length>
+      <clade>
+        <name>Mus musculus</name>
+        <branch_length>0.02</branch_length>
+        <property ref="style:font" datatype="xsd:token" applies_to="node">Source Sans 3</property>
+        <property ref="style:font_size" datatype="xsd:unsignedByte" applies_to="node">12</property>
+        <property ref="style:font_color" datatype="xsd:token" applies_to="node">#008800</property>
+        <property ref="style:node_shape" datatype="xsd:token" applies_to="node">circle</property>
+        <property ref="style:node_size" datatype="xsd:float" applies_to="node">9.0</property>
+        <property ref="style:node_color" datatype="xsd:token" applies_to="node">#008800</property>
+        <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">none</property>
+      </clade>
+      <clade>
+        <name>Rattus norvegicus</name>
+        <branch_length>0.02</branch_length>
+      </clade>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>

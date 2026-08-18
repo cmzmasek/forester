@@ -50,7 +50,7 @@ public final class ConfigurationTest {
         if ( !"Display Node Data".equals( c.getClickToTitle( Configuration.display_node_data ) ) ) {
             return false;
         }
-        if ( !"Colorize Node(s)".equals( c.getClickToTitle( Configuration.color_node_font ) ) ) {
+        if ( !"Node Style".equals( c.getClickToTitle( Configuration.node_style ) ) ) {
             return false;
         }
         if ( !"Colorize Subtree(s)".equals( c.getClickToTitle( Configuration.color_subtree ) ) ) {

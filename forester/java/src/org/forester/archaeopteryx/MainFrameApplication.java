@@ -1747,7 +1747,11 @@ public final class MainFrameApplication extends MainFrame {
         _select_representative_tips_jmi.setToolTipText(
                 "Reduce redundancy: group tips that are close in evolutionary distance and keep one representative per group, either within a distance cutoff or to reach a target number. Highlights the representatives and can extract them into a new tree; the current tree is left unchanged.");
         _tools_menu.addSeparator();
-        // Colorizing
+        // Colorizing / styling
+        _tools_menu.add(_node_style_selected_jmi = new JMenuItem("Node Style for Selected Nodes…"));
+        customizeJMenuItem(_node_style_selected_jmi);
+        _node_style_selected_jmi.setToolTipText(
+                "Change the font (style, size, color) and node mark (shape, fill, size, color) of all selected / found nodes at once");
         _tools_menu.add(_color_rank_jmi = new JMenuItem("Colorize Subtrees via Taxonomic Rank"));
         customizeJMenuItem(_color_rank_jmi);
         _color_rank_jmi.setToolTipText("for example, at \"Class\" level, colorize mammal specific subtree red");

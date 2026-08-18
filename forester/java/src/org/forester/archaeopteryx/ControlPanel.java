@@ -99,7 +99,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         SORT_DESCENDENTS,
         SUBTREE,
         SWAP,
-        COLOR_NODE_FONT,
+        NODE_STYLE,
         UNCOLLAPSE_ALL,
         ORDER_SUBTREE;
     }
@@ -178,7 +178,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     private int _open_pdb_item;
     private int _open_seq_web_item;
     private int _open_tax_web_item;
-    private int _color_node_font_item;
+    private int _node_style_item;
     private JButton _order;
     private int _paste_subtree_item;
     private int _reroot_cb_item;
@@ -979,11 +979,11 @@ final class ControlPanel extends JPanel implements ActionListener {
             }
             cb_index++;
         }
-        if (_configuration.doDisplayClickToOption(Configuration.color_node_font)) {
-            _color_node_font_item = cb_index;
-            addClickToOption(Configuration.color_node_font,
-                    _configuration.getClickToTitle(Configuration.color_node_font));
-            if (default_option == Configuration.color_node_font) {
+        if (_configuration.doDisplayClickToOption(Configuration.node_style)) {
+            _node_style_item = cb_index;
+            addClickToOption(Configuration.node_style,
+                    _configuration.getClickToTitle(Configuration.node_style));
+            if (default_option == Configuration.node_style) {
                 selected_index = cb_index;
             }
             cb_index++;
@@ -2380,8 +2380,8 @@ final class ControlPanel extends JPanel implements ActionListener {
             setActionWhenNodeClicked(NodeClickAction.SELECT_NODES);
         } else if (action == _open_pdb_item) {
             setActionWhenNodeClicked(NodeClickAction.OPEN_PDB_WEB);
-        } else if (action == _color_node_font_item) {
-            setActionWhenNodeClicked(NodeClickAction.COLOR_NODE_FONT);
+        } else if (action == _node_style_item) {
+            setActionWhenNodeClicked(NodeClickAction.NODE_STYLE);
         } else if (action == _uncollapse_all_cb_item) {
             setActionWhenNodeClicked(NodeClickAction.UNCOLLAPSE_ALL);
         } else if (action == _order_subtree_cb_item) {

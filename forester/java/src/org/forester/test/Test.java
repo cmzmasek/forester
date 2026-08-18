@@ -306,6 +306,22 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Node style editor: ");
+        if (org.forester.archaeopteryx.NodeStyleEditorTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Node style dialog: ");
+        if (org.forester.archaeopteryx.NodeStyleDialogTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("External-data fit: ");
         if (org.forester.archaeopteryx.ExternalDataFitTest.test()) {
             System.out.println("OK.");

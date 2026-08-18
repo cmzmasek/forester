@@ -31,6 +31,7 @@ import org.forester.io.parsers.nexus.NexusPhylogeniesParser;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
+import org.forester.phylogeny.data.NodeVisualData;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 
 /**
@@ -101,6 +102,11 @@ public final class DemoTreesTest {
         ok &= hasAtLeastTips( "search-emphasis.xml", 12 );
         ok &= tipsContaining( "search-emphasis.xml", "kinase", 4 );
         ok &= hasInternalConfidence( "search-emphasis.xml" );
+
+        // node style: several tips carry a per-node NodeVisualData (font + node mark), for "Use Visual Styles" and
+        // the Node Style editor (click-to / Tools)
+        ok &= hasAtLeastTips( "node-visual-styles.xml", 5 );
+        ok &= hasNodeVisualStyle( "node-visual-styles.xml", 3 );
 
         // infer ancestor taxonomies: six real-species tips (rank 'species'), NO taxonomy on the internal nodes,
         // ready for Analysis > Infer Ancestor Taxonomies (which resolves the tips online and fills the internals)
@@ -263,6 +269,25 @@ public final class DemoTreesTest {
         if ( matches < min_matches ) {
             return note( file_name + " must have at least " + min_matches + " tips whose name contains '" + token
                     + "' (a searchable subset for the emphasis demo), found " + matches );
+        }
+        return true;
+    }
+
+    /** At least {@code min} tips carry a non-empty per-node visual style ({@link NodeVisualData}). */
+    private static boolean hasNodeVisualStyle( final String file_name, final int min ) {
+        final Phylogeny phy = load( file_name );
+        if ( phy == null ) {
+            return false;
+        }
+        int styled = 0;
+        for ( final PhylogenyNode n : phy.getExternalNodes() ) {
+            final NodeVisualData vis = n.getNodeData().getNodeVisualData();
+            if ( ( vis != null ) && !vis.isEmpty() ) {
+                styled++;
+            }
+        }
+        if ( styled < min ) {
+            return note( file_name + " must have at least " + min + " tips with a visual style; found " + styled );
         }
         return true;
     }

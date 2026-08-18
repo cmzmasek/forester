@@ -244,8 +244,12 @@ public final class RepresentativeTipsToolTest {
                     System.out.println( "  [RepresentativeTipsToolTest] \"Delete/Retain Selected Tips\" menu items not found" );
                     ok[ 0 ] = false;
                 }
-                if ( toolsItem( mf[ 0 ].getJMenuBar(), "Selected Nodes" ) != null ) {
-                    System.out.println( "  [RepresentativeTipsToolTest] old \"...Selected Nodes\" menu label still present" );
+                // the PRUNING items must not carry the old "...Selected Nodes" labels (guard the ...Tips rename);
+                // check the specific old labels, not the bare phrase (other tools legitimately act on selected nodes,
+                // e.g. "Node Style for Selected Nodes")
+                if ( ( toolsItem( mf[ 0 ].getJMenuBar(), "Delete Selected Nodes" ) != null )
+                        || ( toolsItem( mf[ 0 ].getJMenuBar(), "Retain Selected Nodes" ) != null ) ) {
+                    System.out.println( "  [RepresentativeTipsToolTest] old \"...Selected Nodes\" pruning label still present" );
                     ok[ 0 ] = false;
                 }
 

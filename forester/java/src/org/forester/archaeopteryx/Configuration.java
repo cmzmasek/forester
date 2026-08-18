@@ -49,7 +49,7 @@ public final class Configuration {
     final static String[][] clickto_options = {
             {"Display Node Data", "display"}, {"Collapse/Uncollapse", "display"}, {"Root/Reroot", "display"},
             {"Go to Sub/Supertree", "display"}, {"Swap Descendants", "display"},
-            {"Colorize Node(s)", "display"},
+            {"Node Style", "display"},
             {"Colorize Subtree(s)", "display"}, {"Open Sequence DB", "display"}, {"Open PDB", "display"},
             {"Open Taxonomy DB", "display"}, {"Launch BLAST", "display"}, {"Cut Subtree", "display"},
             {"Copy Subtree", "display"}, {"Paste Subtree", "display"}, {"Delete Subtree/Node", "display"},
@@ -61,7 +61,7 @@ public final class Configuration {
     final static int reroot = 2;
     final static int subtree = 3;
     final static int swap = 4;
-    final static int color_node_font = 5;
+    final static int node_style = 5;
     final static int color_subtree = 6;
     final static int open_seq_web = 7;
     final static int open_pdb_web = 8;

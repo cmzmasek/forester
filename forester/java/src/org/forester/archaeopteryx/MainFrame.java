@@ -258,6 +258,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem _midpoint_root_item;
     JMenuItem _mad_root_item;
     JMenuItem _color_rank_jmi;
+    JMenuItem _node_style_selected_jmi;
     JMenuItem _clade_bands_jmi;
     JMenuItem _annotation_columns_jmi;
     JMenu _edit_jmenu;
@@ -416,6 +417,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             executeGSDIR();
         } else if (o == _color_rank_jmi) {
             colorRank();
+        } else if (o == _node_style_selected_jmi) {
+            nodeStyleForSelectedNodes();
         } else if (o == _clade_bands_jmi) {
             labelCladesByRank();
         } else if (o == _annotation_columns_jmi) {
@@ -1070,6 +1073,27 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         setVisible(false);
         dispose();
+    }
+
+    /** Tools -> "Node Style for Selected Nodes…": opens the {@link NodeStyleDialog} over the current found/selected
+     *  set (search hits A/B + manual selection). Warns when nothing is selected. */
+    void nodeStyleForSelectedNodes() {
+        final TreePanel tp = _mainpanel.getCurrentTreePanel();
+        if (tp == null) {
+            return;
+        }
+        final Phylogeny phy = tp.getPhylogeny();
+        if ((phy == null) || phy.isEmpty()) {
+            return;
+        }
+        final List<PhylogenyNode> selected = tp.getFoundNodesAsListOfPhylogenyNodes();
+        if ((selected == null) || selected.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "No nodes are selected. Click nodes in the tree, or use the Search field(s), then choose this again.",
+                    "No Selection", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        new NodeStyleDialog(tp, selected, false).setVisible(true);
     }
 
     void colorRank() {

@@ -126,34 +126,6 @@ import org.forester.util.TaxonomyUtil;
 
 public final class TreePanel extends JPanel implements ActionListener, MouseWheelListener, Printable {
 
-    final private class NodeColorizationActionListener implements ActionListener {
-
-        List<PhylogenyNode> _additional_nodes = null;
-        JColorChooser _chooser = null;
-        PhylogenyNode _node = null;
-
-        NodeColorizationActionListener(final JColorChooser chooser, final PhylogenyNode node) {
-            _chooser = chooser;
-            _node = node;
-        }
-
-        NodeColorizationActionListener(final JColorChooser chooser,
-                                       final PhylogenyNode node,
-                                       final List<PhylogenyNode> additional_nodes) {
-            _chooser = chooser;
-            _node = node;
-            _additional_nodes = additional_nodes;
-        }
-
-        @Override
-        public void actionPerformed(final ActionEvent e) {
-            final Color c = _chooser.getColor();
-            if (c != null) {
-                colorizeNodes(c, _node, _additional_nodes);
-            }
-        }
-    }
-
     final private class SubtreeColorizationActionListener implements ActionListener {
 
         JColorChooser _chooser = null;
@@ -874,24 +846,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 JOptionPane.WARNING_MESSAGE);
     }
 
-    final private void colorizeNodes(final Color c,
-                                     final PhylogenyNode node,
-                                     final List<PhylogenyNode> additional_nodes) {
-        _control_panel.setColorBranches(true);
-        if (_control_panel.getUseVisualStylesCb() != null) {
-            _control_panel.getUseVisualStylesCb().setSelected(true);
-        }
-        if (node != null) {
-            colorizeNodesHelper(c, node);
-        }
-        if (additional_nodes != null) {
-            for (final PhylogenyNode n : additional_nodes) {
-                colorizeNodesHelper(c, n);
-            }
-        }
-        repaint();
-    }
-
     final private void colorizeSubtree(final Color c, final PhylogenyNode node) {
         _control_panel.setColorBranches(true);
         if (_control_panel.getUseVisualStylesCb() != null) {
@@ -905,29 +859,53 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         repaint();
     }
 
-    private void colorNodeFont(final PhylogenyNode node) {
-        _color_chooser.setPreviewPanel(new JPanel());
-        NodeColorizationActionListener al;
-        int count = 1;
-        if ((getFoundNodes0() != null) || (getFoundNodes1() != null)) {
-            final List<PhylogenyNode> additional_nodes = getFoundNodesAsListOfPhylogenyNodes();
-            al = new NodeColorizationActionListener(_color_chooser, node, additional_nodes);
-            count = additional_nodes.size();
-            if (!additional_nodes.contains(node)) {
-                count++;
+    /** The "Node Style" click-to action: opens the {@link NodeStyleDialog} for the single clicked node so the user
+     *  can change its font (style/size/colour) and node mark (shape/fill/size/colour). */
+    private void editNodeStyle(final PhylogenyNode node) {
+        final List<PhylogenyNode> targets = new ArrayList<>();
+        targets.add(node);
+        new NodeStyleDialog(this, targets, true).setVisible(true);
+    }
+
+    /**
+     * Applies a per-node visual-style edit (from {@link NodeStyleDialog}) to {@code targets}: checkpoints undo,
+     * writes only the spec's ticked attributes ({@link NodeStyleEditor}), turns on "Use Visual Styles" so the edit
+     * is visible, appends a provenance sentence, marks the tree edited and repaints. A tree-data MUTATION. Returns
+     * the number of nodes changed.
+     */
+    final int applyNodeStyleEdit(final List<PhylogenyNode> targets, final NodeStyleEditor.Spec spec) {
+        if ((targets == null) || targets.isEmpty() || (spec == null) || spec.isEmpty()) {
+            return 0;
+        }
+        boolean has_target = false;
+        for (final PhylogenyNode t : targets) {
+            if (t != null) {
+                has_target = true;
+                break;
             }
-        } else {
-            al = new NodeColorizationActionListener(_color_chooser, node);
         }
-        String title = "Change the (node and font) color for ";
-        if (count == 1) {
-            title += "one node";
-        } else {
-            title += (count + " nodes");
+        if (!has_target) {
+            return 0; // nothing to change -> don't checkpoint (which would clear redo) for a no-op
         }
-        final JDialog dialog = JColorChooser.createDialog(this, title, true, _color_chooser, al, null);
-        setEdited(true);
-        dialog.setVisible(true);
+        pushUndoCheckpoint("Node Style");
+        // use the BASE (user-chosen) font, not getLargeFont() -- that is the transient, auto-shrunk DISPLAYED font,
+        // so a font edit while zoomed out would otherwise pin the node to a tiny size
+        final Font tree_font = getTreeFontSet().getBaseFont();
+        final int n = NodeStyleEditor.apply(targets, spec, tree_font.getFamily(), tree_font.getSize());
+        if (n > 0) {
+            // make the edit visible: "Use Visual Styles" is the render gate (isUseVisualStyles() reads the checkbox
+            // when present, else the color-branches flag), so set both
+            getControlPanel().setColorBranches(true);
+            if (getControlPanel().getUseVisualStylesCb() != null) {
+                getControlPanel().getUseVisualStylesCb().setSelected(true);
+            }
+            final String sentence = NodeStyleEditor.provenance(spec, n);
+            final String existing = _phylogeny.getDescription();
+            _phylogeny.setDescription(ForesterUtil.isEmpty(existing) ? sentence : existing + " " + sentence);
+            setEdited(true);
+            repaint();
+        }
+        return n;
     }
 
     final private void colorSubtree(final PhylogenyNode node) {
@@ -1301,8 +1279,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             case COLOR_SUBTREE:
                 colorSubtree(node);
                 break;
-            case COLOR_NODE_FONT:
-                colorNodeFont(node);
+            case NODE_STYLE:
+                editNodeStyle(node);
                 break;
             case OPEN_SEQ_WEB:
                 openSeqWeb(node);
@@ -11209,13 +11187,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (_domain_structure_width > 20) {
             _domain_structure_width *= 0.8;
         }
-    }
-
-    private final static void colorizeNodesHelper(final Color c, final PhylogenyNode node) {
-        if (node.getNodeData().getNodeVisualData() == null) {
-            node.getNodeData().setNodeVisualData(new NodeVisualData());
-        }
-        node.getNodeData().getNodeVisualData().setFontColor(new Color(c.getRed(), c.getGreen(), c.getBlue()));
     }
 
     final private static void drawString(final String str, final float x, final float y, final Graphics2D g) {

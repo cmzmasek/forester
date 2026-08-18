@@ -38,6 +38,11 @@ import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.PropertiesList;
 import org.forester.phylogeny.data.Property;
 import org.forester.phylogeny.data.Property.AppliesTo;
+import org.forester.phylogeny.data.NodeVisualData;
+import org.forester.phylogeny.data.NodeVisualData.NodeFill;
+import org.forester.phylogeny.data.NodeVisualData.NodeShape;
+import java.awt.Color;
+import java.awt.Font;
 import org.forester.phylogeny.data.Taxonomy;
 
 /**
@@ -77,6 +82,7 @@ public final class DemoTreeGenerator {
         write( dir, "import-annotations.xml", importAnnotationsTree() );
         writeText( dir, "import-annotations.csv", importAnnotationsCsv() );
         write( dir, "search-emphasis.xml", searchEmphasisTree() );
+        write( dir, "node-visual-styles.xml", nodeVisualStylesTree() );
         writeText( dir, "beast-annotations.nex", beastAnnotationsNexus() );
         write( dir, "ancestral-pie-charts.xml", ancestralPieChartsTree() );
         write( dir, "tanglegram-tree-a.xml", tanglegramTreeA() );
@@ -211,6 +217,43 @@ public final class DemoTreeGenerator {
         return tree( root, "Size by property (demo)",
                      "Synthetic avian-influenza tree. Each tip carries a numeric 'read_count' property. "
                              + "Try Size by: read_count -- the tip symbol AREA is proportional to the value." );
+    }
+
+    // ----- "Node Style": a few tips carry a per-node visual style (font style/size/colour + node shape/fill/size/
+    //       colour). Turn on "Use Visual Styles" to see them, then click a node -> "Node Style" (or select/search
+    //       nodes -> Tools -> "Node Style for Selected Nodes...") to change any node's style.
+    private static Phylogeny nodeVisualStylesTree() {
+        final PhylogenyNode a = styledLeaf( "Homo sapiens", Font.BOLD, 18, new Color( 0xD0, 0x00, 0x00 ),
+                                            NodeShape.CIRCLE, NodeFill.SOLID, 14f, new Color( 0xD0, 0x00, 0x00 ) );
+        final PhylogenyNode b = styledLeaf( "Pan troglodytes", Font.ITALIC, 14, new Color( 0x00, 0x66, 0xCC ),
+                                            NodeShape.RECTANGLE, NodeFill.SOLID, 10f, new Color( 0x00, 0x66, 0xCC ) );
+        final PhylogenyNode c = leaf( "Gorilla gorilla" ); // unstyled -- the default look, for comparison
+        final PhylogenyNode d = styledLeaf( "Mus musculus", Font.PLAIN, 12, new Color( 0x00, 0x88, 0x00 ),
+                                            NodeShape.CIRCLE, NodeFill.NONE, 9f, new Color( 0x00, 0x88, 0x00 ) );
+        final PhylogenyNode e = leaf( "Rattus norvegicus" ); // unstyled
+        final PhylogenyNode root = clade( 0, clade( 0.05, clade( 0.03, a, b ), c ), clade( 0.04, d, e ) );
+        return tree( root, "Node Style (demo)",
+                     "A few tips carry a per-node visual style (font + node mark). Turn on \"Use Visual Styles\", "
+                             + "then click a node -> \"Node Style\", or select/search nodes and use Tools -> \"Node "
+                             + "Style for Selected Nodes...\", to change the font (style/size/colour) and node mark "
+                             + "(shape/fill/size/colour)." );
+    }
+
+    private static PhylogenyNode styledLeaf( final String name, final int font_style, final int font_size,
+                                             final Color font_color, final NodeShape shape, final NodeFill fill,
+                                             final float node_size, final Color node_color ) {
+        final PhylogenyNode n = leaf( name );
+        final NodeVisualData vis = new NodeVisualData();
+        vis.setFontName( "Source Sans 3" );
+        vis.setFontStyle( font_style );
+        vis.setFontSize( font_size );
+        vis.setFontColor( font_color );
+        vis.setShape( shape );
+        vis.setFillType( fill );
+        vis.setSize( node_size );
+        vis.setNodeColor( node_color );
+        n.getNodeData().setNodeVisualData( vis );
+        return n;
     }
 
     private static PhylogenyNode sizedLeaf( final String name, final int read_count ) {
