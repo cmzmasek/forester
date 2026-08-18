@@ -74,6 +74,7 @@ public final class DemoTreesTest {
         // node age bars: internal nodes carry a phyloXML <date> with a min/max interval + branch lengths (dated tree)
         ok &= hasBranchLengths( "node-hpd-bars.xml" );
         ok &= hasInternalDateInterval( "node-hpd-bars.xml" );
+        ok &= isDetectedTimeTree( "node-hpd-bars.xml", AptxUtil.TIME_TREE_KIND.DATED ); // dated -> auto-labelled
         // zebra stripes: enough tips for alternating row bands to be meaningful + a categorical + numeric column to track
         ok &= hasAtLeastTips( "zebra-stripes.xml", 8 );
         ok &= hasCategoricalRef( "zebra-stripes.xml", "data:host" );
@@ -270,6 +271,19 @@ public final class DemoTreesTest {
         if ( matches < min_matches ) {
             return note( file_name + " must have at least " + min_matches + " tips whose name contains '" + token
                     + "' (a searchable subset for the emphasis demo), found " + matches );
+        }
+        return true;
+    }
+
+    /** The demo tree is detected as the expected kind of time tree (auto-label vs offer vs none). */
+    private static boolean isDetectedTimeTree( final String file_name, final AptxUtil.TIME_TREE_KIND expected ) {
+        final Phylogeny phy = load( file_name );
+        if ( phy == null ) {
+            return false;
+        }
+        final AptxUtil.TIME_TREE_KIND got = AptxUtil.detectTimeTree( phy );
+        if ( got != expected ) {
+            return note( file_name + " must be detected as " + expected + " time tree, was " + got );
         }
         return true;
     }

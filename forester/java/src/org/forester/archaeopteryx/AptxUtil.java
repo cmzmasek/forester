@@ -413,6 +413,87 @@ public final class AptxUtil {
         return label.substring(0, max - 1).stripTrailing() + "…";
     }
 
+    /** How strongly a tree looks like a time tree (see {@link #detectTimeTree}). */
+    public enum TIME_TREE_KIND {
+        DATED,       // node <date> elements present -> definitive, auto-label
+        ULTRAMETRIC, // no dates, but branch lengths + all tips equidistant from the root -> only suggestive, OFFER
+        NONE
+    }
+
+    // tips within this fraction of the deepest tip's root-distance count as "equidistant" (ultrametric)
+    private final static double ULTRAMETRIC_TOLERANCE_FRACTION = 0.01;
+
+    /**
+     * Detects whether a phylogeny is a <em>time tree</em>. {@link TIME_TREE_KIND#DATED} -- a majority of internal
+     * nodes carry a {@code <date>} value (a chronogram / BEAST-style dated tree) -- is definitive and can be
+     * auto-labeled. {@link TIME_TREE_KIND#ULTRAMETRIC} -- no dates, but branch lengths are present and every tip is
+     * (within tolerance) the same distance from the root -- is only <em>suggestive</em> (a UPGMA distance tree is
+     * ultrametric too), so it should be OFFERED to the user, not asserted. Pure/headless.
+     */
+    public final static TIME_TREE_KIND detectTimeTree(final Phylogeny phy) {
+        if ((phy == null) || phy.isEmpty() || (phy.getNumberOfExternalNodes() < 2)) {
+            return TIME_TREE_KIND.NONE;
+        }
+        int internal = 0;
+        int dated = 0;
+        for (final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if (n.isInternal()) {
+                internal++;
+                if (n.getNodeData().isHasDate() && (n.getNodeData().getDate().getValue() != null)) {
+                    dated++;
+                }
+            }
+        }
+        // a STRICT majority of internal nodes dated (and at least two), so a chronogram (all internal nodes dated)
+        // is DATED but a genetic-distance tree carrying one or two fossil-calibration ages is not auto-asserted
+        if ((dated >= 2) && ((dated * 2) > internal)) {
+            return TIME_TREE_KIND.DATED;
+        }
+        if (isUltrametric(phy)) {
+            return TIME_TREE_KIND.ULTRAMETRIC;
+        }
+        return TIME_TREE_KIND.NONE;
+    }
+
+    /** True when the tree has branch lengths and every tip is (within {@link #ULTRAMETRIC_TOLERANCE_FRACTION} of the
+     *  deepest) the same distance from the root -- the geometric signature of a time tree with contemporaneous tips
+     *  (also true of UPGMA distance trees, hence only suggestive). */
+    public final static boolean isUltrametric(final Phylogeny phy) {
+        if ((phy == null) || phy.isEmpty() || (phy.getNumberOfExternalNodes() < 2)) {
+            return false;
+        }
+        double min = Double.MAX_VALUE;
+        double max = -1;
+        for (final PhylogenyNode n : phy.getExternalNodes()) {
+            final double d = n.calculateDistanceToRoot();
+            if (d < min) {
+                min = d;
+            }
+            if (d > max) {
+                max = d;
+            }
+        }
+        if (max <= 0) {
+            return false; // no meaningful branch lengths
+        }
+        return (max - min) <= (max * ULTRAMETRIC_TOLERANCE_FRACTION);
+    }
+
+    /** The time unit declared on a dated node's {@code <date>} (e.g. "mya", "years"), or null when none is set. */
+    public final static String timeTreeUnit(final Phylogeny phy) {
+        if ((phy == null) || phy.isEmpty()) {
+            return null;
+        }
+        for (final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if (n.getNodeData().isHasDate() && !ForesterUtil.isEmpty(n.getNodeData().getDate().getUnit())) {
+                return n.getNodeData().getDate().getUnit();
+            }
+        }
+        return null;
+    }
+
     /**
      * Heuristic for the load-time "treat internal labels as support values?" offer: {@code true} when the
      * tree looks like a bootstrap/posterior tree -- at least two internal nodes carry a non-empty name,

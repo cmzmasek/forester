@@ -1497,6 +1497,43 @@ public abstract class MainFrame extends JFrame implements ActionListener {
      * ({@link AptxUtil#internalNamesLookLikeConfidenceValues}), ask whether to treat them as confidence
      * values rather than node names.
      */
+    /** After a load, OFFER to label any merely-ultrametric (undated) loaded tree a time tree. A DATED tree is
+     *  auto-labeled by the badge itself and needs no dialog; this handles only the ambiguous case (ultrametric
+     *  could also be a UPGMA distance tree, so we ask rather than assert). One dialog covers all loaded tabs. */
+    void offerTreatAsTimeTree() {
+        if (_mainpanel == null) {
+            return;
+        }
+        final java.util.List<TreePanel> panels = _mainpanel.getTreePanels();
+        if ((panels == null) || panels.isEmpty()) {
+            return;
+        }
+        final java.util.List<TreePanel> ultrametric = new java.util.ArrayList<>();
+        for (final TreePanel tp : panels) {
+            if ((tp != null)
+                    && (AptxUtil.detectTimeTree(tp.getPhylogeny()) == AptxUtil.TIME_TREE_KIND.ULTRAMETRIC)) {
+                ultrametric.add(tp);
+            }
+        }
+        if (ultrametric.isEmpty()) {
+            return;
+        }
+        final String what = (ultrametric.size() == 1) ? "This tree is"
+                : (ultrametric.size() + " of the loaded trees are");
+        final int choice = JOptionPane.showConfirmDialog(this,
+                what + " ultrametric (all tips the same distance from the root), which is typical of a\n"
+                        + "dated / time tree. Label and treat "
+                        + ((ultrametric.size() == 1) ? "it" : "them") + " as " + ((ultrametric.size() == 1) ? "a" : "")
+                        + " time " + ((ultrametric.size() == 1) ? "tree" : "trees") + "?\n\n"
+                        + "(If the branch lengths are genetic distance rather than time, choose No.)",
+                "Tree Looks Like a Time Tree", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+        if (choice == JOptionPane.YES_OPTION) {
+            for (final TreePanel tp : ultrametric) {
+                tp.setConfirmedTimeTree(true);
+            }
+        }
+    }
+
     void offerInternalNamesAsConfidence(final Phylogeny[] phys) {
         if ((phys == null) || getOptions().isInternalNumberAreConfidenceForNhParsing()) {
             return;

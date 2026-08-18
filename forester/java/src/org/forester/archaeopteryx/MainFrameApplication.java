@@ -1345,6 +1345,7 @@ public final class MainFrameApplication extends MainFrame {
                                             JOptionPane.WARNING_MESSAGE);
                         }
                         offerLabelExtraction(phys);
+                        offerTreatAsTimeTree(); // format-agnostic: offer for an ultrametric (undated) tree
                         if (nhx_or_nexus) {
                             offerInternalNamesAsConfidence(phys);
                         }

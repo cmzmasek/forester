@@ -67,7 +67,79 @@ public final class AptxUtilTest {
                 && testBranchesToCollapse() && testConfigFileOption() && testScanForDataPresence()
                 && testAssignDistinctColors() && testShortenLabel()
                 && testInternalNamesLookLikeConfidenceValues() && testInternalNodeDateInterval()
-                && testPreferredDisplayTypeForBranchLengthTree();
+                && testPreferredDisplayTypeForBranchLengthTree() && testDetectTimeTree();
+    }
+
+    /**
+     * Time-tree detection: DATED (a majority of internal nodes carry a {@code <date>} value) is definitive;
+     * ULTRAMETRIC (branch lengths + all tips equidistant from the root, no dates) is suggestive; a ragged phylogram
+     * or a length-less cladogram is NONE.
+     */
+    private static boolean testDetectTimeTree() {
+        // DATED: date the root + one clade parent (2 of 3 internal nodes)
+        final Phylogeny dated = balancedFourTip( 0, 0, 0 );
+        final PhylogenyNode d_root = dated.getRoot();
+        d_root.getNodeData().setDate( new Date( "", new BigDecimal( "90" ), null, null, "mya" ) );
+        d_root.getChildNode( 0 ).getNodeData().setDate( new Date( "", new BigDecimal( "30" ), null, null, "mya" ) );
+        if ( AptxUtil.detectTimeTree( dated ) != AptxUtil.TIME_TREE_KIND.DATED ) {
+            return fail( "a majority-dated tree must be DATED" );
+        }
+        if ( !"mya".equals( AptxUtil.timeTreeUnit( dated ) ) ) {
+            return fail( "the time unit must be read from a <date> element" );
+        }
+        // ULTRAMETRIC: equal branch lengths -> every tip at the same distance from the root, no dates
+        final Phylogeny ultra = balancedFourTip( 1, 1, 1 );
+        if ( !AptxUtil.isUltrametric( ultra ) ) {
+            return fail( "an equal-length balanced tree must be ultrametric" );
+        }
+        if ( AptxUtil.detectTimeTree( ultra ) != AptxUtil.TIME_TREE_KIND.ULTRAMETRIC ) {
+            return fail( "an ultrametric, undated tree must be ULTRAMETRIC (offer, not assert)" );
+        }
+        // RAGGED phylogram: branch lengths but one tip much deeper -> NONE
+        final Phylogeny ragged = balancedFourTip( 1, 1, 1 );
+        ragged.getFirstExternalNode().setDistanceToParent( 5 );
+        if ( AptxUtil.isUltrametric( ragged ) ) {
+            return fail( "a ragged tree must NOT be ultrametric" );
+        }
+        if ( AptxUtil.detectTimeTree( ragged ) != AptxUtil.TIME_TREE_KIND.NONE ) {
+            return fail( "a ragged phylogram must be NONE" );
+        }
+        // CLADOGRAM: no branch lengths -> NONE
+        final Phylogeny clado = balancedFourTip( 0, 0, 0 );
+        if ( AptxUtil.isUltrametric( clado ) ) {
+            return fail( "a length-less cladogram must NOT be ultrametric" );
+        }
+        if ( AptxUtil.detectTimeTree( clado ) != AptxUtil.TIME_TREE_KIND.NONE ) {
+            return fail( "a length-less cladogram must be NONE" );
+        }
+        return true;
+    }
+
+    /** ((A,B),(C,D)) with the given branch lengths on the two internal clades and on every tip. Shared with
+     *  {@link TimeTreeLabelTest} so the time-tree fixture lives in one place. */
+    static Phylogeny balancedFourTip( final double bl_i1, final double bl_i2, final double bl_tip ) {
+        final Phylogeny phy = new Phylogeny();
+        final PhylogenyNode root = new PhylogenyNode();
+        final PhylogenyNode i1 = new PhylogenyNode();
+        i1.setDistanceToParent( bl_i1 );
+        final PhylogenyNode i2 = new PhylogenyNode();
+        i2.setDistanceToParent( bl_i2 );
+        final String[] names = { "A", "B", "C", "D" };
+        final PhylogenyNode[] tips = new PhylogenyNode[ 4 ];
+        for ( int i = 0; i < 4; ++i ) {
+            tips[ i ] = new PhylogenyNode();
+            tips[ i ].setName( names[ i ] );
+            tips[ i ].setDistanceToParent( bl_tip );
+        }
+        i1.addAsChild( tips[ 0 ] );
+        i1.addAsChild( tips[ 1 ] );
+        i2.addAsChild( tips[ 2 ] );
+        i2.addAsChild( tips[ 3 ] );
+        root.addAsChild( i1 );
+        root.addAsChild( i2 );
+        phy.setRoot( root );
+        phy.externalNodesHaveChanged();
+        return phy;
     }
 
     /**

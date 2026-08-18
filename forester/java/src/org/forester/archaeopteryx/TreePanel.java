@@ -336,6 +336,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private Sequence _query_sequence = null;
     private final Rectangle2D _rectangle = new Rectangle2D.Float();
     private final Path2D.Float _diamond = new Path2D.Float();
+    // "Time tree" badge state: the expensive DATED detection is cached per tree; a user-confirmed ULTRAMETRIC tree
+    // is remembered by the tree OBJECT it was confirmed for, so replacing the panel's tree (undo/paste/sub-tree)
+    // cleanly drops a stale confirmation without any per-path reset.
+    private Phylogeny _time_tree_cached_for    = null;
+    private boolean   _time_tree_dated         = false;
+    private String    _time_tree_unit          = null;
+    private Phylogeny _confirmed_time_tree_for = null;
     private final RenderingHints _rendering_hints = new RenderingHints(RenderingHints.KEY_RENDERING,
             RenderingHints.VALUE_RENDER_DEFAULT);
     private JTextArea _rollover_popup;
@@ -4700,6 +4707,58 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.setColor(saved);
         g.setStroke(saved_stroke);
         g.setFont(saved_font);
+    }
+
+    /** The "Time tree" badge text for the current tree, or null when it is not a time tree. A DATED tree (node
+     *  {@code <date>}s) is auto-labeled -- with its declared unit if any; an ULTRAMETRIC tree is labeled only after
+     *  the user confirmed the load-time offer. The expensive DATED detection is cached per tree. */
+    String timeTreeBadgeLabel() {
+        if (_time_tree_cached_for != _phylogeny) {
+            _time_tree_cached_for = _phylogeny;
+            _time_tree_dated = (AptxUtil.detectTimeTree(_phylogeny) == AptxUtil.TIME_TREE_KIND.DATED);
+            _time_tree_unit = _time_tree_dated ? AptxUtil.timeTreeUnit(_phylogeny) : null;
+        }
+        if (_time_tree_dated) {
+            return ForesterUtil.isEmpty(_time_tree_unit) ? "Time tree" : ("Time tree · " + _time_tree_unit);
+        }
+        if (_confirmed_time_tree_for == _phylogeny) { // confirmation is bound to THIS tree object
+            return "Time tree";
+        }
+        return null;
+    }
+
+    /** Marks the panel's CURRENT (ultrametric) tree as a time tree after the user accepted the load-time offer, then
+     *  repaints. The confirmation is tied to the tree object, so it lapses automatically if the tree is replaced. */
+    void setConfirmedTimeTree(final boolean confirmed) {
+        _confirmed_time_tree_for = confirmed ? _phylogeny : null;
+        repaint();
+    }
+
+    boolean isConfirmedTimeTreeForTest() {
+        return _confirmed_time_tree_for == _phylogeny;
+    }
+
+    /** Draws the small "Time tree" badge at the top-right of the drawing region (viewport-fixed on screen, the export
+     *  extent for a file), when the current tree is a time tree. WYSIWYG. */
+    final private void paintTimeTreeBadge(final Graphics2D g,
+                                          final int region_x,
+                                          final int region_width,
+                                          final int region_y_top,
+                                          final boolean to_pdf,
+                                          final boolean to_graphics_file) {
+        final String label = timeTreeBadgeLabel();
+        if (label == null) {
+            return;
+        }
+        final Font saved = g.getFont();
+        g.setFont(getTreeFontSet().getSmallFont());
+        g.setColor(scaleInkColor(to_pdf, to_graphics_file));
+        final int tw = g.getFontMetrics().stringWidth(label);
+        // top-right, but never left of the left margin (a zero-width File>Print region falls back to the left)
+        final int x = Math.max(region_x + MOVE, (region_x + region_width) - tw - MOVE);
+        final int y = region_y_top + g.getFontMetrics().getAscent() + 4;
+        g.drawString(label, x, y);
+        g.setFont(saved);
     }
 
     final private void paintTreeName(final Graphics2D g,
@@ -10237,6 +10296,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     paintTreeName(g, graphics_file_x, graphics_file_width, graphics_file_y + graphics_file_height,
                             to_pdf, to_graphics_file, scale_shown, axis_shown_horizontal);
                 }
+            }
+            if (!(to_graphics_file || to_pdf)) {
+                paintTimeTreeBadge(g, getVisibleRect().x, getVisibleRect().width, getVisibleRect().y, to_pdf,
+                        to_graphics_file);
+            } else {
+                paintTimeTreeBadge(g, graphics_file_x, graphics_file_width, graphics_file_y, to_pdf, to_graphics_file);
             }
             if (getOptions().isShowOverview() && isOvOn() && !to_graphics_file && !to_pdf) {
                 if (vertical) {
