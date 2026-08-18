@@ -62,7 +62,7 @@ final class NodeStyleDialog extends JDialog {
     private static final long serialVersionUID = 1L;
 
     private static final String[] FONT_STYLES = { "Plain", "Bold", "Italic", "Bold Italic" };
-    private static final String[] SHAPES      = { "Default", "Circle", "Rectangle" };
+    private static final String[] SHAPES      = { "Default", "Circle", "Rectangle", "Diamond" };
     private static final String[] FILLS       = { "Default", "Solid", "None", "Gradient" };
 
     private final TreePanel           _tp;
@@ -203,7 +203,7 @@ final class NodeStyleDialog extends JDialog {
             _apply_font_color.setSelected( true );
         }
         if ( vis.getShape() != NodeShape.DEFAULT ) {
-            _shape_combo.setSelectedItem( ( vis.getShape() == NodeShape.RECTANGLE ) ? "Rectangle" : "Circle" );
+            _shape_combo.setSelectedItem( labelForShape( vis.getShape() ) );
             _apply_shape.setSelected( true );
         }
         if ( vis.getFillType() != NodeFill.DEFAULT ) {
@@ -339,7 +339,23 @@ final class NodeStyleDialog extends JDialog {
         if ( "Rectangle".equals( s ) ) {
             return NodeShape.RECTANGLE;
         }
+        if ( "Diamond".equals( s ) ) {
+            return NodeShape.DIAMOND;
+        }
         return NodeShape.DEFAULT;
+    }
+
+    private static String labelForShape( final NodeShape shape ) {
+        switch ( shape ) {
+            case CIRCLE:
+                return "Circle";
+            case RECTANGLE:
+                return "Rectangle";
+            case DIAMOND:
+                return "Diamond";
+            default:
+                return "Default";
+        }
     }
 
     private static NodeFill fillFromLabel( final String s ) {
@@ -378,8 +394,7 @@ final class NodeStyleDialog extends JDialog {
 
     /** Ticks "Apply node shape" and selects the shape. */
     void setApplyShapeForTest( final NodeShape shape ) {
-        _shape_combo.setSelectedItem( ( shape == NodeShape.RECTANGLE ) ? "Rectangle"
-                : ( shape == NodeShape.CIRCLE ) ? "Circle" : "Default" );
+        _shape_combo.setSelectedItem( labelForShape( shape ) );
         _apply_shape.setSelected( true );
     }
 

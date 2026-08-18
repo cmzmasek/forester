@@ -107,6 +107,7 @@ public final class DemoTreesTest {
         // the Node Style editor (click-to / Tools)
         ok &= hasAtLeastTips( "node-visual-styles.xml", 5 );
         ok &= hasNodeVisualStyle( "node-visual-styles.xml", 3 );
+        ok &= hasNodeShape( "node-visual-styles.xml", NodeVisualData.NodeShape.DIAMOND ); // round-trips the diamond
 
         // infer ancestor taxonomies: six real-species tips (rank 'species'), NO taxonomy on the internal nodes,
         // ready for Analysis > Infer Ancestor Taxonomies (which resolves the tips online and fills the internals)
@@ -271,6 +272,21 @@ public final class DemoTreesTest {
                     + "' (a searchable subset for the emphasis demo), found " + matches );
         }
         return true;
+    }
+
+    /** At least one tip carries the given node {@code shape} (round-trips the shape string through phyloXML). */
+    private static boolean hasNodeShape( final String file_name, final NodeVisualData.NodeShape shape ) {
+        final Phylogeny phy = load( file_name );
+        if ( phy == null ) {
+            return false;
+        }
+        for ( final PhylogenyNode n : phy.getExternalNodes() ) {
+            final NodeVisualData vis = n.getNodeData().getNodeVisualData();
+            if ( ( vis != null ) && ( vis.getShape() == shape ) ) {
+                return true;
+            }
+        }
+        return note( file_name + " must have a tip with node shape " + shape );
     }
 
     /** At least {@code min} tips carry a non-empty per-node visual style ({@link NodeVisualData}). */

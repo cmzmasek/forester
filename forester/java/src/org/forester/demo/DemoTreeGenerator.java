@@ -230,7 +230,8 @@ public final class DemoTreeGenerator {
         final PhylogenyNode c = leaf( "Gorilla gorilla" ); // unstyled -- the default look, for comparison
         final PhylogenyNode d = styledLeaf( "Mus musculus", Font.PLAIN, 12, new Color( 0x00, 0x88, 0x00 ),
                                             NodeShape.CIRCLE, NodeFill.NONE, 9f, new Color( 0x00, 0x88, 0x00 ) );
-        final PhylogenyNode e = leaf( "Rattus norvegicus" ); // unstyled
+        final PhylogenyNode e = styledLeaf( "Rattus norvegicus", Font.PLAIN, 12, new Color( 0xC8, 0x7A, 0x00 ),
+                                            NodeShape.DIAMOND, NodeFill.SOLID, 12f, new Color( 0xC8, 0x7A, 0x00 ) );
         final PhylogenyNode root = clade( 0, clade( 0.05, clade( 0.03, a, b ), c ), clade( 0.04, d, e ) );
         return tree( root, "Node Style (demo)",
                      "A few tips carry a per-node visual style (font + node mark). Turn on \"Use Visual Styles\", "

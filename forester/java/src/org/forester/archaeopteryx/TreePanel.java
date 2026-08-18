@@ -335,6 +335,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private final StringBuffer _popup_buffer = new StringBuffer();
     private Sequence _query_sequence = null;
     private final Rectangle2D _rectangle = new Rectangle2D.Float();
+    private final Path2D.Float _diamond = new Path2D.Float();
     private final RenderingHints _rendering_hints = new RenderingHints(RenderingHints.KEY_RENDERING,
             RenderingHints.VALUE_RENDER_DEFAULT);
     private JTextArea _rollover_popup;
@@ -1135,6 +1136,44 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (color_border != null) {
             g.setPaint(color_border);
             g.draw(_rectangle);
+        }
+    }
+
+    /** A diamond (rhombus) inscribed in the box [x,x+width] x [y,y+height]: vertices at the four edge midpoints. */
+    private void setDiamond(final double x, final double y, final double width, final double heigth) {
+        final float cx = (float) (x + (width / 2.0));
+        final float cy = (float) (y + (heigth / 2.0));
+        _diamond.reset();
+        _diamond.moveTo(cx, (float) y);
+        _diamond.lineTo((float) (x + width), cy);
+        _diamond.lineTo(cx, (float) (y + heigth));
+        _diamond.lineTo((float) x, cy);
+        _diamond.closePath();
+    }
+
+    final private void drawDiamondFilled(final double x,
+                                         final double y,
+                                         final double width,
+                                         final double heigth,
+                                         final Graphics2D g) {
+        setDiamond(x, y, width, heigth);
+        g.fill(_diamond);
+    }
+
+    final private void drawDiamondGradient(final float x,
+                                           final float y,
+                                           final float width,
+                                           final float heigth,
+                                           final Graphics2D g,
+                                           final Color color_1,
+                                           final Color color_2,
+                                           final Color color_border) {
+        setDiamond(x, y, width, heigth);
+        g.setPaint(new GradientPaint(x, y, color_1, (x + width), (y + heigth), color_2, false));
+        g.fill(_diamond);
+        if (color_border != null) {
+            g.setPaint(color_border);
+            g.draw(_diamond);
         }
     }
 
@@ -3058,19 +3097,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 }
             }
             NodeShape shape = null;
-            if (vis != null) {
-                if (vis.getShape() == NodeShape.CIRCLE) {
-                    shape = NodeShape.CIRCLE;
-                } else if (vis.getShape() == NodeShape.RECTANGLE) {
-                    shape = NodeShape.RECTANGLE;
-                }
+            if ((vis != null) && (vis.getShape() != NodeShape.DEFAULT)) {
+                shape = vis.getShape(); // CIRCLE / RECTANGLE / DIAMOND
             }
-            if (shape == null) {
-                if (getOptions().getDefaultNodeShape() == NodeShape.CIRCLE) {
-                    shape = NodeShape.CIRCLE;
-                } else if (getOptions().getDefaultNodeShape() == NodeShape.RECTANGLE) {
-                    shape = NodeShape.RECTANGLE;
-                }
+            if ((shape == null) && (getOptions().getDefaultNodeShape() != NodeShape.DEFAULT)) {
+                shape = getOptions().getDefaultNodeShape();
             }
             NodeFill fill = null;
             if (vis != null) {
@@ -3157,6 +3188,37 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     }
                     drawRectFilled(x - half_box_size, y - half_box_size, box_size, box_size, g);
                 }
+            } else if (shape == NodeShape.DIAMOND) {
+                if (fill == NodeVisualData.NodeFill.GRADIENT) {
+                    drawDiamondGradient(x - half_box_size,
+                            y - half_box_size,
+                            box_size,
+                            box_size,
+                            g,
+                            to_pdf ? Color.WHITE : outline_color,
+                            to_pdf ? outline_color : getBackground(),
+                            outline_color);
+                } else if (fill == NodeVisualData.NodeFill.NONE) {
+                    Color background = getBackground();
+                    if (to_pdf) {
+                        background = Color.WHITE;
+                    }
+                    drawDiamondGradient(x - half_box_size,
+                            y - half_box_size,
+                            box_size,
+                            box_size,
+                            g,
+                            background,
+                            background,
+                            outline_color);
+                } else if (fill == NodeVisualData.NodeFill.SOLID) {
+                    if (vis_fill_color != null) {
+                        g.setColor(vis_fill_color);
+                    } else {
+                        g.setColor(outline_color);
+                    }
+                    drawDiamondFilled(x - half_box_size, y - half_box_size, box_size, box_size, g);
+                }
             }
         }
     }
@@ -3186,7 +3248,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (add > 0) {
             x += add;
         }
-        final int half_box_size = getOptions().getDefaultNodeShapeSize() / 2;
+        final int half_box_size = effectiveNodeHalfBoxSize(node);
         final boolean want_dot = (isColorByProperty() && (node.isExternal() || node.isCollapse()))
                 || (isSizeByProperty() && node.isExternal());
         // at a pie node the pie IS the marker, so suppress the plain color/size dot (which the later-drawn pie
@@ -3764,7 +3826,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         setColor(g, node, to_graphics_file, to_pdf, is_in_found_nodes, getTreeColorSet().getSequenceColor());
         setFont(g, node);
         final Font base_font = g.getFont();
-        final float gap = (getOptions().getDefaultNodeShapeSize() / 2f) + 3f; // start the label just off the node box
+        final float gap = effectiveNodeHalfBoxSize(node) + 3f; // start the label just off the node box (per-node size aware)
         final int tax_w = show_tax ? taxonomyLabelWidth(node.getNodeData().getTaxonomy(), base_font) : 0;
         final int rest_w = getFontMetrics(base_font).stringWidth(rest);
         final double total_w = gap + tax_w + rest_w; // full extent from the node, for the left-half flip
@@ -4684,11 +4746,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final Taxonomy taxonomy = node.getNodeData().getTaxonomy();
         final boolean using_visual_font = setFont(g, node);
         setColor(g, node, to_graphics_file, to_pdf, is_in_found_nodes, getTreeColorSet().getTaxonomyColor());
-        float start_x = labelSegmentStartX(node.getXcoord(), getOptions().getDefaultNodeShapeSize() / 2, x_shift);
+        float start_x = labelSegmentStartX(node.getXcoord(), effectiveNodeHalfBoxSize(node), x_shift);
         if ((getControlPanel().getTreeDisplayType() == Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM)
                 && node.isExternal()) {
             start_x = labelSegmentStartX((float) ((getMaxDistanceToRoot() * getXcorrectionFactor()) + TreePanel.MOVE
-                    + getXdistance()), getOptions().getDefaultNodeShapeSize() / 2, x_shift);
+                    + getXdistance()), effectiveNodeHalfBoxSize(node), x_shift);
         }
         float start_y;
         if (!using_visual_font) {
@@ -4777,6 +4839,20 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      */
     static float labelSegmentStartX(final float base_x, final int half_box_size, final float prior_width) {
         return base_x + half_box_size + LABEL_GAP_AFTER_NODE_SHAPE + prior_width;
+    }
+
+    /** Half the node MARK size actually DRAWN for {@code node}: the per-node visual size when "Use Visual Styles" is on
+     *  and the node carries one, else the global default node-shape size. Label positions offset by this so a large
+     *  per-node node shape doesn't overlap its label (a plain default node uses the default, unchanged). */
+    int effectiveNodeHalfBoxSize(final PhylogenyNode node) {
+        float box_size = getOptions().getDefaultNodeShapeSize();
+        if (getControlPanel().isUseVisualStyles() && (node != null)) {
+            final NodeVisualData vis = node.getNodeData().getNodeVisualData();
+            if ((vis != null) && (vis.getSize() != NodeVisualData.DEFAULT_SIZE)) {
+                box_size = vis.getSize();
+            }
+        }
+        return (int) (box_size / 2.0f); // truncate (floor) to match the previous default int-division exactly
     }
 
     /** The italic-derived variant of {@code base}, cached so repeated paints don't re-allocate the Font. */
@@ -8946,11 +9022,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ((_phylogeny == null) || _phylogeny.isEmpty()) {
             return null;
         }
-        final int half_box_size_plus_wiggle = (getOptions().getDefaultNodeShapeSize() / 2) + WIGGLE;
         // in a vertical orientation the node coords are logical (un-rotated); map the device click back to that space
         final Point2D.Double p = toLogicalPoint(x, y);
         for (final PhylogenyNodeIterator iter = _phylogeny.iteratorPostorder(); iter.hasNext(); ) {
             final PhylogenyNode node = iter.next();
+            // size the click target to the mark ACTUALLY drawn (per-node when styled) so a large custom node shape
+            // is clickable across its full extent, not just the default-sized box
+            final int half_box_size_plus_wiggle = effectiveNodeHalfBoxSize(node) + WIGGLE;
             if ((_phylogeny.isRooted() || !node.isRoot() || (node.getNumberOfDescendants() > 2))
                     && ((node.getXcoord() - half_box_size_plus_wiggle) <= p.x)
                     && ((node.getXcoord() + half_box_size_plus_wiggle) >= p.x)
@@ -10648,7 +10726,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  on the end of its (vertical) leader instead of being pushed diagonally off it. Matches the label anchors in
      *  {@link #paintNodeData} / {@link #paintTaxonomy}. */
     private float labelTextStartX(final PhylogenyNode node) {
-        final int half_box = getOptions().getDefaultNodeShapeSize() / 2;
+        final int half_box = effectiveNodeHalfBoxSize(node);
         // clustergram "labels below columns": tip/collapsed labels are drawn past the tip-aligned columns (aligned at
         // the far edge), so the dendrogram sits directly on the grid and the sample labels run along the bottom
         if (tipLabelsBelowColumns() && (node.isExternal() || node.isCollapse())) {

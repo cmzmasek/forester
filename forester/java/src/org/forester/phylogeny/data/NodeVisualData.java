@@ -54,6 +54,7 @@ public final class NodeVisualData implements PhylogenyData {
     public static final String NODE_FILL_TYPE_REF     = APTX_VISUALIZATION_REF + "node_fill_type";
     public static final String NODE_FILL_TYPE_TYPE    = "xsd:token";
     public static final String NODE_SHAPE_CIRCLE      = "circle";
+    public static final String NODE_SHAPE_DIAMOND     = "diamond";
     public static final String NODE_SHAPE_RECTANGLE   = "rectangle";
     public static final String NODE_SHAPE_REF         = APTX_VISUALIZATION_REF + "node_shape";
     public static final String NODE_SHAPE_TYPE        = "xsd:token";
@@ -345,6 +346,9 @@ public final class NodeVisualData implements PhylogenyData {
         else if ( shape.equalsIgnoreCase( NODE_SHAPE_RECTANGLE ) ) {
             setShape( NodeShape.RECTANGLE );
         }
+        else if ( shape.equalsIgnoreCase( NODE_SHAPE_DIAMOND ) ) {
+            setShape( NodeShape.DIAMOND );
+        }
         else {
             setShape( NodeShape.DEFAULT );
         }
@@ -438,6 +442,9 @@ public final class NodeVisualData implements PhylogenyData {
             else if ( getShape() == NodeShape.CIRCLE ) {
                 shape = NODE_SHAPE_CIRCLE;
             }
+            else if ( getShape() == NodeShape.DIAMOND ) {
+                shape = NODE_SHAPE_DIAMOND;
+            }
             else {
                 throw new RuntimeException( "unknown node shape" + getShape() );
             }
@@ -492,6 +499,6 @@ public final class NodeVisualData implements PhylogenyData {
     }
 
     public enum NodeShape {
-        CIRCLE, DEFAULT, RECTANGLE
+        CIRCLE, DEFAULT, RECTANGLE, DIAMOND
     }
 }

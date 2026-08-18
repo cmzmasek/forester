@@ -121,6 +121,29 @@ public final class NodeStyleDialogTest {
                     ck( ok, comboHasItem( tp.getControlPanel(), "Node Style" ),
                         "the 'Click on Node to:' dropdown offers 'Node Style'" );
 
+                    // ---- the label offset uses the ACTUAL per-node mark size so a big mark doesn't overlap ----
+                    // (a prior edit already turned "Use Visual Styles" on, so the per-node size applies)
+                    final PhylogenyNode big_node = new PhylogenyNode();
+                    final NodeVisualData big_mark = new NodeVisualData();
+                    big_mark.setSize( 30f );
+                    big_node.getNodeData().setNodeVisualData( big_mark );
+                    ck( ok, tp.effectiveNodeHalfBoxSize( big_node ) == 15,
+                        "label offset uses the per-node mark size (30 -> 15)" );
+                    ck( ok, tp.effectiveNodeHalfBoxSize( new PhylogenyNode() )
+                            == ( tp.getOptions().getDefaultNodeShapeSize() / 2 ),
+                        "a plain node uses the default half size" );
+
+                    // ---- diamond shape: the dialog maps it both ways ----
+                    final NodeStyleDialog dia = new NodeStyleDialog( tp, Arrays.asList( leaves[ 0 ] ), false );
+                    dia.setApplyShapeForTest( NodeShape.DIAMOND );
+                    ck( ok, dia.buildSpec().shape() == NodeShape.DIAMOND, "dialog builds a DIAMOND shape spec" );
+                    final PhylogenyNode dia_node = new PhylogenyNode();
+                    final NodeVisualData dia_vis = new NodeVisualData();
+                    dia_vis.setShape( NodeShape.DIAMOND );
+                    dia_node.getNodeData().setNodeVisualData( dia_vis );
+                    ck( ok, new NodeStyleDialog( tp, Arrays.asList( dia_node ), true ).buildSpec().shape()
+                            == NodeShape.DIAMOND, "single-node dialog pre-fills a diamond shape" );
+
                     mf[ 0 ].dispose();
                 }
                 catch ( final Throwable t ) {

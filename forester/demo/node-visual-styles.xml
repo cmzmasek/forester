@@ -55,6 +55,13 @@
       <clade>
         <name>Rattus norvegicus</name>
         <branch_length>0.02</branch_length>
+        <property ref="style:font" datatype="xsd:token" applies_to="node">Source Sans 3</property>
+        <property ref="style:font_size" datatype="xsd:unsignedByte" applies_to="node">12</property>
+        <property ref="style:font_color" datatype="xsd:token" applies_to="node">#c87a00</property>
+        <property ref="style:node_shape" datatype="xsd:token" applies_to="node">diamond</property>
+        <property ref="style:node_size" datatype="xsd:float" applies_to="node">12.0</property>
+        <property ref="style:node_color" datatype="xsd:token" applies_to="node">#c87a00</property>
+        <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">solid</property>
       </clade>
     </clade>
   </clade>

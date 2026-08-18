@@ -309,6 +309,24 @@ public final class MainFrameApplication extends MainFrame {
         System.gc();
         // warm the persistent taxonomy cache off the EDT now, so the first colorize/fetch is snappy
         NcbiTaxonomyLineageService.getShared().primeAsync();
+        // warm the Swing color chooser off the EDT too: building its default panels + loading the classes is a
+        // one-time cost, so the first "Node Style" / subtree-colorize colour pick isn't slow to appear
+        warmColorChooserAsync();
+    }
+
+    /** Best-effort background warmup of {@link javax.swing.JColorChooser}: constructing one builds all of its default
+     *  chooser panels (the slow, one-time part), so the first user-triggered colour dialog opens promptly. */
+    private static void warmColorChooserAsync() {
+        final Thread t = new Thread(() -> {
+            try {
+                new javax.swing.JColorChooser();
+            }
+            catch (final Throwable ignore) {
+                // warmup only -- never fatal
+            }
+        }, "aptx-colorchooser-warmup");
+        t.setDaemon(true);
+        t.start();
     }
 
     @Override
