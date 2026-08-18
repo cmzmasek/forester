@@ -80,6 +80,45 @@ public final class TreeColorSchemeTest {
         if ( !Color.BLACK.equals( tcs.getBinaryDomainCombinationsColor() ) ) {
             return false;
         }
+        // ---- found-node highlights: UNIFIED across themes (A = red, "both" = teal, same hue per role in Light and
+        //      Dark -- no longer flipped), with Search B = the "Found/Selected Colors" choice ----
+        tcs.setFoundColor( Options.FOUND_COLOR.ELECTRIC_VIOLET );
+        tcs.setColorSchema( 1 ); // Light: A red, B electric violet, both teal
+        if ( !new Color( 0xE0, 0x00, 0x00 ).equals( tcs.getFoundColor0() )
+                || !new Color( 0x9D, 0x00, 0xFF ).equals( tcs.getFoundColor1() )
+                || !new Color( 0x00, 0x8B, 0x8B ).equals( tcs.getFoundColor0and1() ) ) {
+            return false;
+        }
+        tcs.setColorSchema( 0 ); // Dark: SAME hues, brightened for the dark ground
+        if ( !new Color( 0xFF, 0x40, 0x40 ).equals( tcs.getFoundColor0() )
+                || !new Color( 0xB4, 0x4D, 0xFF ).equals( tcs.getFoundColor1() )
+                || !new Color( 0x00, 0xC8, 0xC8 ).equals( tcs.getFoundColor0and1() ) ) {
+            return false;
+        }
+        // A stays red-dominant and "both" stays teal (green+blue over red) in BOTH themes -- the anti-flip guarantee
+        for ( final int s : new int[] { 0, 1 } ) {
+            tcs.setColorSchema( s );
+            final Color a = tcs.getFoundColor0();
+            final Color both = tcs.getFoundColor0and1();
+            if ( ( a.getRed() <= a.getGreen() ) || ( a.getRed() <= a.getBlue() ) ) {
+                return false; // A must be red
+            }
+            if ( ( both.getRed() >= both.getGreen() ) || ( both.getRed() >= both.getBlue() ) ) {
+                return false; // "both" must be teal
+            }
+        }
+        // only Search B changes with the choice; A and "both" do not
+        tcs.setColorSchema( 1 );
+        tcs.setFoundColor( Options.FOUND_COLOR.NEON_MAGENTA );
+        if ( !new Color( 0xFF, 0x00, 0xAA ).equals( tcs.getFoundColor1() )
+                || !new Color( 0xE0, 0x00, 0x00 ).equals( tcs.getFoundColor0() )
+                || !new Color( 0x00, 0x8B, 0x8B ).equals( tcs.getFoundColor0and1() ) ) {
+            return false;
+        }
+        tcs.setFoundColor( Options.FOUND_COLOR.EMERALD_GREEN );
+        if ( !new Color( 0x00, 0xA0, 0x00 ).equals( tcs.getFoundColor1() ) ) {
+            return false;
+        }
         return true;
     }
 

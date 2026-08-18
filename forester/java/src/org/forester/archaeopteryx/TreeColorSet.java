@@ -113,6 +113,9 @@ public final class TreeColorSet {
     private Color              found_color_0;
     private Color              found_color_0_and_1;
     private Color              found_color_1;
+    // The Search-B / secondary-highlight hue (from the "Found/Selected Colors" setting). Search A is always red and
+    // "in both" always teal; only B varies. Same hue per role in both themes (see applyFoundColors).
+    private Options.FOUND_COLOR _found_color = Options.FOUND_COLOR.ELECTRIC_VIOLET;
     private Color              ov_color;
     // The drawing colors
     private Color              seq_color;
@@ -253,9 +256,7 @@ public final class TreeColorSet {
         branch_color = _color_schemes[ scheme ][ 5 ];
         box_color = _color_schemes[ scheme ][ 6 ];
         collapse_fill_color = _color_schemes[ scheme ][ 7 ];
-        found_color_0 = _color_schemes[ scheme ][ 8 ];
-        found_color_1 = _color_schemes[ scheme ][ 9 ];
-        found_color_0_and_1 = _color_schemes[ scheme ][ 10 ];
+        applyFoundColors(); // found_color_0/1/0and1 -- computed (unified across themes), not read from the array [8..10]
         dup_box_color = _color_schemes[ scheme ][ 11 ];
         spec_box_color = _color_schemes[ scheme ][ 12 ];
         duplication_or_specation_color = _color_schemes[ scheme ][ 13 ];
@@ -264,6 +265,42 @@ public final class TreeColorSet {
         binary_domain_combinations_color = _color_schemes[ scheme ][ 16 ];
         annotation_color = _color_schemes[ scheme ][ 17 ];
         ov_color = _color_schemes[ scheme ][ 18 ];
+    }
+
+    /** Sets the Search-B / secondary-highlight hue (the "Found/Selected Colors" setting) and re-derives the found
+     *  colors for the current scheme. */
+    void setFoundColor( final Options.FOUND_COLOR found_color ) {
+        _found_color = ( found_color == null ) ? Options.FOUND_COLOR.ELECTRIC_VIOLET : found_color;
+        applyFoundColors();
+    }
+
+    Options.FOUND_COLOR getFoundColor() {
+        return _found_color;
+    }
+
+    /**
+     * Derives the three found-node colors for the current scheme. UNIFIED across Light/Dark (same hue per role,
+     * only brightened for the dark ground): Search A = red, "in both" = teal, Search B = the chosen hue. This
+     * replaces the old per-scheme array entries, which had A/B FLIPPED between themes and a different "both" hue.
+     */
+    private void applyFoundColors() {
+        final boolean dark = ( _color_scheme == DARK_COLOR_SCHEME );
+        found_color_0 = dark ? new Color( 0xFF, 0x40, 0x40 ) : new Color( 0xE0, 0x00, 0x00 );       // A = red
+        found_color_0_and_1 = dark ? new Color( 0x00, 0xC8, 0xC8 ) : new Color( 0x00, 0x8B, 0x8B ); // both = teal
+        found_color_1 = foundColorB( _found_color, dark );                                          // B = chosen hue
+    }
+
+    /** The Search-B color for a choice + ground (light/dark variant of the same hue). */
+    static Color foundColorB( final Options.FOUND_COLOR c, final boolean dark ) {
+        switch ( c ) {
+            case NEON_MAGENTA:
+                return dark ? new Color( 0xFF, 0x3D, 0xC0 ) : new Color( 0xFF, 0x00, 0xAA );
+            case EMERALD_GREEN:
+                return dark ? new Color( 0x22, 0xD4, 0x22 ) : new Color( 0x00, 0xA0, 0x00 );
+            case ELECTRIC_VIOLET:
+            default:
+                return dark ? new Color( 0xB4, 0x4D, 0xFF ) : new Color( 0x9D, 0x00, 0xFF );
+        }
     }
 
     static TreeColorSet createInstance() {

@@ -66,17 +66,23 @@ public final class FoundSelectedCounterTest {
 
     private static void staticsOk() {
         ck( FoundSelectedCounter.labelText( 42 ).equals( "Found / Selected: 42" ), "label text" );
-        final String tip = FoundSelectedCounter.tooltipText( 10, 7, 5, 2, true );
+        final String tip = FoundSelectedCounter.tooltipText( 10, 7, 5, 2, true, null );
         ck( tip.contains( "10 highlighted nodes" ), "tooltip shows the distinct total: " + tip );
         ck( tip.contains( "A: 7" ) && tip.contains( "B: 5" ) && tip.contains( "2 in both" ),
             "tooltip shows the A/B/both breakdown: " + tip );
-        final String solo = FoundSelectedCounter.tooltipText( 3, 3, 0, 0, true );
+        final String solo = FoundSelectedCounter.tooltipText( 3, 3, 0, 0, true, null );
         ck( solo.contains( "A: 3" ) && !solo.contains( "B:" ), "a solo-A tooltip omits B: " + solo );
-        ck( FoundSelectedCounter.tooltipText( 1, 1, 0, 0, true ).contains( "1 highlighted node (" ), "singular wording" );
+        ck( FoundSelectedCounter.tooltipText( 1, 1, 0, 0, true, null ).contains( "1 highlighted node (" ),
+            "singular wording" );
         // found-set 0 is a manual SELECTION (Search A has no query) -> labelled "Selected", not "A"
-        final String sel = FoundSelectedCounter.tooltipText( 4, 3, 1, 0, false );
+        final String sel = FoundSelectedCounter.tooltipText( 4, 3, 1, 0, false, null );
         ck( sel.contains( "Selected: 3" ) && !sel.contains( "A:" ), "a manual selection is labelled Selected: " + sel );
         ck( sel.contains( "B: 1" ), "Search B is still labelled B alongside a selection: " + sel );
+        // when the two boxes are COMBINED the tooltip shows the combine description, NOT the per-box breakdown
+        final String comb = FoundSelectedCounter.tooltipText( 6, 6, 0, 0, true, "A AND B" );
+        ck( comb.contains( "6 highlighted nodes" ) && comb.contains( "A AND B" ),
+            "a combined tooltip names the combine mode: " + comb );
+        ck( !comb.contains( "A: 6" ), "a combined tooltip omits the per-box breakdown: " + comb );
     }
 
     // ---- component lifecycle (headless -- no painting needed) --------------------------------------------------
@@ -84,18 +90,18 @@ public final class FoundSelectedCounterTest {
     private static void componentOk() {
         final FoundSelectedCounter c = new FoundSelectedCounter();
         ck( !c.isShowingForTest(), "counter starts hidden" );
-        c.setCounts( 5, 3, 4, 2, true );
+        c.setCounts( 5, 3, 4, 2, true, null );
         ck( c.isShowingForTest(), "counter shows when total > 0" );
         ck( c.getTotalForTest() == 5, "total is set" );
         ck( c.isSweepingForTest(), "a change starts the sweep" );
         ck( ( c.getTooltipForTest() != null ) && c.getTooltipForTest().contains( "5" ), "tooltip carries the total" );
         c.runSweepToEndForTest();
         ck( !c.isSweepingForTest(), "the sweep settles static after its passes" );
-        c.setCounts( 5, 3, 4, 2, true );
+        c.setCounts( 5, 3, 4, 2, true, null );
         ck( !c.isSweepingForTest(), "an unchanged total does NOT restart the sweep" );
-        c.setCounts( 7, 7, 0, 0, true );
+        c.setCounts( 7, 7, 0, 0, true, null );
         ck( c.isSweepingForTest() && ( c.getTotalForTest() == 7 ), "a changed total re-sweeps + updates" );
-        c.setCounts( 0, 0, 0, 0, true );
+        c.setCounts( 0, 0, 0, 0, true, null );
         ck( !c.isShowingForTest(), "counter hides at 0" );
         ck( !c.isSweepingForTest(), "the sweep is stopped when hidden" );
 
@@ -103,7 +109,7 @@ public final class FoundSelectedCounterTest {
         final FoundSelectedCounter c2 = new FoundSelectedCounter();
         c2.setFont( new java.awt.Font( java.awt.Font.SANS_SERIF, java.awt.Font.PLAIN, 13 ) );
         c2.setSize( 160, 20 );
-        c2.setCounts( 9, 9, 0, 0, true );
+        c2.setCounts( 9, 9, 0, 0, true, null );
         final int ticks = c2.runSweepToEndForTest();
         // at STEP_PX=8 over a 160px width one pass is ~27 frames; two passes + the rest gap is ~60+
         ck( ticks > 45, "the sweep must run TWO passes, not one (took only " + ticks + " frames)" );

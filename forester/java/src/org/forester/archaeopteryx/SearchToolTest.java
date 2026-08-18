@@ -304,6 +304,42 @@ public final class SearchToolTest {
                     ck( ok, same( runA( cp, tp, "Gene Symbol", SearchMode.CONTAINS, false, false, "BRCA1", "" ), a ),
                         "the freshly-surfaced Gene Symbol field should be searchable" );
 
+                    // --- Combine A & B (cross-field boolean): A = host contains "u" -> {alpha, gamma}; B = scientific
+                    //     name contains "s" -> {alpha, beta, gamma}. Independent = dual highlight; AND = intersection;
+                    //     OR = union; and the control is adaptive (shown only when both boxes have a query) ---
+                    cp.setSearchInverseForTest( false );
+                    cp.setSearchCaseSensitiveForTest( false );
+                    cp.setSearchCombineForTest( 0 );
+                    cp.setSearchFieldByLabelForTest( true, HOST );
+                    cp.setSearchModeForTest( true, SearchMode.CONTAINS );
+                    cp.getSearchTextField0().setText( "u" );
+                    cp.setSearchFieldByLabelForTest( false, SCI );
+                    cp.setSearchModeForTest( false, SearchMode.CONTAINS );
+                    cp.getSearchTextField1().setText( "s" );
+                    cp.search0();
+                    cp.search1();
+                    ck( ok, same( nonNull( tp.getFoundNodes0() ), a, c ) && same( nonNull( tp.getFoundNodes1() ), a, b, c ),
+                        "independent: A(host~u)={alpha,gamma}, B(sci~s)={alpha,beta,gamma}" );
+                    ck( ok, cp.isSearchCombineControlVisibleForTest(),
+                        "the Combine control appears once BOTH boxes have a query" );
+                    cp.setSize( cp.getPreferredSize() ); // force the layout pass a live revalidate would run
+                    cp.doLayout();
+                    ck( ok, cp.searchCombinePanelHeightForTest() > 0,
+                        "the Combine control lays out with a real height when shown" );
+                    cp.setSearchCombineForTest( 1 ); // AND
+                    ck( ok, same( nonNull( tp.getFoundNodes0() ), a, c ) && ( tp.getFoundNodes1() == null ),
+                        "Combine AND: found set = A ∩ B = {alpha, gamma}, box-B highlight cleared" );
+                    cp.setSearchCombineForTest( 2 ); // OR
+                    ck( ok, same( nonNull( tp.getFoundNodes0() ), a, b, c ) && ( tp.getFoundNodes1() == null ),
+                        "Combine OR: found set = A ∪ B = {alpha, beta, gamma}" );
+                    cp.setSearchCombineForTest( 0 ); // back to independent restores the separate A/B highlights
+                    ck( ok, same( nonNull( tp.getFoundNodes0() ), a, c ) && same( nonNull( tp.getFoundNodes1() ), a, b, c ),
+                        "leaving Combine restores the independent A/B found sets" );
+                    cp.getSearchTextField1().setText( "" ); // clearing a box hides the adaptive control
+                    cp.search1();
+                    ck( ok, !cp.isSearchCombineControlVisibleForTest(),
+                        "the Combine control hides when only one box has a query" );
+
                     ( (javax.swing.JFrame) mf[ 0 ] ).dispose();
                 }
                 catch ( final Throwable t ) {

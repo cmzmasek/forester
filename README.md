@@ -126,8 +126,17 @@ Searching Trees
 ---------------
 
 Two independent **search boxes** on the left control panel (**A** and **B**) find
-and highlight matching nodes; a node matched by A, by B, or by both is shown in a
-distinct colour, so two searches can be compared at a glance.
+and highlight matching nodes; a node matched by A (**red**), by B, or by **both**
+(**teal**) is shown in a distinct colour, so two searches can be compared at a
+glance. Search B’s colour is chosen under **Settings → Display → Found/Selected
+Colors** — **Electric Violet** (default), **Neon Magenta**, or **Emerald Green** —
+each picked to stay legible on a white background, and the choice is remembered
+across restarts.
+
+When both boxes carry a query, a **Combine:** control appears below them: keep the
+two highlights **independent** (the default), or fold them into one result set —
+**A AND B** (matches both) or **A OR B** (matches either) — which then drives the
+highlight, step-through, counter, and export.
 
 Each box has two dropdowns — **what** to search and **how** to match — above its
 query field:

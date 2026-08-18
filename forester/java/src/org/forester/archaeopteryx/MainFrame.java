@@ -1225,7 +1225,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         final TreePanel tp = (getMainPanel() != null) ? getMainPanel().getCurrentTreePanel() : null;
         if (tp == null) {
-            _found_selected_counter.setCounts(0, 0, 0, 0, false);
+            _found_selected_counter.setCounts(0, 0, 0, 0, false, null);
             return;
         }
         // distinct highlighted nodes = the union of the two found sets = a + b - both; derive it from the one
@@ -1238,7 +1238,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         final boolean a_is_search = (cp != null) && (cp.getSearchTextField0() != null)
                 && (cp.getSearchTextField0().getText() != null)
                 && !cp.getSearchTextField0().getText().trim().isEmpty();
-        _found_selected_counter.setCounts(total, br[0], br[1], br[2], a_is_search);
+        // when the two boxes are combined (A AND/OR B), the result is one set in found-set 0 -- label it by the combine
+        // mode instead of the per-box A/B breakdown (which would misreport A∩B/A∪B as box-A-only hits)
+        final String combine_label = (cp != null) ? cp.searchCombineDescription() : null;
+        _found_selected_counter.setCounts(total, br[0], br[1], br[2], a_is_search, combine_label);
     }
 
     /**
@@ -2113,6 +2116,11 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         final TreeColorSet colorset = getMainPanel().getTreeColorSet();
         if (colorset == null) {
             return;
+        }
+        // keep the found-node palette ("Found/Selected Colors" setting) in sync, then set the light/dark scheme --
+        // both re-derive the found colors, so they end up correct for the new scheme + choice
+        if (getOptions() != null) {
+            colorset.setFoundColor(getOptions().getFoundColor());
         }
         // scheme 0 = Dark, scheme 1 = Light (TreeColorSet has only these two)
         colorset.setColorSchema(ui == Configuration.UI.FLAT_DARK ? 0 : 1);

@@ -106,6 +106,7 @@ public final class ResetToDefaultsTest {
         o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP ); // default is ROOT_LEFT
         o.setTipLabelDirection( Options.TIP_LABEL_DIRECTION.HORIZONTAL ); // default is VERTICAL
         o.setNodeLabelDirection( Options.NODE_LABEL_DIRECTION.RADIAL ); // "Radial Labels"; default is HORIZONTAL
+        o.setFoundColor( Options.FOUND_COLOR.NEON_MAGENTA ); // default is ELECTRIC_VIOLET
         o.setSupportVisualization( SUPPORT_VISUALIZATION.SIZE_SCALED );
         // search options (reset by init, resynced onto the control-panel checkboxes by Reset to Defaults)
         o.setSearchCaseSensitive( true );
@@ -144,6 +145,8 @@ public final class ResetToDefaultsTest {
         ok &= eq( "treeOrientation", o.getTreeOrientation(), def.getTreeOrientation() );
         ok &= eq( "tipLabelDirection", o.getTipLabelDirection(), def.getTipLabelDirection() );
         ok &= eq( "nodeLabelDirection", o.getNodeLabelDirection(), def.getNodeLabelDirection() );
+        ok &= eq( "foundColor", o.getFoundColor(), def.getFoundColor() );
+        ok &= eq( "foundColor default VIOLET", def.getFoundColor(), Options.FOUND_COLOR.ELECTRIC_VIOLET );
         ok &= eq( "palette", o.getColorPaletteName(), def.getColorPaletteName() );
         ok &= eq( "showScaleGrid", o.isShowScaleGrid(), def.isShowScaleGrid() );
         ok &= eq( "showScaleAxis", o.isShowScaleAxis(), def.isShowScaleAxis() );

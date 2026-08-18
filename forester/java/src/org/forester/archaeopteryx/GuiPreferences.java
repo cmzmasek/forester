@@ -144,6 +144,8 @@ final class GuiPreferences {
             // spoke, HORIZONTAL keeps labels upright; a no-op in the rectangular family
             enumPref( "node_label_direction", Options::getNodeLabelDirection, Options::setNodeLabelDirection,
                       NODE_LABEL_DIRECTION::valueOf ),
+            enumPref( "found_color", Options::getFoundColor, Options::setFoundColor,
+                      Options.FOUND_COLOR::valueOf ),
             // "Color by" palette: only apply a stored name that is still a known palette (a renamed/removed
             // palette is ignored, keeping the default) so a stale file can't select a non-existent palette
             stringPref( "color_palette", Options::getColorPaletteName, Options::setColorPaletteName,

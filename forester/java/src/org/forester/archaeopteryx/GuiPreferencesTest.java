@@ -93,6 +93,8 @@ public final class GuiPreferencesTest {
             final Options.NODE_LABEL_DIRECTION node_dir = ( src
                     .getNodeLabelDirection() == Options.NODE_LABEL_DIRECTION.HORIZONTAL )
                             ? Options.NODE_LABEL_DIRECTION.RADIAL : Options.NODE_LABEL_DIRECTION.HORIZONTAL;
+            final Options.FOUND_COLOR found_color = ( src.getFoundColor() == Options.FOUND_COLOR.ELECTRIC_VIOLET )
+                    ? Options.FOUND_COLOR.NEON_MAGENTA : Options.FOUND_COLOR.ELECTRIC_VIOLET;
             final String palette = altPalette( src.getColorPaletteName() ); // a real, non-current palette name
             final int raster_scale = src.getRasterExportScale() + 2;
             final boolean transparent = !src.isTransparentExportBackground();
@@ -115,6 +117,7 @@ public final class GuiPreferencesTest {
             src.setTreeOrientation( orient );
             src.setTipLabelDirection( tip_dir );
             src.setNodeLabelDirection( node_dir );
+            src.setFoundColor( found_color );
             src.setColorPaletteName( palette );
             src.setRasterExportScale( raster_scale );
             src.setTransparentExportBackground( transparent );
@@ -172,6 +175,9 @@ public final class GuiPreferencesTest {
             }
             if ( dst.getTipLabelDirection() != tip_dir ) {
                 return fail( "tip_label_direction did not round-trip" );
+            }
+            if ( dst.getFoundColor() != found_color ) {
+                return fail( "found_color did not round-trip" );
             }
             if ( dst.getNodeLabelDirection() != node_dir ) {
                 return fail( "node_label_direction did not round-trip" );

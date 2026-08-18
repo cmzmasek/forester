@@ -166,6 +166,10 @@ final class SettingsDialog extends JDialog {
         add( c, cb( _mf._show_confidence_stddev_cbmi ) );
         add( c, cb( _mf._show_mad_confidence_cbmi ) );
         add( c, labeled( "\"Color by\" palette:", paletteCombo() ) );
+        add( c, labeled( "Found/Selected colors:", enumCombo( Options.FOUND_COLOR.values(),
+                                                              _mf.getOptions().getFoundColor(),
+                                                              v -> { _mf.getOptions().setFoundColor( v );
+                                                                     applyFoundColor( v ); } ) ) );
         c.add( header( "Collapsed Subtrees & Domains" ) );
         add( c, cb( _mf._collapsed_with_average_height_cbmi ) );
         add( c, cb( _mf._show_abbreviated_labels_for_collapsed_nodes_cbmi ) );
@@ -584,6 +588,17 @@ final class SettingsDialog extends JDialog {
         if ( _mf.getCurrentTreePanel() != null ) {
             _mf.getCurrentTreePanel().repaint();
         }
+    }
+
+    /** Pushes the chosen "Found/Selected Colors" hue onto the live tree color set and repaints. */
+    private void applyFoundColor( final Options.FOUND_COLOR v ) {
+        if ( _mf.getMainPanel() != null ) {
+            final TreeColorSet cs = _mf.getMainPanel().getTreeColorSet();
+            if ( cs != null ) {
+                cs.setFoundColor( v );
+            }
+        }
+        repaintTree();
     }
 
     private void updateOverview() {

@@ -43,6 +43,25 @@ final public class Options {
         HORIZONTAL, RADIAL;
     }
 
+    // The color of the Search-B / secondary highlight (found + selected nodes). Search A stays red and "in both"
+    // stays teal; this picks B's neon hue. The chosen hue is used (brightened) in both the Light and Dark themes.
+    public static enum FOUND_COLOR {
+        ELECTRIC_VIOLET( "Electric Violet" ),
+        NEON_MAGENTA( "Neon Magenta" ),
+        EMERALD_GREEN( "Emerald Green" );
+
+        private final String _label;
+
+        FOUND_COLOR( final String label ) {
+            _label = label;
+        }
+
+        @Override
+        public String toString() {
+            return _label;
+        }
+    }
+
     public static enum PHYLOGENY_GRAPHICS_TYPE {
         CIRCULAR, EURO_STYLE, RECTANGULAR, ROUNDED, TRIANGULAR, UNROOTED;
     }
@@ -170,6 +189,7 @@ final public class Options {
     private boolean _transparent_export_background;
     private boolean _graphics_export_white_background;
     private NODE_LABEL_DIRECTION _node_label_direction;
+    private FOUND_COLOR          _found_color;
     private short _number_of_digits_after_comma_for_branch_length_values;
     private short _number_of_digits_after_comma_for_confidence_values;
     private OVERVIEW_PLACEMENT_TYPE _ov_placement;
@@ -336,6 +356,7 @@ final public class Options {
         _show_overview = true;
         _ov_placement = OVERVIEW_PLACEMENT_TYPE.UPPER_LEFT;
         _node_label_direction = NODE_LABEL_DIRECTION.HORIZONTAL;
+        _found_color = FOUND_COLOR.ELECTRIC_VIOLET;
         _inverse_search_result = false;
         _scale_bar_length = 0.0;
         _number_of_digits_after_comma_for_branch_length_values = AptxConstants.NUMBER_OF_DIGITS_AFTER_COMMA_FOR_BRANCH_LENGTH_VALUES_DEFAULT;
@@ -415,6 +436,10 @@ final public class Options {
 
     final NODE_LABEL_DIRECTION getNodeLabelDirection() {
         return _node_label_direction;
+    }
+
+    final FOUND_COLOR getFoundColor() {
+        return _found_color;
     }
 
     final short getNumberOfDigitsAfterCommaForBranchLengthValues() {
@@ -757,6 +782,10 @@ final public class Options {
 
     final void setNodeLabelDirection(final NODE_LABEL_DIRECTION node_label_direction) {
         _node_label_direction = node_label_direction;
+    }
+
+    final void setFoundColor(final FOUND_COLOR found_color) {
+        _found_color = found_color;
     }
 
     final void setOvPlacement(final OVERVIEW_PLACEMENT_TYPE ov_placement) {

@@ -78,10 +78,12 @@ final class FoundSelectedCounter extends JComponent {
      * {@code total} = distinct highlighted nodes (union of the two found sets); {@code a}/{@code b}/{@code both} are
      * the per-set breakdown for the tooltip. {@code a_is_search} tells whether found-set 0 currently holds Search-A
      * hits ({@code true}) or a manual SELECTION ({@code false}, i.e. Search A has no query) -- Archaeopteryx reuses
-     * found-set 0 for both, so this decides whether that count is labelled "A" or "Selected". A {@code total} of 0
-     * hides the counter.
+     * found-set 0 for both, so this decides whether that count is labelled "A" or "Selected". When {@code combine_label}
+     * is non-null (the two boxes are combined via "Combine A & B"), the tooltip shows that description (e.g. "A AND B")
+     * instead of the per-box breakdown, since the highlight is one combined set. A {@code total} of 0 hides the counter.
      */
-    void setCounts( final int total, final int a, final int b, final int both, final boolean a_is_search ) {
+    void setCounts( final int total, final int a, final int b, final int both, final boolean a_is_search,
+                    final String combine_label ) {
         if ( total <= 0 ) {
             _total = 0;
             _a = 0;
@@ -99,7 +101,7 @@ final class FoundSelectedCounter extends JComponent {
         _a = a;
         _b = b;
         _both = both;
-        setToolTipText( tooltipText( total, a, b, both, a_is_search ) );
+        setToolTipText( tooltipText( total, a, b, both, a_is_search, combine_label ) );
         _showing = true;
         if ( !isVisible() ) {
             setVisible( true );
@@ -121,10 +123,14 @@ final class FoundSelectedCounter extends JComponent {
     /** The tooltip: the distinct total plus the per-set breakdown, stressing that hits and selections are one pool.
      *  Found-set 0 is labelled "A" when Search A holds a query, else "Selected" (a manual selection). Each part is
      *  shown only when non-zero (a solo search / selection shows just its own count). */
-    static String tooltipText( final int total, final int a, final int b, final int both, final boolean a_is_search ) {
+    static String tooltipText( final int total, final int a, final int b, final int both, final boolean a_is_search,
+                               final String combine_label ) {
         final StringBuilder sb = new StringBuilder();
         sb.append( total ).append( total == 1 ? " highlighted node" : " highlighted nodes" );
         sb.append( " (search hits + selection)" );
+        if ( combine_label != null ) {
+            return sb.append( " — " ).append( combine_label ).toString(); // combined result: no per-box breakdown
+        }
         if ( ( a > 0 ) || ( b > 0 ) ) {
             sb.append( ": " );
             boolean first = true;

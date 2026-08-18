@@ -358,8 +358,7 @@ final class ControlPanel extends JPanel implements ActionListener {
                 }
                 displayedPhylogenyMightHaveChanged(true);
             } else if (e.getSource() == _show_domain_architectures) {
-                search0();
-                search1();
+                reRunSearches();
                 // When the user switches domains ON, re-fit the (now wider) tree horizontally so the
                 // domains actually become visible -- otherwise it looks like nothing happened. The
                 // horizontal-only fit keeps the user's vertical zoom; turning domains OFF just repaints.
@@ -449,13 +448,11 @@ final class ControlPanel extends JPanel implements ActionListener {
                     displayedPhylogenyMightHaveChanged(true);
                 } else if (e.getSource() == _decr_domain_structure_evalue_thr) {
                     _mainpanel.getCurrentTreePanel().decreaseDomainStructureEvalueThresholdExp();
-                    search0();
-                    search1();
+                    reRunSearches();
                     displayedPhylogenyMightHaveChanged(true);
                 } else if (e.getSource() == _incr_domain_structure_evalue_thr) {
                     _mainpanel.getCurrentTreePanel().increaseDomainStructureEvalueThresholdExp();
-                    search0();
-                    search1();
+                    reRunSearches();
                     displayedPhylogenyMightHaveChanged(true);
                 } else if (e.getSource() == _search_tf_0) {
                     search0();
@@ -1694,10 +1691,15 @@ final class ControlPanel extends JPanel implements ActionListener {
             if ( _search_range_tf_1 != null ) {
                 _search_range_tf_1.setText( "" );
             }
+            if ( _search_combine_combo != null ) {
+                _search_combine_combo.setSelectedIndex( 0 ); // back to independent
+            }
+            _search_was_combined = false;
         }
         finally {
             _search_controls_adjusting = false;
         }
+        updateCombineControlVisibility();
     }
 
     /** Resets the "Color by" property dropdown to None (for Reset to Defaults). The per-tab coloring state is
@@ -1964,47 +1966,208 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     void search0() {
-        final MainPanel main_panel = getMainPanel();
-        final Phylogeny tree = main_panel.getCurrentPhylogeny();
-        if ((tree == null) || tree.isEmpty()) {
-            return;
-        }
-        String query = getSearchTextField0().getText();
-        if (query != null) {
-            query = query.trim();
-        }
-        if (!ForesterUtil.isEmpty(query)) {
-            search0(main_panel, tree, query);
-        } else {
-            getSearchFoundCountsLabel0().setVisible(false);
-            getSearchResetButton0().setEnabled(false);
-            getSearchResetButton0().setVisible(false);
-            searchReset0();
-        }
-        updateSearchFieldValidity(true);
-        repaintTreeAfterSearch(); // light: only the highlight changed (no full layout recalc)
+        runSearchBox(true);
     }
 
     void search1() {
+        runSearchBox(false);
+    }
+
+    /**
+     * Runs a search box, honouring the "Combine A & B" mode. When it is AND/OR and BOTH boxes carry a query, the two
+     * boxes are combined into a SINGLE found set (A &cap; B / A &cup; B) in found-set 0; otherwise the two boxes search
+     * INDEPENDENTLY (the default A/B dual-highlight). Leaving combine mode (a box cleared, or the mode set back to
+     * independent) re-runs BOTH boxes independently so their separate highlights are restored.
+     */
+    private void runSearchBox(final boolean box_a) {
         final MainPanel main_panel = getMainPanel();
         final Phylogeny tree = main_panel.getCurrentPhylogeny();
         if ((tree == null) || tree.isEmpty()) {
             return;
         }
-        String query = getSearchTextField1().getText();
+        if (combineActive()) {
+            runCombinedSearch(tree);
+            _search_was_combined = true;
+        } else if (_search_was_combined) {
+            _search_was_combined = false;
+            independentSearch(true);  // restore BOTH boxes' own found sets (the combined result had cleared box B)
+            independentSearch(false);
+        } else {
+            independentSearch(box_a);
+        }
+        updateCombineControlVisibility();
+        updateSearchFieldValidity(box_a);
+        repaintTreeAfterSearch(); // light: only the highlight changed (no full layout recalc)
+    }
+
+    /** The independent (single-box) search: compute the box's own found set from its field/mode/value -- the default,
+     *  dual-highlight behaviour. */
+    private void independentSearch(final boolean box_a) {
+        final MainPanel main_panel = getMainPanel();
+        final Phylogeny tree = main_panel.getCurrentPhylogeny();
+        if ((tree == null) || tree.isEmpty()) {
+            return;
+        }
+        String query = (box_a ? getSearchTextField0() : getSearchTextField1()).getText();
         if (query != null) {
             query = query.trim();
         }
         if (!ForesterUtil.isEmpty(query)) {
-            search1(main_panel, tree, query);
+            if (box_a) {
+                search0(main_panel, tree, query);
+            } else {
+                search1(main_panel, tree, query);
+            }
         } else {
-            getSearchFoundCountsLabel1().setVisible(false);
-            getSearchResetButton1().setEnabled(false);
-            getSearchResetButton1().setVisible(false);
-            searchReset1();
+            final JLabel lbl = box_a ? getSearchFoundCountsLabel0() : getSearchFoundCountsLabel1();
+            final JButton btn = box_a ? getSearchResetButton0() : getSearchResetButton1();
+            lbl.setVisible(false);
+            btn.setEnabled(false);
+            btn.setVisible(false);
+            if (box_a) {
+                searchReset0();
+            } else {
+                searchReset1();
+            }
         }
-        updateSearchFieldValidity(false);
-        repaintTreeAfterSearch(); // light: only the highlight changed (no full layout recalc)
+    }
+
+    /** The combine selection: 0 = independent (default) / 1 = AND (A &cap; B) / 2 = OR (A &cup; B). */
+    private int combineModeIndex() {
+        return (_search_combine_combo == null) ? 0 : _search_combine_combo.getSelectedIndex();
+    }
+
+    /** Whether BOTH search boxes currently hold a non-blank query. */
+    private boolean bothQueriesActive() {
+        return (_search_tf_0 != null) && (_search_tf_1 != null)
+                && !ForesterUtil.isEmptyTrimmed(_search_tf_0.getText())
+                && !ForesterUtil.isEmptyTrimmed(_search_tf_1.getText());
+    }
+
+    /** Whether the two boxes should be COMBINED into one found set: a non-independent mode AND both boxes have a query. */
+    private boolean combineActive() {
+        return (combineModeIndex() > 0) && bothQueriesActive();
+    }
+
+    /** A description of the active combine mode for the menu-bar counter ("A AND B" / "A OR B"), or null when the two
+     *  boxes are independent -- so the counter labels a combined result correctly instead of misreporting it as "A". */
+    String searchCombineDescription() {
+        return combineActive() ? ((combineModeIndex() == 1) ? "A AND B" : "A OR B") : null;
+    }
+
+    /** Re-runs BOTH search boxes (after a display or shared-option change). In combine mode a single search0() already
+     *  recomputes the combined A&cap;B/A&cup;B for both boxes, so search1() is skipped -- otherwise the full combined
+     *  search would run twice. */
+    private void reRunSearches() {
+        search0();
+        if (!combineActive()) {
+            search1();
+        }
+    }
+
+    /** Shows the "Combine A & B" control only when both boxes have a query (adaptive -- zero panel space for the
+     *  common single-search case, like the step-through navigator). */
+    private void updateCombineControlVisibility() {
+        if (_search_combine_panel == null) {
+            return;
+        }
+        final boolean show = bothQueriesActive();
+        if (_search_combine_panel.isVisible() != show) {
+            _search_combine_panel.setVisible(show);
+            revalidate();
+            repaint();
+        }
+    }
+
+    /** The raw found set of one box (its own field/mode/value + the ',' OR / '+' AND / Inverse handling), WITHOUT
+     *  installing it on the panel -- used to combine the two boxes. */
+    private Set<Long> rawFoundSet(final boolean box_a, final Phylogeny tree) {
+        final String q = (box_a ? _search_tf_0 : _search_tf_1).getText();
+        if (ForesterUtil.isEmptyTrimmed(q)) {
+            return new HashSet<>();
+        }
+        final SearchField f = (SearchField) (box_a ? _search_field_0 : _search_field_1).getSelectedItem();
+        final SearchMode m = (SearchMode) (box_a ? _search_mode_0 : _search_mode_1).getSelectedItem();
+        final String range = (box_a ? _search_range_tf_0 : _search_range_tf_1).getText();
+        final Set<Long> r = runSearch(tree, f, m, q.trim(), range);
+        return (r == null) ? new HashSet<>() : r;
+    }
+
+    /** Runs the combined A/B search: A &cap; B (AND) or A &cup; B (OR), placing the single result in found-set 0
+     *  (found-set 1 cleared) so the highlight, count, step-through, the menu-bar counter and export all reflect it. */
+    private void runCombinedSearch(final Phylogeny tree) {
+        final TreePanel tp = getMainPanel().getCurrentTreePanel();
+        if (tp == null) {
+            return;
+        }
+        final Set<Long> combined = new HashSet<>(rawFoundSet(true, tree));
+        if (combineModeIndex() == 1) {
+            combined.retainAll(rawFoundSet(false, tree)); // AND
+        } else {
+            combined.addAll(rawFoundSet(false, tree));     // OR
+        }
+        tp.setFoundNodes1(null); // the combined result lives in found-set 0 only
+        if (!combined.isEmpty()) {
+            tp.setFoundNodes0(combined);
+            setSearchFoundCountsOnLabel0(combined.size());
+        } else {
+            searchReset0();
+            setSearchFoundCountsOnLabel0(0);
+        }
+        getSearchFoundCountsLabel0().setVisible(true);
+        getSearchResetButton0().setEnabled(true);
+        getSearchResetButton0().setVisible(true);
+        // box B's own count / reset are not meaningful while the two boxes are combined into one result
+        getSearchFoundCountsLabel1().setVisible(false);
+        getSearchResetButton1().setEnabled(false);
+        getSearchResetButton1().setVisible(false);
+    }
+
+    /** The "Combine A & B" control (independent / AND / OR), hidden until both boxes carry a query. */
+    void setupSearchCombine() {
+        _search_combine_panel = new JPanel(new BorderLayout(4, 0));
+        _search_combine_panel.setBackground(getBackground());
+        final JLabel lbl = new JLabel("Combine:");
+        lbl.setFont(ControlPanel.jcb_font);
+        if (_configuration.isApplyCustomGuiColors()) {
+            lbl.setForeground(getConfiguration().getGuiCheckboxTextColor());
+        }
+        _search_combine_combo = new JComboBox<>(new String[] { "independent", "A AND B", "A OR B" });
+        _search_combine_combo.setSelectedIndex(0);
+        _search_combine_combo.setToolTipText("How to combine the two search boxes: independent A/B highlights, or one "
+                + "result set -- A AND B (in both) / A OR B (in either)");
+        _search_combine_combo.setFont(ControlPanel.jcb_font);
+        if (_configuration.isApplyCustomGuiColors()) {
+            _search_combine_combo.setBackground(getConfiguration().getGuiButtonBackgroundColor());
+            _search_combine_combo.setForeground(getConfiguration().getGuiButtonTextColor());
+        }
+        _search_combine_combo.setPreferredSize(new Dimension(10, _search_combine_combo.getPreferredSize().height));
+        _search_combine_combo.addActionListener(e -> {
+            if (!_search_controls_adjusting) {
+                search0(); // recompute with the new combine mode (routes through runSearchBox)
+            }
+        });
+        _search_combine_panel.add(lbl, BorderLayout.WEST);
+        _search_combine_panel.add(_search_combine_combo, BorderLayout.CENTER);
+        _search_combine_panel.setVisible(false); // adaptive: shown only when both boxes have a query
+        add(_search_combine_panel);
+    }
+
+    /** Test hook: set the combine mode (0 independent / 1 AND / 2 OR); fires the real recompute. */
+    void setSearchCombineForTest(final int index) {
+        if (_search_combine_combo != null) {
+            _search_combine_combo.setSelectedIndex(index);
+        }
+    }
+
+    /** Test hook: whether the adaptive "Combine A & B" control is currently showing. */
+    boolean isSearchCombineControlVisibleForTest() {
+        return (_search_combine_panel != null) && _search_combine_panel.isVisible();
+    }
+
+    /** Test hook: the combine control's laid-out height (0 when hidden/not yet laid out). */
+    int searchCombinePanelHeightForTest() {
+        return (_search_combine_panel == null) ? 0 : _search_combine_panel.getHeight();
     }
 
     void searchReset0() {
@@ -2512,6 +2675,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         nextRowGap(TIGHT_GAP); // less space between Search (A) and Search (B)
         setupSearchTools1();
         nextRowGap(TIGHT_GAP);
+        setupSearchCombine(); // adaptive "Combine A & B" control (hidden until both boxes have a query)
         setupSearchNavigation();
         addControlPanelGlue();
     }
@@ -2535,6 +2699,11 @@ final class ControlPanel extends JPanel implements ActionListener {
     // value-autocomplete popups: offer the selected field's existing values as you type in the value box
     private SearchValueAutocomplete _search_autocomplete_0;
     private SearchValueAutocomplete _search_autocomplete_1;
+    // "Combine A & B" control: 0 = independent (dual-highlight, default) / 1 = AND (A ∩ B) / 2 = OR (A ∪ B). Adaptive:
+    // the panel is shown only when BOTH boxes have a query, so it costs no panel space for the common single search.
+    private JComboBox<String> _search_combine_combo;
+    private JPanel            _search_combine_panel;
+    private boolean           _search_was_combined; // the last search produced a combined (not dual) result
     private Phylogeny _search_fields_tree;    // identity guard: the tree the field lists were last built for
     private List<String> _search_fields_sig;  // last-built field signatures (label + numeric-ness), to skip a no-op
     // set while re-seeding the search combos programmatically (e.g. Reset to Defaults / per-tree rebuild), so
@@ -3047,8 +3216,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         final Options o = getOptions();
         o.setSearchCaseSensitive(_search_case_sensitive_cb.isSelected());
         o.setInverseSearchResult(_search_inverse_cb.isSelected());
-        search0();
-        search1();
+        reRunSearches();
     }
 
     /**
@@ -3207,15 +3375,11 @@ final class ControlPanel extends JPanel implements ActionListener {
 
             @Override
             public void actionPerformed(final ActionEvent e) {
-                searchReset0();
-                setSearchFoundCountsOnLabel0(0);
-                getSearchFoundCountsLabel0().setVisible(false);
                 getSearchTextField0().setText("");
                 _search_range_tf_0.setText("");
-                getSearchResetButton0().setEnabled(false);
-                getSearchResetButton0().setVisible(false);
-                updateSearchFieldValidity(true); // clear any error outline
-                repaintTreeAfterSearch();
+                // route through search0() so the empty box clears its found set + labels AND the combine state is
+                // reconciled (restore box B's independent highlight, drop _search_was_combined, hide the Combine row)
+                search0();
             }
         };
         _search_reset_button_0.addActionListener(action_listener);
@@ -3282,15 +3446,11 @@ final class ControlPanel extends JPanel implements ActionListener {
 
             @Override
             public void actionPerformed(final ActionEvent e) {
-                searchReset1();
-                setSearchFoundCountsOnLabel1(0);
-                getSearchFoundCountsLabel1().setVisible(false);
                 getSearchTextField1().setText("");
                 _search_range_tf_1.setText("");
-                getSearchResetButton1().setEnabled(false);
-                getSearchResetButton1().setVisible(false);
-                updateSearchFieldValidity(false); // clear any error outline
-                repaintTreeAfterSearch();
+                // route through search1() so the empty box clears its found set + labels AND the combine state is
+                // reconciled (restore box A's independent highlight, drop _search_was_combined, hide the Combine row)
+                search1();
             }
         };
         _search_reset_button_1.addActionListener(action_listener);
@@ -3813,8 +3973,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             populateAncestralPieBox();
             // run the searches AFTER the field selectors are rebuilt for this tab's tree, so the highlight reflects
             // the field the combo now shows (not the previous tab's field).
-            getMainPanel().getControlPanel().search0();
-            getMainPanel().getControlPanel().search1();
+            reRunSearches();
             if (getMainPanel().getMainFrame() != null) {
                 getMainPanel().getMainFrame().updateEditMenu(); // undo history is per-tab
             }
