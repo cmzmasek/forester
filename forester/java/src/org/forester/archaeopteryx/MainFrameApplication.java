@@ -1620,7 +1620,6 @@ public final class MainFrameApplication extends MainFrame {
         _graphics_export_white_background_cbmi.setToolTipText(MainFrame.WHITE_BG_TIP);
         _label_direction_cbmi = new JCheckBoxMenuItem(LABEL_DIRECTION_LABEL);
         _label_direction_cbmi.setToolTipText(LABEL_DIRECTION_TIP);
-        _color_all_found_nodes_when_coloring_subtree_cbmi = new JCheckBoxMenuItem("Colorize All Found Nodes When Colorizing Subtree(s)");
         _antialias_print_cbmi = new JCheckBoxMenuItem("Antialias (export)");
         _print_black_and_white_cbmi = new JCheckBoxMenuItem("Export in Black and White");
         _graphics_export_visible_only_cbmi = new JCheckBoxMenuItem("Limit to Visible ('Screenshot') for PNG and JPG export");
@@ -1686,8 +1685,6 @@ public final class MainFrameApplication extends MainFrame {
         customizeCheckBoxMenuItem(_replace_underscores_cbmi, getOptions().isReplaceUnderscoresInNhParsing());
         customizeCheckBoxMenuItem(_allow_errors_in_distance_to_parent_cbmi,
                 getOptions().isAllowErrorsInDistanceToParent());
-        customizeCheckBoxMenuItem(_color_all_found_nodes_when_coloring_subtree_cbmi,
-                getOptions().isColorAllFoundNodesWhenColoringSubtree());
         customizeCheckBoxMenuItem(_parse_beast_style_extended_nexus_tags_cbmi,
                 getOptions().isParseBeastStyleExtendedNexusTags());
         customizeCheckBoxMenuItem(_graphics_export_visible_only_cbmi, getOptions().isGraphicsExportVisibleOnly());

@@ -320,8 +320,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JCheckBoxMenuItem _use_brackets_for_conf_in_nh_export_cbmi;
     JCheckBoxMenuItem _use_internal_names_for_conf_in_nh_export_cbmi;
     JCheckBoxMenuItem _parse_beast_style_extended_nexus_tags_cbmi;
-    // search: the case/words/regex/inverse/properties options moved to the left ControlPanel.
-    JCheckBoxMenuItem _color_all_found_nodes_when_coloring_subtree_cbmi;
     // type menu:
     JMenu _type_menu;
     JCheckBoxMenuItem _rectangular_type_cbmi;
@@ -510,8 +508,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         } else if (o == _ext_node_dependent_cladogram_rbmi) {
             updateOptions(getOptions());
             showWhole();
-        } else if (o == _color_all_found_nodes_when_coloring_subtree_cbmi) {
-            updateOptions(getOptions());
         } else if (o == _parse_beast_style_extended_nexus_tags_cbmi) {
             updateOptions(getOptions());
         } else if (o == _show_scale_cbmi) {
@@ -2290,9 +2286,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if ((_line_up_renderable_data_cbmi != null) && _line_up_renderable_data_cbmi.isEnabled()) {
             options.setLineUpRendarableNodeData(_line_up_renderable_data_cbmi.isSelected());
         }
-        if ((_color_all_found_nodes_when_coloring_subtree_cbmi != null) && _color_all_found_nodes_when_coloring_subtree_cbmi.isEnabled()) {
-            options.setColorAllFoundNodesWhenColoringSubtree(_color_all_found_nodes_when_coloring_subtree_cbmi.isSelected());
-        }
         if ((_parse_beast_style_extended_nexus_tags_cbmi != null) && _parse_beast_style_extended_nexus_tags_cbmi.isEnabled()) {
             options.setParseBeastStyleExtendedNexusTags(_parse_beast_style_extended_nexus_tags_cbmi.isSelected());
         }
@@ -2354,8 +2347,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         setSelected(_graphics_export_visible_only_cbmi, options.isGraphicsExportVisibleOnly());
         setSelected(_right_line_up_domains_cbmi, options.isRightLineUpDomains());
         setSelected(_line_up_renderable_data_cbmi, options.isLineUpRendarableNodeData());
-        setSelected(_color_all_found_nodes_when_coloring_subtree_cbmi,
-                options.isColorAllFoundNodesWhenColoringSubtree());
         setSelected(_parse_beast_style_extended_nexus_tags_cbmi, options.isParseBeastStyleExtendedNexusTags());
         setSelected(_collapsed_with_average_height_cbmi, options.isCollapsedWithAverageHeigh());
         setSelected(_show_abbreviated_labels_for_collapsed_nodes_cbmi,

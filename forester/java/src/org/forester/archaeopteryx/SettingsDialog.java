@@ -86,7 +86,6 @@ final class SettingsDialog extends JDialog {
         tabs.addTab( "Labels & Colors", scroll( labelsColorsTab() ) );
         tabs.addTab( "Overlays", scroll( overlaysTab() ) );
         tabs.addTab( "Fonts, Nodes and Branches", scroll( nodesTab() ) );
-        tabs.addTab( "Search", scroll( searchTab() ) );
         tabs.addTab( "Export & Print", scroll( exportTab() ) );
         tabs.addTab( "File Reading", scroll( readTab() ) );
         tabs.addTab( "File Saving", scroll( saveTab() ) );
@@ -114,6 +113,13 @@ final class SettingsDialog extends JDialog {
         add( tabs, BorderLayout.CENTER );
         add( south, BorderLayout.SOUTH );
         pack();
+        // pack() sizes to the (narrow) tab CONTENT, which wraps the tab-header row onto two rows and feels cramped;
+        // widen the default so all tabs sit on a single row with room to spare (never shrink a naturally-wider pack).
+        // The minimum WIDTH keeps it from being dragged back into the wrapped, cramped state; height stays free
+        // (each tab already scrolls).
+        final int min_width = Math.max( 900, getWidth() );
+        setSize( min_width, getHeight() );
+        setMinimumSize( new Dimension( min_width, 300 ) );
         setLocationRelativeTo( mf );
     }
 
@@ -241,22 +247,6 @@ final class SettingsDialog extends JDialog {
         font_blurb.setAlignmentX( Component.LEFT_ALIGNMENT );
         c.add( font_blurb );
         refreshFontInfo();
-        return c;
-    }
-
-    private JPanel searchTab() {
-        final JPanel c = column();
-        c.add( header( "Search & Selection" ) );
-        add( c, cb( _mf._color_all_found_nodes_when_coloring_subtree_cbmi ) );
-        c.add( Box.createVerticalStrut( 4 ) );
-        // constrain the HTML note's width so it WRAPS instead of laying out as one very long line -- an
-        // unconstrained single-line note was forcing the whole Settings dialog ~1340px wide
-        final JLabel note = new JLabel( "<html><body style='width: 340px'><i>Each search box on the left control panel"
-                + " has its own field selector (what to search) and match-mode selector (contains / starts with /"
-                + " ends with / whole word / regular expression), plus the shared Match Case and Inverse options."
-                + "</i></body></html>" );
-        note.setAlignmentX( Component.LEFT_ALIGNMENT );
-        c.add( note );
         return c;
     }
 

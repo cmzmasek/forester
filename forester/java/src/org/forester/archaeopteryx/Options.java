@@ -236,7 +236,6 @@ final public class Options {
     private TAXONOMY_EXTRACTION _taxonomy_extraction;
     private boolean _line_up_renderable_node_data;
     private boolean _right_align_domains;
-    private boolean _color_all_found_nodes_when_coloring_subtree;
     private boolean _parse_beast_style_extended_nexus_tags;
     private boolean _collapsed_with_average_height;
     private boolean _show_abbreviated_labels_for_collapsed_nodes;
@@ -337,7 +336,6 @@ final public class Options {
         _outline_fonts_in_vector_export = true;
         _show_default_node_shapes_external = false;
         _show_default_node_shapes_for_marked_nodes = false;
-        _color_all_found_nodes_when_coloring_subtree = false;
         _parse_beast_style_extended_nexus_tags = true;
         _min_confidence_fraction = MIN_CONFIDENCE_FRACTION_DEFAULT;
         _support_visualization = SUPPORT_VISUALIZATION.NONE;
@@ -948,14 +946,6 @@ final public class Options {
 
     final static Options createDefaultInstance() {
         return new Options();
-    }
-
-    final boolean isColorAllFoundNodesWhenColoringSubtree() {
-        return _color_all_found_nodes_when_coloring_subtree;
-    }
-
-    final void setColorAllFoundNodesWhenColoringSubtree(final boolean color_all_found_nodes_when_coloring_subtree) {
-        _color_all_found_nodes_when_coloring_subtree = color_all_found_nodes_when_coloring_subtree;
     }
 
     final boolean isParseBeastStyleExtendedNexusTags() {

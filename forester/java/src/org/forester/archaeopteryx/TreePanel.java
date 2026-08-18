@@ -156,7 +156,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     final private class SubtreeColorizationActionListener implements ActionListener {
 
-        List<PhylogenyNode> _additional_nodes = null;
         JColorChooser _chooser = null;
         PhylogenyNode _node = null;
 
@@ -165,19 +164,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             _node = node;
         }
 
-        SubtreeColorizationActionListener(final JColorChooser chooser,
-                                          final PhylogenyNode node,
-                                          final List<PhylogenyNode> additional_nodes) {
-            _chooser = chooser;
-            _node = node;
-            _additional_nodes = additional_nodes;
-        }
-
         @Override
         public void actionPerformed(final ActionEvent e) {
             final Color c = _chooser.getColor();
             if (c != null) {
-                colorizeSubtree(c, _node, _additional_nodes);
+                colorizeSubtree(c, _node);
             }
         }
     }
@@ -901,9 +892,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         repaint();
     }
 
-    final private void colorizeSubtree(final Color c,
-                                       final PhylogenyNode node,
-                                       final List<PhylogenyNode> additional_nodes) {
+    final private void colorizeSubtree(final Color c, final PhylogenyNode node) {
         _control_panel.setColorBranches(true);
         if (_control_panel.getUseVisualStylesCb() != null) {
             _control_panel.getUseVisualStylesCb().setSelected(true);
@@ -911,13 +900,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (node != null) {
             for (final PreorderTreeIterator it = new PreorderTreeIterator(node); it.hasNext(); ) {
                 it.next().getBranchData().setBranchColor(new BranchColor(c));
-            }
-        }
-        if (additional_nodes != null) {
-            for (final PhylogenyNode an : additional_nodes) {
-                for (final PreorderTreeIterator it = new PreorderTreeIterator(an); it.hasNext(); ) {
-                    it.next().getBranchData().setBranchColor(new BranchColor(c));
-                }
             }
         }
         repaint();
@@ -957,14 +939,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return;
         }
         _color_chooser.setPreviewPanel(new JPanel());
-        final SubtreeColorizationActionListener al;
-        final boolean color_found = getOptions().isColorAllFoundNodesWhenColoringSubtree();
-        if (color_found && ((getFoundNodes0() != null) || (getFoundNodes1() != null))) {
-            final List<PhylogenyNode> additional_nodes = getFoundNodesAsListOfPhylogenyNodes();
-            al = new SubtreeColorizationActionListener(_color_chooser, node, additional_nodes);
-        } else {
-            al = new SubtreeColorizationActionListener(_color_chooser, node);
-        }
+        final SubtreeColorizationActionListener al = new SubtreeColorizationActionListener(_color_chooser, node);
         final JDialog dialog = JColorChooser
                 .createDialog(this, "Subtree colorization", true, _color_chooser, al, null);
         setEdited(true);

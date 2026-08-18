@@ -94,8 +94,9 @@ public final class SettingsDialogTest {
                 dlg.pack();
                 final List<JTabbedPane> tabs = new ArrayList<>();
                 collect( dlg.getContentPane(), JTabbedPane.class, tabs );
-                // the former single "Display" tab was split into "Layout" / "Labels & Colors" / "Overlays" -> 9 tabs
-                if ( tabs.isEmpty() || ( tabs.get( 0 ).getTabCount() != 9 ) ) {
+                // the former single "Display" tab was split into "Layout" / "Labels & Colors" / "Overlays", and the
+                // former "Search" tab (its one clumsy colorize-all-found setting) was removed entirely -> 8 tabs
+                if ( tabs.isEmpty() || ( tabs.get( 0 ).getTabCount() != 8 ) ) {
                     ok[ 0 ] = false;
                 }
                 else {
@@ -103,14 +104,19 @@ public final class SettingsDialogTest {
                     for ( int i = 0; i < tabs.get( 0 ).getTabCount(); ++i ) {
                         titles.add( tabs.get( 0 ).getTitleAt( i ) );
                     }
-                    // the three split tabs are present, the retired combined "Display" tab is gone, and the
-                    // persistent-taxonomy-cache tab (with its on/off checkbox) is still there
+                    // the three split tabs are present, the retired combined "Display" and standalone "Search" tabs
+                    // are gone, and the persistent-taxonomy-cache tab (with its on/off checkbox) is still there
                     if ( !titles.contains( "Layout" ) || !titles.contains( "Labels & Colors" )
                             || !titles.contains( "Overlays" ) || titles.contains( "Display" )
-                            || !titles.contains( "Taxonomy Cache" )
+                            || titles.contains( "Search" ) || !titles.contains( "Taxonomy Cache" )
                             || ( findCheckBox( dlg.getContentPane(), "Use persistent cache" ) == null ) ) {
                         ok[ 0 ] = false;
                     }
+                }
+                // the default width is widened so the whole tab-header row fits on ONE row (pack() alone sizes to
+                // the narrow tab content and would wrap the header onto two cramped rows)
+                if ( dlg.getWidth() < 900 ) {
+                    ok[ 0 ] = false;
                 }
                 // the retired "Behavior" section and its "Data returned on copy:" combo (the old "List Node
                 // Data" config) must no longer appear anywhere in the dialog
