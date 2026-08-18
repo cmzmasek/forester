@@ -290,6 +290,30 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Search autocomplete: ");
+        if (org.forester.archaeopteryx.SearchAutocompleteTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Found/Selected counter: ");
+        if (org.forester.archaeopteryx.FoundSelectedCounterTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("External-data fit: ");
+        if (org.forester.archaeopteryx.ExternalDataFitTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Confidence label: ");
         if (org.forester.archaeopteryx.ConfidenceLabelTest.test()) {
             System.out.println("OK.");

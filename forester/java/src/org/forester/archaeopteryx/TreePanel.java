@@ -1546,6 +1546,31 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return orderedFoundNodes().size();
     }
 
+    /** Tree-validated breakdown of the highlighted nodes for the "Found / Selected" menu-bar counter tooltip:
+     *  {@code [inA, inB, inBoth]}, counted over the nodes actually present in the current (sub)tree -- so it stays
+     *  consistent with {@link #getSearchHitCount()} (which is inA + inB - inBoth) even after a prune leaves stale ids
+     *  in the found sets. */
+    final int[] foundSelectedBreakdown() {
+        int a = 0, b = 0, both = 0;
+        if ((_phylogeny != null) && hasFoundNodes()) {
+            for (final PhylogenyNodeIterator it = _phylogeny.iteratorPreorder(); it.hasNext(); ) {
+                final PhylogenyNode n = it.next();
+                final boolean in0 = isInFoundNodes0(n);
+                final boolean in1 = isInFoundNodes1(n);
+                if (in0) {
+                    a++;
+                }
+                if (in1) {
+                    b++;
+                }
+                if (in0 && in1) {
+                    both++;
+                }
+            }
+        }
+        return new int[] { a, b, both };
+    }
+
     /** Current 0-based step-through position, or -1 if not positioned yet. */
     final int getSearchHitIndex() {
         return _search_hit_index;
@@ -3758,17 +3783,27 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             _sb.append(node.getName());
         }
         if (node.getNodeData().isHasSequence()) {
-            if (getControlPanel().isShowSequenceAcc() && (node.getNodeData().getSequence().getAccession() != null)) {
+            final Sequence seq = node.getNodeData().getSequence();
+            if (getControlPanel().isShowSequenceAcc() && (seq.getAccession() != null)) {
                 _sb.append(" ");
-                if (!ForesterUtil.isEmpty(node.getNodeData().getSequence().getAccession().getSource())) {
-                    _sb.append(node.getNodeData().getSequence().getAccession().getSource());
+                if (!ForesterUtil.isEmpty(seq.getAccession().getSource())) {
+                    _sb.append(seq.getAccession().getSource());
                     _sb.append(":");
                 }
-                _sb.append(node.getNodeData().getSequence().getAccession().getValue());
+                _sb.append(seq.getAccession().getValue());
             }
-            if (getControlPanel().isShowSeqNames() && (node.getNodeData().getSequence().getName().length() > 0)) {
+            // gene symbol + gene name (were missing radially -- rectangular parity, see paintNodeData)
+            if (getControlPanel().isShowSeqSymbols() && (seq.getSymbol().length() > 0)) {
                 _sb.append(" ");
-                _sb.append(node.getNodeData().getSequence().getName());
+                _sb.append(seq.getSymbol());
+            }
+            if (getControlPanel().isShowGeneNames() && (seq.getGeneName().length() > 0)) {
+                _sb.append(" ");
+                _sb.append(seq.getGeneName());
+            }
+            if (getControlPanel().isShowSeqNames() && (seq.getName().length() > 0)) {
+                _sb.append(" ");
+                _sb.append(seq.getName());
             }
         }
         final String rest = _sb.toString();
@@ -5602,6 +5637,21 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     final void calculateLongestExtNodeInfo() {
         if ((_phylogeny == null) || _phylogeny.isEmpty()) {
+            return;
+        }
+        // When "Show External Data" is off, no external-node labels/domains/vectors/etc. are drawn (see the
+        // isShowExternalData guards in paintNodeData), so reserve ZERO width for them -- otherwise fit-to-window ("F")
+        // and fit-width ("W") leave a large empty right margin where the (undrawn) labels would have gone. This is the
+        // single source of the label-reach reservation (depthLabelReserve/breadthLabelReserve, the radial label reach,
+        // annotation-column x), so zeroing it here fixes the wasted space in EVERY display type. Node shapes at the
+        // tips are covered by the MOVE margin the fit always keeps.
+        if ((getControlPanel() != null) && !getControlPanel().isShowExternalData()) {
+            _longest_ext_node_info = 0;
+            _length_of_longest_text = 0;
+            _length_of_longest_text_only = 0;
+            _longest_domain = 0;
+            _longest_rendered_domain = 0;
+            _ext_node_with_longest_txt_info = _phylogeny.getFirstExternalNode();
             return;
         }
         int max_possible_length = ForesterUtil

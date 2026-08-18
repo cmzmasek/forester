@@ -459,10 +459,8 @@ final class ControlPanel extends JPanel implements ActionListener {
                     displayedPhylogenyMightHaveChanged(true);
                 } else if (e.getSource() == _search_tf_0) {
                     search0();
-                    displayedPhylogenyMightHaveChanged(true);
                 } else if (e.getSource() == _search_tf_1) {
                     search1();
-                    displayedPhylogenyMightHaveChanged(true);
                 } else if ((_dynamically_hide_data != null) && (e.getSource() == _dynamically_hide_data)
                         && !_dynamically_hide_data.isSelected()) {
                     setDynamicHidingIsOn(false);
@@ -767,7 +765,9 @@ final class ControlPanel extends JPanel implements ActionListener {
      */
     private Set<Long> runSearch(final Phylogeny tree, final SearchField field, final SearchMode mode, String value,
                                 final String range_high) {
-        if ((field == null) || (mode == null)) {
+        // guard: field and mode must be the same kind; a transient mismatch (should be reconciled first) must
+        // reset the search, never build a mismatched SearchSpec (which throws -> an unexpected-exception dialog).
+        if ((field == null) || (mode == null) || (field.isNumeric() != mode.isNumeric())) {
             return null;
         }
         final boolean inverse = (_search_inverse_cb != null) && _search_inverse_cb.isSelected();
@@ -830,21 +830,79 @@ final class ControlPanel extends JPanel implements ActionListener {
         return (acc == null) ? new HashSet<>() : acc;
     }
 
-    /** The complement of {@code matched} over the nodes that CARRY {@code field} (the "Inverse" modifier): for a
-     *  numeric field the nodes that actually have a value for it (branch length / support / a numeric property live
-     *  outside node data), for a text field any data-bearing node (the legacy behaviour). */
+    /** The complement of {@code matched} over the nodes that CARRY {@code field} (the "Inverse" modifier): the
+     *  inverse of a field-scoped search is over the nodes the field applies to, not every data-bearing node -- so
+     *  e.g. "inverse of scientific-name = X" no longer selects tips that have no scientific name at all. Applies to
+     *  text and numeric fields alike (see {@link SearchField#carries}). */
     private static Set<Long> complement(final Phylogeny tree, final SearchField field, final Set<Long> matched) {
         final Set<Long> out = new HashSet<>();
         for (final PhylogenyNode n : PhylogenyMethods.obtainAllNodesAsList(tree)) {
-            if (matched.contains(n.getId())) {
-                continue;
-            }
-            final boolean carries = field.isNumeric() ? (field.numericValues(n).length > 0) : n.isHasNodeData();
-            if (carries) {
+            if (!matched.contains(n.getId()) && field.carries(n)) {
                 out.add(n.getId());
             }
         }
         return out;
+    }
+
+    /** The distinct existing values the value-autocomplete popup offers for one search box: the selected field's
+     *  values across the current tree -- but only for a SPECIFIC text field in a non-regex mode. Empty (so no popup)
+     *  for "Any text field" (a mixed value set, not a meaningful pick list), a numeric field (continuous), regex mode
+     *  (a pattern, not a value), or no tree. Recomputed on each popup open (the popup does not cache), so it can never
+     *  go stale against a tree/data edit. */
+    private List<String> autocompleteValues(final boolean box_a) {
+        final JComboBox<SearchField> fc = box_a ? _search_field_0 : _search_field_1;
+        final JComboBox<SearchMode> mc = box_a ? _search_mode_0 : _search_mode_1;
+        if ((fc == null) || (mc == null)) {
+            return new ArrayList<String>();
+        }
+        final SearchField f = (SearchField) fc.getSelectedItem();
+        final SearchMode m = (SearchMode) mc.getSelectedItem();
+        if ((f == null) || (m == null) || f.isNumeric() || (f.kind() == SearchField.Kind.ANY_TEXT)
+                || (m == SearchMode.REGEX)) {
+            return new ArrayList<String>();
+        }
+        final Phylogeny phy = (getMainPanel() == null) ? null : getMainPanel().getCurrentPhylogeny();
+        return SearchField.distinctValues(phy, f);
+    }
+
+    /** Whether a key does NOT modify the query text -- arrows / caret navigation, and the autocomplete popup's
+     *  Down/Up/Escape/Tab. The value fields re-run the search on keyReleased; skipping these keeps arrowing through the
+     *  suggestion popup (or moving the caret) from re-running the whole search on every keypress. ENTER is deliberately
+     *  NOT here -- it still runs the search (a plain Enter, or after accepting a suggestion). */
+    static boolean isNonEditingKey(final int key_code) {
+        switch (key_code) {
+            case KeyEvent.VK_UP:
+            case KeyEvent.VK_DOWN:
+            case KeyEvent.VK_LEFT:
+            case KeyEvent.VK_RIGHT:
+            case KeyEvent.VK_HOME:
+            case KeyEvent.VK_END:
+            case KeyEvent.VK_PAGE_UP:
+            case KeyEvent.VK_PAGE_DOWN:
+            case KeyEvent.VK_ESCAPE:
+            case KeyEvent.VK_TAB:
+            case KeyEvent.VK_SHIFT:
+            case KeyEvent.VK_CONTROL:
+            case KeyEvent.VK_ALT:
+            case KeyEvent.VK_META:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    /** Closes a box's value-autocomplete popup (and drops its cached session values), e.g. when its field or mode
+     *  changed so the value set / eligibility differs; the next focus/keystroke recomputes from the live tree. */
+    private void dismissAutocomplete(final boolean box_a) {
+        final SearchValueAutocomplete ac = box_a ? _search_autocomplete_0 : _search_autocomplete_1;
+        if (ac != null) {
+            ac.endSession();
+        }
+    }
+
+    /** Test hook: the value-autocomplete candidate list for a box (see {@link #autocompleteValues(boolean)}). */
+    List<String> autocompleteValuesForTest(final boolean box_a) {
+        return autocompleteValues(box_a);
     }
 
     private void setTreeDisplayType(final int index, final Options.PHYLOGENY_DISPLAY_TYPE t) {
@@ -1546,6 +1604,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             return;
         }
         final Phylogeny phy = _mainpanel.getCurrentPhylogeny();
+        final Set<Integer> prev_presence = _data_presence;
         if (force_rescan || (phy != _data_presence_for) || (_data_presence == null)) {
             _data_presence = AptxUtil.scanForDataPresence(phy);
             _data_presence_for = phy;
@@ -1565,9 +1624,14 @@ final class ControlPanel extends JPanel implements ActionListener {
             revalidate();
             repaint();
         }
-        // tailor the search field selectors to this tree (identity-guarded: a no-op when it hasn't changed, so
-        // the per-search repaint path pays nothing).
-        rebuildSearchFields(false);
+        // Tailor the search field selectors to this tree, but force the (O(n)) rebuild ONLY when the tree's set of
+        // present data types actually CHANGED -- i.e. an in-place data edit added/removed a field (Extract Data from
+        // Labels, a node-data edit; Import forces its own rebuild). A structural/display event (collapse, prune, swap,
+        // reorder, a display-checkbox toggle) keeps the same data-presence set, so it takes the identity-guarded
+        // rebuildSearchFields(false) path and pays nothing; a NEW tree still rebuilds via that method's phy-identity
+        // guard. This keeps the frequent structural/display events off the extra full-tree availableFields scan.
+        final boolean presence_changed = !java.util.Objects.equals(prev_presence, _data_presence);
+        rebuildSearchFields(presence_changed);
     }
 
     // For tests: whether the "Display Data" checkbox row for the given option constant is showing.
@@ -1917,6 +1981,8 @@ final class ControlPanel extends JPanel implements ActionListener {
             getSearchResetButton0().setVisible(false);
             searchReset0();
         }
+        updateSearchFieldValidity(true);
+        repaintTreeAfterSearch(); // light: only the highlight changed (no full layout recalc)
     }
 
     void search1() {
@@ -1937,6 +2003,8 @@ final class ControlPanel extends JPanel implements ActionListener {
             getSearchResetButton1().setVisible(false);
             searchReset1();
         }
+        updateSearchFieldValidity(false);
+        repaintTreeAfterSearch(); // light: only the highlight changed (no full layout recalc)
     }
 
     void searchReset0() {
@@ -2464,6 +2532,9 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JTextField _search_range_tf_1;
     private JPanel _search_range_panel_0;     // wraps the range field so it collapses to no space when hidden
     private JPanel _search_range_panel_1;
+    // value-autocomplete popups: offer the selected field's existing values as you type in the value box
+    private SearchValueAutocomplete _search_autocomplete_0;
+    private SearchValueAutocomplete _search_autocomplete_1;
     private Phylogeny _search_fields_tree;    // identity guard: the tree the field lists were last built for
     private List<String> _search_fields_sig;  // last-built field signatures (label + numeric-ness), to skip a no-op
     // set while re-seeding the search combos programmatically (e.g. Reset to Defaults / per-tree rebuild), so
@@ -2549,6 +2620,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     /** Reacts to a field-selector change: switch the mode set to match the field's type, show/hide the range
      *  field, then re-run that box's search. */
     private void onSearchFieldChanged(final boolean box_a) {
+        dismissAutocomplete(box_a); // the value set / eligibility changed with the field; recompute on next open
         final SearchField f = (SearchField) (box_a ? _search_field_0 : _search_field_1).getSelectedItem();
         if (f != null) { // remember this box's field so a later per-tree rebuild re-selects it when available
             if (box_a) {
@@ -2566,11 +2638,11 @@ final class ControlPanel extends JPanel implements ActionListener {
         else {
             search1();
         }
-        displayedPhylogenyMightHaveChanged(true);
     }
 
     /** Reacts to a mode-selector change: remember it (per box, per kind), show/hide the range field, re-run. */
     private void onSearchModeChanged(final boolean box_a) {
+        dismissAutocomplete(box_a); // regex mode suppresses the popup; other modes keep it -- recompute on next open
         final SearchField f = (SearchField) (box_a ? _search_field_0 : _search_field_1).getSelectedItem();
         final SearchMode m = (SearchMode) (box_a ? _search_mode_0 : _search_mode_1).getSelectedItem();
         if ((f != null) && (m != null)) {
@@ -2583,7 +2655,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         else {
             search1();
         }
-        displayedPhylogenyMightHaveChanged(true);
     }
 
     private SearchMode rememberedMode(final boolean box_a, final boolean numeric) {
@@ -2735,13 +2806,15 @@ final class ControlPanel extends JPanel implements ActionListener {
 
             @Override
             public void keyReleased(final KeyEvent e) {
+                if (isNonEditingKey(e.getKeyCode())) {
+                    return; // caret-navigation keys don't change the range bound -> don't re-run the search
+                }
                 if (box_a) {
                     search0();
                 }
                 else {
                     search1();
                 }
-                displayedPhylogenyMightHaveChanged(true);
             }
         });
         return tf;
@@ -2904,6 +2977,57 @@ final class ControlPanel extends JPanel implements ActionListener {
         _search_inverse_cb.setSelected( b );
     }
 
+    /** A cheap repaint of just the tree canvas after a search: the found-set highlight is the only thing that
+     *  changed, so a search must NOT run the full layout recalc of displayedPhylogenyMightHaveChanged(true) (which,
+     *  per keystroke on a large tree, re-measures every label -- the dominant search-lag source). */
+    private void repaintTreeAfterSearch() {
+        if ((_mainpanel != null) && (_mainpanel.getCurrentTreePanel() != null)) {
+            _mainpanel.getCurrentTreePanel().repaint();
+        }
+    }
+
+    /** Draws a red "error" outline on a box's query field (and its range field) when the current query can never
+     *  match: an uncompilable regular expression, or a non-numeric operand on a numeric field. Because the search
+     *  runs on every keystroke (no Enter button), this passive cue -- not a dialog -- is the right signal for a
+     *  query that is only transiently invalid while being typed. Uses FlatLaf's {@code JComponent.outline}. */
+    private void updateSearchFieldValidity(final boolean box_a) {
+        final JComboBox<SearchField> fc = box_a ? _search_field_0 : _search_field_1;
+        final JComboBox<SearchMode> mc = box_a ? _search_mode_0 : _search_mode_1;
+        if ((fc == null) || (mc == null)) {
+            return;
+        }
+        final SearchField field = (SearchField) fc.getSelectedItem();
+        final SearchMode mode = (SearchMode) mc.getSelectedItem();
+        final JTextField value_tf = box_a ? _search_tf_0 : _search_tf_1;
+        final JTextField range_tf = box_a ? _search_range_tf_0 : _search_range_tf_1;
+        setOutlineError(value_tf, isSearchQueryInvalid(field, mode, (value_tf == null) ? null : value_tf.getText()));
+        setOutlineError(range_tf, (mode == SearchMode.RANGE)
+                && isSearchQueryInvalid(field, mode, (range_tf == null) ? null : range_tf.getText()));
+    }
+
+    /** Whether a NON-EMPTY query can never match: an invalid regex (REGEX mode), or a non-number on a numeric
+     *  field. An empty query is not "invalid" -- it just clears the search. */
+    private static boolean isSearchQueryInvalid(final SearchField field, final SearchMode mode, final String text) {
+        if ((field == null) || (mode == null) || ForesterUtil.isEmpty(text) || ForesterUtil.isEmpty(text.trim())) {
+            return false;
+        }
+        if (field.isNumeric()) {
+            return SearchMatcher.parseFiniteDouble(text) == null;
+        }
+        return (mode == SearchMode.REGEX) && !SearchMatcher.isCompilableRegex(text);
+    }
+
+    private static void setOutlineError(final JTextField tf, final boolean error) {
+        if (tf == null) {
+            return;
+        }
+        final Object want = error ? "error" : null;
+        if (!java.util.Objects.equals(tf.getClientProperty("JComponent.outline"), want)) {
+            tf.putClientProperty("JComponent.outline", want);
+            tf.repaint();
+        }
+    }
+
     private JPanel searchOptionsRow(final JCheckBox a, final JCheckBox b) {
         final JPanel p = new JPanel(new GridLayout(1, 2, 0, 0));
         if (_configuration.isApplyCustomGuiColors()) {
@@ -2925,7 +3049,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         o.setInverseSearchResult(_search_inverse_cb.isSelected());
         search0();
         search1();
-        displayedPhylogenyMightHaveChanged(true);
     }
 
     /**
@@ -3074,8 +3197,10 @@ final class ControlPanel extends JPanel implements ActionListener {
 
             @Override
             public void keyReleased(final KeyEvent key_event) {
+                if (isNonEditingKey(key_event.getKeyCode())) {
+                    return; // navigation / autocomplete-popup keys don't change the query -> don't re-run the search
+                }
                 search0();
-                displayedPhylogenyMightHaveChanged(true);
             }
         };
         final ActionListener action_listener = new ActionListener() {
@@ -3089,11 +3214,14 @@ final class ControlPanel extends JPanel implements ActionListener {
                 _search_range_tf_0.setText("");
                 getSearchResetButton0().setEnabled(false);
                 getSearchResetButton0().setVisible(false);
-                displayedPhylogenyMightHaveChanged(true);
+                updateSearchFieldValidity(true); // clear any error outline
+                repaintTreeAfterSearch();
             }
         };
         _search_reset_button_0.addActionListener(action_listener);
         _search_tf_0.addKeyListener(key_adapter);
+        _search_autocomplete_0 = new SearchValueAutocomplete(_search_tf_0, () -> autocompleteValues(true),
+                () -> (_search_case_sensitive_cb != null) && _search_case_sensitive_cb.isSelected(), this::search0);
         addJTextField(_search_tf_0, s_panel_1);
         s_panel_2.add(_search_found_label_0);
         addJButton(_search_reset_button_0, s_panel_2);
@@ -3144,8 +3272,10 @@ final class ControlPanel extends JPanel implements ActionListener {
 
             @Override
             public void keyReleased(final KeyEvent key_event) {
+                if (isNonEditingKey(key_event.getKeyCode())) {
+                    return; // navigation / autocomplete-popup keys don't change the query -> don't re-run the search
+                }
                 search1();
-                displayedPhylogenyMightHaveChanged(true);
             }
         };
         final ActionListener action_listener = new ActionListener() {
@@ -3159,11 +3289,14 @@ final class ControlPanel extends JPanel implements ActionListener {
                 _search_range_tf_1.setText("");
                 getSearchResetButton1().setEnabled(false);
                 getSearchResetButton1().setVisible(false);
-                displayedPhylogenyMightHaveChanged(true);
+                updateSearchFieldValidity(false); // clear any error outline
+                repaintTreeAfterSearch();
             }
         };
         _search_reset_button_1.addActionListener(action_listener);
         _search_tf_1.addKeyListener(key_adapter);
+        _search_autocomplete_1 = new SearchValueAutocomplete(_search_tf_1, () -> autocompleteValues(false),
+                () -> (_search_case_sensitive_cb != null) && _search_case_sensitive_cb.isSelected(), this::search1);
         addJTextField(_search_tf_1, s_panel_1);
         s_panel_2.add(_search_found_label_1);
         addJButton(_search_reset_button_1, s_panel_2);
@@ -3256,6 +3389,12 @@ final class ControlPanel extends JPanel implements ActionListener {
             _search_nav_panel.setVisible(show);
             revalidate();
             repaint();
+        }
+        // keep the prominent menu-bar "Found / Selected: N" counter in sync (this method is the single choke point
+        // every found-set change funnels through: search, reset, manual selection, prune, undo, tab change)
+        final MainFrame mf = getMainFrame();
+        if (mf != null) {
+            mf.updateFoundSelectedCounter();
         }
     }
 
@@ -3667,13 +3806,15 @@ final class ControlPanel extends JPanel implements ActionListener {
             updateZoomButtonsForLayout(); // relabel the zoom cluster for the current (possibly persisted) layout
             getMainPanel().getCurrentTreePanel().updateSubSuperTreeButton();
             getMainPanel().getCurrentTreePanel().updateButtonToUncollapseAll();
-            getMainPanel().getControlPanel().search0();
-            getMainPanel().getControlPanel().search1();
             getMainPanel().getControlPanel().updateDomainStructureEvaluethresholdDisplay();
             updateDataCheckboxVisibility(true);
             populateColorByPropertyBox();
             populateSizeByPropertyBox();
             populateAncestralPieBox();
+            // run the searches AFTER the field selectors are rebuilt for this tab's tree, so the highlight reflects
+            // the field the combo now shows (not the previous tab's field).
+            getMainPanel().getControlPanel().search0();
+            getMainPanel().getControlPanel().search1();
             if (getMainPanel().getMainFrame() != null) {
                 getMainPanel().getMainFrame().updateEditMenu(); // undo history is per-tab
             }

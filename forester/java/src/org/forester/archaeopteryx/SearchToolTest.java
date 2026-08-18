@@ -33,11 +33,12 @@ import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Property;
 import org.forester.phylogeny.data.Property.AppliesTo;
 import org.forester.phylogeny.data.PropertiesList;
+import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.Taxonomy;
 
 /**
  * Headful coverage for the redesigned search UI. Phase 2: the two search boxes each carry a field + match-mode
- * selector, defaulting to "Any text field" + "contains"; any-text vs field-scoped, the string modes, Match Case,
+ * selector, defaulting to "Any Text" + "contains"; any-text vs field-scoped, the string modes, Match Case,
  * Inverse, A/B independence. Phase 3: the field selector is tailored to the loaded tree (only present fields + one
  * entry per custom property + numeric built-ins), the mode selector switches STRING&harr;NUMERIC by field type,
  * the numeric operators and the on-demand range field work, and per-property matching is key-scoped. A green no-op
@@ -45,11 +46,11 @@ import org.forester.phylogeny.data.Taxonomy;
  */
 public final class SearchToolTest {
 
-    private static final String ANY  = "Any text field";
-    private static final String NODE = "Node name";
-    private static final String SCI  = "Taxonomy: scientific name";
-    private static final String BL   = "Branch length";
-    private static final String HOST = "aptx:host";
+    private static final String ANY  = "Any Text";
+    private static final String NODE = "Node Name";
+    private static final String SCI  = "Taxonomy Scientific";
+    private static final String BL   = "Branch Length";
+    private static final String HOST = "data:host";
     private static final String READS = "data:reads";
 
     public static void main( final String[] args ) {
@@ -89,13 +90,15 @@ public final class SearchToolTest {
                     for ( final String want : new String[] { ANY, NODE, SCI, BL, HOST, READS } ) {
                         ck( ok, fields.contains( want ), "field selector should list \"" + want + "\", has " + fields );
                     }
-                    ck( ok, !fields.contains( "Gene name" ), "field selector should NOT list absent fields (Gene name)" );
+                    ck( ok, !fields.contains( "Gene Name" ), "field selector should NOT list absent fields (Gene Name)" );
 
                     // --- string: any-text vs field-scoped ---
                     ck( ok, same( runA( cp, tp, ANY, SearchMode.CONTAINS, false, false, "catus", "" ), b ),
                         "Any-text 'catus' should find Felis catus" );
                     ck( ok, same( runA( cp, tp, ANY, SearchMode.CONTAINS, false, false, "alpha", "" ), a ),
                         "Any-text 'alpha' should find alpha by node name" );
+                    ck( ok, same( runA( cp, tp, ANY, SearchMode.CONTAINS, false, false, "human", "" ), a ),
+                        "Any-text should now also search user-visible property values (data:host=human)" );
                     ck( ok, runA( cp, tp, NODE, SearchMode.CONTAINS, false, false, "Homo", "" ).isEmpty(),
                         "Node-name 'Homo' should find nothing" );
                     ck( ok, same( runA( cp, tp, SCI, SearchMode.CONTAINS, false, false, "Homo", "" ), a ),
@@ -110,7 +113,14 @@ public final class SearchToolTest {
                         "case-sensitive 'homo' should find nothing" );
                     final Set<Long> inv = runA( cp, tp, NODE, SearchMode.CONTAINS, false, true, "alpha", "" );
                     ck( ok, !inv.contains( a.getId() ) && inv.contains( b.getId() ) && inv.contains( c.getId() )
-                            && ( inv.size() == 2 ), "inverse of node-name 'alpha' should be {beta, gamma_kinase}" );
+                            && inv.contains( mid.getId() ) && ( inv.size() == 3 ),
+                        "inverse of node-name 'alpha' should be every OTHER named node (beta, gamma_kinase, clade1)" );
+                    // text inverse is field-aware: the complement is over nodes that HAVE the field, so 'clade1'
+                    // (named, but with NO scientific name) is NOT in the inverse of a scientific-name search
+                    final Set<Long> sci_inv = runA( cp, tp, SCI, SearchMode.CONTAINS, false, true, "sapiens", "" );
+                    ck( ok, sci_inv.contains( b.getId() ) && sci_inv.contains( c.getId() ) && !sci_inv.contains( a.getId() )
+                            && !sci_inv.contains( mid.getId() ) && ( sci_inv.size() == 2 ),
+                        "inverse of scientific-name 'sapiens' should be only nodes WITH a scientific name (beta, gamma)" );
                     ck( ok, runA( cp, tp, ANY, SearchMode.CONTAINS, false, true, ",", "" ).isEmpty(),
                         "a separator-only query with Inverse should reset, not select the whole tree" );
 
@@ -179,6 +189,45 @@ public final class SearchToolTest {
                         "A ('catus') and B ('musculus') should hold independent found sets" );
                     ck( ok, same( nonNull( tp.getFoundNodes0() ), b ), "running B must not disturb A's found set" );
 
+                    // --- topological (structure) fields, in the same field dropdown ---
+                    for ( final String want : new String[] { "Structure: Clade Size (tips)",
+                            "Structure: Number of Children", "Structure: Depth from Root (edges)",
+                            "Structure: Distance from Root" } ) {
+                        ck( ok, cp.searchFieldLabelsForTest( true ).contains( want ),
+                            "the field selector should list the structure field: " + want );
+                    }
+                    // tree: root -> ( mid(clade1, bl 0.2) -> (a bl 0.5, b bl 1.5), c bl 2.5 )
+                    ck( ok, same( runA( cp, tp, "Structure: Clade Size (tips)", SearchMode.EQ, false, false, "2", "" ), mid ),
+                        "clade size = 2 should find the 2-tip internal node (clade1)" );
+                    ck( ok, same( runA( cp, tp, "Structure: Number of Children", SearchMode.EQ, false, false, "0", "" ),
+                                  a, b, c ), "number of children = 0 should find all three leaves" );
+                    ck( ok, same( runA( cp, tp, "Structure: Depth from Root (edges)", SearchMode.EQ, false, false, "2", "" ),
+                                  a, b ), "depth from root = 2 should find the deepest tips (alpha, beta)" );
+                    ck( ok, same( runA( cp, tp, "Structure: Distance from Root", SearchMode.GT, false, false, "2", "" ), c ),
+                        "distance from root > 2 should find gamma_kinase (2.5 branch-length from root)" );
+
+                    // --- ',' = OR / '+' = AND text combinators ---
+                    ck( ok, same( runA( cp, tp, ANY, SearchMode.CONTAINS, false, false, "catus,musculus", "" ), b, c ),
+                        "',' should OR: 'catus,musculus' finds Felis catus and Mus musculus" );
+                    ck( ok, same( runA( cp, tp, NODE, SearchMode.CONTAINS, false, false, "gamma+kinase", "" ), c ),
+                        "'+' should AND: a node name containing both 'gamma' and 'kinase'" );
+                    ck( ok, runA( cp, tp, NODE, SearchMode.CONTAINS, false, false, "gamma+zzz", "" ).isEmpty(),
+                        "'+' AND with an absent term should find nothing" );
+
+                    // --- invalid-input feedback: red error outline on an uncompilable regex / non-numeric operand ---
+                    runA( cp, tp, NODE, SearchMode.REGEX, false, false, "[", "" );
+                    ck( ok, "error".equals( cp.getSearchTextField0().getClientProperty( "JComponent.outline" ) ),
+                        "an invalid regex should set the error outline" );
+                    runA( cp, tp, NODE, SearchMode.REGEX, false, false, "al.*", "" );
+                    ck( ok, cp.getSearchTextField0().getClientProperty( "JComponent.outline" ) == null,
+                        "a valid regex should clear the error outline" );
+                    runA( cp, tp, BL, SearchMode.GT, false, false, "notanumber", "" );
+                    ck( ok, "error".equals( cp.getSearchTextField0().getClientProperty( "JComponent.outline" ) ),
+                        "a non-numeric operand on a numeric field should set the error outline" );
+                    runA( cp, tp, BL, SearchMode.GT, false, false, "1", "" );
+                    ck( ok, cp.getSearchTextField0().getClientProperty( "JComponent.outline" ) == null,
+                        "a valid numeric operand should clear the error outline" );
+
                     // --- remember-last (in-session): a chosen mode survives a field-KIND switch ---
                     cp.userSelectFieldForTest( true, NODE );
                     cp.userSelectModeForTest( true, SearchMode.STARTS_WITH );
@@ -200,6 +249,60 @@ public final class SearchToolTest {
                     cp.userSelectFieldForTest( true, NODE );
                     ck( ok, cp.getSearchModeForTest( true ) == SearchMode.CONTAINS,
                         "Reset should clear the remembered mode (contains, not the pre-reset ends-with)" );
+
+                    // --- value autocomplete: the candidate list is per-field, only for a SPECIFIC text field in a
+                    //     non-regex mode; "Any text", numeric fields and regex mode suppress it (no popup) ---
+                    cp.setSearchFieldByLabelForTest( true, NODE );
+                    cp.setSearchModeForTest( true, SearchMode.CONTAINS );
+                    final List<String> node_vals = cp.autocompleteValuesForTest( true );
+                    ck( ok, node_vals.contains( "alpha" ) && node_vals.contains( "gamma_kinase" )
+                            && node_vals.contains( "clade1" ),
+                        "node-name autocomplete should offer the tree's node names: " + node_vals );
+                    cp.setSearchFieldByLabelForTest( true, ANY );
+                    ck( ok, cp.autocompleteValuesForTest( true ).isEmpty(),
+                        "\"Any Text\" should offer no autocomplete values (mixed set, not a pick list)" );
+                    cp.setSearchFieldByLabelForTest( true, BL );
+                    ck( ok, cp.autocompleteValuesForTest( true ).isEmpty(),
+                        "a numeric field should offer no autocomplete values" );
+                    cp.setSearchFieldByLabelForTest( true, NODE );
+                    cp.setSearchModeForTest( true, SearchMode.REGEX );
+                    ck( ok, cp.autocompleteValuesForTest( true ).isEmpty(), "regex mode should suppress autocomplete" );
+                    cp.setSearchModeForTest( true, SearchMode.CONTAINS );
+
+                    // node type is reintroduced as a categorical field whose value set the popup enumerates
+                    ck( ok, cp.searchFieldLabelsForTest( true ).contains( "Structure: Node Type" ),
+                        "node type should be offered in the field dropdown" );
+                    cp.setSearchFieldByLabelForTest( true, "Structure: Node Type" );
+                    final List<String> type_vals = cp.autocompleteValuesForTest( true );
+                    ck( ok, type_vals.contains( "leaf" ) && type_vals.contains( "internal" )
+                            && type_vals.contains( "root" ),
+                        "node-type autocomplete should offer leaf/internal/root: " + type_vals );
+                    ck( ok, same( runA( cp, tp, "Structure: Node Type", SearchMode.WHOLE_WORD, false, false, "leaf", "" ),
+                                  a, b, c ), "node type 'leaf' should find the three external tips" );
+
+                    // arrow / popup-navigation keys must NOT re-run the search on keyReleased (they don't change the
+                    // query); ENTER and an actual character key still do
+                    ck( ok, ControlPanel.isNonEditingKey( java.awt.event.KeyEvent.VK_DOWN )
+                            && ControlPanel.isNonEditingKey( java.awt.event.KeyEvent.VK_UP )
+                            && ControlPanel.isNonEditingKey( java.awt.event.KeyEvent.VK_ESCAPE ),
+                        "arrow/escape keys should be treated as non-editing (no re-search)" );
+                    ck( ok, !ControlPanel.isNonEditingKey( java.awt.event.KeyEvent.VK_ENTER )
+                            && !ControlPanel.isNonEditingKey( java.awt.event.KeyEvent.VK_A ),
+                        "ENTER and a character key must still trigger a search" );
+
+                    // --- data added to the SAME tree object (Extract Data from Labels / Import / node edit) must
+                    //     surface as a searchable field: a FORCED data-presence refresh rebuilds the field selectors,
+                    //     not just the Display-Data checkboxes (the identity-guarded rebuild would otherwise skip it) ---
+                    ck( ok, !cp.searchFieldLabelsForTest( true ).contains( "Gene Symbol" ),
+                        "the tree has no gene symbol yet, so that field should not be offered" );
+                    final Sequence gs = new Sequence();
+                    gs.setSymbol( "BRCA1" );
+                    a.getNodeData().setSequence( gs );
+                    cp.updateDataCheckboxVisibility( true ); // as the extraction / import / edit paths do
+                    ck( ok, cp.searchFieldLabelsForTest( true ).contains( "Gene Symbol" ),
+                        "a gene symbol added to the tree should now be offered as a searchable field" );
+                    ck( ok, same( runA( cp, tp, "Gene Symbol", SearchMode.CONTAINS, false, false, "BRCA1", "" ), a ),
+                        "the freshly-surfaced Gene Symbol field should be searchable" );
 
                     ( (javax.swing.JFrame) mf[ 0 ] ).dispose();
                 }
@@ -255,7 +358,8 @@ public final class SearchToolTest {
     private static Phylogeny buildTree( final PhylogenyNode[] out ) {
         final PhylogenyNode root = new PhylogenyNode();
         final PhylogenyNode mid = new PhylogenyNode();
-        mid.setDistanceToParent( 0.2 ); // a branch length, but no node data
+        mid.setDistanceToParent( 0.2 );
+        mid.setName( "clade1" ); // node data (a name), a branch length, but NO scientific name / properties
         final PhylogenyNode a = leaf( "alpha", "Homo sapiens", 0.5, "human", "1000", "1" );
         final PhylogenyNode b = leaf( "beta", "Felis catus", 1.5, "cat", "200", "2" );
         final PhylogenyNode c = leaf( "gamma_kinase", "Mus musculus", 2.5, "mouse", "50", "3" );
@@ -268,6 +372,7 @@ public final class SearchToolTest {
         phy.setRooted( true );
         phy.setName( "searchtool" );
         phy.externalNodesHaveChanged();
+        phy.recalculateNumberOfExternalDescendants( false ); // populate subtree tip counts for the structure fields
         out[ 0 ] = a;
         out[ 1 ] = b;
         out[ 2 ] = c;

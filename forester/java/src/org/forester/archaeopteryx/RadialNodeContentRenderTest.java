@@ -52,7 +52,42 @@ public final class RadialNodeContentRenderTest {
         return labelsOk() && dotsOk() && numbersOk() && collapseOk() && collapseMarkerOk() && collapseOverviewOk()
                 && circularCenteredOk() && circularPhylogramOk() && overviewCollapseLayoutOk()
                 && circularCladeBandsOk() && circularAnnotationRingsOk() && circularZebraWedgesOk()
-                && circularHpdBarsOk() && circularLongLabelsOk() && circularAlignedTipsOk();
+                && circularHpdBarsOk() && circularLongLabelsOk() && circularAlignedTipsOk() && circularGeneNameOk();
+    }
+
+    /** Gene NAME (and gene SYMBOL) render in the circular layout -- they were missing radially, where only the node
+     *  name / accession / sequence name were built into the tip label. With a gene name on every tip, turning "Gene
+     *  name" on adds the gene-name text ink over the same render with it off. */
+    private static boolean circularGeneNameOk() {
+        final boolean[] ok = { true };
+        withFrame( "colorize-by-rank.xml", ( frame, tp, o ) -> {
+            // colorize-by-rank tips carry taxonomy but no sequence; give each a distinctive gene name
+            for ( final org.forester.phylogeny.iterators.PhylogenyNodeIterator it = tp.getPhylogeny()
+                    .iteratorExternalForward(); it.hasNext(); ) {
+                final org.forester.phylogeny.data.Sequence s = new org.forester.phylogeny.data.Sequence();
+                s.setGeneName( "GENEXYZ" );
+                it.next().getNodeData().setSequence( s );
+            }
+            final ControlPanel cp = tp.getControlPanel();
+            final int w = 760, h = 760;
+            o.setGraphicsExportWhiteBackground( true );
+            o.setShowOverview( false );
+            tp.setOvOn( false );
+            cp.setCheckbox( Configuration.display_node_data, true ); // show external node data
+            tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
+            tp.setPreferredSize( new java.awt.Dimension( w, h ) );
+            tp.setSize( w, h );
+            cp.setCheckbox( Configuration.show_gene_names, false );
+            tp.calcParametersForPainting( w, h );
+            final int off = countDark( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) );
+            cp.setCheckbox( Configuration.show_gene_names, true );
+            tp.calcParametersForPainting( w, h );
+            final int on = countDark( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) );
+            if ( on <= ( off + 200 ) ) {
+                fail( ok, "gene names must render in a circular layout (dark ink on " + on + " vs off " + off + ")" );
+            }
+        }, ok );
+        return ok[ 0 ];
     }
 
     /** The CIRCULAR ALIGNED phylogram (the "A" button) pins every external tip LABEL to a common outer circle (the iTOL

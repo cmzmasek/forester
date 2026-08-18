@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods.NDF;
@@ -66,7 +67,8 @@ final class SearchField {
     private static final double[]  NO_NUMBERS   = new double[ 0 ];
 
     enum Kind {
-        ANY_TEXT, NDF_FIELD, PROPERTY, BRANCH_LENGTH, CONFIDENCE
+        ANY_TEXT, NDF_FIELD, PROPERTY, BRANCH_LENGTH, CONFIDENCE, CLADE_SIZE, NUM_CHILDREN, DEPTH, DISTANCE_TO_ROOT,
+        NODE_TYPE
     }
 
     private final String  _label;
@@ -88,7 +90,7 @@ final class SearchField {
 
     /** The synthetic "search every text field" field -- the default, reproducing today's all-fields search. */
     static SearchField anyText() {
-        return new SearchField( "Any text field", false, Kind.ANY_TEXT, null, null );
+        return new SearchField( "Any Text", false, Kind.ANY_TEXT, null, null );
     }
 
     /** A single existing node-data text field (node name, scientific name, sequence name, ...). */
@@ -105,12 +107,41 @@ final class SearchField {
 
     /** The branch length (distance to parent), a numeric built-in. */
     static SearchField branchLength() {
-        return new SearchField( "Branch length", true, Kind.BRANCH_LENGTH, null, null );
+        return new SearchField( "Branch Length", true, Kind.BRANCH_LENGTH, null, null );
     }
 
     /** The branch support / confidence value(s), a numeric built-in. */
     static SearchField confidence() {
-        return new SearchField( "Support / confidence", true, Kind.CONFIDENCE, null, null );
+        return new SearchField( "Support / Confidence", true, Kind.CONFIDENCE, null, null );
+    }
+
+    /** Topological: the number of external tips in the node's subtree (a leaf = 1), a numeric built-in. */
+    static SearchField cladeSize() {
+        return new SearchField( "Structure: Clade Size (tips)", true, Kind.CLADE_SIZE, null, null );
+    }
+
+    /** Topological: the number of the node's DIRECT children (a leaf = 0), a numeric built-in -- e.g. > 2 finds
+     *  polytomies / unresolved nodes. */
+    static SearchField numChildren() {
+        return new SearchField( "Structure: Number of Children", true, Kind.NUM_CHILDREN, null, null );
+    }
+
+    /** Topological: the number of EDGES from the root to the node (root = 0), a numeric built-in. */
+    static SearchField depth() {
+        return new SearchField( "Structure: Depth from Root (edges)", true, Kind.DEPTH, null, null );
+    }
+
+    /** Metric: the node's distance from the root = the sum of the branch lengths on the path to the root; a numeric
+     *  built-in, offered only when the tree has branch lengths. */
+    static SearchField distanceToRoot() {
+        return new SearchField( "Structure: Distance from Root", true, Kind.DISTANCE_TO_ROOT, null, null );
+    }
+
+    /** Categorical: whether a node is a {@code leaf}, an {@code internal} node, or the {@code root} -- a small,
+     *  enumerable value set, so it pairs naturally with the value-autocomplete popup (pick "leaf"/"internal"/"root"
+     *  from the list rather than knowing to type it). */
+    static SearchField nodeType() {
+        return new SearchField( "Structure: Node Type", false, Kind.NODE_TYPE, null, null );
     }
 
     /** The static list of string fields for the search-tool field selector, in menu order ("Any text field"
@@ -176,7 +207,10 @@ final class SearchField {
             }
             if ( node.getNodeData().getProperties() != null ) {
                 for ( final Property p : node.getNodeData().getProperties().getProperties() ) {
-                    if ( ( p == null ) || ForesterUtil.isEmpty( p.getRef() ) ) {
+                    // skip internal (aptx:) properties -- they are Archaeopteryx metadata (e.g. the re-import
+                    // profile), not user data, so they are not offered as searchable fields
+                    if ( ( p == null ) || ForesterUtil.isEmpty( p.getRef() )
+                            || TreePanelUtil.isInternalPropertyRef( p.getRef() ) ) {
                         continue;
                     }
                     final boolean[] st = prop_stats.computeIfAbsent( p.getRef(),
@@ -223,6 +257,15 @@ final class SearchField {
             }
             out.add( property( e.getKey(), numeric ) );
         }
+        // topological fields -- always available (every non-empty tree has structure), offered last; the metric
+        // distance-from-root is offered only when the tree carries branch lengths
+        out.add( cladeSize() );
+        out.add( numChildren() );
+        out.add( depth() );
+        if ( has_branch_length ) {
+            out.add( distanceToRoot() );
+        }
+        out.add( nodeType() );
         return out;
     }
 
@@ -288,6 +331,7 @@ final class SearchField {
                 for ( final NDF ndf : TEXT_NDFS ) {
                     collectNdfStrings( node, ndf, out );
                 }
+                collectVisiblePropertyStrings( node, out ); // so the default also finds custom annotation values
                 break;
             case NDF_FIELD:
                 collectNdfStrings( node, _ndf, out );
@@ -295,10 +339,53 @@ final class SearchField {
             case PROPERTY:
                 collectPropertyStrings( node, _property_ref, out );
                 break;
+            case NODE_TYPE:
+                add( out, nodeTypeLabel( node ) ); // "leaf" / "internal" / "root"
+                break;
             default:
                 break; // numeric fields have no string values
         }
         return out;
+    }
+
+    /** The categorical value of the {@link Kind#NODE_TYPE} field: {@code root} for the root, {@code leaf} for an
+     *  external non-root node, else {@code internal}. */
+    static String nodeTypeLabel( final PhylogenyNode node ) {
+        if ( node == null ) {
+            return "";
+        }
+        if ( node.isRoot() ) {
+            return "root";
+        }
+        return node.isExternal() ? "leaf" : "internal";
+    }
+
+    /**
+     * The distinct, non-blank string values this text field takes across every node of {@code phy}, sorted (the
+     * candidate set for the value-autocomplete popup). Empty for a numeric field, the synthetic {@code ANY_TEXT}
+     * field (its value set is everything mixed together -- not a meaningful pick list), or an empty/null tree. One
+     * preorder pass -- the popup recomputes this on open rather than caching it, so it can never go stale against a
+     * tree edit.
+     */
+    static List<String> distinctValues( final Phylogeny phy, final SearchField field ) {
+        if ( ( phy == null ) || phy.isEmpty() || ( field == null ) || field._numeric
+                || ( field._kind == Kind.ANY_TEXT ) ) {
+            return new ArrayList<>();
+        }
+        // a molecular sequence is (near-)unique per tip and can be megabytes long -- a value pick-list of full
+        // sequences is useless AND expensive to build, so it gets no autocomplete (you still search it with contains).
+        if ( ( field._kind == Kind.NDF_FIELD ) && ( field._ndf == NDF.MolecularSequence ) ) {
+            return new ArrayList<>();
+        }
+        final Set<String> set = new TreeSet<>();
+        for ( final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
+            for ( final String v : field.stringValues( it.next() ) ) {
+                if ( ( v != null ) && !v.trim().isEmpty() ) {
+                    set.add( v.trim() );
+                }
+            }
+        }
+        return new ArrayList<>( set );
     }
 
     /** The numeric value(s) of this field on {@code node} (empty for a string field or when the node has no
@@ -315,9 +402,35 @@ final class SearchField {
                 return confidenceValues( node );
             case PROPERTY:
                 return numbersFromStrings( stringValuesForProperty( node, _property_ref ) );
+            case CLADE_SIZE:
+                return new double[] { node.getNumberOfExternalNodes() }; // cached count of the subtree's tips
+            case NUM_CHILDREN:
+                return new double[] { node.getNumberOfDescendants() };   // direct children (a leaf = 0)
+            case DEPTH:
+                return new double[] { node.calculateDepth() };           // edges from the root (root = 0)
+            case DISTANCE_TO_ROOT:
+                return new double[] { node.calculateDistanceToRoot() };  // summed branch lengths to the root
             default:
                 return NO_NUMBERS;
         }
+    }
+
+    /** Whether {@code node} carries a value for this field: a numeric value (numeric field) or a non-blank string
+     *  value (text field). Used for the field-aware "Inverse" complement -- the inverse of a field-scoped search
+     *  is over the nodes the field APPLIES to, not every data-bearing node. */
+    boolean carries( final PhylogenyNode node ) {
+        if ( node == null ) {
+            return false;
+        }
+        if ( _numeric ) {
+            return numericValues( node ).length > 0;
+        }
+        for ( final String v : stringValues( node ) ) {
+            if ( !ForesterUtil.isEmpty( v ) && !v.trim().isEmpty() ) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // ---- helpers --------------------------------------------------------------------------------------------
@@ -347,6 +460,19 @@ final class SearchField {
         }
         for ( final Property p : node.getNodeData().getProperties().getProperties() ) {
             if ( ( p != null ) && ref.equals( p.getRef() ) ) {
+                add( out, p.getValue() );
+            }
+        }
+    }
+
+    /** Adds the values of the node's USER-VISIBLE custom properties (skipping the internal aptx: namespace, e.g.
+     *  the re-import profile), so the default "Any text field" also searches annotation columns like data:host. */
+    private static void collectVisiblePropertyStrings( final PhylogenyNode node, final List<String> out ) {
+        if ( node.getNodeData().getProperties() == null ) {
+            return;
+        }
+        for ( final Property p : node.getNodeData().getProperties().getProperties() ) {
+            if ( ( p != null ) && !TreePanelUtil.isInternalPropertyRef( p.getRef() ) ) {
                 add( out, p.getValue() );
             }
         }
@@ -516,41 +642,44 @@ final class SearchField {
     }
 
     private static String labelForNdf( final NDF ndf ) {
+        // Title Case, no colon groups -- consistent with the "Display Data" checkbox labels (e.g. "Taxonomy
+        // Scientific", "Seq Name", "Gene Name"). The search-only Structure fields (see the factories) keep a
+        // "Structure:" prefix since they have no Display-Data counterpart.
         switch ( ndf ) {
             case NodeName:
-                return "Node name";
+                return "Node Name";
             case TaxonomyCode:
-                return "Taxonomy: code";
+                return "Taxonomy Code";
             case TaxonomyCommonName:
-                return "Taxonomy: common name";
+                return "Taxonomy Common";
             case TaxonomyScientificName:
-                return "Taxonomy: scientific name";
+                return "Taxonomy Scientific";
             case TaxonomyIdentifier:
-                return "Taxonomy: identifier";
+                return "Taxonomy Identifier";
             case TaxonomySynonym:
-                return "Taxonomy: synonym";
+                return "Taxonomy Synonym";
             case TaxonomicLineage:
-                return "Taxonomy: lineage";
+                return "Taxonomy Lineage";
             case SequenceName:
-                return "Sequence: name";
+                return "Seq Name";
             case GeneName:
-                return "Gene name";
+                return "Gene Name";
             case SequenceSymbol:
-                return "Sequence: symbol";
+                return "Gene Symbol"; // the phyloXML <sequence><symbol>, i.e. the (species-specific) gene symbol
             case SequenceAccession:
-                return "Sequence: accession";
+                return "Seq Accession";
             case MolecularSequence:
-                return "Molecular sequence";
+                return "Molecular Sequence";
             case Domain:
                 return "Domain";
             case Annotation:
                 return "Annotation";
             case CrossRef:
-                return "Cross-reference";
+                return "Cross-Reference";
             case BinaryCharacter:
-                return "Binary character";
+                return "Binary Character";
             case Properties:
-                return "Any property";
+                return "Any Property";
             default:
                 return ndf.toString();
         }

@@ -133,18 +133,30 @@ Each box has two dropdowns — **what** to search and **how** to match — above
 query field:
 
 - **Field** — the node data to search. The list is tailored to the loaded tree, so
-  you only see fields it actually has. **Any text field** (the default) searches
-  every text field at once; or pick a specific one — node name, a taxonomy field
-  (scientific / common name, code, rank, …), a sequence field (name, gene,
-  accession, …), annotations, domains, or **any custom phyloXML property** by its
-  reference (e.g. `aptx:host`). Numeric fields — **Branch length**, **Support /
-  confidence**, and numeric properties — are offered as well.
+  you only see fields it actually has, and the labels match the **Display Data**
+  checkboxes. **Any Text** (the default) searches every text field — and your custom
+  annotation properties — at once; or pick a specific one — **Node Name**, a taxonomy
+  field (**Taxonomy Scientific**, **Taxonomy Common**, **Taxonomy Code**, **Taxonomy
+  Identifier**, **Taxonomy Synonym**, **Taxonomy Lineage**), a sequence field (**Seq
+  Name**, **Gene Name**, **Gene Symbol**, **Seq Accession**), **Annotation**,
+  **Domain**, or **any custom phyloXML property** by its reference (e.g. `data:host`).
+  Numeric fields — **Branch Length**, **Support / Confidence**, and numeric
+  properties — are offered as well, as are the tree's **structure** fields (prefixed
+  `Structure:`): **Clade Size (tips)**, **Number of Children**, **Depth from Root
+  (edges)**, **Distance from Root** (when the tree has branch lengths), and **Node
+  Type** (leaf / internal / root) — so you can, for example, find every clade with
+  more than 50 tips, or every unresolved node (children > 2).
 - **Match** — how the query is compared. For a text field: **contains** (the
   default), **starts with**, **ends with**, **whole word**, or **regular
   expression**. For a numeric field the operators switch to plain-language
-  comparisons — **equals**, **not equal**, **less than**, **at most (≤)**, **greater
-  than**, **at least (≥)** — and **range** (which reveals a second box for the upper
+  comparisons — **equals**, **not equal**, **less than**, **at most**, **greater
+  than**, **at least** — and **range** (which reveals a second box for the upper
   bound).
+
+When you search a specific text field, the query box **suggests the values that
+field actually has in the tree**, filtered as you type — pick one to match it exactly.
+This makes categorical fields (**Node Type**, **Taxonomy Code**, an annotation column
+like `data:host`) point-and-click, and saves you from mistyping a value.
 
 Two shared options sit above the boxes: **Match Case** and **Inverse** (select the
 nodes that do *not* match). Within a text query, `,` is a logical **OR** and `+` a
@@ -156,6 +168,12 @@ Step through the hits with the **◀ / ▶** buttons beside the boxes, or **View
 Next / Find Previous** (**⌘G / ⌘⇧G**) — each jump centres the next match in the view.
 Under **Settings → Display**, **Bold Found Labels**, **Dim Non-Matches**, and **Pulse
 Found Nodes** make the matches stand out further.
+
+Whenever any nodes are highlighted, a **Found / Selected: N** counter appears at the
+right of the menu bar. Search hits and manual selection are one and the same in
+Archaeopteryx, so this is a single running total of the distinct highlighted nodes; it
+hides itself when nothing is highlighted. Hover it for the breakdown by search box
+(**A** / **B**) and manual **Selected** nodes.
 
 
 BEAST and BEAST X Output

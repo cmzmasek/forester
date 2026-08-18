@@ -130,7 +130,13 @@ final class SearchMatcher {
                 return Pattern.compile( q, flags );
             }
             if ( spec.mode() == SearchMode.WHOLE_WORD ) {
-                return Pattern.compile( "(^|\\s)" + Pattern.quote( q ) + "($|\\s)", flags );
+                // boundary = the string edge OR any non-alphanumeric char, so "kinase" matches in "Rot1-kinase" /
+                // "kinase," and "Homo" matches in "Homo_sapiens" (underscore is NOT alphanumeric, so it separates) --
+                // the whitespace-only boundary missed the punctuation-delimited tokens common in biological labels.
+                // UNICODE_CHARACTER_CLASS makes \p{Alnum} match Unicode letters/digits too, so a diacritic (Bäcker,
+                // naïve) is part of the word, not a boundary -- otherwise whole-word would split words at accents.
+                return Pattern.compile( "(?<![\\p{Alnum}])" + Pattern.quote( q ) + "(?![\\p{Alnum}])",
+                                        flags | Pattern.UNICODE_CHARACTER_CLASS );
             }
         }
         catch ( final PatternSyntaxException e ) {
@@ -191,17 +197,53 @@ final class SearchMatcher {
         return Math.abs( a - b ) <= ( 1e-9 * Math.max( 1.0, Math.abs( b ) ) );
     }
 
-    /** Parses a finite {@code double} (trimmed); returns {@code null} for empty, non-numeric, NaN or infinite. */
+    /** Parses a finite {@code double} (trimmed); returns {@code null} for empty, non-numeric, NaN or infinite.
+     *  Accepts a comma as the decimal separator when it is unambiguous (exactly one comma and no period, e.g. the
+     *  European {@code "0,5"}), so non-US users' numeric searches aren't silent no-ops. */
     static Double parseFiniteDouble( final String s ) {
         if ( ForesterUtil.isEmpty( s ) ) {
             return null;
         }
+        final String t = s.trim();
+        final Double d = tryParseDouble( t );
+        if ( d != null ) {
+            return d;
+        }
+        // comma as decimal separator (only when unambiguous: a single comma, no period)
+        if ( ( t.indexOf( '.' ) < 0 ) && ( t.indexOf( ',' ) >= 0 ) && ( t.indexOf( ',' ) == t.lastIndexOf( ',' ) ) ) {
+            final int comma = t.indexOf( ',' );
+            // reject the US thousands-grouping pattern (digit(s), comma, EXACTLY three digits -- e.g. "12,500"): it is
+            // genuinely ambiguous with a European decimal, so return null (skip, as before the comma support) rather
+            // than guess a wrong value (12.5). A comma with 1-2 or 4+ following digits is unambiguously a decimal.
+            if ( ( comma > 0 ) && ( ( t.length() - comma - 1 ) == 3 ) ) {
+                return null;
+            }
+            return tryParseDouble( t.replace( ',', '.' ) );
+        }
+        return null;
+    }
+
+    private static Double tryParseDouble( final String t ) {
         try {
-            final double d = Double.parseDouble( s.trim() );
+            final double d = Double.parseDouble( t );
             return Double.isFinite( d ) ? Double.valueOf( d ) : null;
         }
         catch ( final NumberFormatException e ) {
             return null;
+        }
+    }
+
+    /** Whether {@code query} is a compilable regular expression (used for the search box's invalid-regex feedback). */
+    static boolean isCompilableRegex( final String query ) {
+        if ( ForesterUtil.isEmpty( query ) ) {
+            return false;
+        }
+        try {
+            Pattern.compile( query.trim() );
+            return true;
+        }
+        catch ( final PatternSyntaxException e ) {
+            return false;
         }
     }
 }

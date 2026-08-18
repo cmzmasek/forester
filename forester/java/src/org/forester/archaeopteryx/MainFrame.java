@@ -222,6 +222,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String INFER_ANCESTOR_TAXONOMIES = "Infer Ancestor Taxonomies";
     static final String OBTAIN_SEQUENCE_AND_TAXONOMIC_INFORMATION = "Fetch Sequence & Taxonomic Data";
     JMenuBar _jmenubar;
+    FoundSelectedCounter _found_selected_counter; // right-aligned menu-bar counter of highlighted (found+selected) nodes
     JMenu _file_jmenu;
     JMenu _tools_menu;
     JMenu _view_jmenu;
@@ -1214,6 +1215,32 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _redo_item.setText(can_redo ? ("Redo " + tp.redoLabel()) : "Redo");
     }
 
+    /** Refreshes the menu-bar "Found / Selected: N" counter from the current tree's highlighted (found + selected)
+     *  nodes; hides it when nothing is highlighted. Called from the found-set choke point
+     *  ({@link ControlPanel#updateSearchHitNavigation()}), so it stays in sync with search / selection / prune / undo /
+     *  tab change. Null-safe during construction/teardown. */
+    void updateFoundSelectedCounter() {
+        if (_found_selected_counter == null) {
+            return;
+        }
+        final TreePanel tp = (getMainPanel() != null) ? getMainPanel().getCurrentTreePanel() : null;
+        if (tp == null) {
+            _found_selected_counter.setCounts(0, 0, 0, 0, false);
+            return;
+        }
+        // distinct highlighted nodes = the union of the two found sets = a + b - both; derive it from the one
+        // breakdown walk instead of a second getSearchHitCount() preorder pass.
+        final int[] br = tp.foundSelectedBreakdown();
+        final int total = (br[0] + br[1]) - br[2];
+        // found-set 0 doubles as "Search A" and the manual selection; it holds Search-A hits only when box A has a
+        // query -- otherwise its nodes are a manual selection (a search would have cleared them), so label them so.
+        final ControlPanel cp = tp.getControlPanel();
+        final boolean a_is_search = (cp != null) && (cp.getSearchTextField0() != null)
+                && (cp.getSearchTextField0().getText() != null)
+                && !cp.getSearchTextField0().getText().trim().isEmpty();
+        _found_selected_counter.setCounts(total, br[0], br[1], br[2], a_is_search);
+    }
+
     /**
      * Opens the "Annotation Columns" chooser: pick which annotation fields to show as tip-aligned columns and
      * how to render each (color strip / heat map / bar / text), then applies them to the current tree.
@@ -1528,6 +1555,11 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             tp.setEdited(true);
             tp.getControlPanel().setCheckbox(Configuration.show_seq_names, true);
             tp.getControlPanel().setCheckbox(Configuration.show_taxonomy_scientific_names, true);
+            // the extraction populated new fields (seq name/accession/gene name, taxonomy) on the SAME tree, so force
+            // a data-presence refresh: this reveals the newly-populated Display-Data checkboxes AND (via the shared
+            // choke point) rebuilds the search field selectors so the new fields are searchable -- on the manual Tools
+            // path too, not only the load auto-offer path.
+            tp.getControlPanel().updateDataCheckboxVisibility(true);
             tp.getControlPanel().fitWidth();
         }
         return n;

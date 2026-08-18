@@ -246,7 +246,7 @@ class NodePanel extends JPanel implements TreeSelectionListener {
         if (!phylogeny_node.isExternal()) {
             addSubelement(category, "Children", String.valueOf(phylogeny_node.getNumberOfDescendants()));
             addSubelement(category,
-                    "External children",
+                    "Clade size (tips)", // matches the "Structure: clade size (tips)" search field's terminology
                     String.valueOf(phylogeny_node.getAllExternalDescendants().size()));
             final Map<Taxonomy, Integer> distinct_tax = PhylogenyMethods.obtainDistinctTaxonomyCounts(phylogeny_node);
             if (distinct_tax != null) {

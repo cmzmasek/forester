@@ -240,6 +240,10 @@ public final class MainFrameApplication extends MainFrame {
         buildHelpMenu();
         setJMenuBar(_jmenubar);
         _jmenubar.add(_help_jmenu);
+        // right-aligned "Found / Selected: N" counter (a glue pushes it to the far right); hidden until there are hits
+        _found_selected_counter = new FoundSelectedCounter();
+        _jmenubar.add(javax.swing.Box.createHorizontalGlue());
+        _jmenubar.add(_found_selected_counter);
         _contentpane = getContentPane();
         _contentpane.setLayout(new BorderLayout());
         _contentpane.add(_mainpanel, BorderLayout.CENTER);

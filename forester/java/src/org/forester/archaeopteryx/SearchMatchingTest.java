@@ -58,8 +58,11 @@ public final class SearchMatchingTest {
             inverse();
             specValidation();
             parseDouble();
+            wholeWordBoundaries();
+            regexValidity();
             wholeTreeSearch();
             availableFieldsScan();
+            structuralFields();
             return true;
         }
         catch ( final AssertionError e ) {
@@ -106,31 +109,32 @@ public final class SearchMatchingTest {
             "case-sensitive REGEX should respect case" );
     }
 
-    // ---- Any text field -------------------------------------------------------------------------------------
+    // ---- Any Text -------------------------------------------------------------------------------------
 
     private static void anyTextField() {
         final PhylogenyNode n = new PhylogenyNode();
         n.setName( "leaf1" );
         n.getNodeData().setTaxonomy( sci( "Felis catus" ) );
-        addProp( n, "aptx:host", "human", "xsd:string" );
+        addProp( n, "data:host", "human", "xsd:string" );             // a user-visible property
+        addProp( n, "aptx:import_profile", "v1;secret", "xsd:string" ); // an internal (aptx:) property
         final SearchField any = SearchField.anyText();
         ck( pos( any, SearchMode.CONTAINS, "catus", n ), "Any-text should search the scientific name" );
         ck( pos( any, SearchMode.CONTAINS, "leaf1", n ), "Any-text should search the node name" );
-        // properties are intentionally NOT part of the any-text default (opt in via a property field)
-        ck( !pos( any, SearchMode.CONTAINS, "human", n ),
-            "Any-text should not search custom properties (opt-in only)" );
+        ck( pos( any, SearchMode.CONTAINS, "human", n ), "Any-text should search user-visible property values" );
+        ck( !pos( any, SearchMode.CONTAINS, "secret", n ),
+            "Any-text must NOT search internal (aptx:) property values" );
     }
 
     // ---- per-property (key-scoped) matching -----------------------------------------------------------------
 
     private static void perPropertyScoping() {
         final PhylogenyNode n = new PhylogenyNode();
-        addProp( n, "aptx:host", "human", "xsd:string" );
-        addProp( n, "aptx:diet", "omnivore", "xsd:string" );
-        ck( pos( SearchField.property( "aptx:host", false ), SearchMode.CONTAINS, "human", n ),
+        addProp( n, "data:host", "human", "xsd:string" );
+        addProp( n, "data:diet", "omnivore", "xsd:string" );
+        ck( pos( SearchField.property( "data:host", false ), SearchMode.CONTAINS, "human", n ),
             "a property field should match its own value" );
         // the legacy search lumped all property VALUES together and ignored the key; the redesign is key-scoped
-        ck( !pos( SearchField.property( "aptx:diet", false ), SearchMode.CONTAINS, "human", n ),
+        ck( !pos( SearchField.property( "data:diet", false ), SearchMode.CONTAINS, "human", n ),
             "a property field must not match a value living in a different property (key-scoped)" );
     }
 
@@ -220,6 +224,53 @@ public final class SearchMatchingTest {
         ck( SearchMatcher.parseFiniteDouble( "" ) == null, "empty should parse to null" );
         ck( SearchMatcher.parseFiniteDouble( "NaN" ) == null, "NaN should be rejected" );
         ck( SearchMatcher.parseFiniteDouble( "Infinity" ) == null, "Infinity should be rejected" );
+        // a comma is accepted as the decimal separator when unambiguous (European locales)
+        ck( eqD( SearchMatcher.parseFiniteDouble( "0,5" ), 0.5 ), "\"0,5\" should parse to 0.5" );
+        ck( eqD( SearchMatcher.parseFiniteDouble( "1,5" ), 1.5 ), "\"1,5\" should parse to 1.5" );
+        ck( eqD( SearchMatcher.parseFiniteDouble( "-2,25" ), -2.25 ), "\"-2,25\" should parse to -2.25" );
+        ck( SearchMatcher.parseFiniteDouble( "1,5,5" ) == null, "two commas should not parse" );
+        ck( SearchMatcher.parseFiniteDouble( "1.5,5" ) == null, "a mixed '.' and ',' should not parse" );
+        // the US thousands-grouping pattern (a comma followed by EXACTLY three digits) is ambiguous with a European
+        // decimal, so it is REJECTED (null, as before the comma support) rather than misparsed as a fraction
+        ck( SearchMatcher.parseFiniteDouble( "12,500" ) == null, "\"12,500\" (US thousands) must be null, not 12.5" );
+        ck( SearchMatcher.parseFiniteDouble( "1,000" ) == null, "\"1,000\" (ambiguous thousands) must be null" );
+        ck( eqD( SearchMatcher.parseFiniteDouble( "1,25" ), 1.25 ), "\"1,25\" (2 decimals) should still parse to 1.25" );
+        ck( eqD( SearchMatcher.parseFiniteDouble( "1,2345" ), 1.2345 ),
+            "\"1,2345\" (4 decimals, not a thousands group) should parse to 1.2345" );
+    }
+
+    private static boolean eqD( final Double d, final double v ) {
+        return ( d != null ) && ( d.doubleValue() == v );
+    }
+
+    // ---- whole-word / regex ---------------------------------------------------------------------------------
+
+    private static void wholeWordBoundaries() {
+        final PhylogenyNode n = new PhylogenyNode();
+        final SearchField f = SearchField.ofNdf( NDF.NodeName );
+        n.setName( "Homo_sapiens" );
+        ck( pos( f, SearchMode.WHOLE_WORD, "Homo", n ), "whole-word should match across an underscore (Homo_sapiens)" );
+        ck( pos( f, SearchMode.WHOLE_WORD, "sapiens", n ), "whole-word should match the trailing token" );
+        n.setName( "Rot1-kinase" );
+        ck( pos( f, SearchMode.WHOLE_WORD, "kinase", n ), "whole-word should match across a hyphen (Rot1-kinase)" );
+        n.setName( "kinase," );
+        ck( pos( f, SearchMode.WHOLE_WORD, "kinase", n ), "whole-word should match a token before a comma" );
+        n.setName( "kinases" );
+        ck( !pos( f, SearchMode.WHOLE_WORD, "kinase", n ), "whole-word should NOT match a longer word (kinases)" );
+        n.setName( "prokinase" );
+        ck( !pos( f, SearchMode.WHOLE_WORD, "kinase", n ), "whole-word should NOT match a suffix (prokinase)" );
+        // accented / non-ASCII letters are part of the word (Unicode-aware boundary), NOT a token boundary
+        n.setName( "Bäcker" );
+        ck( !pos( f, SearchMode.WHOLE_WORD, "B", n ), "whole-word 'B' should NOT match before a diacritic (Bäcker)" );
+        n.setName( "naïve" );
+        ck( !pos( f, SearchMode.WHOLE_WORD, "na", n ), "whole-word 'na' should NOT split at a diacritic (naïve)" );
+        ck( pos( f, SearchMode.WHOLE_WORD, "naïve", n ), "whole-word should match the full accented word (naïve)" );
+    }
+
+    private static void regexValidity() {
+        ck( SearchMatcher.isCompilableRegex( "Ho.*ens" ), "a valid regex is compilable" );
+        ck( !SearchMatcher.isCompilableRegex( "[" ), "an invalid regex is not compilable" );
+        ck( !SearchMatcher.isCompilableRegex( "" ), "an empty query is not 'compilable'" );
     }
 
     // ---- whole-tree search ----------------------------------------------------------------------------------
@@ -257,10 +308,11 @@ public final class SearchMatchingTest {
         leaf.getNodeData().setTaxonomy( sci( "Homo sapiens" ) );
         leaf.setDistanceToParent( 0.5 );
         PhylogenyMethods.setConfidence( leaf, 95 );
-        addProp( leaf, "aptx:host", "human", "xsd:string" );
+        addProp( leaf, "data:host", "human", "xsd:string" );
         addProp( leaf, "data:reads", "1000", "xsd:decimal" );
         addProp( leaf, "x:num", "5", "" );   // no datatype, value parses -> numeric
         addProp( leaf, "x:txt", "abc", "" ); // no datatype, value does not parse -> string
+        addProp( leaf, "aptx:import_profile", "v1;x", "xsd:string" ); // internal -> must NOT be offered as a field
         root.addAsChild( leaf );
         final Phylogeny phy = new Phylogeny();
         phy.setRoot( root );
@@ -268,23 +320,102 @@ public final class SearchMatchingTest {
         phy.externalNodesHaveChanged();
 
         final List<SearchField> fields = SearchField.availableFields( phy );
-        ck( byLabel( fields, "Any text field" ) != null, "availableFields should always include Any text" );
-        ck( byLabel( fields, "Node name" ) != null, "availableFields should always include Node name" );
-        ck( byLabel( fields, "Taxonomy: scientific name" ) != null, "a present scientific name should be offered" );
-        ck( byLabel( fields, "Branch length" ) != null, "a present branch length should be offered" );
-        ck( byLabel( fields, "Support / confidence" ) != null, "a present confidence should be offered" );
-        ck( byLabel( fields, "Gene name" ) == null, "an absent gene name should not be offered" );
+        ck( byLabel( fields, "Any Text" ) != null, "availableFields should always include Any text" );
+        ck( byLabel( fields, "Node Name" ) != null, "availableFields should always include Node Name" );
+        ck( byLabel( fields, "Taxonomy Scientific" ) != null, "a present scientific name should be offered" );
+        ck( byLabel( fields, "Branch Length" ) != null, "a present branch length should be offered" );
+        ck( byLabel( fields, "Support / Confidence" ) != null, "a present confidence should be offered" );
+        ck( byLabel( fields, "Gene Name" ) == null, "an absent gene name should not be offered" );
         ck( byLabel( fields, "Domain" ) == null, "an absent domain should not be offered" );
-        final SearchField host = byLabel( fields, "aptx:host" );
+        final SearchField host = byLabel( fields, "data:host" );
         final SearchField reads = byLabel( fields, "data:reads" );
         final SearchField x_num = byLabel( fields, "x:num" );
         final SearchField x_txt = byLabel( fields, "x:txt" );
-        ck( ( host != null ) && !host.isNumeric(), "aptx:host (xsd:string) should be a string field" );
+        ck( byLabel( fields, "aptx:import_profile" ) == null,
+            "an internal (aptx:) property must NOT be offered as a searchable field" );
+        ck( ( host != null ) && !host.isNumeric(), "data:host (xsd:string) should be a string field" );
         ck( ( reads != null ) && reads.isNumeric(), "data:reads (xsd:decimal) should be a numeric field" );
         ck( ( x_num != null ) && x_num.isNumeric(), "x:num (no datatype, numeric values) should be numeric" );
         ck( ( x_txt != null ) && !x_txt.isNumeric(), "x:txt (no datatype, non-numeric value) should be string" );
         ck( SearchField.availableFields( new Phylogeny() ).size() == 2,
-            "an empty tree should offer only Any text + Node name" );
+            "an empty tree should offer only Any text + Node Name" );
+    }
+
+    // ---- topological / structural fields --------------------------------------------------------------------
+
+    private static void structuralFields() {
+        // root -> ( mid -> (a, b), c )
+        final PhylogenyNode a = named( "a" );
+        final PhylogenyNode b = named( "b" );
+        final PhylogenyNode c = named( "c" );
+        final PhylogenyNode mid = new PhylogenyNode();
+        mid.addAsChild( a );
+        mid.addAsChild( b );
+        final PhylogenyNode root = new PhylogenyNode();
+        root.addAsChild( mid );
+        root.addAsChild( c );
+        mid.setDistanceToParent( 1.0 ); // branch lengths, so distance-from-root is meaningful/offered
+        a.setDistanceToParent( 2.0 );
+        b.setDistanceToParent( 3.0 );
+        c.setDistanceToParent( 0.5 );
+        final Phylogeny phy = new Phylogeny();
+        phy.setRoot( root );
+        phy.setRooted( true );
+        phy.externalNodesHaveChanged();
+        phy.recalculateNumberOfExternalDescendants( false ); // populate the subtree tip counts
+
+        final SearchField size = SearchField.cladeSize();
+        final SearchField depth = SearchField.depth();
+        ck( size.isNumeric() && depth.isNumeric(), "clade size and depth are numeric fields" );
+
+        // clade size (subtree tips): root=3, mid=2, a/b/c=1
+        ck( pos( size, SearchMode.EQ, "3", root ), "root clade size should be 3" );
+        ck( pos( size, SearchMode.EQ, "2", mid ), "mid clade size should be 2" );
+        ck( pos( size, SearchMode.GT, "1", mid ) && pos( size, SearchMode.GT, "1", root ),
+            "internal nodes have clade size > 1" );
+        ck( !pos( size, SearchMode.GT, "1", a ), "a leaf's clade size (1) is not > 1" );
+
+        // number of DIRECT children: root=2, mid=2, a/b/c=0
+        final SearchField kids = SearchField.numChildren();
+        ck( pos( kids, SearchMode.EQ, "2", root ), "root has 2 children" );
+        ck( pos( kids, SearchMode.EQ, "0", a ), "a leaf has 0 children" );
+        ck( !pos( kids, SearchMode.GT, "0", c ), "a leaf's child count (0) is not > 0" );
+
+        // depth from root (edges): root=0, mid=1, c=1, a/b=2
+        ck( pos( depth, SearchMode.EQ, "0", root ), "root depth should be 0" );
+        ck( pos( depth, SearchMode.EQ, "1", mid ), "mid depth should be 1" );
+        ck( pos( depth, SearchMode.EQ, "2", a ), "a depth should be 2" );
+        ck( pos( depth, SearchMode.LT, "2", root ), "root depth is < 2" );
+
+        // distance from root (branch lengths): root=0, mid=1, c=0.5, a=3, b=4
+        final SearchField dist = SearchField.distanceToRoot();
+        ck( pos( dist, SearchMode.EQ, "0", root ), "root distance should be 0" );
+        ck( pos( dist, SearchMode.EQ, "3", a ), "a distance should be 3 (1+2)" );
+        ck( pos( dist, SearchMode.GT, "3.5", b ), "b distance (4) should be > 3.5" );
+        ck( !pos( dist, SearchMode.GT, "3.5", a ), "a distance (3) is not > 3.5" );
+
+        // they are always offered (distance only when the tree has branch lengths)
+        final List<SearchField> fields = SearchField.availableFields( phy );
+        ck( byLabel( fields, "Structure: Clade Size (tips)" ) != null, "clade-size field should be offered" );
+        ck( byLabel( fields, "Structure: Number of Children" ) != null, "num-children field should be offered" );
+        ck( byLabel( fields, "Structure: Depth from Root (edges)" ) != null, "depth field should be offered" );
+        ck( byLabel( fields, "Structure: Distance from Root" ) != null,
+            "distance-from-root should be offered when branch lengths are present" );
+
+        // ... but distance-from-root is NOT offered for a tree without branch lengths
+        final PhylogenyNode r2 = new PhylogenyNode();
+        r2.addAsChild( named( "x" ) );
+        final Phylogeny no_bl = new Phylogeny();
+        no_bl.setRoot( r2 );
+        no_bl.externalNodesHaveChanged();
+        ck( byLabel( SearchField.availableFields( no_bl ), "Structure: Distance from Root" ) == null,
+            "distance-from-root should NOT be offered without branch lengths" );
+    }
+
+    private static PhylogenyNode named( final String name ) {
+        final PhylogenyNode n = new PhylogenyNode();
+        n.setName( name );
+        return n;
     }
 
     private static SearchField byLabel( final List<SearchField> fields, final String label ) {
