@@ -95,6 +95,9 @@ public class MainPanel extends JPanel implements ComponentListener {
         // if this tree was saved after an annotation import, restore the remembered profile so File -> Re-import works
         // across a save/reload (the profile rides along as a property on the root node)
         treepanel.setLastImportProfile(org.forester.archaeopteryx.tools.NodeDataImporter.readProfileFromTree(phy));
+        // restore a saved per-tree Time-Axis config (aptx:time_axis on the root); a saved config wins over the
+        // auto-derived default, and null (no/unparsable property) leaves this tab on auto-derive
+        treepanel.applyTimeAxisConfig(TimeAxisConfig.readFromTree(phy));
         getControlPanel().phylogenyAdded(config);
         treepanel.setControlPanel(getControlPanel());
         _treepanels.add(treepanel);

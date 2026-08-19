@@ -77,8 +77,6 @@ final class GuiPreferences {
             boolPref( "show_tree_name", Options::isShowTreeName, Options::setShowTreeName ),
             boolPref( "show_scale", Options::isShowScale, Options::setShowScale ),
             boolPref( "show_scale_grid", Options::isShowScaleGrid, Options::setShowScaleGrid ),
-            boolPref( "show_geologic_grid", Options::isShowGeologicGridLines, Options::setShowGeologicGridLines ),
-            boolPref( "show_geologic_ages", Options::isShowGeologicBoundaryAges, Options::setShowGeologicBoundaryAges ),
             boolPref( "show_scale_axis", Options::isShowScaleAxis, Options::setShowScaleAxis ),
             // NOTE: "show_hpd_bars" is deliberately NOT persisted -- it is now DATA-DRIVEN (auto-enabled at load for
             // a dated phylogram with node-age HPD intervals; see AptxUtil.lookAtSomeTreePropertiesForAptxControlSettings).
@@ -148,8 +146,6 @@ final class GuiPreferences {
                       NODE_LABEL_DIRECTION::valueOf ),
             enumPref( "found_color", Options::getFoundColor, Options::setFoundColor,
                       Options.FOUND_COLOR::valueOf ),
-            enumPref( "time_axis_type", Options::getTimeAxisType, Options::setTimeAxisType,
-                      Options.TIME_AXIS_TYPE::valueOf ),
             // "Color by" palette: only apply a stored name that is still a known palette (a renamed/removed
             // palette is ignored, keeping the default) so a stale file can't select a non-existent palette
             stringPref( "color_palette", Options::getColorPaletteName, Options::setColorPaletteName,

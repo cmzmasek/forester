@@ -494,6 +494,59 @@ public final class AptxUtil {
         return null;
     }
 
+    private final static java.util.Set<String> GEOLOGIC_DATE_UNITS = new java.util.HashSet<>(java.util.Arrays.asList(
+            "mya", "ma", "myr", "myrs", "my", "ga", "gya", "bya", "kya", "million years", "billion years"));
+    private final static java.util.Set<String> CALENDAR_DATE_UNITS = new java.util.HashSet<>(java.util.Arrays.asList(
+            "year", "years", "yr", "yrs", "cal", "ce", "ad", "calendar", "calendar year", "calendar years"));
+
+    /** Auto-derive the appropriate Time-Axis type from a tree's OWN {@code <date>} data -- the baseline the per-tree
+     *  Time Axis follows unless the user overrides. Uses the {@code <date unit>} when recognized ("mya"/"Ma"/"Ga"/... =
+     *  geologic ages before present; "year"/"yr"/"CE"/... = calendar years); else a magnitude fallback (values
+     *  clustered near the present ~[1500,2200] read as calendar years; large values decreasing toward ~0 read as
+     *  geologic ages); else {@code NONE}. Pure. */
+    public final static Options.TIME_AXIS_TYPE deriveTimeAxisType(final Phylogeny phy) {
+        if ((phy == null) || phy.isEmpty()) {
+            return Options.TIME_AXIS_TYPE.NONE;
+        }
+        final String unit = timeTreeUnit(phy);
+        if (!ForesterUtil.isEmpty(unit)) {
+            final String u = unit.trim().toLowerCase(java.util.Locale.ROOT);
+            if (GEOLOGIC_DATE_UNITS.contains(u)) {
+                return Options.TIME_AXIS_TYPE.GEOLOGIC;
+            }
+            if (CALENDAR_DATE_UNITS.contains(u)) {
+                return Options.TIME_AXIS_TYPE.CALENDAR;
+            }
+        }
+        // no / unrecognized unit -> magnitude fallback over the node <date> values
+        int count = 0;
+        int calendar_like = 0;
+        double min = Double.MAX_VALUE;
+        double max = -Double.MAX_VALUE;
+        for (final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if (n.getNodeData().isHasDate() && (n.getNodeData().getDate().getValue() != null)) {
+                final double v = n.getNodeData().getDate().getValue().doubleValue();
+                ++count;
+                min = Math.min(min, v);
+                max = Math.max(max, v);
+                if ((v >= 1500) && (v <= 2200)) {
+                    ++calendar_like;
+                }
+            }
+        }
+        if (count == 0) {
+            return Options.TIME_AXIS_TYPE.NONE;
+        }
+        if ((calendar_like * 2) > count) { // strict majority clustered near the present -> calendar years
+            return Options.TIME_AXIS_TYPE.CALENDAR;
+        }
+        if ((max > 10) && (min <= (max * 0.05))) { // ages before present, decreasing toward ~0 -> geologic
+            return Options.TIME_AXIS_TYPE.GEOLOGIC;
+        }
+        return Options.TIME_AXIS_TYPE.NONE;
+    }
+
     /**
      * Heuristic for the load-time "treat internal labels as support values?" offer: {@code true} when the
      * tree looks like a bootstrap/posterior tree -- at least two internal nodes carry a non-empty name,

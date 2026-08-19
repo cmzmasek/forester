@@ -93,8 +93,6 @@ public final class ResetToDefaultsTest {
         o.setPhylogenyDisplayType( PHYLOGENY_DISPLAY_TYPE.CLADOGRAM ); // default is UNALIGNED_PHYLOGRAM
         o.setColorPaletteName( "Colorblind-friendly" );
         o.setShowScaleGrid( true );
-        o.setShowGeologicGridLines( true );
-        o.setShowGeologicBoundaryAges( true );
         o.setShowScaleAxis( true );
         o.setShowHpdBars( true );
         o.setShowZebraStripes( true );
@@ -109,7 +107,6 @@ public final class ResetToDefaultsTest {
         o.setTipLabelDirection( Options.TIP_LABEL_DIRECTION.HORIZONTAL ); // default is VERTICAL
         o.setNodeLabelDirection( Options.NODE_LABEL_DIRECTION.RADIAL ); // "Radial Labels"; default is HORIZONTAL
         o.setFoundColor( Options.FOUND_COLOR.NEON_MAGENTA ); // default is ELECTRIC_VIOLET
-        o.setTimeAxisType( Options.TIME_AXIS_TYPE.GEOLOGIC ); // default is NONE
         o.setSupportVisualization( SUPPORT_VISUALIZATION.SIZE_SCALED );
         // search options (reset by init, resynced onto the control-panel checkboxes by Reset to Defaults)
         o.setSearchCaseSensitive( true );
@@ -150,12 +147,8 @@ public final class ResetToDefaultsTest {
         ok &= eq( "nodeLabelDirection", o.getNodeLabelDirection(), def.getNodeLabelDirection() );
         ok &= eq( "foundColor", o.getFoundColor(), def.getFoundColor() );
         ok &= eq( "foundColor default VIOLET", def.getFoundColor(), Options.FOUND_COLOR.ELECTRIC_VIOLET );
-        ok &= eq( "timeAxisType", o.getTimeAxisType(), def.getTimeAxisType() );
-        ok &= eq( "timeAxisType default NONE", def.getTimeAxisType(), Options.TIME_AXIS_TYPE.NONE );
         ok &= eq( "palette", o.getColorPaletteName(), def.getColorPaletteName() );
         ok &= eq( "showScaleGrid", o.isShowScaleGrid(), def.isShowScaleGrid() );
-        ok &= eq( "showGeologicGridLines", o.isShowGeologicGridLines(), def.isShowGeologicGridLines() );
-        ok &= eq( "showGeologicBoundaryAges", o.isShowGeologicBoundaryAges(), def.isShowGeologicBoundaryAges() );
         ok &= eq( "showScaleAxis", o.isShowScaleAxis(), def.isShowScaleAxis() );
         ok &= eq( "showHpdBars", o.isShowHpdBars(), def.isShowHpdBars() );
         ok &= eq( "showZebraStripes", o.isShowZebraStripes(), def.isShowZebraStripes() );
@@ -211,7 +204,7 @@ public final class ResetToDefaultsTest {
                           frame._transparent_export_background_cbmi, frame._graphics_export_white_background_cbmi,
                           frame._color_labels_same_as_parent_branch, frame._show_default_node_shapes_internal_cbmi,
                           frame._show_default_node_shapes_external_cbmi, frame._show_default_node_shapes_for_marked_cbmi,
-                          frame._show_scale_grid_cbmi, frame._show_geologic_grid_cbmi, frame._show_geologic_ages_cbmi,
+                          frame._show_scale_grid_cbmi,
                           frame._show_scale_axis_cbmi, frame._show_hpd_bars_cbmi,
                           frame._show_zebra_stripes_cbmi, frame._tip_labels_below_columns_cbmi,
                           frame._reverse_tip_order_cbmi,
@@ -237,6 +230,8 @@ public final class ResetToDefaultsTest {
                     tp.setPhylogenyGraphicsType( PHYLOGENY_GRAPHICS_TYPE.CIRCULAR ); // live tree drawn circular
                     cp.setTreeDisplayType( PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM ); // drive P/A/C off the default
                     tp.setColorPaletteName( "Colorblind-friendly" );
+                    tp.setTimeAxisType( Options.TIME_AXIS_TYPE.GEOLOGIC ); // per-tab Time-Axis override + toggle
+                    tp.setTimeAxisGrid( true );
                     tp.setSizeByPropertyRef( "data:sz" ); // turn "Size by" ON (a per-tab display setting)
                     cp.populateSizeByPropertyBox(); // re-seed the dropdown from the tree, so it shows the active ref
                     if ( !tp.isSizeByProperty() ) {
@@ -288,6 +283,11 @@ public final class ResetToDefaultsTest {
                     }
                     if ( o.getDefaultNodeShape() != NodeShape.CIRCLE ) {
                         fail( ok, "node shape should reset to CIRCLE, got " + o.getDefaultNodeShape() );
+                    }
+                    // the per-tab Time-Axis override is cleared -> back to auto-derive (this dateless tree derives NONE)
+                    if ( ( tp.effectiveTimeAxisType() != Options.TIME_AXIS_TYPE.NONE ) || tp.isTimeAxisGrid() ) {
+                        fail( ok, "Reset must clear the per-tab Time-Axis override (back to auto-derive), got type="
+                                + tp.effectiveTimeAxisType() + " grid=" + tp.isTimeAxisGrid() );
                     }
                     // 3b. EVERY flipped menu control was re-seeded: reading them all back via updateOptions must equal
                     //     a fresh default across the whole boolean surface (a control the resync missed stays flipped

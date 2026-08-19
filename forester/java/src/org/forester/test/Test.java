@@ -330,6 +330,15 @@ public final class Test {
             failed++;
         }
 
+        System.out.print("Time axis config: ");
+        if (org.forester.archaeopteryx.TimeAxisConfigTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+
         System.out.print("Time tree label: ");
         if (org.forester.archaeopteryx.TimeTreeLabelTest.test()) {
             System.out.println("OK.");
@@ -780,6 +789,14 @@ public final class Test {
         }
         System.out.print("Geologic time axis (render): ");
         if (org.forester.archaeopteryx.GeologicAxisRenderTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Time axis per tree: ");
+        if (org.forester.archaeopteryx.TimeAxisPerTreeTest.test()) {
             System.out.println("OK.");
             succeeded++;
         } else {

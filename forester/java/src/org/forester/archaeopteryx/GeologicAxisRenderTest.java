@@ -114,7 +114,7 @@ public final class GeologicAxisRenderTest {
                     // OFF: no geologic axis -> no saturated band pixels. Re-fit after each type change, exactly as the
                     // app does (SettingsDialog.maybeCalibrateAndFit -> reFitCurrentTree), so the layout reserve/R
                     // transform matches the option (an on-screen change without a re-fit is not a real usage path).
-                    o.setTimeAxisType( Options.TIME_AXIS_TYPE.NONE );
+                    tp.setTimeAxisType( Options.TIME_AXIS_TYPE.NONE );
                     tp.calcParametersForPainting( w, h );
                     if ( tp.geologicAxisApplies() ) {
                         fail( ok, "the geologic axis must not apply when the Time Axis type is NONE" );
@@ -122,7 +122,7 @@ public final class GeologicAxisRenderTest {
                     final int off = countSaturated( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) );
 
                     // ON: the geologic axis draws the coloured ICS bands
-                    o.setTimeAxisType( Options.TIME_AXIS_TYPE.GEOLOGIC );
+                    tp.setTimeAxisType( Options.TIME_AXIS_TYPE.GEOLOGIC );
                     tp.calcParametersForPainting( w, h );
                     if ( !tp.geologicAxisApplies() ) {
                         fail( ok, "the geologic axis must apply to a dated phylogram with a positive root age "
@@ -137,21 +137,21 @@ public final class GeologicAxisRenderTest {
                     }
 
                     // OPTIONAL grid lines (off by default): turning them on adds faint reference lines through the tree
-                    o.setShowGeologicGridLines( false );
+                    tp.setTimeAxisGrid( false );
                     final BufferedImage grid_off = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
-                    o.setShowGeologicGridLines( true );
+                    tp.setTimeAxisGrid( true );
                     final BufferedImage grid_on = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
                     if ( diffPixels( grid_off, grid_on ) < 200 ) {
                         fail( ok, "the geologic grid lines should draw faint reference lines through the tree when on" );
                     }
-                    o.setShowGeologicGridLines( false );
+                    tp.setTimeAxisGrid( false );
 
                     // OPTIONAL boundary ages (off by default): turning them on reserves an extra row (the tips compress
                     // -> smaller y-distance) AND draws the age labels, so the image changes
                     tp.calcParametersForPainting( w, h );
                     final float yd_no_ages = tp.getYdistance();
                     final BufferedImage ages_off = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
-                    o.setShowGeologicBoundaryAges( true );
+                    tp.setTimeAxisAges( true );
                     tp.calcParametersForPainting( w, h );
                     final float yd_ages = tp.getYdistance();
                     final BufferedImage ages_on = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
@@ -162,53 +162,49 @@ public final class GeologicAxisRenderTest {
                     if ( diffPixels( ages_off, ages_on ) < 200 ) {
                         fail( ok, "the geologic boundary ages should draw age labels when on" );
                     }
-                    o.setShowGeologicBoundaryAges( false );
+                    tp.setTimeAxisAges( false );
                     tp.calcParametersForPainting( w, h );
 
-                    // the boundary-ages MENU TOGGLE must re-fit so the extra reserved row is applied (the checks above
-                    // set the option + recalced directly; this exercises the actionPerformed re-fit a user's click
-                    // triggers -- without it the age row would overlap the bottom tip). Geologic axis applies here.
-                    if ( frame._show_geologic_ages_cbmi != null ) {
-                        frame._show_geologic_ages_cbmi.setSelected( false );
-                        o.setShowGeologicBoundaryAges( false );
-                        frame.showWhole();
-                        final float yd_off_click = tp.getYdistance();
-                        frame._show_geologic_ages_cbmi.doClick(); // turns ON + re-fits via the real handler
-                        final float yd_on_click = tp.getYdistance();
-                        if ( !( yd_on_click < yd_off_click ) ) {
-                            fail( ok, "toggling Geologic Boundary Ages via the menu must re-fit so the reserved row is "
-                                    + "applied (tips compress): y-distance off=" + yd_off_click + " on=" + yd_on_click );
-                        }
-                        frame._show_geologic_ages_cbmi.setSelected( false );
-                        o.setShowGeologicBoundaryAges( false );
-                        frame.showWhole();
-                        tp.setSize( w, h );
-                        tp.calcParametersForPainting( w, h );
+                    // the boundary-ages TOGGLE must re-fit so the extra reserved row is applied (the checks above set the
+                    // per-tab flag + recalced directly; this exercises the re-fit the per-panel setTimeAxisAges does
+                    // itself -- without it the age row would overlap the bottom tip). Geologic axis applies here.
+                    tp.setTimeAxisAges( false );
+                    frame.showWhole();
+                    final float yd_off_click = tp.getYdistance();
+                    tp.setTimeAxisAges( true ); // turns ON + re-fits via getControlPanel().showWhole()
+                    final float yd_on_click = tp.getYdistance();
+                    if ( !( yd_on_click < yd_off_click ) ) {
+                        fail( ok, "toggling Geologic Boundary Ages must re-fit so the reserved row is applied (tips "
+                                + "compress): y-distance off=" + yd_off_click + " on=" + yd_on_click );
                     }
+                    tp.setTimeAxisAges( false );
+                    frame.showWhole();
+                    tp.setSize( w, h );
+                    tp.calcParametersForPainting( w, h );
 
                     // the bottom band must reserve space -> the tip-spread is compressed (smaller y-distance) vs off
-                    o.setTimeAxisType( Options.TIME_AXIS_TYPE.NONE );
+                    tp.setTimeAxisType( Options.TIME_AXIS_TYPE.NONE );
                     tp.calcParametersForPainting( w, h );
                     final float yd_off = tp.getYdistance();
-                    o.setTimeAxisType( Options.TIME_AXIS_TYPE.GEOLOGIC );
+                    tp.setTimeAxisType( Options.TIME_AXIS_TYPE.GEOLOGIC );
                     tp.calcParametersForPainting( w, h );
                     final float yd_on = tp.getYdistance();
                     if ( !( yd_on < yd_off ) ) {
                         fail( ok, "the geologic axis must reserve a bottom band (compress the tip-spread): y-distance "
                                 + "off=" + yd_off + " on=" + yd_on );
                     }
-                    o.setTimeAxisType( Options.TIME_AXIS_TYPE.NONE );
+                    tp.setTimeAxisType( Options.TIME_AXIS_TYPE.NONE );
 
                     // PARITY: the two-band geologic axis also renders in the root-TOP and root-BOTTOM orientations (it
                     // rides the canvas rotation R into a side band down the breadth edge)
                     for ( final Options.TREE_ORIENTATION ori : new Options.TREE_ORIENTATION[] {
                             Options.TREE_ORIENTATION.ROOT_TOP, Options.TREE_ORIENTATION.ROOT_BOTTOM } ) {
                         o.setTreeOrientation( ori );
-                        o.setTimeAxisType( Options.TIME_AXIS_TYPE.NONE );
+                        tp.setTimeAxisType( Options.TIME_AXIS_TYPE.NONE );
                         tp.calcParametersForPainting( w, h );
                         final int voff = countSaturated( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1,
                                 false ) );
-                        o.setTimeAxisType( Options.TIME_AXIS_TYPE.GEOLOGIC );
+                        tp.setTimeAxisType( Options.TIME_AXIS_TYPE.GEOLOGIC );
                         if ( !tp.geologicAxisApplies() ) {
                             fail( ok, "the geologic axis must apply in the " + ori + " orientation" );
                         }
@@ -221,7 +217,7 @@ public final class GeologicAxisRenderTest {
                         }
                     }
                     o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
-                    o.setTimeAxisType( Options.TIME_AXIS_TYPE.NONE );
+                    tp.setTimeAxisType( Options.TIME_AXIS_TYPE.NONE );
                     tp.calcParametersForPainting( w, h );
 
                     // PARITY: the CIRCULAR layout shows the geologic scale as concentric coloured ICS rings
@@ -229,7 +225,7 @@ public final class GeologicAxisRenderTest {
                     tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
                     frame.showWhole();
                     final int coff = countSaturated( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) );
-                    o.setTimeAxisType( Options.TIME_AXIS_TYPE.GEOLOGIC );
+                    tp.setTimeAxisType( Options.TIME_AXIS_TYPE.GEOLOGIC );
                     if ( !tp.geologicRingsApplyCircular() ) {
                         fail( ok, "the geologic rings must apply to a circular phylogram with a positive root age" );
                     }
@@ -263,7 +259,7 @@ public final class GeologicAxisRenderTest {
 
                     o.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
                     tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
-                    o.setTimeAxisType( Options.TIME_AXIS_TYPE.NONE );
+                    tp.setTimeAxisType( Options.TIME_AXIS_TYPE.NONE );
                     tp.calcParametersForPainting( w, h );
 
                     // DEEP TIME: a tree reaching into the Archean (oldest date > 2500 Ma) makes the axis adapt to the
@@ -283,11 +279,11 @@ public final class GeologicAxisRenderTest {
                             fail( ok, "the deep-time demo should reach into the Archean (> 2500 Ma), got "
                                     + tp.timeAxisRootAgeMa() );
                         }
-                        o.setTimeAxisType( Options.TIME_AXIS_TYPE.NONE );
+                        tp.setTimeAxisType( Options.TIME_AXIS_TYPE.NONE );
                         tp.calcParametersForPainting( w, h );
                         final int doff = countSaturated( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1,
                                 false ) );
-                        o.setTimeAxisType( Options.TIME_AXIS_TYPE.GEOLOGIC );
+                        tp.setTimeAxisType( Options.TIME_AXIS_TYPE.GEOLOGIC );
                         tp.calcParametersForPainting( w, h );
                         final int don = countSaturated( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1,
                                 false ) );
@@ -295,7 +291,7 @@ public final class GeologicAxisRenderTest {
                             fail( ok, "the deep-time (Eon/Era) geologic axis should band the Precambrian (on=" + don
                                     + " off=" + doff + ")" );
                         }
-                        o.setTimeAxisType( Options.TIME_AXIS_TYPE.NONE );
+                        tp.setTimeAxisType( Options.TIME_AXIS_TYPE.NONE );
                     }
 
                     // CALENDAR axis: a tip-dated tree (calendar-year dates) draws a labelled year ruler (not coloured
@@ -315,10 +311,10 @@ public final class GeologicAxisRenderTest {
                             fail( ok, "the SARS demo present date should be the most-recent tip (2022.5), got "
                                     + tp.timeAxisPresentDate() );
                         }
-                        o.setTimeAxisType( Options.TIME_AXIS_TYPE.NONE );
+                        tp.setTimeAxisType( Options.TIME_AXIS_TYPE.NONE );
                         tp.calcParametersForPainting( w, h );
                         final BufferedImage cal_off = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
-                        o.setTimeAxisType( Options.TIME_AXIS_TYPE.CALENDAR );
+                        tp.setTimeAxisType( Options.TIME_AXIS_TYPE.CALENDAR );
                         if ( !tp.calendarAxisApplies() ) {
                             fail( ok, "the calendar axis must apply to a tip-dated phylogram (present="
                                     + tp.timeAxisPresentDate() + ")" );
@@ -335,16 +331,16 @@ public final class GeologicAxisRenderTest {
                             fail( ok, "the calendar axis should draw a year ruler (ticks + labels) in the bottom band" );
                         }
                         // optional grid lines apply to the calendar axis too (year lines through the tree)
-                        o.setShowGeologicGridLines( false );
+                        tp.setTimeAxisGrid( false );
                         final BufferedImage cal_grid_off = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1,
                                 false );
-                        o.setShowGeologicGridLines( true );
+                        tp.setTimeAxisGrid( true );
                         final BufferedImage cal_grid_on = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1,
                                 false );
                         if ( diffPixels( cal_grid_off, cal_grid_on ) < 100 ) {
                             fail( ok, "the time-axis grid lines should draw calendar-year reference lines when on" );
                         }
-                        o.setShowGeologicGridLines( false );
+                        tp.setTimeAxisGrid( false );
                         // circular parity: the calendar rings apply in a circular phylogram; the rectangular axis does not
                         o.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
                         tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
@@ -353,7 +349,7 @@ public final class GeologicAxisRenderTest {
                         }
                         o.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
                         tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
-                        o.setTimeAxisType( Options.TIME_AXIS_TYPE.NONE );
+                        tp.setTimeAxisType( Options.TIME_AXIS_TYPE.NONE );
                     }
                 }
                 catch ( final Throwable t ) {

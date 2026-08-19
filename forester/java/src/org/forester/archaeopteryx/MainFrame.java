@@ -285,8 +285,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JCheckBoxMenuItem _show_scale_cbmi;                                                                                                                                                                                                      //TODO fix me
     JCheckBoxMenuItem _show_tree_name_cbmi;
     JCheckBoxMenuItem _show_scale_grid_cbmi;
-    JCheckBoxMenuItem _show_geologic_grid_cbmi;
-    JCheckBoxMenuItem _show_geologic_ages_cbmi;
     JCheckBoxMenuItem _show_scale_axis_cbmi;
     JCheckBoxMenuItem _show_hpd_bars_cbmi;
     JCheckBoxMenuItem _show_zebra_stripes_cbmi;
@@ -525,18 +523,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             updateOptions(getOptions());
         } else if (o == _show_scale_grid_cbmi) {
             updateOptions(getOptions());
-        } else if (o == _show_geologic_grid_cbmi) {
-            updateOptions(getOptions());
-        } else if (o == _show_geologic_ages_cbmi) {
-            updateOptions(getOptions());
-            // the boundary-age row grows the geologic-axis reserve, so toggling it must re-fit (like the scale axis)
-            // so the tips compress/reclaim the row and the age labels clear the bottom tip -- but only where the
-            // RECTANGULAR geologic axis is drawn (geologicAxisApplies()); circular uses no such reserve (the ages ride
-            // the spoke), and a re-fit there would reset the radial zoom.
-            final TreePanel tp_ages = getCurrentTreePanel();
-            if ((tp_ages != null) && tp_ages.geologicAxisApplies()) {
-                showWhole();
-            }
         } else if (o == _show_scale_axis_cbmi) {
             updateOptions(getOptions());
             // the scale axis reserves a tip-spread band (a side ruler in a vertical orientation, a bottom band in a
@@ -958,6 +944,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                     phy.setName(getMainPanel().getTabbedPane().getTitleAt(i));
                 }
                 trees.add(phy);
+                getMainPanel().getTreePanels().get(i).syncTimeAxisConfigToTree(); // embed each tab's Time-Axis config
                 getMainPanel().getTreePanels().get(i).setEdited(false);
             }
             final PhylogenyWriter writer = new PhylogenyWriter();
@@ -2295,8 +2282,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         // The search options (case/words/regex/inverse/properties) are now set directly on Options
         // by the control-panel checkboxes, so they are intentionally not read from menu items here.
         options.setShowScaleGrid((_show_scale_grid_cbmi != null) && _show_scale_grid_cbmi.isSelected());
-        options.setShowGeologicGridLines((_show_geologic_grid_cbmi != null) && _show_geologic_grid_cbmi.isSelected());
-        options.setShowGeologicBoundaryAges((_show_geologic_ages_cbmi != null) && _show_geologic_ages_cbmi.isSelected());
         options.setShowScaleAxis((_show_scale_axis_cbmi != null) && _show_scale_axis_cbmi.isSelected());
         options.setShowHpdBars((_show_hpd_bars_cbmi != null) && _show_hpd_bars_cbmi.isSelected());
         options.setShowZebraStripes((_show_zebra_stripes_cbmi != null) && _show_zebra_stripes_cbmi.isSelected());
@@ -2405,8 +2390,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         setSelected(_show_default_node_shapes_external_cbmi, options.isShowDefaultNodeShapesExternal());
         setSelected(_show_default_node_shapes_for_marked_cbmi, options.isShowDefaultNodeShapesForMarkedNodes());
         setSelected(_show_scale_grid_cbmi, options.isShowScaleGrid());
-        setSelected(_show_geologic_grid_cbmi, options.isShowGeologicGridLines());
-        setSelected(_show_geologic_ages_cbmi, options.isShowGeologicBoundaryAges());
         setSelected(_show_scale_axis_cbmi, options.isShowScaleAxis());
         setSelected(_show_hpd_bars_cbmi, options.isShowHpdBars());
         setSelected(_show_zebra_stripes_cbmi, options.isShowZebraStripes());
@@ -2486,6 +2469,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             for (final TreePanel tp : getMainPanel().getTreePanels()) {
                 tp.resetColorStateToDefaults(); // also turns ancestral-state pies OFF (per-tab)
                 tp.setPhylogenyGraphicsType(type);
+                tp.resetTimeAxisToAutoDerive(); // per-tab: drop any Time-Axis override -> back to auto-derive
             }
             final ControlPanel cp = getMainPanel().getControlPanel();
             if (cp != null) {
@@ -2767,6 +2751,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     static boolean writeAsPhyloXml(final TreePanel tp, final Options op, boolean exception, final File file) {
         try {
+            tp.syncTimeAxisConfigToTree(); // embed the per-tree Time-Axis config (only if it deviates from auto-derive)
             final PhylogenyWriter writer = new PhylogenyWriter();
             writer.toPhyloXML(file, tp.getPhylogeny(), 0);
         } catch (final Exception e) {

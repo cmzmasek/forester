@@ -229,6 +229,13 @@ bands — **System/Period** over **Series/Epoch** — so a clade's position alon
 time axis reads directly against the named geologic intervals (Cretaceous,
 Jurassic, Triassic, …).
 
+The Time Axis is **per tree**: Archaeopteryx reads the appropriate axis from each
+tree's own `<date>` values (their unit and magnitude), so a geologic Dinosaur tree
+in one tab and a calendar-dated SARS-CoV-2 tree in another each show the right axis
+at the same time — no global switch to flip. The Settings dropdown lets you
+override the axis for the current tab (or turn it off), and when you **save** the
+tree, a deliberate choice travels with it (restored on reload).
+
 The axis follows the layout: it runs along the bottom in the **root-left**
 orientation, down the breadth side in the **root-on-top / root-on-bottom**
 orientations, and becomes concentric coloured **rings** (period bands from the
@@ -247,9 +254,9 @@ The tree is anchored in time by its **root age**: Archaeopteryx uses the oldest
 `<date>` value in the tree, or you can set it explicitly with **"Set root age…"**
 next to the Time Axis selector (most-recent tips are taken as the present, age 0).
 
-Two optional refinements (both **off by default**, and remembered between
-sessions) are available under **Settings → Overlays** when the geologic axis is
-on: **Time-Axis Grid Lines** draws faint reference lines across the tree at the
+Two optional refinements (both **off by default**, and — like the axis itself —
+per tree, saved with the tree) are available under **Settings → Overlays** when the
+geologic axis is on: **Time-Axis Grid Lines** draws faint reference lines across the tree at the
 finer band's interval boundaries (e.g. the Early/Middle/Late Triassic and the
 Triassic/Permian boundaries), and **Geologic Boundary Ages** labels the coarser
 band's boundaries with their age (e.g. *201.4* at the base of the Jurassic).

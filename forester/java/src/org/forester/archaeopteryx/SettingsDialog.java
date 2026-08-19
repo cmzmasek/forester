@@ -199,14 +199,23 @@ final class SettingsDialog extends JDialog {
         add( c, cb( _mf._show_hpd_bars_cbmi ) );
         add( c, cb( _mf._show_zebra_stripes_cbmi ) );
         add( c, cb( _mf._show_internal_taxonomy_key_cbmi ) );
-        c.add( header( "Time Axis" ) );
-        add( c, labeled( "Time axis:", enumCombo( Options.TIME_AXIS_TYPE.values(), _mf.getOptions().getTimeAxisType(),
-                                                  v -> { _mf.getOptions().setTimeAxisType( v );
+        // The Time Axis is PER-TREE (per-tab): a SARS-CoV-2 (calendar) tab and a Dinosaur (geologic) tab show
+        // different axes at once. These controls act on the CURRENT tab and are seeded from it at open (like the
+        // Tree style / palette combos above -- so they reflect the tab that was current when the dialog opened).
+        c.add( header( "Time Axis (per tree)" ) );
+        final TreePanel cur_ta = _mf.getCurrentTreePanel();
+        add( c, labeled( "Time axis:", enumCombo( Options.TIME_AXIS_TYPE.values(),
+                                                  ( cur_ta != null ) ? cur_ta.effectiveTimeAxisType()
+                                                          : Options.TIME_AXIS_TYPE.NONE,
+                                                  v -> { final TreePanel cur = _mf.getCurrentTreePanel();
+                                                         if ( cur != null ) { cur.setTimeAxisType( v ); }
                                                          maybeCalibrateAndFit( v ); } ) ) );
         add( c, labeled( "", button( "Set root age… (geologic)", this::setTimeAxisRootAgeDialog ) ) );
         add( c, labeled( "", button( "Set most-recent-tip date… (calendar)", this::setTimeAxisPresentDateDialog ) ) );
-        add( c, cb( _mf._show_geologic_grid_cbmi ) );
-        add( c, cb( _mf._show_geologic_ages_cbmi ) );
+        add( c, panelCheckbox( MainFrame.GEOLOGIC_GRID_LABEL, MainFrame.GEOLOGIC_GRID_TIP,
+                               TreePanel::isTimeAxisGrid, ( p, b ) -> p.setTimeAxisGrid( b ) ) );
+        add( c, panelCheckbox( MainFrame.GEOLOGIC_AGES_LABEL, MainFrame.GEOLOGIC_AGES_TIP,
+                               TreePanel::isTimeAxisAges, ( p, b ) -> p.setTimeAxisAges( b ) ) );
         c.add( header( "Tree Name & Overview" ) );
         add( c, cb( _mf._show_tree_name_cbmi ) );
         add( c, cb( _mf._show_overview_cbmi ) );
@@ -410,6 +419,23 @@ final class SettingsDialog extends JDialog {
         c.addActionListener( e -> {
             if ( mi.isSelected() != c.isSelected() ) {
                 mi.doClick();
+            }
+        } );
+        return c;
+    }
+
+    /** A checkbox bound to a PER-TREE (per-panel) boolean on the CURRENT TreePanel: seeded from it at construction,
+     *  writes to it on toggle (a no-op when no tree is loaded). Used for the per-tab Time-Axis refinement toggles. */
+    private JCheckBox panelCheckbox( final String label, final String tip,
+                                     final java.util.function.Predicate<TreePanel> getter,
+                                     final java.util.function.BiConsumer<TreePanel, Boolean> setter ) {
+        final TreePanel cur = _mf.getCurrentTreePanel();
+        final JCheckBox c = new JCheckBox( label, ( cur != null ) && getter.test( cur ) );
+        c.setToolTipText( tip );
+        c.addActionListener( e -> {
+            final TreePanel p = _mf.getCurrentTreePanel();
+            if ( p != null ) {
+                setter.accept( p, c.isSelected() );
             }
         } );
         return c;

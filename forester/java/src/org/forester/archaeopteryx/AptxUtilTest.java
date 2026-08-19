@@ -67,7 +67,60 @@ public final class AptxUtilTest {
                 && testBranchesToCollapse() && testConfigFileOption() && testScanForDataPresence()
                 && testAssignDistinctColors() && testShortenLabel()
                 && testInternalNamesLookLikeConfidenceValues() && testInternalNodeDateInterval()
-                && testPreferredDisplayTypeForBranchLengthTree() && testDetectTimeTree();
+                && testPreferredDisplayTypeForBranchLengthTree() && testDetectTimeTree()
+                && testDeriveTimeAxisType();
+    }
+
+    /** Auto-derive of the per-tree Time-Axis type from the tree's own {@code <date>} data: the {@code <date unit>}
+     *  when recognized (case-insensitive tokens), else a magnitude fallback (ages decreasing to ~0 -> geologic; values
+     *  clustered near the present -> calendar), else NONE. */
+    private static boolean testDeriveTimeAxisType() {
+        if ( AptxUtil.deriveTimeAxisType( balancedFourTip( 1, 1, 1 ) ) != Options.TIME_AXIS_TYPE.NONE ) {
+            return fail( "a tree with no dates must derive NONE" );
+        }
+        // recognized units (case-insensitive) win outright
+        if ( AptxUtil.deriveTimeAxisType( datedTree( "mya", 250, 66, 0 ) ) != Options.TIME_AXIS_TYPE.GEOLOGIC ) {
+            return fail( "unit 'mya' must derive GEOLOGIC" );
+        }
+        if ( AptxUtil.deriveTimeAxisType( datedTree( "Ga", 3.8, 1.0, 0 ) ) != Options.TIME_AXIS_TYPE.GEOLOGIC ) {
+            return fail( "unit 'Ga' must derive GEOLOGIC (unit beats a small magnitude)" );
+        }
+        if ( AptxUtil.deriveTimeAxisType( datedTree( "year", 2019.9, 2021, 2022.5 ) ) != Options.TIME_AXIS_TYPE.CALENDAR ) {
+            return fail( "unit 'year' must derive CALENDAR" );
+        }
+        if ( AptxUtil.deriveTimeAxisType( datedTree( "CE", 2019, 2020, 2021 ) ) != Options.TIME_AXIS_TYPE.CALENDAR ) {
+            return fail( "unit 'CE' must derive CALENDAR" );
+        }
+        // magnitude fallback (no / unrecognized unit). NOTE: a <date> whose ONLY field is a value of exactly 0 reports
+        // isHasDate()=false (ForesterUtil.isNull treats 0 as null-ish), so the recent end uses a small NON-zero age.
+        if ( AptxUtil.deriveTimeAxisType( datedTree( null, 250, 66, 2.58 ) ) != Options.TIME_AXIS_TYPE.GEOLOGIC ) {
+            return fail( "unitless ages (2.58..250) must fall back to GEOLOGIC" );
+        }
+        if ( AptxUtil.deriveTimeAxisType( datedTree( "bogus", 2019, 2020, 2022 ) ) != Options.TIME_AXIS_TYPE.CALENDAR ) {
+            return fail( "unitless calendar years must fall back to CALENDAR" );
+        }
+        if ( AptxUtil.deriveTimeAxisType( datedTree( "bogus", 5, 4, 3 ) ) != Options.TIME_AXIS_TYPE.NONE ) {
+            return fail( "ambiguous small magnitudes (not near present, not ages-to-0) must derive NONE" );
+        }
+        return true;
+    }
+
+    /** A 4-tip tree with a {@code <date unit=...>} (unit null = no unit) on the root + one mid clade + one tip. */
+    private static Phylogeny datedTree( final String unit, final double v_root, final double v_mid, final double v_tip ) {
+        final Phylogeny phy = balancedFourTip( 1, 1, 1 );
+        setDate( phy.getRoot(), v_root, unit );
+        setDate( phy.getRoot().getChildNode( 0 ), v_mid, unit );
+        setDate( phy.getFirstExternalNode(), v_tip, unit );
+        return phy;
+    }
+
+    private static void setDate( final PhylogenyNode n, final double v, final String unit ) {
+        final Date d = new Date(); // no-arg ctor leaves an empty unit, so a null `unit` models a unitless <date>
+        d.setValue( BigDecimal.valueOf( v ) );
+        if ( unit != null ) {
+            d.setUnit( unit );
+        }
+        n.getNodeData().setDate( d );
     }
 
     /**

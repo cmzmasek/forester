@@ -206,7 +206,6 @@ final public class Options {
     private boolean _transparent_export_background;
     private boolean _graphics_export_white_background;
     private NODE_LABEL_DIRECTION _node_label_direction;
-    private TIME_AXIS_TYPE        _time_axis_type;
     private FOUND_COLOR          _found_color;
     private short _number_of_digits_after_comma_for_branch_length_values;
     private short _number_of_digits_after_comma_for_confidence_values;
@@ -242,8 +241,6 @@ final public class Options {
     private boolean _show_overview;
     private boolean _show_scale;
     private boolean _show_scale_grid;
-    private boolean _show_geologic_grid;
-    private boolean _show_geologic_ages;
     private boolean _show_scale_axis;
     private boolean _show_hpd_bars;
     private boolean _show_zebra_stripes;
@@ -329,8 +326,6 @@ final public class Options {
         _internal_number_are_confidence_for_nh_parsing = false;
         _show_scale = false;
         _show_scale_grid = false;
-        _show_geologic_grid = false;
-        _show_geologic_ages = false;
         _show_scale_axis = false;
         _show_hpd_bars = false;
         _show_zebra_stripes = false;
@@ -376,7 +371,6 @@ final public class Options {
         _show_overview = true;
         _ov_placement = OVERVIEW_PLACEMENT_TYPE.UPPER_LEFT;
         _node_label_direction = NODE_LABEL_DIRECTION.HORIZONTAL;
-        _time_axis_type = TIME_AXIS_TYPE.NONE;
         _found_color = FOUND_COLOR.ELECTRIC_VIOLET;
         _inverse_search_result = false;
         _scale_bar_length = 0.0;
@@ -457,14 +451,6 @@ final public class Options {
 
     final NODE_LABEL_DIRECTION getNodeLabelDirection() {
         return _node_label_direction;
-    }
-
-    final TIME_AXIS_TYPE getTimeAxisType() {
-        return _time_axis_type;
-    }
-
-    final void setTimeAxisType(final TIME_AXIS_TYPE time_axis_type) {
-        _time_axis_type = time_axis_type;
     }
 
     final FOUND_COLOR getFoundColor() {
@@ -667,22 +653,6 @@ final public class Options {
 
     final void setShowTreeName(final boolean show_tree_name) {
         _show_tree_name = show_tree_name;
-    }
-
-    final boolean isShowGeologicGridLines() {
-        return _show_geologic_grid;
-    }
-
-    final void setShowGeologicGridLines(final boolean show_geologic_grid) {
-        _show_geologic_grid = show_geologic_grid;
-    }
-
-    final boolean isShowGeologicBoundaryAges() {
-        return _show_geologic_ages;
-    }
-
-    final void setShowGeologicBoundaryAges(final boolean show_geologic_ages) {
-        _show_geologic_ages = show_geologic_ages;
     }
 
     final boolean isShowScaleGrid() {

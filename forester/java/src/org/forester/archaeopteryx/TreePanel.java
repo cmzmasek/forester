@@ -350,6 +350,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private boolean   _time_tree_dated         = false;
     private String    _time_tree_unit          = null;
     private Phylogeny _confirmed_time_tree_for = null;
+    // TIME AXIS -- per-tree (per-panel) state. The TYPE + the two refinement toggles are panel-scoped; the type is null
+    // == "follow auto-derive" (AptxUtil.deriveTimeAxisType, cached below by tree identity). A saved aptx:time_axis
+    // property (TimeAxisConfig) restored on load sets these explicitly and wins over auto-derive.
+    private Options.TIME_AXIS_TYPE _time_axis_type = null; // null == auto-derive
+    private boolean   _time_axis_grid           = false;
+    private boolean   _time_axis_ages           = false;
+    private Options.TIME_AXIS_TYPE _derived_time_axis_type = Options.TIME_AXIS_TYPE.NONE;
+    private Phylogeny _derived_time_axis_for    = null;   // identity key for the derived-type cache
     // time-AXIS calibration: an explicit user root-age (Ma) override wins; else derive from the oldest <date>, cached
     private double    _time_axis_root_age       = 0;
     private Phylogeny _time_axis_root_age_for    = null;
@@ -4491,7 +4499,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  CIRCULAR analogue is the geologic boundary rings / the calendar year rings). */
     private void paintTimeAxisGridLines(final Graphics2D g, final boolean to_pdf, final boolean to_graphics_file,
                                         final int graphics_file_y, final int graphics_file_height) {
-        if (!getOptions().isShowGeologicGridLines()) {
+        if (!isTimeAxisGrid()) {
             return;
         }
         final double corr = getXcorrectionFactor();
@@ -5015,7 +5023,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         // faint fine-rank boundary rings (the finer subdivision, as ring outlines within the coarse-rank colours) --
         // the circular analogue of the geologic grid lines, so they follow the same optional (off by default) toggle
-        if (getOptions().isShowGeologicGridLines()) {
+        if (isTimeAxisGrid()) {
             g.setStroke(STROKE_05);
             g.setColor(scaleGridColor(to_pdf, to_graphics_file));
             for (final GeologicTimeScale.Interval iv : GeologicTimeScale.overlapping(ranks[1], 0, root_age)) {
@@ -5089,7 +5097,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  so they read over the band + any branch, decimated so they never stack. Gated on "Geologic Boundary Ages". */
     private void paintGeologicBoundaryAgesCircular(final Graphics2D g, final int cx, final int cy, final int radius,
                                                    final boolean to_pdf, final boolean to_graphics_file) {
-        if (!geologicRingsApplyCircular() || (radius <= 0) || !getOptions().isShowGeologicBoundaryAges()) {
+        if (!geologicRingsApplyCircular() || (radius <= 0) || !isTimeAxisAges()) {
             return;
         }
         final double root_age = timeAxisRootAgeMa();
@@ -5240,12 +5248,113 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         repaint();
     }
 
+    /** The Time-Axis type in effect for THIS tree (tab): an explicit per-panel choice if one was made, else the type
+     *  auto-derived from the tree's own {@code <date>} data. Per-tree, so a Dinosaur (geologic) tab and a SARS-CoV-2
+     *  (calendar) tab can show different axes at the same time. */
+    Options.TIME_AXIS_TYPE effectiveTimeAxisType() {
+        return (_time_axis_type != null) ? _time_axis_type : derivedTimeAxisType();
+    }
+
+    /** The auto-derived Time-Axis type for the current tree ({@link AptxUtil#deriveTimeAxisType}), cached by tree
+     *  identity (recomputed when {@code _phylogeny} is replaced by a subtree / undo / paste). */
+    private Options.TIME_AXIS_TYPE derivedTimeAxisType() {
+        if (_derived_time_axis_for != _phylogeny) {
+            _derived_time_axis_for = _phylogeny;
+            _derived_time_axis_type = AptxUtil.deriveTimeAxisType(_phylogeny);
+        }
+        return _derived_time_axis_type;
+    }
+
+    /** Sets an explicit per-tab Time-Axis type override (Off / Geologic / Calendar); wins over auto-derive and survives
+     *  a tree replacement within this panel (a tab-level view choice). */
+    void setTimeAxisType(final Options.TIME_AXIS_TYPE type) {
+        _time_axis_type = type;
+        repaint();
+    }
+
+    boolean isTimeAxisGrid() {
+        return _time_axis_grid;
+    }
+
+    void setTimeAxisGrid(final boolean b) {
+        _time_axis_grid = b;
+        repaint();
+    }
+
+    boolean isTimeAxisAges() {
+        return _time_axis_ages;
+    }
+
+    void setTimeAxisAges(final boolean b) {
+        _time_axis_ages = b;
+        // the boundary-age row grows the geologic-axis reserve, so toggling it must re-fit (like the scale axis)
+        if (geologicAxisApplies()) {
+            getControlPanel().showWhole();
+        }
+        else {
+            repaint();
+        }
+    }
+
+    /** Restore a per-tree Time-Axis config read from a saved tree ({@code aptx:time_axis}); it wins over auto-derive.
+     *  A {@code null} cfg (no / unparsable saved property) leaves this panel on auto-derive. */
+    void applyTimeAxisConfig(final TimeAxisConfig cfg) {
+        if (cfg == null) {
+            return;
+        }
+        _time_axis_type = cfg.getType();
+        _time_axis_grid = cfg.isGrid();
+        _time_axis_ages = cfg.isAges();
+        if (cfg.getRootAgeOverride() > 0) {
+            setTimeAxisRootAge(cfg.getRootAgeOverride());
+        }
+        if (cfg.getPresentDateOverride() > 0) {
+            setTimeAxisPresentDate(cfg.getPresentDateOverride());
+        }
+    }
+
+    /** A snapshot of this panel's live effective Time-Axis config, for persisting into the tree on save. The two
+     *  calibration overrides are included only when set AND still scoped to the current tree. */
+    TimeAxisConfig currentTimeAxisConfig() {
+        final double root_override = ((_time_axis_root_age > 0) && (_time_axis_root_age_for == _phylogeny))
+                ? _time_axis_root_age : 0;
+        final double present_override = ((_time_axis_present_date > 0) && (_time_axis_present_date_for == _phylogeny))
+                ? _time_axis_present_date : 0;
+        // snapshot the RAW type field (null == follow auto-derive), NOT the resolved effectiveTimeAxisType() -- so a
+        // tree still on auto-derive persists no type, and a refinement-only (grid/ages) deviation keeps type auto
+        return new TimeAxisConfig(_time_axis_type, root_override, present_override, _time_axis_grid, _time_axis_ages);
+    }
+
+    /** Reset the per-tab Time-Axis state to auto-derive (Reset to Defaults): clears the type override, both refinement
+     *  toggles, and the calibration overrides. */
+    void resetTimeAxisToAutoDerive() {
+        _time_axis_type = null;
+        _time_axis_grid = false;
+        _time_axis_ages = false;
+        _time_axis_root_age = 0;
+        _time_axis_present_date = 0;
+        repaint();
+    }
+
+    /** Persist this panel's Time-Axis config into the tree (an {@code aptx:time_axis} root property) so it survives a
+     *  save/reload -- but ONLY when it DEVIATES from what auto-derive would produce (else strip any stale property, to
+     *  keep files clean). Called at the save choke points. Pure view state -> does NOT {@code setEdited}. */
+    void syncTimeAxisConfigToTree() {
+        final TimeAxisConfig live = currentTimeAxisConfig();
+        if (live.isDefault()) { // pure auto-derive (no type override, no toggles, no calibration override)
+            TimeAxisConfig.writeToTree(_phylogeny, null); // clean default -> no property
+        }
+        else {
+            TimeAxisConfig.writeToTree(_phylogeny, live);
+        }
+    }
+
     /** Whether the two-band geologic time axis is ON and drawable in a RECTANGULAR-family layout: mode GEOLOGIC, a
      *  phylogram in any of the three rectangular orientations (root-left / root-top / root-bottom), and an absolute
      *  root-age calibration. The circular analogue is {@link #geologicRingsApplyCircular()}; UNROOTED is N/A (an
      *  approved biological exception -- a distance-from-root radial has no single time axis to band). */
     boolean geologicAxisApplies() {
-        return (getOptions().getTimeAxisType() == Options.TIME_AXIS_TYPE.GEOLOGIC)
+        return (effectiveTimeAxisType() == Options.TIME_AXIS_TYPE.GEOLOGIC)
                 && getControlPanel().isDrawPhylogram()
                 && (getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR)
                 && (getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.UNROOTED)
@@ -5256,7 +5365,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  GEOLOGIC, a circular phylogram (radius encodes distance-from-root = time), and an absolute root-age calibration.
      *  The polar analogue of {@link #geologicAxisApplies()} -- the radial time axis is banded by the ICS periods. */
     boolean geologicRingsApplyCircular() {
-        return (getOptions().getTimeAxisType() == Options.TIME_AXIS_TYPE.GEOLOGIC)
+        return (effectiveTimeAxisType() == Options.TIME_AXIS_TYPE.GEOLOGIC)
                 && isCircularPhylogram()
                 && (timeAxisRootAgeMa() > 0);
     }
@@ -5266,7 +5375,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  calibration. A labeled year/decade ruler (like the numeric scale axis) rather than coloured bands. The polar
      *  analogue is {@link #calendarRingsApplyCircular()}; UNROOTED is N/A (an approved biological exception). */
     boolean calendarAxisApplies() {
-        return (getOptions().getTimeAxisType() == Options.TIME_AXIS_TYPE.CALENDAR)
+        return (effectiveTimeAxisType() == Options.TIME_AXIS_TYPE.CALENDAR)
                 && getControlPanel().isDrawPhylogram()
                 && (getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR)
                 && (getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.UNROOTED)
@@ -5277,7 +5386,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     /** Whether the CALENDAR time axis is ON and drawable as concentric year RINGS in the CIRCULAR layout. */
     boolean calendarRingsApplyCircular() {
-        return (getOptions().getTimeAxisType() == Options.TIME_AXIS_TYPE.CALENDAR)
+        return (effectiveTimeAxisType() == Options.TIME_AXIS_TYPE.CALENDAR)
                 && isCircularPhylogram()
                 && (timeAxisPresentDate() > 0);
     }
@@ -5294,7 +5403,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     /** Height of the optional boundary-age label row (drawn between the band and the edge when "Geologic Boundary Ages"
      *  is on), 0 otherwise. */
     private int geologicAgeRowHeight() {
-        return getOptions().isShowGeologicBoundaryAges() ? geologicAxisRowHeight() : 0;
+        return isTimeAxisAges() ? geologicAxisRowHeight() : 0;
     }
 
     /** The drawn content of the rectangular geologic axis (the two band rows + the optional age-label row), WITHOUT the
@@ -5383,7 +5492,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private void paintGeologicBoundaryAges(final Graphics2D g, final GeologicTimeScale.Rank coarse, final double root_age,
                                            final float origin_x, final float tip_x, final int band_bottom_y,
                                            final boolean to_pdf, final boolean to_graphics_file) {
-        if (!getOptions().isShowGeologicBoundaryAges()) {
+        if (!isTimeAxisAges()) {
             return;
         }
         g.setFont(getTreeFontSet().getSmallFont());
