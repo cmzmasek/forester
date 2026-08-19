@@ -403,6 +403,29 @@ public class TreePanelUtil {
         return pow * 10.0;
     }
 
+    /** The smallest "nice" step (1/2/5 x 10^k, k ANY integer incl. NEGATIVE for sub-1 steps) that is &gt;= {@code raw}.
+     *  Unlike {@link #niceYearStep} this allows fractional steps (0.5, 0.2, 0.1 ...), so a shallow geologic tree (root a
+     *  few Ma old) gets fine ticks and a deep one gets 50/100/500 Ma ticks. 0 for a non-positive raw. */
+    static double niceAxisStep( final double raw ) {
+        if ( !( raw > 0.0 ) ) {
+            return 0.0;
+        }
+        final double pow = Math.pow( 10.0, Math.floor( Math.log10( raw ) ) );
+        for ( final double m : new double[] { 1, 2, 5, 10 } ) {
+            if ( ( pow * m ) >= ( raw - ( raw * 1.0e-9 ) ) ) {
+                return pow * m;
+            }
+        }
+        return pow * 10.0;
+    }
+
+    /** "Nice" age ticks (Ma before present) for a numeric geologic axis over {@code [0, root_age]}: 0 (the present) and
+     *  multiples of a nice step (aiming for ~7 ticks) up to {@code root_age}. Reuses {@link #scaleAxisTickValues} with a
+     *  {@link #niceAxisStep} spacing (so sub-1 Ma steps are allowed). Empty for a non-positive root age. */
+    final static double[] maAxisTickValues( final double root_age ) {
+        return scaleAxisTickValues( root_age, niceAxisStep( root_age / 8.0 ) );
+    }
+
     /**
      * The device-y the horizontal scale axis line is drawn at (its top). On SCREEN the axis FLOATS at the viewport
      * bottom so it never scrolls out of view when zoomed in (PearTree-style), exactly like the viewport-fixed scale

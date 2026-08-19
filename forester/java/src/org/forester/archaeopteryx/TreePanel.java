@@ -5413,10 +5413,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return isTimeAxisAges() ? geologicAxisRowHeight() : 0;
     }
 
-    /** The drawn content of the rectangular geologic axis (the two band rows + the optional age-label row), WITHOUT the
-     *  edge gap -- i.e. from the band's tree-side edge to its outermost drawn edge. */
+    /** Height of the numeric "Ma before present" age ruler drawn at the outer edge of the geologic axis (baseline +
+     *  ticks + one label row). Always present when the geologic axis applies -- it is the numeric axis itself. */
+    private int geologicAgeRulerHeight() {
+        return scaleAxisBandHeight();
+    }
+
+    /** The drawn content of the rectangular geologic axis: the two band rows + the optional age-label row + the numeric
+     *  Ma ruler, WITHOUT the edge gap -- i.e. from the band's tree-side edge to its outermost drawn edge. */
     private int geologicAxisContentHeight() {
-        return geologicAxisBandHeight() + geologicAgeRowHeight();
+        return geologicAxisBandHeight() + geologicAgeRowHeight() + geologicAgeRulerHeight();
     }
 
     /** The full breadth reserved for the rectangular geologic axis: the drawn content ({@link #geologicAxisContentHeight})
@@ -5458,6 +5464,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // optional Ma age labels at the coarse-band boundaries, in the reserved row between the band and the edge
         paintGeologicBoundaryAges(g, ranks[0], root_age, origin_x, tip_x, top_y + geologicAxisBandHeight(), to_pdf,
                 to_graphics_file);
+        // the numeric "Ma before present" ruler at the outer edge (the axis itself) -- ages increase toward the root
+        paintGeologicAgeRuler(g, root_age, origin_x, tip_x,
+                top_y + geologicAxisBandHeight() + geologicAgeRowHeight(), to_pdf, to_graphics_file);
         g.setFont(saved_font);
         g.setColor(saved_color);
     }
@@ -5489,6 +5498,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // optional Ma age labels at the coarse-band boundaries; ride R (logical coords) like the band cell labels
         paintGeologicBoundaryAges(g, ranks[0], root_age, origin_x, tip_x, band_top + geologicAxisBandHeight(), to_pdf,
                 to_graphics_file);
+        // the numeric "Ma before present" ruler at the outer edge; rides R (logical coords) like the band labels
+        paintGeologicAgeRuler(g, root_age, origin_x, tip_x,
+                band_top + geologicAxisBandHeight() + geologicAgeRowHeight(), to_pdf, to_graphics_file);
         g.setFont(saved_font);
         g.setColor(saved_color);
     }
@@ -5526,6 +5538,53 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 last_right = left + w;
             }
         }
+    }
+
+    /** Draws the numeric "Ma before present" age ruler for the geologic axis: a baseline from the tips (age 0) to the
+     *  root (the oldest age), a tick mark + Ma label at each "nice" round age (0, 50, 100 ... via
+     *  {@link TreePanelUtil#maAxisTickValues}), the unit "Ma" at the age-0 end, decimated so labels never overlap. Ages
+     *  INCREASE toward the root -- the standard age-before-present axis. Because the ruler is anchored to the tree's own
+     *  root-age calibration ({@link #ageToX}), not a manual offset/reverse, it can't show a wrong root age (unlike the
+     *  FigTree reverse-axis footgun). Reused by the horizontal axis (device coords) and the vertical axis (logical
+     *  coords, riding R into a rotated ruler), exactly like {@link #paintGeologicBoundaryAges}. */
+    private void paintGeologicAgeRuler(final Graphics2D g, final double root_age, final float origin_x,
+                                       final float tip_x, final int ruler_y, final boolean to_pdf,
+                                       final boolean to_graphics_file) {
+        final double[] ticks = TreePanelUtil.maAxisTickValues(root_age);
+        if (ticks.length == 0) {
+            return;
+        }
+        g.setFont(getTreeFontSet().getSmallFont());
+        final FontMetrics fm = g.getFontMetrics();
+        g.setColor(scaleInkColor(to_pdf, to_graphics_file));
+        final Stroke saved_stroke = g.getStroke();
+        g.setStroke(STROKE_1);
+        final int baseline_y = ruler_y + SCALE_AXIS_TICK_LEN + fm.getAscent() + 1;
+        // the axis line from the root (oldest age, origin_x) to the deepest tip (age 0, tip_x)
+        drawLine((int) Math.round(origin_x), ruler_y, (int) Math.round(tip_x), ruler_y, g);
+        // ticks run right (age 0) to left (root age); collect (x, age) then place LEFT->RIGHT with a min-gap decimation
+        final java.util.List<double[]> pts = new java.util.ArrayList<>();
+        for (final double age : ticks) {
+            pts.add(new double[] { ageToX(age, root_age, origin_x, tip_x), age });
+        }
+        pts.sort((a, c) -> Double.compare(a[0], c[0]));
+        int last_right = Integer.MIN_VALUE;
+        for (final double[] pt : pts) {
+            final int x = (int) Math.round(pt[0]);
+            drawLine(x, ruler_y, x, ruler_y + SCALE_AXIS_TICK_LEN, g); // the tick mark (always drawn)
+            final String label = TreePanelUtil.formatCompactNumber(pt[1]);
+            final int half = fm.stringWidth(label) / 2;
+            if ((x - half) >= (last_right + SCALE_AXIS_LABEL_GAP)) {
+                g.drawString(label, x - half, baseline_y);
+                last_right = x + half;
+            }
+        }
+        // the unit "Ma" just past the age-0 (tip) end, if it clears the last drawn tick label
+        final int unit_x = last_right + SCALE_AXIS_UNIT_GAP;
+        if (unit_x >= (last_right + SCALE_AXIS_LABEL_GAP)) {
+            g.drawString("Ma", unit_x, baseline_y);
+        }
+        g.setStroke(saved_stroke);
     }
 
     /** Shifts the vertical geologic band's logical breadth so its OUTER edge (away from the tips) floats to the viewport

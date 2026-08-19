@@ -135,6 +135,12 @@ public final class GeologicAxisRenderTest {
                         fail( ok, "the geologic axis should add a lot of coloured band pixels (on=" + on + " off=" + off
                                 + ")" );
                     }
+                    // the numeric "Ma before present" ruler (baseline + ticks + Ma labels) draws DARK ink in the
+                    // bottom-most strip, below the (coloured, non-dark) bands -- a proper numeric axis, always on
+                    if ( countDarkInBottomStrip( geo_img, 24 ) < 100 ) {
+                        fail( ok, "the geologic axis must draw a numeric Ma ruler (dark ticks + labels) in the bottom "
+                                + "strip, got dark px " + countDarkInBottomStrip( geo_img, 24 ) );
+                    }
 
                     // OPTIONAL grid lines (off by default): turning them on adds faint reference lines through the tree
                     tp.setTimeAxisGrid( false );

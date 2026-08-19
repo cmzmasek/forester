@@ -68,7 +68,7 @@ public final class TreePanelUtilTest {
                 && testInferenceFeedsRankAssignment() && testWriteCladeTaxonomies() && testInternalTaxaByRank()
                 && testCladeBands() && testRankColorizationViaSequenceIds() && testInternalLabelAboveBranchLayout()
                 && testAbbreviateScientificName() && testSupportColor() && testScaleGridLines()
-                && testScaleAxisTickValues() && testCalendarTickYears() && testFormatCompactNumber() && testHpdBarXRange()
+                && testScaleAxisTickValues() && testCalendarTickYears() && testMaAxisTicks() && testFormatCompactNumber() && testHpdBarXRange()
                 && testOrientationTransform() && testInternalLabelAlignWidth() && testAutoTipLabelDirection()
                 && testUserVisiblePropertiesText() && testTipLineagesAndUnresolved() && testInferenceStrings()
                 && testIsDuplicateOfAncestorTaxon() && testScaleAxisFloating() && testAncestralPieData();
@@ -643,6 +643,34 @@ public final class TreePanelUtilTest {
         if ( ( TreePanelUtil.calendarTickYears( 2021.0, 2021.0 ).length != 0 )
                 || ( TreePanelUtil.calendarTickYears( 2022.0, 2020.0 ).length != 0 ) ) {
             return fail( "a non-positive calendar span must yield no ticks" );
+        }
+        return true;
+    }
+
+    /** The numeric "Ma before present" geologic-axis ticks: niceAxisStep allows SUB-1 steps (unlike whole-year
+     *  niceYearStep), so a shallow tree gets fine ticks and a deep one gets 50/500-Ma ticks. */
+    private static boolean testMaAxisTicks() {
+        if ( Math.abs( TreePanelUtil.niceAxisStep( 0.3 ) - 0.5 ) > 1e-12 ) {
+            return fail( "niceAxisStep(0.3) should be 0.5 (sub-1 allowed), got " + TreePanelUtil.niceAxisStep( 0.3 ) );
+        }
+        if ( ( Math.abs( TreePanelUtil.niceAxisStep( 35.0 ) - 50.0 ) > 1e-9 )
+                || ( Math.abs( TreePanelUtil.niceAxisStep( 543.0 ) - 1000.0 ) > 1e-9 ) ) {
+            return fail( "niceAxisStep should round UP to a nice 1/2/5 x 10^k step" );
+        }
+        if ( ( TreePanelUtil.niceAxisStep( 0.0 ) != 0.0 ) || ( TreePanelUtil.niceAxisStep( -5.0 ) != 0.0 ) ) {
+            return fail( "niceAxisStep of a non-positive raw must be 0" );
+        }
+        final double[] dino = TreePanelUtil.maAxisTickValues( 250.0 ); // 0..250 by 50
+        if ( ( dino.length != 6 ) || ( dino[ 0 ] != 0.0 ) || ( Math.abs( dino[ 1 ] - 50.0 ) > 1e-9 )
+                || ( Math.abs( dino[ 5 ] - 250.0 ) > 1e-9 ) ) {
+            return fail( "maAxisTickValues(250) expected 0..250 by 50, got " + java.util.Arrays.toString( dino ) );
+        }
+        final double[] shallow = TreePanelUtil.maAxisTickValues( 5.0 ); // fine whole-Ma ticks 0..5
+        if ( ( shallow.length != 6 ) || ( Math.abs( shallow[ 1 ] - 1.0 ) > 1e-9 ) ) {
+            return fail( "maAxisTickValues(5) expected 1-Ma ticks 0..5, got " + java.util.Arrays.toString( shallow ) );
+        }
+        if ( TreePanelUtil.maAxisTickValues( 0.0 ).length != 0 ) {
+            return fail( "maAxisTickValues of a non-positive root age must be empty" );
         }
         return true;
     }

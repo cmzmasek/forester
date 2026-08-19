@@ -244,6 +244,11 @@ not shown in the unrooted layout, which has no single time axis to band.) In the
 rectangular orientations the axis stays pinned to the edge as you zoom and scroll,
 so it is always in view.
 
+Beneath the coloured bands a **numeric age axis** is drawn — a ruler in *millions of
+years before present* (Ma), with tick marks and labels at round intervals that
+increase toward the root, so you can read any node's age directly off the axis.
+(In the circular layout the named, coloured annuli themselves are the age scale.)
+
 The two bands **adapt to the tree's depth** so both always fully cover its range:
 **System/Period** over **Series/Epoch** for a Phanerozoic tree, **Erathem/Era**
 over **System/Period** once the tree reaches into the Proterozoic, and
