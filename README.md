@@ -233,7 +233,9 @@ The axis follows the layout: it runs along the bottom in the **root-left**
 orientation, down the breadth side in the **root-on-top / root-on-bottom**
 orientations, and becomes concentric coloured **rings** (period bands from the
 centre outward) in the **circular** layout — the iTOL-style geologic disc. (It is
-not shown in the unrooted layout, which has no single time axis to band.)
+not shown in the unrooted layout, which has no single time axis to band.) In the
+rectangular orientations the axis stays pinned to the edge as you zoom and scroll,
+so it is always in view.
 
 The tree is anchored in time by its **root age**: Archaeopteryx uses the oldest
 `<date>` value in the tree, or you can set it explicitly with **"Set root age…"**
