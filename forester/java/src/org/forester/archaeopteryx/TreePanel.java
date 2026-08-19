@@ -348,6 +348,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // time-AXIS calibration: an explicit user root-age (Ma) override wins; else derive from the oldest <date>, cached
     private double    _time_axis_root_age       = 0;
     private Phylogeny _time_axis_root_age_for    = null;
+    private double    _time_axis_present_date    = 0;
+    private Phylogeny _time_axis_present_date_for = null;
     private Phylogeny _time_axis_age_cached_for = null;
     private double    _time_axis_root_age_cache = 0;
     private final RenderingHints _rendering_hints = new RenderingHints(RenderingHints.KEY_RENDERING,
@@ -4573,6 +4575,59 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.setStroke(saved_stroke);
     }
 
+    /** The CALENDAR (absolute-date) time axis along the bottom: a horizontal ruler with a tick + calendar-year label at
+     *  each "nice" year (like {@link #paintScaleAxis}, but the tick values are calendar years and the position maps the
+     *  branch-length depth to time). Calibrated by {@link #timeAxisPresentDate()} (the most-recent tip = the present) so
+     *  {@code root_year = present - maxDist}; a node at distance-from-root {@code d} sits at year {@code root_year + d}. */
+    private void paintCalendarAxis(final Graphics2D g, final boolean to_pdf, final boolean to_graphics_file,
+                                   final int graphics_file_y, final int graphics_file_height) {
+        final double present = timeAxisPresentDate();
+        final double corr = getXcorrectionFactor();
+        final double max_dist = getMaxDistanceToRoot();
+        if ((present <= 0) || (corr <= 0) || (max_dist <= 0)) {
+            return;
+        }
+        final double root_year = present - max_dist;
+        final double[] years = TreePanelUtil.calendarTickYears(root_year, present);
+        if (years.length == 0) {
+            return;
+        }
+        final float origin_x = _phylogeny.getRoot().getXcoord();
+        final Font saved_font = g.getFont();
+        final Color saved_color = g.getColor();
+        final Stroke saved_stroke = g.getStroke();
+        g.setFont(getTreeFontSet().getSmallFont());
+        final FontMetrics fm = g.getFontMetrics();
+        final Rectangle vr = getVisibleRect();
+        final int bottom = TreePanelUtil.scaleAxisFloatingBottom(to_pdf, to_graphics_file, graphics_file_y,
+                graphics_file_height, getHeight(), vr.y + vr.height);
+        final int axis_y = bottom - scaleAxisBandHeight();
+        final int label_baseline = axis_y + SCALE_AXIS_TICK_LEN + fm.getAscent() + 1;
+        g.setColor(scaleInkColor(to_pdf, to_graphics_file));
+        g.setStroke(STROKE_1);
+        final int x_end = (int) Math.round(origin_x + (max_dist * corr));
+        drawLine(Math.round(origin_x), axis_y, x_end, axis_y, g); // root (root_year) -> deepest tip (present)
+        int last_label_right = Integer.MIN_VALUE;
+        for (final double year : years) {
+            final int x = (int) Math.round(origin_x + ((year - root_year) * corr));
+            drawLine(x, axis_y, x, axis_y + SCALE_AXIS_TICK_LEN, g);
+            final String label = calendarYearLabel(year);
+            final int half = fm.stringWidth(label) / 2;
+            if ((x - half) >= (last_label_right + SCALE_AXIS_LABEL_GAP)) {
+                g.drawString(label, x - half, label_baseline);
+                last_label_right = x + half;
+            }
+        }
+        g.setFont(saved_font);
+        g.setColor(saved_color);
+        g.setStroke(saved_stroke);
+    }
+
+    /** A calendar-year tick label: the whole year (e.g. "2021") -- ticks are whole-year multiples. */
+    private static String calendarYearLabel(final double year) {
+        return String.valueOf((int) Math.round(year));
+    }
+
     /** The labeled scale axis in a VERTICAL orientation: a ruler down one BREADTH side (the band just past the last
      *  tip that {@link #verticalScaleAxisReserve()} reserves), with tick marks pointing toward the tree and UPRIGHT
      *  numeric labels. Chrome -- drawn after the base frame is restored; each depth position maps to a device point
@@ -4639,6 +4694,60 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.setStroke(saved_stroke);
     }
 
+    /** The CALENDAR time axis in a VERTICAL orientation: a ruler down one BREADTH side with a tick + upright
+     *  calendar-year label at each nice year, exactly like {@link #paintScaleAxisVertical} but with calendar-year
+     *  ticks. Floats to the viewport breadth edge on screen; tree-anchored in exports. */
+    private void paintCalendarAxisVertical(final Graphics2D g, final boolean to_pdf, final boolean to_graphics_file) {
+        if (_orientation_R == null) {
+            return;
+        }
+        final double corr = getXcorrectionFactor();
+        final double max_dist = getMaxDistanceToRoot();
+        final double present = timeAxisPresentDate();
+        if ((corr <= 0.0) || (max_dist <= 0.0) || (present <= 0.0)) {
+            return;
+        }
+        final double root_year = present - max_dist;
+        final double[] years = TreePanelUtil.calendarTickYears(root_year, present);
+        if (years.length == 0) {
+            return;
+        }
+        final float origin_x = _phylogeny.getRoot().getXcoord();
+        final double ruler_ly = treeBreadthExtent() - 2.0;
+        final Font saved_font = g.getFont();
+        final Color saved_color = g.getColor();
+        final Stroke saved_stroke = g.getStroke();
+        g.setFont(getTreeFontSet().getSmallFont());
+        final FontMetrics fm = g.getFontMetrics();
+        g.setColor(scaleInkColor(to_pdf, to_graphics_file));
+        g.setStroke(STROKE_1);
+        final Point2D.Double r_root = screenPoint(origin_x, ruler_ly);
+        final Point2D.Double r_tip = screenPoint(origin_x + (max_dist * corr), ruler_ly);
+        final int anchored_x = (int) Math.round(r_root.x);
+        final int tip_side_x = (int) Math.round(screenPoint(origin_x, ruler_ly - 16.0).x);
+        final int in = (tip_side_x >= anchored_x) ? 1 : -1;
+        final Rectangle vr = getVisibleRect();
+        final int ruler_x = TreePanelUtil.scaleAxisRulerX(to_pdf, to_graphics_file, anchored_x, in, vr.x, vr.width);
+        drawLine(ruler_x, (int) Math.round(r_root.y), ruler_x, (int) Math.round(r_tip.y), g);
+        final int center = (fm.getAscent() - fm.getDescent()) / 2;
+        final int min_label_gap = fm.getHeight() + SCALE_AXIS_LABEL_GAP;
+        int last_label_y = Integer.MIN_VALUE;
+        for (final double year : years) {
+            final int ty = (int) Math.round(screenPoint(origin_x + ((year - root_year) * corr), ruler_ly).y);
+            drawLine(ruler_x, ty, ruler_x + (in * SCALE_AXIS_TICK_LEN), ty, g);
+            final String label = calendarYearLabel(year);
+            if ((last_label_y == Integer.MIN_VALUE) || (Math.abs(ty - last_label_y) >= min_label_gap)) {
+                final int lx = (in > 0) ? (ruler_x + SCALE_AXIS_TICK_LEN + 2)
+                        : (ruler_x - SCALE_AXIS_TICK_LEN - 2 - fm.stringWidth(label));
+                g.drawString(label, lx, ty + center);
+                last_label_y = ty;
+            }
+        }
+        g.setFont(saved_font);
+        g.setColor(saved_color);
+        g.setStroke(saved_stroke);
+    }
+
     /** Vertical space (px) the labeled scale axis occupies below its top (line + ticks + one label row). One source,
      *  used to place the axis AND to lift the scale bar / tree name clear of it. */
     private int scaleAxisBandHeight() {
@@ -4671,6 +4780,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (geologicAxisApplies()) {
             return geologicAxisReserve(); // the geologic axis takes the bottom strip (+ an edge gap) vs the numeric axis
         }
+        if (calendarAxisApplies()) {
+            // the calendar tick axis reserves one label row, like the numeric scale axis -- but only when it actually
+            // yields year ticks (a sub-year span within one calendar year has none, so draws nothing -> reserve nothing)
+            final double present = timeAxisPresentDate();
+            if (TreePanelUtil.calendarTickYears(present - getMaxDistanceToRoot(), present).length > 0) {
+                return scaleAxisBandHeight();
+            }
+            return 0;
+        }
         if (!getOptions().isShowScaleAxis() || !scaleAxisAppliesToLayout()) {
             return 0;
         }
@@ -4687,6 +4805,19 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         if (geologicAxisApplies()) {
             return geologicAxisReserve(); // the geologic two-band axis takes the breadth side band (+ edge gap) in vertical
+        }
+        if (calendarAxisApplies()) {
+            final double present = timeAxisPresentDate();
+            final double[] years = TreePanelUtil.calendarTickYears(present - getMaxDistanceToRoot(), present);
+            if (years.length == 0) {
+                return 0;
+            }
+            final FontMetrics fmc = getFontMetrics(getTreeFontSet().getSmallFont());
+            int max_year_label = 0;
+            for (final double y : years) {
+                max_year_label = Math.max(max_year_label, fmc.stringWidth(calendarYearLabel(y)));
+            }
+            return SCALE_AXIS_TICK_LEN + max_year_label + 8;
         }
         if (!getOptions().isShowScaleAxis() || !getControlPanel().isDrawPhylogram() || (getScaleDistance() <= 0.0)) {
             return 0;
@@ -4757,6 +4888,54 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final int ly = (cy - rr) + fm.getAscent() + 1; // just inside the ring at the top
             if ((last_label_y - ly) >= line_h) { // enough vertical gap since the last drawn label
                 final String label = TreePanelUtil.formatCompactNumber(d);
+                g.setColor(label_c);
+                g.drawString(label, cx - (fm.stringWidth(label) / 2f), ly);
+                last_label_y = ly;
+            }
+        }
+        g.setColor(saved);
+        g.setStroke(saved_stroke);
+        g.setFont(saved_font);
+    }
+
+    /** Concentric CALENDAR-year rings for a circular PHYLOGRAM: the radial axis is time, so a faint ring at each nice
+     *  year (radius = distance-from-root scaled) labelled with the year up the top spoke -- the polar analogue of the
+     *  rectangular calendar ruler. A no-op unless {@link #calendarRingsApplyCircular()}. */
+    private void paintCalendarRingsCircular(final Graphics2D g, final int cx, final int cy, final int radius,
+                                            final boolean to_pdf, final boolean to_graphics_file) {
+        if (!calendarRingsApplyCircular() || (radius <= 0)) {
+            return;
+        }
+        final double present = timeAxisPresentDate();
+        final double max = getMaxDistanceToRoot();
+        if ((present <= 0) || (max <= 0)) {
+            return;
+        }
+        final double root_year = present - max;
+        final double[] years = TreePanelUtil.calendarTickYears(root_year, present);
+        if (years.length == 0) {
+            return;
+        }
+        final Color saved = g.getColor();
+        final Stroke saved_stroke = g.getStroke();
+        final Font saved_font = g.getFont();
+        g.setStroke(STROKE_05);
+        g.setFont(getTreeFontSet().getSmallFont());
+        final FontMetrics fm = getTreeFontSet().getFontMetricsSmall();
+        final int line_h = fm.getHeight();
+        final Color ring_c = scaleGridColor(to_pdf, to_graphics_file);
+        final Color label_c = scaleInkColor(to_pdf, to_graphics_file);
+        int last_label_y = Integer.MAX_VALUE; // rings inner->outer (old->recent), labels move UP the top spoke
+        for (final double year : years) {
+            final int rr = (int) Math.round(((year - root_year) / max) * radius);
+            if ((rr <= 0) || (rr > radius)) {
+                continue;
+            }
+            g.setColor(ring_c);
+            g.drawOval(cx - rr, cy - rr, 2 * rr, 2 * rr);
+            final int ly = (cy - rr) + fm.getAscent() + 1;
+            if ((last_label_y - ly) >= line_h) {
+                final String label = calendarYearLabel(year);
                 g.setColor(label_c);
                 g.drawString(label, cx - (fm.stringWidth(label) / 2f), ly);
                 last_label_y = ly;
@@ -4980,6 +5159,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ((_time_axis_root_age > 0) && (_time_axis_root_age_for == _phylogeny)) {
             return _time_axis_root_age;
         }
+        return maxNodeDateValue();
+    }
+
+    /** The maximum node {@code <date>} value in the tree, cached per tree. Its MEANING depends on the date convention:
+     *  for a geologic tree (ages before present) it is the OLDEST age (the root age); for a calendar tip-dated tree
+     *  (calendar-year dates) it is the MOST-RECENT tip's date (the present). 0 when the tree carries no dates. */
+    private double maxNodeDateValue() {
         if (_time_axis_age_cached_for != _phylogeny) {
             _time_axis_age_cached_for = _phylogeny;
             double max = 0;
@@ -4994,6 +5180,23 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             _time_axis_root_age_cache = max;
         }
         return _time_axis_root_age_cache;
+    }
+
+    /** The calendar date (decimal year) at the MOST-RECENT tip (the "present"), calibrating the calendar time axis: an
+     *  explicit user override if set, else the largest node {@code <date>} value (a tip-dated tree whose dates are
+     *  calendar years). 0 when the tree carries no absolute dates. */
+    double timeAxisPresentDate() {
+        if ((_time_axis_present_date > 0) && (_time_axis_present_date_for == _phylogeny)) {
+            return _time_axis_present_date;
+        }
+        return maxNodeDateValue();
+    }
+
+    /** Sets an explicit most-recent-tip (present) calendar date for the calendar axis; 0 clears it. */
+    void setTimeAxisPresentDate(final double year) {
+        _time_axis_present_date = Math.max(0, year);
+        _time_axis_present_date_for = _phylogeny; // scope the override to the tree it was set on
+        repaint();
     }
 
     /** Sets an explicit root-age calibration (Ma) for a tree without dates (the "set root age" dialog); 0 clears it. */
@@ -5022,6 +5225,27 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return (getOptions().getTimeAxisType() == Options.TIME_AXIS_TYPE.GEOLOGIC)
                 && isCircularPhylogram()
                 && (timeAxisRootAgeMa() > 0);
+    }
+
+    /** Whether the CALENDAR (absolute-date) time axis is ON and drawable in a RECTANGULAR-family layout: mode CALENDAR,
+     *  a phylogram in any of the three rectangular orientations, branch lengths present, and a most-recent-tip date
+     *  calibration. A labeled year/decade ruler (like the numeric scale axis) rather than coloured bands. The polar
+     *  analogue is {@link #calendarRingsApplyCircular()}; UNROOTED is N/A (an approved biological exception). */
+    boolean calendarAxisApplies() {
+        return (getOptions().getTimeAxisType() == Options.TIME_AXIS_TYPE.CALENDAR)
+                && getControlPanel().isDrawPhylogram()
+                && (getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR)
+                && (getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.UNROOTED)
+                && isPhyHasBranchLengths()
+                && (getMaxDistanceToRoot() > 0)
+                && (timeAxisPresentDate() > 0);
+    }
+
+    /** Whether the CALENDAR time axis is ON and drawable as concentric year RINGS in the CIRCULAR layout. */
+    boolean calendarRingsApplyCircular() {
+        return (getOptions().getTimeAxisType() == Options.TIME_AXIS_TYPE.CALENDAR)
+                && isCircularPhylogram()
+                && (timeAxisPresentDate() > 0);
     }
 
     private int geologicAxisRowHeight() {
@@ -10670,7 +10894,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             // the geologic axis is an alternative time-scale representation; suppress the numeric grid lines when it is
             // on (like the numeric scale bar + axis), so the two differently-spaced tick systems don't clash
             final boolean scale_grid_shown = getOptions().isShowScaleGrid() && getControlPanel().isDrawPhylogram()
-                    && (getScaleDistance() > 0.0) && !geologicAxisApplies();
+                    && (getScaleDistance() > 0.0) && !geologicAxisApplies() && !calendarAxisApplies();
             if (!vertical && scale_grid_shown) {
                 paintScaleGrid(g, to_pdf, to_graphics_file, graphics_file_y, graphics_file_height);
             }
@@ -10739,9 +10963,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             // the geologic time axis takes over the bottom strip; suppress the numeric scale bar + axis when it is on
             final boolean geo_axis = geologicAxisApplies();
-            final boolean scale_shown = !geo_axis && getOptions().isShowScale() && getControlPanel().isDrawPhylogram()
+            final boolean calendar_axis = calendarAxisApplies();
+            final boolean time_axis = geo_axis || calendar_axis; // a geologic/calendar time axis replaces the numeric one
+            final boolean scale_shown = !time_axis && getOptions().isShowScale() && getControlPanel().isDrawPhylogram()
                     && (getScaleDistance() > 0.0);
-            final boolean axis_shown = !geo_axis && getOptions().isShowScaleAxis()
+            final boolean axis_shown = !time_axis && getOptions().isShowScaleAxis()
                     && getControlPanel().isDrawPhylogram() && (getScaleDistance() > 0.0);
             // the horizontal axis owns a reserved bottom band; lift the (viewport-fixed) scale bar clear above it (the
             // tree name is likewise raised, inside paintTreeName) so the three bottom overlays never overprint. Derive
@@ -10773,6 +10999,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 // horizontal (root-left) geologic axis: chrome floating at the viewport bottom (the vertical variant
                 // rode R inside the frame above, before the base transform was restored)
                 paintGeologicTimeAxis(g, to_pdf, to_graphics_file, graphics_file_y, graphics_file_height);
+            }
+            if (calendar_axis) {
+                // the calendar (absolute-date) axis is a tick ruler like the numeric scale axis -- chrome (upright
+                // labels), a bottom axis in a horizontal layout and a side ruler in a vertical one
+                if (vertical) {
+                    paintCalendarAxisVertical(g, to_pdf, to_graphics_file);
+                } else {
+                    paintCalendarAxis(g, to_pdf, to_graphics_file, graphics_file_y, graphics_file_height);
+                }
             }
             if (getOptions().isShowTreeName() && !ForesterUtil.isEmpty(getPhylogeny().getName())) {
                 // the name sits in the lower-left, but slides to the lower-right when the scale is shown there, and
@@ -10875,7 +11110,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             // concentric ICS geologic bands behind the tree (a no-op unless GEOLOGIC + a circular phylogram); it is an
             // alternative radial time-scale representation, so it suppresses the numeric distance rings when on
             paintGeologicRingsCircular(g, center_x, center_y, radius > 0 ? radius : 0, to_pdf, to_graphics_file);
-            if (!geologicRingsApplyCircular()) {
+            // concentric CALENDAR-year rings behind the tree (a no-op unless CALENDAR + a circular phylogram)
+            paintCalendarRingsCircular(g, center_x, center_y, radius > 0 ? radius : 0, to_pdf, to_graphics_file);
+            if (!geologicRingsApplyCircular() && !calendarRingsApplyCircular()) {
                 // concentric distance rings behind the tree (a no-op unless this is a circular PHYLOGRAM)
                 paintCircularScaleRings(g, center_x, center_y, radius > 0 ? radius : 0, to_pdf, to_graphics_file);
             }

@@ -154,6 +154,12 @@ public final class DemoTreesTest {
         ok &= hasAtLeastTips( "tree-of-life-deep-time.xml", 8 );
         ok &= isDetectedTimeTree( "tree-of-life-deep-time.xml", AptxUtil.TIME_TREE_KIND.DATED );
         ok &= oldestDateAtLeast( "tree-of-life-deep-time.xml", 2500.0 );
+        // calendar time axis: a tip-dated SARS-CoV-2 tree whose <date> values are CALENDAR YEARS (2019.98..2022.5) --
+        // detected DATED, and the max date (the most-recent tip = the present) is a plausible calendar year
+        ok &= hasBranchLengths( "sars-cov-2-time-tree.xml" );
+        ok &= hasAtLeastTips( "sars-cov-2-time-tree.xml", 7 );
+        ok &= isDetectedTimeTree( "sars-cov-2-time-tree.xml", AptxUtil.TIME_TREE_KIND.DATED );
+        ok &= oldestDateAtLeast( "sars-cov-2-time-tree.xml", 2000.0 );
         return ok;
     }
 

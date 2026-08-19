@@ -46,7 +46,7 @@ final public class Options {
     /** The umbrella "time axis" mode for a time tree: OFF, a colored GEOLOGIC (ICS chronostratigraphic) axis, or --
      *  future -- numeric-My / calendar-date. */
     public static enum TIME_AXIS_TYPE {
-        NONE( "Off" ), GEOLOGIC( "Geologic (ICS)" );
+        NONE( "Off" ), GEOLOGIC( "Geologic (ICS)" ), CALENDAR( "Calendar (dates)" );
 
         private final String _label;
 

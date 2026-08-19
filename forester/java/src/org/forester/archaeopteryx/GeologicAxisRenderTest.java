@@ -297,6 +297,52 @@ public final class GeologicAxisRenderTest {
                         }
                         o.setTimeAxisType( Options.TIME_AXIS_TYPE.NONE );
                     }
+
+                    // CALENDAR axis: a tip-dated tree (calendar-year dates) draws a labelled year ruler (not coloured
+                    // bands). Load the SARS-CoV-2 demo; present = the most-recent tip (2022.5) is derived automatically.
+                    final File cal_file = new File( System.getProperty( "user.dir" ),
+                                                    "forester/demo/sars-cov-2-time-tree.xml" );
+                    if ( cal_file.exists() ) {
+                        final Phylogeny cal = ParserBasedPhylogenyFactory.getInstance()
+                                .create( cal_file, PhyloXmlParser.createPhyloXmlParser() )[ 0 ];
+                        tp.setTree( cal );
+                        o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                        o.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
+                        tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
+                        frame.showWhole();
+                        tp.setSize( w, h );
+                        if ( Math.abs( tp.timeAxisPresentDate() - 2022.5 ) > 0.05 ) {
+                            fail( ok, "the SARS demo present date should be the most-recent tip (2022.5), got "
+                                    + tp.timeAxisPresentDate() );
+                        }
+                        o.setTimeAxisType( Options.TIME_AXIS_TYPE.NONE );
+                        tp.calcParametersForPainting( w, h );
+                        final BufferedImage cal_off = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
+                        o.setTimeAxisType( Options.TIME_AXIS_TYPE.CALENDAR );
+                        if ( !tp.calendarAxisApplies() ) {
+                            fail( ok, "the calendar axis must apply to a tip-dated phylogram (present="
+                                    + tp.timeAxisPresentDate() + ")" );
+                        }
+                        tp.calcParametersForPainting( w, h );
+                        final BufferedImage cal_on = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
+                        // count DARK ink in the reserved bottom strip (the axis band, below the compressed tips): the
+                        // year ticks + labels live there. Counting the strip -- not a whole-image diff -- guards the AXIS
+                        // itself, not just the tip-compression the reserve would cause even if the axis weren't drawn.
+                        final int strip = 26;
+                        if ( countDarkInBottomStrip( cal_on, strip ) <= ( countDarkInBottomStrip( cal_off, strip )
+                                + 40 ) ) {
+                            fail( ok, "the calendar axis should draw a year ruler (ticks + labels) in the bottom band" );
+                        }
+                        // circular parity: the calendar rings apply in a circular phylogram; the rectangular axis does not
+                        o.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
+                        tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
+                        if ( !tp.calendarRingsApplyCircular() || tp.calendarAxisApplies() ) {
+                            fail( ok, "the calendar rings apply in circular; the rectangular calendar axis must not" );
+                        }
+                        o.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
+                        tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
+                        o.setTimeAxisType( Options.TIME_AXIS_TYPE.NONE );
+                    }
                 }
                 catch ( final Throwable t ) {
                     fail( ok, "unexpected: " + t );
@@ -344,6 +390,22 @@ public final class GeologicAxisRenderTest {
                 final int max = Math.max( r, Math.max( g, b ) );
                 final int min = Math.min( r, Math.min( g, b ) );
                 if ( ( ( max - min ) <= 8 ) && ( min >= 210 ) && ( max <= 245 ) ) { // neutral grey ~235, not white/black
+                    ++n;
+                }
+            }
+        }
+        return n;
+    }
+
+    /** Count near-black (dark ink) pixels in the bottom {@code strip} rows -- where the calendar axis line/ticks/labels
+     *  sit (below the reserve-compressed tips). Neutral dark, not colored. */
+    private static int countDarkInBottomStrip( final BufferedImage img, final int strip ) {
+        int n = 0;
+        for ( int y = Math.max( 0, img.getHeight() - strip ); y < img.getHeight(); ++y ) {
+            for ( int x = 0; x < img.getWidth(); ++x ) {
+                final int rgb = img.getRGB( x, y );
+                final int r = ( rgb >> 16 ) & 0xFF, g = ( rgb >> 8 ) & 0xFF, b = rgb & 0xFF;
+                if ( ( r < 110 ) && ( g < 110 ) && ( b < 110 ) ) {
                     ++n;
                 }
             }

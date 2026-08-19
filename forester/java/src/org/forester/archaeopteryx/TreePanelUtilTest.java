@@ -68,7 +68,7 @@ public final class TreePanelUtilTest {
                 && testInferenceFeedsRankAssignment() && testWriteCladeTaxonomies() && testInternalTaxaByRank()
                 && testCladeBands() && testRankColorizationViaSequenceIds() && testInternalLabelAboveBranchLayout()
                 && testAbbreviateScientificName() && testSupportColor() && testScaleGridLines()
-                && testScaleAxisTickValues() && testFormatCompactNumber() && testHpdBarXRange()
+                && testScaleAxisTickValues() && testCalendarTickYears() && testFormatCompactNumber() && testHpdBarXRange()
                 && testOrientationTransform() && testInternalLabelAlignWidth() && testAutoTipLabelDirection()
                 && testUserVisiblePropertiesText() && testTipLineagesAndUnresolved() && testInferenceStrings()
                 && testIsDuplicateOfAncestorTaxon() && testScaleAxisFloating() && testAncestralPieData();
@@ -605,6 +605,48 @@ public final class TreePanelUtilTest {
      * Labeled-axis tick VALUES: 0 (the root) then stepping by spacing up to and including max_distance; degenerate
      * inputs yield none. (Distinct from the grid lines, which skip 0.)
      */
+    private static boolean testCalendarTickYears() {
+        // a SARS-CoV-2-scale span (2019.9 .. 2022.5) -> whole-year ticks 2020, 2021, 2022
+        final double[] a = TreePanelUtil.calendarTickYears( 2019.9, 2022.5 );
+        if ( ( a.length != 3 ) || ( a[ 0 ] != 2020.0 ) || ( a[ 1 ] != 2021.0 ) || ( a[ 2 ] != 2022.0 ) ) {
+            return fail( "expected calendar ticks 2020,2021,2022; got " + java.util.Arrays.toString( a ) );
+        }
+        // every tick is a whole year (no decimal-year labels)
+        for ( final double y : a ) {
+            if ( y != Math.rint( y ) ) {
+                return fail( "calendar ticks must be whole years, got " + y );
+            }
+        }
+        // a ~15-year span must use a WHOLE-year step (regression: a 2.5-year step gave half-year ticks like 2007.5)
+        final double[] mid = TreePanelUtil.calendarTickYears( 2005.0, 2020.0 );
+        for ( final double y : mid ) {
+            if ( y != Math.rint( y ) ) {
+                return fail( "a 15-year span must use whole-year ticks (no 2.5-year step), got " + y );
+            }
+        }
+        // a wider span uses a coarser (still whole-year) step and stays within [from, to]
+        final double[] b = TreePanelUtil.calendarTickYears( 1850.0, 2020.0 ); // span 170 -> ~25-year step
+        if ( b.length < 3 ) {
+            return fail( "a 170-year span should yield several ticks; got " + java.util.Arrays.toString( b ) );
+        }
+        for ( final double y : b ) {
+            if ( ( y < 1850.0 ) || ( y > 2020.0 ) || ( y != Math.rint( y ) ) ) {
+                return fail( "wide-span ticks must be whole years within [1850,2020], got " + y );
+            }
+        }
+        // niceYearStep is at least 1 (whole years) and grows with the target
+        if ( ( TreePanelUtil.niceYearStep( 0.3 ) != 1.0 ) || ( TreePanelUtil.niceYearStep( 3.0 ) < 1.0 )
+                || ( TreePanelUtil.niceYearStep( 40.0 ) < 10.0 ) ) {
+            return fail( "niceYearStep must be >= 1 and scale up with the target span" );
+        }
+        // degenerate: non-positive span -> no ticks
+        if ( ( TreePanelUtil.calendarTickYears( 2021.0, 2021.0 ).length != 0 )
+                || ( TreePanelUtil.calendarTickYears( 2022.0, 2020.0 ).length != 0 ) ) {
+            return fail( "a non-positive calendar span must yield no ticks" );
+        }
+        return true;
+    }
+
     private static boolean testScaleAxisTickValues() {
         final double[] a = TreePanelUtil.scaleAxisTickValues( 0.7, 0.1 );
         if ( ( a.length != 8 ) || ( a[ 0 ] != 0.0 ) || ( Math.abs( a[ 1 ] - 0.1 ) > 1e-9 )

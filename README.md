@@ -263,6 +263,24 @@ Reference:
   International Chronostratigraphic Chart this decade", *Episodes* 48:105–115.
 
 
+Calendar (Absolute-Date) Axis
+-----------------------------
+
+For a **tip-dated** tree — a time-scaled phylogeny whose branch lengths are
+calendar time and whose tips carry sampling dates, as in molecular epidemiology
+(e.g. a SARS-CoV-2 phylodynamic tree) — Archaeopteryx can draw a **calendar-year
+axis** instead of the geologic one. Turn it on under **Settings → Overlays →
+Time Axis → Calendar (dates)**. It draws a labelled year/decade ruler (like the
+distance scale axis, but in calendar time): along the bottom in the root-left
+orientation, down the side in root-on-top / root-on-bottom, and as concentric
+labelled **year rings** in the circular layout.
+
+The axis is anchored by the **most-recent tip** (the present): Archaeopteryx uses
+the largest tip `<date>` (a calendar-year value) automatically, or you can set it
+explicitly with **"Set most-recent-tip date…"** next to the Time Axis selector.
+Each node's calendar date is then its distance-from-root back from that present.
+
+
 Tanglegrams
 -----------
 

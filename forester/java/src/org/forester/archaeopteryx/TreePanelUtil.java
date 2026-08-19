@@ -360,6 +360,49 @@ public class TreePanelUtil {
         return values;
     }
 
+    /** "Nice" calendar tick years covering {@code [from_year, to_year]} (each a multiple of a nice step, aiming for
+     *  ~6-8 ticks). Steps are whole-year multiples (1, 2, 5, 10, 20, 25, 50, 100, ...) so the labels are calendar
+     *  years, not decimals; a sub-year span still gets its enclosing whole years. Empty for a non-positive span. */
+    final static double[] calendarTickYears( final double from_year, final double to_year ) {
+        final double span = to_year - from_year;
+        if ( span <= 0.0 ) {
+            return new double[ 0 ];
+        }
+        final double step = niceYearStep( span / 7.0 );
+        if ( step <= 0.0 ) {
+            return new double[ 0 ];
+        }
+        final double first = Math.ceil( ( from_year / step ) - 1.0e-9 ) * step;
+        final double count_d = Math.floor( ( ( to_year - first ) / step ) + 1.0e-9 ) + 1;
+        if ( ( count_d <= 0 ) || ( count_d > MAX_AXIS_TICKS ) ) {
+            return new double[ 0 ];
+        }
+        final int count = (int) count_d;
+        final double[] out = new double[ count ];
+        for ( int i = 0; i < count; ++i ) {
+            out[ i ] = first + ( i * step );
+        }
+        return out;
+    }
+
+    /** The smallest WHOLE-YEAR "nice" step (1/2/5 x 10^k) that is &gt;= {@code raw}; at least 1 year. Only whole-year
+     *  multipliers are used (no 2.5, which would give a fractional 2.5-year step at pow=1 and mislabel half-year ticks). */
+    static double niceYearStep( final double raw ) {
+        if ( raw <= 1.0 ) {
+            return 1.0;
+        }
+        double pow = 1.0;
+        while ( ( pow * 10.0 ) <= raw ) {
+            pow *= 10.0;
+        }
+        for ( final double m : new double[] { 1, 2, 5, 10 } ) {
+            if ( ( pow * m ) >= raw ) {
+                return pow * m;
+            }
+        }
+        return pow * 10.0;
+    }
+
     /**
      * The device-y the horizontal scale axis line is drawn at (its top). On SCREEN the axis FLOATS at the viewport
      * bottom so it never scrolls out of view when zoomed in (PearTree-style), exactly like the viewport-fixed scale

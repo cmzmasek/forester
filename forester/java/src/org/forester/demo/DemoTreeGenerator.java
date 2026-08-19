@@ -76,6 +76,7 @@ public final class DemoTreeGenerator {
         write( dir, "node-hpd-bars.xml", hpdBarsTree() );
         write( dir, "dinosaur-time-tree.xml", dinosaurTimeTree() );
         write( dir, "tree-of-life-deep-time.xml", deepTimeTree() );
+        write( dir, "sars-cov-2-time-tree.xml", sarsCov2TimeTree() );
         write( dir, "zebra-stripes.xml", zebraStripesTree() );
         write( dir, "reverse-tip-order.xml", reverseTipOrderTree() );
         write( dir, "root-on-top.xml", rootOnTopTree() );
@@ -719,6 +720,65 @@ public final class DemoTreeGenerator {
                                             + "rigorous phylogeny." );
         phy.setDistanceUnit( "My" );
         return phy;
+    }
+
+    /** A schematic, time-calibrated SARS-CoV-2 phylodynamic tree with TIP DATES as calendar years (2019.98 .. 2022.5),
+     *  so the CALENDAR (absolute-date) time axis maps the tree to calendar time. Non-ultrametric (tips sampled at
+     *  different dates) -- the tip-dated case the calendar axis targets. */
+    private static Phylogeny sarsCov2TimeTree() {
+        final PhylogenyNode wuhan = calTip( "Wuhan-Hu-1", 2019.98 );
+        final PhylogenyNode early = calTip( "B.1 (early 2020)", 2020.2 );
+        final PhylogenyNode alpha = calTip( "Alpha (B.1.1.7)", 2020.95 );
+        final PhylogenyNode delta = calTip( "Delta (B.1.617.2)", 2021.5 );
+        final PhylogenyNode ba1 = calTip( "Omicron BA.1", 2021.95 );
+        final PhylogenyNode ba2 = calTip( "Omicron BA.2", 2022.3 );
+        final PhylogenyNode ba5 = calTip( "Omicron BA.5", 2022.5 );
+        final PhylogenyNode ba2ba5 = calNode( "", 2022.0, ba2, ba5 );
+        final PhylogenyNode omicron = calNode( "Omicron", 2021.0, ba1, ba2ba5 );
+        final PhylogenyNode delta_omi = calNode( "", 2020.5, delta, omicron );
+        final PhylogenyNode variants = calNode( "", 2020.3, alpha, delta_omi );
+        final PhylogenyNode post_wuhan = calNode( "", 2020.0, early, variants );
+        final PhylogenyNode root = calNode( "SARS-CoV-2 MRCA", 2019.9, wuhan, post_wuhan );
+        setCalendarBranchLengths( root, 2019.9 );
+        final Phylogeny phy = tree( root, "SARS-CoV-2 time tree (demo)",
+                                    "A schematic, time-calibrated SARS-CoV-2 phylodynamic tree: the tips are named "
+                                            + "lineages/variants with their sampling dates as calendar years (Wuhan-Hu-1 "
+                                            + "late 2019 through the Omicron sub-lineages in 2022), so the tree is "
+                                            + "TIP-DATED (non-ultrametric). Turn on Settings > Overlays > Time axis: "
+                                            + "Calendar to draw the labelled calendar-year axis (the most-recent tip = "
+                                            + "the present is derived automatically). Works in every layout, including "
+                                            + "concentric year rings in the circular view. Schematic, not a rigorous "
+                                            + "phylogeny." );
+        phy.setDistanceUnit( "years" );
+        return phy;
+    }
+
+    private static PhylogenyNode calTip( final String name, final double year ) {
+        final PhylogenyNode n = leaf( name );
+        n.getNodeData().setDate( new org.forester.phylogeny.data.Date( "", java.math.BigDecimal.valueOf( year ), null,
+                null, "year" ) );
+        return n;
+    }
+
+    private static PhylogenyNode calNode( final String name, final double year, final PhylogenyNode... kids ) {
+        final PhylogenyNode n = new PhylogenyNode();
+        n.setName( name );
+        n.getNodeData().setDate( new org.forester.phylogeny.data.Date( "", java.math.BigDecimal.valueOf( year ), null,
+                null, "year" ) );
+        for ( final PhylogenyNode k : kids ) {
+            n.addAsChild( k );
+        }
+        return n;
+    }
+
+    /** Sets each node's branch length to (node calendar year - parent calendar year), so distance-from-root == elapsed
+     *  calendar time (a proper tip-dated time phylogram). */
+    private static void setCalendarBranchLengths( final PhylogenyNode node, final double parent_year ) {
+        final double year = node.getNodeData().getDate().getValue().doubleValue();
+        node.setDistanceToParent( year - parent_year );
+        for ( int i = 0; i < node.getNumberOfDescendants(); ++i ) {
+            setCalendarBranchLengths( node.getChildNode( i ), year );
+        }
     }
 
     private static PhylogenyNode datedTip( final String name, final double age_ma ) {

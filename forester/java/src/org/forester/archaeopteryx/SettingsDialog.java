@@ -203,7 +203,8 @@ final class SettingsDialog extends JDialog {
         add( c, labeled( "Time axis:", enumCombo( Options.TIME_AXIS_TYPE.values(), _mf.getOptions().getTimeAxisType(),
                                                   v -> { _mf.getOptions().setTimeAxisType( v );
                                                          maybeCalibrateAndFit( v ); } ) ) );
-        add( c, labeled( "", button( "Set root age…", this::setTimeAxisRootAgeDialog ) ) );
+        add( c, labeled( "", button( "Set root age… (geologic)", this::setTimeAxisRootAgeDialog ) ) );
+        add( c, labeled( "", button( "Set most-recent-tip date… (calendar)", this::setTimeAxisPresentDateDialog ) ) );
         add( c, cb( _mf._show_geologic_grid_cbmi ) );
         add( c, cb( _mf._show_geologic_ages_cbmi ) );
         c.add( header( "Tree Name & Overview" ) );
@@ -500,7 +501,39 @@ final class SettingsDialog extends JDialog {
         if ( ( type == Options.TIME_AXIS_TYPE.GEOLOGIC ) && ( tp != null ) && ( tp.timeAxisRootAgeMa() <= 0 ) ) {
             setTimeAxisRootAgeDialog();
         }
+        else if ( ( type == Options.TIME_AXIS_TYPE.CALENDAR ) && ( tp != null ) && ( tp.timeAxisPresentDate() <= 0 ) ) {
+            setTimeAxisPresentDateDialog();
+        }
         reFitCurrentTree();
+    }
+
+    /** Asks for the most-recent-tip calendar date (decimal year) for the CALENDAR axis, for a tree WITHOUT calendar
+     *  {@code <date>} elements; a tip-dated tree derives it automatically. */
+    private void setTimeAxisPresentDateDialog() {
+        final TreePanel tp = _mf.getCurrentTreePanel();
+        if ( tp == null ) {
+            return;
+        }
+        final double current = tp.timeAxisPresentDate();
+        final String in = JOptionPane.showInputDialog( this,
+                "Calendar date of the MOST-RECENT tip, as a decimal year (e.g. 2021.5 for mid-2021).\n"
+                        + "This calibrates the calendar time axis for a tree WITHOUT calendar <date> elements.\n"
+                        + "(A tip-dated tree whose dates are calendar years derives this automatically.)",
+                ( current > 0 ) ? Double.toString( current ) : "" );
+        if ( in == null ) {
+            return; // cancelled
+        }
+        try {
+            final double year = Double.parseDouble( in.trim() );
+            if ( year > 0 ) {
+                tp.setTimeAxisPresentDate( year );
+                reFitCurrentTree();
+            }
+        }
+        catch ( final NumberFormatException e ) {
+            JOptionPane.showMessageDialog( this, "Please enter a positive decimal year (e.g. 2021.5).",
+                                           "Invalid date", JOptionPane.WARNING_MESSAGE );
+        }
     }
 
     /** Asks for the root age in Ma (for a tree without {@code <date>} elements) and applies it to the current tree. */
