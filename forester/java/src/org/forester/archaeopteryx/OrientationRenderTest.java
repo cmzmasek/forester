@@ -202,6 +202,50 @@ public final class OrientationRenderTest {
                         fail( ok, "wide HORIZONTAL tip labels must not clip at the canvas edge (edge ink left="
                                 + left_edge + " right=" + right_edge + ")" );
                     }
+
+                    // DEPTH-EDGE CLIP: an upright tip label is drawn one TIP_LABEL_DEPTH_GAP past the tip ALONG THE
+                    // DEPTH (paintTipLabelHorizontal), so depthLabelReserve() must reserve that gap too -- else after
+                    // a fit the OUTERMOST tip's label pokes past the near depth edge (the TOP in root-bottom, the
+                    // BOTTOM in root-top) and clips. Reuses the long names + tree-name-off from above. The hook
+                    // measures the actual drawn label far edge against the canvas depth edge (negative = clipped).
+                    layout( frame, tp, o, TREE_ORIENTATION.ROOT_BOTTOM, w, h );
+                    final double bottom_margin = tp.minUprightLabelDepthMarginForTest();
+                    if ( bottom_margin < -0.5 ) {
+                        fail( ok, "ROOT_BOTTOM upright tip labels clip at the TOP depth edge (margin=" + bottom_margin
+                                + "px) -- depthLabelReserve must reserve the tip-label depth gap" );
+                    }
+                    layout( frame, tp, o, TREE_ORIENTATION.ROOT_TOP, w, h );
+                    final double top_margin = tp.minUprightLabelDepthMarginForTest();
+                    if ( top_margin < -0.5 ) {
+                        fail( ok, "ROOT_TOP upright tip labels clip at the BOTTOM depth edge (margin=" + top_margin
+                                + "px) -- depthLabelReserve must reserve the tip-label depth gap" );
+                    }
+
+                    // a large CUSTOM node mark anchors a tip's label further along the depth than the DEFAULT half-box,
+                    // so depthLabelReserve() must offset by the MAX tip half-box (not the bare default) or a custom-node
+                    // tip clips -- the same class. Give every tip a big node mark + turn on Use Visual Styles.
+                    final boolean sv_vis = tp.getControlPanel().isUseVisualStyles();
+                    final org.forester.phylogeny.data.NodeVisualData[] sv_vd =
+                            new org.forester.phylogeny.data.NodeVisualData[ tips.length ];
+                    for ( int i = 0; i < tips.length; ++i ) {
+                        sv_vd[ i ] = tips[ i ].getNodeData().getNodeVisualData();
+                        final org.forester.phylogeny.data.NodeVisualData vd =
+                                new org.forester.phylogeny.data.NodeVisualData();
+                        vd.setSize( 40 ); // half-box 20 vs the default 2
+                        tips[ i ].getNodeData().setNodeVisualData( vd );
+                    }
+                    tp.getControlPanel().getUseVisualStylesCb().setSelected( true );
+                    layout( frame, tp, o, TREE_ORIENTATION.ROOT_BOTTOM, w, h );
+                    final double custom_margin = tp.minUprightLabelDepthMarginForTest();
+                    if ( custom_margin < -0.5 ) {
+                        fail( ok, "ROOT_BOTTOM upright labels with a large CUSTOM node mark clip at the TOP depth edge "
+                                + "(margin=" + custom_margin + "px) -- depthLabelReserve must use the MAX tip half-box" );
+                    }
+                    tp.getControlPanel().getUseVisualStylesCb().setSelected( sv_vis );
+                    for ( int i = 0; i < tips.length; ++i ) {
+                        tips[ i ].getNodeData().setNodeVisualData( sv_vd[ i ] );
+                    }
+
                     for ( int i = 0; i < tips.length; ++i ) {
                         tips[ i ].setName( saved_names[ i ] );
                     }

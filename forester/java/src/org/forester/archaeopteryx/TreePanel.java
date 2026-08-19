@@ -165,6 +165,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // taxonomy label ends. When the two differed (taxonomy 3, node data 2), the node data started a pixel inside
     // the taxonomy box and an italic scientific name's right overhang overlapped the following node name.
     private final static int LABEL_GAP_AFTER_NODE_SHAPE = 2;
+    // Gap (px) between a tip and its UPRIGHT (horizontal) label along the DEPTH axis in a vertical orientation
+    // (see paintTipLabelHorizontal). depthLabelReserve() must reserve this too, else the outermost tip's label
+    // pokes past the depth edge and clips (the top in root-bottom, the bottom in root-top).
+    private final static int TIP_LABEL_DEPTH_GAP = 5;
     // Extra horizontal gap between the taxonomy and node-data segments of an above-the-branch internal label, ON
     // TOP of the trailing space the taxonomy segment already carries (taxonomyLabel emits a trailing " "). Kept at
     // 0 so an internal label's taxonomy->name spacing matches the external path (which separates the two with only
@@ -4133,7 +4137,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final Point2D.Double anchor = screenPoint(labelTextStartX(node), node.getYcoord());
         final FontMetrics fm = getFontMetricsForLargeDefaultFont();
         final boolean root_bottom = getOptions().getTreeOrientation() == Options.TREE_ORIENTATION.ROOT_BOTTOM;
-        final double gap = 5.0;
+        final double gap = TIP_LABEL_DEPTH_GAP;
         final double anchor_x = anchor.x - (lw / 2.0); // centre the label on the tip's breadth
         // baseline just past the tip along the depth: below it (root-top) or above it (root-bottom)
         final double anchor_y = root_bottom ? (anchor.y - gap - fm.getDescent()) : (anchor.y + gap + fm.getAscent());
@@ -5641,6 +5645,22 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
         }
         return (int) (box_size / 2.0f); // truncate (floor) to match the previous default int-division exactly
+    }
+
+    /** The largest node-mark half-box drawn among the external tips: the global default unless "Use Visual Styles" is
+     *  on AND some tip carries a larger custom size. {@link #depthLabelReserve()} offsets the vertical tip-label reserve
+     *  by this (not the bare default) so a large custom tip node can't push its upright label past the depth edge. The
+     *  O(tips) walk runs only when visual styles are on; otherwise every tip resolves to the (constant) default. */
+    private int maxTipEffectiveHalfBoxSize() {
+        final int def = (int) (getOptions().getDefaultNodeShapeSize() / 2.0);
+        if ((_phylogeny == null) || (getControlPanel() == null) || !getControlPanel().isUseVisualStyles()) {
+            return def;
+        }
+        int max = def;
+        for (final PhylogenyNode t : _phylogeny.getExternalNodes()) {
+            max = Math.max(max, effectiveNodeHalfBoxSize(t));
+        }
+        return max;
     }
 
     /** The italic-derived variant of {@code base}, cached so repeated paints don't re-allocate the Font. */
@@ -11356,11 +11376,20 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         final double a = tipLabelAngle();
         final int line_h = getFontMetricsForLargeDefaultFont().getHeight();
-        // the TEXT label projected onto the depth (L_text*|sin| + lineH*|cos|) + the axis-aligned domain track past it.
-        // Uses the TEXT-ONLY longest (not getLongestExtNodeInfo, which already folds in the domain width -- using that
-        // here would count the domain twice, over-compressing the depth axis when domains are shown).
+        // every vertical tip label is anchored at labelTextStartX -- the tip's own effectiveNodeHalfBoxSize +
+        // LABEL_GAP_AFTER_NODE_SHAPE PAST the node along the depth -- so that offset eats into the reserve; an UPRIGHT
+        // (0-degree) label is drawn one extra TIP_LABEL_DEPTH_GAP past the tip (paintTipLabelHorizontal). Reserve both,
+        // else after a fit the OUTERMOST tip's label pokes past the near depth edge (the top in root-bottom, the bottom
+        // in root-top) and clips (was ~9px in root-bottom). Uses the MAX tip half-box (not the global default) so a
+        // large custom node mark on a tip can't push its label past the edge.
+        final int anchor_offset = maxTipEffectiveHalfBoxSize() + LABEL_GAP_AFTER_NODE_SHAPE;
+        final int upright_gap = (effectiveTipLabelDirection() == Options.TIP_LABEL_DIRECTION.HORIZONTAL)
+                ? TIP_LABEL_DEPTH_GAP : 0;
+        // the TEXT label projected onto the depth (L_text*|sin| + lineH*|cos|) + the anchor offset + the upright gap +
+        // the axis-aligned domain track past it. Uses the TEXT-ONLY longest (not getLongestExtNodeInfo, which already
+        // folds in the domain width -- that would count the domain twice, over-compressing the depth when domains show).
         return (int) Math.ceil((_length_of_longest_text_only * Math.abs(Math.sin(a))) + (line_h * Math.abs(Math.cos(a))))
-                + verticalDomainReserve();
+                + anchor_offset + upright_gap + verticalDomainReserve();
     }
 
     /** Extra depth (px) reserved past the tilted tip labels for the axis-aligned domain-architecture track that a
@@ -11498,6 +11527,25 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     /** Test hook: the resolved tip-label tilt (radians) for the current "Tip label angle" setting + orientation. */
     double tipLabelAngleForTest() {
         return tipLabelAngle();
+    }
+
+    /** Test hook: for the current vertical-orientation layout with UPRIGHT (HORIZONTAL) tip labels, the smallest
+     *  signed margin (px) between an external tip's upright label FAR edge and the near canvas DEPTH edge -- the top
+     *  edge in ROOT_BOTTOM, the bottom edge in ROOT_TOP. Negative means the outermost label is clipped off the
+     *  canvas (the defect {@link #depthLabelReserve()} must prevent). Mirrors {@link #paintTipLabelHorizontal}'s
+     *  anchor math exactly, so it measures the ACTUAL drawn label position, not a re-derivation of the reserve. */
+    double minUprightLabelDepthMarginForTest() {
+        final FontMetrics fm = getFontMetricsForLargeDefaultFont();
+        final boolean root_bottom = getOptions().getTreeOrientation() == Options.TREE_ORIENTATION.ROOT_BOTTOM;
+        double min = Double.MAX_VALUE;
+        for (final PhylogenyNode t : _phylogeny.getExternalNodes()) {
+            final Point2D.Double a = screenPoint(labelTextStartX(t), t.getYcoord());
+            // far edge of the upright label along the depth (baseline +/- gap +/- the ascent/descent it spans)
+            final double far = root_bottom ? (a.y - TIP_LABEL_DEPTH_GAP - fm.getAscent() - fm.getDescent())
+                    : (a.y + TIP_LABEL_DEPTH_GAP + fm.getAscent() + fm.getDescent());
+            min = Math.min(min, root_bottom ? far : (getHeight() - far));
+        }
+        return min;
     }
 
     /** Test hook: a node's position in the (rotated) overview thumbnail, in VIEWPORT-relative coords (matching a
