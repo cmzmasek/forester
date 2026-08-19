@@ -3963,6 +3963,10 @@ final class ControlPanel extends JPanel implements ActionListener {
             }
             getMainPanel().getMainFrame()
                     .setSelectedTypeInTypeMenu(getMainPanel().getCurrentTreePanel().getPhylogenyGraphicsType());
+            // re-seed a left-open modeless Settings dialog's per-tab controls (tree style, palette, Time Axis) so it
+            // reflects the now-current tab -- AFTER the Type-menu radios above are synced (the tree-style reseeder
+            // reads them)
+            getMainPanel().getMainFrame().refreshOpenSettingsDialog();
             updateZoomButtonsForLayout(); // relabel the zoom cluster for the current (possibly persisted) layout
             getMainPanel().getCurrentTreePanel().updateSubSuperTreeButton();
             getMainPanel().getCurrentTreePanel().updateButtonToUncollapseAll();

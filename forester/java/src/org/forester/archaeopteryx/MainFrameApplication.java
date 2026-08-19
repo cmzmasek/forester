@@ -1729,7 +1729,13 @@ public final class MainFrameApplication extends MainFrame {
             @Override
             public void menuSelected(final javax.swing.event.MenuEvent e) {
                 javax.swing.MenuSelectionManager.defaultManager().clearSelectedPath();
-                SwingUtilities.invokeLater(() -> new SettingsDialog(MainFrameApplication.this).setVisible(true));
+                SwingUtilities.invokeLater(() -> {
+                    // track the open dialog so a tab switch can re-seed its per-tab controls (tree style, palette,
+                    // Time Axis); refreshOpenSettingsDialog() guards on isShowing(), so a closed/hidden one is inert
+                    final SettingsDialog d = new SettingsDialog(MainFrameApplication.this);
+                    setOpenSettingsDialog(d);
+                    d.setVisible(true);
+                });
             }
 
             @Override

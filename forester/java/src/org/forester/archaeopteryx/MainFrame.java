@@ -2101,6 +2101,23 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _options = options;
     }
 
+    /** The currently-open modeless Settings dialog (set/cleared by the launcher), or null. */
+    SettingsDialog _open_settings_dialog;
+
+    /** Track the open Settings dialog so a main-window tab switch can re-seed its per-tab controls; auto-clears when
+     *  the dialog is disposed. */
+    void setOpenSettingsDialog(final SettingsDialog dialog) {
+        _open_settings_dialog = dialog;
+    }
+
+    /** Re-seed the open (modeless) Settings dialog's per-tab controls (tree style, palette, Time Axis) after a tab
+     *  switch, so it reflects the now-current tree. No-op when the dialog isn't open. */
+    void refreshOpenSettingsDialog() {
+        if ((_open_settings_dialog != null) && _open_settings_dialog.isShowing()) {
+            _open_settings_dialog.refreshCurrentTabControls();
+        }
+    }
+
     void setSelectedTypeInTypeMenu(final PHYLOGENY_GRAPHICS_TYPE type) {
         setTypeMenuToAllUnselected();
         switch (type) {

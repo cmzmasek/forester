@@ -76,6 +76,11 @@ final class SettingsDialog extends JDialog {
     private JLabel            _cache_status_label;
     private int               _cache_tab_index = -1;
     private JLabel            _current_font_label; // "Fonts, Nodes and Branches" tab
+    // per-tab controls (tree style, "Color by" palette, Time Axis) reflect the CURRENT tab; on a tab switch a
+    // left-open modeless dialog re-seeds them via these reseeders, under a guard that suppresses their own listeners
+    private final java.util.List<Runnable> _tab_reseeders = new java.util.ArrayList<>();
+    private boolean           _refreshing = false;
+    private JComboBox<Options.TIME_AXIS_TYPE> _axis_combo; // the per-tab Time-Axis type combo (for a test hook)
 
     SettingsDialog( final MainFrame mf ) {
         super( mf, "Settings", false );
@@ -121,6 +126,29 @@ final class SettingsDialog extends JDialog {
         setSize( min_width, getHeight() );
         setMinimumSize( new Dimension( min_width, 300 ) );
         setLocationRelativeTo( mf );
+    }
+
+    /** Re-seed the per-tab controls (tree style, "Color by" palette, Time Axis type + grid/ages) from the now-current
+     *  tab -- called on a main-window tab switch so a left-open modeless dialog reflects the current tree. The guard
+     *  suppresses the controls' own listeners so re-seeding doesn't write the value back onto the (new) current tab. */
+    void refreshCurrentTabControls() {
+        if ( _refreshing ) {
+            return;
+        }
+        _refreshing = true;
+        try {
+            for ( final Runnable r : _tab_reseeders ) {
+                r.run();
+            }
+        }
+        finally {
+            _refreshing = false;
+        }
+    }
+
+    /** Test hook: the type the per-tab Time-Axis combo currently shows. */
+    Options.TIME_AXIS_TYPE axisComboTypeForTest() {
+        return ( _axis_combo == null ) ? null : (Options.TIME_AXIS_TYPE) _axis_combo.getSelectedItem();
     }
 
     // ---- tabs ----------------------------------------------------------------------------------
@@ -204,12 +232,17 @@ final class SettingsDialog extends JDialog {
         // Tree style / palette combos above -- so they reflect the tab that was current when the dialog opened).
         c.add( header( "Time Axis (per tree)" ) );
         final TreePanel cur_ta = _mf.getCurrentTreePanel();
-        add( c, labeled( "Time axis:", enumCombo( Options.TIME_AXIS_TYPE.values(),
-                                                  ( cur_ta != null ) ? cur_ta.effectiveTimeAxisType()
-                                                          : Options.TIME_AXIS_TYPE.NONE,
-                                                  v -> { final TreePanel cur = _mf.getCurrentTreePanel();
-                                                         if ( cur != null ) { cur.setTimeAxisType( v ); }
-                                                         maybeCalibrateAndFit( v ); } ) ) );
+        final JComboBox<Options.TIME_AXIS_TYPE> axis_combo = enumCombo( Options.TIME_AXIS_TYPE.values(),
+                ( cur_ta != null ) ? cur_ta.effectiveTimeAxisType() : Options.TIME_AXIS_TYPE.NONE,
+                v -> { final TreePanel cur = _mf.getCurrentTreePanel();
+                       if ( cur != null ) { cur.setTimeAxisType( v ); }
+                       maybeCalibrateAndFit( v ); } );
+        _axis_combo = axis_combo;
+        add( c, labeled( "Time axis:", axis_combo ) );
+        _tab_reseeders.add( () -> {
+            final TreePanel cur = _mf.getCurrentTreePanel();
+            axis_combo.setSelectedItem( ( cur != null ) ? cur.effectiveTimeAxisType() : Options.TIME_AXIS_TYPE.NONE );
+        } );
         add( c, labeled( "", button( "Set root age… (geologic)", this::setTimeAxisRootAgeDialog ) ) );
         add( c, labeled( "", button( "Set most-recent-tip date… (calendar)", this::setTimeAxisPresentDateDialog ) ) );
         add( c, panelCheckbox( MainFrame.GEOLOGIC_GRID_LABEL, MainFrame.GEOLOGIC_GRID_TIP,
@@ -433,10 +466,17 @@ final class SettingsDialog extends JDialog {
         final JCheckBox c = new JCheckBox( label, ( cur != null ) && getter.test( cur ) );
         c.setToolTipText( tip );
         c.addActionListener( e -> {
+            if ( _refreshing ) {
+                return; // re-seed on a tab switch -- reflect the tab, don't re-apply the toggle
+            }
             final TreePanel p = _mf.getCurrentTreePanel();
             if ( p != null ) {
                 setter.accept( p, c.isSelected() );
             }
+        } );
+        _tab_reseeders.add( () -> {
+            final TreePanel p = _mf.getCurrentTreePanel();
+            c.setSelected( ( p != null ) && getter.test( p ) );
         } );
         return c;
     }
@@ -489,12 +529,29 @@ final class SettingsDialog extends JDialog {
         final JComboBox<String> combo = new JComboBox<>( labels );
         combo.setSelectedIndex( selected );
         combo.addActionListener( e -> {
+            if ( _refreshing ) {
+                return; // re-seed on a tab switch -- reflect the tab, don't re-apply the style
+            }
             final int i = combo.getSelectedIndex();
             if ( ( i >= 0 ) && ( items[ i ] != null ) && !items[ i ].isSelected() ) {
                 items[ i ].doClick();
             }
             if ( orientation_combo != null ) {
                 // orientation is a no-op for the radial circular/unrooted layouts -- grey it out there
+                orientation_combo.setEnabled( !isRadialStyleSelected() );
+            }
+        } );
+        // tree style is per-tab (TreePanel._graphics_type -> the Type-menu radios, synced to the current tab by
+        // tabChanged): re-seed from the radios on a tab switch, and re-evaluate the orientation combo's enabled state
+        _tab_reseeders.add( () -> {
+            int sel = 0;
+            for ( int i = 0; i < items.length; ++i ) {
+                if ( ( items[ i ] != null ) && items[ i ].isSelected() ) {
+                    sel = i;
+                }
+            }
+            combo.setSelectedIndex( sel );
+            if ( orientation_combo != null ) {
                 orientation_combo.setEnabled( !isRadialStyleSelected() );
             }
         } );
@@ -598,9 +655,18 @@ final class SettingsDialog extends JDialog {
             combo.setSelectedItem( tp.getColorPaletteName() );
         }
         combo.addActionListener( e -> {
+            if ( _refreshing ) {
+                return; // re-seed on a tab switch -- reflect the tab, don't re-apply the palette
+            }
             final TreePanel cur = _mf.getCurrentTreePanel();
             if ( ( cur != null ) && ( combo.getSelectedItem() != null ) ) {
                 cur.setColorPaletteName( combo.getSelectedItem().toString() );
+            }
+        } );
+        _tab_reseeders.add( () -> { // "Color by" palette is per-tab
+            final TreePanel cur = _mf.getCurrentTreePanel();
+            if ( cur != null ) {
+                combo.setSelectedItem( cur.getColorPaletteName() );
             }
         } );
         return combo;
@@ -643,6 +709,9 @@ final class SettingsDialog extends JDialog {
             combo.setSelectedItem( current );
         }
         combo.addActionListener( e -> {
+            if ( _refreshing ) {
+                return; // a programmatic re-seed on a tab switch -- do not write the value back onto the tab
+            }
             @SuppressWarnings( "unchecked" )
             final T v = (T) combo.getSelectedItem();
             setter.set( v );
