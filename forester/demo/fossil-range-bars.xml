@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" branch_length_unit="My" rerootable="true">
+  <name>Fossil ranges (equid evolution, demo)</name>
+  <description>A schematic horse (Equidae) evolutionary tree (ages in Ma) where each genus carries a stratigraphic range -- its First Appearance Datum (oldest) and Last Appearance Datum (youngest) -- as a phyloXML date min/max. It is auto-detected as a time tree and &quot;Fossil Range Bars (FAD/LAD)&quot; turns on, drawing each taxon&apos;s known duration as a capped bar. Turn on Settings &gt; Overlays &gt; Time axis: Geologic to read the ranges against the coloured ICS geologic axis; the extant Equus reaches 0 Ma so the axis reaches the present. Schematic, not a rigorous phylogeny or literal ranges.</description>
+  <clade>
+    <name>Equidae</name>
+    <branch_length>0.0</branch_length>
+    <date unit="mya">
+      <value>58.0</value>
+    </date>
+    <clade>
+      <name>Eohippus</name>
+      <branch_length>10.0</branch_length>
+      <date unit="mya">
+        <value>48.0</value>
+        <minimum>48.0</minimum>
+        <maximum>55.0</maximum>
+      </date>
+    </clade>
+    <clade>
+      <branch_length>16.0</branch_length>
+      <date unit="mya">
+        <value>42.0</value>
+      </date>
+      <clade>
+        <name>Mesohippus</name>
+        <branch_length>12.0</branch_length>
+        <date unit="mya">
+          <value>30.0</value>
+          <minimum>30.0</minimum>
+          <maximum>38.0</maximum>
+        </date>
+      </clade>
+      <clade>
+        <branch_length>22.0</branch_length>
+        <date unit="mya">
+          <value>20.0</value>
+        </date>
+        <clade>
+          <name>Merychippus</name>
+          <branch_length>9.0</branch_length>
+          <date unit="mya">
+            <value>11.0</value>
+            <minimum>11.0</minimum>
+            <maximum>17.0</maximum>
+          </date>
+        </clade>
+        <clade>
+          <branch_length>7.0</branch_length>
+          <date unit="mya">
+            <value>13.0</value>
+          </date>
+          <clade>
+            <name>Pliohippus</name>
+            <branch_length>7.0</branch_length>
+            <date unit="mya">
+              <value>6.0</value>
+              <minimum>6.0</minimum>
+              <maximum>12.0</maximum>
+            </date>
+          </clade>
+          <clade>
+            <name>Equus</name>
+            <branch_length>13.0</branch_length>
+            <date unit="mya">
+              <value>0.0</value>
+              <minimum>0.0</minimum>
+              <maximum>4.5</maximum>
+            </date>
+          </clade>
+        </clade>
+      </clade>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>

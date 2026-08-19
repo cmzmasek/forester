@@ -245,6 +245,7 @@ final class SettingsDialog extends JDialog {
         add( c, cb( _mf._show_scale_axis_cbmi ) );
         c.add( header( "Data Overlays" ) );
         add( c, cb( _mf._show_hpd_bars_cbmi ) );
+        add( c, cb( _mf._show_fossil_range_bars_cbmi ) );
         add( c, cb( _mf._show_zebra_stripes_cbmi ) );
         add( c, cb( _mf._show_internal_taxonomy_key_cbmi ) );
         // The Time Axis is PER-TREE (per-tab): a SARS-CoV-2 (calendar) tab and a Dinosaur (geologic) tab show

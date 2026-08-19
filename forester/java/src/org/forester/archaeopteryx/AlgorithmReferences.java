@@ -90,6 +90,13 @@ final class AlgorithmReferences {
                         + "interval boundaries, names, and official colours are those of the International "
                         + "Chronostratigraphic Chart of the International Commission on Stratigraphy (ICS / IUGS), "
                         + "www.stratigraphy.org. " + GeologicTimeScale.REFERENCE ) );
+        refs.add( new Reference( "Fossil range bars (Settings → Overlays → Data Overlays → Fossil Range Bars)",
+                "On a dated (time-calibrated) tree, draws a stratigraphic-range bar at each fossil tip spanning its "
+                        + "observed duration -- from its First Appearance Datum (FAD, oldest occurrence) to its Last "
+                        + "Appearance Datum (LAD, youngest occurrence), read from the tip's phyloXML date min/max. The "
+                        + "convention of plotting taxon stratigraphic ranges against a time-calibrated phylogeny follows "
+                        + "the strap R package: Bell MA, Lloyd GT (2015): \"strap: an R package for plotting phylogenies "
+                        + "against stratigraphy and assessing their stratigraphic congruence\", Palaeontology 58(2):379–389." ) );
         refs.add( new Reference( "phyloXML (file format)", ForesterConstants.PHYLO_XML_REFERENCE ) );
         return refs;
     }

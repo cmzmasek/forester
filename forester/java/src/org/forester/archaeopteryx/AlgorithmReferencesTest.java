@@ -102,6 +102,12 @@ public final class AlgorithmReferencesTest {
             System.out.println( "  [AlgorithmReferencesTest] geologic time axis reference/citation is missing" );
             ok = false;
         }
+        // the fossil range bars (FAD/LAD) must be described, with the strap (Bell & Lloyd 2015) citation
+        if ( !text.contains( "Fossil range bars" ) || !text.contains( "First Appearance Datum" )
+                || !text.contains( "Last Appearance Datum" ) || !text.contains( "Bell MA, Lloyd GT (2015)" ) ) {
+            System.out.println( "  [AlgorithmReferencesTest] fossil range bars (FAD/LAD) reference/citation is missing" );
+            ok = false;
+        }
         boolean phyloxml_present = false;
         for ( final AlgorithmReferences.Reference r : all ) {
             if ( ForesterConstants.PHYLO_XML_REFERENCE.equals( r.citation() ) ) {

@@ -295,6 +295,20 @@ public final class AptxUtil {
         return false;
     }
 
+    /** True when at least one EXTERNAL node (tip) carries a node-age {@code <date>} with both a minimum and a maximum --
+     *  i.e. a fossil stratigraphic range (First/Last Appearance Datum) to draw as a Fossil Range Bar. The tip analogue
+     *  of {@link #isHasAtLeastOneInternalNodeWithDateInterval}. */
+    final static public boolean isHasAtLeastOneExternalNodeWithDateInterval(final Phylogeny phy) {
+        for (final PhylogenyNodeIterator it = phy.iteratorExternalForward(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if (n.getNodeData().isHasDate() && (n.getNodeData().getDate().getMin() != null)
+                    && (n.getNodeData().getDate().getMax() != null)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     // The number of distinct "Display Data" option constants scanForDataPresence can report (kept in
     // sync by hand with the present.add(...) calls below); used to short-circuit the scan once every
     // flag has been found.
@@ -1327,6 +1341,18 @@ public final class AptxUtil {
                 final MainFrame mf = cp.getMainPanel().getMainFrame();
                 if ((mf != null) && (mf._show_hpd_bars_cbmi != null)) {
                     mf._show_hpd_bars_cbmi.setSelected(true);
+                }
+            }
+            // A dated phylogram with fossil TIP ranges (external nodes carrying a <date> min/max = FAD/LAD): switch
+            // "Fossil Range Bars" on so the stratigraphic ranges show right away. Same ON-only, set-both pattern as the
+            // HPD auto-enable above; harmless if a later tree has no tip ranges to draw.
+            if (has_bl && AptxUtil.isHasAtLeastOneExternalNodeWithDateInterval(t) && (cp.getMainPanel() != null)) {
+                if (cp.getMainPanel().getOptions() != null) {
+                    cp.getMainPanel().getOptions().setShowFossilRangeBars(true);
+                }
+                final MainFrame mf = cp.getMainPanel().getMainFrame();
+                if ((mf != null) && (mf._show_fossil_range_bars_cbmi != null)) {
+                    mf._show_fossil_range_bars_cbmi.setSelected(true);
                 }
             }
             // Show only the Display Data checkboxes for which this tree actually has data.

@@ -78,9 +78,10 @@ final class GuiPreferences {
             boolPref( "show_scale", Options::isShowScale, Options::setShowScale ),
             boolPref( "show_scale_grid", Options::isShowScaleGrid, Options::setShowScaleGrid ),
             boolPref( "show_scale_axis", Options::isShowScaleAxis, Options::setShowScaleAxis ),
-            // NOTE: "show_hpd_bars" is deliberately NOT persisted -- it is now DATA-DRIVEN (auto-enabled at load for
-            // a dated phylogram with node-age HPD intervals; see AptxUtil.lookAtSomeTreePropertiesForAptxControlSettings).
-            // Persisting it would let a one-time BEAST/dated-tree load flip the global default ON for every later launch.
+            // NOTE: "show_hpd_bars" and "show_fossil_range_bars" are deliberately NOT persisted -- both are DATA-DRIVEN
+            // (auto-enabled at load for a dated phylogram with node-age intervals / fossil tip ranges respectively; see
+            // AptxUtil.lookAtSomeTreePropertiesForAptxControlSettings). Persisting them would let a one-time dated-tree
+            // load flip the global default ON for every later launch.
             boolPref( "show_zebra_stripes", Options::isShowZebraStripes, Options::setShowZebraStripes ),
             boolPref( "show_internal_taxonomy_key", Options::isShowInternalTaxonomyKey,
                       Options::setShowInternalTaxonomyKey ),

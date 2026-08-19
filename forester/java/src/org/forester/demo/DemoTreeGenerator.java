@@ -75,6 +75,7 @@ public final class DemoTreeGenerator {
         write( dir, "scale-axis.xml", scaleAxisTree() );
         write( dir, "node-hpd-bars.xml", hpdBarsTree() );
         write( dir, "dinosaur-time-tree.xml", dinosaurTimeTree() );
+        write( dir, "fossil-range-bars.xml", fossilRangeTree() );
         write( dir, "tree-of-life-deep-time.xml", deepTimeTree() );
         write( dir, "sars-cov-2-time-tree.xml", sarsCov2TimeTree() );
         write( dir, "zebra-stripes.xml", zebraStripesTree() );
@@ -690,6 +691,36 @@ public final class DemoTreeGenerator {
         return phy;
     }
 
+    /** A schematic horse (equid) phylogeny where each tip is a genus carrying a stratigraphic RANGE (First/Last
+     *  Appearance Datum) as a phyloXML date value+min+max, so the "Fossil Range Bars (FAD/LAD)" overlay draws each
+     *  taxon's known duration as a capped bar. Each genus is placed at its LAD (last appearance), so the range bar runs
+     *  back over the terminal branch toward the older FAD and the tip label sits clear to the right; the extant Equus
+     *  reaches 0 Ma, so the tree is a proper time phylogram and the geologic axis reaches the present. */
+    private static Phylogeny fossilRangeTree() {
+        // fossilTip( name, placement age = LAD, FAD (oldest), LAD (youngest) ) -- all in Ma
+        final PhylogenyNode eohippus = fossilTip( "Eohippus", 48, 55, 48 );
+        final PhylogenyNode mesohippus = fossilTip( "Mesohippus", 30, 38, 30 );
+        final PhylogenyNode merychippus = fossilTip( "Merychippus", 11, 17, 11 );
+        final PhylogenyNode pliohippus = fossilTip( "Pliohippus", 6, 12, 6 );
+        final PhylogenyNode equus = fossilTip( "Equus", 0, 4.5, 0 ); // extant -> placed at the present, range back to 4.5 Ma
+        final PhylogenyNode n4 = datedNode( "", 13, pliohippus, equus );
+        final PhylogenyNode n3 = datedNode( "", 20, merychippus, n4 );
+        final PhylogenyNode n2 = datedNode( "", 42, mesohippus, n3 );
+        final PhylogenyNode root = datedNode( "Equidae", 58, eohippus, n2 );
+        setTimeBranchLengths( root, 58 );
+        final Phylogeny phy = tree( root, "Fossil ranges (equid evolution, demo)",
+                                    "A schematic horse (Equidae) evolutionary tree (ages in Ma) where each genus carries "
+                                            + "a stratigraphic range -- its First Appearance Datum (oldest) and Last "
+                                            + "Appearance Datum (youngest) -- as a phyloXML date min/max. It is "
+                                            + "auto-detected as a time tree and \"Fossil Range Bars (FAD/LAD)\" turns on, "
+                                            + "drawing each taxon's known duration as a capped bar. Turn on Settings > "
+                                            + "Overlays > Time axis: Geologic to read the ranges against the coloured ICS "
+                                            + "geologic axis; the extant Equus reaches 0 Ma so the axis reaches the "
+                                            + "present. Schematic, not a rigorous phylogeny or literal ranges." );
+        phy.setDistanceUnit( "My" );
+        return phy;
+    }
+
     /** A schematic, time-calibrated tree of the three domains of life reaching back to ~3.8 Ga (LUCA, deep in the
      *  Archean) -- so the geologic axis picks the DEEP-TIME (Eon over Era) band pair and the Precambrian is not blank. */
     private static Phylogeny deepTimeTree() {
@@ -796,6 +827,16 @@ public final class DemoTreeGenerator {
         for ( final PhylogenyNode k : kids ) {
             n.addAsChild( k );
         }
+        return n;
+    }
+
+    /** A fossil tip placed at {@code placement_ma} (its point age on the time axis) carrying a stratigraphic RANGE as a
+     *  phyloXML date value + min (LAD, youngest) + max (FAD, oldest) -- what the Fossil Range Bar spans. */
+    private static PhylogenyNode fossilTip( final String name, final double placement_ma, final double fad_ma,
+                                            final double lad_ma ) {
+        final PhylogenyNode n = leaf( name );
+        n.getNodeData().setDate( new org.forester.phylogeny.data.Date( "", java.math.BigDecimal.valueOf( placement_ma ),
+                java.math.BigDecimal.valueOf( lad_ma ), java.math.BigDecimal.valueOf( fad_ma ), "mya" ) );
         return n;
     }
 

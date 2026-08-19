@@ -252,6 +252,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private static final int    HPD_BAR_HEIGHT = 7;
     private static final Color  HPD_BAR_COLOR = new Color(70, 130, 220, 90);  // translucent blue, FigTree-like
     private static final Color  HPD_BAR_COLOR_BW = new Color(90, 90, 90, 70); // translucent gray for B&W export
+    // Fossil stratigraphic-range (FAD/LAD) bars: a solid-ish sepia bar spanning a TIP's observed first->last
+    // appearance datum, with short end-caps so it reads as a bracketed interval (the strap "|--|" range convention).
+    // A more OPAQUE earth tone than the translucent HPD bar so the two overlays stay visually distinct on a tree that
+    // carries both node-age intervals AND fossil tip ranges.
+    private static final int    FOSSIL_BAR_HEIGHT = 5;
+    private static final int    FOSSIL_BAR_CAP = 3; // half-length (px) of the end-cap ticks
+    private static final Color  FOSSIL_BAR_COLOR = new Color(150, 100, 55, 220);  // opaque-ish sepia
+    private static final Color  FOSSIL_BAR_COLOR_BW = new Color(60, 60, 60, 220);  // near-solid gray for B&W export
     // Zebra row stripes: a faint translucent band, darkening a light background / lightening a dark one.
     private static final Color  ZEBRA_STRIPE_ON_LIGHT = new Color(0, 0, 0, 16);
     private static final Color  ZEBRA_STRIPE_ON_DARK = new Color(255, 255, 255, 20);
@@ -9362,6 +9370,103 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.setColor(saved);
     }
 
+    /**
+     * Fossil stratigraphic-range (FAD/LAD) bars: on a dated phylogram, a solid horizontal bar at each TIP that carries
+     * a node-age {@code <date>} interval, spanning its observed range -- the First Appearance Datum (oldest, {@code max})
+     * to the Last Appearance Datum (youngest, {@code min}) -- with short end-caps so it reads as a bracketed
+     * stratigraphic range. This is the TIP analogue of {@link #paintHpdBars} (which draws INTERNAL-node age
+     * uncertainty): here it shows how long an extinct taxon is known to have existed, the strap/FAD-LAD convention no
+     * interactive tree viewer draws. Reuses {@link TreePanelUtil#hpdBarXRange} for the geometry (anchored to the tip's
+     * OWN drawn x plus signed age deltas -- FAD to the left/root, LAD to the right/tips), so it stays put on the tip
+     * even when the tree is not strictly ultrametric. Rectangular family (phylograms only); a circular twin is
+     * {@link #paintFossilRangeBarsCircular}. Assumes the age unit matches the branch-length (time) unit.
+     */
+    private void paintFossilRangeBars(final Graphics2D g, final boolean to_pdf, final boolean to_graphics_file) {
+        if (!getOptions().isShowFossilRangeBars() || !getControlPanel().isDrawPhylogram() || (_phylogeny == null)) {
+            return;
+        }
+        final double corr = getXcorrectionFactor();
+        if (corr <= 0) {
+            return; // no branch-length scale -> nothing meaningful to place
+        }
+        final Color saved = g.getColor();
+        final Stroke saved_stroke = g.getStroke();
+        g.setColor(((to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite()) ? FOSSIL_BAR_COLOR_BW
+                : FOSSIL_BAR_COLOR);
+        g.setStroke(STROKE_1); // thin, deterministic end-cap ticks (independent of the ambient branch stroke)
+        for (final PhylogenyNode node : _nodes_in_preorder) {
+            if (!node.isExternal() || isHiddenUnderCollapse(node) || !node.getNodeData().isHasDate()) {
+                continue; // fossil RANGE bars are for TIPS (external nodes)
+            }
+            final org.forester.phylogeny.data.Date date = node.getNodeData().getDate();
+            if ((date.getMin() == null) || (date.getMax() == null)) {
+                continue; // need a FAD/LAD range to draw a bar
+            }
+            final double min = date.getMin().doubleValue();
+            final double max = date.getMax().doubleValue();
+            final double value = (date.getValue() != null) ? date.getValue().doubleValue() : ((min + max) / 2.0);
+            final float[] xr = TreePanelUtil.hpdBarXRange(node.getXcoord(), value, min, max, corr);
+            final int left = Math.round(Math.min(xr[0], xr[1])); // robust to swapped/degenerate bounds
+            final int right = Math.round(Math.max(xr[0], xr[1]));
+            final int y = Math.round(node.getYcoord());
+            g.fillRect(left, y - (FOSSIL_BAR_HEIGHT / 2), Math.max(1, right - left), FOSSIL_BAR_HEIGHT);
+            // FAD/LAD end-caps: short vertical ticks so the range reads as a bracketed interval
+            drawLine(left, y - FOSSIL_BAR_CAP, left, y + FOSSIL_BAR_CAP, g);
+            drawLine(right, y - FOSSIL_BAR_CAP, right, y + FOSSIL_BAR_CAP, g);
+        }
+        g.setColor(saved);
+        g.setStroke(saved_stroke);
+    }
+
+    /**
+     * Circular twin of {@link #paintFossilRangeBars}: on a circular PHYLOGRAM the radius encodes distance-from-root =
+     * time, so a fossil tip's stratigraphic range is a RADIAL segment along its spoke (FAD toward the root, LAD toward
+     * the outer ring). Mirrors {@link #paintHpdBarsCircular} but for external tips, using the fossil colour; no
+     * end-caps in the fan (a perpendicular tick would foul neighbouring spokes). Unrooted is N/A (no distance ring).
+     */
+    private void paintFossilRangeBarsCircular(final Graphics2D g, final int cx, final int cy, final int radius,
+                                              final boolean to_pdf, final boolean to_graphics_file) {
+        if (!getOptions().isShowFossilRangeBars() || !isCircularPhylogram() || (_phylogeny == null) || (radius <= 0)) {
+            return;
+        }
+        final double max_dist = getMaxDistanceToRoot();
+        if (max_dist <= 0) {
+            return;
+        }
+        final double radial_corr = radius / max_dist; // px per distance/time unit along the spoke (== the phylogram scale)
+        final Color saved = g.getColor();
+        final Stroke saved_stroke = g.getStroke();
+        g.setColor(((to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite()) ? FOSSIL_BAR_COLOR_BW
+                : FOSSIL_BAR_COLOR);
+        g.setStroke(new BasicStroke(FOSSIL_BAR_HEIGHT, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        for (final java.util.Iterator<PhylogenyNode> it = _phylogeny.iteratorPreorder(); it.hasNext();) {
+            final PhylogenyNode node = it.next();
+            if (!node.isExternal() || isHiddenUnderCollapse(node) || !node.getNodeData().isHasDate()) {
+                continue; // fossil RANGE bars are for TIPS (external nodes)
+            }
+            final org.forester.phylogeny.data.Date date = node.getNodeData().getDate();
+            if ((date.getMin() == null) || (date.getMax() == null)) {
+                continue; // need a FAD/LAD range to draw a bar
+            }
+            final Double ang = _urt_nodeid_angle_map.get(node.getId());
+            if (ang == null) {
+                continue; // no circular angle (e.g. hidden) -> nothing to place
+            }
+            final double min = date.getMin().doubleValue();
+            final double max = date.getMax().doubleValue();
+            final double value = (date.getValue() != null) ? date.getValue().doubleValue() : ((min + max) / 2.0);
+            final double r_node = circularRadiusFraction(node) * radius;
+            double r_low = r_node - ((max - value) * radial_corr);  // FAD (older) -> smaller radius (toward the root)
+            double r_high = r_node + ((value - min) * radial_corr); // LAD (younger) -> larger radius (toward the tips)
+            r_low = Math.max(0, Math.min(r_low, r_high)); // robust to swapped/degenerate bounds; never past the centre
+            r_high = Math.max(r_low + 1, r_high); // >= 1px floor so a dated tip always shows a mark
+            final double cos = Math.cos(ang), sin = Math.sin(ang);
+            drawLine(cx + (r_low * cos), cy + (r_low * sin), cx + (r_high * cos), cy + (r_high * sin), g);
+        }
+        g.setColor(saved);
+        g.setStroke(saved_stroke);
+    }
+
     /** Diameter (px, tree/device space) of an ancestral-state pie: ~2.5x the node dot, floored at 10px so the
      *  wedges stay legible even at a tiny node-shape size. */
     private double ancestralPieDiameter() {
@@ -11160,6 +11265,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 // later increment). faint alternating row bands first, so annotation columns etc. sit on top.
                 paintZebraStripes(g, to_pdf, to_graphics_file, graphics_file_x, graphics_file_width);
                 paintHpdBars(g, to_pdf, to_graphics_file); // node-age HPD bars -- node coords set by the loop above
+                paintFossilRangeBars(g, to_pdf, to_graphics_file); // FAD/LAD stratigraphic-range bars on fossil tips
                 paintAnnotationColumns(g); // tip-aligned columns (strip/heat map/bar/text), right of the labels
                 paintCladeBands(g); // clade boxes/bars over the tree -- node coords set by the loop above
                 paintAncestralPies(g, to_pdf, to_graphics_file); // per-node state pies, on top -- coords set above
@@ -11172,6 +11278,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 // drawn as upright chrome after the base frame is restored (paintScaleAxisVertical, further below).
                 paintZebraStripes(g, to_pdf, to_graphics_file, graphics_file_x, graphics_file_width); // faint row bands, behind
                 paintHpdBars(g, to_pdf, to_graphics_file); // node-age HPD bars: a plain rect at each node -> rides R
+                paintFossilRangeBars(g, to_pdf, to_graphics_file); // FAD/LAD tip range bars: axis-aligned rects -> ride R
                 paintAnnotationColumnsVertical(g);
                 paintCladeBands(g); // boxes ride R; bars/brackets draw the label upright (isVerticalOrientation branch)
                 paintAncestralPies(g, to_pdf, to_graphics_file); // pies ride R: the disc stays a disc, wedges rotate
@@ -11349,6 +11456,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             paintZebraStripesCircular(g, center_x, center_y, radius > 0 ? radius : 0);
             // node-age (HPD) bars as radial age-range segments (circular phylogram only), over the tree
             paintHpdBarsCircular(g, center_x, center_y, radius > 0 ? radius : 0, to_pdf, to_graphics_file);
+            // fossil stratigraphic-range (FAD/LAD) bars as radial segments on the tips (circular phylogram only)
+            paintFossilRangeBarsCircular(g, center_x, center_y, radius > 0 ? radius : 0, to_pdf, to_graphics_file);
             // tip-aligned annotation columns as concentric rings (strip/heat-map/bar/text), just past the tips + labels
             paintAnnotationColumnsCircular(g, center_x, center_y, radius > 0 ? radius : 0);
             // clade bands as polar sectors/arcs, over the tree (coords set above), like the rectangular wash

@@ -275,6 +275,31 @@ Reference:
   International Chronostratigraphic Chart this decade", *Episodes* 48:105–115.
 
 
+Fossil Range Bars (FAD/LAD)
+---------------------------
+
+For a tree of **fossil taxa**, a tip is not a single point in time — each taxon is
+known from a *stratigraphic range*, from its **First Appearance Datum** (FAD, its
+oldest occurrence) to its **Last Appearance Datum** (LAD, its youngest). Turn on
+**Settings → Overlays → Data Overlays → Fossil Range Bars (FAD/LAD)** and, on a
+dated phylogram, each tip that carries a `<date>` **min/max** gets a capped
+stratigraphic-range bar spanning its known duration, drawn back over the terminal
+branch so the tip label stays clear. Read against the **Geologic Time Axis**, this
+turns a phylogeny into a proper stratigraphic-range figure — the duration and
+overlap of taxa laid out against the named geologic intervals, no hand-drawing in
+Illustrator required.
+
+Like the Node Age Bars, it is **auto-enabled** on load when the tree has fossil tip
+ranges, and it renders in every rectangular orientation and as radial segments in
+the **circular** layout. The range is read from the tip's native phyloXML `<date>`
+(value/min/max — the same model shown in the node popup), so it works directly on a
+tree time-scaled by any of the usual tools. Reference:
+
+- Bell, M.A. & Lloyd, G.T. (2015): "strap: an R package for plotting phylogenies
+  against stratigraphy and assessing their stratigraphic congruence",
+  *Palaeontology* 58(2):379–389.
+
+
 Calendar (Absolute-Date) Axis
 -----------------------------
 

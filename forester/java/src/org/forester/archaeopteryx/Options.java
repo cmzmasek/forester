@@ -243,6 +243,7 @@ final public class Options {
     private boolean _show_scale_grid;
     private boolean _show_scale_axis;
     private boolean _show_hpd_bars;
+    private boolean _show_fossil_range_bars;
     private boolean _show_zebra_stripes;
     private boolean _show_internal_taxonomy_key;
     private boolean _reverse_tip_order;
@@ -328,6 +329,7 @@ final public class Options {
         _show_scale_grid = false;
         _show_scale_axis = false;
         _show_hpd_bars = false;
+        _show_fossil_range_bars = false;
         _show_zebra_stripes = false;
         _show_internal_taxonomy_key = false;
         _reverse_tip_order = false;
@@ -677,6 +679,14 @@ final public class Options {
 
     final void setShowHpdBars(final boolean show_hpd_bars) {
         _show_hpd_bars = show_hpd_bars;
+    }
+
+    final boolean isShowFossilRangeBars() {
+        return _show_fossil_range_bars;
+    }
+
+    final void setShowFossilRangeBars(final boolean show_fossil_range_bars) {
+        _show_fossil_range_bars = show_fossil_range_bars;
     }
 
     final boolean isShowZebraStripes() {

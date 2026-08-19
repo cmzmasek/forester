@@ -148,6 +148,12 @@ public final class DemoTreesTest {
         ok &= hasBranchLengths( "dinosaur-time-tree.xml" );
         ok &= hasAtLeastTips( "dinosaur-time-tree.xml", 7 );
         ok &= isDetectedTimeTree( "dinosaur-time-tree.xml", AptxUtil.TIME_TREE_KIND.DATED );
+        // fossil range bars: a dated equid tree whose TIPS carry a <date> min/max (FAD/LAD) stratigraphic range --
+        // the "Fossil Range Bars (FAD/LAD)" overlay draws each tip's known duration
+        ok &= hasBranchLengths( "fossil-range-bars.xml" );
+        ok &= hasAtLeastTips( "fossil-range-bars.xml", 5 );
+        ok &= isDetectedTimeTree( "fossil-range-bars.xml", AptxUtil.TIME_TREE_KIND.DATED );
+        ok &= hasExternalDateInterval( "fossil-range-bars.xml" );
         // deep-time geologic axis: a dated tree of life reaching into the Archean (oldest <date> > 2500 Ma), so the
         // geologic axis adapts to the coarse Eon/Era band pair -- the Precambrian is banded, not blank
         ok &= hasBranchLengths( "tree-of-life-deep-time.xml" );
@@ -364,6 +370,20 @@ public final class DemoTreesTest {
             }
         }
         return note( file_name + " must carry an INTERNAL-node <date> with a min/max interval (for HPD age bars)" );
+    }
+
+    /** At least one EXTERNAL tip carries a {@code <date>} with a min/max interval (a fossil FAD/LAD range) -- what the
+     *  Fossil Range Bars overlay draws. Delegates to the PRODUCTION predicate that drives the auto-enable, so the demo
+     *  guard and the shipping code can't drift. */
+    private static boolean hasExternalDateInterval( final String file_name ) {
+        final Phylogeny phy = load( file_name );
+        if ( phy == null ) {
+            return false;
+        }
+        if ( AptxUtil.isHasAtLeastOneExternalNodeWithDateInterval( phy ) ) {
+            return true;
+        }
+        return note( file_name + " must carry an EXTERNAL-tip <date> with a min/max interval (for fossil range bars)" );
     }
 
     /** The oldest node {@code <date>} value is at least {@code min_ma} Ma (so the geologic axis picks the deep-time
