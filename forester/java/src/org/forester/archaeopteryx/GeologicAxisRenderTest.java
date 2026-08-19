@@ -81,6 +81,11 @@ public final class GeologicAxisRenderTest {
                     tp.getTreeColorSet().setColorforDefault( TreeColorSet.SEQUENCE, new Color( 0, 0, 0 ) );
                     tp.getTreeColorSet().setColorforDefault( TreeColorSet.TAXONOMY, new Color( 0, 0, 0 ) );
                     tp.getTreeColorSet().setColorSchema( 0 );
+                    // pin root-left rectangular: the developer's persisted orientation/graphics-type may be vertical or
+                    // circular, and the first checks below verify the horizontal (root-left) axis specifically
+                    o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                    o.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
+                    tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
                     final int w = 900, h = 560;
                     frame.showWhole();
                     tp.setSize( w, h );
@@ -106,17 +111,21 @@ public final class GeologicAxisRenderTest {
                     tp.setTimeAxisRootAge( 0 ); // clear for the rest of the checks (derived 250 Ma stands)
                     tp.calcParametersForPainting( w, h ); // re-lay-out the replacement tree before the render checks
 
-                    // OFF: no geologic axis -> no saturated band pixels
+                    // OFF: no geologic axis -> no saturated band pixels. Re-fit after each type change, exactly as the
+                    // app does (SettingsDialog.maybeCalibrateAndFit -> reFitCurrentTree), so the layout reserve/R
+                    // transform matches the option (an on-screen change without a re-fit is not a real usage path).
                     o.setTimeAxisType( Options.TIME_AXIS_TYPE.NONE );
+                    tp.calcParametersForPainting( w, h );
                     if ( tp.geologicAxisApplies() ) {
                         fail( ok, "the geologic axis must not apply when the Time Axis type is NONE" );
                     }
                     final int off = countSaturated( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) );
 
-                    // ON: the geologic axis draws the coloured ICS bands along the bottom
+                    // ON: the geologic axis draws the coloured ICS bands
                     o.setTimeAxisType( Options.TIME_AXIS_TYPE.GEOLOGIC );
+                    tp.calcParametersForPainting( w, h );
                     if ( !tp.geologicAxisApplies() ) {
-                        fail( ok, "the geologic axis must apply to a dated root-left phylogram with a positive root age "
+                        fail( ok, "the geologic axis must apply to a dated phylogram with a positive root age "
                                 + "(isDrawPhylogram=" + tp.getControlPanel().isDrawPhylogram() + ", rootAge=" + root_age
                                 + ")" );
                     }

@@ -236,6 +236,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // How far the (faint) scale-grid color is blended from the background toward the branch-length color.
     private static final double SCALE_GRID_BLEND = 0.18;
     private static final int    GEOLOGIC_RING_ALPHA = 70; // translucency of the circular geologic-band annuli
+    private static final int    GEOLOGIC_AXIS_EDGE_GAP = 6; // px between the rectangular geologic axis and the edge
     private static final int    SCALE_AXIS_TICK_LEN = 4;  // length (px) of the labeled scale-axis tick marks
     private static final int    SCALE_AXIS_LABEL_GAP = 4; // min px between adjacent tick labels (else the label is decimated)
     private static final int    SCALE_AXIS_UNIT_GAP = 5;  // gap before the trailing [unit] label
@@ -4628,7 +4629,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return 0;
         }
         if (geologicAxisApplies()) {
-            return geologicAxisBandHeight(); // the geologic axis takes the bottom strip in place of the numeric axis
+            return geologicAxisReserve(); // the geologic axis takes the bottom strip (+ an edge gap) vs the numeric axis
         }
         if (!getOptions().isShowScaleAxis() || !scaleAxisAppliesToLayout()) {
             return 0;
@@ -4645,7 +4646,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return 0;
         }
         if (geologicAxisApplies()) {
-            return geologicAxisBandHeight(); // the geologic two-band axis takes the breadth side band in vertical too
+            return geologicAxisReserve(); // the geologic two-band axis takes the breadth side band (+ edge gap) in vertical
         }
         if (!getOptions().isShowScaleAxis() || !getControlPanel().isDrawPhylogram() || (getScaleDistance() <= 0.0)) {
             return 0;
@@ -4922,9 +4923,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return getFontMetrics(getTreeFontSet().getSmallFont()).getHeight() + 2;
     }
 
-    /** Bottom band reserved for the two geologic rows (Period + Epoch). */
+    /** Height of the two drawn geologic rows (Period + Epoch), WITHOUT the edge gap. */
     private int geologicAxisBandHeight() {
         return 2 * geologicAxisRowHeight();
+    }
+
+    /** The full breadth reserved for the rectangular geologic axis: the two drawn rows PLUS a few pixels of
+     *  {@link #GEOLOGIC_AXIS_EDGE_GAP} between the axis and the canvas/window edge, so the axis doesn't sit flush
+     *  against the border (which reads as "cut off / more below"). Used by both the horizontal-bottom and vertical-side
+     *  reserves and to place the band, so the drawn band always ends one gap short of the edge. */
+    private int geologicAxisReserve() {
+        return geologicAxisBandHeight() + GEOLOGIC_AXIS_EDGE_GAP;
     }
 
     /** age (Ma) -> device x: the root (oldest age) sits at {@code origin_x}, the tips (age 0) at {@code tip_x}. */
@@ -4947,7 +4956,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final int bottom = TreePanelUtil.scaleAxisFloatingBottom(to_pdf, to_graphics_file, graphics_file_y,
                 graphics_file_height, getHeight(), vr.y + vr.height);
         final int row_h = geologicAxisRowHeight();
-        final int top_y = bottom - (2 * row_h);
+        final int top_y = bottom - geologicAxisReserve(); // band ends one GEOLOGIC_AXIS_EDGE_GAP short of the edge
         final Font saved_font = g.getFont();
         final Color saved_color = g.getColor();
         paintGeologicBand(g, GeologicTimeScale.Rank.PERIOD, root_age, origin_x, tip_x, top_y, row_h, to_pdf,
@@ -4972,7 +4981,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final float origin_x = _phylogeny.getRoot().getXcoord();
         final float tip_x = (float) (origin_x + (getMaxDistanceToRoot() * corr));
         final int row_h = geologicAxisRowHeight();
-        final int band_top = treeBreadthExtent() - (2 * row_h); // the reserved side band, just past the last tip (logical)
+        // the reserved side band, just past the last tip; band ends one GEOLOGIC_AXIS_EDGE_GAP short of the breadth edge.
+        // On screen it FLOATS to the viewport breadth edge (like the numeric vertical scale ruler) so it stays visible
+        // when a zoomed tree is scrolled along the breadth; exports keep the tree-anchored position (WYSIWYG).
+        final int band_top = floatVerticalGeologicBandTop(treeBreadthExtent() - geologicAxisReserve(), origin_x, to_pdf,
+                to_graphics_file);
         final Font saved_font = g.getFont();
         final Color saved_color = g.getColor();
         paintGeologicBand(g, GeologicTimeScale.Rank.PERIOD, root_age, origin_x, tip_x, band_top, row_h, to_pdf,
@@ -4981,6 +4994,31 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 to_graphics_file);
         g.setFont(saved_font);
         g.setColor(saved_color);
+    }
+
+    /** Shifts the vertical geologic band's logical breadth so its OUTER edge (away from the tips) floats to the viewport
+     *  breadth edge on screen -- so the two-band axis stays visible when a zoomed vertical tree is scrolled along the
+     *  breadth, exactly like the numeric vertical scale ruler. Exports/print keep the tree-anchored position (WYSIWYG).
+     *  Works by mapping the desired device-x edge back to a logical breadth via the R inverse (depth positions, hence
+     *  the tree-alignment along the time axis, are untouched). */
+    private int floatVerticalGeologicBandTop(final int anchored_band_top, final float origin_x, final boolean to_pdf,
+                                             final boolean to_graphics_file) {
+        if (to_pdf || to_graphics_file || (_orientation_R_inverse == null)) {
+            return anchored_band_top;
+        }
+        final Rectangle vr = getVisibleRect();
+        if ((vr.width <= 0) || (vr.height <= 0)) {
+            return anchored_band_top;
+        }
+        final int outer_ly = anchored_band_top + geologicAxisBandHeight(); // the band's outer edge (larger breadth)
+        final Point2D.Double outer_dev = screenPoint(origin_x, outer_ly);
+        final double toward_tree_x = screenPoint(origin_x, outer_ly - 16.0).x; // 16 breadth toward the tips
+        // the outer edge floats to the viewport edge on the side AWAY from the tree (a small gap in from the border)
+        final boolean tree_to_right = toward_tree_x > outer_dev.x;
+        final int target_x = tree_to_right ? (vr.x + GEOLOGIC_AXIS_EDGE_GAP)
+                : ((vr.x + vr.width) - GEOLOGIC_AXIS_EDGE_GAP);
+        final Point2D.Double floated = toLogicalPoint(target_x, (int) Math.round(outer_dev.y));
+        return (int) Math.round(floated.y) - geologicAxisBandHeight();
     }
 
     private void paintGeologicBand(final Graphics2D g, final GeologicTimeScale.Rank rank, final double root_age,
