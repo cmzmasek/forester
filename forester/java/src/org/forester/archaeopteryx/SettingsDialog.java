@@ -80,7 +80,7 @@ final class SettingsDialog extends JDialog {
     // left-open modeless dialog re-seeds them via these reseeders, under a guard that suppresses their own listeners
     private final java.util.List<Runnable> _tab_reseeders = new java.util.ArrayList<>();
     private boolean           _refreshing = false;
-    private JComboBox<Options.TIME_AXIS_TYPE> _axis_combo; // the per-tab Time-Axis type combo (for a test hook)
+    private JComboBox<String> _axis_combo; // the per-tab Time-Axis combo ("Auto" + Off/Geologic/Calendar; test hook)
 
     SettingsDialog( final MainFrame mf ) {
         super( mf, "Settings", false );
@@ -146,9 +146,29 @@ final class SettingsDialog extends JDialog {
         }
     }
 
-    /** Test hook: the type the per-tab Time-Axis combo currently shows. */
+    /** Label for the per-tab Time-Axis combo's "follow auto-derive" entry (index 0). */
+    static final String AXIS_AUTO_LABEL = "Auto (from dates)";
+
+    /** Combo index for a raw type override: 0 == "Auto" (null override), else the enum ordinal + 1 (Off/Geo/Cal). */
+    private static int axisComboIndexFor( final Options.TIME_AXIS_TYPE override ) {
+        return ( override == null ) ? 0 : ( override.ordinal() + 1 );
+    }
+
+    /** The type override a combo index maps to: index 0 -> null ("Auto"), else the enum value at ordinal index-1. */
+    private static Options.TIME_AXIS_TYPE axisTypeForComboIndex( final int i ) {
+        return ( i <= 0 ) ? null : Options.TIME_AXIS_TYPE.values()[ i - 1 ];
+    }
+
+    /** Test hook: the type override the per-tab Time-Axis combo currently shows ({@code null} == the "Auto" entry). */
     Options.TIME_AXIS_TYPE axisComboTypeForTest() {
-        return ( _axis_combo == null ) ? null : (Options.TIME_AXIS_TYPE) _axis_combo.getSelectedItem();
+        return ( _axis_combo == null ) ? null : axisTypeForComboIndex( _axis_combo.getSelectedIndex() );
+    }
+
+    /** Test hook: simulate a user selecting a Time-Axis entry ({@code null} == "Auto"), firing the real listener. */
+    void userSelectAxisForTest( final Options.TIME_AXIS_TYPE type ) {
+        if ( _axis_combo != null ) {
+            _axis_combo.setSelectedIndex( axisComboIndexFor( type ) );
+        }
     }
 
     // ---- tabs ----------------------------------------------------------------------------------
@@ -231,17 +251,35 @@ final class SettingsDialog extends JDialog {
         // different axes at once. These controls act on the CURRENT tab and are seeded from it at open (like the
         // Tree style / palette combos above -- so they reflect the tab that was current when the dialog opened).
         c.add( header( "Time Axis (per tree)" ) );
+        // "Auto" (index 0) = follow auto-derive (the tab's type override is null); the other entries are explicit
+        // overrides (Off / Geologic / Calendar). The combo shows "Auto" until the user picks an explicit type, and
+        // selecting "Auto" again returns the tab to auto-derive.
         final TreePanel cur_ta = _mf.getCurrentTreePanel();
-        final JComboBox<Options.TIME_AXIS_TYPE> axis_combo = enumCombo( Options.TIME_AXIS_TYPE.values(),
-                ( cur_ta != null ) ? cur_ta.effectiveTimeAxisType() : Options.TIME_AXIS_TYPE.NONE,
-                v -> { final TreePanel cur = _mf.getCurrentTreePanel();
-                       if ( cur != null ) { cur.setTimeAxisType( v ); }
-                       maybeCalibrateAndFit( v ); } );
+        final String[] axis_labels = { AXIS_AUTO_LABEL, Options.TIME_AXIS_TYPE.NONE.toString(),
+                Options.TIME_AXIS_TYPE.GEOLOGIC.toString(), Options.TIME_AXIS_TYPE.CALENDAR.toString() };
+        final JComboBox<String> axis_combo = new JComboBox<>( axis_labels );
+        axis_combo.setSelectedIndex( axisComboIndexFor( ( cur_ta != null ) ? cur_ta.getTimeAxisTypeOverride() : null ) );
+        axis_combo.addActionListener( e -> {
+            if ( _refreshing ) {
+                return; // a programmatic re-seed on a tab switch -- don't write the value back onto the tab
+            }
+            final TreePanel cur = _mf.getCurrentTreePanel();
+            final Options.TIME_AXIS_TYPE sel = axisTypeForComboIndex( axis_combo.getSelectedIndex() );
+            if ( cur != null ) {
+                cur.setTimeAxisType( sel ); // sel == null -> "Auto" (follow auto-derive)
+            }
+            if ( sel == null ) {
+                reFitCurrentTree(); // "Auto" needs no manual calibration prompt (a dated tree derives its own)
+            }
+            else {
+                maybeCalibrateAndFit( sel );
+            }
+        } );
         _axis_combo = axis_combo;
         add( c, labeled( "Time axis:", axis_combo ) );
         _tab_reseeders.add( () -> {
             final TreePanel cur = _mf.getCurrentTreePanel();
-            axis_combo.setSelectedItem( ( cur != null ) ? cur.effectiveTimeAxisType() : Options.TIME_AXIS_TYPE.NONE );
+            axis_combo.setSelectedIndex( axisComboIndexFor( ( cur != null ) ? cur.getTimeAxisTypeOverride() : null ) );
         } );
         add( c, labeled( "", button( "Set root age… (geologic)", this::setTimeAxisRootAgeDialog ) ) );
         add( c, labeled( "", button( "Set most-recent-tip date… (calendar)", this::setTimeAxisPresentDateDialog ) ) );

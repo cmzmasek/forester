@@ -80,19 +80,20 @@ public final class TimeAxisPerTreeTest {
                         fail( ok, "the SARS-CoV-2 tab must auto-derive CALENDAR, got " + tp_sars.effectiveTimeAxisType() );
                     }
 
-                    // 1b) LIVE REFRESH: a left-open modeless Settings dialog re-seeds its per-tab Time-Axis combo to the
-                    //     now-current tab on a tab switch, WITHOUT the re-seed writing an explicit type onto the tab
+                    // 1b) the "Auto" entry + LIVE REFRESH. Give the Dinosaur tab an EXPLICIT Geologic override (so the
+                    //     combo shows a non-Auto value); the SARS tab stays on auto-derive (combo shows "Auto").
+                    tp_dino.setTimeAxisType( TIME_AXIS_TYPE.GEOLOGIC );
                     final javax.swing.JTabbedPane jtp = frame.getMainPanel().getTabbedPane();
-                    jtp.setSelectedIndex( 0 ); // Dinosaur
+                    jtp.setSelectedIndex( 0 ); // Dinosaur (explicit GEOLOGIC)
                     final SettingsDialog dlg = new SettingsDialog( frame );
                     if ( dlg.axisComboTypeForTest() != TIME_AXIS_TYPE.GEOLOGIC ) {
-                        fail( ok, "the Settings axis combo must seed from the current (Dinosaur) tab = GEOLOGIC, got "
+                        fail( ok, "the axis combo must show the Dinosaur tab's explicit GEOLOGIC override, got "
                                 + dlg.axisComboTypeForTest() );
                     }
-                    jtp.setSelectedIndex( 1 ); // switch to SARS-CoV-2
+                    jtp.setSelectedIndex( 1 ); // switch to SARS-CoV-2 (auto-derive)
                     dlg.refreshCurrentTabControls();
-                    if ( dlg.axisComboTypeForTest() != TIME_AXIS_TYPE.CALENDAR ) {
-                        fail( ok, "after a tab switch the axis combo must re-seed to the SARS tab = CALENDAR, got "
+                    if ( dlg.axisComboTypeForTest() != null ) { // null == the "Auto" entry
+                        fail( ok, "after switching to an auto-derive tab the combo must show Auto (null), got "
                                 + dlg.axisComboTypeForTest() );
                     }
                     // the re-seed must NOT mutate the tab (the guard held): SARS stays on auto-derive -> no property
@@ -100,7 +101,19 @@ public final class TimeAxisPerTreeTest {
                     if ( TimeAxisConfig.readFromTree( tp_sars.getPhylogeny() ) != null ) {
                         fail( ok, "re-seeding the axis combo on a tab switch must NOT make the tab an explicit override" );
                     }
+                    // selecting "Auto" on the overridden Dinosaur tab returns it to auto-derive (clears the override)
+                    jtp.setSelectedIndex( 0 );
+                    dlg.refreshCurrentTabControls(); // combo now shows GEOLOGIC (dino's override)
+                    dlg.userSelectAxisForTest( null ); // pick "Auto"
+                    if ( tp_dino.getTimeAxisTypeOverride() != null ) {
+                        fail( ok, "selecting Auto must clear the type override, got " + tp_dino.getTimeAxisTypeOverride() );
+                    }
+                    if ( tp_dino.effectiveTimeAxisType() != TIME_AXIS_TYPE.GEOLOGIC ) {
+                        fail( ok, "after Auto, the Dinosaur tab must re-derive GEOLOGIC, got "
+                                + tp_dino.effectiveTimeAxisType() );
+                    }
                     dlg.dispose();
+                    tp_dino.resetTimeAxisToAutoDerive(); // restore pristine state for the later steps
 
                     // 2) an override on one tab does NOT affect the other
                     tp_dino.setTimeAxisType( TIME_AXIS_TYPE.NONE );

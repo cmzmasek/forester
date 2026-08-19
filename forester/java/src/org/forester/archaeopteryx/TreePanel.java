@@ -5255,6 +5255,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return (_time_axis_type != null) ? _time_axis_type : derivedTimeAxisType();
     }
 
+    /** The EXPLICIT per-tab Time-Axis type override, or {@code null} when the type follows auto-derive ("Auto"). Unlike
+     *  {@link #effectiveTimeAxisType()} (which resolves null to the derived type) this returns the raw choice, so the
+     *  Settings dropdown can show "Auto" vs an explicit Off/Geologic/Calendar. */
+    Options.TIME_AXIS_TYPE getTimeAxisTypeOverride() {
+        return _time_axis_type;
+    }
+
     /** The auto-derived Time-Axis type for the current tree ({@link AptxUtil#deriveTimeAxisType}), cached by tree
      *  identity (recomputed when {@code _phylogeny} is replaced by a subtree / undo / paste). */
     private Options.TIME_AXIS_TYPE derivedTimeAxisType() {
