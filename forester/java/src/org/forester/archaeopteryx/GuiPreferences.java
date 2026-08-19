@@ -77,6 +77,8 @@ final class GuiPreferences {
             boolPref( "show_tree_name", Options::isShowTreeName, Options::setShowTreeName ),
             boolPref( "show_scale", Options::isShowScale, Options::setShowScale ),
             boolPref( "show_scale_grid", Options::isShowScaleGrid, Options::setShowScaleGrid ),
+            boolPref( "show_geologic_grid", Options::isShowGeologicGridLines, Options::setShowGeologicGridLines ),
+            boolPref( "show_geologic_ages", Options::isShowGeologicBoundaryAges, Options::setShowGeologicBoundaryAges ),
             boolPref( "show_scale_axis", Options::isShowScaleAxis, Options::setShowScaleAxis ),
             // NOTE: "show_hpd_bars" is deliberately NOT persisted -- it is now DATA-DRIVEN (auto-enabled at load for
             // a dated phylogram with node-age HPD intervals; see AptxUtil.lookAtSomeTreePropertiesForAptxControlSettings).

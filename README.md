@@ -247,6 +247,13 @@ The tree is anchored in time by its **root age**: Archaeopteryx uses the oldest
 `<date>` value in the tree, or you can set it explicitly with **"Set root age…"**
 next to the Time Axis selector (most-recent tips are taken as the present, age 0).
 
+Two optional refinements (both **off by default**, and remembered between
+sessions) are available under **Settings → Overlays** when the geologic axis is
+on: **Geologic Grid Lines** draws faint reference lines across the tree at the
+finer band's interval boundaries (e.g. the Early/Middle/Late Triassic and the
+Triassic/Permian boundaries), and **Geologic Boundary Ages** labels the coarser
+band's boundaries with their age (e.g. *201.4* at the base of the Jurassic).
+
 The interval names, boundaries, and official colours are those of the
 **International Chronostratigraphic Chart** of the **International Commission on
 Stratigraphy (ICS / IUGS)** ([stratigraphy.org](https://stratigraphy.org)).

@@ -129,10 +129,61 @@ public final class GeologicAxisRenderTest {
                                 + "(isDrawPhylogram=" + tp.getControlPanel().isDrawPhylogram() + ", rootAge=" + root_age
                                 + ")" );
                     }
-                    final int on = countSaturated( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) );
+                    final BufferedImage geo_img = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
+                    final int on = countSaturated( geo_img );
                     if ( on <= ( off + 2000 ) ) {
                         fail( ok, "the geologic axis should add a lot of coloured band pixels (on=" + on + " off=" + off
                                 + ")" );
+                    }
+
+                    // OPTIONAL grid lines (off by default): turning them on adds faint reference lines through the tree
+                    o.setShowGeologicGridLines( false );
+                    final BufferedImage grid_off = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
+                    o.setShowGeologicGridLines( true );
+                    final BufferedImage grid_on = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
+                    if ( diffPixels( grid_off, grid_on ) < 200 ) {
+                        fail( ok, "the geologic grid lines should draw faint reference lines through the tree when on" );
+                    }
+                    o.setShowGeologicGridLines( false );
+
+                    // OPTIONAL boundary ages (off by default): turning them on reserves an extra row (the tips compress
+                    // -> smaller y-distance) AND draws the age labels, so the image changes
+                    tp.calcParametersForPainting( w, h );
+                    final float yd_no_ages = tp.getYdistance();
+                    final BufferedImage ages_off = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
+                    o.setShowGeologicBoundaryAges( true );
+                    tp.calcParametersForPainting( w, h );
+                    final float yd_ages = tp.getYdistance();
+                    final BufferedImage ages_on = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
+                    if ( !( yd_ages < yd_no_ages ) ) {
+                        fail( ok, "the boundary-age row must reserve extra space (compress the tips): y-distance no-ages="
+                                + yd_no_ages + " ages=" + yd_ages );
+                    }
+                    if ( diffPixels( ages_off, ages_on ) < 200 ) {
+                        fail( ok, "the geologic boundary ages should draw age labels when on" );
+                    }
+                    o.setShowGeologicBoundaryAges( false );
+                    tp.calcParametersForPainting( w, h );
+
+                    // the boundary-ages MENU TOGGLE must re-fit so the extra reserved row is applied (the checks above
+                    // set the option + recalced directly; this exercises the actionPerformed re-fit a user's click
+                    // triggers -- without it the age row would overlap the bottom tip). Geologic axis applies here.
+                    if ( frame._show_geologic_ages_cbmi != null ) {
+                        frame._show_geologic_ages_cbmi.setSelected( false );
+                        o.setShowGeologicBoundaryAges( false );
+                        frame.showWhole();
+                        final float yd_off_click = tp.getYdistance();
+                        frame._show_geologic_ages_cbmi.doClick(); // turns ON + re-fits via the real handler
+                        final float yd_on_click = tp.getYdistance();
+                        if ( !( yd_on_click < yd_off_click ) ) {
+                            fail( ok, "toggling Geologic Boundary Ages via the menu must re-fit so the reserved row is "
+                                    + "applied (tips compress): y-distance off=" + yd_off_click + " on=" + yd_on_click );
+                        }
+                        frame._show_geologic_ages_cbmi.setSelected( false );
+                        o.setShowGeologicBoundaryAges( false );
+                        frame.showWhole();
+                        tp.setSize( w, h );
+                        tp.calcParametersForPainting( w, h );
                     }
 
                     // the bottom band must reserve space -> the tip-spread is compressed (smaller y-distance) vs off
@@ -293,6 +344,22 @@ public final class GeologicAxisRenderTest {
                 final int max = Math.max( r, Math.max( g, b ) );
                 final int min = Math.min( r, Math.min( g, b ) );
                 if ( ( ( max - min ) <= 8 ) && ( min >= 210 ) && ( max <= 245 ) ) { // neutral grey ~235, not white/black
+                    ++n;
+                }
+            }
+        }
+        return n;
+    }
+
+    /** Number of pixels that differ between two equal-size renders (a robust "this toggle changed the figure" check). */
+    private static int diffPixels( final BufferedImage a, final BufferedImage b ) {
+        if ( ( a.getWidth() != b.getWidth() ) || ( a.getHeight() != b.getHeight() ) ) {
+            return Integer.MAX_VALUE;
+        }
+        int n = 0;
+        for ( int y = 0; y < a.getHeight(); ++y ) {
+            for ( int x = 0; x < a.getWidth(); ++x ) {
+                if ( ( a.getRGB( x, y ) & 0xFFFFFF ) != ( b.getRGB( x, y ) & 0xFFFFFF ) ) {
                     ++n;
                 }
             }

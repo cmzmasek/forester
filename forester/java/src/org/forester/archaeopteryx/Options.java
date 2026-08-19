@@ -242,6 +242,8 @@ final public class Options {
     private boolean _show_overview;
     private boolean _show_scale;
     private boolean _show_scale_grid;
+    private boolean _show_geologic_grid;
+    private boolean _show_geologic_ages;
     private boolean _show_scale_axis;
     private boolean _show_hpd_bars;
     private boolean _show_zebra_stripes;
@@ -327,6 +329,8 @@ final public class Options {
         _internal_number_are_confidence_for_nh_parsing = false;
         _show_scale = false;
         _show_scale_grid = false;
+        _show_geologic_grid = false;
+        _show_geologic_ages = false;
         _show_scale_axis = false;
         _show_hpd_bars = false;
         _show_zebra_stripes = false;
@@ -663,6 +667,22 @@ final public class Options {
 
     final void setShowTreeName(final boolean show_tree_name) {
         _show_tree_name = show_tree_name;
+    }
+
+    final boolean isShowGeologicGridLines() {
+        return _show_geologic_grid;
+    }
+
+    final void setShowGeologicGridLines(final boolean show_geologic_grid) {
+        _show_geologic_grid = show_geologic_grid;
+    }
+
+    final boolean isShowGeologicBoundaryAges() {
+        return _show_geologic_ages;
+    }
+
+    final void setShowGeologicBoundaryAges(final boolean show_geologic_ages) {
+        _show_geologic_ages = show_geologic_ages;
     }
 
     final boolean isShowScaleGrid() {

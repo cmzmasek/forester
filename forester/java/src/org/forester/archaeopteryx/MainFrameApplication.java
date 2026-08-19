@@ -1589,6 +1589,10 @@ public final class MainFrameApplication extends MainFrame {
         _show_tree_name_cbmi.setToolTipText("show the tree's name on the canvas (lower-left, or lower-right when the scale is shown)");
         _show_scale_grid_cbmi = new JCheckBoxMenuItem(MainFrame.DISPLAY_SCALE_GRID_LABEL);
         _show_scale_grid_cbmi.setToolTipText(MainFrame.DISPLAY_SCALE_GRID_TIP);
+        _show_geologic_grid_cbmi = new JCheckBoxMenuItem(MainFrame.GEOLOGIC_GRID_LABEL);
+        _show_geologic_grid_cbmi.setToolTipText(MainFrame.GEOLOGIC_GRID_TIP);
+        _show_geologic_ages_cbmi = new JCheckBoxMenuItem(MainFrame.GEOLOGIC_AGES_LABEL);
+        _show_geologic_ages_cbmi.setToolTipText(MainFrame.GEOLOGIC_AGES_TIP);
         _show_scale_axis_cbmi = new JCheckBoxMenuItem(MainFrame.DISPLAY_SCALE_AXIS_LABEL);
         _show_scale_axis_cbmi.setToolTipText(MainFrame.DISPLAY_SCALE_AXIS_TIP);
         _show_hpd_bars_cbmi = new JCheckBoxMenuItem(MainFrame.DISPLAY_HPD_BARS_LABEL);
@@ -1678,6 +1682,8 @@ public final class MainFrameApplication extends MainFrame {
         customizeCheckBoxMenuItem(_show_scale_cbmi, getOptions().isShowScale());
         customizeCheckBoxMenuItem(_show_tree_name_cbmi, getOptions().isShowTreeName());
         customizeCheckBoxMenuItem(_show_scale_grid_cbmi, getOptions().isShowScaleGrid());
+        customizeCheckBoxMenuItem(_show_geologic_grid_cbmi, getOptions().isShowGeologicGridLines());
+        customizeCheckBoxMenuItem(_show_geologic_ages_cbmi, getOptions().isShowGeologicBoundaryAges());
         customizeCheckBoxMenuItem(_show_scale_axis_cbmi, getOptions().isShowScaleAxis());
         customizeCheckBoxMenuItem(_show_hpd_bars_cbmi, getOptions().isShowHpdBars());
         customizeCheckBoxMenuItem(_show_zebra_stripes_cbmi, getOptions().isShowZebraStripes());

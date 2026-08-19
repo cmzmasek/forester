@@ -4477,6 +4477,46 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.setStroke(saved_stroke);
     }
 
+    /** Optional (off by default) faint reference lines across the tree at the FINE band's interval boundaries when the
+     *  geologic axis is on -- e.g. the Early/Middle/Late Triassic and the Triassic/Permian boundaries. Drawn BEHIND the
+     *  tree, mirroring {@link #paintScaleGrid} (vertical lines in a horizontal layout; logical lines that ride R into
+     *  horizontal grid lines in a vertical orientation; the CIRCULAR analogue is the boundary rings in
+     *  {@link #paintGeologicRingsCircular}). */
+    private void paintGeologicGridLines(final Graphics2D g, final boolean to_pdf, final boolean to_graphics_file,
+                                        final int graphics_file_y, final int graphics_file_height) {
+        if (!getOptions().isShowGeologicGridLines() || !geologicAxisApplies()) {
+            return;
+        }
+        final double root_age = timeAxisRootAgeMa();
+        final double corr = getXcorrectionFactor();
+        if ((root_age <= 0) || (corr <= 0)) {
+            return;
+        }
+        final float origin_x = _phylogeny.getRoot().getXcoord();
+        final float tip_x = (float) (origin_x + (getMaxDistanceToRoot() * corr));
+        final GeologicTimeScale.Rank fine = GeologicTimeScale.bandRanks(root_age)[1];
+        final boolean use_export_extent = (to_pdf || to_graphics_file) && (graphics_file_height > 0);
+        final int top = isVerticalOrientation() ? 0 : (use_export_extent ? graphics_file_y : 0);
+        final int bottom = isVerticalOrientation() ? treeBreadthExtent()
+                : (use_export_extent ? (graphics_file_y + graphics_file_height) : getHeight());
+        final Color saved_color = g.getColor();
+        final Stroke saved_stroke = g.getStroke();
+        g.setColor(scaleGridColor(to_pdf, to_graphics_file));
+        g.setStroke(STROKE_05);
+        // a line at each interval's OLDER boundary (its younger boundary is the older boundary of the next interval,
+        // so drawing every old boundary covers all internal boundaries); skip the tips (0) and the root edge
+        for (final GeologicTimeScale.Interval iv : GeologicTimeScale.overlapping(fine, 0, root_age)) {
+            final double b = Math.min(root_age, iv.oldMa());
+            if ((b <= 0) || (b >= root_age)) {
+                continue;
+            }
+            final int x = (int) Math.round(ageToX(b, root_age, origin_x, tip_x));
+            drawLine(x, top, x, bottom, g);
+        }
+        g.setColor(saved_color);
+        g.setStroke(saved_stroke);
+    }
+
     /**
      * A labeled distance axis with tick marks along the bottom (phylograms only): a horizontal line spanning the
      * tree's depth, a tick at each scale-distance interval, and a numeric label under each tick -- so branch lengths
@@ -4760,13 +4800,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             g.setColor(geologicRingFill(iv.color(), to_pdf, to_graphics_file));
             g.fill(ring);
         }
-        // faint fine-rank boundary rings (the finer subdivision, as ring outlines within the coarse-rank colours)
-        g.setStroke(STROKE_05);
-        g.setColor(scaleGridColor(to_pdf, to_graphics_file));
-        for (final GeologicTimeScale.Interval iv : GeologicTimeScale.overlapping(ranks[1], 0, root_age)) {
-            final int rr = (int) Math.round(((root_age - Math.max(0, iv.youngMa())) / root_age) * radius);
-            if ((rr > 0) && (rr < radius)) {
-                g.drawOval(cx - rr, cy - rr, 2 * rr, 2 * rr);
+        // faint fine-rank boundary rings (the finer subdivision, as ring outlines within the coarse-rank colours) --
+        // the circular analogue of the geologic grid lines, so they follow the same optional (off by default) toggle
+        if (getOptions().isShowGeologicGridLines()) {
+            g.setStroke(STROKE_05);
+            g.setColor(scaleGridColor(to_pdf, to_graphics_file));
+            for (final GeologicTimeScale.Interval iv : GeologicTimeScale.overlapping(ranks[1], 0, root_age)) {
+                final int rr = (int) Math.round(((root_age - Math.max(0, iv.youngMa())) / root_age) * radius);
+                if ((rr > 0) && (rr < radius)) {
+                    g.drawOval(cx - rr, cy - rr, 2 * rr, 2 * rr);
+                }
             }
         }
         g.setColor(saved);
@@ -4822,6 +4865,66 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 g.setColor(Color.BLACK);
             }
             g.drawString(iv.name(), lx, ly);
+            last_label_y = ly;
+        }
+        g.setFont(saved_font);
+        g.setColor(saved);
+    }
+
+    /** Optional Ma age labels at the COARSE band's boundary RADII, up the top (12 o'clock) spoke, for the circular
+     *  geologic axis -- the circular analogue of the rectangular boundary-age row. Drawn ON TOP with a faint background
+     *  so they read over the band + any branch, decimated so they never stack. Gated on "Geologic Boundary Ages". */
+    private void paintGeologicBoundaryAgesCircular(final Graphics2D g, final int cx, final int cy, final int radius,
+                                                   final boolean to_pdf, final boolean to_graphics_file) {
+        if (!geologicRingsApplyCircular() || (radius <= 0) || !getOptions().isShowGeologicBoundaryAges()) {
+            return;
+        }
+        final double root_age = timeAxisRootAgeMa();
+        if (root_age <= 0) {
+            return;
+        }
+        final Font saved_font = g.getFont();
+        final Color saved = g.getColor();
+        g.setFont(getTreeFontSet().getSmallFont());
+        final FontMetrics fm = getTreeFontSet().getFontMetricsSmall();
+        final int line_h = fm.getHeight();
+        final Color bg = getTreeColorSet().getBackgroundColor();
+        final Color ink = scaleInkColor(to_pdf, to_graphics_file);
+        final boolean bw = (to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite();
+        // each coarse interval's OLDER edge is a boundary; youngest first = outer first (smallest ly), decimate down.
+        // Skip boundaries in the crowded OUTER region (near the tip ring, where the thin outer annuli + their name
+        // chips collide) -- scale-adaptive, so a wider zoom shows more ages; the deep, well-spaced boundaries stay.
+        // skip the crowded outer region, but never go negative (on a tiny disc that would drop ALL ages, not just the
+        // outer ones) -- then only the age-0 edge is excluded and the deep, well-spaced boundaries still show
+        final int outer_cutoff = (radius > (2 * line_h)) ? (radius - (2 * line_h)) : radius;
+        final java.util.List<Double> ages = new java.util.ArrayList<>();
+        for (final GeologicTimeScale.Interval iv : GeologicTimeScale.overlapping(GeologicTimeScale.bandRanks(root_age)[0],
+                0, root_age)) {
+            final double b = iv.oldMa();
+            if ((b > 0) && (b < root_age)) {
+                ages.add(b);
+            }
+        }
+        ages.sort((a, c) -> Double.compare(a, c)); // ascending age = younger boundary first = larger radius (outer)
+        int last_label_y = Integer.MIN_VALUE / 2;
+        for (final double b : ages) {
+            final int rr = (int) Math.round(((root_age - b) / root_age) * radius);
+            if ((rr <= 0) || (rr >= outer_cutoff)) {
+                continue;
+            }
+            final int ly = (cy - rr) + (fm.getAscent() / 2);
+            if ((ly - last_label_y) < line_h) {
+                continue;
+            }
+            final String label = TreePanelUtil.formatCompactNumber(b);
+            final int w = fm.stringWidth(label);
+            final int lx = cx - (w / 2);
+            if (!bw) {
+                g.setColor(new Color(bg.getRed(), bg.getGreen(), bg.getBlue(), 225));
+                g.fillRect(lx - 1, ly - fm.getAscent(), w + 2, line_h);
+            }
+            g.setColor(ink);
+            g.drawString(label, lx, ly);
             last_label_y = ly;
         }
         g.setFont(saved_font);
@@ -4925,17 +5028,29 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return getFontMetrics(getTreeFontSet().getSmallFont()).getHeight() + 2;
     }
 
-    /** Height of the two drawn geologic rows (Period + Epoch), WITHOUT the edge gap. */
+    /** Height of the two drawn geologic rows (coarse + fine band), WITHOUT the edge gap or the optional age-label row. */
     private int geologicAxisBandHeight() {
         return 2 * geologicAxisRowHeight();
     }
 
-    /** The full breadth reserved for the rectangular geologic axis: the two drawn rows PLUS a few pixels of
-     *  {@link #GEOLOGIC_AXIS_EDGE_GAP} between the axis and the canvas/window edge, so the axis doesn't sit flush
-     *  against the border (which reads as "cut off / more below"). Used by both the horizontal-bottom and vertical-side
-     *  reserves and to place the band, so the drawn band always ends one gap short of the edge. */
+    /** Height of the optional boundary-age label row (drawn between the band and the edge when "Geologic Boundary Ages"
+     *  is on), 0 otherwise. */
+    private int geologicAgeRowHeight() {
+        return getOptions().isShowGeologicBoundaryAges() ? geologicAxisRowHeight() : 0;
+    }
+
+    /** The drawn content of the rectangular geologic axis (the two band rows + the optional age-label row), WITHOUT the
+     *  edge gap -- i.e. from the band's tree-side edge to its outermost drawn edge. */
+    private int geologicAxisContentHeight() {
+        return geologicAxisBandHeight() + geologicAgeRowHeight();
+    }
+
+    /** The full breadth reserved for the rectangular geologic axis: the drawn content ({@link #geologicAxisContentHeight})
+     *  PLUS a few pixels of {@link #GEOLOGIC_AXIS_EDGE_GAP} between the axis and the canvas/window edge, so the axis
+     *  doesn't sit flush against the border. Used by both the horizontal-bottom and vertical-side reserves and to place
+     *  the band; the band is drawn at (edge - reserve), so the age row lands between the band and the edge. */
     private int geologicAxisReserve() {
-        return geologicAxisBandHeight() + GEOLOGIC_AXIS_EDGE_GAP;
+        return geologicAxisContentHeight() + GEOLOGIC_AXIS_EDGE_GAP;
     }
 
     /** age (Ma) -> device x: the root (oldest age) sits at {@code origin_x}, the tips (age 0) at {@code tip_x}. */
@@ -4966,6 +5081,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final GeologicTimeScale.Rank[] ranks = GeologicTimeScale.bandRanks(root_age);
         paintGeologicBand(g, ranks[0], root_age, origin_x, tip_x, top_y, row_h, to_pdf, to_graphics_file);
         paintGeologicBand(g, ranks[1], root_age, origin_x, tip_x, top_y + row_h, row_h, to_pdf, to_graphics_file);
+        // optional Ma age labels at the coarse-band boundaries, in the reserved row between the band and the edge
+        paintGeologicBoundaryAges(g, ranks[0], root_age, origin_x, tip_x, top_y + geologicAxisBandHeight(), to_pdf,
+                to_graphics_file);
         g.setFont(saved_font);
         g.setColor(saved_color);
     }
@@ -4994,8 +5112,46 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final GeologicTimeScale.Rank[] ranks = GeologicTimeScale.bandRanks(root_age); // Period/Epoch -> Era/Period -> Eon/Era
         paintGeologicBand(g, ranks[0], root_age, origin_x, tip_x, band_top, row_h, to_pdf, to_graphics_file);
         paintGeologicBand(g, ranks[1], root_age, origin_x, tip_x, band_top + row_h, row_h, to_pdf, to_graphics_file);
+        // optional Ma age labels at the coarse-band boundaries; ride R (logical coords) like the band cell labels
+        paintGeologicBoundaryAges(g, ranks[0], root_age, origin_x, tip_x, band_top + geologicAxisBandHeight(), to_pdf,
+                to_graphics_file);
         g.setFont(saved_font);
         g.setColor(saved_color);
+    }
+
+    /** Draws the optional Ma age labels at the COARSE band's interval boundaries (e.g. "201.4" at the base of the
+     *  Jurassic), on a baseline just past the band toward the edge, decimated so they never overlap. Reused by the
+     *  horizontal axis (device coords) and the vertical axis (logical coords, riding R into rotated labels). */
+    private void paintGeologicBoundaryAges(final Graphics2D g, final GeologicTimeScale.Rank coarse, final double root_age,
+                                           final float origin_x, final float tip_x, final int band_bottom_y,
+                                           final boolean to_pdf, final boolean to_graphics_file) {
+        if (!getOptions().isShowGeologicBoundaryAges()) {
+            return;
+        }
+        g.setFont(getTreeFontSet().getSmallFont());
+        final FontMetrics fm = g.getFontMetrics();
+        g.setColor(scaleInkColor(to_pdf, to_graphics_file));
+        final int baseline_y = band_bottom_y + fm.getAscent() + 1;
+        // each coarse interval's OLDER edge is a boundary (its younger edge is the older edge of the next interval);
+        // collect the in-range boundaries as (x, age), then place left->right with a min-gap decimation
+        final java.util.List<double[]> pts = new java.util.ArrayList<>();
+        for (final GeologicTimeScale.Interval iv : GeologicTimeScale.overlapping(coarse, 0, root_age)) {
+            final double b = iv.oldMa();
+            if ((b > 0) && (b < root_age)) {
+                pts.add(new double[] { ageToX(b, root_age, origin_x, tip_x), b });
+            }
+        }
+        pts.sort((a, c) -> Double.compare(a[0], c[0]));
+        int last_right = Integer.MIN_VALUE;
+        for (final double[] pt : pts) {
+            final String label = TreePanelUtil.formatCompactNumber(pt[1]);
+            final int w = fm.stringWidth(label);
+            final int left = (int) Math.round(pt[0]) - (w / 2);
+            if (left >= (last_right + SCALE_AXIS_LABEL_GAP)) {
+                g.drawString(label, left, baseline_y);
+                last_right = left + w;
+            }
+        }
     }
 
     /** Shifts the vertical geologic band's logical breadth so its OUTER edge (away from the tips) floats to the viewport
@@ -5012,7 +5168,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ((vr.width <= 0) || (vr.height <= 0)) {
             return anchored_band_top;
         }
-        final int outer_ly = anchored_band_top + geologicAxisBandHeight(); // the band's outer edge (larger breadth)
+        // the OUTERMOST drawn edge (past the band + the optional age-label row) is what floats to the viewport edge
+        final int outer_ly = anchored_band_top + geologicAxisContentHeight(); // outermost drawn edge (larger breadth)
         final Point2D.Double outer_dev = screenPoint(origin_x, outer_ly);
         final double toward_tree_x = screenPoint(origin_x, outer_ly - 16.0).x; // 16 breadth toward the tips
         // the outer edge floats to the viewport edge on the side AWAY from the tree (a small gap in from the border)
@@ -5020,7 +5177,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final int target_x = tree_to_right ? (vr.x + GEOLOGIC_AXIS_EDGE_GAP)
                 : ((vr.x + vr.width) - GEOLOGIC_AXIS_EDGE_GAP);
         final Point2D.Double floated = toLogicalPoint(target_x, (int) Math.round(outer_dev.y));
-        return (int) Math.round(floated.y) - geologicAxisBandHeight();
+        return (int) Math.round(floated.y) - geologicAxisContentHeight();
     }
 
     private void paintGeologicBand(final Graphics2D g, final GeologicTimeScale.Rank rank, final double root_age,
@@ -10517,6 +10674,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             if (!vertical && scale_grid_shown) {
                 paintScaleGrid(g, to_pdf, to_graphics_file, graphics_file_y, graphics_file_height);
             }
+            if (!vertical) {
+                // optional geologic grid lines at the fine-band boundaries (self-gated on the option + geologic axis)
+                paintGeologicGridLines(g, to_pdf, to_graphics_file, graphics_file_y, graphics_file_height);
+            }
             // Root-top/bottom: the tree is laid out logically (above); now rotate the whole canvas for the geometry
             // pass. Geometry (branches, boxes, triangles, halos) rides R for free; node TEXT is re-anchored upright
             // or at 45deg by withNodeTextFrame inside paintNodeRectangular; the viewport-fixed chrome further below
@@ -10532,6 +10693,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 if (scale_grid_shown) {
                     paintScaleGrid(g, to_pdf, to_graphics_file, graphics_file_y, graphics_file_height);
                 }
+                // optional geologic grid lines ride R the same way (logical lines -> horizontal grid lines by depth)
+                paintGeologicGridLines(g, to_pdf, to_graphics_file, graphics_file_y, graphics_file_height);
             }
             for (final PhylogenyNode element : _nodes_in_preorder) {
                 paintNodeRectangular(g,
@@ -10728,8 +10891,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             paintAnnotationColumnsCircular(g, center_x, center_y, radius > 0 ? radius : 0);
             // clade bands as polar sectors/arcs, over the tree (coords set above), like the rectangular wash
             paintCladeBandsCircular(g, center_x, center_y, radius > 0 ? radius : 0);
-            // the geologic PERIOD names, up the top spoke ON TOP of the tree (the annuli are drawn behind, above)
+            // the geologic band names, up the top spoke ON TOP of the tree (the annuli are drawn behind, above)
             paintGeologicRingLabelsCircular(g, center_x, center_y, radius > 0 ? radius : 0, to_pdf, to_graphics_file);
+            // optional Ma age labels at the coarse-band boundary radii, up the spoke (gated on "Geologic Boundary Ages")
+            paintGeologicBoundaryAgesCircular(g, center_x, center_y, radius > 0 ? radius : 0, to_pdf, to_graphics_file);
             paintRadialOverlays(g, to_pdf, to_graphics_file); // dots + pies + hover preview + halos (coords set above)
             if (getOptions().isShowOverview() && isOvOn() && !to_graphics_file && !to_pdf) {
                 final int radius_ov = (int) (getOvMaxHeight() < getOvMaxWidth() ? getOvMaxHeight() / 2

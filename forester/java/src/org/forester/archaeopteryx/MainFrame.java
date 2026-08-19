@@ -169,6 +169,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String SHOW_TREE_NAME_LABEL = "Tree Name";
     static final String DISPLAY_SCALE_GRID_LABEL = "Scale Grid Lines";
     static final String DISPLAY_SCALE_GRID_TIP = "Draw faint vertical reference lines at scale intervals across the tree (phylograms only), so branch depths are easy to compare.";
+    static final String GEOLOGIC_GRID_LABEL = "Geologic Grid Lines";
+    static final String GEOLOGIC_GRID_TIP = "When the Geologic time axis is on, draw faint reference lines across the tree at the finer band's interval boundaries (e.g. the Early/Middle/Late Triassic and Triassic/Permian boundaries).";
+    static final String GEOLOGIC_AGES_LABEL = "Geologic Boundary Ages";
+    static final String GEOLOGIC_AGES_TIP = "When the Geologic time axis is on, label the coarser band's interval boundaries with their age (e.g. \"201.4 Ma\" at the base of the Jurassic).";
     static final String DISPLAY_SCALE_AXIS_LABEL = "Scale Axis";
     static final String DISPLAY_SCALE_AXIS_TIP = "Draw a labeled distance axis with tick marks along the bottom (phylograms only), so branch lengths can be read off directly.";
     static final String DISPLAY_HPD_BARS_LABEL = "Node Age Bars (HPD)";
@@ -281,6 +285,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JCheckBoxMenuItem _show_scale_cbmi;                                                                                                                                                                                                      //TODO fix me
     JCheckBoxMenuItem _show_tree_name_cbmi;
     JCheckBoxMenuItem _show_scale_grid_cbmi;
+    JCheckBoxMenuItem _show_geologic_grid_cbmi;
+    JCheckBoxMenuItem _show_geologic_ages_cbmi;
     JCheckBoxMenuItem _show_scale_axis_cbmi;
     JCheckBoxMenuItem _show_hpd_bars_cbmi;
     JCheckBoxMenuItem _show_zebra_stripes_cbmi;
@@ -519,6 +525,18 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             updateOptions(getOptions());
         } else if (o == _show_scale_grid_cbmi) {
             updateOptions(getOptions());
+        } else if (o == _show_geologic_grid_cbmi) {
+            updateOptions(getOptions());
+        } else if (o == _show_geologic_ages_cbmi) {
+            updateOptions(getOptions());
+            // the boundary-age row grows the geologic-axis reserve, so toggling it must re-fit (like the scale axis)
+            // so the tips compress/reclaim the row and the age labels clear the bottom tip -- but only where the
+            // RECTANGULAR geologic axis is drawn (geologicAxisApplies()); circular uses no such reserve (the ages ride
+            // the spoke), and a re-fit there would reset the radial zoom.
+            final TreePanel tp_ages = getCurrentTreePanel();
+            if ((tp_ages != null) && tp_ages.geologicAxisApplies()) {
+                showWhole();
+            }
         } else if (o == _show_scale_axis_cbmi) {
             updateOptions(getOptions());
             // the scale axis reserves a tip-spread band (a side ruler in a vertical orientation, a bottom band in a
@@ -2277,6 +2295,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         // The search options (case/words/regex/inverse/properties) are now set directly on Options
         // by the control-panel checkboxes, so they are intentionally not read from menu items here.
         options.setShowScaleGrid((_show_scale_grid_cbmi != null) && _show_scale_grid_cbmi.isSelected());
+        options.setShowGeologicGridLines((_show_geologic_grid_cbmi != null) && _show_geologic_grid_cbmi.isSelected());
+        options.setShowGeologicBoundaryAges((_show_geologic_ages_cbmi != null) && _show_geologic_ages_cbmi.isSelected());
         options.setShowScaleAxis((_show_scale_axis_cbmi != null) && _show_scale_axis_cbmi.isSelected());
         options.setShowHpdBars((_show_hpd_bars_cbmi != null) && _show_hpd_bars_cbmi.isSelected());
         options.setShowZebraStripes((_show_zebra_stripes_cbmi != null) && _show_zebra_stripes_cbmi.isSelected());
@@ -2385,6 +2405,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         setSelected(_show_default_node_shapes_external_cbmi, options.isShowDefaultNodeShapesExternal());
         setSelected(_show_default_node_shapes_for_marked_cbmi, options.isShowDefaultNodeShapesForMarkedNodes());
         setSelected(_show_scale_grid_cbmi, options.isShowScaleGrid());
+        setSelected(_show_geologic_grid_cbmi, options.isShowGeologicGridLines());
+        setSelected(_show_geologic_ages_cbmi, options.isShowGeologicBoundaryAges());
         setSelected(_show_scale_axis_cbmi, options.isShowScaleAxis());
         setSelected(_show_hpd_bars_cbmi, options.isShowHpdBars());
         setSelected(_show_zebra_stripes_cbmi, options.isShowZebraStripes());

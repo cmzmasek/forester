@@ -93,6 +93,8 @@ public final class ResetToDefaultsTest {
         o.setPhylogenyDisplayType( PHYLOGENY_DISPLAY_TYPE.CLADOGRAM ); // default is UNALIGNED_PHYLOGRAM
         o.setColorPaletteName( "Colorblind-friendly" );
         o.setShowScaleGrid( true );
+        o.setShowGeologicGridLines( true );
+        o.setShowGeologicBoundaryAges( true );
         o.setShowScaleAxis( true );
         o.setShowHpdBars( true );
         o.setShowZebraStripes( true );
@@ -152,6 +154,8 @@ public final class ResetToDefaultsTest {
         ok &= eq( "timeAxisType default NONE", def.getTimeAxisType(), Options.TIME_AXIS_TYPE.NONE );
         ok &= eq( "palette", o.getColorPaletteName(), def.getColorPaletteName() );
         ok &= eq( "showScaleGrid", o.isShowScaleGrid(), def.isShowScaleGrid() );
+        ok &= eq( "showGeologicGridLines", o.isShowGeologicGridLines(), def.isShowGeologicGridLines() );
+        ok &= eq( "showGeologicBoundaryAges", o.isShowGeologicBoundaryAges(), def.isShowGeologicBoundaryAges() );
         ok &= eq( "showScaleAxis", o.isShowScaleAxis(), def.isShowScaleAxis() );
         ok &= eq( "showHpdBars", o.isShowHpdBars(), def.isShowHpdBars() );
         ok &= eq( "showZebraStripes", o.isShowZebraStripes(), def.isShowZebraStripes() );
@@ -207,7 +211,8 @@ public final class ResetToDefaultsTest {
                           frame._transparent_export_background_cbmi, frame._graphics_export_white_background_cbmi,
                           frame._color_labels_same_as_parent_branch, frame._show_default_node_shapes_internal_cbmi,
                           frame._show_default_node_shapes_external_cbmi, frame._show_default_node_shapes_for_marked_cbmi,
-                          frame._show_scale_grid_cbmi, frame._show_scale_axis_cbmi, frame._show_hpd_bars_cbmi,
+                          frame._show_scale_grid_cbmi, frame._show_geologic_grid_cbmi, frame._show_geologic_ages_cbmi,
+                          frame._show_scale_axis_cbmi, frame._show_hpd_bars_cbmi,
                           frame._show_zebra_stripes_cbmi, frame._tip_labels_below_columns_cbmi,
                           frame._reverse_tip_order_cbmi,
                           frame._bold_found_labels_cbmi, frame._dim_non_matches_cbmi, frame._pulse_found_nodes_cbmi,

@@ -204,6 +204,8 @@ final class SettingsDialog extends JDialog {
                                                   v -> { _mf.getOptions().setTimeAxisType( v );
                                                          maybeCalibrateAndFit( v ); } ) ) );
         add( c, labeled( "", button( "Set root age…", this::setTimeAxisRootAgeDialog ) ) );
+        add( c, cb( _mf._show_geologic_grid_cbmi ) );
+        add( c, cb( _mf._show_geologic_ages_cbmi ) );
         c.add( header( "Tree Name & Overview" ) );
         add( c, cb( _mf._show_tree_name_cbmi ) );
         add( c, cb( _mf._show_overview_cbmi ) );
