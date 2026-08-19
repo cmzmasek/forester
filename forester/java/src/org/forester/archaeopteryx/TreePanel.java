@@ -235,6 +235,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private static final Color CONNECTOR_GUIDE_COLOR = new Color(200, 200, 200);
     // How far the (faint) scale-grid color is blended from the background toward the branch-length color.
     private static final double SCALE_GRID_BLEND = 0.18;
+    private static final int    GEOLOGIC_RING_ALPHA = 70; // translucency of the circular geologic-band annuli
     private static final int    SCALE_AXIS_TICK_LEN = 4;  // length (px) of the labeled scale-axis tick marks
     private static final int    SCALE_AXIS_LABEL_GAP = 4; // min px between adjacent tick labels (else the label is decimated)
     private static final int    SCALE_AXIS_UNIT_GAP = 5;  // gap before the trailing [unit] label
@@ -343,6 +344,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private boolean   _time_tree_dated         = false;
     private String    _time_tree_unit          = null;
     private Phylogeny _confirmed_time_tree_for = null;
+    // time-AXIS calibration: an explicit user root-age (Ma) override wins; else derive from the oldest <date>, cached
+    private double    _time_axis_root_age       = 0;
+    private Phylogeny _time_axis_root_age_for    = null;
+    private Phylogeny _time_axis_age_cached_for = null;
+    private double    _time_axis_root_age_cache = 0;
     private final RenderingHints _rendering_hints = new RenderingHints(RenderingHints.KEY_RENDERING,
             RenderingHints.VALUE_RENDER_DEFAULT);
     private JTextArea _rollover_popup;
@@ -4618,7 +4624,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  fit, and scroll agree and the ruler sits clear just below the last tip. 0 in a vertical orientation, and 0
      *  wherever the axis is not drawn (cladogram / CIRCULAR / UNROOTED / no ticks) -- see scaleAxisAppliesToLayout. */
     private int scaleAxisBottomReserve() {
-        if (isVerticalOrientation() || !getOptions().isShowScaleAxis() || !scaleAxisAppliesToLayout()) {
+        if (isVerticalOrientation()) {
+            return 0;
+        }
+        if (geologicAxisApplies()) {
+            return geologicAxisBandHeight(); // the geologic axis takes the bottom strip in place of the numeric axis
+        }
+        if (!getOptions().isShowScaleAxis() || !scaleAxisAppliesToLayout()) {
             return 0;
         }
         return scaleAxisBandHeight();
@@ -4629,8 +4641,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  a vertical orientation on a phylogram with a scale. Reserved in the breadth budget (calcParametersForPainting)
      *  and the logical breadth extent (logicalTreeExtent), so paint, fit, and scroll all agree. */
     private int verticalScaleAxisReserve() {
-        if (!isVerticalOrientation() || !getOptions().isShowScaleAxis() || !getControlPanel().isDrawPhylogram()
-                || (getScaleDistance() <= 0.0)) {
+        if (!isVerticalOrientation()) {
+            return 0;
+        }
+        if (geologicAxisApplies()) {
+            return geologicAxisBandHeight(); // the geologic two-band axis takes the breadth side band in vertical too
+        }
+        if (!getOptions().isShowScaleAxis() || !getControlPanel().isDrawPhylogram() || (getScaleDistance() <= 0.0)) {
             return 0;
         }
         final double[] ticks = TreePanelUtil.scaleAxisTickValues(getMaxDistanceToRoot(), getScaleDistance());
@@ -4709,6 +4726,114 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.setFont(saved_font);
     }
 
+    /** Concentric ICS geologic bands for a circular PHYLOGRAM: the radial axis IS time (radius = distance-from-root), so
+     *  each geologic PERIOD fills a translucent coloured annulus from its old-boundary radius (inner) to its
+     *  young-boundary radius (outer), drawn BEHIND the tree, with faint EPOCH boundary rings for the finer subdivision
+     *  and the period name labelled up the top (12 o'clock) spoke. The polar analogue of the rectangular two-band axis;
+     *  a no-op unless {@link #geologicRingsApplyCircular()}. */
+    private void paintGeologicRingsCircular(final Graphics2D g, final int cx, final int cy, final int radius,
+                                            final boolean to_pdf, final boolean to_graphics_file) {
+        if (!geologicRingsApplyCircular() || (radius <= 0)) {
+            return;
+        }
+        final double root_age = timeAxisRootAgeMa();
+        if (root_age <= 0) {
+            return;
+        }
+        final Color saved = g.getColor();
+        final Stroke saved_stroke = g.getStroke();
+        // translucent PERIOD annuli (age -> radius: age root_age at the centre, age 0 at the outer ring)
+        for (final GeologicTimeScale.Interval iv : GeologicTimeScale.overlapping(GeologicTimeScale.Rank.PERIOD, 0,
+                root_age)) {
+            final double young = Math.max(0, iv.youngMa());
+            final double old = Math.min(root_age, iv.oldMa());
+            final int r_outer = (int) Math.round(((root_age - young) / root_age) * radius); // younger -> larger radius
+            final int r_inner = (int) Math.round(((root_age - old) / root_age) * radius);
+            if ((r_outer - r_inner) <= 0) {
+                continue;
+            }
+            final Area ring = new Area(new Ellipse2D.Double(cx - r_outer, cy - r_outer, 2 * r_outer, 2 * r_outer));
+            ring.subtract(new Area(new Ellipse2D.Double(cx - r_inner, cy - r_inner, 2 * r_inner, 2 * r_inner)));
+            g.setColor(geologicRingFill(iv.color(), to_pdf, to_graphics_file));
+            g.fill(ring);
+        }
+        // faint EPOCH boundary rings (the finer subdivision, as ring outlines within the period colours)
+        g.setStroke(STROKE_05);
+        g.setColor(scaleGridColor(to_pdf, to_graphics_file));
+        for (final GeologicTimeScale.Interval iv : GeologicTimeScale.overlapping(GeologicTimeScale.Rank.EPOCH, 0,
+                root_age)) {
+            final int rr = (int) Math.round(((root_age - Math.max(0, iv.youngMa())) / root_age) * radius);
+            if ((rr > 0) && (rr < radius)) {
+                g.drawOval(cx - rr, cy - rr, 2 * rr, 2 * rr);
+            }
+        }
+        g.setColor(saved);
+        g.setStroke(saved_stroke);
+    }
+
+    /** The period-name labels for the circular geologic bands, drawn UP the top (12 o'clock) spoke ON TOP of the tree
+     *  (so a branch at 12 o'clock can't hide them), each at its annulus mid-radius, decimated so they never stack. Split
+     *  from {@link #paintGeologicRingsCircular} (which fills the annuli behind the tree) so the labels stay legible. */
+    private void paintGeologicRingLabelsCircular(final Graphics2D g, final int cx, final int cy, final int radius,
+                                                 final boolean to_pdf, final boolean to_graphics_file) {
+        if (!geologicRingsApplyCircular() || (radius <= 0)) {
+            return;
+        }
+        final double root_age = timeAxisRootAgeMa();
+        if (root_age <= 0) {
+            return;
+        }
+        final Font saved_font = g.getFont();
+        final Color saved = g.getColor();
+        g.setFont(getTreeFontSet().getSmallFont());
+        final FontMetrics fm = getTreeFontSet().getFontMetricsSmall();
+        final int line_h = fm.getHeight();
+        // collect each period's label baseline y up the top spoke (at its annulus mid-radius), then draw INNER->OUTER
+        // (ascending radius) greedily keeping a >=line_h gap -- order-independent of what overlapping() returns
+        final java.util.List<GeologicTimeScale.Interval> periods = new java.util.ArrayList<>(
+                GeologicTimeScale.overlapping(GeologicTimeScale.Rank.PERIOD, 0, root_age));
+        periods.sort((x, y) -> Double.compare(x.youngMa(), y.youngMa())); // young first = outer first (larger radius)
+        int last_label_y = Integer.MIN_VALUE / 2; // outer->inner, ly increases; keep a >=line_h gap (half-min: no overflow)
+        for (final GeologicTimeScale.Interval iv : periods) {
+            final int r_outer = (int) Math.round(((root_age - Math.max(0, iv.youngMa())) / root_age) * radius);
+            final int r_inner = (int) Math.round(((root_age - Math.min(root_age, iv.oldMa())) / root_age) * radius);
+            if ((r_outer - r_inner) <= 0) {
+                continue;
+            }
+            final int ly = (cy - ((r_inner + r_outer) / 2)) + (fm.getAscent() / 2);
+            if ((ly - last_label_y) < line_h) {
+                continue;
+            }
+            final int lx = cx - (fm.stringWidth(iv.name()) / 2);
+            final boolean bw = (to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite();
+            if (!bw) {
+                // an opaque ICS-coloured chip so the name reads over both the pale band and any branch at 12 o'clock;
+                // ink contrast-picked against that chip colour
+                g.setColor(iv.color());
+                g.fillRect(lx - 2, ly - fm.getAscent(), fm.stringWidth(iv.name()) + 4, line_h);
+                g.setColor(labelInkOn(iv.color()));
+            }
+            else {
+                // B&W export: no chip; the annulus behind is the light grey geologicRingFill paints, so use black ink
+                // (NOT labelInkOn(iv.color()), which would pick white for a dark period and vanish on the grey)
+                g.setColor(Color.BLACK);
+            }
+            g.drawString(iv.name(), lx, ly);
+            last_label_y = ly;
+        }
+        g.setFont(saved_font);
+        g.setColor(saved);
+    }
+
+    /** Translucent fill for a circular geologic band: the official ICS colour softened with alpha so the tree + rings
+     *  read over it (a light grey in a B&W export -- the band is a colour key, muted when colour is unavailable). */
+    private Color geologicRingFill(final Color c, final boolean to_pdf, final boolean to_graphics_file) {
+        if ((to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite()) {
+            return new Color(235, 235, 235);
+        }
+        return new Color(c.getRed(), c.getGreen(), c.getBlue(), GEOLOGIC_RING_ALPHA);
+    }
+
     /** The "Time tree" badge text for the current tree, or null when it is not a time tree. A DATED tree (node
      *  {@code <date>}s) is auto-labeled -- with its declared unit if any; an ULTRAMETRIC tree is labeled only after
      *  the user confirmed the load-time offer. The expensive DATED detection is cached per tree. */
@@ -4736,6 +4861,159 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     boolean isConfirmedTimeTreeForTest() {
         return _confirmed_time_tree_for == _phylogeny;
+    }
+
+    // ---- time axis (geologic) ----------------------------------------------------------------------------------
+
+    /** The absolute age (Ma before present) at the ROOT, used to calibrate the time axis: an explicit user
+     *  calibration if set (&gt; 0), else the oldest node {@code <date>} value (a dated tree). 0 when the tree carries
+     *  no absolute time information (an uncalibrated ultrametric tree). Cached per tree. */
+    double timeAxisRootAgeMa() {
+        // an explicit override applies only to the tree it was set on -- navigating into a subtree / undo / paste
+        // replaces _phylogeny, and a stale override must not calibrate the now-different displayed tree
+        if ((_time_axis_root_age > 0) && (_time_axis_root_age_for == _phylogeny)) {
+            return _time_axis_root_age;
+        }
+        if (_time_axis_age_cached_for != _phylogeny) {
+            _time_axis_age_cached_for = _phylogeny;
+            double max = 0;
+            if (_phylogeny != null) {
+                for (final PhylogenyNodeIterator it = _phylogeny.iteratorPreorder(); it.hasNext(); ) {
+                    final PhylogenyNode n = it.next();
+                    if (n.getNodeData().isHasDate() && (n.getNodeData().getDate().getValue() != null)) {
+                        max = Math.max(max, n.getNodeData().getDate().getValue().doubleValue());
+                    }
+                }
+            }
+            _time_axis_root_age_cache = max;
+        }
+        return _time_axis_root_age_cache;
+    }
+
+    /** Sets an explicit root-age calibration (Ma) for a tree without dates (the "set root age" dialog); 0 clears it. */
+    void setTimeAxisRootAge(final double ma) {
+        _time_axis_root_age = Math.max(0, ma);
+        _time_axis_root_age_for = _phylogeny; // scope the override to the tree it was set on (see timeAxisRootAgeMa)
+        repaint();
+    }
+
+    /** Whether the two-band geologic time axis is ON and drawable in a RECTANGULAR-family layout: mode GEOLOGIC, a
+     *  phylogram in any of the three rectangular orientations (root-left / root-top / root-bottom), and an absolute
+     *  root-age calibration. The circular analogue is {@link #geologicRingsApplyCircular()}; UNROOTED is N/A (an
+     *  approved biological exception -- a distance-from-root radial has no single time axis to band). */
+    boolean geologicAxisApplies() {
+        return (getOptions().getTimeAxisType() == Options.TIME_AXIS_TYPE.GEOLOGIC)
+                && getControlPanel().isDrawPhylogram()
+                && (getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR)
+                && (getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.UNROOTED)
+                && (timeAxisRootAgeMa() > 0);
+    }
+
+    /** Whether the geologic time scale is ON and drawable as concentric coloured RINGS in the CIRCULAR layout: mode
+     *  GEOLOGIC, a circular phylogram (radius encodes distance-from-root = time), and an absolute root-age calibration.
+     *  The polar analogue of {@link #geologicAxisApplies()} -- the radial time axis is banded by the ICS periods. */
+    boolean geologicRingsApplyCircular() {
+        return (getOptions().getTimeAxisType() == Options.TIME_AXIS_TYPE.GEOLOGIC)
+                && isCircularPhylogram()
+                && (timeAxisRootAgeMa() > 0);
+    }
+
+    private int geologicAxisRowHeight() {
+        return getFontMetrics(getTreeFontSet().getSmallFont()).getHeight() + 2;
+    }
+
+    /** Bottom band reserved for the two geologic rows (Period + Epoch). */
+    private int geologicAxisBandHeight() {
+        return 2 * geologicAxisRowHeight();
+    }
+
+    /** age (Ma) -> device x: the root (oldest age) sits at {@code origin_x}, the tips (age 0) at {@code tip_x}. */
+    private static double ageToX(final double age, final double root_age, final float origin_x, final float tip_x) {
+        return tip_x - ((age / root_age) * (tip_x - origin_x));
+    }
+
+    /** Draws the two-band colored geologic (ICS) time axis in the reserved bottom strip: Period over Epoch, each cell
+     *  filled with its official ICS colour and (where it fits) labelled, boundaries at the true ages. */
+    private void paintGeologicTimeAxis(final Graphics2D g, final boolean to_pdf, final boolean to_graphics_file,
+                                       final int graphics_file_y, final int graphics_file_height) {
+        final double root_age = timeAxisRootAgeMa();
+        final double corr = getXcorrectionFactor();
+        if ((root_age <= 0) || (corr <= 0)) {
+            return;
+        }
+        final float origin_x = _phylogeny.getRoot().getXcoord();
+        final float tip_x = (float) (origin_x + (getMaxDistanceToRoot() * corr));
+        final Rectangle vr = getVisibleRect();
+        final int bottom = TreePanelUtil.scaleAxisFloatingBottom(to_pdf, to_graphics_file, graphics_file_y,
+                graphics_file_height, getHeight(), vr.y + vr.height);
+        final int row_h = geologicAxisRowHeight();
+        final int top_y = bottom - (2 * row_h);
+        final Font saved_font = g.getFont();
+        final Color saved_color = g.getColor();
+        paintGeologicBand(g, GeologicTimeScale.Rank.PERIOD, root_age, origin_x, tip_x, top_y, row_h, to_pdf,
+                to_graphics_file);
+        paintGeologicBand(g, GeologicTimeScale.Rank.EPOCH, root_age, origin_x, tip_x, top_y + row_h, row_h, to_pdf,
+                to_graphics_file);
+        g.setFont(saved_font);
+        g.setColor(saved_color);
+    }
+
+    /** The two-band geologic axis in a VERTICAL orientation (root-top / root-bottom): the SAME coloured Period/Epoch
+     *  cells as the horizontal axis ({@link #paintGeologicBand}), but drawn INSIDE the R frame in LOGICAL coordinates,
+     *  so the axis-aligned band cells AND their labels ride R into a side band down the breadth edge, in the reserve
+     *  {@link #verticalScaleAxisReserve()} sets aside just past the last tip. Called while g is rotated by R (like the
+     *  other vertical tree overlays), before the upright base frame is restored. */
+    private void paintGeologicTimeAxisVertical(final Graphics2D g, final boolean to_pdf, final boolean to_graphics_file) {
+        final double root_age = timeAxisRootAgeMa();
+        final double corr = getXcorrectionFactor();
+        if ((root_age <= 0) || (corr <= 0)) {
+            return;
+        }
+        final float origin_x = _phylogeny.getRoot().getXcoord();
+        final float tip_x = (float) (origin_x + (getMaxDistanceToRoot() * corr));
+        final int row_h = geologicAxisRowHeight();
+        final int band_top = treeBreadthExtent() - (2 * row_h); // the reserved side band, just past the last tip (logical)
+        final Font saved_font = g.getFont();
+        final Color saved_color = g.getColor();
+        paintGeologicBand(g, GeologicTimeScale.Rank.PERIOD, root_age, origin_x, tip_x, band_top, row_h, to_pdf,
+                to_graphics_file);
+        paintGeologicBand(g, GeologicTimeScale.Rank.EPOCH, root_age, origin_x, tip_x, band_top + row_h, row_h, to_pdf,
+                to_graphics_file);
+        g.setFont(saved_font);
+        g.setColor(saved_color);
+    }
+
+    private void paintGeologicBand(final Graphics2D g, final GeologicTimeScale.Rank rank, final double root_age,
+                                   final float origin_x, final float tip_x, final int y, final int h,
+                                   final boolean to_pdf, final boolean to_graphics_file) {
+        g.setFont(getTreeFontSet().getSmallFont());
+        final FontMetrics fm = g.getFontMetrics();
+        final Color ink = scaleInkColor(to_pdf, to_graphics_file);
+        for (final GeologicTimeScale.Interval iv : GeologicTimeScale.overlapping(rank, 0, root_age)) {
+            final double young = Math.max(0, iv.youngMa());
+            final double old = Math.min(root_age, iv.oldMa());
+            final int x_young = (int) Math.round(ageToX(young, root_age, origin_x, tip_x));
+            final int x_old = (int) Math.round(ageToX(old, root_age, origin_x, tip_x));
+            final int left = Math.min(x_old, x_young);
+            final int w = Math.abs(x_young - x_old);
+            if (w <= 0) {
+                continue;
+            }
+            g.setColor(iv.color()); // the official ICS colour (kept even in B&W export -- the timescale IS a colour key)
+            g.fillRect(left, y, w, h);
+            g.setColor(ink);
+            g.drawRect(left, y, w, h);
+            if ((fm.stringWidth(iv.name()) + 4) <= w) {
+                g.setColor(labelInkOn(iv.color()));
+                g.drawString(iv.name(), left + ((w - fm.stringWidth(iv.name())) / 2), y + fm.getAscent() + 1);
+            }
+        }
+    }
+
+    /** Black or white label ink, whichever reads better on the given band colour (per-cell contrast). */
+    private static Color labelInkOn(final Color c) {
+        final double luminance = ((0.299 * c.getRed()) + (0.587 * c.getGreen()) + (0.114 * c.getBlue())) / 255.0;
+        return (luminance > 0.55) ? Color.BLACK : Color.WHITE;
     }
 
     /** Draws the small "Time tree" badge at the top-right of the drawing region (viewport-fixed on screen, the export
@@ -4773,7 +5051,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (raise_for_scale_axis) {
             // the labeled scale axis occupies the bottom band -- lift the name clear above it (same band height the
             // axis reserves, so the two can't drift), never past the top edge
-            y1 = Math.max(g.getFontMetrics().getHeight(), y1 - scaleAxisBandHeight());
+            y1 = Math.max(g.getFontMetrics().getHeight(), y1 - scaleAxisBottomReserve());
         }
         y1 -= 12;
         final int y3 = y1 - 4;
@@ -10192,8 +10470,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     /* || getControlPanel().isUseVisualStyles() || getOptions().isShowDefaultNodeShapesForMarkedNodes()*/ //TODO check if this is really not needed.
                     || to_graphics_file || to_pdf;
             final boolean vertical = isVerticalOrientation();
+            // the geologic axis is an alternative time-scale representation; suppress the numeric grid lines when it is
+            // on (like the numeric scale bar + axis), so the two differently-spaced tick systems don't clash
             final boolean scale_grid_shown = getOptions().isShowScaleGrid() && getControlPanel().isDrawPhylogram()
-                    && (getScaleDistance() > 0.0);
+                    && (getScaleDistance() > 0.0) && !geologicAxisApplies();
             if (!vertical && scale_grid_shown) {
                 paintScaleGrid(g, to_pdf, to_graphics_file, graphics_file_y, graphics_file_height);
             }
@@ -10243,6 +10523,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 paintAnnotationColumnsVertical(g);
                 paintCladeBands(g); // boxes ride R; bars/brackets draw the label upright (isVerticalOrientation branch)
                 paintAncestralPies(g, to_pdf, to_graphics_file); // pies ride R: the disc stays a disc, wedges rotate
+                if (geologicAxisApplies()) {
+                    // the two-band geologic axis rides R into a side band down the breadth edge (bands + labels rotate)
+                    paintGeologicTimeAxisVertical(g, to_pdf, to_graphics_file);
+                }
             }
             paintHoverPreview(g, !(to_pdf || to_graphics_file)); // translucent select/deselect hover preview (rides R)
             paintFoundNodeHalos(g, to_pdf, to_graphics_file); // pulsing (screen) / static-glow (export) hit halos
@@ -10250,10 +10534,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             if (vertical) {
                 g.setTransform(orientation_saved);
             }
-            final boolean scale_shown = getOptions().isShowScale() && getControlPanel().isDrawPhylogram()
+            // the geologic time axis takes over the bottom strip; suppress the numeric scale bar + axis when it is on
+            final boolean geo_axis = geologicAxisApplies();
+            final boolean scale_shown = !geo_axis && getOptions().isShowScale() && getControlPanel().isDrawPhylogram()
                     && (getScaleDistance() > 0.0);
-            final boolean axis_shown = getOptions().isShowScaleAxis() && getControlPanel().isDrawPhylogram()
-                    && (getScaleDistance() > 0.0);
+            final boolean axis_shown = !geo_axis && getOptions().isShowScaleAxis()
+                    && getControlPanel().isDrawPhylogram() && (getScaleDistance() > 0.0);
             // the horizontal axis owns a reserved bottom band; lift the (viewport-fixed) scale bar clear above it (the
             // tree name is likewise raised, inside paintTreeName) so the three bottom overlays never overprint. Derive
             // both the lift AND the flag from the SAME layout reserve so they stay in lockstep with what is actually
@@ -10279,6 +10565,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 } else {
                     paintScaleAxis(g, to_pdf, to_graphics_file, graphics_file_y, graphics_file_height);
                 }
+            }
+            if (geo_axis && !vertical) {
+                // horizontal (root-left) geologic axis: chrome floating at the viewport bottom (the vertical variant
+                // rode R inside the frame above, before the base transform was restored)
+                paintGeologicTimeAxis(g, to_pdf, to_graphics_file, graphics_file_y, graphics_file_height);
             }
             if (getOptions().isShowTreeName() && !ForesterUtil.isEmpty(getPhylogeny().getName())) {
                 // the name sits in the lower-left, but slides to the lower-right when the scale is shown there, and
@@ -10378,8 +10669,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     getControlPanel().setDynamicHidingIsOn(false);
                 }
             }
-            // concentric distance rings behind the tree (a no-op unless this is a circular PHYLOGRAM)
-            paintCircularScaleRings(g, center_x, center_y, radius > 0 ? radius : 0, to_pdf, to_graphics_file);
+            // concentric ICS geologic bands behind the tree (a no-op unless GEOLOGIC + a circular phylogram); it is an
+            // alternative radial time-scale representation, so it suppresses the numeric distance rings when on
+            paintGeologicRingsCircular(g, center_x, center_y, radius > 0 ? radius : 0, to_pdf, to_graphics_file);
+            if (!geologicRingsApplyCircular()) {
+                // concentric distance rings behind the tree (a no-op unless this is a circular PHYLOGRAM)
+                paintCircularScaleRings(g, center_x, center_y, radius > 0 ? radius : 0, to_pdf, to_graphics_file);
+            }
             paintCircular(_phylogeny, getStartingAngle(), center_x, center_y, radius > 0 ? radius : 0, g, to_pdf,
                     to_graphics_file);
             // (aligned circular phylogram: the tip->ring leaders are drawn per-tip inside paintNodeDataUnrootedCirc,
@@ -10392,6 +10688,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             paintAnnotationColumnsCircular(g, center_x, center_y, radius > 0 ? radius : 0);
             // clade bands as polar sectors/arcs, over the tree (coords set above), like the rectangular wash
             paintCladeBandsCircular(g, center_x, center_y, radius > 0 ? radius : 0);
+            // the geologic PERIOD names, up the top spoke ON TOP of the tree (the annuli are drawn behind, above)
+            paintGeologicRingLabelsCircular(g, center_x, center_y, radius > 0 ? radius : 0, to_pdf, to_graphics_file);
             paintRadialOverlays(g, to_pdf, to_graphics_file); // dots + pies + hover preview + halos (coords set above)
             if (getOptions().isShowOverview() && isOvOn() && !to_graphics_file && !to_pdf) {
                 final int radius_ov = (int) (getOvMaxHeight() < getOvMaxWidth() ? getOvMaxHeight() / 2

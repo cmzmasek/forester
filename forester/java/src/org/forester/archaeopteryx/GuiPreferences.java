@@ -146,6 +146,8 @@ final class GuiPreferences {
                       NODE_LABEL_DIRECTION::valueOf ),
             enumPref( "found_color", Options::getFoundColor, Options::setFoundColor,
                       Options.FOUND_COLOR::valueOf ),
+            enumPref( "time_axis_type", Options::getTimeAxisType, Options::setTimeAxisType,
+                      Options.TIME_AXIS_TYPE::valueOf ),
             // "Color by" palette: only apply a stored name that is still a known palette (a renamed/removed
             // palette is ignored, keeping the default) so a stale file can't select a non-existent palette
             stringPref( "color_palette", Options::getColorPaletteName, Options::setColorPaletteName,

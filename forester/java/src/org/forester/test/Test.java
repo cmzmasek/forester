@@ -321,7 +321,15 @@ public final class Test {
         } else {
             System.out.println("failed.");
             failed++;
+        }        System.out.print("Geologic time scale: ");
+        if (org.forester.archaeopteryx.GeologicTimeScaleTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
         }
+
         System.out.print("Time tree label: ");
         if (org.forester.archaeopteryx.TimeTreeLabelTest.test()) {
             System.out.println("OK.");
@@ -764,6 +772,14 @@ public final class Test {
         }
         System.out.print("Scale axis (render): ");
         if (org.forester.archaeopteryx.ScaleAxisRenderTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Geologic time axis (render): ");
+        if (org.forester.archaeopteryx.GeologicAxisRenderTest.test()) {
             System.out.println("OK.");
             succeeded++;
         } else {

@@ -217,6 +217,37 @@ To turn a dated MCC tree into a time tree, display it as a **phylogram** (the
 labeled time axis.
 
 
+Geologic Time Axis
+------------------
+
+For a dated, time-calibrated tree — where the branch lengths are geologic time
+(millions of years) — Archaeopteryx can draw the **international geologic time
+scale** beneath the tree instead of a plain numeric axis. Turn it on under
+**Settings → Overlays → Time Axis → Geologic (ICS)**. The axis appears when the
+tree is shown as a **phylogram** (branch lengths = time), as two coloured, named
+bands — **System/Period** over **Series/Epoch** — so a clade's position along the
+time axis reads directly against the named geologic intervals (Cretaceous,
+Jurassic, Triassic, …).
+
+The axis follows the layout: it runs along the bottom in the **root-left**
+orientation, down the breadth side in the **root-on-top / root-on-bottom**
+orientations, and becomes concentric coloured **rings** (period bands from the
+centre outward) in the **circular** layout — the iTOL-style geologic disc. (It is
+not shown in the unrooted layout, which has no single time axis to band.)
+
+The tree is anchored in time by its **root age**: Archaeopteryx uses the oldest
+`<date>` value in the tree, or you can set it explicitly with **"Set root age…"**
+next to the Time Axis selector (most-recent tips are taken as the present, age 0).
+
+The interval names, boundaries, and official colours are those of the
+**International Chronostratigraphic Chart** of the **International Commission on
+Stratigraphy (ICS / IUGS)** ([stratigraphy.org](https://stratigraphy.org)).
+Reference:
+
+- Cohen, K.M., Harper, D.A.T., Gibbard, P.L. & Car, N. (2025, updated): "The ICS
+  International Chronostratigraphic Chart this decade", *Episodes* 48:105–115.
+
+
 Tanglegrams
 -----------
 

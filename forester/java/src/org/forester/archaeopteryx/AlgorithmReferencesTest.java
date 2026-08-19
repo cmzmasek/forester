@@ -95,6 +95,13 @@ public final class AlgorithmReferencesTest {
             System.out.println( "  [AlgorithmReferencesTest] tanglegram entanglement reference/citation is missing" );
             ok = false;
         }
+        // the geologic time axis must be described, with its ICS / Cohen et al. chart citation
+        if ( !text.contains( "Geologic time axis" ) || !text.contains( "International Chronostratigraphic Chart" )
+                || !text.contains( "International Commission on Stratigraphy" )
+                || !text.contains( "The ICS International Chronostratigraphic Chart this decade" ) ) {
+            System.out.println( "  [AlgorithmReferencesTest] geologic time axis reference/citation is missing" );
+            ok = false;
+        }
         boolean phyloxml_present = false;
         for ( final AlgorithmReferences.Reference r : all ) {
             if ( ForesterConstants.PHYLO_XML_REFERENCE.equals( r.citation() ) ) {

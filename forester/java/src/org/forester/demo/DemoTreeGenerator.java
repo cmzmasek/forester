@@ -74,6 +74,7 @@ public final class DemoTreeGenerator {
         write( dir, "infer-ancestor-taxonomies.xml", inferAncestorTaxonomiesTree() );
         write( dir, "scale-axis.xml", scaleAxisTree() );
         write( dir, "node-hpd-bars.xml", hpdBarsTree() );
+        write( dir, "dinosaur-time-tree.xml", dinosaurTimeTree() );
         write( dir, "zebra-stripes.xml", zebraStripesTree() );
         write( dir, "reverse-tip-order.xml", reverseTipOrderTree() );
         write( dir, "root-on-top.xml", rootOnTopTree() );
@@ -655,6 +656,63 @@ public final class DemoTreeGenerator {
                         + "on Settings > Display > Node Age Bars (HPD)." );
         phy.setDistanceUnit( "My" );
         return phy;
+    }
+
+    // ----- "Geologic time axis": a schematic time-calibrated archosaur tree (ages in Ma), including Archaeopteryx in
+    //       the Late Jurassic. Extant tips (Crocodylia, modern birds) sit at 0 Ma so the axis reaches the present;
+    //       branch lengths are age differences (a proper time tree). Turn on Settings > Overlays > Time axis: Geologic.
+    private static Phylogeny dinosaurTimeTree() {
+        final PhylogenyNode croc = datedTip( "Crocodylia", 0 );
+        final PhylogenyNode birds = datedTip( "Aves (modern birds)", 0 );
+        final PhylogenyNode archaeopteryx = datedTip( "Archaeopteryx", 150 );
+        final PhylogenyNode trex = datedTip( "Tyrannosaurus", 66 );
+        final PhylogenyNode diplodocus = datedTip( "Diplodocus", 150 );
+        final PhylogenyNode stegosaurus = datedTip( "Stegosaurus", 150 );
+        final PhylogenyNode triceratops = datedTip( "Triceratops", 66 );
+        final PhylogenyNode paraves = datedNode( "Paraves", 165, archaeopteryx, birds );
+        final PhylogenyNode theropoda = datedNode( "Theropoda", 231, trex, paraves );
+        final PhylogenyNode saurischia = datedNode( "Saurischia", 232, diplodocus, theropoda );
+        final PhylogenyNode ornithischia = datedNode( "Ornithischia", 235, stegosaurus, triceratops );
+        final PhylogenyNode dinosauria = datedNode( "Dinosauria", 240, ornithischia, saurischia );
+        final PhylogenyNode root = datedNode( "Archosauria", 250, croc, dinosauria );
+        setTimeBranchLengths( root, 250 ); // branch length = parent age - node age -> a proper time phylogram
+        final Phylogeny phy = tree( root, "Dinosaur time tree (demo)",
+                                    "A schematic, time-calibrated archosaur tree (ages in Ma), with Archaeopteryx in "
+                                            + "the Late Jurassic. It is auto-detected as a time tree; turn on "
+                                            + "Settings > Overlays > Time axis: Geologic to draw the coloured ICS "
+                                            + "geologic axis (Period over Epoch). Extant tips (Crocodylia, modern "
+                                            + "birds) are at 0 Ma so the axis reaches the present; the extinct taxa "
+                                            + "sit at their ages (Late Jurassic / Late Cretaceous). Schematic, not a "
+                                            + "rigorous phylogeny." );
+        phy.setDistanceUnit( "My" );
+        return phy;
+    }
+
+    private static PhylogenyNode datedTip( final String name, final double age_ma ) {
+        final PhylogenyNode n = leaf( name );
+        n.getNodeData().setDate( new org.forester.phylogeny.data.Date( "", java.math.BigDecimal.valueOf( age_ma ),
+                null, null, "mya" ) );
+        return n;
+    }
+
+    private static PhylogenyNode datedNode( final String name, final double age_ma, final PhylogenyNode... kids ) {
+        final PhylogenyNode n = new PhylogenyNode();
+        n.setName( name );
+        n.getNodeData().setDate( new org.forester.phylogeny.data.Date( "", java.math.BigDecimal.valueOf( age_ma ),
+                null, null, "mya" ) );
+        for ( final PhylogenyNode k : kids ) {
+            n.addAsChild( k );
+        }
+        return n;
+    }
+
+    /** Sets each node's branch length to (parent age - node age), so distance-from-root == elapsed time. */
+    private static void setTimeBranchLengths( final PhylogenyNode node, final double parent_age_ma ) {
+        final double age = node.getNodeData().getDate().getValue().doubleValue();
+        node.setDistanceToParent( parent_age_ma - age );
+        for ( int i = 0; i < node.getNumberOfDescendants(); ++i ) {
+            setTimeBranchLengths( node.getChildNode( i ), age );
+        }
     }
 
     /** An internal clade node with a branch length (My) and a phyloXML date: point age + its 95% interval (My). */

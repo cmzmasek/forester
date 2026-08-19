@@ -1,0 +1,274 @@
+// forester -- software libraries and applications
+// for evolutionary biology and genomics.
+// Copyright (C) 2026 Christian M. Zmasek
+// All rights reserved
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+//
+// Contact: czmasek at jcvi dot org
+
+package org.forester.archaeopteryx;
+
+import java.awt.Color;
+import java.awt.GraphicsEnvironment;
+import java.awt.image.BufferedImage;
+import java.io.File;
+
+import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
+
+import org.forester.io.parsers.phyloxml.PhyloXmlParser;
+import org.forester.phylogeny.Phylogeny;
+import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
+
+/**
+ * Renders the dinosaur time-tree demo (forester/demo/dinosaur-time-tree.xml) with the geologic Time Axis ON and
+ * asserts the coloured ICS period/epoch bands appear along the bottom -- and NONE when the axis is off. Also checks
+ * the calibration (root age = the oldest {@code <date>} = 250 Ma) and the approved biological exception (the geologic
+ * axis is a rectangular root-left overlay, so it does NOT apply in a circular layout). Headful; a green no-op when
+ * headless. Dogfoods the demo tree (the "feature test loads its demo tree" convention).
+ */
+public final class GeologicAxisRenderTest {
+
+    public static void main( final String[] args ) {
+        final boolean ok = test();
+        System.out.println( "GeologicAxisRender: " + ( ok ? "OK." : "FAILED." ) );
+        System.exit( ok ? 0 : 1 );
+    }
+
+    public static boolean test() {
+        if ( GraphicsEnvironment.isHeadless() ) {
+            return true;
+        }
+        return axisRendersOk();
+    }
+
+    private static boolean axisRendersOk() {
+        try {
+            final File file = new File( System.getProperty( "user.dir" ), "forester/demo/dinosaur-time-tree.xml" );
+            if ( !file.exists() ) {
+                return fail( "demo tree missing: " + file.getAbsolutePath() );
+            }
+            final PhyloXmlParser parser = PhyloXmlParser.createPhyloXmlParser();
+            final Phylogeny phy = ParserBasedPhylogenyFactory.getInstance().create( file, parser )[ 0 ];
+            final Configuration conf = new Configuration();
+            final MainFrame[] mf = new MainFrame[ 1 ];
+            SwingUtilities.invokeAndWait(
+                    () -> mf[ 0 ] = MainFrameApplication.createInstance( new Phylogeny[] { phy }, conf, "geo" ) );
+            final boolean[] ok = { true };
+            SwingUtilities.invokeAndWait( () -> {
+                final MainFrame frame = mf[ 0 ];
+                try {
+                    final TreePanel tp = frame.getMainPanel().getCurrentTreePanel();
+                    final Options o = frame.getOptions();
+                    o.setGraphicsExportWhiteBackground( false ); // keep our forced colors (no light-theme switch)
+                    // force the tree to pure black-on-white so the ONLY saturated colors in the image are the
+                    // official ICS band fills (green/cyan/purple/orange)
+                    tp.getTreeColorSet().setColorforDefault( TreeColorSet.BACKGROUND, new Color( 255, 255, 255 ) );
+                    tp.getTreeColorSet().setColorforDefault( TreeColorSet.BRANCH, new Color( 0, 0, 0 ) );
+                    tp.getTreeColorSet().setColorforDefault( TreeColorSet.BRANCH_LENGTH, new Color( 0, 0, 0 ) );
+                    tp.getTreeColorSet().setColorforDefault( TreeColorSet.SEQUENCE, new Color( 0, 0, 0 ) );
+                    tp.getTreeColorSet().setColorforDefault( TreeColorSet.TAXONOMY, new Color( 0, 0, 0 ) );
+                    tp.getTreeColorSet().setColorSchema( 0 );
+                    final int w = 900, h = 560;
+                    frame.showWhole();
+                    tp.setSize( w, h );
+                    tp.calcParametersForPainting( w, h );
+
+                    // calibration: the root age is taken from the tree's oldest <date> (Archosauria at 250 Ma)
+                    final double root_age = tp.timeAxisRootAgeMa();
+                    if ( Math.abs( root_age - 250.0 ) > 0.5 ) {
+                        fail( ok, "root age should be the oldest <date> (250 Ma), got " + root_age );
+                    }
+                    // an explicit "Set root age…" override applies to THIS tree, but must NOT leak onto a replacement
+                    // tree (navigating into a subtree / undo / paste replaces the panel's tree)
+                    tp.setTimeAxisRootAge( 500.0 );
+                    if ( Math.abs( tp.timeAxisRootAgeMa() - 500.0 ) > 0.5 ) {
+                        fail( ok, "an explicit root-age override should apply to the current tree, got "
+                                + tp.timeAxisRootAgeMa() );
+                    }
+                    tp.setTree( phy.copy() ); // replace the panel's tree with a distinct object
+                    if ( Math.abs( tp.timeAxisRootAgeMa() - 250.0 ) > 0.5 ) {
+                        fail( ok, "the root-age override must not leak onto a replacement tree (should revert to the "
+                                + "derived 250 Ma), got " + tp.timeAxisRootAgeMa() );
+                    }
+                    tp.setTimeAxisRootAge( 0 ); // clear for the rest of the checks (derived 250 Ma stands)
+                    tp.calcParametersForPainting( w, h ); // re-lay-out the replacement tree before the render checks
+
+                    // OFF: no geologic axis -> no saturated band pixels
+                    o.setTimeAxisType( Options.TIME_AXIS_TYPE.NONE );
+                    if ( tp.geologicAxisApplies() ) {
+                        fail( ok, "the geologic axis must not apply when the Time Axis type is NONE" );
+                    }
+                    final int off = countSaturated( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) );
+
+                    // ON: the geologic axis draws the coloured ICS bands along the bottom
+                    o.setTimeAxisType( Options.TIME_AXIS_TYPE.GEOLOGIC );
+                    if ( !tp.geologicAxisApplies() ) {
+                        fail( ok, "the geologic axis must apply to a dated root-left phylogram with a positive root age "
+                                + "(isDrawPhylogram=" + tp.getControlPanel().isDrawPhylogram() + ", rootAge=" + root_age
+                                + ")" );
+                    }
+                    final int on = countSaturated( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) );
+                    if ( on <= ( off + 2000 ) ) {
+                        fail( ok, "the geologic axis should add a lot of coloured band pixels (on=" + on + " off=" + off
+                                + ")" );
+                    }
+
+                    // the bottom band must reserve space -> the tip-spread is compressed (smaller y-distance) vs off
+                    o.setTimeAxisType( Options.TIME_AXIS_TYPE.NONE );
+                    tp.calcParametersForPainting( w, h );
+                    final float yd_off = tp.getYdistance();
+                    o.setTimeAxisType( Options.TIME_AXIS_TYPE.GEOLOGIC );
+                    tp.calcParametersForPainting( w, h );
+                    final float yd_on = tp.getYdistance();
+                    if ( !( yd_on < yd_off ) ) {
+                        fail( ok, "the geologic axis must reserve a bottom band (compress the tip-spread): y-distance "
+                                + "off=" + yd_off + " on=" + yd_on );
+                    }
+                    o.setTimeAxisType( Options.TIME_AXIS_TYPE.NONE );
+
+                    // PARITY: the two-band geologic axis also renders in the root-TOP and root-BOTTOM orientations (it
+                    // rides the canvas rotation R into a side band down the breadth edge)
+                    for ( final Options.TREE_ORIENTATION ori : new Options.TREE_ORIENTATION[] {
+                            Options.TREE_ORIENTATION.ROOT_TOP, Options.TREE_ORIENTATION.ROOT_BOTTOM } ) {
+                        o.setTreeOrientation( ori );
+                        o.setTimeAxisType( Options.TIME_AXIS_TYPE.NONE );
+                        tp.calcParametersForPainting( w, h );
+                        final int voff = countSaturated( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1,
+                                false ) );
+                        o.setTimeAxisType( Options.TIME_AXIS_TYPE.GEOLOGIC );
+                        if ( !tp.geologicAxisApplies() ) {
+                            fail( ok, "the geologic axis must apply in the " + ori + " orientation" );
+                        }
+                        tp.calcParametersForPainting( w, h );
+                        final int von = countSaturated( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1,
+                                false ) );
+                        if ( von <= ( voff + 2000 ) ) {
+                            fail( ok, "the geologic axis should add coloured band pixels in " + ori + " (on=" + von
+                                    + " off=" + voff + ")" );
+                        }
+                    }
+                    o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                    o.setTimeAxisType( Options.TIME_AXIS_TYPE.NONE );
+                    tp.calcParametersForPainting( w, h );
+
+                    // PARITY: the CIRCULAR layout shows the geologic scale as concentric coloured ICS rings
+                    o.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
+                    tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
+                    frame.showWhole();
+                    final int coff = countSaturated( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) );
+                    o.setTimeAxisType( Options.TIME_AXIS_TYPE.GEOLOGIC );
+                    if ( !tp.geologicRingsApplyCircular() ) {
+                        fail( ok, "the geologic rings must apply to a circular phylogram with a positive root age" );
+                    }
+                    if ( tp.geologicAxisApplies() ) {
+                        fail( ok, "the rectangular two-band axis must NOT apply in a circular layout (rings apply there)" );
+                    }
+                    final int con = countSaturated( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) );
+                    // a large delta: the translucent annuli fill most of the disc (tens of thousands of px), well beyond
+                    // the few opaque period-name chips -- so this fails if the ring FILLS (not just the labels) go missing
+                    if ( con <= ( coff + 15000 ) ) {
+                        fail( ok, "the circular geologic rings should fill coloured annuli across the disc (on=" + con
+                                + " off=" + coff + ")" );
+                    }
+
+                    // B&W circular export: the annuli render as light grey (geologicRingFill), and the period-name
+                    // labels must use BLACK ink on that grey (not labelInkOn(vivid), which vanishes) -- exercise the
+                    // path renders grey bands + does not crash
+                    o.setPrintBlackAndWhite( true );
+                    final int grey = countLightGrey( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) );
+                    if ( grey < 3000 ) {
+                        fail( ok, "B&W circular geologic export should render light-grey annuli (got " + grey + " px)" );
+                    }
+                    o.setPrintBlackAndWhite( false );
+
+                    // UNROOTED is N/A (an approved biological exception): neither predicate applies there
+                    o.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.UNROOTED );
+                    tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.UNROOTED );
+                    if ( tp.geologicAxisApplies() || tp.geologicRingsApplyCircular() ) {
+                        fail( ok, "the geologic axis is N/A in the UNROOTED layout (approved biological exception)" );
+                    }
+
+                    o.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
+                    tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
+                    o.setTimeAxisType( Options.TIME_AXIS_TYPE.NONE );
+                    tp.calcParametersForPainting( w, h );
+                }
+                catch ( final Throwable t ) {
+                    fail( ok, "unexpected: " + t );
+                }
+                finally {
+                    ( (JFrame) frame ).dispose();
+                }
+            } );
+            return ok[ 0 ];
+        }
+        catch ( final Throwable e ) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /** Count strongly-saturated colored pixels (max-min channel large, not near-black/near-white) -- with the tree
+     *  forced black-on-white, these are exactly the official ICS geologic band fills. */
+    private static int countSaturated( final BufferedImage img ) {
+        int n = 0;
+        for( int y = 0; y < img.getHeight(); ++y ) {
+            for( int x = 0; x < img.getWidth(); ++x ) {
+                final int rgb = img.getRGB( x, y );
+                final int r = ( rgb >> 16 ) & 0xFF, g = ( rgb >> 8 ) & 0xFF, b = rgb & 0xFF;
+                final int max = Math.max( r, Math.max( g, b ) );
+                final int min = Math.min( r, Math.min( g, b ) );
+                // >22 catches both the opaque rectangular bands (diff ~120) AND the translucent circular ring fills
+                // (diff ~28-46 over white); the black-on-white tree ink is neutral (diff 0), so it is never counted
+                if ( ( ( max - min ) > 22 ) && ( max > 60 ) ) {
+                    ++n;
+                }
+            }
+        }
+        return n;
+    }
+
+    /** Count near-light-grey pixels (the B&W geologic annulus fill ~235, and its epoch rings) -- neutral greys well
+     *  above the black tree ink, below pure white. */
+    private static int countLightGrey( final BufferedImage img ) {
+        int n = 0;
+        for ( int y = 0; y < img.getHeight(); ++y ) {
+            for ( int x = 0; x < img.getWidth(); ++x ) {
+                final int rgb = img.getRGB( x, y );
+                final int r = ( rgb >> 16 ) & 0xFF, g = ( rgb >> 8 ) & 0xFF, b = rgb & 0xFF;
+                final int max = Math.max( r, Math.max( g, b ) );
+                final int min = Math.min( r, Math.min( g, b ) );
+                if ( ( ( max - min ) <= 8 ) && ( min >= 210 ) && ( max <= 245 ) ) { // neutral grey ~235, not white/black
+                    ++n;
+                }
+            }
+        }
+        return n;
+    }
+
+    private static boolean fail( final String msg ) {
+        System.out.println( "  [GeologicAxisRenderTest] " + msg );
+        return false;
+    }
+
+    private static void fail( final boolean[] ok, final String msg ) {
+        System.out.println( "  [GeologicAxisRenderTest] " + msg );
+        ok[ 0 ] = false;
+    }
+
+    private GeologicAxisRenderTest() {
+    }
+}

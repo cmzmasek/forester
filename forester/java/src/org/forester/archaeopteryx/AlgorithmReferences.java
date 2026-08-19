@@ -83,6 +83,13 @@ final class AlgorithmReferences {
                         + "i256. A related, leaf-position-based entanglement measure is implemented in the dendextend R "
                         + "package: Galili T (2015): \"dendextend: an R package for visualizing, adjusting and comparing "
                         + "trees of hierarchical clustering\", Bioinformatics 31(22):3718–3720." ) );
+        refs.add( new Reference( "Geologic time axis (Settings → Overlays → Time Axis → Geologic)",
+                "Draws the international geologic time scale beneath a dated (time-calibrated) tree as coloured, "
+                        + "named interval bands (System/Period over Series/Epoch), so a node's position along the "
+                        + "branch-length (= time) axis can be read directly against the named geologic intervals. The "
+                        + "interval boundaries, names, and official colours are those of the International "
+                        + "Chronostratigraphic Chart of the International Commission on Stratigraphy (ICS / IUGS), "
+                        + "www.stratigraphy.org. " + GeologicTimeScale.REFERENCE ) );
         refs.add( new Reference( "phyloXML (file format)", ForesterConstants.PHYLO_XML_REFERENCE ) );
         return refs;
     }

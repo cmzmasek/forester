@@ -43,6 +43,23 @@ final public class Options {
         HORIZONTAL, RADIAL;
     }
 
+    /** The umbrella "time axis" mode for a time tree: OFF, a colored GEOLOGIC (ICS chronostratigraphic) axis, or --
+     *  future -- numeric-My / calendar-date. */
+    public static enum TIME_AXIS_TYPE {
+        NONE( "Off" ), GEOLOGIC( "Geologic (ICS)" );
+
+        private final String _label;
+
+        TIME_AXIS_TYPE( final String label ) {
+            _label = label;
+        }
+
+        @Override
+        public String toString() {
+            return _label;
+        }
+    }
+
     // The color of the Search-B / secondary highlight (found + selected nodes). Search A stays red and "in both"
     // stays teal; this picks B's neon hue. The chosen hue is used (brightened) in both the Light and Dark themes.
     public static enum FOUND_COLOR {
@@ -189,6 +206,7 @@ final public class Options {
     private boolean _transparent_export_background;
     private boolean _graphics_export_white_background;
     private NODE_LABEL_DIRECTION _node_label_direction;
+    private TIME_AXIS_TYPE        _time_axis_type;
     private FOUND_COLOR          _found_color;
     private short _number_of_digits_after_comma_for_branch_length_values;
     private short _number_of_digits_after_comma_for_confidence_values;
@@ -354,6 +372,7 @@ final public class Options {
         _show_overview = true;
         _ov_placement = OVERVIEW_PLACEMENT_TYPE.UPPER_LEFT;
         _node_label_direction = NODE_LABEL_DIRECTION.HORIZONTAL;
+        _time_axis_type = TIME_AXIS_TYPE.NONE;
         _found_color = FOUND_COLOR.ELECTRIC_VIOLET;
         _inverse_search_result = false;
         _scale_bar_length = 0.0;
@@ -434,6 +453,14 @@ final public class Options {
 
     final NODE_LABEL_DIRECTION getNodeLabelDirection() {
         return _node_label_direction;
+    }
+
+    final TIME_AXIS_TYPE getTimeAxisType() {
+        return _time_axis_type;
+    }
+
+    final void setTimeAxisType(final TIME_AXIS_TYPE time_axis_type) {
+        _time_axis_type = time_axis_type;
     }
 
     final FOUND_COLOR getFoundColor() {

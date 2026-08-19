@@ -107,6 +107,7 @@ public final class ResetToDefaultsTest {
         o.setTipLabelDirection( Options.TIP_LABEL_DIRECTION.HORIZONTAL ); // default is VERTICAL
         o.setNodeLabelDirection( Options.NODE_LABEL_DIRECTION.RADIAL ); // "Radial Labels"; default is HORIZONTAL
         o.setFoundColor( Options.FOUND_COLOR.NEON_MAGENTA ); // default is ELECTRIC_VIOLET
+        o.setTimeAxisType( Options.TIME_AXIS_TYPE.GEOLOGIC ); // default is NONE
         o.setSupportVisualization( SUPPORT_VISUALIZATION.SIZE_SCALED );
         // search options (reset by init, resynced onto the control-panel checkboxes by Reset to Defaults)
         o.setSearchCaseSensitive( true );
@@ -147,6 +148,8 @@ public final class ResetToDefaultsTest {
         ok &= eq( "nodeLabelDirection", o.getNodeLabelDirection(), def.getNodeLabelDirection() );
         ok &= eq( "foundColor", o.getFoundColor(), def.getFoundColor() );
         ok &= eq( "foundColor default VIOLET", def.getFoundColor(), Options.FOUND_COLOR.ELECTRIC_VIOLET );
+        ok &= eq( "timeAxisType", o.getTimeAxisType(), def.getTimeAxisType() );
+        ok &= eq( "timeAxisType default NONE", def.getTimeAxisType(), Options.TIME_AXIS_TYPE.NONE );
         ok &= eq( "palette", o.getColorPaletteName(), def.getColorPaletteName() );
         ok &= eq( "showScaleGrid", o.isShowScaleGrid(), def.isShowScaleGrid() );
         ok &= eq( "showScaleAxis", o.isShowScaleAxis(), def.isShowScaleAxis() );

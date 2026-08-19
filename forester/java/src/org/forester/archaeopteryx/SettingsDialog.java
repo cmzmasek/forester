@@ -199,6 +199,11 @@ final class SettingsDialog extends JDialog {
         add( c, cb( _mf._show_hpd_bars_cbmi ) );
         add( c, cb( _mf._show_zebra_stripes_cbmi ) );
         add( c, cb( _mf._show_internal_taxonomy_key_cbmi ) );
+        c.add( header( "Time Axis" ) );
+        add( c, labeled( "Time axis:", enumCombo( Options.TIME_AXIS_TYPE.values(), _mf.getOptions().getTimeAxisType(),
+                                                  v -> { _mf.getOptions().setTimeAxisType( v );
+                                                         maybeCalibrateAndFit( v ); } ) ) );
+        add( c, labeled( "", button( "Set root age…", this::setTimeAxisRootAgeDialog ) ) );
         c.add( header( "Tree Name & Overview" ) );
         add( c, cb( _mf._show_tree_name_cbmi ) );
         add( c, cb( _mf._show_overview_cbmi ) );
@@ -483,6 +488,44 @@ final class SettingsDialog extends JDialog {
             _mf.getMainPanel().getControlPanel().updateZoomButtonsForLayout(); // relabel the zoom cluster for the layout
             _mf.getMainPanel().getControlPanel().showWhole();
             _mf.getCurrentTreePanel().repaint();
+        }
+    }
+
+    /** When the geologic time axis is switched on for a tree that has NO absolute dates, prompt for the root age so
+     *  the axis has an absolute calibration to map; then re-fit (the axis reserves a bottom band). */
+    private void maybeCalibrateAndFit( final Options.TIME_AXIS_TYPE type ) {
+        final TreePanel tp = _mf.getCurrentTreePanel();
+        if ( ( type == Options.TIME_AXIS_TYPE.GEOLOGIC ) && ( tp != null ) && ( tp.timeAxisRootAgeMa() <= 0 ) ) {
+            setTimeAxisRootAgeDialog();
+        }
+        reFitCurrentTree();
+    }
+
+    /** Asks for the root age in Ma (for a tree without {@code <date>} elements) and applies it to the current tree. */
+    private void setTimeAxisRootAgeDialog() {
+        final TreePanel tp = _mf.getCurrentTreePanel();
+        if ( tp == null ) {
+            return;
+        }
+        final double current = tp.timeAxisRootAgeMa();
+        final String in = JOptionPane.showInputDialog( this,
+                "Age of the ROOT, in millions of years before present (Ma).\n"
+                        + "This calibrates the geologic time axis for a tree WITHOUT <date> elements.\n"
+                        + "(A dated tree derives this automatically.)",
+                ( current > 0 ) ? Double.toString( current ) : "" );
+        if ( in == null ) {
+            return; // cancelled
+        }
+        try {
+            final double ma = Double.parseDouble( in.trim() );
+            if ( ma > 0 ) {
+                tp.setTimeAxisRootAge( ma );
+                reFitCurrentTree();
+            }
+        }
+        catch ( final NumberFormatException e ) {
+            JOptionPane.showMessageDialog( this, "Please enter a positive number (Ma).", "Invalid age",
+                                           JOptionPane.WARNING_MESSAGE );
         }
     }
 

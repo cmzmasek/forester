@@ -142,6 +142,12 @@ public final class DemoTreesTest {
         ok &= hasAtLeastTips( "tanglegram-parasite-tree.xml", 6 );
         ok &= tanglegramAssociationLinks( "tanglegram-host-tree.xml", "tanglegram-parasite-tree.xml",
                                           "tanglegram-association.tsv" );
+        // geologic time axis: a dated dinosaur phylogram (branch lengths = time in Ma; internal nodes carry a
+        // <date>), detected as a DATED time tree, with extant tips at age 0 -- so the geologic time axis maps ages
+        // exactly and the Cretaceous/Jurassic/Triassic period bands render beneath it
+        ok &= hasBranchLengths( "dinosaur-time-tree.xml" );
+        ok &= hasAtLeastTips( "dinosaur-time-tree.xml", 7 );
+        ok &= isDetectedTimeTree( "dinosaur-time-tree.xml", AptxUtil.TIME_TREE_KIND.DATED );
         return ok;
     }
 
