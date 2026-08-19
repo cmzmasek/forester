@@ -75,6 +75,7 @@ public final class DemoTreeGenerator {
         write( dir, "scale-axis.xml", scaleAxisTree() );
         write( dir, "node-hpd-bars.xml", hpdBarsTree() );
         write( dir, "dinosaur-time-tree.xml", dinosaurTimeTree() );
+        write( dir, "tree-of-life-deep-time.xml", deepTimeTree() );
         write( dir, "zebra-stripes.xml", zebraStripesTree() );
         write( dir, "reverse-tip-order.xml", reverseTipOrderTree() );
         write( dir, "root-on-top.xml", rootOnTopTree() );
@@ -683,6 +684,38 @@ public final class DemoTreeGenerator {
                                             + "geologic axis (Period over Epoch). Extant tips (Crocodylia, modern "
                                             + "birds) are at 0 Ma so the axis reaches the present; the extinct taxa "
                                             + "sit at their ages (Late Jurassic / Late Cretaceous). Schematic, not a "
+                                            + "rigorous phylogeny." );
+        phy.setDistanceUnit( "My" );
+        return phy;
+    }
+
+    /** A schematic, time-calibrated tree of the three domains of life reaching back to ~3.8 Ga (LUCA, deep in the
+     *  Archean) -- so the geologic axis picks the DEEP-TIME (Eon over Era) band pair and the Precambrian is not blank. */
+    private static Phylogeny deepTimeTree() {
+        final PhylogenyNode cyano = datedTip( "Cyanobacteria", 0 );
+        final PhylogenyNode proteo = datedTip( "Proteobacteria", 0 );
+        final PhylogenyNode firmi = datedTip( "Firmicutes", 0 );
+        final PhylogenyNode eury = datedTip( "Euryarchaeota", 0 );
+        final PhylogenyNode cren = datedTip( "Crenarchaeota", 0 );
+        final PhylogenyNode plants = datedTip( "Plantae", 0 );
+        final PhylogenyNode animals = datedTip( "Animalia", 0 );
+        final PhylogenyNode fungi = datedTip( "Fungi", 0 );
+        final PhylogenyNode gracilicutes = datedNode( "", 3000, proteo, firmi );
+        final PhylogenyNode bacteria = datedNode( "Bacteria", 3400, cyano, gracilicutes );
+        final PhylogenyNode archaea = datedNode( "Archaea", 3200, eury, cren );
+        final PhylogenyNode opistho = datedNode( "Opisthokonta", 1100, fungi, animals );
+        final PhylogenyNode eukaryota = datedNode( "Eukaryota", 1800, plants, opistho );
+        final PhylogenyNode neomura = datedNode( "", 3500, archaea, eukaryota );
+        final PhylogenyNode luca = datedNode( "LUCA", 3800, bacteria, neomura );
+        setTimeBranchLengths( luca, 3800 );
+        final Phylogeny phy = tree( luca, "Tree of life (deep time, demo)",
+                                    "A schematic, time-calibrated tree of the three domains of life (ages in Ma), with "
+                                            + "LUCA near 3.8 Ga in the Archean and the crown eukaryotes in the "
+                                            + "Proterozoic. Turn on Settings > Overlays > Time axis: Geologic to draw "
+                                            + "the coloured ICS geologic axis; because the tree reaches deep time it "
+                                            + "adapts to the coarse band pair (Eon over Era), so the Precambrian "
+                                            + "(Archean, Proterozoic) is banded rather than blank. Extant tips at 0 Ma "
+                                            + "reach the present. Schematic (rough molecular-clock ages), not a "
                                             + "rigorous phylogeny." );
         phy.setDistanceUnit( "My" );
         return phy;

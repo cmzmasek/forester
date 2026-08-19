@@ -26,16 +26,18 @@ import org.forester.archaeopteryx.GeologicTimeScale.Interval;
 import org.forester.archaeopteryx.GeologicTimeScale.Rank;
 
 /**
- * Sanity checks on the embedded ICS geologic time scale: the two populated ranks have the expected counts, their
- * intervals TILE their range with no gaps or overlaps, boundaries are monotonic, and the age lookups / overlap
- * queries return the right units (incl. the thematic ~150 Ma Late Jurassic where <em>Archaeopteryx</em> lived).
+ * Sanity checks on the embedded ICS geologic time scale: the four populated ranks (Eon / Era / Period / Epoch) have
+ * the expected counts, their intervals TILE their range with no gaps or overlaps, boundaries are monotonic, the age
+ * lookups / overlap queries return the right units (incl. the thematic ~150 Ma Late Jurassic where <em>Archaeopteryx</em>
+ * lived), and {@link GeologicTimeScale#bandRanks} adapts the two-band pair to the tree's depth (Period/Epoch ->
+ * Era/Period -> Eon/Era) so deep-time (Precambrian) trees are fully banded.
  */
 public final class GeologicTimeScaleTest {
 
     public static boolean test() {
         try {
-            return countsOk() && contiguousOk( Rank.PERIOD ) && contiguousOk( Rank.EPOCH ) && lookupOk()
-                    && overlapOk();
+            return countsOk() && contiguousOk( Rank.EON ) && contiguousOk( Rank.ERA ) && contiguousOk( Rank.PERIOD )
+                    && contiguousOk( Rank.EPOCH ) && lookupOk() && overlapOk() && bandRanksOk();
         }
         catch ( final Throwable e ) {
             e.printStackTrace();
@@ -44,8 +46,33 @@ public final class GeologicTimeScaleTest {
     }
 
     private static boolean countsOk() {
+        ck( GeologicTimeScale.intervals( Rank.EON ).size() == 3, "3 eons" );
+        ck( GeologicTimeScale.intervals( Rank.ERA ).size() == 10, "10 eras" );
         ck( GeologicTimeScale.intervals( Rank.PERIOD ).size() == 22, "22 periods" );
         ck( GeologicTimeScale.intervals( Rank.EPOCH ).size() == 34, "34 epochs" );
+        return true;
+    }
+
+    /** The two-band axis picks a coarse+fine rank pair that adapts to the tree's depth, so BOTH bands always fully
+     *  cover [0, oldest] -- Period/Epoch for a Phanerozoic tree, Era/Period into the Proterozoic (epochs run out at
+     *  ~539 Ma), Eon/Era for a deep Archean tree (periods run out at ~2500 Ma). */
+    private static boolean bandRanksOk() {
+        ck( java.util.Arrays.equals( GeologicTimeScale.bandRanks( 150 ), new Rank[] { Rank.PERIOD, Rank.EPOCH } ),
+            "a 150 Ma (Phanerozoic) tree bands Period over Epoch" );
+        ck( java.util.Arrays.equals( GeologicTimeScale.bandRanks( 538.8 ), new Rank[] { Rank.PERIOD, Rank.EPOCH } ),
+            "at exactly 538.8 Ma (base of the Phanerozoic) epochs still cover it -> Period over Epoch" );
+        ck( java.util.Arrays.equals( GeologicTimeScale.bandRanks( 1000 ), new Rank[] { Rank.ERA, Rank.PERIOD } ),
+            "a 1000 Ma (Proterozoic) tree bands Era over Period (epochs run out at ~539 Ma)" );
+        ck( java.util.Arrays.equals( GeologicTimeScale.bandRanks( 3500 ), new Rank[] { Rank.EON, Rank.ERA } ),
+            "a 3500 Ma (Archean) tree bands Eon over Era (periods run out at ~2500 Ma)" );
+        // the finer band of each pair fully covers the depth (no blank deep segment)
+        ck( GeologicTimeScale.coverageMa( Rank.EPOCH ) >= 538.0, "epochs cover to the base of the Phanerozoic" );
+        ck( GeologicTimeScale.coverageMa( Rank.PERIOD ) >= 2500.0, "periods cover into the Paleoproterozoic" );
+        ck( GeologicTimeScale.coverageMa( Rank.ERA ) >= 4031.0, "eras cover the whole Archean" );
+        // deep-time lookups
+        ck( "Archean".equals( named( GeologicTimeScale.at( Rank.EON, 3000 ) ) ), "3000 Ma is in the Archean eon" );
+        ck( "Mesoarchean".equals( named( GeologicTimeScale.at( Rank.ERA, 3000 ) ) ), "3000 Ma is the Mesoarchean era" );
+        ck( "Proterozoic".equals( named( GeologicTimeScale.at( Rank.EON, 1000 ) ) ), "1000 Ma is the Proterozoic eon" );
         return true;
     }
 

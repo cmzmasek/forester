@@ -34,9 +34,10 @@ import java.util.List;
  * Chart this decade." Episodes 48: 105-115. Boundary ages and unit colours from the International Commission on
  * Stratigraphy (ICS / IUGS), www.stratigraphy.org.
  * <p>
- * FIRST CUT: PERIOD + EPOCH ranks only (the default two-band pair). STAGE/AGE (the finer band for zoomed-in, recent
- * trees) and ERA (for very deep trees) are follow-ons. Ages/colours here follow the ICS scheme (via Macrostrat) and
- * should be spot-checked against the official chart PDF before shipping.
+ * Populated ranks: EON, ERA, PERIOD, EPOCH -- so the two-band axis can adapt its rank pair to the tree's depth
+ * (Period/Epoch for a Phanerozoic tree, Era/Period into the Proterozoic, Eon/Era for a deep Archean tree; see
+ * {@link #bandRanks(double)}). STAGE/AGE (the finer band for very recent trees) is a follow-on. Ages/colours follow
+ * the ICS scheme (via Macrostrat) and should be spot-checked against the official chart PDF before shipping.
  */
 final class GeologicTimeScale {
 
@@ -46,9 +47,9 @@ final class GeologicTimeScale {
                     + "The ICS International Chronostratigraphic Chart this decade. Episodes 48: 105-115.";
     static final String SOURCE = "International Commission on Stratigraphy (ICS / IUGS), www.stratigraphy.org";
 
-    /** The chronostratigraphic ranks, coarse -> fine. Only PERIOD and EPOCH are populated in this first cut. */
+    /** The chronostratigraphic ranks, coarse -> fine. EON, ERA, PERIOD, EPOCH are populated (AGE is a follow-on). */
     enum Rank {
-        ERA, PERIOD, EPOCH, AGE
+        EON, ERA, PERIOD, EPOCH, AGE
     }
 
     /** One named time interval: [young, old] in Ma (young &lt; old), plus its rank and official colour. */
@@ -93,10 +94,27 @@ final class GeologicTimeScale {
         }
     }
 
+    private static final List<Interval> EONS    = new ArrayList<>();
+    private static final List<Interval> ERAS    = new ArrayList<>();
     private static final List<Interval> PERIODS = new ArrayList<>();
     private static final List<Interval> EPOCHS  = new ArrayList<>();
 
     static {
+        // ---- Eons (Eonothem/Eon), youngest -> oldest ----
+        eon( "Phanerozoic", 0, 538.8, 0x9AD9DD );
+        eon( "Proterozoic", 538.8, 2500, 0xFF70B8 );
+        eon( "Archean", 2500, 4031, 0xFF3399 );
+        // ---- Eras (Erathem/Era), youngest -> oldest ----
+        era( "Cenozoic", 0, 66, 0xF2F91D );
+        era( "Mesozoic", 66, 251.902, 0x67C5CA );
+        era( "Paleozoic", 251.902, 538.8, 0x99C08D );
+        era( "Neoproterozoic", 538.8, 1000, 0xFF9BCD );
+        era( "Mesoproterozoic", 1000, 1600, 0xFF7EBF );
+        era( "Paleoproterozoic", 1600, 2500, 0xE665A6 );
+        era( "Neoarchean", 2500, 2800, 0xFF5CAD );
+        era( "Mesoarchean", 2800, 3200, 0xE62E8A );
+        era( "Paleoarchean", 3200, 3600, 0xCC297A );
+        era( "Eoarchean", 3600, 4031, 0xB2246B );
         // ---- Periods (System/Period), youngest -> oldest ----
         p( "Quaternary", 0, 2.58, 0xF9F97F );
         p( "Neogene", 2.58, 23.04, 0xFFE619 );
@@ -157,6 +175,14 @@ final class GeologicTimeScale {
         e( "Terreneuvian", 521, 538.8, 0x8CB06C );
     }
 
+    private static void eon( final String name, final double young, final double old, final int rgb ) {
+        EONS.add( new Interval( name, Rank.EON, young, old, new Color( rgb ) ) );
+    }
+
+    private static void era( final String name, final double young, final double old, final int rgb ) {
+        ERAS.add( new Interval( name, Rank.ERA, young, old, new Color( rgb ) ) );
+    }
+
     private static void p( final String name, final double young, final double old, final int rgb ) {
         PERIODS.add( new Interval( name, Rank.PERIOD, young, old, new Color( rgb ) ) );
     }
@@ -165,9 +191,13 @@ final class GeologicTimeScale {
         EPOCHS.add( new Interval( name, Rank.EPOCH, young, old, new Color( rgb ) ) );
     }
 
-    /** All intervals of a rank (unmodifiable-ish; callers must not mutate), youngest first. Empty for AGE/ERA (TODO). */
+    /** All intervals of a rank (unmodifiable-ish; callers must not mutate), youngest first. Empty for AGE (a follow-on). */
     static List<Interval> intervals( final Rank rank ) {
         switch ( rank ) {
+            case EON:
+                return EONS;
+            case ERA:
+                return ERAS;
             case PERIOD:
                 return PERIODS;
             case EPOCH:
@@ -175,6 +205,29 @@ final class GeologicTimeScale {
             default:
                 return new ArrayList<>();
         }
+    }
+
+    /** The oldest boundary (Ma) covered by a rank's data -- i.e. how deep that rank can band. */
+    static double coverageMa( final Rank rank ) {
+        double m = 0;
+        for ( final Interval iv : intervals( rank ) ) {
+            m = Math.max( m, iv.oldMa() );
+        }
+        return m;
+    }
+
+    /** The coarse+fine rank pair for the two-band axis, adapted to a tree spanning {@code [0, old_ma]}: Period over
+     *  Epoch for a Phanerozoic tree (epochs cover it), Era over Period once it reaches into the Proterozoic (epochs
+     *  run out at ~539 Ma), and Eon over Era for a deep Archean tree (periods run out at ~2500 Ma) -- so BOTH bands
+     *  always fully cover the range (no blank deep segment). Returns {@code [upper (coarser), lower (finer)]}. */
+    static Rank[] bandRanks( final double old_ma ) {
+        if ( old_ma <= coverageMa( Rank.EPOCH ) ) {
+            return new Rank[] { Rank.PERIOD, Rank.EPOCH };
+        }
+        if ( old_ma <= coverageMa( Rank.PERIOD ) ) {
+            return new Rank[] { Rank.ERA, Rank.PERIOD };
+        }
+        return new Rank[] { Rank.EON, Rank.ERA };
     }
 
     /** The intervals of {@code rank} that overlap the age window [young_ma, old_ma] (Ma), youngest first -- i.e. the
@@ -205,15 +258,11 @@ final class GeologicTimeScale {
         return null;
     }
 
-    /** The oldest boundary we have data for (Ma) -- the deep end of the embedded scale. */
+    /** The oldest boundary we have data for (Ma) -- the deep end of the embedded scale (the Eon/Era ranks reach the
+     *  base of the Archean, ~4031 Ma). */
     static double oldestMa() {
-        double m = 0;
-        for ( final Interval iv : PERIODS ) {
-            if ( iv.oldMa() > m ) {
-                m = iv.oldMa();
-            }
-        }
-        return m;
+        return Math.max( coverageMa( Rank.EON ), Math.max( coverageMa( Rank.ERA ),
+                Math.max( coverageMa( Rank.PERIOD ), coverageMa( Rank.EPOCH ) ) ) );
     }
 
     private GeologicTimeScale() {

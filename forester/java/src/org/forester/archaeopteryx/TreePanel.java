@@ -4743,9 +4743,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         final Color saved = g.getColor();
         final Stroke saved_stroke = g.getStroke();
-        // translucent PERIOD annuli (age -> radius: age root_age at the centre, age 0 at the outer ring)
-        for (final GeologicTimeScale.Interval iv : GeologicTimeScale.overlapping(GeologicTimeScale.Rank.PERIOD, 0,
-                root_age)) {
+        // the coarse+fine rank pair adapts to the tree's depth (Period/Epoch -> Era/Period -> Eon/Era); the coarse
+        // rank fills the coloured annuli, the fine rank draws the boundary rings
+        final GeologicTimeScale.Rank[] ranks = GeologicTimeScale.bandRanks(root_age);
+        // translucent coarse-rank annuli (age -> radius: age root_age at the centre, age 0 at the outer ring)
+        for (final GeologicTimeScale.Interval iv : GeologicTimeScale.overlapping(ranks[0], 0, root_age)) {
             final double young = Math.max(0, iv.youngMa());
             final double old = Math.min(root_age, iv.oldMa());
             final int r_outer = (int) Math.round(((root_age - young) / root_age) * radius); // younger -> larger radius
@@ -4758,11 +4760,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             g.setColor(geologicRingFill(iv.color(), to_pdf, to_graphics_file));
             g.fill(ring);
         }
-        // faint EPOCH boundary rings (the finer subdivision, as ring outlines within the period colours)
+        // faint fine-rank boundary rings (the finer subdivision, as ring outlines within the coarse-rank colours)
         g.setStroke(STROKE_05);
         g.setColor(scaleGridColor(to_pdf, to_graphics_file));
-        for (final GeologicTimeScale.Interval iv : GeologicTimeScale.overlapping(GeologicTimeScale.Rank.EPOCH, 0,
-                root_age)) {
+        for (final GeologicTimeScale.Interval iv : GeologicTimeScale.overlapping(ranks[1], 0, root_age)) {
             final int rr = (int) Math.round(((root_age - Math.max(0, iv.youngMa())) / root_age) * radius);
             if ((rr > 0) && (rr < radius)) {
                 g.drawOval(cx - rr, cy - rr, 2 * rr, 2 * rr);
@@ -4772,7 +4773,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.setStroke(saved_stroke);
     }
 
-    /** The period-name labels for the circular geologic bands, drawn UP the top (12 o'clock) spoke ON TOP of the tree
+    /** The coarse-rank band names (Period, or Era/Eon for a deep tree) for the circular geologic bands, drawn UP the
+     *  top (12 o'clock) spoke ON TOP of the tree
      *  (so a branch at 12 o'clock can't hide them), each at its annulus mid-radius, decimated so they never stack. Split
      *  from {@link #paintGeologicRingsCircular} (which fills the annuli behind the tree) so the labels stay legible. */
     private void paintGeologicRingLabelsCircular(final Graphics2D g, final int cx, final int cy, final int radius,
@@ -4789,10 +4791,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.setFont(getTreeFontSet().getSmallFont());
         final FontMetrics fm = getTreeFontSet().getFontMetricsSmall();
         final int line_h = fm.getHeight();
-        // collect each period's label baseline y up the top spoke (at its annulus mid-radius), then draw INNER->OUTER
-        // (ascending radius) greedily keeping a >=line_h gap -- order-independent of what overlapping() returns
+        // collect each coarse-rank band's label baseline y up the top spoke (at its annulus mid-radius), then draw
+        // INNER->OUTER (ascending radius) greedily keeping a >=line_h gap -- order-independent of what overlapping() gives
         final java.util.List<GeologicTimeScale.Interval> periods = new java.util.ArrayList<>(
-                GeologicTimeScale.overlapping(GeologicTimeScale.Rank.PERIOD, 0, root_age));
+                GeologicTimeScale.overlapping(GeologicTimeScale.bandRanks(root_age)[0], 0, root_age));
         periods.sort((x, y) -> Double.compare(x.youngMa(), y.youngMa())); // young first = outer first (larger radius)
         int last_label_y = Integer.MIN_VALUE / 2; // outer->inner, ly increases; keep a >=line_h gap (half-min: no overflow)
         for (final GeologicTimeScale.Interval iv : periods) {
@@ -4941,7 +4943,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return tip_x - ((age / root_age) * (tip_x - origin_x));
     }
 
-    /** Draws the two-band colored geologic (ICS) time axis in the reserved bottom strip: Period over Epoch, each cell
+    /** Draws the two-band colored geologic (ICS) time axis in the reserved bottom strip: the coarse rank over the fine
+     *  rank (adaptive to depth -- Period/Epoch, Era/Period, or Eon/Era; see {@link GeologicTimeScale#bandRanks}), each cell
      *  filled with its official ICS colour and (where it fits) labelled, boundaries at the true ages. */
     private void paintGeologicTimeAxis(final Graphics2D g, final boolean to_pdf, final boolean to_graphics_file,
                                        final int graphics_file_y, final int graphics_file_height) {
@@ -4959,16 +4962,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final int top_y = bottom - geologicAxisReserve(); // band ends one GEOLOGIC_AXIS_EDGE_GAP short of the edge
         final Font saved_font = g.getFont();
         final Color saved_color = g.getColor();
-        paintGeologicBand(g, GeologicTimeScale.Rank.PERIOD, root_age, origin_x, tip_x, top_y, row_h, to_pdf,
-                to_graphics_file);
-        paintGeologicBand(g, GeologicTimeScale.Rank.EPOCH, root_age, origin_x, tip_x, top_y + row_h, row_h, to_pdf,
-                to_graphics_file);
+        // the coarse+fine rank pair adapts to the tree's depth (Period/Epoch -> Era/Period -> Eon/Era)
+        final GeologicTimeScale.Rank[] ranks = GeologicTimeScale.bandRanks(root_age);
+        paintGeologicBand(g, ranks[0], root_age, origin_x, tip_x, top_y, row_h, to_pdf, to_graphics_file);
+        paintGeologicBand(g, ranks[1], root_age, origin_x, tip_x, top_y + row_h, row_h, to_pdf, to_graphics_file);
         g.setFont(saved_font);
         g.setColor(saved_color);
     }
 
-    /** The two-band geologic axis in a VERTICAL orientation (root-top / root-bottom): the SAME coloured Period/Epoch
-     *  cells as the horizontal axis ({@link #paintGeologicBand}), but drawn INSIDE the R frame in LOGICAL coordinates,
+    /** The two-band geologic axis in a VERTICAL orientation (root-top / root-bottom): the SAME coloured band cells
+     *  as the horizontal axis ({@link #paintGeologicBand}), but drawn INSIDE the R frame in LOGICAL coordinates,
      *  so the axis-aligned band cells AND their labels ride R into a side band down the breadth edge, in the reserve
      *  {@link #verticalScaleAxisReserve()} sets aside just past the last tip. Called while g is rotated by R (like the
      *  other vertical tree overlays), before the upright base frame is restored. */
@@ -4988,10 +4991,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 to_graphics_file);
         final Font saved_font = g.getFont();
         final Color saved_color = g.getColor();
-        paintGeologicBand(g, GeologicTimeScale.Rank.PERIOD, root_age, origin_x, tip_x, band_top, row_h, to_pdf,
-                to_graphics_file);
-        paintGeologicBand(g, GeologicTimeScale.Rank.EPOCH, root_age, origin_x, tip_x, band_top + row_h, row_h, to_pdf,
-                to_graphics_file);
+        final GeologicTimeScale.Rank[] ranks = GeologicTimeScale.bandRanks(root_age); // Period/Epoch -> Era/Period -> Eon/Era
+        paintGeologicBand(g, ranks[0], root_age, origin_x, tip_x, band_top, row_h, to_pdf, to_graphics_file);
+        paintGeologicBand(g, ranks[1], root_age, origin_x, tip_x, band_top + row_h, row_h, to_pdf, to_graphics_file);
         g.setFont(saved_font);
         g.setColor(saved_color);
     }

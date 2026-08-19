@@ -148,6 +148,12 @@ public final class DemoTreesTest {
         ok &= hasBranchLengths( "dinosaur-time-tree.xml" );
         ok &= hasAtLeastTips( "dinosaur-time-tree.xml", 7 );
         ok &= isDetectedTimeTree( "dinosaur-time-tree.xml", AptxUtil.TIME_TREE_KIND.DATED );
+        // deep-time geologic axis: a dated tree of life reaching into the Archean (oldest <date> > 2500 Ma), so the
+        // geologic axis adapts to the coarse Eon/Era band pair -- the Precambrian is banded, not blank
+        ok &= hasBranchLengths( "tree-of-life-deep-time.xml" );
+        ok &= hasAtLeastTips( "tree-of-life-deep-time.xml", 8 );
+        ok &= isDetectedTimeTree( "tree-of-life-deep-time.xml", AptxUtil.TIME_TREE_KIND.DATED );
+        ok &= oldestDateAtLeast( "tree-of-life-deep-time.xml", 2500.0 );
         return ok;
     }
 
@@ -352,6 +358,26 @@ public final class DemoTreesTest {
             }
         }
         return note( file_name + " must carry an INTERNAL-node <date> with a min/max interval (for HPD age bars)" );
+    }
+
+    /** The oldest node {@code <date>} value is at least {@code min_ma} Ma (so the geologic axis picks the deep-time
+     *  band pair -- e.g. Eon/Era for an Archean tree). */
+    private static boolean oldestDateAtLeast( final String file_name, final double min_ma ) {
+        final Phylogeny phy = load( file_name );
+        if ( phy == null ) {
+            return false;
+        }
+        double oldest = 0;
+        for( final java.util.Iterator<PhylogenyNode> it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if ( n.getNodeData().isHasDate() && ( n.getNodeData().getDate().getValue() != null ) ) {
+                oldest = Math.max( oldest, n.getNodeData().getDate().getValue().doubleValue() );
+            }
+        }
+        if ( oldest < min_ma ) {
+            return note( file_name + " oldest <date> must be >= " + min_ma + " Ma (deep time), was " + oldest );
+        }
+        return true;
     }
 
     /** At least {@code min_tips} external tips carry a sequence with a domain architecture of &ge;1 domain. */

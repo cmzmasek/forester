@@ -237,6 +237,12 @@ not shown in the unrooted layout, which has no single time axis to band.) In the
 rectangular orientations the axis stays pinned to the edge as you zoom and scroll,
 so it is always in view.
 
+The two bands **adapt to the tree's depth** so both always fully cover its range:
+**System/Period** over **Series/Epoch** for a Phanerozoic tree, **Erathem/Era**
+over **System/Period** once the tree reaches into the Proterozoic, and
+**Eonothem/Eon** over **Erathem/Era** for a deep Archean tree — so even a
+billions-of-years "tree of life" is fully banded (the Precambrian is never blank).
+
 The tree is anchored in time by its **root age**: Archaeopteryx uses the oldest
 `<date>` value in the tree, or you can set it explicitly with **"Set root age…"**
 next to the Time Axis selector (most-recent tips are taken as the present, age 0).

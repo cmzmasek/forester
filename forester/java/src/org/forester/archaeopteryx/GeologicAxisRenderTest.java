@@ -214,6 +214,38 @@ public final class GeologicAxisRenderTest {
                     tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
                     o.setTimeAxisType( Options.TIME_AXIS_TYPE.NONE );
                     tp.calcParametersForPainting( w, h );
+
+                    // DEEP TIME: a tree reaching into the Archean (oldest date > 2500 Ma) makes the axis adapt to the
+                    // coarse Eon/Era band pair (epochs/periods run out) -- the Precambrian must be BANDED, not blank. Load
+                    // the deep-time demo and assert the geologic bands still render (the coarse ranks paint through the
+                    // same path). Guards the bandRanks() wiring in the paint methods.
+                    final File deep_file = new File( System.getProperty( "user.dir" ),
+                                                     "forester/demo/tree-of-life-deep-time.xml" );
+                    if ( deep_file.exists() ) {
+                        final Phylogeny deep = ParserBasedPhylogenyFactory.getInstance()
+                                .create( deep_file, PhyloXmlParser.createPhyloXmlParser() )[ 0 ];
+                        tp.setTree( deep );
+                        o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                        frame.showWhole(); // re-fit the replacement tree (setTree alone leaves a stale preferred size)
+                        tp.setSize( w, h );
+                        if ( tp.timeAxisRootAgeMa() < 2500.0 ) {
+                            fail( ok, "the deep-time demo should reach into the Archean (> 2500 Ma), got "
+                                    + tp.timeAxisRootAgeMa() );
+                        }
+                        o.setTimeAxisType( Options.TIME_AXIS_TYPE.NONE );
+                        tp.calcParametersForPainting( w, h );
+                        final int doff = countSaturated( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1,
+                                false ) );
+                        o.setTimeAxisType( Options.TIME_AXIS_TYPE.GEOLOGIC );
+                        tp.calcParametersForPainting( w, h );
+                        final int don = countSaturated( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1,
+                                false ) );
+                        if ( don <= ( doff + 2000 ) ) {
+                            fail( ok, "the deep-time (Eon/Era) geologic axis should band the Precambrian (on=" + don
+                                    + " off=" + doff + ")" );
+                        }
+                        o.setTimeAxisType( Options.TIME_AXIS_TYPE.NONE );
+                    }
                 }
                 catch ( final Throwable t ) {
                     fail( ok, "unexpected: " + t );

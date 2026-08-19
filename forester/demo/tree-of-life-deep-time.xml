@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" branch_length_unit="My" rerootable="true">
+  <name>Tree of life (deep time, demo)</name>
+  <description>A schematic, time-calibrated tree of the three domains of life (ages in Ma), with LUCA near 3.8 Ga in the Archean and the crown eukaryotes in the Proterozoic. Turn on Settings &gt; Overlays &gt; Time axis: Geologic to draw the coloured ICS geologic axis; because the tree reaches deep time it adapts to the coarse band pair (Eon over Era), so the Precambrian (Archean, Proterozoic) is banded rather than blank. Extant tips at 0 Ma reach the present. Schematic (rough molecular-clock ages), not a rigorous phylogeny.</description>
+  <clade>
+    <name>LUCA</name>
+    <branch_length>0.0</branch_length>
+    <date unit="mya">
+      <value>3800.0</value>
+    </date>
+    <clade>
+      <name>Bacteria</name>
+      <branch_length>400.0</branch_length>
+      <date unit="mya">
+        <value>3400.0</value>
+      </date>
+      <clade>
+        <name>Cyanobacteria</name>
+        <branch_length>3400.0</branch_length>
+        <date unit="mya">
+          <value>0.0</value>
+        </date>
+      </clade>
+      <clade>
+        <branch_length>400.0</branch_length>
+        <date unit="mya">
+          <value>3000.0</value>
+        </date>
+        <clade>
+          <name>Proteobacteria</name>
+          <branch_length>3000.0</branch_length>
+          <date unit="mya">
+            <value>0.0</value>
+          </date>
+        </clade>
+        <clade>
+          <name>Firmicutes</name>
+          <branch_length>3000.0</branch_length>
+          <date unit="mya">
+            <value>0.0</value>
+          </date>
+        </clade>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>300.0</branch_length>
+      <date unit="mya">
+        <value>3500.0</value>
+      </date>
+      <clade>
+        <name>Archaea</name>
+        <branch_length>300.0</branch_length>
+        <date unit="mya">
+          <value>3200.0</value>
+        </date>
+        <clade>
+          <name>Euryarchaeota</name>
+          <branch_length>3200.0</branch_length>
+          <date unit="mya">
+            <value>0.0</value>
+          </date>
+        </clade>
+        <clade>
+          <name>Crenarchaeota</name>
+          <branch_length>3200.0</branch_length>
+          <date unit="mya">
+            <value>0.0</value>
+          </date>
+        </clade>
+      </clade>
+      <clade>
+        <name>Eukaryota</name>
+        <branch_length>1700.0</branch_length>
+        <date unit="mya">
+          <value>1800.0</value>
+        </date>
+        <clade>
+          <name>Plantae</name>
+          <branch_length>1800.0</branch_length>
+          <date unit="mya">
+            <value>0.0</value>
+          </date>
+        </clade>
+        <clade>
+          <name>Opisthokonta</name>
+          <branch_length>700.0</branch_length>
+          <date unit="mya">
+            <value>1100.0</value>
+          </date>
+          <clade>
+            <name>Fungi</name>
+            <branch_length>1100.0</branch_length>
+            <date unit="mya">
+              <value>0.0</value>
+            </date>
+          </clade>
+          <clade>
+            <name>Animalia</name>
+            <branch_length>1100.0</branch_length>
+            <date unit="mya">
+              <value>0.0</value>
+            </date>
+          </clade>
+        </clade>
+      </clade>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>
