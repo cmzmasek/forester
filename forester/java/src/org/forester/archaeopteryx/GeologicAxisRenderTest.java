@@ -328,11 +328,23 @@ public final class GeologicAxisRenderTest {
                         // count DARK ink in the reserved bottom strip (the axis band, below the compressed tips): the
                         // year ticks + labels live there. Counting the strip -- not a whole-image diff -- guards the AXIS
                         // itself, not just the tip-compression the reserve would cause even if the axis weren't drawn.
-                        final int strip = 26;
+                        // The strip must span the band + the edge gap the axis is lifted by (so the labels are inside it).
+                        final int strip = 44;
                         if ( countDarkInBottomStrip( cal_on, strip ) <= ( countDarkInBottomStrip( cal_off, strip )
                                 + 40 ) ) {
                             fail( ok, "the calendar axis should draw a year ruler (ticks + labels) in the bottom band" );
                         }
+                        // optional grid lines apply to the calendar axis too (year lines through the tree)
+                        o.setShowGeologicGridLines( false );
+                        final BufferedImage cal_grid_off = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1,
+                                false );
+                        o.setShowGeologicGridLines( true );
+                        final BufferedImage cal_grid_on = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1,
+                                false );
+                        if ( diffPixels( cal_grid_off, cal_grid_on ) < 100 ) {
+                            fail( ok, "the time-axis grid lines should draw calendar-year reference lines when on" );
+                        }
+                        o.setShowGeologicGridLines( false );
                         // circular parity: the calendar rings apply in a circular phylogram; the rectangular axis does not
                         o.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
                         tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );

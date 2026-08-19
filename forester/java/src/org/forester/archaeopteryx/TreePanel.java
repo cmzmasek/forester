@@ -237,6 +237,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private static final double SCALE_GRID_BLEND = 0.18;
     private static final int    GEOLOGIC_RING_ALPHA = 70; // translucency of the circular geologic-band annuli
     private static final int    GEOLOGIC_AXIS_EDGE_GAP = 6; // px between the rectangular geologic axis and the edge
+    private static final int    CALENDAR_AXIS_EDGE_GAP = 12; // px between the calendar tick ruler and the window edge
     private static final int    SCALE_AXIS_TICK_LEN = 4;  // length (px) of the labeled scale-axis tick marks
     private static final int    SCALE_AXIS_LABEL_GAP = 4; // min px between adjacent tick labels (else the label is decimated)
     private static final int    SCALE_AXIS_UNIT_GAP = 5;  // gap before the trailing [unit] label
@@ -4479,24 +4480,55 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.setStroke(saved_stroke);
     }
 
-    /** Optional (off by default) faint reference lines across the tree at the FINE band's interval boundaries when the
-     *  geologic axis is on -- e.g. the Early/Middle/Late Triassic and the Triassic/Permian boundaries. Drawn BEHIND the
-     *  tree, mirroring {@link #paintScaleGrid} (vertical lines in a horizontal layout; logical lines that ride R into
-     *  horizontal grid lines in a vertical orientation; the CIRCULAR analogue is the boundary rings in
-     *  {@link #paintGeologicRingsCircular}). */
-    private void paintGeologicGridLines(final Graphics2D g, final boolean to_pdf, final boolean to_graphics_file,
+    /** Optional (off by default) faint reference lines across the tree at the active time axis's tick positions -- the
+     *  FINE geologic band's interval boundaries (e.g. the Early/Middle/Late Triassic and the Triassic/Permian
+     *  boundaries) OR the CALENDAR year ticks. Drawn BEHIND the tree, mirroring {@link #paintScaleGrid} (vertical lines
+     *  in a horizontal layout; logical lines that ride R into horizontal grid lines in a vertical orientation; the
+     *  CIRCULAR analogue is the geologic boundary rings / the calendar year rings). */
+    private void paintTimeAxisGridLines(final Graphics2D g, final boolean to_pdf, final boolean to_graphics_file,
                                         final int graphics_file_y, final int graphics_file_height) {
-        if (!getOptions().isShowGeologicGridLines() || !geologicAxisApplies()) {
+        if (!getOptions().isShowGeologicGridLines()) {
             return;
         }
-        final double root_age = timeAxisRootAgeMa();
         final double corr = getXcorrectionFactor();
-        if ((root_age <= 0) || (corr <= 0)) {
+        if (corr <= 0) {
             return;
         }
         final float origin_x = _phylogeny.getRoot().getXcoord();
-        final float tip_x = (float) (origin_x + (getMaxDistanceToRoot() * corr));
-        final GeologicTimeScale.Rank fine = GeologicTimeScale.bandRanks(root_age)[1];
+        final double max_dist = getMaxDistanceToRoot();
+        final float tip_x = (float) (origin_x + (max_dist * corr));
+        // the grid-line x positions come from whichever time axis is active: the fine geologic band's boundaries, or
+        // the calendar year ticks. Skip the tips and the root edge.
+        final java.util.List<Integer> xs = new java.util.ArrayList<>();
+        if (geologicAxisApplies()) {
+            final double root_age = timeAxisRootAgeMa();
+            if (root_age <= 0) {
+                return;
+            }
+            final GeologicTimeScale.Rank fine = GeologicTimeScale.bandRanks(root_age)[1];
+            for (final GeologicTimeScale.Interval iv : GeologicTimeScale.overlapping(fine, 0, root_age)) {
+                final double b = Math.min(root_age, iv.oldMa());
+                if ((b > 0) && (b < root_age)) {
+                    xs.add((int) Math.round(ageToX(b, root_age, origin_x, tip_x)));
+                }
+            }
+        }
+        else if (calendarAxisApplies()) {
+            final double present = timeAxisPresentDate();
+            if ((present <= 0) || (max_dist <= 0)) {
+                return;
+            }
+            final double root_year = present - max_dist;
+            for (final double year : TreePanelUtil.calendarTickYears(root_year, present)) {
+                final int x = (int) Math.round(origin_x + ((year - root_year) * corr));
+                if ((x > Math.round(origin_x)) && (x < tip_x)) {
+                    xs.add(x);
+                }
+            }
+        }
+        else {
+            return;
+        }
         final boolean use_export_extent = (to_pdf || to_graphics_file) && (graphics_file_height > 0);
         final int top = isVerticalOrientation() ? 0 : (use_export_extent ? graphics_file_y : 0);
         final int bottom = isVerticalOrientation() ? treeBreadthExtent()
@@ -4505,14 +4537,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final Stroke saved_stroke = g.getStroke();
         g.setColor(scaleGridColor(to_pdf, to_graphics_file));
         g.setStroke(STROKE_05);
-        // a line at each interval's OLDER boundary (its younger boundary is the older boundary of the next interval,
-        // so drawing every old boundary covers all internal boundaries); skip the tips (0) and the root edge
-        for (final GeologicTimeScale.Interval iv : GeologicTimeScale.overlapping(fine, 0, root_age)) {
-            final double b = Math.min(root_age, iv.oldMa());
-            if ((b <= 0) || (b >= root_age)) {
-                continue;
-            }
-            final int x = (int) Math.round(ageToX(b, root_age, origin_x, tip_x));
+        for (final int x : xs) {
             drawLine(x, top, x, bottom, g);
         }
         g.setColor(saved_color);
@@ -4601,7 +4626,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final Rectangle vr = getVisibleRect();
         final int bottom = TreePanelUtil.scaleAxisFloatingBottom(to_pdf, to_graphics_file, graphics_file_y,
                 graphics_file_height, getHeight(), vr.y + vr.height);
-        final int axis_y = bottom - scaleAxisBandHeight();
+        // draw one CALENDAR_AXIS_EDGE_GAP up from the edge so the ruler + labels don't sit flush against the border
+        final int axis_y = bottom - scaleAxisBandHeight() - CALENDAR_AXIS_EDGE_GAP;
         final int label_baseline = axis_y + SCALE_AXIS_TICK_LEN + fm.getAscent() + 1;
         g.setColor(scaleInkColor(to_pdf, to_graphics_file));
         g.setStroke(STROKE_1);
@@ -4727,7 +4753,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final int tip_side_x = (int) Math.round(screenPoint(origin_x, ruler_ly - 16.0).x);
         final int in = (tip_side_x >= anchored_x) ? 1 : -1;
         final Rectangle vr = getVisibleRect();
-        final int ruler_x = TreePanelUtil.scaleAxisRulerX(to_pdf, to_graphics_file, anchored_x, in, vr.x, vr.width);
+        // float to the viewport breadth edge, then step one CALENDAR_AXIS_EDGE_GAP INWARD (toward the tree, i.e. by
+        // +in) so the ruler + its year labels don't sit flush against the window border
+        final int ruler_x = TreePanelUtil.scaleAxisRulerX(to_pdf, to_graphics_file, anchored_x, in, vr.x, vr.width)
+                + (in * CALENDAR_AXIS_EDGE_GAP);
         drawLine(ruler_x, (int) Math.round(r_root.y), ruler_x, (int) Math.round(r_tip.y), g);
         final int center = (fm.getAscent() - fm.getDescent()) / 2;
         final int min_label_gap = fm.getHeight() + SCALE_AXIS_LABEL_GAP;
@@ -4781,11 +4810,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return geologicAxisReserve(); // the geologic axis takes the bottom strip (+ an edge gap) vs the numeric axis
         }
         if (calendarAxisApplies()) {
-            // the calendar tick axis reserves one label row, like the numeric scale axis -- but only when it actually
-            // yields year ticks (a sub-year span within one calendar year has none, so draws nothing -> reserve nothing)
+            // the calendar tick axis reserves one label row (+ an edge gap from the window border), like the numeric
+            // scale axis -- but only when it actually yields year ticks (a sub-year span within one calendar year has
+            // none, so it draws nothing -> reserve nothing)
             final double present = timeAxisPresentDate();
             if (TreePanelUtil.calendarTickYears(present - getMaxDistanceToRoot(), present).length > 0) {
-                return scaleAxisBandHeight();
+                return scaleAxisBandHeight() + CALENDAR_AXIS_EDGE_GAP;
             }
             return 0;
         }
@@ -4817,7 +4847,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             for (final double y : years) {
                 max_year_label = Math.max(max_year_label, fmc.stringWidth(calendarYearLabel(y)));
             }
-            return SCALE_AXIS_TICK_LEN + max_year_label + 8;
+            return SCALE_AXIS_TICK_LEN + max_year_label + 8 + CALENDAR_AXIS_EDGE_GAP;
         }
         if (!getOptions().isShowScaleAxis() || !getControlPanel().isDrawPhylogram() || (getScaleDistance() <= 0.0)) {
             return 0;
@@ -10900,7 +10930,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             if (!vertical) {
                 // optional geologic grid lines at the fine-band boundaries (self-gated on the option + geologic axis)
-                paintGeologicGridLines(g, to_pdf, to_graphics_file, graphics_file_y, graphics_file_height);
+                paintTimeAxisGridLines(g, to_pdf, to_graphics_file, graphics_file_y, graphics_file_height);
             }
             // Root-top/bottom: the tree is laid out logically (above); now rotate the whole canvas for the geometry
             // pass. Geometry (branches, boxes, triangles, halos) rides R for free; node TEXT is re-anchored upright
@@ -10918,7 +10948,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     paintScaleGrid(g, to_pdf, to_graphics_file, graphics_file_y, graphics_file_height);
                 }
                 // optional geologic grid lines ride R the same way (logical lines -> horizontal grid lines by depth)
-                paintGeologicGridLines(g, to_pdf, to_graphics_file, graphics_file_y, graphics_file_height);
+                paintTimeAxisGridLines(g, to_pdf, to_graphics_file, graphics_file_y, graphics_file_height);
             }
             for (final PhylogenyNode element : _nodes_in_preorder) {
                 paintNodeRectangular(g,

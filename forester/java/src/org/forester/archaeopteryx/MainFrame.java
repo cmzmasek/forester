@@ -169,8 +169,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String SHOW_TREE_NAME_LABEL = "Tree Name";
     static final String DISPLAY_SCALE_GRID_LABEL = "Scale Grid Lines";
     static final String DISPLAY_SCALE_GRID_TIP = "Draw faint vertical reference lines at scale intervals across the tree (phylograms only), so branch depths are easy to compare.";
-    static final String GEOLOGIC_GRID_LABEL = "Geologic Grid Lines";
-    static final String GEOLOGIC_GRID_TIP = "When the Geologic time axis is on, draw faint reference lines across the tree at the finer band's interval boundaries (e.g. the Early/Middle/Late Triassic and Triassic/Permian boundaries).";
+    static final String GEOLOGIC_GRID_LABEL = "Time-Axis Grid Lines";
+    static final String GEOLOGIC_GRID_TIP = "When a Time Axis is on, draw faint reference lines across the tree at its tick positions (the geologic band boundaries, or the calendar year ticks).";
     static final String GEOLOGIC_AGES_LABEL = "Geologic Boundary Ages";
     static final String GEOLOGIC_AGES_TIP = "When the Geologic time axis is on, label the coarser band's interval boundaries with their age (e.g. \"201.4 Ma\" at the base of the Jurassic).";
     static final String DISPLAY_SCALE_AXIS_LABEL = "Scale Axis";

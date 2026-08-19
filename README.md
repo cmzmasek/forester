@@ -249,7 +249,7 @@ next to the Time Axis selector (most-recent tips are taken as the present, age 0
 
 Two optional refinements (both **off by default**, and remembered between
 sessions) are available under **Settings → Overlays** when the geologic axis is
-on: **Geologic Grid Lines** draws faint reference lines across the tree at the
+on: **Time-Axis Grid Lines** draws faint reference lines across the tree at the
 finer band's interval boundaries (e.g. the Early/Middle/Late Triassic and the
 Triassic/Permian boundaries), and **Geologic Boundary Ages** labels the coarser
 band's boundaries with their age (e.g. *201.4* at the base of the Jurassic).
@@ -279,6 +279,8 @@ The axis is anchored by the **most-recent tip** (the present): Archaeopteryx use
 the largest tip `<date>` (a calendar-year value) automatically, or you can set it
 explicitly with **"Set most-recent-tip date…"** next to the Time Axis selector.
 Each node's calendar date is then its distance-from-root back from that present.
+The **Time-Axis Grid Lines** toggle (Settings → Overlays) also works here, drawing
+faint reference lines across the tree at each labelled year tick.
 
 
 Tanglegrams
