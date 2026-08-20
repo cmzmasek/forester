@@ -5470,6 +5470,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return _nextstrain_branch_mode != NEXTSTRAIN_BRANCH_MODE.DIVERGENCE;
     }
 
+    /** Invalidate the identity-keyed time-axis caches (derived type + max node-date) after an IN-PLACE change to the
+     *  node {@code <date>}s on the SAME tree object (e.g. Extract Dates from Labels) -- the caches are keyed by tree
+     *  identity, which does not change on an in-place edit, so the Calendar axis would otherwise stay stale. */
+    void invalidateTimeAxisDerivation() {
+        _derived_time_axis_for = null;
+        _time_axis_age_cached_for = null;
+    }
+
     /** Whether the two-band geologic time axis is ON and drawable in a RECTANGULAR-family layout: mode GEOLOGIC, a
      *  phylogram in any of the three rectangular orientations (root-left / root-top / root-bottom), and an absolute
      *  root-age calibration. The circular analogue is {@link #geologicRingsApplyCircular()}; UNROOTED is N/A (an

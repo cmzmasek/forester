@@ -73,6 +73,7 @@ public final class DemoTreeGenerator {
         write( dir, "colorize-by-rank.xml", colorizeByRankTree() );
         write( dir, "infer-ancestor-taxonomies.xml", inferAncestorTaxonomiesTree() );
         write( dir, "scale-axis.xml", scaleAxisTree() );
+        write( dir, "date-in-labels.xml", dateInLabelsTree() );
         write( dir, "node-hpd-bars.xml", hpdBarsTree() );
         write( dir, "dinosaur-time-tree.xml", dinosaurTimeTree() );
         write( dir, "fossil-range-bars.xml", fossilRangeTree() );
@@ -643,6 +644,24 @@ public final class DemoTreeGenerator {
                         + "Settings > Display > Scale Axis to read a labeled distance axis with ticks along the bottom." );
         phy.setDistanceUnit( "substitutions/site" );
         return phy;
+    }
+
+    // ----- "Extract Dates from Labels": tips carry the sampling DATE in the label (mixed formats), no structured <date>
+    private static Phylogeny dateInLabelsTree() {
+        final PhylogenyNode root = clade( 0,
+                clade( 0.2, blLeaf( "hCoV-19/China/WH-01/2019-12-30", 0.1 ),
+                       blLeaf( "hCoV-19/Japan/TY/2020-01", 0.2 ),
+                       blLeaf( "hCoV-19/Italy/LOM-2020-02-20", 0.3 ) ),
+                clade( 0.5, blLeaf( "hCoV-19/USA/CA-2020-03-15", 0.4 ), blLeaf( "hCoV-19/UK/ENG-2020-09-20", 0.9 ),
+                       clade( 1.0, blLeaf( "hCoV-19/India/delta/2021-04-10", 0.5 ),
+                              blLeaf( "hCoV-19/SouthAfrica/omicron/2021-11-25", 1.2 ),
+                              blLeaf( "hCoV-19/USA/BA2/2022-02-14", 1.4 ) ) ),
+                clade( 0.1, blLeaf( "A/swine/2019", 0.1 ), blLeaf( "GISAID/01-Dec-2021", 2.0 ) ) );
+        return tree( root, "Dates in tip labels (demo)",
+                "Synthetic SARS-CoV-2-like tree whose tips carry the SAMPLING DATE in the label (mixed formats: ISO "
+                        + "2020-02-20, ISO year-month 2020-01, bare year 2019, month-name 01-Dec-2021) but NO "
+                        + "structured <date>. Run Tools > Extract Dates from Labels... to pull each date into a <date> "
+                        + "+ a Color-by-able data:date property; the tree then gets the Calendar axis." );
     }
 
     // ----- "Node Age Bars (HPD)": a dated (ultrametric) mammal phylogram, branch lengths = time (My). Each internal

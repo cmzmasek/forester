@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" rerootable="true">
+  <name>Dates in tip labels (demo)</name>
+  <description>Synthetic SARS-CoV-2-like tree whose tips carry the SAMPLING DATE in the label (mixed formats: ISO 2020-02-20, ISO year-month 2020-01, bare year 2019, month-name 01-Dec-2021) but NO structured &lt;date&gt;. Run Tools &gt; Extract Dates from Labels... to pull each date into a &lt;date&gt; + a Color-by-able data:date property; the tree then gets the Calendar axis.</description>
+  <clade>
+    <branch_length>0.0</branch_length>
+    <clade>
+      <branch_length>0.2</branch_length>
+      <clade>
+        <name>hCoV-19/China/WH-01/2019-12-30</name>
+        <branch_length>0.1</branch_length>
+      </clade>
+      <clade>
+        <name>hCoV-19/Japan/TY/2020-01</name>
+        <branch_length>0.2</branch_length>
+      </clade>
+      <clade>
+        <name>hCoV-19/Italy/LOM-2020-02-20</name>
+        <branch_length>0.3</branch_length>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.5</branch_length>
+      <clade>
+        <name>hCoV-19/USA/CA-2020-03-15</name>
+        <branch_length>0.4</branch_length>
+      </clade>
+      <clade>
+        <name>hCoV-19/UK/ENG-2020-09-20</name>
+        <branch_length>0.9</branch_length>
+      </clade>
+      <clade>
+        <branch_length>1.0</branch_length>
+        <clade>
+          <name>hCoV-19/India/delta/2021-04-10</name>
+          <branch_length>0.5</branch_length>
+        </clade>
+        <clade>
+          <name>hCoV-19/SouthAfrica/omicron/2021-11-25</name>
+          <branch_length>1.2</branch_length>
+        </clade>
+        <clade>
+          <name>hCoV-19/USA/BA2/2022-02-14</name>
+          <branch_length>1.4</branch_length>
+        </clade>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.1</branch_length>
+      <clade>
+        <name>A/swine/2019</name>
+        <branch_length>0.1</branch_length>
+      </clade>
+      <clade>
+        <name>GISAID/01-Dec-2021</name>
+        <branch_length>2.0</branch_length>
+      </clade>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>

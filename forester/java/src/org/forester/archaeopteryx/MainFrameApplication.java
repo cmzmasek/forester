@@ -356,6 +356,11 @@ public final class MainFrameApplication extends MainFrame {
                     return;
                 }
                 extractLabelData();
+            } else if (o == _extract_dates_jmi) {
+                if (isSubtreeDisplayed()) {
+                    return;
+                }
+                extractTipDates();
             } else if (o == _internal_number_are_confidence_for_nh_parsing_cbmi) {
                 updateOptions(getOptions());
             } else if (o == _replace_underscores_cbmi) {
@@ -1868,6 +1873,10 @@ public final class MainFrameApplication extends MainFrame {
         customizeJMenuItem(_extract_label_data_jmi);
         _extract_label_data_jmi.setToolTipText(
                 "Parse UniProt or GenBank/RefSeq FASTA-header node names into accession, description, gene and taxonomy fields (offline, no network); only empty fields are filled");
+        _tools_menu.add(_extract_dates_jmi = new JMenuItem("Extract Dates from Labels…"));
+        customizeJMenuItem(_extract_dates_jmi);
+        _extract_dates_jmi.setToolTipText(
+                "Parse a sampling date out of each tip label (ISO / numeric / month-name / decimal-year / bare-year) into a <date> + a Color-by-able data:date property, so a tip-dated tree gets the Calendar axis; shows a preview first");
         _jmenubar.add(_tools_menu);
     }
 

@@ -89,6 +89,10 @@ import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
 import org.forester.analysis.AncestralTaxonomyInference;
 import org.forester.archaeopteryx.tools.AncestralTaxonomyInferrer;
 import org.forester.archaeopteryx.tools.LabelDataExtractor;
+import org.forester.archaeopteryx.tools.TipDateExtractor;
+import org.forester.archaeopteryx.tools.TipDateExtractor.DayMonthOrder;
+import org.forester.archaeopteryx.tools.TipDateExtractor.Summary;
+import org.forester.archaeopteryx.tools.TipDateExtractor.TipDate;
 import org.forester.archaeopteryx.tools.NodeDataExporter;
 import org.forester.archaeopteryx.tools.NodeDataImporter;
 import org.forester.archaeopteryx.tools.ProcessPool;
@@ -274,6 +278,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     JMenuItem _obtain_seq_and_tax_information_jmi;
     JMenuItem _extract_label_data_jmi;
+    JMenuItem _extract_dates_jmi;
     JMenuItem _remove_branch_color_item;
     JMenuItem _remove_visual_styles_item;
     JMenuItem _delete_selected_nodes_item;
@@ -1634,6 +1639,101 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             tp.getControlPanel().fitWidth();
         }
         return n;
+    }
+
+    /**
+     * The Tools "Extract Dates from Labels…" operation: parse a sampling date out of each tip label (ISO / numeric /
+     * month-name / decimal-year / bare-year) via a PREVIEW dialog, then -- on Apply -- write it into each tip's
+     * {@code <date>} + a numeric {@code data:date} property, so a tip-dated Newick/phyloXML/Nexus tree lights up the
+     * Calendar axis and Color-by-date. A no-op if no label carries a recognisable date.
+     */
+    void extractTipDates() {
+        if (_mainpanel.getCurrentTreePanel() == null) {
+            return;
+        }
+        final TreePanel tp = _mainpanel.getCurrentTreePanel();
+        final Phylogeny phy = tp.getPhylogeny();
+        if ((phy == null) || phy.isEmpty()) {
+            return;
+        }
+        boolean any = false;
+        for (final TipDate t : TipDateExtractor.preview(phy, DayMonthOrder.DAY_FIRST)) {
+            if (t.match() != null) {
+                any = true;
+                break;
+            }
+        }
+        if (!any) {
+            JOptionPane.showMessageDialog(this,
+                    "No sampling dates were recognised in the tip labels.\nTried ISO (2021-03-15), numeric "
+                            + "(15/03/2021), month-name (01-Dec-2015), decimal-year (2021.37) and bare-year (…/2012) "
+                            + "formats.",
+                    "Extract Dates from Labels", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        final TipDateExtractionDialog dlg = new TipDateExtractionDialog(this, phy);
+        dlg.setVisible(true); // modal
+        if (dlg.isApplied()) {
+            final int n = applyTipDatesAndRefit(tp, dlg.getOrder(), dlg.isSkipExisting());
+            if (n > 0) {
+                JOptionPane.showMessageDialog(this,
+                        "Wrote sampling dates to " + n + " tip" + ((n == 1) ? "" : "s")
+                                + ".\nThe tree is now on the Calendar axis, and \"Color by\" → data:date shows the "
+                                + "date gradient.",
+                        "Extract Dates from Labels", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this,
+                        "No new dates were written — every tip with a recognised date already has one.\n"
+                                + "Uncheck \"Skip tips that already have a date\" to overwrite them.",
+                        "Extract Dates from Labels", JOptionPane.INFORMATION_MESSAGE);
+            }
+        }
+    }
+
+    /**
+     * The dialog-free core of {@link #extractTipDates()} (so it is unit-testable): writes the parsed date onto each
+     * matched tip (skipping already-dated tips when requested), appends a provenance sentence, and re-fits so the
+     * auto-derived Calendar axis + the {@code data:date} Color-by option appear. Undoable (a checkpoint is pushed
+     * before mutating). Returns the number of tips dated.
+     */
+    int applyTipDatesAndRefit(final TreePanel tp, final DayMonthOrder order, final boolean skip_existing) {
+        final Phylogeny phy = tp.getPhylogeny();
+        if ((phy == null) || phy.isEmpty()) {
+            return 0;
+        }
+        final java.util.List<TipDate> rows = TipDateExtractor.preview(phy, order);
+        int to_write = 0;
+        for (final TipDate t : rows) {
+            if ((t.match() != null) && !(skip_existing && t.alreadyDated())) {
+                to_write++;
+            }
+        }
+        if (to_write == 0) {
+            return 0;
+        }
+        tp.pushUndoCheckpoint("Extract dates from labels"); // reversible: a tree-data mutation
+        int written = 0;
+        for (final TipDate t : rows) {
+            if ((t.match() != null) && !(skip_existing && t.alreadyDated())
+                    && TipDateExtractor.applyToNode(t.node(), t.match())) {
+                written++;
+            }
+        }
+        final Summary sum = TipDateExtractor.summarize(rows);
+        final String prov = TipDateExtractor.provenanceSentence(written, rows.size(), sum.dominantFormat());
+        final String existing = phy.getDescription();
+        phy.setDescription(ForesterUtil.isEmpty(existing) ? prov : existing + " " + prov);
+        tp.setEdited(true);
+        phy.externalNodesHaveChanged();
+        tp.invalidateTimeAxisDerivation(); // dates were added in place on the same tree -> re-derive the Calendar axis
+        // reveal the data:date Color-by option + let the Calendar axis auto-derive from the new "year" dates; re-fit
+        // (null-guarded: a minimal/embedded TreePanel may have no control panel -- the tree is still validly dated)
+        if (tp.getControlPanel() != null) {
+            tp.getControlPanel().updateDataCheckboxVisibility(true);
+            tp.getControlPanel().populateColorByPropertyBox();
+            tp.getControlPanel().showWhole();
+        }
+        return written;
     }
 
 

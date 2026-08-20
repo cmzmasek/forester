@@ -176,7 +176,31 @@ public final class DemoTreesTest {
         // Auspice / Nextstrain v2 JSON: a synthetic nCoV dataset -- parses via the AuspiceJsonParser, is a dated
         // (calendar) tree, and carries a discrete 'region' trait with per-node confidence (-> ancestral-state pies)
         ok &= auspiceDemoOk( "nextstrain-ncov.json" );
+        // Extract Dates from Labels: the tips carry the date in the LABEL (no structured <date>), and a strict
+        // majority parse via TipDateExtractor -- so Tools > Extract Dates from Labels has work to do
+        ok &= dateInLabelsDemoOk( "date-in-labels.xml" );
         return ok;
+    }
+
+    /** The date-in-labels demo has &ge;10 tips whose LABELS carry a parseable date but which have NO structured
+     *  {@code <date>} yet -- exactly what the Extract-Dates-from-Labels tool consumes. */
+    private static boolean dateInLabelsDemoOk( final String file_name ) {
+        final Phylogeny phy = load( file_name );
+        if ( phy == null ) {
+            return note( file_name + " is missing / unparseable" );
+        }
+        if ( phy.getNumberOfExternalNodes() < 10 ) {
+            return note( file_name + " must have >= 10 tips, has " + phy.getNumberOfExternalNodes() );
+        }
+        for ( final PhylogenyNode ext : phy.getExternalNodes() ) {
+            if ( ext.getNodeData().isHasDate() ) {
+                return note( file_name + " tips must NOT carry a structured <date> (the tool extracts it from the label)" );
+            }
+        }
+        if ( !org.forester.archaeopteryx.tools.TipDateExtractor.mostLabelsHaveDates( phy ) ) {
+            return note( file_name + " tip labels must carry parseable dates" );
+        }
+        return true;
     }
 
     /** The host/parasite demo trees (whose tip names share nothing) fully link through the association file, and a
