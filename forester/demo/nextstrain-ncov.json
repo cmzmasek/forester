@@ -1,0 +1,81 @@
+{
+  "version": "v2",
+  "meta": {
+    "title": "Synthetic nCoV phylodynamics (demo)",
+    "updated": "2024-01-01",
+    "description": "A small, schematic SARS-CoV-2-like Auspice v2 dataset for demonstrating Archaeopteryx's Auspice/Nextstrain JSON import. Not real data."
+  },
+  "tree": {
+    "name": "ROOT",
+    "node_attrs": {
+      "div": 0,
+      "num_date": { "value": 2019.9, "confidence": [2019.78, 2020.0] },
+      "region": { "value": "Asia", "confidence": { "Asia": 0.86, "Europe": 0.1, "North America": 0.04 } }
+    },
+    "branch_attrs": { "labels": { "clade": "19A" } },
+    "children": [
+      {
+        "name": "China/Wuhan-1/2019",
+        "node_attrs": {
+          "div": 0.0001,
+          "num_date": { "value": 2019.98 },
+          "region": { "value": "Asia" }, "country": { "value": "China" }, "host": { "value": "Homo sapiens" }
+        }
+      },
+      {
+        "name": "NODE_0001",
+        "node_attrs": {
+          "div": 0.0006,
+          "num_date": { "value": 2020.12, "confidence": [2020.02, 2020.22] },
+          "region": { "value": "Europe", "confidence": { "Europe": 0.62, "Asia": 0.28, "North America": 0.1 } }
+        },
+        "branch_attrs": { "labels": { "clade": "20A" } },
+        "children": [
+          {
+            "name": "Italy/Lombardy-1/2020",
+            "node_attrs": {
+              "div": 0.0011,
+              "num_date": { "value": 2020.28 },
+              "region": { "value": "Europe" }, "country": { "value": "Italy" }, "host": { "value": "Homo sapiens" }
+            }
+          },
+          {
+            "name": "UK/England-COG-1/2020",
+            "node_attrs": {
+              "div": 0.0013,
+              "num_date": { "value": 2020.35 },
+              "region": { "value": "Europe" }, "country": { "value": "United Kingdom" }, "host": { "value": "Homo sapiens" }
+            }
+          },
+          {
+            "name": "NODE_0002",
+            "node_attrs": {
+              "div": 0.0015,
+              "num_date": { "value": 2020.42, "confidence": [2020.28, 2020.55] },
+              "region": { "value": "North America", "confidence": { "North America": 0.71, "Europe": 0.29 } }
+            },
+            "branch_attrs": { "labels": { "clade": "20C" } },
+            "children": [
+              {
+                "name": "USA/CA-CDC-1/2020",
+                "node_attrs": {
+                  "div": 0.0021,
+                  "num_date": { "value": 2020.58 },
+                  "region": { "value": "North America" }, "country": { "value": "USA" }, "host": { "value": "Homo sapiens" }
+                }
+              },
+              {
+                "name": "USA/WA-UW-2/2020",
+                "node_attrs": {
+                  "div": 0.0024,
+                  "num_date": { "value": 2020.71 },
+                  "region": { "value": "North America" }, "country": { "value": "USA" }, "host": { "value": "Homo sapiens" }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

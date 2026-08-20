@@ -827,6 +827,22 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("JSON parser: ");
+        if (org.forester.io.parsers.json.JsonParserTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Auspice/Nextstrain JSON parser: ");
+        if (org.forester.io.parsers.json.AuspiceJsonParserTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Ancestral-state pies (render): ");
         if (org.forester.archaeopteryx.AncestralPieRenderTest.test()) {
             System.out.println("OK.");

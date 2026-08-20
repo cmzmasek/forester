@@ -138,6 +138,8 @@ Just launch Archaeopteryx and pick a tree from **File → Demo Trees**:
 - **Node Age Spindles** — divergence-time uncertainty (point age + 95% HPD) as
   tapered spindles
 - **SARS-CoV-2 Time Tree** — a tip-dated viral tree on a calendar-year axis
+- **Phylodynamics (Nextstrain JSON)** — an Auspice v2 dataset with geographic
+  ancestral-state pies, read straight from `dataset.json`
 - **Dinosaur Time Tree** — a dated archosaur tree (with *Archaeopteryx*!) on the
   geologic time scale
 - **Ammonite Time Tree** — an all-extinct fossil clade with FAD/LAD range bars
@@ -360,6 +362,35 @@ explicitly with **"Set most-recent-tip date…"** next to the Time Axis selector
 Each node's calendar date is then its distance-from-root back from that present.
 The **Time-Axis Grid Lines** toggle (Settings → Overlays) also works here, drawing
 faint reference lines across the tree at each labelled year tick.
+
+
+Auspice / Nextstrain JSON
+-------------------------
+
+Archaeopteryx reads **Auspice / Nextstrain v2** datasets — the `dataset.json`
+format behind [nextstrain.org](https://nextstrain.org) and the Auspice viewer,
+the de-facto interchange format for dated, annotated pathogen phylogenies. Just
+open a `.json` file with **File → Read Tree from File…** (or try **File → Demo
+Trees → Phylodynamics (Nextstrain JSON)**).
+
+The point is that it maps straight onto features Archaeopteryx already has, so
+your Nextstrain tree lights up on open:
+
+- **`num_date`** → the tree is placed on the **Calendar axis**, and each internal
+  node's **`num_date.confidence`** (the divergence-time interval) becomes a
+  **Node Age spindle**.
+- **`div`** (cumulative divergence) is kept as a property.
+- every **discrete trait** — `country`, `region`, `clade_membership`, `host`, … —
+  becomes a **`nextstrain:<trait>`** node property you can **Color by**, tabulate
+  as an **Annotation Column**, or search; and each trait's per-node **confidence**
+  drives the **Ancestral-State Pies** (geographic phylogeography, straight from the
+  file).
+
+Not imported (Archaeopteryx is a tree viewer, not a phylodynamics dashboard): the
+map, entropy, and frequencies panels. Reference:
+
+- Hadfield, J. *et al.* (2018): "Nextstrain: real-time tracking of pathogen
+  evolution", *Bioinformatics* 34(23):4121–4123.
 
 
 Tanglegrams

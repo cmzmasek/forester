@@ -119,6 +119,17 @@ final class DemoTrees {
                                  final TreePanel tp = openTree( mf, "sars-cov-2-time-tree.xml" );
                                  timeAxis( mf, tp, Options.TIME_AXIS_TYPE.CALENDAR );
                              } ) );
+        demos.add( new Demo( "Phylodynamics (Nextstrain JSON)",
+                             "An Auspice / Nextstrain v2 dataset (synthetic nCoV): a calendar-dated tree with geographic "
+                                     + "ancestral-state pies and divergence-time spindles -- read straight from dataset.json.",
+                             mf -> {
+                                 final TreePanel tp = openTree( mf, "nextstrain-ncov.json" );
+                                 timeAxis( mf, tp, Options.TIME_AXIS_TYPE.CALENDAR );
+                                 final ControlPanel cp = mf.getMainPanel().getControlPanel();
+                                 if ( cp != null ) {
+                                     cp.demoSelectAncestralPie( "region" ); // geographic ancestral-state pies
+                                 }
+                             } ) );
         demos.add( new Demo( "Dinosaur Time Tree (Geologic Axis)",
                              "A dated archosaur tree -- with Archaeopteryx! -- against the ICS geologic time scale.",
                              mf -> {
@@ -144,14 +155,23 @@ final class DemoTrees {
         return demos;
     }
 
-    /** Parse a bundled phyloXML demo tree from the jar. */
+    /** Parse a bundled demo tree from the jar -- phyloXML, or (for a {@code .json} resource) an Auspice/Nextstrain v2
+     *  dataset. */
     static Phylogeny loadTree( final String resource ) throws IOException {
         try ( final InputStream in = DemoTrees.class.getResourceAsStream( RESOURCE_DIR + resource ) ) {
             if ( in == null ) {
                 throw new IOException( "bundled demo tree not found on the classpath: " + RESOURCE_DIR + resource );
             }
-            final PhyloXmlParser parser = PhyloXmlParser.createPhyloXmlParser();
-            final Phylogeny[] phys = ParserBasedPhylogenyFactory.getInstance().create( in, parser );
+            final Phylogeny[] phys;
+            if ( resource.toLowerCase().endsWith( ".json" ) ) {
+                final org.forester.io.parsers.json.AuspiceJsonParser parser = new org.forester.io.parsers.json.AuspiceJsonParser();
+                parser.setSource( in );
+                phys = parser.parse();
+            }
+            else {
+                final PhyloXmlParser parser = PhyloXmlParser.createPhyloXmlParser();
+                phys = ParserBasedPhylogenyFactory.getInstance().create( in, parser );
+            }
             if ( ( phys == null ) || ( phys.length == 0 ) || ( phys[ 0 ] == null ) || phys[ 0 ].isEmpty() ) {
                 throw new IOException( "bundled demo tree is empty: " + resource );
             }

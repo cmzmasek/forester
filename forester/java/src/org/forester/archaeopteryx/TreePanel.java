@@ -9359,7 +9359,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (max_dist <= 0) {
             return;
         }
-        final double radial_corr = radius / max_dist; // px per distance/time unit along the spoke (== the phylogram scale)
+        final double radial_corr0 = radius / max_dist; // px per distance/time unit along the spoke (== the phylogram scale)
+        // a CALENDAR tree's date increases toward the tips (larger radius); negate so the earlier bound sits at a
+        // smaller radius (toward the centre) and the later bound at a larger radius (toward the tips)
+        final double radial_corr = (effectiveTimeAxisType() == Options.TIME_AXIS_TYPE.CALENDAR) ? -radial_corr0
+                : radial_corr0;
         final Color saved = g.getColor();
         final Stroke saved_stroke = g.getStroke();
         g.setColor(((to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite()) ? HPD_BAR_COLOR_BW
@@ -9441,6 +9445,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (corr <= 0) {
             return; // no branch-length scale -> nothing meaningful to place
         }
+        // a CALENDAR tree's date INCREASES toward the tips (opposite of geologic age, which decreases toward the tips);
+        // negate corr so hpdBarXRange places the earlier bound to the left and the later bound to the right
+        final double signed_corr = (effectiveTimeAxisType() == Options.TIME_AXIS_TYPE.CALENDAR) ? -corr : corr;
         final Color saved = g.getColor();
         g.setColor(((to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite()) ? HPD_BAR_COLOR_BW
                 : HPD_BAR_COLOR);
@@ -9455,7 +9462,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final double min = date.getMin().doubleValue();
             final double max = date.getMax().doubleValue();
             final double value = (date.getValue() != null) ? date.getValue().doubleValue() : ((min + max) / 2.0);
-            final float[] xr = TreePanelUtil.hpdBarXRange(node.getXcoord(), value, min, max, corr);
+            final float[] xr = TreePanelUtil.hpdBarXRange(node.getXcoord(), value, min, max, signed_corr);
             final double y = node.getYcoord();
             if (getOptions().getNodeAgeShape() == Options.NODE_AGE_SHAPE.SPINDLE) {
                 // a tapered lens from the older bound to the younger, peaking at the node's own (point-estimate) x

@@ -47,7 +47,87 @@ public final class HpdBarRenderTest {
         if ( GraphicsEnvironment.isHeadless() ) {
             return true;
         }
-        return barsRenderOk();
+        return barsRenderOk() && calendarDirectionOk();
+    }
+
+    /** On a CALENDAR tree (dates increase toward the tips, opposite of geologic age), the node-age bar for an internal
+     *  node with a right-skewed date confidence must extend FARTHER toward the later date (right) than the earlier date
+     *  (left) -- i.e. the signed-corr flip is applied. A geologic (age) mapping would mirror it. */
+    private static boolean calendarDirectionOk() {
+        final boolean[] ok = { true };
+        try {
+            // MID (internal, mid-tree) has value 2020.0 with confidence [2019.9, 2020.5]: strongly skewed to LATER
+            final String json = "{\"version\":\"v2\",\"tree\":{\"name\":\"R\",\"node_attrs\":{\"num_date\":{\"value\":2019.0,\"confidence\":[2018.9,2019.1]}},"
+                    + "\"children\":[{\"name\":\"x\",\"node_attrs\":{\"num_date\":{\"value\":2019.5}}},"
+                    + "{\"name\":\"MID\",\"node_attrs\":{\"num_date\":{\"value\":2020.0,\"confidence\":[2019.9,2020.5]}},"
+                    + "\"children\":[{\"name\":\"a\",\"node_attrs\":{\"num_date\":{\"value\":2020.9}}},"
+                    + "{\"name\":\"b\",\"node_attrs\":{\"num_date\":{\"value\":2021.0}}}]}]}}";
+            final org.forester.io.parsers.json.AuspiceJsonParser parser = new org.forester.io.parsers.json.AuspiceJsonParser();
+            parser.setSource( new StringBuffer( json ) );
+            final Phylogeny phy = parser.parse()[ 0 ];
+            final Configuration conf = new Configuration();
+            final MainFrame[] mf = new MainFrame[ 1 ];
+            SwingUtilities.invokeAndWait(
+                    () -> mf[ 0 ] = MainFrameApplication.createInstance( new Phylogeny[] { phy }, conf, "cal" ) );
+            SwingUtilities.invokeAndWait( () -> {
+                final MainFrame frame = mf[ 0 ];
+                try {
+                    final TreePanel tp = frame.getMainPanel().getCurrentTreePanel();
+                    final Options o = frame.getOptions();
+                    o.setGraphicsExportWhiteBackground( true );
+                    o.setShowHpdBars( true );
+                    o.setNodeAgeShape( Options.NODE_AGE_SHAPE.BAR ); // measure the flat bar's extent, not a spindle
+                    o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                    tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
+                    tp.getControlPanel().setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM );
+                    tp.setTimeAxisType( Options.TIME_AXIS_TYPE.CALENDAR );
+                    final int w = 900, h = 460;
+                    frame.showWhole();
+                    tp.setSize( w, h );
+                    tp.calcParametersForPainting( w, h );
+                    final BufferedImage img = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
+                    org.forester.phylogeny.PhylogenyNode mid = null;
+                    for ( final java.util.Iterator<org.forester.phylogeny.PhylogenyNode> it = phy.iteratorPreorder();
+                            it.hasNext(); ) {
+                        final org.forester.phylogeny.PhylogenyNode n = it.next();
+                        if ( "MID".equals( n.getName() ) ) {
+                            mid = n;
+                            break;
+                        }
+                    }
+                    if ( mid == null ) {
+                        fail( ok, "expected the MID node" );
+                        return;
+                    }
+                    final int nx = Math.round( mid.getXcoord() ), ny = Math.round( mid.getYcoord() );
+                    int left_ext = 0, right_ext = 0;
+                    for ( int dx = 1; dx <= 200; ++dx ) {
+                        if ( bluishNear( img, nx - dx, nx - dx, ny ) ) {
+                            left_ext = dx;
+                        }
+                        if ( bluishNear( img, nx + dx, nx + dx, ny ) ) {
+                            right_ext = dx;
+                        }
+                    }
+                    // later (right) reach must clearly exceed earlier (left) reach -- the calendar direction
+                    if ( right_ext <= ( left_ext + 5 ) ) {
+                        fail( ok, "a calendar tree's node-age bar must reach farther toward the LATER date (right "
+                                + right_ext + " vs left " + left_ext + ")" );
+                    }
+                }
+                catch ( final Throwable t ) {
+                    fail( ok, "unexpected: " + t );
+                }
+                finally {
+                    ( (JFrame) frame ).dispose();
+                }
+            } );
+            return ok[ 0 ];
+        }
+        catch ( final Throwable e ) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     private static boolean barsRenderOk() {

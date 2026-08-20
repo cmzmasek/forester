@@ -114,6 +114,12 @@ public final class AlgorithmReferencesTest {
             System.out.println( "  [AlgorithmReferencesTest] node age bars/spindles reference/citation is missing" );
             ok = false;
         }
+        // the Auspice/Nextstrain JSON import must be described, with the Nextstrain (Hadfield et al. 2018) citation
+        if ( !text.contains( "Auspice / Nextstrain JSON import" ) || !text.contains( "dataset.json" )
+                || !text.contains( "Hadfield J" ) || !text.contains( "real-time tracking of pathogen evolution" ) ) {
+            System.out.println( "  [AlgorithmReferencesTest] Auspice/Nextstrain import reference/citation is missing" );
+            ok = false;
+        }
         boolean phyloxml_present = false;
         for ( final AlgorithmReferences.Reference r : all ) {
             if ( ForesterConstants.PHYLO_XML_REFERENCE.equals( r.citation() ) ) {

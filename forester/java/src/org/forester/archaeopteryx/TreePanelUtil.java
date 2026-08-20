@@ -668,6 +668,10 @@ public class TreePanelUtil {
     // ===== Ancestral-state pie charts (BEAST discrete/geographic traits) =====
 
     private final static String BEAST_PREFIX    = "beast:";
+    private final static String NEXTSTRAIN_PREFIX = "nextstrain:";
+    // discrete ancestral-state distributions come from BEAST/TreeAnnotator (beast:) or Auspice/Nextstrain (nextstrain:),
+    // both stored as a <prefix><trait>_set + _set_prob brace-list pair; the pies read either.
+    private final static String[] STATE_PREFIXES = { BEAST_PREFIX, NEXTSTRAIN_PREFIX };
     private final static String SET_SUFFIX      = "_set";
     private final static String SET_PROB_SUFFIX = "_set_prob";
 
@@ -706,12 +710,14 @@ public class TreePanelUtil {
             }
             for( final Property p : n.getNodeData().getProperties().getProperties() ) {
                 final String ref = p.getRef();
-                if ( ref.startsWith( BEAST_PREFIX ) && ref.endsWith( SET_PROB_SUFFIX ) ) {
-                    final String trait = ref.substring( BEAST_PREFIX.length(),
-                                                        ref.length() - SET_PROB_SUFFIX.length() );
-                    if ( !ForesterUtil.isEmpty( trait )
-                            && !firstProperty( n, BEAST_PREFIX + trait + SET_SUFFIX ).isEmpty() ) {
-                        traits.add( trait ); // require the matching states list too (a distribution is set + set_prob)
+                for( final String prefix : STATE_PREFIXES ) {
+                    if ( ref.startsWith( prefix ) && ref.endsWith( SET_PROB_SUFFIX ) ) {
+                        final String trait = ref.substring( prefix.length(),
+                                                            ref.length() - SET_PROB_SUFFIX.length() );
+                        if ( !ForesterUtil.isEmpty( trait )
+                                && !firstProperty( n, prefix + trait + SET_SUFFIX ).isEmpty() ) {
+                            traits.add( trait ); // require the matching states list too (a distribution is set + set_prob)
+                        }
                     }
                 }
             }
@@ -727,8 +733,17 @@ public class TreePanelUtil {
         if ( ( node == null ) || ForesterUtil.isEmpty( trait ) || ( node.getNodeData().getProperties() == null ) ) {
             return out;
         }
-        final String set_raw = firstProperty( node, BEAST_PREFIX + trait + SET_SUFFIX );
-        final String prob_raw = firstProperty( node, BEAST_PREFIX + trait + SET_PROB_SUFFIX );
+        String set_raw = "";
+        String prob_raw = "";
+        for( final String prefix : STATE_PREFIXES ) { // beast: or nextstrain:, whichever carries this trait's distribution
+            final String s = firstProperty( node, prefix + trait + SET_SUFFIX );
+            final String p = firstProperty( node, prefix + trait + SET_PROB_SUFFIX );
+            if ( !s.isEmpty() || !p.isEmpty() ) {
+                set_raw = s;
+                prob_raw = p;
+                break;
+            }
+        }
         // If the node carries EITHER set property it is MEANT to have a distribution: require a well-formed
         // (equal-length, all-finite, all-non-negative) pair, else return empty (no pie) -- never fall through to
         // the single-state disc below, which would misrepresent an uncertain distribution as a confident 100%.
@@ -758,9 +773,12 @@ public class TreePanelUtil {
             }
             return out;
         }
-        final String single = firstProperty( node, BEAST_PREFIX + trait ); // a tip's single observed state
-        if ( !ForesterUtil.isEmpty( single ) ) {
-            out.add( new StateProbability( single, 1.0 ) );
+        for( final String prefix : STATE_PREFIXES ) {
+            final String single = firstProperty( node, prefix + trait ); // a tip's single observed state
+            if ( !ForesterUtil.isEmpty( single ) ) {
+                out.add( new StateProbability( single, 1.0 ) );
+                return out;
+            }
         }
         return out;
     }

@@ -110,6 +110,16 @@ final class AlgorithmReferences {
                         + "Baele G, Ayres DL, Drummond AJ, Rambaut A (2018): \"Bayesian phylogenetic and phylodynamic data "
                         + "integration using BEAST 1.10\", Virus Evolution 4(1):vey016. The node-bars visualisation "
                         + "convention is that of FigTree (A. Rambaut, http://tree.bio.ed.ac.uk/software/figtree/)." ) );
+        refs.add( new Reference( "Auspice / Nextstrain JSON import (File → Read Tree from File → .json)",
+                "Reads an Auspice / Nextstrain v2 dataset (dataset.json) -- the interchange format for dated, "
+                        + "annotated pathogen phylogenies -- into Archaeopteryx's native model: node dates (num_date) and "
+                        + "their confidence intervals become the calendar time axis + node-age spindles, the cumulative "
+                        + "divergence (div) is kept for a time/divergence view, and each discrete trait (country, region, "
+                        + "clade_membership, host, ...) becomes a colourable/searchable node property whose per-node "
+                        + "confidence drives the ancestral-state pies. The map, entropy, and frequencies panels are not "
+                        + "imported (Archaeopteryx is a tree viewer). Nextstrain / Auspice: Hadfield J, Megill C, Bell SM, "
+                        + "Huddleston J, Potter B, Callender C, Sagulenko P, Bedford T, Neher RA (2018): \"Nextstrain: "
+                        + "real-time tracking of pathogen evolution\", Bioinformatics 34(23):4121–4123." ) );
         refs.add( new Reference( "phyloXML (file format)", ForesterConstants.PHYLO_XML_REFERENCE ) );
         return refs;
     }

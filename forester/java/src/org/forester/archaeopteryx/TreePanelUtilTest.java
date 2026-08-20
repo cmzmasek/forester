@@ -123,6 +123,28 @@ public final class TreePanelUtilTest {
         if ( ( t.size() != 1 ) || !t.get( 0 ).getState().equals( "Africa" ) || ( t.get( 0 ).getProbability() != 1.0 ) ) {
             return fail( "a tip's single observed state must be one full-probability wedge" );
         }
+        // Auspice / Nextstrain traits (nextstrain: prefix) flow through the SAME pie layer as BEAST's
+        final PhylogenyNode ns_root = new PhylogenyNode();
+        withProp( ns_root, "nextstrain:region_set", "{Asia,Europe}" );
+        withProp( ns_root, "nextstrain:region_set_prob", "{0.7,0.3}" );
+        final PhylogenyNode ns_tip = new PhylogenyNode();
+        ns_tip.setName( "ns" );
+        withProp( ns_tip, "nextstrain:region", "Asia" );
+        ns_root.addAsChild( ns_tip );
+        final Phylogeny ns_phy = new Phylogeny();
+        ns_phy.setRoot( ns_root );
+        ns_phy.externalNodesHaveChanged();
+        if ( !TreePanelUtil.ancestralStateTraits( ns_phy ).contains( "region" ) ) {
+            return fail( "ancestralStateTraits must detect a nextstrain:<trait> distribution too" );
+        }
+        final List<TreePanelUtil.StateProbability> nd = TreePanelUtil.stateDistribution( ns_root, "region" );
+        if ( ( nd.size() != 2 ) || !nd.get( 0 ).getState().equals( "Asia" )
+                || ( Math.abs( nd.get( 0 ).getProbability() - 0.7 ) > 1e-9 ) ) {
+            return fail( "a nextstrain: distribution must be 2 states with Asia=0.7, got " + nd );
+        }
+        if ( TreePanelUtil.stateDistribution( ns_tip, "region" ).size() != 1 ) {
+            return fail( "a nextstrain: tip's single observed state must be one wedge" );
+        }
         // unnormalized probabilities normalize
         final PhylogenyNode n2 = new PhylogenyNode();
         withProp( n2, "beast:host_set", "{Bat,Human}" );

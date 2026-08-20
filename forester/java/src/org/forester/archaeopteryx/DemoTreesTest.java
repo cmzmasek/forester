@@ -173,6 +173,9 @@ public final class DemoTreesTest {
         ok &= hasAtLeastTips( "sars-cov-2-time-tree.xml", 7 );
         ok &= isDetectedTimeTree( "sars-cov-2-time-tree.xml", AptxUtil.TIME_TREE_KIND.DATED );
         ok &= oldestDateAtLeast( "sars-cov-2-time-tree.xml", 2000.0 );
+        // Auspice / Nextstrain v2 JSON: a synthetic nCoV dataset -- parses via the AuspiceJsonParser, is a dated
+        // (calendar) tree, and carries a discrete 'region' trait with per-node confidence (-> ancestral-state pies)
+        ok &= auspiceDemoOk( "nextstrain-ncov.json" );
         return ok;
     }
 
@@ -487,6 +490,37 @@ public final class DemoTreesTest {
         }
         catch ( final Exception e ) {
             return note( csv_file + " could not be read/joined: " + e.getMessage() );
+        }
+    }
+
+    /** The Auspice/Nextstrain v2 JSON demo parses via {@link org.forester.io.parsers.json.AuspiceJsonParser}, is a
+     *  dated calendar tree with &ge;5 tips, and carries a discrete 'region' trait with confidence (-> pies). */
+    private static boolean auspiceDemoOk( final String file_name ) {
+        final File file = new File( DEMO_DIR + file_name );
+        if ( !file.exists() ) {
+            return note( file_name + " is missing from the demo gallery (" + file.getAbsolutePath() + ")" );
+        }
+        try {
+            final org.forester.io.parsers.json.AuspiceJsonParser parser = new org.forester.io.parsers.json.AuspiceJsonParser();
+            parser.setSource( file );
+            final Phylogeny[] phys = parser.parse();
+            if ( ( phys == null ) || ( phys.length != 1 ) || phys[ 0 ].isEmpty() ) {
+                return note( file_name + " did not yield one non-empty tree" );
+            }
+            final Phylogeny phy = phys[ 0 ];
+            if ( phy.getNumberOfExternalNodes() < 5 ) {
+                return note( file_name + " must have >= 5 tips, has " + phy.getNumberOfExternalNodes() );
+            }
+            if ( AptxUtil.detectTimeTree( phy ) != AptxUtil.TIME_TREE_KIND.DATED ) {
+                return note( file_name + " must be detected as a dated time tree" );
+            }
+            if ( !TreePanelUtil.ancestralStateTraits( phy ).contains( "region" ) ) {
+                return note( file_name + " must carry a 'region' ancestral-state trait (for pies)" );
+            }
+            return true;
+        }
+        catch ( final Exception e ) {
+            return note( file_name + " could not be read: " + e.getMessage() );
         }
     }
 

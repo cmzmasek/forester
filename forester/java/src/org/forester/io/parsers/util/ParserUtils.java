@@ -425,6 +425,9 @@ public final class ParserUtils {
                 || filename_lc.endsWith( ".nwk" ) ) {
             parser = new NHXParser();
         }
+        else if ( filename_lc.endsWith( ".json" ) || filename_lc.endsWith( ".auspice.json" ) ) {
+            parser = new org.forester.io.parsers.json.AuspiceJsonParser(); // Auspice / Nextstrain v2 dataset
+        }
         return parser;
     }
 
