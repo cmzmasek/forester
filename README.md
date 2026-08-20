@@ -135,6 +135,8 @@ Just launch Archaeopteryx and pick a tree from **File → Demo Trees**:
 - **Annotation Columns** — tip-aligned color strips and a numeric heat-map
 - **Protein Domain Architectures** — multi-domain proteins drawn to scale
 - **Ancestral State Pies** — a discrete geographic trait as posterior pies
+- **Node Age Spindles** — divergence-time uncertainty (point age + 95% HPD) as
+  tapered spindles
 - **SARS-CoV-2 Time Tree** — a tip-dated viral tree on a calendar-year axis
 - **Dinosaur Time Tree** — a dated archosaur tree (with *Archaeopteryx*!) on the
   geologic time scale

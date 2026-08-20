@@ -43,8 +43,8 @@ public final class DemoTreesGalleryTest {
 
     // the resources the catalog opens (a fossil-only ammonite tree, a tanglegram pair + its association file, etc.)
     private static final String[] TREE_RESOURCES = { "color-by-property.xml", "annotation-columns.xml",
-            "domain-architectures.xml", "ancestral-pie-charts.xml", "sars-cov-2-time-tree.xml", "dinosaur-time-tree.xml",
-            "ammonite-time-tree.xml", "tree-of-life-deep-time.xml", "tanglegram-host-tree.xml",
+            "domain-architectures.xml", "ancestral-pie-charts.xml", "node-hpd-bars.xml", "sars-cov-2-time-tree.xml",
+            "dinosaur-time-tree.xml", "ammonite-time-tree.xml", "tree-of-life-deep-time.xml", "tanglegram-host-tree.xml",
             "tanglegram-parasite-tree.xml" };
 
     public static void main( final String[] args ) {
@@ -66,8 +66,8 @@ public final class DemoTreesGalleryTest {
     /** Headless: every bundled demo resource loads + parses from the classpath, and the catalog is the expected size. */
     private static boolean resourcesLoadOk() {
         try {
-            if ( DemoTrees.catalog().size() != 9 ) {
-                return fail( "the demo catalog should have 9 curated entries, has " + DemoTrees.catalog().size() );
+            if ( DemoTrees.catalog().size() != 10 ) {
+                return fail( "the demo catalog should have 10 curated entries, has " + DemoTrees.catalog().size() );
             }
             // if the demo resources were not staged onto the classpath (a raw IDE compile that skipped the Ant
             // copy_resources step), skip the load checks rather than fail the whole suite -- the authoritative
@@ -199,6 +199,13 @@ public final class DemoTreesGalleryTest {
         else if ( label.startsWith( "Ancestral State Pies" ) ) {
             if ( tp.getAncestralPieTrait() == null ) {
                 fail( ok, "the ancestral-pie demo must select a discrete trait" );
+            }
+        }
+        else if ( label.startsWith( "Node Age Spindles" ) ) {
+            if ( !frame.getOptions().isShowHpdBars()
+                    || ( frame.getOptions().getNodeAgeShape() != Options.NODE_AGE_SHAPE.SPINDLE ) ) {
+                fail( ok, "the node-age spindles demo must turn on the node-age bars in SPINDLE shape (bars="
+                        + frame.getOptions().isShowHpdBars() + " shape=" + frame.getOptions().getNodeAgeShape() + ")" );
             }
         }
         else if ( label.startsWith( "SARS-CoV-2" ) ) {

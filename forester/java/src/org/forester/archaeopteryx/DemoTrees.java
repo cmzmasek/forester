@@ -106,6 +106,13 @@ final class DemoTrees {
                                  final TreePanel tp = openTree( mf, "ancestral-pie-charts.xml" );
                                  firstAncestralPie( mf, tp );
                              } ) );
+        demos.add( new Demo( "Node Age Spindles",
+                             "Divergence-time uncertainty as tapered spindles -- the point age peaking within its 95% "
+                                     + "HPD interval -- on a BEAST-style dated tree.",
+                             mf -> {
+                                 openTree( mf, "node-hpd-bars.xml" );
+                                 nodeAgeSpindles( mf );
+                             } ) );
         demos.add( new Demo( "SARS-CoV-2 Time Tree (Calendar Axis)",
                              "A tip-dated viral tree read against a labelled calendar-year axis -- molecular epidemiology.",
                              mf -> {
@@ -200,6 +207,19 @@ final class DemoTrees {
         }
         cp.setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM ); // "Draw Phylogram"
         tp.setTimeAxisType( type );
+        refit( mf );
+    }
+
+    /** Show the node-age SPINDLE overlay on the current tree: force a phylogram (the overlay needs branch lengths =
+     *  time), turn the node-age bars on, set the spindle shape, then re-fit. */
+    private static void nodeAgeSpindles( final MainFrameApplication mf ) {
+        final ControlPanel cp = mf.getMainPanel().getControlPanel();
+        if ( cp == null ) {
+            return;
+        }
+        cp.setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM ); // "Draw Phylogram"
+        mf.getOptions().setShowHpdBars( true );
+        mf.getOptions().setNodeAgeShape( Options.NODE_AGE_SHAPE.SPINDLE );
         refit( mf );
     }
 
