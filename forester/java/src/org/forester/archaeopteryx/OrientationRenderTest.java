@@ -203,22 +203,23 @@ public final class OrientationRenderTest {
                                 + left_edge + " right=" + right_edge + ")" );
                     }
 
-                    // DEPTH-EDGE CLIP: an upright tip label is drawn one TIP_LABEL_DEPTH_GAP past the tip ALONG THE
-                    // DEPTH (paintTipLabelHorizontal), so depthLabelReserve() must reserve that gap too -- else after
-                    // a fit the OUTERMOST tip's label pokes past the near depth edge (the TOP in root-bottom, the
-                    // BOTTOM in root-top) and clips. Reuses the long names + tree-name-off from above. The hook
-                    // measures the actual drawn label far edge against the canvas depth edge (negative = clipped).
+                    // DEPTH-EDGE BREATHING ROOM: an upright tip label is drawn one TIP_LABEL_DEPTH_GAP past the tip ALONG
+                    // THE DEPTH (paintTipLabelHorizontal); depthLabelReserve() must reserve that gap -- else after a fit
+                    // the OUTERMOST tip's label pokes past the near depth edge (the TOP in root-bottom, the BOTTOM in
+                    // root-top) and clips -- PLUS a TIP_LABEL_DEPTH_EDGE_PAD so it isn't flush against the edge. The hook
+                    // measures the drawn label far edge against the canvas depth edge (negative = clipped; ~0 = flush).
+                    // Require a POSITIVE margin (real breathing room), not just no-clip. Reuses the long names above.
                     layout( frame, tp, o, TREE_ORIENTATION.ROOT_BOTTOM, w, h );
                     final double bottom_margin = tp.minUprightLabelDepthMarginForTest();
-                    if ( bottom_margin < -0.5 ) {
-                        fail( ok, "ROOT_BOTTOM upright tip labels clip at the TOP depth edge (margin=" + bottom_margin
-                                + "px) -- depthLabelReserve must reserve the tip-label depth gap" );
+                    if ( bottom_margin < 4.0 ) {
+                        fail( ok, "ROOT_BOTTOM upright tip labels are too tight against the TOP depth edge (margin="
+                                + bottom_margin + "px) -- depthLabelReserve must reserve the gap + edge padding" );
                     }
                     layout( frame, tp, o, TREE_ORIENTATION.ROOT_TOP, w, h );
                     final double top_margin = tp.minUprightLabelDepthMarginForTest();
-                    if ( top_margin < -0.5 ) {
-                        fail( ok, "ROOT_TOP upright tip labels clip at the BOTTOM depth edge (margin=" + top_margin
-                                + "px) -- depthLabelReserve must reserve the tip-label depth gap" );
+                    if ( top_margin < 4.0 ) {
+                        fail( ok, "ROOT_TOP upright tip labels are too tight against the BOTTOM depth edge (margin="
+                                + top_margin + "px) -- depthLabelReserve must reserve the gap + edge padding" );
                     }
 
                     // a large CUSTOM node mark anchors a tip's label further along the depth than the DEFAULT half-box,

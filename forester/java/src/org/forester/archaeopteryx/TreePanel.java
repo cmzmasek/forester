@@ -170,6 +170,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // (see paintTipLabelHorizontal). depthLabelReserve() must reserve this too, else the outermost tip's label
     // pokes past the depth edge and clips (the top in root-bottom, the bottom in root-top).
     private final static int TIP_LABEL_DEPTH_GAP = 5;
+    // Aesthetic breathing room (px) reserved past the tip labels at the FAR depth edge in a vertical orientation, so the
+    // outermost upright label doesn't sit flush against the window/canvas edge. The 0.11.55 depthLabelReserve() only
+    // guaranteed no-CLIP (margin ~0 = flush, which reads too tight); this backs the labels off the edge a little.
+    private final static int TIP_LABEL_DEPTH_EDGE_PAD = 8;
     // Extra horizontal gap between the taxonomy and node-data segments of an above-the-branch internal label, ON
     // TOP of the trailing space the taxonomy segment already carries (taxonomyLabel emits a trailing " "). Kept at
     // 0 so an internal label's taxonomy->name spacing matches the external path (which separates the two with only
@@ -4596,7 +4600,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final Color saved_color = g.getColor();
         g.setFont(saved_font.deriveFont(Font.ITALIC));
         g.setColor(scaleInkColor(false, false));
-        g.drawString("Time axis hidden — display as a phylogram (P) to show it", vr.x + 8, (vr.y + vr.height) - 8);
+        g.drawString("Time axis hidden: display as a phylogram (P) to show it", vr.x + 8, (vr.y + vr.height) - 8);
         g.setFont(saved_font);
         g.setColor(saved_color);
     }
@@ -11732,6 +11736,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             // optional Ma age labels at the coarse-band boundary radii, up the spoke (gated on "Geologic Boundary Ages")
             paintGeologicBoundaryAgesCircular(g, center_x, center_y, radius > 0 ? radius : 0, to_pdf, to_graphics_file);
             paintRadialOverlays(g, to_pdf, to_graphics_file); // dots + pies + hover preview + halos (coords set above)
+            paintTimeAxisHint(g, to_pdf, to_graphics_file); // a dated circular CLADOGRAM: say why the ring axis isn't showing
             if (getOptions().isShowOverview() && isOvOn() && !to_graphics_file && !to_pdf) {
                 final int radius_ov = (int) (getOvMaxHeight() < getOvMaxWidth() ? getOvMaxHeight() / 2
                         : getOvMaxWidth() / 2);
@@ -11937,8 +11942,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // the TEXT label projected onto the depth (L_text*|sin| + lineH*|cos|) + the anchor offset + the upright gap +
         // the axis-aligned domain track past it. Uses the TEXT-ONLY longest (not getLongestExtNodeInfo, which already
         // folds in the domain width -- that would count the domain twice, over-compressing the depth when domains show).
+        // + a little breathing room at the far depth edge (scaled up a touch for large/HiDPI fonts), so the outermost
+        // tip label doesn't sit flush against the window edge (the 0.11.55 reserve only guaranteed no-clip = flush)
+        final int edge_pad = Math.max(TIP_LABEL_DEPTH_EDGE_PAD, line_h / 3);
         return (int) Math.ceil((_length_of_longest_text_only * Math.abs(Math.sin(a))) + (line_h * Math.abs(Math.cos(a))))
-                + anchor_offset + upright_gap + verticalDomainReserve();
+                + anchor_offset + upright_gap + verticalDomainReserve() + edge_pad;
     }
 
     /** Extra depth (px) reserved past the tilted tip labels for the axis-aligned domain-architecture track that a

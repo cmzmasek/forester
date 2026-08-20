@@ -105,6 +105,21 @@ public final class TimeOverlayUxTest {
                 }
             } );
 
+            // (a, circular) the hint ALSO shows in the CIRCULAR layout: a dated circular cladogram has no ring axis
+            withFrame( new Phylogeny[] { copy( hpd ) }, ok, f -> {
+                final TreePanel tp = f.getMainPanel().getCurrentTreePanel();
+                tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
+                tp.getControlPanel().setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.CLADOGRAM );
+                tp.setTimeAxisType( null ); // auto -> GEOLOGIC -> hint fires on a circular cladogram
+                final BufferedImage with_hint = renderScreen( tp );
+                tp.setTimeAxisType( Options.TIME_AXIS_TYPE.NONE ); // axis off -> no hint
+                final BufferedImage no_hint = renderScreen( tp );
+                if ( diffPixels( with_hint, no_hint ) < 30 ) {
+                    fail( ok, "a dated CIRCULAR cladogram must draw the hint (diff "
+                            + diffPixels( with_hint, no_hint ) + ")" );
+                }
+            } );
+
             return ok[ 0 ];
         }
         catch ( final Throwable t ) {

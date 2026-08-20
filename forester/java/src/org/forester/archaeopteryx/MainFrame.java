@@ -1017,7 +1017,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         customizeCheckBoxMenuItem(_rounded_type_cbmi, false);
         customizeCheckBoxMenuItem(_unrooted_type_cbmi, false);
         customizeCheckBoxMenuItem(_circular_type_cbmi, false);
-        _triangular_type_cbmi.setToolTipText("not suitable for phylograms");
+        _triangular_type_cbmi.setToolTipText(
+                "Draws clades as triangles; reads cleanly only with aligned tips, so selecting it switches this tab to "
+                        + "Cladogram (C). Switch back to P for a near-clock tree.");
         _unrooted_type_cbmi.setToolTipText(MainFrame.USE_MOUSEWHEEL_SHIFT_TO_ROTATE);
         _circular_type_cbmi.setToolTipText(MainFrame.USE_MOUSEWHEEL_SHIFT_TO_ROTATE);
         initializeTypeMenu(getOptions());
@@ -2346,10 +2348,21 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if (getCurrentTreePanel() != null) {
             final PHYLOGENY_GRAPHICS_TYPE previous_type = getCurrentTreePanel().getPhylogenyGraphicsType();
             final PHYLOGENY_GRAPHICS_TYPE new_type = getOptions().getPhylogenyGraphicsType();
-            if (((previous_type == PHYLOGENY_GRAPHICS_TYPE.UNROOTED) && (new_type != PHYLOGENY_GRAPHICS_TYPE.UNROOTED))
-                    || ((previous_type == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR) && (new_type != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR))
-                    || ((previous_type != PHYLOGENY_GRAPHICS_TYPE.UNROOTED) && (new_type == PHYLOGENY_GRAPHICS_TYPE.UNROOTED))
-                    || ((previous_type != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR) && (new_type == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR))) {
+            // Triangular draws straight chords to each clade's extreme tips, so it only reads cleanly when the tips are
+            // aligned (a cladogram) or the tree is near-ultrametric -- on a ragged phylogram the chords cross the
+            // branches. So on a TRANSITION to Triangular, nudge THIS tab to a CLADOGRAM (the user stays free to switch
+            // back to P, e.g. for a near-clock tree). Gated on a real transition (previous_type != TRIANGULAR) so
+            // re-selecting the already-current Triangular style does NOT re-clobber a deliberate P choice; only when the
+            // tree has branch lengths and is currently a phylogram. The nudge does its own re-fit below, so the
+            // radial-exit re-fit is skipped when it fires (that fit would be on the stale pre-cladogram layout).
+            final boolean nudge_to_cladogram = (previous_type != PHYLOGENY_GRAPHICS_TYPE.TRIANGULAR)
+                    && (new_type == PHYLOGENY_GRAPHICS_TYPE.TRIANGULAR) && getCurrentTreePanel().isPhyHasBranchLengths()
+                    && getCurrentTreePanel().getControlPanel().isDrawPhylogram();
+            if (!nudge_to_cladogram
+                    && (((previous_type == PHYLOGENY_GRAPHICS_TYPE.UNROOTED) && (new_type != PHYLOGENY_GRAPHICS_TYPE.UNROOTED))
+                            || ((previous_type == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR) && (new_type != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR))
+                            || ((previous_type != PHYLOGENY_GRAPHICS_TYPE.UNROOTED) && (new_type == PHYLOGENY_GRAPHICS_TYPE.UNROOTED))
+                            || ((previous_type != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR) && (new_type == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR)))) {
                 getCurrentTreePanel().getControlPanel().showWhole();
             }
             // The phylogram/cladogram (P/A/C) radios apply in EVERY layout that can honor branch lengths -- since
@@ -2358,6 +2371,12 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             // pre-0.11.7 leftover that greyed the radios out in circular even though the paint now responds to them).
             getCurrentTreePanel().getControlPanel().setDrawPhylogramEnabled(getCurrentTreePanel().isPhyHasBranchLengths());
             getCurrentTreePanel().setPhylogenyGraphicsType(getOptions().getPhylogenyGraphicsType());
+            // Apply the Triangular->Cladogram nudge computed above. setTreeDisplayType does NOT fire the P/A/C
+            // actionPerformed, so the persisted global display-type default is untouched -- a per-tab nudge only.
+            if (nudge_to_cladogram) {
+                getCurrentTreePanel().getControlPanel().setTreeDisplayType(Options.PHYLOGENY_DISPLAY_TYPE.CLADOGRAM);
+                getCurrentTreePanel().getControlPanel().showWhole();
+            }
             if ((new_type == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR) || (new_type == PHYLOGENY_GRAPHICS_TYPE.UNROOTED)) {
                 // the showWhole above ran while the panel was still the OLD (rectangular) type, so it laid out a
                 // non-square preferred size; now that the panel IS radial, re-fit its SQUARE canvas to the viewport

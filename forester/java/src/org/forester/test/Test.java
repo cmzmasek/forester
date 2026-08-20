@@ -491,6 +491,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Triangular nudge (Triangular -> Cladogram): ");
+        if (org.forester.archaeopteryx.TriangularNudgeTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Node data exporter: ");
         if (org.forester.archaeopteryx.tools.NodeDataExporterTest.test()) {
             System.out.println("OK.");
