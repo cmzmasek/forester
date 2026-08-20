@@ -98,6 +98,7 @@ import org.forester.archaeopteryx.phylogeny.data.RenderableDomainArchitecture;
 import org.forester.archaeopteryx.phylogeny.data.RenderableMsaSequence;
 import org.forester.archaeopteryx.phylogeny.data.RenderableVector;
 import org.forester.archaeopteryx.tools.Blast;
+import org.forester.io.parsers.json.AuspiceJsonParser;
 import org.forester.io.parsers.phyloxml.PhyloXmlUtil;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
@@ -378,6 +379,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private Phylogeny _time_axis_present_date_for = null;
     private Phylogeny _time_axis_age_cached_for = null;
     private double    _time_axis_root_age_cache = 0;
+    // Auspice/Nextstrain: a per-panel, reversible time<->divergence branch-length display mode. Both metrics are
+    // retained on the tree (the <date> values + the nextstrain:div properties), so switching just rewrites the branch
+    // lengths from the retained metadata -- a pure display mode (no setEdited / no undo). Default TIME = the loaded default.
+    private NEXTSTRAIN_BRANCH_MODE _nextstrain_branch_mode = NEXTSTRAIN_BRANCH_MODE.TIME;
+    // applicability (carries both a date AND a nextstrain:div) is a function of the tree's data, so cache it by tree
+    // identity (like the derived-time-axis cache); a mode toggle doesn't change it, only a tree replacement does
+    private Phylogeny _nextstrain_applicable_for = null;
+    private boolean   _nextstrain_applicable     = false;
     private final RenderingHints _rendering_hints = new RenderingHints(RenderingHints.KEY_RENDERING,
             RenderingHints.VALUE_RENDER_DEFAULT);
     private JTextArea _rollover_popup;
@@ -5383,6 +5392,76 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
+    // ---- Auspice/Nextstrain time<->divergence display toggle (Increment 2) --------------------------------------
+
+    /** True when the current tree carries BOTH a date (time signal) AND a {@code nextstrain:div} property (divergence
+     *  signal), so the time&harr;divergence branch-length toggle is meaningful (an Auspice/Nextstrain tree). Cached by
+     *  tree identity (recomputed on a tree replacement; an in-place node-data edit that adds/removes the metric is the
+     *  same accepted cache-staleness class as the derived-time-axis / color-by caches). */
+    boolean isNextstrainTimeDivergenceApplicable() {
+        if ( _nextstrain_applicable_for != _phylogeny ) {
+            _nextstrain_applicable = AuspiceJsonParser.hasTimeAndDivergence( _phylogeny );
+            _nextstrain_applicable_for = _phylogeny;
+        }
+        return _nextstrain_applicable;
+    }
+
+    NEXTSTRAIN_BRANCH_MODE getNextstrainBranchMode() {
+        return _nextstrain_branch_mode;
+    }
+
+    /** Switch the branch lengths (and the time axis) between the TIME view (num_date deltas + auto calendar axis) and
+     *  the DIVERGENCE view (nextstrain:div deltas + no calendar axis -- the numeric substitutions/site scale). A pure,
+     *  reversible display mode: both metrics stay retained on the tree, so it never {@code setEdited}s or checkpoints
+     *  undo. Re-fits to the viewport (the depth axis changes meaning, so a fit -- not just a repaint -- is needed). */
+    void setNextstrainBranchMode( final NEXTSTRAIN_BRANCH_MODE mode ) {
+        if ( ( mode == null ) || ( mode == _nextstrain_branch_mode ) || !isNextstrainTimeDivergenceApplicable() ) {
+            return;
+        }
+        _nextstrain_branch_mode = mode;
+        if ( mode == NEXTSTRAIN_BRANCH_MODE.DIVERGENCE ) {
+            AuspiceJsonParser.applyDivergenceBranchLengths( _phylogeny );
+            _phylogeny.setDistanceUnit( "subs/site" );
+            _time_axis_type = Options.TIME_AXIS_TYPE.NONE; // a calendar axis is meaningless for divergence lengths
+        }
+        else {
+            AuspiceJsonParser.applyTimeBranchLengths( _phylogeny );
+            _phylogeny.setDistanceUnit( "year" );
+            _time_axis_type = null; // back to auto -> re-derives CALENDAR from the retained <date> unit
+        }
+        recalculateMaxDistanceToRoot(); // the branch-length change invalidates the depth cache
+        if ( getControlPanel() != null ) {
+            // showWhole() recomputes the layout (displayedPhylogenyMightHaveChanged) then fits to the VIEWPORT --
+            // drift-free (the depth scale changes drastically between year deltas and div deltas).
+            getControlPanel().showWhole();
+        }
+        else {
+            repaint();
+        }
+        // this flipped the time axis (CALENDAR<->off); re-seed an open modeless Settings dialog so its axis combo isn't
+        // stale (guarded internally by isShowing(), so a no-op when the dialog is closed)
+        if ( ( getMainPanel() != null ) && ( getMainPanel().getMainFrame() != null ) ) {
+            getMainPanel().getMainFrame().refreshOpenSettingsDialog();
+        }
+    }
+
+    /** Reset the branch-length view to the TIME default (used by Reset to Defaults). Rewrites only THIS panel's model
+     *  + invalidates its depth cache (NO cross-panel re-fit, so it is safe in a batch per-tab reset loop -- the layout
+     *  refreshes when the tab is next shown). No-op if already TIME or the tree is not applicable. */
+    void resetNextstrainBranchModeToDefault() {
+        if ( _nextstrain_branch_mode == NEXTSTRAIN_BRANCH_MODE.TIME ) {
+            return;
+        }
+        _nextstrain_branch_mode = NEXTSTRAIN_BRANCH_MODE.TIME;
+        if ( isNextstrainTimeDivergenceApplicable() ) {
+            AuspiceJsonParser.applyTimeBranchLengths( _phylogeny );
+            _phylogeny.setDistanceUnit( "year" );
+            _time_axis_type = null;
+            recalculateMaxDistanceToRoot();
+        }
+        repaint();
+    }
+
     /** Whether the two-band geologic time axis is ON and drawable in a RECTANGULAR-family layout: mode GEOLOGIC, a
      *  phylogram in any of the three rectangular orientations (root-left / root-top / root-bottom), and an absolute
      *  root-age calibration. The circular analogue is {@link #geologicRingsApplyCircular()}; UNROOTED is N/A (an
@@ -6944,6 +7023,20 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // once a third (pie) draggable legend was added.
     enum DRAGGED_LEGEND {
         PROPERTY, SIZE, ANCESTRAL_PIE, INTERNAL_TAXA
+    }
+    // The two branch-length metrics an Auspice/Nextstrain tree can be laid out by (Increment 2 display toggle).
+    enum NEXTSTRAIN_BRANCH_MODE {
+        TIME( "Time" ), DIVERGENCE( "Divergence" );
+
+        private final String _label;
+
+        NEXTSTRAIN_BRANCH_MODE( final String label ) {
+            _label = label;
+        }
+
+        String label() {
+            return _label;
+        }
     }
     private DRAGGED_LEGEND      _dragged_legend = DRAGGED_LEGEND.PROPERTY;
     // User-assigned per-value colors: ref -> (group key -> color); applied by the color scheme,

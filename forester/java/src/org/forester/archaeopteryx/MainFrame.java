@@ -2494,12 +2494,14 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 tp.resetColorStateToDefaults(); // also turns ancestral-state pies OFF (per-tab)
                 tp.setPhylogenyGraphicsType(type);
                 tp.resetTimeAxisToAutoDerive(); // per-tab: drop any Time-Axis override -> back to auto-derive
+                tp.resetNextstrainBranchModeToDefault(); // per-tab: back to the TIME branch-length view (Auspice trees)
             }
             final ControlPanel cp = getMainPanel().getControlPanel();
             if (cp != null) {
                 cp.setColorByPropertySelectionToNone();
                 cp.setSizeByPropertySelectionToNone();
                 cp.setAncestralPieSelectionToNone();
+                cp.setBranchLengthsSelectionToTime();
                 // re-seed the always-visible control-panel controls (theme radios + search checkboxes) that hold
                 // their own state -- else they stay stale and the search checkboxes clobber the reset on next click
                 cp.resyncFromOptions();

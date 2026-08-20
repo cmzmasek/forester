@@ -843,6 +843,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Nextstrain branch mode (time<->divergence): ");
+        if (org.forester.archaeopteryx.NextstrainBranchModeTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Ancestral-state pies (render): ");
         if (org.forester.archaeopteryx.AncestralPieRenderTest.test()) {
             System.out.println("OK.");

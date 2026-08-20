@@ -129,6 +129,12 @@ public final class AuspiceJsonParserTest {
             if ( !divergenceOnlyBranchLengths() ) {
                 return false;
             }
+            if ( !reversibleTimeDivergenceToggle() ) {
+                return false;
+            }
+            if ( !smallDivReadsAsPlainDecimal() ) {
+                return false;
+            }
             return true;
         }
         catch ( final Throwable t ) {
@@ -182,6 +188,59 @@ public final class AuspiceJsonParserTest {
         // no node has a date in a divergence-only build
         if ( dv( root ) != null ) {
             return fail( "a divergence-only build must carry no dates" );
+        }
+        return true;
+    }
+
+    /** The time&harr;divergence toggle (Increment 2): both metrics are retained, so the public
+     *  {@code applyTimeBranchLengths}/{@code applyDivergenceBranchLengths} rewrite the branch lengths losslessly and
+     *  reversibly, and {@code hasTimeAndDivergence} is true only when both signals are present. */
+    private static boolean reversibleTimeDivergenceToggle() throws Exception {
+        final AuspiceJsonParser parser = new AuspiceJsonParser();
+        parser.setSource( new StringBuffer( DATASET ) );
+        final Phylogeny phy = parser.parse()[ 0 ];
+        final PhylogenyNode a = named( phy, "A" );
+        final PhylogenyNode b = named( phy, "B" );
+        if ( !AuspiceJsonParser.hasTimeAndDivergence( phy ) ) {
+            return fail( "the DATASET carries both a date and a div -> hasTimeAndDivergence must be true" );
+        }
+        // parse default = time; switch to divergence -> branch lengths become div deltas (root div 0, A 0.002, B 0.003)
+        AuspiceJsonParser.applyDivergenceBranchLengths( phy );
+        if ( ( Math.abs( a.getDistanceToParent() - 0.002 ) > 1e-9 )
+                || ( Math.abs( b.getDistanceToParent() - 0.003 ) > 1e-9 )
+                || ( Math.abs( phy.getRoot().getDistanceToParent() - 0.0 ) > 1e-9 ) ) {
+            return fail( "divergence view branch lengths: A=" + a.getDistanceToParent() + " B="
+                    + b.getDistanceToParent() );
+        }
+        // switch back to time -> reverts exactly to the num_date deltas (lossless)
+        AuspiceJsonParser.applyTimeBranchLengths( phy );
+        if ( ( Math.abs( a.getDistanceToParent() - 1.0 ) > 1e-9 )
+                || ( Math.abs( b.getDistanceToParent() - 1.5 ) > 1e-9 ) ) {
+            return fail( "time view must revert exactly: A=" + a.getDistanceToParent() + " B="
+                    + b.getDistanceToParent() );
+        }
+        // a divergence-only tree (no dates) does NOT support the toggle
+        final AuspiceJsonParser p2 = new AuspiceJsonParser();
+        p2.setSource( new StringBuffer( "{\"version\":\"v2\",\"tree\":{\"name\":\"R\",\"node_attrs\":{\"div\":0.0},"
+                + "\"children\":[{\"name\":\"t\",\"node_attrs\":{\"div\":0.01}}]}}" ) );
+        if ( AuspiceJsonParser.hasTimeAndDivergence( p2.parse()[ 0 ] ) ) {
+            return fail( "a divergence-only tree must NOT report hasTimeAndDivergence" );
+        }
+        return true;
+    }
+
+    /** A small divergence value (0.0001) must be stored as a plain decimal "0.0001", NOT scientific notation "1.0E-4"
+     *  (which would read oddly in the node-data popup / as a searchable value). */
+    private static boolean smallDivReadsAsPlainDecimal() throws Exception {
+        final String ds = "{\"version\":\"v2\",\"tree\":{\"name\":\"R\",\"node_attrs\":{\"div\":0.0,"
+                + "\"num_date\":{\"value\":2020.0}},\"children\":[{\"name\":\"t\",\"node_attrs\":{\"div\":0.0001,"
+                + "\"num_date\":{\"value\":2020.5}}}]}}";
+        final AuspiceJsonParser p = new AuspiceJsonParser();
+        p.setSource( new StringBuffer( ds ) );
+        final PhylogenyNode t = named( p.parse()[ 0 ], "t" );
+        final String div = ( t == null ) ? null : prop( t, AuspiceJsonParser.PREFIX + "div" );
+        if ( !"0.0001".equals( div ) ) {
+            return fail( "a small div must read as a plain decimal, got " + div );
         }
         return true;
     }

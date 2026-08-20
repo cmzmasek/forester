@@ -148,6 +148,10 @@ final class ControlPanel extends JPanel implements ActionListener {
     // discrete/geographic traits (a `beast:<trait>_set_prob` property); see populateAncestralPieBox().
     private JComboBox<String> _ancestral_pie_property_cb;
     private JLabel            _ancestral_pie_label;
+    // "Branch lengths:" (Time / Divergence) -- shown adaptively only for an Auspice/Nextstrain tree that carries BOTH
+    // a date and a nextstrain:div property; a reversible display mode. See populateBranchLengthsControl().
+    private JComboBox<String> _branch_lengths_cb;
+    private JLabel            _branch_lengths_label;
     private static final String COLOR_BY_PROPERTY_NONE = "None";
     private boolean _color_branches;
     private JCheckBox _use_visual_styles_cb;
@@ -344,6 +348,14 @@ final class ControlPanel extends JPanel implements ActionListener {
                 tp.setAncestralPieTrait(
                         ((sel == null) || COLOR_BY_PROPERTY_NONE.equals(sel)) ? null : sel.toString());
                 tp.repaint();
+            } else if (e.getSource() == _branch_lengths_cb) {
+                final Object sel = _branch_lengths_cb.getSelectedItem();
+                // setNextstrainBranchMode is self-contained: it rewrites the branch lengths, swaps the distance unit +
+                // time axis, and re-fits to the viewport (a reversible display mode -- no setEdited / no undo).
+                tp.setNextstrainBranchMode(
+                        TreePanel.NEXTSTRAIN_BRANCH_MODE.DIVERGENCE.label().equals(sel)
+                                ? TreePanel.NEXTSTRAIN_BRANCH_MODE.DIVERGENCE
+                                : TreePanel.NEXTSTRAIN_BRANCH_MODE.TIME);
             } else if (e.getSource() == _click_to_combobox) {
                 setClickToAction(_click_to_combobox.getSelectedIndex());
                 getCurrentTreePanel().repaint();
@@ -2626,6 +2638,83 @@ final class ControlPanel extends JPanel implements ActionListener {
         return (sel == null) ? COLOR_BY_PROPERTY_NONE : sel.toString();
     }
 
+    /** The "Branch lengths:" dropdown (Time / Divergence): lay an Auspice/Nextstrain tree out by time (num_date) or by
+     *  divergence (nextstrain:div) -- a reversible display mode. Only appears for a tree that carries BOTH signals --
+     *  see {@link #populateBranchLengthsControl()}. */
+    void setupBranchLengthsControl() {
+        _branch_lengths_label = new JLabel("Branch lengths:");
+        _branch_lengths_label.setFont(ControlPanel.jcb_font);
+        if (_configuration.isApplyCustomGuiColors()) {
+            _branch_lengths_label.setForeground(getConfiguration().getGuiCheckboxTextColor());
+        }
+        _branch_lengths_cb = new JComboBox<String>();
+        _branch_lengths_cb.setFont(ControlPanel.js_font);
+        _branch_lengths_cb.setToolTipText(
+                "lay the tree out by time (num_date) or by divergence (nextstrain:div) -- a reversible display mode");
+        _branch_lengths_cb.addItem(TreePanel.NEXTSTRAIN_BRANCH_MODE.TIME.label());
+        _branch_lengths_cb.addItem(TreePanel.NEXTSTRAIN_BRANCH_MODE.DIVERGENCE.label());
+        _branch_lengths_cb.addActionListener(this);
+        add(_branch_lengths_label);
+        add(_branch_lengths_cb);
+        // start hidden: revealed by populate only for an Auspice/Nextstrain tree carrying both a date and a div
+        _branch_lengths_label.setVisible(false);
+        _branch_lengths_cb.setVisible(false);
+    }
+
+    /** Reseed the "Branch lengths:" dropdown from the current tree and show/hide the whole control (label + combo, so
+     *  the row collapses) depending on whether the tree carries both a time and a divergence signal. */
+    void populateBranchLengthsControl() {
+        if (_branch_lengths_cb == null) {
+            return;
+        }
+        final TreePanel tp = getMainPanel().getCurrentTreePanel();
+        final boolean applicable = (tp != null) && (tp.getPhylogeny() != null)
+                && tp.isNextstrainTimeDivergenceApplicable();
+        _branch_lengths_cb.removeActionListener(this);
+        if (applicable) {
+            _branch_lengths_cb.setSelectedItem(tp.getNextstrainBranchMode().label());
+        }
+        _branch_lengths_cb.addActionListener(this);
+        final boolean changed = _branch_lengths_label.isVisible() != applicable;
+        _branch_lengths_label.setVisible(applicable);
+        _branch_lengths_cb.setVisible(applicable);
+        if (changed) {
+            revalidate();
+            repaint();
+        }
+    }
+
+    /** Reseed the "Branch lengths" dropdown to the Time default WITHOUT firing the listener (for Reset to Defaults; the
+     *  per-tab TreePanel model is reset separately via {@code resetNextstrainBranchModeToDefault}). */
+    void setBranchLengthsSelectionToTime() {
+        if (_branch_lengths_cb != null) {
+            _branch_lengths_cb.removeActionListener(this);
+            _branch_lengths_cb.setSelectedItem(TreePanel.NEXTSTRAIN_BRANCH_MODE.TIME.label());
+            _branch_lengths_cb.addActionListener(this);
+        }
+    }
+
+    /** Test hook: whether the "Branch lengths:" control is currently visible. */
+    boolean isBranchLengthsControlVisible() {
+        return (_branch_lengths_cb != null) && _branch_lengths_cb.isVisible();
+    }
+
+    /** Test hook: the "Branch lengths" dropdown's selected item as a string. */
+    String getBranchLengthsSelection() {
+        if (_branch_lengths_cb == null) {
+            return TreePanel.NEXTSTRAIN_BRANCH_MODE.TIME.label();
+        }
+        final Object sel = _branch_lengths_cb.getSelectedItem();
+        return (sel == null) ? TreePanel.NEXTSTRAIN_BRANCH_MODE.TIME.label() : sel.toString();
+    }
+
+    /** Test hook: select a "Branch lengths" mode the way a user would (fires the real actionPerformed dispatch). */
+    void userSelectBranchLengthsForTest(final TreePanel.NEXTSTRAIN_BRANCH_MODE mode) {
+        if (_branch_lengths_cb != null) {
+            _branch_lengths_cb.setSelectedItem(mode.label());
+        }
+    }
+
     /** Repopulate the "Color by:" dropdown from the currently displayed tree's properties. */
     void populateColorByPropertyBox() {
         if (_color_by_property_cb == null) {
@@ -2683,6 +2772,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         setupColorByProperty();
         setupSizeByProperty();
         setupAncestralPieProperty();
+        setupBranchLengthsControl();
         setupDisplayCheckboxes();
         /* GUILHEM_BEG */
         // The sequence relation query selection combo-box
@@ -4003,6 +4093,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             populateColorByPropertyBox();
             populateSizeByPropertyBox();
             populateAncestralPieBox();
+            populateBranchLengthsControl();
             // run the searches AFTER the field selectors are rebuilt for this tab's tree, so the highlight reflects
             // the field the combo now shows (not the previous tab's field).
             reRunSearches();

@@ -379,7 +379,11 @@ your Nextstrain tree lights up on open:
 - **`num_date`** → the tree is placed on the **Calendar axis**, and each internal
   node's **`num_date.confidence`** (the divergence-time interval) becomes a
   **Node Age spindle**.
-- **`div`** (cumulative divergence) is kept as a property.
+- **`div`** (cumulative divergence) drives a **"Branch lengths: Time / Divergence"**
+  control (left panel, shown only for a tree that carries both) — flip the whole tree
+  between the **time** layout (`num_date`, with the calendar axis) and the
+  **divergence** layout (`div`, in substitutions/site) at any time. It's a reversible
+  display mode: both metrics stay on the tree, so nothing is edited or lost.
 - every **discrete trait** — `country`, `region`, `clade_membership`, `host`, … —
   becomes a **`nextstrain:<trait>`** node property you can **Color by**, tabulate
   as an **Annotation Column**, or search; and each trait's per-node **confidence**

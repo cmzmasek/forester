@@ -239,15 +239,17 @@ public final class AuspiceJsonParser implements PhylogenyParser {
         }
     }
 
-    /** Default branch lengths = successive {@code num_date} differences (a time tree); a node/parent without a date gets
-     *  the default (unset) length. Root length is 0. */
+    /** Branch lengths = successive {@code num_date} differences (a time tree); root length is 0, and a node whose
+     *  metric (or whose parent's) is absent gets a 0-length branch -- so a time&harr;divergence toggle never leaves a
+     *  stale cross-scale length behind (on well-formed Auspice output every node carries num_date, so the 0 fallback is
+     *  defensive, not the normal path). */
     private static void setTimeBranchLengths( final PhylogenyNode node, final Double parent_date ) {
         final Double d = nodeDate( node );
-        if ( node.isRoot() ) {
-            node.setDistanceToParent( 0.0 );
-        }
-        else if ( ( parent_date != null ) && ( d != null ) ) {
+        if ( !node.isRoot() && ( parent_date != null ) && ( d != null ) ) {
             node.setDistanceToParent( Math.max( 0.0, d - parent_date ) ); // clamp a (spurious) negative branch to 0
+        }
+        else {
+            node.setDistanceToParent( 0.0 );
         }
         for ( int i = 0; i < node.getNumberOfDescendants(); ++i ) {
             setTimeBranchLengths( node.getChildNode( i ), d );
@@ -275,15 +277,56 @@ public final class AuspiceJsonParser implements PhylogenyParser {
         return false;
     }
 
-    /** Fallback branch lengths from the cumulative {@code nextstrain:div} property (successive differences, a
-     *  divergence tree); a node/parent without a div gets the default (unset) length. Root length is 0. */
+    /** True if any node in the subtree carries a {@code nextstrain:div} property (a divergence signal). */
+    private static boolean hasAnyDiv( final PhylogenyNode node ) {
+        if ( nodeDiv( node ) != null ) {
+            return true;
+        }
+        for ( int i = 0; i < node.getNumberOfDescendants(); ++i ) {
+            if ( hasAnyDiv( node.getChildNode( i ) ) ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // ---- reusable public API for the time<->divergence display toggle (Increment 2) ------------------------------
+    // Both metrics are RETAINED on the tree after parsing (the <date> values + the nextstrain:div properties), so a
+    // view can rewrite the branch lengths from EITHER at any time -- a lossless, reversible display mode. These reuse
+    // the exact same recompute the parser itself uses, so the toggle can never drift from the loaded default.
+
+    /** Rewrite every branch length from the retained {@code num_date} values (the TIME view -- successive date
+     *  differences; root length 0). Reversible; nothing is lost (the {@code <date>} values are retained). */
+    public static void applyTimeBranchLengths( final Phylogeny phy ) {
+        if ( ( phy != null ) && !phy.isEmpty() ) {
+            setTimeBranchLengths( phy.getRoot(), null );
+        }
+    }
+
+    /** Rewrite every branch length from the retained {@code nextstrain:div} properties (the DIVERGENCE view --
+     *  successive div differences; root length 0). Reversible; nothing is lost (the div properties are retained). */
+    public static void applyDivergenceBranchLengths( final Phylogeny phy ) {
+        if ( ( phy != null ) && !phy.isEmpty() ) {
+            setDivBranchLengths( phy.getRoot(), null );
+        }
+    }
+
+    /** True if the tree carries BOTH a time signal (a {@code num_date}) AND a divergence signal (a
+     *  {@code nextstrain:div} property), so the time&harr;divergence display toggle is meaningful. */
+    public static boolean hasTimeAndDivergence( final Phylogeny phy ) {
+        return ( phy != null ) && !phy.isEmpty() && hasAnyDate( phy.getRoot() ) && hasAnyDiv( phy.getRoot() );
+    }
+
+    /** Branch lengths from the cumulative {@code nextstrain:div} property (successive differences, a divergence tree);
+     *  root length is 0, and a node whose div (or whose parent's) is absent gets a 0-length branch -- the same
+     *  defensive completeness as {@link #setTimeBranchLengths} so a toggle never leaves a stale cross-scale length. */
     private static void setDivBranchLengths( final PhylogenyNode node, final Double parent_div ) {
         final Double d = nodeDiv( node );
-        if ( node.isRoot() ) {
-            node.setDistanceToParent( 0.0 );
-        }
-        else if ( ( parent_div != null ) && ( d != null ) ) {
+        if ( !node.isRoot() && ( parent_div != null ) && ( d != null ) ) {
             node.setDistanceToParent( Math.max( 0.0, d - parent_div ) ); // clamp a (spurious) negative branch to 0
+        }
+        else {
+            node.setDistanceToParent( 0.0 );
         }
         for ( int i = 0; i < node.getNumberOfDescendants(); ++i ) {
             setDivBranchLengths( node.getChildNode( i ), d );
@@ -377,11 +420,13 @@ public final class AuspiceJsonParser implements PhylogenyParser {
     }
 
     /** A compact string for a JSON number: a whole value drops the trailing ".0" (a clean categorical/integer property),
-     *  otherwise the plain decimal. */
+     *  otherwise the plain decimal WITHOUT scientific notation (a small divergence like 0.0001 reads as "0.0001", not
+     *  "1.0E-4", in the node-data popup / as a searchable value). */
     private static String numberToString( final double d ) {
         if ( ( d == Math.rint( d ) ) && !Double.isInfinite( d ) && ( Math.abs( d ) < 1e15 ) ) {
             return Long.toString( (long) d );
         }
-        return Double.toString( d );
+        // stripTrailingZeros so "1.0E-4" -> 0.0001 (not "0.00010"); toPlainString never uses scientific notation
+        return BigDecimal.valueOf( d ).stripTrailingZeros().toPlainString();
     }
 }
