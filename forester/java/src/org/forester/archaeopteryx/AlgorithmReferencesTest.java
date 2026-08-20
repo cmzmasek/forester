@@ -108,6 +108,12 @@ public final class AlgorithmReferencesTest {
             System.out.println( "  [AlgorithmReferencesTest] fossil range bars (FAD/LAD) reference/citation is missing" );
             ok = false;
         }
+        // the node-age bars/spindles must be described (incl. the honest "schematic, not raw posterior" caveat) + BEAST
+        if ( !text.contains( "Node age bars / spindles" ) || !text.contains( "Highest Posterior Density" )
+                || !text.contains( "SCHEMATIC" ) || !text.contains( "BEAST 1.10" ) ) {
+            System.out.println( "  [AlgorithmReferencesTest] node age bars/spindles reference/citation is missing" );
+            ok = false;
+        }
         boolean phyloxml_present = false;
         for ( final AlgorithmReferences.Reference r : all ) {
             if ( ForesterConstants.PHYLO_XML_REFERENCE.equals( r.citation() ) ) {

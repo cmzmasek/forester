@@ -127,6 +127,24 @@ public final class HpdBarRenderTest {
                     }
                     o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
 
+                    // NODE AGE SHAPE = SPINDLE: the tapered lens is TALLER at the node's point-estimate x (its peak)
+                    // than a flat HPD_BAR_HEIGHT (7px) bar, so its vertical blue extent there exceeds 7 -- proving the
+                    // spindle shape rendered (not a fallback to the flat bar)
+                    if ( inode != null ) {
+                        o.setNodeAgeShape( Options.NODE_AGE_SHAPE.SPINDLE );
+                        tp.calcParametersForPainting( w, h );
+                        final java.awt.image.BufferedImage spindle_img =
+                                AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
+                        final int nx = Math.round( inode.getXcoord() ), ny = Math.round( inode.getYcoord() );
+                        final int span = bluishVerticalSpan( spindle_img, nx, ny );
+                        if ( span <= 7 ) {
+                            fail( ok, "the SPINDLE must be taller than a flat 7px bar at the peak (blue span " + span
+                                    + ")" );
+                        }
+                        o.setNodeAgeShape( Options.NODE_AGE_SHAPE.BAR );
+                        tp.calcParametersForPainting( w, h );
+                    }
+
                     // collapsing a clade must REMOVE its hidden internal descendants' bars (not draw them at stale
                     // coords): find a dated clade with an internal child, collapse it, and assert the blue drops
                     org.forester.phylogeny.PhylogenyNode clade = null;
@@ -186,6 +204,23 @@ public final class HpdBarRenderTest {
             }
         }
         return n;
+    }
+
+    /** The vertical extent (px) of bluish overlay pixels in a thin x-window around {@code x}, near row {@code y} -- how
+     *  tall the node-age overlay is at the point estimate (a flat bar is 7px; the spindle peaks taller). */
+    private static int bluishVerticalSpan( final BufferedImage img, final int x, final int y ) {
+        int min_y = Integer.MAX_VALUE, max_y = Integer.MIN_VALUE;
+        for ( int yy = Math.max( 0, y - 12 ); yy < Math.min( img.getHeight(), y + 13 ); ++yy ) {
+            for ( int xx = Math.max( 0, x - 1 ); xx <= Math.min( img.getWidth() - 1, x + 1 ); ++xx ) {
+                final int rgb = img.getRGB( xx, yy );
+                final int r = ( rgb >> 16 ) & 0xFF, g = ( rgb >> 8 ) & 0xFF, b = rgb & 0xFF;
+                if ( ( b >= ( r + 20 ) ) && ( b >= ( g + 15 ) ) ) {
+                    min_y = Math.min( min_y, yy );
+                    max_y = Math.max( max_y, yy );
+                }
+            }
+        }
+        return ( max_y >= min_y ) ? ( ( max_y - min_y ) + 1 ) : 0;
     }
 
     /** Is there any bluish pixel in the band [x0,x1] x [y-4,y+4]? (the bar is HPD_BAR_HEIGHT=7 tall, centred on y) */

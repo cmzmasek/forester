@@ -97,6 +97,19 @@ final class AlgorithmReferences {
                         + "convention of plotting taxon stratigraphic ranges against a time-calibrated phylogeny follows "
                         + "the strap R package: Bell MA, Lloyd GT (2015): \"strap: an R package for plotting phylogenies "
                         + "against stratigraphy and assessing their stratigraphic congruence\", Palaeontology 58(2):379–389." ) );
+        refs.add( new Reference( "Node age bars / spindles (HPD) (Settings → Overlays → Data Overlays)",
+                "On a dated (time-calibrated) phylogram, draws each internal node's divergence-time uncertainty from its "
+                        + "phyloXML date -- the point estimate (median/mean height) and the 95% Highest Posterior Density "
+                        + "(HPD) interval (min/max), as produced by Bayesian MCMC dating (e.g. BEAST / TreeAnnotator "
+                        + "height_95%_HPD). \"Node age shape\" selects the rendering: a flat BAR spanning the interval (the "
+                        + "FigTree \"node bars\" convention), or a SPINDLE -- a tapered lens peaking at the point estimate "
+                        + "and narrowing to zero at the HPD bounds, so the position of the estimate WITHIN its interval "
+                        + "(the skew) is visible. NOTE: the spindle is a SCHEMATIC of the summarised uncertainty (the point "
+                        + "estimate + the 95% HPD), NOT the raw posterior density -- a summary (MCC) tree does not carry "
+                        + "the per-node posterior sample. Source of the dated ages and HPD intervals: Suchard MA, Lemey P, "
+                        + "Baele G, Ayres DL, Drummond AJ, Rambaut A (2018): \"Bayesian phylogenetic and phylodynamic data "
+                        + "integration using BEAST 1.10\", Virus Evolution 4(1):vey016. The node-bars visualisation "
+                        + "convention is that of FigTree (A. Rambaut, http://tree.bio.ed.ac.uk/software/figtree/)." ) );
         refs.add( new Reference( "phyloXML (file format)", ForesterConstants.PHYLO_XML_REFERENCE ) );
         return refs;
     }

@@ -109,6 +109,7 @@ public final class ResetToDefaultsTest {
         o.setNodeLabelDirection( Options.NODE_LABEL_DIRECTION.RADIAL ); // "Radial Labels"; default is HORIZONTAL
         o.setFoundColor( Options.FOUND_COLOR.NEON_MAGENTA ); // default is ELECTRIC_VIOLET
         o.setSupportVisualization( SUPPORT_VISUALIZATION.SIZE_SCALED );
+        o.setNodeAgeShape( Options.NODE_AGE_SHAPE.SPINDLE ); // default is BAR
         // search options (reset by init, resynced onto the control-panel checkboxes by Reset to Defaults)
         o.setSearchCaseSensitive( true );
         o.setMatchWholeTermsOnly( true );
@@ -169,6 +170,7 @@ public final class ResetToDefaultsTest {
                   Options.TIP_LABEL_DIRECTION.VERTICAL );
         ok &= eq( "abbreviateNames", o.isAbbreviateScientificTaxonNames(), def.isAbbreviateScientificTaxonNames() );
         ok &= eq( "supportViz", o.getSupportVisualization(), def.getSupportVisualization() );
+        ok &= eq( "nodeAgeShape", o.getNodeAgeShape(), def.getNodeAgeShape() );
         ok &= eq( "searchCase", o.isSearchCaseSensitive(), def.isSearchCaseSensitive() );
         ok &= eq( "searchWholeWords", o.isMatchWholeTermsOnly(), def.isMatchWholeTermsOnly() );
         ok &= eq( "searchRegex", o.isSearchWithRegex(), def.isSearchWithRegex() );

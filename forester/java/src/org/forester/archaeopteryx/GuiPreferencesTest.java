@@ -72,6 +72,8 @@ public final class GuiPreferencesTest {
             final NodeFill fill = ( src.getDefaultNodeFill() == NodeFill.NONE ) ? NodeFill.SOLID : NodeFill.NONE;
             final SUPPORT_VISUALIZATION support_viz = ( src.getSupportVisualization() == SUPPORT_VISUALIZATION.NONE )
                     ? SUPPORT_VISUALIZATION.SIZE_SCALED : SUPPORT_VISUALIZATION.NONE;
+            final Options.NODE_AGE_SHAPE age_shape = ( src.getNodeAgeShape() == Options.NODE_AGE_SHAPE.BAR )
+                    ? Options.NODE_AGE_SHAPE.SPINDLE : Options.NODE_AGE_SHAPE.BAR;
             final short node_size = (short) ( src.getDefaultNodeShapeSize() + 3 );
             // all numeric flips stay INSIDE the persisted [min,max] (branch width [0.5,20], support/min-conf [0,1],
             // raster scale [1,8]) so they survive the clamp on load; out-of-range clamping is checked separately below
@@ -109,6 +111,7 @@ public final class GuiPreferencesTest {
             src.setDefaultNodeFill( fill );
             src.setDefaultBranchWidth( branch_width );
             src.setSupportVisualization( support_viz );
+            src.setNodeAgeShape( age_shape );
             src.setSupportThreshold( support_threshold );
             src.setMinConfidenceFraction( min_conf );
             src.setPhylogenyGraphicsType( gtype );
@@ -157,6 +160,9 @@ public final class GuiPreferencesTest {
             }
             if ( dst.getSupportVisualization() != support_viz ) {
                 return fail( "support_visualization did not round-trip" );
+            }
+            if ( dst.getNodeAgeShape() != age_shape ) {
+                return fail( "node_age_shape did not round-trip" );
             }
             if ( dst.getSupportThreshold() != support_threshold ) {
                 return fail( "support_threshold did not round-trip" );

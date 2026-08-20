@@ -68,7 +68,7 @@ public final class TreePanelUtilTest {
                 && testInferenceFeedsRankAssignment() && testWriteCladeTaxonomies() && testInternalTaxaByRank()
                 && testCladeBands() && testRankColorizationViaSequenceIds() && testInternalLabelAboveBranchLayout()
                 && testAbbreviateScientificName() && testSupportColor() && testScaleGridLines()
-                && testScaleAxisTickValues() && testCalendarTickYears() && testMaAxisTicks() && testFormatCompactNumber() && testHpdBarXRange()
+                && testScaleAxisTickValues() && testCalendarTickYears() && testMaAxisTicks() && testFormatCompactNumber() && testHpdBarXRange() && testSpindleHalfHeight()
                 && testOrientationTransform() && testInternalLabelAlignWidth() && testAutoTipLabelDirection()
                 && testUserVisiblePropertiesText() && testTipLineagesAndUnresolved() && testInferenceStrings()
                 && testIsDuplicateOfAncestorTaxon() && testScaleAxisFloating() && testAncestralPieData();
@@ -597,6 +597,38 @@ public final class TreePanelUtilTest {
         if ( !( ( r[ 0 ] < 100f ) && ( 100f < r[ 1 ] ) && ( a[ 0 ] < 50f ) && ( 50f < a[ 1 ] ) ) ) {
             return fail( "the bar must straddle the node's x: " + java.util.Arrays.toString( r ) + " / "
                     + java.util.Arrays.toString( a ) );
+        }
+        return true;
+    }
+
+    /** The node-age SPINDLE profile: 0 at both interval ends, peaks at the point estimate, asymmetric when the estimate
+     *  is off-centre, and degenerate-safe. */
+    private static boolean testSpindleHalfHeight() {
+        // interval [0,10], estimate (peak) at 3, max half-height 5
+        if ( TreePanelUtil.spindleHalfHeightAt( 0, 0, 10, 3, 5 ) != 0 ) {
+            return fail( "spindle must be 0 at the low end" );
+        }
+        if ( TreePanelUtil.spindleHalfHeightAt( 10, 0, 10, 3, 5 ) != 0 ) {
+            return fail( "spindle must be 0 at the high end" );
+        }
+        if ( Math.abs( TreePanelUtil.spindleHalfHeightAt( 3, 0, 10, 3, 5 ) - 5 ) > 1e-9 ) {
+            return fail( "spindle must reach h_max at the peak" );
+        }
+        // ASYMMETRIC: at the SAME absolute distance (1.5) from the off-centre peak (3), the short lobe [0,3] is lower
+        // than the long lobe [3,10] -- because the short lobe rises/falls more steeply
+        final double left = TreePanelUtil.spindleHalfHeightAt( 1.5, 0, 10, 3, 5 );  // 1.5 below the peak (short lobe)
+        final double right = TreePanelUtil.spindleHalfHeightAt( 4.5, 0, 10, 3, 5 ); // 1.5 above the peak (long lobe)
+        if ( !( ( left > 0 ) && ( left < 5 ) && ( right > 0 ) && ( right < 5 ) ) ) {
+            return fail( "spindle lobe heights must be between 0 and h_max" );
+        }
+        if ( left >= right ) {
+            return fail( "the spindle must be asymmetric: the short lobe is lower at the same distance from the peak "
+                    + "(left=" + left + " right=" + right + ")" );
+        }
+        // degenerate: zero-width interval or non-positive h_max -> 0
+        if ( ( TreePanelUtil.spindleHalfHeightAt( 5, 5, 5, 5, 5 ) != 0 )
+                || ( TreePanelUtil.spindleHalfHeightAt( 3, 0, 10, 3, 0 ) != 0 ) ) {
+            return fail( "spindle must be 0 for a degenerate interval or non-positive h_max" );
         }
         return true;
     }

@@ -241,6 +241,14 @@ To turn a dated MCC tree into a time tree, display it as a **phylogram** (the
 `P`/`A` buttons) with **Node Age Bars (HPD)** on; add the **Scale Axis** for a
 labeled time axis.
 
+The node-age overlay has two shapes (**Settings → Overlays → Data Overlays → Node
+age shape**): a flat **Bar** across the 95% HPD interval (the FigTree convention),
+or a **Spindle** — a tapered lens that peaks at the point estimate and narrows to
+the HPD bounds, so you can see *where* the estimate sits within its interval. The
+spindle is a schematic of the *summarized* uncertainty (the point estimate + 95%
+HPD), not the raw posterior density — a summary (MCC) tree doesn't carry the
+per-node posterior sample.
+
 
 Geologic Time Axis
 ------------------

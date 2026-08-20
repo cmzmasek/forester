@@ -245,6 +245,9 @@ final class SettingsDialog extends JDialog {
         add( c, cb( _mf._show_scale_axis_cbmi ) );
         c.add( header( "Data Overlays" ) );
         add( c, cb( _mf._show_hpd_bars_cbmi ) );
+        add( c, labeled( "Node age shape:", enumCombo( Options.NODE_AGE_SHAPE.values(),
+                                                       _mf.getOptions().getNodeAgeShape(),
+                                                       v -> { _mf.getOptions().setNodeAgeShape( v ); repaintTree(); } ) ) );
         add( c, cb( _mf._show_fossil_range_bars_cbmi ) );
         add( c, cb( _mf._show_zebra_stripes_cbmi ) );
         add( c, cb( _mf._show_internal_taxonomy_key_cbmi ) );

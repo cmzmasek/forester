@@ -210,6 +210,14 @@ public final class RadialNodeContentRenderTest {
             if ( on <= ( off + 200 ) ) {
                 fail( ok, "circular HPD bars must add blue radial segments (bluish on " + on + " vs off " + off + ")" );
             }
+            // the SPINDLE shape must also draw radial lenses in circular (exercises fillRadialNodeAgeSpindle)
+            o.setNodeAgeShape( Options.NODE_AGE_SHAPE.SPINDLE );
+            tp.calcParametersForPainting( w, h );
+            final int spindle = countBluish( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) );
+            if ( spindle <= ( off + 200 ) ) {
+                fail( ok, "circular node-age SPINDLE must draw radial lenses (bluish " + spindle + " vs off " + off + ")" );
+            }
+            o.setNodeAgeShape( Options.NODE_AGE_SHAPE.BAR );
             o.setShowHpdBars( false );
         }, ok );
         return ok[ 0 ];

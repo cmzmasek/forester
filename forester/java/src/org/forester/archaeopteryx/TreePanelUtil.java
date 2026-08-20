@@ -479,6 +479,33 @@ public class TreePanelUtil {
     }
 
     /**
+     * The half-thickness of a node-age SPINDLE at position {@code p} along its span {@code [lo, hi]} (either device x
+     * for the rectangular shape or radius for the circular one): 0 at both ends {@code lo}/{@code hi}, rising smoothly
+     * (a quarter-sine) to {@code h_max} at the point-estimate position {@code peak}. Asymmetric when the estimate is
+     * off-centre in the HPD interval -- so the spindle shows WHERE the point age sits within its 95% HPD, unlike the
+     * flat bar. This is a schematic of the SUMMARISED uncertainty (point + 95% HPD), not the raw posterior density.
+     * Pure/testable.
+     */
+    final static double spindleHalfHeightAt( final double p, final double lo, final double hi, final double peak,
+                                             final double h_max ) {
+        if ( ( hi <= lo ) || ( h_max <= 0 ) ) {
+            return 0;
+        }
+        final double pk = Math.min( Math.max( peak, lo ), hi ); // clamp the estimate into the interval
+        double t;
+        if ( p <= pk ) {
+            final double span = pk - lo;
+            t = ( span > 0 ) ? ( ( p - lo ) / span ) : 1.0; // estimate at the low end -> that lobe is a step to full height
+        }
+        else {
+            final double span = hi - pk;
+            t = ( span > 0 ) ? ( ( hi - p ) / span ) : 1.0;
+        }
+        t = Math.min( Math.max( t, 0 ), 1 );
+        return h_max * Math.sin( ( t * Math.PI ) / 2.0 ); // 0 at the tips, h_max at the peak
+    }
+
+    /**
      * Formats a number for a compact figure label (scale-axis ticks, size-legend samples): a whole number as an
      * integer, otherwise with enough decimals to stay legible across magnitudes -- 2 decimals for values &gt;= 1
      * (years, distances, counts) but MORE for small magnitudes, so a 0..1 property/distance does not collapse to

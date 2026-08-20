@@ -31,6 +31,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import org.forester.archaeopteryx.Options.NODE_AGE_SHAPE;
 import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
 import org.forester.archaeopteryx.Options.OVERVIEW_PLACEMENT_TYPE;
 import org.forester.archaeopteryx.Options.PHYLOGENY_DISPLAY_TYPE;
@@ -114,6 +115,7 @@ final class GuiPreferences {
                        0.5f, 20f ),
             enumPref( "support_visualization", Options::getSupportVisualization, Options::setSupportVisualization,
                       SUPPORT_VISUALIZATION::valueOf ),
+            enumPref( "node_age_shape", Options::getNodeAgeShape, Options::setNodeAgeShape, NODE_AGE_SHAPE::valueOf ),
             doublePref( "support_threshold", Options::getSupportThreshold, Options::setSupportThreshold, 0.0, 1.0 ),
             doublePref( "min_confidence_fraction", Options::getMinConfidenceFraction,
                         Options::setMinConfidenceFraction, 0.0, 1.0 ),

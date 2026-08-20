@@ -171,6 +171,24 @@ final public class Options {
         }
     }
 
+    /** How the node-age (HPD) overlay is drawn on a dated phylogram: a flat BAR (the FigTree standard) or a SPINDLE
+     *  (a tapered shape peaking at the point estimate, so the position of the estimate within its 95% HPD is visible). */
+    static enum NODE_AGE_SHAPE {
+        BAR("Bar"),
+        SPINDLE("Spindle");
+
+        private final String _name;
+
+        private NODE_AGE_SHAPE(final String name) {
+            _name = name;
+        }
+
+        @Override
+        public String toString() {
+            return _name;
+        }
+    }
+
     // The "Min. confidence shown" display filter is a FRACTION (0..1) of each tree's detected support scale,
     // not an absolute value -- so one setting behaves correctly whatever the scale (0-1 posteriors, 0-100
     // bootstrap, 0-1000). The effective cutoff is fraction * confidenceScaleMaxFor(tree). Default 0.5 hides
@@ -199,6 +217,7 @@ final public class Options {
     private boolean _search_with_regex;
     private double _min_confidence_fraction;
     private SUPPORT_VISUALIZATION _support_visualization;
+    private NODE_AGE_SHAPE _node_age_shape;
     private double _support_threshold;
     private NH_CONVERSION_SUPPORT_VALUE_STYLE _nh_conversion_support_value_style;
     private boolean _nh_parsing_replace_underscores;
@@ -358,6 +377,7 @@ final public class Options {
         _parse_beast_style_extended_nexus_tags = true;
         _min_confidence_fraction = MIN_CONFIDENCE_FRACTION_DEFAULT;
         _support_visualization = SUPPORT_VISUALIZATION.NONE;
+        _node_age_shape = NODE_AGE_SHAPE.BAR;
         _support_threshold = SUPPORT_THRESHOLD_DEFAULT;
         _print_black_and_white = false;
         _phylogeny_graphics_type = PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR;
@@ -441,6 +461,14 @@ final public class Options {
 
     final SUPPORT_VISUALIZATION getSupportVisualization() {
         return _support_visualization;
+    }
+
+    final NODE_AGE_SHAPE getNodeAgeShape() {
+        return _node_age_shape;
+    }
+
+    final void setNodeAgeShape(final NODE_AGE_SHAPE node_age_shape) {
+        _node_age_shape = node_age_shape;
     }
 
     final double getSupportThreshold() {

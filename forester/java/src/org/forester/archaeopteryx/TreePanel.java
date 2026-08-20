@@ -252,6 +252,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private static final int    HPD_BAR_HEIGHT = 7;
     private static final Color  HPD_BAR_COLOR = new Color(70, 130, 220, 90);  // translucent blue, FigTree-like
     private static final Color  HPD_BAR_COLOR_BW = new Color(90, 90, 90, 70); // translucent gray for B&W export
+    // Node-age SPINDLE (an alternative shape to the flat HPD bar): a tapered lens peaking at the point estimate. Its
+    // MAX half-thickness (a touch fatter than the bar's half-height so the tapered shape reads distinctly), and the
+    // sampling step (px) at which the smooth outline is walked.
+    private static final double SPINDLE_HALF_HEIGHT = 5.0;
+    private static final double SPINDLE_SAMPLE_STEP = 2.0;
     // Fossil stratigraphic-range (FAD/LAD) bars: a solid-ish sepia bar spanning a TIP's observed first->last
     // appearance datum, with short end-caps so it reads as a bracketed interval (the strap "|--|" range convention).
     // A more OPAQUE earth tone than the translucent HPD bar so the two overlays stay visually distinct on a tree that
@@ -9381,11 +9386,42 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             double r_high = r_node + ((value - min) * radial_corr); // younger bound -> larger radius (toward the tips)
             r_low = Math.max(0, Math.min(r_low, r_high)); // robust to swapped/degenerate bounds; never past the centre
             r_high = Math.max(r_low + 1, r_high); // >= 1px floor so a dated node always shows a mark (rectangular parity)
-            final double cos = Math.cos(ang), sin = Math.sin(ang);
-            drawLine(cx + (r_low * cos), cy + (r_low * sin), cx + (r_high * cos), cy + (r_high * sin), g);
+            if (getOptions().getNodeAgeShape() == Options.NODE_AGE_SHAPE.SPINDLE) {
+                fillRadialNodeAgeSpindle(g, cx, cy, ang, r_low, r_high, r_node); // a radial lens peaking at the node's radius
+            }
+            else {
+                final double cos = Math.cos(ang), sin = Math.sin(ang);
+                drawLine(cx + (r_low * cos), cy + (r_low * sin), cx + (r_high * cos), cy + (r_high * sin), g);
+            }
         }
         g.setColor(saved);
         g.setStroke(saved_stroke);
+    }
+
+    /** Fills a radial node-age SPINDLE (circular twin of {@link #fillNodeAgeSpindle}): a lens along the spoke at angle
+     *  {@code ang}, from the older bound radius {@code r_low} to the younger {@code r_high}, its perpendicular
+     *  half-thickness peaking at the node's own radius {@code r_peak}. */
+    private void fillRadialNodeAgeSpindle(final Graphics2D g, final int cx, final int cy, final double ang,
+                                          final double r_low, final double r_high, final double r_peak) {
+        final double cos = Math.cos(ang), sin = Math.sin(ang);
+        if ((r_high - r_low) <= SPINDLE_SAMPLE_STEP) { // too narrow to sample a lens: a short radial mark so the node shows
+            drawLine(cx + (r_low * cos), cy + (r_low * sin), cx + (r_high * cos), cy + (r_high * sin), g);
+            return;
+        }
+        final double px = -sin, py = cos; // unit vector perpendicular to the spoke
+        final java.awt.geom.Path2D.Double path = new java.awt.geom.Path2D.Double();
+        path.moveTo(cx + (r_low * cos), cy + (r_low * sin)); // inner tip
+        for (double r = r_low + SPINDLE_SAMPLE_STEP; r < r_high; r += SPINDLE_SAMPLE_STEP) {
+            final double h = TreePanelUtil.spindleHalfHeightAt(r, r_low, r_high, r_peak, SPINDLE_HALF_HEIGHT);
+            path.lineTo(cx + (r * cos) + (h * px), cy + (r * sin) + (h * py));
+        }
+        path.lineTo(cx + (r_high * cos), cy + (r_high * sin)); // outer tip
+        for (double r = r_high - SPINDLE_SAMPLE_STEP; r > r_low; r -= SPINDLE_SAMPLE_STEP) {
+            final double h = TreePanelUtil.spindleHalfHeightAt(r, r_low, r_high, r_peak, SPINDLE_HALF_HEIGHT);
+            path.lineTo(cx + (r * cos) - (h * px), cy + (r * sin) - (h * py));
+        }
+        path.closePath();
+        g.fill(path);
     }
 
     /**
@@ -9420,11 +9456,40 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final double max = date.getMax().doubleValue();
             final double value = (date.getValue() != null) ? date.getValue().doubleValue() : ((min + max) / 2.0);
             final float[] xr = TreePanelUtil.hpdBarXRange(node.getXcoord(), value, min, max, corr);
-            final int left = Math.round(Math.min(xr[0], xr[1])); // robust to swapped/degenerate bounds
-            final int w = Math.max(1, Math.round(Math.abs(xr[1] - xr[0])));
-            g.fillRect(left, Math.round(node.getYcoord()) - (HPD_BAR_HEIGHT / 2), w, HPD_BAR_HEIGHT);
+            final double y = node.getYcoord();
+            if (getOptions().getNodeAgeShape() == Options.NODE_AGE_SHAPE.SPINDLE) {
+                // a tapered lens from the older bound to the younger, peaking at the node's own (point-estimate) x
+                fillNodeAgeSpindle(g, Math.min(xr[0], xr[1]), Math.max(xr[0], xr[1]), node.getXcoord(), y);
+            }
+            else {
+                final int left = Math.round(Math.min(xr[0], xr[1])); // robust to swapped/degenerate bounds
+                final int w = Math.max(1, Math.round(Math.abs(xr[1] - xr[0])));
+                g.fillRect(left, (int) Math.round(y) - (HPD_BAR_HEIGHT / 2), w, HPD_BAR_HEIGHT);
+            }
         }
         g.setColor(saved);
+    }
+
+    /** Fills a horizontal node-age SPINDLE (the tapered alternative to the flat HPD bar): a smooth lens from the older
+     *  bound {@code x_left} to the younger {@code x_right}, peaking at the point-estimate x {@code x_peak}, centred on
+     *  {@code y}. The half-thickness at each x comes from {@link TreePanelUtil#spindleHalfHeightAt}. */
+    private void fillNodeAgeSpindle(final Graphics2D g, final double x_left, final double x_right, final double x_peak,
+                                    final double y) {
+        if ((x_right - x_left) <= SPINDLE_SAMPLE_STEP) { // too narrow to sample a lens: a tiny mark so the node still shows
+            g.fillRect((int) Math.round(x_left) - 1, (int) Math.round(y) - (HPD_BAR_HEIGHT / 2), 2, HPD_BAR_HEIGHT);
+            return;
+        }
+        final java.awt.geom.Path2D.Double path = new java.awt.geom.Path2D.Double();
+        path.moveTo(x_left, y); // left tip (half-height 0)
+        for (double x = x_left + SPINDLE_SAMPLE_STEP; x < x_right; x += SPINDLE_SAMPLE_STEP) {
+            path.lineTo(x, y - TreePanelUtil.spindleHalfHeightAt(x, x_left, x_right, x_peak, SPINDLE_HALF_HEIGHT));
+        }
+        path.lineTo(x_right, y); // right tip
+        for (double x = x_right - SPINDLE_SAMPLE_STEP; x > x_left; x -= SPINDLE_SAMPLE_STEP) {
+            path.lineTo(x, y + TreePanelUtil.spindleHalfHeightAt(x, x_left, x_right, x_peak, SPINDLE_HALF_HEIGHT));
+        }
+        path.closePath();
+        g.fill(path);
     }
 
     /**
