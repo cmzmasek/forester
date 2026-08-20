@@ -93,12 +93,18 @@ public final class NextstrainBranchModeTest {
                     if ( tp.effectiveTimeAxisType() != TIME_AXIS_TYPE.CALENDAR ) {
                         fail( ok, "TIME view must derive a CALENDAR axis, got " + tp.effectiveTimeAxisType() );
                     }
-                    // capture the TIME layout for a render diff below
+                    // capture the TIME layout for a render diff below, with node-age spindles ON (they draw here)
                     final Options o = frame.getOptions();
+                    o.setShowHpdBars( true );
+                    o.setNodeAgeShape( Options.NODE_AGE_SHAPE.SPINDLE );
                     final int w = 800, h = 500;
                     tp.setSize( w, h );
                     tp.calcParametersForPainting( w, h );
                     final BufferedImage img_time = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
+                    final int time_bluish = countBluish( img_time );
+                    if ( time_bluish < 100 ) {
+                        fail( ok, "TIME view must draw node-age spindles (bluish pixels), got " + time_bluish );
+                    }
 
                     // switch to DIVERGENCE via the real dropdown dispatch
                     cp.userSelectBranchLengthsForTest( TreePanel.NEXTSTRAIN_BRANCH_MODE.DIVERGENCE );
@@ -124,6 +130,14 @@ public final class NextstrainBranchModeTest {
                     final BufferedImage img_div = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
                     if ( diffPixels( img_time, img_div ) < 500 ) {
                         fail( ok, "the DIVERGENCE layout must differ visibly from the TIME layout" );
+                    }
+                    // node-age spindles read the <date> interval (years); in DIVERGENCE the branch lengths are subs/site
+                    // so a date-scaled spindle would be scaled by the huge divergence corr and cover the canvas -> it
+                    // must be SUPPRESSED (isBranchLengthTimeCalibrated() == false)
+                    final int div_bluish = countBluish( img_div );
+                    if ( div_bluish > ( time_bluish / 10 ) ) {
+                        fail( ok, "DIVERGENCE view must SUPPRESS node-age spindles (they would be scaled by the div corr "
+                                + "and cover the canvas); bluish " + div_bluish + " vs time " + time_bluish );
                     }
 
                     // switch back to TIME -> exactly reversible (span + axis + unit restored)
@@ -161,6 +175,21 @@ public final class NextstrainBranchModeTest {
             t.printStackTrace();
             return fail( "exception: " + t );
         }
+    }
+
+    /** Count of translucent-blue node-age spindle pixels (same detection as HpdBarRenderTest). */
+    private static int countBluish( final BufferedImage img ) {
+        int n = 0;
+        for ( int y = 0; y < img.getHeight(); ++y ) {
+            for ( int x = 0; x < img.getWidth(); ++x ) {
+                final int rgb = img.getRGB( x, y );
+                final int r = ( rgb >> 16 ) & 0xFF, g = ( rgb >> 8 ) & 0xFF, b = rgb & 0xFF;
+                if ( ( b >= ( r + 20 ) ) && ( b >= ( g + 15 ) ) ) {
+                    ++n;
+                }
+            }
+        }
+        return n;
     }
 
     /** Count of pixels that differ between two equal-size renders (the layout change is visible when this is large). */

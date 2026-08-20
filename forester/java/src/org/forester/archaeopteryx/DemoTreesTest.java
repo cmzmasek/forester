@@ -508,14 +508,27 @@ public final class DemoTreesTest {
                 return note( file_name + " did not yield one non-empty tree" );
             }
             final Phylogeny phy = phys[ 0 ];
-            if ( phy.getNumberOfExternalNodes() < 5 ) {
-                return note( file_name + " must have >= 5 tips, has " + phy.getNumberOfExternalNodes() );
+            if ( phy.getNumberOfExternalNodes() < 15 ) {
+                return note( file_name + " must have >= 15 tips, has " + phy.getNumberOfExternalNodes() );
             }
             if ( AptxUtil.detectTimeTree( phy ) != AptxUtil.TIME_TREE_KIND.DATED ) {
                 return note( file_name + " must be detected as a dated time tree" );
             }
             if ( !TreePanelUtil.ancestralStateTraits( phy ).contains( "region" ) ) {
                 return note( file_name + " must carry a 'region' ancestral-state trait (for pies)" );
+            }
+            // num_date is exposed as a numeric property so it can drive the "Color by" date gradient -- it must show
+            // up in the colour-by refs AND be typed numeric (a gradient), which is what makes "Color by date" work
+            if ( !hasTipProperty( phy, "nextstrain:num_date" )
+                    || !PropertyColorScheme.colorableRefs( phy ).contains( "nextstrain:num_date" )
+                    || !PropertyColorScheme.numericRefs( phy ).contains( "nextstrain:num_date" ) ) {
+                return note( file_name + " must offer nextstrain:num_date as a NUMERIC 'Color by' ref (date gradient)" );
+            }
+            // host metadata with real variety (mostly human + at least one non-human -> a useful 'Color by host')
+            final java.util.Set<String> hosts = tipPropertyValues( phy, "nextstrain:host" );
+            if ( hosts.size() < 2 || !hosts.contains( "Homo sapiens" ) ) {
+                return note( file_name + " must carry a 'host' trait with >= 2 distinct values incl. Homo sapiens, got "
+                        + hosts );
             }
             return true;
         }
@@ -691,6 +704,26 @@ public final class DemoTreesTest {
     private static Phylogeny fail( final String msg ) {
         note( msg );
         return null;
+    }
+
+    private static boolean hasTipProperty( final Phylogeny phy, final String ref ) {
+        return !tipPropertyValues( phy, ref ).isEmpty();
+    }
+
+    /** Distinct values of a given node property across the external nodes (tips). */
+    private static java.util.Set<String> tipPropertyValues( final Phylogeny phy, final String ref ) {
+        final java.util.Set<String> vals = new java.util.HashSet<>();
+        for ( final PhylogenyNode ext : phy.getExternalNodes() ) {
+            if ( ext.getNodeData().getProperties() != null ) {
+                for ( final org.forester.phylogeny.data.Property p : ext.getNodeData().getProperties()
+                        .getProperties() ) {
+                    if ( ref.equals( p.getRef() ) ) {
+                        vals.add( p.getValue() );
+                    }
+                }
+            }
+        }
+        return vals;
     }
 
     /** false-returning failure note for the shape checks. */

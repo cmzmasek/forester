@@ -5462,6 +5462,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         repaint();
     }
 
+    /** Whether the branch lengths currently represent TIME, so a node's {@code <date>} interval (in time units) maps to
+     *  an x / radius distance. FALSE only for an Auspice/Nextstrain tree switched to the DIVERGENCE view, where the
+     *  branch lengths are substitutions/site: a date-based node-age (HPD) bar/spindle or fossil-range bar would then be
+     *  scaled by the (huge) divergence corr and paint absurdly long (covering the whole canvas). Gates those overlays. */
+    boolean isBranchLengthTimeCalibrated() {
+        return _nextstrain_branch_mode != NEXTSTRAIN_BRANCH_MODE.DIVERGENCE;
+    }
+
     /** Whether the two-band geologic time axis is ON and drawable in a RECTANGULAR-family layout: mode GEOLOGIC, a
      *  phylogram in any of the three rectangular orientations (root-left / root-top / root-bottom), and an absolute
      *  root-age calibration. The circular analogue is {@link #geologicRingsApplyCircular()}; UNROOTED is N/A (an
@@ -9445,7 +9453,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  phylograms only (the radius must encode distance); skips nodes hidden under a collapse. */
     private void paintHpdBarsCircular(final Graphics2D g, final int cx, final int cy, final int radius,
                                       final boolean to_pdf, final boolean to_graphics_file) {
-        if (!getOptions().isShowHpdBars() || !isCircularPhylogram() || (_phylogeny == null) || (radius <= 0)) {
+        if (!getOptions().isShowHpdBars() || !isCircularPhylogram() || (_phylogeny == null) || (radius <= 0)
+                || !isBranchLengthTimeCalibrated()) {
             return;
         }
         final double max_dist = getMaxDistanceToRoot();
@@ -9531,7 +9540,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      * the branch-length (time) unit -- the dated-tree use.
      */
     private void paintHpdBars(final Graphics2D g, final boolean to_pdf, final boolean to_graphics_file) {
-        if (!getOptions().isShowHpdBars() || !getControlPanel().isDrawPhylogram() || (_phylogeny == null)) {
+        if (!getOptions().isShowHpdBars() || !getControlPanel().isDrawPhylogram() || (_phylogeny == null)
+                || !isBranchLengthTimeCalibrated()) {
             return;
         }
         final double corr = getXcorrectionFactor();
@@ -9604,7 +9614,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      * {@link #paintFossilRangeBarsCircular}. Assumes the age unit matches the branch-length (time) unit.
      */
     private void paintFossilRangeBars(final Graphics2D g, final boolean to_pdf, final boolean to_graphics_file) {
-        if (!getOptions().isShowFossilRangeBars() || !getControlPanel().isDrawPhylogram() || (_phylogeny == null)) {
+        if (!getOptions().isShowFossilRangeBars() || !getControlPanel().isDrawPhylogram() || (_phylogeny == null)
+                || !isBranchLengthTimeCalibrated()) {
             return;
         }
         final double corr = getXcorrectionFactor();
@@ -9648,7 +9659,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      */
     private void paintFossilRangeBarsCircular(final Graphics2D g, final int cx, final int cy, final int radius,
                                               final boolean to_pdf, final boolean to_graphics_file) {
-        if (!getOptions().isShowFossilRangeBars() || !isCircularPhylogram() || (_phylogeny == null) || (radius <= 0)) {
+        if (!getOptions().isShowFossilRangeBars() || !isCircularPhylogram() || (_phylogeny == null) || (radius <= 0)
+                || !isBranchLengthTimeCalibrated()) {
             return;
         }
         final double max_dist = getMaxDistanceToRoot();

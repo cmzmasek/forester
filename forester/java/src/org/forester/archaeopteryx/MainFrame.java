@@ -146,6 +146,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     final static NHFilter nhfilter = new NHFilter();
     final static NHXFilter nhxfilter = new NHXFilter();
     final static XMLFilter xmlfilter = new XMLFilter();
+    final static JsonFilter jsonfilter = new JsonFilter();
     final static TolFilter tolfilter = new TolFilter();
     final static NexusFilter nexusfilter = new NexusFilter();
     final static PdfFilter pdffilter = new PdfFilter();
@@ -3720,12 +3721,12 @@ class DefaultFilter extends FileFilter {
                 || file_name.endsWith("phylo.xml") || file_name.endsWith(".pxml") || file_name.endsWith(".nexus")
                 || file_name.endsWith(".nx") || file_name.endsWith(".nex") || file_name.endsWith(".tre")
                 || file_name.endsWith(".zip") || file_name.endsWith(".tol") || file_name.endsWith(".tolxml")
-                || file_name.endsWith(".con") || f.isDirectory();
+                || file_name.endsWith(".con") || file_name.endsWith(".json") || f.isDirectory();
     }
 
     @Override
     public String getDescription() {
-        return "All supported files (*.xml, *.phyloxml, *phylo.xml, *.nhx, *.nh, *.newick, *.nex, *.nexus, *.phy, *.tre, *.tree, *.tol, ...)";
+        return "All supported files (*.xml, *.phyloxml, *phylo.xml, *.nhx, *.nh, *.newick, *.nex, *.nexus, *.phy, *.tre, *.tree, *.tol, *.json, ...)";
     }
 }
 
@@ -3832,3 +3833,17 @@ class XMLFilter extends FileFilter {
         return "phyloXML files (*.xml, *.phyloxml, *phylo.xml, *.pxml, *.zip)";
     }
 } // XMLFilter
+
+class JsonFilter extends FileFilter {
+
+    @Override
+    public boolean accept(final File f) {
+        // .auspice.json ends with .json, so the single check covers both
+        return f.getName().trim().toLowerCase().endsWith(".json") || f.isDirectory();
+    }
+
+    @Override
+    public String getDescription() {
+        return "Auspice / Nextstrain JSON files (*.json, *.auspice.json)";
+    }
+} // JsonFilter

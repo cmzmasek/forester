@@ -92,6 +92,12 @@ public final class AuspiceJsonParserTest {
             if ( !"0.002".equals( prop( a, AuspiceJsonParser.PREFIX + "div" ) ) ) {
                 return fail( "div -> nextstrain:div, got " + prop( a, AuspiceJsonParser.PREFIX + "div" ) );
             }
+            // num_date is ALSO exposed as a numeric property (drives "Color by" as a date gradient) -- 2020.0 -> "2020"
+            if ( !"2020".equals( prop( a, AuspiceJsonParser.PREFIX + "num_date" ) )
+                    || !"2019".equals( prop( root, AuspiceJsonParser.PREFIX + "num_date" ) ) ) {
+                return fail( "num_date -> nextstrain:num_date numeric property, got tip="
+                        + prop( a, AuspiceJsonParser.PREFIX + "num_date" ) );
+            }
             // trait confidence -> the pie-shaped set + set_prob pair (state names quoted so a comma in one survives)
             if ( !"{\"USA\",\"Canada\"}".equals( prop( a, AuspiceJsonParser.PREFIX + "country_set" ) )
                     || !"{0.9,0.1}".equals( prop( a, AuspiceJsonParser.PREFIX + "country_set_prob" ) ) ) {

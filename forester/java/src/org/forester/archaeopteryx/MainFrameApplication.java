@@ -80,6 +80,7 @@ import org.forester.archaeopteryx.tools.NodeDataExporter;
 import org.forester.archaeopteryx.tools.RepresentativeTipSelector;
 import org.forester.archaeopteryx.tools.SequenceAndTaxonomyDataObtainer;
 import org.forester.io.parsers.PhylogenyParser;
+import org.forester.io.parsers.json.AuspiceJsonParser;
 import org.forester.io.parsers.nexus.NexusPhylogeniesParser;
 import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
@@ -209,6 +210,7 @@ public final class MainFrameApplication extends MainFrame {
         _open_filechooser.addChoosableFileFilter(MainFrame.nhfilter);
         _open_filechooser.addChoosableFileFilter(MainFrame.nexusfilter);
         _open_filechooser.addChoosableFileFilter(MainFrame.tolfilter);
+        _open_filechooser.addChoosableFileFilter(MainFrame.jsonfilter);
         _open_filechooser.addChoosableFileFilter(_open_filechooser.getAcceptAllFileFilter());
         _open_filechooser.setFileFilter(MainFrame.defaultfilter);
         _open_filechooser_for_species_tree = new JFileChooser();
@@ -1283,6 +1285,13 @@ public final class MainFrameApplication extends MainFrame {
                             setSpecialOptionsForNexParser(nex);
                             phys = PhylogenyMethods.readPhylogenies(nex, file);
                             nhx_or_nexus = true;
+                        } catch (final Exception e) {
+                            exception = true;
+                            exceptionOccuredDuringOpenFile(e);
+                        }
+                    } else if (_open_filechooser.getFileFilter() == MainFrame.jsonfilter) {
+                        try {
+                            phys = PhylogenyMethods.readPhylogenies(new AuspiceJsonParser(), file);
                         } catch (final Exception e) {
                             exception = true;
                             exceptionOccuredDuringOpenFile(e);

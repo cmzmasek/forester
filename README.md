@@ -378,7 +378,8 @@ your Nextstrain tree lights up on open:
 
 - **`num_date`** → the tree is placed on the **Calendar axis**, and each internal
   node's **`num_date.confidence`** (the divergence-time interval) becomes a
-  **Node Age spindle**.
+  **Node Age spindle**. It is also exposed as a numeric **`nextstrain:num_date`**
+  property, so you can **Color by** the sampling date (a date gradient).
 - **`div`** (cumulative divergence) drives a **"Branch lengths: Time / Divergence"**
   control (left panel, shown only for a tree that carries both) — flip the whole tree
   between the **time** layout (`num_date`, with the calendar axis) and the

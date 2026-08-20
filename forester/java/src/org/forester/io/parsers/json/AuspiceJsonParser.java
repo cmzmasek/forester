@@ -159,7 +159,16 @@ public final class AuspiceJsonParser implements PhylogenyParser {
             final String key = e.getKey();
             final Object val = e.getValue();
             if ( "num_date".equals( key ) ) {
-                applyNumDate( node, asObject( val ) );
+                final Map<String, Object> nd = asObject( val );
+                applyNumDate( node, nd ); // the <date> (calendar axis + node-age spindles)
+                // ALSO expose the point date as a numeric property, so the sampling date can drive "Color by" (a date
+                // gradient -- the classic Nextstrain "colour by date" view), search, and annotation columns
+                if ( nd != null ) {
+                    final Double v = asDouble( nd.get( "value" ) );
+                    if ( v != null ) {
+                        addProperty( node, PREFIX + "num_date", numberToString( v ) );
+                    }
+                }
             }
             else if ( "div".equals( key ) ) {
                 final Double d = asDouble( val ); // div is a bare number (cumulative divergence from the root)
