@@ -1479,10 +1479,45 @@ public final class MainFrameApplication extends MainFrame {
         }
     }
 
+    /** The File -> Demo Trees submenu: a curated set of pre-configured example trees ({@link DemoTrees}) bundled in the
+     *  jar, each showcasing a capability -- the in-app twin of the published demo gallery (removes the empty-window
+     *  first-run experience, especially from a native installer). */
+    private JMenu buildDemoTreesSubmenu() {
+        final JMenu demo_menu = MainFrame.createMenu("Demo Trees", getConfiguration());
+        demo_menu.setToolTipText("Open a pre-configured example tree that showcases a capability of Archaeopteryx.");
+        demo_menu.setFont(MainFrame.menu_font); // a submenu needs the item font set explicitly when custom colours are off
+        for (final DemoTrees.Demo demo : DemoTrees.catalog()) {
+            final JMenuItem item = new JMenuItem(demo.label());
+            item.setToolTipText(demo.tooltip());
+            // style the item like the others, but do NOT route it through customizeJMenuItem: that also adds the global
+            // MainFrame action dispatcher (this) as a listener, which would double-fire alongside the demo lambda
+            item.setFont(MainFrame.menu_font);
+            if (getConfiguration().isApplyCustomGuiColors()) {
+                item.setBackground(getConfiguration().getGuiMenuBackgroundColor());
+                item.setForeground(getConfiguration().getGuiMenuTextColor());
+            }
+            item.addActionListener(e -> openDemo(demo));
+            demo_menu.add(item);
+        }
+        return demo_menu;
+    }
+
+    private void openDemo(final DemoTrees.Demo demo) {
+        try {
+            demo.open(this);
+        }
+        catch (final Throwable t) {
+            final String detail = (t.getMessage() != null) ? t.getMessage() : t.toString();
+            JOptionPane.showMessageDialog(this, "Could not open the demo tree \"" + demo.label() + "\":\n" + detail,
+                    "Demo Trees", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
     void buildFileMenu() {
         _file_jmenu = MainFrame.createMenu("File", getConfiguration());
         _file_jmenu.setToolTipText("Read, save, and export trees; close tabs or exit");
         _file_jmenu.add(_open_item = new JMenuItem("Read Tree from File..."));
+        _file_jmenu.add(buildDemoTreesSubmenu()); // pre-configured example trees, bundled in the jar (like Cytoscape)
         if (getConfiguration().isEditable()) {
             _file_jmenu.addSeparator();
             _file_jmenu.add(_new_item = new JMenuItem("New"));

@@ -2647,6 +2647,34 @@ final class ControlPanel extends JPanel implements ActionListener {
         _color_by_property_cb.addActionListener(this);
     }
 
+    /** Demo gallery: colour the current tree by a property, reflected in the "Color by" dropdown. Populates the box,
+     *  selects the ref in it, and drives the render. For a demo tree the ref is always a colourable option (so the
+     *  dropdown reflects it); the explicit setter is a fallback ensuring the render even if the combo did not fire. */
+    void demoSelectColorByProperty(final String ref) {
+        populateColorByPropertyBox();
+        if (_color_by_property_cb != null) {
+            _color_by_property_cb.setSelectedItem(ref);
+        }
+        final TreePanel tp = getMainPanel().getCurrentTreePanel();
+        if (tp != null) {
+            tp.setColorByPropertyRef(ref); // ensure the render even if the combo selection did not change/fire
+            tp.repaint();
+        }
+    }
+
+    /** Demo gallery: turn on ancestral-state pies for a discrete trait, reflected in the "Ancestral pie" dropdown. */
+    void demoSelectAncestralPie(final String trait) {
+        populateAncestralPieBox();
+        if (_ancestral_pie_property_cb != null) {
+            _ancestral_pie_property_cb.setSelectedItem(trait);
+        }
+        final TreePanel tp = getMainPanel().getCurrentTreePanel();
+        if (tp != null) {
+            tp.setAncestralPieTrait(trait);
+            tp.repaint();
+        }
+    }
+
     void setupControls() {
         setupThemeButtons();
         nextRowGap(SECTION_GAP); // more space between the Light/Dark row and the P/A/C row

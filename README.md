@@ -122,6 +122,31 @@ java -Xmx4g -jar forester.jar mytree.xml
 ```
 
 
+Try It: Demo Trees
+------------------
+
+Don't have a tree handy? Archaeopteryx ships with a small gallery of example
+trees, each **pre-configured to show off a capability** — open one and it comes
+up already colored, banded, or laid out, no setup required.
+
+Just launch Archaeopteryx and pick a tree from **File → Demo Trees**:
+
+- **Color Tips by Metadata** — a tree colored by a categorical property
+- **Annotation Columns** — tip-aligned color strips and a numeric heat-map
+- **Protein Domain Architectures** — multi-domain proteins drawn to scale
+- **Ancestral State Pies** — a discrete geographic trait as posterior pies
+- **SARS-CoV-2 Time Tree** — a tip-dated viral tree on a calendar-year axis
+- **Dinosaur Time Tree** — a dated archosaur tree (with *Archaeopteryx*!) on the
+  geologic time scale
+- **Ammonite Time Tree** — an all-extinct fossil clade with FAD/LAD range bars
+- **Tree of Life (Deep Time)** — a time-calibrated tree back to LUCA (~3.8 Ga)
+- **Tanglegram** — two trees (gophers vs. their lice) compared side by side
+
+The demos are bundled inside the jar, so they are always available. (The same
+trees, plus more, live in [`forester/demo/`](forester/demo/) for browsing on
+GitHub.)
+
+
 Searching Trees
 ---------------
 
