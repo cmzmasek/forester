@@ -148,6 +148,18 @@ public final class AptxUtilTest {
         if ( AptxUtil.detectTimeTree( ultra ) != AptxUtil.TIME_TREE_KIND.ULTRAMETRIC ) {
             return fail( "an ultrametric, undated tree must be ULTRAMETRIC (offer, not assert)" );
         }
+        // TIP-DATED: a strict majority of the TIPS dated (internal nodes undated) -> still a DATED time tree (a
+        // tip-dated tree, e.g. BEAST tip dates or dates extracted from labels) -> the time-tree badge shows
+        final Phylogeny tip_dated = balancedFourTip( 1, 1, 1 );
+        int i = 0;
+        for ( final PhylogenyNode ext : tip_dated.getExternalNodes() ) {
+            if ( i++ < 3 ) { // 3 of 4 tips (strict majority)
+                ext.getNodeData().setDate( new Date( "", new BigDecimal( "2020" ), null, null, "year" ) );
+            }
+        }
+        if ( AptxUtil.detectTimeTree( tip_dated ) != AptxUtil.TIME_TREE_KIND.DATED ) {
+            return fail( "a tip-dated tree (majority of TIPS dated, internal undated) must be DATED" );
+        }
         // RAGGED phylogram: branch lengths but one tip much deeper -> NONE
         final Phylogeny ragged = balancedFourTip( 1, 1, 1 );
         ragged.getFirstExternalNode().setDistanceToParent( 5 );

@@ -260,7 +260,9 @@ Dates in tip labels
 Most molecular-epidemiology trees (BEAST, TreeTime, augur, GISAID Newick) carry
 the **sampling date in the tip name** — `hCoV-19/USA/CA-1234/2021|2021-03-15`,
 `A/Texas/50/2012` — rather than as a structured field, so Archaeopteryx can't see
-it. **Tools → Extract Dates from Labels…** pulls it out: it recognizes ISO
+it. When you open such a tree Archaeopteryx **offers to extract the dates**
+automatically; you can also run it any time from **Tools → Extract Dates from
+Labels…**. Either way it recognizes ISO
 (`2021-03-15`), numeric (`15/03/2021`), month-name (`01-Dec-2015`), decimal-year
 (`2021.37`) and bare-year (`…/2012`) formats, shows a **preview** of exactly what
 it found on every tip *before* writing anything, and (on Apply) sets each tip's

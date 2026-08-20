@@ -161,7 +161,10 @@ public final class MainFrameApplication extends MainFrame {
             // offer label extraction for a command-line / initially-loaded header tree too, but only after
             // the frame is realized (deferred), so the dialog never appears mid-construction
             final Phylogeny[] loaded = phys;
-            javax.swing.SwingUtilities.invokeLater(() -> offerLabelExtraction(loaded));
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                offerLabelExtraction(loaded);
+                offerTipDateExtraction();
+            });
         }
         // align the tree canvas with the resolved (light/dark) theme at startup
         updateTreeCanvasColors(getConfiguration().getUi());
@@ -1359,6 +1362,7 @@ public final class MainFrameApplication extends MainFrame {
                                             JOptionPane.WARNING_MESSAGE);
                         }
                         offerLabelExtraction(phys);
+                        offerTipDateExtraction(); // before the ultrametric offer: extracting dates preempts it
                         offerTreatAsTimeTree(); // format-agnostic: offer for an ultrametric (undated) tree
                         if (nhx_or_nexus) {
                             offerInternalNamesAsConfidence(phys);

@@ -1508,6 +1508,28 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     }
 
     /**
+     * Load-time OFFER (mirrors {@link #offerLabelExtraction}): when the CURRENT tree's tip labels look like they carry
+     * sampling dates and it has no structured {@code <date>} yet, ask whether to extract them. Yes opens the preview
+     * dialog ({@link #extractTipDates}). Runs before the ultrametric time-tree offer, so accepting it (which dates the
+     * tree) preempts a redundant "treat as time tree" prompt.
+     */
+    void offerTipDateExtraction() {
+        if ((_mainpanel == null) || (_mainpanel.getCurrentTreePanel() == null)) {
+            return;
+        }
+        if (!TipDateExtractor.shouldOffer(_mainpanel.getCurrentTreePanel().getPhylogeny())) {
+            return;
+        }
+        final int choice = JOptionPane.showConfirmDialog(this,
+                "The tip labels look like they contain sampling dates (e.g. \"…/2021-03-15\").\n"
+                        + "Extract them into node dates? You'll see a preview first, and it's undoable.",
+                "Extract Dates from Labels?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+        if (choice == JOptionPane.YES_OPTION) {
+            extractTipDates();
+        }
+    }
+
+    /**
      * Load-time offer (NH/NHX/Nexus only, and only when the manual "Internal Node Names are Confidence
      * Values" option is off): if the internal node labels look like support values
      * ({@link AptxUtil#internalNamesLookLikeConfidenceValues}), ask whether to treat them as confidence

@@ -85,8 +85,10 @@ public final class TipDateExtractor {
     private static final Pattern DECIMAL_YEAR  = Pattern.compile( "(?<![0-9.])(\\d{4}\\.\\d+)(?![0-9])" );
     private static final Pattern BARE_YEAR     = Pattern.compile( "(?<![0-9.])(\\d{4})(?![0-9.])" );
 
-    private static final String[] MONTHS       = { "jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct",
+    private static final String[] MONTHS_ABBR  = { "jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct",
             "nov", "dec" };
+    private static final String[] MONTHS_FULL  = { "january", "february", "march", "april", "may", "june", "july",
+            "august", "september", "october", "november", "december" };
 
     /** The order of the two non-year fields in an ambiguous numeric date (e.g. {@code 05/03/2021}). */
     public enum DayMonthOrder {
@@ -347,19 +349,19 @@ public final class TipDateExtractor {
         return ( tips > 0 ) && ( ( dated * 2 ) > tips );
     }
 
-    /** Whether any tip's date is a numeric date whose day/month order had to be guessed -- so the day/month toggle is
-     *  worth showing (adaptive UI). */
-    public static boolean hasAmbiguousDates( final Phylogeny phy, final DayMonthOrder order ) {
-        if ( ( phy == null ) || phy.isEmpty() ) {
+    /** Whether to auto-OFFER extraction after a load: a strict majority of tips carry a parseable date in the label
+     *  AND no tip already has a structured {@code <date>} (so there is real work to do, and an already-dated tree --
+     *  e.g. a chronogram loaded with dates -- is not pestered). */
+    public static boolean shouldOffer( final Phylogeny phy ) {
+        if ( !mostLabelsHaveDates( phy ) ) {
             return false;
         }
         for ( final PhylogenyNode ext : phy.getExternalNodes() ) {
-            final DateMatch m = parse( ext.getName(), order );
-            if ( ( m != null ) && m.ambiguous() ) {
-                return true;
+            if ( ext.getNodeData().isHasDate() ) {
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     /** Write a matched date onto a node: the {@code <date>} (value = rounded decimal year, unit "year") + the numeric
@@ -425,14 +427,16 @@ public final class TipDateExtractor {
         return new DateMatch( toDecimalYear( year, month, 0 ), matched, Precision.MONTH, format, false );
     }
 
-    /** 1-12 for a (possibly long) English month name via its first three letters, else 0. */
+    /** 1-12 for an English month name -- the EXACT 3-letter abbreviation (Jan..Dec) OR the full name (January..
+     *  December), case-insensitive; 0 for anything else. The exact match (not a prefix) is what stops a place/clade
+     *  name like "Marburg" / "Junin" / "Decatur" from being misread as a month. */
     private static int monthNumber( final String name ) {
-        if ( ( name == null ) || ( name.length() < 3 ) ) {
+        if ( name == null ) {
             return 0;
         }
-        final String key = name.substring( 0, 3 ).toLowerCase( Locale.ROOT );
-        for ( int i = 0; i < MONTHS.length; ++i ) {
-            if ( MONTHS[ i ].equals( key ) ) {
+        final String key = name.toLowerCase( Locale.ROOT );
+        for ( int i = 0; i < 12; ++i ) {
+            if ( MONTHS_ABBR[ i ].equals( key ) || MONTHS_FULL[ i ].equals( key ) ) {
                 return i + 1;
             }
         }

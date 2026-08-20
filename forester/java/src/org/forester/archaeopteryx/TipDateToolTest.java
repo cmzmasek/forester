@@ -72,6 +72,10 @@ public final class TipDateToolTest {
                     if ( anyTipDated( p ) ) {
                         fail( ok, "the demo tips must start WITHOUT a <date> (the whole point is extraction)" );
                     }
+                    // the load-time auto-offer (Inc 2) would fire for this tree: date-bearing labels, no dates yet
+                    if ( !TipDateExtractor.shouldOffer( p ) ) {
+                        fail( ok, "the load-time offer must fire for the demo (date-bearing labels, undated)" );
+                    }
                     // the preview dialog: 10 matched, ISO-dominant, no ambiguity (so day/month order irrelevant)
                     final TipDateExtractionDialog dlg = new TipDateExtractionDialog( frame, p );
                     final String summary = dlg.summaryTextForTest();
@@ -99,6 +103,11 @@ public final class TipDateToolTest {
                     if ( tp.effectiveTimeAxisType() != TIME_AXIS_TYPE.CALENDAR ) {
                         fail( ok, "extracted year dates must auto-derive the CALENDAR axis, got "
                                 + tp.effectiveTimeAxisType() );
+                    }
+                    // the tip-dated tree is now detected DATED -> the "Time tree" badge shows (Inc 2)
+                    if ( AptxUtil.detectTimeTree( p ) != AptxUtil.TIME_TREE_KIND.DATED ) {
+                        fail( ok, "a tip-dated tree must be detected DATED (time-tree badge), got "
+                                + AptxUtil.detectTimeTree( p ) );
                     }
                     // provenance appended
                     if ( ( p.getDescription() == null ) || !p.getDescription().contains( "Extracted sampling dates" ) ) {

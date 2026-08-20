@@ -438,30 +438,43 @@ public final class AptxUtil {
     private final static double ULTRAMETRIC_TOLERANCE_FRACTION = 0.01;
 
     /**
-     * Detects whether a phylogeny is a <em>time tree</em>. {@link TIME_TREE_KIND#DATED} -- a majority of internal
-     * nodes carry a {@code <date>} value (a chronogram / BEAST-style dated tree) -- is definitive and can be
-     * auto-labeled. {@link TIME_TREE_KIND#ULTRAMETRIC} -- no dates, but branch lengths are present and every tip is
-     * (within tolerance) the same distance from the root -- is only <em>suggestive</em> (a UPGMA distance tree is
-     * ultrametric too), so it should be OFFERED to the user, not asserted. Pure/headless.
+     * Detects whether a phylogeny is a <em>time tree</em>. {@link TIME_TREE_KIND#DATED} -- a majority of INTERNAL
+     * nodes carry a {@code <date>} value (a chronogram / BEAST-style dated tree) OR a majority of the TIPS do (a
+     * tip-dated tree: BEAST tip dates, or dates extracted from the labels) -- is definitive and can be auto-labeled.
+     * {@link TIME_TREE_KIND#ULTRAMETRIC} -- no dates, but branch lengths are present and every tip is (within
+     * tolerance) the same distance from the root -- is only <em>suggestive</em> (a UPGMA distance tree is ultrametric
+     * too), so it should be OFFERED to the user, not asserted. Pure/headless.
      */
     public final static TIME_TREE_KIND detectTimeTree(final Phylogeny phy) {
         if ((phy == null) || phy.isEmpty() || (phy.getNumberOfExternalNodes() < 2)) {
             return TIME_TREE_KIND.NONE;
         }
-        int internal = 0;
-        int dated = 0;
+        int internal = 0, dated_internal = 0;
+        int external = 0, dated_external = 0;
         for (final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
+            final boolean dated = n.getNodeData().isHasDate() && (n.getNodeData().getDate().getValue() != null);
             if (n.isInternal()) {
                 internal++;
-                if (n.getNodeData().isHasDate() && (n.getNodeData().getDate().getValue() != null)) {
-                    dated++;
+                if (dated) {
+                    dated_internal++;
+                }
+            }
+            else {
+                external++;
+                if (dated) {
+                    dated_external++;
                 }
             }
         }
-        // a STRICT majority of internal nodes dated (and at least two), so a chronogram (all internal nodes dated)
-        // is DATED but a genetic-distance tree carrying one or two fossil-calibration ages is not auto-asserted
-        if ((dated >= 2) && ((dated * 2) > internal)) {
+        // a STRICT majority of INTERNAL nodes dated (and at least two): a chronogram (all internal nodes dated) is
+        // DATED, but a genetic-distance tree carrying one or two fossil-calibration ages is not auto-asserted
+        if ((dated_internal >= 2) && ((dated_internal * 2) > internal)) {
+            return TIME_TREE_KIND.DATED;
+        }
+        // OR a strict majority of the TIPS dated: a tip-dated tree (BEAST tip dates / dates extracted from labels),
+        // whose internal nodes carry no date but which is still a genuine time tree
+        if ((dated_external >= 2) && ((dated_external * 2) > external)) {
             return TIME_TREE_KIND.DATED;
         }
         if (isUltrametric(phy)) {

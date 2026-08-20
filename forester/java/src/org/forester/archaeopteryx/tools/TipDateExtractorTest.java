@@ -74,6 +74,14 @@ public final class TipDateExtractorTest {
             if ( !yearEq( "A/Texas/50/2012", 2012.5, Precision.YEAR ) ) {
                 return fail( "bare 4-digit year token -> midpoint" );
             }
+            // a place/clade name whose first letters spell a month must NOT be read as a month-name date (regression:
+            // Marburg -> "mar" -> March); it falls through to the bare year
+            if ( !yearEq( "A/Marburg-2019", 2019.5, Precision.YEAR ) ) {
+                return fail( "'Marburg' must not be misread as March -> bare year" );
+            }
+            if ( !yearEq( "Junin-2020", 2020.5, Precision.YEAR ) || !yearEq( "Decatur-2021", 2021.5, Precision.YEAR ) ) {
+                return fail( "'Junin'/'Decatur' must not be misread as June/December" );
+            }
             // --- leap year ---
             if ( !yearEq( "s/2020-03-15", 2020.204, Precision.DAY ) ) {
                 return fail( "leap-year full date (2020)" );
@@ -185,14 +193,17 @@ public final class TipDateExtractorTest {
                 || !sum.dominantFormat().contains( "ISO" ) || ( sum.minYear() >= sum.maxYear() ) ) {
             return fail( "summarize: " + sum );
         }
-        // an all-<=12 numeric date (dots, safe in a Newick name) makes hasAmbiguousDates true
-        final Phylogeny amb = parse( "(a_05.03.2021:1,b_2020-01-01:1);" );
-        if ( !TipDateExtractor.hasAmbiguousDates( amb, DF ) ) {
-            return fail( "hasAmbiguousDates must be true when an ambiguous numeric date is present" );
+        // shouldOffer (load-time auto-offer gate): majority date-bearing labels AND no tip already dated
+        if ( !TipDateExtractor.shouldOffer( mostly ) ) {
+            return fail( "shouldOffer must be true for a majority-date-bearing, undated tree" );
         }
-        final Phylogeny unamb = parse( "(a_2021-03-15:1,b_2020-01-01:1);" );
-        if ( TipDateExtractor.hasAmbiguousDates( unamb, DF ) ) {
-            return fail( "hasAmbiguousDates must be false for unambiguous dates" );
+        if ( TipDateExtractor.shouldOffer( few ) ) {
+            return fail( "shouldOffer must be false when few labels carry a date" );
+        }
+        mostly.getFirstExternalNode().getNodeData().setDate(
+                new org.forester.phylogeny.data.Date( "", new java.math.BigDecimal( "2020" ), null, null, "year" ) );
+        if ( TipDateExtractor.shouldOffer( mostly ) ) {
+            return fail( "shouldOffer must be false once a tip already has a <date> (don't pester)" );
         }
         return true;
     }
