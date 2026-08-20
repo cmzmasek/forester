@@ -214,6 +214,39 @@ hides itself when nothing is highlighted. Hover it for the breakdown by search b
 (**A** / **B**) and manual **Selected** nodes.
 
 
+Time Trees & Chronograms
+------------------------
+
+Archaeopteryx treats a **dated tree** as a first-class object, and this is one of
+the places it most tries to *just work*. However the dates arrive — parsed from
+**BEAST / BEAST X** output, read from an **Auspice / Nextstrain** JSON,
+**extracted from the tip labels**, or already sitting in a phyloXML `<date>` —
+they all land in one native date model, and every time-tree feature reads from
+it. So the whole toolkit composes on any dated tree, whatever its origin:
+
+- Archaeopteryx **auto-detects** the dated tree, marks it with a **"Time tree"**
+  badge, and — because the axis is chosen **per tree from its own `<date>`
+  values** (their unit and magnitude) — draws the **right axis automatically**: a
+  **Geologic (ICS)** axis for a tree dated in millions of years, a
+  **Calendar-year** axis for a tip-dated molecular-epidemiology tree. A Dinosaur
+  tree and a SARS-CoV-2 tree open in two tabs show the correct axis *at the same
+  time* — there is no global switch to flip.
+- **Node-age (HPD) bars / spindles** draw each internal node's divergence-time
+  uncertainty; **fossil-range (FAD/LAD) bars** draw each fossil tip's
+  stratigraphic duration; **Color by → date** shades the tips by sampling date.
+  Each turns on by itself when the tree carries the data for it.
+
+Two things are worth knowing, because they are the rare places where the magic is
+conditional. A time axis is a property of a **phylogram** — it needs branch
+lengths that mean time — so a dated tree opens as a phylogram by default; if you
+switch it to a **cladogram** (the `C` button) the axis has no time scale to draw
+and steps aside. And a time axis **replaces** the plain numeric distance scale, so
+you see one or the other, not both.
+
+Everything below is a piece of this one picture; in practice you rarely set any of
+it by hand.
+
+
 BEAST and BEAST X Output
 ------------------------
 
@@ -241,9 +274,10 @@ dates, pies), and every remaining field is preserved as a `beast:*` property you
 can color, size, or tabulate. A malformed field is skipped rather than aborting
 the load, so real-world TreeAnnotator files open cleanly.
 
-To turn a dated MCC tree into a time tree, display it as a **phylogram** (the
-`P`/`A` buttons) with **Node Age Bars (HPD)** on; add the **Scale Axis** for a
-labeled time axis.
+A dated MCC tree opens as a **phylogram** with **Node Age Bars (HPD)** already on,
+and — reading the dates' unit — draws the matching **time axis** on its own (a
+**Calendar** or **Geologic** axis; see *Time Trees & Chronograms* above). There is
+normally nothing to set by hand.
 
 The node-age overlay has two shapes (**Settings → Overlays → Data Overlays → Node
 age shape**): a flat **Bar** across the 95% HPD interval (the FigTree convention),

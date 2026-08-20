@@ -4579,6 +4579,28 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.setStroke(saved_stroke);
     }
 
+    /** Screen-only guidance (never drawn in exports -- it is UI help, not figure content): a dated tree carries a time
+     *  axis (Geologic / Calendar), but a time axis needs a PHYLOGRAM to draw. When the tree is shown as a CLADOGRAM the
+     *  axis silently steps aside; a faint one-line hint at the bottom of the view says why, and how to get it back. */
+    private void paintTimeAxisHint(final Graphics2D g, final boolean to_pdf, final boolean to_graphics_file) {
+        if (to_pdf || to_graphics_file || (_phylogeny == null) || (getControlPanel() == null)
+                || getControlPanel().isDrawPhylogram()) {
+            return;
+        }
+        final Options.TIME_AXIS_TYPE t = effectiveTimeAxisType();
+        if ((t != Options.TIME_AXIS_TYPE.GEOLOGIC) && (t != Options.TIME_AXIS_TYPE.CALENDAR)) {
+            return;
+        }
+        final java.awt.Rectangle vr = getVisibleRect();
+        final Font saved_font = g.getFont();
+        final Color saved_color = g.getColor();
+        g.setFont(saved_font.deriveFont(Font.ITALIC));
+        g.setColor(scaleInkColor(false, false));
+        g.drawString("Time axis hidden — display as a phylogram (P) to show it", vr.x + 8, (vr.y + vr.height) - 8);
+        g.setFont(saved_font);
+        g.setColor(saved_color);
+    }
+
     /**
      * A labeled distance axis with tick marks along the bottom (phylograms only): a horizontal line spanning the
      * tree's depth, a tick at each scale-distance interval, and a numeric label under each tick -- so branch lengths
@@ -11550,6 +11572,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             // unticked scale (never lift over a band that isn't there).
             final int bottom_reserve = scaleAxisBottomReserve();
             final boolean axis_shown_horizontal = bottom_reserve > 0;
+            paintTimeAxisHint(g, to_pdf, to_graphics_file); // a dated CLADOGRAM: say why the time axis isn't showing
             if (scale_shown) {
                 if (!(to_graphics_file || to_pdf)) {
                     paintScale(g,

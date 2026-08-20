@@ -1342,34 +1342,49 @@ public final class AptxUtil {
             if (AptxUtil.isHasAtLeastOneNodeWithDomainArchitecture(t)) {
                 cp.showDomainArchitecturesFitted();
             }
-            // A dated phylogram with node-age HPD intervals (e.g. BEAST / BEAST X / TreeAnnotator output): switch
-            // "Node Age Bars (HPD)" on so the intervals show right away. HPD bars is an Options toggle mirrored by a
-            // menu item, so set BOTH -- the Option drives the paint, and the checked menu item keeps the next
-            // updateOptions() from clearing it. Only turns it ON (like the domain auto-enable); harmless if a later
-            // undated tree has no dates to draw.
-            if (has_bl && AptxUtil.isHasAtLeastOneInternalNodeWithDateInterval(t) && (cp.getMainPanel() != null)) {
-                if (cp.getMainPanel().getOptions() != null) {
-                    cp.getMainPanel().getOptions().setShowHpdBars(true);
-                }
-                final MainFrame mf = cp.getMainPanel().getMainFrame();
-                if ((mf != null) && (mf._show_hpd_bars_cbmi != null)) {
-                    mf._show_hpd_bars_cbmi.setSelected(true);
-                }
-            }
-            // A dated phylogram with fossil TIP ranges (external nodes carrying a <date> min/max = FAD/LAD): switch
-            // "Fossil Range Bars" on so the stratigraphic ranges show right away. Same ON-only, set-both pattern as the
-            // HPD auto-enable above; harmless if a later tree has no tip ranges to draw.
-            if (has_bl && AptxUtil.isHasAtLeastOneExternalNodeWithDateInterval(t) && (cp.getMainPanel() != null)) {
-                if (cp.getMainPanel().getOptions() != null) {
-                    cp.getMainPanel().getOptions().setShowFossilRangeBars(true);
-                }
-                final MainFrame mf = cp.getMainPanel().getMainFrame();
-                if ((mf != null) && (mf._show_fossil_range_bars_cbmi != null)) {
-                    mf._show_fossil_range_bars_cbmi.setSelected(true);
-                }
-            }
+            // "Node Age Bars (HPD)" and "Fossil Range Bars" are data-driven GLOBAL toggles (Options + a menu item),
+            // so reconcile them to whether ANY currently-open tree carries the interval data -- a dated phylogram
+            // with node-age HPD intervals (BEAST / BEAST X / TreeAnnotator) enables the HPD bars, a tree with fossil
+            // TIP ranges (external <date> min/max = FAD/LAD) enables the fossil bars, and a session with no such tree
+            // clears them. This is BIDIRECTIONAL (unlike the old ON-only auto-enable, which left an undated tab
+            // showing the toggle checked) yet non-regressing: a still-open dated tree keeps the toggle on because it
+            // is counted here too. Recomputed on each load; the last tree in a batch sees all tabs, so the final
+            // state is authoritative. The paint path still gates each bar on a phylogram + branch lengths, so a
+            // counted-but-branchless tree draws nothing.
+            reconcileDataDrivenOverlayToggles(cp.getMainPanel());
             // Show only the Display Data checkboxes for which this tree actually has data.
             cp.updateDataCheckboxVisibility(true);
+        }
+    }
+
+    /** Set the two data-driven global overlay toggles (Node Age HPD bars, Fossil Range bars) to whether ANY open tree
+     *  carries the interval data they need -- so they enable for a dated / fossil tree and clear when none is open,
+     *  without a still-open dated tree losing its bars. A branchless tree is not counted (the bars need a phylogram to
+     *  draw, so counting it would only check a toggle that can't display anything). */
+    static void reconcileDataDrivenOverlayToggles(final MainPanel main_panel) {
+        if ((main_panel == null) || (main_panel.getOptions() == null)) {
+            return;
+        }
+        boolean any_hpd = false;
+        boolean any_fossil = false;
+        for (final TreePanel tp : main_panel.getTreePanels()) {
+            if ((tp == null) || (tp.getPhylogeny() == null)
+                    || !isHasAtLeastOneBranchLengthLargerThanZero(tp.getPhylogeny())) {
+                continue;
+            }
+            any_hpd |= isHasAtLeastOneInternalNodeWithDateInterval(tp.getPhylogeny());
+            any_fossil |= isHasAtLeastOneExternalNodeWithDateInterval(tp.getPhylogeny());
+        }
+        main_panel.getOptions().setShowHpdBars(any_hpd);
+        main_panel.getOptions().setShowFossilRangeBars(any_fossil);
+        final MainFrame mf = main_panel.getMainFrame();
+        if (mf != null) {
+            if (mf._show_hpd_bars_cbmi != null) {
+                mf._show_hpd_bars_cbmi.setSelected(any_hpd);
+            }
+            if (mf._show_fossil_range_bars_cbmi != null) {
+                mf._show_fossil_range_bars_cbmi.setSelected(any_fossil);
+            }
         }
     }
 
