@@ -154,6 +154,13 @@ public final class DemoTreesTest {
         ok &= hasAtLeastTips( "fossil-range-bars.xml", 5 );
         ok &= isDetectedTimeTree( "fossil-range-bars.xml", AptxUtil.TIME_TREE_KIND.DATED );
         ok &= hasExternalDateInterval( "fossil-range-bars.xml" );
+        // fossil-only geologic alignment: an all-extinct ammonite tree whose youngest tips die at the K-Pg (66 Ma),
+        // so NO tip reaches the present -- the geologic axis must align to the branches (maxDist < rootAge)
+        ok &= hasBranchLengths( "ammonite-time-tree.xml" );
+        ok &= hasAtLeastTips( "ammonite-time-tree.xml", 5 );
+        ok &= isDetectedTimeTree( "ammonite-time-tree.xml", AptxUtil.TIME_TREE_KIND.DATED );
+        ok &= hasExternalDateInterval( "ammonite-time-tree.xml" );
+        ok &= allExternalDatesAtLeast( "ammonite-time-tree.xml", 60.0 ); // fossil-only: every tip older than 60 Ma
         // deep-time geologic axis: a dated tree of life reaching into the Archean (oldest <date> > 2500 Ma), so the
         // geologic axis adapts to the coarse Eon/Era band pair -- the Precambrian is banded, not blank
         ok &= hasBranchLengths( "tree-of-life-deep-time.xml" );
@@ -384,6 +391,23 @@ public final class DemoTreesTest {
             return true;
         }
         return note( file_name + " must carry an EXTERNAL-tip <date> with a min/max interval (for fossil range bars)" );
+    }
+
+    /** Every external tip's {@code <date>} value is at least {@code min_ma} Ma -- i.e. the tree is FOSSIL-ONLY (no extant
+     *  tip at/near the present), the case the fossil-only geologic alignment targets. */
+    private static boolean allExternalDatesAtLeast( final String file_name, final double min_ma ) {
+        final Phylogeny phy = load( file_name );
+        if ( phy == null ) {
+            return false;
+        }
+        for( final java.util.Iterator<PhylogenyNode> it = phy.iteratorExternalForward(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if ( !n.getNodeData().isHasDate() || ( n.getNodeData().getDate().getValue() == null )
+                    || ( n.getNodeData().getDate().getValue().doubleValue() < min_ma ) ) {
+                return note( file_name + " must be fossil-only: every tip's <date> value >= " + min_ma + " Ma" );
+            }
+        }
+        return true;
     }
 
     /** The oldest node {@code <date>} value is at least {@code min_ma} Ma (so the geologic axis picks the deep-time

@@ -76,6 +76,7 @@ public final class DemoTreeGenerator {
         write( dir, "node-hpd-bars.xml", hpdBarsTree() );
         write( dir, "dinosaur-time-tree.xml", dinosaurTimeTree() );
         write( dir, "fossil-range-bars.xml", fossilRangeTree() );
+        write( dir, "ammonite-time-tree.xml", ammoniteTimeTree() );
         write( dir, "tree-of-life-deep-time.xml", deepTimeTree() );
         write( dir, "sars-cov-2-time-tree.xml", sarsCov2TimeTree() );
         write( dir, "zebra-stripes.xml", zebraStripesTree() );
@@ -717,6 +718,36 @@ public final class DemoTreeGenerator {
                                             + "Overlays > Time axis: Geologic to read the ranges against the coloured ICS "
                                             + "geologic axis; the extant Equus reaches 0 Ma so the axis reaches the "
                                             + "present. Schematic, not a rigorous phylogeny or literal ranges." );
+        phy.setDistanceUnit( "My" );
+        return phy;
+    }
+
+    /** A schematic, FOSSIL-ONLY ammonite tree: every tip is an extinct Mesozoic genus and the youngest tips die at the
+     *  end-Cretaceous (K-Pg, 66 Ma), so NO tip reaches the present (age 0). This exercises the fossil-only geologic-axis
+     *  alignment (maxDistanceToRoot < rootAge): the bands must line up with the branches over [66, 250] Ma rather than
+     *  wrongly pinning age 0 to the youngest tip. Each genus also carries a FAD/LAD range for the fossil range bars. */
+    private static Phylogeny ammoniteTimeTree() {
+        // fossilTip( name, placement age = LAD, FAD (oldest), LAD (youngest) ) -- all in Ma
+        final PhylogenyNode ceratites = fossilTip( "Ceratites", 235, 245, 235 );       // Middle Triassic
+        final PhylogenyNode psiloceras = fossilTip( "Psiloceras", 199, 201, 199 );     // earliest Jurassic
+        final PhylogenyNode perisphinctes = fossilTip( "Perisphinctes", 152, 163, 152 ); // Late Jurassic
+        final PhylogenyNode baculites = fossilTip( "Baculites", 66, 83, 66 );          // Late Cretaceous -> K-Pg
+        final PhylogenyNode scaphites = fossilTip( "Scaphites", 66, 90, 66 );          // Late Cretaceous -> K-Pg
+        final PhylogenyNode n4 = datedNode( "", 95, baculites, scaphites );
+        final PhylogenyNode n3 = datedNode( "", 170, perisphinctes, n4 );
+        final PhylogenyNode n2 = datedNode( "", 210, psiloceras, n3 );
+        final PhylogenyNode root = datedNode( "Ammonoidea", 250, ceratites, n2 );
+        setTimeBranchLengths( root, 250 );
+        final Phylogeny phy = tree( root, "Ammonite time tree (fossil-only, demo)",
+                                    "A schematic ammonite (Ammonoidea) tree (ages in Ma) in which EVERY genus is extinct "
+                                            + "-- the youngest tips (Baculites, Scaphites) die at the end-Cretaceous "
+                                            + "(K-Pg, 66 Ma), so NO tip reaches the present. Show it as a phylogram (P) "
+                                            + "and turn on Settings > Overlays > Time axis: Geologic to read the tree "
+                                            + "against the ICS intervals (Triassic / Jurassic / Cretaceous): the coloured "
+                                            + "bands line up with the branches over 250-66 Ma, and the youngest tips sit "
+                                            + "at the K-Pg boundary rather than at the present -- the fossil-only case. "
+                                            + "Each genus also carries a FAD/LAD range (Fossil Range Bars). Schematic, "
+                                            + "not a rigorous phylogeny or literal ranges." );
         phy.setDistanceUnit( "My" );
         return phy;
     }

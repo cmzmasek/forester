@@ -257,7 +257,14 @@ billions-of-years "tree of life" is fully banded (the Precambrian is never blank
 
 The tree is anchored in time by its **root age**: Archaeopteryx uses the oldest
 `<date>` value in the tree, or you can set it explicitly with **"Set root age…"**
-next to the Time Axis selector (most-recent tips are taken as the present, age 0).
+next to the Time Axis selector.
+
+The axis is aligned to the tree's **own branches**, so it works on a **fossil-only**
+clade — one with no living (age-0) tip. Each Ma spans exactly one branch-length
+unit, anchored at the root age, so the coloured bands line up with the branch
+nodes and the youngest tips sit at their true age (e.g. an all-extinct ammonite
+tree ends at the end-Cretaceous, 66 Ma, rather than being stretched to the
+present). A tree that *does* reach the present is the ordinary special case.
 
 Two optional refinements (both **off by default**, and — like the axis itself —
 per tree, saved with the tree) are available under **Settings → Overlays** when the

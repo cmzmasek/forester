@@ -30,6 +30,7 @@ import javax.swing.SwingUtilities;
 
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.phylogeny.Phylogeny;
+import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 
 /**
@@ -51,7 +52,88 @@ public final class GeologicAxisRenderTest {
         if ( GraphicsEnvironment.isHeadless() ) {
             return true;
         }
-        return axisRendersOk();
+        return axisRendersOk() && fossilOnlyAlignmentOk();
+    }
+
+    /** A FOSSIL-ONLY tree (no extant age-0 tip, so maxDistanceToRoot &lt; rootAge) must have its geologic axis aligned to
+     *  the BRANCHES: for a consistent time tree every node sits at its own age's axis position, i.e.
+     *  {@code node.getXcoord() == ageToX(nodeAge)}. The old tip_x-anchored mapping (age 0 pinned to the youngest tip)
+     *  violates this whenever maxDist &lt; rootAge; the branch-aligned mapping satisfies it. Dogfoods the ammonite demo. */
+    private static boolean fossilOnlyAlignmentOk() {
+        try {
+            final File file = new File( System.getProperty( "user.dir" ), "forester/demo/ammonite-time-tree.xml" );
+            if ( !file.exists() ) {
+                return fail( "demo tree missing: " + file.getAbsolutePath() );
+            }
+            final PhyloXmlParser parser = PhyloXmlParser.createPhyloXmlParser();
+            final Phylogeny phy = ParserBasedPhylogenyFactory.getInstance().create( file, parser )[ 0 ];
+            final Configuration conf = new Configuration();
+            final MainFrame[] mf = new MainFrame[ 1 ];
+            SwingUtilities.invokeAndWait(
+                    () -> mf[ 0 ] = MainFrameApplication.createInstance( new Phylogeny[] { phy }, conf, "geofossil" ) );
+            final boolean[] ok = { true };
+            SwingUtilities.invokeAndWait( () -> {
+                final MainFrame frame = mf[ 0 ];
+                try {
+                    final TreePanel tp = frame.getMainPanel().getCurrentTreePanel();
+                    final Options o = frame.getOptions();
+                    o.setGraphicsExportWhiteBackground( false );
+                    o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                    o.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
+                    tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
+                    tp.getControlPanel().setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM );
+                    tp.setTimeAxisType( Options.TIME_AXIS_TYPE.GEOLOGIC );
+                    final int w = 1000, h = 520;
+                    frame.showWhole();
+                    tp.setSize( w, h );
+                    tp.calcParametersForPainting( w, h );
+                    if ( !tp.geologicAxisApplies() ) {
+                        fail( ok, "the geologic axis must apply to the dated fossil-only ammonite phylogram" );
+                    }
+                    // paint once so the node x-coords are assigned by the SAME layout pass whose corr/origin the
+                    // alignment check reads (getXcoord is set during paint, not by calcParametersForPainting)
+                    AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
+                    // TEETH: the tree must genuinely be fossil-only (its youngest tip is the K-Pg at 66 Ma, well above 0),
+                    // so the broken tip_x-anchored mapping and the branch-aligned one differ -- else the check is vacuous
+                    final double youngest = tp.timeAxisYoungestAgeMaForTest();
+                    if ( youngest < 50.0 ) {
+                        fail( ok, "the ammonite demo must be fossil-only (youngest tip well above 0 Ma), youngest="
+                                + youngest );
+                    }
+                    // the alignment invariant: every dated node's drawn x equals the geologic axis x for its age
+                    double max_err = 0;
+                    int checked = 0;
+                    for ( final java.util.Iterator<PhylogenyNode> it = phy.iteratorPreorder(); it.hasNext(); ) {
+                        final PhylogenyNode n = it.next();
+                        if ( !n.getNodeData().isHasDate() || ( n.getNodeData().getDate().getValue() == null ) ) {
+                            continue;
+                        }
+                        final double age = n.getNodeData().getDate().getValue().doubleValue();
+                        final double err = Math.abs( n.getXcoord() - tp.geologicAgeToXForTest( age ) );
+                        max_err = Math.max( max_err, err );
+                        ++checked;
+                    }
+                    if ( checked < 5 ) {
+                        fail( ok, "expected to check the ammonite tree's dated nodes, only checked " + checked );
+                    }
+                    if ( max_err > 2.0 ) {
+                        fail( ok, "the geologic axis must align to the branches on a fossil-only tree: a node's drawn x "
+                                + "must equal ageToX(nodeAge) (max error " + max_err + " px)" );
+                    }
+                }
+                catch ( final Throwable t ) {
+                    fail( ok, "unexpected: " + t );
+                }
+                finally {
+                    ( (JFrame) frame ).dispose();
+                }
+            } );
+            return ok[ 0 ];
+        }
+        catch ( final Throwable e ) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     private static boolean axisRendersOk() {

@@ -4515,10 +4515,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return;
         }
         final float origin_x = _phylogeny.getRoot().getXcoord();
-        final double max_dist = getMaxDistanceToRoot();
-        final float tip_x = (float) (origin_x + (max_dist * corr));
-        // the grid-line x positions come from whichever time axis is active: the fine geologic band's boundaries, or
-        // the calendar year ticks. Skip the tips and the root edge.
+        // the grid-line x positions come from whichever time axis is active: the fine geologic band's boundaries
+        // (branch-aligned via ageToX, bounded by the youngest tip), or the calendar year ticks. Skip the tips/root edge.
         final java.util.List<Integer> xs = new java.util.ArrayList<>();
         if (geologicAxisApplies()) {
             final double root_age = timeAxisRootAgeMa();
@@ -4526,14 +4524,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 return;
             }
             final GeologicTimeScale.Rank fine = GeologicTimeScale.bandRanks(root_age)[1];
-            for (final GeologicTimeScale.Interval iv : GeologicTimeScale.overlapping(fine, 0, root_age)) {
+            final double young_bound = timeAxisYoungestAgeMa(); // >0 for a fossil-only tree: no grid lines past the tips
+            for (final GeologicTimeScale.Interval iv : GeologicTimeScale.overlapping(fine, young_bound, root_age)) {
                 final double b = Math.min(root_age, iv.oldMa());
-                if ((b > 0) && (b < root_age)) {
-                    xs.add((int) Math.round(ageToX(b, root_age, origin_x, tip_x)));
+                if ((b > young_bound) && (b < root_age)) {
+                    xs.add((int) Math.round(ageToX(b, root_age, origin_x, corr)));
                 }
             }
         }
         else if (calendarAxisApplies()) {
+            final double max_dist = getMaxDistanceToRoot();
+            final float tip_x = (float) (origin_x + (max_dist * corr));
             final double present = timeAxisPresentDate();
             if ((present <= 0) || (max_dist <= 0)) {
                 return;
@@ -4996,6 +4997,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.setFont(saved_font);
     }
 
+    /** age (Ma) -> radius (px) for the circular geologic axis, aligned to the TREE's OWN radial scale (radius per
+     *  distance/time unit == {@code radius / maxDistanceToRoot}): the root (oldest age = {@code root_age}) at the centre
+     *  (r=0), each Ma one distance unit outward, so a fossil-only tree's rings line up with the branch radii instead of
+     *  pinning age 0 to the outer tip ring. For a clock tree (maxDist == root_age) this equals the older
+     *  {@code (root_age-age)/root_age * radius} mapping. Callers are gated on {@link #geologicRingsApplyCircular()},
+     *  which guarantees maxDistanceToRoot &gt; 0. */
+    private int geologicRadiusPx(final double age, final double root_age, final int radius) {
+        return (int) Math.round(((root_age - age) / getMaxDistanceToRoot()) * radius);
+    }
+
     /** Concentric ICS geologic bands for a circular PHYLOGRAM: the radial axis IS time (radius = distance-from-root), so
      *  each geologic PERIOD fills a translucent coloured annulus from its old-boundary radius (inner) to its
      *  young-boundary radius (outer), drawn BEHIND the tree, with faint EPOCH boundary rings for the finer subdivision
@@ -5010,17 +5021,18 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (root_age <= 0) {
             return;
         }
+        final double young_bound = timeAxisYoungestAgeMa(); // >0 for a fossil-only tree: the outer ring is youngest, not 0
         final Color saved = g.getColor();
         final Stroke saved_stroke = g.getStroke();
         // the coarse+fine rank pair adapts to the tree's depth (Period/Epoch -> Era/Period -> Eon/Era); the coarse
         // rank fills the coloured annuli, the fine rank draws the boundary rings
         final GeologicTimeScale.Rank[] ranks = GeologicTimeScale.bandRanks(root_age);
-        // translucent coarse-rank annuli (age -> radius: age root_age at the centre, age 0 at the outer ring)
-        for (final GeologicTimeScale.Interval iv : GeologicTimeScale.overlapping(ranks[0], 0, root_age)) {
-            final double young = Math.max(0, iv.youngMa());
+        // translucent coarse-rank annuli (age -> radius: age root_age at the centre, the youngest tip at the outer ring)
+        for (final GeologicTimeScale.Interval iv : GeologicTimeScale.overlapping(ranks[0], young_bound, root_age)) {
+            final double young = Math.max(young_bound, iv.youngMa());
             final double old = Math.min(root_age, iv.oldMa());
-            final int r_outer = (int) Math.round(((root_age - young) / root_age) * radius); // younger -> larger radius
-            final int r_inner = (int) Math.round(((root_age - old) / root_age) * radius);
+            final int r_outer = geologicRadiusPx(young, root_age, radius); // younger -> larger radius
+            final int r_inner = geologicRadiusPx(old, root_age, radius);
             if ((r_outer - r_inner) <= 0) {
                 continue;
             }
@@ -5034,8 +5046,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (isTimeAxisGrid()) {
             g.setStroke(STROKE_05);
             g.setColor(scaleGridColor(to_pdf, to_graphics_file));
-            for (final GeologicTimeScale.Interval iv : GeologicTimeScale.overlapping(ranks[1], 0, root_age)) {
-                final int rr = (int) Math.round(((root_age - Math.max(0, iv.youngMa())) / root_age) * radius);
+            for (final GeologicTimeScale.Interval iv : GeologicTimeScale.overlapping(ranks[1], young_bound, root_age)) {
+                final int rr = geologicRadiusPx(Math.max(young_bound, iv.youngMa()), root_age, radius);
                 if ((rr > 0) && (rr < radius)) {
                     g.drawOval(cx - rr, cy - rr, 2 * rr, 2 * rr);
                 }
@@ -5063,15 +5075,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.setFont(getTreeFontSet().getSmallFont());
         final FontMetrics fm = getTreeFontSet().getFontMetricsSmall();
         final int line_h = fm.getHeight();
+        final double young_bound = timeAxisYoungestAgeMa(); // >0 for a fossil-only tree: no annuli past the tips
         // collect each coarse-rank band's label baseline y up the top spoke (at its annulus mid-radius), then draw
         // INNER->OUTER (ascending radius) greedily keeping a >=line_h gap -- order-independent of what overlapping() gives
         final java.util.List<GeologicTimeScale.Interval> periods = new java.util.ArrayList<>(
-                GeologicTimeScale.overlapping(GeologicTimeScale.bandRanks(root_age)[0], 0, root_age));
+                GeologicTimeScale.overlapping(GeologicTimeScale.bandRanks(root_age)[0], young_bound, root_age));
         periods.sort((x, y) -> Double.compare(x.youngMa(), y.youngMa())); // young first = outer first (larger radius)
         int last_label_y = Integer.MIN_VALUE / 2; // outer->inner, ly increases; keep a >=line_h gap (half-min: no overflow)
         for (final GeologicTimeScale.Interval iv : periods) {
-            final int r_outer = (int) Math.round(((root_age - Math.max(0, iv.youngMa())) / root_age) * radius);
-            final int r_inner = (int) Math.round(((root_age - Math.min(root_age, iv.oldMa())) / root_age) * radius);
+            final int r_outer = geologicRadiusPx(Math.max(young_bound, iv.youngMa()), root_age, radius);
+            final int r_inner = geologicRadiusPx(Math.min(root_age, iv.oldMa()), root_age, radius);
             if ((r_outer - r_inner) <= 0) {
                 continue;
             }
@@ -5126,18 +5139,19 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // skip the crowded outer region, but never go negative (on a tiny disc that would drop ALL ages, not just the
         // outer ones) -- then only the age-0 edge is excluded and the deep, well-spaced boundaries still show
         final int outer_cutoff = (radius > (2 * line_h)) ? (radius - (2 * line_h)) : radius;
+        final double young_bound = timeAxisYoungestAgeMa(); // >0 for a fossil-only tree: no boundaries past the tips
         final java.util.List<Double> ages = new java.util.ArrayList<>();
         for (final GeologicTimeScale.Interval iv : GeologicTimeScale.overlapping(GeologicTimeScale.bandRanks(root_age)[0],
-                0, root_age)) {
+                young_bound, root_age)) {
             final double b = iv.oldMa();
-            if ((b > 0) && (b < root_age)) {
+            if ((b > young_bound) && (b < root_age)) {
                 ages.add(b);
             }
         }
         ages.sort((a, c) -> Double.compare(a, c)); // ascending age = younger boundary first = larger radius (outer)
         int last_label_y = Integer.MIN_VALUE / 2;
         for (final double b : ages) {
-            final int rr = (int) Math.round(((root_age - b) / root_age) * radius);
+            final int rr = geologicRadiusPx(b, root_age, radius);
             if ((rr <= 0) || (rr >= outer_cutoff)) {
                 continue;
             }
@@ -5441,9 +5455,34 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return geologicAxisContentHeight() + GEOLOGIC_AXIS_EDGE_GAP;
     }
 
-    /** age (Ma) -> device x: the root (oldest age) sits at {@code origin_x}, the tips (age 0) at {@code tip_x}. */
-    private static double ageToX(final double age, final double root_age, final float origin_x, final float tip_x) {
-        return tip_x - ((age / root_age) * (tip_x - origin_x));
+    /** age (Ma) -> device x, aligned to the TREE's OWN branch scale: the root (oldest age = {@code root_age}) sits at
+     *  {@code origin_x}, and each Ma spans exactly one branch-length unit ({@code corr} px), so the geologic band cell
+     *  boundaries and the Ma ruler ticks line up with the branch nodes -- even when the tree has NO extant (age-0) tip.
+     *  x = origin_x + (root_age - age)*corr. For a clock tree whose deepest tip is the present, root_age ==
+     *  maxDistanceToRoot and this equals the older tip_x-anchored mapping; for a fossil-only tree (maxDist < root_age)
+     *  it no longer wrongly pins age 0 to the youngest tip, so the bands align to the branches. */
+    private static double ageToX(final double age, final double root_age, final float origin_x, final double corr) {
+        return origin_x + ((root_age - age) * corr);
+    }
+
+    /** The age (Ma) of the YOUNGEST drawn tip = {@code root_age - maxDistanceToRoot}: 0 for a clock tree with an extant
+     *  (present-day) tip, but &gt; 0 for a fossil-only tree whose most-recent taxon is still older than the present. The
+     *  geologic axis / ruler / rings are drawn over {@code [youngestAge, root_age]} (mapped to [tip edge, root]) so they
+     *  stay aligned to the branches and don't extend past the tips toward the present. */
+    private double timeAxisYoungestAgeMa() {
+        return Math.max(0, timeAxisRootAgeMa() - getMaxDistanceToRoot());
+    }
+
+    /** Test hook: the geologic axis's device x for a given age, using the current tree's root-age calibration and branch
+     *  scale. The alignment invariant is that a consistent time tree's node sits at {@code ageToX(nodeAge)} == its
+     *  drawn x; a fossil-only tree (maxDist &lt; rootAge) only satisfies it with the branch-aligned mapping. */
+    double geologicAgeToXForTest(final double age) {
+        return ageToX(age, timeAxisRootAgeMa(), _phylogeny.getRoot().getXcoord(), getXcorrectionFactor());
+    }
+
+    /** Test hook: {@link #timeAxisYoungestAgeMa()} (0 for a clock tree, &gt; 0 for a fossil-only tree). */
+    double timeAxisYoungestAgeMaForTest() {
+        return timeAxisYoungestAgeMa();
     }
 
     /** Draws the two-band colored geologic (ICS) time axis in the reserved bottom strip: the coarse rank over the fine
@@ -5457,7 +5496,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return;
         }
         final float origin_x = _phylogeny.getRoot().getXcoord();
-        final float tip_x = (float) (origin_x + (getMaxDistanceToRoot() * corr));
         final Rectangle vr = getVisibleRect();
         final int bottom = TreePanelUtil.scaleAxisFloatingBottom(to_pdf, to_graphics_file, graphics_file_y,
                 graphics_file_height, getHeight(), vr.y + vr.height);
@@ -5467,13 +5505,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final Color saved_color = g.getColor();
         // the coarse+fine rank pair adapts to the tree's depth (Period/Epoch -> Era/Period -> Eon/Era)
         final GeologicTimeScale.Rank[] ranks = GeologicTimeScale.bandRanks(root_age);
-        paintGeologicBand(g, ranks[0], root_age, origin_x, tip_x, top_y, row_h, to_pdf, to_graphics_file);
-        paintGeologicBand(g, ranks[1], root_age, origin_x, tip_x, top_y + row_h, row_h, to_pdf, to_graphics_file);
+        paintGeologicBand(g, ranks[0], root_age, origin_x, corr, top_y, row_h, to_pdf, to_graphics_file);
+        paintGeologicBand(g, ranks[1], root_age, origin_x, corr, top_y + row_h, row_h, to_pdf, to_graphics_file);
         // optional Ma age labels at the coarse-band boundaries, in the reserved row between the band and the edge
-        paintGeologicBoundaryAges(g, ranks[0], root_age, origin_x, tip_x, top_y + geologicAxisBandHeight(), to_pdf,
+        paintGeologicBoundaryAges(g, ranks[0], root_age, origin_x, corr, top_y + geologicAxisBandHeight(), to_pdf,
                 to_graphics_file);
         // the numeric "Ma before present" ruler at the outer edge (the axis itself) -- ages increase toward the root
-        paintGeologicAgeRuler(g, root_age, origin_x, tip_x,
+        paintGeologicAgeRuler(g, root_age, origin_x, corr,
                 top_y + geologicAxisBandHeight() + geologicAgeRowHeight(), to_pdf, to_graphics_file);
         g.setFont(saved_font);
         g.setColor(saved_color);
@@ -5491,7 +5529,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return;
         }
         final float origin_x = _phylogeny.getRoot().getXcoord();
-        final float tip_x = (float) (origin_x + (getMaxDistanceToRoot() * corr));
         final int row_h = geologicAxisRowHeight();
         // the reserved side band, just past the last tip; band ends one GEOLOGIC_AXIS_EDGE_GAP short of the breadth edge.
         // On screen it FLOATS to the viewport breadth edge (like the numeric vertical scale ruler) so it stays visible
@@ -5501,13 +5538,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final Font saved_font = g.getFont();
         final Color saved_color = g.getColor();
         final GeologicTimeScale.Rank[] ranks = GeologicTimeScale.bandRanks(root_age); // Period/Epoch -> Era/Period -> Eon/Era
-        paintGeologicBand(g, ranks[0], root_age, origin_x, tip_x, band_top, row_h, to_pdf, to_graphics_file);
-        paintGeologicBand(g, ranks[1], root_age, origin_x, tip_x, band_top + row_h, row_h, to_pdf, to_graphics_file);
+        paintGeologicBand(g, ranks[0], root_age, origin_x, corr, band_top, row_h, to_pdf, to_graphics_file);
+        paintGeologicBand(g, ranks[1], root_age, origin_x, corr, band_top + row_h, row_h, to_pdf, to_graphics_file);
         // optional Ma age labels at the coarse-band boundaries; ride R (logical coords) like the band cell labels
-        paintGeologicBoundaryAges(g, ranks[0], root_age, origin_x, tip_x, band_top + geologicAxisBandHeight(), to_pdf,
+        paintGeologicBoundaryAges(g, ranks[0], root_age, origin_x, corr, band_top + geologicAxisBandHeight(), to_pdf,
                 to_graphics_file);
         // the numeric "Ma before present" ruler at the outer edge; rides R (logical coords) like the band labels
-        paintGeologicAgeRuler(g, root_age, origin_x, tip_x,
+        paintGeologicAgeRuler(g, root_age, origin_x, corr,
                 band_top + geologicAxisBandHeight() + geologicAgeRowHeight(), to_pdf, to_graphics_file);
         g.setFont(saved_font);
         g.setColor(saved_color);
@@ -5517,7 +5554,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  Jurassic), on a baseline just past the band toward the edge, decimated so they never overlap. Reused by the
      *  horizontal axis (device coords) and the vertical axis (logical coords, riding R into rotated labels). */
     private void paintGeologicBoundaryAges(final Graphics2D g, final GeologicTimeScale.Rank coarse, final double root_age,
-                                           final float origin_x, final float tip_x, final int band_bottom_y,
+                                           final float origin_x, final double corr, final int band_bottom_y,
                                            final boolean to_pdf, final boolean to_graphics_file) {
         if (!isTimeAxisAges()) {
             return;
@@ -5526,13 +5563,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final FontMetrics fm = g.getFontMetrics();
         g.setColor(scaleInkColor(to_pdf, to_graphics_file));
         final int baseline_y = band_bottom_y + fm.getAscent() + 1;
+        final double young_bound = timeAxisYoungestAgeMa(); // >0 for a fossil-only tree: no boundaries past the tips
         // each coarse interval's OLDER edge is a boundary (its younger edge is the older edge of the next interval);
         // collect the in-range boundaries as (x, age), then place left->right with a min-gap decimation
         final java.util.List<double[]> pts = new java.util.ArrayList<>();
-        for (final GeologicTimeScale.Interval iv : GeologicTimeScale.overlapping(coarse, 0, root_age)) {
+        for (final GeologicTimeScale.Interval iv : GeologicTimeScale.overlapping(coarse, young_bound, root_age)) {
             final double b = iv.oldMa();
-            if ((b > 0) && (b < root_age)) {
-                pts.add(new double[] { ageToX(b, root_age, origin_x, tip_x), b });
+            if ((b > young_bound) && (b < root_age)) {
+                pts.add(new double[] { ageToX(b, root_age, origin_x, corr), b });
             }
         }
         pts.sort((a, c) -> Double.compare(a[0], c[0]));
@@ -5556,7 +5594,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  FigTree reverse-axis footgun). Reused by the horizontal axis (device coords) and the vertical axis (logical
      *  coords, riding R into a rotated ruler), exactly like {@link #paintGeologicBoundaryAges}. */
     private void paintGeologicAgeRuler(final Graphics2D g, final double root_age, final float origin_x,
-                                       final float tip_x, final int ruler_y, final boolean to_pdf,
+                                       final double corr, final int ruler_y, final boolean to_pdf,
                                        final boolean to_graphics_file) {
         final double[] ticks = TreePanelUtil.maAxisTickValues(root_age);
         if (ticks.length == 0) {
@@ -5567,27 +5605,45 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.setColor(scaleInkColor(to_pdf, to_graphics_file));
         final Stroke saved_stroke = g.getStroke();
         g.setStroke(STROKE_1);
+        final double young_bound = timeAxisYoungestAgeMa(); // >0 for a fossil-only tree: the tip end is youngest, not 0
+        // the tip end of the axis line: youngestAge maps here (== origin_x + maxDist*corr); for a clock tree that is age 0
+        final int tip_x = (int) Math.round(ageToX(young_bound, root_age, origin_x, corr));
         final int baseline_y = ruler_y + SCALE_AXIS_TICK_LEN + fm.getAscent() + 1;
-        // the axis line from the root (oldest age, origin_x) to the deepest tip (age 0, tip_x)
-        drawLine((int) Math.round(origin_x), ruler_y, (int) Math.round(tip_x), ruler_y, g);
-        // ticks run right (age 0) to left (root age); collect (x, age) then place LEFT->RIGHT with a min-gap decimation
+        // the axis line from the root (oldest age, origin_x) to the deepest tip (youngest age, tip_x)
+        drawLine((int) Math.round(origin_x), ruler_y, tip_x, ruler_y, g);
+        // ticks run right (youngest) to left (root age); collect (x, age) then place LEFT->RIGHT with a min-gap decimation.
+        // a fossil-only tree's youngest tip is > 0 Ma, so skip ticks younger than it (they would fall past the tip end)
         final java.util.List<double[]> pts = new java.util.ArrayList<>();
         for (final double age : ticks) {
-            pts.add(new double[] { ageToX(age, root_age, origin_x, tip_x), age });
+            if (age < (young_bound - 1e-9)) {
+                continue;
+            }
+            pts.add(new double[] { ageToX(age, root_age, origin_x, corr), age });
         }
         pts.sort((a, c) -> Double.compare(a[0], c[0]));
+        // a fossil-only tree's tip end sits at the youngest age (e.g. the K-Pg 66 Ma), which is usually not a round
+        // tick -- so reserve its label span at the tip end and draw it explicitly, the feature's headline value. For a
+        // clock tree (young_bound == 0) age 0 IS a round tick, so this block is skipped and the ruler is unchanged.
+        final boolean label_tip = young_bound > 1e-9;
+        final int tip_half = label_tip ? (fm.stringWidth(TreePanelUtil.formatCompactNumber(young_bound)) / 2) : 0;
+        final int tip_reserve_left = label_tip ? ((tip_x - tip_half) - SCALE_AXIS_LABEL_GAP) : Integer.MAX_VALUE;
         int last_right = Integer.MIN_VALUE;
         for (final double[] pt : pts) {
             final int x = (int) Math.round(pt[0]);
             drawLine(x, ruler_y, x, ruler_y + SCALE_AXIS_TICK_LEN, g); // the tick mark (always drawn)
             final String label = TreePanelUtil.formatCompactNumber(pt[1]);
             final int half = fm.stringWidth(label) / 2;
-            if ((x - half) >= (last_right + SCALE_AXIS_LABEL_GAP)) {
+            if (((x - half) >= (last_right + SCALE_AXIS_LABEL_GAP)) && ((x + half) <= tip_reserve_left)) {
                 g.drawString(label, x - half, baseline_y);
                 last_right = x + half;
             }
         }
-        // the unit "Ma" just past the age-0 (tip) end, if it clears the last drawn tick label
+        if (label_tip) { // the youngest-tip age at the tip end, always labelled (the round ticks reserved space for it)
+            drawLine(tip_x, ruler_y, tip_x, ruler_y + SCALE_AXIS_TICK_LEN, g);
+            g.drawString(TreePanelUtil.formatCompactNumber(young_bound), tip_x - tip_half, baseline_y);
+            last_right = tip_x + tip_half;
+        }
+        // the unit "Ma" just past the tip end, if it clears the last drawn tick label
         final int unit_x = last_right + SCALE_AXIS_UNIT_GAP;
         if (unit_x >= (last_right + SCALE_AXIS_LABEL_GAP)) {
             g.drawString("Ma", unit_x, baseline_y);
@@ -5622,16 +5678,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     private void paintGeologicBand(final Graphics2D g, final GeologicTimeScale.Rank rank, final double root_age,
-                                   final float origin_x, final float tip_x, final int y, final int h,
+                                   final float origin_x, final double corr, final int y, final int h,
                                    final boolean to_pdf, final boolean to_graphics_file) {
         g.setFont(getTreeFontSet().getSmallFont());
         final FontMetrics fm = g.getFontMetrics();
         final Color ink = scaleInkColor(to_pdf, to_graphics_file);
-        for (final GeologicTimeScale.Interval iv : GeologicTimeScale.overlapping(rank, 0, root_age)) {
-            final double young = Math.max(0, iv.youngMa());
+        final double young_bound = timeAxisYoungestAgeMa(); // >0 for a fossil-only tree: don't draw past the tips
+        for (final GeologicTimeScale.Interval iv : GeologicTimeScale.overlapping(rank, young_bound, root_age)) {
+            final double young = Math.max(young_bound, iv.youngMa());
             final double old = Math.min(root_age, iv.oldMa());
-            final int x_young = (int) Math.round(ageToX(young, root_age, origin_x, tip_x));
-            final int x_old = (int) Math.round(ageToX(old, root_age, origin_x, tip_x));
+            final int x_young = (int) Math.round(ageToX(young, root_age, origin_x, corr));
+            final int x_old = (int) Math.round(ageToX(old, root_age, origin_x, corr));
             final int left = Math.min(x_old, x_young);
             final int w = Math.abs(x_young - x_old);
             if (w <= 0) {
