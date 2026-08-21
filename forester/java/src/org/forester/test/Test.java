@@ -987,6 +987,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Break long branches (render): ");
+        if (org.forester.archaeopteryx.BreakLongBranchRenderTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Domain architectures vertical (render): ");
         if (org.forester.archaeopteryx.DomainArchitectureVerticalRenderTest.test()) {
             System.out.println("OK.");

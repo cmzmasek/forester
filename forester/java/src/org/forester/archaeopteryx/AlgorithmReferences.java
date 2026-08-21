@@ -110,6 +110,18 @@ final class AlgorithmReferences {
                         + "Baele G, Ayres DL, Drummond AJ, Rambaut A (2018): \"Bayesian phylogenetic and phylodynamic data "
                         + "integration using BEAST 1.10\", Virus Evolution 4(1):vey016. The node-bars visualisation "
                         + "convention is that of FigTree (A. Rambaut, http://tree.bio.ed.ac.uk/software/figtree/)." ) );
+        refs.add( new Reference( "Broken / truncated long branches (Settings → Layout → Break Long Branches)",
+                "A DISPLAY-ONLY option for phylograms in which one branch is so much longer than the rest (a distant "
+                        + "outgroup, a fast-evolving lineage) that it squashes the informative part of the tree to an "
+                        + "unreadable sliver. Such a branch is drawn shortened (capped) and marked with an axis-break "
+                        + "glyph -- the tree analogue of a broken/scale-break axis in a chart -- and the horizontal (depth) "
+                        + "scale is re-derived from the capped tree height so the remaining branches reclaim the freed "
+                        + "width. The underlying data is never altered: the true branch length is still shown as its "
+                        + "numeric label. A branch is treated as \"long\" when its length exceeds a fixed multiple (8x) of "
+                        + "the MEDIAN of the tree's strictly-positive branch lengths -- a robust threshold, unaffected by "
+                        + "the single outlier being detected or by the many zero-length branches of a polytomy-heavy tree. "
+                        + "This is a graphical convention (as offered by interactive viewers such as iTOL's \"cut long "
+                        + "branches\"), not an inference algorithm; it changes only how the tree is drawn." ) );
         refs.add( new Reference( "Auspice / Nextstrain JSON import (File → Read Tree from File → .json)",
                 "Reads an Auspice / Nextstrain v2 dataset (dataset.json) -- the interchange format for dated, "
                         + "annotated pathogen phylogenies -- into Archaeopteryx's native model: node dates (num_date) and "

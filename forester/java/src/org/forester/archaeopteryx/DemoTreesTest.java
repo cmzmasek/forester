@@ -71,6 +71,12 @@ public final class DemoTreesTest {
         ok &= colorizesOfflineInto( "colorize-by-rank.xml", "order", 3 );
         // scale axis: a phylogram with real branch lengths (so the labeled distance axis has ticks)
         ok &= hasBranchLengths( "scale-axis.xml" );
+        // break long branches: a phylogram with branch lengths AND a genuine outlier branch (> the auto cap), so the
+        // "Break Long Branches" option actually has something to break, plus internal bootstrap support (so the demo
+        // shows the support values stay clear of the break mark)
+        ok &= hasBranchLengths( "long-branch-break.xml" );
+        ok &= hasOutlierBranch( "long-branch-break.xml" );
+        ok &= hasInternalConfidence( "long-branch-break.xml" );
         // node age bars: internal nodes carry a phyloXML <date> with a min/max interval + branch lengths (dated tree)
         ok &= hasBranchLengths( "node-hpd-bars.xml" );
         ok &= hasInternalDateInterval( "node-hpd-bars.xml" );
@@ -389,6 +395,26 @@ public final class DemoTreesTest {
             return note( file_name + " must have at least " + min_tips + " tips (for meaningful zebra row bands)" );
         }
         return true;
+    }
+
+    /** The tree has a genuine outlier branch: at least one branch exceeds the auto break cap
+     *  ({@code LONG_BRANCH_BREAK_MULTIPLIER} * median positive branch length). Delegates to the PRODUCTION helpers so
+     *  the demo guard tracks the shipping threshold. */
+    private static boolean hasOutlierBranch( final String file_name ) {
+        final Phylogeny phy = load( file_name );
+        if ( phy == null ) {
+            return false;
+        }
+        final double cap = TreePanelUtil.longBranchBreakCap( phy, TreePanel.LONG_BRANCH_BREAK_MULTIPLIER );
+        if ( cap <= 0 ) {
+            return note( file_name + " must have positive branch lengths (a break cap)" );
+        }
+        for( final java.util.Iterator<PhylogenyNode> it = phy.iteratorPreorder(); it.hasNext(); ) {
+            if ( it.next().getDistanceToParent() > cap ) {
+                return true;
+            }
+        }
+        return note( file_name + " must carry an outlier branch longer than the auto break cap " + cap );
     }
 
     private static boolean hasInternalDateInterval( final String file_name ) {

@@ -242,6 +242,20 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             0f);
     // Neutral guide color for the lined-up-data connector (see connectorColor()/drawConnection).
     private static final Color CONNECTOR_GUIDE_COLOR = new Color(200, 200, 200);
+    // "Break Long Branches": a branch longer than this multiple of the median (strictly-positive) branch length is
+    // drawn capped, with an axis-break glyph. 8x is conservative -- a clock-like / well-behaved tree has no branch
+    // that long, so it shows no breaks; only a genuine outlier (an outgroup, a fast lineage) is truncated.
+    final static double LONG_BRANCH_BREAK_MULTIPLIER = 8.0;
+    // Test seam: set false to render the CAPPED layout WITHOUT the break glyph, so a test can isolate the glyph as the
+    // pixel difference against the same layout (production leaves it true; see BreakLongBranchRenderTest).
+    static boolean PAINT_BREAK_GLYPH = true;
+    // Break-glyph geometry (tree-coordinate units, so it scales with zoom like the node/support marks).
+    private static final float BRANCH_BREAK_GLYPH_HALF_HEIGHT = 5.0f;
+    private static final float BRANCH_BREAK_GLYPH_SLANT = 2.0f;
+    private static final float BRANCH_BREAK_GLYPH_GAP = 3.0f;
+    // Position of the break glyph along the branch (0 = parent end, 1 = node end). Off the midpoint so it clears the
+    // support/branch-length values, which are centered on the branch midpoint (both are, in a vertical orientation).
+    private static final float BRANCH_BREAK_GLYPH_FRACTION = 0.72f;
     // How far the (faint) scale-grid color is blended from the background toward the branch-length color.
     private static final double SCALE_GRID_BLEND = 0.18;
     private static final int    GEOLOGIC_RING_ALPHA = 70; // translucency of the circular geologic-band annuli
@@ -399,6 +413,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // Set transiently by AptxUtil around a PNG export so paintPhylogeny leaves the background unfilled
     // (transparent). Off for screen and every other export format.
     private boolean _export_transparent_background = false;
+    // "Break Long Branches": the model-length cap, cached by tree IDENTITY (like maxNodeDateValue) -- it depends only
+    // on the tree's branch-length distribution. <=0 = no positive branch length (capping inactive).
+    private Phylogeny _break_cap_for = null;
+    private double _break_cap = 0;
+    private double _break_capped_height = 0;
+    // the capped height depends on the display-collapse state too (a collapsed clade is measured only to its root),
+    // which changes WITHOUT replacing _phylogeny -- so the cache is also keyed by the collapsed-tip-set size
+    private int _break_capped_height_collapse_sig = -1;
     // Cache for the italic-derived scientific-name font: deriveFont() allocates, and taxonomyLabel runs
     // per node per repaint, so re-derive only when the base font actually changes (see italicOf()).
     private Font _italic_base_font;
@@ -869,10 +891,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      */
     final private float calculateBranchLengthToParent(final PhylogenyNode node, final float factor) {
         if (getControlPanel().isDrawPhylogram()) {
-            if (node.getDistanceToParent() < 0.0) {
+            double dtp = node.getDistanceToParent();
+            if (dtp < 0.0) {
                 return 0.0f;
             }
-            return (float) (getXcorrectionFactor() * node.getDistanceToParent());
+            if (breakLongBranchesActive() && (dtp > breakLongBranchCap())) {
+                dtp = breakLongBranchCap(); // "Break Long Branches": draw an outlier capped (glyph in paintBranchRectangular)
+            }
+            return (float) (getXcorrectionFactor() * dtp);
         } else {
             if ((factor == 0) || isNonLinedUpCladogram()) {
                 return getXdistance();
@@ -883,16 +909,115 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     final private float calculateOvBranchLengthToParent(final PhylogenyNode node, final int factor) {
         if (getControlPanel().isDrawPhylogram()) {
-            if (node.getDistanceToParent() < 0.0) {
+            double dtp = node.getDistanceToParent();
+            if (dtp < 0.0) {
                 return 0.0f;
             }
-            return (float) (getOvXcorrectionFactor() * node.getDistanceToParent());
+            if (breakLongBranchesActive() && (dtp > breakLongBranchCap())) {
+                dtp = breakLongBranchCap(); // keep the overview thumbnail consistent with the capped main view
+            }
+            return (float) (getOvXcorrectionFactor() * dtp);
         } else {
             if ((factor == 0) || isNonLinedUpCladogram()) {
                 return getOvXDistance();
             }
             return getOvXDistance() * factor;
         }
+    }
+
+    final boolean isBreakLongBranches() {
+        return getOptions().isBreakLongBranches();
+    }
+
+    /** Compute + cache the break cap AND the resulting capped tree height, by tree identity (both depend only on the
+     *  tree's branch-length distribution). NOTE: keyed by tree IDENTITY, so an in-place branch-length edit (NodeEditPanel,
+     *  which mutates _phylogeny without replacing it) leaves this stale until the tree object is swapped (nav / undo /
+     *  paste) -- the same accepted cache-invalidation class as {@link #maxNodeDateValue()} and the color-by caches. */
+    private void ensureBreakCap() {
+        final int collapse_sig = _collapsed_external_nodeid_set.size();
+        if ((_break_cap_for != _phylogeny) || (_break_capped_height_collapse_sig != collapse_sig)) {
+            _break_cap = TreePanelUtil.longBranchBreakCap(_phylogeny, LONG_BRANCH_BREAK_MULTIPLIER);
+            // collapse-aware, matching the collapse-aware calculateHeight the non-break depth scale uses
+            _break_capped_height = (_break_cap > 0) ? TreePanelUtil.cappedTreeHeight(_phylogeny, _break_cap,
+                    !_options.isCollapsedWithAverageHeigh()) : 0;
+            _break_cap_for = _phylogeny;
+            _break_capped_height_collapse_sig = collapse_sig;
+        }
+    }
+
+    /** The model-length cap above which a branch is drawn broken. <=0 when the tree has no positive branch length. */
+    final double breakLongBranchCap() {
+        ensureBreakCap();
+        return _break_cap;
+    }
+
+    /** The deepest root-to-tip path length after capping (the drawn depth extent when capping is active). */
+    private double breakCappedHeight() {
+        ensureBreakCap();
+        return _break_capped_height;
+    }
+
+    /** The max distance from the root that is actually DRAWN: the capped tree height while Break Long Branches is
+     *  active, else the true {@link #getMaxDistanceToRoot()}. Anchors the aligned tip column / domain lineup to the
+     *  drawn tips instead of off-canvas at the uncapped outlier distance -- so "A" (aligned phylogram) is capped too. */
+    private double displayedMaxDistanceToRoot() {
+        return breakLongBranchesActive() ? breakCappedHeight() : getMaxDistanceToRoot();
+    }
+
+    /** The tree HEIGHT used for the DRAWN depth extent (preferred size / overview): the capped height while Break Long
+     *  Branches is active -- matching the corr computed in calcParametersForPainting -- else calculateHeight. Without
+     *  this the extent would be corr * the UNCAPPED height, ballooning the preferred size (a capped internal branch
+     *  makes corr large while the uncapped height stays huge -> a hugely oversized scroll extent -> clipping). */
+    private double displayedTreeHeight() {
+        return breakLongBranchesActive() ? breakCappedHeight()
+                : getPhylogeny().calculateHeight(!_options.isCollapsedWithAverageHeigh());
+    }
+
+    /** Whether the "Break Long Branches" layout COULD apply here, independent of the option being on: a rectangular-
+     *  family phylogram (UNALIGNED "P" or ALIGNED "A") with branch lengths. The aligned tip column / domain lineup are
+     *  anchored to the capped extent via {@link #displayedMaxDistanceToRoot()}, so aligned caps too; the radial layouts
+     *  derive radius from the distance directly (not corr), so they are not capped in v1. Drives the re-fit on toggle
+     *  (ON or OFF) so the depth scale is recomputed either way. */
+    final boolean breakLongBranchesRelevantToLayout() {
+        return (getControlPanel() != null) && getControlPanel().isDrawPhylogram() && !isRadialLayout()
+                && isPhyHasBranchLengths();
+    }
+
+    /** Whether long branches are actively being capped in the current view: the option is on AND the layout is one
+     *  that caps AND there is a positive branch length to reference. Gates the capping in calculateBranchLengthToParent
+     *  + the depth scale, the break glyph, and the suppression of the numeric distance scale (a broken branch is not to
+     *  scale, so a distance ruler/grid over it would be misleading). */
+    final boolean breakLongBranchesActive() {
+        return isBreakLongBranches() && breakLongBranchesRelevantToLayout() && (breakLongBranchCap() > 0);
+    }
+
+    /** Draw an axis-break glyph ("//" with a small gap in the branch) centred at (mx, my) on a capped branch. */
+    private void paintBranchBreakGlyph(final Graphics2D g,
+                                       final float mx,
+                                       final float my,
+                                       final boolean to_graphics_file) {
+        if (!PAINT_BREAK_GLYPH) {
+            return;
+        }
+        final Color ink = g.getColor();
+        final Stroke saved_stroke = g.getStroke();
+        final float h = BRANCH_BREAK_GLYPH_HALF_HEIGHT;
+        final float run = BRANCH_BREAK_GLYPH_SLANT;
+        final float gap = BRANCH_BREAK_GLYPH_GAP;
+        // erase a short slice of the branch behind the glyph so it reads as a real break -- but NOT on a transparent
+        // export, where a background-coloured cover would paint a solid blob onto the intended cut-out.
+        if (!(to_graphics_file && _export_transparent_background)) {
+            g.setColor(getTreeColorSet().getBackgroundColor());
+            g.setStroke(new BasicStroke(3.0f));
+            g.draw(new Line2D.Float(mx - gap - run, my, mx + gap + run, my));
+        }
+        // two parallel "/" strokes in the branch ink (bottom-left to top-right; screen y grows downward)
+        g.setColor(ink);
+        g.setStroke(new BasicStroke(1.4f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        g.draw(new Line2D.Float(mx - gap - run, my + h, mx - gap + run, my - h));
+        g.draw(new Line2D.Float(mx + gap - run, my + h, mx + gap + run, my - h));
+        g.setColor(ink);
+        g.setStroke(saved_stroke);
     }
 
     final private void cannotOpenBrowserWarningMessage(final String type_type) {
@@ -2319,6 +2444,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         assignGraphicsForBranchWithColorForParentBranch(node, false, g, to_pdf, to_graphics_file);
         if (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.TRIANGULAR) {
             drawLine(x1, y1, x2, y2, g);
+            // "Break Long Branches": a capped triangular chord gets the break glyph at its midpoint too, so the branch
+            // is never silently shortened without a marker.
+            if (breakLongBranchesActive() && (node.getDistanceToParent() > breakLongBranchCap())) {
+                paintBranchBreakGlyph(g, x1 + ((x2 - x1) * BRANCH_BREAK_GLYPH_FRACTION),
+                        y1 + ((y2 - y1) * BRANCH_BREAK_GLYPH_FRACTION), to_graphics_file);
+            }
         } else {
             final float x2a = x2;
             final float x1a = x1;
@@ -2395,6 +2526,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 } else {
                     drawRectFilled(x1a, y2 - (w / 2), x2a - x1a, w, g);
                 }
+            }
+            // "Break Long Branches": mark a capped branch with an axis-break glyph across the middle of its horizontal
+            // segment (the segment is drawn shortened; the true length is still shown by the branch-length label).
+            if (breakLongBranchesActive() && (node.getDistanceToParent() > breakLongBranchCap())) {
+                paintBranchBreakGlyph(g, x1a + ((x2a - x1a) * BRANCH_BREAK_GLYPH_FRACTION), y2, to_graphics_file);
             }
             if ((getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.ROUNDED)) {
                 if (x1_r > x2a) {
@@ -3001,7 +3137,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final int h = (y / 2) < default_height ? ForesterUtil.roundToInt(y * 2) : default_height;
             rs.setRenderingHeight(h > 1 ? h : 1);
             if (getControlPanel().isDrawPhylogram()) {
-                rs.render((float) ((getMaxDistanceToRoot() * getXcorrectionFactor()) + _length_of_longest_text),
+                rs.render((float) ((displayedMaxDistanceToRoot() * getXcorrectionFactor()) + _length_of_longest_text),
                         node.getYcoord() - (h / 2.0f),
                         g,
                         this,
@@ -3409,7 +3545,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             pos_x = labelSegmentStartX(annotationColumnsEndX(), half_box_size, x);
         } else if ((getControlPanel().getTreeDisplayType() == Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM)
                 && (node.isExternal() || node.isCollapse())) {
-            pos_x = labelSegmentStartX((float) ((getMaxDistanceToRoot() * getXcorrectionFactor()) + TreePanel.MOVE
+            pos_x = labelSegmentStartX((float) ((displayedMaxDistanceToRoot() * getXcorrectionFactor()) + TreePanel.MOVE
                     + getXdistance()), half_box_size, x);
         } else {
             pos_x = labelSegmentStartX(node.getXcoord(), half_box_size, x);
@@ -4233,7 +4369,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 if (getControlPanel().isDrawPhylogram()) {
                     if (getOptions().isLineUpRendarableNodeData()) {
                         if (getOptions().isRightLineUpDomains()) {
-                            rds.render((float) ((getMaxDistanceToRoot() * getXcorrectionFactor())
+                            rds.render((float) ((displayedMaxDistanceToRoot() * getXcorrectionFactor())
                                             + _length_of_longest_text + _phylogeny.getRoot().getXcoord()
                                             + ((_longest_domain - rds.getTotalLength()) * rds.getRenderingFactorWidth())),
                                     node.getYcoord() - (h / 2.0f),
@@ -4241,7 +4377,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                     this,
                                     to_pdf);
                         } else {
-                            rds.render((float) ((getMaxDistanceToRoot() * getXcorrectionFactor())
+                            rds.render((float) ((displayedMaxDistanceToRoot() * getXcorrectionFactor())
                                             + _length_of_longest_text + _phylogeny.getRoot().getXcoord()),
                                     node.getYcoord() - (h / 2.0f),
                                     g,
@@ -4441,7 +4577,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return;
         }
         x1 += MOVE;
-        final double x2 = x1 + (getScaleDistance() * getXcorrectionFactor());
+        final double x2 = x1 + (displayScaleDistance() * getXcorrectionFactor());
         y1 -= 12;
         final int y2 = y1 - 8;
         final int y3 = y1 - 4;
@@ -4452,8 +4588,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         drawLine(x1, y1, x1, y2, g);
         drawLine(x2, y1, x2, y2, g);
         drawLine(x1, y3, x2, y3, g);
-        if (getScaleLabel() != null) {
-            g.drawString(getScaleLabel(), (x1 + 2), y3 - 2);
+        if (displayScaleLabel() != null) {
+            g.drawString(displayScaleLabel(), (x1 + 2), y3 - 2);
         }
         g.setStroke(s);
     }
@@ -4465,7 +4601,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                           final boolean to_graphics_file) {
         x1 += MOVE;
         final int y_bottom = y1 - 12;
-        final int y_top = (int) Math.round(y_bottom - (getScaleDistance() * getXcorrectionFactor()));
+        final int y_top = (int) Math.round(y_bottom - (displayScaleDistance() * getXcorrectionFactor()));
         final int x_tick = x1 + 8;
         final int x_bar = x1 + 4;
         g.setFont(getTreeFontSet().getSmallFont());
@@ -4475,8 +4611,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         drawLine(x1, y_bottom, x_tick, y_bottom, g);
         drawLine(x1, y_top, x_tick, y_top, g);
         drawLine(x_bar, y_bottom, x_bar, y_top, g);
-        if (getScaleLabel() != null) {
-            g.drawString(getScaleLabel(), x_tick + 3, (y_bottom + y_top) / 2);
+        if (displayScaleLabel() != null) {
+            g.drawString(displayScaleLabel(), x_tick + 3, (y_bottom + y_top) / 2);
         }
         g.setStroke(s);
     }
@@ -4493,7 +4629,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                       final int graphics_file_height) {
         final float origin_x = _phylogeny.getRoot().getXcoord();
         final float spacing = (float) (getScaleDistance() * getXcorrectionFactor());
-        final float max_x = (float) (origin_x + (getMaxDistanceToRoot() * getXcorrectionFactor()));
+        final float max_x = (float) (origin_x + (displayedMaxDistanceToRoot() * getXcorrectionFactor()));
         final float[] xs = TreePanelUtil.scaleGridLineXs(origin_x, spacing, max_x);
         if (xs.length == 0) {
             return;
@@ -4851,7 +4987,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     boolean scaleAxisAppliesToLayout() {
         if (!getControlPanel().isDrawPhylogram() || (getScaleDistance() <= 0.0)
                 || (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR)
-                || (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED)) {
+                || (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED)
+                || breakLongBranchesActive()) { // a capped tree has no single linear distance scale (see below)
             return false;
         }
         return TreePanelUtil.scaleAxisTickValues(getMaxDistanceToRoot(), getScaleDistance()).length > 0;
@@ -4890,7 +5027,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  vertical ruler + its upright labels sit clear of the tips just past the last tip. 0 unless the axis is shown in
      *  a vertical orientation on a phylogram with a scale. Reserved in the breadth budget (calcParametersForPainting)
      *  and the logical breadth extent (logicalTreeExtent), so paint, fit, and scroll all agree. */
-    private int verticalScaleAxisReserve() {
+    int verticalScaleAxisReserve() {
         if (!isVerticalOrientation()) {
             return 0;
         }
@@ -4910,7 +5047,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             return SCALE_AXIS_TICK_LEN + max_year_label + 8 + CALENDAR_AXIS_EDGE_GAP;
         }
-        if (!getOptions().isShowScaleAxis() || !getControlPanel().isDrawPhylogram() || (getScaleDistance() <= 0.0)) {
+        if (!getOptions().isShowScaleAxis() || !getControlPanel().isDrawPhylogram() || (getScaleDistance() <= 0.0)
+                || breakLongBranchesActive()) { // capping suppresses the numeric axis (see scaleAxisAppliesToLayout)
             return 0;
         }
         final double[] ticks = TreePanelUtil.scaleAxisTickValues(getMaxDistanceToRoot(), getScaleDistance());
@@ -5513,6 +5651,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 && getControlPanel().isDrawPhylogram()
                 && (getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR)
                 && (getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.UNROOTED)
+                && !breakLongBranchesActive() // a capped tree's age->x no longer lines up with the bands (see below)
                 && (timeAxisRootAgeMa() > 0);
     }
 
@@ -5534,6 +5673,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 && getControlPanel().isDrawPhylogram()
                 && (getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR)
                 && (getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.UNROOTED)
+                && !breakLongBranchesActive() // a capped tree's date->x no longer lines up with the year ticks
                 && isPhyHasBranchLengths()
                 && (getMaxDistanceToRoot() > 0)
                 && (timeAxisPresentDate() > 0);
@@ -5907,7 +6047,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         float start_x = labelSegmentStartX(node.getXcoord(), effectiveNodeHalfBoxSize(node), x_shift);
         if ((getControlPanel().getTreeDisplayType() == Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM)
                 && node.isExternal()) {
-            start_x = labelSegmentStartX((float) ((getMaxDistanceToRoot() * getXcorrectionFactor()) + TreePanel.MOVE
+            start_x = labelSegmentStartX((float) ((displayedMaxDistanceToRoot() * getXcorrectionFactor()) + TreePanel.MOVE
                     + getXdistance()), effectiveNodeHalfBoxSize(node), x_shift);
         }
         float start_y;
@@ -6799,8 +6939,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             setXdistance(xdist);
             setYdistance(ydist);
             setOvXDistance(ov_xdist);
-            final double height = _phylogeny.calculateHeight(!_options.isCollapsedWithAverageHeigh());
+            double height = _phylogeny.calculateHeight(!_options.isCollapsedWithAverageHeigh());
             //final double height = PhylogenyMethods.calculateMaxDepth( _phylogeny );
+            // "Break Long Branches": derive the depth scale from the CAPPED height so the informative part reclaims the
+            // width a broken outlier branch would otherwise consume (the branch itself is drawn capped, both here for
+            // the scale and in calculateBranchLengthToParent for its x). With no branch over the cap this equals the
+            // ordinary height, so a well-behaved tree is unchanged. Off / cladogram / aligned / radial: full height.
+            if (breakLongBranchesActive() && (breakCappedHeight() > 0)) {
+                height = breakCappedHeight();
+            }
             if (height > 0) {
                 final float corr = (float) ((x - (2.0 * TreePanel.MOVE) - depth_label
                         - rightMarginExtraWidth() - getXdistance()) / height);
@@ -6955,27 +7102,30 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ((_phylogeny == null) || _phylogeny.isEmpty()) {
             return;
         }
-        final double height = getMaxDistanceToRoot();
-        if (height > 0) {
-            if ((height <= 0.5)) {
-                setScaleDistance(0.01);
-            } else if (height <= 5.0) {
-                setScaleDistance(0.1);
-            } else if (height <= 50.0) {
-                setScaleDistance(1);
-            } else if (height <= 500.0) {
-                setScaleDistance(10);
-            } else {
-                setScaleDistance(100);
-            }
-        } else {
-            setScaleDistance(0.0);
-        }
-        String scale_label = String.valueOf(getScaleDistance());
+        setScaleDistance(TreePanelUtil.niceScaleBarDistance(getMaxDistanceToRoot()));
+        setScaleLabel(scaleBarLabel(getScaleDistance()));
+    }
+
+    /** The scale-bar label for a given distance: the number plus the tree's distance unit in brackets, if any. */
+    private String scaleBarLabel(final double distance) {
+        String label = String.valueOf(distance);
         if (!ForesterUtil.isEmpty(_phylogeny.getDistanceUnit())) {
-            scale_label += " [" + _phylogeny.getDistanceUnit() + "]";
+            label += " [" + _phylogeny.getDistanceUnit() + "]";
         }
-        setScaleLabel(scale_label);
+        return label;
+    }
+
+    /** The scale-bar distance to DRAW: while Break Long Branches caps the tree, size the bar from the DRAWN (capped)
+     *  extent so it reflects the un-broken (ingroup) scale, not the outlier-inflated one; otherwise the cached
+     *  {@link #getScaleDistance()}. (The bar reads correctly for the un-broken tree; the broken branch is off-scale,
+     *  marked by the break glyph -- the numeric scale AXIS / grid, which would span the whole width, stay suppressed.) */
+    private double displayScaleDistance() {
+        return breakLongBranchesActive() ? TreePanelUtil.niceScaleBarDistance(displayedMaxDistanceToRoot())
+                : getScaleDistance();
+    }
+
+    private String displayScaleLabel() {
+        return breakLongBranchesActive() ? scaleBarLabel(displayScaleDistance()) : getScaleLabel();
     }
 
     final Color calculateTaxonomyBasedColor(final Taxonomy tax) {
@@ -10194,7 +10344,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  the columns here, right past the tips, and the labels past the columns instead.) */
     private float tipsDepthEdge() {
         if (getControlPanel().isDrawPhylogram()) {
-            return (float) ((getMaxDistanceToRoot() * getXcorrectionFactor()) + _phylogeny.getRoot().getXcoord());
+            return (float) ((displayedMaxDistanceToRoot() * getXcorrectionFactor()) + _phylogeny.getRoot().getXcoord());
         }
         return getPhylogeny().getFirstExternalNode().getXcoord();
     }
@@ -11462,8 +11612,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             if (!_phylogeny.isRooted() /*|| ( _subtree_index > 0 )*/) {
                 _phylogeny.getRoot().setXcoord(TreePanel.MOVE);
             } else if ((_phylogeny.getRoot().getDistanceToParent() > 0.0) && getControlPanel().isDrawPhylogram()) {
-                _phylogeny.getRoot().setXcoord((float) (TreePanel.MOVE
-                        + (_phylogeny.getRoot().getDistanceToParent() * getXcorrectionFactor())));
+                double root_dtp = _phylogeny.getRoot().getDistanceToParent();
+                if (breakLongBranchesActive() && (root_dtp > breakLongBranchCap())) {
+                    root_dtp = breakLongBranchCap(); // cap a pathological root branch too (rare -- root usually has none)
+                }
+                _phylogeny.getRoot().setXcoord((float) (TreePanel.MOVE + (root_dtp * getXcorrectionFactor())));
             } else {
                 _phylogeny.getRoot().setXcoord(TreePanel.MOVE + getXdistance());
             }
@@ -11492,7 +11645,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             // the geologic axis is an alternative time-scale representation; suppress the numeric grid lines when it is
             // on (like the numeric scale bar + axis), so the two differently-spaced tick systems don't clash
             final boolean scale_grid_shown = getOptions().isShowScaleGrid() && getControlPanel().isDrawPhylogram()
-                    && (getScaleDistance() > 0.0) && !geologicAxisApplies() && !calendarAxisApplies();
+                    && (getScaleDistance() > 0.0) && !geologicAxisApplies() && !calendarAxisApplies()
+                    && !breakLongBranchesActive();
             if (!vertical && scale_grid_shown) {
                 paintScaleGrid(g, to_pdf, to_graphics_file, graphics_file_y, graphics_file_height);
             }
@@ -11565,9 +11719,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final boolean geo_axis = geologicAxisApplies();
             final boolean calendar_axis = calendarAxisApplies();
             final boolean time_axis = geo_axis || calendar_axis; // a geologic/calendar time axis replaces the numeric one
-            final boolean scale_shown = !time_axis && getOptions().isShowScale() && getControlPanel().isDrawPhylogram()
-                    && (getScaleDistance() > 0.0);
-            final boolean axis_shown = !time_axis && getOptions().isShowScaleAxis()
+            // a capped tree ("Break Long Branches") has no single linear distance scale across its whole width, so
+            // suppress the full-width scale AXIS + GRID (the break glyph marks the discontinuity). The small scale BAR
+            // stays -- it reads correctly for the un-broken (ingroup) part and is sized from the drawn extent (see
+            // displayScaleDistance); use displayScaleDistance() for the >0 gate so a capped tree still shows it.
+            final boolean break_active = breakLongBranchesActive();
+            final boolean scale_shown = !time_axis && getOptions().isShowScale()
+                    && getControlPanel().isDrawPhylogram() && (displayScaleDistance() > 0.0);
+            final boolean axis_shown = !time_axis && !break_active && getOptions().isShowScaleAxis()
                     && getControlPanel().isDrawPhylogram() && (getScaleDistance() > 0.0);
             // the horizontal axis owns a reserved bottom band; lift the (viewport-fixed) scale bar clear above it (the
             // tree name is likewise raised, inside paintTreeName) so the three bottom overlays never overprint. Derive
@@ -12016,9 +12175,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         int w;
         if (getControlPanel().isDrawPhylogram()) {
             w = TreePanel.MOVE + depthLabelReserve() + rightMarginExtraWidth()
-                    + ForesterUtil.roundToInt((getXcorrectionFactor()
-                    * getPhylogeny().calculateHeight(!_options.isCollapsedWithAverageHeigh()))
-                    + getXdistance());
+                    + ForesterUtil.roundToInt((getXcorrectionFactor() * displayedTreeHeight()) + getXdistance());
         } else if (!isNonLinedUpCladogram()) {
             w = TreePanel.MOVE + depthLabelReserve() + rightMarginExtraWidth() + ForesterUtil
                     .roundToInt(getXdistance() * (getPhylogeny().getRoot().getNumberOfExternalNodes() + 2));
@@ -12157,8 +12314,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     /** The logical X of the far-right aligned label column (aligned-phylogram mode), where all tip labels line up. */
-    private float alignedLabelColumnX() {
-        return (float) ((getMaxDistanceToRoot() * getXcorrectionFactor()) + TreePanel.MOVE + getXdistance());
+    float alignedLabelColumnX() {
+        return (float) ((displayedMaxDistanceToRoot() * getXcorrectionFactor()) + TreePanel.MOVE + getXdistance());
     }
 
     /** The logical X where a node's label text begins: the aligned column for an aligned tip, else just right of the
@@ -12645,7 +12802,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 ydist = 0.0f;
             }
             setOvXDistance(ov_xdist);
-            final double height = _phylogeny.calculateHeight(!_options.isCollapsedWithAverageHeigh());
+            double height = _phylogeny.calculateHeight(!_options.isCollapsedWithAverageHeigh());
+            // keep the overview x-scale consistent with the capped main view (see calcParametersForPainting)
+            if (breakLongBranchesActive() && (breakCappedHeight() > 0)) {
+                height = breakCappedHeight();
+            }
             if (height > 0) {
                 final float ov_corr = (float) (((getOvMaxWidth() - l) - getOvXDistance()) / height);
                 setOvXcorrectionFactor(ov_corr > 0 ? ov_corr : 0);

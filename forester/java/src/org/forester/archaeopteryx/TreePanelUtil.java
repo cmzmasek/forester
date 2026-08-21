@@ -26,6 +26,7 @@ import java.awt.geom.AffineTransform;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Locale;
@@ -1802,5 +1803,117 @@ public class TreePanelUtil {
             }
         }
         return sb;
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------
+    // Broken / truncated long branches (display only)
+    // ---------------------------------------------------------------------------------------------------------------
+    // A branch far longer than the rest (a distant outgroup, a fast-evolving lineage) squashes the informative part of
+    // a phylogram to an unreadable sliver. The "Break Long Branches" display option caps how long such a branch is
+    // DRAWN (marking it with an axis-break glyph) and re-derives the depth scale from the CAPPED height, so the rest of
+    // the tree reclaims the freed width. The tree data is never touched -- the true branch length is still shown as the
+    // branch-length label. A branch is "long" when its length exceeds LONG_BRANCH_BREAK_MULTIPLIER times the median of
+    // the tree's strictly-positive branch lengths -- a robust reference: the median is unaffected by the one huge
+    // outlier we are trying to detect and by the many zero-length branches of a polytomy-heavy tree.
+
+    /** Median of the strictly-positive branch lengths (distance-to-parent) over every node, or 0 if the tree has none
+     *  (a cladogram, or an all-zero-length tree). Pure. */
+    static double medianPositiveBranchLength( final Phylogeny phy ) {
+        if ( ( phy == null ) || phy.isEmpty() ) {
+            return 0;
+        }
+        final List<Double> pos = new ArrayList<>();
+        for( final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final double dtp = it.next().getDistanceToParent();
+            if ( dtp > 0 ) {
+                pos.add( dtp );
+            }
+        }
+        if ( pos.isEmpty() ) {
+            return 0;
+        }
+        final double[] a = new double[ pos.size() ];
+        for( int i = 0; i < a.length; i++ ) {
+            a[ i ] = pos.get( i );
+        }
+        Arrays.sort( a );
+        final int n = a.length;
+        return ( ( n % 2 ) == 1 ) ? a[ n / 2 ] : ( ( a[ ( n / 2 ) - 1 ] + a[ n / 2 ] ) / 2.0 );
+    }
+
+    /** The model-length cap above which a branch is drawn broken: {@code multiplier * median(positive branch length)},
+     *  or 0 when there is no positive branch length to reference (so capping is inactive). Pure. */
+    static double longBranchBreakCap( final Phylogeny phy, final double multiplier ) {
+        final double median = medianPositiveBranchLength( phy );
+        return ( median > 0 ) ? ( multiplier * median ) : 0;
+    }
+
+    /** Deepest root-to-tip path length after each branch is capped at {@code cap}, taking display-collapse into account.
+     *  Mirrors {@code Phylogeny.calculateSubtreeHeight} (from which the non-break depth scale is derived) EXACTLY -- the
+     *  root's own incoming branch is included, and a display-collapsed clade is measured only to its collapsed root (the
+     *  height accumulation resets when the walk passes a collapsed node) -- but with {@code min(dtp, cap)} for the length
+     *  of each branch. So with a cap larger than every branch this equals the ordinary tree height. Pure; returns 0 for
+     *  an empty / branch-length-less tree or a non-positive cap. */
+    static double cappedTreeHeight( final Phylogeny phy, final double cap, final boolean take_collapse_into_account ) {
+        if ( ( phy == null ) || phy.isEmpty() || ( cap <= 0 ) ) {
+            return 0;
+        }
+        final PhylogenyNode root = phy.getRoot();
+        if ( root.isExternal() || ( take_collapse_into_account && root.isCollapse() ) ) {
+            return cappedDistance( root, cap );
+        }
+        double max = 0;
+        for( final PhylogenyNode ext : root.getAllExternalDescendants() ) {
+            double h = 0;
+            PhylogenyNode d = ext;
+            while ( d != root ) {
+                if ( take_collapse_into_account && d.isCollapse() ) {
+                    h = 0; // a collapsed clade is drawn only to its root -> the depth below it does not count
+                }
+                h += cappedDistance( d, cap );
+                d = d.getParent();
+            }
+            h += cappedDistance( root, cap ); // include the (capped) root branch, like calculateHeight
+            if ( h > max ) {
+                max = h;
+            }
+        }
+        return max;
+    }
+
+    /** {@code cappedTreeHeight} ignoring collapse (take_collapse_into_account = true is the usual non-average case). */
+    static double cappedTreeHeight( final Phylogeny phy, final double cap ) {
+        return cappedTreeHeight( phy, cap, true );
+    }
+
+    private static double cappedDistance( final PhylogenyNode n, final double cap ) {
+        final double dtp = n.getDistanceToParent();
+        if ( dtp <= 0 ) {
+            return 0;
+        }
+        return ( dtp > cap ) ? cap : dtp;
+    }
+
+    /** The "nice" scale-bar distance (0.01 / 0.1 / 1 / 10 / 100) for a tree whose deepest root-to-tip distance is
+     *  {@code height}, so the bar is a readable fraction of the tree width; 0 for a non-positive height. Pure. Used
+     *  both for the normal scale bar (from the true max distance) and, while capping, from the DRAWN (capped) extent
+     *  so the bar reflects the un-broken (ingroup) scale rather than the outlier-inflated one. */
+    static double niceScaleBarDistance( final double height ) {
+        if ( height <= 0 ) {
+            return 0.0;
+        }
+        if ( height <= 0.5 ) {
+            return 0.01;
+        }
+        if ( height <= 5.0 ) {
+            return 0.1;
+        }
+        if ( height <= 50.0 ) {
+            return 1;
+        }
+        if ( height <= 500.0 ) {
+            return 10;
+        }
+        return 100;
     }
 }

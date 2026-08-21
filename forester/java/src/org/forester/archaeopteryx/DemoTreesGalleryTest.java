@@ -43,9 +43,9 @@ public final class DemoTreesGalleryTest {
 
     // the resources the catalog opens (a fossil-only ammonite tree, a tanglegram pair + its association file, etc.)
     private static final String[] TREE_RESOURCES = { "color-by-property.xml", "annotation-columns.xml",
-            "domain-architectures.xml", "ancestral-pie-charts.xml", "node-hpd-bars.xml", "sars-cov-2-time-tree.xml",
-            "nextstrain-ncov.json", "dinosaur-time-tree.xml", "ammonite-time-tree.xml", "tree-of-life-deep-time.xml",
-            "tanglegram-host-tree.xml", "tanglegram-parasite-tree.xml" };
+            "domain-architectures.xml", "ancestral-pie-charts.xml", "node-hpd-bars.xml", "long-branch-break.xml",
+            "sars-cov-2-time-tree.xml", "nextstrain-ncov.json", "dinosaur-time-tree.xml", "ammonite-time-tree.xml",
+            "tree-of-life-deep-time.xml", "tanglegram-host-tree.xml", "tanglegram-parasite-tree.xml" };
 
     public static void main( final String[] args ) {
         final boolean ok = test();
@@ -66,8 +66,8 @@ public final class DemoTreesGalleryTest {
     /** Headless: every bundled demo resource loads + parses from the classpath, and the catalog is the expected size. */
     private static boolean resourcesLoadOk() {
         try {
-            if ( DemoTrees.catalog().size() != 11 ) {
-                return fail( "the demo catalog should have 11 curated entries, has " + DemoTrees.catalog().size() );
+            if ( DemoTrees.catalog().size() != 12 ) {
+                return fail( "the demo catalog should have 12 curated entries, has " + DemoTrees.catalog().size() );
             }
             // if the demo resources were not staged onto the classpath (a raw IDE compile that skipped the Ant
             // copy_resources step), skip the load checks rather than fail the whole suite -- the authoritative
@@ -199,6 +199,11 @@ public final class DemoTreesGalleryTest {
         else if ( label.startsWith( "Ancestral State Pies" ) ) {
             if ( tp.getAncestralPieTrait() == null ) {
                 fail( ok, "the ancestral-pie demo must select a discrete trait" );
+            }
+        }
+        else if ( label.startsWith( "Break Long Branches" ) ) {
+            if ( !frame.getOptions().isBreakLongBranches() ) {
+                fail( ok, "the break-long-branches demo must turn on the Break Long Branches option" );
             }
         }
         else if ( label.startsWith( "Node Age Spindles" ) ) {

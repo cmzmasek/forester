@@ -137,6 +137,8 @@ Just launch Archaeopteryx and pick a tree from **File → Demo Trees**:
 - **Ancestral State Pies** — a discrete geographic trait as posterior pies
 - **Node Age Spindles** — divergence-time uncertainty (point age + 95% HPD) as
   tapered spindles
+- **Break Long Branches** — a fast-evolving outgroup on a huge branch drawn
+  shortened with a break mark so the ingroup reclaims the width (with support values)
 - **SARS-CoV-2 Time Tree** — a tip-dated viral tree on a calendar-year axis
 - **Phylodynamics (Nextstrain JSON)** — an Auspice v2 dataset with geographic
   ancestral-state pies, read straight from `dataset.json`
@@ -451,6 +453,34 @@ map, entropy, and frequencies panels. Reference:
 
 - Hadfield, J. *et al.* (2018): "Nextstrain: real-time tracking of pathogen
   evolution", *Bioinformatics* 34(23):4121–4123.
+
+
+Broken (Truncated) Long Branches
+--------------------------------
+
+One branch that is far longer than the rest — a distant outgroup, a fast-evolving
+lineage — squashes the informative part of a phylogram to an unreadable sliver.
+Turn on **Settings → Layout → Break Long Branches** and such a branch is drawn
+**shortened, with an axis-break glyph** (`─//─`) across it — the tree analogue of a
+broken axis in a chart — while the **depth scale is re-derived from the capped
+height** so the rest of the tree reclaims the freed width. It is **display-only**:
+the underlying branch length is never altered, and its true value is still shown as
+the branch-length label.
+
+A branch is treated as *long* when its length exceeds **8× the median** of the
+tree's strictly-positive branch lengths — a robust threshold (unaffected by the one
+outlier being detected, or by the many zero-length branches of a polytomy-heavy
+tree), so a well-behaved, near-clock tree shows no breaks at all. This is a
+graphical convention (as offered by interactive viewers such as iTOL's *cut long
+branches*), not an inference step. It applies to both the unaligned "P" and aligned
+"A" phylograms across the rectangular family of layouts (root-left / -top / -bottom
+and triangular) — in the aligned view the broken branch is capped and its tip still
+lines up at the common label column; the circular/unrooted layouts are a planned
+follow-up. While it is on, the small **scale bar** is kept — sized to the un-broken
+(ingroup) scale, so it reads correctly for the bulk of the tree — but the full-width
+scale **axis** and **grid lines** are hidden, since a single linear ruler across the
+whole width can't represent a truncated branch (the break mark denotes the
+discontinuity). Try it on [`long-branch-break.xml`](forester/demo/README.md).
 
 
 Tanglegrams

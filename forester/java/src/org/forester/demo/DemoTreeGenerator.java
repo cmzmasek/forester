@@ -73,6 +73,7 @@ public final class DemoTreeGenerator {
         write( dir, "colorize-by-rank.xml", colorizeByRankTree() );
         write( dir, "infer-ancestor-taxonomies.xml", inferAncestorTaxonomiesTree() );
         write( dir, "scale-axis.xml", scaleAxisTree() );
+        write( dir, "long-branch-break.xml", longBranchBreakTree() );
         write( dir, "date-in-labels.xml", dateInLabelsTree() );
         write( dir, "node-hpd-bars.xml", hpdBarsTree() );
         write( dir, "dinosaur-time-tree.xml", dinosaurTimeTree() );
@@ -642,6 +643,27 @@ public final class DemoTreeGenerator {
         final Phylogeny phy = tree( root, "Scale axis (demo)",
                 "Synthetic gene-family phylogram with branch lengths in substitutions/site (max depth ~0.7). Turn on "
                         + "Settings > Display > Scale Axis to read a labeled distance axis with ticks along the bottom." );
+        phy.setDistanceUnit( "substitutions/site" );
+        return phy;
+    }
+
+    // ----- "Break Long Branches": an ingroup with normal (~0.1-0.3) branches plus one distant, fast-evolving outgroup
+    //       on a ~4.0 branch that squashes the rest. Turn on Settings > Layout > Break Long Branches.
+    private static Phylogeny longBranchBreakTree() {
+        final PhylogenyNode primates = conf( clade( 0.20, blLeaf( "Homo_sapiens", 0.18 ),
+                                                    blLeaf( "Pan_troglodytes", 0.15 ) ), 98 );
+        final PhylogenyNode rodents = conf( clade( 0.22, blLeaf( "Mus_musculus", 0.25 ),
+                                                   blLeaf( "Rattus_norvegicus", 0.20 ) ), 95 );
+        final PhylogenyNode mammals = conf( clade( 0.15, primates, rodents ), 99 );
+        final PhylogenyNode others = conf( clade( 0.18, blLeaf( "Gallus_gallus", 0.30 ),
+                                                  blLeaf( "Xenopus_laevis", 0.28 ) ), 88 );
+        final PhylogenyNode root = clade( 0, mammals, others, blLeaf( "Fast_evolving_outgroup", 4.0 ) );
+        final Phylogeny phy = tree( root, "Break long branches (demo)",
+                "Synthetic phylogram whose ingroup branches are ~0.1-0.3 substitutions/site (with bootstrap support on "
+                        + "the internal nodes) while one distant, fast-evolving outgroup sits on a ~4.0 branch that "
+                        + "squashes the rest. Turn on Settings > Layout > Break Long Branches: the outgroup is drawn "
+                        + "shortened with a break mark (its true length is still shown as the label) and the ingroup "
+                        + "reclaims the freed width; the support values stay clear of the break mark." );
         phy.setDistanceUnit( "substitutions/site" );
         return phy;
     }

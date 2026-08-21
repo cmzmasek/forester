@@ -264,6 +264,7 @@ final public class Options {
     private boolean _show_hpd_bars;
     private boolean _show_fossil_range_bars;
     private boolean _show_zebra_stripes;
+    private boolean _break_long_branches;
     private boolean _show_internal_taxonomy_key;
     private boolean _reverse_tip_order;
     private boolean _bold_found_labels;
@@ -350,6 +351,7 @@ final public class Options {
         _show_hpd_bars = false;
         _show_fossil_range_bars = false;
         _show_zebra_stripes = false;
+        _break_long_branches = false;
         _show_internal_taxonomy_key = false;
         _reverse_tip_order = false;
         _bold_found_labels = false;
@@ -723,6 +725,14 @@ final public class Options {
 
     final void setShowZebraStripes(final boolean show_zebra_stripes) {
         _show_zebra_stripes = show_zebra_stripes;
+    }
+
+    final boolean isBreakLongBranches() {
+        return _break_long_branches;
+    }
+
+    final void setBreakLongBranches(final boolean break_long_branches) {
+        _break_long_branches = break_long_branches;
     }
 
     final boolean isShowInternalTaxonomyKey() {

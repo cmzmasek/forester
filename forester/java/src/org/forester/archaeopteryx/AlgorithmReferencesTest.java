@@ -114,6 +114,12 @@ public final class AlgorithmReferencesTest {
             System.out.println( "  [AlgorithmReferencesTest] node age bars/spindles reference/citation is missing" );
             ok = false;
         }
+        // the broken-long-branch display convention must be described, with its median-multiple threshold
+        if ( !text.contains( "Break Long Branches" ) || !text.contains( "axis-break glyph" )
+                || !text.contains( "MEDIAN of the tree's strictly-positive branch lengths" ) ) {
+            System.out.println( "  [AlgorithmReferencesTest] broken long-branch reference is missing" );
+            ok = false;
+        }
         // the Auspice/Nextstrain JSON import must be described, with the Nextstrain (Hadfield et al. 2018) citation
         if ( !text.contains( "Auspice / Nextstrain JSON import" ) || !text.contains( "dataset.json" )
                 || !text.contains( "Hadfield J" ) || !text.contains( "real-time tracking of pathogen evolution" ) ) {

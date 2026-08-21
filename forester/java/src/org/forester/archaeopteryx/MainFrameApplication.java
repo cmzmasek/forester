@@ -1650,6 +1650,8 @@ public final class MainFrameApplication extends MainFrame {
         _show_fossil_range_bars_cbmi.setToolTipText(MainFrame.DISPLAY_FOSSIL_RANGE_BARS_TIP);
         _show_zebra_stripes_cbmi = new JCheckBoxMenuItem(MainFrame.DISPLAY_ZEBRA_STRIPES_LABEL);
         _show_zebra_stripes_cbmi.setToolTipText(MainFrame.DISPLAY_ZEBRA_STRIPES_TIP);
+        _break_long_branches_cbmi = new JCheckBoxMenuItem(MainFrame.DISPLAY_BREAK_LONG_BRANCHES_LABEL);
+        _break_long_branches_cbmi.setToolTipText(MainFrame.DISPLAY_BREAK_LONG_BRANCHES_TIP);
         _show_internal_taxonomy_key_cbmi = new JCheckBoxMenuItem(MainFrame.DISPLAY_INTERNAL_TAXONOMY_KEY_LABEL);
         _show_internal_taxonomy_key_cbmi.setToolTipText(MainFrame.DISPLAY_INTERNAL_TAXONOMY_KEY_TIP);
         _tip_labels_below_columns_cbmi = new JCheckBoxMenuItem(MainFrame.DISPLAY_TIP_LABELS_BELOW_COLUMNS_LABEL);
@@ -1737,6 +1739,7 @@ public final class MainFrameApplication extends MainFrame {
         customizeCheckBoxMenuItem(_show_hpd_bars_cbmi, getOptions().isShowHpdBars());
         customizeCheckBoxMenuItem(_show_fossil_range_bars_cbmi, getOptions().isShowFossilRangeBars());
         customizeCheckBoxMenuItem(_show_zebra_stripes_cbmi, getOptions().isShowZebraStripes());
+        customizeCheckBoxMenuItem(_break_long_branches_cbmi, getOptions().isBreakLongBranches());
         customizeCheckBoxMenuItem(_show_internal_taxonomy_key_cbmi, getOptions().isShowInternalTaxonomyKey());
         customizeCheckBoxMenuItem(_tip_labels_below_columns_cbmi, getOptions().isTipLabelsBelowColumns());
         customizeCheckBoxMenuItem(_reverse_tip_order_cbmi, getOptions().isReverseTipOrder());

@@ -84,6 +84,7 @@ final class GuiPreferences {
             // AptxUtil.lookAtSomeTreePropertiesForAptxControlSettings). Persisting them would let a one-time dated-tree
             // load flip the global default ON for every later launch.
             boolPref( "show_zebra_stripes", Options::isShowZebraStripes, Options::setShowZebraStripes ),
+            boolPref( "break_long_branches", Options::isBreakLongBranches, Options::setBreakLongBranches ),
             boolPref( "show_internal_taxonomy_key", Options::isShowInternalTaxonomyKey,
                       Options::setShowInternalTaxonomyKey ),
             boolPref( "tip_labels_below_columns", Options::isTipLabelsBelowColumns, Options::setTipLabelsBelowColumns ),

@@ -113,6 +113,14 @@ final class DemoTrees {
                                  openTree( mf, "node-hpd-bars.xml" );
                                  nodeAgeSpindles( mf );
                              } ) );
+        demos.add( new Demo( "Break Long Branches",
+                             "A distant, fast-evolving outgroup on a huge branch is drawn shortened with a break mark, so "
+                                     + "the informative ingroup reclaims the width; the bootstrap support values stay "
+                                     + "clear of the break.",
+                             mf -> {
+                                 openTree( mf, "long-branch-break.xml" );
+                                 breakLongBranches( mf );
+                             } ) );
         demos.add( new Demo( "SARS-CoV-2 Time Tree (Calendar Axis)",
                              "A tip-dated viral tree read against a labelled calendar-year axis -- molecular epidemiology.",
                              mf -> {
@@ -240,6 +248,21 @@ final class DemoTrees {
         cp.setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM ); // "Draw Phylogram"
         mf.getOptions().setShowHpdBars( true );
         mf.getOptions().setNodeAgeShape( Options.NODE_AGE_SHAPE.SPINDLE );
+        refit( mf );
+    }
+
+    /** Show the Break Long Branches demo: force a phylogram (capping applies to phylograms), turn the option on, and
+     *  show the support values (which stay clear of the break mark), then re-fit so the depth scale decompresses. */
+    private static void breakLongBranches( final MainFrameApplication mf ) {
+        final ControlPanel cp = mf.getMainPanel().getControlPanel();
+        if ( cp == null ) {
+            return;
+        }
+        cp.setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM ); // "Draw Phylogram"
+        mf.getOptions().setBreakLongBranches( true );
+        if ( cp.getWriteConfidenceCb() != null ) {
+            cp.getWriteConfidenceCb().setSelected( true ); // show the bootstrap support values on the branches
+        }
         refit( mf );
     }
 

@@ -67,7 +67,7 @@ public final class TreePanelUtilTest {
                 && testRankResolutionIdThenNameCache() && testNamelessTaxonomyTipResolvesByNodeName()
                 && testInferenceFeedsRankAssignment() && testWriteCladeTaxonomies() && testInternalTaxaByRank()
                 && testCladeBands() && testRankColorizationViaSequenceIds() && testInternalLabelAboveBranchLayout()
-                && testAbbreviateScientificName() && testSupportColor() && testScaleGridLines()
+                && testAbbreviateScientificName() && testSupportColor() && testBreakLongBranches() && testScaleGridLines()
                 && testScaleAxisTickValues() && testCalendarTickYears() && testMaAxisTicks() && testFormatCompactNumber() && testHpdBarXRange() && testSpindleHalfHeight()
                 && testOrientationTransform() && testInternalLabelAlignWidth() && testAutoTipLabelDirection()
                 && testUserVisiblePropertiesText() && testTipLineagesAndUnresolved() && testInferenceStrings()
@@ -1971,6 +1971,135 @@ public final class TreePanelUtilTest {
             previous = y_dist;
         }
         return true;
+    }
+
+    /** medianPositiveBranchLength (positive-only, so zeros don't poison it), longBranchBreakCap, and cappedTreeHeight
+     *  (a long branch contributes only the cap; a cap larger than every branch == the ordinary tree height). */
+    private static boolean testBreakLongBranches() {
+        // ((A:1,B:1):1, OUT:40) -- one outlier branch, the rest ~1
+        final PhylogenyNode root = new PhylogenyNode();
+        final PhylogenyNode clade = blChild( root, null, 1 );
+        blChild( clade, "A", 1 );
+        blChild( clade, "B", 1 );
+        blChild( root, "OUT", 40 );
+        final Phylogeny phy = new Phylogeny();
+        phy.setRoot( root );
+        phy.externalNodesHaveChanged();
+        // positive dtps = {1,1,1,40} -> median 1 (the root's own default negative distance is excluded)
+        if ( Math.abs( TreePanelUtil.medianPositiveBranchLength( phy ) - 1.0 ) > 1e-9 ) {
+            return fail( "median positive branch length must be 1, got " + TreePanelUtil.medianPositiveBranchLength( phy ) );
+        }
+        final double cap = TreePanelUtil.longBranchBreakCap( phy, 8.0 );
+        if ( Math.abs( cap - 8.0 ) > 1e-9 ) {
+            return fail( "cap must be 8 * median = 8, got " + cap );
+        }
+        // cappedTreeHeight: root->clade->A = 2, root->OUT = min(40,8) = 8 -> deepest capped path 8 (< true height 40)
+        if ( Math.abs( TreePanelUtil.cappedTreeHeight( phy, cap ) - 8.0 ) > 1e-9 ) {
+            return fail( "capped height must be 8, got " + TreePanelUtil.cappedTreeHeight( phy, cap ) );
+        }
+        // a cap larger than every branch reproduces the ordinary tree height (no rescale for a well-behaved tree)
+        final double huge = TreePanelUtil.cappedTreeHeight( phy, 1.0e9 );
+        if ( ( Math.abs( huge - 40.0 ) > 1e-9 ) || ( Math.abs( huge - phy.calculateHeight( true ) ) > 1e-9 ) ) {
+            return fail( "capped height with a huge cap must equal the ordinary height 40, got " + huge );
+        }
+        // a long INTERNAL branch (a whole clade behind it) must be capped too, pulling its subtree in: ((A:1,B:1):40, C:1)
+        // -> the internal branch caps to 8, so the deepest path root->clade(8)->A(1) = 9 (not 41), NOT off at the true 41
+        final PhylogenyNode ir = new PhylogenyNode();
+        final PhylogenyNode iclade = blChild( ir, null, 40 ); // the long internal branch
+        blChild( iclade, "A", 1 );
+        blChild( iclade, "B", 1 );
+        blChild( ir, "C", 1 );
+        final Phylogeny iphy = new Phylogeny();
+        iphy.setRoot( ir );
+        iphy.externalNodesHaveChanged();
+        final double icap = TreePanelUtil.longBranchBreakCap( iphy, 8.0 ); // median {1,1,1,40} = 1 -> cap 8
+        if ( ( Math.abs( icap - 8.0 ) > 1e-9 )
+                || ( Math.abs( TreePanelUtil.cappedTreeHeight( iphy, icap ) - 9.0 ) > 1e-9 ) ) {
+            return fail( "a long internal branch must cap (cap 8, capped height 9), got cap=" + icap + " height="
+                    + TreePanelUtil.cappedTreeHeight( iphy, icap ) );
+        }
+        // zeros (polytomy branches) are excluded from the median: {0,0,2,4,6} -> median 4, not 2
+        final PhylogenyNode r2 = new PhylogenyNode();
+        blChild( r2, "a", 0 );
+        blChild( r2, "b", 0 );
+        blChild( r2, "c", 2 );
+        blChild( r2, "d", 4 );
+        blChild( r2, "e", 6 );
+        final Phylogeny phy2 = new Phylogeny();
+        phy2.setRoot( r2 );
+        phy2.externalNodesHaveChanged();
+        if ( Math.abs( TreePanelUtil.medianPositiveBranchLength( phy2 ) - 4.0 ) > 1e-9 ) {
+            return fail( "median must ignore zero-length branches (expect 4), got "
+                    + TreePanelUtil.medianPositiveBranchLength( phy2 ) );
+        }
+        // a POSITIVE root branch is included in the capped height (parity with calculateHeight, which adds it), so a
+        // well-behaved tree (nothing over the cap) is drawn unchanged instead of overshooting
+        final PhylogenyNode r4 = new PhylogenyNode();
+        r4.setDistanceToParent( 3.0 ); // the root's own incoming branch
+        final PhylogenyNode c4 = blChild( r4, null, 1 );
+        blChild( c4, "a", 1 );
+        blChild( c4, "b", 1 );
+        blChild( r4, "c", 2 );
+        final Phylogeny phy4 = new Phylogeny();
+        phy4.setRoot( r4 );
+        phy4.externalNodesHaveChanged();
+        if ( Math.abs( TreePanelUtil.cappedTreeHeight( phy4, 1.0e9 ) - phy4.calculateHeight( true ) ) > 1e-9 ) {
+            return fail( "capped height (huge cap) must equal calculateHeight incl. the root branch, got "
+                    + TreePanelUtil.cappedTreeHeight( phy4, 1.0e9 ) + " vs " + phy4.calculateHeight( true ) );
+        }
+        // collapse-aware: cappedTreeHeight mirrors calculateHeight under display-collapse (a collapsed clade counts only
+        // to its root). Deep clade (tips at depth 6) + a shallow tip (depth 2); collapsing the deep clade drops the
+        // deepest DRAWN tip to 2 -- so the depth scale/extent must NOT keep measuring through the collapse.
+        final PhylogenyNode cr = new PhylogenyNode();
+        final PhylogenyNode deep = blChild( cr, null, 1 );
+        blChild( deep, "t1", 5 );
+        blChild( deep, "t2", 5 );
+        blChild( cr, "shallow", 2 );
+        final Phylogeny cphy = new Phylogeny();
+        cphy.setRoot( cr );
+        cphy.externalNodesHaveChanged();
+        deep.setCollapse( true );
+        if ( Math.abs( cphy.calculateHeight( true ) - cphy.calculateHeight( false ) ) < 1e-9 ) {
+            return fail( "test setup: collapsing the deep clade must change calculateHeight" );
+        }
+        for( final boolean tc : new boolean[] { true, false } ) {
+            // with a huge cap (nothing capped), capped height must EXACTLY equal calculateHeight for BOTH collapse modes
+            if ( Math.abs( TreePanelUtil.cappedTreeHeight( cphy, 1.0e9, tc ) - cphy.calculateHeight( tc ) ) > 1e-9 ) {
+                return fail( "capped height (huge cap, collapse=" + tc + ") must equal calculateHeight, got "
+                        + TreePanelUtil.cappedTreeHeight( cphy, 1.0e9, tc ) + " vs " + cphy.calculateHeight( tc ) );
+            }
+        }
+        // scale-bar interval buckets: sized from the DRAWN extent, so a capped tree's bar reflects the ingroup scale
+        // (e.g. a deep-outlier tree with maxDist 40 -> bucket 1, but capped extent 1.6 -> bucket 0.1)
+        if ( ( TreePanelUtil.niceScaleBarDistance( 0.4 ) != 0.01 ) || ( TreePanelUtil.niceScaleBarDistance( 1.6 ) != 0.1 )
+                || ( TreePanelUtil.niceScaleBarDistance( 4.0 ) != 0.1 ) || ( TreePanelUtil.niceScaleBarDistance( 40 ) != 1 )
+                || ( TreePanelUtil.niceScaleBarDistance( 400 ) != 10 )
+                || ( TreePanelUtil.niceScaleBarDistance( 0 ) != 0.0 ) ) {
+            return fail( "niceScaleBarDistance buckets wrong (0.4->0.01, 1.6/4->0.1, 40->1, 400->10, 0->0)" );
+        }
+        // a branch-length-less tree: no positive branch -> cap 0 -> capping inactive
+        final PhylogenyNode r3 = new PhylogenyNode();
+        blChild( r3, "x", 0 );
+        blChild( r3, "y", 0 );
+        final Phylogeny phy3 = new Phylogeny();
+        phy3.setRoot( r3 );
+        phy3.externalNodesHaveChanged();
+        if ( ( TreePanelUtil.medianPositiveBranchLength( phy3 ) != 0 )
+                || ( TreePanelUtil.longBranchBreakCap( phy3, 8.0 ) != 0 )
+                || ( TreePanelUtil.cappedTreeHeight( phy3, 0 ) != 0 ) ) {
+            return fail( "a branch-length-less tree must yield median/cap/capped-height 0 (capping inactive)" );
+        }
+        return true;
+    }
+
+    private static PhylogenyNode blChild( final PhylogenyNode parent, final String name, final double dtp ) {
+        final PhylogenyNode n = new PhylogenyNode();
+        if ( name != null ) {
+            n.setName( name );
+        }
+        n.setDistanceToParent( dtp );
+        parent.addAsChild( n );
+        return n;
     }
 
     private static boolean fail( final String message ) {

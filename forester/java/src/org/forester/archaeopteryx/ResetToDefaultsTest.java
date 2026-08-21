@@ -97,6 +97,7 @@ public final class ResetToDefaultsTest {
         o.setShowHpdBars( true );
         o.setShowFossilRangeBars( true );
         o.setShowZebraStripes( true );
+        o.setBreakLongBranches( true );
         o.setShowInternalTaxonomyKey( true );
         o.setTipLabelsBelowColumns( true );
         o.setReverseTipOrder( true );
@@ -155,6 +156,7 @@ public final class ResetToDefaultsTest {
         ok &= eq( "showHpdBars", o.isShowHpdBars(), def.isShowHpdBars() );
         ok &= eq( "showFossilRangeBars", o.isShowFossilRangeBars(), def.isShowFossilRangeBars() );
         ok &= eq( "showZebraStripes", o.isShowZebraStripes(), def.isShowZebraStripes() );
+        ok &= eq( "breakLongBranches", o.isBreakLongBranches(), def.isBreakLongBranches() );
         ok &= eq( "showInternalTaxonomyKey", o.isShowInternalTaxonomyKey(), def.isShowInternalTaxonomyKey() );
         ok &= eq( "tipLabelsBelowColumns", o.isTipLabelsBelowColumns(), def.isTipLabelsBelowColumns() );
         ok &= eq( "reverseTipOrder", o.isReverseTipOrder(), def.isReverseTipOrder() );
@@ -211,7 +213,8 @@ public final class ResetToDefaultsTest {
                           frame._show_scale_grid_cbmi,
                           frame._show_scale_axis_cbmi, frame._show_hpd_bars_cbmi,
                           frame._show_fossil_range_bars_cbmi,
-                          frame._show_zebra_stripes_cbmi, frame._tip_labels_below_columns_cbmi,
+                          frame._show_zebra_stripes_cbmi, frame._break_long_branches_cbmi,
+                          frame._tip_labels_below_columns_cbmi,
                           frame._reverse_tip_order_cbmi,
                           frame._bold_found_labels_cbmi, frame._dim_non_matches_cbmi, frame._pulse_found_nodes_cbmi,
                           frame._show_scale_cbmi, frame._show_tree_name_cbmi,

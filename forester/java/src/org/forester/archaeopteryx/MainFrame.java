@@ -186,6 +186,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String DISPLAY_FOSSIL_RANGE_BARS_TIP = "On a dated (time-scaled) phylogram, draw a stratigraphic-range bar at each fossil tip spanning its first-to-last appearance (the tip's phyloXML date min/max).";
     static final String DISPLAY_ZEBRA_STRIPES_LABEL = "Zebra Stripes";
     static final String DISPLAY_ZEBRA_STRIPES_TIP = "Shade every other tip row with a faint band, so a label is easy to track across a wide tree to its annotation columns.";
+    static final String DISPLAY_BREAK_LONG_BRANCHES_LABEL = "Break Long Branches";
+    static final String DISPLAY_BREAK_LONG_BRANCHES_TIP = "On a phylogram, draw an outlier-long branch (e.g. a distant outgroup) shortened with a break mark and give the rest of the tree the freed width. The true branch length is unchanged (still shown as its label).";
     static final String DISPLAY_INTERNAL_TAXONOMY_KEY_LABEL = "Internal Taxonomy Key";
     static final String DISPLAY_INTERNAL_TAXONOMY_KEY_TIP = "Show a draggable key of the distinct internal-node taxa (from inference / curation / clade annotation), grouped by rank with counts.";
     static final String DISPLAY_REVERSE_TIP_ORDER_LABEL = "Reverse Tip Order";
@@ -297,6 +299,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JCheckBoxMenuItem _show_hpd_bars_cbmi;
     JCheckBoxMenuItem _show_fossil_range_bars_cbmi;
     JCheckBoxMenuItem _show_zebra_stripes_cbmi;
+    JCheckBoxMenuItem _break_long_branches_cbmi;
     JCheckBoxMenuItem _show_internal_taxonomy_key_cbmi;
     JCheckBoxMenuItem _tip_labels_below_columns_cbmi;
     JCheckBoxMenuItem _reverse_tip_order_cbmi;
@@ -550,6 +553,17 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             updateOptions(getOptions());
         } else if (o == _show_zebra_stripes_cbmi) {
             updateOptions(getOptions());
+        } else if (o == _break_long_branches_cbmi) {
+            updateOptions(getOptions());
+            // capping an outlier branch changes the depth scale (the informative part reclaims the freed width), so
+            // re-fit whenever the toggle FLIPS -- ON to apply the capping, OFF to restore the uncapped layout (the guard
+            // is option-INDEPENDENT: it asks whether this layout is one the feature affects, so OFF re-fits too). Only a
+            // rectangular-family unaligned phylogram with branch lengths, so a cladogram / aligned / radial layout stays
+            // put (its radial zoom isn't reset). showWhole re-fits to the viewport -> no preferred-size feedback / drift.
+            final TreePanel tp = getCurrentTreePanel();
+            if ((tp != null) && tp.breakLongBranchesRelevantToLayout()) {
+                showWhole();
+            }
         } else if (o == _show_internal_taxonomy_key_cbmi) {
             updateOptions(getOptions());
         } else if (o == _tip_labels_below_columns_cbmi) {
@@ -2450,6 +2464,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         options.setShowHpdBars((_show_hpd_bars_cbmi != null) && _show_hpd_bars_cbmi.isSelected());
         options.setShowFossilRangeBars((_show_fossil_range_bars_cbmi != null) && _show_fossil_range_bars_cbmi.isSelected());
         options.setShowZebraStripes((_show_zebra_stripes_cbmi != null) && _show_zebra_stripes_cbmi.isSelected());
+        options.setBreakLongBranches((_break_long_branches_cbmi != null) && _break_long_branches_cbmi.isSelected());
         options.setShowInternalTaxonomyKey(
                 (_show_internal_taxonomy_key_cbmi != null) && _show_internal_taxonomy_key_cbmi.isSelected());
         options.setTipLabelsBelowColumns((_tip_labels_below_columns_cbmi != null)
@@ -2559,6 +2574,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         setSelected(_show_hpd_bars_cbmi, options.isShowHpdBars());
         setSelected(_show_fossil_range_bars_cbmi, options.isShowFossilRangeBars());
         setSelected(_show_zebra_stripes_cbmi, options.isShowZebraStripes());
+        setSelected(_break_long_branches_cbmi, options.isBreakLongBranches());
         setSelected(_show_internal_taxonomy_key_cbmi, options.isShowInternalTaxonomyKey());
         setSelected(_tip_labels_below_columns_cbmi, options.isTipLabelsBelowColumns());
         setSelected(_reverse_tip_order_cbmi, options.isReverseTipOrder());

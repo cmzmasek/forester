@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" branch_length_unit="substitutions/site" rerootable="true">
+  <name>Break long branches (demo)</name>
+  <description>Synthetic phylogram whose ingroup branches are ~0.1-0.3 substitutions/site (with bootstrap support on the internal nodes) while one distant, fast-evolving outgroup sits on a ~4.0 branch that squashes the rest. Turn on Settings &gt; Layout &gt; Break Long Branches: the outgroup is drawn shortened with a break mark (its true length is still shown as the label) and the ingroup reclaims the freed width; the support values stay clear of the break mark.</description>
+  <clade>
+    <branch_length>0.0</branch_length>
+    <clade>
+      <branch_length>0.15</branch_length>
+      <confidence type="bootstrap">99</confidence>
+      <clade>
+        <branch_length>0.2</branch_length>
+        <confidence type="bootstrap">98</confidence>
+        <clade>
+          <name>Homo_sapiens</name>
+          <branch_length>0.18</branch_length>
+        </clade>
+        <clade>
+          <name>Pan_troglodytes</name>
+          <branch_length>0.15</branch_length>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>0.22</branch_length>
+        <confidence type="bootstrap">95</confidence>
+        <clade>
+          <name>Mus_musculus</name>
+          <branch_length>0.25</branch_length>
+        </clade>
+        <clade>
+          <name>Rattus_norvegicus</name>
+          <branch_length>0.2</branch_length>
+        </clade>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.18</branch_length>
+      <confidence type="bootstrap">88</confidence>
+      <clade>
+        <name>Gallus_gallus</name>
+        <branch_length>0.3</branch_length>
+      </clade>
+      <clade>
+        <name>Xenopus_laevis</name>
+        <branch_length>0.28</branch_length>
+      </clade>
+    </clade>
+    <clade>
+      <name>Fast_evolving_outgroup</name>
+      <branch_length>4.0</branch_length>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>
