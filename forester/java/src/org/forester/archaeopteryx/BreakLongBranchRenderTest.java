@@ -38,7 +38,9 @@ import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
  * Renders forester/demo/long-branch-break.xml (an ingroup with ~0.1-0.3 branches + one ~4.0 outgroup) as a phylogram
  * with "Break Long Branches" OFF then ON, and asserts: (1) the depth scale grows (the informative part reclaims the
  * width the outgroup consumed) -- an ingroup tip is drawn much farther from the root; and (2) a break glyph appears
- * across the outgroup branch (ink above/below its horizontal segment, where there is none when off). Headful; a green
+ * across the outgroup branch (ink above/below its horizontal segment, where there is none when off). Also covers the
+ * ALIGNED phylogram, preferred-size (no ballooning), a long INTERNAL branch, and RADIAL parity -- the circular AND
+ * unrooted phylograms decompress the ingroup + draw the rotated "//" glyph on the capped spoke. Headful; a green
  * no-op when headless. Dogfoods the demo.
  */
 public final class BreakLongBranchRenderTest {
@@ -235,6 +237,108 @@ public final class BreakLongBranchRenderTest {
                                 + " on=" + ipref_on + ")" );
                     }
                     o.setBreakLongBranches( false );
+
+                    // (8) RADIAL parity: the circular AND unrooted phylograms honour Break Long Branches. A tree with a
+                    // long OUTGROUP tip (20.0) behind an ingroup of ~0.3 branches (median 0.3 -> cap 2.4): capping fans
+                    // the ingroup OUT (its radius from the centre grows) while the outgroup spoke is pulled IN, and a
+                    // "//" glyph is drawn on the capped spoke. Radii are taken from the ROOT node, which sits at the
+                    // layout centre in both radial layouts. Both assertions together mutation-verify the two mechanisms:
+                    // the absolute-radius growth catches the normalizer/urt-factor cap; the ingroup/outgroup ratio
+                    // growth catches the per-spoke length cap.
+                    for( final Options.PHYLOGENY_GRAPHICS_TYPE gt : new Options.PHYLOGENY_GRAPHICS_TYPE[] {
+                            Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR, Options.PHYLOGENY_GRAPHICS_TYPE.UNROOTED } ) {
+                        final Phylogeny rphy = radialBreakTree();
+                        tp.setTree( rphy );
+                        tp.recalculateMaxDistanceToRoot(); // production pairs setTree with this; radial depth reads it
+                        tp.getControlPanel().setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM );
+                        tp.setPhylogenyGraphicsType( gt );
+                        final PhylogenyNode a = rphy.getNode( "A" ); // a deep ingroup tip
+                        final PhylogenyNode out = rphy.getNode( "OUT" ); // the long outgroup tip
+                        final boolean circular = ( gt == Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
+                        o.setBreakLongBranches( false );
+                        if ( circular ? tp.breakLongBranchesActiveCircular() : tp.breakLongBranchesActiveUnrooted() ) {
+                            fail( ok, gt + ": radial capping must be inactive while the option is off" );
+                        }
+                        renderAt( tp, w, h ); // side effect: lays out the node coordinates at this size
+                        final double a_off = radiusFromRoot( a, rphy );
+                        final double out_off = radiusFromRoot( out, rphy );
+                        o.setBreakLongBranches( true );
+                        if ( !( circular ? tp.breakLongBranchesActiveCircular()
+                                         : tp.breakLongBranchesActiveUnrooted() ) ) {
+                            fail( ok, gt + ": radial capping must be active while the option is on (phylogram + lengths)" );
+                        }
+                        renderAt( tp, w, h );
+                        final double a_on = radiusFromRoot( a, rphy );
+                        final double out_on = radiusFromRoot( out, rphy );
+                        if ( a_on <= ( a_off * 2.0 ) ) {
+                            fail( ok, gt + ": the ingroup must decompress radially (A radius off=" + a_off + " on="
+                                    + a_on + ")" );
+                        }
+                        final double ratio_off = ( out_off > 0 ) ? ( a_off / out_off ) : 0;
+                        final double ratio_on = ( out_on > 0 ) ? ( a_on / out_on ) : 0;
+                        if ( ratio_on <= ( ratio_off * 2.0 ) ) {
+                            fail( ok, gt + ": the outgroup spoke must be capped (ingroup/outgroup radius ratio off="
+                                    + ratio_off + " on=" + ratio_on + ")" );
+                        }
+                        // the "//" break glyph renders on the capped radial spoke -- isolated via the PAINT_BREAK_GLYPH
+                        // seam (layout identical), so the diff is exactly the glyph (and mutation-verifies its dispatch).
+                        final BufferedImage rg_with = renderAt( tp, w, h );
+                        final BufferedImage rg_without;
+                        TreePanel.PAINT_BREAK_GLYPH = false;
+                        try {
+                            rg_without = renderAt( tp, w, h );
+                        }
+                        finally {
+                            TreePanel.PAINT_BREAK_GLYPH = true;
+                        }
+                        final int rdiff = diffPixels( rg_with, rg_without );
+                        if ( rdiff < 20 ) {
+                            fail( ok, gt + ": a break glyph must be drawn on the capped radial spoke (diff=" + rdiff
+                                    + ")" );
+                        }
+                        if ( !tp.breakLongBranchesRelevantToRadialLayout() ) {
+                            fail( ok, gt + ": a radial branch-length phylogram must be relevant to the radial re-fit" );
+                        }
+                        o.setBreakLongBranches( false );
+                    }
+
+                    // (9) the UNROOTED OVERVIEW thumbnail caps too (mirrors paintUnrooted). The export render path skips
+                    // the overview, so drive a SCREEN paint (paintComponent) with the tree larger than the viewport so
+                    // the overview turns on, and read the thumbnail coordinates (XSecondary, taken from the root, which
+                    // sits at the overview centre). With break on the outlier's overview spoke is pulled IN (the
+                    // thumbnail ingroup/outgroup radius ratio grows) -- else the thumbnail shows the outlier dominating
+                    // while the main view caps it (the fossils_8_20-class overview inconsistency, radial edition).
+                    {
+                        final Phylogeny rphy = radialBreakTree();
+                        tp.setTree( rphy );
+                        tp.recalculateMaxDistanceToRoot();
+                        tp.getControlPanel().setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM );
+                        tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.UNROOTED );
+                        final PhylogenyNode a = rphy.getNode( "A" );
+                        final PhylogenyNode out = rphy.getNode( "OUT" );
+                        o.setShowOverview( true );
+                        final int ow = 1400, oh = 1400;
+                        frame.showWhole();
+                        tp.setSize( ow, oh ); // larger than the frame viewport (updateOvSizes turns the overview on)
+                        o.setBreakLongBranches( false );
+                        tp.calcParametersForPainting( ow, oh ); // runs updateOvSizes -> isOvOn, then draws the thumbnail
+                        paintScreen( tp, ow, oh );
+                        if ( !tp.isOvOn() ) {
+                            fail( ok, "precondition: the overview must be ON so the unrooted thumbnail is exercised" );
+                        }
+                        final double ov_ratio_off = ovRatio( a, out, rphy );
+                        o.setBreakLongBranches( true );
+                        tp.calcParametersForPainting( ow, oh );
+                        paintScreen( tp, ow, oh );
+                        final double ov_ratio_on = ovRatio( a, out, rphy );
+                        if ( ov_ratio_on <= ( ov_ratio_off * 2.0 ) ) {
+                            fail( ok, "the unrooted overview must cap the outlier too (thumbnail ingroup/outgroup ratio "
+                                    + "off=" + ov_ratio_off + " on=" + ov_ratio_on + ")" );
+                        }
+                        o.setShowOverview( false );
+                        o.setBreakLongBranches( false );
+                    }
+                    tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
                 }
                 catch ( final Throwable t ) {
                     fail( ok, "unexpected: " + t );
@@ -266,6 +370,52 @@ public final class BreakLongBranchRenderTest {
         phy.setRoot( root );
         phy.externalNodesHaveChanged();
         return phy;
+    }
+
+    /** ((A:0.3,B:0.3):0.3, OUT:20.0) -- a long OUTGROUP tip behind an ingroup of ~0.3 branches. median {0.3,0.3,0.3,20}
+     *  = 0.3 -> cap 2.4, so the 20.0 outgroup spoke caps hard (the radial decompression is dramatic, ~8x). */
+    private static Phylogeny radialBreakTree() {
+        final PhylogenyNode root = new PhylogenyNode();
+        final PhylogenyNode c = branchChild( root, null, 0.3 );
+        branchChild( c, "A", 0.3 );
+        branchChild( c, "B", 0.3 );
+        branchChild( root, "OUT", 20.0 );
+        final Phylogeny phy = new Phylogeny();
+        phy.setRoot( root );
+        phy.externalNodesHaveChanged();
+        return phy;
+    }
+
+    /** Pixel distance from a node to the tree's root node -- the root sits at the layout centre in both radial
+     *  layouts (circular: fraction 0 -> centre; unrooted: getWidth()/2, getHeight()/2), so this is the node's radius. */
+    private static double radiusFromRoot( final PhylogenyNode n, final Phylogeny phy ) {
+        final PhylogenyNode root = phy.getRoot();
+        final double dx = n.getXcoord() - root.getXcoord();
+        final double dy = n.getYcoord() - root.getYcoord();
+        return Math.sqrt( ( dx * dx ) + ( dy * dy ) );
+    }
+
+    /** Ingroup/outgroup radius ratio in the OVERVIEW thumbnail (from the XSecondary coords set by paintUnrootedLite;
+     *  the root's XSecondary is the overview centre). Grows when the outlier spoke is capped in the thumbnail. */
+    private static double ovRatio( final PhylogenyNode ingroup, final PhylogenyNode outgroup, final Phylogeny phy ) {
+        final PhylogenyNode root = phy.getRoot();
+        final double ai = Math.hypot( ingroup.getXSecondary() - root.getXSecondary(),
+                ingroup.getYSecondary() - root.getYSecondary() );
+        final double ao = Math.hypot( outgroup.getXSecondary() - root.getXSecondary(),
+                outgroup.getYSecondary() - root.getYSecondary() );
+        return ( ao > 0 ) ? ( ai / ao ) : 0;
+    }
+
+    /** Drive the on-screen paint (paintComponent) so the overview thumbnail is drawn (the export path skips it). */
+    private static void paintScreen( final TreePanel tp, final int w, final int h ) {
+        final BufferedImage img = new BufferedImage( w, h, BufferedImage.TYPE_INT_RGB );
+        final Graphics2D g = img.createGraphics();
+        try {
+            tp.paintComponent( g );
+        }
+        finally {
+            g.dispose();
+        }
     }
 
     private static PhylogenyNode branchChild( final PhylogenyNode parent, final String name, final double dtp ) {

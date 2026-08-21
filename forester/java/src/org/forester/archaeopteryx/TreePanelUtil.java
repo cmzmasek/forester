@@ -934,7 +934,7 @@ public class TreePanelUtil {
 
     /** Sentinel for {@link #maximalMonochromaticRoots}: a subtree whose descendants are not all one rank taxon
      *  (compared by reference identity, never equal to a real {@link RankTaxon}). */
-    private final static RankTaxon MIXED = new RankTaxon( null, " MIXED" );
+    private final static RankTaxon MIXED = new RankTaxon( null, "<MIXED-sentinel>" );
 
     private static TaxonomicLineageService _default_lineage_service;
 
@@ -1884,6 +1884,41 @@ public class TreePanelUtil {
     /** {@code cappedTreeHeight} ignoring collapse (take_collapse_into_account = true is the usual non-average case). */
     static double cappedTreeHeight( final Phylogeny phy, final double cap ) {
         return cappedTreeHeight( phy, cap, true );
+    }
+
+    /** Sum of the CAPPED branch lengths ({@code min(dtp, cap)}) from {@code node} up to (not including) the root -- the
+     *  capped analogue of {@code PhylogenyNode.calculateDistanceToRoot}, used to place a node's radius/spoke in the
+     *  radial (circular / unrooted) layouts while Break Long Branches is active. Pure. */
+    static double cappedDistanceToRoot( final PhylogenyNode node, final double cap ) {
+        double d = 0;
+        PhylogenyNode n = node;
+        while ( ( n != null ) && !n.isRoot() ) {
+            final double dtp = n.getDistanceToParent();
+            if ( dtp > 0 ) {
+                d += ( dtp > cap ) ? cap : dtp;
+            }
+            n = n.getParent();
+        }
+        return d;
+    }
+
+    /** The largest {@link #cappedDistanceToRoot} over all external tips (root branch EXCLUDED) -- the capped analogue of
+     *  {@code PhylogenyMethods.calculateMaxDistanceToRoot}, used as the RADIAL (circular / unrooted) normalizer so the
+     *  deepest capped tip lands on the outer ring/diameter exactly as the uncapped deepest tip does. Differs from
+     *  {@link #cappedTreeHeight}, which INCLUDES the capped root branch (parity with calculateHeight -- the RECTANGULAR
+     *  depth) and is collapse-aware; this mirrors getMaxDistanceToRoot (root-excluded, collapse-unaware). Pure. */
+    static double cappedMaxDistanceToRoot( final Phylogeny phy, final double cap ) {
+        if ( ( phy == null ) || phy.isEmpty() || ( cap <= 0 ) ) {
+            return 0;
+        }
+        double max = 0;
+        for( final PhylogenyNode ext : phy.getExternalNodes() ) {
+            final double d = cappedDistanceToRoot( ext, cap );
+            if ( d > max ) {
+                max = d;
+            }
+        }
+        return max;
     }
 
     private static double cappedDistance( final PhylogenyNode n, final double cap ) {

@@ -2006,9 +2006,9 @@ public final class TreePanelUtilTest {
         // -> the internal branch caps to 8, so the deepest path root->clade(8)->A(1) = 9 (not 41), NOT off at the true 41
         final PhylogenyNode ir = new PhylogenyNode();
         final PhylogenyNode iclade = blChild( ir, null, 40 ); // the long internal branch
-        blChild( iclade, "A", 1 );
+        final PhylogenyNode ia = blChild( iclade, "A", 1 );
         blChild( iclade, "B", 1 );
-        blChild( ir, "C", 1 );
+        final PhylogenyNode ic = blChild( ir, "C", 1 );
         final Phylogeny iphy = new Phylogeny();
         iphy.setRoot( ir );
         iphy.externalNodesHaveChanged();
@@ -2017,6 +2017,16 @@ public final class TreePanelUtilTest {
                 || ( Math.abs( TreePanelUtil.cappedTreeHeight( iphy, icap ) - 9.0 ) > 1e-9 ) ) {
             return fail( "a long internal branch must cap (cap 8, capped height 9), got cap=" + icap + " height="
                     + TreePanelUtil.cappedTreeHeight( iphy, icap ) );
+        }
+        // cappedDistanceToRoot places a node's radius/spoke radially: it sums CAPPED branch lengths to the root, so a tip
+        // behind the long internal branch pulls in (A: min(1,8)+min(40,8) = 9, NOT the true 41) while a normal tip is exact
+        // (C: 1); the root is 0. This is the radial (circular/unrooted) analogue of the rectangular capped depth.
+        if ( ( Math.abs( TreePanelUtil.cappedDistanceToRoot( ia, icap ) - 9.0 ) > 1e-9 )
+                || ( Math.abs( TreePanelUtil.cappedDistanceToRoot( ic, icap ) - 1.0 ) > 1e-9 )
+                || ( TreePanelUtil.cappedDistanceToRoot( ir, icap ) != 0.0 ) ) {
+            return fail( "cappedDistanceToRoot wrong (A must be 9, C must be 1, root 0), got A="
+                    + TreePanelUtil.cappedDistanceToRoot( ia, icap ) + " C=" + TreePanelUtil.cappedDistanceToRoot( ic, icap )
+                    + " root=" + TreePanelUtil.cappedDistanceToRoot( ir, icap ) );
         }
         // zeros (polytomy branches) are excluded from the median: {0,0,2,4,6} -> median 4, not 2
         final PhylogenyNode r2 = new PhylogenyNode();
@@ -2046,6 +2056,16 @@ public final class TreePanelUtilTest {
         if ( Math.abs( TreePanelUtil.cappedTreeHeight( phy4, 1.0e9 ) - phy4.calculateHeight( true ) ) > 1e-9 ) {
             return fail( "capped height (huge cap) must equal calculateHeight incl. the root branch, got "
                     + TreePanelUtil.cappedTreeHeight( phy4, 1.0e9 ) + " vs " + phy4.calculateHeight( true ) );
+        }
+        // the RADIAL normalizer EXCLUDES the root branch (matching cappedDistanceToRoot / getMaxDistanceToRoot), so the
+        // deepest capped tip fills the ring exactly even with a positive root branch. phy4's deepest tip is 2 from the
+        // root (a: 1+1, or c: 2); cappedMaxDistanceToRoot must be 2, i.e. cappedTreeHeight (5, root-included) minus the
+        // 3.0 root branch -- else a circular/unrooted tree with a root branch would under-fill the ring/diameter.
+        if ( ( Math.abs( TreePanelUtil.cappedMaxDistanceToRoot( phy4, 1.0e9 ) - 2.0 ) > 1e-9 )
+                || ( Math.abs( TreePanelUtil.cappedMaxDistanceToRoot( phy4, 1.0e9 )
+                        - ( TreePanelUtil.cappedTreeHeight( phy4, 1.0e9 ) - 3.0 ) ) > 1e-9 ) ) {
+            return fail( "cappedMaxDistanceToRoot must EXCLUDE the root branch (expect 2 = cappedTreeHeight 5 - root 3), "
+                    + "got " + TreePanelUtil.cappedMaxDistanceToRoot( phy4, 1.0e9 ) );
         }
         // collapse-aware: cappedTreeHeight mirrors calculateHeight under display-collapse (a collapsed clade counts only
         // to its root). Deep clade (tips at depth 6) + a shallow tip (depth 2); collapsing the deep clade drops the

@@ -418,6 +418,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private Phylogeny _break_cap_for = null;
     private double _break_cap = 0;
     private double _break_capped_height = 0;
+    // the RADIAL normalizer: max capped distance-to-root over the tips (root branch EXCLUDED, collapse-unaware) -- the
+    // capped analogue of getMaxDistanceToRoot, so a positive root branch does not under-fill the ring (differs from
+    // _break_capped_height, which is root-INCLUDED + collapse-aware for the rectangular depth scale)
+    private double _break_capped_radial_max = 0;
     // the capped height depends on the display-collapse state too (a collapsed clade is measured only to its root),
     // which changes WITHOUT replacing _phylogeny -- so the cache is also keyed by the collapsed-tip-set size
     private int _break_capped_height_collapse_sig = -1;
@@ -940,6 +944,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             // collapse-aware, matching the collapse-aware calculateHeight the non-break depth scale uses
             _break_capped_height = (_break_cap > 0) ? TreePanelUtil.cappedTreeHeight(_phylogeny, _break_cap,
                     !_options.isCollapsedWithAverageHeigh()) : 0;
+            _break_capped_radial_max = (_break_cap > 0)
+                    ? TreePanelUtil.cappedMaxDistanceToRoot(_phylogeny, _break_cap) : 0;
             _break_cap_for = _phylogeny;
             _break_capped_height_collapse_sig = collapse_sig;
         }
@@ -955,6 +961,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private double breakCappedHeight() {
         ensureBreakCap();
         return _break_capped_height;
+    }
+
+    /** The RADIAL normalizer while capping: the largest capped distance-from-root over the tips (root branch EXCLUDED),
+     *  so the deepest capped tip lands on the outer ring/diameter -- the capped analogue of {@link #getMaxDistanceToRoot()}
+     *  (which the radial layouts use when not capping). Distinct from {@link #breakCappedHeight()}, which is
+     *  root-INCLUDED for the rectangular depth scale. See circularRadiusFraction / setUpUrtFactor. */
+    private double breakCappedRadialMax() {
+        ensureBreakCap();
+        return _break_capped_radial_max;
     }
 
     /** The max distance from the root that is actually DRAWN: the capped tree height while Break Long Branches is
@@ -991,16 +1006,46 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return isBreakLongBranches() && breakLongBranchesRelevantToLayout() && (breakLongBranchCap() > 0);
     }
 
-    /** Draw an axis-break glyph ("//" with a small gap in the branch) centred at (mx, my) on a capped branch. */
+    /** Whether Break Long Branches is capping in the CIRCULAR phylogram (radius encodes distance-from-root = the
+     *  capped distance): a branch over the cap is drawn as a shorter radial leg + a break glyph, pulling its clade
+     *  inward so the informative rings decompress. See circularRadiusFraction. */
+    final boolean breakLongBranchesActiveCircular() {
+        return isBreakLongBranches() && isCircularPhylogram() && (breakLongBranchCap() > 0);
+    }
+
+    /** Whether Break Long Branches is capping in the UNROOTED layout (each branch's radial spoke length is capped;
+     *  the urt factor is derived from the capped height so the informative part fans out). See setUpUrtFactor /
+     *  paintUnrooted. */
+    final boolean breakLongBranchesActiveUnrooted() {
+        return isBreakLongBranches() && (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED)
+                && getControlPanel().isDrawPhylogram() && isPhyHasBranchLengths() && (breakLongBranchCap() > 0);
+    }
+
+    /** Option-INDEPENDENT: whether a RADIAL layout (circular / unrooted phylogram with branch lengths) is one the
+     *  feature caps -- drives the re-fit on toggle (ON to apply, OFF to restore), like breakLongBranchesRelevantToLayout
+     *  does for the rectangular family. (Unrooted derives its urt factor in the fit pass, so a re-fit is needed.) */
+    final boolean breakLongBranchesRelevantToRadialLayout() {
+        return (getControlPanel() != null) && isRadialLayout() && getControlPanel().isDrawPhylogram()
+                && isPhyHasBranchLengths();
+    }
+
+    /** Draw an axis-break glyph ("//" with a small gap in the branch) centred at (mx, my) on a capped branch drawn
+     *  along {@code branch_angle} (0 = a horizontal rectangular segment; the radial layouts pass the spoke angle so the
+     *  gap rides the branch and the slashes cross it). */
     private void paintBranchBreakGlyph(final Graphics2D g,
                                        final float mx,
                                        final float my,
+                                       final double branch_angle,
                                        final boolean to_graphics_file) {
         if (!PAINT_BREAK_GLYPH) {
             return;
         }
         final Color ink = g.getColor();
         final Stroke saved_stroke = g.getStroke();
+        final java.awt.geom.AffineTransform saved_tx = g.getTransform();
+        if (branch_angle != 0) {
+            g.rotate(branch_angle, mx, my); // align the glyph with the branch direction (radial spoke)
+        }
         final float h = BRANCH_BREAK_GLYPH_HALF_HEIGHT;
         final float run = BRANCH_BREAK_GLYPH_SLANT;
         final float gap = BRANCH_BREAK_GLYPH_GAP;
@@ -1018,6 +1063,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.draw(new Line2D.Float(mx + gap - run, my + h, mx + gap + run, my - h));
         g.setColor(ink);
         g.setStroke(saved_stroke);
+        g.setTransform(saved_tx);
     }
 
     final private void cannotOpenBrowserWarningMessage(final String type_type) {
@@ -2448,7 +2494,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             // is never silently shortened without a marker.
             if (breakLongBranchesActive() && (node.getDistanceToParent() > breakLongBranchCap())) {
                 paintBranchBreakGlyph(g, x1 + ((x2 - x1) * BRANCH_BREAK_GLYPH_FRACTION),
-                        y1 + ((y2 - y1) * BRANCH_BREAK_GLYPH_FRACTION), to_graphics_file);
+                        y1 + ((y2 - y1) * BRANCH_BREAK_GLYPH_FRACTION), 0, to_graphics_file);
             }
         } else {
             final float x2a = x2;
@@ -2530,7 +2576,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             // "Break Long Branches": mark a capped branch with an axis-break glyph across the middle of its horizontal
             // segment (the segment is drawn shortened; the true length is still shown by the branch-length label).
             if (breakLongBranchesActive() && (node.getDistanceToParent() > breakLongBranchCap())) {
-                paintBranchBreakGlyph(g, x1a + ((x2a - x1a) * BRANCH_BREAK_GLYPH_FRACTION), y2, to_graphics_file);
+                paintBranchBreakGlyph(g, x1a + ((x2a - x1a) * BRANCH_BREAK_GLYPH_FRACTION), y2, 0, to_graphics_file);
             }
             if ((getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.ROUNDED)) {
                 if (x1_r > x2a) {
@@ -5661,6 +5707,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     boolean geologicRingsApplyCircular() {
         return (effectiveTimeAxisType() == Options.TIME_AXIS_TYPE.GEOLOGIC)
                 && isCircularPhylogram()
+                && !breakLongBranchesActiveCircular() // capped radius no longer lines up with the age rings
                 && (timeAxisRootAgeMa() > 0);
     }
 
@@ -5683,6 +5730,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     boolean calendarRingsApplyCircular() {
         return (effectiveTimeAxisType() == Options.TIME_AXIS_TYPE.CALENDAR)
                 && isCircularPhylogram()
+                && !breakLongBranchesActiveCircular() // capped radius no longer lines up with the year rings
                 && (timeAxisPresentDate() > 0);
     }
 
@@ -6251,11 +6299,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final double arc_size = (desc_num_enclosed / num_enclosed) * (high_angle - low_angle);
             float length;
             if (isPhyHasBranchLengths() && getControlPanel().isDrawPhylogram()) {
-                if (desc.getDistanceToParent() < 0) {
-                    length = 0;
-                } else {
-                    length = (float) (desc.getDistanceToParent() * getUrtFactor());
+                double dtp = desc.getDistanceToParent();
+                if (dtp < 0) {
+                    dtp = 0;
+                } else if (breakLongBranchesActiveUnrooted() && (dtp > breakLongBranchCap())) {
+                    dtp = breakLongBranchCap(); // "Break Long Branches": cap the spoke length (glyph drawn below)
                 }
+                length = (float) (dtp * getUrtFactor());
             } else {
                 length = getUrtFactor();
             }
@@ -6268,6 +6318,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             current_angle += arc_size;
             assignGraphicsForBranchWithColorForParentBranch(desc, false, g, to_pdf, to_graphics_file);
             drawLine(x, y, new_x, new_y, g);
+            // "Break Long Branches": mark a capped spoke with a break glyph, rotated to the branch direction, at 0.72
+            // along it (clear of the support/length numbers at the midpoint)
+            if (breakLongBranchesActiveUnrooted() && (desc.getDistanceToParent() > breakLongBranchCap())) {
+                paintBranchBreakGlyph(g, (float) (x + ((new_x - x) * BRANCH_BREAK_GLYPH_FRACTION)),
+                        (float) (y + ((new_y - y) * BRANCH_BREAK_GLYPH_FRACTION)), mid_angle, to_graphics_file);
+            }
             // support + branch-length numbers ride the middle of this branch, rotated to its direction (mid_angle)
             paintBranchDataRadial(g, desc, (x + new_x) / 2.0, (y + new_y) / 2.0, mid_angle, to_pdf, to_graphics_file);
             paintNodeBox(new_x, new_y, desc, g, to_pdf, to_graphics_file);
@@ -6309,11 +6365,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final double arc_size = (desc_num_enclosed / num_enclosed) * (high_angle - low_angle);
             float length;
             if (isPhyHasBranchLengths() && getControlPanel().isDrawPhylogram()) {
-                if (desc.getDistanceToParent() < 0) {
-                    length = 0;
-                } else {
-                    length = (float) (desc.getDistanceToParent() * urt_ov_factor);
+                double dtp = desc.getDistanceToParent();
+                if (dtp < 0) {
+                    dtp = 0;
+                } else if (breakLongBranchesActiveUnrooted() && (dtp > breakLongBranchCap())) {
+                    dtp = breakLongBranchCap(); // "Break Long Branches": cap the spoke here too, matching paintUnrooted
                 }
+                length = (float) (dtp * urt_ov_factor);
             } else {
                 length = urt_ov_factor;
             }
@@ -6580,7 +6638,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             d = getVisibleRect().width < getVisibleRect().height ? getVisibleRect().width : getVisibleRect().height;
         }
         if (isPhyHasBranchLengths() && getControlPanel().isDrawPhylogram()) {
-            setUrtFactor((float) (d / (2 * getMaxDistanceToRoot())));
+            // "Break Long Branches": scale by the CAPPED radial max so the informative part fans out (matches
+            // paintUnrooted, which caps each branch's spoke length; root-EXCLUDED, like getMaxDistanceToRoot)
+            final double max = breakLongBranchesActiveUnrooted() ? breakCappedRadialMax() : getMaxDistanceToRoot();
+            setUrtFactor((float) (d / (2 * max)));
         } else {
             final int max_depth = _circ_max_depth;
             if (max_depth > 0) {
@@ -9641,7 +9702,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 || !isBranchLengthTimeCalibrated()) {
             return;
         }
-        final double max_dist = getMaxDistanceToRoot();
+        // while capping, use the CAPPED radial normalizer so the interval scale matches the (capped) r_node -- like the
+        // rectangular paintHpdBars, whose corr becomes the capped corr; else the bar is scaled off the uncapped max
+        final double max_dist = breakLongBranchesActiveCircular() ? breakCappedRadialMax() : getMaxDistanceToRoot();
         if (max_dist <= 0) {
             return;
         }
@@ -9847,7 +9910,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 || !isBranchLengthTimeCalibrated()) {
             return;
         }
-        final double max_dist = getMaxDistanceToRoot();
+        // while capping, use the CAPPED radial normalizer so the range-bar scale matches the (capped) r_node (parity
+        // with the rectangular fossil bars, which ride the capped corr)
+        final double max_dist = breakLongBranchesActiveCircular() ? breakCappedRadialMax() : getMaxDistanceToRoot();
         if (max_dist <= 0) {
             return;
         }
@@ -11346,6 +11411,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final double inward_x = root_x + (Math.cos(angle) * parent_radius);
         final double inward_y = root_y + (Math.sin(angle) * parent_radius);
         drawLine(c.getXcoord(), c.getYcoord(), inward_x, inward_y, g);
+        // "Break Long Branches": mark a capped radial leg with a break glyph, rotated to the spoke, at 0.72 along the
+        // leg (clear of the support/length numbers centred at the midpoint)
+        if (breakLongBranchesActiveCircular() && (c.getDistanceToParent() > breakLongBranchCap())) {
+            paintBranchBreakGlyph(g,
+                    (float) (inward_x + ((c.getXcoord() - inward_x) * BRANCH_BREAK_GLYPH_FRACTION)),
+                    (float) (inward_y + ((c.getYcoord() - inward_y) * BRANCH_BREAK_GLYPH_FRACTION)), angle,
+                    to_graphics_file);
+        }
         // support + branch-length numbers ride the middle of this radial leg (rectangular draws them via
         // paintConfidenceValues/paintBranchLength, which are horizontal-branch only)
         paintBranchDataRadial(g, c, (c.getXcoord() + inward_x) / 2.0, (c.getYcoord() + inward_y) / 2.0, angle, to_pdf,
@@ -11488,7 +11561,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return 0;
         }
         if (isCircularPhylogram()) {
-            final double f = node.calculateDistanceToRoot() / getMaxDistanceToRoot();
+            // "Break Long Branches": the radius encodes the CAPPED distance-from-root, normalised by the capped height,
+            // so an outlier branch is drawn as a shorter radial leg and the informative rings reclaim the ring.
+            final boolean cap = breakLongBranchesActiveCircular();
+            final double dist = cap ? TreePanelUtil.cappedDistanceToRoot(node, breakLongBranchCap())
+                    : node.calculateDistanceToRoot();
+            // root-EXCLUDED capped normalizer (matches cappedDistanceToRoot), so the deepest tip fills the ring exactly
+            final double max = cap ? breakCappedRadialMax() : getMaxDistanceToRoot();
+            final double f = (max > 0) ? (dist / max) : 0;
             return (f < 0) ? 0 : ((f > 1) ? 1 : f); // clamp a root-branch / rounding overshoot onto the ring
         }
         if (node.isExternal()) {
@@ -11872,8 +11952,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             paintGeologicRingsCircular(g, center_x, center_y, radius > 0 ? radius : 0, to_pdf, to_graphics_file);
             // concentric CALENDAR-year rings behind the tree (a no-op unless CALENDAR + a circular phylogram)
             paintCalendarRingsCircular(g, center_x, center_y, radius > 0 ? radius : 0, to_pdf, to_graphics_file);
-            if (!geologicRingsApplyCircular() && !calendarRingsApplyCircular()) {
-                // concentric distance rings behind the tree (a no-op unless this is a circular PHYLOGRAM)
+            if (!geologicRingsApplyCircular() && !calendarRingsApplyCircular() && !breakLongBranchesActiveCircular()) {
+                // concentric distance rings behind the tree (a no-op unless this is a circular PHYLOGRAM); suppressed
+                // while capping -- the radius is the CAPPED distance, so linear distance rings would misalign
                 paintCircularScaleRings(g, center_x, center_y, radius > 0 ? radius : 0, to_pdf, to_graphics_file);
             }
             paintCircular(_phylogeny, getStartingAngle(), center_x, center_y, radius > 0 ? radius : 0, g, to_pdf,

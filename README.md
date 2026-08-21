@@ -472,11 +472,13 @@ tree's strictly-positive branch lengths — a robust threshold (unaffected by th
 outlier being detected, or by the many zero-length branches of a polytomy-heavy
 tree), so a well-behaved, near-clock tree shows no breaks at all. This is a
 graphical convention (as offered by interactive viewers such as iTOL's *cut long
-branches*), not an inference step. It applies to both the unaligned "P" and aligned
-"A" phylograms across the rectangular family of layouts (root-left / -top / -bottom
-and triangular) — in the aligned view the broken branch is capped and its tip still
-lines up at the common label column; the circular/unrooted layouts are a planned
-follow-up. While it is on, the small **scale bar** is kept — sized to the un-broken
+branches*), not an inference step. It applies in **all** phylogram layouts — the
+unaligned "P" and aligned "A" rectangular family (root-left / -top / -bottom and
+triangular), and the **circular** and **unrooted** radial views. In the aligned view
+the broken branch is capped and its tip still lines up at the common label column; in
+the radial views the outlier's spoke is shortened (the informative part fans out to
+reclaim the disc) with the break glyph rotated to ride the spoke. While it is on
+(rectangular), the small **scale bar** is kept — sized to the un-broken
 (ingroup) scale, so it reads correctly for the bulk of the tree — but the full-width
 scale **axis** and **grid lines** are hidden, since a single linear ruler across the
 whole width can't represent a truncated branch (the break mark denotes the

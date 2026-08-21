@@ -555,13 +555,15 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             updateOptions(getOptions());
         } else if (o == _break_long_branches_cbmi) {
             updateOptions(getOptions());
-            // capping an outlier branch changes the depth scale (the informative part reclaims the freed width), so
-            // re-fit whenever the toggle FLIPS -- ON to apply the capping, OFF to restore the uncapped layout (the guard
-            // is option-INDEPENDENT: it asks whether this layout is one the feature affects, so OFF re-fits too). Only a
-            // rectangular-family unaligned phylogram with branch lengths, so a cladogram / aligned / radial layout stays
-            // put (its radial zoom isn't reset). showWhole re-fits to the viewport -> no preferred-size feedback / drift.
+            // capping an outlier branch changes the depth scale / radial spread (the informative part reclaims the freed
+            // width or disc), so re-fit whenever the toggle FLIPS -- ON to apply the capping, OFF to restore the uncapped
+            // layout (the guard is option-INDEPENDENT: it asks whether this layout is one the feature affects, so OFF
+            // re-fits too). Fires for a rectangular-family phylogram (unaligned "P" or aligned "A") AND for a radial
+            // (circular / unrooted) phylogram -- the latter re-fits the radial zoom via showWhole -- but NOT for a
+            // cladogram. showWhole re-fits to the viewport -> no preferred-size feedback / drift.
             final TreePanel tp = getCurrentTreePanel();
-            if ((tp != null) && tp.breakLongBranchesRelevantToLayout()) {
+            if ((tp != null)
+                    && (tp.breakLongBranchesRelevantToLayout() || tp.breakLongBranchesRelevantToRadialLayout())) {
                 showWhole();
             }
         } else if (o == _show_internal_taxonomy_key_cbmi) {
