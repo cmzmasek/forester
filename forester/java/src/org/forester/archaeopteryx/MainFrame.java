@@ -266,6 +266,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem _export_node_data_item;
     JMenuItem _import_annotations_item;
     JMenuItem _import_annotations_url_item;
+    JMenuItem _import_gtdb_item;
     JMenuItem _reimport_annotations_item;
     // tools menu:
     JMenuItem _midpoint_root_item;
@@ -722,6 +723,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             exportNodeDataAsTsv();
         } else if (o == _import_annotations_item) {
             importAnnotations();
+        } else if (o == _import_gtdb_item) {
+            importGtdbTaxonomy();
         } else if (o == _import_annotations_url_item) {
             importAnnotationsFromUrl();
         } else if (o == _reimport_annotations_item) {
@@ -3541,6 +3544,163 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             sb.append(" Columns: ").append(String.join(", ", property_columns)).append(".");
         }
         return sb.toString();
+    }
+
+    /**
+     * File -> Import GTDB Taxonomy: read a GTDB-Tk-style table (a tip-key column + a GTDB classification column
+     * {@code d__…;…;s__…}) and write the genome-based taxonomy onto the matching tips -- each rank as a
+     * {@code gtdb:<rank>} property + a taxonomy at the most specific rank -- so GTDB (the bacterial/archaeal standard)
+     * drives Color-by / Annotation Columns / search entirely offline. Undoable.
+     */
+    void importGtdbTaxonomy() {
+        final Phylogeny phy = currentPhylogenyForExport();
+        if (phy == null) {
+            return;
+        }
+        final JFileChooser fc = new JFileChooser();
+        fc.setMultiSelectionEnabled(false);
+        fc.setDialogTitle("Import GTDB Taxonomy (GTDB-Tk table)");
+        fc.setFileFilter(new FileNameExtensionFilter("GTDB-Tk / GTDB tables (*.tsv, *.csv, *.txt)", "tsv", "csv", "txt"));
+        if (getCurrentDir(DirectoryPreferences.Category.OPEN) != null) {
+            fc.setCurrentDirectory(getCurrentDir(DirectoryPreferences.Category.OPEN));
+        }
+        if (fc.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+        final File file = fc.getSelectedFile();
+        if (file == null) {
+            return;
+        }
+        setCurrentDir(DirectoryPreferences.Category.OPEN, fc.getCurrentDirectory());
+        final String text;
+        try {
+            text = Files.readString(file.toPath());
+        }
+        catch (final IOException e) {
+            JOptionPane.showMessageDialog(this, "Failed to read " + file + ":\n" + e.getMessage(), "Read Failed",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        final int annotated = importGtdbAndRefit(phy, text, file.getName());
+        if (annotated < 0) {
+            JOptionPane.showMessageDialog(this,
+                    "Could not read a GTDB classification from \"" + file.getName() + "\".\n"
+                            + "Expected a table (TSV/CSV) with a tip-name column and a GTDB classification column "
+                            + "(values like d__Bacteria;p__…;s__…), e.g. a GTDB-Tk summary.",
+                    "Import GTDB Taxonomy", JOptionPane.WARNING_MESSAGE);
+        }
+        else if (annotated == 0) {
+            JOptionPane.showMessageDialog(this,
+                    "No tips matched the table's key column by name — nothing was imported.\n"
+                            + "The classification column was found, but no tip name equalled a row's key.",
+                    "Import GTDB Taxonomy", JOptionPane.WARNING_MESSAGE);
+        }
+        else {
+            JOptionPane.showMessageDialog(this,
+                    "Imported GTDB taxonomy onto " + annotated + " of " + phy.getNumberOfExternalNodes()
+                            + " tips.\nColor by (or add an Annotation Column for) gtdb:phylum / gtdb:family / gtdb:genus …",
+                    "Import GTDB Taxonomy", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+    /**
+     * Dialog-free testable core of {@link #importGtdbTaxonomy()}: parse the table, find the GTDB classification column
+     * (values look like {@code d__…}) and the key column (a genome-id / node_id / name column, else the first
+     * non-classification column -- see {@link #gtdbKeyColumn}), apply the classifications to tips matched BY NAME, and
+     * -- only when it changed the tree -- checkpoint undo, append a provenance sentence, re-lay-out, and refresh the
+     * Color-by / search inputs. Returns the number of tips annotated, or -1 on a parse error / no GTDB classification
+     * column.
+     */
+    int importGtdbAndRefit(final Phylogeny phy, final String text, final String source_name) {
+        final NodeDataImporter.Table table;
+        try {
+            table = NodeDataImporter.parseTable(text);
+        }
+        catch (final Exception e) {
+            return -1;
+        }
+        final int class_col = gtdbClassificationColumn(table);
+        if (class_col < 0) {
+            return -1;
+        }
+        final int key_col = gtdbKeyColumn(table, class_col);
+        final java.util.Map<String, String> map = new java.util.HashMap<String, String>();
+        for (int r = 0; r < table.getRowCount(); ++r) {
+            final String k = table.getCell(r, key_col);
+            final String c = table.getCell(r, class_col);
+            if ((k != null) && (k.trim().length() > 0) && (c != null)) {
+                map.put(k.trim(), c);
+            }
+        }
+        final TreePanel tp = getCurrentTreePanel();
+        final Phylogeny before = (tp != null) ? phy.copy() : null;
+        final boolean was_edited = (tp != null) && tp.isEdited();
+        final int total_tips = phy.getNumberOfExternalNodes();
+        final int annotated;
+        try {
+            annotated = org.forester.archaeopteryx.tools.GtdbTaxonomy.applyByTipName(phy, map);
+        }
+        catch (final Exception e) {
+            return -1;
+        }
+        if ((annotated > 0) && (tp != null)) {
+            tp.pushUndoSnapshot(before, was_edited, "Import GTDB Taxonomy");
+            final String prov = "Imported GTDB taxonomy from table \"" + source_name + "\" onto " + annotated + " of "
+                    + total_tips + (total_tips == 1 ? " tip" : " tips") + " (gtdb:domain … gtdb:species).";
+            final String existing = phy.getDescription();
+            phy.setDescription(ForesterUtil.isEmpty(existing) ? prov : existing + " " + prov);
+            tp.setTree(phy);
+            tp.getControlPanel().populateColorByPropertyBox(); // surface the gtdb:* ranks in "Color by:"
+            tp.getControlPanel().populateSizeByPropertyBox(); // (consistency with the annotation-import refresh path)
+            tp.getControlPanel().populateAncestralPieBox();
+            tp.getControlPanel().rebuildSearchFields(true); // and as searchable fields (forced: same tree, new data)
+            showWhole();
+            tp.setEdited(true);
+        }
+        return annotated;
+    }
+
+    /** The first table column whose values look like a GTDB classification string ({@code d__…;p__…;s__…}); -1 if
+     *  none. Package-visible for {@link ImportGtdbToolTest}. */
+    static int gtdbClassificationColumn(final NodeDataImporter.Table table) {
+        for (int c = 0; c < table.getColumnCount(); ++c) {
+            for (int r = 0; r < table.getRowCount(); ++r) {
+                if (org.forester.archaeopteryx.tools.GtdbTaxonomy.looksLikeGtdb(table.getCell(r, c))) {
+                    return c;
+                }
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * The column to key the join on (matched against tip names), given the detected {@code class_col}. Prefers a GTDB-Tk
+     * genome-id header (user_genome / genome / accession / bin_id / bin), else the table's node_id/name key column, else
+     * the first column that is not the classification -- so an unrelated "name" column can't hijack the key on a
+     * GTDB-Tk table that also carries one. Package-visible for {@link ImportGtdbToolTest}.
+     */
+    static int gtdbKeyColumn(final NodeDataImporter.Table table, final int class_col) {
+        final String[] headers = table.getHeaders();
+        for (int c = 0; c < headers.length; ++c) {
+            if (c == class_col) {
+                continue;
+            }
+            final String h = (headers[c] == null) ? "" : headers[c].trim().toLowerCase(java.util.Locale.ROOT);
+            if (h.equals("user_genome") || h.equals("genome") || h.equals("accession") || h.equals("bin_id")
+                    || h.equals("bin")) {
+                return c;
+            }
+        }
+        final int def = table.defaultKeyColumn(); // a node_id/name column if the table has one (else 0)
+        if ((def >= 0) && (def != class_col)) {
+            return def;
+        }
+        for (int c = 0; c < table.getColumnCount(); ++c) {
+            if (c != class_col) {
+                return c;
+            }
+        }
+        return class_col; // single-column table (degenerate; applyByTipName then matches the classification as a name)
     }
 
     /**

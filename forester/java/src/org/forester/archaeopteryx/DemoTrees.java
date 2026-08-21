@@ -107,6 +107,16 @@ final class DemoTrees {
                                  openTree( mf, "bat-phylogeny.xml" );
                                  colorizeRank( mf, "family" ); // 8 families light up from the in-tree clade annotations
                              } ) );
+        demos.add( new Demo( "GTDB Taxonomy (Genome-based)",
+                             "14 Bacteria + Archaea genomes named only by accession, with the GTDB (genome-based "
+                                     + "microbial standard) classification imported from a GTDB-Tk table and coloured by "
+                                     + "phylum -- entirely offline.",
+                             mf -> {
+                                 final TreePanel tp = openTree( mf, "gtdb-genomes.xml" );
+                                 mf.importGtdbAndRefit( tp.getPhylogeny(), loadText( "gtdb-classifications.tsv" ),
+                                                        "gtdb-classifications.tsv" );
+                                 colorBy( mf, "gtdb:phylum" ); // the genome-based phyla light up
+                             } ) );
         demos.add( new Demo( "Ancestral State Pies (Phylogeography)",
                              "A discrete geographic trait as posterior-probability pie charts at the internal nodes.",
                              mf -> {

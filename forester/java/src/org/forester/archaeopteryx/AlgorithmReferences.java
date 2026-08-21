@@ -133,6 +133,18 @@ final class AlgorithmReferences {
                         + "imported (Archaeopteryx is a tree viewer). Nextstrain / Auspice: Hadfield J, Megill C, Bell SM, "
                         + "Huddleston J, Potter B, Callender C, Sagulenko P, Bedford T, Neher RA (2018): \"Nextstrain: "
                         + "real-time tracking of pathogen evolution\", Bioinformatics 34(23):4121–4123." ) );
+        refs.add( new Reference( "GTDB taxonomy import (File → Import GTDB Taxonomy)",
+                "Reads a GTDB-Tk-style classification table (a tip-name column + a GTDB lineage column, "
+                        + "d__Bacteria;p__…;g__…;s__…) and writes the genome-based bacterial/archaeal taxonomy onto the "
+                        + "matching tips: each of the seven standardized ranks (domain/phylum/class/order/family/genus/"
+                        + "species) becomes a categorical gtdb:<rank> node property -- so Color by / Annotation Columns / "
+                        + "search work at any rank -- plus a taxonomy at the most specific rank. Entirely offline; no "
+                        + "network lookup. GTDB (Genome Taxonomy Database): Parks DH, Chuvochina M, Rinke C, Mussig AJ, "
+                        + "Chaumeil P-A, Hugenholtz P (2022): \"GTDB: an ongoing census of bacterial and archaeal "
+                        + "diversity through a phylogenetically consistent, rank normalized and complete genome-based "
+                        + "taxonomy\", Nucleic Acids Research 50(D1):D785–D794. The classification tables are produced by "
+                        + "GTDB-Tk: Chaumeil P-A, Mussig AJ, Hugenholtz P, Parks DH (2020): \"GTDB-Tk: a toolkit to "
+                        + "classify genomes with the Genome Taxonomy Database\", Bioinformatics 36(6):1925–1927." ) );
         refs.add( new Reference( "phyloXML (file format)", ForesterConstants.PHYLO_XML_REFERENCE ) );
         return refs;
     }

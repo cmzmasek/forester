@@ -1583,6 +1583,12 @@ public final class MainFrameApplication extends MainFrame {
         _reimport_annotations_item.setToolTipText("<html>Re-fetch this tree's last annotation source (file or URL) and "
                 + "re-apply the same key column, match attribute, and column mapping with one click.<br><i>Edit your "
                 + "sheet/file, then pull the changes in without walking the dialog again.</i></html>");
+        _file_jmenu.add(_import_gtdb_item = new JMenuItem("Import GTDB Taxonomy..."));
+        _import_gtdb_item.setToolTipText("<html>Read a GTDB-Tk table (a tip-name column + a GTDB classification column, "
+                + "<i>d__Bacteria;p__…;s__…</i>) and write the genome-based bacterial/archaeal taxonomy onto the tips: "
+                + "each rank becomes a <i>gtdb:&lt;rank&gt;</i> property (so you can Color by / add an Annotation Column "
+                + "for gtdb:phylum, gtdb:family, gtdb:genus …) plus a taxonomy at the most specific rank. Entirely "
+                + "offline. Undoable.</html>");
         _file_jmenu.addSeparator();
         _file_jmenu.add(_close_item = new JMenuItem("Close Tab"));
         _close_item.setToolTipText("To close the current pane.");
@@ -1608,6 +1614,7 @@ public final class MainFrameApplication extends MainFrame {
         customizeJMenuItem(_import_annotations_item);
         customizeJMenuItem(_import_annotations_url_item);
         customizeJMenuItem(_reimport_annotations_item);
+        customizeJMenuItem(_import_gtdb_item);
         customizeJMenuItem(_exit_item);
         // Keyboard shortcuts for the common File actions. The platform menu-shortcut key is Cmd on macOS, Ctrl
         // elsewhere. Copy Image uses Shift too, deliberately NOT plain Cmd-C, so it can't hijack text copy in the

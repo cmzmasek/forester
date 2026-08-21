@@ -126,6 +126,13 @@ public final class AlgorithmReferencesTest {
             System.out.println( "  [AlgorithmReferencesTest] Auspice/Nextstrain import reference/citation is missing" );
             ok = false;
         }
+        // the GTDB taxonomy import must be described, with the GTDB (Parks et al. 2022) + GTDB-Tk (Chaumeil et al. 2020) citations
+        if ( !text.contains( "GTDB taxonomy import" ) || !text.contains( "genome-based" )
+                || !text.contains( "Parks DH, Chuvochina M" ) || !text.contains( "GTDB-Tk" )
+                || !text.contains( "Chaumeil P-A, Mussig AJ" ) ) {
+            System.out.println( "  [AlgorithmReferencesTest] GTDB taxonomy import reference/citation is missing" );
+            ok = false;
+        }
         boolean phyloxml_present = false;
         for ( final AlgorithmReferences.Reference r : all ) {
             if ( ForesterConstants.PHYLO_XML_REFERENCE.equals( r.citation() ) ) {

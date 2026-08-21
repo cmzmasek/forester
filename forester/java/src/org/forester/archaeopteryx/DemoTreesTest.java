@@ -121,6 +121,11 @@ public final class DemoTreesTest {
         ok &= hasAtLeastTips( "import-annotations.xml", 12 );
         ok &= csvJoinMatchesAllTips( "import-annotations.xml", "import-annotations.csv" );
 
+        // import GTDB taxonomy: accession-named genome tree + a GTDB-Tk table whose classifications must apply to
+        // EVERY tip, giving gtdb:<rank> properties + a species taxonomy
+        ok &= hasAtLeastTips( "gtdb-genomes.xml", 14 );
+        ok &= gtdbDemoOk( "gtdb-genomes.xml", "gtdb-classifications.tsv" );
+
         ok &= hasAtLeastTips( "search-emphasis.xml", 12 );
         ok &= tipsContaining( "search-emphasis.xml", "kinase", 4 );
         ok &= hasInternalConfidence( "search-emphasis.xml" );
@@ -603,6 +608,76 @@ public final class DemoTreesTest {
         catch ( final Exception e ) {
             return note( csv_file + " could not be read/joined: " + e.getMessage() );
         }
+    }
+
+    /** The GTDB-Tk-style companion table parses, its classification column joins onto EVERY tip by name, and applying
+     *  it (via {@link org.forester.archaeopteryx.tools.GtdbTaxonomy}) writes a gtdb:phylum property + a taxonomy onto
+     *  the tips -- so the "Import GTDB Taxonomy" demo lights up offline. */
+    private static boolean gtdbDemoOk( final String tree_file, final String tsv_file ) {
+        final Phylogeny phy = load( tree_file );
+        if ( phy == null ) {
+            return false;
+        }
+        // the genome tree must start WITHOUT taxonomy (the whole point of importing it)
+        if ( phy.getFirstExternalNode().getNodeData().isHasTaxonomy() ) {
+            return note( tree_file + " tips should carry no taxonomy before the GTDB import" );
+        }
+        final File tsv = new File( DEMO_DIR + tsv_file );
+        if ( !tsv.exists() ) {
+            return note( tsv_file + " is missing from the demo gallery (" + tsv.getAbsolutePath() + ")" );
+        }
+        try {
+            final NodeDataImporter.Table table = NodeDataImporter.parseTable( java.nio.file.Files.readString( tsv.toPath() ) );
+            // find the GTDB classification column and pair it with the other (key) column
+            int class_col = -1;
+            for ( int c = 0; ( class_col < 0 ) && ( c < table.getColumnCount() ); ++c ) {
+                for ( int r = 0; r < table.getRowCount(); ++r ) {
+                    if ( org.forester.archaeopteryx.tools.GtdbTaxonomy.looksLikeGtdb( table.getCell( r, c ) ) ) {
+                        class_col = c;
+                        break;
+                    }
+                }
+            }
+            if ( class_col < 0 ) {
+                return note( tsv_file + " has no GTDB classification column (a d__..;p__..;s__.. value)" );
+            }
+            final int key_col = ( class_col == 0 ) ? 1 : 0;
+            final java.util.Map<String, String> map = new java.util.HashMap<String, String>();
+            for ( int r = 0; r < table.getRowCount(); ++r ) {
+                map.put( table.getCell( r, key_col ), table.getCell( r, class_col ) );
+            }
+            final int annotated = org.forester.archaeopteryx.tools.GtdbTaxonomy.applyByTipName( phy, map );
+            if ( annotated != phy.getNumberOfExternalNodes() ) {
+                return note( tsv_file + " should annotate all " + phy.getNumberOfExternalNodes() + " tips of " + tree_file
+                        + ", annotated " + annotated );
+            }
+            // every tip must now carry a gtdb:phylum property + a taxonomy
+            for ( final org.forester.phylogeny.iterators.PhylogenyNodeIterator it = phy.iteratorExternalForward(); it.hasNext(); ) {
+                final org.forester.phylogeny.PhylogenyNode tip = it.next();
+                if ( !tip.getNodeData().isHasTaxonomy() ) {
+                    return note( tree_file + " tip " + tip.getName() + " has no taxonomy after the GTDB import" );
+                }
+                if ( propValue( tip, "gtdb:phylum" ) == null ) {
+                    return note( tree_file + " tip " + tip.getName() + " has no gtdb:phylum property after the GTDB import" );
+                }
+            }
+            return true;
+        }
+        catch ( final Exception e ) {
+            return note( tsv_file + " could not be read/applied: " + e.getMessage() );
+        }
+    }
+
+    private static String propValue( final org.forester.phylogeny.PhylogenyNode n, final String ref ) {
+        if ( ( n.getNodeData() == null ) || ( n.getNodeData().getProperties() == null ) ) {
+            return null;
+        }
+        for ( final org.forester.phylogeny.data.Property p : n.getNodeData().getProperties().getProperties() ) {
+            if ( ref.equals( p.getRef() ) ) {
+                return p.getValue();
+            }
+        }
+        return null;
     }
 
     /** The Auspice/Nextstrain v2 JSON demo parses via {@link org.forester.io.parsers.json.AuspiceJsonParser}, is a

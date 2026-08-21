@@ -136,6 +136,8 @@ Just launch Archaeopteryx and pick a tree from **File → Demo Trees**:
 - **Protein Domain Architectures** — multi-domain proteins drawn to scale
 - **Bat Phylogeny (Taxonomy by Rank)** — 34 bat species with common + scientific
   names + synonyms, every clade rank-annotated, colorized by family (all offline)
+- **GTDB Taxonomy (Genome-based)** — Bacteria + Archaea genomes with the GTDB
+  classification imported from a GTDB-Tk table and colored by phylum (all offline)
 - **Ancestral State Pies** — a discrete geographic trait as posterior pies
 - **Node Age Spindles** — divergence-time uncertainty (point age + 95% HPD) as
   tapered spindles
@@ -459,6 +461,37 @@ map, entropy, and frequencies panels. Reference:
 
 - Hadfield, J. *et al.* (2018): "Nextstrain: real-time tracking of pathogen
   evolution", *Bioinformatics* 34(23):4121–4123.
+
+
+GTDB Taxonomy
+-------------
+
+For trees of bacterial and archaeal genomes, Archaeopteryx imports the **GTDB**
+(Genome Taxonomy Database) classification — the genome-based standard for microbial
+taxonomy. Load a tree whose tips are genome accessions, then **File → Import GTDB
+Taxonomy…** and pick a **GTDB-Tk**-style table (a tip-name column plus a GTDB
+classification column, e.g.
+`d__Bacteria;p__Pseudomonadota;…;g__Escherichia;s__Escherichia coli`, exactly as a
+GTDB-Tk `classify` summary emits). Or just try **File → Demo Trees → GTDB Taxonomy
+(Genome-based)**.
+
+Each of the seven standardized ranks — domain / phylum / class / order / family /
+genus / species — becomes a categorical **`gtdb:<rank>`** node property, plus a
+`<taxonomy>` at the most specific rank present. So you can immediately **Color by**
+`gtdb:phylum` (or `gtdb:domain`), add an **Annotation Column** for `gtdb:family`, and
+**search** `gtdb:genus`. It is **entirely offline** — no network lookup, no bundled
+database — so it is reproducible and version-pinned to whatever GTDB release produced
+your table. The import is undoable.
+
+References:
+
+- Parks, D.H., Chuvochina, M., Rinke, C., Mussig, A.J., Chaumeil, P.-A., Hugenholtz, P.
+  (2022): "GTDB: an ongoing census of bacterial and archaeal diversity through a
+  phylogenetically consistent, rank normalized and complete genome-based taxonomy",
+  *Nucleic Acids Research* 50(D1):D785–D794.
+- Chaumeil, P.-A., Mussig, A.J., Hugenholtz, P., Parks, D.H. (2020): "GTDB-Tk: a
+  toolkit to classify genomes with the Genome Taxonomy Database", *Bioinformatics*
+  36(6):1925–1927.
 
 
 Broken (Truncated) Long Branches

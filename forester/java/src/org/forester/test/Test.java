@@ -218,6 +218,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Import GTDB taxonomy tool: ");
+        if (org.forester.archaeopteryx.ImportGtdbToolTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Tree history (undo/redo): ");
         if (org.forester.archaeopteryx.TreeHistoryTest.test()) {
             System.out.println("OK.");
@@ -469,6 +477,14 @@ public final class Test {
         }
         System.out.print("Tip date extractor: ");
         if (org.forester.archaeopteryx.tools.TipDateExtractorTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("GTDB taxonomy (parse + apply): ");
+        if (org.forester.archaeopteryx.tools.GtdbTaxonomyTest.test()) {
             System.out.println("OK.");
             succeeded++;
         } else {

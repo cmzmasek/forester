@@ -89,6 +89,8 @@ public final class DemoTreeGenerator {
         write( dir, "domain-architectures.xml", domainArchitecturesTree() );
         write( dir, "heatmap-matrix.xml", heatmapMatrixTree() );
         write( dir, "import-annotations.xml", importAnnotationsTree() );
+        write( dir, "gtdb-genomes.xml", gtdbGenomeTree() );
+        writeText( dir, "gtdb-classifications.tsv", gtdbClassificationsTsv() );
         writeText( dir, "import-annotations.csv", importAnnotationsCsv() );
         write( dir, "search-emphasis.xml", searchEmphasisTree() );
         write( dir, "node-visual-styles.xml", nodeVisualStylesTree() );
@@ -207,6 +209,61 @@ public final class DemoTreeGenerator {
                 + "isolate_10,mosquito,Brazil,1120\n"
                 + "isolate_11,pig,Vietnam,505\n"
                 + "isolate_12,bat,China,1450\n";
+    }
+
+    // ----- "Import GTDB Taxonomy": a tree of Bacteria + Archaea genomes named ONLY by their assembly accession
+    //       (no taxonomy), paired with a GTDB-Tk-style classification table (user_genome -> d__..;p__..;s__..).
+    //       File > Import GTDB Taxonomy, pick gtdb-classifications.tsv -> each rank becomes a gtdb:<rank> property
+    //       (+ a taxonomy at the most specific rank) -> Color by gtdb:phylum / gtdb:domain, or add an Annotation
+    //       Column for gtdb:family. Entirely offline.
+    private static Phylogeny gtdbGenomeTree() {
+        // Bacteria
+        final PhylogenyNode pseudomonadota = clade( 0.06, clade( 0.03, leaf( "GCF_000005845.2" ), // E. coli
+                                                                  leaf( "GCF_000006945.2" ) ),      // Salmonella enterica
+                                                    leaf( "GCF_000006765.1" ) );                    // Pseudomonas aeruginosa
+        final PhylogenyNode bacillota = clade( 0.06, clade( 0.03, leaf( "GCF_000009045.1" ),        // Bacillus subtilis
+                                                            leaf( "GCF_000013425.1" ) ),            // Staphylococcus aureus
+                                               leaf( "GCF_000009065.1" ) );                          // Clostridioides difficile
+        final PhylogenyNode actino_bactero_cyano = clade( 0.05,
+                                                          clade( 0.04, leaf( "GCF_000195955.2" ),    // Mycobacterium tuberculosis
+                                                                 leaf( "GCF_000203835.1" ) ),       // Streptomyces coelicolor
+                                                          clade( 0.05, leaf( "GCF_000025985.1" ),    // Bacteroides fragilis
+                                                                 leaf( "GCF_000011465.1" ) ) );      // Prochlorococcus marinus
+        final PhylogenyNode bacteria = clade( 0.08, pseudomonadota,
+                                              clade( 0.05, bacillota, actino_bactero_cyano ) );
+        // Archaea
+        final PhylogenyNode archaea = clade( 0.09, leaf( "GCF_000091665.1" ),                        // Methanocaldococcus jannaschii
+                                             clade( 0.05, leaf( "GCF_000006805.1" ),                 // Halobacterium salinarum
+                                                    clade( 0.05, leaf( "GCF_000018465.1" ),          // Nitrosopumilus maritimus
+                                                           leaf( "GCF_000007765.1" ) ) ) );          // Saccharolobus solfataricus
+        final PhylogenyNode root = clade( 0.0, bacteria, archaea );
+        return tree( root, "Import GTDB Taxonomy (demo)",
+                     "A tree of 14 Bacteria + Archaea genomes named only by their assembly accession -- no taxonomy. "
+                             + "Pair it with the companion gtdb-classifications.tsv (a GTDB-Tk-style table): "
+                             + "File > Import GTDB Taxonomy, pick the TSV. Each GTDB rank becomes a gtdb:<rank> "
+                             + "property (+ a taxonomy at the most specific rank), so you can Color by gtdb:phylum "
+                             + "or gtdb:domain, add an Annotation Column for gtdb:family, and search gtdb:genus -- "
+                             + "entirely offline." );
+    }
+
+    /** The companion GTDB-Tk-style classification table for {@link #gtdbGenomeTree()}: two columns
+     *  (user_genome &lt;TAB&gt; classification), one genome per row, the classification a 7-rank d__..;p__..;s__.. string. */
+    private static String gtdbClassificationsTsv() {
+        return "user_genome\tclassification\n"
+                + "GCF_000005845.2\td__Bacteria;p__Pseudomonadota;c__Gammaproteobacteria;o__Enterobacterales;f__Enterobacteriaceae;g__Escherichia;s__Escherichia coli\n"
+                + "GCF_000006945.2\td__Bacteria;p__Pseudomonadota;c__Gammaproteobacteria;o__Enterobacterales;f__Enterobacteriaceae;g__Salmonella;s__Salmonella enterica\n"
+                + "GCF_000006765.1\td__Bacteria;p__Pseudomonadota;c__Gammaproteobacteria;o__Pseudomonadales;f__Pseudomonadaceae;g__Pseudomonas;s__Pseudomonas aeruginosa\n"
+                + "GCF_000009045.1\td__Bacteria;p__Bacillota;c__Bacilli;o__Bacillales;f__Bacillaceae;g__Bacillus;s__Bacillus subtilis\n"
+                + "GCF_000013425.1\td__Bacteria;p__Bacillota;c__Bacilli;o__Staphylococcales;f__Staphylococcaceae;g__Staphylococcus;s__Staphylococcus aureus\n"
+                + "GCF_000009065.1\td__Bacteria;p__Bacillota_A;c__Clostridia;o__Peptostreptococcales;f__Peptostreptococcaceae;g__Clostridioides;s__Clostridioides difficile\n"
+                + "GCF_000195955.2\td__Bacteria;p__Actinomycetota;c__Actinomycetia;o__Mycobacteriales;f__Mycobacteriaceae;g__Mycobacterium;s__Mycobacterium tuberculosis\n"
+                + "GCF_000203835.1\td__Bacteria;p__Actinomycetota;c__Actinomycetia;o__Streptomycetales;f__Streptomycetaceae;g__Streptomyces;s__Streptomyces coelicolor\n"
+                + "GCF_000025985.1\td__Bacteria;p__Bacteroidota;c__Bacteroidia;o__Bacteroidales;f__Bacteroidaceae;g__Bacteroides;s__Bacteroides fragilis\n"
+                + "GCF_000011465.1\td__Bacteria;p__Cyanobacteriota;c__Cyanobacteriia;o__PCC-6307;f__Cyanobiaceae;g__Prochlorococcus;s__Prochlorococcus marinus\n"
+                + "GCF_000091665.1\td__Archaea;p__Methanobacteriota;c__Methanococci;o__Methanococcales;f__Methanocaldococcaceae;g__Methanocaldococcus;s__Methanocaldococcus jannaschii\n"
+                + "GCF_000006805.1\td__Archaea;p__Halobacteriota;c__Halobacteria;o__Halobacteriales;f__Halobacteriaceae;g__Halobacterium;s__Halobacterium salinarum\n"
+                + "GCF_000018465.1\td__Archaea;p__Thermoproteota;c__Nitrososphaeria;o__Nitrosopumilales;f__Nitrosopumilaceae;g__Nitrosopumilus;s__Nitrosopumilus maritimus\n"
+                + "GCF_000007765.1\td__Archaea;p__Thermoproteota;c__Thermoprotei;o__Sulfolobales;f__Sulfolobaceae;g__Saccharolobus;s__Saccharolobus solfataricus\n";
     }
 
     // ----- "Size by property": one numeric property (sequencing read count) spanning ~3 orders of magnitude, so the
