@@ -1,0 +1,816 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" rerootable="true">
+  <name>filoviridae [protein|MAFFT|FastTree JTT]</name>
+  <description>This tree is based on a concatenation of marker proteins (GP, L, L protein, NP, RNA-dependent RNA polymerase, RNA-directed RNA polymerase L, envelope glycoprotein, glycoprotein, nucleocapsid protein, nucleoprotein, spike glycoprotein); amino-acid; each leaf is one representative sequence. | repseq 0.44.1 phylogeny | generated 2026-06-02 03:39:01 UTC | alphabet=protein | MSA=MAFFT v7.520 (2023/Mar/22) | tree=FastTree FastTree Version 2.1.11 Double precision (No SSE3) | model=JTT | bootstrap=none | rooting=taxonomy | markers=GP, L, L protein, NP, RNA-dependent RNA polymerase, RNA-directed RNA polymerase L, envelope glycoprotein, glycoprotein, nucleocapsid protein, nucleoprotein, spike glycoprotein</description>
+  <clade>
+    <name>Filoviridae</name>
+    <confidence type="sh_like">100</confidence>
+    <taxonomy>
+      <scientific_name>Filoviridae</scientific_name>
+      <rank>family</rank>
+    </taxonomy>
+    <clade>
+      <name>Orthoebolavirus</name>
+      <branch_length>0.942776</branch_length>
+      <confidence type="sh_like">95</confidence>
+      <taxonomy>
+        <scientific_name>Orthoebolavirus</scientific_name>
+        <rank>genus</rank>
+      </taxonomy>
+      <clade>
+        <branch_length>0.0437784</branch_length>
+        <clade>
+          <branch_length>0.0946303</branch_length>
+          <confidence type="sh_like">100</confidence>
+          <clade>
+            <name>Orthoebolavirus zairense</name>
+            <branch_length>0.0918833</branch_length>
+            <confidence type="sh_like">100</confidence>
+            <taxonomy>
+              <scientific_name>Orthoebolavirus zairense</scientific_name>
+              <rank>species</rank>
+            </taxonomy>
+            <clade>
+              <branch_length>0.0350585</branch_length>
+              <confidence type="sh_like">100</confidence>
+              <clade>
+                <branch_length>0.0255243</branch_length>
+                <confidence type="sh_like">100</confidence>
+                <clade>
+                  <name>KU174140.1</name>
+                  <branch_length>0.104232</branch_length>
+                  <taxonomy>
+                    <id provider="ncbi">186538</id>
+                    <scientific_name>Orthoebolavirus zairense</scientific_name>
+                  </taxonomy>
+                  <sequence type="protein">
+                    <accession source="ncbi">ALT19583.1</accession>
+                    <name>NP</name>
+                  </sequence>
+                  <sequence type="protein">
+                    <accession source="ncbi">ALT19590.1</accession>
+                    <name>L</name>
+                  </sequence>
+                  <sequence type="protein">
+                    <accession source="ncbi">ALT19587.1</accession>
+                    <name>GP</name>
+                  </sequence>
+                  <sequence type="protein">
+                    <accession source="ncbi">ALT19584.1</accession>
+                    <name>eGFP</name>
+                  </sequence>
+                  <sequence type="protein">
+                    <accession source="ncbi">ALT19585.1</accession>
+                    <name>VP35</name>
+                  </sequence>
+                  <sequence type="protein">
+                    <accession source="ncbi">ALT19586.1</accession>
+                    <name>VP40</name>
+                  </sequence>
+                  <sequence type="protein">
+                    <accession source="ncbi">ALT19588.1</accession>
+                    <name>VP30</name>
+                  </sequence>
+                  <sequence type="protein">
+                    <accession source="ncbi">ALT19589.1</accession>
+                    <name>VP24</name>
+                  </sequence>
+                  <sequence type="dna">
+                    <accession source="ncbi">KU174140.1</accession>
+                    <name>Mutant Zaire ebolavirus isolate Ebola virus/H.sapiens-rec/COD/1976/Yambuku-Mayinga-eGFP-MARV_GP, complete genome</name>
+                  </sequence>
+                  <property ref="repseq:year" datatype="xsd:string" applies_to="clade">1976</property>
+                  <property ref="repseq:strain" datatype="xsd:string" applies_to="clade">Ebola virus/H.sapiens-rec/COD/1976/Yambuku-Mayinga-eGFP-MARV_GP</property>
+                  <property ref="repseq:species" datatype="xsd:string" applies_to="clade">Orthoebolavirus zairense</property>
+                  <property ref="repseq:protein_names" datatype="xsd:string" applies_to="clade">NP, L, GP, eGFP, VP35, VP40, VP30, VP24</property>
+                  <property ref="repseq:protein_acc" datatype="xsd:string" applies_to="clade">ALT19583.1, ALT19590.1, ALT19587.1, ALT19584.1, ALT19585.1, ALT19586.1, ALT19588.1, ALT19589.1</property>
+                  <property ref="repseq:order" datatype="xsd:string" applies_to="clade">Mononegavirales</property>
+                  <property ref="repseq:nuc_acc" datatype="xsd:string" applies_to="clade">KU174140.1</property>
+                  <property ref="repseq:genus" datatype="xsd:string" applies_to="clade">Orthoebolavirus</property>
+                  <property ref="repseq:family" datatype="xsd:string" applies_to="clade">Filoviridae</property>
+                  <property ref="repseq:collection_date" datatype="xsd:string" applies_to="clade">1976</property>
+                  <property ref="repseq:class" datatype="xsd:string" applies_to="clade">Monjiviricetes</property>
+                  <property ref="style:font_color" datatype="xsd:token" applies_to="node">#50e67c</property>
+                </clade>
+                <clade>
+                  <name>KU174142.1</name>
+                  <branch_length>0.0479882</branch_length>
+                  <taxonomy>
+                    <id provider="ncbi">186538</id>
+                    <scientific_name>Orthoebolavirus zairense</scientific_name>
+                  </taxonomy>
+                  <sequence type="protein">
+                    <accession source="ncbi">ALT19599.1</accession>
+                    <name>NP</name>
+                  </sequence>
+                  <sequence type="protein">
+                    <accession source="ncbi">ALT19607.1</accession>
+                    <name>L</name>
+                  </sequence>
+                  <sequence type="protein">
+                    <accession source="ncbi">ALT19603.1</accession>
+                    <name>GP</name>
+                  </sequence>
+                  <sequence type="protein">
+                    <accession source="ncbi">ALT19600.1</accession>
+                    <name>eGFP</name>
+                  </sequence>
+                  <sequence type="protein">
+                    <accession source="ncbi">ALT19601.1</accession>
+                    <name>VP35</name>
+                  </sequence>
+                  <sequence type="protein">
+                    <accession source="ncbi">ALT19602.1</accession>
+                    <name>VP40</name>
+                  </sequence>
+                  <sequence type="protein">
+                    <accession source="ncbi">ALT19604.1</accession>
+                    <name>sGP</name>
+                  </sequence>
+                  <sequence type="protein">
+                    <accession source="ncbi">ALT19605.1</accession>
+                    <name>VP30</name>
+                  </sequence>
+                  <sequence type="protein">
+                    <accession source="ncbi">ALT19606.1</accession>
+                    <name>VP24</name>
+                  </sequence>
+                  <sequence type="dna">
+                    <accession source="ncbi">KU174142.1</accession>
+                    <name>Mutant Zaire ebolavirus isolate Ebola virus/H.sapiens-rec/COD/1976/Yambuku-Mayinga-eGFP-SUDV_GP, complete genome</name>
+                  </sequence>
+                  <property ref="repseq:year" datatype="xsd:string" applies_to="clade">1976</property>
+                  <property ref="repseq:strain" datatype="xsd:string" applies_to="clade">Ebola virus/H.sapiens-rec/COD/1976/Yambuku-Mayinga-eGFP-SUDV_GP</property>
+                  <property ref="repseq:species" datatype="xsd:string" applies_to="clade">Orthoebolavirus zairense</property>
+                  <property ref="repseq:protein_names" datatype="xsd:string" applies_to="clade">NP, L, GP, eGFP, VP35, VP40, sGP, VP30, VP24</property>
+                  <property ref="repseq:protein_acc" datatype="xsd:string" applies_to="clade">ALT19599.1, ALT19607.1, ALT19603.1, ALT19600.1, ALT19601.1, ALT19602.1, ALT19604.1, ALT19605.1, ALT19606.1</property>
+                  <property ref="repseq:order" datatype="xsd:string" applies_to="clade">Mononegavirales</property>
+                  <property ref="repseq:nuc_acc" datatype="xsd:string" applies_to="clade">KU174142.1</property>
+                  <property ref="repseq:genus" datatype="xsd:string" applies_to="clade">Orthoebolavirus</property>
+                  <property ref="repseq:family" datatype="xsd:string" applies_to="clade">Filoviridae</property>
+                  <property ref="repseq:collection_date" datatype="xsd:string" applies_to="clade">1976</property>
+                  <property ref="repseq:class" datatype="xsd:string" applies_to="clade">Monjiviricetes</property>
+                  <property ref="style:font_color" datatype="xsd:token" applies_to="node">#50e67c</property>
+                </clade>
+              </clade>
+              <clade>
+                <name>NC_002549.1</name>
+                <branch_length>0.034698</branch_length>
+                <taxonomy>
+                  <id provider="ncbi">186538</id>
+                  <scientific_name>Orthoebolavirus zairense</scientific_name>
+                </taxonomy>
+                <sequence type="protein">
+                  <accession source="ncbi">NP_066243.1</accession>
+                  <name>nucleoprotein</name>
+                </sequence>
+                <sequence type="protein">
+                  <accession source="ncbi">NP_066251.1</accession>
+                  <name>RNA-dependent RNA polymerase</name>
+                </sequence>
+                <sequence type="protein">
+                  <accession source="ncbi">NP_066246.1</accession>
+                  <name>spike glycoprotein</name>
+                </sequence>
+                <sequence type="protein">
+                  <accession source="ncbi">NP_066244.1</accession>
+                  <name>polymerase complex protein</name>
+                </sequence>
+                <sequence type="protein">
+                  <accession source="ncbi">NP_066245.1</accession>
+                  <name>matrix protein</name>
+                </sequence>
+                <sequence type="protein">
+                  <accession source="ncbi">NP_066247.1</accession>
+                  <name>small secreted glycoprotein</name>
+                </sequence>
+                <sequence type="protein">
+                  <accession source="ncbi">NP_066248.1</accession>
+                  <name>second secreted glycoprotein</name>
+                </sequence>
+                <sequence type="protein">
+                  <accession source="ncbi">NP_066249.1</accession>
+                  <name>minor nucleoprotein</name>
+                </sequence>
+                <sequence type="protein">
+                  <accession source="ncbi">NP_066250.1</accession>
+                  <name>membrane-associated protein</name>
+                </sequence>
+                <sequence type="dna">
+                  <accession source="ncbi">NC_002549.1</accession>
+                  <name>Zaire ebolavirus isolate Ebola virus/H.sapiens-tc/COD/1976/Yambuku-Mayinga, complete genome</name>
+                </sequence>
+                <property ref="repseq:year" datatype="xsd:string" applies_to="clade">1976</property>
+                <property ref="repseq:strain" datatype="xsd:string" applies_to="clade">Ebola virus/H.sapiens-tc/COD/1976/Yambuku-Mayinga</property>
+                <property ref="repseq:species" datatype="xsd:string" applies_to="clade">Orthoebolavirus zairense</property>
+                <property ref="repseq:protein_names" datatype="xsd:string" applies_to="clade">nucleoprotein, RNA-dependent RNA polymerase, spike glycoprotein, polymerase complex protein, matrix protein, small secreted glycoprotein, second secreted glycoprotein, minor nucleoprotein, membrane-associated protein</property>
+                <property ref="repseq:protein_acc" datatype="xsd:string" applies_to="clade">NP_066243.1, NP_066251.1, NP_066246.1, NP_066244.1, NP_066245.1, NP_066247.1, NP_066248.1, NP_066249.1, NP_066250.1</property>
+                <property ref="repseq:order" datatype="xsd:string" applies_to="clade">Mononegavirales</property>
+                <property ref="repseq:nuc_acc" datatype="xsd:string" applies_to="clade">NC_002549.1</property>
+                <property ref="repseq:genus" datatype="xsd:string" applies_to="clade">Orthoebolavirus</property>
+                <property ref="repseq:family" datatype="xsd:string" applies_to="clade">Filoviridae</property>
+                <property ref="repseq:collection_date" datatype="xsd:string" applies_to="clade">1976</property>
+                <property ref="repseq:class" datatype="xsd:string" applies_to="clade">Monjiviricetes</property>
+                <property ref="style:font_color" datatype="xsd:token" applies_to="node">#50e67c</property>
+              </clade>
+            </clade>
+            <clade>
+              <name>KU174138.1</name>
+              <branch_length>0.00146148</branch_length>
+              <taxonomy>
+                <id provider="ncbi">186538</id>
+                <scientific_name>Orthoebolavirus zairense</scientific_name>
+              </taxonomy>
+              <sequence type="protein">
+                <accession source="ncbi">ALT19566.1</accession>
+                <name>NP</name>
+              </sequence>
+              <sequence type="protein">
+                <accession source="ncbi">ALT19573.1</accession>
+                <name>L</name>
+              </sequence>
+              <sequence type="protein">
+                <accession source="ncbi">ALT19570.1</accession>
+                <name>GP</name>
+              </sequence>
+              <sequence type="protein">
+                <accession source="ncbi">ALT19567.1</accession>
+                <name>eGFP</name>
+              </sequence>
+              <sequence type="protein">
+                <accession source="ncbi">ALT19568.1</accession>
+                <name>VP35</name>
+              </sequence>
+              <sequence type="protein">
+                <accession source="ncbi">ALT19569.1</accession>
+                <name>VP40</name>
+              </sequence>
+              <sequence type="protein">
+                <accession source="ncbi">ALT19571.1</accession>
+                <name>VP30</name>
+              </sequence>
+              <sequence type="protein">
+                <accession source="ncbi">ALT19572.1</accession>
+                <name>VP24</name>
+              </sequence>
+              <sequence type="dna">
+                <accession source="ncbi">KU174138.1</accession>
+                <name>Mutant Zaire ebolavirus isolate Ebola virus/H.sapiens-rec/COD/1976/Yambuku-Mayinga-eGFP-BDBV_GPdelta_sGP, complete genome</name>
+              </sequence>
+              <property ref="repseq:year" datatype="xsd:string" applies_to="clade">1976</property>
+              <property ref="repseq:strain" datatype="xsd:string" applies_to="clade">Ebola virus/H.sapiens-rec/COD/1976/Yambuku-Mayinga-eGFP-BDBV_GPdelta_sGP</property>
+              <property ref="repseq:species" datatype="xsd:string" applies_to="clade">Orthoebolavirus zairense</property>
+              <property ref="repseq:protein_names" datatype="xsd:string" applies_to="clade">NP, L, GP, eGFP, VP35, VP40, VP30, VP24</property>
+              <property ref="repseq:protein_acc" datatype="xsd:string" applies_to="clade">ALT19566.1, ALT19573.1, ALT19570.1, ALT19567.1, ALT19568.1, ALT19569.1, ALT19571.1, ALT19572.1</property>
+              <property ref="repseq:order" datatype="xsd:string" applies_to="clade">Mononegavirales</property>
+              <property ref="repseq:nuc_acc" datatype="xsd:string" applies_to="clade">KU174138.1</property>
+              <property ref="repseq:genus" datatype="xsd:string" applies_to="clade">Orthoebolavirus</property>
+              <property ref="repseq:family" datatype="xsd:string" applies_to="clade">Filoviridae</property>
+              <property ref="repseq:collection_date" datatype="xsd:string" applies_to="clade">1976</property>
+              <property ref="repseq:class" datatype="xsd:string" applies_to="clade">Monjiviricetes</property>
+              <property ref="style:font_color" datatype="xsd:token" applies_to="node">#50e67c</property>
+            </clade>
+          </clade>
+          <clade>
+            <branch_length>0.0580157</branch_length>
+            <confidence type="sh_like">100</confidence>
+            <clade>
+              <name>NC_014372.1</name>
+              <branch_length>0.158181</branch_length>
+              <taxonomy>
+                <id provider="ncbi">186541</id>
+                <scientific_name>Orthoebolavirus taiense</scientific_name>
+              </taxonomy>
+              <sequence type="protein">
+                <accession source="ncbi">YP_003815423.1</accession>
+                <name>nucleoprotein</name>
+              </sequence>
+              <sequence type="protein">
+                <accession source="ncbi">YP_003815431.1</accession>
+                <name>RNA-dependent RNA polymerase</name>
+              </sequence>
+              <sequence type="protein">
+                <accession source="ncbi">YP_003815426.1</accession>
+                <name>spike glycoprotein</name>
+              </sequence>
+              <sequence type="protein">
+                <accession source="ncbi">YP_003815424.1</accession>
+                <name>polymerase complex protein</name>
+              </sequence>
+              <sequence type="protein">
+                <accession source="ncbi">YP_003815425.1</accession>
+                <name>matrix protein</name>
+              </sequence>
+              <sequence type="protein">
+                <accession source="ncbi">YP_003815427.1</accession>
+                <name>small secreted glycoprotein</name>
+              </sequence>
+              <sequence type="protein">
+                <accession source="ncbi">YP_003815428.1</accession>
+                <name>second secreted glycoprotein</name>
+              </sequence>
+              <sequence type="protein">
+                <accession source="ncbi">YP_003815429.1</accession>
+                <name>minor nucleoprotein</name>
+              </sequence>
+              <sequence type="protein">
+                <accession source="ncbi">YP_003815430.1</accession>
+                <name>membrane-associated protein</name>
+              </sequence>
+              <sequence type="dna">
+                <accession source="ncbi">NC_014372.1</accession>
+                <name>Tai Forest ebolavirus isolate Tai Forest virus/H.sapiens-tc/CIV/1994/Pauleoula-CI, complete genome</name>
+              </sequence>
+              <property ref="repseq:year" datatype="xsd:string" applies_to="clade">1994</property>
+              <property ref="repseq:strain" datatype="xsd:string" applies_to="clade">Tai Forest virus/H.sapiens-tc/CIV/1994/Pauleoula-CI</property>
+              <property ref="repseq:species" datatype="xsd:string" applies_to="clade">Orthoebolavirus taiense</property>
+              <property ref="repseq:protein_names" datatype="xsd:string" applies_to="clade">nucleoprotein, RNA-dependent RNA polymerase, spike glycoprotein, polymerase complex protein, matrix protein, small secreted glycoprotein, second secreted glycoprotein, minor nucleoprotein, membrane-associated protein</property>
+              <property ref="repseq:protein_acc" datatype="xsd:string" applies_to="clade">YP_003815423.1, YP_003815431.1, YP_003815426.1, YP_003815424.1, YP_003815425.1, YP_003815427.1, YP_003815428.1, YP_003815429.1, YP_003815430.1</property>
+              <property ref="repseq:order" datatype="xsd:string" applies_to="clade">Mononegavirales</property>
+              <property ref="repseq:nuc_acc" datatype="xsd:string" applies_to="clade">NC_014372.1</property>
+              <property ref="repseq:host" datatype="xsd:string" applies_to="clade">Homo sapiens</property>
+              <property ref="repseq:genus" datatype="xsd:string" applies_to="clade">Orthoebolavirus</property>
+              <property ref="repseq:family" datatype="xsd:string" applies_to="clade">Filoviridae</property>
+              <property ref="repseq:country" datatype="xsd:string" applies_to="clade">Cote d&apos;Ivoire</property>
+              <property ref="repseq:collection_date" datatype="xsd:string" applies_to="clade">Nov-1994</property>
+              <property ref="repseq:class" datatype="xsd:string" applies_to="clade">Monjiviricetes</property>
+              <property ref="style:font_color" datatype="xsd:token" applies_to="node">#50e67c</property>
+            </clade>
+            <clade>
+              <name>NC_014373.1</name>
+              <branch_length>0.0722498</branch_length>
+              <taxonomy>
+                <id provider="ncbi">565995</id>
+                <scientific_name>Orthoebolavirus bundibugyoense</scientific_name>
+              </taxonomy>
+              <sequence type="protein">
+                <accession source="ncbi">YP_003815432.1</accession>
+                <name>nucleoprotein</name>
+              </sequence>
+              <sequence type="protein">
+                <accession source="ncbi">YP_003815440.1</accession>
+                <name>RNA-dependent RNA polymerase</name>
+              </sequence>
+              <sequence type="protein">
+                <accession source="ncbi">YP_003815435.1</accession>
+                <name>spike glycoprotein</name>
+              </sequence>
+              <sequence type="protein">
+                <accession source="ncbi">YP_003815433.1</accession>
+                <name>polymerase complex protein</name>
+              </sequence>
+              <sequence type="protein">
+                <accession source="ncbi">YP_003815434.1</accession>
+                <name>matrix protein</name>
+              </sequence>
+              <sequence type="protein">
+                <accession source="ncbi">YP_003815436.1</accession>
+                <name>small secreted glycoprotein</name>
+              </sequence>
+              <sequence type="protein">
+                <accession source="ncbi">YP_003815437.1</accession>
+                <name>second secreted glycoprotein</name>
+              </sequence>
+              <sequence type="protein">
+                <accession source="ncbi">YP_003815438.1</accession>
+                <name>minor nucleoprotein</name>
+              </sequence>
+              <sequence type="protein">
+                <accession source="ncbi">YP_003815439.1</accession>
+                <name>membrane-associated protein</name>
+              </sequence>
+              <sequence type="dna">
+                <accession source="ncbi">NC_014373.1</accession>
+                <name>Bundibugyo ebolavirus, complete genome</name>
+              </sequence>
+              <property ref="repseq:year" datatype="xsd:string" applies_to="clade">2007</property>
+              <property ref="repseq:strain" datatype="xsd:string" applies_to="clade">Bundibugyo virus/H.sapiens-tc/UGA/2007/Butalya-811250</property>
+              <property ref="repseq:species" datatype="xsd:string" applies_to="clade">Orthoebolavirus bundibugyoense</property>
+              <property ref="repseq:protein_names" datatype="xsd:string" applies_to="clade">nucleoprotein, RNA-dependent RNA polymerase, spike glycoprotein, polymerase complex protein, matrix protein, small secreted glycoprotein, second secreted glycoprotein, minor nucleoprotein, membrane-associated protein</property>
+              <property ref="repseq:protein_acc" datatype="xsd:string" applies_to="clade">YP_003815432.1, YP_003815440.1, YP_003815435.1, YP_003815433.1, YP_003815434.1, YP_003815436.1, YP_003815437.1, YP_003815438.1, YP_003815439.1</property>
+              <property ref="repseq:order" datatype="xsd:string" applies_to="clade">Mononegavirales</property>
+              <property ref="repseq:nuc_acc" datatype="xsd:string" applies_to="clade">NC_014373.1</property>
+              <property ref="repseq:host" datatype="xsd:string" applies_to="clade">Homo sapiens</property>
+              <property ref="repseq:genus" datatype="xsd:string" applies_to="clade">Orthoebolavirus</property>
+              <property ref="repseq:family" datatype="xsd:string" applies_to="clade">Filoviridae</property>
+              <property ref="repseq:country" datatype="xsd:string" applies_to="clade">Uganda</property>
+              <property ref="repseq:collection_date" datatype="xsd:string" applies_to="clade">Nov-2007</property>
+              <property ref="repseq:class" datatype="xsd:string" applies_to="clade">Monjiviricetes</property>
+              <property ref="style:font_color" datatype="xsd:token" applies_to="node">#50e67c</property>
+            </clade>
+          </clade>
+        </clade>
+        <clade>
+          <name>NC_039345.1</name>
+          <branch_length>0.247286</branch_length>
+          <taxonomy>
+            <id provider="ncbi">2010960</id>
+            <scientific_name>Orthoebolavirus bombaliense</scientific_name>
+          </taxonomy>
+          <sequence type="protein">
+            <accession source="ncbi">YP_009513274.1</accession>
+            <name>nucleoprotein</name>
+          </sequence>
+          <sequence type="protein">
+            <accession source="ncbi">YP_009513282.1</accession>
+            <name>RNA-dependent RNA polymerase</name>
+          </sequence>
+          <sequence type="protein">
+            <accession source="ncbi">YP_009513277.1</accession>
+            <name>spike glycoprotein</name>
+          </sequence>
+          <sequence type="protein">
+            <accession source="ncbi">YP_009513275.1</accession>
+            <name>polymerase complex protein</name>
+          </sequence>
+          <sequence type="protein">
+            <accession source="ncbi">YP_009513276.1</accession>
+            <name>matrix protein</name>
+          </sequence>
+          <sequence type="protein">
+            <accession source="ncbi">YP_009513278.1</accession>
+            <name>small secreted glycoprotein</name>
+          </sequence>
+          <sequence type="protein">
+            <accession source="ncbi">YP_009513279.1</accession>
+            <name>second secreted glycoprotein</name>
+          </sequence>
+          <sequence type="protein">
+            <accession source="ncbi">YP_009513280.1</accession>
+            <name>minor nucleoprotein</name>
+          </sequence>
+          <sequence type="protein">
+            <accession source="ncbi">YP_009513281.1</accession>
+            <name>membrane-associated protein</name>
+          </sequence>
+          <sequence type="dna">
+            <accession source="ncbi">NC_039345.1</accession>
+            <name>Bombali ebolavirus isolate Bombali ebolavirus/Mops condylurus/SLE/2016/PREDICT_SLAB000156, complete genome</name>
+          </sequence>
+          <property ref="repseq:year" datatype="xsd:string" applies_to="clade">2016</property>
+          <property ref="repseq:strain" datatype="xsd:string" applies_to="clade">Bombali ebolavirus/Mops condylurus/SLE/2016/PREDICT_SLAB000156</property>
+          <property ref="repseq:species" datatype="xsd:string" applies_to="clade">Orthoebolavirus bombaliense</property>
+          <property ref="repseq:protein_names" datatype="xsd:string" applies_to="clade">nucleoprotein, RNA-dependent RNA polymerase, spike glycoprotein, polymerase complex protein, matrix protein, small secreted glycoprotein, second secreted glycoprotein, minor nucleoprotein, membrane-associated protein</property>
+          <property ref="repseq:protein_acc" datatype="xsd:string" applies_to="clade">YP_009513274.1, YP_009513282.1, YP_009513277.1, YP_009513275.1, YP_009513276.1, YP_009513278.1, YP_009513279.1, YP_009513280.1, YP_009513281.1</property>
+          <property ref="repseq:order" datatype="xsd:string" applies_to="clade">Mononegavirales</property>
+          <property ref="repseq:nuc_acc" datatype="xsd:string" applies_to="clade">NC_039345.1</property>
+          <property ref="repseq:host" datatype="xsd:string" applies_to="clade">Mops condylurus</property>
+          <property ref="repseq:genus" datatype="xsd:string" applies_to="clade">Orthoebolavirus</property>
+          <property ref="repseq:family" datatype="xsd:string" applies_to="clade">Filoviridae</property>
+          <property ref="repseq:country" datatype="xsd:string" applies_to="clade">Sierra Leone</property>
+          <property ref="repseq:collection_date" datatype="xsd:string" applies_to="clade">25-May-2016</property>
+          <property ref="repseq:class" datatype="xsd:string" applies_to="clade">Monjiviricetes</property>
+          <property ref="style:font_color" datatype="xsd:token" applies_to="node">#50e67c</property>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>0.0605704</branch_length>
+        <confidence type="sh_like">99</confidence>
+        <clade>
+          <name>NC_006432.1</name>
+          <branch_length>0.231774</branch_length>
+          <taxonomy>
+            <id provider="ncbi">186540</id>
+            <scientific_name>Orthoebolavirus sudanense</scientific_name>
+          </taxonomy>
+          <sequence type="protein">
+            <accession source="ncbi">YP_138520.1</accession>
+            <name>nucleoprotein</name>
+          </sequence>
+          <sequence type="protein">
+            <accession source="ncbi">YP_138527.1</accession>
+            <name>RNA-dependent RNA polymerase</name>
+          </sequence>
+          <sequence type="protein">
+            <accession source="ncbi">YP_138523.1</accession>
+            <name>spike glycoprotein</name>
+          </sequence>
+          <sequence type="protein">
+            <accession source="ncbi">YP_138521.1</accession>
+            <name>polymerase complex protein</name>
+          </sequence>
+          <sequence type="protein">
+            <accession source="ncbi">YP_138522.1</accession>
+            <name>matrix protein</name>
+          </sequence>
+          <sequence type="protein">
+            <accession source="ncbi">YP_138524.1</accession>
+            <name>small secreted glycoprotein</name>
+          </sequence>
+          <sequence type="protein">
+            <accession source="ncbi">YP_009246341.1</accession>
+            <name>second secreted glycoprotein</name>
+          </sequence>
+          <sequence type="protein">
+            <accession source="ncbi">YP_138525.1</accession>
+            <name>minor nucleoprotein</name>
+          </sequence>
+          <sequence type="protein">
+            <accession source="ncbi">YP_138526.1</accession>
+            <name>membrane-associated protein</name>
+          </sequence>
+          <sequence type="dna">
+            <accession source="ncbi">NC_006432.1</accession>
+            <name>Sudan ebolavirus isolate Sudan virus/H.sapiens-tc/UGA/2000/Gulu-808892, complete genome</name>
+          </sequence>
+          <property ref="repseq:year" datatype="xsd:string" applies_to="clade">2000</property>
+          <property ref="repseq:strain" datatype="xsd:string" applies_to="clade">Sudan virus/H.sapiens-tc/UGA/2000/Gulu-808892</property>
+          <property ref="repseq:species" datatype="xsd:string" applies_to="clade">Orthoebolavirus sudanense</property>
+          <property ref="repseq:protein_names" datatype="xsd:string" applies_to="clade">nucleoprotein, RNA-dependent RNA polymerase, spike glycoprotein, polymerase complex protein, matrix protein, small secreted glycoprotein, second secreted glycoprotein, minor nucleoprotein, membrane-associated protein</property>
+          <property ref="repseq:protein_acc" datatype="xsd:string" applies_to="clade">YP_138520.1, YP_138527.1, YP_138523.1, YP_138521.1, YP_138522.1, YP_138524.1, YP_009246341.1, YP_138525.1, YP_138526.1</property>
+          <property ref="repseq:order" datatype="xsd:string" applies_to="clade">Mononegavirales</property>
+          <property ref="repseq:nuc_acc" datatype="xsd:string" applies_to="clade">NC_006432.1</property>
+          <property ref="repseq:genus" datatype="xsd:string" applies_to="clade">Orthoebolavirus</property>
+          <property ref="repseq:family" datatype="xsd:string" applies_to="clade">Filoviridae</property>
+          <property ref="repseq:country" datatype="xsd:string" applies_to="clade">Uganda</property>
+          <property ref="repseq:collection_date" datatype="xsd:string" applies_to="clade">2000</property>
+          <property ref="repseq:class" datatype="xsd:string" applies_to="clade">Monjiviricetes</property>
+          <property ref="style:font_color" datatype="xsd:token" applies_to="node">#50e67c</property>
+        </clade>
+        <clade>
+          <name>NC_004161.1</name>
+          <branch_length>0.232794</branch_length>
+          <taxonomy>
+            <id provider="ncbi">186539</id>
+            <scientific_name>Orthoebolavirus restonense</scientific_name>
+          </taxonomy>
+          <sequence type="protein">
+            <accession source="ncbi">NP_690580.1</accession>
+            <name>nucleoprotein</name>
+          </sequence>
+          <sequence type="protein">
+            <accession source="ncbi">NP_690587.1</accession>
+            <name>RNA-dependent RNA polymerase</name>
+          </sequence>
+          <sequence type="protein">
+            <accession source="ncbi">NP_690583.1</accession>
+            <name>spike glycoprotein</name>
+          </sequence>
+          <sequence type="protein">
+            <accession source="ncbi">NP_690581.1</accession>
+            <name>polymerase complex protein</name>
+          </sequence>
+          <sequence type="protein">
+            <accession source="ncbi">NP_690582.1</accession>
+            <name>matrix protein</name>
+          </sequence>
+          <sequence type="protein">
+            <accession source="ncbi">NP_690584.1</accession>
+            <name>small secreted glycoprotein</name>
+          </sequence>
+          <sequence type="protein">
+            <accession source="ncbi">YP_009246340.1</accession>
+            <name>second secreted glycoprotein</name>
+          </sequence>
+          <sequence type="protein">
+            <accession source="ncbi">NP_690585.1</accession>
+            <name>minor nucleoprotein</name>
+          </sequence>
+          <sequence type="protein">
+            <accession source="ncbi">NP_690586.1</accession>
+            <name>membrane-associated protein</name>
+          </sequence>
+          <sequence type="dna">
+            <accession source="ncbi">NC_004161.1</accession>
+            <name>Reston ebolavirus isolate Reston virus/M.fascicularis-tc/USA/1989/Philippines89-Pennsylvania, complete genome</name>
+          </sequence>
+          <property ref="repseq:year" datatype="xsd:string" applies_to="clade">1989</property>
+          <property ref="repseq:strain" datatype="xsd:string" applies_to="clade">Reston virus/M.fascicularis-tc/USA/1989/Philippines89-Pennsylvania</property>
+          <property ref="repseq:species" datatype="xsd:string" applies_to="clade">Orthoebolavirus restonense</property>
+          <property ref="repseq:protein_names" datatype="xsd:string" applies_to="clade">nucleoprotein, RNA-dependent RNA polymerase, spike glycoprotein, polymerase complex protein, matrix protein, small secreted glycoprotein, second secreted glycoprotein, minor nucleoprotein, membrane-associated protein</property>
+          <property ref="repseq:protein_acc" datatype="xsd:string" applies_to="clade">NP_690580.1, NP_690587.1, NP_690583.1, NP_690581.1, NP_690582.1, NP_690584.1, YP_009246340.1, NP_690585.1, NP_690586.1</property>
+          <property ref="repseq:order" datatype="xsd:string" applies_to="clade">Mononegavirales</property>
+          <property ref="repseq:nuc_acc" datatype="xsd:string" applies_to="clade">NC_004161.1</property>
+          <property ref="repseq:genus" datatype="xsd:string" applies_to="clade">Orthoebolavirus</property>
+          <property ref="repseq:family" datatype="xsd:string" applies_to="clade">Filoviridae</property>
+          <property ref="repseq:collection_date" datatype="xsd:string" applies_to="clade">1989</property>
+          <property ref="repseq:class" datatype="xsd:string" applies_to="clade">Monjiviricetes</property>
+          <property ref="style:font_color" datatype="xsd:token" applies_to="node">#50e67c</property>
+        </clade>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.197896</branch_length>
+      <confidence type="sh_like">100</confidence>
+      <clade>
+        <branch_length>0.245967</branch_length>
+        <confidence type="sh_like">100</confidence>
+        <clade>
+          <name>NC_024781.1</name>
+          <branch_length>0.0798196</branch_length>
+          <taxonomy>
+            <id provider="ncbi">3052505</id>
+            <scientific_name>Orthomarburgvirus marburgense</scientific_name>
+          </taxonomy>
+          <sequence type="protein">
+            <accession source="ncbi">YP_009055222.1</accession>
+            <name>nucleoprotein</name>
+          </sequence>
+          <sequence type="protein">
+            <accession source="ncbi">YP_009055228.1</accession>
+            <name>RNA-dependent RNA polymerase</name>
+          </sequence>
+          <sequence type="protein">
+            <accession source="ncbi">YP_009055225.1</accession>
+            <name>glycoprotein</name>
+          </sequence>
+          <sequence type="protein">
+            <accession source="ncbi">YP_009055223.1</accession>
+            <name>polymerase complex protein</name>
+          </sequence>
+          <sequence type="protein">
+            <accession source="ncbi">YP_009055224.1</accession>
+            <name>matrix protein</name>
+          </sequence>
+          <sequence type="protein">
+            <accession source="ncbi">YP_009055226.1</accession>
+            <name>minor nucleoprotein</name>
+          </sequence>
+          <sequence type="protein">
+            <accession source="ncbi">YP_009055227.1</accession>
+            <name>membrane-associated protein</name>
+          </sequence>
+          <sequence type="dna">
+            <accession source="ncbi">NC_024781.1</accession>
+            <name>Marburg marburgvirus isolate Ravn virus/H.sapiens-tc/KEN/1987/Kitum Cave-810040, complete genome</name>
+          </sequence>
+          <property ref="repseq:year" datatype="xsd:string" applies_to="clade">1987</property>
+          <property ref="repseq:strain" datatype="xsd:string" applies_to="clade">Ravn virus/H.sapiens-tc/KEN/1987/Kitum Cave-810040</property>
+          <property ref="repseq:species" datatype="xsd:string" applies_to="clade">Orthomarburgvirus marburgense</property>
+          <property ref="repseq:protein_names" datatype="xsd:string" applies_to="clade">nucleoprotein, RNA-dependent RNA polymerase, glycoprotein, polymerase complex protein, matrix protein, minor nucleoprotein, membrane-associated protein</property>
+          <property ref="repseq:protein_acc" datatype="xsd:string" applies_to="clade">YP_009055222.1, YP_009055228.1, YP_009055225.1, YP_009055223.1, YP_009055224.1, YP_009055226.1, YP_009055227.1</property>
+          <property ref="repseq:order" datatype="xsd:string" applies_to="clade">Mononegavirales</property>
+          <property ref="repseq:nuc_acc" datatype="xsd:string" applies_to="clade">NC_024781.1</property>
+          <property ref="repseq:host" datatype="xsd:string" applies_to="clade">Homo sapiens</property>
+          <property ref="repseq:genus" datatype="xsd:string" applies_to="clade">Orthomarburgvirus</property>
+          <property ref="repseq:family" datatype="xsd:string" applies_to="clade">Filoviridae</property>
+          <property ref="repseq:country" datatype="xsd:string" applies_to="clade">Kenya</property>
+          <property ref="repseq:collection_date" datatype="xsd:string" applies_to="clade">1987</property>
+          <property ref="repseq:class" datatype="xsd:string" applies_to="clade">Monjiviricetes</property>
+          <property ref="style:font_color" datatype="xsd:token" applies_to="node">#a750e6</property>
+        </clade>
+        <clade>
+          <name>NC_001608.4</name>
+          <branch_length>0.0566252</branch_length>
+          <taxonomy>
+            <id provider="ncbi">33727</id>
+            <scientific_name>Orthomarburgvirus marburgense</scientific_name>
+          </taxonomy>
+          <sequence type="protein">
+            <accession source="ncbi">YP_001531153.1</accession>
+            <name>nucleoprotein</name>
+          </sequence>
+          <sequence type="protein">
+            <accession source="ncbi">YP_001531159.2</accession>
+            <name>L protein</name>
+          </sequence>
+          <sequence type="protein">
+            <accession source="ncbi">YP_001531156.2</accession>
+            <name>glycoprotein</name>
+          </sequence>
+          <sequence type="protein">
+            <accession source="ncbi">YP_001531154.1</accession>
+            <name>VP35</name>
+          </sequence>
+          <sequence type="protein">
+            <accession source="ncbi">YP_001531155.1</accession>
+            <name>VP40</name>
+          </sequence>
+          <sequence type="protein">
+            <accession source="ncbi">YP_001531157.1</accession>
+            <name>VP30</name>
+          </sequence>
+          <sequence type="protein">
+            <accession source="ncbi">YP_001531158.1</accession>
+            <name>VP24</name>
+          </sequence>
+          <sequence type="dna">
+            <accession source="ncbi">NC_001608.4</accession>
+            <name>Marburg virus - Musoke, Kenya, 1980, complete genome</name>
+          </sequence>
+          <property ref="repseq:strain" datatype="xsd:string" applies_to="clade">Musoke</property>
+          <property ref="repseq:species" datatype="xsd:string" applies_to="clade">Orthomarburgvirus marburgense</property>
+          <property ref="repseq:protein_names" datatype="xsd:string" applies_to="clade">nucleoprotein, L protein, glycoprotein, VP35, VP40, VP30, VP24</property>
+          <property ref="repseq:protein_acc" datatype="xsd:string" applies_to="clade">YP_001531153.1, YP_001531159.2, YP_001531156.2, YP_001531154.1, YP_001531155.1, YP_001531157.1, YP_001531158.1</property>
+          <property ref="repseq:order" datatype="xsd:string" applies_to="clade">Mononegavirales</property>
+          <property ref="repseq:nuc_acc" datatype="xsd:string" applies_to="clade">NC_001608.4</property>
+          <property ref="repseq:genus" datatype="xsd:string" applies_to="clade">Orthomarburgvirus</property>
+          <property ref="repseq:family" datatype="xsd:string" applies_to="clade">Filoviridae</property>
+          <property ref="repseq:country" datatype="xsd:string" applies_to="clade">Kenya</property>
+          <property ref="repseq:class" datatype="xsd:string" applies_to="clade">Monjiviricetes</property>
+          <property ref="style:font_color" datatype="xsd:token" applies_to="node">#a750e6</property>
+        </clade>
+      </clade>
+      <clade>
+        <name>OP924273.1</name>
+        <branch_length>0.304122</branch_length>
+        <taxonomy>
+          <id provider="ncbi">2997411</id>
+          <scientific_name>Dianlovirus dehongense</scientific_name>
+        </taxonomy>
+        <sequence type="protein">
+          <accession source="ncbi">WMZ41123.1</accession>
+          <name>nucleocapsid protein</name>
+        </sequence>
+        <sequence type="protein">
+          <accession source="ncbi">WMZ41129.1</accession>
+          <name>RNA-directed RNA polymerase L</name>
+        </sequence>
+        <sequence type="protein">
+          <accession source="ncbi">WMZ41126.1</accession>
+          <name>envelope glycoprotein</name>
+        </sequence>
+        <sequence type="protein">
+          <accession source="ncbi">WMZ41124.1</accession>
+          <name>polymerase cofactor VP35</name>
+        </sequence>
+        <sequence type="protein">
+          <accession source="ncbi">WMZ41125.1</accession>
+          <name>matrix protein VP40</name>
+        </sequence>
+        <sequence type="protein">
+          <accession source="ncbi">WMZ41127.1</accession>
+          <name>minor nucleoprotein VP30</name>
+        </sequence>
+        <sequence type="protein">
+          <accession source="ncbi">WMZ41128.1</accession>
+          <name>membrane-associated protein VP24</name>
+        </sequence>
+        <sequence type="dna">
+          <accession source="ncbi">OP924273.1</accession>
+          <name>Dehong virus isolate CHN/2016/Rl133-16, complete genome</name>
+        </sequence>
+        <property ref="repseq:year" datatype="xsd:string" applies_to="clade">2016</property>
+        <property ref="repseq:strain" datatype="xsd:string" applies_to="clade">CHN/2016/Rl133-16</property>
+        <property ref="repseq:species" datatype="xsd:string" applies_to="clade">Dianlovirus dehongense</property>
+        <property ref="repseq:protein_names" datatype="xsd:string" applies_to="clade">nucleocapsid protein, RNA-directed RNA polymerase L, envelope glycoprotein, polymerase cofactor VP35, matrix protein VP40, minor nucleoprotein VP30, membrane-associated protein VP24</property>
+        <property ref="repseq:protein_acc" datatype="xsd:string" applies_to="clade">WMZ41123.1, WMZ41129.1, WMZ41126.1, WMZ41124.1, WMZ41125.1, WMZ41127.1, WMZ41128.1</property>
+        <property ref="repseq:order" datatype="xsd:string" applies_to="clade">Mononegavirales</property>
+        <property ref="repseq:nuc_acc" datatype="xsd:string" applies_to="clade">OP924273.1</property>
+        <property ref="repseq:host" datatype="xsd:string" applies_to="clade">Rousettus leschenaultii</property>
+        <property ref="repseq:genus" datatype="xsd:string" applies_to="clade">Dianlovirus</property>
+        <property ref="repseq:family" datatype="xsd:string" applies_to="clade">Filoviridae</property>
+        <property ref="repseq:country" datatype="xsd:string" applies_to="clade">China</property>
+        <property ref="repseq:collection_date" datatype="xsd:string" applies_to="clade">03-Dec-2016</property>
+        <property ref="repseq:class" datatype="xsd:string" applies_to="clade">Monjiviricetes</property>
+        <property ref="style:font_color" datatype="xsd:token" applies_to="node">#e65050</property>
+      </clade>
+    </clade>
+    <clade>
+      <name>NC_055510.1</name>
+      <branch_length>0.409948</branch_length>
+      <taxonomy>
+        <id provider="ncbi">3052181</id>
+        <scientific_name>Dianlovirus menglaense</scientific_name>
+      </taxonomy>
+      <sequence type="protein">
+        <accession source="ncbi">YP_010087183.1</accession>
+        <name>nucleocapsid protein</name>
+      </sequence>
+      <sequence type="protein">
+        <accession source="ncbi">YP_010087189.1</accession>
+        <name>RNA-directed RNA polymerase L</name>
+      </sequence>
+      <sequence type="protein">
+        <accession source="ncbi">YP_010087186.1</accession>
+        <name>envelope glycoprotein</name>
+      </sequence>
+      <sequence type="protein">
+        <accession source="ncbi">YP_010087184.1</accession>
+        <name>polymerase cofactor VP35</name>
+      </sequence>
+      <sequence type="protein">
+        <accession source="ncbi">YP_010087185.1</accession>
+        <name>matrix protein VP40</name>
+      </sequence>
+      <sequence type="protein">
+        <accession source="ncbi">YP_010087187.1</accession>
+        <name>minor nucleoprotein VP30</name>
+      </sequence>
+      <sequence type="protein">
+        <accession source="ncbi">YP_010087188.1</accession>
+        <name>membrane-associated protein VP24</name>
+      </sequence>
+      <sequence type="dna">
+        <accession source="ncbi">NC_055510.1</accession>
+        <name>Mengla dianlovirus isolate Rousettus-wt/CHN/2015/Sharen-Bat9447-1, complete genome</name>
+      </sequence>
+      <property ref="repseq:year" datatype="xsd:string" applies_to="clade">2015</property>
+      <property ref="repseq:strain" datatype="xsd:string" applies_to="clade">Rousettus-wt/CHN/2015/Sharen-Bat9447-1</property>
+      <property ref="repseq:species" datatype="xsd:string" applies_to="clade">Dianlovirus menglaense</property>
+      <property ref="repseq:protein_names" datatype="xsd:string" applies_to="clade">nucleocapsid protein, RNA-directed RNA polymerase L, envelope glycoprotein, polymerase cofactor VP35, matrix protein VP40, minor nucleoprotein VP30, membrane-associated protein VP24</property>
+      <property ref="repseq:protein_acc" datatype="xsd:string" applies_to="clade">YP_010087183.1, YP_010087189.1, YP_010087186.1, YP_010087184.1, YP_010087185.1, YP_010087187.1, YP_010087188.1</property>
+      <property ref="repseq:order" datatype="xsd:string" applies_to="clade">Mononegavirales</property>
+      <property ref="repseq:nuc_acc" datatype="xsd:string" applies_to="clade">NC_055510.1</property>
+      <property ref="repseq:host" datatype="xsd:string" applies_to="clade">Rousettus sp.</property>
+      <property ref="repseq:genus" datatype="xsd:string" applies_to="clade">Dianlovirus</property>
+      <property ref="repseq:family" datatype="xsd:string" applies_to="clade">Filoviridae</property>
+      <property ref="repseq:country" datatype="xsd:string" applies_to="clade">China</property>
+      <property ref="repseq:collection_date" datatype="xsd:string" applies_to="clade">26-Dec-2015</property>
+      <property ref="repseq:class" datatype="xsd:string" applies_to="clade">Monjiviricetes</property>
+      <property ref="style:font_color" datatype="xsd:token" applies_to="node">#e65050</property>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>

@@ -1,0 +1,501 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" rerootable="true">
+  <name>Bat phylogeny (Chiroptera, demo)</name>
+  <description>A 34-species tree of the bats (order Chiroptera) across both suborders and eight families. Every TIP carries a full taxonomy -- common name, scientific name, and a taxonomic synonym (the original combination, e.g. Vespertilio pipistrellus) -- so turn on Display Data: Taxonomy to see the italic Latin names, or search the synonyms. Every INTERNAL node is annotated with its clade + rank (order / suborder / superfamily / family / subfamily / genus), so Tools &gt; Colorize Subtrees via Taxonomic Rank -- and Annotate Clades by Rank -- work OFFLINE at &apos;family&apos; (Pteropodidae, Rhinolophidae, Phyllostomidae, Vespertilionidae, ...) or &apos;genus&apos;, and Settings &gt; Display &gt; Internal Taxonomy Key lists the backbone. Schematic (illustrative branch lengths), not a rigorous phylogeny.</description>
+  <clade>
+    <branch_length>0.0</branch_length>
+    <taxonomy>
+      <scientific_name>Chiroptera</scientific_name>
+      <rank>order</rank>
+    </taxonomy>
+    <clade>
+      <branch_length>0.04</branch_length>
+      <taxonomy>
+        <scientific_name>Yinpterochiroptera</scientific_name>
+        <rank>suborder</rank>
+      </taxonomy>
+      <clade>
+        <branch_length>0.05</branch_length>
+        <taxonomy>
+          <scientific_name>Pteropodidae</scientific_name>
+          <rank>family</rank>
+        </taxonomy>
+        <clade>
+          <name>Large flying fox</name>
+          <branch_length>0.02</branch_length>
+          <taxonomy>
+            <scientific_name>Pteropus vampyrus</scientific_name>
+            <common_name>Large flying fox</common_name>
+            <synonym>Vespertilio vampyrus</synonym>
+            <rank>species</rank>
+          </taxonomy>
+        </clade>
+        <clade>
+          <name>Egyptian fruit bat</name>
+          <branch_length>0.02</branch_length>
+          <taxonomy>
+            <scientific_name>Rousettus aegyptiacus</scientific_name>
+            <common_name>Egyptian fruit bat</common_name>
+            <synonym>Pteropus aegyptiacus</synonym>
+            <rank>species</rank>
+          </taxonomy>
+        </clade>
+        <clade>
+          <name>Straw-coloured fruit bat</name>
+          <branch_length>0.02</branch_length>
+          <taxonomy>
+            <scientific_name>Eidolon helvum</scientific_name>
+            <common_name>Straw-coloured fruit bat</common_name>
+            <synonym>Vespertilio vampyrus helvus</synonym>
+            <rank>species</rank>
+          </taxonomy>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>0.04</branch_length>
+        <taxonomy>
+          <scientific_name>Rhinolophoidea</scientific_name>
+          <rank>superfamily</rank>
+        </taxonomy>
+        <clade>
+          <branch_length>0.05</branch_length>
+          <taxonomy>
+            <scientific_name>Rhinolophidae</scientific_name>
+            <rank>family</rank>
+          </taxonomy>
+          <clade>
+            <name>Greater horseshoe bat</name>
+            <branch_length>0.02</branch_length>
+            <taxonomy>
+              <scientific_name>Rhinolophus ferrumequinum</scientific_name>
+              <common_name>Greater horseshoe bat</common_name>
+              <synonym>Vespertilio ferrumequinum</synonym>
+              <rank>species</rank>
+            </taxonomy>
+          </clade>
+          <clade>
+            <name>Lesser horseshoe bat</name>
+            <branch_length>0.02</branch_length>
+            <taxonomy>
+              <scientific_name>Rhinolophus hipposideros</scientific_name>
+              <common_name>Lesser horseshoe bat</common_name>
+              <synonym>Vespertilio hipposideros</synonym>
+              <rank>species</rank>
+            </taxonomy>
+          </clade>
+        </clade>
+        <clade>
+          <branch_length>0.06</branch_length>
+          <taxonomy>
+            <scientific_name>Megadermatidae</scientific_name>
+            <rank>family</rank>
+          </taxonomy>
+          <clade>
+            <name>Greater false vampire bat</name>
+            <branch_length>0.02</branch_length>
+            <taxonomy>
+              <scientific_name>Lyroderma lyra</scientific_name>
+              <common_name>Greater false vampire bat</common_name>
+              <synonym>Megaderma lyra</synonym>
+              <rank>species</rank>
+            </taxonomy>
+          </clade>
+        </clade>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.04</branch_length>
+      <taxonomy>
+        <scientific_name>Yangochiroptera</scientific_name>
+        <rank>suborder</rank>
+      </taxonomy>
+      <clade>
+        <branch_length>0.04</branch_length>
+        <taxonomy>
+          <scientific_name>Noctilionoidea</scientific_name>
+          <rank>superfamily</rank>
+        </taxonomy>
+        <clade>
+          <branch_length>0.06</branch_length>
+          <taxonomy>
+            <scientific_name>Noctilionidae</scientific_name>
+            <rank>family</rank>
+          </taxonomy>
+          <clade>
+            <name>Greater bulldog bat</name>
+            <branch_length>0.02</branch_length>
+            <taxonomy>
+              <scientific_name>Noctilio leporinus</scientific_name>
+              <common_name>Greater bulldog bat</common_name>
+              <synonym>Vespertilio leporinus</synonym>
+              <rank>species</rank>
+            </taxonomy>
+          </clade>
+        </clade>
+        <clade>
+          <branch_length>0.05</branch_length>
+          <taxonomy>
+            <scientific_name>Phyllostomidae</scientific_name>
+            <rank>family</rank>
+          </taxonomy>
+          <clade>
+            <name>Common vampire bat</name>
+            <branch_length>0.02</branch_length>
+            <taxonomy>
+              <scientific_name>Desmodus rotundus</scientific_name>
+              <common_name>Common vampire bat</common_name>
+              <synonym>Phyllostoma rotundum</synonym>
+              <rank>species</rank>
+            </taxonomy>
+          </clade>
+          <clade>
+            <name>Seba&apos;s short-tailed bat</name>
+            <branch_length>0.02</branch_length>
+            <taxonomy>
+              <scientific_name>Carollia perspicillata</scientific_name>
+              <common_name>Seba&apos;s short-tailed bat</common_name>
+              <synonym>Vespertilio perspicillatus</synonym>
+              <rank>species</rank>
+            </taxonomy>
+          </clade>
+          <clade>
+            <name>Pallas&apos;s long-tongued bat</name>
+            <branch_length>0.02</branch_length>
+            <taxonomy>
+              <scientific_name>Glossophaga soricina</scientific_name>
+              <common_name>Pallas&apos;s long-tongued bat</common_name>
+              <synonym>Vespertilio soricinus</synonym>
+              <rank>species</rank>
+            </taxonomy>
+          </clade>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>0.03</branch_length>
+        <taxonomy>
+          <scientific_name>Vespertilionoidea</scientific_name>
+          <rank>superfamily</rank>
+        </taxonomy>
+        <clade>
+          <branch_length>0.05</branch_length>
+          <taxonomy>
+            <scientific_name>Molossidae</scientific_name>
+            <rank>family</rank>
+          </taxonomy>
+          <clade>
+            <name>Velvety free-tailed bat</name>
+            <branch_length>0.02</branch_length>
+            <taxonomy>
+              <scientific_name>Molossus molossus</scientific_name>
+              <common_name>Velvety free-tailed bat</common_name>
+              <synonym>Vespertilio molossus</synonym>
+              <rank>species</rank>
+            </taxonomy>
+          </clade>
+          <clade>
+            <name>European free-tailed bat</name>
+            <branch_length>0.02</branch_length>
+            <taxonomy>
+              <scientific_name>Tadarida teniotis</scientific_name>
+              <common_name>European free-tailed bat</common_name>
+              <synonym>Cephalotes teniotis</synonym>
+              <rank>species</rank>
+            </taxonomy>
+          </clade>
+        </clade>
+        <clade>
+          <branch_length>0.06</branch_length>
+          <taxonomy>
+            <scientific_name>Miniopteridae</scientific_name>
+            <rank>family</rank>
+          </taxonomy>
+          <clade>
+            <name>Common bent-wing bat</name>
+            <branch_length>0.02</branch_length>
+            <taxonomy>
+              <scientific_name>Miniopterus schreibersii</scientific_name>
+              <common_name>Common bent-wing bat</common_name>
+              <synonym>Vespertilio schreibersii</synonym>
+              <rank>species</rank>
+            </taxonomy>
+          </clade>
+        </clade>
+        <clade>
+          <branch_length>0.04</branch_length>
+          <taxonomy>
+            <scientific_name>Vespertilionidae</scientific_name>
+            <rank>family</rank>
+          </taxonomy>
+          <clade>
+            <branch_length>0.04</branch_length>
+            <taxonomy>
+              <scientific_name>Myotinae</scientific_name>
+              <rank>subfamily</rank>
+            </taxonomy>
+            <clade>
+              <branch_length>0.04</branch_length>
+              <taxonomy>
+                <scientific_name>Myotis</scientific_name>
+                <rank>genus</rank>
+              </taxonomy>
+              <clade>
+                <name>Greater mouse-eared bat</name>
+                <branch_length>0.02</branch_length>
+                <taxonomy>
+                  <scientific_name>Myotis myotis</scientific_name>
+                  <common_name>Greater mouse-eared bat</common_name>
+                  <synonym>Vespertilio myotis</synonym>
+                  <rank>species</rank>
+                </taxonomy>
+              </clade>
+              <clade>
+                <name>Little brown bat</name>
+                <branch_length>0.02</branch_length>
+                <taxonomy>
+                  <scientific_name>Myotis lucifugus</scientific_name>
+                  <common_name>Little brown bat</common_name>
+                  <synonym>Vespertilio lucifugus</synonym>
+                  <rank>species</rank>
+                </taxonomy>
+              </clade>
+              <clade>
+                <name>Daubenton&apos;s bat</name>
+                <branch_length>0.02</branch_length>
+                <taxonomy>
+                  <scientific_name>Myotis daubentonii</scientific_name>
+                  <common_name>Daubenton&apos;s bat</common_name>
+                  <synonym>Vespertilio daubentonii</synonym>
+                  <rank>species</rank>
+                </taxonomy>
+              </clade>
+              <clade>
+                <name>Natterer&apos;s bat</name>
+                <branch_length>0.02</branch_length>
+                <taxonomy>
+                  <scientific_name>Myotis nattereri</scientific_name>
+                  <common_name>Natterer&apos;s bat</common_name>
+                  <synonym>Vespertilio nattereri</synonym>
+                  <rank>species</rank>
+                </taxonomy>
+              </clade>
+            </clade>
+          </clade>
+          <clade>
+            <branch_length>0.04</branch_length>
+            <taxonomy>
+              <scientific_name>Vespertilioninae</scientific_name>
+              <rank>subfamily</rank>
+            </taxonomy>
+            <clade>
+              <branch_length>0.03</branch_length>
+              <taxonomy>
+                <scientific_name>Pipistrellus</scientific_name>
+                <rank>genus</rank>
+              </taxonomy>
+              <clade>
+                <name>Common pipistrelle</name>
+                <branch_length>0.02</branch_length>
+                <taxonomy>
+                  <scientific_name>Pipistrellus pipistrellus</scientific_name>
+                  <common_name>Common pipistrelle</common_name>
+                  <synonym>Vespertilio pipistrellus</synonym>
+                  <rank>species</rank>
+                </taxonomy>
+              </clade>
+              <clade>
+                <name>Nathusius&apos;s pipistrelle</name>
+                <branch_length>0.02</branch_length>
+                <taxonomy>
+                  <scientific_name>Pipistrellus nathusii</scientific_name>
+                  <common_name>Nathusius&apos;s pipistrelle</common_name>
+                  <synonym>Vespertilio nathusii</synonym>
+                  <rank>species</rank>
+                </taxonomy>
+              </clade>
+              <clade>
+                <name>Kuhl&apos;s pipistrelle</name>
+                <branch_length>0.02</branch_length>
+                <taxonomy>
+                  <scientific_name>Pipistrellus kuhlii</scientific_name>
+                  <common_name>Kuhl&apos;s pipistrelle</common_name>
+                  <synonym>Vespertilio kuhlii</synonym>
+                  <rank>species</rank>
+                </taxonomy>
+              </clade>
+            </clade>
+            <clade>
+              <branch_length>0.03</branch_length>
+              <taxonomy>
+                <scientific_name>Nyctalus</scientific_name>
+                <rank>genus</rank>
+              </taxonomy>
+              <clade>
+                <name>Common noctule</name>
+                <branch_length>0.02</branch_length>
+                <taxonomy>
+                  <scientific_name>Nyctalus noctula</scientific_name>
+                  <common_name>Common noctule</common_name>
+                  <synonym>Vespertilio noctula</synonym>
+                  <rank>species</rank>
+                </taxonomy>
+              </clade>
+              <clade>
+                <name>Leisler&apos;s bat</name>
+                <branch_length>0.02</branch_length>
+                <taxonomy>
+                  <scientific_name>Nyctalus leisleri</scientific_name>
+                  <common_name>Leisler&apos;s bat</common_name>
+                  <synonym>Vespertilio leisleri</synonym>
+                  <rank>species</rank>
+                </taxonomy>
+              </clade>
+            </clade>
+            <clade>
+              <branch_length>0.03</branch_length>
+              <taxonomy>
+                <scientific_name>Eptesicus</scientific_name>
+                <rank>genus</rank>
+              </taxonomy>
+              <clade>
+                <name>Serotine bat</name>
+                <branch_length>0.02</branch_length>
+                <taxonomy>
+                  <scientific_name>Eptesicus serotinus</scientific_name>
+                  <common_name>Serotine bat</common_name>
+                  <synonym>Vespertilio serotinus</synonym>
+                  <rank>species</rank>
+                </taxonomy>
+              </clade>
+              <clade>
+                <name>Big brown bat</name>
+                <branch_length>0.02</branch_length>
+                <taxonomy>
+                  <scientific_name>Eptesicus fuscus</scientific_name>
+                  <common_name>Big brown bat</common_name>
+                  <synonym>Vespertilio fuscus</synonym>
+                  <rank>species</rank>
+                </taxonomy>
+              </clade>
+            </clade>
+            <clade>
+              <branch_length>0.03</branch_length>
+              <taxonomy>
+                <scientific_name>Lasiurus</scientific_name>
+                <rank>genus</rank>
+              </taxonomy>
+              <clade>
+                <name>Eastern red bat</name>
+                <branch_length>0.02</branch_length>
+                <taxonomy>
+                  <scientific_name>Lasiurus borealis</scientific_name>
+                  <common_name>Eastern red bat</common_name>
+                  <synonym>Vespertilio borealis</synonym>
+                  <rank>species</rank>
+                </taxonomy>
+              </clade>
+              <clade>
+                <name>Hoary bat</name>
+                <branch_length>0.02</branch_length>
+                <taxonomy>
+                  <scientific_name>Lasiurus cinereus</scientific_name>
+                  <common_name>Hoary bat</common_name>
+                  <synonym>Vespertilio cinereus</synonym>
+                  <rank>species</rank>
+                </taxonomy>
+              </clade>
+            </clade>
+            <clade>
+              <name>Parti-coloured bat</name>
+              <branch_length>0.02</branch_length>
+              <taxonomy>
+                <scientific_name>Vespertilio murinus</scientific_name>
+                <common_name>Parti-coloured bat</common_name>
+                <synonym>Vespertilio discolor</synonym>
+                <rank>species</rank>
+              </taxonomy>
+            </clade>
+            <clade>
+              <name>Savi&apos;s pipistrelle</name>
+              <branch_length>0.02</branch_length>
+              <taxonomy>
+                <scientific_name>Hypsugo savii</scientific_name>
+                <common_name>Savi&apos;s pipistrelle</common_name>
+                <synonym>Vespertilio savii</synonym>
+                <rank>species</rank>
+              </taxonomy>
+            </clade>
+            <clade>
+              <name>Tricolored bat</name>
+              <branch_length>0.02</branch_length>
+              <taxonomy>
+                <scientific_name>Perimyotis subflavus</scientific_name>
+                <common_name>Tricolored bat</common_name>
+                <synonym>Vespertilio subflavus</synonym>
+                <rank>species</rank>
+              </taxonomy>
+            </clade>
+            <clade>
+              <name>Evening bat</name>
+              <branch_length>0.02</branch_length>
+              <taxonomy>
+                <scientific_name>Nycticeius humeralis</scientific_name>
+                <common_name>Evening bat</common_name>
+                <synonym>Vespertilio humeralis</synonym>
+                <rank>species</rank>
+              </taxonomy>
+            </clade>
+            <clade>
+              <name>Pallid bat</name>
+              <branch_length>0.02</branch_length>
+              <taxonomy>
+                <scientific_name>Antrozous pallidus</scientific_name>
+                <common_name>Pallid bat</common_name>
+                <synonym>Vespertilio pallidus</synonym>
+                <rank>species</rank>
+              </taxonomy>
+            </clade>
+          </clade>
+          <clade>
+            <branch_length>0.04</branch_length>
+            <taxonomy>
+              <scientific_name>Plecotinae</scientific_name>
+              <rank>subfamily</rank>
+            </taxonomy>
+            <clade>
+              <name>Brown long-eared bat</name>
+              <branch_length>0.02</branch_length>
+              <taxonomy>
+                <scientific_name>Plecotus auritus</scientific_name>
+                <common_name>Brown long-eared bat</common_name>
+                <synonym>Vespertilio auritus</synonym>
+                <rank>species</rank>
+              </taxonomy>
+            </clade>
+            <clade>
+              <name>Western barbastelle</name>
+              <branch_length>0.02</branch_length>
+              <taxonomy>
+                <scientific_name>Barbastella barbastellus</scientific_name>
+                <common_name>Western barbastelle</common_name>
+                <synonym>Vespertilio barbastellus</synonym>
+                <rank>species</rank>
+              </taxonomy>
+            </clade>
+            <clade>
+              <name>Townsend&apos;s big-eared bat</name>
+              <branch_length>0.02</branch_length>
+              <taxonomy>
+                <scientific_name>Corynorhinus townsendii</scientific_name>
+                <common_name>Townsend&apos;s big-eared bat</common_name>
+                <synonym>Plecotus townsendii</synonym>
+                <rank>species</rank>
+              </taxonomy>
+            </clade>
+          </clade>
+        </clade>
+      </clade>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>

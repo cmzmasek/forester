@@ -100,6 +100,13 @@ final class DemoTrees {
         demos.add( new Demo( "Protein Domain Architectures",
                              "Multi-domain protein sequences drawn to scale at each tip (auto-enabled on load).",
                              mf -> openTree( mf, "domain-architectures.xml" ) ) ); // domains auto-enable + fit on load
+        demos.add( new Demo( "Bat Phylogeny (Taxonomy by Rank)",
+                             "A 34-species tree of the bats (Chiroptera): common + scientific names + synonyms at the "
+                                     + "tips, every clade annotated by rank, colorized by family -- all offline.",
+                             mf -> {
+                                 openTree( mf, "bat-phylogeny.xml" );
+                                 colorizeRank( mf, "family" ); // 8 families light up from the in-tree clade annotations
+                             } ) );
         demos.add( new Demo( "Ancestral State Pies (Phylogeography)",
                              "A discrete geographic trait as posterior-probability pie charts at the internal nodes.",
                              mf -> {
@@ -138,10 +145,25 @@ final class DemoTrees {
                                      cp.demoSelectAncestralPie( "region" ); // geographic ancestral-state pies
                                  }
                              } ) );
+        demos.add( new Demo( "Filoviridae (Ebola & Marburg) — real data",
+                             "A real filovirus phylogeny: the Ebola species (Zaire, Sudan, Reston, Bundibugyo, Taï, "
+                                     + "Bombali), Marburg and Dianlovirus, colored by species, with host / country / "
+                                     + "year metadata and per-protein accessions.",
+                             mf -> {
+                                 openTree( mf, "filoviridae-tree.xml" );
+                                 colorBy( mf, "repseq:species" ); // color the 13 representatives by viral species
+                             } ) );
         demos.add( new Demo( "Dinosaur Time Tree (Geologic Axis)",
                              "A dated archosaur tree -- with Archaeopteryx! -- against the ICS geologic time scale.",
                              mf -> {
                                  final TreePanel tp = openTree( mf, "dinosaur-time-tree.xml" );
+                                 timeAxis( mf, tp, Options.TIME_AXIS_TYPE.GEOLOGIC );
+                             } ) );
+        demos.add( new Demo( "Lagomorph Time Tree (Geologic Axis)",
+                             "A dated tree of the rabbits, hares and pikas (Lagomorpha) -- 18 living species back to the "
+                                     + "Eocene -- against the ICS geologic time scale.",
+                             mf -> {
+                                 final TreePanel tp = openTree( mf, "lagomorph-time-tree.xml" );
                                  timeAxis( mf, tp, Options.TIME_AXIS_TYPE.GEOLOGIC );
                              } ) );
         demos.add( new Demo( "Ammonite Time Tree (Fossil Ranges)",
@@ -210,6 +232,16 @@ final class DemoTrees {
         final ControlPanel cp = mf.getMainPanel().getControlPanel();
         if ( cp != null ) {
             cp.demoSelectColorByProperty( ref );
+        }
+    }
+
+    /** Colorize the current tree's subtrees by a taxonomic rank, from the tree's own in-tree clade annotations
+     *  (offline -- no online resolve), then re-fit. */
+    private static void colorizeRank( final MainFrameApplication mf, final String rank ) {
+        final TreePanel tp = mf.getMainPanel().getCurrentTreePanel();
+        if ( tp != null ) {
+            tp.colorByRank( rank );
+            refit( mf );
         }
     }
 

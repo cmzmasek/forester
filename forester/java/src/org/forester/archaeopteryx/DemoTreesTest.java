@@ -33,6 +33,7 @@ import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.NodeVisualData;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
+import org.forester.util.ForesterUtil;
 
 /**
  * Anti-rot guard for the {@code forester/demo/} gallery: every committed demo tree (see
@@ -97,6 +98,20 @@ public final class DemoTreesTest {
         ok &= hasAtLeastTips( "domain-architectures.xml", 6 );
         ok &= hasBranchLengths( "domain-architectures.xml" );
         ok &= hasDomainArchitectures( "domain-architectures.xml", 6 );
+
+        // bat phylogeny: a large taxonomy tree (common + scientific names + synonyms at the tips, ranks on the clades)
+        ok &= batTreeOk( "bat-phylogeny.xml" );
+
+        // lagomorph time tree: a dated species tree with clade + rank annotations, for the geologic axis + rank colorize
+        ok &= lagomorphTreeOk( "lagomorph-time-tree.xml" );
+        ok &= hasBranchLengths( "lagomorph-time-tree.xml" );
+        ok &= isDetectedTimeTree( "lagomorph-time-tree.xml", AptxUtil.TIME_TREE_KIND.DATED );
+
+        // filoviridae: a REAL filovirus phylogeny (Ebola/Marburg reps) with repseq:* metadata -> color by species
+        ok &= hasAtLeastTips( "filoviridae-tree.xml", 13 );
+        ok &= hasBranchLengths( "filoviridae-tree.xml" );
+        ok &= hasCategoricalRef( "filoviridae-tree.xml", "repseq:species" ); // the demo colors by this
+        ok &= hasCategoricalRef( "filoviridae-tree.xml", "repseq:host" );    // real host metadata present
 
         ok &= hasAtLeastTips( "heatmap-matrix.xml", 6 );
         ok &= hasNumericRef( "heatmap-matrix.xml", "data:s1" );
@@ -501,6 +516,53 @@ public final class DemoTreesTest {
             return note( file_name + " must carry domain architectures on >= " + min_tips + " tips, found " + n );
         }
         return true;
+    }
+
+    /** The bat phylogeny: &ge;30 species; every TIP carries a taxonomy with a scientific name, a common name AND a
+     *  synonym; and the INTERNAL nodes carry rank annotations at 'family' and 'genus' (so Colorize / Annotate Clades by
+     *  Rank works offline). Guards the taxonomy richness the demo advertises. */
+    private static boolean batTreeOk( final String file_name ) {
+        final Phylogeny phy = load( file_name );
+        if ( phy == null ) {
+            return false;
+        }
+        if ( phy.getNumberOfExternalNodes() < 30 ) {
+            return note( file_name + " must have at least 30 species, has " + phy.getNumberOfExternalNodes() );
+        }
+        for( final PhylogenyNode ext : phy.getExternalNodes() ) {
+            if ( !ext.getNodeData().isHasTaxonomy() ) {
+                return note( file_name + ": every tip must carry a taxonomy (missing on " + ext.getName() + ")" );
+            }
+            final org.forester.phylogeny.data.Taxonomy t = ext.getNodeData().getTaxonomy();
+            if ( ForesterUtil.isEmpty( t.getScientificName() ) || ForesterUtil.isEmpty( t.getCommonName() )
+                    || t.getSynonyms().isEmpty() ) {
+                return note( file_name + ": every tip must have a scientific name, common name AND a synonym (tip '"
+                        + ext.getName() + "')" );
+            }
+        }
+        return hasRank( file_name, "family" ) && hasRank( file_name, "genus" ); // clade annotations for rank colorize
+    }
+
+    /** The lagomorph time tree: &ge;15 species, a dated time tree with branch lengths, and internal clade annotations at
+     *  'family' and 'genus' (so the geologic axis + offline rank colorize both work). */
+    private static boolean lagomorphTreeOk( final String file_name ) {
+        final Phylogeny phy = load( file_name );
+        if ( phy == null ) {
+            return false;
+        }
+        if ( phy.getNumberOfExternalNodes() < 15 ) {
+            return note( file_name + " must have at least 15 species, has " + phy.getNumberOfExternalNodes() );
+        }
+        for( final PhylogenyNode ext : phy.getExternalNodes() ) {
+            final org.forester.phylogeny.data.Taxonomy t = ext.getNodeData().isHasTaxonomy()
+                    ? ext.getNodeData().getTaxonomy() : null;
+            if ( ( t == null ) || ForesterUtil.isEmpty( t.getScientificName() )
+                    || ForesterUtil.isEmpty( t.getCommonName() ) ) {
+                return note( file_name + ": every tip must carry a scientific + common name (tip '" + ext.getName()
+                        + "')" );
+            }
+        }
+        return hasRank( file_name, "family" ) && hasRank( file_name, "genus" ); // clade annotations for rank colorize
     }
 
     private static boolean hasBranchLengths( final String file_name ) {

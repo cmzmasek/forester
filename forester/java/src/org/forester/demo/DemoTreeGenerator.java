@@ -72,6 +72,8 @@ public final class DemoTreeGenerator {
         write( dir, "annotation-columns.xml", annotationColumnsTree() );
         write( dir, "colorize-by-rank.xml", colorizeByRankTree() );
         write( dir, "infer-ancestor-taxonomies.xml", inferAncestorTaxonomiesTree() );
+        write( dir, "bat-phylogeny.xml", batSpeciesTree() );
+        write( dir, "lagomorph-time-tree.xml", lagomorphTimeTree() );
         write( dir, "scale-axis.xml", scaleAxisTree() );
         write( dir, "long-branch-break.xml", longBranchBreakTree() );
         write( dir, "date-in-labels.xml", dateInLabelsTree() );
@@ -395,6 +397,217 @@ public final class DemoTreeGenerator {
     private static PhylogenyNode speciesTip( final String scientific_name ) throws PhyloXmlDataFormatException {
         final PhylogenyNode n = leaf( scientific_name );
         taxon( n, scientific_name, "species" );
+        return n;
+    }
+
+    // ----- "Bat phylogeny": a larger (34-tip) species tree of the bats (order Chiroptera), spanning both suborders and
+    //       eight families. Every tip carries a full <taxonomy> -- common name, scientific (Latin) name, rank, and a
+    //       taxonomic SYNONYM (mostly the original Vespertilio/Pteropus/Phyllostoma combination the species was first
+    //       described in). Every INTERNAL node is annotated with its clade name + rank (order / suborder / superfamily /
+    //       family / subfamily / genus), so Colorize / Annotate Clades by Rank works OFFLINE at any of those ranks and the
+    //       Internal Taxonomy Key summarises the backbone. Topology follows the accepted two-suborder classification
+    //       (Yinpterochiroptera + Yangochiroptera); it is schematic (illustrative branch lengths), not a rigorous estimate.
+    private static Phylogeny batSpeciesTree() throws PhyloXmlDataFormatException {
+        // --- Yinpterochiroptera ---
+        final PhylogenyNode pteropodidae = namedClade( 0.05, "Pteropodidae", "family",
+                batTip( "Large flying fox", "Pteropus vampyrus", "Vespertilio vampyrus" ),
+                batTip( "Egyptian fruit bat", "Rousettus aegyptiacus", "Pteropus aegyptiacus" ),
+                batTip( "Straw-coloured fruit bat", "Eidolon helvum", "Vespertilio vampyrus helvus" ) );
+        final PhylogenyNode rhinolophidae = namedClade( 0.05, "Rhinolophidae", "family",
+                batTip( "Greater horseshoe bat", "Rhinolophus ferrumequinum", "Vespertilio ferrumequinum" ),
+                batTip( "Lesser horseshoe bat", "Rhinolophus hipposideros", "Vespertilio hipposideros" ) );
+        final PhylogenyNode megadermatidae = namedClade( 0.06, "Megadermatidae", "family",
+                batTip( "Greater false vampire bat", "Lyroderma lyra", "Megaderma lyra" ) );
+        final PhylogenyNode rhinolophoidea = namedClade( 0.04, "Rhinolophoidea", "superfamily",
+                rhinolophidae, megadermatidae );
+        final PhylogenyNode yinptero = namedClade( 0.04, "Yinpterochiroptera", "suborder",
+                pteropodidae, rhinolophoidea );
+
+        // --- Yangochiroptera : Noctilionoidea ---
+        final PhylogenyNode noctilionidae = namedClade( 0.06, "Noctilionidae", "family",
+                batTip( "Greater bulldog bat", "Noctilio leporinus", "Vespertilio leporinus" ) );
+        final PhylogenyNode phyllostomidae = namedClade( 0.05, "Phyllostomidae", "family",
+                batTip( "Common vampire bat", "Desmodus rotundus", "Phyllostoma rotundum" ),
+                batTip( "Seba's short-tailed bat", "Carollia perspicillata", "Vespertilio perspicillatus" ),
+                batTip( "Pallas's long-tongued bat", "Glossophaga soricina", "Vespertilio soricinus" ) );
+        final PhylogenyNode noctilionoidea = namedClade( 0.04, "Noctilionoidea", "superfamily",
+                noctilionidae, phyllostomidae );
+
+        // --- Yangochiroptera : Vespertilionoidea ---
+        final PhylogenyNode molossidae = namedClade( 0.05, "Molossidae", "family",
+                batTip( "Velvety free-tailed bat", "Molossus molossus", "Vespertilio molossus" ),
+                batTip( "European free-tailed bat", "Tadarida teniotis", "Cephalotes teniotis" ) );
+        final PhylogenyNode miniopteridae = namedClade( 0.06, "Miniopteridae", "family",
+                batTip( "Common bent-wing bat", "Miniopterus schreibersii", "Vespertilio schreibersii" ) );
+        // Vespertilionidae (vesper bats -- the largest family), split into subfamilies with genus clades
+        final PhylogenyNode myotis = namedClade( 0.04, "Myotis", "genus",
+                batTip( "Greater mouse-eared bat", "Myotis myotis", "Vespertilio myotis" ),
+                batTip( "Little brown bat", "Myotis lucifugus", "Vespertilio lucifugus" ),
+                batTip( "Daubenton's bat", "Myotis daubentonii", "Vespertilio daubentonii" ),
+                batTip( "Natterer's bat", "Myotis nattereri", "Vespertilio nattereri" ) );
+        final PhylogenyNode myotinae = namedClade( 0.04, "Myotinae", "subfamily", myotis );
+        final PhylogenyNode pipistrellus = namedClade( 0.03, "Pipistrellus", "genus",
+                batTip( "Common pipistrelle", "Pipistrellus pipistrellus", "Vespertilio pipistrellus" ),
+                batTip( "Nathusius's pipistrelle", "Pipistrellus nathusii", "Vespertilio nathusii" ),
+                batTip( "Kuhl's pipistrelle", "Pipistrellus kuhlii", "Vespertilio kuhlii" ) );
+        final PhylogenyNode nyctalus = namedClade( 0.03, "Nyctalus", "genus",
+                batTip( "Common noctule", "Nyctalus noctula", "Vespertilio noctula" ),
+                batTip( "Leisler's bat", "Nyctalus leisleri", "Vespertilio leisleri" ) );
+        final PhylogenyNode eptesicus = namedClade( 0.03, "Eptesicus", "genus",
+                batTip( "Serotine bat", "Eptesicus serotinus", "Vespertilio serotinus" ),
+                batTip( "Big brown bat", "Eptesicus fuscus", "Vespertilio fuscus" ) );
+        final PhylogenyNode lasiurus = namedClade( 0.03, "Lasiurus", "genus",
+                batTip( "Eastern red bat", "Lasiurus borealis", "Vespertilio borealis" ),
+                batTip( "Hoary bat", "Lasiurus cinereus", "Vespertilio cinereus" ) );
+        final PhylogenyNode vespertilioninae = namedClade( 0.04, "Vespertilioninae", "subfamily",
+                pipistrellus, nyctalus, eptesicus, lasiurus,
+                batTip( "Parti-coloured bat", "Vespertilio murinus", "Vespertilio discolor" ),
+                batTip( "Savi's pipistrelle", "Hypsugo savii", "Vespertilio savii" ),
+                batTip( "Tricolored bat", "Perimyotis subflavus", "Vespertilio subflavus" ),
+                batTip( "Evening bat", "Nycticeius humeralis", "Vespertilio humeralis" ),
+                batTip( "Pallid bat", "Antrozous pallidus", "Vespertilio pallidus" ) );
+        final PhylogenyNode plecotinae = namedClade( 0.04, "Plecotinae", "subfamily",
+                batTip( "Brown long-eared bat", "Plecotus auritus", "Vespertilio auritus" ),
+                batTip( "Western barbastelle", "Barbastella barbastellus", "Vespertilio barbastellus" ),
+                batTip( "Townsend's big-eared bat", "Corynorhinus townsendii", "Plecotus townsendii" ) );
+        final PhylogenyNode vespertilionidae = namedClade( 0.04, "Vespertilionidae", "family",
+                myotinae, vespertilioninae, plecotinae );
+        final PhylogenyNode vespertilionoidea = namedClade( 0.03, "Vespertilionoidea", "superfamily",
+                molossidae, miniopteridae, vespertilionidae );
+
+        final PhylogenyNode yangochiro = namedClade( 0.04, "Yangochiroptera", "suborder",
+                noctilionoidea, vespertilionoidea );
+        final PhylogenyNode root = namedClade( 0, "Chiroptera", "order", yinptero, yangochiro );
+        return tree( root, "Bat phylogeny (Chiroptera, demo)",
+                     "A 34-species tree of the bats (order Chiroptera) across both suborders and eight families. Every "
+                             + "TIP carries a full taxonomy -- common name, scientific name, and a taxonomic synonym (the "
+                             + "original combination, e.g. Vespertilio pipistrellus) -- so turn on Display Data: Taxonomy "
+                             + "to see the italic Latin names, or search the synonyms. Every INTERNAL node is annotated "
+                             + "with its clade + rank (order / suborder / superfamily / family / subfamily / genus), so "
+                             + "Tools > Colorize Subtrees via Taxonomic Rank -- and Annotate Clades by Rank -- work OFFLINE "
+                             + "at 'family' (Pteropodidae, Rhinolophidae, Phyllostomidae, Vespertilionidae, ...) or 'genus', "
+                             + "and Settings > Display > Internal Taxonomy Key lists the backbone. Schematic (illustrative "
+                             + "branch lengths), not a rigorous phylogeny." );
+    }
+
+    /** A bat (or any) species tip: node name = common name; taxonomy carries the scientific (Latin) name, the common
+     *  name, rank 'species', and a taxonomic synonym (the original combination). A null synonym is omitted. */
+    private static PhylogenyNode batTip( final String common_name, final String scientific_name, final String synonym )
+            throws PhyloXmlDataFormatException {
+        final PhylogenyNode n = leaf( common_name );
+        final Taxonomy t = new Taxonomy();
+        t.setScientificName( scientific_name );
+        t.setCommonName( common_name );
+        t.setRank( "species" );
+        if ( synonym != null ) {
+            t.getSynonyms().add( synonym );
+        }
+        n.getNodeData().setTaxonomy( t );
+        return n;
+    }
+
+    /** An internal clade node with a branch length AND a clade-name taxonomy at the given rank (order / family / ...),
+     *  so the rank-based colorize / annotate tools and the Internal Taxonomy Key read it directly. */
+    private static PhylogenyNode namedClade( final double branch_length, final String scientific_name, final String rank,
+                                             final PhylogenyNode... kids ) throws PhyloXmlDataFormatException {
+        final PhylogenyNode n = clade( branch_length, kids );
+        taxon( n, scientific_name, rank );
+        return n;
+    }
+
+    // ----- "Lagomorph time tree": a time-calibrated species tree of the rabbits, hares and pikas (order Lagomorpha),
+    //       ages in Ma, all tips extant (0 Ma) so the axis reaches the present. Every tip carries a common + scientific
+    //       name; every internal node is dated AND annotated with its clade + rank, so it auto-detects as a time tree and
+    //       Colorize / Annotate Clades by Rank works offline. Turn on Settings > Overlays > Time axis: Geologic for the
+    //       ICS geologic scale (the Lagomorpha crown is Eocene). Schematic divergence times, not a rigorous chronogram.
+    private static Phylogeny lagomorphTimeTree() throws PhyloXmlDataFormatException {
+        // --- Ochotonidae (pikas) : the Ochotona radiation (crown ~15 Ma, mid-Miocene). Only the genus Ochotona is
+        //     extant, so the family crown IS the genus crown -- one node, labelled at family rank (the Leporidae vs
+        //     Ochotonidae split is the headline for the family-rank colorize demo). ---
+        final PhylogenyNode ochotonidae = datedTaxonNode( "Ochotonidae", "pikas", "family", 15,
+                datedNamedTip( "American pika", "Ochotona princeps", 0 ),
+                datedNamedTip( "Collared pika", "Ochotona collaris", 0 ),
+                datedNamedTip( "Alpine pika", "Ochotona alpina", 0 ),
+                datedNamedTip( "Plateau pika", "Ochotona curzoniae", 0 ),
+                datedNamedTip( "Afghan pika", "Ochotona rufescens", 0 ) );
+
+        // --- Leporidae (rabbits & hares), crown ~25 Ma (late Oligocene) ---
+        final PhylogenyNode lepus = datedTaxonNode( "Lepus", "hares", "genus", 5, // hare crown radiation, Pliocene
+                datedNamedTip( "European hare", "Lepus europaeus", 0 ),
+                datedNamedTip( "Mountain hare", "Lepus timidus", 0 ),
+                datedNamedTip( "Arctic hare", "Lepus arcticus", 0 ),
+                datedNamedTip( "Snowshoe hare", "Lepus americanus", 0 ),
+                datedNamedTip( "Black-tailed jackrabbit", "Lepus californicus", 0 ) );
+        final PhylogenyNode sylvilagus = datedTaxonNode( "Sylvilagus", "cottontails", "genus", 7, // late Miocene
+                datedNamedTip( "Eastern cottontail", "Sylvilagus floridanus", 0 ),
+                datedNamedTip( "Desert cottontail", "Sylvilagus audubonii", 0 ) );
+        // core Leporinae: hares + cottontails + the European rabbit + the pygmy rabbit
+        final PhylogenyNode oryctolagus = datedNamedTip( "European rabbit", "Oryctolagus cuniculus", 0 );
+        final PhylogenyNode brachylagus = datedNamedTip( "Pygmy rabbit", "Brachylagus idahoensis", 0 );
+        final PhylogenyNode rabbits = datedTaxonNode( "", "", "", 10, oryctolagus, brachylagus );
+        final PhylogenyNode hares_cottontails = datedTaxonNode( "", "", "", 12, lepus, sylvilagus );
+        final PhylogenyNode crown_leporids = datedTaxonNode( "", "", "", 18, hares_cottontails, rabbits );
+        // relict / basal leporid genera branching earlier
+        final PhylogenyNode relicts = datedTaxonNode( "", "", "", 20,
+                datedNamedTip( "Volcano rabbit", "Romerolagus diazi", 0 ),
+                datedNamedTip( "Amami rabbit", "Pentalagus furnessi", 0 ),
+                datedNamedTip( "Sumatran striped rabbit", "Nesolagus netscheri", 0 ),
+                datedNamedTip( "Hispid hare", "Caprolagus hispidus", 0 ) );
+        final PhylogenyNode leporidae = datedTaxonNode( "Leporidae", "rabbits & hares", "family", 25, crown_leporids,
+                relicts );
+
+        final PhylogenyNode root = datedTaxonNode( "Lagomorpha", "rabbits, hares & pikas", "order", 50, ochotonidae,
+                leporidae );
+        setTimeBranchLengths( root, 50 );
+        final Phylogeny phy = tree( root, "Lagomorph time tree (demo)",
+                                    "A time-calibrated species tree of the rabbits, hares and pikas (order Lagomorpha), "
+                                            + "ages in Ma; all 18 tips are extant (0 Ma) so the axis reaches the present. "
+                                            + "It auto-detects as a time tree; turn on Settings > Overlays > Time axis: "
+                                            + "Geologic to draw the ICS geologic scale (the pika/rabbit split is Eocene, "
+                                            + "the Lepus radiation Pliocene). Every tip carries a common + scientific name "
+                                            + "and every internal node is dated and annotated with its clade + rank "
+                                            + "(order Lagomorpha; families Leporidae, Ochotonidae; genera Lepus, "
+                                            + "Sylvilagus, Ochotona), so Colorize / Annotate Clades by Rank works offline. "
+                                            + "Schematic divergence times, not a rigorous chronogram." );
+        phy.setDistanceUnit( "My" );
+        return phy;
+    }
+
+    /** A dated tip with a common + scientific name: node name = common name, a phyloXML <date> (age in Ma), and a
+     *  species-rank taxonomy. */
+    private static PhylogenyNode datedNamedTip( final String common_name, final String scientific_name,
+                                                final double age_ma ) throws PhyloXmlDataFormatException {
+        final PhylogenyNode n = datedTip( common_name, age_ma );
+        final Taxonomy t = new Taxonomy();
+        t.setScientificName( scientific_name );
+        t.setCommonName( common_name );
+        t.setRank( "species" );
+        n.getNodeData().setTaxonomy( t );
+        return n;
+    }
+
+    /** A dated internal node carrying a clade-name TAXONOMY at the given rank, plus an optional common name (blank
+     *  sci-name/rank = an unlabelled dated internal node). The clade name lives ONLY in the taxonomy (not the node name
+     *  too), so the label isn't drawn twice; taxonomy display shows the clade (+ common name) + rank, and the
+     *  rank-colorize / annotate tools read it. */
+    private static PhylogenyNode datedTaxonNode( final String scientific_name, final String common_name,
+                                                 final String rank, final double age_ma,
+                                                 final PhylogenyNode... kids ) throws PhyloXmlDataFormatException {
+        final PhylogenyNode n = new PhylogenyNode();
+        n.getNodeData().setDate( new org.forester.phylogeny.data.Date( "", java.math.BigDecimal.valueOf( age_ma ),
+                null, null, "mya" ) );
+        for ( final PhylogenyNode k : kids ) {
+            n.addAsChild( k );
+        }
+        if ( ( scientific_name != null ) && ( scientific_name.length() > 0 ) ) {
+            taxon( n, scientific_name, rank );
+            if ( ( common_name != null ) && ( common_name.length() > 0 ) ) {
+                n.getNodeData().getTaxonomy().setCommonName( common_name );
+                // display the common name via the node NAME (like the tips) -- it differs from the italic scientific
+                // name, so the clade shows e.g. "Leporidae rabbits & hares" with no doubling
+                n.setName( common_name );
+            }
+        }
         return n;
     }
 

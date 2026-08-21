@@ -134,6 +134,8 @@ Just launch Archaeopteryx and pick a tree from **File → Demo Trees**:
 - **Color Tips by Metadata** — a tree colored by a categorical property
 - **Annotation Columns** — tip-aligned color strips and a numeric heat-map
 - **Protein Domain Architectures** — multi-domain proteins drawn to scale
+- **Bat Phylogeny (Taxonomy by Rank)** — 34 bat species with common + scientific
+  names + synonyms, every clade rank-annotated, colorized by family (all offline)
 - **Ancestral State Pies** — a discrete geographic trait as posterior pies
 - **Node Age Spindles** — divergence-time uncertainty (point age + 95% HPD) as
   tapered spindles
@@ -142,8 +144,12 @@ Just launch Archaeopteryx and pick a tree from **File → Demo Trees**:
 - **SARS-CoV-2 Time Tree** — a tip-dated viral tree on a calendar-year axis
 - **Phylodynamics (Nextstrain JSON)** — an Auspice v2 dataset with geographic
   ancestral-state pies, read straight from `dataset.json`
+- **Filoviridae (Ebola & Marburg)** — a *real* filovirus phylogeny colored by
+  species, with host/country/year metadata and per-protein accessions
 - **Dinosaur Time Tree** — a dated archosaur tree (with *Archaeopteryx*!) on the
   geologic time scale
+- **Lagomorph Time Tree** — the rabbits, hares and pikas (18 living species back to
+  the Eocene) on the geologic time scale
 - **Ammonite Time Tree** — an all-extinct fossil clade with FAD/LAD range bars
 - **Tree of Life (Deep Time)** — a time-calibrated tree back to LUCA (~3.8 Ga)
 - **Tanglegram** — two trees (gophers vs. their lice) compared side by side

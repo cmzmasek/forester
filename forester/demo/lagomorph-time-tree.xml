@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" branch_length_unit="My" rerootable="true">
+  <name>Lagomorph time tree (demo)</name>
+  <description>A time-calibrated species tree of the rabbits, hares and pikas (order Lagomorpha), ages in Ma; all 18 tips are extant (0 Ma) so the axis reaches the present. It auto-detects as a time tree; turn on Settings &gt; Overlays &gt; Time axis: Geologic to draw the ICS geologic scale (the pika/rabbit split is Eocene, the Lepus radiation Pliocene). Every tip carries a common + scientific name and every internal node is dated and annotated with its clade + rank (order Lagomorpha; families Leporidae, Ochotonidae; genera Lepus, Sylvilagus, Ochotona), so Colorize / Annotate Clades by Rank works offline. Schematic divergence times, not a rigorous chronogram.</description>
+  <clade>
+    <name>rabbits, hares &amp; pikas</name>
+    <branch_length>0.0</branch_length>
+    <taxonomy>
+      <scientific_name>Lagomorpha</scientific_name>
+      <common_name>rabbits, hares &amp; pikas</common_name>
+      <rank>order</rank>
+    </taxonomy>
+    <date unit="mya">
+      <value>50.0</value>
+    </date>
+    <clade>
+      <name>pikas</name>
+      <branch_length>35.0</branch_length>
+      <taxonomy>
+        <scientific_name>Ochotonidae</scientific_name>
+        <common_name>pikas</common_name>
+        <rank>family</rank>
+      </taxonomy>
+      <date unit="mya">
+        <value>15.0</value>
+      </date>
+      <clade>
+        <name>American pika</name>
+        <branch_length>15.0</branch_length>
+        <taxonomy>
+          <scientific_name>Ochotona princeps</scientific_name>
+          <common_name>American pika</common_name>
+          <rank>species</rank>
+        </taxonomy>
+        <date unit="mya">
+          <value>0.0</value>
+        </date>
+      </clade>
+      <clade>
+        <name>Collared pika</name>
+        <branch_length>15.0</branch_length>
+        <taxonomy>
+          <scientific_name>Ochotona collaris</scientific_name>
+          <common_name>Collared pika</common_name>
+          <rank>species</rank>
+        </taxonomy>
+        <date unit="mya">
+          <value>0.0</value>
+        </date>
+      </clade>
+      <clade>
+        <name>Alpine pika</name>
+        <branch_length>15.0</branch_length>
+        <taxonomy>
+          <scientific_name>Ochotona alpina</scientific_name>
+          <common_name>Alpine pika</common_name>
+          <rank>species</rank>
+        </taxonomy>
+        <date unit="mya">
+          <value>0.0</value>
+        </date>
+      </clade>
+      <clade>
+        <name>Plateau pika</name>
+        <branch_length>15.0</branch_length>
+        <taxonomy>
+          <scientific_name>Ochotona curzoniae</scientific_name>
+          <common_name>Plateau pika</common_name>
+          <rank>species</rank>
+        </taxonomy>
+        <date unit="mya">
+          <value>0.0</value>
+        </date>
+      </clade>
+      <clade>
+        <name>Afghan pika</name>
+        <branch_length>15.0</branch_length>
+        <taxonomy>
+          <scientific_name>Ochotona rufescens</scientific_name>
+          <common_name>Afghan pika</common_name>
+          <rank>species</rank>
+        </taxonomy>
+        <date unit="mya">
+          <value>0.0</value>
+        </date>
+      </clade>
+    </clade>
+    <clade>
+      <name>rabbits &amp; hares</name>
+      <branch_length>25.0</branch_length>
+      <taxonomy>
+        <scientific_name>Leporidae</scientific_name>
+        <common_name>rabbits &amp; hares</common_name>
+        <rank>family</rank>
+      </taxonomy>
+      <date unit="mya">
+        <value>25.0</value>
+      </date>
+      <clade>
+        <branch_length>7.0</branch_length>
+        <date unit="mya">
+          <value>18.0</value>
+        </date>
+        <clade>
+          <branch_length>6.0</branch_length>
+          <date unit="mya">
+            <value>12.0</value>
+          </date>
+          <clade>
+            <name>hares</name>
+            <branch_length>7.0</branch_length>
+            <taxonomy>
+              <scientific_name>Lepus</scientific_name>
+              <common_name>hares</common_name>
+              <rank>genus</rank>
+            </taxonomy>
+            <date unit="mya">
+              <value>5.0</value>
+            </date>
+            <clade>
+              <name>European hare</name>
+              <branch_length>5.0</branch_length>
+              <taxonomy>
+                <scientific_name>Lepus europaeus</scientific_name>
+                <common_name>European hare</common_name>
+                <rank>species</rank>
+              </taxonomy>
+              <date unit="mya">
+                <value>0.0</value>
+              </date>
+            </clade>
+            <clade>
+              <name>Mountain hare</name>
+              <branch_length>5.0</branch_length>
+              <taxonomy>
+                <scientific_name>Lepus timidus</scientific_name>
+                <common_name>Mountain hare</common_name>
+                <rank>species</rank>
+              </taxonomy>
+              <date unit="mya">
+                <value>0.0</value>
+              </date>
+            </clade>
+            <clade>
+              <name>Arctic hare</name>
+              <branch_length>5.0</branch_length>
+              <taxonomy>
+                <scientific_name>Lepus arcticus</scientific_name>
+                <common_name>Arctic hare</common_name>
+                <rank>species</rank>
+              </taxonomy>
+              <date unit="mya">
+                <value>0.0</value>
+              </date>
+            </clade>
+            <clade>
+              <name>Snowshoe hare</name>
+              <branch_length>5.0</branch_length>
+              <taxonomy>
+                <scientific_name>Lepus americanus</scientific_name>
+                <common_name>Snowshoe hare</common_name>
+                <rank>species</rank>
+              </taxonomy>
+              <date unit="mya">
+                <value>0.0</value>
+              </date>
+            </clade>
+            <clade>
+              <name>Black-tailed jackrabbit</name>
+              <branch_length>5.0</branch_length>
+              <taxonomy>
+                <scientific_name>Lepus californicus</scientific_name>
+                <common_name>Black-tailed jackrabbit</common_name>
+                <rank>species</rank>
+              </taxonomy>
+              <date unit="mya">
+                <value>0.0</value>
+              </date>
+            </clade>
+          </clade>
+          <clade>
+            <name>cottontails</name>
+            <branch_length>5.0</branch_length>
+            <taxonomy>
+              <scientific_name>Sylvilagus</scientific_name>
+              <common_name>cottontails</common_name>
+              <rank>genus</rank>
+            </taxonomy>
+            <date unit="mya">
+              <value>7.0</value>
+            </date>
+            <clade>
+              <name>Eastern cottontail</name>
+              <branch_length>7.0</branch_length>
+              <taxonomy>
+                <scientific_name>Sylvilagus floridanus</scientific_name>
+                <common_name>Eastern cottontail</common_name>
+                <rank>species</rank>
+              </taxonomy>
+              <date unit="mya">
+                <value>0.0</value>
+              </date>
+            </clade>
+            <clade>
+              <name>Desert cottontail</name>
+              <branch_length>7.0</branch_length>
+              <taxonomy>
+                <scientific_name>Sylvilagus audubonii</scientific_name>
+                <common_name>Desert cottontail</common_name>
+                <rank>species</rank>
+              </taxonomy>
+              <date unit="mya">
+                <value>0.0</value>
+              </date>
+            </clade>
+          </clade>
+        </clade>
+        <clade>
+          <branch_length>8.0</branch_length>
+          <date unit="mya">
+            <value>10.0</value>
+          </date>
+          <clade>
+            <name>European rabbit</name>
+            <branch_length>10.0</branch_length>
+            <taxonomy>
+              <scientific_name>Oryctolagus cuniculus</scientific_name>
+              <common_name>European rabbit</common_name>
+              <rank>species</rank>
+            </taxonomy>
+            <date unit="mya">
+              <value>0.0</value>
+            </date>
+          </clade>
+          <clade>
+            <name>Pygmy rabbit</name>
+            <branch_length>10.0</branch_length>
+            <taxonomy>
+              <scientific_name>Brachylagus idahoensis</scientific_name>
+              <common_name>Pygmy rabbit</common_name>
+              <rank>species</rank>
+            </taxonomy>
+            <date unit="mya">
+              <value>0.0</value>
+            </date>
+          </clade>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>5.0</branch_length>
+        <date unit="mya">
+          <value>20.0</value>
+        </date>
+        <clade>
+          <name>Volcano rabbit</name>
+          <branch_length>20.0</branch_length>
+          <taxonomy>
+            <scientific_name>Romerolagus diazi</scientific_name>
+            <common_name>Volcano rabbit</common_name>
+            <rank>species</rank>
+          </taxonomy>
+          <date unit="mya">
+            <value>0.0</value>
+          </date>
+        </clade>
+        <clade>
+          <name>Amami rabbit</name>
+          <branch_length>20.0</branch_length>
+          <taxonomy>
+            <scientific_name>Pentalagus furnessi</scientific_name>
+            <common_name>Amami rabbit</common_name>
+            <rank>species</rank>
+          </taxonomy>
+          <date unit="mya">
+            <value>0.0</value>
+          </date>
+        </clade>
+        <clade>
+          <name>Sumatran striped rabbit</name>
+          <branch_length>20.0</branch_length>
+          <taxonomy>
+            <scientific_name>Nesolagus netscheri</scientific_name>
+            <common_name>Sumatran striped rabbit</common_name>
+            <rank>species</rank>
+          </taxonomy>
+          <date unit="mya">
+            <value>0.0</value>
+          </date>
+        </clade>
+        <clade>
+          <name>Hispid hare</name>
+          <branch_length>20.0</branch_length>
+          <taxonomy>
+            <scientific_name>Caprolagus hispidus</scientific_name>
+            <common_name>Hispid hare</common_name>
+            <rank>species</rank>
+          </taxonomy>
+          <date unit="mya">
+            <value>0.0</value>
+          </date>
+        </clade>
+      </clade>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>
