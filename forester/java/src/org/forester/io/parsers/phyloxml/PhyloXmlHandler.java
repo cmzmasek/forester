@@ -468,6 +468,15 @@ public final class PhyloXmlHandler extends DefaultHandler {
             else if ( qualified_name.equals( PhyloXmlMapping.CONFIDENCE ) ) {
                 phylogeny.setConfidence( ( Confidence ) ConfidenceParser.getInstance().parse( element ) );
             }
+            else if ( qualified_name.equals( PhyloXmlMapping.PROPERTY ) ) {
+                // a <property> that is a DIRECT child of <phylogeny> (applies_to="phylogeny") -> tree-level property.
+                // (node/branch properties live inside <clade> and are handled by mapElementToPhylogenyNode.)
+                final Property prop = ( Property ) PropertyParser.getInstance().parse( element );
+                if ( phylogeny.getProperties() == null ) {
+                    phylogeny.setProperties( new PropertiesList() );
+                }
+                phylogeny.getProperties().addProperty( prop );
+            }
         }
     }
 }

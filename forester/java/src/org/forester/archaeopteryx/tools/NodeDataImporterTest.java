@@ -35,8 +35,11 @@ import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Accession;
 import org.forester.phylogeny.data.Identifier;
 import org.forester.phylogeny.data.PhylogenyDataUtil;
+import org.forester.phylogeny.data.PropertiesList;
 import org.forester.phylogeny.data.Property;
+import org.forester.phylogeny.data.Property.AppliesTo;
 import org.forester.phylogeny.data.Sequence;
+import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.phylogeny.data.Taxonomy;
 
 /**
@@ -61,7 +64,7 @@ public final class NodeDataImporterTest {
                     && embeddedNewlineCsv() && explicitDelimiter() && columnPlan()
                     && nodeIdColumnSkipped() && leadingBlankLine() && emptyRenameSkipped() && dryRunValidatesKeyCol()
                     && userMatchOptionsAndSummary() && defaultKeyPrefersName() && importProfile()
-                    && importProfilePersistence();
+                    && importProfilePersistence() && importProfileMigration();
         }
         catch ( final Exception e ) {
             e.printStackTrace();
@@ -712,6 +715,63 @@ public final class NodeDataImporterTest {
             return fail( "writeProfileToTree(null) should clear the persisted profile" );
         }
         return true;
+    }
+
+    /** Migration: the import profile now persists as a PHYLOGENY-level property (not on the root node); an OLD
+     *  root-NODE copy still reads (backward-compat); and re-saving migrates it to the phylogeny level and drops the
+     *  stale node-level copy. */
+    private static boolean importProfileMigration() throws Exception {
+        final Table t = NodeDataImporter.parseTable( "name\treads\nX\t3\n" );
+        final ImportProfile prof = ImportProfile.from( t, 0, MatchBy.TIP_NAME,
+                NodeDataImporter.ColumnPlan.importAll( t ), "annots.tsv", false );
+
+        // (1) a new write goes to the PHYLOGENY level, and NOT onto any node
+        final Phylogeny phy = bareTree();
+        NodeDataImporter.writeProfileToTree( phy, prof );
+        if ( !phy.isHasProperties()
+                || ( phy.getProperties().getProperties( NodeDataImporter.IMPORT_PROFILE_REF ).size() != 1 )
+                || ( AppliesTo.PHYLOGENY != phy.getProperties()
+                        .getProperties( NodeDataImporter.IMPORT_PROFILE_REF ).get( 0 ).getAppliesTo() ) ) {
+            return fail( "the profile should now be a single phylogeny-level (applies_to=phylogeny) property" );
+        }
+        if ( nodeHasImportProfile( phy ) ) {
+            return fail( "a new profile write must not put the property on any node" );
+        }
+
+        // (2) backward-compat: an OLD-style root-NODE property still reads
+        final Phylogeny old = bareTree();
+        final PropertiesList root_props = new PropertiesList();
+        root_props.addProperty( new Property( NodeDataImporter.IMPORT_PROFILE_REF, prof.serialize(), "", "xsd:string",
+                AppliesTo.NODE ) );
+        old.getRoot().getNodeData().setProperties( root_props );
+        if ( old.isHasProperties() ) {
+            return fail( "precondition: the old-style tree carries no phylogeny-level property" );
+        }
+        final ImportProfile read_old = NodeDataImporter.readProfileFromTree( old );
+        if ( ( read_old == null ) || !prof.serialize().equals( read_old.serialize() ) ) {
+            return fail( "an old root-node profile must still be readable (backward-compat)" );
+        }
+
+        // (3) re-saving migrates it: phylogeny-level set, node-level gone
+        NodeDataImporter.writeProfileToTree( old, read_old );
+        if ( !old.isHasProperties()
+                || old.getProperties().getProperties( NodeDataImporter.IMPORT_PROFILE_REF ).isEmpty() ) {
+            return fail( "re-save should place the profile at the phylogeny level" );
+        }
+        if ( nodeHasImportProfile( old ) ) {
+            return fail( "re-save should remove the stale NODE-level profile (migration)" );
+        }
+        return true;
+    }
+
+    private static boolean nodeHasImportProfile( final Phylogeny phy ) {
+        for( final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final PropertiesList pl = it.next().getNodeData().getProperties();
+            if ( ( pl != null ) && !pl.getProperties( NodeDataImporter.IMPORT_PROFILE_REF ).isEmpty() ) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // ---- helpers ----

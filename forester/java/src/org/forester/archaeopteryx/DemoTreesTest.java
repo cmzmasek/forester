@@ -32,7 +32,10 @@ import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.NodeVisualData;
+import org.forester.phylogeny.data.PropertiesList;
+import org.forester.phylogeny.data.Property;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
+import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.util.ForesterUtil;
 
 /**
@@ -205,6 +208,39 @@ public final class DemoTreesTest {
         // Extract Dates from Labels: the tips carry the date in the LABEL (no structured <date>), and a strict
         // majority parse via TipDateExtractor -- so Tools > Extract Dates from Labels has work to do
         ok &= dateInLabelsDemoOk( "date-in-labels.xml" );
+        // GUARD: no demo tree carries an aptx: property on a NODE -- Archaeopteryx app state (import profile,
+        // time-axis config, ...) must ride the PHYLOGENY level (a <property applies_to="phylogeny">), never node data
+        ok &= noDemoCarriesNodeLevelAptxProperty();
+        return ok;
+    }
+
+    /** No committed demo {@code .xml} carries an {@code aptx:}-prefixed property on any NODE: app state belongs at the
+     *  PHYLOGENY level (a {@code <property applies_to="phylogeny">}, auto-hidden from displays), so a node-level
+     *  {@code aptx:} property would be an accidental-write regression. */
+    private static boolean noDemoCarriesNodeLevelAptxProperty() {
+        final File[] xmls = new File( DEMO_DIR ).listFiles( ( d, name ) -> name.endsWith( ".xml" ) );
+        if ( xmls == null ) {
+            return note( "could not list the demo directory " + DEMO_DIR );
+        }
+        boolean ok = true;
+        for( final File f : xmls ) {
+            final Phylogeny phy = load( f.getName() );
+            if ( phy == null ) {
+                ok = false;
+                continue;
+            }
+            for( final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
+                final PropertiesList pl = it.next().getNodeData().getProperties();
+                if ( pl != null ) {
+                    for( final Property p : pl.getProperties() ) {
+                        if ( ( p.getRef() != null ) && p.getRef().startsWith( "aptx:" ) ) {
+                            ok = note( f.getName() + " carries a NODE-level aptx: property (" + p.getRef()
+                                    + ") -- app state must be a phylogeny-level <property applies_to=\"phylogeny\">" );
+                        }
+                    }
+                }
+            }
+        }
         return ok;
     }
 

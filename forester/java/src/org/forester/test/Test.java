@@ -531,6 +531,22 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Phylogeny-level property round-trip: ");
+        if (org.forester.phylogeny.PhylogenyPropertyRoundTripTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Tree app property (phylogeny-level storage): ");
+        if (org.forester.archaeopteryx.tools.TreeAppPropertyTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Representative tip selector: ");
         if (org.forester.archaeopteryx.tools.RepresentativeTipSelectorTest.test()) {
             System.out.println("OK.");

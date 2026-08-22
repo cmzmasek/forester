@@ -40,6 +40,7 @@ import org.forester.phylogeny.data.BranchData;
 import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.data.Identifier;
 import org.forester.phylogeny.data.PhylogenyDataUtil;
+import org.forester.phylogeny.data.PropertiesList;
 import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.SequenceRelation;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
@@ -68,6 +69,9 @@ public class Phylogeny {
     private List<PhylogenyNode>                                 _external_nodes_set;
     private Collection<Sequence>                                _sequenceRelationQueries;
     private Collection<SequenceRelation.SEQUENCE_RELATION_TYPE> _relevant_sequence_relation_types;
+    /** Tree-level properties: phyloXML {@code <property applies_to="phylogeny">} children of {@code <phylogeny>}
+     *  (viewer/app metadata that describes the whole tree, NOT node data). Null when the tree carries none. */
+    private PropertiesList                                      _properties;
 
     /**
      * Default Phylogeny constructor. Constructs an empty Phylogeny.
@@ -189,6 +193,15 @@ public class Phylogeny {
         if ( _identifier != null ) {
             tree._identifier = ( Identifier ) _identifier.copy();
         }
+        // tree-level properties must survive the copy -- this is the undo-snapshot path (phy.copy()). The list is
+        // INDEPENDENT (add/remove on the copy does not touch the original); the Property objects are shared, which is
+        // safe ONLY because tree-level properties are always REPLACED (strip + add a fresh Property; see
+        // TreeAppProperty), never mutated in place -- so a snapshot's values can't change under it. A future consumer
+        // that edits a phylogeny Property in place would corrupt every undo snapshot: strip-and-add, never setValue().
+        // (Same shallow-per-element idiom as NodeData.copy().)
+        if ( _properties != null ) {
+            tree._properties = ( PropertiesList ) _properties.copy();
+        }
         tree.setAllowMultipleParents( isAllowMultipleParents() );
         tree._root = PhylogenyMethods.copySubTree( source );
         return tree;
@@ -218,6 +231,7 @@ public class Phylogeny {
         tree._distance_unit = _distance_unit;
         tree._confidence = _confidence;
         tree._identifier = _identifier;
+        tree._properties = _properties; // shallow: shared by reference, like _confidence/_identifier above
         tree.setAllowMultipleParents( isAllowMultipleParents() );
         tree._root = PhylogenyMethods.copySubTreeShallow( source );
         return tree;
@@ -309,6 +323,16 @@ public class Phylogeny {
 
     public String getDescription() {
         return _description;
+    }
+
+    /** The tree-level {@code <property applies_to="phylogeny">} list, or {@code null} if this tree carries none.
+     *  Mirrors {@link org.forester.phylogeny.data.NodeData#getProperties()} (nullable). */
+    public PropertiesList getProperties() {
+        return _properties;
+    }
+
+    public boolean isHasProperties() {
+        return ( _properties != null ) && ( _properties.size() > 0 );
     }
 
     public String getDistanceUnit() {
@@ -748,6 +772,7 @@ public class Phylogeny {
         _id_to_node_map = null;
         _confidence = null;
         _identifier = null;
+        _properties = null;
         _rerootable = true;
         setAllowMultipleParents( Phylogeny.ALLOW_MULTIPLE_PARENTS_DEFAULT );
     }
@@ -1106,6 +1131,10 @@ public class Phylogeny {
 
     public void setDistanceUnit( final String _distance_unit ) {
         this._distance_unit = _distance_unit;
+    }
+
+    public void setProperties( final PropertiesList properties ) {
+        _properties = properties;
     }
 
     public void setIdentifier( final Identifier identifier ) {

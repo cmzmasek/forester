@@ -785,52 +785,18 @@ public final class NodeDataImporter {
      *  node, so it stays out of the tip-facing Color-by / Annotation-Column / export features). */
     public static final String IMPORT_PROFILE_REF = "aptx:import_profile";
 
-    /** Persist {@code profile} onto {@code phy} (as a property on the root node, so it saves with the tree); any prior
-     *  profile property anywhere in the tree is removed first. A {@code null} profile just clears it. */
+    /** Persist {@code profile} onto {@code phy} as a PHYLOGENY-level {@code <property>} (so it saves with the tree,
+     *  off the node data); any prior profile property (phylogeny- or node-level) is removed first. A {@code null}
+     *  profile just clears it. */
     public static void writeProfileToTree( final Phylogeny phy, final ImportProfile profile ) {
-        if ( ( phy == null ) || phy.isEmpty() ) {
-            return;
-        }
-        for( final java.util.Iterator<PhylogenyNode> it = phy.iteratorPreorder(); it.hasNext(); ) {
-            final PropertiesList pl = it.next().getNodeData().getProperties();
-            if ( pl != null ) {
-                final Iterator<Property> pi = pl.getProperties().iterator();
-                while ( pi.hasNext() ) {
-                    if ( IMPORT_PROFILE_REF.equals( pi.next().getRef() ) ) {
-                        pi.remove();
-                    }
-                }
-            }
-        }
-        if ( profile == null ) {
-            return;
-        }
-        final PhylogenyNode root = phy.getRoot();
-        PropertiesList pl = root.getNodeData().getProperties();
-        if ( pl == null ) {
-            pl = new PropertiesList();
-            root.getNodeData().setProperties( pl );
-        }
-        pl.addProperty( new Property( IMPORT_PROFILE_REF, profile.serialize(), "", "xsd:string", AppliesTo.NODE ) );
+        TreeAppProperty.write( phy, IMPORT_PROFILE_REF, ( profile == null ) ? null : profile.serialize() );
     }
 
-    /** Read a persisted {@link ImportProfile} from {@code phy} (scans for the profile property, robust to a reroot),
-     *  or {@code null} if none / unparsable. */
+    /** Read a persisted {@link ImportProfile} from {@code phy} (phylogeny-level, else a backward-compatible scan of
+     *  the node properties for a pre-0.11.x root-node copy), or {@code null} if none / unparsable. */
     public static ImportProfile readProfileFromTree( final Phylogeny phy ) {
-        if ( ( phy == null ) || phy.isEmpty() ) {
-            return null;
-        }
-        for( final java.util.Iterator<PhylogenyNode> it = phy.iteratorPreorder(); it.hasNext(); ) {
-            final PropertiesList pl = it.next().getNodeData().getProperties();
-            if ( pl != null ) {
-                for( final Property p : pl.getProperties() ) {
-                    if ( IMPORT_PROFILE_REF.equals( p.getRef() ) ) {
-                        return ImportProfile.deserialize( p.getValue() );
-                    }
-                }
-            }
-        }
-        return null;
+        final String value = TreeAppProperty.read( phy, IMPORT_PROFILE_REF );
+        return ( value == null ) ? null : ImportProfile.deserialize( value );
     }
 
     /** Apply the parsed {@code table} importing every non-key column (see {@link #apply(Phylogeny, Table, int, MatchBy, ColumnPlan)}). */

@@ -117,6 +117,16 @@ public final class PhylogenyWriter {
         }
     }
 
+    /** Writes the tree-level {@code <property applies_to="phylogeny">} elements. Per the phyloXML schema the
+     *  {@code property} children of {@code <phylogeny>} come AFTER {@code <clade>}, so this is called by
+     *  {@link #writeOutput} once the clade body has been written, NOT from {@link #appendPhylogenyLevelPhyloXml}
+     *  (which emits the name/id/description/confidence header BEFORE the clade). */
+    private void appendPhylogenyLevelProperties( final Writer writer, final Phylogeny tree ) throws IOException {
+        if ( tree.isHasProperties() ) {
+            tree.getProperties().toPhyloXML( writer, getPhyloXmlLevel(), new String() );
+        }
+    }
+
     private StringBuffer createIndentation() {
         if ( !isIndentPhyloxml() ) {
             return null;
@@ -618,6 +628,7 @@ public final class PhylogenyWriter {
             while ( isHasNext() ) {
                 next();
             }
+            appendPhylogenyLevelProperties( writer, tree ); // schema order: property* comes after clade
             writer.write( ForesterUtil.LINE_SEPARATOR );
             PhylogenyDataUtil.appendClose( writer, PhyloXmlMapping.PHYLOGENY );
         }
