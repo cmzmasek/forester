@@ -36,13 +36,15 @@ import org.forester.phylogeny.data.PropertiesList;
 import org.forester.phylogeny.data.Property;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
+import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
 
 /**
  * Anti-rot guard for the {@code forester/demo/} gallery: every committed demo tree (see
- * {@link org.forester.demo.DemoTreeGenerator}) must still parse cleanly AND still carry the data its feature needs to
- * be demonstrable. Headless -- pure phyloXML parsing + model inspection, no GUI. If a parser or the property/taxonomy
- * model changes in a way that breaks a demo, this fails in the always-run suite instead of the demo silently rotting.
+ * {@link org.forester.demo.DemoTreeGenerator}) must still parse cleanly -- the phyloXML demos additionally VALIDATE
+ * against the phyloXML schema (see {@link #load}) -- AND still carry the data its feature needs to be demonstrable.
+ * Headless -- parsing + model inspection, no GUI. If a parser or the property/taxonomy model changes in a way that
+ * breaks a demo, this fails in the always-run suite instead of the demo silently rotting.
  *
  * <p>When a new demo tree is added (per the "one demo tree per new feature" convention), add a shape check here.
  */
@@ -50,6 +52,24 @@ public final class DemoTreesTest {
 
     private static final String DEMO_DIR = System.getProperty( "user.dir" ) + File.separator + "forester"
             + File.separator + "demo" + File.separator;
+
+    /** Whether the phyloXML XSD is on the classpath (staged by Ant {@code copy_resources}). When present, {@link #load}
+     *  VALIDATES each phyloXML demo against the schema; when absent (a raw IDE compile that skipped that step), it falls
+     *  back to the lenient parser + a one-time note. A missing XSD is an ENVIRONMENT gap, NOT demo rot, so it must not
+     *  hard-fail every demo -- mirrors {@link DemoTreesGalleryTest}, which SKIPS its bundle check rather than failing.
+     *  Decided ONCE here, distinct from a genuine per-file parse/validation failure. */
+    private static final boolean XSD_ON_CLASSPATH = xsdOnClasspath();
+
+    private static boolean xsdOnClasspath() {
+        final boolean present = PhyloXmlParser.class.getClassLoader()
+                .getResource( ForesterConstants.LOCAL_PHYLOXML_XSD_RESOURCE ) != null;
+        if ( !present ) {
+            System.out.println( "  [DemoTreesTest] NOTE: the phyloXML XSD (" + ForesterConstants.LOCAL_PHYLOXML_XSD_RESOURCE
+                    + ") is not on the classpath (Ant copy_resources not staged?) -- checking the demos WITHOUT schema "
+                    + "validation" );
+        }
+        return present;
+    }
 
     public static void main( final String[] args ) {
         final boolean ok = test();
@@ -617,7 +637,6 @@ public final class DemoTreesTest {
         return true;
     }
 
-    /** Parses a demo file, asserting it is present, error-free and non-empty; null on any failure (with a message). */
     /** The companion CSV parses and its key column joins onto every tip of the tree (no unmatched rows, no tip left out). */
     private static boolean csvJoinMatchesAllTips( final String tree_file, final String csv_file ) {
         final Phylogeny phy = load( tree_file );
@@ -760,13 +779,19 @@ public final class DemoTreesTest {
         }
     }
 
+    /** Parse a demo phyloXML file, asserting it is present, error-free and a single non-empty tree; null on any failure
+     *  (with a message). Uses the XSD-VALIDATING parser when the schema is on the classpath ({@link #XSD_ON_CLASSPATH} --
+     *  the Ant/CI path), so a schema-invalid demo (a mis-ordered/misplaced element, or app state written on a node
+     *  instead of the phylogeny) fails the always-run suite instead of surfacing only as a silent runtime quirk; falls
+     *  back to the lenient parser when the XSD isn't staged. */
     private static Phylogeny load( final String file_name ) {
         final File file = new File( DEMO_DIR + file_name );
         if ( !file.exists() ) {
             return fail( file_name + " is missing from the demo gallery (" + file.getAbsolutePath() + ")" );
         }
         try {
-            final PhyloXmlParser parser = PhyloXmlParser.createPhyloXmlParser();
+            final PhyloXmlParser parser = XSD_ON_CLASSPATH ? PhyloXmlParser.createPhyloXmlParserXsdValidating()
+                                                           : PhyloXmlParser.createPhyloXmlParser();
             final Phylogeny[] phys = ParserBasedPhylogenyFactory.getInstance().create( file, parser );
             if ( parser.getErrorCount() > 0 ) {
                 return fail( file_name + " parsed with errors: " + parser.getErrorMessages() );

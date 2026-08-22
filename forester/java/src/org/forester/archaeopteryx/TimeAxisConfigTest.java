@@ -20,12 +20,18 @@
 
 package org.forester.archaeopteryx;
 
+import java.util.Iterator;
+
 import org.forester.archaeopteryx.Options.TIME_AXIS_TYPE;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
+import org.forester.phylogeny.data.PropertiesList;
+import org.forester.phylogeny.data.Property;
+import org.forester.phylogeny.data.Property.AppliesTo;
 
 /** Headless unit test for {@link TimeAxisConfig}: the serialize/deserialize codec (round-trip + malformed -> null) and
- *  the write/read of the {@code aptx:time_axis} root property. */
+ *  the write/read of the {@code aptx:time_axis} property -- stored at the PHYLOGENY level (via {@link org.forester.archaeopteryx.tools.TreeAppProperty}),
+ *  read backward-compatibly from the pre-0.11.76 root-node location, and migrated onto {@code <phylogeny>} on re-save. */
 public final class TimeAxisConfigTest {
 
     public static void main( final String[] args ) {
@@ -73,41 +79,101 @@ public final class TimeAxisConfigTest {
                 return fail( "malformed input must deserialize to null: " + s );
             }
         }
-        // write/read on a real tree: strip-then-add on the root, round-trips; null clears
+        // write/read on a real tree: strip-then-add at the PHYLOGENY level, round-trips; null clears
         final Phylogeny phy = twoTipTree();
         TimeAxisConfig.writeToTree( phy, a );
         final TimeAxisConfig read = TimeAxisConfig.readFromTree( phy );
         if ( ( read == null ) || ( read.getType() != TIME_AXIS_TYPE.CALENDAR ) || !read.isGrid() ) {
             return fail( "writeToTree/readFromTree did not round-trip the config" );
         }
-        // the property lives on the ROOT node (an internal node, out of the tip-facing features)
-        if ( ( phy.getRoot().getNodeData().getProperties() == null )
-                || !hasTimeAxisProp( phy.getRoot() ) ) {
-            return fail( "the time-axis property must be written on the root node" );
+        // the property lives at the PHYLOGENY level (<property applies_to="phylogeny">), NOT on any node
+        if ( !hasTimeAxisPropAtPhylogenyLevel( phy ) ) {
+            return fail( "the time-axis property must be written at the phylogeny level" );
         }
-        // a second write REPLACES (no duplicate); null clears entirely
+        if ( anyNodeHasTimeAxisProp( phy ) ) {
+            return fail( "the time-axis property must NOT ride on any node" );
+        }
+        // a second write REPLACES (no duplicate at the phylogeny level); null clears entirely
         TimeAxisConfig.writeToTree( phy, def );
         final TimeAxisConfig read2 = TimeAxisConfig.readFromTree( phy );
         if ( ( read2 == null ) || ( read2.getType() != TIME_AXIS_TYPE.GEOLOGIC ) ) {
             return fail( "a second writeToTree must replace the config, got " + ( read2 == null ? "null" : read2.serialize() ) );
         }
+        if ( countTimeAxisPropsAtPhylogenyLevel( phy ) != 1 ) {
+            return fail( "a second writeToTree must not leave a duplicate phylogeny-level property, found "
+                    + countTimeAxisPropsAtPhylogenyLevel( phy ) );
+        }
         TimeAxisConfig.writeToTree( phy, null );
         if ( TimeAxisConfig.readFromTree( phy ) != null ) {
             return fail( "writeToTree(null) must strip the property" );
         }
+        if ( hasTimeAxisPropAtPhylogenyLevel( phy ) ) {
+            return fail( "writeToTree(null) must leave no phylogeny-level property" );
+        }
+        // backward-compat + migration: a pre-0.11.76 tree stored the config on the ROOT node. readFromTree must still
+        // read it, and re-saving must MIGRATE it to the phylogeny level and drop the stale node copy.
+        final Phylogeny legacy = twoTipTree();
+        writeLegacyRootNodeProperty( legacy, a.serialize() );
+        final TimeAxisConfig read_legacy = TimeAxisConfig.readFromTree( legacy );
+        if ( ( read_legacy == null ) || ( read_legacy.getType() != TIME_AXIS_TYPE.CALENDAR ) ) {
+            return fail( "readFromTree must read a pre-0.11.76 root-node property (backward-compat)" );
+        }
+        TimeAxisConfig.writeToTree( legacy, def ); // re-save
+        if ( !hasTimeAxisPropAtPhylogenyLevel( legacy ) || anyNodeHasTimeAxisProp( legacy ) ) {
+            return fail( "re-saving a legacy file must migrate the property to the phylogeny level and clear the node copy" );
+        }
         return true;
+    }
+
+    /** True when a {@code TIME_AXIS_REF} property with {@code applies_to="phylogeny"} sits at the phylogeny level. */
+    private static boolean hasTimeAxisPropAtPhylogenyLevel( final Phylogeny phy ) {
+        return countTimeAxisPropsAtPhylogenyLevel( phy ) > 0;
+    }
+
+    private static int countTimeAxisPropsAtPhylogenyLevel( final Phylogeny phy ) {
+        if ( phy.getProperties() == null ) {
+            return 0;
+        }
+        int count = 0;
+        for ( final Property p : phy.getProperties().getProperties() ) {
+            if ( TimeAxisConfig.TIME_AXIS_REF.equals( p.getRef() ) && ( p.getAppliesTo() == AppliesTo.PHYLOGENY ) ) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    private static boolean anyNodeHasTimeAxisProp( final Phylogeny phy ) {
+        for ( final Iterator<PhylogenyNode> it = phy.iteratorPreorder(); it.hasNext(); ) {
+            if ( hasTimeAxisProp( it.next() ) ) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean hasTimeAxisProp( final PhylogenyNode n ) {
         if ( n.getNodeData().getProperties() == null ) {
             return false;
         }
-        for ( final org.forester.phylogeny.data.Property p : n.getNodeData().getProperties().getProperties() ) {
+        for ( final Property p : n.getNodeData().getProperties().getProperties() ) {
             if ( TimeAxisConfig.TIME_AXIS_REF.equals( p.getRef() ) ) {
                 return true;
             }
         }
         return false;
+    }
+
+    /** Write a config the pre-0.11.76 way: an {@code applies_to="node"} property on the ROOT node (the old location
+     *  the backward-compat read + re-save migration must handle). */
+    private static void writeLegacyRootNodeProperty( final Phylogeny phy, final String value ) {
+        final PhylogenyNode root = phy.getRoot();
+        PropertiesList pl = root.getNodeData().getProperties();
+        if ( pl == null ) {
+            pl = new PropertiesList();
+            root.getNodeData().setProperties( pl );
+        }
+        pl.addProperty( new Property( TimeAxisConfig.TIME_AXIS_REF, value, "", "xsd:string", AppliesTo.NODE ) );
     }
 
     private static Phylogeny twoTipTree() {

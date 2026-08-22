@@ -20,21 +20,17 @@
 
 package org.forester.archaeopteryx;
 
-import java.util.Iterator;
-
 import org.forester.archaeopteryx.Options.TIME_AXIS_TYPE;
+import org.forester.archaeopteryx.tools.TreeAppProperty;
 import org.forester.phylogeny.Phylogeny;
-import org.forester.phylogeny.PhylogenyNode;
-import org.forester.phylogeny.data.PropertiesList;
-import org.forester.phylogeny.data.Property;
-import org.forester.phylogeny.data.Property.AppliesTo;
 
 /**
  * The per-tree Time-Axis configuration (type + the two refinement toggles + the calibration overrides), an immutable
- * value object that can be embedded in a saved phyloXML tree as a single {@code aptx:time_axis} property on the ROOT
- * node -- so a deliberately-chosen axis rides along with the tree and is restored on reload. The property is written
- * only when the config DEVIATES from what {@link AptxUtil#deriveTimeAxisType(Phylogeny)} would auto-derive, so files
- * stay clean; auto-derive is the always-on baseline for unsaved / never-configured trees.
+ * value object that can be embedded in a saved phyloXML tree as a single phylogeny-level {@code aptx:time_axis}
+ * {@code <property applies_to="phylogeny">} (via {@link TreeAppProperty}) -- so a deliberately-chosen axis rides along
+ * with the tree and is restored on reload. The property is written only when the config DEVIATES from what
+ * {@link AptxUtil#deriveTimeAxisType(Phylogeny)} would auto-derive, so files stay clean; auto-derive is the always-on
+ * baseline for unsaved / never-configured trees.
  *
  * <p>Serialization is a versioned, {@code ;}-separated string (mirroring {@code NodeDataImporter.ImportProfile}) -- but
  * with NO escaping, deliberately: the value carries only an enum name, two numbers and two digit flags, none of which
@@ -43,8 +39,8 @@ import org.forester.phylogeny.data.Property.AppliesTo;
  */
 final class TimeAxisConfig {
 
-    /** phyloXML node-property ref under which the config is persisted, on the ROOT node (internal, so it stays out of
-     *  the tip-facing features and is auto-hidden from displays by {@code TreePanelUtil.isInternalPropertyRef}). */
+    /** phyloXML property ref under which the config is persisted at the PHYLOGENY level (an {@code aptx:} ref, so it
+     *  stays out of the tip-facing features and is auto-hidden from displays by {@code TreePanelUtil.isInternalPropertyRef}). */
     static final String            TIME_AXIS_REF = "aptx:time_axis";
     private static final String    VERSION       = "v1";
     private static final String    AUTO_TOKEN    = "AUTO"; // serialized sentinel for a null (follow-auto-derive) type
@@ -121,52 +117,19 @@ final class TimeAxisConfig {
         }
     }
 
-    /** Persist {@code cfg} onto {@code phy} as a property on the root node (so it saves with the tree); any prior
-     *  time-axis property anywhere in the tree is removed first. A {@code null} cfg just clears it. Structural copy of
-     *  {@code NodeDataImporter.writeProfileToTree}. */
+    /** Persist {@code cfg} onto {@code phy} as a PHYLOGENY-level {@code <property>} (so it saves with the tree, off the
+     *  node data); any prior time-axis property -- phylogeny-level OR the pre-0.11.76 root-node copy -- is removed
+     *  first, so re-saving an old file migrates it onto {@code <phylogeny>}. A {@code null} cfg just clears it. Goes
+     *  through {@link TreeAppProperty} (strip-and-add), the documented undo-safe writer -- never mutate a Property in
+     *  place (see that class's undo invariant); {@code TimeAxisConfig} is immutable, so this holds. */
     static void writeToTree( final Phylogeny phy, final TimeAxisConfig cfg ) {
-        if ( ( phy == null ) || phy.isEmpty() ) {
-            return;
-        }
-        for( final Iterator<PhylogenyNode> it = phy.iteratorPreorder(); it.hasNext(); ) {
-            final PropertiesList pl = it.next().getNodeData().getProperties();
-            if ( pl != null ) {
-                final Iterator<Property> pi = pl.getProperties().iterator();
-                while ( pi.hasNext() ) {
-                    if ( TIME_AXIS_REF.equals( pi.next().getRef() ) ) {
-                        pi.remove();
-                    }
-                }
-            }
-        }
-        if ( cfg == null ) {
-            return;
-        }
-        final PhylogenyNode root = phy.getRoot();
-        PropertiesList pl = root.getNodeData().getProperties();
-        if ( pl == null ) {
-            pl = new PropertiesList();
-            root.getNodeData().setProperties( pl );
-        }
-        pl.addProperty( new Property( TIME_AXIS_REF, cfg.serialize(), "", "xsd:string", AppliesTo.NODE ) );
+        TreeAppProperty.write( phy, TIME_AXIS_REF, ( cfg == null ) ? null : cfg.serialize() );
     }
 
-    /** Read a persisted config from {@code phy} (scans preorder, robust to a reroot), or {@code null} if none /
-     *  unparsable. */
+    /** Read a persisted config from {@code phy}: the phylogeny-level property if present, else (backward-compat) a
+     *  pre-0.11.76 copy on the node data. {@code null} if none / unparsable. */
     static TimeAxisConfig readFromTree( final Phylogeny phy ) {
-        if ( ( phy == null ) || phy.isEmpty() ) {
-            return null;
-        }
-        for( final Iterator<PhylogenyNode> it = phy.iteratorPreorder(); it.hasNext(); ) {
-            final PropertiesList pl = it.next().getNodeData().getProperties();
-            if ( pl != null ) {
-                for( final Property p : pl.getProperties() ) {
-                    if ( TIME_AXIS_REF.equals( p.getRef() ) ) {
-                        return deserialize( p.getValue() );
-                    }
-                }
-            }
-        }
-        return null;
+        final String value = TreeAppProperty.read( phy, TIME_AXIS_REF );
+        return ( value == null ) ? null : deserialize( value );
     }
 }
