@@ -31,24 +31,23 @@ package org.forester.archaeopteryx;
 public enum ClickToOption {
 
     DISPLAY_NODE_DATA( "Display Node Data" ),
+    SUBTREE( "Switch to Sub/Supertree" ),
+    SELECT_NODES( "Select Node/Select Tips" ),
     COLLAPSE_UNCOLLAPSE( "Collapse/Uncollapse" ),
-    REROOT( "Root/Reroot" ),
-    SUBTREE( "Go to Sub/Supertree" ),
+    UNCOLLAPSE_ALL( "Uncollapse Subtree" ),
     SWAP( "Swap Descendants" ),
-    NODE_STYLE( "Node Style" ),
-    COLOR_SUBTREE( "Colorize Subtree(s)" ),
-    OPEN_SEQ_WEB( "Open Sequence DB" ),
+    ORDER_SUBTREE( "Ladderize Subtree" ),
     OPEN_TAX_WEB( "Open Taxonomy DB" ),
+    OPEN_SEQ_WEB( "Open Sequence DB" ),
+    NODE_STYLE( "Edit Node Style" ),
+    COLOR_SUBTREE( "Colorize Subtree" ),
+    EDIT_NODE_DATA( "Edit Node Data" ),
+    REROOT( "Root/Reroot" ),
+    DELETE_SUBTREE_OR_NODE( "Delete Node/Subtree" ),
+    ADD_NEW_NODE( "Add New Node" ),
     CUT_SUBTREE( "Cut Subtree" ),
     COPY_SUBTREE( "Copy Subtree" ),
-    PASTE_SUBTREE( "Paste Subtree" ),
-    DELETE_SUBTREE_OR_NODE( "Delete Subtree/Node" ),
-    ADD_NEW_NODE( "Add New Node" ),
-    EDIT_NODE_DATA( "Edit Node Data" ),
-    SORT_DESCENDENTS( "Sort Descendants" ),
-    SELECT_NODES( "Select Node(s)" ),
-    UNCOLLAPSE_ALL( "Uncollapse All" ),
-    ORDER_SUBTREE( "Order Subtree" );
+    PASTE_SUBTREE( "Paste Subtree" );
 
     private final String _title;
 

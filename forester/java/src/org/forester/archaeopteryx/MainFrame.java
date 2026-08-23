@@ -229,8 +229,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String USE_INTERNAL_NAMES_FOR_CONF_IN_NH_LABEL = "Use Internal Node Names for Confidence Values";
     static final String SHOW_BASIC_TREE_INFORMATION_LABEL = "Basic Tree Information";
     static final String EDIT_TREE_INFO_LABEL = "Edit Tree Name and Description...";
-    static final String RIGHT_LINE_UP_DOMAINS = "Right-align Domain Architectures";
-    static final String LINE_UP_RENDERABLE_DATA = "Line Up Diagrams (such as Domain Architectures)";
     static final String INFER_ANCESTOR_TAXONOMIES = "Infer Ancestor Taxonomies";
     static final String OBTAIN_SEQUENCE_AND_TAXONOMIC_INFORMATION = "Fetch Sequence & Taxonomic Data";
     JMenuBar _jmenubar;
@@ -320,8 +318,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JCheckBoxMenuItem _show_default_node_shapes_for_marked_cbmi;
     JCheckBoxMenuItem _show_confidence_stddev_cbmi;
     JCheckBoxMenuItem _show_mad_confidence_cbmi;
-    JCheckBoxMenuItem _right_line_up_domains_cbmi;
-    JCheckBoxMenuItem _line_up_renderable_data_cbmi;
     JCheckBoxMenuItem _collapsed_with_average_height_cbmi;
     JCheckBoxMenuItem _show_abbreviated_labels_for_collapsed_nodes_cbmi;
     // _  print
@@ -596,11 +592,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             if (getCurrentTreePanel() != null) {
                 getCurrentTreePanel().updateOvSizes();
             }
-        } else if (o == _line_up_renderable_data_cbmi) {
-            if (!_line_up_renderable_data_cbmi.isSelected()) {
-                _right_line_up_domains_cbmi.setSelected(false);
-            }
-            updateOptions(getOptions());
         } else if (o == _collapsed_with_average_height_cbmi) {
             if (_collapsed_with_average_height_cbmi.isSelected()) {
                 _collapsed_with_average_height_cbmi.setSelected(true);
@@ -609,11 +600,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         } else if (o == _show_abbreviated_labels_for_collapsed_nodes_cbmi) {
             if (_show_abbreviated_labels_for_collapsed_nodes_cbmi.isSelected()) {
                 _show_abbreviated_labels_for_collapsed_nodes_cbmi.setSelected(true);
-            }
-            updateOptions(getOptions());
-        } else if (o == _right_line_up_domains_cbmi) {
-            if (_right_line_up_domains_cbmi.isSelected()) {
-                _line_up_renderable_data_cbmi.setSelected(true);
             }
             updateOptions(getOptions());
         } else if ((o == _rectangular_type_cbmi) || (o == _triangular_type_cbmi)
@@ -2550,12 +2536,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         } else if ((_circular_type_cbmi != null) && _circular_type_cbmi.isSelected()) {
             options.setPhylogenyGraphicsType(PHYLOGENY_GRAPHICS_TYPE.CIRCULAR);
         }
-        if ((_right_line_up_domains_cbmi != null) && _right_line_up_domains_cbmi.isEnabled()) {
-            options.setRightLineUpDomains(_right_line_up_domains_cbmi.isSelected());
-        }
-        if ((_line_up_renderable_data_cbmi != null) && _line_up_renderable_data_cbmi.isEnabled()) {
-            options.setLineUpRendarableNodeData(_line_up_renderable_data_cbmi.isSelected());
-        }
         if ((_parse_beast_style_extended_nexus_tags_cbmi != null) && _parse_beast_style_extended_nexus_tags_cbmi.isEnabled()) {
             options.setParseBeastStyleExtendedNexusTags(_parse_beast_style_extended_nexus_tags_cbmi.isSelected());
         }
@@ -2616,8 +2596,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         setSelected(_replace_underscores_cbmi, options.isReplaceUnderscoresInNhParsing());
         setSelected(_allow_errors_in_distance_to_parent_cbmi, options.isAllowErrorsInDistanceToParent());
         setSelected(_graphics_export_visible_only_cbmi, options.isGraphicsExportVisibleOnly());
-        setSelected(_right_line_up_domains_cbmi, options.isRightLineUpDomains());
-        setSelected(_line_up_renderable_data_cbmi, options.isLineUpRendarableNodeData());
         setSelected(_parse_beast_style_extended_nexus_tags_cbmi, options.isParseBeastStyleExtendedNexusTags());
         setSelected(_collapsed_with_average_height_cbmi, options.isCollapsedWithAverageHeigh());
         setSelected(_show_abbreviated_labels_for_collapsed_nodes_cbmi,

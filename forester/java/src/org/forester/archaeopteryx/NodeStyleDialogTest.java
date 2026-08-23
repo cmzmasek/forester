@@ -118,8 +118,8 @@ public final class NodeStyleDialogTest {
                     // ---- entry-point wiring (the methods open modal dialogs, untestable headlessly) ----
                     ck( ok, toolsItem( mf[ 0 ].getJMenuBar(), "Node Style for Selected Nodes" ) != null,
                         "Tools menu has the 'Node Style for Selected Nodes' item" );
-                    ck( ok, comboHasItem( tp.getControlPanel(), "Node Style" ),
-                        "the 'Click on Node to:' dropdown offers 'Node Style'" );
+                    ck( ok, comboHasItem( tp.getControlPanel(), "Edit Node Style" ),
+                        "the 'Click on Node to:' dropdown offers 'Edit Node Style'" );
 
                     // ---- the label offset uses the ACTUAL per-node mark size so a big mark doesn't overlap ----
                     // (a prior edit already turned "Use Visual Styles" on, so the per-node size applies)

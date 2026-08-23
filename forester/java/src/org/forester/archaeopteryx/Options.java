@@ -292,8 +292,6 @@ final public class Options {
     private boolean _pulse_found_nodes;
     private boolean _show_tree_name;
     private TAXONOMY_EXTRACTION _taxonomy_extraction;
-    private boolean _line_up_renderable_node_data;
-    private boolean _right_align_domains;
     private boolean _parse_beast_style_extended_nexus_tags;
     private boolean _collapsed_with_average_height;
     private boolean _show_abbreviated_labels_for_collapsed_nodes;
@@ -317,14 +315,6 @@ final public class Options {
 
     public boolean isAllowErrorsInDistanceToParent() {
         return _allow_errors_in_distance_to_parent;
-    }
-
-    final public boolean isLineUpRendarableNodeData() {
-        return _line_up_renderable_node_data;
-    }
-
-    final public boolean isRightLineUpDomains() {
-        return _right_align_domains;
     }
 
     public final DOMAIN_LABEL_MODE getDomainLabelMode() {
@@ -355,14 +345,6 @@ final public class Options {
 
     public void setColorLabelsSameAsParentBranch(final boolean color_labels_same_as_parent_branch) {
         _color_labels_same_as_parent_branch = color_labels_same_as_parent_branch;
-    }
-
-    final public void setLineUpRendarableNodeData(final boolean line_up_renderable_node_data) {
-        _line_up_renderable_node_data = line_up_renderable_node_data;
-    }
-
-    final public void setRightLineUpDomains(final boolean right_align_domains) {
-        _right_align_domains = right_align_domains;
     }
 
     public void setDomainLabelMode(final DOMAIN_LABEL_MODE domain_label_mode) {
@@ -456,8 +438,6 @@ final public class Options {
         _show_confidence_stddev = false;
         _show_mad_confidence = false;
         _nh_conversion_support_value_style = NH_CONVERSION_SUPPORT_VALUE_STYLE.NONE;
-        _line_up_renderable_node_data = true;
-        _right_align_domains = false;
         _collapsed_with_average_height = true;
         _show_abbreviated_labels_for_collapsed_nodes = true;
         _search_properties = true;
@@ -1038,8 +1018,6 @@ final public class Options {
         setShowDefaultNodeShapesInternal(configuration.isShowDefaultNodeShapesInternal());
         setShowDefaultNodeShapesExternal(configuration.isShowDefaultNodeShapesExternal());
         setShowDefaultNodeShapesForMarkedNodes(configuration.isShowDefaultNodeShapesForMarkedNodes());
-        setRightLineUpDomains(configuration.isRightLineUpDomains());
-        setLineUpRendarableNodeData(configuration.isLineUpRendarableNodeData());
         setAllowErrorsInDistanceToParent(false);
     }
 

@@ -55,18 +55,17 @@ public final class Configuration {
     private static String DEFAULT_FONT_FAMILY = "";
 
     // The click-to action selected by default in the dropdown.
-    private ClickToOption _default_clickto = ClickToOption.DISPLAY_NODE_DATA;
+    private final ClickToOption _default_clickto = ClickToOption.DISPLAY_NODE_DATA;
 
     private final boolean _abbreviate_scientific_names = false;
     private String _base_font_family_name = "";
     private int _base_font_size = -1;
     private final CLADOGRAM_TYPE _cladogram_type = AptxConstants.CLADOGRAM_TYPE_DEFAULT;
-    private boolean _color_labels_same_as_parent_branch = false;
-    private NodeFill _default_node_fill = NodeFill.SOLID;
-    private NodeShape _default_node_shape = NodeShape.CIRCLE;
-    private short _default_node_shape_size = AptxConstants.DEFAULT_NODE_SHAPE_SIZE_DEFAULT;
+    private final boolean _color_labels_same_as_parent_branch = false;
+    private final NodeFill _default_node_fill = NodeFill.SOLID;
+    private final NodeShape _default_node_shape = NodeShape.CIRCLE;
+    private final short _default_node_shape_size = AptxConstants.DEFAULT_NODE_SHAPE_SIZE_DEFAULT;
     private SortedMap<String, Color> _display_colors = null;
-    private boolean _display_sequence_relations = false;
 
     private final Color _gui_background_color = AptxConstants.GUI_BACKGROUND_DEFAULT;
     private final Color _gui_button_background_color = AptxConstants.BUTTON_BACKGROUND_COLOR_DEFAULT;
@@ -76,17 +75,16 @@ public final class Configuration {
     private final Color _gui_checkbox_text_color = AptxConstants.CHECKBOX_TEXT_COLOR_DEFAULT;
     private final Color _gui_menu_background_color = AptxConstants.MENU_BACKGROUND_COLOR_DEFAULT;
     private final Color _gui_menu_text_color = AptxConstants.MENU_TEXT_COLOR_DEFAULT;
-    private final boolean _hide_controls_and_menus = false;
     private final boolean _internal_number_are_confidence_for_nh_parsing = false;
-    private boolean _midpoint_root = false;
+    private final boolean _midpoint_root = false;
     private int _min_base_font_size = 2;
     private double _min_confidence_fraction = Options.MIN_CONFIDENCE_FRACTION_DEFAULT;
     private boolean _nh_parsing_replace_underscores = false;
     private NODE_LABEL_DIRECTION _node_label_direction = NODE_LABEL_DIRECTION.HORIZONTAL;
     private short _number_of_digits_after_comma_for_branch_length_values = AptxConstants.NUMBER_OF_DIGITS_AFTER_COMMA_FOR_BRANCH_LENGTH_VALUES_DEFAULT;
     private short _number_of_digits_after_comma_for_confidence_values = AptxConstants.NUMBER_OF_DIGITS_AFTER_COMMA_FOR_CONFIDENCE_VALUES_DEFAULT;
-    private short _ov_max_height = 80;
-    private short _ov_max_width = 80;
+    private final short _ov_max_height = 80;
+    private final short _ov_max_width = 80;
     private OVERVIEW_PLACEMENT_TYPE _ov_placement = OVERVIEW_PLACEMENT_TYPE.UPPER_LEFT;
     private PHYLOGENY_GRAPHICS_TYPE _phylogeny_graphics_type = PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR;
     private float _print_line_width = AptxConstants.PDF_LINE_WIDTH_DEFAULT;
@@ -97,15 +95,8 @@ public final class Configuration {
     private boolean _show_scale = false;
     private TAXONOMY_EXTRACTION _taxonomy_extraction = TAXONOMY_EXTRACTION.NO;
     private UI _ui = UI.UNKNOWN;
-    private boolean _use_tabbed_display = false;
-    private boolean _validate_against_phyloxml_xsd_schema = AptxConstants.VALIDATE_AGAINST_PHYLOXML_XSD_SCJEMA_DEFAULT;
-    private Color _vector_data_min_color = Color.BLUE;
-    private Color _vector_data_max_color = Color.YELLOW;
-    private Color _vector_data_mean_color = Color.WHITE;
-    private double _vector_data_height = 12;
-    private int _vector_data_width = 120;
-    private boolean _line_up_renderable_node_data = true;
-    private boolean _right_align_domains = false;
+    private final boolean _validate_against_phyloxml_xsd_schema = AptxConstants.VALIDATE_AGAINST_PHYLOXML_XSD_SCJEMA_DEFAULT;
+
 
     static {
         for (final String font_name : AptxConstants.DEFAULT_FONT_CHOICES) {
@@ -142,26 +133,6 @@ public final class Configuration {
         return _default_node_shape_size;
     }
 
-    public double getVectorDataHeight() {
-        return _vector_data_height;
-    }
-
-    public Color getVectorDataMaxColor() {
-        return _vector_data_max_color;
-    }
-
-    public Color getVectorDataMeanColor() {
-        return _vector_data_mean_color;
-    }
-
-    public Color getVectorDataMinColor() {
-        return _vector_data_min_color;
-    }
-
-    public int getVectorDataWidth() {
-        return _vector_data_width;
-    }
-
     public boolean isAbbreviateScientificTaxonNames() {
         return _abbreviate_scientific_names;
     }
@@ -174,16 +145,8 @@ public final class Configuration {
         return _color_labels_same_as_parent_branch;
     }
 
-    final public boolean isLineUpRendarableNodeData() {
-        return _line_up_renderable_node_data;
-    }
-
     public boolean isMidpointReroot() {
         return _midpoint_root;
-    }
-
-    final public boolean isRightLineUpDomains() {
-        return _right_align_domains;
     }
 
     public boolean isShowDefaultNodeShapesExternal() {
@@ -222,10 +185,6 @@ public final class Configuration {
         _species_colors = new Hashtable<String, Color>();
     }
 
-
-    boolean displaySequenceRelations() {
-        return _display_sequence_relations;
-    }
 
     int getBaseFontSize() {
         return _base_font_size;
@@ -380,7 +339,7 @@ public final class Configuration {
         return _ui;
     }
 
-    final void setUi(final UI ui) {
+    void setUi(final UI ui) {
         _ui = ui;
     }
 
@@ -410,7 +369,7 @@ public final class Configuration {
         }
     }
 
-    final boolean isUseNativeUI() {
+    boolean isUseNativeUI() {
         return getUi() == UI.NATIVE;
     }
 

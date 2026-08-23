@@ -1683,8 +1683,6 @@ public final class MainFrameApplication extends MainFrame {
         _show_default_node_shapes_for_marked_cbmi = new JCheckBoxMenuItem(MainFrame.DISPLAY_NODE_BOXES_LABEL_MARKED);
         _collapsed_with_average_height_cbmi = new JCheckBoxMenuItem("Proportional Height of Collapsed Subtrees");
         _show_abbreviated_labels_for_collapsed_nodes_cbmi = new JCheckBoxMenuItem("Add Abbreviated Labels to Collapsed Subtrees");
-        _line_up_renderable_data_cbmi = new JCheckBoxMenuItem(MainFrame.LINE_UP_RENDERABLE_DATA);
-        _right_line_up_domains_cbmi = new JCheckBoxMenuItem(MainFrame.RIGHT_LINE_UP_DOMAINS);
         _show_confidence_stddev_cbmi = new JCheckBoxMenuItem(SHOW_CONF_STDDEV_LABEL);
         _show_mad_confidence_cbmi = new JCheckBoxMenuItem(MainFrame.SHOW_MAD_CONF_LABEL);
         _color_labels_same_as_parent_branch = new JCheckBoxMenuItem(COLOR_LABELS_LABEL);
@@ -1777,8 +1775,6 @@ public final class MainFrameApplication extends MainFrame {
         customizeCheckBoxMenuItem(_use_internal_names_for_conf_in_nh_export_cbmi,
                 getOptions()
                         .getNhConversionSupportValueStyle() == NH_CONVERSION_SUPPORT_VALUE_STYLE.AS_INTERNAL_NODE_NAMES);
-        customizeCheckBoxMenuItem(_line_up_renderable_data_cbmi, getOptions().isLineUpRendarableNodeData());
-        customizeCheckBoxMenuItem(_right_line_up_domains_cbmi, getOptions().isRightLineUpDomains());
     }
 
     void buildSettingsMenu() {

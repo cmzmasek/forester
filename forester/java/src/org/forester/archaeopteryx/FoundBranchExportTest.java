@@ -102,7 +102,6 @@ public final class FoundBranchExportTest {
         final TreePanel tp = mp.getCurrentTreePanel();
         tp.setSize( 900, 700 );
         tp.validate();
-        mp.getOptions().setLineUpRendarableNodeData( true ); // draws aligned connectors when aligned
 
         // mark two leaves as search-found (one in each highlight set: green and red)
         final Set<Long> found0 = new HashSet<>();

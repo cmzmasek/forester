@@ -87,7 +87,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         REROOT,
         SELECT_NODES,
         SHOW_DATA,
-        SORT_DESCENDENTS,
         SUBTREE,
         SWAP,
         NODE_STYLE,
@@ -207,7 +206,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JButton _show_whole;
     private JButton _expand_y;
     private JButton _fit_width;
-    private int _sort_descendents_item;
     private Map<String, Color> _species_colors;
     private int _subtree_cb_item;
     private int _swap_cb_item;
@@ -748,50 +746,52 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     private void setupClickToOptions() {
-        // Every click-to action is always offered (the old "display"/"nodisplay" gate was uniformly
-        // "display"); the editable-only subset stays gated by Options.isEditable() below.
+        // Every click-to action is always offered; the tree-editing subset (Edit Node Data, Delete, Add,
+        // Cut/Copy/Paste) is gated per-item by Options.isEditable(), so on a non-editable tree those rows
+        // are simply skipped and the surrounding always-shown actions close up around them.
         final ClickToOption default_option = _configuration.getDefaultDisplayClicktoOption();
         int selected_index = 0;
         int cb_index = 0;
+        final boolean editable = getOptions().isEditable();
         _show_data_item = addClickToOption(cb_index++, ClickToOption.DISPLAY_NODE_DATA);
         selected_index = clickToSelectedIndex(selected_index, _show_data_item, default_option, ClickToOption.DISPLAY_NODE_DATA);
+        _subtree_cb_item = addClickToOption(cb_index++, ClickToOption.SUBTREE);
+        selected_index = clickToSelectedIndex(selected_index, _subtree_cb_item, default_option, ClickToOption.SUBTREE);
+        _select_nodes_item = addClickToOption(cb_index++, ClickToOption.SELECT_NODES);
+        selected_index = clickToSelectedIndex(selected_index, _select_nodes_item, default_option, ClickToOption.SELECT_NODES);
         _collapse_cb_item = addClickToOption(cb_index++, ClickToOption.COLLAPSE_UNCOLLAPSE);
         selected_index = clickToSelectedIndex(selected_index, _collapse_cb_item, default_option, ClickToOption.COLLAPSE_UNCOLLAPSE);
         _uncollapse_all_cb_item = addClickToOption(cb_index++, ClickToOption.UNCOLLAPSE_ALL);
         selected_index = clickToSelectedIndex(selected_index, _uncollapse_all_cb_item, default_option, ClickToOption.UNCOLLAPSE_ALL);
-        _reroot_cb_item = addClickToOption(cb_index++, ClickToOption.REROOT);
-        selected_index = clickToSelectedIndex(selected_index, _reroot_cb_item, default_option, ClickToOption.REROOT);
-        _subtree_cb_item = addClickToOption(cb_index++, ClickToOption.SUBTREE);
-        selected_index = clickToSelectedIndex(selected_index, _subtree_cb_item, default_option, ClickToOption.SUBTREE);
         _swap_cb_item = addClickToOption(cb_index++, ClickToOption.SWAP);
         selected_index = clickToSelectedIndex(selected_index, _swap_cb_item, default_option, ClickToOption.SWAP);
         _order_subtree_cb_item = addClickToOption(cb_index++, ClickToOption.ORDER_SUBTREE);
         selected_index = clickToSelectedIndex(selected_index, _order_subtree_cb_item, default_option, ClickToOption.ORDER_SUBTREE);
-        _sort_descendents_item = addClickToOption(cb_index++, ClickToOption.SORT_DESCENDENTS);
-        selected_index = clickToSelectedIndex(selected_index, _sort_descendents_item, default_option, ClickToOption.SORT_DESCENDENTS);
+        _open_tax_web_item = addClickToOption(cb_index++, ClickToOption.OPEN_TAX_WEB);
+        selected_index = clickToSelectedIndex(selected_index, _open_tax_web_item, default_option, ClickToOption.OPEN_TAX_WEB);
+        _open_seq_web_item = addClickToOption(cb_index++, ClickToOption.OPEN_SEQ_WEB);
+        selected_index = clickToSelectedIndex(selected_index, _open_seq_web_item, default_option, ClickToOption.OPEN_SEQ_WEB);
         _node_style_item = addClickToOption(cb_index++, ClickToOption.NODE_STYLE);
         selected_index = clickToSelectedIndex(selected_index, _node_style_item, default_option, ClickToOption.NODE_STYLE);
         _color_subtree_cb_item = addClickToOption(cb_index++, ClickToOption.COLOR_SUBTREE);
         selected_index = clickToSelectedIndex(selected_index, _color_subtree_cb_item, default_option, ClickToOption.COLOR_SUBTREE);
-        _open_seq_web_item = addClickToOption(cb_index++, ClickToOption.OPEN_SEQ_WEB);
-        selected_index = clickToSelectedIndex(selected_index, _open_seq_web_item, default_option, ClickToOption.OPEN_SEQ_WEB);
-        _open_tax_web_item = addClickToOption(cb_index++, ClickToOption.OPEN_TAX_WEB);
-        selected_index = clickToSelectedIndex(selected_index, _open_tax_web_item, default_option, ClickToOption.OPEN_TAX_WEB);
-        _select_nodes_item = addClickToOption(cb_index++, ClickToOption.SELECT_NODES);
-        selected_index = clickToSelectedIndex(selected_index, _select_nodes_item, default_option, ClickToOption.SELECT_NODES);
-        if (getOptions().isEditable()) {
+        if (editable) {
+            _edit_node_data_item = addClickToOption(cb_index++, ClickToOption.EDIT_NODE_DATA);
+            selected_index = clickToSelectedIndex(selected_index, _edit_node_data_item, default_option, ClickToOption.EDIT_NODE_DATA);
+        }
+        _reroot_cb_item = addClickToOption(cb_index++, ClickToOption.REROOT);
+        selected_index = clickToSelectedIndex(selected_index, _reroot_cb_item, default_option, ClickToOption.REROOT);
+        if (editable) {
+            _delete_node_or_subtree_item = addClickToOption(cb_index++, ClickToOption.DELETE_SUBTREE_OR_NODE);
+            selected_index = clickToSelectedIndex(selected_index, _delete_node_or_subtree_item, default_option, ClickToOption.DELETE_SUBTREE_OR_NODE);
+            _add_new_node_item = addClickToOption(cb_index++, ClickToOption.ADD_NEW_NODE);
+            selected_index = clickToSelectedIndex(selected_index, _add_new_node_item, default_option, ClickToOption.ADD_NEW_NODE);
             _cut_subtree_item = addClickToOption(cb_index++, ClickToOption.CUT_SUBTREE);
             selected_index = clickToSelectedIndex(selected_index, _cut_subtree_item, default_option, ClickToOption.CUT_SUBTREE);
             _copy_subtree_item = addClickToOption(cb_index++, ClickToOption.COPY_SUBTREE);
             selected_index = clickToSelectedIndex(selected_index, _copy_subtree_item, default_option, ClickToOption.COPY_SUBTREE);
             _paste_subtree_item = addClickToOption(cb_index++, ClickToOption.PASTE_SUBTREE);
             selected_index = clickToSelectedIndex(selected_index, _paste_subtree_item, default_option, ClickToOption.PASTE_SUBTREE);
-            _delete_node_or_subtree_item = addClickToOption(cb_index++, ClickToOption.DELETE_SUBTREE_OR_NODE);
-            selected_index = clickToSelectedIndex(selected_index, _delete_node_or_subtree_item, default_option, ClickToOption.DELETE_SUBTREE_OR_NODE);
-            _add_new_node_item = addClickToOption(cb_index++, ClickToOption.ADD_NEW_NODE);
-            selected_index = clickToSelectedIndex(selected_index, _add_new_node_item, default_option, ClickToOption.ADD_NEW_NODE);
-            _edit_node_data_item = addClickToOption(cb_index++, ClickToOption.EDIT_NODE_DATA);
-            selected_index = clickToSelectedIndex(selected_index, _edit_node_data_item, default_option, ClickToOption.EDIT_NODE_DATA);
         }
         // Set default selection and its action
         _click_to_combobox.setSelectedIndex(selected_index);
@@ -860,9 +860,6 @@ final class ControlPanel extends JPanel implements ActionListener {
                     _decr_domain_structure_evalue_thr.setVisible(true);
                     _incr_domain_structure_evalue_thr.setVisible(true);
                     _domain_structure_evalue_thr_tf.setVisible(true);
-                    if (mf._right_line_up_domains_cbmi != null) {
-                        mf._right_line_up_domains_cbmi.setVisible(true);
-                    }
                 } else {
                     _domain_display_label.setVisible(false);
                     _zoom_in_domain_structure.setVisible(false);
@@ -870,9 +867,6 @@ final class ControlPanel extends JPanel implements ActionListener {
                     _decr_domain_structure_evalue_thr.setVisible(false);
                     _incr_domain_structure_evalue_thr.setVisible(false);
                     _domain_structure_evalue_thr_tf.setVisible(false);
-                    if (mf._right_line_up_domains_cbmi != null) {
-                        mf._right_line_up_domains_cbmi.setVisible(false);
-                    }
                 }
             }
         }
@@ -1997,8 +1991,6 @@ final class ControlPanel extends JPanel implements ActionListener {
             setActionWhenNodeClicked(NodeClickAction.COLOR_SUBTREE);
         } else if (action == _open_seq_web_item) {
             setActionWhenNodeClicked(NodeClickAction.OPEN_SEQ_WEB);
-        } else if (action == _sort_descendents_item) {
-            setActionWhenNodeClicked(NodeClickAction.SORT_DESCENDENTS);
         } else if (action == _open_tax_web_item) {
             setActionWhenNodeClicked(NodeClickAction.OPEN_TAX_WEB);
         } else if (action == _cut_subtree_item) {
@@ -3290,28 +3282,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         final MainFrame mf = getMainFrame();
         if (mf != null) {
             mf.updateFoundSelectedCounter();
-        }
-    }
-
-    void setVisibilityOfDomainStrucureCB() {
-        try {
-            if ((getCurrentTreePanel() != null) && ((getCurrentTreePanel()
-                    .getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR)
-                    || (getCurrentTreePanel().getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED))) {
-                if (getMainPanel().getMainFrame()._right_line_up_domains_cbmi != null) {
-                    getMainPanel().getMainFrame()._right_line_up_domains_cbmi.setVisible(false);
-                }
-            } else if (isShowDomainArchitectures()) {
-                if (getMainPanel().getMainFrame()._right_line_up_domains_cbmi != null) {
-                    getMainPanel().getMainFrame()._right_line_up_domains_cbmi.setVisible(true);
-                }
-            } else {
-                if (getMainPanel().getMainFrame()._right_line_up_domains_cbmi != null) {
-                    getMainPanel().getMainFrame()._right_line_up_domains_cbmi.setVisible(false);
-                }
-            }
-        } catch (final Exception ignore) {
-            //not important...
         }
     }
 

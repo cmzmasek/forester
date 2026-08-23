@@ -204,8 +204,6 @@ final class SettingsDialog extends JDialog {
         c.add( header( "Collapsed Subtrees & Domains" ) );
         add( c, cb( _mf._collapsed_with_average_height_cbmi ) );
         add( c, cb( _mf._show_abbreviated_labels_for_collapsed_nodes_cbmi ) );
-        add( c, cb( _mf._line_up_renderable_data_cbmi ) );
-        add( c, cb( _mf._right_line_up_domains_cbmi ) );
         add( c, labeled( "Domain labels:", enumCombo( Options.DOMAIN_LABEL_MODE.values(),
                                                       _mf.getOptions().getDomainLabelMode(),
                                                       v -> { _mf.getOptions().setDomainLabelMode( v ); repaintTree(); } ) ) );

@@ -226,7 +226,6 @@ public final class ResetToDefaultsTest {
                           frame._antialias_print_cbmi, frame._print_black_and_white_cbmi,
                           frame._internal_number_are_confidence_for_nh_parsing_cbmi, frame._replace_underscores_cbmi,
                           frame._allow_errors_in_distance_to_parent_cbmi, frame._graphics_export_visible_only_cbmi,
-                          frame._right_line_up_domains_cbmi, frame._line_up_renderable_data_cbmi,
                           frame._parse_beast_style_extended_nexus_tags_cbmi, frame._collapsed_with_average_height_cbmi,
                           frame._show_abbreviated_labels_for_collapsed_nodes_cbmi, frame._label_direction_cbmi,
                           frame._internal_labels_above_branch_rbmi, frame._internal_labels_right_of_node_rbmi,

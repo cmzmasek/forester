@@ -49,7 +49,7 @@ public final class ConfigurationTest {
      */
     private static boolean testOptionEnums() {
         if ( !"Display Node Data".equals( ClickToOption.DISPLAY_NODE_DATA.title() )
-                || !"Order Subtree".equals( ClickToOption.ORDER_SUBTREE.title() )
+                || !"Ladderize Subtree".equals( ClickToOption.ORDER_SUBTREE.title() )
                 || !"Open Taxonomy DB".equals( ClickToOption.OPEN_TAX_WEB.title() ) ) {
             return false;
         }

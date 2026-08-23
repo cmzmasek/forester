@@ -53,9 +53,6 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.awt.print.PageFormat;
-import java.awt.print.Printable;
-import java.awt.print.PrinterException;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -119,7 +116,7 @@ import org.forester.util.ForesterUtil;
 import org.forester.util.SequenceAccessionTools;
 import org.forester.util.TaxonomyUtil;
 
-public final class TreePanel extends JPanel implements ActionListener, MouseWheelListener, Printable {
+public final class TreePanel extends JPanel implements ActionListener, MouseWheelListener {
 
     final private class SubtreeColorizationActionListener implements ActionListener {
 
@@ -486,7 +483,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // against a y-distance that the reserves see stale (pre-setYdistance) but the paint sees fresh, which clipped the
     // outermost upright labels when the fresh spacing flipped the resolved angle. See effectiveTipLabelDirection().
     private Options.TIP_LABEL_DIRECTION _resolved_auto_tip_dir = null;
-    private int _longest_domain;
     private double _longest_rendered_domain; // widest domain track in px (rendered width), for the vertical depth reserve
 
     static {
@@ -686,21 +682,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHints(_rendering_hints);
         paintPhylogeny(g2d, false, false, 0, 0, 0, 0);
-    }
-
-    @Override
-    final public int print(final Graphics g, final PageFormat page_format, final int page_index)
-            throws PrinterException {
-        if (page_index > 0) {
-            return (NO_SUCH_PAGE);
-        } else {
-            final Graphics2D g2d = (Graphics2D) g;
-            g2d.translate(page_format.getImageableX(), page_format.getImageableY());
-            // Turn off double buffering !?
-            paintPhylogeny(g2d, true, false, 0, 0, 0, 0);
-            // Turn double buffering back on !?
-            return (PAGE_EXISTS);
-        }
     }
 
     public final void setEdited(final boolean edited) {
@@ -1521,9 +1502,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             case SELECT_NODES:
                 selectNode(node);
                 break;
-            case SORT_DESCENDENTS:
-                sortDescendants(node);
-                break;
             case UNCOLLAPSE_ALL:
                 uncollapseAll(node);
                 break;
@@ -2049,8 +2027,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 _node_popup_menu_items[i].setEnabled(isCanSubtree(node));
             } else if (title.equals(ClickToOption.SWAP.title())) {
                 _node_popup_menu_items[i].setEnabled(node.getNumberOfDescendants() == 2);
-            } else if (title.equals(ClickToOption.SORT_DESCENDENTS.title())) {
-                _node_popup_menu_items[i].setEnabled(node.getNumberOfDescendants() > 1);
             } else if (title.equals(ClickToOption.UNCOLLAPSE_ALL.title())) {
                 _node_popup_menu_items[i].setEnabled(isCanUncollapseAll(node));
             }
@@ -4031,8 +4007,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 paintInternalLabelLeftVertical(g, node, to_pdf, to_graphics_file);
             }
         } else {
-            final int x = paintNodeData(g, node, to_graphics_file, to_pdf, is_in_found_nodes, 0);
-            paintNodeWithRenderableData(x, g, node, to_graphics_file, to_pdf);
+            paintNodeData(g, node, to_graphics_file, to_pdf, is_in_found_nodes, 0);
+            paintNodeWithRenderableData(g, node, to_graphics_file, to_pdf);
         }
     }
 
@@ -4113,8 +4089,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return w;
     }
 
-    final private void paintNodeWithRenderableData(final int x,
-                                                   final Graphics2D g,
+    final private void paintNodeWithRenderableData(final Graphics2D g,
                                                    final PhylogenyNode node,
                                                    final boolean to_graphics_file,
                                                    final boolean to_pdf) {
@@ -4140,39 +4115,19 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 final float y = getYdistance(); // track the actual row spacing (see the horizontal path above)
                 final int h = TreePanelUtil.domainBoxHeight(y, DOMAIN_STRUCTURE_HEIGHT_MIN, DOMAIN_STRUCTURE_HEIGHT_MAX);
                 rds.setRenderingHeight(h);
+                // Domain architectures always line up in a common right-edge column (the standard,
+                // iTOL-style comparable layout); the phylogram column is past the deepest tip + longest
+                // label, the cladogram column just past the aligned tips.
                 if (getControlPanel().isDrawPhylogram()) {
-                    if (getOptions().isLineUpRendarableNodeData()) {
-                        if (getOptions().isRightLineUpDomains()) {
-                            rds.render((float) ((displayedMaxDistanceToRoot() * getXcorrectionFactor())
-                                            + _length_of_longest_text + _phylogeny.getRoot().getXcoord()
-                                            + ((_longest_domain - rds.getTotalLength()) * rds.getRenderingFactorWidth())),
-                                    node.getYcoord() - (h / 2.0f),
-                                    g,
-                                    this,
-                                    to_pdf);
-                        } else {
-                            rds.render((float) ((displayedMaxDistanceToRoot() * getXcorrectionFactor())
-                                            + _length_of_longest_text + _phylogeny.getRoot().getXcoord()),
-                                    node.getYcoord() - (h / 2.0f),
-                                    g,
-                                    this,
-                                    to_pdf);
-                        }
-                    } else {
-                        rds.render(node.getXcoord() + x, node.getYcoord() - (h / 2.0f), g, this, to_pdf);
-                    }
+                    rds.render((float) ((displayedMaxDistanceToRoot() * getXcorrectionFactor())
+                                    + _length_of_longest_text + _phylogeny.getRoot().getXcoord()),
+                            node.getYcoord() - (h / 2.0f),
+                            g,
+                            this,
+                            to_pdf);
                 } else {
-                    if (getOptions().isRightLineUpDomains()) {
-                        rds.render(((getPhylogeny().getFirstExternalNode().getXcoord() + _length_of_longest_text)
-                                        - 20) + ((_longest_domain - rds.getTotalLength()) * rds.getRenderingFactorWidth()),
-                                node.getYcoord() - (h / 2.0f),
-                                g,
-                                this,
-                                to_pdf);
-                    } else {
-                        rds.render(getPhylogeny().getFirstExternalNode().getXcoord()
-                                + _length_of_longest_text, node.getYcoord() - (h / 2.0f), g, this, to_pdf);
-                    }
+                    rds.render(getPhylogeny().getFirstExternalNode().getXcoord()
+                            + _length_of_longest_text, node.getYcoord() - (h / 2.0f), g, this, to_pdf);
                 }
             }
         }
@@ -4384,8 +4339,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (xs.length == 0) {
             return;
         }
-        // Use the export canvas extent only when it is real; the direct printer path (TreePanel.print)
-        // passes to_pdf=true with height 0, so fall back to the panel height there as on screen.
+        // Use the export canvas extent only when it is real; the on-screen paint passes to_pdf=false with
+        // height 0, so fall back to the panel height there.
         final boolean use_export_extent = (to_pdf || to_graphics_file) && (graphics_file_height > 0);
         // the grid line spans the full CROSS-tree extent (all tips): the device height in a horizontal layout, but the
         // logical breadth extent in a vertical orientation, where the line is drawn in logical coords and rides R into
@@ -4514,7 +4469,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final FontMetrics fm = g.getFontMetrics();
         // Screen: FLOAT the axis at the viewport bottom so it never scrolls out of view when zoomed in (PearTree-
         // style), exactly like the viewport-fixed scale bar. A file export stays anchored to the tree/export bottom
-        // so figures remain WYSIWYG; File>Print (to_pdf with height 0) anchors to the whole canvas.
+        // so figures remain WYSIWYG.
         final Rectangle vr = getVisibleRect();
         final int bottom = TreePanelUtil.scaleAxisFloatingBottom(to_pdf, to_graphics_file, graphics_file_y,
                 graphics_file_height, getHeight(), vr.y + vr.height);
@@ -5745,7 +5700,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.setFont(getTreeFontSet().getSmallFont());
         g.setColor(scaleInkColor(to_pdf, to_graphics_file));
         final int tw = g.getFontMetrics().stringWidth(label);
-        // top-right, but never left of the left margin (a zero-width File>Print region falls back to the left)
+        // top-right, but never left of the left margin (a zero-width region falls back to the left)
         final int x = Math.max(region_x + MOVE, (region_x + region_width) - tw - MOVE);
         final int y = region_y_top + g.getFontMetrics().getAscent() + 4;
         g.drawString(label, x, y);
@@ -6765,7 +6720,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             _longest_ext_node_info = 0;
             _length_of_longest_text = 0;
             _length_of_longest_text_only = 0;
-            _longest_domain = 0;
             _longest_rendered_domain = 0;
             _ext_node_with_longest_txt_info = _phylogeny.getFirstExternalNode();
             return;
@@ -6778,7 +6732,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         int longest = 30;
         int longest_txt = 0;
         int longest_text_only = 0; // text label (name + taxonomy) width, WITHOUT the domain track width
-        _longest_domain = 0;
         _longest_rendered_domain = 0;
         PhylogenyNode longest_txt_node = _phylogeny.getFirstExternalNode();
         for (final PhylogenyNode node : _phylogeny.getExternalNodes()) {
@@ -6828,9 +6781,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 final double rendered = (effectiveDomainStructureWidth()
                         / ((RenderableDomainArchitecture) d).getOriginalSize().getWidth()) * d.getTotalLength();
                 sum += rendered + 10;
-                if (d.getTotalLength() > _longest_domain) {
-                    _longest_domain = d.getTotalLength();
-                }
                 if (rendered > _longest_rendered_domain) {
                     _longest_rendered_domain = rendered;
                 }
@@ -12420,7 +12370,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private Rectangle2D.Double logicalVisibleRect() {
         final Rectangle v = getVisibleRect();
         if ((v.width <= 0) || (v.height <= 0)) {
-            return null; // no meaningful viewport (offscreen render / File>Print / not-yet-realized) -> never cull
+            return null; // no meaningful viewport (offscreen render / not-yet-realized) -> never cull
         }
         if (!isVerticalOrientation() || (_orientation_R_inverse == null)) {
             return new Rectangle2D.Double(v.x, v.y, v.width, v.height);
@@ -12630,27 +12580,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         _y_distance = y;
     }
 
-    final void sortDescendants(final PhylogenyNode node) {
-        if (!node.isExternal()) {
-            pushUndoCheckpoint("Sort Descendants");
-            DESCENDANT_SORT_PRIORITY pri = DESCENDANT_SORT_PRIORITY.NODE_NAME;
-            if (getControlPanel().isShowTaxonomyScientificNames() || getControlPanel().isShowTaxonomyCode()) {
-                pri = DESCENDANT_SORT_PRIORITY.TAXONOMY;
-            } else if (getControlPanel().isShowSeqNames() || getControlPanel().isShowSeqSymbols()
-                    || getControlPanel().isShowGeneNames()) {
-                pri = DESCENDANT_SORT_PRIORITY.SEQUENCE;
-            }
-            PhylogenyMethods.sortNodeDescendents(node, pri);
-            setNodeInPreorderToNull();
-            _phylogeny.externalNodesHaveChanged();
-            _phylogeny.clearHashIdToNodeMap();
-            _phylogeny.recalculateNumberOfExternalDescendants(true);
-            resetNodeIdToDistToLeafMap();
-            setEdited(true);
-        }
-        repaint();
-    }
-
     final void subTree(final PhylogenyNode clicked_node) {
         if (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED) {
             JOptionPane.showMessageDialog(this,
@@ -12757,7 +12686,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 || getControlPanel().isShowGeneNames()) {
             pri = DESCENDANT_SORT_PRIORITY.SEQUENCE;
         }
-        pushUndoCheckpoint("Order Subtree");
+        pushUndoCheckpoint("Ladderize Subtree");
         PhylogenyMethods.orderAppearanceX(node, true, pri);
         setNodeInPreorderToNull();
         getPhylogeny().externalNodesHaveChanged();
